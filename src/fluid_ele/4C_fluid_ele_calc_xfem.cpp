@@ -4434,10 +4434,10 @@ namespace Discret
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::assemble_interface_force(
-        Teuchos::RCP<Epetra_Vector> iforcecol,   ///< interface force column vector
-        Core::FE::Discretization& cutdis,        ///< cut discretization
-        std::vector<int>& lm,                    ///< local dof map
-        Core::LinAlg::SerialDenseVector& iforce  ///< interface force vector
+        Teuchos::RCP<Core::LinAlg::Vector> iforcecol,  ///< interface force column vector
+        Core::FE::Discretization& cutdis,              ///< cut discretization
+        std::vector<int>& lm,                          ///< local dof map
+        Core::LinAlg::SerialDenseVector& iforce        ///< interface force vector
     )
     {
       // TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::assemble_interface_force");

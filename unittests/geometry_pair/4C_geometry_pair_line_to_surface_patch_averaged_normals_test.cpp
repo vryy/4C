@@ -16,6 +16,7 @@
 #include "4C_geometry_pair_line_to_surface_patch_geometry_test.hpp"
 #include "4C_geometry_pair_line_to_surface_patch_results_test.hpp"
 #include "4C_geometry_pair_scalar_types.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_SerialComm.h>
 
@@ -151,7 +152,7 @@ namespace
     // Set the state in the face element, here also the FAD variables for each patch are set.
     auto gid_map = Teuchos::rcp(new Epetra_Map(discret_->num_global_nodes() * 3,
         discret_->num_global_nodes() * 3, 0, discret_->get_comm()));
-    auto displacement_vector = Teuchos::rcp(new Epetra_Vector(*gid_map));
+    auto displacement_vector = Teuchos::rcp(new Core::LinAlg::Vector(*gid_map));
     for (int i = 0; i < displacement_vector->GlobalLength(); i++)
       (*displacement_vector)[i] = i * 0.01;
     face_element->set_state(displacement_vector, face_elements_map);

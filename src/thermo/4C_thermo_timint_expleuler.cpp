@@ -81,7 +81,7 @@ void Thermo::TimIntExplEuler::integrate_step()
   // ordinary internal force and conductivity matrix
   {
     // temperature increment in step
-    Teuchos::RCP<Epetra_Vector> tempinc = Teuchos::rcp(new Epetra_Vector(*tempn_));
+    Teuchos::RCP<Core::LinAlg::Vector> tempinc = Teuchos::rcp(new Core::LinAlg::Vector(*tempn_));
     tempinc->Update(-1.0, *(*temp_)(0), 1.0);
     // create an empty parameter list for the discretisation
     Teuchos::ParameterList p;
@@ -90,7 +90,8 @@ void Thermo::TimIntExplEuler::integrate_step()
   }
 
   // determine time derivative of capacity vector, ie \f$\dot{P} = C . \dot{T}_{n=1}\f$
-  Teuchos::RCP<Epetra_Vector> frimpn = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> frimpn =
+      Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   frimpn->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
 
   // obtain new temperature rates \f$R_{n+1}\f$
@@ -114,7 +115,7 @@ void Thermo::TimIntExplEuler::integrate_step()
   else
   {
     // extract the diagonal values of the mass matrix
-    Teuchos::RCP<Epetra_Vector> diag = Core::LinAlg::create_vector(
+    Teuchos::RCP<Core::LinAlg::Vector> diag = Core::LinAlg::create_vector(
         (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(tang_))->row_map(), false);
     (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(tang_))->extract_diagonal_copy(*diag);
     // R_{n+1} = C^{-1} . ( -fint + fext )

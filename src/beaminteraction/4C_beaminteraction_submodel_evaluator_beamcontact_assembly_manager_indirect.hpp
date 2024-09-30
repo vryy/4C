@@ -71,7 +71,7 @@ namespace BEAMINTERACTION
         return mortar_manager_;
       }
 
-      double get_energy(const Teuchos::RCP<const Epetra_Vector>& disp) const override;
+      double get_energy(const Teuchos::RCP<const Core::LinAlg::Vector>& disp) const override;
 
      private:
       //! Pointer to the mortar manager. This object stores the relevant mortar matrices.

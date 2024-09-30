@@ -45,7 +45,7 @@ void Solid::ModelEvaluator::Multiphysics::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Multiphysics::reset(const Epetra_Vector& x)
+void Solid::ModelEvaluator::Multiphysics::reset(const Core::LinAlg::Vector& x)
 {
   check_active_model_type();
 
@@ -56,7 +56,7 @@ void Solid::ModelEvaluator::Multiphysics::reset(const Epetra_Vector& x)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::Multiphysics::assemble_force(
-    Epetra_Vector& f, const double& timefac_np) const
+    Core::LinAlg::Vector& f, const double& timefac_np) const
 {
   check_active_model_type();
 

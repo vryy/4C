@@ -18,10 +18,10 @@ calls into one global sparse matrix and global load vector
 
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_MultiVector.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
@@ -51,8 +51,9 @@ namespace Core::FE
     AssembleStrategy(int firstdofset, int seconddofset,
         Teuchos::RCP<LinAlg::SparseOperator> systemmatrix1,
         Teuchos::RCP<LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-        Teuchos::RCP<Epetra_Vector> systemvector3);
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector3);
 
     /// Destruct
     virtual ~AssembleStrategy() = default;
@@ -74,9 +75,9 @@ namespace Core::FE
     //! @name Access Methods to Global Object
     Teuchos::RCP<LinAlg::SparseOperator> systemmatrix1() { return systemmatrix1_; }
     Teuchos::RCP<LinAlg::SparseOperator> systemmatrix2() { return systemmatrix2_; }
-    Teuchos::RCP<Epetra_Vector> systemvector1() { return systemvector1_; }
-    Teuchos::RCP<Epetra_Vector> systemvector2() { return systemvector2_; }
-    Teuchos::RCP<Epetra_Vector> systemvector3() { return systemvector3_; }
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector1() { return systemvector1_; }
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector2() { return systemvector2_; }
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector3() { return systemvector3_; }
     //@}
 
     //! @name Access Methods to Element Local Object
@@ -163,7 +164,7 @@ namespace Core::FE
     virtual void assemble(LinAlg::SparseOperator& sysmat, double val, int rgid, int cgid);
 
     /// Assemble to given vector
-    virtual void assemble(Epetra_Vector& V, const LinAlg::SerialDenseVector& Vele,
+    virtual void assemble(Core::LinAlg::Vector& V, const LinAlg::SerialDenseVector& Vele,
         const std::vector<int>& lm, const std::vector<int>& lmowner);
 
     /// Assemble to given vector
@@ -180,9 +181,9 @@ namespace Core::FE
 
     Teuchos::RCP<LinAlg::SparseOperator> systemmatrix1_;
     Teuchos::RCP<LinAlg::SparseOperator> systemmatrix2_;
-    Teuchos::RCP<Epetra_Vector> systemvector1_;
-    Teuchos::RCP<Epetra_Vector> systemvector2_;
-    Teuchos::RCP<Epetra_Vector> systemvector3_;
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector1_;
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector2_;
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector3_;
 
     //@}
 

@@ -164,14 +164,14 @@ namespace BEAMINTERACTION
      * \brief Get the global vector of Lagrange multipliers.
      * @return Global vector of Lagrange multipliers.
      */
-    [[nodiscard]] virtual Teuchos::RCP<Epetra_Vector> get_global_lambda() const;
+    [[nodiscard]] virtual Teuchos::RCP<Core::LinAlg::Vector> get_global_lambda() const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
      * the Lagrange GID. on the ranks where they are used.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Epetra_Vector> get_global_lambda_col() const;
+    Teuchos::RCP<Core::LinAlg::Vector> get_global_lambda_col() const;
 
     /**
      * \brief Return a const reference to the contact pairs in this mortar manager.
@@ -221,7 +221,7 @@ namespace BEAMINTERACTION
      * @param displacement_vector (in) global displacement vector.
      */
     void evaluate_and_assemble_global_coupling_contributions(
-        const Teuchos::RCP<const Epetra_Vector>& displacement_vector);
+        const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_vector);
 
     /**
      * \brief Add the mortar penalty contributions to the global force vector and stiffness matrix.
@@ -239,8 +239,8 @@ namespace BEAMINTERACTION
      * @return The regularized Lagrange multipliers and (optionally) their derivative w.r.t. the
      * constraint vector and the scaling vector
      */
-    [[nodiscard]] virtual std::tuple<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_Vector>,
-        Teuchos::RCP<Epetra_Vector>>
+    [[nodiscard]] virtual std::tuple<Teuchos::RCP<Core::LinAlg::Vector>,
+        Teuchos::RCP<Core::LinAlg::Vector>, Teuchos::RCP<Core::LinAlg::Vector>>
     get_penalty_regularization(const bool compute_linearization = false) const;
 
     /**
@@ -251,7 +251,7 @@ namespace BEAMINTERACTION
      *
      * @return Inverted kappa_ vector.
      */
-    Teuchos::RCP<Epetra_Vector> penalty_invert_kappa() const;
+    Teuchos::RCP<Core::LinAlg::Vector> penalty_invert_kappa() const;
 
    protected:
     //! Flag if setup was called.

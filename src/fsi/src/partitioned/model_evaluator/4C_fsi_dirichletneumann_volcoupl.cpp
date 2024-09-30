@@ -107,13 +107,14 @@ void FSI::DirichletNeumannVolCoupl::setup_interface_corrector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::fluid_op(
-    Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag)
+Teuchos::RCP<Core::LinAlg::Vector> FSI::DirichletNeumannVolCoupl::fluid_op(
+    Teuchos::RCP<Core::LinAlg::Vector> idisp, const FillType fillFlag)
 {
   FSI::Partitioned::fluid_op(idisp, fillFlag);
 
   // TODO cant this be done better?
-  Teuchos::RCP<Epetra_Vector> vdisp = Teuchos::rcp(new Epetra_Vector(*structure_field()->dispnp()));
+  Teuchos::RCP<Core::LinAlg::Vector> vdisp =
+      Teuchos::rcp(new Core::LinAlg::Vector(*structure_field()->dispnp()));
 
   if (fillFlag == User)
   {
@@ -124,7 +125,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::fluid_op(
   {
     // normal fluid solve
     // the displacement -> velocity conversion at the interface
-    const Teuchos::RCP<Epetra_Vector> ivel = interface_velocity(idisp);
+    const Teuchos::RCP<Core::LinAlg::Vector> ivel = interface_velocity(idisp);
 
     // A rather simple hack. We need something better!
     const int itemax = mb_fluid_field()->itemax();
@@ -157,8 +158,8 @@ void FSI::DirichletNeumannVolCoupl::extract_previous_interface_solution()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::structure_to_ale(
-    Teuchos::RCP<const Epetra_Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector> FSI::DirichletNeumannVolCoupl::structure_to_ale(
+    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
 {
   return coupsa_->master_to_slave(iv);
 }
@@ -166,8 +167,8 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::structure_to_ale(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVolCoupl::ale_to_structure(
-    Teuchos::RCP<Epetra_Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector> FSI::DirichletNeumannVolCoupl::ale_to_structure(
+    Teuchos::RCP<Core::LinAlg::Vector> iv) const
 {
   return coupsa_->slave_to_master(iv);
 }
@@ -189,7 +190,7 @@ void FSI::InterfaceCorrector::setup(Teuchos::RCP<Adapter::FluidAle> fluidale)
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::InterfaceCorrector::set_interface_displacements(
-    Teuchos::RCP<Epetra_Vector>& idisp_struct, Coupling::Adapter::Coupling& icoupfs)
+    Teuchos::RCP<Core::LinAlg::Vector>& idisp_struct, Coupling::Adapter::Coupling& icoupfs)
 {
   idisp_ = idisp_struct;
   icoupfs_ = Teuchos::rcpFromRef(icoupfs);
@@ -202,7 +203,7 @@ void FSI::InterfaceCorrector::set_interface_displacements(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::InterfaceCorrector::correct_interface_displacements(
-    Teuchos::RCP<Epetra_Vector> disp_fluid,
+    Teuchos::RCP<Core::LinAlg::Vector> disp_fluid,
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
   if (icoupfs_ == Teuchos::null) FOUR_C_THROW("Coupling adapter not set!");
@@ -217,7 +218,7 @@ void FSI::InterfaceCorrector::correct_interface_displacements(
 
   // FOUR_C_THROW("stop");
 
-  Teuchos::RCP<Epetra_Vector> idisp_fluid_corrected = icoupfs_->master_to_slave(idisp_);
+  Teuchos::RCP<Core::LinAlg::Vector> idisp_fluid_corrected = icoupfs_->master_to_slave(idisp_);
 
   deltadisp_->Update(1.0, *idisp_fluid_corrected, -1.0);
 
@@ -237,7 +238,7 @@ void FSI::InterfaceCorrector::correct_interface_displacements(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::VolCorrector::correct_vol_displacements(Teuchos::RCP<Adapter::FluidAle> fluidale,
-    Teuchos::RCP<Epetra_Vector> deltadisp, Teuchos::RCP<Epetra_Vector> disp_fluid,
+    Teuchos::RCP<Core::LinAlg::Vector> deltadisp, Teuchos::RCP<Core::LinAlg::Vector> disp_fluid,
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
   if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
@@ -263,13 +264,14 @@ void FSI::VolCorrector::correct_vol_displacements(Teuchos::RCP<Adapter::FluidAle
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::VolCorrector::correct_vol_displacements_para_space(
-    Teuchos::RCP<Adapter::FluidAle> fluidale, Teuchos::RCP<Epetra_Vector> deltadisp,
-    Teuchos::RCP<Epetra_Vector> disp_fluid,
+    Teuchos::RCP<Adapter::FluidAle> fluidale, Teuchos::RCP<Core::LinAlg::Vector> deltadisp,
+    Teuchos::RCP<Core::LinAlg::Vector> disp_fluid,
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
-  Teuchos::RCP<Epetra_Vector> correction = Teuchos::rcp(new Epetra_Vector(disp_fluid->Map(), true));
-  Teuchos::RCP<Epetra_Vector> DofColMapDummy = Teuchos::rcp(
-      new Epetra_Vector(*fluidale->fluid_field()->discretization()->dof_col_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> correction =
+      Teuchos::rcp(new Core::LinAlg::Vector(disp_fluid->Map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> DofColMapDummy = Teuchos::rcp(
+      new Core::LinAlg::Vector(*fluidale->fluid_field()->discretization()->dof_col_map(), true));
   Core::LinAlg::export_to(*deltadisp, *DofColMapDummy);
 
   const double tol = 1e-5;
@@ -392,13 +394,14 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::VolCorrector::correct_vol_displacements_phys_space(
-    Teuchos::RCP<Adapter::FluidAle> fluidale, Teuchos::RCP<Epetra_Vector> deltadisp,
-    Teuchos::RCP<Epetra_Vector> disp_fluid,
+    Teuchos::RCP<Adapter::FluidAle> fluidale, Teuchos::RCP<Core::LinAlg::Vector> deltadisp,
+    Teuchos::RCP<Core::LinAlg::Vector> disp_fluid,
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
-  Teuchos::RCP<Epetra_Vector> correction = Teuchos::rcp(new Epetra_Vector(disp_fluid->Map(), true));
-  Teuchos::RCP<Epetra_Vector> DofColMapDummy = Teuchos::rcp(
-      new Epetra_Vector(*fluidale->fluid_field()->discretization()->dof_col_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> correction =
+      Teuchos::rcp(new Core::LinAlg::Vector(disp_fluid->Map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> DofColMapDummy = Teuchos::rcp(
+      new Core::LinAlg::Vector(*fluidale->fluid_field()->discretization()->dof_col_map(), true));
   Core::LinAlg::export_to(*deltadisp, *DofColMapDummy);
 
   std::map<int, Core::LinAlg::Matrix<9, 2>> CurrentDOPs =

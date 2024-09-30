@@ -62,8 +62,8 @@ namespace Adapter
 
     void evaluate(Teuchos::RCP<const Core::FE::Discretization> discretization1,
         Teuchos::RCP<const Core::FE::Discretization> discretization2,
-        Teuchos::RCP<const Epetra_Vector> fluid_vel,
-        Teuchos::RCP<const Epetra_Vector> beam_vel) override;
+        Teuchos::RCP<const Core::LinAlg::Vector> fluid_vel,
+        Teuchos::RCP<const Core::LinAlg::Vector> beam_vel) override;
 
     /// resets the matrices and vectors to zero
     void reset_bridge() override;

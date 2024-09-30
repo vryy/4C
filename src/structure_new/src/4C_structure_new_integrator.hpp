@@ -21,7 +21,7 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declarations
-class Epetra_Vector;
+
 #include "4C_utils_parameter_list.fwd.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -34,6 +34,7 @@ namespace Core::IO
 
 namespace Core::LinAlg
 {
+  class Vector;
   class SparseOperator;
   class SparseMatrix;
 }  // namespace Core::LinAlg
@@ -98,7 +99,7 @@ namespace Solid
     virtual void post_setup() = 0;
 
     //! Set state variables
-    virtual void set_state(const Epetra_Vector& x) = 0;
+    virtual void set_state(const Core::LinAlg::Vector& x) = 0;
 
     //! Set initial displacement field
     virtual void set_initial_displacement(
@@ -108,7 +109,7 @@ namespace Solid
      *  (incl. the structural dynamic state variables)
      *
      *  \param x (in) : current full state vector */
-    void reset_model_states(const Epetra_Vector& x);
+    void reset_model_states(const Core::LinAlg::Vector& x);
 
     /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
      *
@@ -116,7 +117,7 @@ namespace Solid
      *         evaluators. This is due to the fact, that some models use a different
      *         time integration scheme for their terms (e.g. GenAlpha for the structure
      *         and OST for the remaining things). */
-    virtual void add_visco_mass_contributions(Epetra_Vector& f) const = 0;
+    virtual void add_visco_mass_contributions(Core::LinAlg::Vector& f) const = 0;
 
     /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
      *
@@ -128,34 +129,35 @@ namespace Solid
     virtual void add_visco_mass_contributions(Core::LinAlg::SparseOperator& jac) const = 0;
 
     //! Apply the right hand side only
-    virtual bool apply_force(const Epetra_Vector& x, Epetra_Vector& f) = 0;
+    virtual bool apply_force(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f) = 0;
 
     /*! \brief Apply the stiffness only
      *
      * Normally this one is unnecessary, since it makes more sense
      * to evaluate the stiffness and right hand side at once, because of
      * the lower computational overhead. */
-    virtual bool apply_stiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac) = 0;
+    virtual bool apply_stiff(const Core::LinAlg::Vector& x, Core::LinAlg::SparseOperator& jac) = 0;
 
     /*! \brief Apply force and stiff at once
      *
      *  Only one loop over all elements. Especially in the contact case,
      *  the difference between this call and first call apply_force and
      *  then apply_stiff is mentionable because of the projection operations. */
-    virtual bool apply_force_stiff(
-        const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) = 0;
+    virtual bool apply_force_stiff(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f,
+        Core::LinAlg::SparseOperator& jac) = 0;
 
     /*! \brief Modify the right hand side and Jacobian corresponding to the requested correction
      * action of one (or several) second order constraint (SOC) model(s)
      */
     virtual bool apply_correction_system(const enum NOX::Nln::CorrectionType type,
-        const std::vector<Inpar::Solid::ModelType>& constraint_models, const Epetra_Vector& x,
-        Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) = 0;
+        const std::vector<Inpar::Solid::ModelType>& constraint_models,
+        const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f,
+        Core::LinAlg::SparseOperator& jac) = 0;
 
     /*! \brief Remove contributions from the structural right-hand side stemming
      *  from any condensation operations (typical example is contact)
      */
-    virtual void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const = 0;
+    virtual void remove_condensed_contributions_from_rhs(Core::LinAlg::Vector& rhs) const = 0;
 
     /*! \brief Calculate characteristic/reference norms for forces
      *
@@ -172,7 +174,7 @@ namespace Solid
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr) = 0;
 
     //! Assemble the right hand side
-    virtual bool assemble_force(Epetra_Vector& f,
+    virtual bool assemble_force(Core::LinAlg::Vector& f,
         const std::vector<Inpar::Solid::ModelType>* without_these_models = nullptr) const = 0;
 
     //! Assemble Jacobian
@@ -183,7 +185,7 @@ namespace Solid
     };
 
     //! Create backup state
-    void create_backup_state(const Epetra_Vector& dir);
+    void create_backup_state(const Core::LinAlg::Vector& dir);
 
     //! recover state from the stored backup
     void recover_from_backup_state();
@@ -245,11 +247,11 @@ namespace Solid
     void determine_energy();
 
     //! get the model value in accordance with the currently active time integration
-    virtual double get_model_value(const Epetra_Vector& x);
+    virtual double get_model_value(const Core::LinAlg::Vector& x);
 
     /*! return the total structural energy evaluated at the actual mid-time
      *  in accordance to the used time integration scheme */
-    double get_total_mid_time_str_energy(const Epetra_Vector& x);
+    double get_total_mid_time_str_energy(const Core::LinAlg::Vector& x);
 
     /// update the structural energy variable in the end of a successful time step
     void update_structural_energy();
@@ -258,7 +260,8 @@ namespace Solid
     void determine_optional_quantity();
 
     /// compute the current volumes of all elements
-    bool determine_element_volumes(const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols);
+    bool determine_element_volumes(
+        const Core::LinAlg::Vector& x, Teuchos::RCP<Core::LinAlg::Vector>& ele_vols);
 
     /*! \brief Output to file
      *
@@ -420,8 +423,8 @@ namespace Solid
       double get_total() const;
 
       /// average quantities based on the used averaging type
-      Teuchos::RCP<const Epetra_Vector> average(
-          const Epetra_Vector& state_np, const Epetra_Vector& state_n, const double fac_n) const;
+      Teuchos::RCP<const Core::LinAlg::Vector> average(const Core::LinAlg::Vector& state_np,
+          const Core::LinAlg::Vector& state_n, const double fac_n) const;
 
       /// copy current state to old state (during update)
       void copy_np_to_n();

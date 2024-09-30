@@ -187,8 +187,10 @@ void ScaTra::HeterogeneousReactionStrategy::init_meshtying()
 void ScaTra::HeterogeneousReactionStrategy::evaluate_condition(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-    Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid)
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector3, const std::string& condstring,
+    const int condid)
 {
   check_is_init();
   check_is_setup();
@@ -207,7 +209,7 @@ void ScaTra::HeterogeneousReactionStrategy::evaluate_condition(Teuchos::Paramete
  | Set state on auxiliary discretization                    rauch 12/16 |
  *----------------------------------------------------------------------*/
 void ScaTra::HeterogeneousReactionStrategy::set_state(
-    unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
+    unsigned nds, const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector> state)
 {
   discret_->set_state(nds, name, state);
   return;

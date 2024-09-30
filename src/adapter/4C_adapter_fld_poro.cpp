@@ -41,10 +41,10 @@ Adapter::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::
 
 /*======================================================================*/
 /* evaluate poroelasticity specific constraint*/
-void Adapter::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Epetra_Vector> Cond_RHS,
+void Adapter::FluidPoro::evaluate_no_penetration_cond(Teuchos::RCP<Core::LinAlg::Vector> Cond_RHS,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> ConstraintMatrix,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> struct_vel_constraint_matrix,
-    Teuchos::RCP<Epetra_Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
+    Teuchos::RCP<Core::LinAlg::Vector> condVector, Teuchos::RCP<std::set<int>> condIDs,
     PoroElast::Coupltype coupltype)
 {
   if (!(discretization()->filled())) FOUR_C_THROW("fill_complete() was not called");
@@ -177,7 +177,7 @@ void Adapter::FluidPoro::output(const int step, const double time)
     // velocity/pressure vector
     fluid_field()->disc_writer()->write_vector("velnp", fluid_field()->velnp());
     // (hydrodynamic) pressure
-    Teuchos::RCP<Epetra_Vector> pressure =
+    Teuchos::RCP<Core::LinAlg::Vector> pressure =
         fluid_field()->get_vel_press_splitter()->extract_cond_vector(fluid_field()->velnp());
     fluid_field()->disc_writer()->write_vector("pressure", pressure);
 

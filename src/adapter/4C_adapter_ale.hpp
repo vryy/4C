@@ -15,12 +15,12 @@
 
 #include "4C_ale_utils_mapextractor.hpp"
 #include "4C_inpar_ale.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_result_test.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -80,16 +80,16 @@ namespace Adapter
     //! @name Vector access
 
     //! initial guess of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> initial_guess() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() const = 0;
 
     //! rhs of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> rhs() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector> rhs() const = 0;
 
     //! unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> dispnp() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector> dispnp() const = 0;
 
     //! known displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> dispn() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector> dispn() const = 0;
 
     //@}
 
@@ -172,7 +172,7 @@ namespace Adapter
      *  In case the StructureNOXCorrectionWrapper is applied, the step increment
      *  is expected which is then transformed into an iteration increment
      */
-    virtual void evaluate(Teuchos::RCP<const Epetra_Vector>
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
                               disiterinc,  ///< step increment such that \f$ x_{n+1}^{k+1} =
                                            ///< x_{n}^{converged}+ stepinc \f$
         ALE::UTILS::MapExtractor::AleDBCSetType
@@ -223,7 +223,7 @@ namespace Adapter
     //@{
 
     //! write access to extract displacements at \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> write_access_dispnp() const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> write_access_dispnp() const = 0;
 
     //@}
 
@@ -242,7 +242,7 @@ namespace Adapter
         Teuchos::RCP<const ALE::UTILS::MapExtractor> interface = Teuchos::null) = 0;
 
     //! update slave dofs for multifield simulations with ale mesh tying
-    virtual void update_slave_dof(Teuchos::RCP<Epetra_Vector>& a) = 0;
+    virtual void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector>& a) = 0;
 
   };  // class Ale
 

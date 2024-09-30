@@ -10,10 +10,11 @@
 
 #include "4C_fsi_nox_jacobian.hpp"
 
+#include "4C_linalg_vector.hpp"
+
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_RowMatrix.h>
-#include <Epetra_Vector.h>
 #include <NOX_Abstract_Group.H>
 #include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_Vector.H>
@@ -84,7 +85,7 @@ int NOX::FSI::FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVect
   // approach is not general purpose) and neglect the dependence of
   // the fluid field on the interface displacements.
 
-  // Convert X and Y from an Epetra_MultiVector to a Epetra_Vectors
+  // Convert X and Y from an Epetra_MultiVector to a Core::LinAlg::Vectors
   // and NOX::epetra::Vectors.  This is done so we use a consistent
   // vector space for norms and inner products.
   Teuchos::RCP<Epetra_Vector> wrappedX = Teuchos::rcp(new Epetra_Vector(View, X, 0));

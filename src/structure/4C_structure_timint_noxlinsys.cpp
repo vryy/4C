@@ -18,6 +18,7 @@
 #include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 
 #include <Epetra_CrsMatrix.h>
@@ -25,7 +26,6 @@
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
 #include <Epetra_VbrMatrix.h>
-#include <Epetra_Vector.h>
 
 #include <vector>
 
@@ -143,13 +143,15 @@ bool NOX::Solid::LinearSystem::applyJacobianInverse(
   // Structure
   if (jacType_ == SparseMatrix)
   {
-    Teuchos::RCP<Epetra_Vector> fres = Teuchos::rcp(new Epetra_Vector(input.getEpetraVector()));
-    Teuchos::RCP<Epetra_Vector> disi = Teuchos::rcp(&(result.getEpetraVector()), false);
+    Teuchos::RCP<Core::LinAlg::Vector> fres =
+        Teuchos::rcp(new Core::LinAlg::Vector(input.getEpetraVector()));
+    Core::LinAlg::VectorView result_view(result.getEpetraVector());
     Core::LinAlg::SparseMatrix* J = dynamic_cast<Core::LinAlg::SparseMatrix*>(jacPtr_.get());
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = callcount_ == 0;
-    structureSolver_->solve(J->epetra_operator(), disi, fres, solver_params);
+    structureSolver_->solve(
+        J->epetra_operator(), result_view.get_non_owning_rcp_ref(), fres, solver_params);
     callcount_ += 1;
   }
   else

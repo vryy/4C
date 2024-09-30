@@ -15,10 +15,10 @@
 
 #include "4C_adapter_fld_fluid_fsi.hpp"
 #include "4C_inpar_xfem.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -67,13 +67,14 @@ namespace Adapter
     /// solve for pure fluid-fluid-ale problem
     void solve() override;
 
-    Teuchos::RCP<Epetra_Vector> relaxation_solve(Teuchos::RCP<Epetra_Vector> ivel) override
+    Teuchos::RCP<Core::LinAlg::Vector> relaxation_solve(
+        Teuchos::RCP<Core::LinAlg::Vector> ivel) override
     {
       FOUR_C_THROW("Do not call RexationSolve for XFFSI.");
       return Teuchos::null;
     }
 
-    Teuchos::RCP<Epetra_Vector> extract_interface_forces() override
+    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_forces() override
     {
       FOUR_C_THROW("Do not call extract_interface_forces for XFFSI.");
       return Teuchos::null;
@@ -91,12 +92,12 @@ namespace Adapter
       return mergedfluidinterface_;
     }
 
-    Teuchos::RCP<const Epetra_Vector> grid_vel() override;
-    Teuchos::RCP<Epetra_Vector> write_access_grid_vel();
+    Teuchos::RCP<const Core::LinAlg::Vector> grid_vel() override;
+    Teuchos::RCP<Core::LinAlg::Vector> write_access_grid_vel();
 
-    Teuchos::RCP<const Epetra_Vector> dispnp() override;
-    Teuchos::RCP<Epetra_Vector> write_access_dispnp();
-    Teuchos::RCP<const Epetra_Vector> dispn() override;
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp() override;
+    Teuchos::RCP<Core::LinAlg::Vector> write_access_dispnp();
+    Teuchos::RCP<const Core::LinAlg::Vector> dispn() override;
 
     /// get the velocity row map of the embedded fluid
     Teuchos::RCP<const Epetra_Map> velocity_row_map() override;
@@ -116,17 +117,18 @@ namespace Adapter
     //@}
 
     /// Apply initial mesh displacement
-    void apply_initial_mesh_displacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override
+    void apply_initial_mesh_displacement(
+        Teuchos::RCP<const Core::LinAlg::Vector> initfluiddisp) override
     {
       FOUR_C_THROW("Not implemented, yet!");
     }
 
     // apply ALE-mesh displacements to embedded fluid
-    void apply_mesh_displacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override;
+    void apply_mesh_displacement(Teuchos::RCP<const Core::LinAlg::Vector> fluiddisp) override;
 
     /// evaluate the fluid and update the merged fluid/FSI DOF-map extractor in case of a change in
     /// the DOF-maps
-    void evaluate(Teuchos::RCP<const Epetra_Vector>
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
             stepinc  ///< solution increment between time step n and n+1
         ) override;
 

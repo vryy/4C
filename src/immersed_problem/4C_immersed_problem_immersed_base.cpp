@@ -76,8 +76,9 @@ void Immersed::ImmersedBase::build_condition_dof_map(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Immersed::ImmersedBase::do_dirichlet_cond(const Teuchos::RCP<Epetra_Vector>& statevector,
-    const Teuchos::RCP<const Epetra_Vector>& dirichvals,
+void Immersed::ImmersedBase::do_dirichlet_cond(
+    const Teuchos::RCP<Core::LinAlg::Vector>& statevector,
+    const Teuchos::RCP<const Core::LinAlg::Vector>& dirichvals,
     const Teuchos::RCP<const Epetra_Map>& dbcmap_new)
 {
   int mynumvals = dbcmap_new->NumMyElements();
@@ -109,8 +110,9 @@ void Immersed::ImmersedBase::do_dirichlet_cond(const Teuchos::RCP<Epetra_Vector>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Immersed::ImmersedBase::do_dirichlet_cond(const Teuchos::RCP<Epetra_Vector>& statevector,
-    const Teuchos::RCP<const Epetra_Vector>& dirichvals,
+void Immersed::ImmersedBase::do_dirichlet_cond(
+    const Teuchos::RCP<Core::LinAlg::Vector>& statevector,
+    const Teuchos::RCP<const Core::LinAlg::Vector>& dirichvals,
     const Teuchos::RCP<const Epetra_Map>& dbcmap_new,
     const Teuchos::RCP<const Epetra_Map>& dbcmap_orig)
 {
@@ -149,7 +151,7 @@ void Immersed::ImmersedBase::apply_dirichlet(
     const Teuchos::RCP<Adapter::StructureWrapper>& field_wrapper,
     const Teuchos::RCP<Core::FE::Discretization>& dis, const std::string condname,
     Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
-    const Teuchos::RCP<const Epetra_Vector>& dirichvals)
+    const Teuchos::RCP<const Core::LinAlg::Vector>& dirichvals)
 {
   const Teuchos::RCP<const Epetra_Map> condmap_orig =
       field_wrapper->get_dbc_map_extractor()->cond_map();
@@ -174,7 +176,7 @@ void Immersed::ImmersedBase::apply_dirichlet_to_fluid(
     const Teuchos::RCP<Adapter::FluidWrapper>& field_wrapper,
     const Teuchos::RCP<Core::FE::Discretization>& dis, const std::string condname,
     Teuchos::RCP<Epetra_Map>& cond_dofrowmap, const int numdof,
-    const Teuchos::RCP<const Epetra_Vector>& dirichvals)
+    const Teuchos::RCP<const Core::LinAlg::Vector>& dirichvals)
 {
   // save the original condition map
   const Teuchos::RCP<const Epetra_Map> condmap_orig =
@@ -603,7 +605,7 @@ void Immersed::ImmersedBase::write_extra_output(const Epetra_Comm& comm, const d
 /*----------------------------------------------------------------------*/
 std::vector<double> Immersed::ImmersedBase::calc_global_resultantfrom_epetra_vector(
     const Epetra_Comm& comm, const Teuchos::RCP<const Core::FE::Discretization>& dis,
-    const Teuchos::RCP<const Epetra_Vector>& vec_epetra)
+    const Teuchos::RCP<const Core::LinAlg::Vector>& vec_epetra)
 {
   double summyrowentriesx = 0.0;
   double summyrowentriesy = 0.0;

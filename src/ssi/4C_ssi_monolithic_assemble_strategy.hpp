@@ -13,10 +13,9 @@
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_linalg_sparseoperator.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_ssi_utils.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -60,9 +59,10 @@ namespace SSI
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold);
 
     //! assemble RHS
-    void assemble_rhs(Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<const Epetra_Vector> rhs_scatra,
-        Teuchos::RCP<const Epetra_Vector> rhs_structure,
-        Teuchos::RCP<const Epetra_Vector> rhs_manifold);
+    void assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs,
+        Teuchos::RCP<const Core::LinAlg::Vector> rhs_scatra,
+        Teuchos::RCP<const Core::LinAlg::Vector> rhs_structure,
+        Teuchos::RCP<const Core::LinAlg::Vector> rhs_manifold);
 
     //! assemble ScaTra-ScaTra-Block into system matrix
     virtual void assemble_scatra_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,

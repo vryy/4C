@@ -83,10 +83,10 @@ void Solid::TimeInt::Implicit::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Implicit::set_state(const Teuchos::RCP<Epetra_Vector>& x)
+void Solid::TimeInt::Implicit::set_state(const Teuchos::RCP<Core::LinAlg::Vector>& x)
 {
   integrator_ptr()->set_state(*x);
-  ::NOX::Epetra::Vector x_nox(x, ::NOX::Epetra::Vector::CreateView);
+  ::NOX::Epetra::Vector x_nox(x->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
   nln_solver().solution_group().setX(x_nox);
   set_state_in_sync_with_nox_group(true);
 }
@@ -155,7 +155,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::solve()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Implicit::update_state_incrementally(
-    Teuchos::RCP<const Epetra_Vector> disiterinc)
+    Teuchos::RCP<const Core::LinAlg::Vector> disiterinc)
 {
   if (disiterinc == Teuchos::null) return;
 
@@ -167,12 +167,13 @@ void Solid::TimeInt::Implicit::update_state_incrementally(
   FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
 
   // cast away const-qualifier for building the Nox Vector
-  Teuchos::RCP<Epetra_Vector> mutable_disiterinc =
-      Teuchos::rcp(const_cast<Epetra_Vector*>(disiterinc.get()), false);
+  Teuchos::RCP<Core::LinAlg::Vector> mutable_disiterinc =
+      Teuchos::rcp(const_cast<Core::LinAlg::Vector*>(disiterinc.get()), false);
 
   // wrap the displacement vector in a nox_epetra_Vector
-  Teuchos::RCP<const ::NOX::Epetra::Vector> nox_disiterinc_ptr = Teuchos::rcp(
-      new ::NOX::Epetra::Vector(mutable_disiterinc, ::NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const ::NOX::Epetra::Vector> nox_disiterinc_ptr =
+      Teuchos::rcp(new ::NOX::Epetra::Vector(
+          mutable_disiterinc->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
 
   // updated the state vector in the nox group
   grp_ptr->computeX(*grp_ptr, *nox_disiterinc_ptr, 1.0);
@@ -180,7 +181,7 @@ void Solid::TimeInt::Implicit::update_state_incrementally(
   // Reset the state variables
   const auto& x_eptra = dynamic_cast<const ::NOX::Epetra::Vector&>(grp_ptr->getX());
   // set the consistent state in the models (e.g. structure and contact models)
-  impl_int().reset_model_states(x_eptra.getEpetraVector());
+  impl_int().reset_model_states(Core::LinAlg::Vector(x_eptra.getEpetraVector()));
 }
 
 /*----------------------------------------------------------------------------*
@@ -189,7 +190,7 @@ void Solid::TimeInt::Implicit::determine_stress_strain() { impl_int().determine_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Implicit::evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void Solid::TimeInt::Implicit::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> disiterinc)
 {
   update_state_incrementally(disiterinc);
 

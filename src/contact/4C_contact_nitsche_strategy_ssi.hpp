@@ -49,8 +49,8 @@ namespace CONTACT
     {
     }
 
-    void apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
         const int step, const int iter, bool predictor) override
     {
       if (kt != Teuchos::null && f != Teuchos::null)
@@ -77,12 +77,13 @@ namespace CONTACT
 
     void integrate(const CONTACT::ParamsInterface& cparams) override;
 
-    void set_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
+    void set_state(
+        const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec) override;
 
-    void set_parent_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec,
+    void set_parent_state(const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec,
         const Core::FE::Discretization& dis) override;
 
-    Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
+    Teuchos::RCP<const Core::LinAlg::Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bp) const override;
 
     /*!
@@ -110,7 +111,7 @@ namespace CONTACT
         const enum CONTACT::MatBlockType& bt, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) override;
 
     //! current scalar state vector
-    Teuchos::RCP<Epetra_Vector> curr_state_scalar_;
+    Teuchos::RCP<Core::LinAlg::Vector> curr_state_scalar_;
     //! ScaTra residual
     Teuchos::RCP<Epetra_FEVector> fs_;
     //! linearization of ScaTra residual w.r.t ScaTra dofs

@@ -157,10 +157,10 @@ namespace STI
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockmapthermo_;
 
     //! global increment vector for Newton-Raphson iteration
-    Teuchos::RCP<Epetra_Vector> increment_;
+    Teuchos::RCP<Core::LinAlg::Vector> increment_;
 
     //! global residual vector on right-hand side of global system of equations
-    Teuchos::RCP<Epetra_Vector> residual_;
+    Teuchos::RCP<Core::LinAlg::Vector> residual_;
 
     //! time for element evaluation and assembly of global system of equations
     double dtele_;
@@ -172,7 +172,7 @@ namespace STI
     Teuchos::RCP<Core::LinAlg::Solver> solver_;
 
     //! inverse sums of absolute values of row entries in global system matrix
-    Teuchos::RCP<Epetra_Vector> invrowsums_;
+    Teuchos::RCP<Core::LinAlg::Vector> invrowsums_;
 
     //! interface coupling adapter for scatra discretization
     Teuchos::RCP<const Coupling::Adapter::Coupling> icoupscatra_;

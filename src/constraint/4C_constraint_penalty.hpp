@@ -14,10 +14,10 @@
 #include "4C_config.hpp"
 
 #include "4C_constraint.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Operator.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -46,8 +46,8 @@ namespace CONSTRAINTS
     void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Epetra_Vector> systemvector3  ///< distributed vector that may be filled by
-                                                   ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector3  ///< distributed vector that may be filled
+                                                          ///< by assembly of element contributions
     );
 
     /// initialization routine called by the manager ctor
@@ -70,12 +70,14 @@ namespace CONSTRAINTS
         Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by
-                                                    ///< assembly of element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector2,  ///< distributed vector that may be filled by
-                                                    ///< assembly of element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector3   ///< distributed vector that may be filled by
-                                                    ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector>
+            systemvector1,  ///< distributed vector that may be filled by
+                            ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector>
+            systemvector2,  ///< distributed vector that may be filled by
+                            ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector3  ///< distributed vector that may be filled
+                                                          ///< by assembly of element contributions
     );
 
    protected:
@@ -85,11 +87,11 @@ namespace CONSTRAINTS
     Teuchos::RCP<Epetra_Import> errorimport_;  ///< importer for redundant and non-overlapping maps
     Teuchos::RCP<Epetra_Map> rederrormap_;     ///< redundant map of errors
     Teuchos::RCP<Epetra_Map> errormap_;        ///< non-overlapping map of errors
-    Teuchos::RCP<Epetra_Vector> initerror_;    ///< initial value of bc
-    Teuchos::RCP<Epetra_Vector> acterror_;     ///< current value of bc
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector> initerror_;  ///< initial value of bc
+    Teuchos::RCP<Core::LinAlg::Vector> acterror_;   ///< current value of bc
+    Teuchos::RCP<Core::LinAlg::Vector>
         lagrvalues_;  ///< value of Lagrange multiplier in augmented Lagrange
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         lagrvalues_force_;  ///< value of Lagrange multiplier in augmented Lagrange
 
 
@@ -110,20 +112,22 @@ namespace CONSTRAINTS
         Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by
-                                                    ///< aasembly of element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector2,  ///< distributed vector that may be filled by
-                                                    ///< aasembly of element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector3   ///< distributed vector that may be filled by
-                                                    ///< aasembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector>
+            systemvector1,  ///< distributed vector that may be filled by
+                            ///< aasembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector>
+            systemvector2,  ///< distributed vector that may be filled by
+                            ///< aasembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector3  ///< distributed vector that may be filled
+                                                          ///< by aasembly of element contributions
     );
 
     //! Compute and assemble initial constraint values (depending on user specific activation times)
     void evaluate_error(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Epetra_Vector> systemvector  ///< distributed vector that may be filled by
-                                                  ///< aasembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector  ///< distributed vector that may be filled
+                                                         ///< by aasembly of element contributions
     );
   };  // class
 }  // namespace CONSTRAINTS

@@ -1127,7 +1127,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::correction_
   // get dirichlet toggle from the discretization
   // we always get the dirichet toggle:
   // in this function we check if the actual nodes have a dirichlet value
-  Teuchos::RCP<const Epetra_Vector> dctoggle = discretization.get_state("dctoggle");
+  Teuchos::RCP<const Core::LinAlg::Vector> dctoggle = discretization.get_state("dctoggle");
   std::vector<double> mydctoggle(lm.size());
   Core::FE::extract_my_values(*dctoggle, mydctoggle, lm);
 

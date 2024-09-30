@@ -134,9 +134,9 @@ namespace FLD
     \brief accessor to interior velocity
 
     */
-    virtual Teuchos::RCP<Epetra_Vector> return_int_velnp() { return intvelnp_; }
-    virtual Teuchos::RCP<Epetra_Vector> return_int_veln() { return intveln_; }
-    virtual Teuchos::RCP<Epetra_Vector> return_int_velnm() { return intvelnm_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector> return_int_velnp() { return intvelnp_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector> return_int_veln() { return intveln_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector> return_int_velnm() { return intvelnm_; }
 
 
    protected:
@@ -157,24 +157,24 @@ namespace FLD
 
     //! @name velocity gradient, velocity and pressure at time n+1, n, n-1
     //!  and n+alpha_F for element interior in HDG
-    Teuchos::RCP<Epetra_Vector> intvelnp_;
-    Teuchos::RCP<Epetra_Vector> intveln_;
-    Teuchos::RCP<Epetra_Vector> intvelnm_;
-    Teuchos::RCP<Epetra_Vector> intvelaf_;
+    Teuchos::RCP<Core::LinAlg::Vector> intvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> intveln_;
+    Teuchos::RCP<Core::LinAlg::Vector> intvelnm_;
+    Teuchos::RCP<Core::LinAlg::Vector> intvelaf_;
     //@}
 
     //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
     //!  and n-1 for element interior in HDG
     //@{
-    Teuchos::RCP<Epetra_Vector> intaccnp_;  ///< acceleration at time \f$t^{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> intaccn_;   ///< acceleration at time \f$t^{n}\f$
-    Teuchos::RCP<Epetra_Vector> intaccam_;  ///< acceleration at time \f$t^{n+\alpha_M}\f$
-    Teuchos::RCP<Epetra_Vector> intaccnm_;  ///< acceleration at time \f$t^{n-1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector> intaccnp_;  ///< acceleration at time \f$t^{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector> intaccn_;   ///< acceleration at time \f$t^{n}\f$
+    Teuchos::RCP<Core::LinAlg::Vector> intaccam_;  ///< acceleration at time \f$t^{n+\alpha_M}\f$
+    Teuchos::RCP<Core::LinAlg::Vector> intaccnm_;  ///< acceleration at time \f$t^{n-1}\f$
     //@}
 
     //! @name other HDG-specific auxiliary vectors, like velocity for output
     Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity_;
-    Teuchos::RCP<Epetra_Vector> interpolatedPressure_;
+    Teuchos::RCP<Core::LinAlg::Vector> interpolatedPressure_;
     //@}
 
     /*!

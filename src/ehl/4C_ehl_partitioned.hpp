@@ -54,9 +54,9 @@ namespace EHL
     void do_lubrication_step();
 
     //! pressure increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> preincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> preincnp_;
     //! displacement increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> dispincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> dispincnp_;
 
     //! maximum iteration steps
     int itmax_;

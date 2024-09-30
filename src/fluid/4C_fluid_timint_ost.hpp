@@ -81,11 +81,12 @@ namespace FLD
            stationary/one-step-theta/BDF2/af-generalized-alpha time integration
            for incompressible and low-Mach-number flow
     */
-    void calculate_acceleration(const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at n+1
-        const Teuchos::RCP<const Epetra_Vector> veln,   ///< velocity at     n
-        const Teuchos::RCP<const Epetra_Vector> velnm,  ///< velocity at     n-1
-        const Teuchos::RCP<const Epetra_Vector> accn,   ///< acceleration at n-1
-        const Teuchos::RCP<Epetra_Vector> accnp         ///< acceleration at n+1
+    void calculate_acceleration(
+        const Teuchos::RCP<const Core::LinAlg::Vector> velnp,  ///< velocity at n+1
+        const Teuchos::RCP<const Core::LinAlg::Vector> veln,   ///< velocity at     n
+        const Teuchos::RCP<const Core::LinAlg::Vector> velnm,  ///< velocity at     n-1
+        const Teuchos::RCP<const Core::LinAlg::Vector> accn,   ///< acceleration at n-1
+        const Teuchos::RCP<Core::LinAlg::Vector> accnp         ///< acceleration at n+1
         ) override;
 
     /*!
@@ -104,8 +105,8 @@ namespace FLD
     \brief Output of filtered velocity
 
     */
-    void outputof_filtered_vel(
-        Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec) override;
+    void outputof_filtered_vel(Teuchos::RCP<Core::LinAlg::Vector> outvec,
+        Teuchos::RCP<Core::LinAlg::Vector> fsoutvec) override;
 
     /*!
 
@@ -144,7 +145,7 @@ namespace FLD
     \brief velocity required for evaluation of related quantites required on element level
 
     */
-    Teuchos::RCP<const Epetra_Vector> evaluation_vel() override { return velnp_; };
+    Teuchos::RCP<const Core::LinAlg::Vector> evaluation_vel() override { return velnp_; };
 
     /*!
     \ apply external forces to the fluid
@@ -208,10 +209,10 @@ namespace FLD
     bool startalgo_;  ///< flag for starting algorithm
 
     /// the vector containing external loads at t_n
-    Teuchos::RCP<Epetra_Vector> external_loadsn_;
+    Teuchos::RCP<Core::LinAlg::Vector> external_loadsn_;
 
     /// the vector containing external loads at t_{n+1}
-    Teuchos::RCP<Epetra_Vector> external_loadsnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> external_loadsnp_;
 
    private:
   };  // class TimIntOneStepTheta

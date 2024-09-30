@@ -178,7 +178,7 @@ double ScaTra::ScaTraResultTest::result_node(
 
     // extract state vector of discrete scatra-scatra interface layer thicknesses
     // depending on whether monolithic or semi-implicit solution approach is used
-    Teuchos::RCP<const Epetra_Vector> s2igrowthvec(Teuchos::null);
+    Teuchos::RCP<const Core::LinAlg::Vector> s2igrowthvec(Teuchos::null);
     switch (strategy->int_layer_growth_evaluation())
     {
       case Inpar::S2I::growth_evaluation_monolithic:

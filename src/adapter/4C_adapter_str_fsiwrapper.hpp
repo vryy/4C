@@ -49,18 +49,19 @@ namespace Adapter
     /// calculation (and matrix free Newton Krylov).
     ///
     /// \note Can only be called after a valid structural solve.
-    virtual Teuchos::RCP<Epetra_Vector> relaxation_solve(Teuchos::RCP<Epetra_Vector> iforce);
+    virtual Teuchos::RCP<Core::LinAlg::Vector> relaxation_solve(
+        Teuchos::RCP<Core::LinAlg::Vector> iforce);
 
     /// @name Extract interface values
 
     /// extract interface displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> extract_interface_dispn();
+    virtual Teuchos::RCP<Core::LinAlg::Vector> extract_interface_dispn();
 
     /// extract interface displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> extract_interface_dispnp();
+    virtual Teuchos::RCP<Core::LinAlg::Vector> extract_interface_dispnp();
 
     /// Predictor for interface displacements
-    virtual Teuchos::RCP<Epetra_Vector> predict_interface_dispnp();
+    virtual Teuchos::RCP<Core::LinAlg::Vector> predict_interface_dispnp();
 
     /// @name Apply interface forces
 
@@ -70,14 +71,15 @@ namespace Adapter
     /// step. The middle values are newly created.
     ///
     /// \note This is not yet the most efficient implementation.
-    virtual void apply_interface_forces(Teuchos::RCP<Epetra_Vector> iforce);
+    virtual void apply_interface_forces(Teuchos::RCP<Core::LinAlg::Vector> iforce);
 
     /// remove as soon as new structure is fully usable ! todo
     /// only 3 nightly tests use this method:
     /// fsi_dc3D_part_ait_ga_ost_xwall (no solidsh8 possible yet)
     /// fsi_ow3D_mtr_drt (no solidsh8 possible yet)
     /// constr2D_fsi (newtonlinuzawa not implemented; but really needed ?)
-    virtual void apply_interface_forces_temporary_deprecated(Teuchos::RCP<Epetra_Vector> iforce);
+    virtual void apply_interface_forces_temporary_deprecated(
+        Teuchos::RCP<Core::LinAlg::Vector> iforce);
 
     /// rebuild FSI interface from structure side
     virtual void rebuild_interface();

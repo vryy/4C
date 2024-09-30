@@ -10,9 +10,9 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_condition.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -64,7 +64,7 @@ namespace CONSTRAINTS
 
     /// Set state of the underlying discretization
     void set_state(const std::string& state,  ///< name of state to set
-        Teuchos::RCP<Epetra_Vector> V         ///< values to set
+        Teuchos::RCP<Core::LinAlg::Vector> V  ///< values to set
     );
 
     //! Evaluate routine to call from outside. In here the right action is determined and the
@@ -72,8 +72,8 @@ namespace CONSTRAINTS
     void evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Epetra_Vector> systemvector1  ///< distributed vector that may be filled by
-                                                   ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector1  ///< distributed vector that may be filled
+                                                          ///< by assembly of element contributions
     );
 
 
@@ -105,8 +105,8 @@ namespace CONSTRAINTS
     void evaluate_monitor(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Epetra_Vector> systemvector  ///< distributed vector that may be filled by
-                                                  ///< aasembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector  ///< distributed vector that may be filled
+                                                         ///< by aasembly of element contributions
     );
   };  // class
 }  // namespace CONSTRAINTS

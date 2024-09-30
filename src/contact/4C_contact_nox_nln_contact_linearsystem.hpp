@@ -70,20 +70,20 @@ namespace NOX
 
         //! derived
         void set_linear_problem_for_solve(Epetra_LinearProblem& linear_problem,
-            Core::LinAlg::SparseOperator& jac, Epetra_Vector& lhs,
-            Epetra_Vector& rhs) const override;
+            Core::LinAlg::SparseOperator& jac, Core::LinAlg::Vector& lhs,
+            Core::LinAlg::Vector& rhs) const override;
 
         //! Combine the linear solution parts [derived]
         void complete_solution_after_solve(
-            const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const override;
+            const Epetra_LinearProblem& linProblem, Core::LinAlg::Vector& lhs) const override;
 
        private:
         //! throws an error message
         void throw_error(const std::string& functionName, const std::string& errorMsg) const;
 
         //! Solve a linear system containing a diagonal matrix
-        void apply_diagonal_inverse(
-            Core::LinAlg::SparseMatrix& mat, Epetra_Vector& lhs, const Epetra_Vector& rhs) const;
+        void apply_diagonal_inverse(Core::LinAlg::SparseMatrix& mat, Core::LinAlg::Vector& lhs,
+            const Core::LinAlg::Vector& rhs) const;
 
         /// return a pointer to the currently active linear solver
         Teuchos::RCP<Core::LinAlg::Solver> get_linear_contact_solver(
@@ -116,16 +116,16 @@ namespace NOX
            *  "inactive" problem is solved directly by inverting the diagonal matrix.
            *
            *  \author hiermeier \date 04/17 */
-          void extract_active_blocks(
-              Core::LinAlg::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs);
+          void extract_active_blocks(Core::LinAlg::SparseOperator& mat, Core::LinAlg::Vector& lhs,
+              Core::LinAlg::Vector& rhs);
 
           /** \brief Set the original linear problem as sub-problem
            *
            *  This is the default case if no simple pseudo problem can be detected.
            *
            *  \author hiermeier \date 04/17 */
-          void set_original_system(
-              Core::LinAlg::SparseOperator& mat, Epetra_Vector& lhs, Epetra_Vector& rhs);
+          void set_original_system(Core::LinAlg::SparseOperator& mat, Core::LinAlg::Vector& lhs,
+              Core::LinAlg::Vector& rhs);
 
           /** \brief insert left hand side of the linear sub-problem into the global
            *  left hand side
@@ -137,13 +137,13 @@ namespace NOX
            *  \param[out] glhs: global left hand side vector
            *
            *  \author hiermeier \date 03/18 */
-          void insert_into_global_lhs(Epetra_Vector& glhs) const;
+          void insert_into_global_lhs(Core::LinAlg::Vector& glhs) const;
 
           const LinearSystem& linsys_;
 
           Teuchos::RCP<Core::LinAlg::SparseOperator> p_jac_;
-          Teuchos::RCP<Epetra_Vector> p_lhs_;
-          Teuchos::RCP<Epetra_Vector> p_rhs_;
+          Teuchos::RCP<Core::LinAlg::Vector> p_lhs_;
+          Teuchos::RCP<Core::LinAlg::Vector> p_rhs_;
         };
 
         //! map of NOX::Nln::CONSTRAINT::Interface::Required objects

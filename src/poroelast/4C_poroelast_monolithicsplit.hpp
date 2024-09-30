@@ -53,12 +53,12 @@ namespace PoroElast
     //! @name transfer helpers
 
     //! field transform (interface only)
-    Teuchos::RCP<Epetra_Vector> structure_to_fluid_at_interface(
-        Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector> structure_to_fluid_at_interface(
+        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
 
     //! field transform (interface only)
-    Teuchos::RCP<Epetra_Vector> fluid_to_structure_at_interface(
-        Teuchos::RCP<const Epetra_Vector> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector> fluid_to_structure_at_interface(
+        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
 
     //!@}
 
@@ -89,44 +89,44 @@ namespace PoroElast
 
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the
     //! structure) evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> lambda_;
+    Teuchos::RCP<Core::LinAlg::Vector> lambda_;
 
     //! interface force \f$f_{\Gamma,i+1}^{S,n+1}\f$ onto the structure at current iteration
     //! \f$i+1\f$
-    Teuchos::RCP<const Epetra_Vector> fgcur_;
+    Teuchos::RCP<const Core::LinAlg::Vector> fgcur_;
 
     //! inner structural displacement increment \f$\Delta(\Delta d_{I,i+1}^{n+1})\f$ at current
     //! iteration \f$i+1\f$
-    Teuchos::RCP<Epetra_Vector> ddiinc_;
+    Teuchos::RCP<Core::LinAlg::Vector> ddiinc_;
 
     //! inner fluid velocity increment \f$\Delta(\Delta u_{I,i+1}^{n+1})\f$ at current iteration
     //! \f$i+1\f$
-    Teuchos::RCP<Epetra_Vector> duiinc_;
+    Teuchos::RCP<Core::LinAlg::Vector> duiinc_;
 
     //! inner displacement solution of the structure at previous iteration
-    Teuchos::RCP<const Epetra_Vector> solipre_;
+    Teuchos::RCP<const Core::LinAlg::Vector> solipre_;
 
     //! inner velocity/pressure solution of the fluid at previous iteration
-    Teuchos::RCP<const Epetra_Vector> solivelpre_;
+    Teuchos::RCP<const Core::LinAlg::Vector> solivelpre_;
 
     //! structural interface displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at
     //! current iteration \f$i+1\f$
-    Teuchos::RCP<Epetra_Vector> ddginc_;
+    Teuchos::RCP<Core::LinAlg::Vector> ddginc_;
 
     //! fluid interface velocity increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current
     //! iteration \f$i+1\f$
-    Teuchos::RCP<Epetra_Vector> duginc_;
+    Teuchos::RCP<Core::LinAlg::Vector> duginc_;
 
     //! interface displacement solution of the structure at previous iteration
-    Teuchos::RCP<const Epetra_Vector> solgpre_;
+    Teuchos::RCP<const Core::LinAlg::Vector> solgpre_;
 
     //! interface displacement solution of the fluid at previous iteration
-    Teuchos::RCP<const Epetra_Vector> solgvelpre_;
+    Teuchos::RCP<const Core::LinAlg::Vector> solgvelpre_;
 
     //!@}
 
     //! interface increment for dof with dirichlet condition on fsi-interface
-    Teuchos::RCP<Epetra_Vector> ddi_;
+    Teuchos::RCP<Core::LinAlg::Vector> ddi_;
   };
 }  // namespace PoroElast
 

@@ -85,7 +85,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       // elemat1+2, elevec2+3 are not used anyway
 
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(0, "displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state(0, "displacement");
       if ((disp == Teuchos::null))
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(la[0].lm_.size());
@@ -106,7 +106,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
         if (discretization.has_state(0, "velocity"))
         {
           // get the velocities
-          Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state(0, "velocity");
+          Teuchos::RCP<const Core::LinAlg::Vector> vel = discretization.get_state(0, "velocity");
           if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
@@ -114,7 +114,8 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
         }
         if (discretization.has_state(1, "temperature"))
         {
-          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
+          Teuchos::RCP<const Core::LinAlg::Vector> tempnp =
+              discretization.get_state(1, "temperature");
           if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
@@ -148,7 +149,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       Core::LinAlg::Matrix<numdofperelement_, 1> elevec1(elevec1_epetra.values(), true);
 
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(la[0].lm_.size());
       Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
@@ -166,7 +167,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
         if (discretization.has_state(0, "velocity"))
         {
           // get the velocities
-          Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state(0, "velocity");
+          Teuchos::RCP<const Core::LinAlg::Vector> vel = discretization.get_state(0, "velocity");
           if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
@@ -175,7 +176,8 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
 
         if (discretization.has_state(1, "temperature"))
         {
-          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
+          Teuchos::RCP<const Core::LinAlg::Vector> tempnp =
+              discretization.get_state(1, "temperature");
           if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
@@ -202,7 +204,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_nlnstifflmass:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(la[0].lm_.size());
       Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
@@ -228,7 +230,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
         if (discretization.has_state(0, "velocity"))
         {
           // get the velocities
-          Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state(0, "velocity");
+          Teuchos::RCP<const Core::LinAlg::Vector> vel = discretization.get_state(0, "velocity");
           if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
@@ -236,7 +238,8 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
         }
         if (discretization.has_state(1, "temperature"))
         {
-          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
+          Teuchos::RCP<const Core::LinAlg::Vector> tempnp =
+              discretization.get_state(1, "temperature");
           if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
@@ -273,7 +276,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_stress:
     {
       // elemat1+2,elevec1-3 are not used anyway
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(0, "displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state(0, "displacement");
       Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
       Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
       Inpar::Solid::StressType iostress = Inpar::Solid::stress_none;
@@ -314,7 +317,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
         if (discretization.has_state(0, "velocity"))
         {
           // get the velocities
-          Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state(0, "velocity");
+          Teuchos::RCP<const Core::LinAlg::Vector> vel = discretization.get_state(0, "velocity");
           if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
@@ -322,7 +325,8 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
         }
         if (discretization.has_state(1, "temperature"))
         {
-          Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
+          Teuchos::RCP<const Core::LinAlg::Vector> tempnp =
+              discretization.get_state(1, "temperature");
           if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
@@ -394,14 +398,15 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_energy:
     {
       // need current displacement
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(0, "displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state(0, "displacement");
       std::vector<double> mydisp(la[0].lm_.size());
       Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
 
       std::vector<double> mytempnp(0);
       if (discretization.has_state(1, "temperature"))
       {
-        Teuchos::RCP<const Epetra_Vector> tempnp = discretization.get_state(1, "temperature");
+        Teuchos::RCP<const Core::LinAlg::Vector> tempnp =
+            discretization.get_state(1, "temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the dimension of the
@@ -430,7 +435,8 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
 
     case Core::Elements::struct_calc_recover:
     {
-      Teuchos::RCP<const Epetra_Vector> res = discretization.get_state("residual displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> res =
+          discretization.get_state("residual displacement");
       if (res == Teuchos::null)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> myres((la[0].lm_).size());
@@ -443,7 +449,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       if (discretization.num_dof_sets() > 1)
         if (discretization.has_state(1, "residual temperature"))
         {
-          Teuchos::RCP<const Epetra_Vector> tempres =
+          Teuchos::RCP<const Core::LinAlg::Vector> tempres =
               discretization.get_state(1, "residual temperature");
           if (tempres == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempres'");
 

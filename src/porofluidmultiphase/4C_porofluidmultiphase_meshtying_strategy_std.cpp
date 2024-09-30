@@ -56,7 +56,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::initialize_linear_solver(
  *--------------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::linear_solve(
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
-    Teuchos::RCP<Epetra_Vector> increment, Teuchos::RCP<Epetra_Vector> residual,
+    Teuchos::RCP<Core::LinAlg::Vector> increment, Teuchos::RCP<Core::LinAlg::Vector> residual,
     Core::LinAlg::SolverParams& solver_params)
 {
   solver_params.refactor = true;
@@ -71,7 +71,7 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::linear_solve(
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::calculate_norms(std::vector<double>& preresnorm,
     std::vector<double>& incprenorm, std::vector<double>& prenorm,
-    const Teuchos::RCP<const Epetra_Vector> increment)
+    const Teuchos::RCP<const Core::LinAlg::Vector> increment)
 {
   preresnorm.resize(1);
   incprenorm.resize(1);
@@ -107,9 +107,9 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::evaluate() { return; }
 /*----------------------------------------------------------------------*
  | extract and update                                  kremheller 04/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector>
+Teuchos::RCP<const Core::LinAlg::Vector>
 POROFLUIDMULTIPHASE::MeshtyingStrategyStd::extract_and_update_iter(
-    const Teuchos::RCP<const Epetra_Vector> inc)
+    const Teuchos::RCP<const Core::LinAlg::Vector> inc)
 {
   return inc;
 }
@@ -117,8 +117,9 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyStd::extract_and_update_iter(
 /*----------------------------------------------------------------------*
  | extract and update                                  kremheller 04/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> POROFLUIDMULTIPHASE::MeshtyingStrategyStd::combined_increment(
-    const Teuchos::RCP<const Epetra_Vector> inc) const
+Teuchos::RCP<const Core::LinAlg::Vector>
+POROFLUIDMULTIPHASE::MeshtyingStrategyStd::combined_increment(
+    const Teuchos::RCP<const Core::LinAlg::Vector> inc) const
 {
   return inc;
 }
@@ -127,7 +128,7 @@ Teuchos::RCP<const Epetra_Vector> POROFLUIDMULTIPHASE::MeshtyingStrategyStd::com
  | check initial fields                                kremheller 06/18 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::check_initial_fields(
-    Teuchos::RCP<const Epetra_Vector> vec_cont) const
+    Teuchos::RCP<const Core::LinAlg::Vector> vec_cont) const
 {
   return;
 }

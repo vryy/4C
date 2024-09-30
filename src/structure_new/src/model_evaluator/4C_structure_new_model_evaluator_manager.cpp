@@ -14,14 +14,13 @@
 
 #include "4C_linalg_blocksparsematrix.hpp"  // debugging
 #include "4C_linalg_sparseoperator.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_structure_new_integrator.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_model_evaluator_factory.hpp"
 #include "4C_structure_new_model_evaluator_structure.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_utils_exceptions.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -118,7 +117,7 @@ void Solid::ModelEvaluatorManager::setup_multi_map_extractor()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::ModelEvaluatorManager::initialize_inertia_and_damping(
-    const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
+    const Core::LinAlg::Vector& x, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
 
@@ -135,7 +134,7 @@ bool Solid::ModelEvaluatorManager::initialize_inertia_and_damping(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::ModelEvaluatorManager::assemble_force(const double timefac_np, Epetra_Vector& f,
+bool Solid::ModelEvaluatorManager::assemble_force(const double timefac_np, Core::LinAlg::Vector& f,
     const std::vector<Inpar::Solid::ModelType>* without_these_models) const
 {
   if (not without_these_models) return assemble_force(timefac_np, f);
@@ -150,7 +149,7 @@ bool Solid::ModelEvaluatorManager::assemble_force(const double timefac_np, Epetr
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluatorManager::assemble_force(
-    bool& ok, const Vector& me_vec, const double timefac_np, Epetra_Vector& f) const
+    bool& ok, const Vector& me_vec, const double timefac_np, Core::LinAlg::Vector& f) const
 {
   if (not ok) return;
 
@@ -259,7 +258,8 @@ void Solid::ModelEvaluatorManager::post_evaluate(bool ok, const Vector& me_vec) 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::ModelEvaluatorManager::apply_initial_force(const Epetra_Vector& x, Epetra_Vector& f)
+bool Solid::ModelEvaluatorManager::apply_initial_force(
+    const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f)
 {
   check_init_setup();
 
@@ -299,7 +299,7 @@ bool Solid::ModelEvaluatorManager::apply_initial_force(const Epetra_Vector& x, E
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluatorManager::reset_states(const Epetra_Vector& x) const
+void Solid::ModelEvaluatorManager::reset_states(const Core::LinAlg::Vector& x) const
 {
   // default reset_states call
   reset_states(x, true);
@@ -307,7 +307,7 @@ void Solid::ModelEvaluatorManager::reset_states(const Epetra_Vector& x) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluatorManager::reset_states(const Epetra_Vector& x, bool setstate) const
+void Solid::ModelEvaluatorManager::reset_states(const Core::LinAlg::Vector& x, bool setstate) const
 {
   reset_states(x, setstate, *me_vec_ptr_);
 }
@@ -315,7 +315,7 @@ void Solid::ModelEvaluatorManager::reset_states(const Epetra_Vector& x, bool set
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluatorManager::reset_states(
-    const Epetra_Vector& x, bool setstate, Vector& me_vec) const
+    const Core::LinAlg::Vector& x, bool setstate, Vector& me_vec) const
 {
   if (setstate) int_ptr_->set_state(x);
   for (auto& me_iter : me_vec) me_iter->reset(x);
@@ -324,7 +324,7 @@ void Solid::ModelEvaluatorManager::reset_states(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::ModelEvaluatorManager::apply_force(
-    const Epetra_Vector& x, Epetra_Vector& f, const double& timefac_np) const
+    const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f, const double& timefac_np) const
 {
   check_init_setup();
   Vector::iterator me_iter;
@@ -353,8 +353,8 @@ bool Solid::ModelEvaluatorManager::apply_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::ModelEvaluatorManager::apply_stiff(
-    const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
+bool Solid::ModelEvaluatorManager::apply_stiff(const Core::LinAlg::Vector& x,
+    Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   check_init_setup();
   Vector::iterator me_iter;
@@ -384,7 +384,8 @@ bool Solid::ModelEvaluatorManager::apply_stiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::ModelEvaluatorManager::apply_stiff(const Inpar::Solid::ModelType& mt,
-    const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
+    const Core::LinAlg::Vector& x, Core::LinAlg::SparseOperator& jac,
+    const double& timefac_np) const
 {
   check_init_setup();
   bool ok = true;
@@ -414,8 +415,8 @@ bool Solid::ModelEvaluatorManager::apply_stiff(const Inpar::Solid::ModelType& mt
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::ModelEvaluatorManager::apply_force_stiff(const Epetra_Vector& x, Epetra_Vector& f,
-    Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
+bool Solid::ModelEvaluatorManager::apply_force_stiff(const Core::LinAlg::Vector& x,
+    Core::LinAlg::Vector& f, Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   check_init_setup();
   Vector::iterator me_iter;
@@ -447,8 +448,8 @@ bool Solid::ModelEvaluatorManager::apply_force_stiff(const Epetra_Vector& x, Epe
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::ModelEvaluatorManager::apply_cheap_soc_rhs(const enum NOX::Nln::CorrectionType type,
-    const std::vector<Inpar::Solid::ModelType>& constraint_models, const Epetra_Vector& x,
-    Epetra_Vector& f, const double& timefac_np) const
+    const std::vector<Inpar::Solid::ModelType>& constraint_models, const Core::LinAlg::Vector& x,
+    Core::LinAlg::Vector& f, const double& timefac_np) const
 {
   check_init_setup();
 
@@ -494,7 +495,7 @@ void Solid::ModelEvaluatorManager::evaluate_cheap_soc_rhs(bool& ok, const Vector
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluatorManager::assemble_cheap_soc_rhs(
-    bool& ok, const Vector& me_vec, const double timefac_np, Epetra_Vector& f) const
+    bool& ok, const Vector& me_vec, const double timefac_np, Core::LinAlg::Vector& f) const
 {
   if (not ok) return;
 
@@ -562,8 +563,8 @@ void Solid::ModelEvaluatorManager::run_recover() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluatorManager::run_post_compute_x(const Epetra_Vector& xold,
-    const Epetra_Vector& dir, const double& step, const Epetra_Vector& xnew,
+void Solid::ModelEvaluatorManager::run_post_compute_x(const Core::LinAlg::Vector& xold,
+    const Core::LinAlg::Vector& dir, const double& step, const Core::LinAlg::Vector& xnew,
     const bool isdefaultstep) const
 {
   check_init_setup();
@@ -578,8 +579,8 @@ void Solid::ModelEvaluatorManager::run_post_compute_x(const Epetra_Vector& xold,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluatorManager::run_pre_compute_x(const Epetra_Vector& xold,
-    Epetra_Vector& dir_mutable, const double& step, const NOX::Nln::Group& curr_grp,
+void Solid::ModelEvaluatorManager::run_pre_compute_x(const Core::LinAlg::Vector& xold,
+    Core::LinAlg::Vector& dir_mutable, const double& step, const NOX::Nln::Group& curr_grp,
     const bool isdefaultstep) const
 {
   eval_data_ptr_->set_is_default_step(isdefaultstep);
@@ -620,8 +621,9 @@ void Solid::ModelEvaluatorManager::run_pre_solve(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluatorManager::run_post_apply_jacobian_inverse(const Epetra_Vector& rhs,
-    Epetra_Vector& result, const Epetra_Vector& xold, const NOX::Nln::Group& grp) const
+void Solid::ModelEvaluatorManager::run_post_apply_jacobian_inverse(const Core::LinAlg::Vector& rhs,
+    Core::LinAlg::Vector& result, const Core::LinAlg::Vector& xold,
+    const NOX::Nln::Group& grp) const
 {
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
@@ -630,8 +632,9 @@ void Solid::ModelEvaluatorManager::run_post_apply_jacobian_inverse(const Epetra_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluatorManager::run_pre_apply_jacobian_inverse(const Epetra_Vector& rhs,
-    Epetra_Vector& result, const Epetra_Vector& xold, const NOX::Nln::Group& grp) const
+void Solid::ModelEvaluatorManager::run_pre_apply_jacobian_inverse(const Core::LinAlg::Vector& rhs,
+    Core::LinAlg::Vector& result, const Core::LinAlg::Vector& xold,
+    const NOX::Nln::Group& grp) const
 {
   Vector::iterator me_iter;
   for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
@@ -725,7 +728,8 @@ void Solid::ModelEvaluatorManager::compute_jacobian_contributions_from_element_l
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluatorManager::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
+void Solid::ModelEvaluatorManager::remove_condensed_contributions_from_rhs(
+    Core::LinAlg::Vector& rhs) const
 {
   check_init_setup();
   for (auto& me : *me_vec_ptr_) me->remove_condensed_contributions_from_rhs(rhs);
@@ -905,7 +909,7 @@ void Solid::ModelEvaluatorManager::extract_model_vector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluatorManager::create_backup_state(const Epetra_Vector& dir)
+void Solid::ModelEvaluatorManager::create_backup_state(const Core::LinAlg::Vector& dir)
 {
   check_init_setup();
   for (const auto& me_iter : *me_vec_ptr_) me_iter->create_backup_state(dir);

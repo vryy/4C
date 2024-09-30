@@ -20,10 +20,11 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
+
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
-#include <Epetra_Vector.h>
 #include <hdf5.h>
 #include <hdf5_hl.h>
 #include <Teuchos_RCP.hpp>
@@ -108,7 +109,7 @@ namespace Core::IO
       Right now an Epetra_MultiVector has to be read along with its map. Thus
       we read an integer and a double array here.
 
-      \note If columns==1, we create an Epetra_Vector.
+      \note If columns==1, we create an Core::LinAlg::Vector.
 
       \param id_path      (in): hdf5 path to map array (from control file)
       \param value_path   (in): hdf5 path to value array (from control file)

@@ -15,6 +15,7 @@
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_model_evaluator_manager.hpp"
@@ -22,7 +23,6 @@
 #include "4C_structure_new_predict_generic.hpp"
 #include "4C_structure_new_timint_implicit.hpp"
 
-#include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>
 
 FOUR_C_NAMESPACE_OPEN
@@ -60,18 +60,18 @@ void Solid::IMPLICIT::Statics::post_setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::IMPLICIT::Statics::set_state(const Epetra_Vector& x)
+void Solid::IMPLICIT::Statics::set_state(const Core::LinAlg::Vector& x)
 {
   check_init_setup();
   if (is_predictor_state()) return;
 
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = global_state().extract_displ_entries(x);
+  Teuchos::RCP<Core::LinAlg::Vector> disnp_ptr = global_state().extract_displ_entries(x);
   global_state().get_dis_np()->Scale(1.0, *disnp_ptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::IMPLICIT::Statics::apply_force(const Epetra_Vector& x, Epetra_Vector& f)
+bool Solid::IMPLICIT::Statics::apply_force(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f)
 {
   check_init_setup();
   reset_eval_params();
@@ -81,7 +81,7 @@ bool Solid::IMPLICIT::Statics::apply_force(const Epetra_Vector& x, Epetra_Vector
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::Statics::apply_stiff(
-    const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
+    const Core::LinAlg::Vector& x, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
   reset_eval_params();
@@ -93,7 +93,7 @@ bool Solid::IMPLICIT::Statics::apply_stiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::Statics::apply_force_stiff(
-    const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac)
+    const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
   reset_eval_params();
@@ -105,7 +105,7 @@ bool Solid::IMPLICIT::Statics::apply_force_stiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::Statics::assemble_force(
-    Epetra_Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models) const
+    Core::LinAlg::Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models) const
 {
   check_init_setup();
   return model_eval().assemble_force(1.0, f, without_these_models);
@@ -144,20 +144,21 @@ double Solid::IMPLICIT::Statics::calc_ref_norm_force(
 {
   check_init_setup();
 
-  const Teuchos::RCP<Epetra_Vector> fintnp =
-      Teuchos::rcp_const_cast<Epetra_Vector>(global_state().get_fint_np());
-  const Teuchos::RCP<Epetra_Vector> fextnp =
-      Teuchos::rcp_const_cast<Epetra_Vector>(global_state().get_fext_np());
-  const Teuchos::RCP<Epetra_Vector> freactnp =
-      Teuchos::rcp_const_cast<Epetra_Vector>(global_state().get_freact_np());
+  const Teuchos::RCP<Core::LinAlg::Vector> fintnp =
+      Teuchos::rcp_const_cast<Core::LinAlg::Vector>(global_state().get_fint_np());
+  const Teuchos::RCP<Core::LinAlg::Vector> fextnp =
+      Teuchos::rcp_const_cast<Core::LinAlg::Vector>(global_state().get_fext_np());
+  const Teuchos::RCP<Core::LinAlg::Vector> freactnp =
+      Teuchos::rcp_const_cast<Core::LinAlg::Vector>(global_state().get_freact_np());
 
-  // switch from Epetra_Vector to ::NOX::Epetra::Vector (view but read-only)
-  Teuchos::RCP<const ::NOX::Epetra::Vector> fintnp_nox_ptr =
-      Teuchos::rcp(new ::NOX::Epetra::Vector(fintnp, ::NOX::Epetra::Vector::CreateView));
-  Teuchos::RCP<const ::NOX::Epetra::Vector> fextnp_nox_ptr =
-      Teuchos::rcp(new ::NOX::Epetra::Vector(fextnp, ::NOX::Epetra::Vector::CreateView));
+  // switch from Core::LinAlg::Vector to ::NOX::Epetra::Vector (view but read-only)
+  Teuchos::RCP<const ::NOX::Epetra::Vector> fintnp_nox_ptr = Teuchos::rcp(new ::NOX::Epetra::Vector(
+      fintnp->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const ::NOX::Epetra::Vector> fextnp_nox_ptr = Teuchos::rcp(new ::NOX::Epetra::Vector(
+      fextnp->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
   Teuchos::RCP<const ::NOX::Epetra::Vector> freactnp_nox_ptr =
-      Teuchos::rcp(new ::NOX::Epetra::Vector(freactnp, ::NOX::Epetra::Vector::CreateView));
+      Teuchos::rcp(new ::NOX::Epetra::Vector(
+          freactnp->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
 
   // norm of the internal forces
   double fintnorm = fintnp_nox_ptr->norm(type);
@@ -189,8 +190,8 @@ void Solid::IMPLICIT::Statics::pre_update()
   const double dt = (*global_state().get_delta_time())[0];
 
   const Inpar::Solid::PredEnum& pred_type = impl_ptr->predictor().get_type();
-  Teuchos::RCP<Epetra_Vector>& accnp_ptr = global_state().get_acc_np();
-  Teuchos::RCP<Epetra_Vector>& velnp_ptr = global_state().get_vel_np();
+  Teuchos::RCP<Core::LinAlg::Vector>& accnp_ptr = global_state().get_acc_np();
+  Teuchos::RCP<Core::LinAlg::Vector>& velnp_ptr = global_state().get_vel_np();
 
   switch (pred_type)
   {
@@ -198,7 +199,7 @@ void Solid::IMPLICIT::Statics::pre_update()
     case Inpar::Solid::pred_constacc:
     {
       // read-only access
-      Teuchos::RCP<const Epetra_Vector> veln_ptr = global_state().get_vel_n();
+      Teuchos::RCP<const Core::LinAlg::Vector> veln_ptr = global_state().get_vel_n();
       // update the pseudo acceleration (statics!)
       accnp_ptr->Update(1.0 / dt, *velnp_ptr, -1.0 / dt, *veln_ptr, 0.0);
 
@@ -208,8 +209,8 @@ void Solid::IMPLICIT::Statics::pre_update()
     case Inpar::Solid::pred_constvel:
     {
       // read-only access
-      Teuchos::RCP<const Epetra_Vector> disn_ptr = global_state().get_dis_n();
-      Teuchos::RCP<const Epetra_Vector> disnp_ptr = global_state().get_dis_np();
+      Teuchos::RCP<const Core::LinAlg::Vector> disn_ptr = global_state().get_dis_n();
+      Teuchos::RCP<const Core::LinAlg::Vector> disnp_ptr = global_state().get_dis_np();
       // update the pseudo velocity (statics!)
       velnp_ptr->Update(1.0 / dt, *disnp_ptr, -1.0 / dt, *disn_ptr, 0.0);
       // ATTENTION: Break for both cases!
@@ -241,7 +242,7 @@ void Solid::IMPLICIT::Statics::update_step_element()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::IMPLICIT::Statics::predict_const_dis_consist_vel_acc(
-    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
+    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
 {
   check_init_setup();
   // constant predictor : displacement in domain
@@ -255,15 +256,15 @@ void Solid::IMPLICIT::Statics::predict_const_dis_consist_vel_acc(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::Statics::predict_const_vel_consist_acc(
-    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
+    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
 {
   check_init_setup();
   // If there is not enough history information, return a fail status.
   if (global_state().get_step_n() == 0) return false;
 
   // Displacement increment over last time step
-  Teuchos::RCP<Epetra_Vector> disp_inc =
-      Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> disp_inc =
+      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view(), true));
   disp_inc->Update((*global_state().get_delta_time())[0], *global_state().get_vel_n(), 0.);
   // apply the dbc on the auxiliary vector
   tim_int().get_dbc().apply_dirichlet_to_vector(disp_inc);
@@ -279,7 +280,7 @@ bool Solid::IMPLICIT::Statics::predict_const_vel_consist_acc(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::Statics::predict_const_acc(
-    Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
+    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
 {
   check_init_setup();
   // If there is not enough history information try a different predictor with
@@ -287,8 +288,8 @@ bool Solid::IMPLICIT::Statics::predict_const_acc(
   if (global_state().get_step_n() < 2) return predict_const_vel_consist_acc(disnp, velnp, accnp);
 
   // Displacement increment over last time step
-  Teuchos::RCP<Epetra_Vector> disp_inc =
-      Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> disp_inc =
+      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view(), true));
   const double& dt = (*global_state().get_delta_time())[0];
   disp_inc->Update(dt, *global_state().get_vel_n(), 0.);
   disp_inc->Update(0.5 * dt * dt, *global_state().get_acc_n(), 1.0);
@@ -313,10 +314,10 @@ void Solid::IMPLICIT::Statics::reset_eval_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Solid::IMPLICIT::Statics::get_model_value(const Epetra_Vector& x)
+double Solid::IMPLICIT::Statics::get_model_value(const Core::LinAlg::Vector& x)
 {
-  Teuchos::RCP<const Epetra_Vector> disnp_ptr = global_state().extract_displ_entries(x);
-  const Epetra_Vector& disnp = *disnp_ptr;
+  Teuchos::RCP<const Core::LinAlg::Vector> disnp_ptr = global_state().extract_displ_entries(x);
+  const Core::LinAlg::Vector& disnp = *disnp_ptr;
 
   set_state(disnp);
 

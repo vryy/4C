@@ -104,8 +104,8 @@ namespace PaSI
      * \param[in] intfdispnp  interface displacement
      * \param[in] intfforcenp interface force
      */
-    void reset_increment_states(Teuchos::RCP<const Epetra_Vector> intfdispnp,
-        Teuchos::RCP<const Epetra_Vector> intfforcenp);
+    void reset_increment_states(Teuchos::RCP<const Core::LinAlg::Vector> intfdispnp,
+        Teuchos::RCP<const Core::LinAlg::Vector> intfforcenp);
 
     /*!
      * \brief build increment states
@@ -125,7 +125,7 @@ namespace PaSI
      *
      * \param[in] intfforcenp interface force
      */
-    void set_interface_forces(Teuchos::RCP<const Epetra_Vector> intfforcenp);
+    void set_interface_forces(Teuchos::RCP<const Core::LinAlg::Vector> intfforcenp);
 
     /*!
      * \brief reset particle states
@@ -180,13 +180,13 @@ namespace PaSI
     void save_particle_states();
 
     //! interface force acting
-    Teuchos::RCP<Epetra_Vector> intfforcenp_;
+    Teuchos::RCP<Core::LinAlg::Vector> intfforcenp_;
 
     //! interface displacement increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> intfdispincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> intfdispincnp_;
 
     //! interface force increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> intfforceincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> intfforceincnp_;
 
     //! maximum iteration steps
     const int itmax_;
@@ -261,13 +261,13 @@ namespace PaSI
     virtual void calc_omega(double& omega, const int itnum);
 
     //! relaxed interface displacement
-    Teuchos::RCP<Epetra_Vector> relaxintfdispnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> relaxintfdispnp_;
 
     //! relaxed interface velocity
-    Teuchos::RCP<Epetra_Vector> relaxintfvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> relaxintfvelnp_;
 
     //! relaxed interface acceleration
-    Teuchos::RCP<Epetra_Vector> relaxintfaccnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> relaxintfaccnp_;
 
     //! relaxation parameter
     double omega_;
@@ -351,7 +351,7 @@ namespace PaSI
     void calc_omega(double& omega, const int itnum) override;
 
     //! old interface displacement increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> intfdispincnpold_;
+    Teuchos::RCP<Core::LinAlg::Vector> intfdispincnpold_;
 
     //! maximal relaxation parameter
     double maxomega_;

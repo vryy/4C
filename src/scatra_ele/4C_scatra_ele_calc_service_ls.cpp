@@ -42,8 +42,8 @@ int Discret::ELEMENTS::ScaTraEleCalcLS<distype>::evaluate_action(Core::Elements:
     case ScaTra::Action::calc_error:
     {
       // extract local values from the global vectors
-      Teuchos::RCP<const Epetra_Vector> phizero = discretization.get_state("phiref");
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
+      Teuchos::RCP<const Core::LinAlg::Vector> phizero = discretization.get_state("phiref");
+      Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
 

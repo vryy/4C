@@ -25,9 +25,9 @@
 #include "4C_linalg_fixedsizematrix_generators.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_mat_so3_material.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -174,7 +174,7 @@ namespace Discret::ELEMENTS
   ElementNodes<celltype> evaluate_element_nodes(const Core::Elements::Element& ele,
       const Core::FE::Discretization& discretization, const std::vector<int>& lm)
   {
-    const Epetra_Vector& displacements = *discretization.get_state("displacement");
+    const Core::LinAlg::Vector& displacements = *discretization.get_state("displacement");
 
     std::vector<double> mydisp(lm.size());
     Core::FE::extract_my_values(displacements, mydisp, lm);

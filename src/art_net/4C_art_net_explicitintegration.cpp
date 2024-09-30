@@ -454,12 +454,12 @@ void Arteries::ArtNetExplicitTimeInt::solve_scatra()
     // set vecotr values needed by elements
     discret_->clear_state();
 
-    eleparams.set<Teuchos::RCP<Epetra_Vector>>("Wfn", Wfn_);
-    eleparams.set<Teuchos::RCP<Epetra_Vector>>("Wbn", Wbn_);
-    eleparams.set<Teuchos::RCP<Epetra_Vector>>("Wfo", Wfo_);
-    eleparams.set<Teuchos::RCP<Epetra_Vector>>("Wbo", Wbo_);
-    eleparams.set<Teuchos::RCP<Epetra_Vector>>("scatran", scatraO2n_);
-    eleparams.set<Teuchos::RCP<Epetra_Vector>>("scatranp", scatraO2np_);
+    eleparams.set<Teuchos::RCP<Core::LinAlg::Vector>>("Wfn", Wfn_);
+    eleparams.set<Teuchos::RCP<Core::LinAlg::Vector>>("Wbn", Wbn_);
+    eleparams.set<Teuchos::RCP<Core::LinAlg::Vector>>("Wfo", Wfo_);
+    eleparams.set<Teuchos::RCP<Core::LinAlg::Vector>>("Wbo", Wbo_);
+    eleparams.set<Teuchos::RCP<Core::LinAlg::Vector>>("scatran", scatraO2n_);
+    eleparams.set<Teuchos::RCP<Core::LinAlg::Vector>>("scatranp", scatraO2np_);
 
     eleparams.set("time step size", dta_);
 
@@ -832,7 +832,7 @@ void Arteries::ArtNetExplicitTimeInt::calc_postprocessing_values()
 
 
 void Arteries::ArtNetExplicitTimeInt::calc_scatra_from_scatra_fw(
-    Teuchos::RCP<Epetra_Vector> scatra, Teuchos::RCP<Epetra_Vector> scatra_fb)
+    Teuchos::RCP<Core::LinAlg::Vector> scatra, Teuchos::RCP<Core::LinAlg::Vector> scatra_fb)
 {
   scatra->PutScalar(0.0);
 

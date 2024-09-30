@@ -12,7 +12,8 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_Vector.h>
+#include "4C_linalg_vector.hpp"
+
 #include <Teuchos_RCPDecl.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -51,7 +52,7 @@ namespace SSI
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
     //! apply contact contributions to the scatra residual
-    void apply_contact_to_scatra_residual(Teuchos::RCP<Epetra_Vector> scatra_residual);
+    void apply_contact_to_scatra_residual(Teuchos::RCP<Core::LinAlg::Vector> scatra_residual);
 
     //! apply contact contributions to scatra sub matrix
     virtual void apply_contact_to_scatra_scatra(

@@ -18,7 +18,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 void CONSTRAINTS::SUBMODELEVALUATOR::LinearCoupledEquation::evaluate_equation(
     Core::LinAlg::SparseMatrix& Q_dd, Core::LinAlg::SparseMatrix& Q_dL,
-    Core::LinAlg::SparseMatrix& Q_Ld, Epetra_Vector& constraint_vector, const Epetra_Vector& D_np1)
+    Core::LinAlg::SparseMatrix& Q_Ld, Core::LinAlg::Vector& constraint_vector,
+    const Core::LinAlg::Vector& D_np1)
 {
   double constraintViolation = 0.;
 

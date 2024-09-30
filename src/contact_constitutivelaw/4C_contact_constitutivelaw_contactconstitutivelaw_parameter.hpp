@@ -18,8 +18,8 @@ relate the contact gap to the contact pressure based on micro interactions
 #include "4C_config.hpp"
 
 #include "4C_io_input_parameter_container.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

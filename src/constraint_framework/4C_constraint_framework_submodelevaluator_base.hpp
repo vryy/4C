@@ -43,10 +43,10 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
 
     /*! Evaluate the current right-hand-side vector and tangential stiffness matrix at \f$t_{n+1}\f$
      */
-    virtual bool evaluate_force_stiff(const Epetra_Vector& displacement_vector,
+    virtual bool evaluate_force_stiff(const Core::LinAlg::Vector& displacement_vector,
         Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> me_stiff_ptr,
-        Teuchos::RCP<Epetra_Vector> me_force_ptr);
+        Teuchos::RCP<Core::LinAlg::Vector> me_force_ptr);
 
     //! Evaluate the matrices of the saddle-point system
     virtual void evaluate_coupling_terms(Solid::TimeInt::BaseDataGlobalState& gstate);
@@ -90,7 +90,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     Teuchos::RCP<Core::LinAlg::SparseMatrix> Q_Ld_ = Teuchos::null;
 
     //! coupling conditions evaluated at current displacements
-    Teuchos::RCP<Epetra_Vector> constraint_vector_;
+    Teuchos::RCP<Core::LinAlg::Vector> constraint_vector_;
   };
 
 }  // namespace CONSTRAINTS::SUBMODELEVALUATOR

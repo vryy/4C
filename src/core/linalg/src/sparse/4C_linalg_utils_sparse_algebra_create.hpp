@@ -13,6 +13,7 @@
 
 #include "4C_fem_dofset_interface.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Comm.h>
@@ -23,7 +24,6 @@
 #include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -57,12 +57,13 @@ namespace Core::LinAlg
       const SparseMatrix& matrix, double* nullspace, Teuchos::ParameterList& params);
 
   /*!
-   \brief Create a new Epetra_Vector and return RefcountPtr to it
+   \brief Create a new Core::LinAlg::Vector and return RefcountPtr to it
 
    \param rowmap (in): row map of vector
    \param init (in): initialize vector to zero upon construction
    */
-  Teuchos::RCP<Epetra_Vector> create_vector(const Epetra_BlockMap& rowmap, const bool init = true);
+  Teuchos::RCP<Core::LinAlg::Vector> create_vector(
+      const Epetra_BlockMap& rowmap, const bool init = true);
 
   /*!
    \brief Create a new Epetra_MultiVector and return RefcountPtr to it

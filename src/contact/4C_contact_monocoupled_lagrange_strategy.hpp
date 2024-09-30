@@ -47,8 +47,8 @@ namespace CONTACT
 
     // Overload CONTACT::AbstractStrategy::apply_force_stiff_cmt as this is called in the structure
     // --> to early for monolithically coupled algorithms!
-    void apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
         const int step, const int iter, bool predictor) override
     {
       if (has_to_evaluate_ && 0)
@@ -62,7 +62,7 @@ namespace CONTACT
 
     // Overload CONTACT::LagrangeStrategy::recover as this is called in the structure --> no
     // enought information available for monolithically coupled algorithms!
-    void recover(Teuchos::RCP<Epetra_Vector> disi) override
+    void recover(Teuchos::RCP<Core::LinAlg::Vector> disi) override
     {
       if (has_to_recover_ && 0)
         FOUR_C_THROW(
@@ -79,16 +79,16 @@ namespace CONTACT
 
     // Alternative Method to CONTACT::AbstractStrategy::apply_force_stiff_cmt for monolithically
     // coupled algorithms
-    virtual void apply_force_stiff_cmt_coupled(Teuchos::RCP<Epetra_Vector> dis,
+    virtual void apply_force_stiff_cmt_coupled(Teuchos::RCP<Core::LinAlg::Vector> dis,
         Teuchos::RCP<Core::LinAlg::SparseOperator>& k_ss,
         std::map<int, Teuchos::RCP<Core::LinAlg::SparseOperator>*> k_sx,
-        Teuchos::RCP<Epetra_Vector>& rhs_s, const int step, const int iter, bool predictor);
+        Teuchos::RCP<Core::LinAlg::Vector>& rhs_s, const int step, const int iter, bool predictor);
 
     // Alternative Method to CONTACT::AbstractStrategy::apply_force_stiff_cmt for monolithically
     // coupled algorithms
-    virtual void apply_force_stiff_cmt_coupled(Teuchos::RCP<Epetra_Vector> dis,
+    virtual void apply_force_stiff_cmt_coupled(Teuchos::RCP<Core::LinAlg::Vector> dis,
         Teuchos::RCP<Core::LinAlg::SparseOperator>& k_ss,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& k_sx, Teuchos::RCP<Epetra_Vector>& rhs_s,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& k_sx, Teuchos::RCP<Core::LinAlg::Vector>& rhs_s,
         const int step, const int iter, bool predictor);
 
     // Alternative Method to CONTACT::LagrangeStrategy::recover as this is called in the structure
@@ -100,10 +100,11 @@ namespace CONTACT
     statically condensated during the setup of the global problem!
     Optionally satisfaction or violation of the contact boundary
     conditions can be checked, too.*/
-    virtual void recover_coupled(
-        Teuchos::RCP<Epetra_Vector> disi, std::map<int, Teuchos::RCP<Epetra_Vector>> inc);
+    virtual void recover_coupled(Teuchos::RCP<Core::LinAlg::Vector> disi,
+        std::map<int, Teuchos::RCP<Core::LinAlg::Vector>> inc);
 
-    virtual void recover_coupled(Teuchos::RCP<Epetra_Vector> disi, Teuchos::RCP<Epetra_Vector> inc);
+    virtual void recover_coupled(
+        Teuchos::RCP<Core::LinAlg::Vector> disi, Teuchos::RCP<Core::LinAlg::Vector> inc);
 
     void evaluate_off_diag_contact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         int Column_Block_Id);  // condensation for all off diagonal matrixes k_s? in monolithically
@@ -125,9 +126,9 @@ namespace CONTACT
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam_;
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invda_;
 
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         lambda_;  // current vector of Lagrange multipliers(for poro no pen.) at t_n+1
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         lambdaold_;  // old vector of Lagrange multipliers(for poro no pen.) at t_n
 
     //! pure useage safty flags

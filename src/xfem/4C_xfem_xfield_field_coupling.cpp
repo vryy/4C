@@ -39,41 +39,41 @@ void XFEM::XFieldField::Coupling::init(const enum MinDofDiscretization& min_dof_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> XFEM::XFieldField::Coupling::master_to_slave(
-    const Teuchos::RCP<const Epetra_Vector>& mv, const enum XFEM::MapType& map_type) const
+Teuchos::RCP<Core::LinAlg::Vector> XFEM::XFieldField::Coupling::master_to_slave(
+    const Teuchos::RCP<const Core::LinAlg::Vector>& mv, const enum XFEM::MapType& map_type) const
 {
-  Teuchos::RCP<Epetra_Vector> sv = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector> sv = Teuchos::null;
   switch (map_type)
   {
     case XFEM::map_dofs:
       return ::FourC::Coupling::Adapter::Coupling::master_to_slave(mv);
       break;
     case XFEM::map_nodes:
-      sv = Teuchos::rcp(new Epetra_Vector(*slavenodemap_));
+      sv = Teuchos::rcp(new Core::LinAlg::Vector(*slavenodemap_));
       break;
   }
 
-  master_to_slave(mv, map_type, sv);
+  master_to_slave(mv->get_ptr_of_const_Epetra_Vector(), map_type, sv->get_ptr_of_Epetra_Vector());
   return sv;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> XFEM::XFieldField::Coupling::slave_to_master(
-    const Teuchos::RCP<const Epetra_Vector>& sv, const enum XFEM::MapType& map_type) const
+Teuchos::RCP<Core::LinAlg::Vector> XFEM::XFieldField::Coupling::slave_to_master(
+    const Teuchos::RCP<const Core::LinAlg::Vector>& sv, const enum XFEM::MapType& map_type) const
 {
-  Teuchos::RCP<Epetra_Vector> mv = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector> mv = Teuchos::null;
   switch (map_type)
   {
     case XFEM::map_dofs:
       return ::FourC::Coupling::Adapter::Coupling::slave_to_master(sv);
       break;
     case XFEM::map_nodes:
-      mv = Teuchos::rcp(new Epetra_Vector(*masternodemap_));
+      mv = Teuchos::rcp(new Core::LinAlg::Vector(*masternodemap_));
       break;
   }
 
-  slave_to_master(sv, map_type, mv);
+  slave_to_master(sv->get_ptr_of_const_Epetra_Vector(), map_type, mv->get_ptr_of_Epetra_Vector());
   return mv;
 }
 

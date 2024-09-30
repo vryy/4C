@@ -122,9 +122,10 @@ namespace FSI
     Since this is a saddle-point formulation, we also need to extract the Lagrange multipliers
     #lag_mult_ from the monolithic solution vector.
     */
-    void extract_field_vectors(Teuchos::RCP<const Epetra_Vector> x,
-        Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
-        Teuchos::RCP<const Epetra_Vector>& ax, Teuchos::RCP<const Epetra_Vector>& lagx);
+    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
+        Teuchos::RCP<const Core::LinAlg::Vector>& sx, Teuchos::RCP<const Core::LinAlg::Vector>& fx,
+        Teuchos::RCP<const Core::LinAlg::Vector>& ax,
+        Teuchos::RCP<const Core::LinAlg::Vector>& lagx);
 
 
     /*!
@@ -133,11 +134,11 @@ namespace FSI
     Since this is a saddle-point formulation, we also need to evaluate the Lagrange multipliers
     #lag_mult_.
     */
-    void evaluate(
-        Teuchos::RCP<const Epetra_Vector> step_increment  ///< increment between time step n and n+1
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+            step_increment  ///< increment between time step n and n+1
         ) override;
 
-    void initial_guess(Teuchos::RCP<Epetra_Vector> initial_guess) final;
+    void initial_guess(Teuchos::RCP<Core::LinAlg::Vector> initial_guess) final;
 
    private:
     /*! \brief Create the combined DOF row map for the FSI problem
@@ -155,11 +156,11 @@ namespace FSI
     virtual void create_lagrange_multiplier_dof_row_map();
 
     virtual void combine_field_vectors(
-        Epetra_Vector& f,  ///< composed vector containing all field vectors
-        Teuchos::RCP<const Epetra_Vector> solid_vector,     ///< structural DOFs
-        Teuchos::RCP<const Epetra_Vector> fluid_vector,     ///< fluid DOFs
-        Teuchos::RCP<const Epetra_Vector> ale_vector,       ///< ale DOFs
-        Teuchos::RCP<const Epetra_Vector> lag_mult_vector,  /// < lagrange multiplier
+        Core::LinAlg::Vector& f,  ///< composed vector containing all field vectors
+        Teuchos::RCP<const Core::LinAlg::Vector> solid_vector,     ///< structural DOFs
+        Teuchos::RCP<const Core::LinAlg::Vector> fluid_vector,     ///< fluid DOFs
+        Teuchos::RCP<const Core::LinAlg::Vector> ale_vector,       ///< ale DOFs
+        Teuchos::RCP<const Core::LinAlg::Vector> lag_mult_vector,  /// < lagrange multiplier
         bool fullvectors);
 
     /*! \brief Setup the Dirichlet map extractor
@@ -172,13 +173,13 @@ namespace FSI
     void setup_dbc_map_extractor() final;
 
     /// setup RHS contributions based on single field residuals
-    void setup_rhs_residual(Epetra_Vector& f) final;
+    void setup_rhs_residual(Core::LinAlg::Vector& f) final;
 
     /// setup RHS contributions based on the Lagrange multiplier field
-    void setup_rhs_lambda(Epetra_Vector& f) final;
+    void setup_rhs_lambda(Core::LinAlg::Vector& f) final;
 
     /// setup RHS contributions based on terms for first nonlinear iteration
-    void setup_rhs_firstiter(Epetra_Vector& f) final;
+    void setup_rhs_firstiter(Core::LinAlg::Vector& f) final;
 
     //! Create #lag_mult_
     virtual void set_lag_mult();
@@ -190,11 +191,11 @@ namespace FSI
     //!@{
 
     /// apply infnorm scaling to linear block system
-    void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b) override;
+    void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& b) override;
 
     /// undo infnorm scaling from scaled solution
-    void unscale_solution(
-        Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) override;
+    void unscale_solution(Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& x,
+        Core::LinAlg::Vector& b) override;
 
     //!@}
 
@@ -227,24 +228,24 @@ namespace FSI
     /// @name infnorm scaling
     //!@{
 
-    Teuchos::RCP<Epetra_Vector> srowsum_;
-    Teuchos::RCP<Epetra_Vector> scolsum_;
-    Teuchos::RCP<Epetra_Vector> arowsum_;
-    Teuchos::RCP<Epetra_Vector> acolsum_;
+    Teuchos::RCP<Core::LinAlg::Vector> srowsum_;
+    Teuchos::RCP<Core::LinAlg::Vector> scolsum_;
+    Teuchos::RCP<Core::LinAlg::Vector> arowsum_;
+    Teuchos::RCP<Core::LinAlg::Vector> acolsum_;
 
     //!@}
 
     /// additional ale residual to avoid incremental ale errors
-    Teuchos::RCP<Epetra_Vector> aleresidual_;
+    Teuchos::RCP<Core::LinAlg::Vector> aleresidual_;
 
     //! DOF map of Lagrange multiplier unknowns
     Teuchos::RCP<const Epetra_Map> lag_mult_dof_map_;
 
     //! Lagrange multiplier
-    Teuchos::RCP<Epetra_Vector> lag_mult_;
+    Teuchos::RCP<Core::LinAlg::Vector> lag_mult_;
 
     //! Lagrange multiplier from previous time step
-    Teuchos::RCP<Epetra_Vector> lag_mult_old_;
+    Teuchos::RCP<Core::LinAlg::Vector> lag_mult_old_;
 
     //! Flag to indicate if Setup has not been called yet
     bool notsetup_;

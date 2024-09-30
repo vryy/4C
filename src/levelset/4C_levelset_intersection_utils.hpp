@@ -66,7 +66,7 @@ namespace ScaTra
       /** \brief construct zero iso-contour of level-set field
        *
        *  \author rasthofer \date 09/13 */
-      void capture_zero_level_set(const Teuchos::RCP<const Epetra_Vector>& phi,
+      void capture_zero_level_set(const Teuchos::RCP<const Core::LinAlg::Vector>& phi,
           const Teuchos::RCP<const Core::FE::Discretization>& scatradis, double& volumedomainminus,
           double& volumedomainplus, double& zerosurface,
           std::map<int, Core::Geo::BoundaryIntCells>& elementBoundaryIntCells);
@@ -88,8 +88,9 @@ namespace ScaTra
       void reset();
 
       template <typename T>
-      void get_zero_level_set(const Epetra_Vector& phi, const Core::FE::Discretization& scatradis,
-          std::map<int, T>& elementBoundaryIntCells, bool cut_screenoutput = false);
+      void get_zero_level_set(const Core::LinAlg::Vector& phi,
+          const Core::FE::Discretization& scatradis, std::map<int, T>& elementBoundaryIntCells,
+          bool cut_screenoutput = false);
 
       /** \brief export boundary integration cells from this proc to parallel distribution
        *
@@ -132,7 +133,7 @@ namespace ScaTra
        *
        *  \author hiermeier \date 11/16 */
       void prepare_cut(const Core::Elements::Element* ele,
-          const Core::FE::Discretization& scatradis, const Epetra_Vector& phicol,
+          const Core::FE::Discretization& scatradis, const Core::LinAlg::Vector& phicol,
           Core::LinAlg::SerialDenseMatrix& xyze, std::vector<double>& phi_nodes,
           std::vector<int>& node_ids) const;
 

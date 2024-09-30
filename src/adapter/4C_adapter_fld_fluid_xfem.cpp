@@ -103,7 +103,7 @@ double Adapter::FluidXFEM::read_restart(int step)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FluidXFEM::nonlinear_solve(
-    Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
+    Teuchos::RCP<Core::LinAlg::Vector> idisp, Teuchos::RCP<Core::LinAlg::Vector> ivel)
 {
   // if we have values at the interface we need to apply them
 
@@ -125,8 +125,8 @@ void Adapter::FluidXFEM::nonlinear_solve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidXFEM::relaxation_solve(
-    Teuchos::RCP<Epetra_Vector> idisp, double dt)
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidXFEM::relaxation_solve(
+    Teuchos::RCP<Core::LinAlg::Vector> idisp, double dt)
 {
   std::cout << "WARNING: RelaxationSolve for XFEM useful?" << std::endl;
 
@@ -139,7 +139,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidXFEM::relaxation_solve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidXFEM::extract_interface_forces()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidXFEM::extract_interface_forces()
 {
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(fluid_field(), true);
   return xfluid->extract_struct_interface_forces();
@@ -148,7 +148,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidXFEM::extract_interface_forces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidXFEM::extract_interface_velnp()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidXFEM::extract_interface_velnp()
 {
   FOUR_C_THROW("Robin stuff");
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(fluid_field(), true);
@@ -158,7 +158,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidXFEM::extract_interface_velnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidXFEM::extract_interface_veln()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidXFEM::extract_interface_veln()
 {
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(fluid_field(), true);
   return xfluid->extract_struct_interface_veln();
@@ -166,7 +166,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FluidXFEM::extract_interface_veln()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FluidXFEM::integrate_interface_shape()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidXFEM::integrate_interface_shape()
 {
   return fluid_field()->integrate_interface_shape();
 }

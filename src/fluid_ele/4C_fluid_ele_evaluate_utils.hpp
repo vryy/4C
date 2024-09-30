@@ -1334,10 +1334,10 @@ namespace FLD
       Teuchos::RCP<Epetra_MultiVector>& col_filtered_reynoldsstress,
       Teuchos::RCP<Epetra_MultiVector>& col_filtered_modeled_subgrid_stress,
       Teuchos::RCP<Epetra_MultiVector>& col_filtered_dens_vel,
-      Teuchos::RCP<Epetra_Vector>& col_filtered_dens,
-      Teuchos::RCP<Epetra_Vector>& col_filtered_dens_strainrate, double& LijMij, double& MijMij,
-      double& CI_numerator, double& CI_denominator, double& xcenter, double& ycenter,
-      double& zcenter)
+      Teuchos::RCP<Core::LinAlg::Vector>& col_filtered_dens,
+      Teuchos::RCP<Core::LinAlg::Vector>& col_filtered_dens_strainrate, double& LijMij,
+      double& MijMij, double& CI_numerator, double& CI_denominator, double& xcenter,
+      double& ycenter, double& zcenter)
   {
     Core::LinAlg::Matrix<3, iel> evel_hat;
     Core::LinAlg::Matrix<9, iel> ereynoldsstress_hat;
@@ -1802,8 +1802,8 @@ namespace FLD
   void f3_calc_vreman_const(Discret::ELEMENTS::Fluid* ele,
       Teuchos::RCP<Epetra_MultiVector>& col_filtered_strainrate,
       Teuchos::RCP<Epetra_MultiVector>& col_filtered_alphaij,
-      Teuchos::RCP<Epetra_Vector>& col_filtered_expression,
-      Teuchos::RCP<Epetra_Vector>& col_filtered_alpha2, double& cv_numerator,
+      Teuchos::RCP<Core::LinAlg::Vector>& col_filtered_expression,
+      Teuchos::RCP<Core::LinAlg::Vector>& col_filtered_alpha2, double& cv_numerator,
       double& cv_denominator, double& volume)
   {
     Core::LinAlg::Matrix<9, iel> estrainrate_hat(true);
@@ -3083,7 +3083,7 @@ namespace FLD
     if (is_ale_)
     {
       // get most recent displacements
-      Teuchos::RCP<const Epetra_Vector> dispnp
+      Teuchos::RCP<const Core::LinAlg::Vector> dispnp
         =
         discretization.GetState("dispnp");
 
@@ -3140,7 +3140,7 @@ namespace FLD
       Core::LinAlg::Matrix<nsd, iel> edispnp(true);
 
       // get most recent displacements
-      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state("dispnp");
+      Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discretization.get_state("dispnp");
 
       if (dispnp == Teuchos::null)
       {

@@ -19,11 +19,10 @@
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_aux.hpp"
 #include "4C_structure_timint.hpp"
-
-#include <Epetra_Vector.h>
 
 #include <iostream>
 
@@ -256,7 +255,8 @@ void Solid::TimAda::evaluate_local_error_dis()
   }
 
   // blank Dirichlet DOFs since they always carry the exact solution
-  Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(locerrdisn_->Map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> zeros =
+      Teuchos::rcp(new Core::LinAlg::Vector(locerrdisn_->Map(), true));
   Core::LinAlg::apply_dirichlet_to_system(
       *locerrdisn_, *zeros, *(sti_->get_dbc_map_extractor()->cond_map()));
 }

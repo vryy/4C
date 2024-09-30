@@ -88,8 +88,9 @@ int Discret::ELEMENTS::Lubrication::evaluate_neumann(Teuchos::ParameterList& par
 void Discret::ELEMENTS::LubricationType::pre_evaluate(Core::FE::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-    Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector3)
 {
   const auto action = Teuchos::getIntegralValue<LUBRICATION::Action>(p, "action");
 

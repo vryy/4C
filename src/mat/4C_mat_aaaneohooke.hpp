@@ -21,11 +21,11 @@ the input line should read
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_material_parameter_base.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -81,7 +81,7 @@ namespace Mat
       }
 
      private:
-      std::vector<Teuchos::RCP<Epetra_Vector>> matparams_;
+      std::vector<Teuchos::RCP<Core::LinAlg::Vector>> matparams_;
     };  // class AAAneohooke
 
   }  // namespace PAR

@@ -13,10 +13,10 @@
 
 #include "4C_adapter_algorithmbase.hpp"
 #include "4C_inpar_poromultiphase_scatra.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_porofluidmultiphase_utils.hpp"
 #include "4C_poromultiphase_adapter.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
 

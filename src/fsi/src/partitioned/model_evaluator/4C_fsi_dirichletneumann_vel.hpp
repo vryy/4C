@@ -90,8 +90,8 @@ namespace FSI
      * \param[in] ivel The interface velocity
      * \param[in] fillFlag Type of evaluation in computeF() (cf. NOX documentation for details)
      */
-    Teuchos::RCP<Epetra_Vector> fluid_op(
-        Teuchos::RCP<Epetra_Vector> ivel, const FillType fillFlag) override;
+    Teuchos::RCP<Core::LinAlg::Vector> fluid_op(
+        Teuchos::RCP<Core::LinAlg::Vector> ivel, const FillType fillFlag) override;
 
     /** \brief interface structural operator
      *
@@ -101,11 +101,11 @@ namespace FSI
      * \param[in] iforce The interface force
      * \param[in] fillFlag Type of evaluation in computeF() (cf. NOX documentation for details)
      */
-    Teuchos::RCP<Epetra_Vector> struct_op(
-        Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) override;
+    Teuchos::RCP<Core::LinAlg::Vector> struct_op(
+        Teuchos::RCP<Core::LinAlg::Vector> iforce, const FillType fillFlag) override;
 
     /// Computes initial guess for the next iteration
-    Teuchos::RCP<Epetra_Vector> initial_guess() override;
+    Teuchos::RCP<Core::LinAlg::Vector> initial_guess() override;
 
     /**
      * \brief In here all coupling related quantities are given to the fluid solver
@@ -113,7 +113,8 @@ namespace FSI
      * \param[in] iv In our case, the input parameter is not used!
      * \returns ivel The fluid velocity on the (whole) fluid domain
      */
-    Teuchos::RCP<Epetra_Vector> struct_to_fluid(Teuchos::RCP<Epetra_Vector> iv) override;
+    Teuchos::RCP<Core::LinAlg::Vector> struct_to_fluid(
+        Teuchos::RCP<Core::LinAlg::Vector> iv) override;
 
     /**
      * \brief In here all coupling related quantities are assembled for the structure solver
@@ -122,7 +123,8 @@ namespace FSI
      * \returns iforce The fsi force acting on the structure
      */
 
-    Teuchos::RCP<Epetra_Vector> fluid_to_struct(Teuchos::RCP<Epetra_Vector> iv) override;
+    Teuchos::RCP<Core::LinAlg::Vector> fluid_to_struct(
+        Teuchos::RCP<Core::LinAlg::Vector> iv) override;
 
 
    private:

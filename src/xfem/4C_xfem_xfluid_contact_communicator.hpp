@@ -17,8 +17,8 @@
 
 #include "4C_inpar_xfem.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <set>

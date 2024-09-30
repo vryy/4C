@@ -48,7 +48,7 @@ namespace ScaTra
     void write_restart() const override;
 
     void collect_problem_specific_runtime_output_data(
-        Teuchos::RCP<Epetra_Vector> interpolatedPhi) override;
+        Teuchos::RCP<Core::LinAlg::Vector> interpolatedPhi) override;
 
     //! adapt material
     void pack_material() override;
@@ -65,7 +65,7 @@ namespace ScaTra
 
    private:
     //! activation time
-    Teuchos::RCP<Epetra_Vector> activation_time_interpol_;
+    Teuchos::RCP<Core::LinAlg::Vector> activation_time_interpol_;
 
     //! element data
     Teuchos::RCP<std::vector<char>> data_;

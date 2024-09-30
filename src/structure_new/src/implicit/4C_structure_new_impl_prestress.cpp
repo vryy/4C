@@ -62,7 +62,8 @@ void Solid::IMPLICIT::PreStress::write_restart(
 {
   check_init_setup();
 
-  const auto zeros = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view(), true));
+  const auto zeros =
+      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view(), true));
 
   // write zero dynamic forces (for dynamic restart after  static prestressing)
   iowriter.write_vector("finert", zeros);

@@ -344,7 +344,7 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
   {
     // define vector for velocity component
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Epetra_Vector> velcomp = Core::LinAlg::create_vector(*dofrowmap, true);
+    Teuchos::RCP<Core::LinAlg::Vector> velcomp = Core::LinAlg::create_vector(*dofrowmap, true);
     velcomp->PutScalar(0.0);
 
     if (lsdim_ == Inpar::ScaTra::ls_3D or (lsdim_ == Inpar::ScaTra::ls_2Dx and idim != 0) or
@@ -674,7 +674,7 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
         discret_->dof(0, lnode, 0);  // since this is a scalar field the dof is always 0
     int doflid = dofrowmap->LID(dofgid);
     if (doflid < 0)
-      FOUR_C_THROW("Proc %d: Cannot find dof gid=%d in Epetra_Vector", myrank_, dofgid);
+      FOUR_C_THROW("Proc %d: Cannot find dof gid=%d in Core::LinAlg::Vector", myrank_, dofgid);
 
     // get physical coordinates of this node
     Core::LinAlg::Matrix<3, 1> nodecoord(false);
@@ -1405,7 +1405,7 @@ void ScaTra::LevelSetAlgorithm::correct_volume()
   // called after a reinitialization.
   const double thickness = -voldelta / surface;
 
-  Teuchos::RCP<Epetra_Vector> one = Teuchos::rcp(new Epetra_Vector(phin_->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector> one = Teuchos::rcp(new Core::LinAlg::Vector(phin_->Map()));
   one->PutScalar(1.0);
 
   // update phi
@@ -1460,9 +1460,9 @@ void ScaTra::LevelSetAlgorithm::reinitialize_with_elliptic_equation()
   // schemes for level-set problems
 
   // some preparations
-  Teuchos::RCP<Epetra_Vector> phinmloc = Teuchos::rcp(new Epetra_Vector(*phinp_));
-  Teuchos::RCP<Epetra_Vector> inc =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
+  Teuchos::RCP<Core::LinAlg::Vector> phinmloc = Teuchos::rcp(new Core::LinAlg::Vector(*phinp_));
+  Teuchos::RCP<Core::LinAlg::Vector> inc =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(discret_->dof_row_map()), true));
   int step = 0;
   bool not_conv = true;
 

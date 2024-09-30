@@ -952,7 +952,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::correction_for_flux_across
       (myelch::elchparams_->equ_pot() == Inpar::ElCh::equpot_enc_pde_elim))
   {
     // get dirichlet toggle from the discretization
-    Teuchos::RCP<const Epetra_Vector> dctoggle = discretization.get_state("dctoggle");
+    Teuchos::RCP<const Core::LinAlg::Vector> dctoggle = discretization.get_state("dctoggle");
     std::vector<double> mydctoggle(lm.size());
     Core::FE::extract_my_values(*dctoggle, mydctoggle, lm);
 

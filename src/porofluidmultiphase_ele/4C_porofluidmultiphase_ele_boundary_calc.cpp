@@ -122,7 +122,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
     // get number of dof-set associated with displacement related dofs
     const int ndsdisp = params_->nds_disp();
 
-    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state(ndsdisp, "dispnp");
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discretization.get_state(ndsdisp, "dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node

@@ -10,12 +10,12 @@
 #include "4C_comm_exporter.hpp"
 #include "4C_comm_utils.hpp"
 #include "4C_global_data.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_structure_new_model_evaluator_manager.hpp"
 
 #include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
-#include <Epetra_Vector.h>
 
 
 FOUR_C_NAMESPACE_OPEN
@@ -159,7 +159,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::post_evaluate()
 
       for (int col = 0; col < nodal_data.NumVectors(); ++col)
       {
-        Epetra_Vector& data_item = *nodal_data(col);
+        auto& data_item = *nodal_data(col);
 
         for (int i = 0; i < data_item.MyLength(); ++i)
         {

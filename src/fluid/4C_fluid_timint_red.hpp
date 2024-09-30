@@ -107,7 +107,7 @@ namespace FLD
 
     */
     void insert_volumetric_surface_flow_cond_vector(
-        Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> res) override;
+        Teuchos::RCP<Core::LinAlg::Vector> vel, Teuchos::RCP<Core::LinAlg::Vector> res) override;
 
     /// prepare AVM3-based scale separation
     void avm3_preparation() override;
@@ -119,7 +119,7 @@ namespace FLD
     \brief Additional function for RedModels in linear_relaxation_solve
 
     */
-    void custom_solve(Teuchos::RCP<Epetra_Vector> relax) override;
+    void custom_solve(Teuchos::RCP<Core::LinAlg::Vector> relax) override;
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)

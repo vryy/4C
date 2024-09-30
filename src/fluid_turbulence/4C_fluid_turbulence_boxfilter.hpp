@@ -39,9 +39,9 @@ References are
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_scatra.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -88,12 +88,12 @@ namespace FLD
 
     void initialize_vreman();
 
-    void apply_filter(const Teuchos::RCP<const Epetra_Vector> velocity,
-        const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
-        const Teuchos::RCP<const Epetra_Vector> dirichtoggle);
+    void apply_filter(const Teuchos::RCP<const Core::LinAlg::Vector> velocity,
+        const Teuchos::RCP<const Core::LinAlg::Vector> scalar, const double thermpress,
+        const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle);
 
-    void apply_filter_scatra(const Teuchos::RCP<const Epetra_Vector> scalar,
-        const double thermpress, const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
+    void apply_filter_scatra(const Teuchos::RCP<const Core::LinAlg::Vector> scalar,
+        const double thermpress, const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle,
         const int ndsvel);
 
 
@@ -107,7 +107,7 @@ namespace FLD
     */
     /*
     void OutputofAveragedVel(
-      Teuchos::RCP<Epetra_Vector> outvec
+      Teuchos::RCP<Core::LinAlg::Vector> outvec
       )
       {
         // loop all elements on this proc (including ghosted ones)
@@ -132,7 +132,7 @@ namespace FLD
 
 
     void outputof_fine_scale_vel(
-      Teuchos::RCP<Epetra_Vector> outvec
+      Teuchos::RCP<Core::LinAlg::Vector> outvec
       )
       {
         // loop all elements on this proc (including ghosted ones)
@@ -157,7 +157,7 @@ namespace FLD
 
 
     void FilteredVelComp(
-      Teuchos::RCP<Epetra_Vector> outvec,
+      Teuchos::RCP<Core::LinAlg::Vector> outvec,
       const int                   i,
       const int                   j
       )
@@ -190,7 +190,7 @@ namespace FLD
     */
     /*
     void FilteredReyStrComp(
-      Teuchos::RCP<Epetra_Vector> outvec,
+      Teuchos::RCP<Core::LinAlg::Vector> outvec,
       const int                   i,
       const int                   j
       )
@@ -370,15 +370,55 @@ namespace FLD
     }
 
 
-    void get_expression(Teuchos::RCP<Epetra_Vector> expr)
+    void get_expression(Teuchos::RCP<Core::LinAlg::Vector> expr)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
-        for (int i = 0; i < 1; ++i)
+        double val = (*col_filtered_expression_)[nid];
+        int err = expr->ReplaceMyValues(1, &val, &nid);
+        if (err != 0) FOUR_C_THROW("dof not on proc");
+      }
+      return;
+    }
+
+
+    void get_density(Teuchos::RCP<Core::LinAlg::Vector> dens)
+    {
+      // loop all elements on this proc (including ghosted ones)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
+      {
         {
-          double val = (*((*col_filtered_expression_)(i)))[nid];
-          int err = ((*expr)(i))->ReplaceMyValues(1, &val, &nid);
+          double val = (*col_filtered_dens_)[nid];
+          int err = dens->ReplaceMyValues(1, &val, &nid);
+          if (err != 0) FOUR_C_THROW("dof not on proc");
+        }
+      }
+      return;
+    }
+
+    void get_temp(Teuchos::RCP<Core::LinAlg::Vector> dens)
+    {
+      // loop all elements on this proc (including ghosted ones)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
+      {
+        {
+          double val = (*col_filtered_temp_)[nid];
+          int err = dens->ReplaceMyValues(1, &val, &nid);
+          if (err != 0) FOUR_C_THROW("dof not on proc");
+        }
+      }
+      return;
+    }
+
+    void get_dens_temp(Teuchos::RCP<Core::LinAlg::Vector> dens)
+    {
+      // loop all elements on this proc (including ghosted ones)
+      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
+      {
+        {
+          double val = (*col_filtered_dens_temp_)[nid];
+          int err = dens->ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
@@ -386,76 +426,28 @@ namespace FLD
     }
 
 
-    void get_density(Teuchos::RCP<Epetra_Vector> dens)
+    void get_density_strainrate(Teuchos::RCP<Core::LinAlg::Vector> densstrainr)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
-        for (int i = 0; i < 1; ++i)
         {
-          double val = (*((*col_filtered_dens_)(i)))[nid];
-          int err = ((*dens)(i))->ReplaceMyValues(1, &val, &nid);
+          double val = (*col_filtered_dens_strainrate_)[nid];
+          int err = densstrainr->ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
     }
 
-    void get_temp(Teuchos::RCP<Epetra_Vector> dens)
+    void get_alpha2(Teuchos::RCP<Core::LinAlg::Vector> alph2)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
-        for (int i = 0; i < 1; ++i)
         {
-          double val = (*((*col_filtered_temp_)(i)))[nid];
-          int err = ((*dens)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) FOUR_C_THROW("dof not on proc");
-        }
-      }
-      return;
-    }
-
-    void get_dens_temp(Teuchos::RCP<Epetra_Vector> dens)
-    {
-      // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
-      {
-        for (int i = 0; i < 1; ++i)
-        {
-          double val = (*((*col_filtered_dens_temp_)(i)))[nid];
-          int err = ((*dens)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) FOUR_C_THROW("dof not on proc");
-        }
-      }
-      return;
-    }
-
-
-    void get_density_strainrate(Teuchos::RCP<Epetra_Vector> densstrainr)
-    {
-      // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
-      {
-        for (int i = 0; i < 1; ++i)
-        {
-          double val = (*((*col_filtered_dens_strainrate_)(i)))[nid];
-          int err = ((*densstrainr)(i))->ReplaceMyValues(1, &val, &nid);
-          if (err != 0) FOUR_C_THROW("dof not on proc");
-        }
-      }
-      return;
-    }
-
-    void get_alpha2(Teuchos::RCP<Epetra_Vector> alph2)
-    {
-      // loop all elements on this proc (including ghosted ones)
-      for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
-      {
-        for (int i = 0; i < 1; ++i)
-        {
-          double val = (*((*col_filtered_alpha2_)(i)))[nid];
-          int err = ((*alph2)(i))->ReplaceMyValues(1, &val, &nid);
+          double val = (*col_filtered_alpha2_)[nid];
+          int err = alph2->ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
@@ -480,7 +472,7 @@ namespace FLD
     }
 
 
-    void filtered_rey_str_comp(Teuchos::RCP<Epetra_Vector> outvec, const int i, const int j)
+    void filtered_rey_str_comp(Teuchos::RCP<Core::LinAlg::Vector> outvec, const int i, const int j)
     {
       // loop all elements on this proc (including ghosted ones)
       int ij = 3 * (i - 1) + (j - 1);
@@ -497,7 +489,7 @@ namespace FLD
       return;
     }
 
-    void filtered_vel_comp(Teuchos::RCP<Epetra_Vector> outvec, const int i, const int j)
+    void filtered_vel_comp(Teuchos::RCP<Core::LinAlg::Vector> outvec, const int i, const int j)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_row_nodes(); ++nid)
@@ -515,7 +507,7 @@ namespace FLD
       return;
     }
 
-    void outputof_fine_scale_vel(Teuchos::RCP<Epetra_Vector> outvec)
+    void outputof_fine_scale_vel(Teuchos::RCP<Core::LinAlg::Vector> outvec)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int n = 0; n < discret_->num_my_row_nodes(); ++n)
@@ -537,7 +529,7 @@ namespace FLD
       return;
     }
 
-    void outputof_averaged_vel(Teuchos::RCP<Epetra_Vector> outvec)
+    void outputof_averaged_vel(Teuchos::RCP<Core::LinAlg::Vector> outvec)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int n = 0; n < discret_->num_my_row_nodes(); ++n)
@@ -574,30 +566,28 @@ namespace FLD
       return;
     }
 
-    void get_filtered_phi2(Teuchos::RCP<Epetra_Vector> phi2)
+    void get_filtered_phi2(Teuchos::RCP<Core::LinAlg::Vector> phi2)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
-        for (int i = 0; i < 1; ++i)
         {
-          double val = (*((*col_filtered_phi2_)(i)))[nid];
-          int err = ((*phi2)(i))->ReplaceMyValues(1, &val, &nid);
+          double val = (*col_filtered_phi2_)[nid];
+          int err = phi2->ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
     }
 
-    void get_filtered_phiexpression(Teuchos::RCP<Epetra_Vector> phiexpression)
+    void get_filtered_phiexpression(Teuchos::RCP<Core::LinAlg::Vector> phiexpression)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
-        for (int i = 0; i < 1; ++i)
         {
-          double val = (*((*col_filtered_phiexpression_)(i)))[nid];
-          int err = ((*phiexpression)(i))->ReplaceMyValues(1, &val, &nid);
+          double val = (*col_filtered_phiexpression_)[nid];
+          int err = phiexpression->ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
@@ -629,12 +619,12 @@ namespace FLD
 
 
 
-    void apply_box_filter(const Teuchos::RCP<const Epetra_Vector> velocity,
-        const Teuchos::RCP<const Epetra_Vector> scalar, const double thermpress,
-        const Teuchos::RCP<const Epetra_Vector> dirichtoggle);
+    void apply_box_filter(const Teuchos::RCP<const Core::LinAlg::Vector> velocity,
+        const Teuchos::RCP<const Core::LinAlg::Vector> scalar, const double thermpress,
+        const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle);
 
-    void apply_box_filter_scatra(const Teuchos::RCP<const Epetra_Vector> scalar,
-        const double thermpress, const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
+    void apply_box_filter_scatra(const Teuchos::RCP<const Core::LinAlg::Vector> scalar,
+        const double thermpress, const Teuchos::RCP<const Core::LinAlg::Vector> dirichtoggle,
         const int ndsvel);
 
 
@@ -692,19 +682,19 @@ namespace FLD
     //! the filtered velocities times rho (3 vectors)
     Teuchos::RCP<Epetra_MultiVector> filtered_dens_vel_;
     //! the filtered density (vector)
-    Teuchos::RCP<Epetra_Vector> filtered_dens_;
+    Teuchos::RCP<Core::LinAlg::Vector> filtered_dens_;
     //! the filtered strainrate times rho (vector)
-    Teuchos::RCP<Epetra_Vector> filtered_dens_strainrate_;
+    Teuchos::RCP<Core::LinAlg::Vector> filtered_dens_strainrate_;
     //! the modeled fine scale velocities in nodes (3 vectors)
     Teuchos::RCP<Epetra_MultiVector> fs_vel_;
     //! Vreman model: strain rate in nodes (9 vectors)
     Teuchos::RCP<Epetra_MultiVector> filtered_strainrate_;
     //! Vreman model: expression (Vector)
-    Teuchos::RCP<Epetra_Vector> filtered_expression_;
+    Teuchos::RCP<Core::LinAlg::Vector> filtered_expression_;
     //! Vreman model: alphaij in nodes (9 vectors)
     Teuchos::RCP<Epetra_MultiVector> filtered_alphaij_;
     //! Vreman model: alpha2 (Vector)
-    Teuchos::RCP<Epetra_Vector> filtered_alpha2_;
+    Teuchos::RCP<Core::LinAlg::Vector> filtered_alpha2_;
     //! the filtered density times temperature times velocity (scalar)
     Teuchos::RCP<Epetra_MultiVector> filtered_dens_vel_temp_;
     //! the filtered density times temperature gradient times rate of strain (scalar)
@@ -712,15 +702,15 @@ namespace FLD
     //  //! the filtered temperature gradient (scalar)
     //  Teuchos::RCP<Epetra_MultiVector>      filtered_gradtemp_;
     //! the filtered temperature (scalar)
-    Teuchos::RCP<Epetra_Vector> filtered_temp_;
+    Teuchos::RCP<Core::LinAlg::Vector> filtered_temp_;
     //! the filtered density times temperature (scalar)
-    Teuchos::RCP<Epetra_Vector> filtered_dens_temp_;
+    Teuchos::RCP<Core::LinAlg::Vector> filtered_dens_temp_;
     //! filtered phi: gradient
     Teuchos::RCP<Epetra_MultiVector> filtered_phi_;
     //! filtered grad(phi_j)*grad(phi_j)
-    Teuchos::RCP<Epetra_Vector> filtered_phi2_;
+    Teuchos::RCP<Core::LinAlg::Vector> filtered_phi2_;
     //! filtered visc*grad(phi_j)*grad(phi_j)
-    Teuchos::RCP<Epetra_Vector> filtered_phiexpression_;
+    Teuchos::RCP<Core::LinAlg::Vector> filtered_phiexpression_;
     //! alphaij tensor for scatra
     Teuchos::RCP<Epetra_MultiVector> filtered_alphaijsc_;
     //! the filtered vel exported to column map
@@ -732,19 +722,19 @@ namespace FLD
     //! the filtered velocities times rho exported to column map
     Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel_;
     //! the filtered density exported to column map
-    Teuchos::RCP<Epetra_Vector> col_filtered_dens_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_dens_;
     //! the filtered strainrate times rho exported to column map
-    Teuchos::RCP<Epetra_Vector> col_filtered_dens_strainrate_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_dens_strainrate_;
     //! the modeled fine scale velocities exported to column map
     Teuchos::RCP<Epetra_MultiVector> col_fs_vel_;
     //! Vreman model: strain rate exported to column map
     Teuchos::RCP<Epetra_MultiVector> col_filtered_strainrate_;
     //! Vreman model: expression (Vector) exported to column map
-    Teuchos::RCP<Epetra_Vector> col_filtered_expression_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_expression_;
     //! Vreman model: alphaij in nodes (9 vectors) exported to column map
     Teuchos::RCP<Epetra_MultiVector> col_filtered_alphaij_;
     //! Vreman model: alpha2 (Vector) exported to column map
-    Teuchos::RCP<Epetra_Vector> col_filtered_alpha2_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_alpha2_;
     //! the filtered density times temperature times velocity exported to column map (scalar)
     Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel_temp_;
     //! the filtered density times temperature gradient times rate of strain exported to column map
@@ -753,15 +743,15 @@ namespace FLD
     //  //! the filtered temperature gradient exported to column map (scalar)
     //  Teuchos::RCP<Epetra_MultiVector>      col_filtered_gradtemp_;
     //! the filtered temperature exported to column map (scalar)
-    Teuchos::RCP<Epetra_Vector> col_filtered_temp_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_temp_;
     //! the filtered density times temperature exported to column map (scalar)
-    Teuchos::RCP<Epetra_Vector> col_filtered_dens_temp_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_dens_temp_;
     //! filtered phi: gradient
     Teuchos::RCP<Epetra_MultiVector> col_filtered_phi_;
     //! filtered grad(phi_j)*grad(phi_j)
-    Teuchos::RCP<Epetra_Vector> col_filtered_phi2_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_phi2_;
     //! filtered visc*grad(phi_j)*grad(phi_j)
-    Teuchos::RCP<Epetra_Vector> col_filtered_phiexpression_;
+    Teuchos::RCP<Core::LinAlg::Vector> col_filtered_phiexpression_;
     //! alphaij tensor for scatra
     Teuchos::RCP<Epetra_MultiVector> col_filtered_alphaijsc_;
     //@}

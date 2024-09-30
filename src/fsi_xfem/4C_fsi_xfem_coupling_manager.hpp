@@ -10,9 +10,8 @@ managers
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
-
-#include <Epetra_Vector.h>
 
 #ifndef FOUR_C_FSI_XFEM_COUPLING_MANAGER_HPP
 #define FOUR_C_FSI_XFEM_COUPLING_MANAGER_HPP
@@ -63,7 +62,7 @@ namespace XFEM
     // in ... idx[0] first discretization index , idx[1] second discretization index, ... in the
     // blockmatrix in ... scaling between xfluid evaluated coupling matrixes and coupled
     // systemmatrix
-    virtual void add_coupling_rhs(Teuchos::RCP<Epetra_Vector> rhs,
+    virtual void add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs,
         const Core::LinAlg::MultiMapExtractor& me, double scaling) = 0;
 
     //! Update (Perform after Each Timestep)

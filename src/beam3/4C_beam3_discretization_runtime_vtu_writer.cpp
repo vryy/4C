@@ -57,7 +57,7 @@ void BeamDiscretizationRuntimeOutputWriter::initialize(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretization(
-    Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
+    Teuchos::RCP<const Core::LinAlg::Vector> const& displacement_state_vector)
 {
   /*  Note:
    *
@@ -253,7 +253,7 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::append_displacement_field(
-    Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
+    Teuchos::RCP<const Core::LinAlg::Vector> const& displacement_state_vector)
 {
   auto& visualization_data = visualization_manager_->get_visualization_data();
 
@@ -343,7 +343,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_displacement_field(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::append_triad_field(
-    Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
+    Teuchos::RCP<const Core::LinAlg::Vector> const& displacement_state_vector)
 {
   auto& visualization_data = visualization_manager_->get_visualization_data();
 
@@ -685,7 +685,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_circular_cross_sectio
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::append_point_circular_cross_section_information_vector(
-    Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
+    Teuchos::RCP<const Core::LinAlg::Vector> const& displacement_state_vector)
 {
   auto& visualization_data = visualization_manager_->get_visualization_data();
 
@@ -1329,7 +1329,7 @@ void BeamDiscretizationRuntimeOutputWriter::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater(
-    Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
+    Teuchos::RCP<const Core::LinAlg::Vector> const& displacement_state_vector)
 {
   /*
    * see
@@ -1438,7 +1438,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
-    Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
+    Teuchos::RCP<const Core::LinAlg::Vector> const& displacement_state_vector)
 {
   // NOTE: so far force in node 0 is written
   // determine number of row BEAM elements for each processor

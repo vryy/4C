@@ -14,8 +14,7 @@
 
 #include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
-
-#include <Epetra_Vector.h>
+#include "4C_linalg_vector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

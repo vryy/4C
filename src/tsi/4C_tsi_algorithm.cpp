@@ -241,11 +241,12 @@ void TSI::Algorithm::output(bool forced_writerestart)
     {
       output_deformation_in_thr(structure_field()->dispn(), structure_field()->discretization());
 
-      thermo_field()->disc_writer()->write_vector("displacement", dispnp_, Core::IO::nodevector);
+      thermo_field()->disc_writer()->write_multi_vector(
+          "displacement", dispnp_, Core::IO::nodevector);
     }
     else
     {
-      Teuchos::RCP<const Epetra_Vector> dummy =
+      Teuchos::RCP<const Core::LinAlg::Vector> dummy =
           volcoupl_->apply_vector_mapping21(structure_field()->dispnp());
 
       // determine number of space dimensions
@@ -284,7 +285,8 @@ void TSI::Algorithm::output(bool forced_writerestart)
         }
       }  // for lnodid
 
-      thermo_field()->disc_writer()->write_vector("displacement", dispnp_, Core::IO::nodevector);
+      thermo_field()->disc_writer()->write_multi_vector(
+          "displacement", dispnp_, Core::IO::nodevector);
     }
   }
 
@@ -301,7 +303,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
     if (not matchinggrid_)
     {
       //************************************************************************************
-      Teuchos::RCP<const Epetra_Vector> dummy1 =
+      Teuchos::RCP<const Core::LinAlg::Vector> dummy1 =
           volcoupl_->apply_vector_mapping12(thermo_field()->tempnp());
 
       // loop over all local nodes of thermal discretisation
@@ -322,7 +324,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
         if (err != 0) FOUR_C_THROW("error while inserting a value into tempnp_");
       }  // for lnodid
 
-      structure_field()->discretization()->writer()->write_vector(
+      structure_field()->discretization()->writer()->write_multi_vector(
           "struct_temperature", tempnp_, Core::IO::nodevector);
     }
 
@@ -337,8 +339,8 @@ void TSI::Algorithm::output(bool forced_writerestart)
  | communicate the displacement vector to Thermo field          dano 12/11 |
  | enable visualisation of thermal variables on deformed body           |
  *----------------------------------------------------------------------*/
-void TSI::Algorithm::output_deformation_in_thr(
-    Teuchos::RCP<const Epetra_Vector> dispnp, Teuchos::RCP<Core::FE::Discretization> structdis)
+void TSI::Algorithm::output_deformation_in_thr(Teuchos::RCP<const Core::LinAlg::Vector> dispnp,
+    Teuchos::RCP<Core::FE::Discretization> structdis)
 {
   if (dispnp == Teuchos::null) FOUR_C_THROW("Got null pointer for displacements");
 
@@ -395,12 +397,12 @@ void TSI::Algorithm::output_deformation_in_thr(
  | calculate velocities                                      dano 12/10 |
  | like interface_velocity(disp) in FSI::DirichletNeumann                |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> TSI::Algorithm::calc_velocity(
-    Teuchos::RCP<const Epetra_Vector> dispnp)
+Teuchos::RCP<const Core::LinAlg::Vector> TSI::Algorithm::calc_velocity(
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp)
 {
-  Teuchos::RCP<Epetra_Vector> vel = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector> vel = Teuchos::null;
   // copy D_n onto V_n+1
-  vel = Teuchos::rcp(new Epetra_Vector(*(structure_field()->dispn())));
+  vel = Teuchos::rcp(new Core::LinAlg::Vector(*(structure_field()->dispn())));
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
   vel->Update(1. / dt(), *dispnp, -1. / dt());
@@ -412,8 +414,8 @@ Teuchos::RCP<const Epetra_Vector> TSI::Algorithm::calc_velocity(
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void TSI::Algorithm::apply_thermo_coupling_state(
-    Teuchos::RCP<const Epetra_Vector> temp, Teuchos::RCP<const Epetra_Vector> temp_res)
+void TSI::Algorithm::apply_thermo_coupling_state(Teuchos::RCP<const Core::LinAlg::Vector> temp,
+    Teuchos::RCP<const Core::LinAlg::Vector> temp_res)
 {
   if (matchinggrid_)
   {
@@ -444,7 +446,7 @@ void TSI::Algorithm::apply_thermo_coupling_state(
  |                                                                      |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::apply_struct_coupling_state(
-    Teuchos::RCP<const Epetra_Vector> disp, Teuchos::RCP<const Epetra_Vector> vel)
+    Teuchos::RCP<const Core::LinAlg::Vector> disp, Teuchos::RCP<const Core::LinAlg::Vector> vel)
 {
   if (matchinggrid_)
   {
@@ -543,8 +545,8 @@ void TSI::Algorithm::prepare_contact_strategy()
 
     contact_strategy_lagrange_->store_dirichlet_status(structure_field()->get_dbc_map_extractor());
 
-    Teuchos::RCP<Epetra_Vector> zero_disp =
-        Teuchos::rcp(new Epetra_Vector(*structure_field()->dof_row_map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector> zero_disp =
+        Teuchos::rcp(new Core::LinAlg::Vector(*structure_field()->dof_row_map(), true));
     contact_strategy_lagrange_->set_state(Mortar::state_new_displacement, *zero_disp);
     contact_strategy_lagrange_->save_reference_state(zero_disp);
     contact_strategy_lagrange_->evaluate_reference_state();

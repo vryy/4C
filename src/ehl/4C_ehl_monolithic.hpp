@@ -163,7 +163,7 @@ namespace EHL
     //@}
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void evaluate(Teuchos::RCP<Epetra_Vector> stepinc);
+    virtual void evaluate(Teuchos::RCP<Core::LinAlg::Vector> stepinc);
 
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...
@@ -194,17 +194,17 @@ namespace EHL
 
     //! Determine norm of force residual
     double calculate_vector_norm(const enum Inpar::EHL::VectorNorm norm,  //!< norm to use
-        const Teuchos::RCP<Epetra_Vector> vect  //!< the vector of interest
+        const Teuchos::RCP<Core::LinAlg::Vector> vect  //!< the vector of interest
     );
 
     //@}
 
     //! apply infnorm scaling to linear block system
-    virtual void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+    virtual void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& b);
 
     //! undo infnorm scaling from scaled solution
     virtual void unscale_solution(
-        Core::LinAlg::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+        Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& x, Core::LinAlg::Vector& b);
 
    protected:
     //! @name Time loop building blocks
@@ -226,8 +226,8 @@ namespace EHL
       \param sx (o) structural vector (e.g. displacements)
       \param lx (o) lubrication vector (e.g. pressures)
       */
-    virtual void extract_field_vectors(Teuchos::RCP<Epetra_Vector> x,
-        Teuchos::RCP<Epetra_Vector>& sx, Teuchos::RCP<Epetra_Vector>& lx);
+    virtual void extract_field_vectors(Teuchos::RCP<Core::LinAlg::Vector> x,
+        Teuchos::RCP<Core::LinAlg::Vector>& sx, Teuchos::RCP<Core::LinAlg::Vector>& lx);
 
     //! @name Access methods for subclasses
 
@@ -271,7 +271,7 @@ namespace EHL
     //@}
 
     //! @name Global vectors
-    Teuchos::RCP<Epetra_Vector> zeros_;  //!< a zero vector of full length
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_;  //!< a zero vector of full length
     //@}
 
     //! enum for STR time integartion
@@ -285,9 +285,9 @@ namespace EHL
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void setup_vector(Epetra_Vector& f,        //!< vector of length of all dofs
-        Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
-        Teuchos::RCP<const Epetra_Vector> lv   //!< vector containing only lubrication dofs
+    void setup_vector(Core::LinAlg::Vector& f,        //!< vector of length of all dofs
+        Teuchos::RCP<const Core::LinAlg::Vector> sv,  //!< vector containing only structural dofs
+        Teuchos::RCP<const Core::LinAlg::Vector> lv   //!< vector containing only lubrication dofs
     );
 
     //! block systemmatrix
@@ -347,22 +347,22 @@ namespace EHL
     //! @name Various global forces
 
     //! rhs of EHL system
-    Teuchos::RCP<Epetra_Vector> rhs_;
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_;
 
     //! increment between Newton steps k and k+1 \f$\Delta{x}^{<k>}_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> iterinc_;
+    Teuchos::RCP<Core::LinAlg::Vector> iterinc_;
 
     //@}
 
     //! @name infnorm scaling
 
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         srowsum_;  //!< sum of absolute values of the rows of the structural block
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         scolsum_;  //!< sum of absolute values of the column of the structural block
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         lrowsum_;  //!< sum of absolute values of the rows of the lubrication block
-    Teuchos::RCP<Epetra_Vector>
+    Teuchos::RCP<Core::LinAlg::Vector>
         lcolsum_;  //!< sum of absolute values of the column of the lubrication block
 
     //@}

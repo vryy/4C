@@ -265,9 +265,10 @@ namespace BEAMINTERACTION
           BEAMINTERACTION::Data::CrosslinkerData* cldata, int stayoccpotid);
 
       /// fill epetar vectors to write vtp output
-      void fill_state_data_vectors_for_output(Teuchos::RCP<Epetra_Vector> displacement,
-          Teuchos::RCP<Epetra_Vector> orientation, Teuchos::RCP<Epetra_Vector> numberofbonds,
-          Teuchos::RCP<Epetra_Vector> owner, Teuchos::RCP<Epetra_Vector> force) const;
+      void fill_state_data_vectors_for_output(Teuchos::RCP<Core::LinAlg::Vector> displacement,
+          Teuchos::RCP<Core::LinAlg::Vector> orientation,
+          Teuchos::RCP<Core::LinAlg::Vector> numberofbonds,
+          Teuchos::RCP<Core::LinAlg::Vector> owner, Teuchos::RCP<Core::LinAlg::Vector> force) const;
 
       /// update maps
       void store_maps_prior_redistribution();
@@ -525,10 +526,10 @@ namespace BEAMINTERACTION
           visualization_output_writer_ptr_;
 
       //! current linker displacement
-      Teuchos::RCP<Epetra_Vector> linker_disnp_;
+      Teuchos::RCP<Core::LinAlg::Vector> linker_disnp_;
 
       //! summarized displacement of nodes since last redistribution
-      Teuchos::RCP<Epetra_Vector> dis_at_last_redistr_;
+      Teuchos::RCP<Core::LinAlg::Vector> dis_at_last_redistr_;
 
       //! half interaction distance considering largest linker + tolerance
       double half_interaction_distance_;

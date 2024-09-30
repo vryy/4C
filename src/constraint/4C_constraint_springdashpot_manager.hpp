@@ -13,11 +13,11 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -57,19 +57,19 @@ namespace CONSTRAINTS
 
     //! add contribution of spring dashpot BC to residual vector and stiffness matrix
     void stiffness_and_internal_forces(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
-        Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<Epetra_Vector> disn,
-        Teuchos::RCP<Epetra_Vector> veln, Teuchos::ParameterList parlist);
+        Teuchos::RCP<Core::LinAlg::Vector> fint, Teuchos::RCP<Core::LinAlg::Vector> disn,
+        Teuchos::RCP<Core::LinAlg::Vector> veln, Teuchos::ParameterList parlist);
 
     //! update for each new time step
     void update();
 
     //! output of gap, normal, and nodal stiffness
     void output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
-        Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp);
+        Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Core::LinAlg::Vector> disp);
 
     //! output of prestressing offset for restart
     void output_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output_restart,
-        Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp);
+        Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Core::LinAlg::Vector> disp);
 
     /*!
      \brief Read restart information
@@ -77,7 +77,7 @@ namespace CONSTRAINTS
     void read_restart(Core::IO::DiscretizationReader& reader, const double& time);
 
     //! reset spring after having done a MULF prestressing update (mhv 12/2015)
-    void reset_prestress(Teuchos::RCP<Epetra_Vector> disold);
+    void reset_prestress(Teuchos::RCP<Core::LinAlg::Vector> disold);
 
    private:
     Teuchos::RCP<Core::FE::Discretization> actdisc_;    ///< standard discretization

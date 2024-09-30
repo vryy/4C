@@ -423,7 +423,7 @@ void Discret::ELEMENTS::Beam3Base::get_triad_of_binding_spot(Core::LinAlg::Matri
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
 Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Beam3Base::get_bounding_volume(
-    const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const Core::FE::Discretization& discret, const Core::LinAlg::Vector& result_data_dofbased,
     const Core::GeometricSearch::GeometricSearchParams& params) const
 {
   // Get the centerline dof values of the beam.

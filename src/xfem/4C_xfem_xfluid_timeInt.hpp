@@ -24,7 +24,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 
 class Epetra_Map;
-class Epetra_Vector;
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::Communication
@@ -100,9 +100,9 @@ namespace XFEM
     /// transfer standard and ghost dofs to new map as far as possible and mark dofs for
     /// reconstruction
     void transfer_dofs_to_new_map(
-        const std::vector<Teuchos::RCP<const Epetra_Vector>>&
+        const std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>&
             oldRowStateVectors,  /// row map based vectors w.r.t old interface position
-        const std::vector<Teuchos::RCP<Epetra_Vector>>&
+        const std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
             newRowStateVectors,  /// row map based vectors w.r.t new interface position
         const Teuchos::RCP<std::set<int>>
             dbcgids  /// set of dof gids that must not be changed by ghost penalty reconstruction
@@ -111,9 +111,9 @@ namespace XFEM
     /// transfer standard and ghost dofs to new map as far as possible and mark dofs for
     /// reconstruction for given vector of node gids
     void transfer_dofs_to_new_map(
-        const std::vector<Teuchos::RCP<const Epetra_Vector>>&
+        const std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>&
             oldRowStateVectors,  /// row map based vectors w.r.t old interface position
-        const std::vector<Teuchos::RCP<Epetra_Vector>>&
+        const std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
             newRowStateVectors,  /// row map based vectors w.r.t new interface position
         const Teuchos::RCP<std::set<int>>
             dbcgids,  /// set of dof gids that must not be changed by ghost penalty reconstruction
@@ -139,9 +139,9 @@ namespace XFEM
     /// transfer standard and ghost dofs to new map as far as possible and mark dofs for
     /// reconstruction for a given node gid
     void transfer_nodal_dofs_to_new_map(
-        const std::vector<Teuchos::RCP<const Epetra_Vector>>&
+        const std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>&
             oldRowStateVectors,  /// row map based vectors w.r.t old interface position
-        const std::vector<Teuchos::RCP<Epetra_Vector>>&
+        const std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
             newRowStateVectors,  /// row map based vectors w.r.t new interface position
         const Teuchos::RCP<std::set<int>>
             dbcgids,  /// set of dof gids that must not be changed by ghost penalty reconstruction
@@ -168,9 +168,9 @@ namespace XFEM
         const int nds_new,                         /// nodal dofset at t^(n+1)
         const int nds_old,                         /// nodal dofset at t^n
         const Inpar::XFEM::XFluidTimeInt method,   /// reconstruction method
-        const std::vector<Teuchos::RCP<Epetra_Vector>>&
+        const std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
             newRowStateVectors,  /// row map based state vectors at t^(n+1)
-        const std::vector<Teuchos::RCP<const Epetra_Vector>>&
+        const std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>&
             oldRowStateVectors,                    /// row map based state vectors at t^n
         const Teuchos::RCP<std::set<int>> dbcgids  /// set of DBC global ids
     );
@@ -178,7 +178,7 @@ namespace XFEM
     /// mark nodal dofs of vector w.r.t new interface position for reconstruction
     void mark_dofs(const Core::Nodes::Node* node,  /// drt node
         const int nds_new,                         /// nodal dofset at t^(n+1)
-        const std::vector<Teuchos::RCP<Epetra_Vector>>&
+        const std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
             newRowStateVectors,                   /// row map based state vectors at t^(n+1)
         const Inpar::XFEM::XFluidTimeInt method,  /// reconstruction method
         const Teuchos::RCP<std::set<int>>
@@ -248,7 +248,7 @@ namespace XFEM
     /// export data about reconstruction method to neighbor proc and receive data from previous
     /// proc
     void export_methods(
-        const std::vector<Teuchos::RCP<Epetra_Vector>>&
+        const std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
             newRowStateVectors,  /// row map based vectors w.r.t new interface position
         const Teuchos::RCP<std::set<int>>
             dbcgids  /// set of dof gids that must not be changed by ghost penalty reconstruction

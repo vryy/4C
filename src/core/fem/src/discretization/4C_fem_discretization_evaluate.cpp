@@ -34,8 +34,9 @@ FOUR_C_NAMESPACE_OPEN
 void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-    Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector3)
 {
   Core::FE::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
@@ -117,7 +118,7 @@ void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-    Teuchos::RCP<Epetra_Vector> systemvector)
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector)
 {
   evaluate(params, systemmatrix, Teuchos::null, systemvector, Teuchos::null, Teuchos::null);
 }
@@ -165,7 +166,7 @@ void Core::FE::Discretization::evaluate(Teuchos::ParameterList& params)
  |  evaluate Neumann conditions (public)                     mwgee 12/06|
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
-    Epetra_Vector& systemvector, Core::LinAlg::SparseOperator* systemmatrix)
+    Core::LinAlg::Vector& systemvector, Core::LinAlg::SparseOperator* systemmatrix)
 {
   if (!filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -344,8 +345,9 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
  |  evaluate Dirichlet conditions (public)                  rauch 06/16 |
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate_dirichlet(Teuchos::ParameterList& params,
-    Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
-    Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvectord,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmapextractor) const
 {
   Core::FE::UTILS::evaluate_dirichlet(
@@ -359,8 +361,10 @@ void Core::FE::Discretization::evaluate_dirichlet(Teuchos::ParameterList& params
 void Core::FE::Discretization::evaluate_condition(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-    Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid)
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector3, const std::string& condstring,
+    const int condid)
 {
   Core::FE::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
@@ -667,7 +671,7 @@ void Core::FE::Discretization::evaluate_scalars(
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate_initial_field(
     const Core::UTILS::FunctionManager& function_manager, const std::string& fieldstring,
-    Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids) const
+    Teuchos::RCP<Core::LinAlg::Vector> fieldvector, const std::vector<int>& locids) const
 {
   Core::FE::UTILS::evaluate_initial_field(
       function_manager, *this, fieldstring, fieldvector, locids);

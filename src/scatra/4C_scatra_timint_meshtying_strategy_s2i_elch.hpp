@@ -92,8 +92,9 @@ namespace ScaTra
 
     void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
-        const Teuchos::RCP<Epetra_Vector>& phinp, const int iteration,
+        const Teuchos::RCP<Core::LinAlg::Vector>& increment,
+        const Teuchos::RCP<Core::LinAlg::Vector>& residual,
+        const Teuchos::RCP<Core::LinAlg::Vector>& phinp, const int iteration,
         Core::LinAlg::SolverParams& solver_params) const override;
   };
 

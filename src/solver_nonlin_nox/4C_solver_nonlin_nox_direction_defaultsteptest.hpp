@@ -22,6 +22,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Core::LinAlg
+{
+  class Vector;
+}
+
 namespace NOX
 {
   namespace Nln
@@ -53,11 +58,11 @@ namespace NOX
            *  The method offers the possibility to return a diagonal vector which
            *  is specifically created based on the information collect throughout
            *  the test. */
-          virtual Teuchos::RCP<Epetra_Vector> get_current_diagonal(
+          virtual Teuchos::RCP<Core::LinAlg::Vector> get_current_diagonal(
               const ::NOX::Abstract::Group& grp) const = 0;
 
           /// fill diagonal vector
-          virtual void fill_diagonal(Epetra_Vector& diagonal) const = 0;
+          virtual void fill_diagonal(Core::LinAlg::Vector& diagonal) const = 0;
 
          protected:
           /// output object
@@ -104,12 +109,12 @@ namespace NOX
           bool check_test(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp) override;
 
           /// return diagonal with the value one at the location of bad element DOFs
-          Teuchos::RCP<Epetra_Vector> get_current_diagonal(
+          Teuchos::RCP<Core::LinAlg::Vector> get_current_diagonal(
               const ::NOX::Abstract::Group& grp) const override;
-          Teuchos::RCP<Epetra_Vector> get_current_diagonal(const NOX::Nln::Group& grp) const;
+          Teuchos::RCP<Core::LinAlg::Vector> get_current_diagonal(const NOX::Nln::Group& grp) const;
 
           /// fill the diagonal with the value one at the location of bad element DOFs
-          inline void fill_diagonal(Epetra_Vector& diagonal) const override
+          inline void fill_diagonal(Core::LinAlg::Vector& diagonal) const override
           {
             fill_diagonal_at_bad_dofs(diagonal);
           }
@@ -143,19 +148,19 @@ namespace NOX
           int fill_my_bad_dofs(NOX::Nln::Group& grp);
 
           /// return an empty diagonal vector
-          Teuchos::RCP<Epetra_Vector> get_empty_diagonal(const NOX::Nln::Group& grp) const;
+          Teuchos::RCP<Core::LinAlg::Vector> get_empty_diagonal(const NOX::Nln::Group& grp) const;
 
           /// fill the diagonal vector at all dofs of bad elements
-          void fill_diagonal_at_bad_dofs(Epetra_Vector& diagonal) const;
+          void fill_diagonal_at_bad_dofs(Core::LinAlg::Vector& diagonal) const;
 
          private:
           /** reference element volumes (volumes corresponding to previously
            * accepted Newton iterate) */
-          Teuchos::RCP<Epetra_Vector> ref_ele_vols_;
+          Teuchos::RCP<Core::LinAlg::Vector> ref_ele_vols_;
 
           /** current element volumes (volumes corresponding to current
            * trial Newton default step) */
-          Teuchos::RCP<Epetra_Vector> curr_ele_vols_;
+          Teuchos::RCP<Core::LinAlg::Vector> curr_ele_vols_;
 
           /// set containing all bad dofs on this proc
           std::set<int> my_bad_dofs_;

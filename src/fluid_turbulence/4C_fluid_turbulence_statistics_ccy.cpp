@@ -18,6 +18,7 @@
 #include "4C_fem_nurbs_discretization.hpp"
 #include "4C_fem_nurbs_discretization_control_point.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_mat_newtonianfluid.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -28,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 
   ---------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Discretization> actdis,
-    bool alefluid, Teuchos::RCP<Epetra_Vector> dispnp, Teuchos::ParameterList& params,
+    bool alefluid, Teuchos::RCP<Core::LinAlg::Vector> dispnp, Teuchos::ParameterList& params,
     const std::string& statistics_outfilename, const bool withscatra)
     : discret_(actdis),
       dispnp_(dispnp),
@@ -472,8 +473,8 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
                             'sum' vectors.
 
  -----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCcy::do_time_sample(Teuchos::RCP<Epetra_Vector> velnp,
-    Teuchos::RCP<Epetra_Vector> scanp, Teuchos::RCP<Epetra_Vector> fullphinp)
+void FLD::TurbulenceStatisticsCcy::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp,
+    Teuchos::RCP<Core::LinAlg::Vector> scanp, Teuchos::RCP<Core::LinAlg::Vector> fullphinp)
 {
   // we have an additional sample
   numsamp_++;
@@ -714,7 +715,8 @@ void FLD::TurbulenceStatisticsCcy::evaluate_pointwise_mean_values_in_planes()
 
       actscatraele->location_vector(*scatranurbsdis, scatralm, scatralmowner, scatralmstride);
 
-      Teuchos::RCP<const Epetra_Vector> phinp = scatranurbsdis->get_state("phinp_for_statistics");
+      Teuchos::RCP<const Core::LinAlg::Vector> phinp =
+          scatranurbsdis->get_state("phinp_for_statistics");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp' for statistics");
       std::vector<double> myphinp(scatralm.size());
       Core::FE::extract_my_values(*phinp, myphinp, scatralm);
@@ -1492,7 +1494,7 @@ Add results from scalar transport fields to statistics
 
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCcy::add_scatra_results(
-    Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Epetra_Vector> phinp)
+    Teuchos::RCP<Core::FE::Discretization> scatradis, Teuchos::RCP<Core::LinAlg::Vector> phinp)
 {
   if (withscatra_)
   {

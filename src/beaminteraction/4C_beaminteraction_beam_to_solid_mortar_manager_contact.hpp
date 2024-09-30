@@ -48,8 +48,8 @@ namespace BEAMINTERACTION
     /**
      * \brief Get the penalty regularization of the constraint vector (derived)
      */
-    [[nodiscard]] std::tuple<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_Vector>,
-        Teuchos::RCP<Epetra_Vector>>
+    [[nodiscard]] std::tuple<Teuchos::RCP<Core::LinAlg::Vector>, Teuchos::RCP<Core::LinAlg::Vector>,
+        Teuchos::RCP<Core::LinAlg::Vector>>
     get_penalty_regularization(const bool compute_linearization = false) const override;
   };
 }  // namespace BEAMINTERACTION

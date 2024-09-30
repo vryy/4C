@@ -364,7 +364,8 @@ int Solid::TimIntImpl::nox_solve()
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
 
   // create intial guess vector of predictor result
-  ::NOX::Epetra::Vector noxSoln(disn_, ::NOX::Epetra::Vector::CreateView);
+  ::NOX::Epetra::Vector noxSoln(
+      disn_->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
   // Linear system
   Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys =

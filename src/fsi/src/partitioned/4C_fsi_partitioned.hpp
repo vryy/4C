@@ -21,7 +21,6 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_CrsGraph.h>
-#include <Epetra_Vector.h>
 #include <NOX.H>
 #include <NOX_Epetra.H>
 #include <NOX_Epetra_Interface_Required.H>
@@ -125,30 +124,33 @@ namespace FSI
    protected:
     //! @name Transfer helpers
 
-    Teuchos::RCP<Epetra_Vector> struct_to_fluid(Teuchos::RCP<Epetra_Vector> iv) override;
-    Teuchos::RCP<Epetra_Vector> fluid_to_struct(Teuchos::RCP<Epetra_Vector> iv) override;
+    Teuchos::RCP<Core::LinAlg::Vector> struct_to_fluid(
+        Teuchos::RCP<Core::LinAlg::Vector> iv) override;
+    Teuchos::RCP<Core::LinAlg::Vector> fluid_to_struct(
+        Teuchos::RCP<Core::LinAlg::Vector> iv) override;
 
     //@}
 
     //! @name Operators implemented by subclasses
 
     /// composed FSI operator
-    virtual void fsi_op(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag);
+    virtual void fsi_op(
+        const Core::LinAlg::Vector& x, Core::LinAlg::Vector& F, const FillType fillFlag);
 
     /// interface fluid operator
-    virtual Teuchos::RCP<Epetra_Vector> fluid_op(
-        Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag);
+    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_op(
+        Teuchos::RCP<Core::LinAlg::Vector> idisp, const FillType fillFlag);
 
     /// interface structural operator
-    virtual Teuchos::RCP<Epetra_Vector> struct_op(
-        Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag);
+    virtual Teuchos::RCP<Core::LinAlg::Vector> struct_op(
+        Teuchos::RCP<Core::LinAlg::Vector> iforce, const FillType fillFlag);
 
     //@}
 
     //! @name Encapsulation of interface unknown
     /// default is displacement, but subclasses might change that
 
-    virtual Teuchos::RCP<Epetra_Vector> initial_guess();
+    virtual Teuchos::RCP<Core::LinAlg::Vector> initial_guess();
 
     //@}
 
@@ -171,19 +173,20 @@ namespace FSI
      *  - [2] U Kuettler, Effiziente Loesungsverfahren fuer Fluid-Struktur-Interaktions-Probleme,
      *    PhD-Thesis, 2009
      */
-    Teuchos::RCP<Epetra_Vector> interface_velocity(Teuchos::RCP<const Epetra_Vector> idispnp) const;
+    Teuchos::RCP<Core::LinAlg::Vector> interface_velocity(
+        Teuchos::RCP<const Core::LinAlg::Vector> idispnp) const;
 
     /// current interface displacements
     /*!
       Extract structural displacement at t(n+1)
      */
-    Teuchos::RCP<Epetra_Vector> interface_disp();
+    Teuchos::RCP<Core::LinAlg::Vector> interface_disp();
 
     /// current interface forces
     /*!
       Extract fluid force at t(n+1)
      */
-    Teuchos::RCP<Epetra_Vector> interface_force();
+    Teuchos::RCP<Core::LinAlg::Vector> interface_force();
 
     //@}
 
@@ -206,10 +209,10 @@ namespace FSI
     virtual void extract_previous_interface_solution();
 
     /// interface displacement from time step begin
-    Teuchos::RCP<Epetra_Vector> idispn_;
+    Teuchos::RCP<Core::LinAlg::Vector> idispn_;
 
     /// interface velocity from time step begin
-    Teuchos::RCP<Epetra_Vector> iveln_;
+    Teuchos::RCP<Core::LinAlg::Vector> iveln_;
 
     /// setup list with default parameters
     virtual void set_default_parameters(

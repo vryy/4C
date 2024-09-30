@@ -17,9 +17,9 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_algorithmbase.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -176,8 +176,9 @@ namespace PaSI
      * \param[in] intfvelnp  interface velocity
      * \param[in] intfaccnp  interface acceleration
      */
-    void set_interface_states(Teuchos::RCP<const Epetra_Vector> intfdispnp,
-        Teuchos::RCP<const Epetra_Vector> intfvelnp, Teuchos::RCP<const Epetra_Vector> intfaccnp);
+    void set_interface_states(Teuchos::RCP<const Core::LinAlg::Vector> intfdispnp,
+        Teuchos::RCP<const Core::LinAlg::Vector> intfvelnp,
+        Teuchos::RCP<const Core::LinAlg::Vector> intfaccnp);
 
     /*!
      * \brief output of structure field
@@ -215,13 +216,13 @@ namespace PaSI
     Teuchos::RCP<const Solid::MapExtractor> interface_;
 
     //! interface displacement
-    Teuchos::RCP<Epetra_Vector> intfdispnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> intfdispnp_;
 
     //! interface velocity
-    Teuchos::RCP<Epetra_Vector> intfvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> intfvelnp_;
 
     //! interface acceleration
-    Teuchos::RCP<Epetra_Vector> intfaccnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> intfaccnp_;
 
    private:
     /*!

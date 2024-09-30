@@ -105,7 +105,7 @@ namespace Discret
       //! @name general evaluation methods
       /*========================================================================*/
 
-      void eval_reinitialization(const Epetra_Vector& phinp, const std::vector<int>& lm,
+      void eval_reinitialization(const Core::LinAlg::Vector& phinp, const std::vector<int>& lm,
           Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra);
@@ -115,7 +115,7 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra);
 
-      void eval_reinitialization_std(const Epetra_Vector& phinp, const std::vector<int>& lm,
+      void eval_reinitialization_std(const Core::LinAlg::Vector& phinp, const std::vector<int>& lm,
           Core::Elements::Element* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra);

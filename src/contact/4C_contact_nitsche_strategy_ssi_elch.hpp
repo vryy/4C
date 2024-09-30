@@ -37,8 +37,8 @@ namespace CONTACT
     {
     }
 
-    void apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
         const int step, const int iter, bool predictor) override
     {
       FOUR_C_THROW("not implemented");

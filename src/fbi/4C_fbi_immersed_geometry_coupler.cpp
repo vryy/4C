@@ -49,7 +49,7 @@ FBI::FBIGeometryCoupler::FBIGeometryCoupler()
 /*----------------------------------------------------------------------*/
 void FBI::FBIGeometryCoupler::setup(
     std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
-    Teuchos::RCP<const Epetra_Vector> structure_displacement)
+    Teuchos::RCP<const Core::LinAlg::Vector> structure_displacement)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Setup");
   Teuchos::TimeMonitor monitor(*t);
@@ -71,7 +71,7 @@ void FBI::FBIGeometryCoupler::setup(
 
 Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::search(
     std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
-    Teuchos::RCP<const Epetra_Vector>& column_structure_displacement)
+    Teuchos::RCP<const Core::LinAlg::Vector>& column_structure_displacement)
 {
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Search");
   Teuchos::TimeMonitor monitor(*t);
@@ -321,7 +321,7 @@ void FBI::FBIGeometryCoupler::compute_fixed_positions(Core::FE::Discretization& 
 
 void FBI::FBIGeometryCoupler::compute_current_positions(Core::FE::Discretization& dis,
     Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions,
-    Teuchos::RCP<const Epetra_Vector> disp) const
+    Teuchos::RCP<const Core::LinAlg::Vector> disp) const
 {
   positions->clear();
   std::vector<int> src_dofs(

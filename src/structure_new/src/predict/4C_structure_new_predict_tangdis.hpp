@@ -19,7 +19,6 @@
 #include "4C_structure_new_predict_generic.hpp"
 
 // forward declaration
-class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -45,16 +44,16 @@ namespace Solid
       void compute(::NOX::Abstract::Group& grp) override;
 
       //! return the dbc increment
-      const Epetra_Vector& get_dbc_incr() const;
+      const Core::LinAlg::Vector& get_dbc_incr() const;
 
       //! return the switch for the pre/post operator
       const bool& is_apply_linear_reaction_forces() const;
 
       //! derived
-      bool pre_apply_force_external(Epetra_Vector& fextnp) const override;
+      bool pre_apply_force_external(Core::LinAlg::Vector& fextnp) const override;
 
      private:
-      Teuchos::RCP<Epetra_Vector> dbc_incr_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector> dbc_incr_ptr_;
 
       bool apply_linear_reaction_forces_;
     };  // class TangDis
@@ -84,7 +83,7 @@ namespace NOX
           TangDis(const Teuchos::RCP<const Solid::Predict::TangDis>& tang_predict_ptr);
 
           //! add the linear reaction forces
-          void run_post_compute_f(Epetra_Vector& F, const NOX::Nln::Group& grp) override;
+          void run_post_compute_f(Core::LinAlg::Vector& F, const NOX::Nln::Group& grp) override;
 
          private:
           //! pointer to the tangdis object (read-only)

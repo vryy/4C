@@ -1036,7 +1036,7 @@ unsigned int Core::Elements::Element::append_visualization_geometry(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 unsigned int Core::Elements::Element::append_visualization_dof_based_result_data_vector(
-    const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const Core::FE::Discretization& discret, const Core::LinAlg::Vector& result_data_dofbased,
     const unsigned int result_num_dofs_per_node, const unsigned int read_result_data_from_dofindex,
     std::vector<double>& vtu_point_result_data) const
 {
@@ -1075,7 +1075,7 @@ unsigned int Core::Elements::Element::append_visualization_node_based_result_dat
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::GeometricSearch::BoundingVolume Core::Elements::Element::get_bounding_volume(
-    const Core::FE::Discretization& discret, const Epetra_Vector& result_data_dofbased,
+    const Core::FE::Discretization& discret, const Core::LinAlg::Vector& result_data_dofbased,
     const Core::GeometricSearch::GeometricSearchParams& params) const
 {
   Core::GeometricSearch::BoundingVolume bounding_box;

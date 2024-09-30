@@ -69,8 +69,8 @@ void FSI::DirichletNeumannVel::setup()
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::fluid_op(
-    Teuchos::RCP<Epetra_Vector> ivel, const FillType fillFlag)
+Teuchos::RCP<Core::LinAlg::Vector> FSI::DirichletNeumannVel::fluid_op(
+    Teuchos::RCP<Core::LinAlg::Vector> ivel, const FillType fillFlag)
 {
   const Teuchos::ParameterList& fbi = Global::Problem::instance()->fbi_params();
 
@@ -104,8 +104,8 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::fluid_op(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::struct_op(
-    Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag)
+Teuchos::RCP<Core::LinAlg::Vector> FSI::DirichletNeumannVel::struct_op(
+    Teuchos::RCP<Core::LinAlg::Vector> iforce, const FillType fillFlag)
 {
   FSI::Partitioned::struct_op(iforce, fillFlag);
 
@@ -139,7 +139,7 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::struct_op(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::initial_guess()
+Teuchos::RCP<Core::LinAlg::Vector> FSI::DirichletNeumannVel::initial_guess()
 {
   if (get_kinematic_coupling())
   {
@@ -168,16 +168,16 @@ Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::initial_guess()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::fluid_to_struct(
-    Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Core::LinAlg::Vector> FSI::DirichletNeumannVel::fluid_to_struct(
+    Teuchos::RCP<Core::LinAlg::Vector> iv)
 {
   return constraint_manager_->fluid_to_structure();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<Epetra_Vector> FSI::DirichletNeumannVel::struct_to_fluid(
-    Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Core::LinAlg::Vector> FSI::DirichletNeumannVel::struct_to_fluid(
+    Teuchos::RCP<Core::LinAlg::Vector> iv)
 {
   return constraint_manager_->structure_to_fluid(step());
 }

@@ -198,11 +198,12 @@ void FLD::TimIntGenAlpha::gen_alpha_update_acceleration()
   }
   else
   {
-    Teuchos::RCP<Epetra_Vector> onlyaccn = velpressplitter_->extract_other_vector(accn_);
-    Teuchos::RCP<Epetra_Vector> onlyveln = velpressplitter_->extract_other_vector(veln_);
-    Teuchos::RCP<Epetra_Vector> onlyvelnp = velpressplitter_->extract_other_vector(velnp_);
+    Teuchos::RCP<Core::LinAlg::Vector> onlyaccn = velpressplitter_->extract_other_vector(accn_);
+    Teuchos::RCP<Core::LinAlg::Vector> onlyveln = velpressplitter_->extract_other_vector(veln_);
+    Teuchos::RCP<Core::LinAlg::Vector> onlyvelnp = velpressplitter_->extract_other_vector(velnp_);
 
-    Teuchos::RCP<Epetra_Vector> onlyaccnp = Teuchos::rcp(new Epetra_Vector(onlyaccn->Map()));
+    Teuchos::RCP<Core::LinAlg::Vector> onlyaccnp =
+        Teuchos::rcp(new Core::LinAlg::Vector(onlyaccn->Map()));
 
     onlyaccnp->Update(fact2, *onlyaccn, 0.0);
     onlyaccnp->Update(fact1, *onlyvelnp, -fact1, *onlyveln, 1.0);
@@ -239,10 +240,11 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values()
   }
   else
   {
-    Teuchos::RCP<Epetra_Vector> onlyaccn = velpressplitter_->extract_other_vector(accn_);
-    Teuchos::RCP<Epetra_Vector> onlyaccnp = velpressplitter_->extract_other_vector(accnp_);
+    Teuchos::RCP<Core::LinAlg::Vector> onlyaccn = velpressplitter_->extract_other_vector(accn_);
+    Teuchos::RCP<Core::LinAlg::Vector> onlyaccnp = velpressplitter_->extract_other_vector(accnp_);
 
-    Teuchos::RCP<Epetra_Vector> onlyaccam = Teuchos::rcp(new Epetra_Vector(onlyaccnp->Map()));
+    Teuchos::RCP<Core::LinAlg::Vector> onlyaccam =
+        Teuchos::rcp(new Core::LinAlg::Vector(onlyaccnp->Map()));
 
     onlyaccam->Update((alphaM_), *onlyaccnp, (1.0 - alphaM_), *onlyaccn, 0.0);
 
@@ -274,7 +276,7 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values()
  | for given vectors at n and n+1                           ghamm 04/14 |
  *----------------------------------------------------------------------*/
 void FLD::TimIntGenAlpha::gen_alpha_intermediate_values(
-    Teuchos::RCP<Epetra_Vector>& vecnp, Teuchos::RCP<Epetra_Vector>& vecn)
+    Teuchos::RCP<Core::LinAlg::Vector>& vecnp, Teuchos::RCP<Core::LinAlg::Vector>& vecn)
 {
   // compute intermediate values for given vectors
   //
@@ -288,10 +290,10 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values(
   Teuchos::RCP<Epetra_Map> vecmap = Teuchos::rcp(new Epetra_Map(vecnp->Map().NumGlobalElements(),
       vecnp->Map().NumMyElements(), vecnp->Map().MyGlobalElements(), 0, vecnp->Map().Comm()));
 
-  Teuchos::RCP<Epetra_Vector> vecam = Core::LinAlg::create_vector(*vecmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector> vecam = Core::LinAlg::create_vector(*vecmap, true);
   vecam->Update((alphaM_), *vecnp, (1.0 - alphaM_), *vecn, 0.0);
 
-  Teuchos::RCP<Epetra_Vector> vecaf = Core::LinAlg::create_vector(*vecmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector> vecaf = Core::LinAlg::create_vector(*vecmap, true);
   vecaf->Update((alphaF_), *vecnp, (1.0 - alphaF_), *vecn, 0.0);
 
   // store computed intermediate values in given vectors
@@ -334,9 +336,12 @@ double FLD::TimIntGenAlpha::set_time_fac() { return alphaF_; }
 /*----------------------------------------------------------------------*
 | calculate acceleration                                       bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::calculate_acceleration(const Teuchos::RCP<const Epetra_Vector> velnp,
-    const Teuchos::RCP<const Epetra_Vector> veln, const Teuchos::RCP<const Epetra_Vector> velnm,
-    const Teuchos::RCP<const Epetra_Vector> accn, const Teuchos::RCP<Epetra_Vector> accnp)
+void FLD::TimIntGenAlpha::calculate_acceleration(
+    const Teuchos::RCP<const Core::LinAlg::Vector> velnp,
+    const Teuchos::RCP<const Core::LinAlg::Vector> veln,
+    const Teuchos::RCP<const Core::LinAlg::Vector> velnm,
+    const Teuchos::RCP<const Core::LinAlg::Vector> accn,
+    const Teuchos::RCP<Core::LinAlg::Vector> accnp)
 {
   // do nothing: new acceleration is calculated at beginning of next time step
 
@@ -378,11 +383,11 @@ void FLD::TimIntGenAlpha::update_velaf_gen_alpha()
  | paraview output of filtered velocity                  rasthofer 02/11|
  *----------------------------------------------------------------------*/
 void FLD::TimIntGenAlpha::outputof_filtered_vel(
-    Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec)
+    Teuchos::RCP<Core::LinAlg::Vector> outvec, Teuchos::RCP<Core::LinAlg::Vector> fsoutvec)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Epetra_Vector> row_finescaleveltmp;
-  row_finescaleveltmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector> row_finescaleveltmp;
+  row_finescaleveltmp = Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap, true));
 
   // get fine scale velocity
   if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)
@@ -438,10 +443,11 @@ void FLD::TimIntGenAlpha::set_element_time_parameter()
 /*----------------------------------------------------------------------*
 | extrapolate end point                                        bk 12/13 |
 *-----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::TimIntGenAlpha::extrapolate_end_point(
-    Teuchos::RCP<Epetra_Vector> vecn, Teuchos::RCP<Epetra_Vector> vecm)
+Teuchos::RCP<Core::LinAlg::Vector> FLD::TimIntGenAlpha::extrapolate_end_point(
+    Teuchos::RCP<Core::LinAlg::Vector> vecn, Teuchos::RCP<Core::LinAlg::Vector> vecm)
 {
-  Teuchos::RCP<Epetra_Vector> vecnp = FluidImplicitTimeInt::extrapolate_end_point(vecn, vecm);
+  Teuchos::RCP<Core::LinAlg::Vector> vecnp =
+      FluidImplicitTimeInt::extrapolate_end_point(vecn, vecm);
 
   // For gen-alpha extrapolate mid-point quantities to end-point.
   // Otherwise, equilibrium time level is already end-point.

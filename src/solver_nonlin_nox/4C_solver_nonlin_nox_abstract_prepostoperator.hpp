@@ -22,6 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration
 namespace Core::LinAlg
 {
+  class Vector;
   class SparseOperator;
 }  // namespace Core::LinAlg
 
@@ -146,7 +147,7 @@ namespace NOX
          * \param linsys : read only access to the linear system object
          */
         virtual void run_pre_compute_jacobian(Core::LinAlg::SparseOperator& jac,
-            const Epetra_Vector& x, const NOX::Nln::LinearSystem& linsys)
+            const Core::LinAlg::Vector& x, const NOX::Nln::LinearSystem& linsys)
         {
         }
 
@@ -158,7 +159,7 @@ namespace NOX
          * \param linsys : read only access to the linear system object
          */
         virtual void run_post_compute_jacobian(Core::LinAlg::SparseOperator& jac,
-            const Epetra_Vector& x, const NOX::Nln::LinearSystem& linsys)
+            const Core::LinAlg::Vector& x, const NOX::Nln::LinearSystem& linsys)
         {
         }
 
@@ -170,8 +171,8 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void run_pre_compute_fand_jacobian(Epetra_Vector& rhs,
-            Core::LinAlg::SparseOperator& jac, const Epetra_Vector& x,
+        virtual void run_pre_compute_fand_jacobian(Core::LinAlg::Vector& rhs,
+            Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector& x,
             const NOX::Nln::LinearSystem& linsys)
         {
         }
@@ -184,8 +185,8 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void run_post_compute_fand_jacobian(Epetra_Vector& rhs,
-            Core::LinAlg::SparseOperator& jac, const Epetra_Vector& x,
+        virtual void run_post_compute_fand_jacobian(Core::LinAlg::Vector& rhs,
+            Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector& x,
             const NOX::Nln::LinearSystem& linsys)
         {
         }
@@ -202,7 +203,7 @@ namespace NOX
          * \param F        : full access to the right hand side vector of the NOX::Nln::Group.
          * \param grp      : read only access to the NOX::Nln::Group object.
          */
-        virtual void run_pre_compute_f(Epetra_Vector& F, const NOX::Nln::Group& grp) {}
+        virtual void run_pre_compute_f(Core::LinAlg::Vector& F, const NOX::Nln::Group& grp) {}
 
         /** User defined method that will be executed at the end of a call to
          * NOX::Nln::Group::computeF().
@@ -210,7 +211,7 @@ namespace NOX
          * \param F        : full access to the right hand side vector of the NOX::Nln::Group.
          * \param grp      : read only access to the NOX::Nln::Group object.
          */
-        virtual void run_post_compute_f(Epetra_Vector& F, const NOX::Nln::Group& grp) {}
+        virtual void run_post_compute_f(Core::LinAlg::Vector& F, const NOX::Nln::Group& grp) {}
 
         /** User defined method that will be executed at the start of a call to
          * NOX::Nln::Group::computeX().
@@ -220,8 +221,8 @@ namespace NOX
          * \param step     : read only access to the current step length (line search).
          * \param curr_grp : read only access to the called/current group (will hold the new X).
          */
-        virtual void run_pre_compute_x(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
-            const double& step, const NOX::Nln::Group& curr_grp)
+        virtual void run_pre_compute_x(const NOX::Nln::Group& input_grp,
+            const Core::LinAlg::Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
         {
         }
 
@@ -233,8 +234,8 @@ namespace NOX
          * \param step     : read only access to the current step length (line search).
          * \param curr_grp : read only access to the called/current group (holds the new X).
          */
-        virtual void run_post_compute_x(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
-            const double& step, const NOX::Nln::Group& curr_grp)
+        virtual void run_post_compute_x(const NOX::Nln::Group& input_grp,
+            const Core::LinAlg::Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
         {
         }
 

@@ -192,7 +192,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::evaluate(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    Teuchos::RCP<Core::LinAlg::Vector> rhs)
 {
   if (!issetup_) FOUR_C_THROW("setup() has not been called");
 
@@ -209,10 +210,11 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::evaluate(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::setup_system(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
-    Teuchos::RCP<const Epetra_Vector> rhs_art,
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    Teuchos::RCP<Core::LinAlg::Vector> rhs, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs_cont,
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs_art,
     Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
     Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art)
 {
@@ -232,7 +234,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::apply_mesh_mov
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector>
+Teuchos::RCP<const Core::LinAlg::Vector>
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::blood_vessel_volume_fraction()
 {
   FOUR_C_THROW("Output of vessel volume fraction not possible for surface-based coupling");

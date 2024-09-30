@@ -18,9 +18,8 @@ algorithms
 #include "4C_coupling_adapter.hpp"
 #include "4C_inpar_ehl.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_lubrication_adapter.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -63,23 +62,24 @@ namespace EHL
     const Teuchos::RCP<Adapter::Structure>& structure_field() { return structure_; }
 
     /// set structure solution on lubrication field
-    void set_struct_solution(Teuchos::RCP<const Epetra_Vector> disp);
+    void set_struct_solution(Teuchos::RCP<const Core::LinAlg::Vector> disp);
 
     /// set lubrication solution on structure field
-    void set_lubrication_solution(Teuchos::RCP<const Epetra_Vector> pressure);
+    void set_lubrication_solution(Teuchos::RCP<const Core::LinAlg::Vector> pressure);
 
     /// evaluate fluid forces on structure
-    Teuchos::RCP<Epetra_Vector> evaluate_fluid_force(Teuchos::RCP<const Epetra_Vector> pressure);
+    Teuchos::RCP<Core::LinAlg::Vector> evaluate_fluid_force(
+        Teuchos::RCP<const Core::LinAlg::Vector> pressure);
 
    protected:
-    void add_pressure_force(
-        Teuchos::RCP<Epetra_Vector> slaveiforce, Teuchos::RCP<Epetra_Vector> masteriforce);
+    void add_pressure_force(Teuchos::RCP<Core::LinAlg::Vector> slaveiforce,
+        Teuchos::RCP<Core::LinAlg::Vector> masteriforce);
 
-    void add_poiseuille_force(
-        Teuchos::RCP<Epetra_Vector> slaveiforce, Teuchos::RCP<Epetra_Vector> masteriforce);
+    void add_poiseuille_force(Teuchos::RCP<Core::LinAlg::Vector> slaveiforce,
+        Teuchos::RCP<Core::LinAlg::Vector> masteriforce);
 
-    void add_couette_force(
-        Teuchos::RCP<Epetra_Vector> slaveiforce, Teuchos::RCP<Epetra_Vector> masteriforce);
+    void add_couette_force(Teuchos::RCP<Core::LinAlg::Vector> slaveiforce,
+        Teuchos::RCP<Core::LinAlg::Vector> masteriforce);
 
     /// underlying structure of the EHL problem
     Teuchos::RCP<Adapter::Structure> structure_;
@@ -95,8 +95,8 @@ namespace EHL
     Teuchos::RCP<Adapter::CouplingEhlMortar> mortaradapter_;
 
     //! Interface traction vector in the slave str dof map
-    Teuchos::RCP<Epetra_Vector> stritraction_D_;
-    Teuchos::RCP<Epetra_Vector> stritraction_M_;
+    Teuchos::RCP<Core::LinAlg::Vector> stritraction_D_;
+    Teuchos::RCP<Core::LinAlg::Vector> stritraction_M_;
 
     //! Transformation matrix for lubrication pre dof map <-> lubrication disp dof map
     Teuchos::RCP<Core::LinAlg::SparseMatrix> lubrimaptransform_;
@@ -115,7 +115,7 @@ namespace EHL
     Teuchos::RCP<Coupling::Adapter::Coupling> ada_lubPres_to_lubDisp_;
 
     //! height old vector to calculate the time derivative of height (Squeeze term)
-    Teuchos::RCP<const Epetra_Vector> heightold_;
+    Teuchos::RCP<const Core::LinAlg::Vector> heightold_;
 
     //! use of a dry contact model
     bool dry_contact_;
@@ -129,10 +129,11 @@ namespace EHL
 
     //! write output
     virtual void output(bool forced_writerestart = false);
-    Teuchos::RCP<Epetra_Vector> inf_gap_toggle_lub_;
+    Teuchos::RCP<Core::LinAlg::Vector> inf_gap_toggle_lub_;
 
     /// velocity calculation given the displacements
-    Teuchos::RCP<Epetra_Vector> calc_velocity(Teuchos::RCP<const Epetra_Vector> dispnp);
+    Teuchos::RCP<Core::LinAlg::Vector> calc_velocity(
+        Teuchos::RCP<const Core::LinAlg::Vector> dispnp);
 
    private:
     /// setup discretizations and dofsets
@@ -140,7 +141,7 @@ namespace EHL
         const std::string lubrication_disname);
 
     /// set structure mesh displacement on lubrication field
-    void set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp);
+    void set_mesh_disp(Teuchos::RCP<const Core::LinAlg::Vector> disp);
 
     /// set average tangential interface velocity (ie structural velocities
     /// this is invariant w.r.t. rigid body rotations

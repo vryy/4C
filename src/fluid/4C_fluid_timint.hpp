@@ -17,10 +17,10 @@
 #include "4C_adapter_fld_fluid.hpp"
 #include "4C_fem_condition.hpp"
 #include "4C_fluid_discretization_runtime_output_params.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -66,110 +66,110 @@ namespace FLD
 
     void init() override = 0;
 
-    Teuchos::RCP<const Epetra_Vector> initial_guess() override
+    Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> rhs() override = 0;
-    Teuchos::RCP<const Epetra_Vector> true_residual() override
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs() override = 0;
+    Teuchos::RCP<const Core::LinAlg::Vector> true_residual() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<Epetra_Vector> write_access_velnp() override
+    Teuchos::RCP<Core::LinAlg::Vector> write_access_velnp() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> velnp() override = 0;
-    Teuchos::RCP<const Epetra_Vector> velaf() override
+    Teuchos::RCP<const Core::LinAlg::Vector> velnp() override = 0;
+    Teuchos::RCP<const Core::LinAlg::Vector> velaf() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> veln() override = 0;
-    Teuchos::RCP<const Epetra_Vector> velnm() override
+    Teuchos::RCP<const Core::LinAlg::Vector> veln() override = 0;
+    Teuchos::RCP<const Core::LinAlg::Vector> velnm() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> accnp() override
+    Teuchos::RCP<const Core::LinAlg::Vector> accnp() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> accn() override
+    Teuchos::RCP<const Core::LinAlg::Vector> accn() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> accnm() override
+    Teuchos::RCP<const Core::LinAlg::Vector> accnm() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> accam() override
+    Teuchos::RCP<const Core::LinAlg::Vector> accam() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> scaaf() override
+    Teuchos::RCP<const Core::LinAlg::Vector> scaaf() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> scaam() override
+    Teuchos::RCP<const Core::LinAlg::Vector> scaam() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> hist() override
+    Teuchos::RCP<const Core::LinAlg::Vector> hist() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> grid_vel() override
+    Teuchos::RCP<const Core::LinAlg::Vector> grid_vel() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> grid_veln() override
+    Teuchos::RCP<const Core::LinAlg::Vector> grid_veln() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> dispnp() override
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> dispn() override
+    Teuchos::RCP<const Core::LinAlg::Vector> dispn() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> convective_vel() override
+    Teuchos::RCP<const Core::LinAlg::Vector> convective_vel() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> fs_vel() override
+    Teuchos::RCP<const Core::LinAlg::Vector> fs_vel() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<Epetra_Vector> std_veln() override
+    Teuchos::RCP<Core::LinAlg::Vector> std_veln() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<Epetra_Vector> std_velnp() override
+    Teuchos::RCP<Core::LinAlg::Vector> std_velnp() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<Epetra_Vector> std_velaf() override
+    Teuchos::RCP<Core::LinAlg::Vector> std_velaf() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -202,7 +202,7 @@ namespace FLD
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> stepinc() override
+    Teuchos::RCP<const Core::LinAlg::Vector> stepinc() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -221,7 +221,7 @@ namespace FLD
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
-    void evaluate(Teuchos::RCP<const Epetra_Vector> vel) override
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> vel) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -230,7 +230,7 @@ namespace FLD
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return false;
     }
-    void iter_update(const Teuchos::RCP<const Epetra_Vector> increment) override
+    void iter_update(const Teuchos::RCP<const Core::LinAlg::Vector> increment) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -339,10 +339,12 @@ namespace FLD
       return;
     }
 
-    void set_restart(const int step, const double time, Teuchos::RCP<const Epetra_Vector> readvelnp,
-        Teuchos::RCP<const Epetra_Vector> readveln, Teuchos::RCP<const Epetra_Vector> readvelnm,
-        Teuchos::RCP<const Epetra_Vector> readaccnp,
-        Teuchos::RCP<const Epetra_Vector> readaccn) override
+    void set_restart(const int step, const double time,
+        Teuchos::RCP<const Core::LinAlg::Vector> readvelnp,
+        Teuchos::RCP<const Core::LinAlg::Vector> readveln,
+        Teuchos::RCP<const Core::LinAlg::Vector> readvelnm,
+        Teuchos::RCP<const Core::LinAlg::Vector> readaccnp,
+        Teuchos::RCP<const Core::LinAlg::Vector> readaccn) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -454,81 +456,83 @@ namespace FLD
       return;
     }
 
-    Teuchos::RCP<Epetra_Vector> extract_interface_forces() override
+    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_forces() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<Epetra_Vector> extract_interface_forces_robin()
+    virtual Teuchos::RCP<Core::LinAlg::Vector> extract_interface_forces_robin()
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<Epetra_Vector> extract_interface_velnp() override
+    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_velnp() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<Epetra_Vector> extract_interface_veln() override
+    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_veln() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    Teuchos::RCP<Epetra_Vector> extract_free_surface_veln() override
+    Teuchos::RCP<Core::LinAlg::Vector> extract_free_surface_veln() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    void apply_interface_velocities(Teuchos::RCP<Epetra_Vector> ivel) override
+    void apply_interface_velocities(Teuchos::RCP<Core::LinAlg::Vector> ivel) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
     virtual void apply_interface_robin_value(
-        Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<Epetra_Vector> iforce)
+        Teuchos::RCP<Core::LinAlg::Vector> ivel, Teuchos::RCP<Core::LinAlg::Vector> iforce)
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
     /// Apply initial mesh displacement
-    void apply_initial_mesh_displacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override
+    void apply_initial_mesh_displacement(
+        Teuchos::RCP<const Core::LinAlg::Vector> initfluiddisp) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
-    void apply_mesh_displacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override
+    void apply_mesh_displacement(Teuchos::RCP<const Core::LinAlg::Vector> fluiddisp) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
-    void apply_mesh_displacement_increment(Teuchos::RCP<const Epetra_Vector> dispstepinc) override
+    void apply_mesh_displacement_increment(
+        Teuchos::RCP<const Core::LinAlg::Vector> dispstepinc) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
-    void apply_mesh_velocity(Teuchos::RCP<const Epetra_Vector> gridvel) override
-    {
-      FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return;
-    }
-
-    void displacement_to_velocity(Teuchos::RCP<Epetra_Vector> fcx) override
-    {
-      FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      return;
-    }
-    void velocity_to_displacement(Teuchos::RCP<Epetra_Vector> fcx) override
+    void apply_mesh_velocity(Teuchos::RCP<const Core::LinAlg::Vector> gridvel) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
-    void free_surf_displacement_to_velocity(Teuchos::RCP<Epetra_Vector> fcx) override
+    void displacement_to_velocity(Teuchos::RCP<Core::LinAlg::Vector> fcx) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
-    void free_surf_velocity_to_displacement(Teuchos::RCP<Epetra_Vector> fcx) override
+    void velocity_to_displacement(Teuchos::RCP<Core::LinAlg::Vector> fcx) override
+    {
+      FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
+      return;
+    }
+
+    void free_surf_displacement_to_velocity(Teuchos::RCP<Core::LinAlg::Vector> fcx) override
+    {
+      FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
+      return;
+    }
+    void free_surf_velocity_to_displacement(Teuchos::RCP<Core::LinAlg::Vector> fcx) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -547,7 +551,7 @@ namespace FLD
     */
     Inpar::FLUID::TimeIntegrationScheme tim_int_scheme() const override { return timealgo_; }
 
-    Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override
+    Teuchos::RCP<Core::LinAlg::Vector> integrate_interface_shape() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -566,7 +570,8 @@ namespace FLD
 
       \note Can only be called after a valid fluid solve.
     */
-    Teuchos::RCP<Epetra_Vector> relaxation_solve(Teuchos::RCP<Epetra_Vector> ivel) override
+    Teuchos::RCP<Core::LinAlg::Vector> relaxation_solve(
+        Teuchos::RCP<Core::LinAlg::Vector> ivel) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -578,15 +583,15 @@ namespace FLD
       return Teuchos::null;
     }
 
-    Teuchos::RCP<const Epetra_Vector> extract_velocity_part(
-        Teuchos::RCP<const Epetra_Vector> velpres) override
+    Teuchos::RCP<const Core::LinAlg::Vector> extract_velocity_part(
+        Teuchos::RCP<const Core::LinAlg::Vector> velpres) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
 
-    Teuchos::RCP<const Epetra_Vector> extract_pressure_part(
-        Teuchos::RCP<const Epetra_Vector> velpres) override
+    Teuchos::RCP<const Core::LinAlg::Vector> extract_pressure_part(
+        Teuchos::RCP<const Core::LinAlg::Vector> velpres) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -615,7 +620,7 @@ namespace FLD
 
     /// apply external forces to the fluid
     void add_contribution_to_external_loads(
-        const Teuchos::RCP<const Epetra_Vector> contributing_vector) override
+        const Teuchos::RCP<const Core::LinAlg::Vector> contributing_vector) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -636,16 +641,18 @@ namespace FLD
     }
 
     ///  set scalar fields within outer iteration loop
-    void set_iter_scalar_fields(Teuchos::RCP<const Epetra_Vector> scalaraf,
-        Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
+    void set_iter_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector> scalaraf,
+        Teuchos::RCP<const Core::LinAlg::Vector> scalaram,
+        Teuchos::RCP<const Core::LinAlg::Vector> scalardtam,
         Teuchos::RCP<Core::FE::Discretization> scatradis, int dofset) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
 
-    void set_loma_iter_scalar_fields(Teuchos::RCP<const Epetra_Vector> scalaraf,
-        Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
-        Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
+    void set_loma_iter_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector> scalaraf,
+        Teuchos::RCP<const Core::LinAlg::Vector> scalaram,
+        Teuchos::RCP<const Core::LinAlg::Vector> scalardtam,
+        Teuchos::RCP<const Core::LinAlg::Vector> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
         Teuchos::RCP<Core::FE::Discretization> scatradis) override
     {
@@ -653,15 +660,15 @@ namespace FLD
     }
 
     /// set scalar fields
-    void set_scalar_fields(Teuchos::RCP<const Epetra_Vector> scalarnp, const double thermpressnp,
-        Teuchos::RCP<const Epetra_Vector> scatraresidual,
+    void set_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector> scalarnp,
+        const double thermpressnp, Teuchos::RCP<const Core::LinAlg::Vector> scatraresidual,
         Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar = -1) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
     }
 
     /// set velocity field (separate computation)
-    void set_velocity_field(Teuchos::RCP<const Epetra_Vector> velnp) override
+    void set_velocity_field(Teuchos::RCP<const Core::LinAlg::Vector> velnp) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -682,7 +689,7 @@ namespace FLD
     Teuchos::RCP<FLD::Vreman> vreman() override { return Teuchos::null; };
 
     /// update velocity increment after Newton step
-    void update_newton(Teuchos::RCP<const Epetra_Vector> vel) override
+    void update_newton(Teuchos::RCP<const Core::LinAlg::Vector> vel) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -695,7 +702,7 @@ namespace FLD
     };
 
     // set fluid displacement vector due to biofilm growth
-    void set_fld_gr_disp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp) override
+    void set_fld_gr_disp(Teuchos::RCP<Core::LinAlg::Vector> fluid_growth_disp) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;

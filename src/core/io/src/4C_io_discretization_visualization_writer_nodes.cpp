@@ -75,7 +75,7 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterNodes::append_dof_based_result_data_vector(
-      const Teuchos::RCP<Epetra_Vector>& result_data_dofbased,
+      const Teuchos::RCP<Core::LinAlg::Vector>& result_data_dofbased,
       unsigned int result_num_dofs_per_node, const std::string& resultname)
   {
     /* the idea is to transform the given data to a 'point data vector' and append it to the
@@ -119,7 +119,7 @@ namespace Core::IO
     {
       for (unsigned int idf = 0; idf < result_num_components_per_node; ++idf)
       {
-        Epetra_Vector* column = (*result_data_nodebased)(idf);
+        auto* column = (*result_data_nodebased)(idf);
         point_result_data.push_back((*column)[lid]);
       }
     }

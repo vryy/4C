@@ -48,10 +48,10 @@ Solid::TimAdaZienXie::TimAdaZienXie(
 void Solid::TimAdaZienXie::integrate_step_auxiliar()
 {
   // get state vectors of marching integrator
-  const Teuchos::RCP<Epetra_Vector> dis = sti_->dis();       // D_{n}^{A2}
-  const Teuchos::RCP<Epetra_Vector> vel = sti_->vel();       // V_{n}^{A2}
-  const Teuchos::RCP<Epetra_Vector> acc = sti_->acc();       // A_{n}^{A2}
-  const Teuchos::RCP<Epetra_Vector> accn = sti_->acc_new();  // A_{n+1}^{A2}
+  const Teuchos::RCP<Core::LinAlg::Vector> dis = sti_->dis();       // D_{n}^{A2}
+  const Teuchos::RCP<Core::LinAlg::Vector> vel = sti_->vel();       // V_{n}^{A2}
+  const Teuchos::RCP<Core::LinAlg::Vector> acc = sti_->acc();       // A_{n}^{A2}
+  const Teuchos::RCP<Core::LinAlg::Vector> accn = sti_->acc_new();  // A_{n+1}^{A2}
 
   // build ZX displacements D_{n+1}^{ZX}
   // using the second order (or lower) accurate new accelerations

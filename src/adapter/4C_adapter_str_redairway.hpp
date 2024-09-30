@@ -20,8 +20,8 @@
 
 #include "4C_adapter_str_wrapper.hpp"
 #include "4C_fem_condition.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -35,11 +35,11 @@ namespace Adapter
     StructureRedAirway(Teuchos::RCP<Structure> stru);
 
     /// set pressure calculated from reduced-d airway tree
-    void set_pressure(Teuchos::RCP<Epetra_Vector> couppres);
+    void set_pressure(Teuchos::RCP<Core::LinAlg::Vector> couppres);
 
     /// calculate outlet fluxes for reduced-d airway tree
-    void calc_flux(
-        Teuchos::RCP<Epetra_Vector> coupflux, Teuchos::RCP<Epetra_Vector> coupvol, double dt);
+    void calc_flux(Teuchos::RCP<Core::LinAlg::Vector> coupflux,
+        Teuchos::RCP<Core::LinAlg::Vector> coupvol, double dt);
 
     /// calculate volume
     void calc_vol(std::map<int, double>& V);

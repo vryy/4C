@@ -72,8 +72,8 @@ namespace XFEM
        *
        *  \param mv       (in) : master vector (to be transferred)
        *  \param map_type (in) : map type of the master vector */
-      inline Teuchos::RCP<Epetra_Vector> master_to_slave(
-          const Teuchos::RCP<Epetra_Vector>& mv, const enum XFEM::MapType& map_type) const
+      inline Teuchos::RCP<Core::LinAlg::Vector> master_to_slave(
+          const Teuchos::RCP<Core::LinAlg::Vector>& mv, const enum XFEM::MapType& map_type) const
       {
         return master_to_slave(mv.getConst(), map_type);
       }
@@ -82,8 +82,8 @@ namespace XFEM
        *
        *  \param sv       (in) : slave vector (to be transferred)
        *  \param map_type (in) : map type of the slave vector */
-      inline Teuchos::RCP<Epetra_Vector> slave_to_master(
-          Teuchos::RCP<Epetra_Vector> sv, const enum XFEM::MapType& map_type) const
+      inline Teuchos::RCP<Core::LinAlg::Vector> slave_to_master(
+          Teuchos::RCP<Core::LinAlg::Vector> sv, const enum XFEM::MapType& map_type) const
       {
         return slave_to_master(sv.getConst(), map_type);
       }
@@ -112,15 +112,17 @@ namespace XFEM
        *
        *  \param mv       (in) : master vector (to be transferred)
        *  \param map_type (in) : map type of the master vector */
-      Teuchos::RCP<Epetra_Vector> master_to_slave(
-          const Teuchos::RCP<const Epetra_Vector>& mv, const enum XFEM::MapType& map_type) const;
+      Teuchos::RCP<Core::LinAlg::Vector> master_to_slave(
+          const Teuchos::RCP<const Core::LinAlg::Vector>& mv,
+          const enum XFEM::MapType& map_type) const;
 
       /** \brief transfer a nodal/dof vector from slave to master
        *
        *  \param sv       (in) : slave vector (to be transferred)
        *  \param map_type (in) : map type of the slave vector */
-      Teuchos::RCP<Epetra_Vector> slave_to_master(
-          const Teuchos::RCP<const Epetra_Vector>& sv, const enum XFEM::MapType& map_type) const;
+      Teuchos::RCP<Core::LinAlg::Vector> slave_to_master(
+          const Teuchos::RCP<const Core::LinAlg::Vector>& sv,
+          const enum XFEM::MapType& map_type) const;
 
       /** \brief transfer a nodel/dof vector from master to slave
        *

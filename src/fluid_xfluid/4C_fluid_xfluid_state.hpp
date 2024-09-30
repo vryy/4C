@@ -16,10 +16,10 @@
 #include "4C_inpar_cut.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_xfem.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -92,8 +92,8 @@ namespace FLD
       CouplingState(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& C_sx,
           const Teuchos::RCP<Core::LinAlg::SparseMatrix>& C_xs,
           const Teuchos::RCP<Core::LinAlg::SparseMatrix>& C_ss,
-          const Teuchos::RCP<Epetra_Vector>& rhC_s,
-          const Teuchos::RCP<Epetra_Vector>& rhC_s_col)
+          const Teuchos::RCP<Core::LinAlg::Vector>& rhC_s,
+          const Teuchos::RCP<Core::LinAlg::Vector>& rhC_s_col)
           : C_sx_(C_sx),  // this rcp constructor using const references copies also the ownership
                           // and increases the specific weak/strong reference counter
             C_xs_(C_xs),
@@ -125,8 +125,8 @@ namespace FLD
       Teuchos::RCP<Core::LinAlg::SparseMatrix> C_sx_;  ///< slave - xfluid coupling block
       Teuchos::RCP<Core::LinAlg::SparseMatrix> C_xs_;  ///< xfluid - slave coupling block
       Teuchos::RCP<Core::LinAlg::SparseMatrix> C_ss_;  ///< slave - slave coupling block
-      Teuchos::RCP<Epetra_Vector> rhC_s_;              ///< slave rhs block
-      Teuchos::RCP<Epetra_Vector> rhC_s_col_;          ///< slave rhs block
+      Teuchos::RCP<Core::LinAlg::Vector> rhC_s_;       ///< slave rhs block
+      Teuchos::RCP<Core::LinAlg::Vector> rhC_s_col_;   ///< slave rhs block
       //@}
 
       bool is_active_;
@@ -185,13 +185,13 @@ namespace FLD
     }
 
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() { return sysmat_; }
-    virtual Teuchos::RCP<Epetra_Vector>& residual() { return residual_; }
-    virtual Teuchos::RCP<Epetra_Vector>& zeros() { return zeros_; }
-    virtual Teuchos::RCP<Epetra_Vector>& inc_vel() { return incvel_; }
-    virtual Teuchos::RCP<Epetra_Vector>& velnp() { return velnp_; }
-    virtual Teuchos::RCP<Epetra_Vector>& veln() { return veln_; }
-    virtual Teuchos::RCP<Epetra_Vector>& accnp() { return accnp_; }
-    virtual Teuchos::RCP<Epetra_Vector>& accn() { return accn_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector>& residual() { return residual_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector>& zeros() { return zeros_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector>& inc_vel() { return incvel_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector>& velnp() { return velnp_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector>& veln() { return veln_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector>& accnp() { return accnp_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector>& accn() { return accn_; }
     //@}
 
     /// dof-rowmap of intersected fluid
@@ -204,57 +204,57 @@ namespace FLD
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_;
 
     /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
-    Teuchos::RCP<Epetra_Vector> zeros_;
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_;
 
     /// the vector containing body and surface forces
-    Teuchos::RCP<Epetra_Vector> neumann_loads_;
+    Teuchos::RCP<Core::LinAlg::Vector> neumann_loads_;
 
     /// (standard) residual vector (rhs for the incremental form),
-    Teuchos::RCP<Epetra_Vector> residual_;
+    Teuchos::RCP<Core::LinAlg::Vector> residual_;
 
     /// (standard) residual vector (rhs for the incremental form) wrt col map,
-    Teuchos::RCP<Epetra_Vector> residual_col_;
+    Teuchos::RCP<Core::LinAlg::Vector> residual_col_;
 
     /// true (rescaled) residual vector without zeros at dirichlet positions
-    Teuchos::RCP<Epetra_Vector> trueresidual_;
+    Teuchos::RCP<Core::LinAlg::Vector> trueresidual_;
 
     /// nonlinear iteration increment vector
-    Teuchos::RCP<Epetra_Vector> incvel_;
+    Teuchos::RCP<Core::LinAlg::Vector> incvel_;
 
     //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
     //@{
-    Teuchos::RCP<Epetra_Vector> accnp_;
-    Teuchos::RCP<Epetra_Vector> accn_;
-    Teuchos::RCP<Epetra_Vector> accam_;
+    Teuchos::RCP<Core::LinAlg::Vector> accnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> accn_;
+    Teuchos::RCP<Core::LinAlg::Vector> accam_;
     //@}
 
     //! @name velocity and pressure at time n+1, n, n-1 and n+alpha_F
     //@{
-    Teuchos::RCP<Epetra_Vector> velnp_;
-    Teuchos::RCP<Epetra_Vector> veln_;
-    Teuchos::RCP<Epetra_Vector> velnm_;
-    Teuchos::RCP<Epetra_Vector> velaf_;
+    Teuchos::RCP<Core::LinAlg::Vector> velnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> veln_;
+    Teuchos::RCP<Core::LinAlg::Vector> velnm_;
+    Teuchos::RCP<Core::LinAlg::Vector> velaf_;
     //@}
 
     //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
     //@{
-    Teuchos::RCP<Epetra_Vector> scaaf_;
-    Teuchos::RCP<Epetra_Vector> scaam_;
+    Teuchos::RCP<Core::LinAlg::Vector> scaaf_;
+    Teuchos::RCP<Core::LinAlg::Vector> scaam_;
     //@}
 
     //! @name displacemets at time n+1, n and n-1 (if we have an XFEM-ALE-fluid)
     //@{
-    Teuchos::RCP<Epetra_Vector> dispnp_;
-    //  Teuchos::RCP<Epetra_Vector>         dispn_;
-    //  Teuchos::RCP<Epetra_Vector>         dispnm_;
+    Teuchos::RCP<Core::LinAlg::Vector> dispnp_;
+    //  Teuchos::RCP<Core::LinAlg::Vector>         dispn_;
+    //  Teuchos::RCP<Core::LinAlg::Vector>         dispnm_;
     //@}
 
     /// grid velocity (if we have an XFEM-ALE-fluid) (set from the adapter!)
-    Teuchos::RCP<Epetra_Vector> gridvnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> gridvnp_;
 
     /// histvector --- a linear combination of velnm, veln (BDF)
     ///                or veln, accn (One-Step-Theta)
-    Teuchos::RCP<Epetra_Vector> hist_;
+    Teuchos::RCP<Core::LinAlg::Vector> hist_;
 
     //! @name map extractors
     //@{
@@ -293,8 +293,8 @@ namespace FLD
      @param dispnp and grivnp vectors w.r.t initial full dofrowmap
      */
     void init_ale_state_vectors(const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,
-        Teuchos::RCP<const Epetra_Vector> dispnp_initmap,
-        Teuchos::RCP<const Epetra_Vector> gridvnp_initmap);
+        Teuchos::RCP<const Core::LinAlg::Vector> dispnp_initmap,
+        Teuchos::RCP<const Core::LinAlg::Vector> gridvnp_initmap);
 
     /// XFEM dofset
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_;

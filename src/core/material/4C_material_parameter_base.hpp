@@ -12,8 +12,8 @@
 
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_legacy_enum_definitions_materials.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN

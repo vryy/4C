@@ -112,7 +112,7 @@ namespace CONTACT
     for a penalty strategy since the weighted gap determines the lagrangian multipliers.
 
     */
-    void save_reference_state(Teuchos::RCP<const Epetra_Vector> dis) override;
+    void save_reference_state(Teuchos::RCP<const Core::LinAlg::Vector> dis) override;
 
     /*!
     \brief Evaluate relative movement of contact bodies in predictor
@@ -143,7 +143,7 @@ namespace CONTACT
 
     */
     void evaluate_contact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff) override;
+        Teuchos::RCP<Core::LinAlg::Vector>& feff) override;
 
     /*!
     \brief Evaluate frictional contact
@@ -152,7 +152,7 @@ namespace CONTACT
 
     */
     void evaluate_friction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff) override;
+        Teuchos::RCP<Core::LinAlg::Vector>& feff) override;
 
     /*!
     \brief Reset penalty parameter to intial value
@@ -183,7 +183,7 @@ namespace CONTACT
 
     */
     void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff) override;
+        Teuchos::RCP<Core::LinAlg::Vector>& feff) override;
 
     /*!
     \brief Compute L2-norm of active constraints
@@ -242,7 +242,7 @@ namespace CONTACT
      *  contributions are present.
      *
      *  \param bt (in): Desired vector block type, e.g. displ, constraint,*/
-    Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
+    Teuchos::RCP<const Core::LinAlg::Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const override;
 
     /*! \brief Return the desired matrix block pointer (read-only)
@@ -274,18 +274,19 @@ namespace CONTACT
     bool active_set_converged() const override { return true; }
     int active_set_steps() const override { return 0; }
     void reset_active_set() override {}
-    void recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
+    void recover(Teuchos::RCP<Core::LinAlg::Vector> disi) override { return; };
     void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
-        Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
+        Teuchos::RCP<Core::LinAlg::Vector> fd, Teuchos::RCP<Core::LinAlg::Vector> sold,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
-        Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
+        Teuchos::RCP<Core::LinAlg::Vector>& blocksol,
+        Teuchos::RCP<Core::LinAlg::Vector>& blockrhs) override
     {
       FOUR_C_THROW(
           "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
           "makes no sense here.");
     }
-    void update_displacements_and_l_mincrements(
-        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
+    void update_displacements_and_l_mincrements(Teuchos::RCP<Core::LinAlg::Vector> sold,
+        Teuchos::RCP<const Core::LinAlg::Vector> blocksol) override
     {
       FOUR_C_THROW(
           "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
@@ -296,7 +297,7 @@ namespace CONTACT
     void update_active_set_semi_smooth(const bool firstStepPredictor = false) override {}
     bool is_penalty() const override { return true; };
     void reset_lagrange_multipliers(
-        const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew) override
+        const CONTACT::ParamsInterface& cparams, const Core::LinAlg::Vector& xnew) override
     {
     }
     bool is_saddle_point_system() const override { return false; }
@@ -319,13 +320,16 @@ namespace CONTACT
      *
      *  \date 05/2016
      *  \author hiermeier */
-    void run_post_compute_x(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
-        const Epetra_Vector& dir, const Epetra_Vector& xnew) override
+    void run_post_compute_x(const CONTACT::ParamsInterface& cparams,
+        const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
+        const Core::LinAlg::Vector& xnew) override
     {
     }
-    Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_n(const bool& redist) const override;
-    Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_np(const bool& redist) const override;
-    Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_old() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector> lagrange_multiplier_n(
+        const bool& redist) const override;
+    Teuchos::RCP<const Core::LinAlg::Vector> lagrange_multiplier_np(
+        const bool& redist) const override;
+    Teuchos::RCP<const Core::LinAlg::Vector> lagrange_multiplier_old() const override;
     Teuchos::RCP<const Epetra_Map> lm_dof_row_map_ptr(const bool& redist) const override;
 
    protected:
@@ -351,7 +355,7 @@ namespace CONTACT
     double initialpenaltytan_;  // initial tangential penalty parameter
     bool evalForceCalled_;      //< flag for evaluate force call
 
-    Teuchos::RCP<Epetra_Vector> fc_;               //< contact penalty force
+    Teuchos::RCP<Core::LinAlg::Vector> fc_;        //< contact penalty force
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kc_;  //< contact penalty stiffness
 
   };  // class PenaltyStrategy

@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */
-double Solid::calculate_vector_norm(
-    const enum Inpar::Solid::VectorNorm norm, const Epetra_Vector& vect, const int numneglect)
+double Solid::calculate_vector_norm(const enum Inpar::Solid::VectorNorm norm,
+    const Core::LinAlg::Vector& vect, const int numneglect)
 {
   // L1 norm
   if (norm == Inpar::Solid::norm_l1)

@@ -207,7 +207,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_setup()
       update_my_double_bonds_remote_id_list();
 
     // store displacement of restart step as displacement state of last redistribution
-    dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*bin_discret().dof_row_map(), true));
+    dis_at_last_redistr_ =
+        Teuchos::rcp(new Core::LinAlg::Vector(*bin_discret().dof_row_map(), true));
     for (int i = 0; i < bin_discret().num_my_row_nodes(); ++i)
     {
       CrossLinking::CrosslinkerNode* crosslinker_i =
@@ -1001,9 +1002,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_update_step_element(b
         "are not the same. Something went wrong");
 #endif
 
-  linker_disnp_ = Teuchos::rcp(new Epetra_Vector(*bin_discret().dof_row_map(), true));
-  Teuchos::RCP<Epetra_Vector> dis_increment =
-      Teuchos::rcp(new Epetra_Vector(*bin_discret().dof_row_map(), true));
+  linker_disnp_ = Teuchos::rcp(new Core::LinAlg::Vector(*bin_discret().dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> dis_increment =
+      Teuchos::rcp(new Core::LinAlg::Vector(*bin_discret().dof_row_map(), true));
 
   Core::LinAlg::Matrix<3, 1> d;
   Core::LinAlg::Matrix<3, 1> ref;
@@ -1052,7 +1053,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_update_step_element(b
   if (linker_redist or beam_redist)
   {
     // current displacement state gets new reference state
-    dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*linker_disnp_));
+    dis_at_last_redistr_ = Teuchos::rcp(new Core::LinAlg::Vector(*linker_disnp_));
     // transfer crosslinker to new bins
     Teuchos::RCP<std::list<int>> lostcl = beam_crosslinker_handler_ptr()->transfer_linker(true);
     if (not lostcl->empty())
@@ -1162,14 +1163,17 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_stru
   // append all desired node and dof output data to the writer object's storage
   Core::FE::Discretization const& bindis = bin_discret();
   // node
-  Teuchos::RCP<Epetra_Vector> numbond = Core::LinAlg::create_vector(*bindis.node_row_map(), true);
-  Teuchos::RCP<Epetra_Vector> owner = Core::LinAlg::create_vector(*bindis.node_row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> numbond =
+      Core::LinAlg::create_vector(*bindis.node_row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> owner =
+      Core::LinAlg::create_vector(*bindis.node_row_map(), true);
 
   // dof
-  Teuchos::RCP<Epetra_Vector> dis = Core::LinAlg::create_vector(*bindis.dof_row_map(), true);
-  Teuchos::RCP<Epetra_Vector> orientation =
+  Teuchos::RCP<Core::LinAlg::Vector> dis = Core::LinAlg::create_vector(*bindis.dof_row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> orientation =
       Core::LinAlg::create_vector(*bindis.dof_row_map(), true);
-  Teuchos::RCP<Epetra_Vector> force = Core::LinAlg::create_vector(*bindis.dof_row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> force =
+      Core::LinAlg::create_vector(*bindis.dof_row_map(), true);
 
   fill_state_data_vectors_for_output(dis, orientation, numbond, owner, force);
 
@@ -1182,7 +1186,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_stru
 
   // append owner if desired
   if (g_in_output().get_runtime_vtp_output_params()->output_owner())
-    visualization_output_writer_ptr_->append_node_based_result_data_vector(owner, 1, "owner");
+    visualization_output_writer_ptr_->append_node_based_result_data_vector(
+        owner->get_ptr_of_Epetra_MultiVector(), 1, "owner");
 
   // append orientation vector if desired
   if (g_in_output().get_runtime_vtp_output_params()->output_orientation_and_length())
@@ -1192,7 +1197,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_stru
   // append number of bonds if desired
   if (g_in_output().get_runtime_vtp_output_params()->output_number_of_bonds())
     visualization_output_writer_ptr_->append_node_based_result_data_vector(
-        numbond, 1, "numberofbonds");
+        numbond->get_ptr_of_Epetra_MultiVector(), 1, "numberofbonds");
 
   // append number of bonds if desired
   if (g_in_output().get_runtime_vtp_output_params()->output_linking_force())
@@ -1272,9 +1277,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_stru
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::fill_state_data_vectors_for_output(
-    Teuchos::RCP<Epetra_Vector> displacement, Teuchos::RCP<Epetra_Vector> orientation,
-    Teuchos::RCP<Epetra_Vector> numberofbonds, Teuchos::RCP<Epetra_Vector> owner,
-    Teuchos::RCP<Epetra_Vector> force) const
+    Teuchos::RCP<Core::LinAlg::Vector> displacement, Teuchos::RCP<Core::LinAlg::Vector> orientation,
+    Teuchos::RCP<Core::LinAlg::Vector> numberofbonds, Teuchos::RCP<Core::LinAlg::Vector> owner,
+    Teuchos::RCP<Core::LinAlg::Vector> force) const
 {
   check_init_setup();
   Core::FE::Discretization const& bindis = bin_discret();
@@ -1572,7 +1577,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_read_restart()
   update_my_double_bonds_remote_id_list();
 
   // store displacement of restart step as displacement state of last redistribution
-  dis_at_last_redistr_ = Teuchos::rcp(new Epetra_Vector(*bin_discret().dof_row_map(), true));
+  dis_at_last_redistr_ = Teuchos::rcp(new Core::LinAlg::Vector(*bin_discret().dof_row_map(), true));
   for (int i = 0; i < bin_discret().num_my_row_nodes(); ++i)
   {
     Core::Nodes::Node* crosslinker_i = bin_discret().l_row_node(i);

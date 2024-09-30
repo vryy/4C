@@ -14,9 +14,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <random>
@@ -39,11 +39,11 @@ namespace Core::FE
    */
   template <int dim>
   Teuchos::RCP<Epetra_MultiVector> compute_superconvergent_patch_recovery(
-      Core::FE::Discretization& dis,  ///< underlying discretization
-      const Epetra_Vector& state,     ///< state vector needed on element level
-      const std::string& statename,   ///< name of state which will be set
-      const int numvec,               ///< number of entries per node to project
-      Teuchos::ParameterList& params  ///< parameter list that contains the element action
+      Core::FE::Discretization& dis,      ///< underlying discretization
+      const Core::LinAlg::Vector& state,  ///< state vector needed on element level
+      const std::string& statename,       ///< name of state which will be set
+      const int numvec,                   ///< number of entries per node to project
+      Teuchos::ParameterList& params      ///< parameter list that contains the element action
   );
 }  // namespace Core::FE
 

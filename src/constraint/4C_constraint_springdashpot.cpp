@@ -51,7 +51,7 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
       offset_prestr_(),
       offset_prestr_new_(Teuchos::null)
 {
-  offset_prestr_new_ = Teuchos::rcp(new Epetra_Vector(*actdisc_->dof_row_map()));
+  offset_prestr_new_ = Teuchos::rcp(new Core::LinAlg::Vector(*actdisc_->dof_row_map()));
   offset_prestr_new_->PutScalar(0.0);
 
   // set type of this spring
@@ -102,8 +102,8 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
  * Integrate a Surface Robin boundary condition (public)       mhv 08/16|
  * ---------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::evaluate_robin(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
-    Teuchos::RCP<Epetra_Vector> fint, const Teuchos::RCP<const Epetra_Vector> disp,
-    const Teuchos::RCP<const Epetra_Vector> velo, Teuchos::ParameterList p)
+    Teuchos::RCP<Core::LinAlg::Vector> fint, const Teuchos::RCP<const Core::LinAlg::Vector> disp,
+    const Teuchos::RCP<const Core::LinAlg::Vector> velo, Teuchos::ParameterList p)
 {
   // reset last Newton step
   springstress_.clear();
@@ -315,9 +315,9 @@ void CONSTRAINTS::SpringDashpot::evaluate_robin(Teuchos::RCP<Core::LinAlg::Spars
 /*----------------------------------------------------------------------*
  |                                                         pfaller Mar16|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::evaluate_force(Epetra_Vector& fint,
-    const Teuchos::RCP<const Epetra_Vector> disp, const Teuchos::RCP<const Epetra_Vector> vel,
-    const Teuchos::ParameterList& p)
+void CONSTRAINTS::SpringDashpot::evaluate_force(Core::LinAlg::Vector& fint,
+    const Teuchos::RCP<const Core::LinAlg::Vector> disp,
+    const Teuchos::RCP<const Core::LinAlg::Vector> vel, const Teuchos::ParameterList& p)
 {
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot find displacement state in discretization");
 
@@ -431,8 +431,8 @@ void CONSTRAINTS::SpringDashpot::evaluate_force(Epetra_Vector& fint,
  |                                                         pfaller mar16|
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::evaluate_force_stiff(Core::LinAlg::SparseMatrix& stiff,
-    Epetra_Vector& fint, const Teuchos::RCP<const Epetra_Vector> disp,
-    const Teuchos::RCP<const Epetra_Vector> vel, Teuchos::ParameterList p)
+    Core::LinAlg::Vector& fint, const Teuchos::RCP<const Core::LinAlg::Vector> disp,
+    const Teuchos::RCP<const Core::LinAlg::Vector> vel, Teuchos::ParameterList p)
 {
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot find displacement state in discretization");
 
@@ -596,7 +596,7 @@ void CONSTRAINTS::SpringDashpot::reset_newton()
 /*----------------------------------------------------------------------*
  |                                                             mhv 12/15|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::reset_prestress(Teuchos::RCP<const Epetra_Vector> dis)
+void CONSTRAINTS::SpringDashpot::reset_prestress(Teuchos::RCP<const Core::LinAlg::Vector> dis)
 {
   // this should be sufficient, no need to loop over nodes anymore
   offset_prestr_new_->Update(1.0, *dis, 1.0);
@@ -628,7 +628,7 @@ void CONSTRAINTS::SpringDashpot::reset_prestress(Teuchos::RCP<const Epetra_Vecto
 /*----------------------------------------------------------------------*
  |                                                             mhv 12/15|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::set_restart(Teuchos::RCP<Epetra_Vector> vec)
+void CONSTRAINTS::SpringDashpot::set_restart(Teuchos::RCP<Core::LinAlg::Vector> vec)
 {
   offset_prestr_new_->Update(1.0, *vec, 0.0);
 }
@@ -677,7 +677,7 @@ void CONSTRAINTS::SpringDashpot::set_restart_old(Teuchos::RCP<Epetra_MultiVector
 /*----------------------------------------------------------------------*
  |                                                         pfaller Jan14|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::output_gap_normal(Teuchos::RCP<Epetra_Vector>& gap,
+void CONSTRAINTS::SpringDashpot::output_gap_normal(Teuchos::RCP<Core::LinAlg::Vector>& gap,
     Teuchos::RCP<Epetra_MultiVector>& normals, Teuchos::RCP<Epetra_MultiVector>& stress) const
 {
   // export gap function
@@ -724,7 +724,7 @@ void CONSTRAINTS::SpringDashpot::output_gap_normal(Teuchos::RCP<Epetra_Vector>& 
  |                                                             mhv Dec15|
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::output_prestr_offset(
-    Teuchos::RCP<Epetra_Vector>& springprestroffset) const
+    Teuchos::RCP<Core::LinAlg::Vector>& springprestroffset) const
 {
   springprestroffset->Update(1.0, *offset_prestr_new_, 0.0);
 }
@@ -771,7 +771,7 @@ void CONSTRAINTS::SpringDashpot::initialize_cur_surf_normal()
   std::map<int, std::vector<Core::Gen::Pairedvector<int, double>>> tmpdnormals_;
 
   // empty displacement vector
-  Teuchos::RCP<Epetra_Vector> disp;
+  Teuchos::RCP<Core::LinAlg::Vector> disp;
   disp = Core::LinAlg::create_vector(*(actdisc_->dof_row_map()), true);
 
   // initialize gap in reference configuration
@@ -940,7 +940,7 @@ void CONSTRAINTS::SpringDashpot::initialize_prestr_offset()
 |(private)                                                  pfaller Apr15|
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::get_cur_normals(
-    const Teuchos::RCP<const Epetra_Vector>& disp, Teuchos::ParameterList p)
+    const Teuchos::RCP<const Core::LinAlg::Vector>& disp, Teuchos::ParameterList p)
 {
   // get current time step size
   const double dt = p.get("dt", 1.0);

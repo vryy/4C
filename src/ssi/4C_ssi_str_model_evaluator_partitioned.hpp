@@ -49,14 +49,14 @@ namespace Solid
         return Inpar::Solid::model_partitioned_coupling;
       }
 
-      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Core::LinAlg::Vector& f, const double& timefac_np) const override;
 
       bool assemble_jacobian(
           Core::LinAlg::SparseOperator& jac, const double& timefac_np) const override;
 
       void determine_stress_strain() override{};
 
-      void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+      void run_pre_compute_x(const Core::LinAlg::Vector& xold, Core::LinAlg::Vector& dir_mutable,
           const NOX::Nln::Group& curr_grp) override;
       //! @}
 

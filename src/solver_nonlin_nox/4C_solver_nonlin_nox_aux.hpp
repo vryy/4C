@@ -27,6 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration
 namespace Core::LinAlg
 {
+  class Vector;
   class Solver;
   class SparseOperator;
 }  // namespace Core::LinAlg
@@ -63,7 +64,8 @@ namespace NOX
        *  \param xincr : current step increment $x_{i}^{k} - x_{i}^{k-1}$
        */
       double root_mean_square_norm(const double& atol, const double& rtol,
-          Teuchos::RCP<const Epetra_Vector> xnew, Teuchos::RCP<const Epetra_Vector> xincr,
+          Teuchos::RCP<const Core::LinAlg::Vector> xnew,
+          Teuchos::RCP<const Core::LinAlg::Vector> xincr,
           const bool& disable_implicit_weighting = false);
 
       /*! \brief Do a recursive search for a NOX::Nln::StatusTest::NormWRMS object in the StatusTest

@@ -140,7 +140,7 @@ int Solid::TimIntCentrDiff::integrate_step()
   // ordinary internal force and stiffness
   {
     // displacement increment in step
-    Epetra_Vector disinc = Epetra_Vector(*disn_);
+    Core::LinAlg::Vector disinc = Core::LinAlg::Vector(*disn_);
     disinc.Update(-1.0, *(*dis_)(0), 1.0);
     // internal force
     apply_force_internal(timen_, dt, disn_, Teuchos::rcp(&disinc, false), veln_, fintn_);
@@ -221,7 +221,8 @@ int Solid::TimIntCentrDiff::integrate_step()
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> massmatrix =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_);
-      Teuchos::RCP<Epetra_Vector> diagonal = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+      Teuchos::RCP<Core::LinAlg::Vector> diagonal =
+          Core::LinAlg::create_vector(*dof_row_map_view(), true);
       int error = massmatrix->extract_diagonal_copy(*diagonal);
       if (error != 0) FOUR_C_THROW("ERROR: ExtractDiagonalCopy went wrong");
       accn_->ReciprocalMultiply(1.0, *diagonal, *frimpn_, 0.0);

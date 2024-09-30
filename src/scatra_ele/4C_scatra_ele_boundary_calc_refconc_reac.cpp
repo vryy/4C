@@ -140,7 +140,7 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ca
     // get number of dof-set associated with displacement related dofs
     const int ndsdisp = my::scatraparams_->nds_disp();
 
-    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state(ndsdisp, "dispnp");
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discretization.get_state(ndsdisp, "dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // parent element location array

@@ -127,7 +127,7 @@ CONSTRAINTS::Constraint::ConstrType CONSTRAINTS::Constraint::get_constr_type(
 |Initialization routine computes ref base values and activates conditions |
 *------------------------------------------------------------------------*/
 void CONSTRAINTS::Constraint::initialize(
-    Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector> systemvector3)
 {
   // choose action
   switch (constrtype_)
@@ -182,8 +182,9 @@ void CONSTRAINTS::Constraint::initialize(const double& time)
 void CONSTRAINTS::Constraint::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-    Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector3)
 {
   switch (constrtype_)
   {
@@ -214,8 +215,9 @@ void CONSTRAINTS::Constraint::evaluate(Teuchos::ParameterList& params,
 void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-    Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector3)
 {
   if (!(actdisc_->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -247,10 +249,12 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
       if (activecons_.find(condID)->second == false)
       {
         const std::string action = params.get<std::string>("action");
-        Teuchos::RCP<Epetra_Vector> displast = params.get<Teuchos::RCP<Epetra_Vector>>("old disp");
+        Teuchos::RCP<Core::LinAlg::Vector> displast =
+            params.get<Teuchos::RCP<Core::LinAlg::Vector>>("old disp");
         actdisc_->set_state("displacement", displast);
         initialize(params, systemvector2);
-        Teuchos::RCP<Epetra_Vector> disp = params.get<Teuchos::RCP<Epetra_Vector>>("new disp");
+        Teuchos::RCP<Core::LinAlg::Vector> disp =
+            params.get<Teuchos::RCP<Core::LinAlg::Vector>>("new disp");
         actdisc_->set_state("displacement", disp);
         params.set("action", action);
       }
@@ -271,13 +275,13 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
       const int lindex = (systemvector3->Map()).LID(gindex);
 
       // store loadcurve values
-      Teuchos::RCP<Epetra_Vector> timefact =
-          params.get<Teuchos::RCP<Epetra_Vector>>("vector curve factors");
+      Teuchos::RCP<Core::LinAlg::Vector> timefact =
+          params.get<Teuchos::RCP<Core::LinAlg::Vector>>("vector curve factors");
       timefact->ReplaceGlobalValues(1, &curvefac, &gindex);
 
       // Get the current lagrange multiplier value for this condition
-      const Teuchos::RCP<Epetra_Vector> lagramul =
-          params.get<Teuchos::RCP<Epetra_Vector>>("LagrMultVector");
+      const Teuchos::RCP<Core::LinAlg::Vector> lagramul =
+          params.get<Teuchos::RCP<Core::LinAlg::Vector>>("LagrMultVector");
       const double lagraval = (*lagramul)[lindex];
 
       // elements might need condition
@@ -357,7 +361,7 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::Constraint::initialize_constraint(
-    Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector> systemvector)
 {
   if (!(actdisc_->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");

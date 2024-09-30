@@ -17,9 +17,9 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -69,20 +69,20 @@ namespace FLD
     void adapt_ml_nullspace(const Teuchos::RCP<Core::LinAlg::Solver>& solver);
 
     // get output vector of enriched dofs
-    Teuchos::RCP<Epetra_Vector> get_output_vector(Teuchos::RCP<Epetra_Vector> vel);
+    Teuchos::RCP<Core::LinAlg::Vector> get_output_vector(Teuchos::RCP<Core::LinAlg::Vector> vel);
 
     // returns, if Properties for GenAlpha have to be updated
-    virtual void update_tau_w(int step, Teuchos::RCP<Epetra_Vector> trueresidual, int itnum,
-        Teuchos::RCP<Epetra_Vector> accn, Teuchos::RCP<Epetra_Vector> velnp,
-        Teuchos::RCP<Epetra_Vector> veln);
+    virtual void update_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector> trueresidual, int itnum,
+        Teuchos::RCP<Core::LinAlg::Vector> accn, Teuchos::RCP<Core::LinAlg::Vector> velnp,
+        Teuchos::RCP<Core::LinAlg::Vector> veln);
 
     // returns tauw of discret_
-    Teuchos::RCP<Epetra_Vector> get_tauw();
+    Teuchos::RCP<Core::LinAlg::Vector> get_tauw();
 
-    Teuchos::RCP<Epetra_Vector> get_tauw_vector()
+    Teuchos::RCP<Core::LinAlg::Vector> get_tauw_vector()
     {
-      Teuchos::RCP<Epetra_Vector> tauw =
-          Teuchos::rcp(new Epetra_Vector(*(discret_->node_row_map()), true));
+      Teuchos::RCP<Core::LinAlg::Vector> tauw =
+          Teuchos::rcp(new Core::LinAlg::Vector(*(discret_->node_row_map()), true));
       Core::LinAlg::export_to(*tauw_, *tauw);
       return tauw;
     }
@@ -91,7 +91,8 @@ namespace FLD
     void read_restart(Core::IO::DiscretizationReader& reader);
 
     // fix residual at Dirichlet-inflow nodes such that the wss can be calculated
-    Teuchos::RCP<Epetra_Vector> fix_dirichlet_inflow(Teuchos::RCP<Epetra_Vector> trueresidual);
+    Teuchos::RCP<Core::LinAlg::Vector> fix_dirichlet_inflow(
+        Teuchos::RCP<Core::LinAlg::Vector> trueresidual);
 
     // set current non-linear iteration number
     void set_iter(int iter)
@@ -123,11 +124,12 @@ namespace FLD
     void setup_l2_projection();
 
     // calculate wall shear stress
-    void calc_tau_w(int step, Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> wss);
+    void calc_tau_w(
+        int step, Teuchos::RCP<Core::LinAlg::Vector> velnp, Teuchos::RCP<Core::LinAlg::Vector> wss);
 
     // l2 project vectors
-    void l2_project_vector(Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp,
-        Teuchos::RCP<Epetra_Vector> accn);
+    void l2_project_vector(Teuchos::RCP<Core::LinAlg::Vector> veln,
+        Teuchos::RCP<Core::LinAlg::Vector> velnp, Teuchos::RCP<Core::LinAlg::Vector> accn);
 
     // calculate parameter for stabilization parameter mk
     void calc_mk();
@@ -169,43 +171,43 @@ namespace FLD
     Teuchos::RCP<Epetra_Map> mergedmap_;
 
     //! wall distance, local vector
-    Teuchos::RCP<Epetra_Vector> walldist_;
+    Teuchos::RCP<Core::LinAlg::Vector> walldist_;
 
     //! wall distance, standard node row map
-    Teuchos::RCP<Epetra_Vector> wdist_;
+    Teuchos::RCP<Core::LinAlg::Vector> wdist_;
 
     //! wall distance, row map of redistributed discretization
-    Teuchos::RCP<Epetra_Vector> wdistxwdis_;
+    Teuchos::RCP<Core::LinAlg::Vector> wdistxwdis_;
 
     //! vector on same dofs for tauw
-    Teuchos::RCP<Epetra_Vector> tauw_;
+    Teuchos::RCP<Core::LinAlg::Vector> tauw_;
 
     //! vector on same dofs for tauw
-    Teuchos::RCP<Epetra_Vector> tauwxwdis_;
+    Teuchos::RCP<Core::LinAlg::Vector> tauwxwdis_;
 
     //! vector on same dofs for deltatauw (increment)
-    Teuchos::RCP<Epetra_Vector> inctauw_;
+    Teuchos::RCP<Core::LinAlg::Vector> inctauw_;
 
     //! vector on same dofs for deltatauw (increment)
-    Teuchos::RCP<Epetra_Vector> inctauwxwdis_;
+    Teuchos::RCP<Core::LinAlg::Vector> inctauwxwdis_;
 
     //! vector on same dofs for old tauw
-    Teuchos::RCP<Epetra_Vector> oldtauw_;
+    Teuchos::RCP<Core::LinAlg::Vector> oldtauw_;
 
     //! vector on same dofs for old tauw
-    Teuchos::RCP<Epetra_Vector> oldinctauw_;
+    Teuchos::RCP<Core::LinAlg::Vector> oldinctauw_;
 
     //! matrix projecting the wall shear stress to off-wall nodes
     Teuchos::RCP<Core::LinAlg::SparseMatrix> tauwcouplingmattrans_;
 
     //! toggle vector, standard node row map
-    Teuchos::RCP<Epetra_Vector> xwalltoggle_;
+    Teuchos::RCP<Core::LinAlg::Vector> xwalltoggle_;
 
     //! toggle vector, xwall discretization
-    Teuchos::RCP<Epetra_Vector> xwalltogglexwdis_;
+    Teuchos::RCP<Core::LinAlg::Vector> xwalltogglexwdis_;
 
     //! toggle vector, local vector
-    Teuchos::RCP<Epetra_Vector> xtoggleloc_;
+    Teuchos::RCP<Core::LinAlg::Vector> xtoggleloc_;
 
     //! redistributed xwall discretization
     Teuchos::RCP<Core::FE::Discretization> xwdiscret_;
@@ -217,30 +219,30 @@ namespace FLD
     Teuchos::RCP<Core::LinAlg::Solver> solver_;
 
     //! increment of veln during projection
-    Teuchos::RCP<Epetra_Vector> incveln_;
+    Teuchos::RCP<Core::LinAlg::Vector> incveln_;
 
     //! increment of velnp during projection
-    Teuchos::RCP<Epetra_Vector> incvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> incvelnp_;
 
     //! increment of accn during projection
-    Teuchos::RCP<Epetra_Vector> incaccn_;
+    Teuchos::RCP<Core::LinAlg::Vector> incaccn_;
 
     //! veln for state of xwall discretization during projection
-    Teuchos::RCP<Epetra_Vector> stateveln_;
+    Teuchos::RCP<Core::LinAlg::Vector> stateveln_;
 
     //! velnp for state of xwall discretization during projection
-    Teuchos::RCP<Epetra_Vector> statevelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> statevelnp_;
 
     //! accn for state of xwall discretization during projection
-    Teuchos::RCP<Epetra_Vector> stateaccn_;
+    Teuchos::RCP<Core::LinAlg::Vector> stateaccn_;
 
     //! MK for standard discretization
-    Teuchos::RCP<Epetra_Vector> mkstate_;
+    Teuchos::RCP<Core::LinAlg::Vector> mkstate_;
 
     //! MK for xwall discretization
-    Teuchos::RCP<Epetra_Vector> mkxwstate_;
+    Teuchos::RCP<Core::LinAlg::Vector> mkxwstate_;
 
-    Teuchos::RCP<Epetra_Vector> restart_wss_;
+    Teuchos::RCP<Core::LinAlg::Vector> restart_wss_;
 
     Teuchos::RCP<TransferTurbulentInflowConditionNodal> turbulent_inflow_condition_;
 
@@ -299,8 +301,8 @@ namespace FLD
     XWallAleFSI(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
         Teuchos::RCP<Teuchos::ParameterList>& params,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
-        Teuchos::RCP<FLD::UTILS::StressManager> wssmanager, Teuchos::RCP<Epetra_Vector> dispnp,
-        Teuchos::RCP<Epetra_Vector> gridv);
+        Teuchos::RCP<FLD::UTILS::StressManager> wssmanager,
+        Teuchos::RCP<Core::LinAlg::Vector> dispnp, Teuchos::RCP<Core::LinAlg::Vector> gridv);
 
     void update_w_dist_wale();
 
@@ -308,18 +310,18 @@ namespace FLD
     void set_x_wall_params(Teuchos::ParameterList& eleparams) override;
 
     // returns, if Properties for GenAlpha have to be updated
-    void update_tau_w(int step, Teuchos::RCP<Epetra_Vector> trueresidual, int itnum,
-        Teuchos::RCP<Epetra_Vector> accn, Teuchos::RCP<Epetra_Vector> velnp,
-        Teuchos::RCP<Epetra_Vector> veln) override;
+    void update_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector> trueresidual, int itnum,
+        Teuchos::RCP<Core::LinAlg::Vector> accn, Teuchos::RCP<Core::LinAlg::Vector> velnp,
+        Teuchos::RCP<Core::LinAlg::Vector> veln) override;
 
    private:
     // set element params for xwall EnrichmentType, distributed for xwall discretization
     void set_x_wall_params_xw_dis(Teuchos::ParameterList& eleparams) override;
-    Teuchos::RCP<Epetra_Vector> mydispnp_;
-    Teuchos::RCP<Epetra_Vector> mygridv_;
+    Teuchos::RCP<Core::LinAlg::Vector> mydispnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> mygridv_;
 
     //! wall distance, row map of redistributed discretization
-    Teuchos::RCP<Epetra_Vector> incwdistxwdis_;
+    Teuchos::RCP<Core::LinAlg::Vector> incwdistxwdis_;
   };
 
 }  // namespace FLD

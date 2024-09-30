@@ -174,12 +174,12 @@ namespace Core::FE
 
      protected:
       void evaluate(const Teuchos::ParameterList& params, const Core::FE::Discretization& discret,
-          double time, const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
+          double time, const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const override;
 
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
-          double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+          double time, const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors,
           const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const override;
 

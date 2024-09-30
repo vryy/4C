@@ -12,13 +12,13 @@
 
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_LinearProblem.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
 #include <Epetra_VbrMatrix.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
 #include <vector>

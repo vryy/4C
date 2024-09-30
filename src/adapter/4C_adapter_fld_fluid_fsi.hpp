@@ -14,10 +14,10 @@
 
 #include "4C_adapter_fld_wrapper.hpp"
 #include "4C_inpar_fsi.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -73,40 +73,43 @@ namespace Adapter
     /// get the linear solver object used for this field
     Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override;
 
-    Teuchos::RCP<Epetra_Vector> relaxation_solve(Teuchos::RCP<Epetra_Vector> ivel) override;
+    Teuchos::RCP<Core::LinAlg::Vector> relaxation_solve(
+        Teuchos::RCP<Core::LinAlg::Vector> ivel) override;
 
     /// communication object at the interface
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override { return interface_; }
 
     /// update slave dofs for multifield simulations with fluid mesh tying
-    virtual void update_slave_dof(Teuchos::RCP<Epetra_Vector>& f);
+    virtual void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector>& f);
 
     Teuchos::RCP<const Epetra_Map> inner_velocity_row_map() override;
 
-    Teuchos::RCP<Epetra_Vector> extract_interface_forces() override;
+    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_forces() override;
 
     /// Return interface velocity at new time level n+1
-    Teuchos::RCP<Epetra_Vector> extract_interface_velnp() override;
+    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_velnp() override;
 
     /// Return interface velocity at old time level n
-    Teuchos::RCP<Epetra_Vector> extract_interface_veln() override;
+    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_veln() override;
 
-    void apply_interface_velocities(Teuchos::RCP<Epetra_Vector> ivel) override;
+    void apply_interface_velocities(Teuchos::RCP<Core::LinAlg::Vector> ivel) override;
 
     /// Apply initial mesh displacement
-    void apply_initial_mesh_displacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override;
+    void apply_initial_mesh_displacement(
+        Teuchos::RCP<const Core::LinAlg::Vector> initfluiddisp) override;
 
-    void apply_mesh_displacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override;
+    void apply_mesh_displacement(Teuchos::RCP<const Core::LinAlg::Vector> fluiddisp) override;
 
     /// Update fluid griv velocity via FD approximation
     void update_gridv();
 
-    void apply_mesh_displacement_increment(Teuchos::RCP<const Epetra_Vector> dispstepinc) override
+    void apply_mesh_displacement_increment(
+        Teuchos::RCP<const Core::LinAlg::Vector> dispstepinc) override
     {
       FOUR_C_THROW("not implemented!");
     };
 
-    void apply_mesh_velocity(Teuchos::RCP<const Epetra_Vector> gridvel) override;
+    void apply_mesh_velocity(Teuchos::RCP<const Core::LinAlg::Vector> gridvel) override;
 
     void set_mesh_map(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override;
 
@@ -117,7 +120,7 @@ namespace Adapter
     //!
     //! All input vectors have to live on the fluid field map.
     void displacement_to_velocity(
-        Teuchos::RCP<Epetra_Vector> fcx  ///< interface displacement step increment
+        Teuchos::RCP<Core::LinAlg::Vector> fcx  ///< interface displacement step increment
         ) override;
 
     //! Conversion of velocity to displacement at the interface without predictors or inhomogeneous
@@ -125,12 +128,12 @@ namespace Adapter
     //!
     //! All input vectors have to live on the fluid field map.
     void velocity_to_displacement(
-        Teuchos::RCP<Epetra_Vector> fcx  ///< interface velocity step increment at interface
+        Teuchos::RCP<Core::LinAlg::Vector> fcx  ///< interface velocity step increment at interface
         ) override;
 
     //@}
 
-    Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
+    Teuchos::RCP<Core::LinAlg::Vector> integrate_interface_shape() override;
 
     void use_block_matrix(bool splitmatrix) override;
 
@@ -208,7 +211,7 @@ namespace Adapter
     //@}
 
     /// Calculate WSS vector
-    virtual Teuchos::RCP<Epetra_Vector> calculate_wall_shear_stresses();
+    virtual Teuchos::RCP<Core::LinAlg::Vector> calculate_wall_shear_stresses();
 
    protected:
     /// create conditioned dof-map extractor for the fluid
@@ -239,7 +242,7 @@ namespace Adapter
     Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
 
     /// interface force at old time level t_n
-    Teuchos::RCP<Epetra_Vector> interfaceforcen_;
+    Teuchos::RCP<Core::LinAlg::Vector> interfaceforcen_;
 
     /// ALE dof map
     Teuchos::RCP<Core::LinAlg::MapExtractor> meshmap_;
@@ -263,9 +266,9 @@ namespace Adapter
      *
      *  \author mayr.mt \date 10/2013
      */
-    void explicit_euler(const Epetra_Vector& veln,  ///< velocity at \f$t_n\f$
-        const Epetra_Vector& accn,                  ///< acceleration at \f$t_n\f$
-        Epetra_Vector& velnp                        ///< velocity at \f$t_{n+1}\f$
+    void explicit_euler(const Core::LinAlg::Vector& veln,  ///< velocity at \f$t_n\f$
+        const Core::LinAlg::Vector& accn,                  ///< acceleration at \f$t_n\f$
+        Core::LinAlg::Vector& velnp                        ///< velocity at \f$t_{n+1}\f$
     ) const;
 
     /*! \brief Do a single Adams-Bashforth 2 step as auxiliary time integrator
@@ -298,14 +301,15 @@ namespace Adapter
      *
      *  \author mayr.mt \date 11/2013
      */
-    void adams_bashforth2(const Epetra_Vector& veln,  ///< velocity at \f$t_n\f$
-        const Epetra_Vector& accn,                    ///< acceleration at \f$t_n\f$
-        const Epetra_Vector& accnm,                   ///< acceleration at \f$t_{n-1}\f$
-        Epetra_Vector& velnp                          ///< velocity at \f$t_{n+1}\f$
+    void adams_bashforth2(const Core::LinAlg::Vector& veln,  ///< velocity at \f$t_n\f$
+        const Core::LinAlg::Vector& accn,                    ///< acceleration at \f$t_n\f$
+        const Core::LinAlg::Vector& accnm,                   ///< acceleration at \f$t_{n-1}\f$
+        Core::LinAlg::Vector& velnp                          ///< velocity at \f$t_{n+1}\f$
     ) const;
 
     //! Compute length-scaled L2-norm of a vector
-    virtual double calculate_error_norm(const Epetra_Vector& vec,  ///< vector to compute norm of
+    virtual double calculate_error_norm(
+        const Core::LinAlg::Vector& vec,  ///< vector to compute norm of
         const int numneglect = 0  ///< number of DOFs that have to be neglected for length scaling
     ) const;
 
@@ -315,7 +319,8 @@ namespace Adapter
     //! return leading error coefficient of velocity of auxiliary integrator
     double aux_method_lin_err_coeff_vel() const;
 
-    Teuchos::RCP<Epetra_Vector> locerrvelnp_;  ///< vector of temporal local discretization error
+    Teuchos::RCP<Core::LinAlg::Vector>
+        locerrvelnp_;  ///< vector of temporal local discretization error
 
     Inpar::FSI::FluidMethod auxintegrator_;  ///< auxiliary time integrator in fluid field
 

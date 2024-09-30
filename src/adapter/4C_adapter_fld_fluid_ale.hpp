@@ -76,25 +76,25 @@ namespace Adapter
         ) override;
 
     void nonlinear_solve(
-        Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
+        Teuchos::RCP<Core::LinAlg::Vector> idisp, Teuchos::RCP<Core::LinAlg::Vector> ivel) override;
 
-    virtual void nonlinear_solve_vol_coupl(Teuchos::RCP<Epetra_Vector> idisp,
-        Teuchos::RCP<Epetra_Vector> ivel, Teuchos::RCP<FSI::InterfaceCorrector> icorrector);
+    virtual void nonlinear_solve_vol_coupl(Teuchos::RCP<Core::LinAlg::Vector> idisp,
+        Teuchos::RCP<Core::LinAlg::Vector> ivel, Teuchos::RCP<FSI::InterfaceCorrector> icorrector);
 
     void apply_interface_values(
-        Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
+        Teuchos::RCP<Core::LinAlg::Vector> idisp, Teuchos::RCP<Core::LinAlg::Vector> ivel) override;
 
-    Teuchos::RCP<Epetra_Vector> relaxation_solve(
-        Teuchos::RCP<Epetra_Vector> idisp, double dt) override;
+    Teuchos::RCP<Core::LinAlg::Vector> relaxation_solve(
+        Teuchos::RCP<Core::LinAlg::Vector> idisp, double dt) override;
 
-    Teuchos::RCP<Epetra_Vector> extract_interface_forces() override;
-    Teuchos::RCP<Epetra_Vector> extract_interface_velnp() override;
-    Teuchos::RCP<Epetra_Vector> extract_interface_veln() override;
+    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_forces() override;
+    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_velnp() override;
+    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_veln() override;
 
     int itemax() const override { return fluid_->itemax(); }
     void set_itemax(int itemax) override { fluid_->set_itemax(itemax); }
 
-    Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
+    Teuchos::RCP<Core::LinAlg::Vector> integrate_interface_shape() override;
 
     Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
@@ -103,23 +103,23 @@ namespace Adapter
     //@{
 
     /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid_field(
-        Teuchos::RCP<Epetra_Vector> iv  ///< ALE vector (to be converted)
+    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_fluid_field(
+        Teuchos::RCP<Core::LinAlg::Vector> iv  ///< ALE vector (to be converted)
     ) const;
 
     /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> ale_to_fluid_field(
-        Teuchos::RCP<const Epetra_Vector> iv  ///< ALE vector (to be converted)
+    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_fluid_field(
+        Teuchos::RCP<const Core::LinAlg::Vector> iv  ///< ALE vector (to be converted)
     ) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> fluid_to_ale(
-        Teuchos::RCP<Epetra_Vector> iv  ///< Fluid vector (to be converted)
+    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_ale(
+        Teuchos::RCP<Core::LinAlg::Vector> iv  ///< Fluid vector (to be converted)
     ) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> fluid_to_ale(
-        Teuchos::RCP<const Epetra_Vector> iv  ///< Fluid vector (to be converted)
+    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_ale(
+        Teuchos::RCP<const Core::LinAlg::Vector> iv  ///< Fluid vector (to be converted)
     ) const;
 
     //@}

@@ -79,7 +79,7 @@ void CONTACT::MeshtyingContactBridge::store_dirichlet_status(
 /*----------------------------------------------------------------------*
  |  Set displacement state                                   farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::set_state(Teuchos::RCP<Epetra_Vector> zeros)
+void CONTACT::MeshtyingContactBridge::set_state(Teuchos::RCP<Core::LinAlg::Vector> zeros)
 {
   if (have_meshtying())
     mt_manager()->get_strategy().set_state(Mortar::state_new_displacement, *zeros);
@@ -133,7 +133,7 @@ void CONTACT::MeshtyingContactBridge::postprocess_quantities_per_interface(
 /*----------------------------------------------------------------------*
  |  Recover lagr. mult and slave displ                       farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::recover(Teuchos::RCP<Epetra_Vector> disi)
+void CONTACT::MeshtyingContactBridge::recover(Teuchos::RCP<Core::LinAlg::Vector> disi)
 {
   // meshtying
   if (have_meshtying()) mt_manager()->get_strategy().recover(disi);
@@ -146,7 +146,7 @@ void CONTACT::MeshtyingContactBridge::recover(Teuchos::RCP<Epetra_Vector> disi)
  |  Recover lagr. mult and slave displ                       farah 06/14|
  *----------------------------------------------------------------------*/
 void CONTACT::MeshtyingContactBridge::read_restart(Core::IO::DiscretizationReader& reader,
-    Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<Epetra_Vector> zero)
+    Teuchos::RCP<Core::LinAlg::Vector> dis, Teuchos::RCP<Core::LinAlg::Vector> zero)
 {
   // contact
   if (have_contact()) contact_manager()->read_restart(reader, dis, zero);
@@ -171,7 +171,7 @@ void CONTACT::MeshtyingContactBridge::write_restart(
 /*----------------------------------------------------------------------*
  |  Write restart                                            farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::update(Teuchos::RCP<Epetra_Vector> dis)
+void CONTACT::MeshtyingContactBridge::update(Teuchos::RCP<Core::LinAlg::Vector> dis)
 {
   // contact
   if (have_contact()) contact_manager()->get_strategy().update(dis);

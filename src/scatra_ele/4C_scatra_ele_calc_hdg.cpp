@@ -475,25 +475,25 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::read_global_vectors(
   interiorPhin_.size(shapes_->ndofs_ * (nsd_ + 1));
   interiorPhinp_.size(shapes_->ndofs_ * (nsd_ + 1));
   tracenm_.size(hdgele->onfdofs_);
-  Teuchos::RCP<const Epetra_Vector> phiaf = discretization.get_state("phiaf");
+  Teuchos::RCP<const Core::LinAlg::Vector> phiaf = discretization.get_state("phiaf");
   if (phiaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector phiaf");
   Core::FE::extract_my_values(*phiaf, tracen_, la[0].lm_);
 
 
   if (discretization.has_state("phin"))
   {
-    Teuchos::RCP<const Epetra_Vector> phin = discretization.get_state("phin");
+    Teuchos::RCP<const Core::LinAlg::Vector> phin = discretization.get_state("phin");
     Core::FE::extract_my_values(*phin, tracenm_, la[0].lm_);
   }
 
-  Teuchos::RCP<const Epetra_Vector> intphinp = discretization.get_state(2, "intphinp");
+  Teuchos::RCP<const Core::LinAlg::Vector> intphinp = discretization.get_state(2, "intphinp");
   if (intphinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector intphinp");
   std::vector<int> localDofs = discretization.dof(2, ele);
   Core::FE::extract_my_values(*intphinp, interiorPhinp_, localDofs);
 
   if (discretization.has_state(2, "intphin"))
   {
-    Teuchos::RCP<const Epetra_Vector> intphin = discretization.get_state(2, "intphin");
+    Teuchos::RCP<const Core::LinAlg::Vector> intphin = discretization.get_state(2, "intphin");
     Core::FE::extract_my_values(*intphin, interiorPhin_, localDofs);
   }
 
@@ -1903,13 +1903,14 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::project_field(
   Core::LinAlg::SerialDenseVector interiorPhi_old(shapes_old->ndofs_ * (nsd_ + 1));
 
   // get node based values!
-  Teuchos::RCP<const Epetra_Vector> matrix_state = params.get<Teuchos::RCP<Epetra_Vector>>("phi");
+  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state =
+      params.get<Teuchos::RCP<Core::LinAlg::Vector>>("phi");
 
   std::vector<double> tracephi;
   Core::FE::extract_my_values(*matrix_state, tracephi, la[nds_var_old].lm_);
 
   // get node based values!
-  matrix_state = params.get<Teuchos::RCP<Epetra_Vector>>("intphi");
+  matrix_state = params.get<Teuchos::RCP<Core::LinAlg::Vector>>("intphi");
   std::vector<double> intphi;
   Core::FE::extract_my_values(*matrix_state, intphi, la[nds_intvar_old].lm_);
   if (intphi.size() != shapes_old->ndofs_ * (nsd_ + 1))

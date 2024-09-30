@@ -264,21 +264,21 @@ namespace ScaTra
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
     virtual void set_velocity_field(
-        Teuchos::RCP<const Epetra_Vector> convvel,  //!< convective velocity/press. vector
-        Teuchos::RCP<const Epetra_Vector> acc,      //!< acceleration vector
-        Teuchos::RCP<const Epetra_Vector> vel,      //!< velocity vector
-        Teuchos::RCP<const Epetra_Vector> fsvel,    //!< fine-scale velocity vector
+        Teuchos::RCP<const Core::LinAlg::Vector> convvel,  //!< convective velocity/press. vector
+        Teuchos::RCP<const Core::LinAlg::Vector> acc,      //!< acceleration vector
+        Teuchos::RCP<const Core::LinAlg::Vector> vel,      //!< velocity vector
+        Teuchos::RCP<const Core::LinAlg::Vector> fsvel,    //!< fine-scale velocity vector
         const bool setpressure =
             false  //!< flag whether the fluid pressure needs to be known for the scatra
     );
 
-    void set_wall_shear_stresses(Teuchos::RCP<const Epetra_Vector> wss);
+    void set_wall_shear_stresses(Teuchos::RCP<const Core::LinAlg::Vector> wss);
 
-    void set_pressure_field(Teuchos::RCP<const Epetra_Vector> pressure);
+    void set_pressure_field(Teuchos::RCP<const Core::LinAlg::Vector> pressure);
 
-    void set_membrane_concentration(Teuchos::RCP<const Epetra_Vector> MembraneConc);
+    void set_membrane_concentration(Teuchos::RCP<const Core::LinAlg::Vector> MembraneConc);
 
-    void set_mean_concentration(Teuchos::RCP<const Epetra_Vector> MeanConc);
+    void set_mean_concentration(Teuchos::RCP<const Core::LinAlg::Vector> MeanConc);
 
     void clear_external_concentrations()
     {
@@ -400,7 +400,7 @@ namespace ScaTra
      *
      * @param[in] dispnp  displacement vector
      */
-    void apply_mesh_movement(Teuchos::RCP<const Epetra_Vector> dispnp);
+    void apply_mesh_movement(Teuchos::RCP<const Core::LinAlg::Vector> dispnp);
 
     //! calculate fluxes inside domain and/or on boundary
     void calc_flux(const bool writetofile  //!< flag for writing flux info to file
@@ -418,21 +418,21 @@ namespace ScaTra
 
     //! Calculate the reconstructed nodal gradient of phi from L2-projection
     Teuchos::RCP<Epetra_MultiVector> reconstruct_gradient_at_nodes_l2_projection(
-        const Teuchos::RCP<const Epetra_Vector> phi,
+        const Teuchos::RCP<const Core::LinAlg::Vector> phi,
         bool scalenormal = false,  ///< Scale the smoothed normal field to 1
         bool returnnodal = false   ///< Return nodal based vector
     );
 
     //! Calculate the reconstructed nodal gradient of phi from super convergent patch recovery
     Teuchos::RCP<Epetra_MultiVector> reconstruct_gradient_at_nodes_patch_recon(
-        const Teuchos::RCP<const Epetra_Vector> phi, const int dimension = 3,
+        const Teuchos::RCP<const Core::LinAlg::Vector> phi, const int dimension = 3,
         bool scalenormal = false,  ///< Scale the smoothed normal field to 1
         bool returnnodal = false   ///< Return nodal based vector
     );
 
     //! Calculate the reconstructed nodal gradient of phi from node mean averaging
     Teuchos::RCP<Epetra_MultiVector> reconstruct_gradient_at_nodes_mean_average(
-        Teuchos::RCP<const Epetra_Vector> phi,
+        Teuchos::RCP<const Core::LinAlg::Vector> phi,
         bool scalenormal = false,  ///< Scale the smoothed normal field to 1
         bool returnnodal = false   ///< Return nodal based vector
     );
@@ -447,7 +447,7 @@ namespace ScaTra
     void apply_bc_to_system();
 
     void evaluate_initial_time_derivative(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Teuchos::RCP<Epetra_Vector> rhs);
+        Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Teuchos::RCP<Core::LinAlg::Vector> rhs);
 
     //! prepare time integrator specific things before calculation of initial time derivative
     virtual void pre_calc_initial_time_derivative(){};
@@ -490,8 +490,8 @@ namespace ScaTra
 
     //! convert dof-based result vector into node-based multi-vector for postprocessing
     [[nodiscard]] Teuchos::RCP<Epetra_MultiVector> convert_dof_vector_to_componentwise_node_vector(
-        const Teuchos::RCP<const Epetra_Vector>& dof_vector,  ///< dof-based result vector
-        const int nds                                         ///< number of dofset to convert
+        const Teuchos::RCP<const Core::LinAlg::Vector>& dof_vector,  ///< dof-based result vector
+        const int nds  ///< number of dofset to convert
     ) const;
 
     //! return system matrix as sparse operator
@@ -507,13 +507,13 @@ namespace ScaTra
     Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_maps() const { return blockmaps_; }
 
     //! return residual vector
-    Teuchos::RCP<Epetra_Vector> residual() const { return residual_; };
+    Teuchos::RCP<Core::LinAlg::Vector> residual() const { return residual_; };
 
     //! return trueresidual vector
-    Teuchos::RCP<Epetra_Vector> true_residual() { return trueresidual_; }
+    Teuchos::RCP<Core::LinAlg::Vector> true_residual() { return trueresidual_; }
 
     //! return increment vector
-    Teuchos::RCP<Epetra_Vector> increment() const { return increment_; };
+    Teuchos::RCP<Core::LinAlg::Vector> increment() const { return increment_; };
 
     //! return flag indicating if an incremental solution approach is used
     bool is_incremental() { return incremental_; }
@@ -742,7 +742,8 @@ namespace ScaTra
     void evaluate_macro_micro_coupling();
 
     //! iterative update of phinp
-    void update_iter(const Teuchos::RCP<const Epetra_Vector> inc  //!< increment vector for phi
+    void update_iter(
+        const Teuchos::RCP<const Core::LinAlg::Vector> inc  //!< increment vector for phi
     );
 
     /*--- query and output ---------------------------------------------------*/
@@ -772,47 +773,47 @@ namespace ScaTra
     const std::vector<double>& omega() const { return omega_; };
 
     //! return scalar field phi at time n
-    Teuchos::RCP<Epetra_Vector> phin() override { return phin_; }
+    Teuchos::RCP<Core::LinAlg::Vector> phin() override { return phin_; }
 
     //! return scalar field phi at time n+1
-    Teuchos::RCP<Epetra_Vector> phinp() const { return phinp_; }
+    Teuchos::RCP<Core::LinAlg::Vector> phinp() const { return phinp_; }
 
     //! get mean concentration of micro discretization
-    Teuchos::RCP<Epetra_Vector> phinp_micro() const { return phinp_micro_; }
+    Teuchos::RCP<Core::LinAlg::Vector> phinp_micro() const { return phinp_micro_; }
 
     //! return increment of scalar field phi at time n+1 for partitioned simulations
-    Teuchos::RCP<Epetra_Vector>& phinp_inc() { return phinp_inc_; };
+    Teuchos::RCP<Core::LinAlg::Vector>& phinp_inc() { return phinp_inc_; };
 
     //! return increment of scalar field phi at time n+1 for partitioned simulations
-    const Teuchos::RCP<Epetra_Vector>& phinp_inc() const { return phinp_inc_; };
+    const Teuchos::RCP<Core::LinAlg::Vector>& phinp_inc() const { return phinp_inc_; };
 
     //! return increment of scalar field phi at time n+1 from previous outer iteration step for
     //! partitioned simulations
-    Teuchos::RCP<Epetra_Vector>& phinp_inc_old() { return phinp_inc_old_; };
+    Teuchos::RCP<Core::LinAlg::Vector>& phinp_inc_old() { return phinp_inc_old_; };
 
     //! return time derivative of scalar field phi at time n
-    Teuchos::RCP<Epetra_Vector> phidtn() { return phidtn_; }
+    Teuchos::RCP<Core::LinAlg::Vector> phidtn() { return phidtn_; }
 
     //! return time derivative of scalar field phi at time n+1
-    Teuchos::RCP<Epetra_Vector> phidtnp() { return phidtnp_; }
+    Teuchos::RCP<Core::LinAlg::Vector> phidtnp() { return phidtnp_; }
 
     //! return scalar field history
-    Teuchos::RCP<Epetra_Vector> hist() { return hist_; }
+    Teuchos::RCP<Core::LinAlg::Vector> hist() { return hist_; }
 
     //! return scalar field phi at time n+alpha_F
-    virtual Teuchos::RCP<Epetra_Vector> phiaf() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> phiaf() = 0;
 
     //! return scalar field phi at time n+alpha_F (gen-alpha) or n+1 (otherwise)
-    virtual Teuchos::RCP<Epetra_Vector> phiafnp() { return phinp_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector> phiafnp() { return phinp_; }
 
     //! return scalar field phi at time n+alpha_M
-    virtual Teuchos::RCP<Epetra_Vector> phiam() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> phiam() = 0;
 
     //! return time derivative of scalar field phi at time n+alpha_M
-    virtual Teuchos::RCP<Epetra_Vector> phidtam() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> phidtam() = 0;
 
     //! return fine-scale scalar field fsphi at time n+1 or alpha_M
-    virtual Teuchos::RCP<Epetra_Vector> fs_phi() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> fs_phi() = 0;
 
     //! output total and mean values of transported scalars
     virtual void output_total_and_mean_scalars(const int num = 0);
@@ -824,7 +825,7 @@ namespace ScaTra
     void output_integr_reac(const int num = 0);
 
     //! return density field at time n+alpha_F (gen-alpha) or n+1 (otherwise) for natural convection
-    Teuchos::RCP<Epetra_Vector> densafnp() { return densafnp_; }
+    Teuchos::RCP<Core::LinAlg::Vector> densafnp() { return densafnp_; }
 
     //! problem-specific restart
     virtual void read_restart_problem_specific(
@@ -856,7 +857,7 @@ namespace ScaTra
     const std::vector<double>& dq_dphi() const { return dq_dphi_; };
 
     //! return rcp ptr to neumann loads vector
-    Teuchos::RCP<Epetra_Vector> get_neumann_loads_ptr() override { return neumann_loads_; };
+    Teuchos::RCP<Core::LinAlg::Vector> get_neumann_loads_ptr() override { return neumann_loads_; };
 
     //! return true if an external force is applied to the system
     bool has_external_force() { return has_external_force_; };
@@ -894,12 +895,12 @@ namespace ScaTra
 
     //! compute contribution of permeable surface/interface
     void surface_permeability(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< system matrix
-        Teuchos::RCP<Epetra_Vector> rhs                                           //!< rhs vector
+        Teuchos::RCP<Core::LinAlg::Vector> rhs                                    //!< rhs vector
     );
 
     //! interface for fps3i problem
     void kedem_katchalsky(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< system matrix
-        Teuchos::RCP<Epetra_Vector> rhs                                       //!< rhs vector
+        Teuchos::RCP<Core::LinAlg::Vector> rhs                                //!< rhs vector
     );
 
     /*========================================================================*/
@@ -998,8 +999,8 @@ namespace ScaTra
 
     //! Apply Dirichlet boundary conditions on provided state vector
     virtual void apply_dirichlet_bc(const double time,  //!< evaluation time
-        Teuchos::RCP<Epetra_Vector> phinp,              //!< transported scalar(s) (may be = null)
-        Teuchos::RCP<Epetra_Vector> phidt               //!< first time derivative (may be = null)
+        Teuchos::RCP<Core::LinAlg::Vector> phinp,       //!< transported scalar(s) (may be = null)
+        Teuchos::RCP<Core::LinAlg::Vector> phidt        //!< first time derivative (may be = null)
     );
 
     //! compute outward pointing unit normal vectors at given bc's
@@ -1009,13 +1010,13 @@ namespace ScaTra
 
     //! evaluate Neumann inflow boundary condition
     void compute_neumann_inflow(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< ?
-        Teuchos::RCP<Epetra_Vector> rhs                                             //!< ?
+        Teuchos::RCP<Core::LinAlg::Vector> rhs                                      //!< ?
     );
 
     //! evaluate boundary condition due to convective heat transfer
     void evaluate_convective_heat_transfer(
         Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< ?
-        Teuchos::RCP<Epetra_Vector> rhs                     //!< ?
+        Teuchos::RCP<Core::LinAlg::Vector> rhs              //!< ?
     );
 
     //! potential residual scaling and potential addition of Neumann terms
@@ -1026,7 +1027,7 @@ namespace ScaTra
 
     //! evaluate Neumann boundary conditions
     virtual void apply_neumann_bc(
-        const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
+        const Teuchos::RCP<Core::LinAlg::Vector>& neumann_loads  //!< Neumann loads
     );
 
     //! add parameters depending on the problem, i.e., loma, level-set, ...
@@ -1052,31 +1053,32 @@ namespace ScaTra
 
     //! Calculate the reconstructed nodal gradient of phi by means of SPR
     Teuchos::RCP<Epetra_MultiVector> compute_superconvergent_patch_recovery(
-        Teuchos::RCP<const Epetra_Vector> state, const std::string& statename, const int numvec,
-        Teuchos::ParameterList& params, const int dim);
+        Teuchos::RCP<const Core::LinAlg::Vector> state, const std::string& statename,
+        const int numvec, Teuchos::ParameterList& params, const int dim);
 
     //! compute contributions of solution-depending boundary and interface conditions to global
     //! system of equations
     virtual void evaluate_solution_depending_conditions(
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,  //!< system matrix
-        Teuchos::RCP<Epetra_Vector> rhs                           //!< rhs vector
+        Teuchos::RCP<Core::LinAlg::Vector> rhs                    //!< rhs vector
     );
 
     //! compute contribution of Robin boundary condition to eq. system
     void evaluate_robin_boundary_conditions(
         Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< system matrix
-        Teuchos::RCP<Epetra_Vector> rhs                     //!< rhs vector
+        Teuchos::RCP<Core::LinAlg::Vector> rhs              //!< rhs vector
     );
 
     //! compute contributions of additional solution-depending models to global system of equations
     virtual void evaluate_additional_solution_depending_models(
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,  //!< system matrix
-        Teuchos::RCP<Epetra_Vector> rhs                           //!< rhs vector
+        Teuchos::RCP<Core::LinAlg::Vector> rhs                    //!< rhs vector
     );
 
     //! perform Aitken relaxation
-    virtual void perform_aitken_relaxation(Epetra_Vector& phinp,  //!< state vector to be relaxed
-        const Epetra_Vector&
+    virtual void perform_aitken_relaxation(
+        Core::LinAlg::Vector& phinp,  //!< state vector to be relaxed
+        const Core::LinAlg::Vector&
             phinp_inc_diff  //!< difference between current and previous state vector increments
     );
 
@@ -1201,7 +1203,7 @@ namespace ScaTra
      * be removed.
      * note: VM3 solver still needs an explicit toggle vector for construction
      */
-    Teuchos::RCP<const Epetra_Vector> dirichlet_toggle();
+    Teuchos::RCP<const Core::LinAlg::Vector> dirichlet_toggle();
 
     /*========================================================================*/
 
@@ -1405,27 +1407,27 @@ namespace ScaTra
     std::vector<std::optional<std::string>> phi_components_{};
 
     //! phi at time n
-    Teuchos::RCP<Epetra_Vector> phin_;
+    Teuchos::RCP<Core::LinAlg::Vector> phin_;
     //! phi at time n+1
-    Teuchos::RCP<Epetra_Vector> phinp_;
+    Teuchos::RCP<Core::LinAlg::Vector> phinp_;
     //! increment of phi at time n+1 for partitioned simulations
-    Teuchos::RCP<Epetra_Vector> phinp_inc_;
+    Teuchos::RCP<Core::LinAlg::Vector> phinp_inc_;
     //! increment of phi at time n+1 from previous outer iteration step for partitioned simulations
-    Teuchos::RCP<Epetra_Vector> phinp_inc_old_;
+    Teuchos::RCP<Core::LinAlg::Vector> phinp_inc_old_;
     //! relaxation parameters
     std::vector<double> omega_;
 
     //! time derivative of phi at time n
-    Teuchos::RCP<Epetra_Vector> phidtn_;
+    Teuchos::RCP<Core::LinAlg::Vector> phidtn_;
     //! time derivative of phi at time n+1
-    Teuchos::RCP<Epetra_Vector> phidtnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> phidtnp_;
 
     //! histvector --- a linear combination of phinm, phin (BDF)
     //!                or phin, phidtn (One-Step-Theta)
-    Teuchos::RCP<Epetra_Vector> hist_;
+    Teuchos::RCP<Core::LinAlg::Vector> hist_;
 
     //! density at time n+alpha_F (gen-alpha) or n+1 (otherwise) for natural convection algorithm
-    Teuchos::RCP<Epetra_Vector> densafnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> densafnp_;
 
     //! relative errors of scalar fields in L2 and H1 norms
     Teuchos::RCP<std::vector<double>> relerrors_;
@@ -1441,14 +1443,14 @@ namespace ScaTra
     const Inpar::ScaTra::VelocityField velocity_field_type_;
 
     //! mean in time at the interface concentration
-    Teuchos::RCP<const Epetra_Vector> mean_conc_;
+    Teuchos::RCP<const Core::LinAlg::Vector> mean_conc_;
 
     //! Membrane concentration in interface bewteen a scatracoupling (needed for instance for type
     //! fps3i)
-    Teuchos::RCP<const Epetra_Vector> membrane_conc_;
+    Teuchos::RCP<const Core::LinAlg::Vector> membrane_conc_;
 
     //! mean concentration of micro discretization  on macro dis
-    Teuchos::RCP<Epetra_Vector> phinp_micro_;
+    Teuchos::RCP<Core::LinAlg::Vector> phinp_micro_;
 
    private:
     //! number of dofset associated with displacement dofs
@@ -1483,7 +1485,7 @@ namespace ScaTra
     /*========================================================================*/
    protected:
     //! subgrid-diffusivity(-scaling) vector
-    Teuchos::RCP<Epetra_Vector> subgrdiff_;
+    Teuchos::RCP<Core::LinAlg::Vector> subgrdiff_;
 
     //! densification coefficients for natural convection
     std::vector<double> densific_;
@@ -1514,7 +1516,7 @@ namespace ScaTra
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockmaps_;
 
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
-    Teuchos::RCP<Epetra_Vector> zeros_;
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_;
 
     //! function to set external force
     std::function<void()> set_external_force_;
@@ -1523,19 +1525,19 @@ namespace ScaTra
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     //! the vector containing body and surface forces
-    Teuchos::RCP<Epetra_Vector> neumann_loads_;
+    Teuchos::RCP<Core::LinAlg::Vector> neumann_loads_;
 
     //! unit outer normal vector field for flux output
     Teuchos::RCP<Epetra_MultiVector> normals_;
 
     //! residual vector
-    Teuchos::RCP<Epetra_Vector> residual_;
+    Teuchos::RCP<Core::LinAlg::Vector> residual_;
 
     //! true (rescaled) residual vector without zeros at Dirichlet conditions
-    Teuchos::RCP<Epetra_Vector> trueresidual_;
+    Teuchos::RCP<Core::LinAlg::Vector> trueresidual_;
 
     //! nonlinear iteration increment vector
-    Teuchos::RCP<Epetra_Vector> increment_;
+    Teuchos::RCP<Core::LinAlg::Vector> increment_;
 
     //! options for meshtying
     Inpar::FLUID::MeshTying msht_;
@@ -1577,7 +1579,7 @@ namespace ScaTra
 
     //! the vector containing source term externally computed
     //! forcing for homogeneous isotropic turbulence
-    Teuchos::RCP<Epetra_Vector> forcing_;
+    Teuchos::RCP<Core::LinAlg::Vector> forcing_;
 
     //! forcing for homogeneous isotropic turbulence
     Teuchos::RCP<ScaTra::HomIsoTurbScalarForcing> homisoturb_forcing_;

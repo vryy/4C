@@ -12,12 +12,11 @@
 
 #include "4C_structure_new_predict_constdisvelaccpress.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_structure_new_impl_generic.hpp"
 #include "4C_structure_new_model_evaluator_manager.hpp"
 #include "4C_structure_new_predict_factory.hpp"
 #include "4C_structure_new_timint_base.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -49,9 +48,9 @@ void Solid::Predict::ConstDisVelAccPress::compute(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
 
-  Teuchos::RCP<Epetra_Vector>& disnp_ptr = global_state().get_dis_np();
-  Teuchos::RCP<Epetra_Vector>& velnp_ptr = global_state().get_vel_np();
-  Teuchos::RCP<Epetra_Vector>& accnp_ptr = global_state().get_acc_np();
+  Teuchos::RCP<Core::LinAlg::Vector>& disnp_ptr = global_state().get_dis_np();
+  Teuchos::RCP<Core::LinAlg::Vector>& velnp_ptr = global_state().get_vel_np();
+  Teuchos::RCP<Core::LinAlg::Vector>& accnp_ptr = global_state().get_acc_np();
 
   bool ok = true;
   switch (get_type())

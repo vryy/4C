@@ -50,7 +50,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
+    const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for mesh tying.
   if (!this->meshtying_is_evaluated_)
@@ -288,7 +288,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
  */
 template <typename Beam, typename Solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::reset_rotation_state(
-    const Core::FE::Discretization& discret, const Teuchos::RCP<const Epetra_Vector>& ia_discolnp)
+    const Core::FE::Discretization& discret,
+    const Teuchos::RCP<const Core::LinAlg::Vector>& ia_discolnp)
 {
   get_beam_triad_interpolation_scheme(discret, ia_discolnp, this->element1(),
       triad_interpolation_scheme_, this->triad_interpolation_scheme_ref_);

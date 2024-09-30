@@ -20,9 +20,9 @@
 
 #include "4C_binstrategy_utils.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <functional>
@@ -91,7 +91,7 @@ namespace Core::Binstrategy
      * @return Vector of relevant points stored as array of length 3.
      */
     std::vector<std::array<double, 3>> operator()(const Core::FE::Discretization& discret,
-        const Core::Elements::Element& ele, Teuchos::RCP<const Epetra_Vector> disnp);
+        const Core::Elements::Element& ele, Teuchos::RCP<const Core::LinAlg::Vector> disnp);
 
     /**
      * Additional function to determine select a different node. By default, the node is returned.
@@ -163,10 +163,10 @@ namespace Core::Binstrategy
         const int my_rank,
         std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node = {},
         std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
-            const Core::Elements::Element&, Teuchos::RCP<const Epetra_Vector> disnp)>
+            const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector> disnp)>
             determine_relevant_points = DefaultRelevantPoints{},
         const std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret = {},
-        std::vector<Teuchos::RCP<const Epetra_Vector>> disnp = {});
+        std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> disnp = {});
 
     //! \name Read access functions
     //! \{
@@ -487,7 +487,7 @@ namespace Core::Binstrategy
     template <typename Range>
     void distribute_elements_to_bins_using_ele_aabb(const Core::FE::Discretization& discret,
         Range element_range, std::map<int, std::set<int>>& bin_to_ele_map,
-        Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null) const;
+        Teuchos::RCP<const Core::LinAlg::Vector> disnp = Teuchos::null) const;
 
     /*!
      * \brief distribute single element to bins using its axis aligned bounding box idea
@@ -499,7 +499,7 @@ namespace Core::Binstrategy
      */
     void distribute_single_element_to_bins_using_ele_aabb(const Core::FE::Discretization& discret,
         Core::Elements::Element* eleptr, std::vector<int>& binIds,
-        Teuchos::RCP<const Epetra_Vector> const& disnp) const;
+        Teuchos::RCP<const Core::LinAlg::Vector> const& disnp) const;
 
     /*!
      * \brief elements of input discretization are assigned to bins
@@ -538,7 +538,7 @@ namespace Core::Binstrategy
      */
     void distribute_row_nodes_to_bins(Teuchos::RCP<Core::FE::Discretization> discret,
         std::map<int, std::vector<int>>& bin_to_rownodes_map,
-        Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null) const;
+        Teuchos::RCP<const Core::LinAlg::Vector> disnp = Teuchos::null) const;
 
 
     /*!
@@ -587,7 +587,7 @@ namespace Core::Binstrategy
      */
     Teuchos::RCP<Epetra_Map> weighted_distribution_of_bins_to_procs(
         std::vector<Teuchos::RCP<Core::FE::Discretization>>& discret,
-        std::vector<Teuchos::RCP<const Epetra_Vector>>& disnp,
+        std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& disnp,
         std::vector<std::map<int, std::vector<int>>>& row_nodes_to_bin_map, double const& weight,
         bool repartition = false) const;
 
@@ -638,7 +638,7 @@ namespace Core::Binstrategy
      * \param[out] stdnodecolmap standard node column map
      */
     void standard_discretization_ghosting(Teuchos::RCP<Core::FE::Discretization>& discret,
-        Teuchos::RCP<Epetra_Map> const& rowbins, Teuchos::RCP<Epetra_Vector>& disnp,
+        Teuchos::RCP<Epetra_Map> const& rowbins, Teuchos::RCP<Core::LinAlg::Vector>& disnp,
         Teuchos::RCP<Epetra_Map>& stdelecolmap, Teuchos::RCP<Epetra_Map>& stdnodecolmap) const;
 
     /*!
@@ -674,7 +674,7 @@ namespace Core::Binstrategy
      */
     void compute_min_binning_domain_containing_all_elements_of_multiple_discrets(
         std::vector<Teuchos::RCP<Core::FE::Discretization>> discret,
-        std::vector<Teuchos::RCP<const Epetra_Vector>> disnp,
+        std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> disnp,
         Core::LinAlg::Matrix<3, 2>& domain_bounding_box_corner_positions,
         bool set_bin_size_lower_bound_);
 
@@ -688,7 +688,7 @@ namespace Core::Binstrategy
      */
     double compute_lower_bound_for_bin_size_as_max_edge_length_of_aabb_of_largest_ele(
         std::vector<Teuchos::RCP<Core::FE::Discretization>> discret,
-        std::vector<Teuchos::RCP<const Epetra_Vector>> disnp);
+        std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> disnp);
 
     /*!
      * \brief create bins based on AABB and lower bound for bin size
@@ -709,7 +709,7 @@ namespace Core::Binstrategy
      */
     void compute_min_binning_domain_containing_all_elements_of_single_discret(
         Teuchos::RCP<Core::FE::Discretization> discret, Core::LinAlg::Matrix<3, 2>& XAABB,
-        Teuchos::RCP<const Epetra_Vector> disnp = Teuchos::null,
+        Teuchos::RCP<const Core::LinAlg::Vector> disnp = Teuchos::null,
         bool set_bin_size_lower_bound_ = false);
 
     /*!
@@ -721,7 +721,8 @@ namespace Core::Binstrategy
      * \param[in] bintorowelemap bin to row element map
      */
     void transfer_nodes_and_elements(Teuchos::RCP<Core::FE::Discretization>& discret,
-        Teuchos::RCP<const Epetra_Vector> disnp, std::map<int, std::set<int>>& bintorowelemap);
+        Teuchos::RCP<const Core::LinAlg::Vector> disnp,
+        std::map<int, std::set<int>>& bintorowelemap);
 
     //! \}
 
@@ -820,7 +821,7 @@ namespace Core::Binstrategy
     //! Function that computes the points to consider as the bounding box of an element. May be
     //! user-supplied for special elements. By default, the nodes of the element are used.
     const std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
-        const Core::Elements::Element&, Teuchos::RCP<const Epetra_Vector> disnp)>
+        const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector> disnp)>
         determine_relevant_points_;
 
     //! Function that allows selecting a different node to be used in binning.
@@ -845,7 +846,8 @@ namespace Core::Binstrategy
   template <typename Range>
   void BinningStrategy::distribute_elements_to_bins_using_ele_aabb(
       const Core::FE::Discretization& discret, Range element_range,
-      std::map<int, std::set<int>>& bin_to_ele_map, Teuchos::RCP<const Epetra_Vector> disnp) const
+      std::map<int, std::set<int>>& bin_to_ele_map,
+      Teuchos::RCP<const Core::LinAlg::Vector> disnp) const
   {
     bin_to_ele_map.clear();
 

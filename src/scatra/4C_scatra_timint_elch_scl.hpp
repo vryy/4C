@@ -121,7 +121,7 @@ namespace ScaTra
     Teuchos::RCP<const Epetra_Map> full_map_elch_scl_;
 
     //! increment of coupled ELCH-SCL problem
-    Teuchos::RCP<Epetra_Vector> increment_elch_scl_;
+    Teuchos::RCP<Core::LinAlg::Vector> increment_elch_scl_;
 
     //! map extractor to get the coupled dofs from macro discretization (cond_map) out of all macro
     //! dofs
@@ -145,7 +145,7 @@ namespace ScaTra
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> micro_timint_;
 
     //! residual of coupled ELCH-SCL problem
-    Teuchos::RCP<Epetra_Vector> residual_elch_scl_;
+    Teuchos::RCP<Core::LinAlg::Vector> residual_elch_scl_;
 
     //! solver for coupled ELCH-SCL problem
     Teuchos::RCP<Core::LinAlg::Solver> solver_elch_scl_;

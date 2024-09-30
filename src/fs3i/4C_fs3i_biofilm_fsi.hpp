@@ -59,26 +59,30 @@ namespace FS3I
     //! information transfer FSI -> ScaTra
     void set_fsi_solution();
 
-    void compute_interface_vectors(Teuchos::RCP<Epetra_Vector> idispnp_,
-        Teuchos::RCP<Epetra_Vector> iveln_, Teuchos::RCP<Epetra_Vector> struidispnp_,
-        Teuchos::RCP<Epetra_Vector> struiveln_);
+    void compute_interface_vectors(Teuchos::RCP<Core::LinAlg::Vector> idispnp_,
+        Teuchos::RCP<Core::LinAlg::Vector> iveln_, Teuchos::RCP<Core::LinAlg::Vector> struidispnp_,
+        Teuchos::RCP<Core::LinAlg::Vector> struiveln_);
 
-    Teuchos::RCP<Epetra_Vector> fluid_to_ale(Teuchos::RCP<Epetra_Vector> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector> fluid_to_ale(Teuchos::RCP<Core::LinAlg::Vector> iv) const;
 
-    Teuchos::RCP<Epetra_Vector> ale_to_fluid_field(Teuchos::RCP<Epetra_Vector> iv) const;
-
-    /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> ale_to_struct_field(Teuchos::RCP<Epetra_Vector> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector> ale_to_fluid_field(
+        Teuchos::RCP<Core::LinAlg::Vector> iv) const;
 
     /// field transform
-    virtual Teuchos::RCP<Epetra_Vector> ale_to_struct_field(
-        Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_struct_field(
+        Teuchos::RCP<Core::LinAlg::Vector> iv) const;
+
+    /// field transform
+    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_struct_field(
+        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> struct_to_ale(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> struct_to_ale(
+        Teuchos::RCP<Core::LinAlg::Vector> iv) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Epetra_Vector> struct_to_ale(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector> struct_to_ale(
+        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
 
     /// solve fluid-ale
     virtual void fluid_ale_solve();
@@ -91,7 +95,7 @@ namespace FS3I
     const Epetra_Comm& comm() { return comm_; }
 
     void vec_to_scatravec(Teuchos::RCP<Core::FE::Discretization> scatradis,
-        Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<Epetra_MultiVector> scatravec);
+        Teuchos::RCP<Core::LinAlg::Vector> vec, Teuchos::RCP<Epetra_MultiVector> scatravec);
 
     void struct_gmsh_output();
 
@@ -124,12 +128,12 @@ namespace FS3I
     //    // total flux at the structure interface overall the InnerTimeloop
     //    Teuchos::RCP<Epetra_MultiVector> struflux;
 
-    Teuchos::RCP<Epetra_Vector> norminflux_;
+    Teuchos::RCP<Core::LinAlg::Vector> norminflux_;
 
-    Teuchos::RCP<Epetra_Vector> lambda_;
-    Teuchos::RCP<Epetra_Vector> normtraction_;
-    Teuchos::RCP<Epetra_Vector> tangtractionone_;
-    Teuchos::RCP<Epetra_Vector> tangtractiontwo_;
+    Teuchos::RCP<Core::LinAlg::Vector> lambda_;
+    Teuchos::RCP<Core::LinAlg::Vector> normtraction_;
+    Teuchos::RCP<Core::LinAlg::Vector> tangtractionone_;
+    Teuchos::RCP<Core::LinAlg::Vector> tangtractiontwo_;
 
     std::vector<double> nvector_;
 
@@ -179,28 +183,28 @@ namespace FS3I
     double time_;
 
     /// fluid interface displacement at time t^{n}
-    Teuchos::RCP<Epetra_Vector> idispn_;
+    Teuchos::RCP<Core::LinAlg::Vector> idispn_;
 
     /// fluid interface displacement at time t^{n+1}
-    Teuchos::RCP<Epetra_Vector> idispnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> idispnp_;
 
     /// fluid velocity at interface (always zero!)
-    Teuchos::RCP<Epetra_Vector> iveln_;
+    Teuchos::RCP<Core::LinAlg::Vector> iveln_;
 
     /// structure interface displacement at time t^{n}
-    Teuchos::RCP<Epetra_Vector> struidispn_;
+    Teuchos::RCP<Core::LinAlg::Vector> struidispn_;
 
     /// structure interface displacement at time t^{n+1}
-    Teuchos::RCP<Epetra_Vector> struidispnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> struidispnp_;
 
     /// structure velocity at interface (always zero!)
-    Teuchos::RCP<Epetra_Vector> struiveln_;
+    Teuchos::RCP<Core::LinAlg::Vector> struiveln_;
 
     /// total structure displacement due to growth
-    Teuchos::RCP<Epetra_Vector> struct_growth_disp_;
+    Teuchos::RCP<Core::LinAlg::Vector> struct_growth_disp_;
 
     /// total fluid displacement due to growth
-    Teuchos::RCP<Epetra_Vector> fluid_growth_disp_;
+    Teuchos::RCP<Core::LinAlg::Vector> fluid_growth_disp_;
 
     /// total scatra structure displacement due to growth
     Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp_;

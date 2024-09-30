@@ -297,7 +297,8 @@ void STI::Algorithm::time_loop()
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_Vector> scatra) const
+void STI::Algorithm::transfer_scatra_to_thermo(
+    const Teuchos::RCP<const Core::LinAlg::Vector> scatra) const
 {
   // pass scatra degrees of freedom to thermo discretization
   thermo_->scatra_field()->discretization()->set_state(2, "scatra", scatra);
@@ -310,7 +311,7 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
       case Inpar::S2I::coupling_matching_nodes:
       {
         // pass master-side scatra degrees of freedom to thermo discretization
-        const Teuchos::RCP<Epetra_Vector> imasterphinp = Core::LinAlg::create_vector(
+        const Teuchos::RCP<Core::LinAlg::Vector> imasterphinp = Core::LinAlg::create_vector(
             *scatra_->scatra_field()->discretization()->dof_row_map(), true);
         strategyscatra_->interface_maps()->insert_vector(
             strategyscatra_->coupling_adapter()->master_to_slave(
@@ -341,8 +342,8 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
             Core::FE::Discretization& thermodis = strategythermo_->mortar_discretization(condid);
 
             // pass interfacial scatra degrees of freedom to thermo discretization
-            const Teuchos::RCP<Epetra_Vector> iscatra =
-                Teuchos::rcp(new Epetra_Vector(*thermodis.dof_row_map(1)));
+            const Teuchos::RCP<Core::LinAlg::Vector> iscatra =
+                Teuchos::rcp(new Core::LinAlg::Vector(*thermodis.dof_row_map(1)));
             Core::LinAlg::export_to(*scatra, *iscatra);
             thermodis.set_state(1, "scatra", iscatra);
           }
@@ -361,7 +362,8 @@ void STI::Algorithm::transfer_scatra_to_thermo(const Teuchos::RCP<const Epetra_V
 
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
-void STI::Algorithm::transfer_thermo_to_scatra(const Teuchos::RCP<const Epetra_Vector> thermo) const
+void STI::Algorithm::transfer_thermo_to_scatra(
+    const Teuchos::RCP<const Core::LinAlg::Vector> thermo) const
 {
   // pass thermo degrees of freedom to scatra discretization
   scatra_->scatra_field()->discretization()->set_state(2, "thermo", thermo);
@@ -388,8 +390,8 @@ void STI::Algorithm::transfer_thermo_to_scatra(const Teuchos::RCP<const Epetra_V
         Core::FE::Discretization& scatradis = strategyscatra_->mortar_discretization(condid);
 
         // pass interfacial thermo degrees of freedom to scatra discretization
-        const Teuchos::RCP<Epetra_Vector> ithermo =
-            Teuchos::rcp(new Epetra_Vector(*scatradis.dof_row_map(1)));
+        const Teuchos::RCP<Core::LinAlg::Vector> ithermo =
+            Teuchos::rcp(new Core::LinAlg::Vector(*scatradis.dof_row_map(1)));
         Core::LinAlg::export_to(*thermo, *ithermo);
         scatradis.set_state(1, "thermo", ithermo);
       }

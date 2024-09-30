@@ -15,9 +15,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_result_test.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -59,11 +58,11 @@ namespace FLD
     /// pointer to fluid discretization
     Teuchos::RCP<Core::FE::Discretization> fluiddis_;
     /// pointer to unknown vector with nodal values
-    Teuchos::RCP<Epetra_Vector> mysol_;
+    Teuchos::RCP<Core::LinAlg::Vector> mysol_;
     /// pointer to traction vector with values
-    Teuchos::RCP<Epetra_Vector> mytraction_;
+    Teuchos::RCP<Core::LinAlg::Vector> mytraction_;
     /// pointer to traction vector with values
-    Teuchos::RCP<Epetra_Vector> mywss_;
+    Teuchos::RCP<Core::LinAlg::Vector> mywss_;
     /// pointer to error evaluation
     Teuchos::RCP<std::vector<double>> myerror_;
     /// pointer to div u evaluation

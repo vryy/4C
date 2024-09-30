@@ -60,7 +60,7 @@ void GEOMETRYPAIR::LineToSurfaceEvaluationData::setup(
  *
  */
 void GEOMETRYPAIR::LineToSurfaceEvaluationData::set_state(
-    const Teuchos::RCP<const Epetra_Vector>& displacement_col_np)
+    const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_col_np)
 {
   for (const auto& [id, face_element] : face_elements_)
     if (face_element->is_part_of_pair())

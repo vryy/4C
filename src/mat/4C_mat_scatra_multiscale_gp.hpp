@@ -12,13 +12,15 @@ transport problems
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
+#include "4C_linear_solver_method_linalg.hpp"
+
 #include <Teuchos_RCP.hpp>
 
 #include <memory>
 #include <vector>
 
 // forward declarations
-class Epetra_Vector;
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -123,19 +125,19 @@ namespace Mat
     int step_;
 
     //! micro-scale state vector at old time step
-    Teuchos::RCP<Epetra_Vector> phin_;
+    Teuchos::RCP<Core::LinAlg::Vector> phin_;
 
     //! micro-scale state vector at new time step
-    Teuchos::RCP<Epetra_Vector> phinp_;
+    Teuchos::RCP<Core::LinAlg::Vector> phinp_;
 
     //! time derivative of micro-scale state vector at old time step
-    Teuchos::RCP<Epetra_Vector> phidtn_;
+    Teuchos::RCP<Core::LinAlg::Vector> phidtn_;
 
     //! time derivative of micro-scale state vector at new time step
-    Teuchos::RCP<Epetra_Vector> phidtnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> phidtnp_;
 
     //! micro-scale history vector
-    Teuchos::RCP<Epetra_Vector> hist_;
+    Teuchos::RCP<Core::LinAlg::Vector> hist_;
 
     //! micro-scale discretization writer
     Teuchos::RCP<Core::IO::DiscretizationWriter> micro_output_;

@@ -897,7 +897,7 @@ void ParticleInteraction::SPHMomentum::momentum_equation_particle_wall_contribut
       // assemble nodal forces
       const int err = walldatastate->get_force_col()->SumIntoGlobalValues(
           numnodes * 3, nodal_force.data(), lmele.data());
-      if (err < 0) FOUR_C_THROW("sum into Epetra_Vector failed!");
+      if (err < 0) FOUR_C_THROW("sum into Core::LinAlg::Vector failed!");
     }
   }
 

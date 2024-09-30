@@ -10,10 +10,10 @@
 
 #include "4C_solver_nonlin_nox_inner_statustest_armijo.hpp"  // class definition
 
+#include "4C_linalg_vector.hpp"
 #include "4C_solver_nonlin_nox_linesearch_generic.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Vector.h>
 #include <NOX_Abstract_Group.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_MeritFunction_Generic.H>

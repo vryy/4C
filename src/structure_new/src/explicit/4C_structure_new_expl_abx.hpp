@@ -61,14 +61,14 @@ namespace Solid
       void post_setup() override;
 
       //! Set state variables (derived)
-      void set_state(const Epetra_Vector& x) override;
+      void set_state(const Core::LinAlg::Vector& x) override;
 
       //! return integration factor (derived)
       [[nodiscard]] double get_int_param() const override { return -1.0; }
 
       /*! \brief Add the viscous and mass contributions to the right hand side
        */
-      void add_visco_mass_contributions(Epetra_Vector& f) const override;
+      void add_visco_mass_contributions(Core::LinAlg::Vector& f) const override;
 
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        */
@@ -120,16 +120,16 @@ namespace Solid
 
      private:
       //! viscous force vector F_viscous F_{viscous;n+1}
-      Teuchos::RCP<Epetra_Vector> fvisconp_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector> fvisconp_ptr_;
 
       //! viscous force vector F_viscous F_{viscous;n}
-      Teuchos::RCP<Epetra_Vector> fviscon_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector> fviscon_ptr_;
 
       //! pointer to inertial force vector F_{inertial,n+1} at new time
-      Teuchos::RCP<Epetra_Vector> finertianp_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector> finertianp_ptr_;
 
       //! pointer to inertial force vector F_{inertial,n} at last time
-      Teuchos::RCP<Epetra_Vector> finertian_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector> finertian_ptr_;
 
       /*! \brief Flag to record the computing phase
        * compute_phase_ = 0..order: compute the initial values using modified forward Euler

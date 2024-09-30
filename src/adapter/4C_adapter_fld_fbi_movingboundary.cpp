@@ -78,7 +78,7 @@ double Adapter::FBIFluidMB::read_restart(int step)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FBIFluidMB::nonlinear_solve(
-    Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel)
+    Teuchos::RCP<Core::LinAlg::Vector> idisp, Teuchos::RCP<Core::LinAlg::Vector> ivel)
 {
   fluid_field()->solve();
 }
@@ -86,8 +86,8 @@ void Adapter::FBIFluidMB::nonlinear_solve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FBIFluidMB::relaxation_solve(
-    Teuchos::RCP<Epetra_Vector> idisp, double dt)
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FBIFluidMB::relaxation_solve(
+    Teuchos::RCP<Core::LinAlg::Vector> idisp, double dt)
 {
   FOUR_C_THROW("RelaxationSolve not yet implemented");
   return Teuchos::null;
@@ -96,7 +96,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FBIFluidMB::relaxation_solve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FBIFluidMB::extract_interface_forces()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FBIFluidMB::extract_interface_forces()
 {
   return fluid_field()->extract_interface_forces();
 }
@@ -104,7 +104,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FBIFluidMB::extract_interface_forces()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FBIFluidMB::extract_interface_velnp()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FBIFluidMB::extract_interface_velnp()
 {
   return fluid_field()->extract_interface_velnp();
 }
@@ -112,7 +112,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FBIFluidMB::extract_interface_velnp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FBIFluidMB::extract_interface_veln()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FBIFluidMB::extract_interface_veln()
 {
   return fluid_field()->extract_interface_veln();
 }
@@ -120,7 +120,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::FBIFluidMB::extract_interface_veln()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Adapter::FBIFluidMB::integrate_interface_shape()
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::FBIFluidMB::integrate_interface_shape()
 {
   // Actually we do not need this here, because this will be handled in the coupling.
   return fluid_field()->integrate_interface_shape();
@@ -146,14 +146,17 @@ void Adapter::FBIFluidMB::set_coupling_contributions(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FBIFluidMB::apply_interface_values(
-    Teuchos::RCP<Epetra_Vector> iforce, Teuchos::RCP<Epetra_Vector> ivel)
+    Teuchos::RCP<Core::LinAlg::Vector> iforce, Teuchos::RCP<Core::LinAlg::Vector> ivel)
 {
   fluid_field()->add_contribution_to_external_loads(iforce);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /// Get velocity at timestep n+1
-Teuchos::RCP<const Epetra_Vector> Adapter::FBIFluidMB::velnp() { return fluid_field()->velnp(); }
+Teuchos::RCP<const Core::LinAlg::Vector> Adapter::FBIFluidMB::velnp()
+{
+  return fluid_field()->velnp();
+}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int Adapter::FBIFluidMB::itemax() const { return fluidadapter_->itemax(); }

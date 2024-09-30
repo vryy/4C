@@ -52,17 +52,18 @@ namespace CONTACT
     {
     }
 
-    void apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
         const int step, const int iter, bool predictor) override;
 
     //  void Integrate(CONTACT::ParamsInterface& cparams);
-    void set_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
+    void set_state(
+        const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec) override;
 
-    void set_parent_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec,
+    void set_parent_state(const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec,
         const Core::FE::Discretization& dis) override;
 
-    Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
+    Teuchos::RCP<const Core::LinAlg::Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bp) const override;
 
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(

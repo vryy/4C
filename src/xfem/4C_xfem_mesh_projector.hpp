@@ -17,10 +17,10 @@
 #include "4C_comm_exporter.hpp"
 #include "4C_fem_general_elementtype.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -49,13 +49,15 @@ namespace XFEM
     MeshProjector(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
         Teuchos::RCP<const Core::FE::Discretization> targetdis,
         const Teuchos::ParameterList& params,
-        Teuchos::RCP<const Epetra_Vector> sourcedisp = Teuchos::null);
+        Teuchos::RCP<const Core::LinAlg::Vector> sourcedisp = Teuchos::null);
 
     //! set current displacements of source discretization
-    void set_source_position_vector(Teuchos::RCP<const Epetra_Vector> sourcedisp = Teuchos::null);
+    void set_source_position_vector(
+        Teuchos::RCP<const Core::LinAlg::Vector> sourcedisp = Teuchos::null);
 
     //! set state vectors - mandatory for interpolation
-    void set_source_state_vectors(std::vector<Teuchos::RCP<const Epetra_Vector>> source_statevecs)
+    void set_source_state_vectors(
+        std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> source_statevecs)
     {
       source_statevecs_ = source_statevecs;
     }
@@ -63,17 +65,18 @@ namespace XFEM
     //! main projection routine (pass a map of the target node ids)
     void project(std::map<int, std::set<int>>&
                      projection_nodeToDof,  //< node-to-dof map of target nodes demanding projection
-        std::vector<Teuchos::RCP<Epetra_Vector>>
+        std::vector<Teuchos::RCP<Core::LinAlg::Vector>>
             target_statevecs,  //< state vectors of target discretization
-        Teuchos::RCP<const Epetra_Vector> targetdisp = Teuchos::null);
+        Teuchos::RCP<const Core::LinAlg::Vector> targetdisp = Teuchos::null);
 
     //! projection routine for projection for all nodes of the target discretization
     void project_in_full_target_discretization(
-        std::vector<Teuchos::RCP<Epetra_Vector>> target_statevecs,
-        Teuchos::RCP<const Epetra_Vector> targetdisp = Teuchos::null);
+        std::vector<Teuchos::RCP<Core::LinAlg::Vector>> target_statevecs,
+        Teuchos::RCP<const Core::LinAlg::Vector> targetdisp = Teuchos::null);
 
     //! write gmsh output for projection details
-    void gmsh_output(int step = 0, Teuchos::RCP<const Epetra_Vector> targetdisp = Teuchos::null);
+    void gmsh_output(
+        int step = 0, Teuchos::RCP<const Core::LinAlg::Vector> targetdisp = Teuchos::null);
 
    private:
     /// determine the search radius for the search tree
@@ -129,7 +132,7 @@ namespace XFEM
     std::map<int, Core::LinAlg::Matrix<3, 1>> src_nodepositions_n_;
 
     //! state vectors from projection source
-    std::vector<Teuchos::RCP<const Epetra_Vector>> source_statevecs_;
+    std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> source_statevecs_;
 
     //! map between target node id and parent element id
     std::map<int, int> targetnode_to_parent_;

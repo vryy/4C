@@ -46,8 +46,8 @@ CONSTRAINTS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<Core::FE::D
 }
 
 void CONSTRAINTS::SpringDashpotManager::stiffness_and_internal_forces(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Epetra_Vector> fint,
-    Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<Epetra_Vector> veln,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Core::LinAlg::Vector> fint,
+    Teuchos::RCP<Core::LinAlg::Vector> disn, Teuchos::RCP<Core::LinAlg::Vector> veln,
     Teuchos::ParameterList parlist)
 {
   // evaluate all spring dashpot conditions
@@ -75,7 +75,7 @@ void CONSTRAINTS::SpringDashpotManager::update()
   return;
 }
 
-void CONSTRAINTS::SpringDashpotManager::reset_prestress(Teuchos::RCP<Epetra_Vector> dis)
+void CONSTRAINTS::SpringDashpotManager::reset_prestress(Teuchos::RCP<Core::LinAlg::Vector> dis)
 {
   // loop over all spring dashpot conditions and reset them
   for (int i = 0; i < n_conds_; ++i) springs_[i]->reset_prestress(dis);
@@ -84,11 +84,11 @@ void CONSTRAINTS::SpringDashpotManager::reset_prestress(Teuchos::RCP<Epetra_Vect
 }
 
 void CONSTRAINTS::SpringDashpotManager::output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
-    Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp)
+    Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Core::LinAlg::Vector> disp)
 {
   // row maps for export
-  Teuchos::RCP<Epetra_Vector> gap =
-      Teuchos::rcp(new Epetra_Vector(*(actdisc_->node_row_map()), true));
+  Teuchos::RCP<Core::LinAlg::Vector> gap =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(actdisc_->node_row_map()), true));
   Teuchos::RCP<Epetra_MultiVector> normals =
       Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->node_row_map()), 3, true));
   Teuchos::RCP<Epetra_MultiVector> springstress =
@@ -109,23 +109,23 @@ void CONSTRAINTS::SpringDashpotManager::output(Teuchos::RCP<Core::IO::Discretiza
   if (found_cursurfnormal)
   {
     output->write_vector("gap", gap);
-    output->write_vector("curnormals", normals);
+    output->write_multi_vector("curnormals", normals);
   }
 
   // write spring stress if defined in io-flag
   if (Global::Problem::instance()->io_params().get<bool>("OUTPUT_SPRING"))
-    output->write_vector("springstress", springstress);
+    output->write_multi_vector("springstress", springstress);
 
   return;
 }
 
 void CONSTRAINTS::SpringDashpotManager::output_restart(
     Teuchos::RCP<Core::IO::DiscretizationWriter> output_restart,
-    Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Epetra_Vector> disp)
+    Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Core::LinAlg::Vector> disp)
 {
   // row maps for export
-  Teuchos::RCP<Epetra_Vector> springoffsetprestr =
-      Teuchos::rcp(new Epetra_Vector(*actdisc_->dof_row_map()));
+  Teuchos::RCP<Core::LinAlg::Vector> springoffsetprestr =
+      Teuchos::rcp(new Core::LinAlg::Vector(*actdisc_->dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> springoffsetprestr_old =
       Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->node_row_map()), 3, true));
 
@@ -145,7 +145,7 @@ void CONSTRAINTS::SpringDashpotManager::output_restart(
   // write vector to output for restart
   output_restart->write_vector("springoffsetprestr", springoffsetprestr);
   // write vector to output for restart
-  output_restart->write_vector("springoffsetprestr_old", springoffsetprestr_old);
+  output_restart->write_multi_vector("springoffsetprestr_old", springoffsetprestr_old);
 
   // normal output as well
   output(output_restart, discret, disp);
@@ -161,7 +161,8 @@ void CONSTRAINTS::SpringDashpotManager::output_restart(
 void CONSTRAINTS::SpringDashpotManager::read_restart(
     Core::IO::DiscretizationReader& reader, const double& time)
 {
-  Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(*actdisc_->dof_row_map()));
+  Teuchos::RCP<Core::LinAlg::Vector> tempvec =
+      Teuchos::rcp(new Core::LinAlg::Vector(*actdisc_->dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> tempvecold =
       Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->node_row_map()), 3, true));
 

@@ -21,7 +21,10 @@
 #include "4C_structure_new_timint_basedatasdyn.hpp"
 
 // forward declaration
-class Epetra_Vector;
+namespace Core::LinAlg
+{
+  class Vector;
+}
 class Epetra_Map;
 
 #include "4C_utils_parameter_list.fwd.hpp"
@@ -165,7 +168,7 @@ namespace Solid
       /// @name Access global state from outside via adapter (needed for coupled problems)
       ///@{
       /// unknown displacements at \f$t_{n+1}\f$
-      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> disp_np() const override
+      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> disp_np() const override
       {
         check_init();
         return dataglobalstate_->get_dis_np();
@@ -184,7 +187,7 @@ namespace Solid
        *
        * See also \ref Adapter::StructureNew::set_state
        */
-      Teuchos::RCP<Epetra_Vector> write_access_disp_np() override
+      Teuchos::RCP<Core::LinAlg::Vector> write_access_disp_np() override
       {
         check_init();
         set_state_in_sync_with_nox_group(false);
@@ -192,63 +195,63 @@ namespace Solid
       }
 
       /// known displacements at \f$t_{n}\f$
-      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> disp_n() const override
+      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> disp_n() const override
       {
         check_init();
         return dataglobalstate_->get_dis_n();
       }
 
       /// write access to displacements at \f$t^{n}\f$
-      Teuchos::RCP<Epetra_Vector> write_access_disp_n() override
+      Teuchos::RCP<Core::LinAlg::Vector> write_access_disp_n() override
       {
         check_init();
         return dataglobalstate_->get_dis_n();
       }
 
       /// unknown velocities at \f$t_{n+1}\f$
-      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> vel_np() const override
+      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> vel_np() const override
       {
         check_init();
         return dataglobalstate_->get_vel_np();
       }
 
       /// write access to velocities at \f$t^{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> write_access_vel_np() override
+      Teuchos::RCP<Core::LinAlg::Vector> write_access_vel_np() override
       {
         check_init();
         return dataglobalstate_->get_vel_np();
       }
 
       /// unknown velocities at \f$t_{n}\f$
-      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> vel_n() const override
+      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> vel_n() const override
       {
         check_init();
         return dataglobalstate_->get_vel_n();
       }
 
       /// write access to velocities at \f$t^{n}\f$
-      Teuchos::RCP<Epetra_Vector> write_access_vel_n() override
+      Teuchos::RCP<Core::LinAlg::Vector> write_access_vel_n() override
       {
         check_init();
         return dataglobalstate_->get_vel_n();
       }
 
       /// known velocities at \f$t_{n-1}\f$
-      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> vel_nm() const override
+      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> vel_nm() const override
       {
         check_init();
         return dataglobalstate_->get_vel_nm();
       }
 
       /// unknown accelerations at \f$t_{n+1}\f$
-      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> acc_np() const override
+      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> acc_np() const override
       {
         check_init();
         return dataglobalstate_->get_acc_np();
       }
 
       //! known accelerations at \f$t_{n}\f$
-      [[nodiscard]] Teuchos::RCP<const Epetra_Vector> acc_n() const override
+      [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> acc_n() const override
       {
         check_init();
         return dataglobalstate_->get_acc_n();
@@ -293,14 +296,14 @@ namespace Solid
 
       /// Add residual increment to Lagrange multipliers stored in Constraint manager (derived)
       /// FixMe Different behavior for the implicit and explicit case!!!
-      void update_iter_incr_constr(Teuchos::RCP<Epetra_Vector> lagrincr) override
+      void update_iter_incr_constr(Teuchos::RCP<Core::LinAlg::Vector> lagrincr) override
       {
         FOUR_C_THROW("Not yet implemented!");
       }
 
       /// Add residual increment to pressures stored in Cardiovascular0D manager (derived)
       /// FixMe Different behavior for the implicit and explicit case!!!
-      void update_iter_incr_cardiovascular0_d(Teuchos::RCP<Epetra_Vector> presincr) override
+      void update_iter_incr_cardiovascular0_d(Teuchos::RCP<Core::LinAlg::Vector> presincr) override
       {
         FOUR_C_THROW("Not yet implemented!");
       }
@@ -516,8 +519,8 @@ namespace Solid
        *  \date 06/13
        *  \author biehler */
       void get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
-          Teuchos::RCP<Epetra_Vector> disnp, Teuchos::RCP<Epetra_Vector> velnp,
-          Teuchos::RCP<Epetra_Vector> accnp, Teuchos::RCP<std::vector<char>> elementdata,
+          Teuchos::RCP<Core::LinAlg::Vector> disnp, Teuchos::RCP<Core::LinAlg::Vector> velnp,
+          Teuchos::RCP<Core::LinAlg::Vector> accnp, Teuchos::RCP<std::vector<char>> elementdata,
           Teuchos::RCP<std::vector<char>> nodedata) override;
 
       /** Read restart values
@@ -529,9 +532,9 @@ namespace Solid
       /// Set restart values (deprecated)
       void set_restart(int stepn,                       //!< restart step at \f${n}\f$
           double timen,                                 //!< restart time at \f$t_{n}\f$
-          Teuchos::RCP<Epetra_Vector> disn,             //!< restart displacements at \f$t_{n}\f$
-          Teuchos::RCP<Epetra_Vector> veln,             //!< restart velocities at \f$t_{n}\f$
-          Teuchos::RCP<Epetra_Vector> accn,             //!< restart accelerations at \f$t_{n}\f$
+          Teuchos::RCP<Core::LinAlg::Vector> disn,      //!< restart displacements at \f$t_{n}\f$
+          Teuchos::RCP<Core::LinAlg::Vector> veln,      //!< restart velocities at \f$t_{n}\f$
+          Teuchos::RCP<Core::LinAlg::Vector> accn,      //!< restart accelerations at \f$t_{n}\f$
           Teuchos::RCP<std::vector<char>> elementdata,  //!< restart element data
           Teuchos::RCP<std::vector<char>> nodedata      //!< restart element data
           ) override;
@@ -540,7 +543,7 @@ namespace Solid
       /// Biofilm related stuff
       /// @{
       /// FixMe set structure displacement vector due to biofilm growth
-      void set_str_gr_disp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) override
+      void set_str_gr_disp(Teuchos::RCP<Core::LinAlg::Vector> struct_growth_disp) override
       {
         FOUR_C_THROW("Currently unsupported!");
       }
@@ -551,8 +554,8 @@ namespace Solid
       /// integrate the current step (implicit and explicit)
       virtual int integrate_step() = 0;
       /// right-hand-side of Newton's method (implicit only)
-      Teuchos::RCP<const Epetra_Vector> rhs() override { return get_f(); };
-      [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> get_f() const = 0;
+      Teuchos::RCP<const Core::LinAlg::Vector> rhs() override { return get_f(); };
+      [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector> get_f() const = 0;
       /// @}
 
      public:

@@ -102,7 +102,7 @@ namespace CONTACT
      *  contributions are present.
      *
      *  \param bt (in): Desired vector block type, e.g. displ, constraint,*/
-    Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
+    Teuchos::RCP<const Core::LinAlg::Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const override;
 
 
@@ -124,8 +124,9 @@ namespace CONTACT
      * \note The search direction \c dir in general differs from the actual step since the step
      * length can be differ from 1.0.
      * */
-    void run_post_compute_x(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
-        const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
+    void run_post_compute_x(const CONTACT::ParamsInterface& cparams,
+        const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
+        const Core::LinAlg::Vector& xnew) override;
 
     /*! \brief Return the desired matrix block pointer (read-only)
      *
@@ -146,7 +147,7 @@ namespace CONTACT
      * @param rhs ?? Right-hand side of linear system or residual?
      */
     void run_pre_apply_jacobian_inverse(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Epetra_Vector& rhs) override;
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Core::LinAlg::Vector& rhs) override;
 
     /*! \brief Perform condensation of frictionless contact
      *
@@ -156,7 +157,7 @@ namespace CONTACT
      * @param rhs ?? Right-hand side of linear system or residual?
      */
     virtual void condense_frictionless(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Epetra_Vector& rhs);
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Core::LinAlg::Vector& rhs);
 
     /*! \brief Perform condensation of frictional contact
      *
@@ -166,7 +167,7 @@ namespace CONTACT
      * @param rhs ?? Right-hand side of linear system or residual?
      */
     virtual void condense_friction(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Epetra_Vector& rhs);
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Core::LinAlg::Vector& rhs);
 
     /*! recover condensed Lagrange multiplier after linear solve
      *
@@ -179,8 +180,8 @@ namespace CONTACT
      * @param grp ??
      */
     void run_post_apply_jacobian_inverse(const CONTACT::ParamsInterface& cparams,
-        const Epetra_Vector& rhs, Epetra_Vector& result, const Epetra_Vector& xold,
-        const NOX::Nln::Group& grp) override;
+        const Core::LinAlg::Vector& rhs, Core::LinAlg::Vector& result,
+        const Core::LinAlg::Vector& xold, const NOX::Nln::Group& grp) override;
 
     //! The contributions to the structural right-hand-side block are calculated.
     virtual void eval_str_contact_rhs();
@@ -253,8 +254,8 @@ namespace CONTACT
     \param[in] sold Displacement dof solution increment
     \param[in] dbcmaps Map extractor to apply Dirichlet boundary conditions
     \param[out] blockMat Epetra_Operator containing the 2x2 block sparse matrix object
-    \param[out] blocksol Epetra_Vector for merged solution vector
-    \param[out] blockrhs Epetra_Vector for merged right hand side vector
+    \param[out] blocksol Core::LinAlg::Vector for merged solution vector
+    \param[out] blockrhs Core::LinAlg::Vector for merged right hand side vector
 
     \todo Update documentation once class members have been removed and replaced by accessing the
     data container directly.
@@ -265,9 +266,10 @@ namespace CONTACT
     \author Tobias Wiesner \date 11/2014
     */
     void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
-        Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
+        Teuchos::RCP<Core::LinAlg::Vector> fd, Teuchos::RCP<Core::LinAlg::Vector> sold,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
-        Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override;
+        Teuchos::RCP<Core::LinAlg::Vector>& blocksol,
+        Teuchos::RCP<Core::LinAlg::Vector>& blockrhs) override;
 
     /*!
     \brief Update internal member variables after solving the 2x2 saddle point contact system
@@ -291,8 +293,8 @@ namespace CONTACT
 
     \author Tobias Wiesner \date 11/2014
     */
-    void update_displacements_and_l_mincrements(
-        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override;
+    void update_displacements_and_l_mincrements(Teuchos::RCP<Core::LinAlg::Vector> sold,
+        Teuchos::RCP<const Core::LinAlg::Vector> blocksol) override;
 
     /*!
     \brief The entries of the constraint right-hand side are calculated.
@@ -332,7 +334,7 @@ namespace CONTACT
     conditions can be checked, too.
 
     */
-    void recover(Teuchos::RCP<Epetra_Vector> disi) override;
+    void recover(Teuchos::RCP<Core::LinAlg::Vector> disi) override;
 
     /*! \brief Reset the internal stored Lagrange multipliers
      *
@@ -341,7 +343,7 @@ namespace CONTACT
      * \param xnew    (in): new solution vector of the NOX solver
      */
     void reset_lagrange_multipliers(
-        const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew) override;
+        const CONTACT::ParamsInterface& cparams, const Core::LinAlg::Vector& xnew) override;
 
     /*! \brief Compute force terms
      *
@@ -415,7 +417,7 @@ namespace CONTACT
     \brief Check linear and angular momentum conservation
 
     */
-    void check_conservation_laws(const Epetra_Vector& fs, const Epetra_Vector& fm);
+    void check_conservation_laws(const Core::LinAlg::Vector& fs, const Core::LinAlg::Vector& fm);
 
     /*!
     \brief do additional matrix manipulations for regularization scaling
@@ -426,20 +428,21 @@ namespace CONTACT
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& kan,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& kam,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& kai,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& kaa, Teuchos::RCP<Epetra_Vector>& fa,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteffnew, Teuchos::RCP<Epetra_Vector>& feffnew);
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& kaa, Teuchos::RCP<Core::LinAlg::Vector>& fa,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteffnew,
+        Teuchos::RCP<Core::LinAlg::Vector>& feffnew);
 
     /*!
     \brief calculate regularization scaling and apply it to matrixes
 
     */
-    void evaluate_regularization_scaling(Teuchos::RCP<Epetra_Vector> gact);
+    void evaluate_regularization_scaling(Teuchos::RCP<Core::LinAlg::Vector> gact);
 
     /*!
     \brief Saving reference state is required for penalty support (LTL)
 
     */
-    void save_reference_state(Teuchos::RCP<const Epetra_Vector> dis) override;
+    void save_reference_state(Teuchos::RCP<const Core::LinAlg::Vector> dis) override;
     //@}
 
     //! @name Empty methods
@@ -455,7 +458,7 @@ namespace CONTACT
     void predict_relative_movement() override {}
     double initial_penalty() const override { return 0.0; }
     void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff) override
+        Teuchos::RCP<Core::LinAlg::Vector>& feff) override
     {
     }
     void reset_penalty() override {}
@@ -493,16 +496,16 @@ namespace CONTACT
 
     */
     void evaluate_contact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff) override;
+        Teuchos::RCP<Core::LinAlg::Vector>& feff) override;
 
     /*!
     \brief Evaluate frictional contact
 
     */
     void evaluate_friction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff) override;
+        Teuchos::RCP<Core::LinAlg::Vector>& feff) override;
 
-    void update(Teuchos::RCP<const Epetra_Vector> dis) override;
+    void update(Teuchos::RCP<const Core::LinAlg::Vector> dis) override;
 
 
    protected:
@@ -511,21 +514,21 @@ namespace CONTACT
 
     */
     void add_line_to_lin_contributions(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
+        Teuchos::RCP<Core::LinAlg::Vector>& feff, bool add_time_integration = true);
 
     /*!
     \brief Add penalty terms for master contact
 
     */
     void add_master_contributions(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
+        Teuchos::RCP<Core::LinAlg::Vector>& feff, bool add_time_integration = true);
 
     /*!
     \brief Add penalty terms for LTL edge contact
 
     */
     void add_line_to_lin_contributions_friction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff, bool add_time_integration = true);
+        Teuchos::RCP<Core::LinAlg::Vector>& feff, bool add_time_integration = true);
 
     // don't want = operator and cctor
     LagrangeStrategy operator=(const LagrangeStrategy& old) = delete;
@@ -564,7 +567,7 @@ namespace CONTACT
         nderivmatrix_;  //< global Matrix containing normal derivatives
 
 
-    Teuchos::RCP<Epetra_Vector> fs_;                 //< slave side effective forces (needed for LM)
+    Teuchos::RCP<Core::LinAlg::Vector> fs_;          //< slave side effective forces (needed for LM)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invd_;  //< inverse of Mortar matrix D (needed for LM)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> ksn_;   //< stiffness block K_sn (needed for LM)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> ksm_;   //< stiffness block K_sm (needed for LM)
@@ -574,12 +577,12 @@ namespace CONTACT
         linslipLM_;  //< global matrix containing derivatives (LM) of slip condition
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         linslipDIS_;  //< global matrix containing derivatives (DIS) of slip condition
-    Teuchos::RCP<Epetra_Vector> linslipRHS_;  //< r.h.s vector friction slip nodes
+    Teuchos::RCP<Core::LinAlg::Vector> linslipRHS_;  //< r.h.s vector friction slip nodes
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         linstickLM_;  //< global matrix containing derivatives (LM) of slip condition
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         linstickDIS_;  //< global matrix containing derivatives (DIS) of stick condition
-    Teuchos::RCP<Epetra_Vector> linstickRHS_;  //< r.h.s vector for friction stick condition
+    Teuchos::RCP<Core::LinAlg::Vector> linstickRHS_;  //< r.h.s vector for friction stick condition
 
     Teuchos::RCP<Epetra_Map> zigzagone_;    //< active node set of last active set try
     Teuchos::RCP<Epetra_Map> zigzagtwo_;    //< active node set of second-last active set try
@@ -589,13 +592,14 @@ namespace CONTACT
 
     Teuchos::RCP<Epetra_Map> gOldslipnodes_;  // active slave nodes from previous newton step
 
-    Teuchos::RCP<Epetra_Vector> fLTLOld_;        //< old line to line forces
-    Teuchos::RCP<Epetra_Vector> fLTL_;           //< current line to line forces combined
-    Teuchos::RCP<Epetra_Vector> fLTLn_;          //< current line to line forces normal
-    Teuchos::RCP<Epetra_Vector> fLTLt_;          //< current line to line forces tangent
-    Teuchos::RCP<Epetra_Vector> fconservation_;  //< current line to line forces normal
+    Teuchos::RCP<Core::LinAlg::Vector> fLTLOld_;        //< old line to line forces
+    Teuchos::RCP<Core::LinAlg::Vector> fLTL_;           //< current line to line forces combined
+    Teuchos::RCP<Core::LinAlg::Vector> fLTLn_;          //< current line to line forces normal
+    Teuchos::RCP<Core::LinAlg::Vector> fLTLt_;          //< current line to line forces tangent
+    Teuchos::RCP<Core::LinAlg::Vector> fconservation_;  //< current line to line forces normal
 
-    Teuchos::RCP<Epetra_Vector> nonsmooth_Penalty_force_;  //< penalty forces of non-smooth contact
+    Teuchos::RCP<Core::LinAlg::Vector>
+        nonsmooth_Penalty_force_;  //< penalty forces of non-smooth contact
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         nonsmooth_Penalty_stiff_;  //< tangent to penalty forces of non-smooth contact
 

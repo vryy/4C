@@ -17,10 +17,13 @@
 
 #include <Teuchos_Time.hpp>
 
-// forward declarations
-class Epetra_Vector;
-
 FOUR_C_NAMESPACE_OPEN
+
+// forward declarations
+namespace Core::LinAlg
+{
+  class Vector;
+}
 
 namespace Adapter
 {
@@ -73,12 +76,12 @@ namespace STI
 
     //! pass scatra degrees of freedom to thermo discretization
     void transfer_scatra_to_thermo(
-        const Teuchos::RCP<const Epetra_Vector> scatra  //!< scatra state vector
+        const Teuchos::RCP<const Core::LinAlg::Vector> scatra  //!< scatra state vector
     ) const;
 
     //! pass thermo degrees of freedom to scatra discretization
     void transfer_thermo_to_scatra(
-        const Teuchos::RCP<const Epetra_Vector> thermo  //!< thermo state vector
+        const Teuchos::RCP<const Core::LinAlg::Vector> thermo  //!< thermo state vector
     ) const;
 
     //! scatra time integrator

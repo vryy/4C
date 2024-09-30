@@ -240,7 +240,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::redistribute(
 
   // now do all the ost specfic steps
   const Epetra_Map* newdofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Epetra_Vector> old;
+  Teuchos::RCP<Core::LinAlg::Vector> old;
 
   if (fsphinp_ != Teuchos::null)
   {
@@ -269,10 +269,12 @@ void ScaTra::LevelSetTimIntOneStepTheta::read_restart(
 /*----------------------------------------------------------------------*
  | interpolate phi to intermediate time level n+theta   rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ScaTra::LevelSetTimIntOneStepTheta::phinptheta(const double theta_inter)
+Teuchos::RCP<Core::LinAlg::Vector> ScaTra::LevelSetTimIntOneStepTheta::phinptheta(
+    const double theta_inter)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Epetra_Vector> phi_tmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector> phi_tmp =
+      Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap, true));
   phi_tmp->Update((1.0 - theta_inter), *phin_, theta_inter, *phinp_, 0.0);
   return phi_tmp;
 }
@@ -281,11 +283,12 @@ Teuchos::RCP<Epetra_Vector> ScaTra::LevelSetTimIntOneStepTheta::phinptheta(const
 /*----------------------------------------------------------------------*
  | interpolate phidt to intermediate time level n+theta rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ScaTra::LevelSetTimIntOneStepTheta::phidtnptheta(
+Teuchos::RCP<Core::LinAlg::Vector> ScaTra::LevelSetTimIntOneStepTheta::phidtnptheta(
     const double theta_inter)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Epetra_Vector> phidt_tmp = Teuchos::rcp(new Epetra_Vector(*dofrowmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector> phidt_tmp =
+      Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap, true));
   phidt_tmp->Update((1.0 - theta_inter), *phidtn_, theta_inter, *phidtnp_, 0.0);
   return phidt_tmp;
 }

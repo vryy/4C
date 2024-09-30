@@ -12,9 +12,9 @@
 #include "4C_config.hpp"
 
 #include "4C_inpar_poromultiphase_scatra.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_Comm.h>
-#include <Epetra_Vector.h>
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 
@@ -74,7 +74,7 @@ namespace PoroMultiPhaseScaTra
      * @return: the norm
      */
     double calculate_vector_norm(const enum Inpar::PoroMultiPhaseScaTra::VectorNorm norm,
-        const Teuchos::RCP<const Epetra_Vector> vect);
+        const Teuchos::RCP<const Core::LinAlg::Vector> vect);
 
     /**
      * Get oxygen partial pressure from oxygen concentration via numerical inversion

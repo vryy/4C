@@ -14,9 +14,8 @@
 
 #include "4C_adapter_algorithmbase.hpp"
 #include "4C_fem_discretization.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_ssi_str_model_evaluator_base.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -205,21 +204,21 @@ namespace SSI
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold() const;
 
     /// set structure solution on other fields
-    void set_struct_solution(Teuchos::RCP<const Epetra_Vector> disp,
-        Teuchos::RCP<const Epetra_Vector> vel, bool set_mechanical_stress);
+    void set_struct_solution(Teuchos::RCP<const Core::LinAlg::Vector> disp,
+        Teuchos::RCP<const Core::LinAlg::Vector> vel, bool set_mechanical_stress);
 
     /// set scatra solution on other fields
-    virtual void set_scatra_solution(Teuchos::RCP<const Epetra_Vector> phi) const;
+    virtual void set_scatra_solution(Teuchos::RCP<const Core::LinAlg::Vector> phi) const;
 
     /*!
      * @brief set contact states needed for evaluation of ssi contact
      *
      * @param[in] phi  scatra state to be set to contact nitsche strategy
      */
-    void set_ssi_contact_states(Teuchos::RCP<const Epetra_Vector> phi) const;
+    void set_ssi_contact_states(Teuchos::RCP<const Core::LinAlg::Vector> phi) const;
 
     /// set micro scatra solution on other fields
-    virtual void set_micro_scatra_solution(Teuchos::RCP<const Epetra_Vector> phi) const;
+    virtual void set_micro_scatra_solution(Teuchos::RCP<const Core::LinAlg::Vector> phi) const;
 
     /// set temperature field  by evaluating time dependent function
     void evaluate_and_set_temperature_field();
@@ -293,7 +292,7 @@ namespace SSI
 
     //! set structure stress state on scatra field
     void set_mechanical_stress_state(
-        Teuchos::RCP<const Epetra_Vector> mechanical_stress_state) const;
+        Teuchos::RCP<const Core::LinAlg::Vector> mechanical_stress_state) const;
 
     void set_modelevaluator_base_ssi(
         Teuchos::RCP<Solid::ModelEvaluator::Generic> modelevaluator_ssi_base)
@@ -367,10 +366,10 @@ namespace SSI
     bool is_init() const { return isinit_; }
 
     /// set structure mesh displacement on scatra field
-    void set_mesh_disp(Teuchos::RCP<const Epetra_Vector> disp);
+    void set_mesh_disp(Teuchos::RCP<const Core::LinAlg::Vector> disp);
 
     /// set structure velocity field on scatra field
-    void set_velocity_fields(Teuchos::RCP<const Epetra_Vector> vel);
+    void set_velocity_fields(Teuchos::RCP<const Core::LinAlg::Vector> vel);
 
     //! different time step size between scatra field and structure field
     const bool diff_time_step_size_;
@@ -434,13 +433,13 @@ namespace SSI
     const int temperature_funct_num_;
 
     //! vector of temperatures
-    Teuchos::RCP<Epetra_Vector> temperature_vector_;
+    Teuchos::RCP<Core::LinAlg::Vector> temperature_vector_;
 
     //! Flag to indicate whether old structural time integration is used.
     const bool use_old_structure_;
 
     //! a zero vector of full length with structure dofs
-    Teuchos::RCP<Epetra_Vector> zeros_structure_;
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_structure_;
   };  // SSI_Base
 }  // namespace SSI
 FOUR_C_NAMESPACE_CLOSE

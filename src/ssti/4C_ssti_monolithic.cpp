@@ -464,9 +464,9 @@ void SSTI::SSTIMono::update()
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> SSTI::SSTIMono::extract_sub_increment(Subproblem sub)
+Teuchos::RCP<Core::LinAlg::Vector> SSTI::SSTIMono::extract_sub_increment(Subproblem sub)
 {
-  Teuchos::RCP<Epetra_Vector> subincrement(Teuchos::null);
+  Teuchos::RCP<Core::LinAlg::Vector> subincrement(Teuchos::null);
   switch (sub)
   {
     case Subproblem::structure:

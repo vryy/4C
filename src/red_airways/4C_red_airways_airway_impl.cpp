@@ -611,9 +611,9 @@ int Discret::ELEMENTS::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
 
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
-  Teuchos::RCP<const Epetra_Vector> pn = discretization.get_state("pn");
-  Teuchos::RCP<const Epetra_Vector> pnm = discretization.get_state("pnm");
+  Teuchos::RCP<const Core::LinAlg::Vector> pnp = discretization.get_state("pnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> pn = discretization.get_state("pn");
+  Teuchos::RCP<const Core::LinAlg::Vector> pnm = discretization.get_state("pnm");
 
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
     FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
@@ -833,7 +833,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_collapse(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::AirwayImpl<distype>::compute_pext(RedAirway* ele,
-    Teuchos::RCP<const Epetra_Vector> pn, Teuchos::RCP<const Epetra_Vector> pnp,
+    Teuchos::RCP<const Core::LinAlg::Vector> pn, Teuchos::RCP<const Core::LinAlg::Vector> pnp,
     Teuchos::ParameterList& params)
 {
   Discret::ReducedLung::EvaluationData& evaluation_data =
@@ -875,7 +875,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
   // the number of nodes
   const int numnode = lm.size();
 
-  Teuchos::RCP<const Epetra_Vector> pn = discretization.get_state("pn");
+  Teuchos::RCP<const Core::LinAlg::Vector> pn = discretization.get_state("pn");
 
   if (pn == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pn'");
 
@@ -1299,9 +1299,9 @@ void Discret::ELEMENTS::AirwayImpl<distype>::calc_flow_rates(RedAirway* ele,
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
 
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
-  Teuchos::RCP<const Epetra_Vector> pn = discretization.get_state("pn");
-  Teuchos::RCP<const Epetra_Vector> pnm = discretization.get_state("pnm");
+  Teuchos::RCP<const Core::LinAlg::Vector> pnp = discretization.get_state("pnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> pn = discretization.get_state("pn");
+  Teuchos::RCP<const Core::LinAlg::Vector> pnm = discretization.get_state("pnm");
 
   if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
     FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
@@ -1471,7 +1471,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::get_coupled_values(RedAirway* ele,
   // the number of nodes
   const int numnode = lm.size();
 
-  Teuchos::RCP<const Epetra_Vector> pnp = discretization.get_state("pnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> pnp = discretization.get_state("pnp");
 
   if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
@@ -1705,9 +1705,9 @@ void Discret::ELEMENTS::AirwayImpl<distype>::update_scatra(RedAirway* ele,
   }
   else
   {
-    Teuchos::RCP<const Epetra_Vector> scatranp = discretization.get_state("scatranp");
-    Teuchos::RCP<const Epetra_Vector> avgscatranp = discretization.get_state("avg_scatranp");
-    Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.get_state("dscatranp");
+    Teuchos::RCP<const Core::LinAlg::Vector> scatranp = discretization.get_state("scatranp");
+    Teuchos::RCP<const Core::LinAlg::Vector> avgscatranp = discretization.get_state("avg_scatranp");
+    Teuchos::RCP<const Core::LinAlg::Vector> dscatranp = discretization.get_state("dscatranp");
 
     Discret::ReducedLung::EvaluationData& evaluation_data =
         Discret::ReducedLung::EvaluationData::get();
@@ -1770,9 +1770,10 @@ void Discret::ELEMENTS::AirwayImpl<distype>::update_elem12_scatra(RedAirway* ele
   }
 
 
-  Teuchos::RCP<const Epetra_Vector> dscatranp = discretization.get_state("dscatranp");
-  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.get_state("scatranp");
-  Teuchos::RCP<const Epetra_Vector> volumeMix = discretization.get_state("junctionVolumeInMix");
+  Teuchos::RCP<const Core::LinAlg::Vector> dscatranp = discretization.get_state("dscatranp");
+  Teuchos::RCP<const Core::LinAlg::Vector> scatranp = discretization.get_state("scatranp");
+  Teuchos::RCP<const Core::LinAlg::Vector> volumeMix =
+      discretization.get_state("junctionVolumeInMix");
 
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
@@ -1830,7 +1831,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::eval_nodal_essential_values(RedAirw
   // ---------------------------------------------------------------------
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
-  Teuchos::RCP<const Epetra_Vector> scatranp = discretization.get_state("scatranp");
+  Teuchos::RCP<const Core::LinAlg::Vector> scatranp = discretization.get_state("scatranp");
 
   // ---------------------------------------------------------------------
   // extract scatra values

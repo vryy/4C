@@ -16,10 +16,10 @@
 
 #include "4C_fem_general_shape_function_type.hpp"
 #include "4C_io_control.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_function_manager.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -60,10 +60,10 @@ namespace Mortar
     void condense_matrix(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat);
 
     /// Perform condensation in the right-hand side
-    void condense_rhs(Teuchos::RCP<Epetra_Vector>& rhs);
+    void condense_rhs(Teuchos::RCP<Core::LinAlg::Vector>& rhs);
 
     /// recover condensed primal slave-sided dofs
-    void recover_incr(Teuchos::RCP<Epetra_Vector>& incr);
+    void recover_incr(Teuchos::RCP<Core::LinAlg::Vector>& incr);
 
    private:
     std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> p_;

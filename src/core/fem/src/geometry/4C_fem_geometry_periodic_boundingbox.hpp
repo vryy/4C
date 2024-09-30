@@ -15,10 +15,10 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_function_manager.hpp"
 #include "4C_utils_random.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -280,8 +280,8 @@ namespace Core::Geo
       /// discretization with one volume element representing the box ( used e.g. for output)
       Teuchos::RCP<Core::FE::Discretization> boxdiscret_;
       /// box displacement vector
-      Teuchos::RCP<Epetra_Vector> disn_row_;
-      Teuchos::RCP<Epetra_Vector> disn_col_;
+      Teuchos::RCP<Core::LinAlg::Vector> disn_row_;
+      Teuchos::RCP<Core::LinAlg::Vector> disn_col_;
 
       bool empty_;
       /// set global pbc flag

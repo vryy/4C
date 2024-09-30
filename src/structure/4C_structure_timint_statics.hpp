@@ -209,32 +209,32 @@ namespace Solid
     void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
     //@}
 
-    void apply_dirichlet_bc(const double time,  //!< at time
-        Teuchos::RCP<Epetra_Vector> dis,        //!< displacements
-                                                //!< (may be Teuchos::null)
-        Teuchos::RCP<Epetra_Vector> vel,        //!< velocities
-                                                //!< (may be Teuchos::null)
-        Teuchos::RCP<Epetra_Vector> acc,        //!< accelerations
-                                                //!< (may be Teuchos::null)
-        bool recreatemap                        //!< recreate mapextractor/toggle-vector
-                                                //!< which stores the DOF IDs subjected
-                                                //!< to Dirichlet BCs
-                                                //!< This needs to be true if the bounded DOFs
-                                                //!< have been changed.
+    void apply_dirichlet_bc(const double time,   //!< at time
+        Teuchos::RCP<Core::LinAlg::Vector> dis,  //!< displacements
+                                                 //!< (may be Teuchos::null)
+        Teuchos::RCP<Core::LinAlg::Vector> vel,  //!< velocities
+                                                 //!< (may be Teuchos::null)
+        Teuchos::RCP<Core::LinAlg::Vector> acc,  //!< accelerations
+                                                 //!< (may be Teuchos::null)
+        bool recreatemap                         //!< recreate mapextractor/toggle-vector
+                                                 //!< which stores the DOF IDs subjected
+                                                 //!< to Dirichlet BCs
+                                                 //!< This needs to be true if the bounded DOFs
+                                                 //!< have been changed.
         ) override;
 
     //! @name Access methods
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> fext() override
+    Teuchos::RCP<Core::LinAlg::Vector> fext() override
     {
       FOUR_C_THROW("Statics: no external forces at t_n available");
       return Teuchos::null;
     }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> fext_new() override { return fextn_; }
+    Teuchos::RCP<Core::LinAlg::Vector> fext_new() override { return fextn_; }
 
     //@}
 
@@ -248,13 +248,13 @@ namespace Solid
     //! @name Global force vectors
     //! Residual \c fres_ exists already in base class
     //@{
-    Teuchos::RCP<Epetra_Vector> fint_;  //!< internal force at \f$t_n\f$
+    Teuchos::RCP<Core::LinAlg::Vector> fint_;  //!< internal force at \f$t_n\f$
 
-    Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> fext_;  //!< internal force at \f$t_n\f$
+    Teuchos::RCP<Core::LinAlg::Vector> fext_;  //!< internal force at \f$t_n\f$
 
-    Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
     //@}
 
   };  // class TimIntStatics

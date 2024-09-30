@@ -22,8 +22,10 @@ FOUR_C_NAMESPACE_OPEN
 
 Core::FE::AssembleStrategy::AssembleStrategy(int firstdofset, int seconddofset,
     Teuchos::RCP<LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LinAlg::SparseOperator> systemmatrix2, Teuchos::RCP<Epetra_Vector> systemvector1,
-    Teuchos::RCP<Epetra_Vector> systemvector2, Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<LinAlg::SparseOperator> systemmatrix2,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector3)
     : firstdofset_(firstdofset),
       seconddofset_(seconddofset),
       systemmatrix1_(systemmatrix1),
@@ -147,8 +149,9 @@ void Core::FE::AssembleStrategy::assemble(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::AssembleStrategy::assemble(Epetra_Vector& V, const LinAlg::SerialDenseVector& Vele,
-    const std::vector<int>& lm, const std::vector<int>& lmowner)
+void Core::FE::AssembleStrategy::assemble(Core::LinAlg::Vector& V,
+    const LinAlg::SerialDenseVector& Vele, const std::vector<int>& lm,
+    const std::vector<int>& lmowner)
 {
   LinAlg::assemble(V, Vele, lm, lmowner);
 }

@@ -332,7 +332,7 @@ void electromagnetics_drt()
             // Create a vector that is going to be filled differently depending on the
             // discretization. If HDG we already have the information about the gradient, otherwise
             // the gradient has to be computed.
-            Teuchos::RCP<Epetra_Vector> phi;
+            Teuchos::RCP<Core::LinAlg::Vector> phi;
 
             // If it is an HDG discretization return the interior variables else return the nodal
             // values

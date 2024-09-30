@@ -302,7 +302,7 @@ void FLD::TimIntHDG::clear_state_assemble_mat_and_rhs()
   {
     // Wrote into the state vector during element calls, need to transfer the
     // data back before it disappears when clearing the state (at least for nproc>1)
-    const Epetra_Vector& intvelnpGhosted = *discret_->get_state(1, "intvelnp");
+    const Core::LinAlg::Vector& intvelnpGhosted = *discret_->get_state(1, "intvelnp");
     for (int i = 0; i < intvelnp_->MyLength(); ++i)
       (*intvelnp_)[i] = intvelnpGhosted[intvelnpGhosted.Map().LID(intvelnp_->Map().GID(i))];
   }
@@ -464,19 +464,19 @@ namespace
 {
   // internal helper function for output
   void get_node_vectors_hdg(Core::FE::Discretization& dis,
-      const Teuchos::RCP<Epetra_Vector>& interiorValues,
-      const Teuchos::RCP<Epetra_Vector>& traceValues, const int ndim,
-      Teuchos::RCP<Epetra_MultiVector>& velocity, Teuchos::RCP<Epetra_Vector>& pressure,
-      Teuchos::RCP<Epetra_MultiVector>& tracevel, Teuchos::RCP<Epetra_Vector>& cellPres)
+      const Teuchos::RCP<Core::LinAlg::Vector>& interiorValues,
+      const Teuchos::RCP<Core::LinAlg::Vector>& traceValues, const int ndim,
+      Teuchos::RCP<Epetra_MultiVector>& velocity, Teuchos::RCP<Core::LinAlg::Vector>& pressure,
+      Teuchos::RCP<Epetra_MultiVector>& tracevel, Teuchos::RCP<Core::LinAlg::Vector>& cellPres)
   {
     // create dofsets for velocity and pressure at nodes
     if (pressure.get() == nullptr || pressure->GlobalLength() != dis.num_global_nodes())
     {
       velocity.reset(new Epetra_MultiVector(*dis.node_row_map(), ndim));
-      pressure.reset(new Epetra_Vector(*dis.node_row_map()));
+      pressure.reset(new Core::LinAlg::Vector(*dis.node_row_map()));
     }
     tracevel.reset(new Epetra_MultiVector(velocity->Map(), ndim));
-    cellPres.reset(new Epetra_Vector(*dis.element_row_map()));
+    cellPres.reset(new Core::LinAlg::Vector(*dis.element_row_map()));
 
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
@@ -537,14 +537,14 @@ void FLD::TimIntHDG::output()
     // step number and time
     output_->new_step(step_, time_);
 
-    Teuchos::RCP<Epetra_Vector> cellPres;
+    Teuchos::RCP<Core::LinAlg::Vector> cellPres;
     Teuchos::RCP<Epetra_MultiVector> traceVel;
     get_node_vectors_hdg(*discret_, intvelnp_, velnp_,
         params_->get<int>("number of velocity degrees of freedom"), interpolatedVelocity_,
         interpolatedPressure_, traceVel, cellPres);
-    output_->write_vector("velnp_hdg", interpolatedVelocity_, Core::IO::nodevector);
+    output_->write_multi_vector("velnp_hdg", interpolatedVelocity_, Core::IO::nodevector);
     output_->write_vector("pressure_hdg", interpolatedPressure_, Core::IO::nodevector);
-    output_->write_vector("tracevel_hdg", traceVel, Core::IO::nodevector);
+    output_->write_multi_vector("tracevel_hdg", traceVel, Core::IO::nodevector);
     output_->write_vector("pressure_avg", cellPres, Core::IO::elementvector);
 
     if (step_ == upres_ or step_ == 0) output_->write_element_data(true);
@@ -571,7 +571,7 @@ void FLD::TimIntHDG::calc_intermediate_solution()
       Teuchos::getIntegralValue<Inpar::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
           "FORCING_TYPE") == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
   {
-    Teuchos::RCP<Epetra_Vector> inttmp =
+    Teuchos::RCP<Core::LinAlg::Vector> inttmp =
         Core::LinAlg::create_vector(*discret_->dof_row_map(1), true);
     inttmp->Update(1.0, *intvelnp_, 0.0);
 

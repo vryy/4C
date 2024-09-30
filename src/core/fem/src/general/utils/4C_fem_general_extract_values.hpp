@@ -16,16 +16,16 @@
 
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_Comm.h>
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::FE
 {
   /*!
-  \brief Locally extract a subset of values from an Epetra_Vector
+  \brief Locally extract a subset of values from an Core::LinAlg::Vector
 
   Extracts lm.size() values from a distributed epetra vector and stores them into local.
   this is NOT a parallel method, meaning that all values to be extracted on a processor
@@ -38,9 +38,9 @@ namespace Core::FE
                       determines number of values to be extracted.
   */
   void extract_my_values(
-      const Epetra_Vector& global, std::vector<double>& local, const std::vector<int>& lm);
+      const Core::LinAlg::Vector& global, std::vector<double>& local, const std::vector<int>& lm);
 
-  void extract_my_values(const Epetra_Vector& global, Core::LinAlg::SerialDenseVector& local,
+  void extract_my_values(const Core::LinAlg::Vector& global, Core::LinAlg::SerialDenseVector& local,
       const std::vector<int>& lm);
 
   void extract_my_values(
@@ -48,7 +48,7 @@ namespace Core::FE
 
   template <class Matrix>
   void extract_my_values(
-      const Epetra_Vector& global, std::vector<Matrix>& local, const std::vector<int>& lm)
+      const Core::LinAlg::Vector& global, std::vector<Matrix>& local, const std::vector<int>& lm)
   {
     // safety check
     if (local[0].n() != 1 or local.size() * (unsigned)local[0].m() != lm.size())
@@ -65,7 +65,7 @@ namespace Core::FE
 
         // safety check
         if (lid < 0)
-          FOUR_C_THROW("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(),
+          FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector", global.Comm().MyPID(),
               lm[inode * local.size() + idof]);
 
         // store current dof in local matrix vector consisting of ndof matrices of size nnode x 1,
@@ -77,7 +77,8 @@ namespace Core::FE
   }
 
   template <class Matrix>
-  void extract_my_values(const Epetra_Vector& global, Matrix& local, const std::vector<int>& lm)
+  void extract_my_values(
+      const Core::LinAlg::Vector& global, Matrix& local, const std::vector<int>& lm)
   {
     // safety check
     if ((unsigned)(local.num_rows() * local.num_cols()) != lm.size())
@@ -95,8 +96,8 @@ namespace Core::FE
 
         // safety check
         if (lid < 0)
-          FOUR_C_THROW(
-              "Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), lm[index]);
+          FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector", global.Comm().MyPID(),
+              lm[index]);
 
         // store current dof in local matrix, which is filled column-wise with the dofs listed in
         // the lm vector
@@ -169,8 +170,8 @@ namespace Core::FE
         const int nodegid = (ele->nodes()[j])->id();
         const int lid = global->Map().LID(nodegid);
         if (lid < 0)
-          FOUR_C_THROW(
-              "Proc %d: Cannot find gid=%d in Epetra_Vector", (*global).Comm().MyPID(), nodegid);
+          FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector",
+              (*global).Comm().MyPID(), nodegid);
         localmatrix(i, j) = globalcolumn[lid];
       }
     }
@@ -199,9 +200,9 @@ namespace Core::FE
       const int lid = global.Map().LID(nodegid);
       if (lid < 0)
         FOUR_C_THROW(
-            "Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), nodegid);
+            "Proc %d: Cannot find gid=%d in Core::LinAlg::Vector", global.Comm().MyPID(), nodegid);
 
-      // loop over multi vector columns (numcol=1 for Epetra_Vector)
+      // loop over multi vector columns (numcol=1 for Core::LinAlg::Vector)
       for (int col = 0; col < numcol; col++)
       {
         double* globalcolumn = (global)[col];

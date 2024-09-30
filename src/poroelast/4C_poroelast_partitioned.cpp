@@ -21,8 +21,8 @@ PoroElast::Partitioned::Partitioned(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,
     Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
     : PoroBase(comm, timeparams, porosity_splitter),
-      fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(fluid_field()->velnp())))),
-      structincnp_(Teuchos::rcp(new Epetra_Vector(*(structure_field()->dispnp()))))
+      fluidincnp_(Teuchos::rcp(new Core::LinAlg::Vector(*(fluid_field()->velnp())))),
+      structincnp_(Teuchos::rcp(new Core::LinAlg::Vector(*(structure_field()->dispnp()))))
 {
   const Teuchos::ParameterList& porodyn = Global::Problem::instance()->poroelast_dynamic_params();
   // Get the parameters for the convergence_check

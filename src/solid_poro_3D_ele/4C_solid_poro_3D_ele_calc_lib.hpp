@@ -14,6 +14,7 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_element_integration_select.hpp"
 #include "4C_fem_general_extract_values.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_mat_fluidporo.hpp"
 #include "4C_mat_fluidporo_multiphase.hpp"
 #include "4C_mat_structporo.hpp"
@@ -21,7 +22,6 @@
 #include "4C_solid_poro_3D_ele_properties.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_SerialDenseSolver.hpp>
 
 #include <numeric>
@@ -78,7 +78,7 @@ namespace Discret::ELEMENTS
       const Core::Elements::Element& ele)
   {
     // get state of the global vector
-    Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.get_state(dofset, state);
+    Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state(dofset, state);
     if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
     // ask for the number of dofs of dofset

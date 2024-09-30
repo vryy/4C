@@ -20,10 +20,10 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_result_test.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <fstream>
@@ -130,7 +130,7 @@ namespace EleMag
     \brief Import initial electric field from scatra solution
     */
     void set_initial_electric_field(
-        Teuchos::RCP<Epetra_Vector> phi, Teuchos::RCP<Core::FE::Discretization>& scatradis);
+        Teuchos::RCP<Core::LinAlg::Vector> phi, Teuchos::RCP<Core::FE::Discretization>& scatradis);
 
     /*!
     \brief Compare the numerical solution to the analytical one.
@@ -333,7 +333,7 @@ namespace EleMag
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
 
     /// residual vector
-    Teuchos::RCP<Epetra_Vector> residual_;
+    Teuchos::RCP<Core::LinAlg::Vector> residual_;
 
     /// all equilibration of global system matrix and RHS is done in here
     Teuchos::RCP<Core::LinAlg::EquilibrationSparse> equilibration_;
@@ -342,7 +342,7 @@ namespace EleMag
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     /// vector of zeros to be used for enforcing zero Dirichlet boundary conditions
-    Teuchos::RCP<Epetra_Vector> zeros_;
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_;
 
 
     //  The fomulation relies on the variables:
@@ -351,16 +351,16 @@ namespace EleMag
     //  o   \Lambda (hybrid varible)
 
     /// Trace vector to be solved at every iteration
-    Teuchos::RCP<Epetra_Vector> trace_;
+    Teuchos::RCP<Core::LinAlg::Vector> trace_;
 
     /// Output vectors
     Teuchos::RCP<Epetra_MultiVector> electric;
     Teuchos::RCP<Epetra_MultiVector> electric_post;
     Teuchos::RCP<Epetra_MultiVector> magnetic;
     Teuchos::RCP<Epetra_MultiVector> trace;
-    Teuchos::RCP<Epetra_Vector> conductivity;
-    Teuchos::RCP<Epetra_Vector> permittivity;
-    Teuchos::RCP<Epetra_Vector> permeability;
+    Teuchos::RCP<Core::LinAlg::Vector> conductivity;
+    Teuchos::RCP<Core::LinAlg::Vector> permittivity;
+    Teuchos::RCP<Core::LinAlg::Vector> permeability;
   };
 
 }  // namespace EleMag

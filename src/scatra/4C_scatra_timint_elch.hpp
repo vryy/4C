@@ -296,15 +296,16 @@ namespace ScaTra
     //! \param rhs             global right-hand side vector
     //! \param condstring      name of condition to be evaluated
     void evaluate_electrode_kinetics_conditions(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs,
-        const std::string& condstring);
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+        Teuchos::RCP<Core::LinAlg::Vector> rhs, const std::string& condstring);
 
     //! \brief evaluate point boundary conditions for electrode kinetics
     //!
     //! \param systemmatrix  global system matrix
     //! \param rhs           global right-hand side vector
     void evaluate_electrode_boundary_kinetics_point_conditions(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs);
+        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
+        Teuchos::RCP<Core::LinAlg::Vector> rhs);
 
     //! Add Linearization for Nernst-BC
     void linearization_nernst_condition();
@@ -314,21 +315,21 @@ namespace ScaTra
 
     void evaluate_solution_depending_conditions(
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-        Teuchos::RCP<Epetra_Vector> rhs) override;
+        Teuchos::RCP<Core::LinAlg::Vector> rhs) override;
 
-    void apply_dirichlet_bc(
-        double time, Teuchos::RCP<Epetra_Vector> phinp, Teuchos::RCP<Epetra_Vector> phidt) override;
+    void apply_dirichlet_bc(double time, Teuchos::RCP<Core::LinAlg::Vector> phinp,
+        Teuchos::RCP<Core::LinAlg::Vector> phidt) override;
 
-    void apply_neumann_bc(const Teuchos::RCP<Epetra_Vector>& neumann_loads) override;
+    void apply_neumann_bc(const Teuchos::RCP<Core::LinAlg::Vector>& neumann_loads) override;
 
     void perform_aitken_relaxation(
-        Epetra_Vector& phinp, const Epetra_Vector& phinp_inc_diff) override;
+        Core::LinAlg::Vector& phinp, const Core::LinAlg::Vector& phinp_inc_diff) override;
 
     /*--- query and output ---------------------------------------------------*/
 
     //! check for negative values of concentrations (ELCH)
     void check_concentration_values(
-        Teuchos::RCP<Epetra_Vector> vec  //!< current phi vector to be checked
+        Teuchos::RCP<Core::LinAlg::Vector> vec  //!< current phi vector to be checked
     );
 
     /*========================================================================*/
@@ -361,11 +362,11 @@ namespace ScaTra
 
     //! electro-kinetics toggle
     //! Toggle which defines dof's with Nernst-BC or Dirichlet condition
-    Teuchos::RCP<Epetra_Vector> ektoggle_;
+    Teuchos::RCP<Core::LinAlg::Vector> ektoggle_;
 
     //! dirichlet toggle
     //! Toggle which defines dof's with a Dirichlet condition
-    Teuchos::RCP<Epetra_Vector> dctoggle_;
+    Teuchos::RCP<Core::LinAlg::Vector> dctoggle_;
 
     //! initial volumes of resolved electrodes
     std::map<int, double> electrodeinitvols_;

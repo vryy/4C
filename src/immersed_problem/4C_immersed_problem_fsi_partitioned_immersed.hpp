@@ -41,27 +41,28 @@ namespace FSI
 
     //! Implement pure virtual functions (again overloaded by corresponding partitioned subclass in
     //! immersed_problem)
-    void fsi_op(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override
+    void fsi_op(
+        const Core::LinAlg::Vector& x, Core::LinAlg::Vector& F, const FillType fillFlag) override
     {
       return;
     };
 
     //! empty; overridden in sub class
-    Teuchos::RCP<Epetra_Vector> fluid_op(
-        Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag) override
+    Teuchos::RCP<Core::LinAlg::Vector> fluid_op(
+        Teuchos::RCP<Core::LinAlg::Vector> idisp, const FillType fillFlag) override
     {
       return Teuchos::null;
     };
 
     //! empty; overridden in sub class
-    Teuchos::RCP<Epetra_Vector> struct_op(
-        Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) override
+    Teuchos::RCP<Core::LinAlg::Vector> struct_op(
+        Teuchos::RCP<Core::LinAlg::Vector> iforce, const FillType fillFlag) override
     {
       return Teuchos::null;
     };
 
     //! empty; overridden in sub class
-    Teuchos::RCP<Epetra_Vector> initial_guess() override { return Teuchos::null; };
+    Teuchos::RCP<Core::LinAlg::Vector> initial_guess() override { return Teuchos::null; };
 
 
   };  // class PartitionedImmersed

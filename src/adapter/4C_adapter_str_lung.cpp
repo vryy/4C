@@ -154,8 +154,8 @@ void Adapter::StructureLung::list_lung_vol_cons(std::set<int>& LungVolConIDs, in
 
 /*======================================================================*/
 /* determine initial volumes */
-void Adapter::StructureLung::initialize_vol_con(
-    Teuchos::RCP<Epetra_Vector> initvol, Teuchos::RCP<Epetra_Vector> signvol, const int offsetID)
+void Adapter::StructureLung::initialize_vol_con(Teuchos::RCP<Core::LinAlg::Vector> initvol,
+    Teuchos::RCP<Core::LinAlg::Vector> signvol, const int offsetID)
 {
   if (!(discretization()->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!discretization()->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -263,8 +263,8 @@ void Adapter::StructureLung::initialize_vol_con(
 /* evaluate structural part of fluid-structure volume constraint */
 void Adapter::StructureLung::evaluate_vol_con(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> StructMatrix,
-    Teuchos::RCP<Epetra_Vector> StructRHS, Teuchos::RCP<Epetra_Vector> CurrVols,
-    Teuchos::RCP<Epetra_Vector> SignVols, Teuchos::RCP<Epetra_Vector> lagrMultVecRed,
+    Teuchos::RCP<Core::LinAlg::Vector> StructRHS, Teuchos::RCP<Core::LinAlg::Vector> CurrVols,
+    Teuchos::RCP<Core::LinAlg::Vector> SignVols, Teuchos::RCP<Core::LinAlg::Vector> lagrMultVecRed,
     const int offsetID)
 {
   if (!(discretization()->filled())) FOUR_C_THROW("fill_complete() was not called");
@@ -392,7 +392,7 @@ void Adapter::StructureLung::evaluate_vol_con(
   StructMatrix->apply_dirichlet(*finmap, false);
 
   const Teuchos::RCP<const Epetra_Map>& dispmap = StructMatrix->range_extractor().Map(0);
-  Teuchos::RCP<Epetra_Vector> zeros = Core::LinAlg::create_vector(*dispmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector> zeros = Core::LinAlg::create_vector(*dispmap, true);
   get_dbc_map_extractor()->insert_cond_vector(
       get_dbc_map_extractor()->extract_cond_vector(zeros), StructRHS);
   interface()->insert_vector(interface()->extract_vector(zeros, 2), 2, StructRHS);
@@ -401,8 +401,10 @@ void Adapter::StructureLung::evaluate_vol_con(
 
 /*======================================================================*/
 /* write additional stuff in case of restart */
-void Adapter::StructureLung::write_vol_con_restart(Teuchos::RCP<Epetra_Vector> OldFlowRatesRed,
-    Teuchos::RCP<Epetra_Vector> OldVolsRed, Teuchos::RCP<Epetra_Vector> OldLagrMultRed)
+void Adapter::StructureLung::write_vol_con_restart(
+    Teuchos::RCP<Core::LinAlg::Vector> OldFlowRatesRed,
+    Teuchos::RCP<Core::LinAlg::Vector> OldVolsRed,
+    Teuchos::RCP<Core::LinAlg::Vector> OldLagrMultRed)
 {
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = disc_writer();
   std::stringstream stream1;
@@ -444,7 +446,7 @@ void Adapter::StructureLung::write_vol_con_restart(Teuchos::RCP<Epetra_Vector> O
 
 /*======================================================================*/
 /* output of volume constraint related forces*/
-void Adapter::StructureLung::output_forces(Teuchos::RCP<Epetra_Vector> Forces)
+void Adapter::StructureLung::output_forces(Teuchos::RCP<Core::LinAlg::Vector> Forces)
 {
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = disc_writer();
   output->write_vector("Add_Forces", Forces);
@@ -454,8 +456,9 @@ void Adapter::StructureLung::output_forces(Teuchos::RCP<Epetra_Vector> Forces)
 /*======================================================================*/
 /* read additional stuff in case of restart */
 void Adapter::StructureLung::read_vol_con_restart(const int step,
-    Teuchos::RCP<Epetra_Vector> OldFlowRatesRed, Teuchos::RCP<Epetra_Vector> OldVolsRed,
-    Teuchos::RCP<Epetra_Vector> OldLagrMultRed)
+    Teuchos::RCP<Core::LinAlg::Vector> OldFlowRatesRed,
+    Teuchos::RCP<Core::LinAlg::Vector> OldVolsRed,
+    Teuchos::RCP<Core::LinAlg::Vector> OldLagrMultRed)
 {
   Core::IO::DiscretizationReader reader(
       discretization(), Global::Problem::instance()->input_control_file(), step);

@@ -54,7 +54,7 @@ namespace Solid
       Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_structure; }
 
       //! derived
-      void reset(const Epetra_Vector& x) override;
+      void reset(const Core::LinAlg::Vector& x) override;
 
       //! derived
       bool evaluate_force() override;
@@ -81,7 +81,7 @@ namespace Solid
       bool initialize_inertia_and_damping();
 
       //! derived
-      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Core::LinAlg::Vector& f, const double& timefac_np) const override;
 
       //! derived
       bool assemble_jacobian(
@@ -95,15 +95,15 @@ namespace Solid
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! derived
-      void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+      void run_pre_compute_x(const Core::LinAlg::Vector& xold, Core::LinAlg::Vector& dir_mutable,
           const NOX::Nln::Group& curr_grp) override;
 
       //! derived
       void run_recover() override;
 
       //! derived
-      void run_post_compute_x(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
+      void run_post_compute_x(const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
+          const Core::LinAlg::Vector& xnew) override;
 
       //! derived
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override;
@@ -133,19 +133,20 @@ namespace Solid
        *  \param global (in): If true, sum and share the result over all procs and
        *                      save the global result. */
       void determine_energy(
-          const Epetra_Vector& disnp, const Epetra_Vector* velnp, const bool global);
+          const Core::LinAlg::Vector& disnp, const Core::LinAlg::Vector* velnp, const bool global);
 
       /*! \brief determine the strain energy
        *
        *  \param disnp (in): Current displacement vector
        *  \param global (in): If true, sum the result over all procs and
        *                      save the global result. */
-      void determine_strain_energy(const Epetra_Vector& disnp, const bool global);
+      void determine_strain_energy(const Core::LinAlg::Vector& disnp, const bool global);
 
       //! derived
       void determine_optional_quantity() override;
 
-      bool determine_element_volumes(const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols);
+      bool determine_element_volumes(
+          const Core::LinAlg::Vector& x, Teuchos::RCP<Core::LinAlg::Vector>& ele_vols);
 
       //! derived
       void reset_step_state() override;
@@ -163,10 +164,10 @@ namespace Solid
       Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector> get_last_time_step_solution_ptr() const override;
 
       //! [derived]
       void post_output() override;
@@ -179,7 +180,7 @@ namespace Solid
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n) override;
 
       //! [derived]
-      void create_backup_state(const Epetra_Vector& dir) override;
+      void create_backup_state(const Core::LinAlg::Vector& dir) override;
 
       //! [derived]
       void recover_from_backup_state() override;
@@ -213,10 +214,10 @@ namespace Solid
        *
        *  \author hiermeier \date 02/18 */
       bool pre_apply_force_stiff_external(
-          Epetra_Vector& fextnp, Core::LinAlg::SparseMatrix& stiff) const;
+          Core::LinAlg::Vector& fextnp, Core::LinAlg::SparseMatrix& stiff) const;
 
       //! Set the params_interface in the parameter list and call the other evaluate_neumann routine
-      void evaluate_neumann(const Teuchos::RCP<Epetra_Vector>& eval_vec,
+      void evaluate_neumann(const Teuchos::RCP<Core::LinAlg::Vector>& eval_vec,
           const Teuchos::RCP<Core::LinAlg::SparseOperator>& eval_mat);
 
       /*! \brief Check if the given parameter list is valid and call the
@@ -227,13 +228,14 @@ namespace Solid
        *
        *  \date 08/15
        *  \author hiermeier */
-      void evaluate_neumann(Teuchos::ParameterList& p, const Teuchos::RCP<Epetra_Vector>& eval_vec,
+      void evaluate_neumann(Teuchos::ParameterList& p,
+          const Teuchos::RCP<Core::LinAlg::Vector>& eval_vec,
           const Teuchos::RCP<Core::LinAlg::SparseOperator>& eval_mat);
 
       //! Set the params_interface in the parameter list and call the other evaluate_internal
       //! routine
       void evaluate_internal(Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Epetra_Vector>* eval_vec);
+          Teuchos::RCP<Core::LinAlg::Vector>* eval_vec);
 
       /*! \brief Check if the given parameter list is valid and call the
        *  Evaluate routine of the discretization
@@ -245,13 +247,13 @@ namespace Solid
        *  \author hiermeier */
       void evaluate_internal(Teuchos::ParameterList& p,
           Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Epetra_Vector>* eval_vec);
+          Teuchos::RCP<Core::LinAlg::Vector>* eval_vec);
 
       /*! \brief  Set the params_interface in the parameter list and call the other
        * evaluate_internal_specified_elements routine */
       void evaluate_internal_specified_elements(
           Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Epetra_Vector>* eval_vec, const Epetra_Map* ele_map_to_be_evaluated);
+          Teuchos::RCP<Core::LinAlg::Vector>* eval_vec, const Epetra_Map* ele_map_to_be_evaluated);
 
       /*! \brief  Check if the given parameter list is valid and call the
        *  Evaluate routine for all elements specified in the element map
@@ -259,7 +261,7 @@ namespace Solid
        *  \author grill */
       void evaluate_internal_specified_elements(Teuchos::ParameterList& p,
           Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Epetra_Vector>* eval_vec, const Epetra_Map* ele_map_to_be_evaluated);
+          Teuchos::RCP<Core::LinAlg::Vector>* eval_vec, const Epetra_Map* ele_map_to_be_evaluated);
 
       /*! \brief Add static structural internal force and stiffness matrix to the
        *         evaluate call (default)
@@ -274,7 +276,7 @@ namespace Solid
        *  \date 09/16
        *  \author hiermeier */
       void static_contributions(Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Epetra_Vector>* eval_vec);
+          Teuchos::RCP<Core::LinAlg::Vector>* eval_vec);
 
       /*! \brief Add static structural internal force to the evaluate call (default)
        *
@@ -285,7 +287,7 @@ namespace Solid
        *
        *  \date 09/16
        *  \author hiermeier */
-      void static_contributions(Teuchos::RCP<Epetra_Vector>* eval_vec);
+      void static_contributions(Teuchos::RCP<Core::LinAlg::Vector>* eval_vec);
 
       /*! \brief Add material damping matrix  to the evaluate call (optional)
        *
@@ -318,7 +320,7 @@ namespace Solid
        *  \date 09/16
        *  \author hiermeier */
       void inertial_contributions(Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Epetra_Vector>* eval_vec);
+          Teuchos::RCP<Core::LinAlg::Vector>* eval_vec);
 
       /*! \brief Add inertial force to the evaluate call (optional)
        *
@@ -333,7 +335,7 @@ namespace Solid
        *
        *  \date 09/16
        *  \author hiermeier */
-      void inertial_contributions(Teuchos::RCP<Epetra_Vector>* eval_vec);
+      void inertial_contributions(Teuchos::RCP<Core::LinAlg::Vector>* eval_vec);
 
       /*! \brief Evaluate the inertial forces (for the standard case) and
        *         any viscous damping forces
@@ -363,7 +365,7 @@ namespace Solid
        *
        *  \date 09/16
        *  \author hiermeier */
-      Teuchos::RCP<Epetra_Vector> get_inertial_force();
+      Teuchos::RCP<Core::LinAlg::Vector> get_inertial_force();
 
       /*! \brief writes output for discretization structure
        *
@@ -396,8 +398,8 @@ namespace Solid
        *  \date 10/17
        *  \author grill */
       void write_output_runtime_structure(
-          const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
-          const Teuchos::RCP<Epetra_Vector>& velocity_state_vector, int timestep_number,
+          const Teuchos::RCP<Core::LinAlg::Vector>& displacement_state_vector,
+          const Teuchos::RCP<Core::LinAlg::Vector>& velocity_state_vector, int timestep_number,
           double time) const;
 
       /**
@@ -429,8 +431,9 @@ namespace Solid
        *
        *  \date 10/17
        *  \author grill */
-      void write_output_runtime_beams(const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
-          int timestep_number, double time) const;
+      void write_output_runtime_beams(
+          const Teuchos::RCP<Core::LinAlg::Vector>& displacement_state_vector, int timestep_number,
+          double time) const;
 
       /*! \brief Write the parameters from the Solid::ModelEvaluator::Data
        *         to the Teuchos::ParameterList
@@ -451,40 +454,40 @@ namespace Solid
       //! @{
 
       //! global internal force at \f$t_{n+1}\f$
-      Epetra_Vector& fint_np();
+      Core::LinAlg::Vector& fint_np();
 
       //! global internal force at \f$t_{n+1}\f$ (read-only)
-      const Epetra_Vector& fint_np() const;
+      const Core::LinAlg::Vector& fint_np() const;
 
       //! global internal force at \f$t_{n}\f$ (read-only)
-      const Epetra_Vector& fint_n() const;
+      const Core::LinAlg::Vector& fint_n() const;
 
       //! global external force at \f$t_{n+1}\f$
-      Epetra_Vector& fext_np();
+      Core::LinAlg::Vector& fext_np();
 
       //! global external force at \f$t_{n+1}\f$ (read-only)
-      const Epetra_Vector& fext_np() const;
+      const Core::LinAlg::Vector& fext_np() const;
 
       //! global external force at \f$t_{n}\f$ (read-only)
-      const Epetra_Vector& fext_n() const;
+      const Core::LinAlg::Vector& fext_n() const;
 
       //! inertial force at \f$t_{n+1}\f$
-      Epetra_Vector& finertial_np();
+      Core::LinAlg::Vector& finertial_np();
 
       //! inertial force at \f$t_{n+1}\f$ (read-only)
-      const Epetra_Vector& finertial_np() const;
+      const Core::LinAlg::Vector& finertial_np() const;
 
       //! viscous force at \f$t_{n+1}\f$
-      Epetra_Vector& fvisco_np();
+      Core::LinAlg::Vector& fvisco_np();
 
       //! viscous force at \f$t_{n+1}\f$ (read-only)
-      const Epetra_Vector& fvisco_np() const;
+      const Core::LinAlg::Vector& fvisco_np() const;
 
       //! structural displacement at \f$t_{n+1}\f$
-      Epetra_Vector& dis_np();
+      Core::LinAlg::Vector& dis_np();
 
       //! structural displacement at \f$t_{n+1}\f$ (read-only)
-      const Epetra_Vector& dis_np() const;
+      const Core::LinAlg::Vector& dis_np() const;
 
       //! structural stiffness block
       Core::LinAlg::SparseMatrix& stiff() const;
@@ -525,7 +528,7 @@ namespace Solid
       /*! \brief displacement increment
        *  Necessary for the EAS reconstruction, incremental strain evaluation,
        *  etc.. */
-      Teuchos::RCP<Epetra_Vector> dis_incr_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector> dis_incr_ptr_;
 
       //! visualization parameters
       Core::IO::VisualizationParameters visualization_params_;

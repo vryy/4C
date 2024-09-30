@@ -66,7 +66,7 @@ namespace FLD
 
     */
     void update_iter_incrementally(
-        Teuchos::RCP<const Epetra_Vector> vel  //!< input residual velocities
+        Teuchos::RCP<const Core::LinAlg::Vector> vel  //!< input residual velocities
         ) override;
 
     /*!
@@ -117,7 +117,7 @@ namespace FLD
 
    protected:
     //! initial porosity (poroelasticity)
-    Teuchos::RCP<Epetra_Vector> init_porosity_field_;
+    Teuchos::RCP<Core::LinAlg::Vector> init_porosity_field_;
 
    private:
   };

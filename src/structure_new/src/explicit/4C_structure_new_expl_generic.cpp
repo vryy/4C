@@ -63,7 +63,7 @@ void Solid::EXPLICIT::Generic::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::EXPLICIT::Generic::apply_force(const Epetra_Vector& x, Epetra_Vector& f)
+bool Solid::EXPLICIT::Generic::apply_force(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f)
 {
   check_init_setup();
 
@@ -79,7 +79,7 @@ bool Solid::EXPLICIT::Generic::apply_force(const Epetra_Vector& x, Epetra_Vector
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::EXPLICIT::Generic::apply_stiff(
-    const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
+    const Core::LinAlg::Vector& x, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
 
@@ -100,7 +100,7 @@ bool Solid::EXPLICIT::Generic::apply_stiff(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::EXPLICIT::Generic::apply_force_stiff(
-    const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac)
+    const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
   // ---------------------------------------------------------------------------
@@ -137,7 +137,7 @@ void Solid::EXPLICIT::Generic::compute_jacobian_contributions_from_element_level
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::EXPLICIT::Generic::assemble_force(
-    Epetra_Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models) const
+    Core::LinAlg::Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models) const
 {
   FOUR_C_THROW("%s is not yet implemented", __FUNCTION__);
   return false;
@@ -145,7 +145,8 @@ bool Solid::EXPLICIT::Generic::assemble_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::EXPLICIT::Generic::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
+void Solid::EXPLICIT::Generic::remove_condensed_contributions_from_rhs(
+    Core::LinAlg::Vector& rhs) const
 {
   model_eval().remove_condensed_contributions_from_rhs(rhs);
 }
@@ -202,7 +203,7 @@ void NOX::Nln::PrePostOp::EXPLICIT::Generic::runPreSolve(const ::NOX::Solver::Ge
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::Nln::PrePostOp::EXPLICIT::Generic::run_pre_compute_x(const NOX::Nln::Group& input_grp,
-    const Epetra_Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
+    const Core::LinAlg::Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
 {
   // For explicit integration this action simply does nothing.
 }
@@ -210,7 +211,7 @@ void NOX::Nln::PrePostOp::EXPLICIT::Generic::run_pre_compute_x(const NOX::Nln::G
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::Nln::PrePostOp::EXPLICIT::Generic::run_post_compute_x(const NOX::Nln::Group& input_grp,
-    const Epetra_Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
+    const Core::LinAlg::Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
 {
   // For explicit integration this action simply does nothing.
 }

@@ -23,7 +23,7 @@
 #include <set>
 
 // forward declaration
-class Epetra_Vector;
+
 namespace NOX
 {
   namespace Epetra

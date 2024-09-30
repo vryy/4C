@@ -65,7 +65,7 @@ class PostWriterBase
    \brief write all time steps of a result
 
    Write results. The results are taken from a reconstructed
-   Epetra_Vector. In many cases this vector will contain just one
+   Core::LinAlg::Vector. In many cases this vector will contain just one
    variable (displacements) and thus is easy to write as a whole. At
    other times, however, there is more than one result (velocity,
    pressure) and we want to write just one part of it. So we have to
@@ -84,7 +84,7 @@ class PostWriterBase
    \brief write all time steps of a result in one time step
 
    Write results. The results are taken from a reconstructed
-   Epetra_Vector. In many cases this vector will contain just one
+   Core::LinAlg::Vector. In many cases this vector will contain just one
    variable (displacements) and thus is easy to write as a whole. At
    other times, however, there is more than one result (velocity,
    pressure) and we want to write just one part of it. So we have to

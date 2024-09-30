@@ -17,9 +17,8 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_ale.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_result_test.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -58,7 +57,7 @@ namespace ALE
     Teuchos::RCP<const Core::FE::Discretization> aledis_;
 
     /// pointer to ALE displacement result vector
-    Teuchos::RCP<const Epetra_Vector> dispnp_;
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp_;
   };
 
 }  // namespace ALE

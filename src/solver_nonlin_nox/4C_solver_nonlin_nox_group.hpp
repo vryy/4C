@@ -32,6 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration
 namespace Core::LinAlg
 {
+  class Vector;
   class SparseMatrix;
 }  // namespace Core::LinAlg
 
@@ -100,7 +101,7 @@ namespace NOX
 
       /// compute element volumes
       ::NOX::Abstract::Group::ReturnType compute_element_volumes(
-          Teuchos::RCP<Epetra_Vector>& ele_vols) const;
+          Teuchos::RCP<Core::LinAlg::Vector>& ele_vols) const;
 
       /*! get the nodal dofs from the elements corresponding to the provided
        *  global element ids */
@@ -109,7 +110,8 @@ namespace NOX
 
       /// compute trial element volumes
       ::NOX::Abstract::Group::ReturnType compute_trial_element_volumes(
-          Teuchos::RCP<Epetra_Vector>& ele_vols, const ::NOX::Abstract::Vector& dir, double step);
+          Teuchos::RCP<Core::LinAlg::Vector>& ele_vols, const ::NOX::Abstract::Vector& dir,
+          double step);
 
       //! @}
 
@@ -237,7 +239,7 @@ namespace NOX
           const ::NOX::Epetra::Vector& dir, const NOX::Nln::Solver::PseudoTransient& ptcsolver);
 
       //! get the lumped mass matrix
-      Teuchos::RCP<const Epetra_Vector> get_lumped_mass_matrix_ptr() const;
+      Teuchos::RCP<const Core::LinAlg::Vector> get_lumped_mass_matrix_ptr() const;
 
       // Get element based scaling operator
       Teuchos::RCP<Core::LinAlg::SparseMatrix> get_contributions_from_element_level();
@@ -267,10 +269,11 @@ namespace NOX
       const Epetra_Map& get_jacobian_range_map(unsigned rbid, unsigned cbid) const;
 
       /// return a copy of the Jacobian diagonal block \c diag_bid
-      Teuchos::RCP<Epetra_Vector> get_diagonal_of_jacobian(unsigned diag_bid) const;
+      Teuchos::RCP<Core::LinAlg::Vector> get_diagonal_of_jacobian(unsigned diag_bid) const;
 
       /// replace the Jacobian diagonal block \c diag_bid
-      void replace_diagonal_of_jacobian(const Epetra_Vector& new_diag, unsigned diag_bid) const;
+      void replace_diagonal_of_jacobian(
+          const Core::LinAlg::Vector& new_diag, unsigned diag_bid) const;
 
       /// compute the condition number of the Jacobian matrix (serial mode)
       ::NOX::Abstract::Group::ReturnType compute_serial_jacobian_condition_number(

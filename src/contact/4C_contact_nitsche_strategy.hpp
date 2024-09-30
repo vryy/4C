@@ -61,12 +61,12 @@ namespace CONTACT
     NitscheStrategy operator=(const NitscheStrategy& old) = delete;
     NitscheStrategy(const NitscheStrategy& old) = delete;
 
-    void apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
         const int step, const int iter, bool predictor) override;
 
     void do_read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<const Epetra_Vector> dis,
+        Teuchos::RCP<const Core::LinAlg::Vector> dis,
         Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
     bool is_saddle_point_system() const override { return false; }
@@ -82,7 +82,7 @@ namespace CONTACT
      */
     virtual void integrate(const CONTACT::ParamsInterface& cparams);
 
-    Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
+    Teuchos::RCP<const Core::LinAlg::Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const override;
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
@@ -106,15 +106,17 @@ namespace CONTACT
     void store_dirichlet_status(Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps) override{
         /* we don't care about dirichlet for now */
     };
-    void update(Teuchos::RCP<const Epetra_Vector> dis) override;
+    void update(Teuchos::RCP<const Core::LinAlg::Vector> dis) override;
     void evaluate_reference_state() override;
-    void do_write_restart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
+    void do_write_restart(
+        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>>& restart_vectors,
         bool forcedrestart) const override{
         /* nothing stored in nitsche strategy that would need to be written */
     };
     void compute_contact_stresses() final{/* nothing stress output in nitsche strategy yet */};
     virtual void reconnect_parent_elements();
-    void set_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
+    void set_state(
+        const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec) override;
 
     /*!
      * @brief  Set the parent state
@@ -123,18 +125,20 @@ namespace CONTACT
      * @param[in] vec        corresponding state vector
      * @param[in] dis        corresponding discretization
      */
-    void set_parent_state(const enum Mortar::StateType& statename, const Epetra_Vector& vec,
+    void set_parent_state(const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec,
         const Core::FE::Discretization& dis) override;
 
-    Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_n(const bool& redist) const override
+    Teuchos::RCP<const Core::LinAlg::Vector> lagrange_multiplier_n(
+        const bool& redist) const override
     {
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_np(const bool& redist) const override
+    Teuchos::RCP<const Core::LinAlg::Vector> lagrange_multiplier_np(
+        const bool& redist) const override
     {
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_old() const override
+    Teuchos::RCP<const Core::LinAlg::Vector> lagrange_multiplier_old() const override
     {
       return Teuchos::null;
     }
@@ -160,18 +164,19 @@ namespace CONTACT
     bool active_set_converged() const override { return true; }
     int active_set_steps() const override { return 0; }
     void reset_active_set() override {}
-    void recover(Teuchos::RCP<Epetra_Vector> disi) override {}
+    void recover(Teuchos::RCP<Core::LinAlg::Vector> disi) override {}
     void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
-        Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
+        Teuchos::RCP<Core::LinAlg::Vector> fd, Teuchos::RCP<Core::LinAlg::Vector> sold,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
-        Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override
+        Teuchos::RCP<Core::LinAlg::Vector>& blocksol,
+        Teuchos::RCP<Core::LinAlg::Vector>& blockrhs) override
     {
       FOUR_C_THROW(
           "Nitsche does not have Lagrange multiplier DOFs. So, saddle point system makes no sense "
           "here.");
     }
-    void update_displacements_and_l_mincrements(
-        Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override
+    void update_displacements_and_l_mincrements(Teuchos::RCP<Core::LinAlg::Vector> sold,
+        Teuchos::RCP<const Core::LinAlg::Vector> blocksol) override
     {
       FOUR_C_THROW(
           "Nitsche does not have Lagrange multiplier DOFs. So, saddle point system makes no sense "
@@ -186,21 +191,21 @@ namespace CONTACT
     void update_constraint_norm(int uzawaiter) override {}
     void initialize() override{};
     void evaluate_contact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff) override
+        Teuchos::RCP<Core::LinAlg::Vector>& feff) override
     {
       FOUR_C_THROW("not supported in this strategy");
     }
     void evaluate_friction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff) override
+        Teuchos::RCP<Core::LinAlg::Vector>& feff) override
     {
       FOUR_C_THROW("not supported in this strategy");
     }
     void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff) override
+        Teuchos::RCP<Core::LinAlg::Vector>& feff) override
     {
     }
     void reset_penalty() override {}
-    void save_reference_state(Teuchos::RCP<const Epetra_Vector> dis) override {}
+    void save_reference_state(Teuchos::RCP<const Core::LinAlg::Vector> dis) override {}
     double initial_penalty() const override { return 0.0; }
     double constraint_norm() const override { return 0.0; }
     bool is_penalty() const override { return false; }
@@ -217,11 +222,12 @@ namespace CONTACT
 
     void evaluate_force_stiff(CONTACT::ParamsInterface& cparams) override;
 
-    void reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
-        const Epetra_Vector& xnew) override;
+    void reset(const CONTACT::ParamsInterface& cparams, const Core::LinAlg::Vector& dispnp,
+        const Core::LinAlg::Vector& xnew) override;
 
-    void run_post_compute_x(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
-        const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
+    void run_post_compute_x(const CONTACT::ParamsInterface& cparams,
+        const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
+        const Core::LinAlg::Vector& xnew) override;
 
     /*!
      * @brief Fill RHS vector of vector block type
@@ -270,7 +276,7 @@ namespace CONTACT
 
     std::vector<Teuchos::RCP<CONTACT::Interface>> interface_;
 
-    Teuchos::RCP<Epetra_Vector> curr_state_;
+    Teuchos::RCP<Core::LinAlg::Vector> curr_state_;
     bool curr_state_eval_;
 
     Teuchos::RCP<Epetra_FEVector> fc_;

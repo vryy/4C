@@ -132,12 +132,12 @@ double NOX::Nln::CONSTRAINT::Group::get_linearized_model_terms(const ::NOX::Abst
       NOX::Nln::Group::get_linearized_model_terms(dir, merit_func_type, linorder, lintype);
 
   const ::NOX::Epetra::Vector& dir_nox_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
-  const Epetra_Vector& dir_epetra = dir_nox_epetra.getEpetraVector();
+  Core::LinAlg::Vector dir_v = Core::LinAlg::Vector(dir_nox_epetra.getEpetraVector());
 
   // constraint contributions
   for (const auto& constr_iter : user_constraint_interfaces_)
-    linVal += constr_iter.second->get_linearized_model_terms(
-        dir_epetra, merit_func_type, linorder, lintype);
+    linVal +=
+        constr_iter.second->get_linearized_model_terms(dir_v, merit_func_type, linorder, lintype);
 
   return linVal;
 }
@@ -174,8 +174,9 @@ Teuchos::RCP<const std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_rhs_nor
       Teuchos::RCP<const NOX::Nln::CONSTRAINT::Interface::Required> constrptr =
           get_constraint_interface_ptr(soltype, false);
       if (constrptr != Teuchos::null)
-        rval = constrptr->get_constraint_rhs_norms(RHSVector.getEpetraVector(), chQ[i], type[i],
-            (*scale)[i] == ::NOX::StatusTest::NormF::Scaled);
+        rval =
+            constrptr->get_constraint_rhs_norms(Core::LinAlg::Vector(RHSVector.getEpetraVector()),
+                chQ[i], type[i], (*scale)[i] == ::NOX::StatusTest::NormF::Scaled);
       else
         rval = 0.0;
     }
@@ -230,8 +231,9 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_solution_upda
         NOX::Nln::Aux::convert_quantity_type_to_solution_type(chQ[i]);
     Teuchos::RCP<const NOX::Nln::CONSTRAINT::Interface::Required> constrptr =
         get_constraint_interface_ptr(soltype);
-    rval = constrptr->get_lagrange_multiplier_update_norms(xVector.getEpetraVector(),
-        xOldEpetra.getEpetraVector(), chQ[i], type[i],
+    rval = constrptr->get_lagrange_multiplier_update_norms(
+        Core::LinAlg::Vector(xVector.getEpetraVector()),
+        Core::LinAlg::Vector(xOldEpetra.getEpetraVector()), chQ[i], type[i],
         (*scale)[i] == StatusTest::NormUpdate::Scaled);
 
     if (rval >= 0.0)
@@ -279,8 +281,9 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_previous_solu
         NOX::Nln::Aux::convert_quantity_type_to_solution_type(chQ[i]);
     Teuchos::RCP<const NOX::Nln::CONSTRAINT::Interface::Required> constrptr =
         get_constraint_interface_ptr(soltype);
-    rval = constrptr->get_previous_lagrange_multiplier_norms(xOldEpetra.getEpetraVector(), chQ[i],
-        type[i], (*scale)[i] == StatusTest::NormUpdate::Scaled);
+    rval = constrptr->get_previous_lagrange_multiplier_norms(
+        Core::LinAlg::Vector(xOldEpetra.getEpetraVector()), chQ[i], type[i],
+        (*scale)[i] == StatusTest::NormUpdate::Scaled);
 
     if (rval >= 0.0)
       norms->push_back(rval);
@@ -324,8 +327,10 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_solution_upda
     Teuchos::RCP<const NOX::Nln::CONSTRAINT::Interface::Required> constrptr =
         get_constraint_interface_ptr(soltype);
 
-    rval = constrptr->get_lagrange_multiplier_update_rms(xVector.getEpetraVector(),
-        xOldEpetra.getEpetraVector(), aTol[i], rTol[i], chQ[i], disable_implicit_weighting[i]);
+    rval = constrptr->get_lagrange_multiplier_update_rms(
+        Core::LinAlg::Vector(xVector.getEpetraVector()),
+        Core::LinAlg::Vector(xOldEpetra.getEpetraVector()), aTol[i], rTol[i], chQ[i],
+        disable_implicit_weighting[i]);
     if (rval >= 0)
       rms->push_back(rval);
     else

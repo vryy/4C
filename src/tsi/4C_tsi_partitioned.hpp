@@ -122,27 +122,27 @@ namespace TSI
     double ittol_;
 
     //! temperature increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> tempincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> tempincnp_;
     //! displacement increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> dispincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> dispincnp_;
 
    private:
     //! displacements at time step (t_n) or (t_n+1)
-    Teuchos::RCP<const Epetra_Vector> disp_;
+    Teuchos::RCP<const Core::LinAlg::Vector> disp_;
     //! velocities at time step (t_n) or (t_n+1)
-    Teuchos::RCP<const Epetra_Vector> vel_;
+    Teuchos::RCP<const Core::LinAlg::Vector> vel_;
 
     //! temperature at time step (t_n) or (t_n+1)
-    Teuchos::RCP<Epetra_Vector> temp_;
+    Teuchos::RCP<Core::LinAlg::Vector> temp_;
 
     //! @name Aitken relaxation
 
     //! difference of last two solutions
     // del = r^{i+1}_{n+1} = d^{i+1}_{n+1} - d^i_{n+1}
-    Teuchos::RCP<Epetra_Vector> del_;
+    Teuchos::RCP<Core::LinAlg::Vector> del_;
     //! difference of difference of last two pair of solutions
     // delhist = ( r^{i+1}_{n+1} - r^i_{n+1} )
-    Teuchos::RCP<Epetra_Vector> delhist_;
+    Teuchos::RCP<Core::LinAlg::Vector> delhist_;
     //! Aitken factor
     double mu_;
 

@@ -15,8 +15,8 @@
 #include "4C_config.hpp"
 
 #include "4C_inpar_fluid.hpp"
+#include "4C_linalg_vector.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -70,9 +70,9 @@ namespace FLD
     Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! state vectors to be initialized
-    Teuchos::RCP<Epetra_Vector> velnp_;
-    Teuchos::RCP<Epetra_Vector> veln_;
-    Teuchos::RCP<Epetra_Vector> velnm_;
+    Teuchos::RCP<Core::LinAlg::Vector> velnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> veln_;
+    Teuchos::RCP<Core::LinAlg::Vector> velnm_;
     //! type of energy spectrum for initialization
     Inpar::FLUID::InitialField type_;
 
@@ -102,9 +102,9 @@ namespace FLD
     void calculate_initial_field() override;
 
    protected:
-    Teuchos::RCP<Epetra_Vector> intveln_;
-    Teuchos::RCP<Epetra_Vector> intvelnm_;
-    Teuchos::RCP<Epetra_Vector> intvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> intveln_;
+    Teuchos::RCP<Core::LinAlg::Vector> intvelnm_;
+    Teuchos::RCP<Core::LinAlg::Vector> intvelnp_;
   };
 
 }  // namespace FLD

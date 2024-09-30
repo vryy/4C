@@ -39,8 +39,8 @@ namespace PoroElast
     void setup_system() override;
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void evaluate(
-        Teuchos::RCP<const Epetra_Vector> iterinc,  //!< increment between iteration i and i+1
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+                      iterinc,  //!< increment between iteration i and i+1
         bool firstiter = false) override;
 
     //! use monolithic update and set old meshtying quantities at the end of a timestep
@@ -48,7 +48,7 @@ namespace PoroElast
 
     //! Recover Lagrange Multiplier after Newton step
     void recover_lagrange_multiplier_after_newton_step(
-        Teuchos::RCP<const Epetra_Vector> iterinc) override;
+        Teuchos::RCP<const Core::LinAlg::Vector> iterinc) override;
 
     //! build meshtying specific norms where meshtying constraint residuals are evaluated separately
     void build_convergence_norms() override;

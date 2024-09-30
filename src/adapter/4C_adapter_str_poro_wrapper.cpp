@@ -113,10 +113,10 @@ const Teuchos::RCP<Adapter::FluidPoro>& Adapter::StructurePoroWrapper::fluid_fie
 }
 
 //! Insert FSI Condition Vector
-Teuchos::RCP<Epetra_Vector> Adapter::StructurePoroWrapper::insert_fsi_cond_vector(
-    Teuchos::RCP<const Epetra_Vector> cond)
+Teuchos::RCP<Core::LinAlg::Vector> Adapter::StructurePoroWrapper::insert_fsi_cond_vector(
+    Teuchos::RCP<const Core::LinAlg::Vector> cond)
 {
-  Teuchos::RCP<Epetra_Vector> tmpcond;
+  Teuchos::RCP<Core::LinAlg::Vector> tmpcond;
   switch (type_)
   {
     case FieldWrapper::type_StructureField:
@@ -135,7 +135,7 @@ Teuchos::RCP<Epetra_Vector> Adapter::StructurePoroWrapper::insert_fsi_cond_vecto
 
 //! Recover Lagrange Multiplier during iteration (does nothing for structure)
 void Adapter::StructurePoroWrapper::recover_lagrange_multiplier_after_newton_step(
-    Teuchos::RCP<Epetra_Vector> iterinc)
+    Teuchos::RCP<Core::LinAlg::Vector> iterinc)
 {
   if (type_ == FieldWrapper::type_PoroField)
     poro_->recover_lagrange_multiplier_after_newton_step(iterinc);

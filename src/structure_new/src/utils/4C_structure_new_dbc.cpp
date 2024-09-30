@@ -18,10 +18,10 @@
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_solver_nonlin_nox_linearsystem_prepostoperator.hpp"
 #include "4C_structure_new_timint_base.hpp"
 
-#include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>
 
 FOUR_C_NAMESPACE_OPEN
@@ -45,7 +45,7 @@ Solid::Dbc::Dbc()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::Dbc::init(const Teuchos::RCP<Core::FE::Discretization>& discret_ptr,
-    const Teuchos::RCP<Epetra_Vector>& freact_ptr,
+    const Teuchos::RCP<Core::LinAlg::Vector>& freact_ptr,
     const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr)
 {
   // reset the setup indicator
@@ -66,7 +66,7 @@ void Solid::Dbc::setup()
   // ---------------------------------------------------------------------------
   // Create Dirichlet Boundary Condition map
   // ---------------------------------------------------------------------------
-  zeros_ptr_ = Teuchos::rcp(new Epetra_Vector(*g_state().dof_row_map_view(), true));
+  zeros_ptr_ = Teuchos::rcp(new Core::LinAlg::Vector(*g_state().dof_row_map_view(), true));
   Teuchos::ParameterList p;
   p.set<double>("total time", timint_ptr_->get_data_global_state().get_time_np());
   dbcmap_ptr_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
@@ -164,10 +164,10 @@ void Solid::Dbc::update_loc_sys_manager()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Solid::Dbc::get_dirichlet_increment()
+Teuchos::RCP<Core::LinAlg::Vector> Solid::Dbc::get_dirichlet_increment()
 {
-  Teuchos::RCP<const Epetra_Vector> disn = timint_ptr_->get_data_global_state().get_dis_n();
-  Teuchos::RCP<Epetra_Vector> dbcincr = Teuchos::rcp(new Epetra_Vector(*disn));
+  Teuchos::RCP<const Core::LinAlg::Vector> disn = timint_ptr_->get_data_global_state().get_dis_n();
+  Teuchos::RCP<Core::LinAlg::Vector> dbcincr = Teuchos::rcp(new Core::LinAlg::Vector(*disn));
   const double& timenp = g_state().get_time_np();
 
   // get the new value for the Dirichlet DOFs
@@ -183,8 +183,9 @@ Teuchos::RCP<Epetra_Vector> Solid::Dbc::get_dirichlet_increment()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::apply_dirichlet_bc(const double& time, Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap) const
+void Solid::Dbc::apply_dirichlet_bc(const double& time, Teuchos::RCP<Core::LinAlg::Vector> dis,
+    Teuchos::RCP<Core::LinAlg::Vector> vel, Teuchos::RCP<Core::LinAlg::Vector> acc,
+    bool recreatemap) const
 {
   check_init_setup();
   // We have to rotate forward ...
@@ -220,7 +221,7 @@ void Solid::Dbc::apply_dirichlet_bc(const double& time, Teuchos::RCP<Epetra_Vect
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::Dbc::apply_dirichlet_to_local_system(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> A, Teuchos::RCP<Epetra_Vector>& b) const
+    Teuchos::RCP<Core::LinAlg::SparseOperator> A, Teuchos::RCP<Core::LinAlg::Vector>& b) const
 {
   check_init_setup();
   apply_dirichlet_to_local_rhs(b);
@@ -229,7 +230,7 @@ void Solid::Dbc::apply_dirichlet_to_local_system(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::apply_dirichlet_to_vector(Teuchos::RCP<Epetra_Vector>& vec) const
+void Solid::Dbc::apply_dirichlet_to_vector(Teuchos::RCP<Core::LinAlg::Vector>& vec) const
 {
   check_init_setup();
   // rotate the coordinate system if desired
@@ -242,7 +243,7 @@ void Solid::Dbc::apply_dirichlet_to_vector(Teuchos::RCP<Epetra_Vector>& vec) con
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Epetra_Vector>& b) const
+void Solid::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Core::LinAlg::Vector>& b) const
 {
   check_init_setup();
 
@@ -255,7 +256,7 @@ void Solid::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Epetra_Vector>& b) co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::apply_dirichlet_to_rhs(Teuchos::RCP<Epetra_Vector>& b) const
+void Solid::Dbc::apply_dirichlet_to_rhs(Teuchos::RCP<Core::LinAlg::Vector>& b) const
 {
   check_init_setup();
 
@@ -299,7 +300,7 @@ void Solid::Dbc::apply_dirichlet_to_local_jacobian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Dbc::rotate_global_to_local(const Teuchos::RCP<Epetra_Vector>& v) const
+bool Solid::Dbc::rotate_global_to_local(const Teuchos::RCP<Core::LinAlg::Vector>& v) const
 {
   check_init_setup();
   return rotate_global_to_local(v, false);
@@ -307,14 +308,15 @@ bool Solid::Dbc::rotate_global_to_local(const Teuchos::RCP<Epetra_Vector>& v) co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Dbc::rotate_global_to_local(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const
+bool Solid::Dbc::rotate_global_to_local(
+    const Teuchos::RCP<Core::LinAlg::Vector>& v, bool offset) const
 {
   check_init_setup();
   if (not is_loc_sys()) return false;
 
   if (g_state().max_block_number() > 1)
   {
-    Epetra_Vector v_displ(*g_state().dof_row_map_view());
+    Core::LinAlg::Vector v_displ(*g_state().dof_row_map_view());
     Core::LinAlg::extract_my_vector(*v, v_displ);
 
     locsysman_ptr_->rotate_global_to_local(Teuchos::rcpFromRef(v_displ), offset);
@@ -347,7 +349,7 @@ bool Solid::Dbc::rotate_global_to_local(const Teuchos::RCP<Core::LinAlg::SparseO
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Dbc::rotate_local_to_global(const Teuchos::RCP<Epetra_Vector>& v) const
+bool Solid::Dbc::rotate_local_to_global(const Teuchos::RCP<Core::LinAlg::Vector>& v) const
 {
   check_init_setup();
   return rotate_local_to_global(v, false);
@@ -355,14 +357,15 @@ bool Solid::Dbc::rotate_local_to_global(const Teuchos::RCP<Epetra_Vector>& v) co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Dbc::rotate_local_to_global(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const
+bool Solid::Dbc::rotate_local_to_global(
+    const Teuchos::RCP<Core::LinAlg::Vector>& v, bool offset) const
 {
   check_init_setup();
   if (not is_loc_sys()) return false;
 
   if (g_state().max_block_number() > 1)
   {
-    Epetra_Vector v_displ(*g_state().dof_row_map_view());
+    Core::LinAlg::Vector v_displ(*g_state().dof_row_map_view());
     Core::LinAlg::extract_my_vector(*v, v_displ);
 
     locsysman_ptr_->rotate_local_to_global(Teuchos::rcpFromRef(v_displ), offset);
@@ -388,7 +391,7 @@ Teuchos::RCP<const Core::LinAlg::SparseMatrix> Solid::Dbc::get_loc_sys_trafo() c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::extract_freact(Teuchos::RCP<Epetra_Vector>& b) const
+void Solid::Dbc::extract_freact(Teuchos::RCP<Core::LinAlg::Vector>& b) const
 {
   check_init_setup();
 
@@ -404,8 +407,8 @@ void Solid::Dbc::extract_freact(Teuchos::RCP<Epetra_Vector>& b) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::insert_vector_in_non_dbc_dofs(
-    Teuchos::RCP<const Epetra_Vector> source_ptr, Teuchos::RCP<Epetra_Vector> target_ptr) const
+void Solid::Dbc::insert_vector_in_non_dbc_dofs(Teuchos::RCP<const Core::LinAlg::Vector> source_ptr,
+    Teuchos::RCP<Core::LinAlg::Vector> target_ptr) const
 {
   check_init_setup();
   dbcmap_ptr_->insert_other_vector(dbcmap_ptr_->extract_other_vector(source_ptr), target_ptr);
@@ -429,7 +432,7 @@ Teuchos::RCP<Core::Conditions::LocsysManager> Solid::Dbc::loc_sys_manager_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& Solid::Dbc::get_zeros() const
+const Core::LinAlg::Vector& Solid::Dbc::get_zeros() const
 {
   check_init_setup();
   return *zeros_ptr_;
@@ -437,7 +440,7 @@ const Epetra_Vector& Solid::Dbc::get_zeros() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Solid::Dbc::get_zeros_ptr() const
+Teuchos::RCP<const Core::LinAlg::Vector> Solid::Dbc::get_zeros_ptr() const
 {
   check_init_setup();
   return zeros_ptr_;
@@ -445,7 +448,7 @@ Teuchos::RCP<const Epetra_Vector> Solid::Dbc::get_zeros_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Epetra_Vector& Solid::Dbc::freact() const
+Core::LinAlg::Vector& Solid::Dbc::freact() const
 {
   FOUR_C_ASSERT(freact_ptr_, "nullptr");
 
@@ -496,10 +499,10 @@ void NOX::Nln::LinSystem::PrePostOp::Dbc::run_pre_apply_jacobian_inverse(
     const NOX::Nln::LinearSystem& linsys)
 {
   ::NOX::Epetra::Vector& rhs_epetra = dynamic_cast<::NOX::Epetra::Vector&>(rhs);
-  Teuchos::RCP<Epetra_Vector> rhs_ptr = Teuchos::rcp(&rhs_epetra.getEpetraVector(), false);
+  Core::LinAlg::VectorView rhs_view(rhs_epetra.getEpetraVector());
   Teuchos::RCP<Core::LinAlg::SparseOperator> jac_ptr = Teuchos::rcp(&jac, false);
   // apply the dirichlet condition and rotate the system if desired
-  dbc_ptr_->apply_dirichlet_to_local_system(jac_ptr, rhs_ptr);
+  dbc_ptr_->apply_dirichlet_to_local_system(jac_ptr, rhs_view.get_non_owning_rcp_ref());
 }
 
 FOUR_C_NAMESPACE_CLOSE

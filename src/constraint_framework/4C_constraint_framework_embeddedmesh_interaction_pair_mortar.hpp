@@ -56,7 +56,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
 
     void get_pair_visualization(
         const Core::IO::VisualizationData& lagrange_multipliers_visualization_data,
-        Teuchos::RCP<Epetra_Vector> lambda,
+        Teuchos::RCP<Core::LinAlg::Vector> lambda,
         const CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager* mortar_manager,
         Teuchos::RCP<std::unordered_set<int>> interface_tracker) override;
 
@@ -89,8 +89,8 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     /**
      * \brief Update the current displacement of the interface and background elements
      */
-    void set_current_element_position(
-        Core::FE::Discretization const& discret, const Epetra_Vector& displacement_vector) override;
+    void set_current_element_position(Core::FE::Discretization const& discret,
+        const Core::LinAlg::Vector& displacement_vector) override;
 
    private:
     /**

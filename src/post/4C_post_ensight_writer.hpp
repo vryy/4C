@@ -90,7 +90,7 @@ class EnsightWriter : public PostWriterBase
    \brief write all time steps of a result
 
    Write nodal results. The results are taken from a reconstructed
-   Epetra_Vector. In many cases this vector will contain just one
+   Core::LinAlg::Vector. In many cases this vector will contain just one
    variable (displacements) and thus is easy to write as a whole. At
    other times, however, there is more than one result (velocity,
    pressure) and we want to write just one part of it. So we have to
@@ -112,7 +112,7 @@ class EnsightWriter : public PostWriterBase
    \brief write all time steps of a result in one time step
 
    Write nodal results. The results are taken from a reconstructed
-   Epetra_Vector. In many cases this vector will contain just one
+   Core::LinAlg::Vector. In many cases this vector will contain just one
    variable (displacements) and thus is easy to write as a whole. At
    other times, however, there is more than one result (velocity,
    pressure) and we want to write just one part of it. So we have to
@@ -305,14 +305,15 @@ class EnsightWriter : public PostWriterBase
 
     \param std::ofstream                    (used for o) direct print to file
     \param int                              (i)          number of degrees of freedom
-    \param Teuchos::RCP<Epetra_Vector>      (i)          the result data read from the 4C output
-    \param string                           (i)          name of the thing we are writing
+    \param Teuchos::RCP<Core::LinAlg::Vector>      (i)          the result data read from the 4C
+    output \param string                           (i)          name of the thing we are writing
                                                          (velocity, pressure etc.)
     \param int                              (i)          potential offset in dof numbering
 
   */
   void write_dof_result_step_for_nurbs(std::ofstream& file, const int numdf,
-      const Teuchos::RCP<Epetra_Vector> data, const std::string name, const int offset) const;
+      const Teuchos::RCP<Core::LinAlg::Vector> data, const std::string name,
+      const int offset) const;
 
   //! perform interpolation of result data to visualization points.
   void interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_MultiVector> idata, const int dim,

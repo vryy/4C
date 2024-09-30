@@ -77,7 +77,7 @@ void CONSTRAINTS::MPConstraint2::initialize(const double& time)
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void CONSTRAINTS::MPConstraint2::initialize(
-    Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector)
+    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector> systemvector)
 {
   const double time = params.get("total time", -1.0);
   // in case init is set to true we want to set systemvector1 to the amplitudes defined
@@ -122,8 +122,9 @@ void CONSTRAINTS::MPConstraint2::initialize(
 void CONSTRAINTS::MPConstraint2::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-    Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector3)
 {
   switch (type())
   {
@@ -259,8 +260,9 @@ void CONSTRAINTS::MPConstraint2::reorder_constraint_nodes(
 void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Discretization> disc,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-    Teuchos::RCP<Epetra_Vector> systemvector3)
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+    Teuchos::RCP<Core::LinAlg::Vector> systemvector3)
 {
   if (!(disc->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!(disc->have_dofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -311,8 +313,8 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
       const int lindex = (systemvector3->Map()).LID(gindex);
 
       // Get the current lagrange multiplier value for this condition
-      const Teuchos::RCP<Epetra_Vector> lagramul =
-          params.get<Teuchos::RCP<Epetra_Vector>>("LagrMultVector");
+      const Teuchos::RCP<Core::LinAlg::Vector> lagramul =
+          params.get<Teuchos::RCP<Core::LinAlg::Vector>>("LagrMultVector");
       const double lagraval = (*lagramul)[lindex];
 
       // get element location vector, dirichlet flags and ownerships
@@ -380,8 +382,8 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
         curvefac = Global::Problem::instance()
                        ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
                        .evaluate(time);
-      Teuchos::RCP<Epetra_Vector> timefact =
-          params.get<Teuchos::RCP<Epetra_Vector>>("vector curve factors");
+      Teuchos::RCP<Core::LinAlg::Vector> timefact =
+          params.get<Teuchos::RCP<Core::LinAlg::Vector>>("vector curve factors");
       timefact->ReplaceGlobalValues(1, &curvefac, &gindex);
     }
   }

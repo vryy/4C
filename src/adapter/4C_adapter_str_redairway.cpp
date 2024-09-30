@@ -58,7 +58,7 @@ Adapter::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
 
 
 /*======================================================================*/
-void Adapter::StructureRedAirway::set_pressure(Teuchos::RCP<Epetra_Vector> couppres)
+void Adapter::StructureRedAirway::set_pressure(Teuchos::RCP<Core::LinAlg::Vector> couppres)
 {
   const Epetra_BlockMap& condmap = couppres->Map();
 
@@ -153,8 +153,8 @@ void Adapter::StructureRedAirway::init_vol()
 
 
 /*======================================================================*/
-void Adapter::StructureRedAirway::calc_flux(
-    Teuchos::RCP<Epetra_Vector> coupflux, Teuchos::RCP<Epetra_Vector> coupvol, double dt)
+void Adapter::StructureRedAirway::calc_flux(Teuchos::RCP<Core::LinAlg::Vector> coupflux,
+    Teuchos::RCP<Core::LinAlg::Vector> coupvol, double dt)
 {
   calc_vol(vnp_);
 

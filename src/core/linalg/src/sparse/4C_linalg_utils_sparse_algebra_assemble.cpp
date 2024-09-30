@@ -89,11 +89,16 @@ void Core::LinAlg::assemble(Epetra_Vector& V, const Core::LinAlg::SerialDenseVec
     V[rlid] += Vele[lrow];
   }  // for (int lrow=0; lrow<ldim; ++lrow)
 }
+void Core::LinAlg::assemble(Core::LinAlg::Vector& V, const Core::LinAlg::SerialDenseVector& Vele,
+    const std::vector<int>& lm, const std::vector<int>& lmowner)
+{
+  assemble(V.get_ref_of_Epetra_Vector(), Vele, lm, lmowner);
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::LinAlg::assemble_my_vector(
-    double scalar_target, Epetra_Vector& target, double scalar_source, const Epetra_Vector& source)
+void Core::LinAlg::assemble_my_vector(double scalar_target, Core::LinAlg::Vector& target,
+    double scalar_source, const Core::LinAlg::Vector& source)
 {
   for (int slid = 0; slid < source.Map().NumMyElements(); ++slid)
   {
@@ -122,8 +127,8 @@ void Core::LinAlg::assemble(Epetra_MultiVector& V, const int n,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::apply_dirichlet_to_system(
-    Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle)
+void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::Vector& x, Core::LinAlg::Vector& b,
+    const Core::LinAlg::Vector& dbcval, const Core::LinAlg::Vector& dbctoggle)
 {
   // set the prescribed value in x and b
   const int mylength = dbcval.MyLength();
@@ -139,8 +144,8 @@ void Core::LinAlg::apply_dirichlet_to_system(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::apply_dirichlet_to_system(
-    Epetra_Vector& x, Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
+void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::Vector& x, Core::LinAlg::Vector& b,
+    const Core::LinAlg::Vector& dbcval, const Epetra_Map& dbcmap)
 {
   if (not dbcmap.UniqueGIDs()) FOUR_C_THROW("unique map required");
 
@@ -169,7 +174,7 @@ void Core::LinAlg::apply_dirichlet_to_system(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::LinAlg::apply_dirichlet_to_system(
-    Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
+    Core::LinAlg::Vector& b, const Core::LinAlg::Vector& dbcval, const Epetra_Map& dbcmap)
 {
   if (not dbcmap.UniqueGIDs()) FOUR_C_THROW("unique map required");
 
@@ -197,8 +202,9 @@ void Core::LinAlg::apply_dirichlet_to_system(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Epetra_Vector& x,
-    Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Vector& dbctoggle)
+void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A,
+    Core::LinAlg::Vector& x, Core::LinAlg::Vector& b, const Core::LinAlg::Vector& dbcval,
+    const Core::LinAlg::Vector& dbctoggle)
 {
   A.apply_dirichlet(dbctoggle);
   apply_dirichlet_to_system(x, b, dbcval, dbctoggle);
@@ -206,8 +212,9 @@ void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Ep
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Epetra_Vector& x,
-    Epetra_Vector& b, const Epetra_Vector& dbcval, const Epetra_Map& dbcmap)
+void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A,
+    Core::LinAlg::Vector& x, Core::LinAlg::Vector& b, const Core::LinAlg::Vector& dbcval,
+    const Epetra_Map& dbcmap)
 {
   A.apply_dirichlet(dbcmap);
   apply_dirichlet_to_system(x, b, dbcval, dbcmap);
@@ -215,9 +222,9 @@ void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseOperator& A, Ep
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseMatrix& A, Epetra_Vector& x,
-    Epetra_Vector& b, const Core::LinAlg::SparseMatrix& trafo, const Epetra_Vector& dbcval,
-    const Epetra_Map& dbcmap)
+void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseMatrix& A, Core::LinAlg::Vector& x,
+    Core::LinAlg::Vector& b, const Core::LinAlg::SparseMatrix& trafo,
+    const Core::LinAlg::Vector& dbcval, const Epetra_Map& dbcmap)
 {
   A.apply_dirichlet_with_trafo(trafo, dbcmap);
   apply_dirichlet_to_system(x, b, dbcval, dbcmap);
@@ -226,7 +233,7 @@ void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseMatrix& A, Epet
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::MapExtractor> Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(
-    const Teuchos::RCP<const Epetra_Vector>& dbctoggle)
+    const Teuchos::RCP<const Core::LinAlg::Vector>& dbctoggle)
 {
   const Epetra_BlockMap& fullblockmap = dbctoggle->Map();
   // this copy is needed because the constructor of Core::LinAlg::MapExtractor

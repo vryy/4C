@@ -28,9 +28,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | global evaluation method called from time integrator     seitz 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::NitscheStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
-    const int iter, bool predictor)
+void CONTACT::NitscheStrategy::apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
+    const int step, const int iter, bool predictor)
 {
   // mortar initialization and evaluation
   set_state(Mortar::state_new_displacement, *dis);
@@ -72,7 +72,8 @@ void CONTACT::NitscheStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector>
  |  read restart information for contact                     seitz 10/16|
  *----------------------------------------------------------------------*/
 void CONTACT::NitscheStrategy::do_read_restart(Core::IO::DiscretizationReader& reader,
-    Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
+    Teuchos::RCP<const Core::LinAlg::Vector> dis,
+    Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   // check whether this is a restart with contact of a previously
   // non-contact simulation run (if yes, we have to be careful not
@@ -103,19 +104,19 @@ void CONTACT::NitscheStrategy::do_read_restart(Core::IO::DiscretizationReader& r
 }
 
 void CONTACT::NitscheStrategy::set_state(
-    const enum Mortar::StateType& statename, const Epetra_Vector& vec)
+    const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec)
 {
   if (statename == Mortar::state_new_displacement)
   {
     double inf_delta = 0.;
     if (curr_state_ == Teuchos::null)
     {
-      curr_state_ = Teuchos::rcp(new Epetra_Vector(vec));
+      curr_state_ = Teuchos::rcp(new Core::LinAlg::Vector(vec));
       inf_delta = 1.e12;
     }
     else
     {
-      Epetra_Vector delta(vec);
+      Core::LinAlg::Vector delta(vec);
       delta.Update(-1., *curr_state_, 1.);
       delta.NormInf(&inf_delta);
     }
@@ -143,11 +144,12 @@ void CONTACT::NitscheStrategy::set_state(
  |                                                             seitz 10/16|
  *------------------------------------------------------------------------*/
 void CONTACT::NitscheStrategy::set_parent_state(const enum Mortar::StateType& statename,
-    const Epetra_Vector& vec, const Core::FE::Discretization& dis)
+    const Core::LinAlg::Vector& vec, const Core::FE::Discretization& dis)
 {
   if (statename == Mortar::state_new_displacement || statename == Mortar::state_svelocity)
   {
-    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis.dof_col_map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector> global =
+        Teuchos::rcp(new Core::LinAlg::Vector(*dis.dof_col_map(), true));
     Core::LinAlg::export_to(vec, *global);
 
     // set state on interfaces
@@ -202,14 +204,15 @@ void CONTACT::NitscheStrategy::evaluate_force_stiff(CONTACT::ParamsInterface& cp
   integrate(cparams);
 }
 
-void CONTACT::NitscheStrategy::reset(
-    const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp, const Epetra_Vector& xnew)
+void CONTACT::NitscheStrategy::reset(const CONTACT::ParamsInterface& cparams,
+    const Core::LinAlg::Vector& dispnp, const Core::LinAlg::Vector& xnew)
 {
   set_state(Mortar::state_new_displacement, dispnp);
 }
 
 void CONTACT::NitscheStrategy::run_post_compute_x(const CONTACT::ParamsInterface& cparams,
-    const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
+    const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
+    const Core::LinAlg::Vector& xnew)
 {
   // do nothing
 }
@@ -281,7 +284,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::create_rhs_block_ptr(
   return fc;
 }
 
-Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategy::get_rhs_block_ptr(
+Teuchos::RCP<const Core::LinAlg::Vector> CONTACT::NitscheStrategy::get_rhs_block_ptr(
     const enum CONTACT::VecBlockType& bt) const
 {
   if (!curr_state_eval_)
@@ -291,7 +294,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategy::get_rhs_block_ptr(
   switch (bt)
   {
     case CONTACT::VecBlockType::displ:
-      return Teuchos::rcp(new Epetra_Vector(Copy, *(fc_), 0));
+      return Teuchos::rcp(new Core::LinAlg::Vector(*fc_));
     case CONTACT::VecBlockType::constraint:
       return Teuchos::null;
     default:
@@ -403,7 +406,7 @@ void CONTACT::NitscheStrategy::update_trace_ineq_etimates()
   }
 }
 
-void CONTACT::NitscheStrategy::update(Teuchos::RCP<const Epetra_Vector> dis)
+void CONTACT::NitscheStrategy::update(Teuchos::RCP<const Core::LinAlg::Vector> dis)
 {
   if (params().get<bool>("NITSCHE_PENALTY_ADAPTIVE")) update_trace_ineq_etimates();
   if (friction_)

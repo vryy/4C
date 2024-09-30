@@ -20,7 +20,7 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declaration ...
-class Epetra_Vector;
+
 namespace NOX
 {
   namespace Abstract
@@ -31,6 +31,10 @@ namespace NOX
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace Core::LinAlg
+{
+  class Vector;
+}
 namespace Solid
 {
   class Dbc;
@@ -90,7 +94,7 @@ namespace Solid
       void print() const;
 
       //! Run before the external force are computed and assembled
-      virtual bool pre_apply_force_external(Epetra_Vector& fextnp) const;
+      virtual bool pre_apply_force_external(Core::LinAlg::Vector& fextnp) const;
 
      protected:
       //! returns init state

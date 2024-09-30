@@ -352,7 +352,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | do sampling                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
-  void TurbulenceStatisticsHit::do_time_sample(Teuchos::RCP<Epetra_Vector> velnp)
+  void TurbulenceStatisticsHit::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp)
   {
 #ifdef FOUR_C_WITH_FFTW
     //-------------------------------------------------------------------------------------------------
@@ -653,7 +653,7 @@ namespace FLD
 
     // compute squared values of velocity
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Epetra_Vector> squaredvelnp = Core::LinAlg::create_vector(*dofrowmap, true);
+    Teuchos::RCP<Core::LinAlg::Vector> squaredvelnp = Core::LinAlg::create_vector(*dofrowmap, true);
     squaredvelnp->Multiply(1.0, *velnp, *velnp, 0.0);
 
     //----------------------------------
@@ -707,7 +707,7 @@ namespace FLD
    | do sampling                                  rasthofer 04/13 |
    *--------------------------------------------------------------*/
   void TurbulenceStatisticsHit::do_scatra_time_sample(
-      Teuchos::RCP<Epetra_Vector> velnp, Teuchos::RCP<Epetra_Vector> phinp)
+      Teuchos::RCP<Core::LinAlg::Vector> velnp, Teuchos::RCP<Core::LinAlg::Vector> phinp)
   {
 #ifdef FOUR_C_WITH_FFTW
     //-------------------------------------------------------------------------------------------------
@@ -1075,7 +1075,7 @@ namespace FLD
 
     // compute squared values of velocity
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Epetra_Vector> squaredvelnp = Core::LinAlg::create_vector(*dofrowmap, true);
+    Teuchos::RCP<Core::LinAlg::Vector> squaredvelnp = Core::LinAlg::create_vector(*dofrowmap, true);
     squaredvelnp->Multiply(1.0, *velnp, *velnp, 0.0);
 
     //----------------------------------
@@ -1128,7 +1128,7 @@ namespace FLD
    |                                              rasthofer 04/13 |
    *--------------------------------------------------------------*/
   void TurbulenceStatisticsHit::evaluate_residuals(
-      std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs)
+      std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> statevecs)
   {
     FOUR_C_THROW("EvaluateResiduals() not yet implemented for hit!");
     return;
@@ -1824,7 +1824,7 @@ namespace FLD
   /*--------------------------------------------------------------*
    | do sampling                                         bk 03/15 |
    *--------------------------------------------------------------*/
-  void TurbulenceStatisticsHitHDG::do_time_sample(Teuchos::RCP<Epetra_Vector> velnp)
+  void TurbulenceStatisticsHitHDG::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp)
   {
 #ifdef FOUR_C_WITH_FFTW
     //-------------------------------------------------------------------------------------------------

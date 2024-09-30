@@ -18,12 +18,12 @@
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -58,7 +58,7 @@ void Solid::ModelEvaluator::SpringDashpot::setup()
   disnp_ptr_ = global_state().get_dis_np();
   velnp_ptr_ = global_state().get_vel_np();
 
-  fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view()));
+  fspring_np_ptr_ = Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view()));
   stiff_spring_ptr_ = Teuchos::rcp(
       new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
 
@@ -68,7 +68,7 @@ void Solid::ModelEvaluator::SpringDashpot::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::SpringDashpot::reset(const Epetra_Vector& x)
+void Solid::ModelEvaluator::SpringDashpot::reset(const Core::LinAlg::Vector& x)
 {
   check_init_setup();
 
@@ -93,7 +93,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_force()
 
   Teuchos::ParameterList springdashpotparams;
   // loop over all spring dashpot conditions and evaluate them
-  fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view()));
+  fspring_np_ptr_ = Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view()));
   for (const auto& spring : springs_)
   {
     const CONSTRAINTS::SpringDashpot::SpringType stype = spring->get_spring_type();
@@ -121,7 +121,8 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_stiff()
 {
   check_init_setup();
 
-  fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view(), true));
+  fspring_np_ptr_ =
+      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view(), true));
 
   // factors from time-integrator for derivative of d(v_{n+1}) / d(d_{n+1})
   // needed for stiffness contribution from dashpot
@@ -163,7 +164,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_force_stiff()
   check_init_setup();
 
   // get displacement DOFs
-  fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
+  fspring_np_ptr_ = Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map(), true));
 
   // factors from time-integrator for derivative of d(v_{n+1}) / d(d_{n+1})
   // needed for stiffness contribution from dashpot
@@ -202,7 +203,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_force_stiff()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::SpringDashpot::assemble_force(
-    Epetra_Vector& f, const double& timefac_np) const
+    Core::LinAlg::Vector& f, const double& timefac_np) const
 {
   Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *fspring_np_ptr_);
   return true;
@@ -227,8 +228,8 @@ void Solid::ModelEvaluator::SpringDashpot::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // row maps for export
-  Teuchos::RCP<Epetra_Vector> springoffsetprestr =
-      Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map()));
+  Teuchos::RCP<Core::LinAlg::Vector> springoffsetprestr =
+      Teuchos::rcp(new Core::LinAlg::Vector(*discret().dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> springoffsetprestr_old =
       Teuchos::rcp(new Epetra_MultiVector(*(discret().node_row_map()), 3, true));
 
@@ -248,14 +249,15 @@ void Solid::ModelEvaluator::SpringDashpot::write_restart(
   // write vector to output for restart
   iowriter.write_vector("springoffsetprestr", springoffsetprestr);
   // write vector to output for restart
-  iowriter.write_vector("springoffsetprestr_old", springoffsetprestr_old);
+  iowriter.write_multi_vector("springoffsetprestr_old", springoffsetprestr_old);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Solid::ModelEvaluator::SpringDashpot::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
-  Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map()));
+  Teuchos::RCP<Core::LinAlg::Vector> tempvec =
+      Teuchos::rcp(new Core::LinAlg::Vector(*discret().dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> tempvecold =
       Teuchos::rcp(new Epetra_MultiVector(*(discret().node_row_map()), 3, true));
 
@@ -280,7 +282,7 @@ void Solid::ModelEvaluator::SpringDashpot::read_restart(Core::IO::Discretization
 void Solid::ModelEvaluator::SpringDashpot::update_step_state(const double& timefac_n)
 {
   // add the old time factor scaled contributions to the residual
-  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = global_state().get_fstructure_old();
+  Teuchos::RCP<Core::LinAlg::Vector>& fstructold_ptr = global_state().get_fstructure_old();
   fstructold_ptr->Update(timefac_n, *fspring_np_ptr_, 1.0);
 
   // check for prestressing and reset if necessary
@@ -308,8 +310,8 @@ void Solid::ModelEvaluator::SpringDashpot::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   // row maps for export
-  Teuchos::RCP<Epetra_Vector> gap =
-      Teuchos::rcp(new Epetra_Vector(*(discret().node_row_map()), true));
+  Teuchos::RCP<Core::LinAlg::Vector> gap =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(discret().node_row_map()), true));
   Teuchos::RCP<Epetra_MultiVector> normals =
       Teuchos::rcp(new Epetra_MultiVector(*(discret().node_row_map()), 3, true));
   Teuchos::RCP<Epetra_MultiVector> springstress =
@@ -330,12 +332,12 @@ void Solid::ModelEvaluator::SpringDashpot::output_step_state(
   if (found_cursurfnormal)
   {
     iowriter.write_vector("gap", gap);
-    iowriter.write_vector("curnormals", normals);
+    iowriter.write_multi_vector("curnormals", normals);
   }
 
   // write spring stress if defined in io-flag
   if (Global::Problem::instance()->io_params().get<bool>("OUTPUT_SPRING"))
-    iowriter.write_vector("springstress", springstress);
+    iowriter.write_multi_vector("springstress", springstress);
 }
 
 /*----------------------------------------------------------------------*
@@ -361,8 +363,8 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::SpringDashpot::get_block_d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Solid::ModelEvaluator::SpringDashpot::get_current_solution_ptr()
-    const
+Teuchos::RCP<const Core::LinAlg::Vector>
+Solid::ModelEvaluator::SpringDashpot::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;
@@ -370,7 +372,7 @@ Teuchos::RCP<const Epetra_Vector> Solid::ModelEvaluator::SpringDashpot::get_curr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector>
+Teuchos::RCP<const Core::LinAlg::Vector>
 Solid::ModelEvaluator::SpringDashpot::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries

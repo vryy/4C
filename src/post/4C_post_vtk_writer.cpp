@@ -274,7 +274,7 @@ void PostVtkWriter::write_result(const std::string groupname, const std::string 
   {
     case dofbased:
     {
-      const Teuchos::RCP<Epetra_Vector> data = result->read_result(groupname);
+      const Teuchos::RCP<Core::LinAlg::Vector> data = result->read_result(groupname);
       this->write_dof_result_step(
           currentout_, data, dummy, groupname, name, numdf, from, fillzeros);
       break;

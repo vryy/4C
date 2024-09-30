@@ -41,8 +41,8 @@ namespace CONSTRAINTS
     void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Epetra_Vector> systemvector  ///< distributed vector that may be filled by
-                                                  ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector  ///< distributed vector that may be filled
+                                                         ///< by assembly of element contributions
         ) override;
 
     /// initialization routine called at restart to activate the right conditions
@@ -60,12 +60,14 @@ namespace CONSTRAINTS
         Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by
-                                                    ///< assembly of element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector2,  ///< distributed vector that may be filled by
-                                                    ///< assembly of element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector3   ///< distributed vector that may be filled by
-                                                    ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector>
+            systemvector1,  ///< distributed vector that may be filled by
+                            ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector>
+            systemvector2,  ///< distributed vector that may be filled by
+                            ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector3  ///< distributed vector that may be filled
+                                                          ///< by assembly of element contributions
         ) override;
 
    private:
@@ -89,11 +91,13 @@ namespace CONSTRAINTS
         Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by
-                                                    ///< assembly of element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector2,  ///< distributed vector that may be filled by
-                                                    ///< assembly of element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector3)
+        Teuchos::RCP<Core::LinAlg::Vector>
+            systemvector1,  ///< distributed vector that may be filled by
+                            ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector>
+            systemvector2,  ///< distributed vector that may be filled by
+                            ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector3)
         override;  ///< distributed vector that may be filled by
                    ///< assembly of element contributions
 

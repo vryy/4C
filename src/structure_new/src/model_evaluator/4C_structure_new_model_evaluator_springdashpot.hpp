@@ -44,7 +44,7 @@ namespace Solid
       Inpar::Solid::ModelType type() const override { return Inpar::Solid::model_springdashpot; }
 
       //! derived
-      void reset(const Epetra_Vector& x) override;
+      void reset(const Core::LinAlg::Vector& x) override;
 
       //! derived
       bool evaluate_force() override;
@@ -62,7 +62,7 @@ namespace Solid
       void post_evaluate() override{};
 
       //! derived
-      bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Core::LinAlg::Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$
       bool assemble_jacobian(
@@ -79,12 +79,12 @@ namespace Solid
       void predict(const Inpar::Solid::PredEnum& pred_type) override{};
 
       //! derived
-      void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+      void run_pre_compute_x(const Core::LinAlg::Vector& xold, Core::LinAlg::Vector& dir_mutable,
           const NOX::Nln::Group& curr_grp) override{};
 
       //! derived
-      void run_post_compute_x(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
+      void run_post_compute_x(const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
+          const Core::LinAlg::Vector& xnew) override
       {
       }
 
@@ -116,10 +116,10 @@ namespace Solid
       Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector> get_last_time_step_solution_ptr() const override;
 
       //! [derived]
       void post_output() override;
@@ -129,16 +129,16 @@ namespace Solid
       std::vector<Teuchos::RCP<CONSTRAINTS::SpringDashpot>> springs_;
 
       //! structural displacement at \f$t_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> disnp_ptr_;
+      Teuchos::RCP<const Core::LinAlg::Vector> disnp_ptr_;
 
       //! structural velocity at \f$t_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> velnp_ptr_;
+      Teuchos::RCP<const Core::LinAlg::Vector> velnp_ptr_;
 
       //! structural stiffness matrix
       Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_spring_ptr_;
 
       //! spring forces at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector> fspring_np_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector> fspring_np_ptr_;
     };
 
   }  // namespace ModelEvaluator

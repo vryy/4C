@@ -20,7 +20,10 @@ namespace Solid::ModelEvaluator
   class BaseSSI : public Generic
   {
    public:
-    bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override { return true; }
+    bool assemble_force(Core::LinAlg::Vector& f, const double& timefac_np) const override
+    {
+      return true;
+    }
 
     bool assemble_jacobian(
         Core::LinAlg::SparseOperator& jac, const double& timefac_np) const override
@@ -42,19 +45,21 @@ namespace Solid::ModelEvaluator
 
     [[nodiscard]] Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> get_current_solution_ptr() const override
+    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> get_current_solution_ptr() const override
     {
       FOUR_C_THROW("Not implemented!");
       return Teuchos::null;
     }
 
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> get_last_time_step_solution_ptr() const override
+    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> get_last_time_step_solution_ptr()
+        const override
     {
       FOUR_C_THROW("Not implemented!");
       return Teuchos::null;
     }
 
-    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> get_mechanical_stress_state() const override
+    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector> get_mechanical_stress_state()
+        const override
     {
       return mechanical_stress_state_;
     }
@@ -71,18 +76,18 @@ namespace Solid::ModelEvaluator
 
     void read_restart(Core::IO::DiscretizationReader& ioreader) override {}
 
-    void reset(const Epetra_Vector& x) override {}
+    void reset(const Core::LinAlg::Vector& x) override {}
 
     void reset_step_state() override {}
 
-    void run_post_compute_x(
-        const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override
+    void run_post_compute_x(const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
+        const Core::LinAlg::Vector& xnew) override
     {
     }
 
     void run_post_iterate(const ::NOX::Solver::Generic& solver) override {}
 
-    void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+    void run_pre_compute_x(const Core::LinAlg::Vector& xold, Core::LinAlg::Vector& dir_mutable,
         const NOX::Nln::Group& curr_grp) override
     {
     }
@@ -105,7 +110,7 @@ namespace Solid::ModelEvaluator
 
    private:
     //! mechanical stress state
-    Teuchos::RCP<Epetra_Vector> mechanical_stress_state_;
+    Teuchos::RCP<Core::LinAlg::Vector> mechanical_stress_state_;
   };
 }  // namespace Solid::ModelEvaluator
 FOUR_C_NAMESPACE_CLOSE

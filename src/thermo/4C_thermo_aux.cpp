@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
  | Calculate vector norm                                    bborn 08/09 |
  *----------------------------------------------------------------------*/
 double Thermo::Aux::calculate_vector_norm(
-    const enum Inpar::Thermo::VectorNorm norm, const Teuchos::RCP<Epetra_Vector> vect)
+    const enum Inpar::Thermo::VectorNorm norm, const Teuchos::RCP<Core::LinAlg::Vector> vect)
 {
   // L1 norm
   if (norm == Inpar::Thermo::norm_l1)

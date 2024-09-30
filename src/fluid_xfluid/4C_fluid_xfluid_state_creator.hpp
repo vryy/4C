@@ -18,9 +18,9 @@
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_xfem.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -95,7 +95,7 @@ namespace FLD
     /// create a state-object after a cut (pure XFEM fluid)
     Teuchos::RCP<XFluidState> create(const Teuchos::RCP<XFEM::DiscretizationXFEM>&
                                          xdiscret,  //!< xfluid background discretization
-        Teuchos::RCP<const Epetra_Vector>
+        Teuchos::RCP<const Core::LinAlg::Vector>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis
         Teuchos::ParameterList& solver_params,  //!< solver parameters
         const int step,                         //!< current time step
@@ -107,7 +107,7 @@ namespace FLD
                                               xdiscret,  //!< xfluid background discretization
         const Teuchos::RCP<Core::FE::Discretization>&
             embfluiddiscret,  //!< embedded fluid discretization
-        Teuchos::RCP<const Epetra_Vector>
+        Teuchos::RCP<const Core::LinAlg::Vector>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis
         Teuchos::ParameterList& solver_params,  //!< solver parameters
         const int step,                         //!< current time step
@@ -123,7 +123,7 @@ namespace FLD
             wizard,  //!< cut wizard associated with current intersection state
         const Teuchos::RCP<XFEM::DiscretizationXFEM>&
             xdiscret,  //!< xfluid background discretization
-        Teuchos::RCP<const Epetra_Vector>
+        Teuchos::RCP<const Core::LinAlg::Vector>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis
         Teuchos::ParameterList& solver_params,  //!< solver parameters
         const int step                          //!< current time step

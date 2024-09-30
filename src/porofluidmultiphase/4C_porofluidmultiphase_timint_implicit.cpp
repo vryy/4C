@@ -539,7 +539,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::update() { strategy_->update(); }
 /*----------------------------------------------------------------------*
  | apply moving mesh data                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::apply_mesh_movement(Teuchos::RCP<const Epetra_Vector> dispnp)
+void POROFLUIDMULTIPHASE::TimIntImpl::apply_mesh_movement(
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE: apply mesh movement");
 
@@ -646,7 +647,8 @@ POROFLUIDMULTIPHASE::TimIntImpl::artery_porofluid_sysmat() const
 /*----------------------------------------------------------------------*
  | return artery residual for coupled system           kremheller 05/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> POROFLUIDMULTIPHASE::TimIntImpl::artery_porofluid_rhs() const
+Teuchos::RCP<const Core::LinAlg::Vector> POROFLUIDMULTIPHASE::TimIntImpl::artery_porofluid_rhs()
+    const
 {
   return strategy_->artery_porofluid_rhs();
 }
@@ -666,8 +668,8 @@ Teuchos::RCP<const Epetra_Vector> POROFLUIDMULTIPHASE::TimIntImpl::artery_porofl
 /*----------------------------------------------------------------------*
  | evaluate Dirichlet boundary conditions at t_{n+1}        vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::apply_dirichlet_bc(
-    const double time, Teuchos::RCP<Epetra_Vector> prenp, Teuchos::RCP<Epetra_Vector> predt)
+void POROFLUIDMULTIPHASE::TimIntImpl::apply_dirichlet_bc(const double time,
+    Teuchos::RCP<Core::LinAlg::Vector> prenp, Teuchos::RCP<Core::LinAlg::Vector> predt)
 {
   // time measurement: apply Dirichlet conditions
   TEUCHOS_FUNC_TIME_MONITOR("POROFLUIDMULTIPHASE:      + apply dirich cond.");
@@ -708,7 +710,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::scaling_and_neumann()
  | evaluate Neumann boundary conditions                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntImpl::apply_neumann_bc(
-    const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
+    const Teuchos::RCP<Core::LinAlg::Vector>& neumann_loads  //!< Neumann loads
 )
 {
   // prepare load vector
@@ -1274,7 +1276,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_pressures_and_saturations()
     add_time_integration_specific_vectors();
 
     // initialize counter vector (will store how many times the node has been evaluated)
-    Teuchos::RCP<Epetra_Vector> counter =
+    Teuchos::RCP<Core::LinAlg::Vector> counter =
         Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
     // call loop over elements
@@ -1318,7 +1320,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_solid_pressures()
   add_time_integration_specific_vectors();
 
   // initialize counter vector (will store how many times the node has been evaluated)
-  Teuchos::RCP<Epetra_Vector> counter =
+  Teuchos::RCP<Core::LinAlg::Vector> counter =
       Core::LinAlg::create_vector(*discret_->dof_row_map(nds_solidpressure_), true);
 
   // create strategy for assembly of solid pressure
@@ -1414,7 +1416,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_porosity()
   add_time_integration_specific_vectors();
 
   // initialize counter vector (will store how many times the node has been evaluated)
-  Teuchos::RCP<Epetra_Vector> counter =
+  Teuchos::RCP<Core::LinAlg::Vector> counter =
       Core::LinAlg::create_vector(*discret_->dof_row_map(nds_solidpressure_), true);
 
   // create strategy for assembly of porosity
@@ -1648,13 +1650,13 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
         POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *solidpressure_, nds_solidpressure_, 1);
 
-    output_->write_vector("solidpressure", solidpressure_multi, Core::IO::nodevector);
+    output_->write_multi_vector("solidpressure", solidpressure_multi, Core::IO::nodevector);
   }
 
   // displacement field
   if (isale_)
   {
-    Teuchos::RCP<const Epetra_Vector> dispnp = discret_->get_state(nds_disp_, "dispnp");
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discret_->get_state(nds_disp_, "dispnp");
     if (dispnp == Teuchos::null)
       FOUR_C_THROW("Cannot extract displacement field from discretization");
 
@@ -1663,7 +1665,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
         POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *dispnp, nds_disp_, nsd_);
 
-    output_->write_vector("dispnp", dispnp_multi, Core::IO::nodevector);
+    output_->write_multi_vector("dispnp", dispnp_multi, Core::IO::nodevector);
   }
   // fluxes
   if (flux_ != Teuchos::null)
@@ -1693,7 +1695,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
           if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
         }
       }
-      output_->write_vector(name, flux_k, Core::IO::nodevector);
+      output_->write_multi_vector(name, flux_k, Core::IO::nodevector);
     }
   }
 
@@ -1720,7 +1722,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
       }
 
       std::string output_name = "velocity_" + std::to_string(k + 1);
-      output_->write_vector(output_name, velocity_k, Core::IO::elementvector);
+      output_->write_multi_vector(output_name, velocity_k, Core::IO::elementvector);
     }
   }
 
@@ -1732,7 +1734,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
         POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *porosity_, nds_solidpressure_, 1);
 
-    output_->write_vector("porosity", porosity_multi, Core::IO::nodevector);
+    output_->write_multi_vector("porosity", porosity_multi, Core::IO::nodevector);
   }
 
   return;
@@ -1884,9 +1886,10 @@ void POROFLUIDMULTIPHASE::TimIntImpl::prepare_system_for_newton_solve()
 /*----------------------------------------------------------------------*
  | iterative update of scalars                              vuong 08/16  |
  *----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::TimIntImpl::update_iter(const Teuchos::RCP<const Epetra_Vector> inc)
+void POROFLUIDMULTIPHASE::TimIntImpl::update_iter(
+    const Teuchos::RCP<const Core::LinAlg::Vector> inc)
 {
-  Teuchos::RCP<const Epetra_Vector> extractedinc = strategy_->extract_and_update_iter(inc);
+  Teuchos::RCP<const Core::LinAlg::Vector> extractedinc = strategy_->extract_and_update_iter(inc);
   // store incremental vector to be available for convergence check
   // if incremental vector is received from outside for coupled problem
   increment_->Update(1.0, *extractedinc, 0.0);
@@ -1904,7 +1907,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::update_iter(const Teuchos::RCP<const Epetr
  | set convective velocity field                            vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntImpl::set_velocity_field(
-    Teuchos::RCP<const Epetra_Vector> vel  //!< velocity vector
+    Teuchos::RCP<const Core::LinAlg::Vector> vel  //!< velocity vector
 )
 {
   // time measurement
@@ -1938,7 +1941,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::set_velocity_field(
  |                                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntImpl::set_state(
-    unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
+    unsigned nds, const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector> state)
 {
   // provide discretization with velocity
   discret_->set_state(nds, name, state);
@@ -2155,7 +2158,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::fd_check()
     std::cout << std::endl << "FINITE DIFFERENCE CHECK FOR SYSTEM MATRIX" << std::endl;
 
   // make a copy of state variables to undo perturbations later
-  Teuchos::RCP<Epetra_Vector> phinp_original = Teuchos::rcp(new Epetra_Vector(*phinp_));
+  Teuchos::RCP<Core::LinAlg::Vector> phinp_original =
+      Teuchos::rcp(new Core::LinAlg::Vector(*phinp_));
 
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
@@ -2173,7 +2177,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::fd_check()
   sysmat_original->FillComplete();
 
   // make a copy of system right-hand side vector
-  Teuchos::RCP<Epetra_Vector> rhs_original = Teuchos::rcp(new Epetra_Vector(*residual_));
+  Teuchos::RCP<Core::LinAlg::Vector> rhs_original =
+      Teuchos::rcp(new Core::LinAlg::Vector(*residual_));
 
   // initialize counter for system matrix entries with failing finite difference check
   int counter(0);

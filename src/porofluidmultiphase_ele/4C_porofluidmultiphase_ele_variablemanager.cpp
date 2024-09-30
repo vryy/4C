@@ -142,7 +142,8 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhi<nsd,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state(dofsetnum, "phinp_fluid");
+  Teuchos::RCP<const Core::LinAlg::Vector> phinp =
+      discretization.get_state(dofsetnum, "phinp_fluid");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // values of fluid are in 'dofsetnum' --> 0 if called with porofluid-element
@@ -225,8 +226,8 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerInstat<nsd,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
 {
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> hist = discretization.get_state("hist");
-  Teuchos::RCP<const Epetra_Vector> phidtnp = discretization.get_state("phidtnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> hist = discretization.get_state("hist");
+  Teuchos::RCP<const Core::LinAlg::Vector> phidtnp = discretization.get_state("phidtnp");
   if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phidtnp'");
 
 
@@ -300,14 +301,15 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd,
       lmvel[inode * nsd + idim] = la[ndsvel_].lm_[inode * numveldofpernode + idim];
 
   // get velocity at nodes
-  Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state(ndsvel_, "velocity field");
+  Teuchos::RCP<const Core::LinAlg::Vector> vel =
+      discretization.get_state(ndsvel_, "velocity field");
   if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector velocity");
 
   // extract local values of velocity field from global state vector
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nsd, nen>>(*vel, econvelnp_, lmvel);
 
   // safety check
-  Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state(ndsdisp_, "dispnp");
+  Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discretization.get_state(ndsdisp_, "dispnp");
   if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
   // determine number of displacement related dofs per node
@@ -373,7 +375,8 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerScalar<nsd,
   this->varmanager_->extract_element_and_node_values(ele, discretization, la, xyze, dofsetnum);
 
   // get state vector from discretization
-  Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.get_state(ndsscalar_, "scalars");
+  Teuchos::RCP<const Core::LinAlg::Vector> scalarnp =
+      discretization.get_state(ndsscalar_, "scalars");
   if (scalarnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'scalars'");
 
   // determine number of scalars related dofs per node
@@ -432,7 +435,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerMaximumNodalVolFracValu
   // call internal class
   this->varmanager_->extract_element_and_node_values(ele, discretization, la, xyze, dofsetnum);
 
-  Teuchos::RCP<const Epetra_Vector> phin = discretization.get_state(dofsetnum, "phin_fluid");
+  Teuchos::RCP<const Core::LinAlg::Vector> phin = discretization.get_state(dofsetnum, "phin_fluid");
   if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin_fluid'");
 
   // values of fluid are in 'dofsetnum' --> 0 if called with porofluid-element

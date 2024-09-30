@@ -14,11 +14,10 @@ strategy without meshtying)
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_scatra_timint_convcheck_strategies.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -127,7 +126,8 @@ namespace ScaTra
      */
     virtual void condense_mat_and_rhs(
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Epetra_Vector>& residual, const bool calcinittimederiv = false) const {};
+        const Teuchos::RCP<Core::LinAlg::Vector>& residual,
+        const bool calcinittimederiv = false) const {};
 
     //! return global map of degrees of freedom
     virtual const Epetra_Map& dof_row_map() const = 0;
@@ -162,8 +162,10 @@ namespace ScaTra
     virtual void evaluate_condition(Teuchos::ParameterList& params,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-        Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid)
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
+        Teuchos::RCP<Core::LinAlg::Vector> systemvector3, const std::string& condstring,
+        const int condid)
     {
       FOUR_C_THROW("evaluate_condition(...) is not implemented in MeshtyingStrategyBase.");
     };
@@ -236,7 +238,7 @@ namespace ScaTra
     \author rauch
     */
     virtual void set_state(
-        unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
+        unsigned nds, const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector> state)
     {
       FOUR_C_THROW(
           "set_state(...) is not implemented in MeshtyingStrategyBase.\n"
@@ -261,8 +263,9 @@ namespace ScaTra
      */
     virtual void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Epetra_Vector>& increment, const Teuchos::RCP<Epetra_Vector>& residual,
-        const Teuchos::RCP<Epetra_Vector>& phinp, const int iteration,
+        const Teuchos::RCP<Core::LinAlg::Vector>& increment,
+        const Teuchos::RCP<Core::LinAlg::Vector>& residual,
+        const Teuchos::RCP<Core::LinAlg::Vector>& phinp, const int iteration,
         Core::LinAlg::SolverParams& solver_params) const = 0;
 
     //! return linear solver for global system of linear equations

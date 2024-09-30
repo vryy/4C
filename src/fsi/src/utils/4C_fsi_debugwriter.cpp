@@ -77,7 +77,7 @@ void FSI::UTILS::DebugWriter::new_iteration()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::DebugWriter::write_vector(const std::string& name, const Epetra_Vector& v)
+void FSI::UTILS::DebugWriter::write_vector(const std::string& name, const Core::LinAlg::Vector& v)
 {
   writer_->write_vector(name, coup_->master_to_slave(Teuchos::rcp(&v, false)));
 }
@@ -129,7 +129,7 @@ void FSI::UTILS::SimpleDebugWriter::new_iteration()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SimpleDebugWriter::write_vector(const std::string& name, Epetra_Vector& v)
+void FSI::UTILS::SimpleDebugWriter::write_vector(const std::string& name, Core::LinAlg::Vector& v)
 {
   writer_->write_vector(name, Teuchos::rcp(&v, false));
 }
@@ -173,17 +173,17 @@ void FSI::UTILS::MonolithicDebugWriter::new_iteration()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::MonolithicDebugWriter::write_vector(
-    const std::string& name, const Teuchos::RCP<Epetra_Vector>& v)
+    const std::string& name, const Teuchos::RCP<Core::LinAlg::Vector>& v)
 {
-  Teuchos::RCP<const Epetra_Vector> sx;
-  Teuchos::RCP<const Epetra_Vector> fx;
-  Teuchos::RCP<const Epetra_Vector> ax;
+  Teuchos::RCP<const Core::LinAlg::Vector> sx;
+  Teuchos::RCP<const Core::LinAlg::Vector> fx;
+  Teuchos::RCP<const Core::LinAlg::Vector> ax;
 
   algorithm_.extract_field_vectors(v, sx, fx, ax);
 
-  Epetra_Vector s(*sx);
-  Epetra_Vector f(*fx);
-  Epetra_Vector a(*ax);
+  Core::LinAlg::Vector s(*sx);
+  Core::LinAlg::Vector f(*fx);
+  Core::LinAlg::Vector a(*ax);
 
   struct_writer_->write_vector(name, s);
   fluid_writer_->write_vector(name, f);

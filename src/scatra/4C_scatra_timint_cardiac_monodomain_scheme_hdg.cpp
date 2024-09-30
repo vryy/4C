@@ -45,7 +45,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::setup()
   TimIntCardiacMonodomain::setup();
 
   // Activation time at time n+1
-  activation_time_interpol_.reset(new Epetra_Vector(*discret_->node_row_map()));
+  activation_time_interpol_.reset(new Core::LinAlg::Vector(*discret_->node_row_map()));
 }
 
 /*----------------------------------------------------------------------*
@@ -121,7 +121,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::collect_runtime_output_data()
       std::ostringstream temp;
       temp << k + 1;
       material_internal_state_np_component_ =
-          Teuchos::rcp((*material_internal_state_np_)(k), false);
+          Teuchos::rcp(new Core::LinAlg::Vector(*(*material_internal_state_np_)(k)));
 
       visualization_writer().append_result_data_vector_with_context(
           *material_internal_state_np_component_, Core::IO::OutputEntity::element,
@@ -145,7 +145,8 @@ void ScaTra::TimIntCardiacMonodomainHDG::write_restart() const
   output_->write_vector("intphin", intphin_);
 
   // copy values from node to dof vector
-  Teuchos::RCP<Epetra_Vector> dofphi = Core::LinAlg::create_vector(*discret_->node_row_map());
+  Teuchos::RCP<Core::LinAlg::Vector> dofphi =
+      Core::LinAlg::create_vector(*discret_->node_row_map());
 
   for (int i = 0; i < dofphi->MyLength(); ++i)
   {
@@ -162,7 +163,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::write_restart() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntCardiacMonodomainHDG::collect_problem_specific_runtime_output_data(
-    Teuchos::RCP<Epetra_Vector> interpolatedPhi)
+    Teuchos::RCP<Core::LinAlg::Vector> interpolatedPhi)
 {
   // Compute and write activation time
   if (activation_time_interpol_ != Teuchos::null)
@@ -243,7 +244,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::read_restart(
   // Call function from base class
   ScaTra::TimIntHDG::read_restart(step, input);
 
-  activation_time_interpol_.reset(new Epetra_Vector(*discret_->node_row_map()));
+  activation_time_interpol_.reset(new Core::LinAlg::Vector(*discret_->node_row_map()));
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::extract_my_values(
-    const Epetra_Vector& global, std::vector<double>& local, const std::vector<int>& lm)
+    const Core::LinAlg::Vector& global, std::vector<double>& local, const std::vector<int>& lm)
 {
   const size_t ldim = lm.size();
   local.resize(ldim);
@@ -34,7 +34,8 @@ void Core::FE::extract_my_values(
   {
     const int lid = global.Map().LID(lm[i]);
     if (lid < 0)
-      FOUR_C_THROW("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), lm[i]);
+      FOUR_C_THROW(
+          "Proc %d: Cannot find gid=%d in Core::LinAlg::Vector", global.Comm().MyPID(), lm[i]);
     local[i] = global[lid];
   }
   return;
@@ -43,8 +44,8 @@ void Core::FE::extract_my_values(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::extract_my_values(
-    const Epetra_Vector& global, Core::LinAlg::SerialDenseVector& local, const std::vector<int>& lm)
+void Core::FE::extract_my_values(const Core::LinAlg::Vector& global,
+    Core::LinAlg::SerialDenseVector& local, const std::vector<int>& lm)
 {
   const size_t ldim = lm.size();
   local.size(ldim);
@@ -52,7 +53,8 @@ void Core::FE::extract_my_values(
   {
     const int lid = global.Map().LID(lm[i]);
     if (lid < 0)
-      FOUR_C_THROW("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), lm[i]);
+      FOUR_C_THROW(
+          "Proc %d: Cannot find gid=%d in Core::LinAlg::Vector", global.Comm().MyPID(), lm[i]);
     local[i] = global[lid];
   }
   return;
@@ -77,7 +79,7 @@ void Core::FE::extract_my_values(
       FOUR_C_THROW(
           "Proc %d: Cannot find gid=%d in Epetra_MultiVector", global.Comm().MyPID(), lm[i]);
 
-    // loop over multi vector columns (numcol=1 for Epetra_Vector)
+    // loop over multi vector columns (numcol=1 for Core::LinAlg::Vector)
     for (int col = 0; col < numcol; col++)
     {
       double* globalcolumn = (global)[col];
@@ -103,9 +105,10 @@ void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
     const int nodegid = (ele->nodes()[i])->id();
     const int lid = global.Map().LID(nodegid);
     if (lid < 0)
-      FOUR_C_THROW("Proc %d: Cannot find gid=%d in Epetra_Vector", global.Comm().MyPID(), nodegid);
+      FOUR_C_THROW(
+          "Proc %d: Cannot find gid=%d in Core::LinAlg::Vector", global.Comm().MyPID(), nodegid);
 
-    // loop over multi vector columns (numcol=1 for Epetra_Vector)
+    // loop over multi vector columns (numcol=1 for Core::LinAlg::Vector)
     for (int col = 0; col < numcol; col++)
     {
       double* globalcolumn = (global)[col];

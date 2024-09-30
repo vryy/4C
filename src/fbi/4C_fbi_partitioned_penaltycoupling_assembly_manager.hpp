@@ -26,6 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
 {
+  class Vector;
   class SparseMatrix;
   class SparseOperator;
 }  // namespace Core::LinAlg
@@ -79,8 +80,8 @@ namespace BEAMINTERACTION
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbb,
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& cfb,
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbf,
-          Teuchos::RCP<const Epetra_Vector> fluid_vel,
-          Teuchos::RCP<const Epetra_Vector> beam_vel) = 0;
+          Teuchos::RCP<const Core::LinAlg::Vector> fluid_vel,
+          Teuchos::RCP<const Core::LinAlg::Vector> beam_vel) = 0;
 
      protected:
       //! Vector of pairs to be evaluated by this class.

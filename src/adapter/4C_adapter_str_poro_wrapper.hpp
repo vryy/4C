@@ -68,10 +68,10 @@ namespace Adapter
     }
 
     /// unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> dispnp() const { return structure_->dispnp(); }
+    virtual Teuchos::RCP<const Core::LinAlg::Vector> dispnp() const { return structure_->dispnp(); }
 
     /// unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> write_access_dispnp() const
+    virtual Teuchos::RCP<Core::LinAlg::Vector> write_access_dispnp() const
     {
       return structure_->write_access_dispnp();
     }
@@ -89,25 +89,25 @@ namespace Adapter
     }
 
     /// extract interface displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> extract_interface_dispn()
+    virtual Teuchos::RCP<Core::LinAlg::Vector> extract_interface_dispn()
     {
       return structure_->extract_interface_dispn();
     }
 
     /// extract interface displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> extract_interface_dispnp()
+    virtual Teuchos::RCP<Core::LinAlg::Vector> extract_interface_dispnp()
     {
       return structure_->extract_interface_dispnp();
     }
 
     /// extract interface displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> extract_fpsi_interface_dispn()
+    virtual Teuchos::RCP<Core::LinAlg::Vector> extract_fpsi_interface_dispn()
     {
       return structure_->interface()->extract_fpsi_cond_vector(structure_->dispn());
     }
 
     /// extract interface displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> extract_fpsi_interface_dispnp()
+    virtual Teuchos::RCP<Core::LinAlg::Vector> extract_fpsi_interface_dispnp()
     {
       return structure_->interface()->extract_fpsi_cond_vector(structure_->dispnp());
     }
@@ -128,10 +128,11 @@ namespace Adapter
     const Teuchos::RCP<Adapter::FluidPoro>& fluid_field();
 
     //! Insert FSI Condition Vector
-    Teuchos::RCP<Epetra_Vector> insert_fsi_cond_vector(Teuchos::RCP<const Epetra_Vector> cond);
+    Teuchos::RCP<Core::LinAlg::Vector> insert_fsi_cond_vector(
+        Teuchos::RCP<const Core::LinAlg::Vector> cond);
 
     //! Recover Lagrange Multiplier during iteration (does nothing for structure)
-    void recover_lagrange_multiplier_after_newton_step(Teuchos::RCP<Epetra_Vector> iterinc);
+    void recover_lagrange_multiplier_after_newton_step(Teuchos::RCP<Core::LinAlg::Vector> iterinc);
 
     bool is_poro() { return (type_ == FieldWrapper::type_PoroField); }
 

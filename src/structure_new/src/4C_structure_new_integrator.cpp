@@ -15,6 +15,7 @@
 #include "4C_global_data.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_sparsematrix.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
@@ -27,8 +28,6 @@
 #include "4C_utils_epetra_exceptions.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -165,7 +164,7 @@ void Solid::Integrator::check_init_setup() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Integrator::reset_model_states(const Epetra_Vector& x)
+void Solid::Integrator::reset_model_states(const Core::LinAlg::Vector& x)
 {
   check_init_setup();
   model_eval().reset_states(x);
@@ -178,11 +177,8 @@ void Solid::Integrator::equilibrate_initial_state()
   check_init();
 
   // temporary right-hand-side
-  Teuchos::RCP<Epetra_Vector> rhs_ptr =
-      Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view(), true));
-  // wrap the rhs_ptr in a nox_epetra_Vector
-  Teuchos::RCP<::NOX::Epetra::Vector> nox_rhs_ptr =
-      Teuchos::rcp(new ::NOX::Epetra::Vector(rhs_ptr, ::NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<Core::LinAlg::Vector> rhs_ptr =
+      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view(), true));
 
   // initialize a temporal structural stiffness matrix
   Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_ptr = Teuchos::rcp(
@@ -192,9 +188,9 @@ void Solid::Integrator::equilibrate_initial_state()
   // overwrite initial state vectors with Dirichlet BCs
   // note that we get accelerations resulting from inhomogeneous Dirichlet conditions here
   const double& timen = (*global_state().get_multi_time())[0];
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = global_state().get_dis_np();
-  Teuchos::RCP<Epetra_Vector> velnp_ptr = global_state().get_vel_np();
-  Teuchos::RCP<Epetra_Vector> accnp_ptr = global_state().get_acc_np();
+  Teuchos::RCP<Core::LinAlg::Vector> disnp_ptr = global_state().get_dis_np();
+  Teuchos::RCP<Core::LinAlg::Vector> velnp_ptr = global_state().get_vel_np();
+  Teuchos::RCP<Core::LinAlg::Vector> accnp_ptr = global_state().get_acc_np();
   dbc().apply_dirichlet_bc(timen, disnp_ptr, velnp_ptr, accnp_ptr, false);
 
 
@@ -255,11 +251,11 @@ void Solid::Integrator::equilibrate_initial_state()
   NOX::Nln::Aux::set_printing_parameters(p_nox, global_state().get_comm());
 
   // create a copy of the initial displacement vector
-  Teuchos::RCP<Epetra_Vector> soln_ptr =
-      Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> soln_ptr =
+      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view(), true));
   // wrap the soln_ptr in a nox_epetra_Vector
-  Teuchos::RCP<::NOX::Epetra::Vector> nox_soln_ptr =
-      Teuchos::rcp(new ::NOX::Epetra::Vector(soln_ptr, ::NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<::NOX::Epetra::Vector> nox_soln_ptr = Teuchos::rcp(new ::NOX::Epetra::Vector(
+      soln_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
 
   // Check if we are using a Newton direction
   std::string dir_str = p_nox.sublist("Direction").get<std::string>("Method");
@@ -295,7 +291,7 @@ void Solid::Integrator::equilibrate_initial_state()
   // solve the linear system
   if (stiff_ptr->NormInf() == 0.0) FOUR_C_THROW("You are about to invert a singular matrix!");
 
-  linsys_ptr->applyJacobianInverse(p_ls, *nox_rhs_ptr, *nox_soln_ptr);
+  linsys_ptr->applyJacobianInverse(p_ls, rhs_ptr->get_ref_of_Epetra_Vector(), *nox_soln_ptr);
   nox_soln_ptr->scale(-1.0);
 
   // get the solution vector and add it into the acceleration vector
@@ -319,14 +315,14 @@ bool Solid::Integrator::current_state_is_equilibrium(const double& tol)
   check_init();
 
   // temporary right-hand-side
-  Teuchos::RCP<Epetra_Vector> rhs_ptr =
-      Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view(), true));
+  Teuchos::RCP<Core::LinAlg::Vector> rhs_ptr =
+      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view(), true));
 
   // overwrite initial state vectors with Dirichlet BCs
   const double& timen = (*global_state().get_multi_time())[0];
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = global_state().get_dis_np();
-  Teuchos::RCP<Epetra_Vector> velnp_ptr = global_state().get_vel_np();
-  Teuchos::RCP<Epetra_Vector> accnp_ptr = global_state().get_acc_np();
+  Teuchos::RCP<Core::LinAlg::Vector> disnp_ptr = global_state().get_dis_np();
+  Teuchos::RCP<Core::LinAlg::Vector> velnp_ptr = global_state().get_vel_np();
+  Teuchos::RCP<Core::LinAlg::Vector> accnp_ptr = global_state().get_acc_np();
   dbc().apply_dirichlet_bc(timen, disnp_ptr, velnp_ptr, accnp_ptr, false);
 
   // set the evaluate parameters of the current base class
@@ -366,7 +362,7 @@ void Solid::Integrator::determine_energy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Solid::Integrator::get_model_value(const Epetra_Vector& x)
+double Solid::Integrator::get_model_value(const Core::LinAlg::Vector& x)
 {
   FOUR_C_THROW(
       "This routine is not supported in the currently active time "
@@ -376,7 +372,7 @@ double Solid::Integrator::get_model_value(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Solid::Integrator::get_total_mid_time_str_energy(const Epetra_Vector& x)
+double Solid::Integrator::get_total_mid_time_str_energy(const Core::LinAlg::Vector& x)
 {
   check_init_setup();
   if (not mt_energy_.is_correctly_configured())
@@ -386,21 +382,21 @@ double Solid::Integrator::get_total_mid_time_str_energy(const Epetra_Vector& x)
         " Please add a meaningful MIDTIME_ENERGY_TYPE to the ---STRUCTURAL DYNAMIC"
         " section of your Input file.");
 
-  Teuchos::RCP<const Epetra_Vector> disnp_ptr = global_state().extract_displ_entries(x);
-  const Epetra_Vector& disnp = *disnp_ptr;
+  Teuchos::RCP<const Core::LinAlg::Vector> disnp_ptr = global_state().extract_displ_entries(x);
+  const Core::LinAlg::Vector& disnp = *disnp_ptr;
 
   set_state(disnp);
 
-  Teuchos::RCP<const Epetra_Vector> velnp_ptr = global_state().get_vel_np();
-  const Epetra_Vector& velnp = *velnp_ptr;
+  Teuchos::RCP<const Core::LinAlg::Vector> velnp_ptr = global_state().get_vel_np();
+  const Core::LinAlg::Vector& velnp = *velnp_ptr;
 
   eval_data().clear_values_for_all_energy_types();
   Solid::ModelEvaluator::Structure& str_model =
       dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Inpar::Solid::model_structure));
 
-  Teuchos::RCP<const Epetra_Vector> dis_avg =
+  Teuchos::RCP<const Core::LinAlg::Vector> dis_avg =
       mt_energy_.average(disnp, *global_state().get_dis_n(), get_int_param());
-  Teuchos::RCP<const Epetra_Vector> vel_avg =
+  Teuchos::RCP<const Core::LinAlg::Vector> vel_avg =
       mt_energy_.average(velnp, *global_state().get_vel_n(), get_int_param());
 
   str_model.determine_energy(*dis_avg, vel_avg.get(), true);
@@ -435,7 +431,7 @@ void Solid::Integrator::determine_optional_quantity()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::Integrator::determine_element_volumes(
-    const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols)
+    const Core::LinAlg::Vector& x, Teuchos::RCP<Core::LinAlg::Vector>& ele_vols)
 {
   check_init_setup();
   Solid::ModelEvaluator::Generic& model = evaluator(Inpar::Solid::model_structure);
@@ -696,7 +692,7 @@ const Solid::TimeInt::Base& Solid::Integrator::tim_int() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Integrator::create_backup_state(const Epetra_Vector& dir)
+void Solid::Integrator::create_backup_state(const Core::LinAlg::Vector& dir)
 {
   check_init_setup();
   model_eval().create_backup_state(dir);
@@ -764,12 +760,13 @@ double Solid::Integrator::MidTimeEnergy::get_total() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Solid::Integrator::MidTimeEnergy::average(
-    const Epetra_Vector& state_np, const Epetra_Vector& state_n, const double fac_n) const
+Teuchos::RCP<const Core::LinAlg::Vector> Solid::Integrator::MidTimeEnergy::average(
+    const Core::LinAlg::Vector& state_np, const Core::LinAlg::Vector& state_n,
+    const double fac_n) const
 {
   const double fac_np = 1.0 - fac_n;
 
-  Teuchos::RCP<Epetra_Vector> state_avg = Teuchos::rcp(new Epetra_Vector(state_np));
+  Teuchos::RCP<Core::LinAlg::Vector> state_avg = Teuchos::rcp(new Core::LinAlg::Vector(state_np));
   switch (avg_type_)
   {
     case Inpar::Solid::midavg_vague:

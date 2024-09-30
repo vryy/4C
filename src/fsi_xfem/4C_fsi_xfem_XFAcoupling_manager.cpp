@@ -93,8 +93,8 @@ void XFEM::XfaCouplingManager::set_coupling_states()
         XFEM::CouplingCommManager::full_to_full);
 
   // 2 Get AleDisplacements
-  Teuchos::RCP<Epetra_Vector> aledisplacements =
-      Teuchos::rcp(new Epetra_Vector(*get_map_extractor(0)->Map(1), true));
+  Teuchos::RCP<Core::LinAlg::Vector> aledisplacements =
+      Teuchos::rcp(new Core::LinAlg::Vector(*get_map_extractor(0)->Map(1), true));
   insert_vector(1, ale_->dispnp(), 0, aledisplacements, CouplingCommManager::partial_to_partial);
   // 3 Set Fluid Dispnp
   get_map_extractor(0)->insert_vector(aledisplacements, 1, xfluid_->write_access_dispnp());
@@ -146,11 +146,11 @@ void XFEM::XfaCouplingManager::add_coupling_matrix(
 /*-----------------------------------------------------------------------------------------*
 | Add the coupling rhs                                                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XfaCouplingManager::add_coupling_rhs(
-    Teuchos::RCP<Epetra_Vector> rhs, const Core::LinAlg::MultiMapExtractor& me, double scaling)
+void XFEM::XfaCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs,
+    const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
-  Teuchos::RCP<const Epetra_Vector> av = ale_->rhs();
-  Teuchos::RCP<Epetra_Vector> aov = ale_->interface()->extract_other_vector(av);
+  Teuchos::RCP<const Core::LinAlg::Vector> av = ale_->rhs();
+  Teuchos::RCP<Core::LinAlg::Vector> aov = ale_->interface()->extract_other_vector(av);
   me.insert_vector(*aov, idx_[1], *rhs);  // add ALE contributions to 'rhs'
   return;
 }

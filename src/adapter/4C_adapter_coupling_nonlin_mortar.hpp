@@ -19,11 +19,11 @@
 
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_fem_condition.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 #include <Teuchos_RCP.hpp>
 
@@ -84,16 +84,20 @@ namespace Adapter
         const Epetra_Comm& comm);
 
     virtual void integrate_lin_d(const std::string& statename,
-        const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm);
+        const Teuchos::RCP<Core::LinAlg::Vector> vec,
+        const Teuchos::RCP<Core::LinAlg::Vector> veclm);
 
     virtual void integrate_lin_dm(const std::string& statename,
-        const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm);
+        const Teuchos::RCP<Core::LinAlg::Vector> vec,
+        const Teuchos::RCP<Core::LinAlg::Vector> veclm);
 
-    virtual void integrate_all(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
-        const Teuchos::RCP<Epetra_Vector> veclm);
+    virtual void integrate_all(const std::string& statename,
+        const Teuchos::RCP<Core::LinAlg::Vector> vec,
+        const Teuchos::RCP<Core::LinAlg::Vector> veclm);
 
     virtual void evaluate_sliding(const std::string& statename,
-        const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Epetra_Vector> veclm);
+        const Teuchos::RCP<Core::LinAlg::Vector> vec,
+        const Teuchos::RCP<Core::LinAlg::Vector> veclm);
 
     virtual void print_interface(std::ostream& os);
 
@@ -130,7 +134,7 @@ namespace Adapter
     // create projection operator Dinv*M
     void create_p() override;
 
-    virtual Teuchos::RCP<Epetra_Vector> gap()
+    virtual Teuchos::RCP<Core::LinAlg::Vector> gap()
     {
       if (gap_ == Teuchos::null) FOUR_C_THROW("ERROR: gap vector is null pointer!");
       return gap_;
@@ -231,9 +235,9 @@ namespace Adapter
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         T_;  ///< Matrix containing the tangent vectors of the slave nodes
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
-        N_;                            ///< Matrix containing the (weighted) gap derivatives
-                                       ///< with respect to master and slave dofs
-    Teuchos::RCP<Epetra_Vector> gap_;  ///< gap vector
+        N_;                                   ///< Matrix containing the (weighted) gap derivatives
+                                              ///< with respect to master and slave dofs
+    Teuchos::RCP<Core::LinAlg::Vector> gap_;  ///< gap vector
 
     Teuchos::RCP<CONTACT::Interface> interface_;  ///< interface
   };

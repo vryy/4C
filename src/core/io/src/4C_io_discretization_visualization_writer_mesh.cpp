@@ -162,8 +162,8 @@ namespace Core::IO
           }
 
           // finally append the data
-          append_dof_based_result_data_vector(
-              *result_data(0), context_map.count(name), min_index_of_name, name);
+          append_dof_based_result_data_vector(Core::LinAlg::Vector(*result_data(0)),
+              context_map.count(name), min_index_of_name, name);
           break;
         }
         case OutputEntity::element:
@@ -185,14 +185,14 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterMesh::append_dof_based_result_data_vector(
-      const Epetra_Vector& result_data_dofbased, const unsigned int result_num_dofs_per_node,
+      const Core::LinAlg::Vector& result_data_dofbased, const unsigned int result_num_dofs_per_node,
       const unsigned int read_result_data_from_dofindex, const std::string& resultname)
   {
     /* the idea is to transform the given data to a 'point data vector' and append it to the
      * collected solution data vectors by calling
      * append_visualization_dof_based_result_data_vector() */
 
-    auto convert_to_col_map_if_necessary = [&](const Epetra_Vector& vector)
+    auto convert_to_col_map_if_necessary = [&](const Core::LinAlg::Vector& vector)
     {
       if (discretization_->dof_col_map()->SameAs(vector.Map()))
       {
@@ -200,7 +200,7 @@ namespace Core::IO
       }
       else if (discretization_->dof_row_map()->SameAs(vector.Map()))
       {
-        auto vector_col_map = Epetra_Vector(*discretization_->dof_col_map(), true);
+        auto vector_col_map = Core::LinAlg::Vector(*discretization_->dof_col_map(), true);
         Core::LinAlg::export_to(vector, vector_col_map);
         return vector_col_map;
       }

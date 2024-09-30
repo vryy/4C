@@ -96,7 +96,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_act
       //       it would be wrong to suppress results for a ghosted boundary!
 
       // get actual values of transported scalars
-      Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
+      Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
       // extract local values from the global vector
@@ -108,7 +108,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_act
       const int ndsvel = my::scatraparams_->nds_vel();
 
       // get convective (velocity - mesh displacement) velocity at nodes
-      Teuchos::RCP<const Epetra_Vector> convel =
+      Teuchos::RCP<const Core::LinAlg::Vector> convel =
           discretization.get_state(ndsvel, "convective velocity field");
       if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
@@ -147,7 +147,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_act
         // get number of dofset associated with velocity related dofs
         const int ndsdisp = my::scatraparams_->nds_disp();
 
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state(ndsdisp, "dispnp");
+        Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state(ndsdisp, "dispnp");
 
         if (disp != Teuchos::null)
         {

@@ -83,7 +83,7 @@ void Solid::TimeInt::Explicit::prepare_time_step()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Explicit::update_state_incrementally(
-    Teuchos::RCP<const Epetra_Vector> disiterinc)
+    Teuchos::RCP<const Core::LinAlg::Vector> disiterinc)
 {
   check_init_setup();
   FOUR_C_THROW(
@@ -98,7 +98,7 @@ void Solid::TimeInt::Explicit::determine_stress_strain() { expl_int().determine_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Explicit::evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void Solid::TimeInt::Explicit::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> disiterinc)
 {
   check_init_setup();
   FOUR_C_THROW(
@@ -130,7 +130,7 @@ void Solid::TimeInt::Explicit::evaluate()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Explicit::set_state(const Teuchos::RCP<Epetra_Vector>& x)
+void Solid::TimeInt::Explicit::set_state(const Teuchos::RCP<Core::LinAlg::Vector>& x)
 {
   FOUR_C_THROW(
       "All coupled problems work with implicit time "
@@ -254,7 +254,7 @@ int Solid::TimeInt::Explicit::integrate_step()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Solid::TimeInt::Explicit::initial_guess()
+Teuchos::RCP<const Core::LinAlg::Vector> Solid::TimeInt::Explicit::initial_guess()
 {
   FOUR_C_THROW("initial_guess() is not available for explicit time integration");
   return Teuchos::null;
@@ -263,7 +263,7 @@ Teuchos::RCP<const Epetra_Vector> Solid::TimeInt::Explicit::initial_guess()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Solid::TimeInt::Explicit::get_f() const
+Teuchos::RCP<const Core::LinAlg::Vector> Solid::TimeInt::Explicit::get_f() const
 {
   FOUR_C_THROW("RHS() is not available for explicit time integration");
   return Teuchos::null;
@@ -272,7 +272,7 @@ Teuchos::RCP<const Epetra_Vector> Solid::TimeInt::Explicit::get_f() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Solid::TimeInt::Explicit::freact()
+Teuchos::RCP<Core::LinAlg::Vector> Solid::TimeInt::Explicit::freact()
 {
   check_init_setup();
   FOUR_C_THROW("Not implemented!");

@@ -145,7 +145,7 @@ void Core::LinAlg::Preconditioner::solve(Teuchos::RCP<Epetra_Operator> matrix,
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = refactor;
     solver_params.reset = reset;
-    solver_->solve(matrix, x_, b_, solver_params);
+    solver_->solve_with_multi_vector(matrix, x_, b_, solver_params);
     x->Update(1.0, *x_, 0.0);
   }
 

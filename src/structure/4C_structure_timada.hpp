@@ -15,9 +15,9 @@
 #include "4C_config.hpp"
 
 #include "4C_inpar_structure.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -203,7 +203,7 @@ namespace Solid
     //@{
 
     //! get the vector of the local discretization error
-    Teuchos::RCP<Epetra_Vector>& loc_err_dis() { return locerrdisn_; }
+    Teuchos::RCP<Core::LinAlg::Vector>& loc_err_dis() { return locerrdisn_; }
 
     //@}
 
@@ -356,13 +356,13 @@ namespace Solid
 
     //! @name Adaptive time integration variables
     //@{
-    double stepsizepre_;                      //!< previous time step size \f$\Delta t_{n-1}\f$
-    double stepsize_;                         //!< current time step size \f$\Delta t_n\f$
-    Teuchos::RCP<Epetra_Vector> locerrdisn_;  //!< current local disp. error
-                                              //!< estimation \f$l_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> locerrveln_;  //!< current local vel. error
-                                              //!< estimation \f$\dot{l}_{n+1}\f$
-    int adaptstep_;                           //!< trial counter, cf. #adaptstepmax_
+    double stepsizepre_;  //!< previous time step size \f$\Delta t_{n-1}\f$
+    double stepsize_;     //!< current time step size \f$\Delta t_n\f$
+    Teuchos::RCP<Core::LinAlg::Vector> locerrdisn_;  //!< current local disp. error
+                                                     //!< estimation \f$l_{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector> locerrveln_;  //!< current local vel. error
+                                                     //!< estimation \f$\dot{l}_{n+1}\f$
+    int adaptstep_;                                  //!< trial counter, cf. #adaptstepmax_
     //@}
 
     //! @name Output settings

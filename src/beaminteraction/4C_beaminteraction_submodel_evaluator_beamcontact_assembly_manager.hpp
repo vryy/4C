@@ -16,6 +16,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
@@ -83,7 +84,10 @@ namespace BEAMINTERACTION
         FOUR_C_THROW("Not implemented!");
       }
 
-      virtual double get_energy(const Teuchos::RCP<const Epetra_Vector>& disp) const { return 0.0; }
+      virtual double get_energy(const Teuchos::RCP<const Core::LinAlg::Vector>& disp) const
+      {
+        return 0.0;
+      }
     };
 
   }  // namespace SUBMODELEVALUATOR

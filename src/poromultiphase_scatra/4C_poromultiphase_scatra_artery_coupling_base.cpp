@@ -117,8 +117,9 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::global_extractor() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::set_solution_vectors(
-    Teuchos::RCP<const Epetra_Vector> phinp_cont, Teuchos::RCP<const Epetra_Vector> phin_cont,
-    Teuchos::RCP<const Epetra_Vector> phinp_art)
+    Teuchos::RCP<const Core::LinAlg::Vector> phinp_cont,
+    Teuchos::RCP<const Core::LinAlg::Vector> phin_cont,
+    Teuchos::RCP<const Core::LinAlg::Vector> phinp_art)
 {
   // do nothing
 }

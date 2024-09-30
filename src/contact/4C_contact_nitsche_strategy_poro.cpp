@@ -25,9 +25,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void CONTACT::NitscheStrategyPoro::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
-    const int iter, bool predictor)
+void CONTACT::NitscheStrategyPoro::apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
+    const int step, const int iter, bool predictor)
 {
   if (predictor) return;
 
@@ -51,7 +51,7 @@ void CONTACT::NitscheStrategyPoro::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vec
 }
 
 void CONTACT::NitscheStrategyPoro::set_state(
-    const enum Mortar::StateType& statename, const Epetra_Vector& vec)
+    const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec)
 {
   if (statename == Mortar::state_svelocity)
   {
@@ -64,12 +64,13 @@ void CONTACT::NitscheStrategyPoro::set_state(
 }
 
 void CONTACT::NitscheStrategyPoro::set_parent_state(const enum Mortar::StateType& statename,
-    const Epetra_Vector& vec, const Core::FE::Discretization& dis)
+    const Core::LinAlg::Vector& vec, const Core::FE::Discretization& dis)
 {
   //
   if (statename == Mortar::state_fvelocity || statename == Mortar::state_fpressure)
   {
-    Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis.dof_col_map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector> global =
+        Teuchos::rcp(new Core::LinAlg::Vector(*dis.dof_col_map(), true));
     Core::LinAlg::export_to(vec, *global);
 
     // set state on interfaces
@@ -131,7 +132,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyPoro::setup_rhs_block_vec(
   }
 }
 
-Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategyPoro::get_rhs_block_ptr(
+Teuchos::RCP<const Core::LinAlg::Vector> CONTACT::NitscheStrategyPoro::get_rhs_block_ptr(
     const enum CONTACT::VecBlockType& bp) const
 {
   if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
@@ -139,7 +140,8 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategyPoro::get_rhs_block_pt
   switch (bp)
   {
     case CONTACT::VecBlockType::porofluid:
-      return Teuchos::rcp(new Epetra_Vector(Copy, *(fp_), 0));
+
+      return Teuchos::rcp(new Core::LinAlg::Vector(*fp_));
     default:
       return CONTACT::NitscheStrategy::get_rhs_block_ptr(bp);
   }

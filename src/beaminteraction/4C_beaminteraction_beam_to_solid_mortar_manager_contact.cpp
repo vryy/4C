@@ -16,9 +16,8 @@ contact simulations
 #include "4C_beaminteraction_contact_pair.hpp"
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_fad.hpp"
-
-#include <Epetra_Vector.h>
 
 
 FOUR_C_NAMESPACE_OPEN
@@ -37,7 +36,8 @@ BEAMINTERACTION::BeamToSolidMortarManagerContact::BeamToSolidMortarManagerContac
 /**
  *
  */
-std::tuple<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_Vector>>
+std::tuple<Teuchos::RCP<Core::LinAlg::Vector>, Teuchos::RCP<Core::LinAlg::Vector>,
+    Teuchos::RCP<Core::LinAlg::Vector>>
 BEAMINTERACTION::BeamToSolidMortarManagerContact::get_penalty_regularization(
     const bool compute_linearization) const
 {
@@ -50,7 +50,7 @@ BEAMINTERACTION::BeamToSolidMortarManagerContact::get_penalty_regularization(
   // vector (averaged gap) and the scaling vector (kappa)
   auto create_lambda_row_vector_with_zeros = [this]()
   {
-    auto row_vector = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
+    auto row_vector = Teuchos::rcp(new Core::LinAlg::Vector(*lambda_dof_rowmap_));
     row_vector->PutScalar(0.0);
     return row_vector;
   };

@@ -22,13 +22,13 @@
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_print.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_mat_cnst_1d_art.hpp"
 #include "4C_scatra_resulttest.hpp"
 #include "4C_scatra_timint_implicit.hpp"
 #include "4C_utils_function.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -387,7 +387,7 @@ void Arteries::ArtNetImplStationary::reset_artery_diam_previous_time_step()
  | evaluate Neumann boundary conditions                kremheller 03/18 |
  *----------------------------------------------------------------------*/
 void Arteries::ArtNetImplStationary::apply_neumann_bc(
-    const Teuchos::RCP<Epetra_Vector>& neumann_loads)
+    const Teuchos::RCP<Core::LinAlg::Vector>& neumann_loads)
 {
   // prepare load vector
   neumann_loads->PutScalar(0.0);
@@ -633,7 +633,7 @@ void Arteries::ArtNetImplStationary::read_restart(int step, bool coupledTo3D)
 
   // read restart for diameter of previous time step
   reader.read_vector(ele_radius_, "ele_radius");
-  Teuchos::RCP<Epetra_Vector> ele_radius_col =
+  Teuchos::RCP<Core::LinAlg::Vector> ele_radius_col =
       Core::LinAlg::create_vector(*discret_->element_col_map(), true);
   Core::LinAlg::export_to(*ele_radius_, *ele_radius_col);
 

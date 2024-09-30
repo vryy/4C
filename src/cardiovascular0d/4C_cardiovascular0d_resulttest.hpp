@@ -12,9 +12,8 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_result_test.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -52,7 +51,7 @@ class Cardiovascular0DResultTest : public Core::UTILS::ResultTest
  private:
   Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization
 
-  const Teuchos::RCP<Epetra_Vector> cardvasc0d_dof_;
+  const Teuchos::RCP<Core::LinAlg::Vector> cardvasc0d_dof_;
 
   const bool havecardio_4elementwindkessel_;
   const bool havecardio_arterialproxdist_;

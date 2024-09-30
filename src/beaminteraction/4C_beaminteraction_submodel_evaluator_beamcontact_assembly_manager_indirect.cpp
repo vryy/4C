@@ -36,7 +36,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::eva
 
 
 double BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect::get_energy(
-    const Teuchos::RCP<const Epetra_Vector>& disp) const
+    const Teuchos::RCP<const Core::LinAlg::Vector>& disp) const
 {
   const double global_mortar_energy = mortar_manager_->get_energy();
 

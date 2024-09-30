@@ -19,11 +19,11 @@
 #include "4C_config.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -65,30 +65,30 @@ namespace Adapter
     void setup() override;
 
     /// initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> initial_guess() override;
+    Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() override;
 
     /// right-hand-side of Newton's method
-    Teuchos::RCP<const Epetra_Vector> rhs() override;
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs() override;
 
     /// unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Epetra_Vector> dispnp() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp() const override;
 
     /// known displacements at \f$t_{n}\f$
-    Teuchos::RCP<const Epetra_Vector> dispn() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector> dispn() const override;
 
     /*! \brief known velocity at \f$t_{n}\f$
      *
      *  Lagrange multiplier does not have a time derivative. Though we need a map
      *  including the Lagrange multiplier, thus, we include it and set it to zero.
      */
-    Teuchos::RCP<const Epetra_Vector> veln() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector> veln() const override;
 
     /*! known acceleration at \f$t_{n}\f$
      *
      *  Lagrange multiplier does not have a time derivative. Though we need a map
      *  including the Lagrange multiplier, thus, we include it and set it to zero.
      */
-    Teuchos::RCP<const Epetra_Vector> accn() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector> accn() const override;
 
     /// dof map of vector of unknowns
     Teuchos::RCP<const Epetra_Map> dof_row_map() override;
@@ -99,7 +99,8 @@ namespace Adapter
     /// step. The middle values are newly created.
     ///
     /// \note This is not yet the most efficient implementation.
-    void apply_interface_forces_temporary_deprecated(Teuchos::RCP<Epetra_Vector> iforce) override;
+    void apply_interface_forces_temporary_deprecated(
+        Teuchos::RCP<Core::LinAlg::Vector> iforce) override;
 
     /// direct access to system matrix
     Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
@@ -108,7 +109,7 @@ namespace Adapter
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
 
     /// update displacement and evaluate elements
-    void evaluate(Teuchos::RCP<const Epetra_Vector>
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
             dispstepinc  ///< solution increment between time step n and n+1
         ) override;
 
@@ -141,7 +142,7 @@ namespace Adapter
     //! Update iteration
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
     void update_iter_incr_constr(
-        Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
+        Teuchos::RCP<Core::LinAlg::Vector> lagrincr  ///< Lagrange multiplier increment
         ) override
     {
       structure_->update_iter_incr_constr(lagrincr);

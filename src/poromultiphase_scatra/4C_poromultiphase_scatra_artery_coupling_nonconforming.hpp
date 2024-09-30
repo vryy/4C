@@ -46,13 +46,15 @@ namespace PoroMultiPhaseScaTra
    protected:
     //! Evaluate the 1D-3D coupling
     void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs) override;
+        Teuchos::RCP<Core::LinAlg::Vector> rhs) override;
 
     //! set-up of linear system of equations of coupled problem
     void setup_system(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Epetra_Vector> rhs, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
+        Teuchos::RCP<Core::LinAlg::Vector> rhs,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
-        Teuchos::RCP<const Epetra_Vector> rhs_cont, Teuchos::RCP<const Epetra_Vector> rhs_art,
+        Teuchos::RCP<const Core::LinAlg::Vector> rhs_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector> rhs_art,
         Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
         Teuchos::RCP<const Epetra_Map> dbcmap_art,
         Teuchos::RCP<const Epetra_Map> dbcmap_art_with_collapsed);
@@ -69,7 +71,8 @@ namespace PoroMultiPhaseScaTra
         const int& ele2gid, const double& integrated_diam,
         std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
+        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Core::LinAlg::Vector> rhs);
 
     //! set flag if varying diameter has to be calculated
     virtual void set_varying_diam_flag();
@@ -113,7 +116,7 @@ namespace PoroMultiPhaseScaTra
     Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod coupling_method_;
 
     //! phinp for artery dis
-    Teuchos::RCP<const Epetra_Vector> phinp_art_;
+    Teuchos::RCP<const Core::LinAlg::Vector> phinp_art_;
 
     //! coupling matrix (FE)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> FEmat_;
@@ -122,8 +125,8 @@ namespace PoroMultiPhaseScaTra
     //! check if initial fields on coupled DOFs are equal
     //!  \note not performed here since penalty approach will force solution to be
     //!        equal anyway
-    void check_initial_fields(Teuchos::RCP<const Epetra_Vector> vec_cont,
-        Teuchos::RCP<const Epetra_Vector> vec_art) override{};
+    void check_initial_fields(Teuchos::RCP<const Core::LinAlg::Vector> vec_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector> vec_art) override{};
 
     //! access artery (1D) dof row map
     Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const override;
@@ -132,17 +135,18 @@ namespace PoroMultiPhaseScaTra
     Teuchos::RCP<const Epetra_Map> dof_row_map() const override;
 
     //! Setup global vector
-    void setup_vector(Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<const Epetra_Vector> vec_cont,
-        Teuchos::RCP<const Epetra_Vector> vec_art) override;
+    void setup_vector(Teuchos::RCP<Core::LinAlg::Vector> vec,
+        Teuchos::RCP<const Core::LinAlg::Vector> vec_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector> vec_art) override;
 
-    void extract_single_field_vectors(Teuchos::RCP<const Epetra_Vector> globalvec,
-        Teuchos::RCP<const Epetra_Vector>& vec_cont,
-        Teuchos::RCP<const Epetra_Vector>& vec_art) override;
+    void extract_single_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> globalvec,
+        Teuchos::RCP<const Core::LinAlg::Vector>& vec_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector>& vec_art) override;
 
     //! set solution vector of single fields
-    void set_solution_vectors(Teuchos::RCP<const Epetra_Vector> phinp_cont,
-        Teuchos::RCP<const Epetra_Vector> phin_cont,
-        Teuchos::RCP<const Epetra_Vector> phinp_art) override;
+    void set_solution_vectors(Teuchos::RCP<const Core::LinAlg::Vector> phinp_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector> phin_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector> phinp_art) override;
 
     //! init the strategy
     void init() override;
@@ -151,7 +155,7 @@ namespace PoroMultiPhaseScaTra
     void set_nearby_ele_pairs(const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     //! access to blood vessel volume fraction
-    Teuchos::RCP<const Epetra_Vector> blood_vessel_volume_fraction() override;
+    Teuchos::RCP<const Core::LinAlg::Vector> blood_vessel_volume_fraction() override;
 
     //! create interaction pairs for line- or surfacebased coupling (GPTS and MP)
     void create_coupling_pairs_line_surf_based();
@@ -166,8 +170,8 @@ namespace PoroMultiPhaseScaTra
     void get_coupling_idsfrom_input();
 
     //! evaluate the pairs
-    void evaluate_coupling_pairs(
-        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
+    void evaluate_coupling_pairs(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Core::LinAlg::Vector> rhs);
 
     //! FE-assemble into global D, M and kappa (MP case)
     void fe_assemble_dm_kappa(const int& ele1gid, const int& ele2gid,
@@ -175,8 +179,8 @@ namespace PoroMultiPhaseScaTra
         const Core::LinAlg::SerialDenseVector& Kappa_ele);
 
     //! sum D and M into global force and stiffness matrix
-    void sum_dm_into_global_force_stiff(
-        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
+    void sum_dm_into_global_force_stiff(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        Teuchos::RCP<Core::LinAlg::Vector> rhs);
 
     //! invert kappa vector
     void invert_kappa();
@@ -210,16 +214,16 @@ namespace PoroMultiPhaseScaTra
     std::map<int, std::set<int>> nearbyelepairs_;
 
     //! phinp for continuous dis
-    Teuchos::RCP<const Epetra_Vector> phinp_cont_;
+    Teuchos::RCP<const Core::LinAlg::Vector> phinp_cont_;
 
     //! phin for continuous dis
-    Teuchos::RCP<const Epetra_Vector> phin_cont_;
+    Teuchos::RCP<const Core::LinAlg::Vector> phin_cont_;
 
     //! zeros for continuous dis
-    Teuchos::RCP<const Epetra_Vector> zeros_cont_;
+    Teuchos::RCP<const Core::LinAlg::Vector> zeros_cont_;
 
     //! zeros for artery dis
-    Teuchos::RCP<const Epetra_Vector> zeros_art_;
+    Teuchos::RCP<const Core::LinAlg::Vector> zeros_art_;
 
     //! scale and function-vector
     std::vector<std::vector<int>> scale_vec_;

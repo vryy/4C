@@ -74,7 +74,7 @@ namespace
 
   void apply_nurbs_initial_condition_solve(Core::FE::Discretization& dis,
       Core::LinAlg::Solver& solver, const Core::UTILS::FunctionOfSpaceTime& start_function,
-      Teuchos::RCP<Epetra_Vector> initialvals)
+      Teuchos::RCP<Core::LinAlg::Vector> initialvals)
   {
     // try to cast dis to a nurbs discretisation --- if possible, proceed
     // with setting initial conditions. Otherwise return.
@@ -115,7 +115,7 @@ namespace
     // -------------------------------------------------------------------
     // create empty right hand side vector
     // -------------------------------------------------------------------
-    Teuchos::RCP<Epetra_Vector> rhs = Core::LinAlg::create_vector(*dofrowmap, true);
+    Teuchos::RCP<Core::LinAlg::Vector> rhs = Core::LinAlg::create_vector(*dofrowmap, true);
 
     // -------------------------------------------------------------------
     // call elements to calculate massmatrix and righthandside
@@ -559,7 +559,8 @@ namespace
 /*----------------------------------------------------------------------*/
 void Core::FE::Nurbs::apply_nurbs_initial_condition(Core::FE::Discretization& dis,
     const Teuchos::ParameterList& solverparams,
-    const Core::UTILS::FunctionOfSpaceTime& start_function, Teuchos::RCP<Epetra_Vector> initialvals)
+    const Core::UTILS::FunctionOfSpaceTime& start_function,
+    Teuchos::RCP<Core::LinAlg::Vector> initialvals)
 {
   // try to cast dis to a nurbs discretisation --- if possible, proceed
   // with setting initial conditions. Otherwise return.

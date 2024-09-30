@@ -62,13 +62,13 @@ namespace ScaTra
     void read_restart(
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
-    Teuchos::RCP<Epetra_Vector> phiaf() override { return Teuchos::null; }
+    Teuchos::RCP<Core::LinAlg::Vector> phiaf() override { return Teuchos::null; }
 
-    Teuchos::RCP<Epetra_Vector> phiam() override { return Teuchos::null; }
+    Teuchos::RCP<Core::LinAlg::Vector> phiam() override { return Teuchos::null; }
 
-    Teuchos::RCP<Epetra_Vector> phidtam() override { return Teuchos::null; }
+    Teuchos::RCP<Core::LinAlg::Vector> phidtam() override { return Teuchos::null; }
 
-    Teuchos::RCP<Epetra_Vector> fs_phi() override
+    Teuchos::RCP<Core::LinAlg::Vector> fs_phi() override
     {
       if (Sep_ != Teuchos::null) Sep_->multiply(false, *phinp_, *fsphinp_);
       return fsphinp_;
@@ -87,13 +87,14 @@ namespace ScaTra
     }
 
     //! set state on micro scale in multi-scale simulations
-    void set_state(Teuchos::RCP<Epetra_Vector> phin,  //!< micro-scale state vector at old time step
-        Teuchos::RCP<Epetra_Vector> phinp,            //!< micro-scale state vector at new time step
-        Teuchos::RCP<Epetra_Vector>
+    void set_state(
+        Teuchos::RCP<Core::LinAlg::Vector> phin,   //!< micro-scale state vector at old time step
+        Teuchos::RCP<Core::LinAlg::Vector> phinp,  //!< micro-scale state vector at new time step
+        Teuchos::RCP<Core::LinAlg::Vector>
             phidtn,  //!< time derivative of micro-scale state vector at old time step
-        Teuchos::RCP<Epetra_Vector>
+        Teuchos::RCP<Core::LinAlg::Vector>
             phidtnp,  //!< time derivative of micro-scale state vector at new time step
-        Teuchos::RCP<Epetra_Vector> hist,                     //!< micro-scale history vector
+        Teuchos::RCP<Core::LinAlg::Vector> hist,              //!< micro-scale history vector
         Teuchos::RCP<Core::IO::DiscretizationWriter> output,  //!< micro-scale discretization writer
         std::shared_ptr<Core::IO::DiscretizationVisualizationWriterMesh> visualization_writer,
         const std::vector<double>&
@@ -138,7 +139,7 @@ namespace ScaTra
     double theta_;
 
     /// fine-scale solution vector at time n+1
-    Teuchos::RCP<Epetra_Vector> fsphinp_;
+    Teuchos::RCP<Core::LinAlg::Vector> fsphinp_;
   };
 
 }  // namespace ScaTra

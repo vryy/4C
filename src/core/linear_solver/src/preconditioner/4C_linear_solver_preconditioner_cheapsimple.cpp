@@ -91,9 +91,9 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epet
   // Allocate and compute abs(rowsum(A(0,0))^{-1}
   //-------------------------------------------------------------------------
   {
-    Epetra_Vector diag(*mmex_.Map(0), false);
+    Core::LinAlg::Vector diag(*mmex_.Map(0), false);
     Teuchos::RCP<Epetra_CrsMatrix> A00 = (*a_)(0, 0).epetra_matrix();
-    A00->InvRowSums(diag);
+    A00->InvRowSums(diag.get_ref_of_Epetra_Vector());
     diag_ainv_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(diag));
     diag_ainv_->complete(*mmex_.Map(0), *mmex_.Map(0));
   }
@@ -102,7 +102,7 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epet
   // Allocate and compute diag(A(0,0)^{-1}
   //-------------------------------------------------------------------------
   {
-    Epetra_Vector diag(*mmex_.Map(0), false);
+    Core::LinAlg::Vector diag(*mmex_.Map(0), false);
     (*A_)(0, 0).ExtractDiagonalCopy(diag);
     int err = diag.Reciprocal(diag);
     if (err) FOUR_C_THROW("Epetra_MultiVector::Reciprocal returned %d", err);

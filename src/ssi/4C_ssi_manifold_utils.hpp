@@ -15,10 +15,9 @@
 
 #include "4C_coupling_adapter.hpp"
 #include "4C_io_runtime_csv_writer.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_ssi_utils.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
-
-#include <Epetra_Vector.h>
 
 #include <memory>
 #include <optional>
@@ -181,8 +180,8 @@ namespace SSI
 
     //! get all RHS
     //@{
-    Teuchos::RCP<Epetra_Vector> rhs_manifold() { return rhs_manifold_; }
-    Teuchos::RCP<Epetra_Vector> rhs_scatra() { return rhs_scatra_; }
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_manifold() { return rhs_manifold_; }
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_scatra() { return rhs_scatra_; }
     //@}
 
     //! get all matrices
@@ -293,10 +292,10 @@ namespace SSI
 
     //! rhs for manifold and scatra
     //@{
-    Teuchos::RCP<Epetra_Vector> rhs_manifold_;
-    Teuchos::RCP<Epetra_Vector> rhs_manifold_cond_;
-    Teuchos::RCP<Epetra_Vector> rhs_scatra_;
-    Teuchos::RCP<Epetra_Vector> rhs_scatra_cond_;
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_manifold_;
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_manifold_cond_;
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_scatra_;
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_scatra_cond_;
     //@}
 
     // writes evaluated data to output
@@ -347,7 +346,7 @@ namespace SSI
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 
     //! apply mesh tying to right hand side
-    void apply_mesh_tying_to_manifold_rhs(Teuchos::RCP<Epetra_Vector> rhs_manifold);
+    void apply_mesh_tying_to_manifold_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs_manifold);
 
     //! apply mesh tying to manifold system matrix
     virtual void apply_meshtying_to_manifold_matrix(

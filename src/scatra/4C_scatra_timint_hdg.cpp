@@ -288,15 +288,15 @@ namespace
 {
   // internal helper function for output
   void get_node_vectors_hdg(Core::FE::Discretization &dis,
-      const Teuchos::RCP<Epetra_Vector> &interiorValues,
-      const Teuchos::RCP<Epetra_Vector> &traceValues, const int ndim,
-      Teuchos::RCP<Epetra_Vector> &phi, Teuchos::RCP<Epetra_MultiVector> &gradphi,
-      Teuchos::RCP<Epetra_Vector> &tracephi, int nds_intvar_, int ndofs)
+      const Teuchos::RCP<Core::LinAlg::Vector> &interiorValues,
+      const Teuchos::RCP<Core::LinAlg::Vector> &traceValues, const int ndim,
+      Teuchos::RCP<Core::LinAlg::Vector> &phi, Teuchos::RCP<Epetra_MultiVector> &gradphi,
+      Teuchos::RCP<Core::LinAlg::Vector> &tracephi, int nds_intvar_, int ndofs)
   {
     dis.clear_state(true);
 
     // create dofsets for concentration at nodes
-    tracephi.reset(new Epetra_Vector(phi->Map()));
+    tracephi.reset(new Core::LinAlg::Vector(phi->Map()));
     gradphi.reset(new Epetra_MultiVector(*dis.node_row_map(), ndim));
 
     // call element routine to interpolate HDG to elements
@@ -364,7 +364,7 @@ void ScaTra::TimIntHDG::write_restart() const
 void ScaTra::TimIntHDG::collect_runtime_output_data()
 {
   Teuchos::RCP<Epetra_MultiVector> interpolatedGradPhi;
-  Teuchos::RCP<Epetra_Vector> interpolatedtracePhi;
+  Teuchos::RCP<Core::LinAlg::Vector> interpolatedtracePhi;
   // get (averaged) values at element nodes
   get_node_vectors_hdg(*discret_, intphinp_, phinp_, Global::Problem::instance()->n_dim(),
       interpolatedPhinp_, interpolatedGradPhi, interpolatedtracePhi, nds_intvar_,
@@ -471,17 +471,17 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   output_->clear_map_cache();
 
   // reset the residual, increment and sysmat to the size
-  residual_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
-  increment_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
-  neumann_loads_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
+  residual_.reset(new Core::LinAlg::Vector(*(discret_->dof_row_map())));
+  increment_.reset(new Core::LinAlg::Vector(*(discret_->dof_row_map())));
+  neumann_loads_.reset(new Core::LinAlg::Vector(*(discret_->dof_row_map())));
   sysmat_ = Teuchos::null;
   sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27));
 
   // reset the state vectors
-  intphinp_.reset(new Epetra_Vector(*(discret_->dof_row_map(nds_intvar_)), true));
-  intphin_.reset(new Epetra_Vector(*(discret_->dof_row_map(nds_intvar_)), true));
-  phinp_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
-  phin_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
+  intphinp_.reset(new Core::LinAlg::Vector(*(discret_->dof_row_map(nds_intvar_)), true));
+  intphin_.reset(new Core::LinAlg::Vector(*(discret_->dof_row_map(nds_intvar_)), true));
+  phinp_.reset(new Core::LinAlg::Vector(*(discret_->dof_row_map())));
+  phin_.reset(new Core::LinAlg::Vector(*(discret_->dof_row_map())));
 
   // read state vectors that are needed for hdg
   reader.read_vector(phinp_, "phinp_trace");
@@ -491,8 +491,8 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   phin_->Update(1.0, *phinp_, 0.0);
 
   // reset vector
-  interpolatedPhinp_.reset(new Epetra_Vector(*(discret_->node_row_map())));
-  elementdegree_.reset(new Epetra_Vector(*(discret_->element_row_map())));
+  interpolatedPhinp_.reset(new Core::LinAlg::Vector(*(discret_->node_row_map())));
+  elementdegree_.reset(new Core::LinAlg::Vector(*(discret_->element_row_map())));
 }
 
 /*----------------------------------------------------------------------*
@@ -639,7 +639,7 @@ void ScaTra::TimIntHDG::gen_alpha_compute_time_derivative()
 /*----------------------------------------------------------------------*
  | update interior variables                             hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntHDG::update_interior_variables(Teuchos::RCP<Epetra_Vector> updatevector)
+void ScaTra::TimIntHDG::update_interior_variables(Teuchos::RCP<Core::LinAlg::Vector> updatevector)
 {
   discret_->clear_state(true);
   Teuchos::ParameterList eleparams;
@@ -686,7 +686,8 @@ void ScaTra::TimIntHDG::update_interior_variables(Teuchos::RCP<Epetra_Vector> up
 void ScaTra::TimIntHDG::fd_check()
 {
   // make a copy of state variables to undo perturbations later
-  Teuchos::RCP<Epetra_Vector> phinp_original = Teuchos::rcp(new Epetra_Vector(*phinp_));
+  Teuchos::RCP<Core::LinAlg::Vector> phinp_original =
+      Teuchos::rcp(new Core::LinAlg::Vector(*phinp_));
 
   discret_->clear_state(true);
 
@@ -694,7 +695,7 @@ void ScaTra::TimIntHDG::fd_check()
   const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
 
   Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1, systemmatrix2;
-  Teuchos::RCP<Epetra_Vector> systemvector1, systemvector2, systemvector3;
+  Teuchos::RCP<Core::LinAlg::Vector> systemvector1, systemvector2, systemvector3;
 
   // create matrix and vector for calculation of sysmat and assemble
   systemmatrix1 = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27));
@@ -709,7 +710,7 @@ void ScaTra::TimIntHDG::fd_check()
   // vector for the calculation of the original residual the temporary vector is necessary because
   // afterwards we need to calculate also the interior vectors with the state vector with
   // perturbation without influence for this update
-  Teuchos::RCP<Epetra_Vector> intphitemp;
+  Teuchos::RCP<Core::LinAlg::Vector> intphitemp;
   intphitemp = Core::LinAlg::create_vector(*intdofrowmap, true);
 
   strategy.zero();
@@ -752,8 +753,9 @@ void ScaTra::TimIntHDG::fd_check()
   sysmatcopy->FillComplete();
 
   // make a copy of system right-hand side vector
-  Teuchos::RCP<Epetra_Vector> residualVec = Teuchos::rcp(new Epetra_Vector(*systemvector1));
-  Teuchos::RCP<Epetra_Vector> fdvec = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector> residualVec =
+      Teuchos::rcp(new Core::LinAlg::Vector(*systemvector1));
+  Teuchos::RCP<Core::LinAlg::Vector> fdvec = Core::LinAlg::create_vector(*dofrowmap, true);
 
   for (int k = 0; k < 16; ++k)
   {
@@ -1010,7 +1012,7 @@ void ScaTra::TimIntHDG::calc_mat_initial()
   discret_->set_state(nds_intvar_, "intphinp", intphinp_);
 
   Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1, systemmatrix2;
-  Teuchos::RCP<Epetra_Vector> systemvector1, systemvector2, systemvector3;
+  Teuchos::RCP<Core::LinAlg::Vector> systemvector1, systemvector2, systemvector3;
 
   // create matrix and vector for calculation of sysmat and assemble
   systemmatrix1 = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27));
@@ -1208,24 +1210,24 @@ void ScaTra::TimIntHDG::adapt_degree()
 
   // copy old values of the state vectors phi and intphi into vectors, which are then used for the
   // projection
-  Teuchos::RCP<Epetra_Vector> phinp_old = Core::LinAlg::create_vector(*facedofs_old, true);
+  Teuchos::RCP<Core::LinAlg::Vector> phinp_old = Core::LinAlg::create_vector(*facedofs_old, true);
   Core::LinAlg::export_to(*phinp_, *phinp_old);
 
-  Teuchos::RCP<Epetra_Vector> intphinp_old = Core::LinAlg::create_vector(*eledofs_old, true);
+  Teuchos::RCP<Core::LinAlg::Vector> intphinp_old = Core::LinAlg::create_vector(*eledofs_old, true);
   Core::LinAlg::export_to(*intphinp_, *intphinp_old);
 
   // reset the residual, increment and sysmat to the size of the adapted new dofset
-  residual_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
-  increment_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
-  neumann_loads_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
+  residual_.reset(new Core::LinAlg::Vector(*(discret_->dof_row_map())));
+  increment_.reset(new Core::LinAlg::Vector(*(discret_->dof_row_map())));
+  neumann_loads_.reset(new Core::LinAlg::Vector(*(discret_->dof_row_map())));
   sysmat_ = Teuchos::null;
   sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27));
 
   // reset the state vectors
-  intphinp_.reset(new Epetra_Vector(*(discret_->dof_row_map(nds_intvar_)), true));
-  intphin_.reset(new Epetra_Vector(*(discret_->dof_row_map(nds_intvar_)), true));
-  phinp_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
-  phin_.reset(new Epetra_Vector(*(discret_->dof_row_map())));
+  intphinp_.reset(new Core::LinAlg::Vector(*(discret_->dof_row_map(nds_intvar_)), true));
+  intphin_.reset(new Core::LinAlg::Vector(*(discret_->dof_row_map(nds_intvar_)), true));
+  phinp_.reset(new Core::LinAlg::Vector(*(discret_->dof_row_map())));
+  phin_.reset(new Core::LinAlg::Vector(*(discret_->dof_row_map())));
 
   //  // end time measurement for element
   //  double dtfillcomplete=Teuchos::Time::wallTime()-tcfillcomplete;
@@ -1272,9 +1274,9 @@ void ScaTra::TimIntHDG::adapt_degree()
  | adapt trace vector and interior variables when adapting element      |
  | degrees                                                hoermann 07/16|
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_new,
-    Teuchos::RCP<Epetra_Vector> phi_old, Teuchos::RCP<Epetra_Vector> intphi_new,
-    Teuchos::RCP<Epetra_Vector> intphi_old, int nds_var_old, int nds_intvar_old,
+void ScaTra::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Core::LinAlg::Vector> phi_new,
+    Teuchos::RCP<Core::LinAlg::Vector> phi_old, Teuchos::RCP<Core::LinAlg::Vector> intphi_new,
+    Teuchos::RCP<Core::LinAlg::Vector> intphi_old, int nds_var_old, int nds_intvar_old,
     std::vector<Core::Elements::LocationArray> la_old)
 {
   // set action
@@ -1293,8 +1295,8 @@ void ScaTra::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Epetra_Vector> phi_ne
 
 
   // set old state vector on parameter list
-  eleparams.set<Teuchos::RCP<Epetra_Vector>>("phi", phi_old);
-  eleparams.set<Teuchos::RCP<Epetra_Vector>>("intphi", intphi_old);
+  eleparams.set<Teuchos::RCP<Core::LinAlg::Vector>>("phi", phi_old);
+  eleparams.set<Teuchos::RCP<Core::LinAlg::Vector>>("intphi", intphi_old);
 
   Core::LinAlg::SerialDenseMatrix dummyMat;
   Core::LinAlg::SerialDenseVector intphi_ele, phi_ele, dummyVec;

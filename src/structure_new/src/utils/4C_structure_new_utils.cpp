@@ -20,6 +20,7 @@
 #include "4C_global_data.hpp"
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_solver_nonlin_nox_aux.hpp"
 #include "4C_solver_nonlin_nox_constraint_interface_preconditioner.hpp"
 #include "4C_solver_nonlin_nox_constraint_interface_required.hpp"
@@ -31,8 +32,6 @@
 #include "4C_structure_new_nln_linearsystem_scaling.hpp"
 #include "4C_structure_new_timint_basedatasdyn.hpp"
 #include "4C_utils_exceptions.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -115,7 +115,7 @@ namespace BEAMINTERACTION
    * @param ref_triad_interpolation_scheme (out) Interpolation of reference triad field.
    */
   void get_beam_triad_interpolation_scheme(const Core::FE::Discretization& discret,
-      const Teuchos::RCP<const Epetra_Vector>& displacement_vector,
+      const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_vector,
       const Core::Elements::Element* ele,
       LargeRotations::TriadInterpolationLocalRotationVectors<3, double>& triad_interpolation_scheme,
       LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&

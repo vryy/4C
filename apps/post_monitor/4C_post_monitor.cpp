@@ -526,7 +526,7 @@ void FluidMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector
-  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("velnp");
+  auto resvec = result.read_result("velnp");
   const Epetra_BlockMap& velmap = resvec->Map();
   // do output of general time step data
   outfile << std::right << std::setw(20) << result.step();
@@ -579,7 +579,7 @@ void RedAirwayMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector
-  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("PO2");
+  auto resvec = result.read_result("PO2");
   const Epetra_BlockMap& pmap = resvec->Map();
   // do output of general time step data
   outfile << std::right << std::setw(20) << result.step();
@@ -677,7 +677,7 @@ void StructMonWriter::write_result(
   // displacement
 
   // get actual result vector displacement
-  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("displacement");
+  auto resvec = result.read_result("displacement");
   const Epetra_BlockMap& dispmap = resvec->Map();
 
   // compute second part of offset
@@ -941,7 +941,7 @@ void AleMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
-  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("displacement");
+  auto resvec = result.read_result("displacement");
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
   outfile << std::right << std::setw(10) << result.step();
@@ -1017,7 +1017,7 @@ void FsiFluidMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
-  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("dispnp");
+  Teuchos::RCP<Core::LinAlg::Vector> resvec = result.read_result("dispnp");
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
   outfile << std::right << std::setw(10) << result.step();
@@ -1151,7 +1151,7 @@ void FsiStructMonWriter::write_result(
   // displacement
 
   // get actual result vector displacement
-  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("displacement");
+  Teuchos::RCP<Core::LinAlg::Vector> resvec = result.read_result("displacement");
   const Epetra_BlockMap& dispmap = resvec->Map();
 
   // compute second part of offset
@@ -1345,7 +1345,7 @@ void ScatraMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
-  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("phinp");
+  Teuchos::RCP<Core::LinAlg::Vector> resvec = result.read_result("phinp");
 
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
@@ -1408,7 +1408,7 @@ void ThermoMonWriter::write_result(
   // temperature
 
   // get actual result vector temperature
-  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("temperature");
+  Teuchos::RCP<Core::LinAlg::Vector> resvec = result.read_result("temperature");
   const Epetra_BlockMap& dispmap = resvec->Map();
 
   // compute second part of offset
@@ -1546,9 +1546,12 @@ void ThermoMonWriter::write_thr_result(std::ofstream& outfile, PostField*& field
   p.set("gpheatfluxmap", data);
   p.set("total time", -1.0);
 
-  Teuchos::RCP<Epetra_Vector> heatfluxx = Teuchos::rcp(new Epetra_Vector(*(dis->dof_row_map())));
-  Teuchos::RCP<Epetra_Vector> heatfluxy = Teuchos::rcp(new Epetra_Vector(*(dis->dof_row_map())));
-  Teuchos::RCP<Epetra_Vector> heatfluxz = Teuchos::rcp(new Epetra_Vector(*(dis->dof_row_map())));
+  Teuchos::RCP<Core::LinAlg::Vector> heatfluxx =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(dis->dof_row_map())));
+  Teuchos::RCP<Core::LinAlg::Vector> heatfluxy =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(dis->dof_row_map())));
+  Teuchos::RCP<Core::LinAlg::Vector> heatfluxz =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(dis->dof_row_map())));
   dis->evaluate(p, Teuchos::null, Teuchos::null, heatfluxx, heatfluxy, heatfluxz);
 
   const unsigned numdofpernode = 1;
@@ -1679,9 +1682,9 @@ void PoroFluidMultiMonWriter::write_result(
     std::ofstream& outfile, PostResult& result, std::vector<int>& gdof, int dim)
 {
   // get actual result vector for displacement
-  Teuchos::RCP<Epetra_Vector> resvec = result.read_result("phinp_fluid");
-  Teuchos::RCP<Epetra_Vector> resvec_sat = result.read_result("saturation");
-  Teuchos::RCP<Epetra_Vector> resvec_press = result.read_result("pressure");
+  Teuchos::RCP<Core::LinAlg::Vector> resvec = result.read_result("phinp_fluid");
+  Teuchos::RCP<Core::LinAlg::Vector> resvec_sat = result.read_result("saturation");
+  Teuchos::RCP<Core::LinAlg::Vector> resvec_press = result.read_result("pressure");
 
   const Epetra_BlockMap& phimap = resvec->Map();
   const Epetra_BlockMap& satmap = resvec_sat->Map();
@@ -1718,7 +1721,7 @@ void PoroFluidMultiMonWriter::write_result(
   // do output for porosity
   if (output_porosity_)
   {
-    Teuchos::RCP<Epetra_Vector> resvec_poro = result.read_result("porosity");
+    Teuchos::RCP<Core::LinAlg::Vector> resvec_poro = result.read_result("porosity");
     const Epetra_BlockMap& poromap = resvec_poro->Map();
     const int lid = poromap.LID(poro_dof_);
     outfile << std::right << std::setw(20) << std::setprecision(10) << std::scientific

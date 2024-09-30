@@ -17,13 +17,13 @@
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Import.h>
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_SerialDenseSolver.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -507,7 +507,7 @@ Core::LinAlg::KrylovProjector::multiply_multi_vecter_multi_vector(
   else
     FOUR_C_THROW("id must be 1 or 2");
 
-  Epetra_Vector prod(*((*temp)(0)));
+  Core::LinAlg::Vector prod(*((*temp)(0)));
   for (int i = 1; i < nsdim_; ++i) prod.Multiply(1.0, *((*temp)(i)), prod, 1.0);
   int numnonzero = 0;
   for (int i = 0; i < prod.MyLength(); ++i)

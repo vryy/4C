@@ -102,7 +102,7 @@ void MultiScale::MicroStatic::set_up_homogenization()
   importf_ = Teuchos::rcp(new Epetra_Import(*fdof_, *(discret_->dof_row_map())));
 
   // create vector containing material coordinates of prescribed nodes
-  Epetra_Vector Xp_temp(*pdof_);
+  Core::LinAlg::Vector Xp_temp(*pdof_);
 
   std::vector<Core::Conditions::Condition*> conds;
   discret_->get_condition("MicroBoundary", conds);

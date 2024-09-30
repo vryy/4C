@@ -40,7 +40,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
      */
     virtual void evaluate_equation(Core::LinAlg::SparseMatrix& Q_dd,
         Core::LinAlg::SparseMatrix& Q_dL, Core::LinAlg::SparseMatrix& Q_Ld,
-        Epetra_Vector& constraint_vector, const Epetra_Vector& D_np1) = 0;
+        Core::LinAlg::Vector& constraint_vector, const Core::LinAlg::Vector& D_np1) = 0;
 
     /*! \brief Return the number of multi point constraints the object contains
      *
@@ -85,8 +85,8 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
 
     //! derived
     void evaluate_equation(Core::LinAlg::SparseMatrix& Q_dd, Core::LinAlg::SparseMatrix& Q_dL,
-        Core::LinAlg::SparseMatrix& Q_Ld, Epetra_Vector& constraint_vector,
-        const Epetra_Vector& D_np1) override;
+        Core::LinAlg::SparseMatrix& Q_Ld, Core::LinAlg::Vector& constraint_vector,
+        const Core::LinAlg::Vector& D_np1) override;
 
    private:
     //! Struct with Term data: Coef, RowID, DofID

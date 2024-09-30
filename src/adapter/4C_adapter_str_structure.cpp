@@ -216,7 +216,8 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
       stcinv = Core::LinAlg::matrix_multiply(*stcinv, false, *tmpstcmat, false, false, false, true);
     }
 
-    Teuchos::RCP<Epetra_Vector> temp = Core::LinAlg::create_vector(*(actdis->dof_row_map()), false);
+    Teuchos::RCP<Epetra_Vector> temp =
+        Teuchos::make_rcp<Epetra_Vector>(*(actdis->dof_row_map()), false);
 
     stcinv->multiply(false, *nsv1, *temp);
     nsv1->Update(1.0, *temp, 0.0);

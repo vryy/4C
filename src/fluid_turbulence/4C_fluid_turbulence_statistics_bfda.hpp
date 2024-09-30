@@ -58,7 +58,7 @@ namespace FLD
     //! @name functions for averaging
 
 
-    void do_time_sample(Teuchos::RCP<Epetra_Vector> velnp);
+    void do_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp);
 
     /*!
     \brief Dump the result to file.
@@ -113,8 +113,8 @@ namespace FLD
     std::vector<double> act_pos_evaluation_;
 
     //! Toggle vectors
-    Teuchos::RCP<Epetra_Vector> togglew_;
-    Teuchos::RCP<Epetra_Vector> togglep_;
+    Teuchos::RCP<Core::LinAlg::Vector> togglew_;
+    Teuchos::RCP<Core::LinAlg::Vector> togglep_;
 
     //! vector for z-coordinates
     Teuchos::RCP<std::vector<double>> zcoordinates_;

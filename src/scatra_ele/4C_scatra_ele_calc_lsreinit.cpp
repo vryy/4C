@@ -94,7 +94,7 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate(
   //(for now) only first dof set considered
   const std::vector<int>& lm = la[0].lm_;
 
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
+  Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state("phinp");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
@@ -108,7 +108,7 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate(
  *----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, unsigned prob_dim>
 void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitialization(
-    const Epetra_Vector& phinp, const std::vector<int>& lm, Core::Elements::Element* ele,
+    const Core::LinAlg::Vector& phinp, const std::vector<int>& lm, Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
@@ -171,7 +171,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
         const Teuchos::RCP<Epetra_MultiVector>& gradphi =
             params.get<Teuchos::RCP<Epetra_MultiVector>>("gradphi");
         Core::FE::extract_my_node_based_values(ele, my::econvelnp_, gradphi, nsd_);
-        Teuchos::RCP<const Epetra_Vector> l2_proj_sys_diag =
+        Teuchos::RCP<const Core::LinAlg::Vector> l2_proj_sys_diag =
             discretization.get_state("l2_proj_system_mat_diag");
         if (l2_proj_sys_diag.is_null())
           FOUR_C_THROW("Could not find the l2 projection system diagonal!");
@@ -347,7 +347,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::elliptic_newto
  *----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, unsigned prob_dim>
 void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitialization_std(
-    const Epetra_Vector& phinp, const std::vector<int>& lm, Core::Elements::Element* ele,
+    const Core::LinAlg::Vector& phinp, const std::vector<int>& lm, Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
@@ -358,9 +358,9 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
     case Inpar::ScaTra::reinitaction_sussman:
     {
       // extract local values from the global vectors
-      Teuchos::RCP<const Epetra_Vector> hist = discretization.get_state("hist");
-      Teuchos::RCP<const Epetra_Vector> phin = discretization.get_state("phin");
-      Teuchos::RCP<const Epetra_Vector> phizero = discretization.get_state("phizero");
+      Teuchos::RCP<const Core::LinAlg::Vector> hist = discretization.get_state("hist");
+      Teuchos::RCP<const Core::LinAlg::Vector> phin = discretization.get_state("phin");
+      Teuchos::RCP<const Core::LinAlg::Vector> phizero = discretization.get_state("phizero");
       if (hist == Teuchos::null || phin == Teuchos::null || phizero == Teuchos::null)
         FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phin' and/or 'phizero'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, lm);

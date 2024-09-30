@@ -61,14 +61,14 @@ SSI::DBCHandlerBlock::DBCHandlerBlock(const bool is_scatra_manifold,
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-void SSI::DBCHandlerBase::apply_dbc_to_rhs(Teuchos::RCP<Epetra_Vector> rhs)
+void SSI::DBCHandlerBase::apply_dbc_to_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs)
 {
   // apply Dirichlet boundary conditions to the structure part of the right hand side
   const auto& locsysmanager_structure = structure_field()->locsys_manager();
   auto rhs_struct = ssi_maps()->maps_sub_problems()->extract_vector(
       rhs, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::structure));
-  const auto zeros_struct =
-      Teuchos::rcp(new Epetra_Vector(*structure_field()->get_dbc_map_extractor()->cond_map()));
+  const auto zeros_struct = Teuchos::rcp(
+      new Core::LinAlg::Vector(*structure_field()->get_dbc_map_extractor()->cond_map()));
 
   if (locsysmanager_structure != Teuchos::null)
     locsysmanager_structure->rotate_global_to_local(rhs_struct);
@@ -82,7 +82,7 @@ void SSI::DBCHandlerBase::apply_dbc_to_rhs(Teuchos::RCP<Epetra_Vector> rhs)
 
   // apply Dirichlet boundary conditions to the scatra part of the right hand side
   const auto zeros_scatra =
-      Teuchos::rcp(new Epetra_Vector(*scatra_field()->dirich_maps()->cond_map()));
+      Teuchos::rcp(new Core::LinAlg::Vector(*scatra_field()->dirich_maps()->cond_map()));
   Core::LinAlg::apply_dirichlet_to_system(
       *rhs, *zeros_scatra, *scatra_field()->dirich_maps()->cond_map());
 
@@ -90,7 +90,7 @@ void SSI::DBCHandlerBase::apply_dbc_to_rhs(Teuchos::RCP<Epetra_Vector> rhs)
   if (is_scatra_manifold())
   {
     const auto zeros_scatramanifold =
-        Teuchos::rcp(new Epetra_Vector(*scatra_manifold_field()->dirich_maps()->cond_map()));
+        Teuchos::rcp(new Core::LinAlg::Vector(*scatra_manifold_field()->dirich_maps()->cond_map()));
     Core::LinAlg::apply_dirichlet_to_system(
         *rhs, *zeros_scatramanifold, *scatra_manifold_field()->dirich_maps()->cond_map());
   }

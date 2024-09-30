@@ -97,29 +97,29 @@ namespace Thermo
     void predict_const_temp_consist_rate() override;
 
     //! Evaluate ordinary internal force, its tangent at state
-    void apply_force_tang_internal(const double time,  //!< evaluation time
-        const double dt,                               //!< step size
-        const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state
-        const Teuchos::RCP<Epetra_Vector> tempi,       //!< residual temperatures
-        Teuchos::RCP<Epetra_Vector> fint,              //!< internal force
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
+    void apply_force_tang_internal(const double time,    //!< evaluation time
+        const double dt,                                 //!< step size
+        const Teuchos::RCP<Core::LinAlg::Vector> temp,   //!< temperature state
+        const Teuchos::RCP<Core::LinAlg::Vector> tempi,  //!< residual temperatures
+        Teuchos::RCP<Core::LinAlg::Vector> fint,         //!< internal force
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang    //!< tangent matrix
     );
 
     //! Evaluate ordinary internal force
-    void apply_force_internal(const double time,  //!< evaluation time
-        const double dt,                          //!< step size
-        const Teuchos::RCP<Epetra_Vector> temp,   //!< temperature state
-        const Teuchos::RCP<Epetra_Vector> tempi,  //!< incremental temperatures
-        Teuchos::RCP<Epetra_Vector> fint          //!< internal force
+    void apply_force_internal(const double time,         //!< evaluation time
+        const double dt,                                 //!< step size
+        const Teuchos::RCP<Core::LinAlg::Vector> temp,   //!< temperature state
+        const Teuchos::RCP<Core::LinAlg::Vector> tempi,  //!< incremental temperatures
+        Teuchos::RCP<Core::LinAlg::Vector> fint          //!< internal force
     );
 
     //! Evaluate a convective boundary condition
     // (nonlinear --> add term to tangent)
-    void apply_force_external_conv(const double time,  //!< evaluation time
-        const Teuchos::RCP<Epetra_Vector> tempn,       //!< temperature state T_n
-        const Teuchos::RCP<Epetra_Vector> temp,        //!< temperature state T_n+1
-        Teuchos::RCP<Epetra_Vector> fext,              //!< internal force
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang  //!< tangent matrix
+    void apply_force_external_conv(const double time,    //!< evaluation time
+        const Teuchos::RCP<Core::LinAlg::Vector> tempn,  //!< temperature state T_n
+        const Teuchos::RCP<Core::LinAlg::Vector> temp,   //!< temperature state T_n+1
+        Teuchos::RCP<Core::LinAlg::Vector> fext,         //!< internal force
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang    //!< tangent matrix
     );
 
     //! Create force residual #fres_ and its tangent #tang_
@@ -173,10 +173,10 @@ namespace Thermo
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> fext() override { return fext_; }
+    Teuchos::RCP<Core::LinAlg::Vector> fext() override { return fext_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> fext_new() override { return fextn_; }
+    Teuchos::RCP<Core::LinAlg::Vector> fext_new() override { return fextn_; }
 
     //@}
 
@@ -190,11 +190,11 @@ namespace Thermo
     //! @name Global force vectors
     //! Residual \c fres_ exists already in base class
     //@{
-    Teuchos::RCP<Epetra_Vector> fint_;   //!< internal force at \f$t_n\f$
-    Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector> fint_;   //!< internal force at \f$t_n\f$
+    Teuchos::RCP<Core::LinAlg::Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> fext_;   //!< external force at \f$t_n\f$
-    Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector> fext_;   //!< external force at \f$t_n\f$
+    Teuchos::RCP<Core::LinAlg::Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
     //@}
 
   };  // class TimIntStatics

@@ -21,6 +21,7 @@
 #include "4C_io_gmsh.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_structure_new_dbc.hpp"
 #include "4C_structure_new_enum_lists.hpp"
 #include "4C_structure_new_factory.hpp"
@@ -33,7 +34,6 @@
 #include "4C_structure_new_timint_basedataio_runtime_vtp_output.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -166,9 +166,10 @@ bool Solid::TimeInt::Base::not_finished() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Base::set_restart(int stepn, double timen, Teuchos::RCP<Epetra_Vector> disn,
-    Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> accn,
-    Teuchos::RCP<std::vector<char>> elementdata, Teuchos::RCP<std::vector<char>> nodedata)
+void Solid::TimeInt::Base::set_restart(int stepn, double timen,
+    Teuchos::RCP<Core::LinAlg::Vector> disn, Teuchos::RCP<Core::LinAlg::Vector> veln,
+    Teuchos::RCP<Core::LinAlg::Vector> accn, Teuchos::RCP<std::vector<char>> elementdata,
+    Teuchos::RCP<std::vector<char>> nodedata)
 {
   check_init_setup();
 
@@ -397,8 +398,8 @@ Teuchos::RCP<Core::UTILS::ResultTest> Solid::TimeInt::Base::create_field_test()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Base::get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
-    Teuchos::RCP<Epetra_Vector> disnp, Teuchos::RCP<Epetra_Vector> velnp,
-    Teuchos::RCP<Epetra_Vector> accnp, Teuchos::RCP<std::vector<char>> elementdata,
+    Teuchos::RCP<Core::LinAlg::Vector> disnp, Teuchos::RCP<Core::LinAlg::Vector> velnp,
+    Teuchos::RCP<Core::LinAlg::Vector> accnp, Teuchos::RCP<std::vector<char>> elementdata,
     Teuchos::RCP<std::vector<char>> nodedata)
 {
   check_init_setup();
@@ -430,8 +431,8 @@ void Solid::TimeInt::Base::prepare_output(bool force_prepare_timestep)
 
     if (dataio_->is_write_current_ele_volume())
     {
-      Teuchos::RCP<Epetra_Vector> elevolumes = Teuchos::null;
-      Teuchos::RCP<const Epetra_Vector> disnp = dataglobalstate_->get_dis_np();
+      Teuchos::RCP<Core::LinAlg::Vector> elevolumes = Teuchos::null;
+      Teuchos::RCP<const Core::LinAlg::Vector> disnp = dataglobalstate_->get_dis_np();
 
       int_ptr_->determine_element_volumes(*disnp, elevolumes);
       int_ptr_->eval_data().set_element_volume_data(elevolumes);
@@ -929,10 +930,10 @@ void Solid::TimeInt::Base::read_restart(const int stepn)
   setup();
 
   // (2) read (or overwrite) the general dynamic state
-  Teuchos::RCP<Epetra_Vector>& velnp = dataglobalstate_->get_vel_np();
+  Teuchos::RCP<Core::LinAlg::Vector>& velnp = dataglobalstate_->get_vel_np();
   ioreader.read_vector(velnp, "velocity");
   dataglobalstate_->get_multi_vel()->update_steps(*velnp);
-  Teuchos::RCP<Epetra_Vector>& accnp = dataglobalstate_->get_acc_np();
+  Teuchos::RCP<Core::LinAlg::Vector>& accnp = dataglobalstate_->get_acc_np();
   ioreader.read_vector(accnp, "acceleration");
   dataglobalstate_->get_multi_acc()->update_steps(*accnp);
 

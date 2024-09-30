@@ -91,7 +91,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::pre_evaluate
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::evaluate(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs)
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    Teuchos::RCP<Core::LinAlg::Vector> rhs)
 {
   if (!issetup_) FOUR_C_THROW("setup() has not been called");
 
@@ -103,10 +104,11 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::evaluate(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::setup_system(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat, Teuchos::RCP<Epetra_Vector> rhs,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art, Teuchos::RCP<const Epetra_Vector> rhs_cont,
-    Teuchos::RCP<const Epetra_Vector> rhs_art,
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    Teuchos::RCP<Core::LinAlg::Vector> rhs, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs_cont,
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs_art,
     Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
     Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art)
 {
@@ -126,7 +128,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::apply_mesh_m
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector>
+Teuchos::RCP<const Core::LinAlg::Vector>
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::blood_vessel_volume_fraction()
 {
   FOUR_C_THROW("Output of vessel volume fraction not possible for node-to-point coupling");

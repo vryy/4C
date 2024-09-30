@@ -15,10 +15,10 @@
 #include "4C_coupling_volmortar_utils.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_inpar_poroelast.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_poroelast_utils.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -112,7 +112,7 @@ namespace PoroElastScaTra
 
     //! Determine norm of vector
     double calculate_vector_norm(const enum Inpar::PoroElast::VectorNorm norm,  //!< norm to use
-        const Teuchos::RCP<const Epetra_Vector> vect  //!< the vector of interest
+        const Teuchos::RCP<const Core::LinAlg::Vector> vect  //!< the vector of interest
     );
 
     //! Set the slave and master elements of the face element

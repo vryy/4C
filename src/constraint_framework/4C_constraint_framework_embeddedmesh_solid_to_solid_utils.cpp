@@ -73,7 +73,7 @@ void CONSTRAINTS::EMBEDDEDMESH::prepare_and_perform_cut(Teuchos::RCP<Cut::CutWiz
   }
 
   // creating some variables for setting the background state
-  Teuchos::RCP<const Epetra_Vector> back_disp_col;
+  Teuchos::RCP<const Core::LinAlg::Vector> back_disp_col;
 
   // set background state
   cutwizard->set_background_state(
@@ -339,7 +339,7 @@ bool CONSTRAINTS::EMBEDDEDMESH::is_interface_element_surface(
 
 void CONSTRAINTS::EMBEDDEDMESH::get_current_element_displacement(
     Core::FE::Discretization const& discret, Core::Elements::Element const* ele,
-    const Epetra_Vector& displacement_vector, std::vector<double>& eledisp)
+    const Core::LinAlg::Vector& displacement_vector, std::vector<double>& eledisp)
 {
   // clear
   eledisp.clear();

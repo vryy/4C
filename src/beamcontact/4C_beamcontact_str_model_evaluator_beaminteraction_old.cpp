@@ -16,11 +16,11 @@
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -46,7 +46,8 @@ void Solid::ModelEvaluator::BeamInteractionOld::setup()
   disnp_ptr_ = global_state().get_dis_np();
   stiff_beaminteract_ptr_ = Teuchos::rcp(
       new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
-  f_beaminteract_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
+  f_beaminteract_np_ptr_ =
+      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map(), true));
 
   // create beam contact manager
   beamcman_ = Teuchos::rcp(new CONTACT::Beam3cmanager(*discret_ptr(), 0.0));
@@ -62,7 +63,7 @@ void Solid::ModelEvaluator::BeamInteractionOld::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::BeamInteractionOld::reset(const Epetra_Vector& x)
+void Solid::ModelEvaluator::BeamInteractionOld::reset(const Core::LinAlg::Vector& x)
 {
   check_init_setup();
 
@@ -141,7 +142,7 @@ bool Solid::ModelEvaluator::BeamInteractionOld::evaluate_force_stiff()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::BeamInteractionOld::assemble_force(
-    Epetra_Vector& f, const double& timefac_np) const
+    Core::LinAlg::Vector& f, const double& timefac_np) const
 {
   // Todo take care of the minus sign in front of timefac_np
   Core::LinAlg::assemble_my_vector(1.0, f, -timefac_np, *f_beaminteract_np_ptr_);
@@ -185,8 +186,8 @@ void Solid::ModelEvaluator::BeamInteractionOld::read_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::BeamInteractionOld::run_post_compute_x(
-    const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
+void Solid::ModelEvaluator::BeamInteractionOld::run_post_compute_x(const Core::LinAlg::Vector& xold,
+    const Core::LinAlg::Vector& dir, const Core::LinAlg::Vector& xnew)
 {
   // empty ToDo
 }
@@ -198,7 +199,7 @@ void Solid::ModelEvaluator::BeamInteractionOld::update_step_state(const double& 
   beamcman_->update(*disnp_ptr_, eval_data().get_step_np(), eval_data().get_nln_iter());
 
   // add the old time factor scaled contributions to the residual
-  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = global_state().get_fstructure_old();
+  Teuchos::RCP<Core::LinAlg::Vector>& fstructold_ptr = global_state().get_fstructure_old();
 
   // Todo take care of the minus sign in front of timefac_np
   fstructold_ptr->Update(-timefac_n, *f_beaminteract_np_ptr_, 1.0);
@@ -259,7 +260,7 @@ Solid::ModelEvaluator::BeamInteractionOld::get_block_dof_row_map_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector>
+Teuchos::RCP<const Core::LinAlg::Vector>
 Solid::ModelEvaluator::BeamInteractionOld::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
@@ -268,7 +269,7 @@ Solid::ModelEvaluator::BeamInteractionOld::get_current_solution_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector>
+Teuchos::RCP<const Core::LinAlg::Vector>
 Solid::ModelEvaluator::BeamInteractionOld::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries

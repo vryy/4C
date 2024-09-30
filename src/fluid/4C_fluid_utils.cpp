@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
  | constructor                                         Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
 FLD::UTILS::StressManager::StressManager(Teuchos::RCP<Core::FE::Discretization> discret,
-    Teuchos::RCP<Epetra_Vector> dispnp, const bool alefluid, const int numdim)
+    Teuchos::RCP<Core::LinAlg::Vector> dispnp, const bool alefluid, const int numdim)
     : discret_(discret),
       dispnp_(dispnp),
       alefluid_(alefluid),
@@ -57,8 +57,9 @@ FLD::UTILS::StressManager::StressManager(Teuchos::RCP<Core::FE::Discretization> 
       isinit_ = false;  // we do this in InitAggr()
       break;
     case Inpar::FLUID::wss_mean:
-      sum_stresses_ = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true)),
-      sum_wss_ = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true)), isinit_ = true;
+      sum_stresses_ = Teuchos::rcp(new Core::LinAlg::Vector(*(discret_->dof_row_map()), true)),
+      sum_wss_ = Teuchos::rcp(new Core::LinAlg::Vector(*(discret_->dof_row_map()), true)),
+      isinit_ = true;
       break;
     default:
       FOUR_C_THROW(
@@ -87,10 +88,10 @@ void FLD::UTILS::StressManager::init_aggr(Teuchos::RCP<Core::LinAlg::SparseOpera
 /*----------------------------------------------------------------------*
  | update and return WSS vector                        Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_wall_shear_stresses(
-    Teuchos::RCP<const Epetra_Vector> trueresidual, const double dt)
+Teuchos::RCP<Core::LinAlg::Vector> FLD::UTILS::StressManager::get_wall_shear_stresses(
+    Teuchos::RCP<const Core::LinAlg::Vector> trueresidual, const double dt)
 {
-  Teuchos::RCP<Epetra_Vector> wss = get_wall_shear_stresses_wo_agg(trueresidual);
+  Teuchos::RCP<Core::LinAlg::Vector> wss = get_wall_shear_stresses_wo_agg(trueresidual);
 
   switch (wss_type_)
   {
@@ -115,11 +116,11 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_wall_shear_stresses(
 /*--------------------------------------------------------------------------*
  | return wss vector (without updating the mean stress vector)   Thon 11/14 |
  *--------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_pre_calc_wall_shear_stresses(
-    Teuchos::RCP<const Epetra_Vector> trueresidual)
+Teuchos::RCP<Core::LinAlg::Vector> FLD::UTILS::StressManager::get_pre_calc_wall_shear_stresses(
+    Teuchos::RCP<const Core::LinAlg::Vector> trueresidual)
 {
-  Teuchos::RCP<Epetra_Vector> wss =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
+  Teuchos::RCP<Core::LinAlg::Vector> wss =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(discret_->dof_row_map()), true));
 
   switch (wss_type_)
   {
@@ -146,14 +147,14 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_pre_calc_wall_shear_s
 /*----------------------------------------------------------------------*
  | return WSS vector always without aggregation        Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_wall_shear_stresses_wo_agg(
-    Teuchos::RCP<const Epetra_Vector> trueresidual)
+Teuchos::RCP<Core::LinAlg::Vector> FLD::UTILS::StressManager::get_wall_shear_stresses_wo_agg(
+    Teuchos::RCP<const Core::LinAlg::Vector> trueresidual)
 {
   if (not isinit_) FOUR_C_THROW("StressManager not initialized");
 
-  Teuchos::RCP<Epetra_Vector> stresses = calc_stresses(trueresidual);
+  Teuchos::RCP<Core::LinAlg::Vector> stresses = calc_stresses(trueresidual);
   // calculate wss from stresses
-  Teuchos::RCP<Epetra_Vector> wss = calc_wall_shear_stresses(stresses);
+  Teuchos::RCP<Core::LinAlg::Vector> wss = calc_wall_shear_stresses(stresses);
 
   return wss;
 }
@@ -161,10 +162,10 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_wall_shear_stresses_w
 /*-----------------------------------------------------------------------------*
  |  calculate traction vector at (Dirichlet) boundary (public) Thon/Krank 07/07|
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_stresses_wo_agg(
-    Teuchos::RCP<const Epetra_Vector> trueresidual)
+Teuchos::RCP<Core::LinAlg::Vector> FLD::UTILS::StressManager::get_stresses_wo_agg(
+    Teuchos::RCP<const Core::LinAlg::Vector> trueresidual)
 {
-  Teuchos::RCP<Epetra_Vector> stresses = calc_stresses(trueresidual);
+  Teuchos::RCP<Core::LinAlg::Vector> stresses = calc_stresses(trueresidual);
 
   return stresses;
 }  // FLD::UTILS::StressManager::GetStressesWOAgg()
@@ -172,10 +173,10 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_stresses_wo_agg(
 /*-----------------------------------------------------------------------------*
  |  update and return stress vector                            Thon/Krank 07/07|
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_stresses(
-    Teuchos::RCP<const Epetra_Vector> trueresidual, const double dt)
+Teuchos::RCP<Core::LinAlg::Vector> FLD::UTILS::StressManager::get_stresses(
+    Teuchos::RCP<const Core::LinAlg::Vector> trueresidual, const double dt)
 {
-  Teuchos::RCP<Epetra_Vector> stresses = get_stresses_wo_agg(trueresidual);
+  Teuchos::RCP<Core::LinAlg::Vector> stresses = get_stresses_wo_agg(trueresidual);
 
   switch (wss_type_)
   {
@@ -200,11 +201,11 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_stresses(
 /*-----------------------------------------------------------------------------*
  | return stress vector (without updating the mean stress vector)   Thon 03/15 |
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_pre_calc_stresses(
-    Teuchos::RCP<const Epetra_Vector> trueresidual)
+Teuchos::RCP<Core::LinAlg::Vector> FLD::UTILS::StressManager::get_pre_calc_stresses(
+    Teuchos::RCP<const Core::LinAlg::Vector> trueresidual)
 {
-  Teuchos::RCP<Epetra_Vector> stresses =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
+  Teuchos::RCP<Core::LinAlg::Vector> stresses =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(discret_->dof_row_map()), true));
 
   switch (wss_type_)
   {
@@ -231,12 +232,12 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::get_pre_calc_stresses(
 /*-----------------------------------------------------------------------------*
  |  calculate traction vector at (Dirichlet) boundary (public) Thon/Krank 07/07|
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::calc_stresses(
-    Teuchos::RCP<const Epetra_Vector> trueresidual)
+Teuchos::RCP<Core::LinAlg::Vector> FLD::UTILS::StressManager::calc_stresses(
+    Teuchos::RCP<const Core::LinAlg::Vector> trueresidual)
 {
   if (not isinit_) FOUR_C_THROW("StressManager not initialized");
   std::string condstring("FluidStressCalc");
-  Teuchos::RCP<Epetra_Vector> integratedshapefunc = integrate_interface_shape(condstring);
+  Teuchos::RCP<Core::LinAlg::Vector> integratedshapefunc = integrate_interface_shape(condstring);
 
   // compute traction values at specified nodes; otherwise do not touch the zero values
   for (int i = 0; i < integratedshapefunc->MyLength(); i++)
@@ -255,7 +256,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::calc_stresses(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::integrate_interface_shape(
+Teuchos::RCP<Core::LinAlg::Vector> FLD::UTILS::StressManager::integrate_interface_shape(
     std::string condname)
 {
   Teuchos::ParameterList eleparams;
@@ -268,7 +269,8 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::integrate_interface_shape
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Epetra_Vector> integratedshapefunc = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector> integratedshapefunc =
+      Core::LinAlg::create_vector(*dofrowmap, true);
 
   // call loop over elements
   discret_->clear_state();
@@ -286,8 +288,8 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::integrate_interface_shape
  |  calculate wall sheer stress from stresses at dirichlet boundary     |
  |                                                     Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::calc_wall_shear_stresses(
-    Teuchos::RCP<Epetra_Vector> stresses)
+Teuchos::RCP<Core::LinAlg::Vector> FLD::UTILS::StressManager::calc_wall_shear_stresses(
+    Teuchos::RCP<Core::LinAlg::Vector> stresses)
 {
   // -------------------------------------------------------------------
   // first evaluate the normals at the nodes
@@ -303,7 +305,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::calc_wall_shear_stresses(
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // vector ndnorm0 with pressure-entries is needed for evaluate_condition
-  Teuchos::RCP<Epetra_Vector> ndnorm0 = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector> ndnorm0 = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // call loop over elements, note: normal vectors do not yet have length = 1.0
   discret_->clear_state();  // TODO: (Thon) Do we really have to to this in here?
@@ -344,7 +346,7 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::calc_wall_shear_stresses(
   // -------------------------------------------------------------------
 
   // get traction
-  Teuchos::RCP<Epetra_Vector> wss = stresses;
+  Teuchos::RCP<Core::LinAlg::Vector> wss = stresses;
 
   // loop over all entities within the traction vector
   for (int i = 0; i < ndnorm0->MyLength(); i += numdim_ + 1)
@@ -373,13 +375,13 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::calc_wall_shear_stresses(
 /*----------------------------------------------------------------------*
  | smooth stresses/wss via ML-aggregation              Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::aggreagte_stresses(
-    Teuchos::RCP<Epetra_Vector> wss)
+Teuchos::RCP<Core::LinAlg::Vector> FLD::UTILS::StressManager::aggreagte_stresses(
+    Teuchos::RCP<Core::LinAlg::Vector> wss)
 {
   if (sep_enr_ == Teuchos::null) FOUR_C_THROW("no scale separation matrix");
 
-  Teuchos::RCP<Epetra_Vector> mean_wss =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
+  Teuchos::RCP<Core::LinAlg::Vector> mean_wss =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(discret_->dof_row_map()), true));
 
   // Do the actual aggregation
   sep_enr_->multiply(false, *wss, *mean_wss);
@@ -390,14 +392,14 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::aggreagte_stresses(
 /*----------------------------------------------------------------------*
  | time average stresses                                     Thon 03/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::time_average_stresses(
-    Teuchos::RCP<const Epetra_Vector> stresses, const double dt)
+Teuchos::RCP<Core::LinAlg::Vector> FLD::UTILS::StressManager::time_average_stresses(
+    Teuchos::RCP<const Core::LinAlg::Vector> stresses, const double dt)
 {
   sum_stresses_->Update(dt, *stresses, 1.0);  // weighted sum of all prior stresses
   sum_dt_stresses_ += dt;
 
-  Teuchos::RCP<Epetra_Vector> mean_stresses =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
+  Teuchos::RCP<Core::LinAlg::Vector> mean_stresses =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(discret_->dof_row_map()), true));
   mean_stresses->Update(1.0 / sum_dt_stresses_, *sum_stresses_, 0.0);
 
   return mean_stresses;
@@ -406,14 +408,14 @@ Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::time_average_stresses(
 /*----------------------------------------------------------------------*
  | time average wss                                          Thon 03/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FLD::UTILS::StressManager::time_average_wss(
-    Teuchos::RCP<const Epetra_Vector> wss, const double dt)
+Teuchos::RCP<Core::LinAlg::Vector> FLD::UTILS::StressManager::time_average_wss(
+    Teuchos::RCP<const Core::LinAlg::Vector> wss, const double dt)
 {
   sum_wss_->Update(dt, *wss, 1.0);  // weighted sum of all prior stresses
   sum_dt_wss_ += dt;
 
-  Teuchos::RCP<Epetra_Vector> mean_wss =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map()), true));
+  Teuchos::RCP<Core::LinAlg::Vector> mean_wss =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(discret_->dof_row_map()), true));
   mean_wss->Update(1.0 / sum_dt_wss_, *sum_wss_, 0.0);
 
   return mean_wss;
@@ -602,8 +604,8 @@ void FLD::UTILS::setup_fluid_fluid_vel_pres_split(const Core::FE::Discretization
 // compute forces and moments                          rasthofer 08/13
 // -------------------------------------------------------------------
 void FLD::UTILS::lift_drag(const Teuchos::RCP<const Core::FE::Discretization> dis,
-    const Teuchos::RCP<const Epetra_Vector> trueresidual,
-    const Teuchos::RCP<const Epetra_Vector> dispnp, const int ndim,
+    const Teuchos::RCP<const Core::LinAlg::Vector> trueresidual,
+    const Teuchos::RCP<const Core::LinAlg::Vector> dispnp, const int ndim,
     Teuchos::RCP<std::map<int, std::vector<double>>>& liftdragvals, bool alefluid)
 {
   int myrank = dis->get_comm().MyPID();
@@ -864,7 +866,7 @@ void FLD::UTILS::write_lift_drag_to_file(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int, double> FLD::UTILS::compute_flow_rates(Core::FE::Discretization& dis,
-    const Teuchos::RCP<Epetra_Vector>& velnp, const std::string& condstring,
+    const Teuchos::RCP<Core::LinAlg::Vector>& velnp, const std::string& condstring,
     const Inpar::FLUID::PhysicalType physicaltype)
 {
   return compute_flow_rates(dis, velnp, Teuchos::null, Teuchos::null, condstring, physicaltype);
@@ -873,8 +875,9 @@ std::map<int, double> FLD::UTILS::compute_flow_rates(Core::FE::Discretization& d
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int, double> FLD::UTILS::compute_flow_rates(Core::FE::Discretization& dis,
-    const Teuchos::RCP<Epetra_Vector>& velnp, const Teuchos::RCP<Epetra_Vector>& gridv,
-    const Teuchos::RCP<Epetra_Vector>& dispnp, const std::string& condstring,
+    const Teuchos::RCP<Core::LinAlg::Vector>& velnp,
+    const Teuchos::RCP<Core::LinAlg::Vector>& gridv,
+    const Teuchos::RCP<Core::LinAlg::Vector>& dispnp, const std::string& condstring,
     const Inpar::FLUID::PhysicalType physicaltype)
 {
   Teuchos::ParameterList eleparams;
@@ -901,7 +904,7 @@ std::map<int, double> FLD::UTILS::compute_flow_rates(Core::FE::Discretization& d
     const Epetra_Map* dofrowmap = dis.dof_row_map();
 
     // create vector (+ initialization with zeros)
-    Teuchos::RCP<Epetra_Vector> flowrates = Core::LinAlg::create_vector(*dofrowmap, true);
+    Teuchos::RCP<Core::LinAlg::Vector> flowrates = Core::LinAlg::create_vector(*dofrowmap, true);
 
     // call loop over elements
     dis.clear_state();
@@ -934,8 +937,9 @@ std::map<int, double> FLD::UTILS::compute_flow_rates(Core::FE::Discretization& d
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int, double> FLD::UTILS::compute_volume(Core::FE::Discretization& dis,
-    const Teuchos::RCP<Epetra_Vector>& velnp, const Teuchos::RCP<Epetra_Vector>& gridv,
-    const Teuchos::RCP<Epetra_Vector>& dispnp, const Inpar::FLUID::PhysicalType physicaltype)
+    const Teuchos::RCP<Core::LinAlg::Vector>& velnp,
+    const Teuchos::RCP<Core::LinAlg::Vector>& gridv,
+    const Teuchos::RCP<Core::LinAlg::Vector>& dispnp, const Inpar::FLUID::PhysicalType physicaltype)
 {
   Teuchos::ParameterList eleparams;
   // set action for elements
@@ -1002,7 +1006,7 @@ void FLD::UTILS::write_doubles_to_file(
  | project vel gradient and store it in given param list        bk 05/15 |
  *----------------------------------------------------------------------*/
 void FLD::UTILS::project_gradient_and_set_param(Teuchos::RCP<Core::FE::Discretization> discret,
-    Teuchos::ParameterList& eleparams, Teuchos::RCP<const Epetra_Vector> vel,
+    Teuchos::ParameterList& eleparams, Teuchos::RCP<const Core::LinAlg::Vector> vel,
     const std::string paraname, bool alefluid)
 {
   // project gradient
@@ -1021,7 +1025,7 @@ void FLD::UTILS::project_gradient_and_set_param(Teuchos::RCP<Core::FE::Discretiz
  | Project velocity gradient                                    bk 05/15 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::project_gradient(
-    Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<const Epetra_Vector> vel,
+    Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<const Core::LinAlg::Vector> vel,
     bool alefluid)
 {
   // reconstruction of second derivatives for fluid residual

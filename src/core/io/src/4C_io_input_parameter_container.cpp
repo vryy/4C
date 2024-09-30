@@ -10,7 +10,7 @@
 
 #include "4C_io_input_parameter_container.hpp"
 
-#include <Epetra_Vector.h>
+#include "4C_linalg_vector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

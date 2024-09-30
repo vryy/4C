@@ -148,7 +148,7 @@ void Coupling::Adapter::MortarVolCoupl::redistribute(const Teuchos::ParameterLis
     Teuchos::RCP<Core::IO::OutputControl> output_control,
     std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node,
     std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
-        const Core::Elements::Element&, Teuchos::RCP<const Epetra_Vector> disnp)>
+        const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector> disnp)>
         determine_relevant_points)
 {
   check_init();
@@ -218,14 +218,14 @@ void Coupling::Adapter::MortarVolCoupl::assign_materials(
 /*----------------------------------------------------------------------*
  |  ApplyMapping from Omega_2 --> Omega_1                    farah 01/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Coupling::Adapter::MortarVolCoupl::apply_vector_mapping12(
-    Teuchos::RCP<const Epetra_Vector> vec) const
+Teuchos::RCP<const Core::LinAlg::Vector> Coupling::Adapter::MortarVolCoupl::apply_vector_mapping12(
+    Teuchos::RCP<const Core::LinAlg::Vector> vec) const
 {
   // safety check
   check_setup();
   check_init();
 
-  Teuchos::RCP<Epetra_Vector> mapvec = Core::LinAlg::create_vector(p12_->row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> mapvec = Core::LinAlg::create_vector(p12_->row_map(), true);
   int err = p12_->multiply(false, *vec, *mapvec);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
@@ -235,14 +235,14 @@ Teuchos::RCP<const Epetra_Vector> Coupling::Adapter::MortarVolCoupl::apply_vecto
 /*----------------------------------------------------------------------*
  |  ApplyMapping from Omega_1 --> Omega_2                    farah 01/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> Coupling::Adapter::MortarVolCoupl::apply_vector_mapping21(
-    Teuchos::RCP<const Epetra_Vector> vec) const
+Teuchos::RCP<const Core::LinAlg::Vector> Coupling::Adapter::MortarVolCoupl::apply_vector_mapping21(
+    Teuchos::RCP<const Core::LinAlg::Vector> vec) const
 {
   // safety check
   check_setup();
   check_init();
 
-  Teuchos::RCP<Epetra_Vector> mapvec = Core::LinAlg::create_vector(p21_->row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> mapvec = Core::LinAlg::create_vector(p21_->row_map(), true);
   int err = p21_->multiply(false, *vec, *mapvec);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
@@ -277,17 +277,17 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Coupling::Adapter::MortarVolCoupl::appl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Coupling::Adapter::MortarVolCoupl::master_to_slave(
-    Teuchos::RCP<const Epetra_Vector> mv) const
+Teuchos::RCP<Core::LinAlg::Vector> Coupling::Adapter::MortarVolCoupl::master_to_slave(
+    Teuchos::RCP<const Core::LinAlg::Vector> mv) const
 {
   // safety check
   check_setup();
   check_init();
 
   // create vector
-  Teuchos::RCP<Epetra_Vector> sv = Core::LinAlg::create_vector(p21_->row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> sv = Core::LinAlg::create_vector(p21_->row_map(), true);
   // project
-  master_to_slave(mv, sv);
+  master_to_slave(mv->get_ptr_of_const_Epetra_Vector(), sv->get_ptr_of_Epetra_Vector());
 
   return sv;
 }
@@ -345,17 +345,17 @@ Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::MortarVolCoupl::master_to_sl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> Coupling::Adapter::MortarVolCoupl::slave_to_master(
-    Teuchos::RCP<const Epetra_Vector> sv) const
+Teuchos::RCP<Core::LinAlg::Vector> Coupling::Adapter::MortarVolCoupl::slave_to_master(
+    Teuchos::RCP<const Core::LinAlg::Vector> sv) const
 {
   // safety check
   check_setup();
   check_init();
 
   // create vector
-  Teuchos::RCP<Epetra_Vector> mv = Core::LinAlg::create_vector(p12_->row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector> mv = Core::LinAlg::create_vector(p12_->row_map(), true);
   // project
-  slave_to_master(sv, mv);
+  slave_to_master(sv->get_ptr_of_const_Epetra_Vector(), mv->get_ptr_of_Epetra_MultiVector());
 
   return mv;
 }

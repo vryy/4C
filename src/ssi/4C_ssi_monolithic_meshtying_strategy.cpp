@@ -195,11 +195,11 @@ void SSI::MeshtyingStrategyBase::apply_meshtying_to_xxx_structure(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-Epetra_Vector SSI::MeshtyingStrategyBase::apply_meshtying_to_structure_rhs(
-    Teuchos::RCP<const Epetra_Vector> structure_rhs)
+Core::LinAlg::Vector SSI::MeshtyingStrategyBase::apply_meshtying_to_structure_rhs(
+    Teuchos::RCP<const Core::LinAlg::Vector> structure_rhs)
 {
   // make copy of structure right-hand side vector
-  Epetra_Vector rhs_structure(*structure_rhs);
+  Core::LinAlg::Vector rhs_structure(*structure_rhs);
 
   auto rhs_structure_master =
       Core::LinAlg::create_vector(*ssi_maps_->structure_dof_row_map(), true);

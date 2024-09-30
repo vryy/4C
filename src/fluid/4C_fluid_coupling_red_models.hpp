@@ -79,12 +79,12 @@ namespace FLD
       /*!
       \brief Wrapper for FluidCouplingWrapper::update_residual
       */
-      void update_residual(Teuchos::RCP<Epetra_Vector> residual);
+      void update_residual(Teuchos::RCP<Core::LinAlg::Vector> residual);
 
 
 
       void evaluate_dirichlet(
-          Teuchos::RCP<Epetra_Vector> velnp, const Epetra_Map& condmap, double time);
+          Teuchos::RCP<Core::LinAlg::Vector> velnp, const Epetra_Map& condmap, double time);
 
       /*!
       \brief Wrapper for FluidCouplingWrapper::write_restart
@@ -242,12 +242,12 @@ namespace FLD
       */
       void inflow_boundary(double flowrate, double time, double dta, double theta, int condid);
 
-      void update_residual(Teuchos::RCP<Epetra_Vector> residual);
+      void update_residual(Teuchos::RCP<Core::LinAlg::Vector> residual);
 
 
 
       void evaluate_dirichlet(
-          Teuchos::RCP<Epetra_Vector> velnp, const Epetra_Map& condmap, double time);
+          Teuchos::RCP<Core::LinAlg::Vector> velnp, const Epetra_Map& condmap, double time);
 
       /*!
       \brief compute TimeUpdate
@@ -270,7 +270,7 @@ namespace FLD
 
      protected:
       // coupled neumann BC
-      Teuchos::RCP<Epetra_Vector> couplingbc_;
+      Teuchos::RCP<Core::LinAlg::Vector> couplingbc_;
 
      private:
       //! ID of present condition

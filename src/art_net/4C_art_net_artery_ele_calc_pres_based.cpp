@@ -137,7 +137,7 @@ void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
   const int numnode = my::iel_;
 
   // get pressure
-  Teuchos::RCP<const Epetra_Vector> pressnp = discretization.get_state(0, "pressurenp");
+  Teuchos::RCP<const Core::LinAlg::Vector> pressnp = discretization.get_state(0, "pressurenp");
   if (pressnp == Teuchos::null) FOUR_C_THROW("could not get pressure inside artery element");
 
   // extract local values of pressure field from global state vector
@@ -214,7 +214,7 @@ void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* e
     Core::LinAlg::SerialDenseVector& flowVec, Teuchos::RCP<const Core::Mat::Material> material)
 {
   // get pressure
-  Teuchos::RCP<const Epetra_Vector> pressnp = discretization.get_state(0, "pressurenp");
+  Teuchos::RCP<const Core::LinAlg::Vector> pressnp = discretization.get_state(0, "pressurenp");
   if (pressnp == Teuchos::null) FOUR_C_THROW("could not get pressure inside artery element");
 
   // extract local values of pressure field from global state vector
@@ -254,7 +254,7 @@ double Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::calculate_ele_length(
   // get current element length
   if (discretization.num_dof_sets() > 1 && discretization.has_state(1, "curr_seg_lengths"))
   {
-    Teuchos::RCP<const Epetra_Vector> curr_seg_lengths =
+    Teuchos::RCP<const Core::LinAlg::Vector> curr_seg_lengths =
         discretization.get_state(1, "curr_seg_lengths");
     std::vector<double> seglengths(la[1].lm_.size());
 

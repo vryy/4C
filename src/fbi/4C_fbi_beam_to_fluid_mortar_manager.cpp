@@ -498,7 +498,8 @@ void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contr
     Teuchos::RCP<Epetra_FEVector> fluid_force, Teuchos::RCP<Epetra_FEVector> beam_force,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kbb, Teuchos::RCP<Core::LinAlg::SparseMatrix> kbf,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kff, Teuchos::RCP<Core::LinAlg::SparseMatrix> kfb,
-    Teuchos::RCP<const Epetra_Vector> beam_vel, Teuchos::RCP<const Epetra_Vector> fluid_vel) const
+    Teuchos::RCP<const Core::LinAlg::Vector> beam_vel,
+    Teuchos::RCP<const Core::LinAlg::Vector> fluid_vel) const
 {
   check_setup();
   check_global_maps();
@@ -506,7 +507,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contr
   int linalg_error = 0;
 
   // Scale D and M with kappa^-1.
-  Teuchos::RCP<Epetra_Vector> global_kappa_inv = invert_kappa();
+  Teuchos::RCP<Core::LinAlg::Vector> global_kappa_inv = invert_kappa();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kappa_inv_mat =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*global_kappa_inv));
   kappa_inv_mat->complete();
@@ -538,7 +539,8 @@ void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contr
       FOUR_C_THROW("Force contributions can only be calculated with a given velocity pointer!");
 
     // Temporary vectors for matrix-vector multiplication and vector-vector additions.
-    Teuchos::RCP<Epetra_Vector> fluid_temp = Teuchos::rcp(new Epetra_Vector(*fluid_dof_rowmap_));
+    Teuchos::RCP<Core::LinAlg::Vector> fluid_temp =
+        Teuchos::rcp(new Core::LinAlg::Vector(*fluid_dof_rowmap_));
 
     // Set the values in the global force vector to 0.
     linalg_error = fluid_force->PutScalar(0.);
@@ -550,7 +552,8 @@ void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contr
     if (linalg_error != 0) FOUR_C_THROW("Error in Update!");
   }
 
-  Teuchos::RCP<Epetra_Vector> beam_temp = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector> beam_temp =
+      Teuchos::rcp(new Core::LinAlg::Vector(*beam_dof_rowmap_));
   linalg_error = beam_force->PutScalar(0.);
   if (linalg_error != 0) FOUR_C_THROW("Error in PutScalar!");
   // Get the force acting on the beam.
@@ -568,24 +571,29 @@ void BEAMINTERACTION::BeamToFluidMortarManager::add_global_force_stiffness_contr
 /**
  *
  */
-Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::get_global_lambda(
-    Teuchos::RCP<const Epetra_Vector> vel) const
+Teuchos::RCP<Core::LinAlg::Vector> BEAMINTERACTION::BeamToFluidMortarManager::get_global_lambda(
+    Teuchos::RCP<const Core::LinAlg::Vector> vel) const
 {
   check_setup();
   check_global_maps();
 
   // Get the velocity of the beams and the fluid.
-  Teuchos::RCP<Epetra_Vector> beam_vel = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));
-  Teuchos::RCP<Epetra_Vector> fluid_vel = Teuchos::rcp(new Epetra_Vector(*fluid_dof_rowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector> beam_vel =
+      Teuchos::rcp(new Core::LinAlg::Vector(*beam_dof_rowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector> fluid_vel =
+      Teuchos::rcp(new Core::LinAlg::Vector(*fluid_dof_rowmap_));
   Core::LinAlg::export_to(*vel, *beam_vel);
   Core::LinAlg::export_to(*vel, *fluid_vel);
 
   // Set up lambda vector;
-  Teuchos::RCP<Epetra_Vector> lambda = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector> lambda =
+      Teuchos::rcp(new Core::LinAlg::Vector(*lambda_dof_rowmap_));
 
   // Create a temporary vector and calculate lambda.
-  Teuchos::RCP<Epetra_Vector> lambda_temp_1 = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
-  Teuchos::RCP<Epetra_Vector> lambda_temp_2 = Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector> lambda_temp_1 =
+      Teuchos::rcp(new Core::LinAlg::Vector(*lambda_dof_rowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector> lambda_temp_2 =
+      Teuchos::rcp(new Core::LinAlg::Vector(*lambda_dof_rowmap_));
   int linalg_error = global_d_->multiply(false, *beam_vel, *lambda_temp_2);
   if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
   linalg_error = lambda_temp_1->Update(1.0, *lambda_temp_2, 0.0);
@@ -596,7 +604,7 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::get_globa
   if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
 
   // Scale Lambda with kappa^-1.
-  Teuchos::RCP<Epetra_Vector> global_kappa_inv = invert_kappa();
+  Teuchos::RCP<Core::LinAlg::Vector> global_kappa_inv = invert_kappa();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kappa_inv_mat =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*global_kappa_inv));
   kappa_inv_mat->complete();
@@ -609,10 +617,11 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::get_globa
 /**
  *
  */
-Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::get_global_lambda_col(
-    Teuchos::RCP<const Epetra_Vector> vel) const
+Teuchos::RCP<Core::LinAlg::Vector> BEAMINTERACTION::BeamToFluidMortarManager::get_global_lambda_col(
+    Teuchos::RCP<const Core::LinAlg::Vector> vel) const
 {
-  Teuchos::RCP<Epetra_Vector> lambda_col = Teuchos::rcp(new Epetra_Vector(*lambda_dof_colmap_));
+  Teuchos::RCP<Core::LinAlg::Vector> lambda_col =
+      Teuchos::rcp(new Core::LinAlg::Vector(*lambda_dof_colmap_));
   Core::LinAlg::export_to(*get_global_lambda(vel), *lambda_col);
   return lambda_col;
 }
@@ -620,11 +629,11 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::get_globa
 /**
  *
  */
-Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::invert_kappa() const
+Teuchos::RCP<Core::LinAlg::Vector> BEAMINTERACTION::BeamToFluidMortarManager::invert_kappa() const
 {
   // Create the inverse vector.
-  Teuchos::RCP<Epetra_Vector> global_kappa_inv =
-      Teuchos::rcp(new Epetra_Vector(*lambda_dof_rowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector> global_kappa_inv =
+      Teuchos::rcp(new Core::LinAlg::Vector(*lambda_dof_rowmap_));
 
   // Calculate the local inverse of kappa.
   double local_kappa_inv_value = 0.;

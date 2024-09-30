@@ -77,7 +77,7 @@ namespace LUBRICATION
    public:
     virtual Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() { return output_; }
 
-    Teuchos::RCP<Epetra_Vector>& inf_gap_toggle() { return inf_gap_toggle_lub_; }
+    Teuchos::RCP<Core::LinAlg::Vector>& inf_gap_toggle() { return inf_gap_toggle_lub_; }
 
     /*========================================================================*/
     //! @name Constructors and destructors and related methods
@@ -104,17 +104,18 @@ namespace LUBRICATION
     //! set the nodal film height
     void set_height_field_pure_lub(const int nds);
     //! set the nodal film height
-    void set_height_field(const int nds, Teuchos::RCP<const Epetra_Vector> gap);
+    void set_height_field(const int nds, Teuchos::RCP<const Core::LinAlg::Vector> gap);
 
     //! set the time derivative of the height (film thickness) by OST
-    void set_height_dot_field(const int nds, Teuchos::RCP<const Epetra_Vector> heightdot);
+    void set_height_dot_field(const int nds, Teuchos::RCP<const Core::LinAlg::Vector> heightdot);
 
     //! set relative tangential interface velocity for Reynolds equation
     void set_average_velocity_field_pure_lub(const int nds);
-    void set_relative_velocity_field(const int nds, Teuchos::RCP<const Epetra_Vector> rel_vel);
+    void set_relative_velocity_field(
+        const int nds, Teuchos::RCP<const Core::LinAlg::Vector> rel_vel);
 
     //! set average tangential interface velocity for Reynolds equation
-    void set_average_velocity_field(const int nds, Teuchos::RCP<const Epetra_Vector> av_vel);
+    void set_average_velocity_field(const int nds, Teuchos::RCP<const Core::LinAlg::Vector> av_vel);
 
     //! add global state vectors specific for time-integration scheme
     virtual void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) = 0;
@@ -144,7 +145,8 @@ namespace LUBRICATION
         ) = 0;
 
     //! apply moving mesh data
-    void apply_mesh_movement(Teuchos::RCP<const Epetra_Vector> dispnp,  //!< displacement vector
+    void apply_mesh_movement(
+        Teuchos::RCP<const Core::LinAlg::Vector> dispnp,  //!< displacement vector
         int nds  //!< number of the dofset the displacement state belongs to
     );
 
@@ -160,7 +162,7 @@ namespace LUBRICATION
     Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix();
 
     //! update Newton step
-    virtual void update_newton(Teuchos::RCP<const Epetra_Vector> prei);
+    virtual void update_newton(Teuchos::RCP<const Core::LinAlg::Vector> prei);
 
     //! Update iteration incrementally
     //!
@@ -174,7 +176,7 @@ namespace LUBRICATION
     //! Update iteration incrementally with prescribed residual
     //! pressures
     void update_iter_incrementally(
-        const Teuchos::RCP<const Epetra_Vector> prei  //!< input residual pressures
+        const Teuchos::RCP<const Core::LinAlg::Vector> prei  //!< input residual pressures
     );
 
     //! build linear system tangent matrix, rhs/force residual
@@ -195,7 +197,7 @@ namespace LUBRICATION
     }
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Epetra_Vector> rhs() { return residual_; }
+    Teuchos::RCP<const Core::LinAlg::Vector> rhs() { return residual_; }
 
     //! return flag indicating if an incremental solution approach is used
     bool is_incremental() { return incremental_; }
@@ -231,7 +233,7 @@ namespace LUBRICATION
     /*--- query and output ---------------------------------------------------*/
 
     //! return pressure field pre at time n+1
-    Teuchos::RCP<Epetra_Vector> prenp() { return prenp_; }
+    Teuchos::RCP<Core::LinAlg::Vector> prenp() { return prenp_; }
 
     //! output mean values of pressure(s)
     virtual void output_mean_pressures(const int num = 0);
@@ -272,9 +274,9 @@ namespace LUBRICATION
     /*--- calculate and update -----------------------------------------------*/
 
     //! Apply Dirichlet boundary conditions on provided state vector
-    void apply_dirichlet_bc(const double time,  //!< evaluation time
-        Teuchos::RCP<Epetra_Vector> prenp,      //!< pressure (may be = null)
-        Teuchos::RCP<Epetra_Vector> predt       //!< first time derivative (may be = null)
+    void apply_dirichlet_bc(const double time,     //!< evaluation time
+        Teuchos::RCP<Core::LinAlg::Vector> prenp,  //!< pressure (may be = null)
+        Teuchos::RCP<Core::LinAlg::Vector> predt   //!< first time derivative (may be = null)
     );
 
     //! potential residual scaling and potential addition of Neumann terms
@@ -284,7 +286,8 @@ namespace LUBRICATION
     virtual void add_neumann_to_residual() = 0;
 
     //! Apply Neumann boundary conditions
-    void apply_neumann_bc(const Teuchos::RCP<Epetra_Vector>& neumann_loads  //!< Neumann loads
+    void apply_neumann_bc(
+        const Teuchos::RCP<Core::LinAlg::Vector>& neumann_loads  //!< Neumann loads
     );
 
     //! call elements to calculate system matrix and rhs and assemble
@@ -437,7 +440,7 @@ namespace LUBRICATION
     int nsd_;
 
     //! pressure at time n+1
-    Teuchos::RCP<Epetra_Vector> prenp_;
+    Teuchos::RCP<Core::LinAlg::Vector> prenp_;
 
     /*========================================================================*/
     //! @name velocity, pressure, and related
@@ -460,28 +463,28 @@ namespace LUBRICATION
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
 
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
-    Teuchos::RCP<Epetra_Vector> zeros_;
+    Teuchos::RCP<Core::LinAlg::Vector> zeros_;
 
     //! maps for extracting Dirichlet and free DOF sets
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     //! the vector containing body and surface forces
-    Teuchos::RCP<Epetra_Vector> neumann_loads_;
+    Teuchos::RCP<Core::LinAlg::Vector> neumann_loads_;
 
     //! residual vector
-    Teuchos::RCP<Epetra_Vector> residual_;
+    Teuchos::RCP<Core::LinAlg::Vector> residual_;
 
     //! true (rescaled) residual vector without zeros at Dirichlet conditions
-    Teuchos::RCP<Epetra_Vector> trueresidual_;
+    Teuchos::RCP<Core::LinAlg::Vector> trueresidual_;
 
     //! nonlinear iteration increment vector
-    Teuchos::RCP<Epetra_Vector> increment_;
+    Teuchos::RCP<Core::LinAlg::Vector> increment_;
 
-    Teuchos::RCP<Epetra_Vector> prei_;  //!< residual pressures
-                                        //!< \f$\Delta{p}^{<k>}_{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector> prei_;  //!< residual pressures
+                                               //!< \f$\Delta{p}^{<k>}_{n+1}\f$
 
     //! Dirchlet toggle vector for unprojectable nodes (i.e. infinite gap)
-    Teuchos::RCP<Epetra_Vector> inf_gap_toggle_lub_;
+    Teuchos::RCP<Core::LinAlg::Vector> inf_gap_toggle_lub_;
 
     /*========================================================================*/
     //! @name not classified variables - to be kept clean!!!

@@ -73,7 +73,7 @@ namespace PoroElast
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each
     //! iteration step (i.e. condensed forces onto the structure) needed for rhs in next newton step
     void recover_lagrange_multiplier_after_newton_step(
-        Teuchos::RCP<const Epetra_Vector> x) override;
+        Teuchos::RCP<const Core::LinAlg::Vector> x) override;
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
     //! step (i.e. condensed forces onto the structure) needed for rhs in next time step
@@ -94,9 +94,9 @@ namespace PoroElast
     //!@}
    private:
     //! build block vector from field vectors, e.g. rhs, increment vector
-    void setup_vector(Epetra_Vector& f,        //!< vector of length of all dofs
-        Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
-        Teuchos::RCP<const Epetra_Vector> fv   //!< vector containing only fluid dofs
+    void setup_vector(Core::LinAlg::Vector& f,        //!< vector of length of all dofs
+        Teuchos::RCP<const Core::LinAlg::Vector> sv,  //!< vector containing only structural dofs
+        Teuchos::RCP<const Core::LinAlg::Vector> fv   //!< vector containing only fluid dofs
         ) override;
 
     //! @name Global matrices and vectors
@@ -115,7 +115,7 @@ namespace PoroElast
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> k_porodisp_;
     Teuchos::RCP<Core::LinAlg::SparseOperator> k_porofluid_;
 
-    Teuchos::RCP<Epetra_Vector> nopenetration_rhs_;
+    Teuchos::RCP<Core::LinAlg::Vector> nopenetration_rhs_;
 
     //! transform object for k_D matrix \f$D\f$
     Teuchos::RCP<Coupling::Adapter::MatrixColTransform> k_d_transform_;
@@ -128,7 +128,7 @@ namespace PoroElast
     //! Lagrange multiplier \f$\lambda_\Gamma^{n+1}\f$ at the interface (ie condensed forces onto
     //! the structure) evaluated at actual iteration step \f$t_{n+1}\f$ but needed for next
     //! iteration step
-    Teuchos::RCP<Epetra_Vector> lambdanp_;
+    Teuchos::RCP<Core::LinAlg::Vector> lambdanp_;
 
     //!@}
 
@@ -146,7 +146,7 @@ namespace PoroElast
     //! block \f$Cfs_{\Gamma\Gamma,i+1}\f$ of fs-coupling matrix at current iteration \f$i+1\f$
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> cfsggcur_;
 
-    Teuchos::RCP<Epetra_Vector> rhs_fgcur_;
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_fgcur_;
 
     //!@}
 

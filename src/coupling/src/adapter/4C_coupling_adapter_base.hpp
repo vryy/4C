@@ -15,9 +15,10 @@
 /* headers */
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
+
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -44,13 +45,13 @@ namespace Coupling::Adapter
     //!@{
 
     /// transfer a dof vector from master to slave
-    virtual Teuchos::RCP<Epetra_Vector> master_to_slave(
-        Teuchos::RCP<Epetra_Vector> mv  ///< master vector (to be transferred)
+    virtual Teuchos::RCP<Core::LinAlg::Vector> master_to_slave(
+        Teuchos::RCP<Core::LinAlg::Vector> mv  ///< master vector (to be transferred)
     ) const = 0;
 
     /// transfer a dof vector from slave to master
-    virtual Teuchos::RCP<Epetra_Vector> slave_to_master(
-        Teuchos::RCP<Epetra_Vector> sv  ///< slave vector (to be transferred)
+    virtual Teuchos::RCP<Core::LinAlg::Vector> slave_to_master(
+        Teuchos::RCP<Core::LinAlg::Vector> sv  ///< slave vector (to be transferred)
     ) const = 0;
 
     /// transfer a dof vector from master to slave
@@ -64,13 +65,13 @@ namespace Coupling::Adapter
     ) const = 0;
 
     /// transfer a dof vector from master to slave
-    virtual Teuchos::RCP<Epetra_Vector> master_to_slave(
-        Teuchos::RCP<const Epetra_Vector> mv  ///< master vector (to be transferred)
+    virtual Teuchos::RCP<Core::LinAlg::Vector> master_to_slave(
+        Teuchos::RCP<const Core::LinAlg::Vector> mv  ///< master vector (to be transferred)
     ) const = 0;
 
     /// transfer a dof vector from slave to master
-    virtual Teuchos::RCP<Epetra_Vector> slave_to_master(
-        Teuchos::RCP<const Epetra_Vector> sv  ///< slave vector (to be transferred)
+    virtual Teuchos::RCP<Core::LinAlg::Vector> slave_to_master(
+        Teuchos::RCP<const Core::LinAlg::Vector> sv  ///< slave vector (to be transferred)
     ) const = 0;
 
     /// transfer a dof vector from master to slave

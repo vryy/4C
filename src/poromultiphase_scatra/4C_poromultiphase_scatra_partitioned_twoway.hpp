@@ -65,15 +65,15 @@ namespace PoroMultiPhaseScaTra
     bool convergence_check(int itnum);
 
     //! scalar increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> scaincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> scaincnp_;
     //! structure increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> structincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> structincnp_;
     //! fluid increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> fluidincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> fluidincnp_;
     //! artery scatra increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> artscaincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> artscaincnp_;
     //! artery pressure increment of the outer loop
-    Teuchos::RCP<Epetra_Vector> arterypressincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector> arterypressincnp_;
 
     //! maximum iteration steps
     int itmax_;

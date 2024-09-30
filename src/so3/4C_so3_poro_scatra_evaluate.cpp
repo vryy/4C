@@ -26,7 +26,7 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::pre_evaluate(Teuchos::Pa
     if (discretization.has_state(2, "scalar"))
     {
       // check if you can get the scalar state
-      Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.get_state(2, "scalar");
+      Teuchos::RCP<const Core::LinAlg::Vector> scalarnp = discretization.get_state(2, "scalar");
 
       // extract local values of the global vectors
       std::vector<double> myscalar(la[2].lm_.size());

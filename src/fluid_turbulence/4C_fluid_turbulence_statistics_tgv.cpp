@@ -269,7 +269,7 @@ FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<Core::FE::Dis
 /*----------------------------------------------------------------------*
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
-    std::map<std::string, Teuchos::RCP<Epetra_Vector>> statevecs,
+    std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> statevecs,
     std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> statetenss, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam)
 {
@@ -287,7 +287,8 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
     Teuchos::ParameterList* stabparams = &(params_.sublist("RESIDUAL-BASED STABILIZATION"));
     if (stabparams->get<bool>("Reconstruct_Sec_Der"))
     {
-      for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::iterator state = statevecs.begin();
+      for (std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>>::iterator state =
+               statevecs.begin();
            state != statevecs.end(); ++state)
       {
         if (state->first == "velaf")
@@ -306,7 +307,8 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
   eleparams_.set<double>("thermpressderiv at n+alpha_M/n+1", thermpressdtam);
 
   // set state vectors for element call
-  for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::iterator state = statevecs.begin();
+  for (std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>>::iterator state =
+           statevecs.begin();
        state != statevecs.end(); ++state)
   {
     discret_->set_state(state->first, state->second);

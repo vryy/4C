@@ -14,10 +14,10 @@
 #include "4C_config.hpp"
 
 #include "4C_binstrategy_utils.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <functional>
@@ -44,7 +44,7 @@ namespace Core::Rebalance
       const std::vector<Teuchos::RCP<Core::FE::Discretization>>& vector_of_discretizations,
       std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node = nullptr,
       std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
-          const Core::Elements::Element&, Teuchos::RCP<const Epetra_Vector> disnp)>
+          const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector> disnp)>
           determine_relevant_points = nullptr,
       bool revertextendedghosting = false);
 
@@ -106,9 +106,9 @@ namespace Core::Rebalance
 
   \param name (in): discretization
   \param state (in): vector of some data  */
-  Teuchos::RCP<const Epetra_Vector> get_col_version_of_row_vector(
+  Teuchos::RCP<const Core::LinAlg::Vector> get_col_version_of_row_vector(
       const Teuchos::RCP<const Core::FE::Discretization> dis,
-      const Teuchos::RCP<const Epetra_Vector> state, const int nds = 0);
+      const Teuchos::RCP<const Core::LinAlg::Vector> state, const int nds = 0);
 
 
   /// recompute nodecolmap of standard discretization to include all nodes as of subdicretization

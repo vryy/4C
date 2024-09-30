@@ -12,9 +12,9 @@ interaction.
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
@@ -130,7 +130,7 @@ namespace Adapter
      * \returns structure force vector
      */
 
-    virtual Teuchos::RCP<Epetra_Vector> fluid_to_structure();
+    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_structure();
 
     /**
      * \brief Abstractly, we do everything we have to, to introduce the coupling condition into the
@@ -145,7 +145,7 @@ namespace Adapter
      * \returns fluid velocity on the whole domain
      */
 
-    virtual Teuchos::RCP<Epetra_Vector> structure_to_fluid(int step);
+    virtual Teuchos::RCP<Core::LinAlg::Vector> structure_to_fluid(int step);
 
     /// Interface to do preparations to solve the fluid
     virtual void prepare_fluid_solve() = 0;
@@ -228,7 +228,7 @@ namespace Adapter
      *
      * \returns coupling contributions to the structure residual
      */
-    virtual Teuchos::RCP<Epetra_Vector> assemble_structure_coupling_residual() const
+    virtual Teuchos::RCP<Core::LinAlg::Vector> assemble_structure_coupling_residual() const
     {
       FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -242,7 +242,7 @@ namespace Adapter
      *
      * \returns coupling contributions to the fluid residual
      */
-    virtual Teuchos::RCP<Epetra_Vector> assemble_fluid_coupling_residual() const
+    virtual Teuchos::RCP<Core::LinAlg::Vector> assemble_fluid_coupling_residual() const
     {
       FOUR_C_THROW("Not yet implemented! This has to be overloaded by a derived class.\n");
       return Teuchos::null;
@@ -292,11 +292,11 @@ namespace Adapter
     Teuchos::RCP<FBI::FBIGeometryCoupler> geometrycoupler_;
 
     /// Displacement of the structural column nodes on the current proc
-    Teuchos::RCP<const Epetra_Vector> column_structure_displacement_;
+    Teuchos::RCP<const Core::LinAlg::Vector> column_structure_displacement_;
     /// Velocity of the structural column nodes on the current proc
-    Teuchos::RCP<const Epetra_Vector> column_structure_velocity_;
+    Teuchos::RCP<const Core::LinAlg::Vector> column_structure_velocity_;
     /// Velocity of the fluid column nodes on the current proc
-    Teuchos::RCP<const Epetra_Vector> column_fluid_velocity_;
+    Teuchos::RCP<const Core::LinAlg::Vector> column_fluid_velocity_;
     /**
      * \brief Extractor to split fluid values into velocities and pressure DOFs
      *

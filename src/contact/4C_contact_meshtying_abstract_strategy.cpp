@@ -194,10 +194,10 @@ void CONTACT::MtAbstractStrategy::setup(bool redistributed)
   // ------------------------------------------------------------------------
 
   // setup Lagrange multiplier vectors
-  z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  z_ = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
+  zincr_ = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
+  zold_ = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
+  zuzawa_ = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
 
   // setup constraint rhs vector
   constrrhs_ = Teuchos::null;  // only for saddle point problem formulation
@@ -259,9 +259,9 @@ void CONTACT::MtAbstractStrategy::setup(bool redistributed)
 /*----------------------------------------------------------------------*
  | global evaluation method called from time integrator      popp 06/09 |
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
-    const int iter, bool predictor)
+void CONTACT::MtAbstractStrategy::apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector> dis,
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector>& f,
+    const int step, const int iter, bool predictor)
 {
   // set displacement state
   set_state(Mortar::state_new_displacement, *dis);
@@ -279,7 +279,7 @@ void CONTACT::MtAbstractStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vect
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::set_state(
-    const enum Mortar::StateType& statetype, const Epetra_Vector& vec)
+    const enum Mortar::StateType& statetype, const Core::LinAlg::Vector& vec)
 {
   switch (statetype)
   {
@@ -304,7 +304,8 @@ void CONTACT::MtAbstractStrategy::set_state(
 /*----------------------------------------------------------------------*
  |  do mortar coupling in reference configuration             popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::mortar_coupling(const Teuchos::RCP<const Epetra_Vector>& dis)
+void CONTACT::MtAbstractStrategy::mortar_coupling(
+    const Teuchos::RCP<const Core::LinAlg::Vector>& dis)
 {
   //********************************************************************
   // initialize and evaluate interfaces
@@ -327,7 +328,7 @@ void CONTACT::MtAbstractStrategy::mortar_coupling(const Teuchos::RCP<const Epetr
   //********************************************************************
   // initialize and evaluate global mortar stuff
   //********************************************************************
-  // (re)setup global Mortar Core::LinAlg::SparseMatrices and Epetra_Vectors
+  // (re)setup global Mortar Core::LinAlg::SparseMatrices and Core::LinAlg::Vectors
   dmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 10));
   mmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100));
   g_ = Core::LinAlg::create_vector(*gsdofrowmap_, true);
@@ -340,13 +341,13 @@ void CONTACT::MtAbstractStrategy::mortar_coupling(const Teuchos::RCP<const Epetr
   mmatrix_->complete(*gmdofrowmap_, *gsdofrowmap_);
 
   // compute g-vector at global level
-  Teuchos::RCP<Epetra_Vector> xs = Core::LinAlg::create_vector(*gsdofrowmap_, true);
-  Teuchos::RCP<Epetra_Vector> xm = Core::LinAlg::create_vector(*gmdofrowmap_, true);
+  Teuchos::RCP<Core::LinAlg::Vector> xs = Core::LinAlg::create_vector(*gsdofrowmap_, true);
+  Teuchos::RCP<Core::LinAlg::Vector> xm = Core::LinAlg::create_vector(*gmdofrowmap_, true);
   assemble_coords("slave", true, xs);
   assemble_coords("master", true, xm);
-  Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector> Dxs = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
   dmatrix_->multiply(false, *xs, *Dxs);
-  Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector> Mxm = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
   mmatrix_->multiply(false, *xm, *Mxm);
   g_->Update(1.0, *Dxs, 1.0);
   g_->Update(-1.0, *Mxm, 1.0);
@@ -462,7 +463,7 @@ void CONTACT::MtAbstractStrategy::restrict_meshtying_zone()
 /*----------------------------------------------------------------------*
  |  mesh initialization for rotational invariance              popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::mesh_initialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
+void CONTACT::MtAbstractStrategy::mesh_initialization(Teuchos::RCP<Core::LinAlg::Vector> Xslavemod)
 {
   //**********************************************************************
   // (1) perform mesh initialization node by node
@@ -491,7 +492,7 @@ void CONTACT::MtAbstractStrategy::mesh_initialization(Teuchos::RCP<Epetra_Vector
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // export Xslavemod to column map for current interface
-    Epetra_Vector Xslavemodcol(*(interface_[i]->slave_col_dofs()), false);
+    Core::LinAlg::Vector Xslavemodcol(*(interface_[i]->slave_col_dofs()), false);
     Core::LinAlg::export_to(*Xslavemod, Xslavemodcol);
 
     // loop over all slave column nodes on the current interface
@@ -568,13 +569,13 @@ void CONTACT::MtAbstractStrategy::mesh_initialization(Teuchos::RCP<Epetra_Vector
   g_ = Core::LinAlg::create_vector(*gsdofrowmap_, true);
 
   // compute g-vector at global level
-  Teuchos::RCP<Epetra_Vector> xs = Core::LinAlg::create_vector(*gsdofrowmap_, true);
-  Teuchos::RCP<Epetra_Vector> xm = Core::LinAlg::create_vector(*gmdofrowmap_, true);
+  Teuchos::RCP<Core::LinAlg::Vector> xs = Core::LinAlg::create_vector(*gsdofrowmap_, true);
+  Teuchos::RCP<Core::LinAlg::Vector> xm = Core::LinAlg::create_vector(*gmdofrowmap_, true);
   assemble_coords("slave", true, xs);
   assemble_coords("master", true, xm);
-  Teuchos::RCP<Epetra_Vector> Dxs = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector> Dxs = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
   dmatrix_->multiply(false, *xs, *Dxs);
-  Teuchos::RCP<Epetra_Vector> Mxm = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector> Mxm = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
   mmatrix_->multiply(false, *xm, *Mxm);
   g_->Update(1.0, *Dxs, 1.0);
   g_->Update(-1.0, *Mxm, 1.0);
@@ -584,7 +585,7 @@ void CONTACT::MtAbstractStrategy::mesh_initialization(Teuchos::RCP<Epetra_Vector
  | call appropriate evaluate for contact evaluation           popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::evaluate(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-    Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)
+    Teuchos::RCP<Core::LinAlg::Vector>& feff, Teuchos::RCP<Core::LinAlg::Vector> dis)
 {
   // trivial (no choice as for contact)
   evaluate_meshtying(kteff, feff, dis);
@@ -600,7 +601,7 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
     // get global quantity to be stored in nodes
-    Teuchos::RCP<const Epetra_Vector> vectorglobal = Teuchos::null;
+    Teuchos::RCP<const Core::LinAlg::Vector> vectorglobal = Teuchos::null;
     switch (type)
     {
       case Mortar::StrategyBase::lmcurrent:
@@ -632,7 +633,8 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
 
     // export global quantity to current interface slave dof row map
     Teuchos::RCP<const Epetra_Map> sdofrowmap = interface_[i]->slave_row_dofs();
-    Teuchos::RCP<Epetra_Vector> vectorinterface = Teuchos::rcp(new Epetra_Vector(*sdofrowmap));
+    Teuchos::RCP<Core::LinAlg::Vector> vectorinterface =
+        Teuchos::rcp(new Core::LinAlg::Vector(*sdofrowmap));
 
     if (vectorglobal != Teuchos::null)
       Core::LinAlg::export_to(*vectorglobal, *vectorinterface);
@@ -651,7 +653,7 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
       int numdof = mtnode->num_dof();
       if (n_dim() != numdof) FOUR_C_THROW("Inconsisteny Dim <-> NumDof");
 
-      // find indices for DOFs of current node in Epetra_Vector
+      // find indices for DOFs of current node in Core::LinAlg::Vector
       // and extract this node's quantity from vectorinterface
       std::vector<int> locindex(n_dim());
 
@@ -740,7 +742,8 @@ void CONTACT::MtAbstractStrategy::store_dirichlet_status(
 
   // create old style dirichtoggle vector (supposed to go away)
   non_redist_gsdirichtoggle_ = Core::LinAlg::create_vector(*gsdofrowmap_, true);
-  Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*(dbcmaps->cond_map())));
+  Teuchos::RCP<Core::LinAlg::Vector> temp =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(dbcmaps->cond_map())));
   temp->PutScalar(1.0);
   Core::LinAlg::export_to(*temp, *non_redist_gsdirichtoggle_);
 
@@ -750,7 +753,7 @@ void CONTACT::MtAbstractStrategy::store_dirichlet_status(
 /*----------------------------------------------------------------------*
  | Update meshtying at end of time step                       popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::update(Teuchos::RCP<const Epetra_Vector> dis)
+void CONTACT::MtAbstractStrategy::update(Teuchos::RCP<const Core::LinAlg::Vector> dis)
 {
   // store Lagrange multipliers
   // (we need this for interpolation of the next generalized mid-point)
@@ -767,7 +770,7 @@ void CONTACT::MtAbstractStrategy::update(Teuchos::RCP<const Epetra_Vector> dis)
  |  read restart information for meshtying                    popp 03/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::do_read_restart(
-    Core::IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis)
+    Core::IO::DiscretizationReader& reader, Teuchos::RCP<const Core::LinAlg::Vector> dis)
 {
   // check whether this is a restart with meshtying of a previously
   // non-meshtying simulation run
@@ -777,11 +780,11 @@ void CONTACT::MtAbstractStrategy::do_read_restart(
   set_state(Mortar::state_new_displacement, *dis);
 
   // read restart information on Lagrange multipliers
-  z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  z_ = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
+  zincr_ = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
   if (!restartwithmeshtying) reader.read_vector(z_, "mt_lagrmultold");
   store_nodal_quantities(Mortar::StrategyBase::lmcurrent);
-  zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+  zold_ = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
   if (!restartwithmeshtying) reader.read_vector(zold_, "mt_lagrmultold");
   store_nodal_quantities(Mortar::StrategyBase::lmold);
 
@@ -789,7 +792,7 @@ void CONTACT::MtAbstractStrategy::do_read_restart(
   auto st = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(params(), "STRATEGY");
   if (st == Inpar::CONTACT::solution_uzawa)
   {
-    zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
+    zuzawa_ = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
     if (!restartwithmeshtying) reader.read_vector(zuzawa_, "mt_lagrmultold");
     store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
   }
@@ -807,15 +810,18 @@ void CONTACT::MtAbstractStrategy::interface_forces(bool output)
   if (emtype == Inpar::CONTACT::output_none) return;
 
   // compute discrete slave and master interface forces
-  Teuchos::RCP<Epetra_Vector> fcslavetemp = Teuchos::rcp(new Epetra_Vector(dmatrix_->row_map()));
-  Teuchos::RCP<Epetra_Vector> fcmastertemp =
-      Teuchos::rcp(new Epetra_Vector(mmatrix_->domain_map()));
+  Teuchos::RCP<Core::LinAlg::Vector> fcslavetemp =
+      Teuchos::rcp(new Core::LinAlg::Vector(dmatrix_->row_map()));
+  Teuchos::RCP<Core::LinAlg::Vector> fcmastertemp =
+      Teuchos::rcp(new Core::LinAlg::Vector(mmatrix_->domain_map()));
   dmatrix_->multiply(true, *z_, *fcslavetemp);
   mmatrix_->multiply(true, *z_, *fcmastertemp);
 
   // export the interface forces to full dof layout
-  Teuchos::RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
-  Teuchos::RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(*problem_dofs()));
+  Teuchos::RCP<Core::LinAlg::Vector> fcslave =
+      Teuchos::rcp(new Core::LinAlg::Vector(*problem_dofs()));
+  Teuchos::RCP<Core::LinAlg::Vector> fcmaster =
+      Teuchos::rcp(new Core::LinAlg::Vector(*problem_dofs()));
   Core::LinAlg::export_to(*fcslavetemp, *fcslave);
   Core::LinAlg::export_to(*fcmastertemp, *fcmaster);
 
@@ -835,8 +841,10 @@ void CONTACT::MtAbstractStrategy::interface_forces(bool output)
   std::vector<double> ggmcmnew(3);
 
   // weighted gap vector
-  Teuchos::RCP<Epetra_Vector> gapslave = Teuchos::rcp(new Epetra_Vector(dmatrix_->row_map()));
-  Teuchos::RCP<Epetra_Vector> gapmaster = Teuchos::rcp(new Epetra_Vector(mmatrix_->domain_map()));
+  Teuchos::RCP<Core::LinAlg::Vector> gapslave =
+      Teuchos::rcp(new Core::LinAlg::Vector(dmatrix_->row_map()));
+  Teuchos::RCP<Core::LinAlg::Vector> gapmaster =
+      Teuchos::rcp(new Core::LinAlg::Vector(mmatrix_->domain_map()));
 
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -925,11 +933,14 @@ void CONTACT::MtAbstractStrategy::interface_forces(bool output)
   }
 
   // weighted gap
-  Teuchos::RCP<Epetra_Vector> gapslavefinal = Teuchos::rcp(new Epetra_Vector(dmatrix_->row_map()));
-  Teuchos::RCP<Epetra_Vector> gapmasterfinal = Teuchos::rcp(new Epetra_Vector(mmatrix_->row_map()));
+  Teuchos::RCP<Core::LinAlg::Vector> gapslavefinal =
+      Teuchos::rcp(new Core::LinAlg::Vector(dmatrix_->row_map()));
+  Teuchos::RCP<Core::LinAlg::Vector> gapmasterfinal =
+      Teuchos::rcp(new Core::LinAlg::Vector(mmatrix_->row_map()));
   dmatrix_->multiply(false, *gapslave, *gapslavefinal);
   mmatrix_->multiply(false, *gapmaster, *gapmasterfinal);
-  Teuchos::RCP<Epetra_Vector> gapfinal = Teuchos::rcp(new Epetra_Vector(dmatrix_->row_map()));
+  Teuchos::RCP<Core::LinAlg::Vector> gapfinal =
+      Teuchos::rcp(new Core::LinAlg::Vector(dmatrix_->row_map()));
   gapfinal->Update(1.0, *gapslavefinal, 0.0);
   gapfinal->Update(-1.0, *gapmasterfinal, 1.0);
 
@@ -1078,7 +1089,7 @@ void CONTACT::MtAbstractStrategy::visualize_gmsh(const int step, const int iter)
  | Visualization of meshtying segments with gmsh              popp 08/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::assemble_coords(
-    const std::string& sidename, bool ref, Teuchos::RCP<Epetra_Vector> vec)
+    const std::string& sidename, bool ref, Teuchos::RCP<Core::LinAlg::Vector> vec)
 {
   // NOTE:
   // An alternative way of doing this would be to loop over
@@ -1086,7 +1097,7 @@ void CONTACT::MtAbstractStrategy::assemble_coords(
   // In that case, one would have to be very careful with
   // edge nodes / crosspoints, which must not be assembled
   // twice. The solution would be to overwrite the corresponding
-  // entries in the Epetra_Vector instead of using Assemble().
+  // entries in the Core::LinAlg::Vector instead of using Assemble().
 
   // decide which side (slave or master)
   Teuchos::RCP<Epetra_Map> sidemap = Teuchos::null;
@@ -1241,15 +1252,16 @@ void CONTACT::MtAbstractStrategy::postprocess_quantities_per_interface(
   using Teuchos::RCP;
 
   // Evaluate slave and master forces
-  RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(d_matrix()->row_map()));
-  RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(m_matrix()->domain_map()));
+  RCP<Core::LinAlg::Vector> fcslave = Teuchos::rcp(new Core::LinAlg::Vector(d_matrix()->row_map()));
+  RCP<Core::LinAlg::Vector> fcmaster =
+      Teuchos::rcp(new Core::LinAlg::Vector(m_matrix()->domain_map()));
   d_matrix()->multiply(true, *zold_, *fcslave);
   m_matrix()->multiply(true, *zold_, *fcmaster);
 
   // Append data to parameter list
-  outputParams->set<RCP<const Epetra_Vector>>("interface traction", zold_);
-  outputParams->set<RCP<const Epetra_Vector>>("slave forces", fcslave);
-  outputParams->set<RCP<const Epetra_Vector>>("master forces", fcmaster);
+  outputParams->set<RCP<const Core::LinAlg::Vector>>("interface traction", zold_);
+  outputParams->set<RCP<const Core::LinAlg::Vector>>("slave forces", fcslave);
+  outputParams->set<RCP<const Core::LinAlg::Vector>>("master forces", fcmaster);
 
   for (std::vector<Teuchos::RCP<Mortar::Interface>>::const_iterator it = interface_.begin();
        it < interface_.end(); ++it)

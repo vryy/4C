@@ -13,10 +13,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_result_test.hpp"
-
-#include <Epetra_Vector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -92,7 +91,7 @@ namespace FSI
     Teuchos::RCP<Core::FE::Discretization> slavedisc_;
 
     //! Lagrange multiplier living on the slave discretization
-    Teuchos::RCP<Epetra_Vector> fsilambda_;
+    Teuchos::RCP<Core::LinAlg::Vector> fsilambda_;
 
     //! the monolithic solver object itself
     Teuchos::RCP<FSI::Monolithic> fsi_;

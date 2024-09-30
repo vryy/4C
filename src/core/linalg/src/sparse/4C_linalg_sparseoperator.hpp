@@ -13,10 +13,10 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_serialdensematrix.hpp"
+#include "4C_linalg_vector.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
@@ -200,7 +200,8 @@ namespace Core::LinAlg
     virtual void un_complete() = 0;
 
     /// Apply dirichlet boundary condition to a matrix
-    virtual void apply_dirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true) = 0;
+    virtual void apply_dirichlet(
+        const Core::LinAlg::Vector& dbctoggle, bool diagonalblock = true) = 0;
 
     /// Apply dirichlet boundary condition to a matrix
     ///

@@ -742,8 +742,8 @@ void XFEM::MultiFieldMapExtractor::build_element_map_extractor()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> XFEM::MultiFieldMapExtractor::extract_vector(
-    const Epetra_Vector& full, enum FieldName field, enum MapType map_type) const
+Teuchos::RCP<Core::LinAlg::Vector> XFEM::MultiFieldMapExtractor::extract_vector(
+    const Core::LinAlg::Vector& full, enum FieldName field, enum MapType map_type) const
 {
   const int dis_id = slave_id(field);
 
@@ -755,7 +755,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::MultiFieldMapExtractor::extract_vector(
     FOUR_C_THROW("null full map for field %s", field_name_to_string(field).c_str());
 
   // create a new vector
-  Teuchos::RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*sl_full_map));
+  Teuchos::RCP<Core::LinAlg::Vector> vec = Teuchos::rcp(new Core::LinAlg::Vector(*sl_full_map));
 
   // extract the actual vector and return it
   extract_vector(full, dis_id, *vec, map_type);
@@ -837,11 +837,12 @@ void XFEM::MultiFieldMapExtractor::add_element_vector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> XFEM::MultiFieldMapExtractor::insert_vector(
-    const Epetra_Vector& partial, enum FieldName field, enum MapType map_type) const
+Teuchos::RCP<Core::LinAlg::Vector> XFEM::MultiFieldMapExtractor::insert_vector(
+    const Core::LinAlg::Vector& partial, enum FieldName field, enum MapType map_type) const
 {
   const int dis_id = slave_id(field);
-  Teuchos::RCP<Epetra_Vector> full = Teuchos::rcp(new Epetra_Vector(*full_map(map_type)));
+  Teuchos::RCP<Core::LinAlg::Vector> full =
+      Teuchos::rcp(new Core::LinAlg::Vector(*full_map(map_type)));
   insert_vector(partial, dis_id, *full, map_type);
   return full;
 }

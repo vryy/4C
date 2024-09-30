@@ -181,7 +181,8 @@ void FSI::Algorithm::output()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Algorithm::struct_to_fluid(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Core::LinAlg::Vector> FSI::Algorithm::struct_to_fluid(
+    Teuchos::RCP<Core::LinAlg::Vector> iv)
 {
   return coupsf_->master_to_slave(iv);
 }
@@ -189,7 +190,8 @@ Teuchos::RCP<Epetra_Vector> FSI::Algorithm::struct_to_fluid(Teuchos::RCP<Epetra_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Algorithm::fluid_to_struct(Teuchos::RCP<Epetra_Vector> iv)
+Teuchos::RCP<Core::LinAlg::Vector> FSI::Algorithm::fluid_to_struct(
+    Teuchos::RCP<Core::LinAlg::Vector> iv)
 {
   return coupsf_->slave_to_master(iv);
 }
@@ -210,8 +212,8 @@ const Coupling::Adapter::Coupling& FSI::Algorithm::structure_fluid_coupling() co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Algorithm::struct_to_fluid(
-    Teuchos::RCP<const Epetra_Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector> FSI::Algorithm::struct_to_fluid(
+    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
 {
   return coupsf_->master_to_slave(iv);
 }
@@ -219,8 +221,8 @@ Teuchos::RCP<Epetra_Vector> FSI::Algorithm::struct_to_fluid(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> FSI::Algorithm::fluid_to_struct(
-    Teuchos::RCP<const Epetra_Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector> FSI::Algorithm::fluid_to_struct(
+    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
 {
   return coupsf_->slave_to_master(iv);
 }

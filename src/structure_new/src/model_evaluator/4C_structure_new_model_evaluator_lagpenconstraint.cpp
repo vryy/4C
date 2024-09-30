@@ -20,11 +20,11 @@
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -63,7 +63,7 @@ void Solid::ModelEvaluator::LagPenConstraint::setup()
   disnp_ptr_ = global_state().get_dis_np();
 
   // contributions of constraints to structural rhs and stiffness
-  fstrconstr_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map_view()));
+  fstrconstr_np_ptr_ = Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view()));
   stiff_constr_ptr_ = Teuchos::rcp(
       new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
 
@@ -81,7 +81,7 @@ void Solid::ModelEvaluator::LagPenConstraint::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::LagPenConstraint::reset(const Epetra_Vector& x)
+void Solid::ModelEvaluator::LagPenConstraint::reset(const Core::LinAlg::Vector& x)
 {
   check_init_setup();
 
@@ -100,7 +100,7 @@ bool Solid::ModelEvaluator::LagPenConstraint::evaluate_force()
 
   double time_np = global_state().get_time_np();
   Teuchos::ParameterList pcon;  // empty parameter list
-  Teuchos::RCP<const Epetra_Vector> disn = global_state().get_dis_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> disn = global_state().get_dis_n();
 
   // only forces are evaluated!
   constrman_->evaluate_force_stiff(
@@ -117,7 +117,7 @@ bool Solid::ModelEvaluator::LagPenConstraint::evaluate_stiff()
 
   double time_np = global_state().get_time_np();
   Teuchos::ParameterList pcon;  // empty parameter list
-  Teuchos::RCP<const Epetra_Vector> disn = global_state().get_dis_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> disn = global_state().get_dis_n();
 
   // only stiffnesses are evaluated!
   constrman_->evaluate_force_stiff(
@@ -136,7 +136,7 @@ bool Solid::ModelEvaluator::LagPenConstraint::evaluate_force_stiff()
 
   double time_np = global_state().get_time_np();
   Teuchos::ParameterList pcon;  // empty parameter list
-  Teuchos::RCP<const Epetra_Vector> disn = global_state().get_dis_n();
+  Teuchos::RCP<const Core::LinAlg::Vector> disn = global_state().get_dis_n();
 
   constrman_->evaluate_force_stiff(
       time_np, disn, disnp_ptr_, fstrconstr_np_ptr_, stiff_constr_ptr_, pcon);
@@ -150,9 +150,9 @@ bool Solid::ModelEvaluator::LagPenConstraint::evaluate_force_stiff()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::LagPenConstraint::assemble_force(
-    Epetra_Vector& f, const double& timefac_np) const
+    Core::LinAlg::Vector& f, const double& timefac_np) const
 {
-  Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector> block_vec_ptr = Teuchos::null;
 
   Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *fstrconstr_np_ptr_);
 
@@ -234,13 +234,13 @@ void Solid::ModelEvaluator::LagPenConstraint::read_restart(Core::IO::Discretizat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::LagPenConstraint::run_post_compute_x(
-    const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
+void Solid::ModelEvaluator::LagPenConstraint::run_post_compute_x(const Core::LinAlg::Vector& xold,
+    const Core::LinAlg::Vector& dir, const Core::LinAlg::Vector& xnew)
 {
   check_init_setup();
 
-  Teuchos::RCP<Epetra_Vector> lagmult_incr =
-      Teuchos::rcp(new Epetra_Vector(*get_block_dof_row_map_ptr()));
+  Teuchos::RCP<Core::LinAlg::Vector> lagmult_incr =
+      Teuchos::rcp(new Core::LinAlg::Vector(*get_block_dof_row_map_ptr()));
 
   Core::LinAlg::export_to(dir, *lagmult_incr);
 
@@ -257,7 +257,7 @@ void Solid::ModelEvaluator::LagPenConstraint::update_step_state(const double& ti
   // residual state vector
   if (not fstrconstr_np_ptr_.is_null())
   {
-    Teuchos::RCP<Epetra_Vector>& fstructold_ptr = global_state().get_fstructure_old();
+    Teuchos::RCP<Core::LinAlg::Vector>& fstructold_ptr = global_state().get_fstructure_old();
     fstructold_ptr->Update(timefac_n, *fstrconstr_np_ptr_, 1.0);
   }
 }
@@ -348,7 +348,7 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::LagPenConstraint::get_bloc
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector>
+Teuchos::RCP<const Core::LinAlg::Vector>
 Solid::ModelEvaluator::LagPenConstraint::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
@@ -357,7 +357,7 @@ Solid::ModelEvaluator::LagPenConstraint::get_current_solution_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector>
+Teuchos::RCP<const Core::LinAlg::Vector>
 Solid::ModelEvaluator::LagPenConstraint::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries

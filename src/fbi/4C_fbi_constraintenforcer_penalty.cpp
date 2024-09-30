@@ -22,8 +22,7 @@ fluid-beam interaction)
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
-
-#include <Epetra_Vector.h>
+#include "4C_linalg_vector.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -69,29 +68,29 @@ Adapter::FBIPenaltyConstraintenforcer::assemble_structure_coupling_matrix() cons
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector>
+Teuchos::RCP<Core::LinAlg::Vector>
 Adapter::FBIPenaltyConstraintenforcer::assemble_fluid_coupling_residual() const
 {
   Teuchos::rcp_dynamic_cast<Adapter::FBIConstraintBridgePenalty>(bridge(), true)
       ->scale_penalty_fluid_contributions();
   // Get the force acting on the fluid field, scale it with -1 to get the
   // correct direction
-  Teuchos::RCP<Epetra_Vector> f =
-      Teuchos::rcp(new Epetra_Vector((bridge()->get_fluid_coupling_residual())->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector> f =
+      Teuchos::rcp(new Core::LinAlg::Vector((bridge()->get_fluid_coupling_residual())->Map()));
   f->Update(-1.0, *(bridge()->get_fluid_coupling_residual()), 0.0);
   return f;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector>
+Teuchos::RCP<Core::LinAlg::Vector>
 Adapter::FBIPenaltyConstraintenforcer::assemble_structure_coupling_residual() const
 {
   Teuchos::rcp_dynamic_cast<Adapter::FBIConstraintBridgePenalty>(bridge(), true)
       ->scale_penalty_structure_contributions();
   // Get the force acting on the structure field, scale it with the penalty factor and -1 to get the
   // correct direction
-  Teuchos::RCP<Epetra_Vector> f =
-      Teuchos::rcp(new Epetra_Vector(bridge()->get_structure_coupling_residual()->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector> f =
+      Teuchos::rcp(new Core::LinAlg::Vector(bridge()->get_structure_coupling_residual()->Map()));
   f->Update(-1.0, *(bridge()->get_structure_coupling_residual()), 0.0);
 
   return f;
@@ -119,7 +118,7 @@ void Adapter::FBIPenaltyConstraintenforcer::print_violation(double time, int ste
   {
     double penalty_parameter = bridge()->get_params()->get_penalty_parameter();
 
-    Teuchos::RCP<Epetra_Vector> violation = Core::LinAlg::create_vector(
+    Teuchos::RCP<Core::LinAlg::Vector> violation = Core::LinAlg::create_vector(
         Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(get_fluid(), true)->velnp()->Map());
 
     int err =
@@ -132,7 +131,7 @@ void Adapter::FBIPenaltyConstraintenforcer::print_violation(double time, int ste
     if (err != 0) FOUR_C_THROW(" Matrix vector product threw error code %i ", err);
 
     err = violation->Update(1.0, *assemble_fluid_coupling_residual(), -1.0);
-    if (err != 0) FOUR_C_THROW(" Epetra_Vector update threw error code %i ", err);
+    if (err != 0) FOUR_C_THROW(" Core::LinAlg::Vector update threw error code %i ", err);
 
     double norm = 0.0, normf = 0.0, norms = 0.0, norm_vel = 0.0;
 

@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::create(
     const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
-    Teuchos::RCP<const Epetra_Vector>
+    Teuchos::RCP<const Core::LinAlg::Vector>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis
     Teuchos::ParameterList& solver_params,  //!< solver parameters
     const int step,                         //!< current time step
@@ -79,7 +79,7 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::create(
     const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
     const Teuchos::RCP<Core::FE::Discretization>&
         embfluiddiscret,  //!< embedded fluid discretization
-    Teuchos::RCP<const Epetra_Vector>
+    Teuchos::RCP<const Core::LinAlg::Vector>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis
     Teuchos::ParameterList& solver_params,  //!< solver parameters
     const int step,                         //!< current time step
@@ -127,7 +127,7 @@ void FLD::XFluidStateCreator::create_new_cut_state(
     Teuchos::RCP<Cut::CutWizard>&
         wizard,  //!< cut wizard associated with current intersection state
     const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,  //!< xfluid background discretization
-    Teuchos::RCP<const Epetra_Vector>
+    Teuchos::RCP<const Core::LinAlg::Vector>
         back_disp_col,  //!< col vector holding background ALE displacements for backdis
     Teuchos::ParameterList& solver_params,  //!< solver parameters
     const int step                          //!< current time step

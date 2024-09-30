@@ -968,7 +968,7 @@ SSI::ManifoldMeshTyingStrategyBlock::intersect_coupling_maps_block_map(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::ManifoldMeshTyingStrategyBase::apply_mesh_tying_to_manifold_rhs(
-    Teuchos::RCP<Epetra_Vector> rhs_manifold)
+    Teuchos::RCP<Core::LinAlg::Vector> rhs_manifold)
 {
   if (is_manifold_meshtying_)
   {

@@ -84,9 +84,9 @@ void EleMag::ElemagTimeInt::init()
   electric_post = Teuchos::rcp(new Epetra_MultiVector(*discret_->node_row_map(), numdim_));
   magnetic = Teuchos::rcp(new Epetra_MultiVector(*discret_->node_row_map(), numdim_));
   trace = Teuchos::rcp(new Epetra_MultiVector(*discret_->node_row_map(), numdim_));
-  conductivity = Teuchos::rcp(new Epetra_Vector(*discret_->element_row_map()));
-  permittivity = Teuchos::rcp(new Epetra_Vector(*discret_->element_row_map()));
-  permeability = Teuchos::rcp(new Epetra_Vector(*discret_->element_row_map()));
+  conductivity = Teuchos::rcp(new Core::LinAlg::Vector(*discret_->element_row_map()));
+  permittivity = Teuchos::rcp(new Core::LinAlg::Vector(*discret_->element_row_map()));
+  permeability = Teuchos::rcp(new Core::LinAlg::Vector(*discret_->element_row_map()));
 
   // create vector of zeros to be used for enforcing zero Dirichlet boundary conditions
   zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
@@ -355,7 +355,7 @@ void EleMag::ElemagTimeInt::set_initial_field(
  |  Set initial field by scatra solution (public)      berardocco 05/20 |
  *----------------------------------------------------------------------*/
 void EleMag::ElemagTimeInt::set_initial_electric_field(
-    Teuchos::RCP<Epetra_Vector> phi, Teuchos::RCP<Core::FE::Discretization> &scatradis)
+    Teuchos::RCP<Core::LinAlg::Vector> phi, Teuchos::RCP<Core::FE::Discretization> &scatradis)
 {
   // we have to call an init for the elements first!
   Teuchos::ParameterList initParams;
@@ -367,16 +367,16 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
   initParams.set<EleMag::Action>("action", EleMag::project_electric_from_scatra_field);
   initParams.set<Inpar::EleMag::DynamicType>("dyna", elemagdyna_);
 
-  Teuchos::RCP<Epetra_Vector> phicol;
+  Teuchos::RCP<Core::LinAlg::Vector> phicol;
   bool ishdg = false;
   if (Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationHDG>(scatradis) != Teuchos::null)
   {
-    phicol = Teuchos::rcp(new Epetra_Vector(*(scatradis->dof_col_map(2))));
+    phicol = Teuchos::rcp(new Core::LinAlg::Vector(*(scatradis->dof_col_map(2))));
     ishdg = true;
     initParams.set<bool>("ishdg", ishdg);
   }
   else
-    phicol = Teuchos::rcp(new Epetra_Vector(*(scatradis->dof_col_map())));
+    phicol = Teuchos::rcp(new Core::LinAlg::Vector(*(scatradis->dof_col_map())));
 
   Core::LinAlg::export_to(*phi, *phicol);
 
@@ -831,11 +831,12 @@ namespace
   *----------------------------------------------------------------------*/
   // internal helper function for output
   void get_node_vectors_hdg(Core::FE::Discretization &dis,
-      const Teuchos::RCP<Epetra_Vector> &traceValues, const int ndim,
+      const Teuchos::RCP<Core::LinAlg::Vector> &traceValues, const int ndim,
       Teuchos::RCP<Epetra_MultiVector> &electric, Teuchos::RCP<Epetra_MultiVector> &electric_post,
       Teuchos::RCP<Epetra_MultiVector> &magnetic, Teuchos::RCP<Epetra_MultiVector> &trace,
-      Teuchos::RCP<Epetra_Vector> &conductivity, Teuchos::RCP<Epetra_Vector> &permittivity,
-      Teuchos::RCP<Epetra_Vector> &permeability)
+      Teuchos::RCP<Core::LinAlg::Vector> &conductivity,
+      Teuchos::RCP<Core::LinAlg::Vector> &permittivity,
+      Teuchos::RCP<Core::LinAlg::Vector> &permeability)
   {
     // create dofsets for electric and pressure at nodes
     // if there is no pressure vector it means that the vectors have not yet
@@ -934,8 +935,9 @@ namespace
   |  Reads material properties from element for output   berardocco 03/18 |
   *----------------------------------------------------------------------*/
   void get_element_material_properties(Core::FE::Discretization &dis,
-      Teuchos::RCP<Epetra_Vector> &conductivity, Teuchos::RCP<Epetra_Vector> &permittivity,
-      Teuchos::RCP<Epetra_Vector> &permeability)
+      Teuchos::RCP<Core::LinAlg::Vector> &conductivity,
+      Teuchos::RCP<Core::LinAlg::Vector> &permittivity,
+      Teuchos::RCP<Core::LinAlg::Vector> &permeability)
   {
     // For every element of the processor
     for (int el = 0; el < dis.num_my_row_elements(); ++el)
@@ -986,10 +988,10 @@ void EleMag::ElemagTimeInt::output()
   }
 
   // Output the reuslts
-  output_->write_vector("magnetic", magnetic, Core::IO::nodevector);
-  output_->write_vector("trace", trace, Core::IO::nodevector);
-  output_->write_vector("electric", electric, Core::IO::nodevector);
-  output_->write_vector("electric_post", electric_post, Core::IO::nodevector);
+  output_->write_multi_vector("magnetic", magnetic, Core::IO::nodevector);
+  output_->write_multi_vector("trace", trace, Core::IO::nodevector);
+  output_->write_multi_vector("electric", electric, Core::IO::nodevector);
+  output_->write_multi_vector("electric_post", electric_post, Core::IO::nodevector);
 
   // add restart data
 
@@ -1009,13 +1011,14 @@ void EleMag::ElemagTimeInt::write_restart()
 {
   if (myrank_ == 0) std::cout << "======= Restart written in step " << step_ << std::endl;
 
-  output_->write_vector("traceRestart", trace);
+  output_->write_multi_vector("traceRestart", trace);
 
   // write internal field for which we need to create and fill the corresponding vectors
   // since this requires some effort, the write_restart method should not be used excessively!
-  Teuchos::RCP<Epetra_Vector> intVar = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map(1))));
-  Teuchos::RCP<Epetra_Vector> intVarnm =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map(1))));
+  Teuchos::RCP<Core::LinAlg::Vector> intVar =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(discret_->dof_row_map(1))));
+  Teuchos::RCP<Core::LinAlg::Vector> intVarnm =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(discret_->dof_row_map(1))));
   discret_->set_state(1, "intVar", intVar);
   discret_->set_state(1, "intVarnm", intVarnm);
 
@@ -1025,7 +1028,7 @@ void EleMag::ElemagTimeInt::write_restart()
 
   discret_->evaluate(eleparams);
 
-  Teuchos::RCP<const Epetra_Vector> matrix_state = discret_->get_state(1, "intVar");
+  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discret_->get_state(1, "intVar");
   Core::LinAlg::export_to(*matrix_state, *intVar);
 
   matrix_state = discret_->get_state(1, "intVarnm");
@@ -1049,7 +1052,8 @@ void EleMag::ElemagTimeInt::read_restart(int step)
       discret_, Global::Problem::instance()->input_control_file(), step);
   time_ = reader.read_double("time");
   step_ = reader.read_int("step");
-  Teuchos::RCP<Epetra_Vector> intVar = Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map(1))));
+  Teuchos::RCP<Core::LinAlg::Vector> intVar =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(discret_->dof_row_map(1))));
   try
   {
     reader.read_vector(intVar, "intVar");
@@ -1065,8 +1069,8 @@ void EleMag::ElemagTimeInt::read_restart(int step)
   eleparams.set<EleMag::Action>("action", EleMag::ele_init_from_restart);
   eleparams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
 
-  Teuchos::RCP<Epetra_Vector> intVarnm =
-      Teuchos::rcp(new Epetra_Vector(*(discret_->dof_row_map(1))));
+  Teuchos::RCP<Core::LinAlg::Vector> intVarnm =
+      Teuchos::rcp(new Core::LinAlg::Vector(*(discret_->dof_row_map(1))));
   try
   {
     reader.read_vector(intVarnm, "intVarnm");

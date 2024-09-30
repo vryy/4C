@@ -301,7 +301,7 @@ void FLD::TimIntHDGWeakComp::clear_state_assemble_mat_and_rhs()
   {
     // Wrote into the state vector during element calls, need to transfer the
     // data back before it disappears when clearing the state (at least for nproc>1)
-    const Epetra_Vector& intvelnpGhosted = *discret_->get_state(1, "intvelnp");
+    const Core::LinAlg::Vector& intvelnpGhosted = *discret_->get_state(1, "intvelnp");
     for (int i = 0; i < intvelnp_->MyLength(); ++i)
       (*intvelnp_)[i] = intvelnpGhosted[intvelnpGhosted.Map().LID(intvelnp_->Map().GID(i))];
   }
@@ -313,7 +313,7 @@ void FLD::TimIntHDGWeakComp::clear_state_assemble_mat_and_rhs()
 /*----------------------------------------------------------------------*
 | update within iteration                                 laspina 08/19 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntHDGWeakComp::iter_update(const Teuchos::RCP<const Epetra_Vector> increment)
+void FLD::TimIntHDGWeakComp::iter_update(const Teuchos::RCP<const Core::LinAlg::Vector> increment)
 {
   // call element routine to update local solution
   Teuchos::ParameterList params;
@@ -333,7 +333,7 @@ void FLD::TimIntHDGWeakComp::iter_update(const Teuchos::RCP<const Epetra_Vector>
   Core::LinAlg::SerialDenseVector elemintinc;
 
   // initialize increments of local variables
-  Teuchos::RCP<Epetra_Vector> intvelincnp = Core::LinAlg::create_vector(*intdofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector> intvelincnp = Core::LinAlg::create_vector(*intdofrowmap, true);
 
   // set state
   set_state_tim_int();
@@ -652,10 +652,10 @@ namespace
 {
   // internal helper function for output
   void get_node_vectors_hdg_weak_comp(Core::FE::Discretization& dis,
-      const Teuchos::RCP<Epetra_Vector>& interiorValues,
-      const Teuchos::RCP<Epetra_Vector>& traceValues, const int ndim,
-      Teuchos::RCP<Epetra_MultiVector>& mixedvar, Teuchos::RCP<Epetra_Vector>& density,
-      Teuchos::RCP<Epetra_Vector>& traceden)
+      const Teuchos::RCP<Core::LinAlg::Vector>& interiorValues,
+      const Teuchos::RCP<Core::LinAlg::Vector>& traceValues, const int ndim,
+      Teuchos::RCP<Epetra_MultiVector>& mixedvar, Teuchos::RCP<Core::LinAlg::Vector>& density,
+      Teuchos::RCP<Core::LinAlg::Vector>& traceden)
   {
     const int msd = ndim * (ndim + 1.0) / 2.0;
 
@@ -663,9 +663,9 @@ namespace
     if (density.get() == nullptr || density->GlobalLength() != dis.num_global_nodes())
     {
       mixedvar.reset(new Epetra_MultiVector(*dis.node_row_map(), msd));
-      density.reset(new Epetra_Vector(*dis.node_row_map()));
+      density.reset(new Core::LinAlg::Vector(*dis.node_row_map()));
     }
-    traceden.reset(new Epetra_Vector(density->Map()));
+    traceden.reset(new Core::LinAlg::Vector(density->Map()));
 
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
@@ -729,7 +729,7 @@ void FLD::TimIntHDGWeakComp::output()
     const unsigned int nsd = params_->get<int>("number of velocity degrees of freedom");
 
     // initialize trace variables
-    Teuchos::RCP<Epetra_Vector> traceDen;
+    Teuchos::RCP<Core::LinAlg::Vector> traceDen;
     Teuchos::RCP<Epetra_MultiVector> traceMom;
 
     // get node vectors
@@ -746,8 +746,8 @@ void FLD::TimIntHDGWeakComp::output()
 
     // evaluate derived variables
     Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity;
-    Teuchos::RCP<Epetra_Vector> interpolatedPressure;
-    interpolatedPressure.reset(new Epetra_Vector(interpolatedDensity_->Map()));
+    Teuchos::RCP<Core::LinAlg::Vector> interpolatedPressure;
+    interpolatedPressure.reset(new Core::LinAlg::Vector(interpolatedDensity_->Map()));
     for (int i = 0; i < interpolatedDensity_->MyLength(); ++i)
     {
       (*interpolatedPressure)[i] =
@@ -756,7 +756,7 @@ void FLD::TimIntHDGWeakComp::output()
     }
 
     // write solution variables
-    output_->write_vector("Mixedvar", interpolatedMixedVar_, Core::IO::nodevector);
+    output_->write_multi_vector("Mixedvar", interpolatedMixedVar_, Core::IO::nodevector);
     output_->write_vector("Density", interpolatedDensity_, Core::IO::nodevector);
     output_->write_vector("Trace_density", traceDen, Core::IO::nodevector);
 
@@ -771,7 +771,7 @@ void FLD::TimIntHDGWeakComp::output()
       for (int i = 0; i < interpolatedDensity_->MyLength(); ++i)
         for (unsigned int d = 0; d < nsd; ++d) (*AleDisplacement)[d][i] = (*dispnp_)[(i * nsd) + d];
 
-      output_->write_vector("Ale_displacement", AleDisplacement, Core::IO::nodevector);
+      output_->write_multi_vector("Ale_displacement", AleDisplacement, Core::IO::nodevector);
     }
 
     if (step_ == upres_ or step_ == 0) output_->write_element_data(true);

@@ -65,11 +65,11 @@ namespace Adapter
 
     /// nonlinear solve
     void nonlinear_solve(
-        Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
+        Teuchos::RCP<Core::LinAlg::Vector> idisp, Teuchos::RCP<Core::LinAlg::Vector> ivel) override;
 
     /// relaxation solve
-    Teuchos::RCP<Epetra_Vector> relaxation_solve(
-        Teuchos::RCP<Epetra_Vector> idisp, double dt) override;
+    Teuchos::RCP<Core::LinAlg::Vector> relaxation_solve(
+        Teuchos::RCP<Core::LinAlg::Vector> idisp, double dt) override;
     //@}
 
     /*========================================================================*/
@@ -77,7 +77,7 @@ namespace Adapter
     /*========================================================================*/
 
     /// After the fluid solve we need the forces at the FSI interface.
-    Teuchos::RCP<Epetra_Vector> extract_interface_forces() override;
+    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_forces() override;
     //@}
 
     /*========================================================================*/
@@ -85,10 +85,10 @@ namespace Adapter
     /*========================================================================*/
 
     /// extract the interface velocity at time t^(n+1)
-    Teuchos::RCP<Epetra_Vector> extract_interface_velnp() override;
+    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_velnp() override;
 
     /// extract the interface velocity at time t^n
-    Teuchos::RCP<Epetra_Vector> extract_interface_veln() override;
+    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_veln() override;
     //@}
 
     /*========================================================================*/
@@ -118,7 +118,7 @@ namespace Adapter
     /*========================================================================*/
 
     /// integrate the interface shape functions
-    Teuchos::RCP<Epetra_Vector> integrate_interface_shape() override;
+    Teuchos::RCP<Core::LinAlg::Vector> integrate_interface_shape() override;
 
     /// create the testing of fields
     Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;

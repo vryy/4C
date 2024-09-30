@@ -103,7 +103,7 @@ template <typename Interface, typename Background, typename Mortar>
 void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface, Background,
     Mortar>::get_pair_visualization(const Core::IO::VisualizationData&
                                         lagrange_multipliers_visualization_data,
-    Teuchos::RCP<Epetra_Vector> lambda,
+    Teuchos::RCP<Core::LinAlg::Vector> lambda,
     const CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager* mortar_manager,
     Teuchos::RCP<std::unordered_set<int>> interface_tracker)
 {
@@ -165,7 +165,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface,
 template <typename Interface, typename Background, typename Mortar>
 void CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<Interface, Background,
     Mortar>::set_current_element_position(Core::FE::Discretization const& discret,
-    const Epetra_Vector& displacement_vector)
+    const Core::LinAlg::Vector& displacement_vector)
 {
   std::vector<double> interface_dofvec_timestep = std::vector<double>();
   std::vector<double> background_dofvec_timestep = std::vector<double>();

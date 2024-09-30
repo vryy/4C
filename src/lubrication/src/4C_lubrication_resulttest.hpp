@@ -15,9 +15,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_result_test.hpp"
 
-#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -77,7 +77,7 @@ namespace LUBRICATION
     /// Teuchos::RCP to lubrication discretization
     Teuchos::RCP<Core::FE::Discretization> dis_;
     /// Teuchos::RCP to solution vector
-    Teuchos::RCP<Epetra_Vector> mysol_;
+    Teuchos::RCP<Core::LinAlg::Vector> mysol_;
     /// number of iterations in last newton iteration
     int mynumiter_;
   };

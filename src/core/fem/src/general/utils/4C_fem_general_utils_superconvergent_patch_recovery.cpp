@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 template <int dim>
 Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery(
-    Core::FE::Discretization& dis, const Epetra_Vector& state, const std::string& statename,
+    Core::FE::Discretization& dis, const Core::LinAlg::Vector& state, const std::string& statename,
     const int numvec, Teuchos::ParameterList& params)
 {
   const int dimp = dim + 1;
@@ -40,19 +40,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
     FOUR_C_THROW("action type for element is missing");
 
   // decide whether a dof or an element based map is given
-  bool dofmaptoreconstruct = false;
-  if (state.Map().PointSameAs(*dis.dof_row_map()))
-    dofmaptoreconstruct = true;
-  else if (state.Map().PointSameAs(*dis.element_row_map()))
-  {
-    dofmaptoreconstruct = false;
-    if (numvec != state.NumVectors())
-      FOUR_C_THROW("numvec and number of vectors of state vector must match");
-  }
-  else
-  {
-    FOUR_C_THROW("input map is neither a dof row map nor an element row map of the given discret");
-  }
+  FOUR_C_ASSERT(state.Map().PointSameAs(*dis.dof_row_map()), "Only works for same maps.");
 
   // handle pbcs if existing
   // build inverse map from slave to master nodes
@@ -105,10 +93,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   // centers (for linear elements the centers are the superconvergent sampling points!)
   dis.clear_state();
   // Set ALE displacements here
-  if (dofmaptoreconstruct)
-  {
-    dis.set_state(statename, Teuchos::rcpFromRef(state));
-  }
+  dis.set_state(statename, Teuchos::rcpFromRef(state));
 
   const Epetra_Map* elementrowmap = dis.element_row_map();
   Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered =
@@ -151,11 +136,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
     // store computed values (e.g. velocity gradient) for each element
     for (int j = 0; j < numvec; ++j)
     {
-      double val = 0.0;
-      if (dofmaptoreconstruct)
-        val = elevector1(j);
-      else
-        val = (*state(j))[i];
+      double val = elevector1(j);
 
       int err = elevec_toberecovered->ReplaceMyValue(i, j, val);
       if (err < 0) FOUR_C_THROW("multi vector insertion failed");
@@ -596,13 +577,13 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
 }
 
 template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<1>(
-    Core::FE::Discretization&, const Epetra_Vector&, const std::string&, const int,
+    Core::FE::Discretization&, const Core::LinAlg::Vector&, const std::string&, const int,
     Teuchos::ParameterList&);
 template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<2>(
-    Core::FE::Discretization&, const Epetra_Vector&, const std::string&, const int,
+    Core::FE::Discretization&, const Core::LinAlg::Vector&, const std::string&, const int,
     Teuchos::ParameterList&);
 template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<3>(
-    Core::FE::Discretization&, const Epetra_Vector&, const std::string&, const int,
+    Core::FE::Discretization&, const Core::LinAlg::Vector&, const std::string&, const int,
     Teuchos::ParameterList&);
 
 FOUR_C_NAMESPACE_CLOSE

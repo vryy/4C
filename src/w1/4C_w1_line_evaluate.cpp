@@ -122,7 +122,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
   {
     loadlin = false;  // no linearization needed for load in last converged configuration
 
-    Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+    Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
     if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
     std::vector<double> mydisp(lm.size());
     Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -141,7 +141,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
       FOUR_C_THROW(
           "No linearization provided for orthopressure load (add 'LOADLIN yes' to input file)");
 
-    Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement new");
+    Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement new");
     if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement new'");
     std::vector<double> mydisp(lm.size());
     Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -532,7 +532,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
       if (Comm.MyPID() == owner())
       {
         // element geometry update
-        Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+        Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
         if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
         Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -560,7 +560,8 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
       if (Comm.MyPID() == owner())
       {
         // element geometry update
-        Teuchos::RCP<const Epetra_Vector> disptotal = discretization.get_state("displacementtotal");
+        Teuchos::RCP<const Core::LinAlg::Vector> disptotal =
+            discretization.get_state("displacementtotal");
         if (disptotal == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacementtotal'");
         std::vector<double> mydisp(lm.size());
         Core::FE::extract_my_values(*disptotal, mydisp, lm);
@@ -590,7 +591,8 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
         Core::LinAlg::SerialDenseVector funct(numnod);
         Core::LinAlg::SerialDenseMatrix deriv(1, numnod);
 
-        Teuchos::RCP<const Epetra_Vector> dispincr = discretization.get_state("displacementincr");
+        Teuchos::RCP<const Core::LinAlg::Vector> dispincr =
+            discretization.get_state("displacementincr");
         std::vector<double> edispincr(lm.size());
         Core::FE::extract_my_values(*dispincr, edispincr, lm);
 
@@ -628,7 +630,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
       {
         FOUR_C_THROW("Area Constraint only works for line2 curves!");
       }  // element geometry update
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null)
       {
         FOUR_C_THROW("Cannot get state vector 'displacement'");
@@ -719,7 +721,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
       const int noddof = num_dof_per_node(*(nodes()[0]));
 
       // element geometry update
-      Teuchos::RCP<const Epetra_Vector> disp = discretization.get_state("displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lmpar.size());
       Core::FE::extract_my_values(*disp, mydisp, lmpar);
@@ -742,7 +744,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
       // number of degrees of freedom per node of fluid
       const int numdofpernode = 3;
 
-      Teuchos::RCP<const Epetra_Vector> velnp = discretization.get_state(1, "fluidvel");
+      Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state(1, "fluidvel");
       if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fluidvel'");
       // extract local values of the global vectors
       std::vector<double> myvelpres(la[1].lm_.size());

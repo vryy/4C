@@ -185,7 +185,7 @@ namespace Core::IO
    */
   unsigned int append_visualization_dof_based_result_data_vector_lagrange_ele(
       const Core::Elements::Element& ele, const Core::FE::Discretization& discret,
-      const Epetra_Vector& result_data_dofbased, const unsigned int result_num_dofs_per_node,
+      const Core::LinAlg::Vector& result_data_dofbased, const unsigned int result_num_dofs_per_node,
       const unsigned int read_result_data_from_dofindex, std::vector<double>& vtu_point_result_data)
   {
     const std::vector<int>& numbering =
@@ -271,8 +271,8 @@ namespace Core::IO
   template <Core::FE::CellType celltype, unsigned int result_num_dofs_per_node>
   unsigned int append_visualization_dof_based_result_data_vector_nurbs(
       const Core::Elements::Element& ele, const Core::FE::Discretization& discret,
-      const Epetra_Vector& result_data_dofbased, const unsigned int read_result_data_from_dofindex,
-      std::vector<double>& vtu_point_result_data)
+      const Core::LinAlg::Vector& result_data_dofbased,
+      const unsigned int read_result_data_from_dofindex, std::vector<double>& vtu_point_result_data)
   {
     constexpr int number_of_output_points = Core::FE::num_nodes<celltype>;
     constexpr int dim_nurbs = Core::FE::dim<celltype>;
@@ -439,7 +439,7 @@ namespace Core::IO
    */
   unsigned int append_visualization_dof_based_result_data_vector_nurbs_ele(
       const Core::Elements::Element& ele, const Core::FE::Discretization& discret,
-      const Epetra_Vector& result_data_dofbased, const unsigned int result_num_dofs_per_node,
+      const Core::LinAlg::Vector& result_data_dofbased, const unsigned int result_num_dofs_per_node,
       const unsigned int read_result_data_from_dofindex, std::vector<double>& vtu_point_result_data)
   {
     using implemented_celltypes =

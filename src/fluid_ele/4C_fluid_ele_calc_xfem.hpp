@@ -318,10 +318,10 @@ namespace Discret
 
       //! assemble side's interface force
       void assemble_interface_force(
-          Teuchos::RCP<Epetra_Vector> iforcecol,   ///< interface force column vector
-          Core::FE::Discretization& cutdis,        ///< cut discretization
-          std::vector<int>& lm,                    ///< local dof map
-          Core::LinAlg::SerialDenseVector& iforce  ///< interface force vector
+          Teuchos::RCP<Core::LinAlg::Vector> iforcecol,  ///< interface force column vector
+          Core::FE::Discretization& cutdis,              ///< cut discretization
+          std::vector<int>& lm,                          ///< local dof map
+          Core::LinAlg::SerialDenseVector& iforce        ///< interface force vector
       );
 
       //! evaluate shape function and derivative at point with local coordinates rst

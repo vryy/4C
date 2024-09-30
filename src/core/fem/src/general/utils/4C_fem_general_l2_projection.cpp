@@ -27,10 +27,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projection(
-    Core::FE::Discretization& dis, const Epetra_Map& noderowmap, const std::string& statename,
-    const int& numvec, Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
-    const std::function<const Teuchos::ParameterList&(int)> get_solver_params,
-    const Epetra_Map& fullnoderowmap, const std::map<int, int>& slavetomastercolnodesmap)
+    Core::FE::Discretization &dis, const Epetra_Map &noderowmap, const std::string &statename,
+    const int &numvec, Teuchos::ParameterList &params, const Teuchos::ParameterList &solverparams,
+    const std::function<const Teuchos::ParameterList &(int)> get_solver_params,
+    const Epetra_Map &fullnoderowmap, const std::map<int, int> &slavetomastercolnodesmap)
 {
   // create empty matrix
   auto massmatrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(noderowmap, 108, false, true));
@@ -51,7 +51,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projectio
 
   // loop column elements
 
-  for (auto* actele : dis.my_col_element_range())
+  for (auto *actele : dis.my_col_element_range())
   {
     const int numnode = actele->num_node();
 
@@ -75,7 +75,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projectio
     lm.resize(numnode);
     lmowner.resize(numnode);
 
-    Core::Nodes::Node** nodes = actele->nodes();
+    Core::Nodes::Node **nodes = actele->nodes();
     for (int n = 0; n < numnode; ++n)
     {
       const int nodeid = nodes[n]->id();
@@ -117,9 +117,9 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projectio
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_nodal_l2_projection(
-    Teuchos::RCP<Core::FE::Discretization> dis, const std::string& statename, const int& numvec,
-    Teuchos::ParameterList& params, const Teuchos::ParameterList& solverparams,
-    const std::function<const Teuchos::ParameterList&(int)> get_solver_params)
+    Teuchos::RCP<Core::FE::Discretization> dis, const std::string &statename, const int &numvec,
+    Teuchos::ParameterList &params, const Teuchos::ParameterList &solverparams,
+    const std::function<const Teuchos::ParameterList &(int)> get_solver_params)
 {
   // check if the statename has been set
   if (!dis->has_state(statename))
@@ -137,7 +137,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_nodal_l2_projection(
   // build inverse map from slave to master nodes
   std::map<int, int> slavetomastercolnodesmap;
 
-  std::map<int, std::vector<int>>* allcoupledcolnodes = dis->get_all_pbc_coupled_col_nodes();
+  std::map<int, std::vector<int>> *allcoupledcolnodes = dis->get_all_pbc_coupled_col_nodes();
   if (allcoupledcolnodes)
   {
     for (auto [master_gid, slave_gids] : *allcoupledcolnodes)
@@ -150,7 +150,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_nodal_l2_projection(
   }
 
   // get reduced node row map of fluid field --> will be used for setting up linear system
-  const auto* fullnoderowmap = dis->node_row_map();
+  const auto *fullnoderowmap = dis->node_row_map();
   // remove pbc slave nodes from full noderowmap
   std::vector<int> reducednoderowmap;
   // a little more memory than necessary is possibly reserved here
@@ -204,11 +204,11 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_nodal_l2_projection(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
-    Core::LinAlg::SparseMatrix& massmatrix, Epetra_MultiVector& rhs, const Epetra_Comm& comm,
-    const int& numvec, const Teuchos::ParameterList& solverparams,
-    const std::function<const Teuchos::ParameterList&(int)> get_solver_params,
-    const Epetra_Map& noderowmap, const Epetra_Map& fullnoderowmap,
-    const std::map<int, int>& slavetomastercolnodesmap)
+    Core::LinAlg::SparseMatrix &massmatrix, Epetra_MultiVector &rhs, const Epetra_Comm &comm,
+    const int &numvec, const Teuchos::ParameterList &solverparams,
+    const std::function<const Teuchos::ParameterList &(int)> get_solver_params,
+    const Epetra_Map &noderowmap, const Epetra_Map &fullnoderowmap,
+    const std::map<int, int> &slavetomastercolnodesmap)
 {
   // get solver parameter list of linear solver
   const auto solvertype =
@@ -229,7 +229,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
       case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2:
       case Core::LinearSolver::PreconditionerType::multigrid_muelu:
       {
-        Teuchos::ParameterList* preclist_ptr = nullptr;
+        Teuchos::ParameterList *preclist_ptr = nullptr;
         // switch here between ML and MueLu cases
         if (prectyp == Core::LinearSolver::PreconditionerType::multigrid_ml or
             prectyp == Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2)
@@ -239,7 +239,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
         else
           FOUR_C_THROW("please add correct parameter list");
 
-        Teuchos::ParameterList& preclist = *preclist_ptr;
+        Teuchos::ParameterList &preclist = *preclist_ptr;
         preclist.set("PDE equations", 1);
         preclist.set("null space: dimension", 1);
         preclist.set("null space: type", "pre-computed");
@@ -274,7 +274,8 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
       Core::LinAlg::SolverParams solver_params;
       solver_params.refactor = true;
       solver_params.reset = true;
-      solver->solve(massmatrix.epetra_operator(), nodevec, Teuchos::rcpFromRef(rhs), solver_params);
+      solver->solve_with_multi_vector(
+          massmatrix.epetra_operator(), nodevec, Teuchos::rcpFromRef(rhs), solver_params);
       break;
     }
     default:
@@ -291,8 +292,8 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
         Core::LinAlg::SolverParams solver_params;
         solver_params.refactor = true;
         solver_params.reset = true;
-        solver->solve(massmatrix.epetra_operator(), Teuchos::rcp(((*nodevec)(i)), false),
-            Teuchos::rcp((rhs(i)), false), solver_params);
+        solver->solve_with_multi_vector(massmatrix.epetra_operator(),
+            Teuchos::rcp(((*nodevec)(i)), false), Teuchos::rcp((rhs(i)), false), solver_params);
       }
       break;
     }

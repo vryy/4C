@@ -23,7 +23,8 @@ void Adapter::FieldWrapper::prepare_time_step()
 }
 
 
-void Adapter::FieldWrapper::update_state_incrementally(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void Adapter::FieldWrapper::update_state_incrementally(
+    Teuchos::RCP<const Core::LinAlg::Vector> disiterinc)
 {
   if (nox_correction_) get_iterinc(disiterinc);
   field_->update_state_incrementally(disiterinc);
@@ -32,7 +33,7 @@ void Adapter::FieldWrapper::update_state_incrementally(Teuchos::RCP<const Epetra
 /*-----------------------------------------------------------------------/
 | update dofs and evaluate elements                                      |
 /-----------------------------------------------------------------------*/
-void Adapter::FieldWrapper::evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void Adapter::FieldWrapper::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> disiterinc)
 {
   if (nox_correction_) get_iterinc(disiterinc);
   field_->evaluate(disiterinc);
@@ -41,7 +42,8 @@ void Adapter::FieldWrapper::evaluate(Teuchos::RCP<const Epetra_Vector> disiterin
 /*-----------------------------------------------------------------------/
 | update dofs and evaluate elements                                      |
 /-----------------------------------------------------------------------*/
-void Adapter::FieldWrapper::evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter)
+void Adapter::FieldWrapper::evaluate(
+    Teuchos::RCP<const Core::LinAlg::Vector> disiterinc, bool firstiter)
 {
   if (nox_correction_) get_iterinc(disiterinc);
   field_->evaluate(disiterinc, firstiter);
@@ -58,7 +60,7 @@ void Adapter::FieldWrapper::reset_stepinc()
 /*-----------------------------------------------------------------------/
 | Get Iteration Increment from Step Increment                            |
 /-----------------------------------------------------------------------*/
-void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Epetra_Vector>& stepinc)
+void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector>& stepinc)
 {
   // The field solver always expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
@@ -72,7 +74,7 @@ void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Epetra_Vector>& stepi
   if (stepinc != Teuchos::null)
   {
     // iteration increments
-    Teuchos::RCP<Epetra_Vector> iterinc = Teuchos::rcp(new Epetra_Vector(*stepinc));
+    Teuchos::RCP<Core::LinAlg::Vector> iterinc = Teuchos::rcp(new Core::LinAlg::Vector(*stepinc));
     if (stepinc_ != Teuchos::null)
     {
       iterinc->Update(-1.0, *stepinc_, 1.0);
@@ -83,10 +85,10 @@ void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Epetra_Vector>& stepi
     }
     else
     {
-      stepinc_ = Teuchos::rcp(new Epetra_Vector(*stepinc));
+      stepinc_ = Teuchos::rcp(new Core::LinAlg::Vector(*stepinc));
     }
     // output is iterinc!
-    stepinc = Teuchos::rcp(new const Epetra_Vector(*iterinc));
+    stepinc = Teuchos::rcp(new const Core::LinAlg::Vector(*iterinc));
   }
 }
 

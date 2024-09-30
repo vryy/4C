@@ -239,7 +239,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
   if (scatrapara_->is_ale())
   {
     // get velocity at nodes
-    Teuchos::RCP<const Epetra_Vector> vel = discretization.get_state(ndsvel, "velocity field");
+    Teuchos::RCP<const Core::LinAlg::Vector> vel =
+        discretization.get_state(ndsvel, "velocity field");
     if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector velocity");
 
     // extract local values of velocity field from global state vector
@@ -251,7 +252,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
     // get number of dofset associated with displacement related dofs
     const int ndsdisp = scatrapara_->nds_disp();
 
-    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.get_state(ndsdisp, "dispnp");
+    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discretization.get_state(ndsdisp, "dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
@@ -281,7 +282,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
   if (scatrapara_->rb_sub_gr_vel())
   {
     // get acceleration values at nodes
-    const Teuchos::RCP<const Epetra_Vector> acc =
+    const Teuchos::RCP<const Core::LinAlg::Vector> acc =
         discretization.get_state(ndsvel, "acceleration field");
     if (acc == Teuchos::null) FOUR_C_THROW("Cannot get state vector acceleration field");
 
@@ -301,8 +302,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
   }
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Epetra_Vector> hist = discretization.get_state("hist");
-  Teuchos::RCP<const Epetra_Vector> phinp = discretization.get_state("phinp");
+  Teuchos::RCP<const Core::LinAlg::Vector> hist = discretization.get_state("hist");
+  Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state("phinp");
   if (hist == Teuchos::null || phinp == Teuchos::null)
     FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phinp'");
 
@@ -314,7 +315,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
   if (scatraparatimint_->is_gen_alpha() and not scatraparatimint_->is_incremental())
   {
     // extract additional local values from global vector
-    Teuchos::RCP<const Epetra_Vector> phin = discretization.get_state("phin");
+    Teuchos::RCP<const Core::LinAlg::Vector> phin = discretization.get_state("phin");
     if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phin, ephin_, lm);
   }
@@ -358,8 +359,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_turbulence_appr
   {
     Teuchos::ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
     // remark: for dynamic estimation, this returns (Cs*h)^2 / Pr_t
-    Teuchos::RCP<Epetra_Vector> ele_prt =
-        turbulencelist.get<Teuchos::RCP<Epetra_Vector>>("col_ele_Prt");
+    Teuchos::RCP<Core::LinAlg::Vector> ele_prt =
+        turbulencelist.get<Teuchos::RCP<Core::LinAlg::Vector>>("col_ele_Prt");
     const int id = ele->lid();
     tpn_ = (*ele_prt)[id];
 
@@ -375,7 +376,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_turbulence_appr
       turbparams_->turb_model() == Inpar::FLUID::multifractal_subgrid_scales)
   {
     // get fine scale scalar field
-    Teuchos::RCP<const Epetra_Vector> gfsphinp = discretization.get_state("fsphinp");
+    Teuchos::RCP<const Core::LinAlg::Vector> gfsphinp = discretization.get_state("fsphinp");
     if (gfsphinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fsphinp'");
 
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*gfsphinp, fsphinp_, la[0].lm_);
@@ -387,7 +388,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_turbulence_appr
       const int ndsvel = scatrapara_->nds_vel();
 
       // get fine-scale velocity at nodes
-      const Teuchos::RCP<const Epetra_Vector> fsvelocity =
+      const Teuchos::RCP<const Core::LinAlg::Vector> fsvelocity =
           discretization.get_state(ndsvel, "fine-scale velocity field");
       if (fsvelocity == Teuchos::null)
         FOUR_C_THROW("Cannot get fine-scale velocity field from scatra discretization!");
@@ -902,7 +903,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::other_node_based_source
   if (turbparams_->scalar_forcing() == Inpar::FLUID::scalarforcing_isotropic)
   {
     // extract additional local values from global vector
-    Teuchos::RCP<const Epetra_Vector> source = discretization.get_state("forcing");
+    Teuchos::RCP<const Core::LinAlg::Vector> source = discretization.get_state("forcing");
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*source, bodyforce_, lm);
   }
   // special forcing mean scalar gradient
