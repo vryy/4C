@@ -284,6 +284,9 @@ namespace Mortar
   template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
   class ProjectorCalcEleBased : public Projector
   {
+    static_assert((Core::FE::dim<distype_m>) == (Core::FE::dim<distype_s>),
+        "Slave and master elements must have the same dimension!");
+
    public:
     // constructor
     ProjectorCalcEleBased();
