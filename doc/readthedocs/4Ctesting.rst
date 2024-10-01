@@ -133,8 +133,6 @@ How to deal with failing tests
   If nightly tests on the main branch fail, open a `new issue <https://gitlab.lrz.de/baci/baci/issues/new>`_
   based on the issue template ``TEST_FAILING.md`` to report the failing pipeline
   and test and to provide a forum to discuss possible fixed and track progress.
-- Minimal tests after merge into the main branch:
-  Follow the same strategy as for a failing nightly test pipelines.
 
 .. _unittesting:
 
@@ -196,55 +194,17 @@ The |FOURC| unit tests are included in ctest as part of the minimal tests and al
     ctest -L minimal
     ctest -R unittests
 
+The test executables are located in the ``tests/`` directory in the build folder. They support the ``--help`` argument,
+which can be used to get a list of available options, e.g. to filter for specific tests.
+
+Many IDEs also come with plugins or support for GoogleTest allowing to run tests directly from the IDE.
+
 How to add unit tests to |FOURC|
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The framework ``CxxTest`` includes a test discovery mechanism (refer to `user guide <https://cxxtest.com/guide.pdf>`_)
-that makes it very easy to add unit tests.
+|FOURC| uses `GoogleTest <https://github.com/google/googletest>`_ for unit testing. If you are new to this framework,
+read the `primer <https://google.github.io/googletest/primer.html>`_.
 
-.. note::
-
-    problems can arise with the test discovery of CxxTest and code formating of `clang-format` that can be avoided with a simple workaround as described here `Issue 187 <https://gitlab.lrz.de/baci/baci/issues/187#note_321659>`_
-
-**File structure**
-
-In |FOURC| the directory ``<Unittests>`` contains all files related to unit testing.
-
-.. note::
-
-    In general this are header files containing the unit test suite definition with corresponding unit tests.
-    However, in some cases it is necessary to add scripts of tools to generate results (refer to `Issue #204 <https://gitlab.lrz.de/baci/baci/-/issues/204>`_)
-    or files containing results to the directoy.
-
-The file structure in this directory is similar to the file structure of the classes and methods to be tested in src directory. Refer to the figure below for an illustration.
-
-.. figure:: figures/tgm_filestructure.png
-   :alt: file structure of the unittests directory
-   :width: 80%
-
-
-
-
-**Unit test header files**
-
-The unit test suite itself is then defined in header files with the name convention to prepend ``unit_*`` to the file names
-(compared to the file containing the class to be tested in directory src).
-Add the new unit test to the file ``CMakeLists.txt`` in the corresponding directory.
-Keep all entries in aforementioned files in an alphabetical order.
-
-The line in the header file defining the test suite class is very crucial for test discovery of ``CxxTest`` as it must be stated in one line without line break
-(line breaks are possibly enforced by clang-format,
-refer to `Issue #187 <https://gitlab.lrz.de/baci/baci/-/issues/187>`_ of how to circumvent this issue) and contain all namespaces of the class in this line!
-
-Each test suite overrides the virtual functions ``TestSuite::setUp()`` and ``TestSuite::tearDown()`` to construct and destroy all objects needed for testing.
-Those two functions are always executed before and after each call of a test function,
-thereby fulfilling the requirement of independent/isolated testing of the :ref:`F.I.R.S.T. principle <firstprinciples>`.
-
-Each unit test is then defined in a public function inside that header file being named with prefix ``test_*`` to be detected by test discovery.
-This test function contains all necessary operations to perform the unit test including a test assertion,
-e.g., ``TS_ASSERT_EQUALS(...)``, to check the results/states/... (refer to user guide of CxxTest for examples).
-
-.. figure:: figures/tgm_headerfile.png
-   :alt: unittest header file with explanitions
-   :width: 100%
-
+Unit tests reside close to the module containing the tested functionality, namely in the ``tests`` directory next to a module's ``src`` directory.
+It can be a good idea to have one unit test file per source file. Conventionally, this test file is named as the source file with the suffix ``_test``. The new file needs to be added to the directory-local ``CMakeLists.txt``
+(create it if not present). In general, we recommended to look through existing unit tests directories first to get an idea on how the tests are organized and how GoogleTest can be used.
