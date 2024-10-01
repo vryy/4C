@@ -96,11 +96,11 @@ namespace FLD
     Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! state vector of volume force to be computed
-    Teuchos::RCP<Core::LinAlg::Vector> forcing_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> forcing_;
 
     //! state vectors used to compute forcing
-    Teuchos::RCP<Core::LinAlg::Vector> velnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> velaf_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> velaf_;
 
     //! threshold wave number for forcing
     //! i.e., forcing is applied to wave numbers <= threshold wave number
@@ -209,11 +209,11 @@ namespace FLD
     Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! state vector of volume force to be computed
-    Teuchos::RCP<Core::LinAlg::Vector> forcing_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> forcing_;
 
     //! state vectors used to compute forcing
-    Teuchos::RCP<Core::LinAlg::Vector> velnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> velaf_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> velaf_;
 
     //! xwall object is required for evaluating inner element planes of channel
     Teuchos::RCP<FLD::XWall> myxwall_;

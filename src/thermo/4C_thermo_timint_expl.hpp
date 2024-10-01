@@ -74,7 +74,7 @@ namespace Thermo
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> tempi) override
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi) override
     {
       FOUR_C_THROW("not implemented for explicit time integration");
       return;
@@ -115,7 +115,7 @@ namespace Thermo
     void update() override;
 
     //! update Newton step
-    void update_newton(Teuchos::RCP<const Core::LinAlg::Vector> tempi) override
+    void update_newton(Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi) override
     {
       FOUR_C_THROW("not needed for explicit time integration");
       return;
@@ -175,24 +175,24 @@ namespace Thermo
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> fext() override = 0;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fext() override = 0;
 
     //! Return reaction forces
-    Teuchos::RCP<Core::LinAlg::Vector> freact() override
+    Teuchos::RCP<Core::LinAlg::Vector<double>> freact() override
     {
       FOUR_C_THROW("Not impl.");
       return Teuchos::null;
     };
 
     //! initial guess of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override
     {
       FOUR_C_THROW("not needed for explicit time integration");
       return Teuchos::null;
     }
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Core::LinAlg::Vector> rhs() override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override
     {
       FOUR_C_THROW("not needed for explicit time integration");
       return Teuchos::null;

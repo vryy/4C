@@ -106,8 +106,8 @@ namespace FLD
     \brief Insert Womersley condition
 
     */
-    void insert_volumetric_surface_flow_cond_vector(
-        Teuchos::RCP<Core::LinAlg::Vector> vel, Teuchos::RCP<Core::LinAlg::Vector> res) override;
+    void insert_volumetric_surface_flow_cond_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> vel,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> res) override;
 
     /// prepare AVM3-based scale separation
     void avm3_preparation() override;
@@ -119,7 +119,7 @@ namespace FLD
     \brief Additional function for RedModels in linear_relaxation_solve
 
     */
-    void custom_solve(Teuchos::RCP<Core::LinAlg::Vector> relax) override;
+    void custom_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> relax) override;
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)

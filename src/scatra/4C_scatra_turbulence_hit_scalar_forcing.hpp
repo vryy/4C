@@ -75,11 +75,11 @@ namespace ScaTra
     Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! state vector of volume force to be computed
-    Teuchos::RCP<Core::LinAlg::Vector> forcing_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> forcing_;
 
     //! state vectors used to compute forcing
-    Teuchos::RCP<Core::LinAlg::Vector> phinp_;
-    Teuchos::RCP<Core::LinAlg::Vector> phiaf_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phiaf_;
 
     //! threshold wave number for forcing
     //! i.e., forcing is applied to wave numbers <= threshold wave number

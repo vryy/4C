@@ -211,7 +211,8 @@ void POROMULTIPHASE::PoroMultiPhaseBase::create_field_test()
  | communicate the solution of the structure to the fluid    vuong 08/16  |
  *------------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseBase::set_struct_solution(
-    Teuchos::RCP<const Core::LinAlg::Vector> disp, Teuchos::RCP<const Core::LinAlg::Vector> vel)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
 {
   set_mesh_disp(disp);
   set_velocity_fields(vel);
@@ -221,7 +222,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::set_struct_solution(
  | communicate the structure velocity  to the fluid           vuong 08/16  |
  *------------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseBase::set_velocity_fields(
-    Teuchos::RCP<const Core::LinAlg::Vector> vel)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
 {
   fluid_->set_velocity_field(vel);
 }
@@ -230,7 +231,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::set_velocity_fields(
  | communicate the scatra solution to the fluid             vuong 08/16  |
  *------------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseBase::set_scatra_solution(
-    unsigned nds, Teuchos::RCP<const Core::LinAlg::Vector> scalars)
+    unsigned nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> scalars)
 {
   fluid_->set_scatra_solution(nds, scalars);
 }
@@ -240,7 +241,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::set_scatra_solution(
  | communicate the structure displacement to the fluid        vuong 08/16  |
  *------------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseBase::set_mesh_disp(
-    Teuchos::RCP<const Core::LinAlg::Vector> disp)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
 {
   fluid_->apply_mesh_movement(disp);
 }
@@ -305,7 +306,8 @@ Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseBase::artery_dof_ro
 /*------------------------------------------------------------------------*
  | return structure displacements                             vuong 08/16  |
  *------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> POROMULTIPHASE::PoroMultiPhaseBase::struct_dispnp() const
+Teuchos::RCP<const Core::LinAlg::Vector<double>> POROMULTIPHASE::PoroMultiPhaseBase::struct_dispnp()
+    const
 {
   return structure_->dispnp();
 }
@@ -313,7 +315,8 @@ Teuchos::RCP<const Core::LinAlg::Vector> POROMULTIPHASE::PoroMultiPhaseBase::str
 /*------------------------------------------------------------------------*
  | return structure velocities                               vuong 08/16  |
  *------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> POROMULTIPHASE::PoroMultiPhaseBase::struct_velnp() const
+Teuchos::RCP<const Core::LinAlg::Vector<double>> POROMULTIPHASE::PoroMultiPhaseBase::struct_velnp()
+    const
 {
   return structure_->velnp();
 }
@@ -329,7 +332,8 @@ Teuchos::RCP<const Epetra_MultiVector> POROMULTIPHASE::PoroMultiPhaseBase::fluid
 /*------------------------------------------------------------------------*
  | return fluid Flux                                         vuong 08/16  |
  *------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> POROMULTIPHASE::PoroMultiPhaseBase::fluid_phinp() const
+Teuchos::RCP<const Core::LinAlg::Vector<double>> POROMULTIPHASE::PoroMultiPhaseBase::fluid_phinp()
+    const
 {
   return fluid_->phinp();
 }
@@ -337,8 +341,8 @@ Teuchos::RCP<const Core::LinAlg::Vector> POROMULTIPHASE::PoroMultiPhaseBase::flu
 /*------------------------------------------------------------------------*
  | return fluid Flux                                         vuong 08/16  |
  *------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> POROMULTIPHASE::PoroMultiPhaseBase::fluid_saturation()
-    const
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
+POROMULTIPHASE::PoroMultiPhaseBase::fluid_saturation() const
 {
   return fluid_->saturation();
 }
@@ -346,7 +350,8 @@ Teuchos::RCP<const Core::LinAlg::Vector> POROMULTIPHASE::PoroMultiPhaseBase::flu
 /*------------------------------------------------------------------------*
  | return fluid Flux                                         vuong 08/16  |
  *------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> POROMULTIPHASE::PoroMultiPhaseBase::fluid_pressure() const
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
+POROMULTIPHASE::PoroMultiPhaseBase::fluid_pressure() const
 {
   return fluid_->pressure();
 }
@@ -354,7 +359,8 @@ Teuchos::RCP<const Core::LinAlg::Vector> POROMULTIPHASE::PoroMultiPhaseBase::flu
 /*------------------------------------------------------------------------*
  | return fluid Flux                                         vuong 08/16  |
  *------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> POROMULTIPHASE::PoroMultiPhaseBase::solid_pressure() const
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
+POROMULTIPHASE::PoroMultiPhaseBase::solid_pressure() const
 {
   return fluid_->solid_pressure();
 }

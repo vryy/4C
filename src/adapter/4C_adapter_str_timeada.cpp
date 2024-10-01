@@ -492,7 +492,7 @@ double Adapter::StructureTimeAda::calculate_dt(const double norm)
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */
 double Adapter::StructureTimeAda::calculate_vector_norm(const enum Inpar::Solid::VectorNorm norm,
-    const Teuchos::RCP<Core::LinAlg::Vector> vect, const int numneglect)
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> vect, const int numneglect)
 {
   // L1 norm
   if (norm == Inpar::Solid::norm_l1)

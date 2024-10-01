@@ -13,7 +13,6 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_dofset.hpp"
 
-#include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 
@@ -36,7 +35,7 @@ namespace CONSTRAINTS
   constraints in the usual parallel fashion. That is there is a
   dof_row_map() and a DofColMap() that return the maps of the global FE
   system of equation in row and column setting respectively. These maps
-  are used by the algorithm's Core::LinAlg::Vector classes amoung others.
+  are used by the algorithm's Core::LinAlg::Vector<double> classes amoung others.
 
   It is not connected to elements or nodes.
   <h3>Invariants</h3>

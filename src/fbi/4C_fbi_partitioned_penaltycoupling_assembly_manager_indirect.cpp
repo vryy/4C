@@ -61,8 +61,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbb,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& cfb,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbf,
-        Teuchos::RCP<const Core::LinAlg::Vector> fluid_vel,
-        Teuchos::RCP<const Core::LinAlg::Vector> beam_vel)
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_vel,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> beam_vel)
 {
   Teuchos::RCP<Teuchos::Time> t =
       Teuchos::TimeMonitor::getNewTimer("FBI::PartitionedAssemblyManagerIndirect");

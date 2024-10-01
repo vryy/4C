@@ -79,8 +79,8 @@ namespace FLD
     global vectors. This method allows to do the time average of the
     nodal values after a certain amount of timesteps.
     */
-    void do_time_sample(
-        Teuchos::RCP<Core::LinAlg::Vector> velnp, Teuchos::RCP<Core::LinAlg::Vector> stresses);
+    void do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> stresses);
 
     /*!
     \brief Dump the result to file.
@@ -129,13 +129,13 @@ namespace FLD
     const std::string statistics_outfilename_;
 
     //! pointer to vel/pres^2 field (space allocated in constructor)
-    Teuchos::RCP<Core::LinAlg::Vector> squaredvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> squaredvelnp_;
 
     //! toogle vectors: sums are computed by scalarproducts
-    Teuchos::RCP<Core::LinAlg::Vector> toggleu_;
-    Teuchos::RCP<Core::LinAlg::Vector> togglev_;
-    Teuchos::RCP<Core::LinAlg::Vector> togglew_;
-    Teuchos::RCP<Core::LinAlg::Vector> togglep_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> toggleu_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> togglev_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> togglew_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> togglep_;
 
     //! available x1- and x2-coordinates
     Teuchos::RCP<std::vector<double>> x1coordinates_;

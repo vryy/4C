@@ -83,7 +83,7 @@ void Solid::TimeInt::Implicit::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Implicit::set_state(const Teuchos::RCP<Core::LinAlg::Vector>& x)
+void Solid::TimeInt::Implicit::set_state(const Teuchos::RCP<Core::LinAlg::Vector<double>>& x)
 {
   integrator_ptr()->set_state(*x);
   ::NOX::Epetra::Vector x_nox(x->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
@@ -155,7 +155,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::solve()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Implicit::update_state_incrementally(
-    Teuchos::RCP<const Core::LinAlg::Vector> disiterinc)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc)
 {
   if (disiterinc == Teuchos::null) return;
 
@@ -167,8 +167,8 @@ void Solid::TimeInt::Implicit::update_state_incrementally(
   FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
 
   // cast away const-qualifier for building the Nox Vector
-  Teuchos::RCP<Core::LinAlg::Vector> mutable_disiterinc =
-      Teuchos::rcp(const_cast<Core::LinAlg::Vector*>(disiterinc.get()), false);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> mutable_disiterinc =
+      Teuchos::rcp(const_cast<Core::LinAlg::Vector<double>*>(disiterinc.get()), false);
 
   // wrap the displacement vector in a nox_epetra_Vector
   Teuchos::RCP<const ::NOX::Epetra::Vector> nox_disiterinc_ptr =
@@ -181,7 +181,7 @@ void Solid::TimeInt::Implicit::update_state_incrementally(
   // Reset the state variables
   const auto& x_eptra = dynamic_cast<const ::NOX::Epetra::Vector&>(grp_ptr->getX());
   // set the consistent state in the models (e.g. structure and contact models)
-  impl_int().reset_model_states(Core::LinAlg::Vector(x_eptra.getEpetraVector()));
+  impl_int().reset_model_states(Core::LinAlg::Vector<double>(x_eptra.getEpetraVector()));
 }
 
 /*----------------------------------------------------------------------------*
@@ -190,7 +190,7 @@ void Solid::TimeInt::Implicit::determine_stress_strain() { impl_int().determine_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Implicit::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> disiterinc)
+void Solid::TimeInt::Implicit::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc)
 {
   update_state_incrementally(disiterinc);
 

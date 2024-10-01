@@ -192,7 +192,7 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> 
       Core::LinAlg::merge_map(*structdofrowmap_, *fluiddofrowmap_, true);
   idispms_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
-  iprojhist_ = Teuchos::rcp(new Core::LinAlg::Vector(*fluiddofrowmap_, true));
+  iprojhist_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluiddofrowmap_, true));
 
 
   centerdisptotal_.resize(Global::Problem::instance()->n_dim());
@@ -218,11 +218,12 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::SlideAleUtils::remeshing(Adapter::FSIStructureWrapper& structure,
-    Teuchos::RCP<Core::FE::Discretization> fluiddis, Teuchos::RCP<Core::LinAlg::Vector> idispale,
-    Teuchos::RCP<Core::LinAlg::Vector> iprojdispale, Coupling::Adapter::CouplingMortar& coupsf,
-    const Epetra_Comm& comm)
+    Teuchos::RCP<Core::FE::Discretization> fluiddis,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> idispale,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iprojdispale,
+    Coupling::Adapter::CouplingMortar& coupsf, const Epetra_Comm& comm)
 {
-  Teuchos::RCP<Core::LinAlg::Vector> idisptotal = structure.extract_interface_dispnp();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> idisptotal = structure.extract_interface_dispnp();
   const int dim = Global::Problem::instance()->n_dim();
 
   // project sliding fluid nodes onto struct interface surface
@@ -268,8 +269,10 @@ void FSI::UTILS::SlideAleUtils::remeshing(Adapter::FSIStructureWrapper& structur
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SlideAleUtils::evaluate_mortar(Teuchos::RCP<Core::LinAlg::Vector> idispstruct,
-    Teuchos::RCP<Core::LinAlg::Vector> idispfluid, Coupling::Adapter::CouplingMortar& coupsf)
+void FSI::UTILS::SlideAleUtils::evaluate_mortar(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> idispstruct,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> idispfluid,
+    Coupling::Adapter::CouplingMortar& coupsf)
 {
   // merge displacement values of interface nodes (struct+fluid) into idispms_ for mortar
   idispms_->PutScalar(0.0);
@@ -292,7 +295,7 @@ void FSI::UTILS::SlideAleUtils::evaluate_mortar(Teuchos::RCP<Core::LinAlg::Vecto
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::SlideAleUtils::evaluate_fluid_mortar(
-    Teuchos::RCP<Core::LinAlg::Vector> ima, Teuchos::RCP<Core::LinAlg::Vector> isl)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ima, Teuchos::RCP<Core::LinAlg::Vector<double>> isl)
 {
   // new D,M,Dinv out of fluid disp before and after sliding
   coupff_->evaluate(ima, isl);
@@ -300,10 +303,10 @@ void FSI::UTILS::SlideAleUtils::evaluate_fluid_mortar(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FSI::UTILS::SlideAleUtils::interpolate_fluid(
-    Teuchos::RCP<const Core::LinAlg::Vector> uold)
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::UTILS::SlideAleUtils::interpolate_fluid(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> uold)
 {
-  Teuchos::RCP<Core::LinAlg::Vector> unew = coupff_->master_to_slave(uold);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> unew = coupff_->master_to_slave(uold);
   unew->ReplaceMap(uold->Map());
 
   return unew;
@@ -317,19 +320,19 @@ std::vector<double> FSI::UTILS::SlideAleUtils::centerdisp(
 {
   Teuchos::RCP<Core::FE::Discretization> structdis = structure.discretization();
 
-  Teuchos::RCP<Core::LinAlg::Vector> idispn = structure.extract_interface_dispn();
-  Teuchos::RCP<Core::LinAlg::Vector> idisptotal = structure.extract_interface_dispnp();
-  Teuchos::RCP<Core::LinAlg::Vector> idispstep = structure.extract_interface_dispnp();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> idispn = structure.extract_interface_dispn();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> idisptotal = structure.extract_interface_dispnp();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> idispstep = structure.extract_interface_dispnp();
 
   int err = idispstep->Update(-1.0, *idispn, 1.0);
   if (err != 0) FOUR_C_THROW("ERROR");
 
   const int dim = Global::Problem::instance()->n_dim();
   // get structure and fluid discretizations  and set stated for element evaluation
-  const Teuchos::RCP<Core::LinAlg::Vector> idisptotalcol =
+  const Teuchos::RCP<Core::LinAlg::Vector<double>> idisptotalcol =
       Core::LinAlg::create_vector(*structdis->dof_col_map(), true);
   Core::LinAlg::export_to(*idisptotal, *idisptotalcol);
-  const Teuchos::RCP<Core::LinAlg::Vector> idispstepcol =
+  const Teuchos::RCP<Core::LinAlg::Vector<double>> idispstepcol =
       Core::LinAlg::create_vector(*structdis->dof_col_map(), true);
   Core::LinAlg::export_to(*idispstep, *idispstepcol);
 
@@ -395,7 +398,7 @@ std::vector<double> FSI::UTILS::SlideAleUtils::centerdisp(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::map<int, Core::LinAlg::Matrix<3, 1>> FSI::UTILS::SlideAleUtils::current_struct_pos(
-    Teuchos::RCP<Core::LinAlg::Vector> reddisp, Core::FE::Discretization& interfacedis,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> reddisp, Core::FE::Discretization& interfacedis,
     std::map<int, double>& maxcoord)
 {
   std::map<int, Core::LinAlg::Matrix<3, 1>> currentpositions;
@@ -445,19 +448,20 @@ std::map<int, Core::LinAlg::Matrix<3, 1>> FSI::UTILS::SlideAleUtils::current_str
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::SlideAleUtils::slide_projection(
     Adapter::FSIStructureWrapper& structure, Teuchos::RCP<Core::FE::Discretization> fluiddis,
-    Teuchos::RCP<Core::LinAlg::Vector> idispale, Teuchos::RCP<Core::LinAlg::Vector> iprojdispale,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> idispale,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iprojdispale,
     Coupling::Adapter::CouplingMortar& coupsf, const Epetra_Comm& comm
 
 )
 {
   const int dim = Global::Problem::instance()->n_dim();
 
-  Teuchos::RCP<Core::LinAlg::Vector> idispnp = structure.extract_interface_dispnp();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp = structure.extract_interface_dispnp();
 
   // Redistribute displacement of structnodes on the interface to all processors.
   Teuchos::RCP<Epetra_Import> interimpo =
       Teuchos::rcp(new Epetra_Import(*structfullnodemap_, *structdofrowmap_));
-  Teuchos::RCP<Core::LinAlg::Vector> reddisp =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> reddisp =
       Core::LinAlg::create_vector(*structfullnodemap_, true);
   reddisp->Import(*idispnp, *interimpo, Add);
 
@@ -470,7 +474,8 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
   // calculate structural interface center of gravity
   std::vector<double> centerdisp_v = centerdisp(structure, comm);
 
-  Teuchos::RCP<Core::LinAlg::Vector> frotfull = Core::LinAlg::create_vector(*fluiddofrowmap_, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> frotfull =
+      Core::LinAlg::create_vector(*fluiddofrowmap_, true);
   if (aletype_ == Inpar::FSI::ALEprojection_rot_z ||
       aletype_ == Inpar::FSI::ALEprojection_rot_zsphere)
   {
@@ -683,23 +688,23 @@ void FSI::UTILS::SlideAleUtils::redundant_elements(
 
 
 void FSI::UTILS::SlideAleUtils::rotation(
-    Core::FE::Discretization& mtrdis,             ///< fluid discretization
-    Teuchos::RCP<Core::LinAlg::Vector> idispale,  ///< vector of ALE displacements
-    const Epetra_Comm& comm,                      ///< communicator
-    std::map<int, double>& rotrat,                ///< rotation ratio of tangential displacements
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Core::FE::Discretization& mtrdis,                     ///< fluid discretization
+    Teuchos::RCP<Core::LinAlg::Vector<double>> idispale,  ///< vector of ALE displacements
+    const Epetra_Comm& comm,                              ///< communicator
+    std::map<int, double>& rotrat,  ///< rotation ratio of tangential displacements
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         rotfull  ///< vector of full displacements in tangential directions
 )
 {
-  Teuchos::RCP<Core::LinAlg::Vector> idispstep =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> idispstep =
       Core::LinAlg::create_vector(*fluiddofrowmap_, false);
   idispstep->Update(1.0, *idispale, -1.0, *iprojhist_, 0.0);
 
   // get structure and fluid discretizations  and set state for element evaluation
-  const Teuchos::RCP<Core::LinAlg::Vector> idispstepcol =
+  const Teuchos::RCP<Core::LinAlg::Vector<double>> idispstepcol =
       Core::LinAlg::create_vector(*mtrdis.dof_col_map(), false);
   Core::LinAlg::export_to(*idispstep, *idispstepcol);
-  const Teuchos::RCP<Core::LinAlg::Vector> idispnpcol =
+  const Teuchos::RCP<Core::LinAlg::Vector<double>> idispnpcol =
       Core::LinAlg::create_vector(*mtrdis.dof_col_map(), false);
   Core::LinAlg::export_to(*idispale, *idispnpcol);
 

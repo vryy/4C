@@ -196,8 +196,8 @@ void PaSI::PasiPartTwoWayCoup::output()
 }
 
 void PaSI::PasiPartTwoWayCoup::reset_increment_states(
-    Teuchos::RCP<const Core::LinAlg::Vector> intfdispnp,
-    Teuchos::RCP<const Core::LinAlg::Vector> intfforcenp)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> intfdispnp,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> intfforcenp)
 {
   intfdispincnp_->Update(1.0, *intfdispnp, 0.0);
   intfforceincnp_->Update(1.0, *intfforcenp, 0.0);
@@ -210,7 +210,7 @@ void PaSI::PasiPartTwoWayCoup::build_increment_states()
 }
 
 void PaSI::PasiPartTwoWayCoup::set_interface_forces(
-    Teuchos::RCP<const Core::LinAlg::Vector> intfforcenp)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> intfforcenp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PaSI::PASI_PartTwoWayCoup::set_interface_forces");
 
@@ -638,7 +638,7 @@ void PaSI::PasiPartTwoWayCoupDispRelaxAitken::output()
 
 void PaSI::PasiPartTwoWayCoupDispRelaxAitken::calc_omega(double& omega, const int itnum)
 {
-  Teuchos::RCP<Core::LinAlg::Vector> intfdispincnpdiff =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> intfdispincnpdiff =
       Core::LinAlg::create_vector(*interface_->pasi_cond_map(), true);
   intfdispincnpdiff->Update(1.0, *intfdispincnp_, (-1.0), *intfdispincnpold_, 0.0);
 

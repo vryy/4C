@@ -1250,10 +1250,10 @@ void SSTI::AssembleStrategySparse::apply_structural_dbc_system_matrix(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector> RHS,
-    Teuchos::RCP<const Core::LinAlg::Vector> RHSscatra,
-    Teuchos::RCP<const Core::LinAlg::Vector> RHSstructure,
-    Teuchos::RCP<const Core::LinAlg::Vector> RHSthermo)
+void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> RHS,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> RHSscatra,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> RHSstructure,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> RHSthermo)
 {
   // zero out RHS
   RHS->PutScalar(0.0);
@@ -1270,7 +1270,7 @@ void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector>
     // monolithic right-hand side vector
 
     // make copy of structural right-hand side vector
-    Core::LinAlg::Vector residual_structure(*RHSstructure);
+    Core::LinAlg::Vector<double> residual_structure(*RHSstructure);
 
     auto rhs_structure_master =
         Core::LinAlg::create_vector(*structure_field()->dof_row_map(), true);
@@ -1298,7 +1298,7 @@ void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector>
 
     // apply pseudo Dirichlet conditions to transformed slave-side part of structural right-hand
     // side vector
-    auto zeros = Teuchos::rcp(new Core::LinAlg::Vector(residual_structure.Map()));
+    auto zeros = Teuchos::rcp(new Core::LinAlg::Vector<double>(residual_structure.Map()));
 
     if (locsysmanager_structure != Teuchos::null)
       locsysmanager_structure->rotate_global_to_local(rhs_structure_master);

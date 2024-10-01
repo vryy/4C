@@ -137,18 +137,19 @@ namespace CONTACT
 
     */
     void read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<Core::LinAlg::Vector> dis, Teuchos::RCP<Core::LinAlg::Vector> zero);
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> zero);
     /*!
     \brief recover lagr. mult. for contact/meshtying and slave displ for mesht.
 
     */
-    void recover(Teuchos::RCP<Core::LinAlg::Vector> disi);
+    void recover(Teuchos::RCP<Core::LinAlg::Vector<double>> disi);
 
     /*!
     \brief set state vector
 
     */
-    void set_state(Teuchos::RCP<Core::LinAlg::Vector> zeros);
+    void set_state(Teuchos::RCP<Core::LinAlg::Vector<double>> zeros);
 
     /*!
     \brief store dirichlet status
@@ -160,7 +161,7 @@ namespace CONTACT
     \brief update
 
     */
-    void update(Teuchos::RCP<Core::LinAlg::Vector> dis);
+    void update(Teuchos::RCP<Core::LinAlg::Vector<double>> dis);
 
     /*!
     \brief visualize stuff with gmsh

@@ -54,14 +54,14 @@ void Mortar::MultiFieldCoupling::condense_matrix(
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
-void Mortar::MultiFieldCoupling::condense_rhs(Teuchos::RCP<Core::LinAlg::Vector>& rhs)
+void Mortar::MultiFieldCoupling::condense_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs)
 {
   Mortar::UTILS::mortar_rhs_condensation(rhs, p_);
 }
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
-void Mortar::MultiFieldCoupling::recover_incr(Teuchos::RCP<Core::LinAlg::Vector>& incr)
+void Mortar::MultiFieldCoupling::recover_incr(Teuchos::RCP<Core::LinAlg::Vector<double>>& incr)
 {
   Mortar::UTILS::mortar_recover(incr, p_);
 }

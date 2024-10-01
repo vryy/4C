@@ -16,7 +16,6 @@
 
 #include "4C_fem_condition.hpp"
 
-#include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>

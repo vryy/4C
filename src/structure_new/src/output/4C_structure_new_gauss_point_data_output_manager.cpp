@@ -13,7 +13,6 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_structure_new_model_evaluator_manager.hpp"
 
-#include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
 
@@ -110,7 +109,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::prepare_nodal_data_vect
     const int size = name_and_size.second;
 
     data_nodes_[name] = Teuchos::rcp(new Epetra_MultiVector(node_col_map, size, true));
-    data_nodes_count_[name] = Teuchos::rcp(new Epetra_IntVector(node_col_map, true));
+    data_nodes_count_[name] = Teuchos::rcp(new Core::LinAlg::Vector<int>(node_col_map, true));
   }
 }
 
@@ -155,7 +154,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::post_evaluate()
       const std::string& name = name_and_size.first;
 
       Epetra_MultiVector& nodal_data = *data_nodes_[name];
-      const Epetra_IntVector& nodal_count = *data_nodes_count_[name];
+      const Core::LinAlg::Vector<int>& nodal_count = *data_nodes_count_[name];
 
       for (int col = 0; col < nodal_data.NumVectors(); ++col)
       {

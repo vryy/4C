@@ -19,7 +19,6 @@
 #include "4C_fem_dofset.hpp"
 
 #include <Epetra_Comm.h>
-#include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 

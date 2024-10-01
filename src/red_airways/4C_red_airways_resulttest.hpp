@@ -57,22 +57,22 @@ namespace Airway
     /// Teuchos::RCP to scalar transport discretization
     Teuchos::RCP<Core::FE::Discretization> dis_;
     /// Teuchos::RCP to nodal solution vector containing pressure
-    Teuchos::RCP<Core::LinAlg::Vector> mynodesol_pressure_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mynodesol_pressure_;
     /// Teuchos::RCP to nodal solution vector containing flow in
-    Teuchos::RCP<Core::LinAlg::Vector> mynodesol_flow_in_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mynodesol_flow_in_;
     /// Teuchos::RCP to nodal solution vector containing flow out
-    Teuchos::RCP<Core::LinAlg::Vector> mynodesol_flow_out_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mynodesol_flow_out_;
 
     /// Teuchos::RCP to element solution vector containing external pressure of element
-    Teuchos::RCP<Core::LinAlg::Vector> myelemsol_pressure_external_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myelemsol_pressure_external_;
     /// Teuchos::RCP to element solution vector containing acinus volume
-    Teuchos::RCP<Core::LinAlg::Vector> myelemsol_acinivol_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myelemsol_acinivol_;
     /// Teuchos::RCP to element solution vector containing airway volume
-    Teuchos::RCP<Core::LinAlg::Vector> myelemsol_airwayvol_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myelemsol_airwayvol_;
     /// Teuchos::RCP to element solution vector containing open status of airway
-    Teuchos::RCP<Core::LinAlg::Vector> myelemsol_open_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myelemsol_open_;
     /// Teuchos::RCP to element solution vector containing opening trajectory of airway
-    Teuchos::RCP<Core::LinAlg::Vector> myelemsol_opening_trajectory_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myelemsol_opening_trajectory_;
   };
 
 }  // namespace Airway

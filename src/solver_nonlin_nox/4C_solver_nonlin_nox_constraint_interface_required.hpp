@@ -68,7 +68,7 @@ namespace NOX
           };
 
           //! Get the desired linearization terms of the objective model
-          virtual double get_linearized_model_terms(const Core::LinAlg::Vector& dir,
+          virtual double get_linearized_model_terms(const Core::LinAlg::Vector<double>& dir,
               const enum NOX::Nln::MeritFunction::MeritFctName name,
               const enum NOX::Nln::MeritFunction::LinOrder order,
               const enum NOX::Nln::MeritFunction::LinType type) const
@@ -83,39 +83,41 @@ namespace NOX
 
           //! Returns the constraint right-hand-side norms
           double get_constraint_rhs_norms(
-              const Core::LinAlg::Vector& F, NOX::Nln::StatusTest::QuantityType chQ) const
+              const Core::LinAlg::Vector<double>& F, NOX::Nln::StatusTest::QuantityType chQ) const
           {
             return get_constraint_rhs_norms(F, chQ, ::NOX::Abstract::Vector::TwoNorm, false);
           };
-          double get_constraint_rhs_norms(const Core::LinAlg::Vector& F,
+          double get_constraint_rhs_norms(const Core::LinAlg::Vector<double>& F,
               NOX::Nln::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type) const
           {
             return get_constraint_rhs_norms(F, chQ, type, false);
           };
-          virtual double get_constraint_rhs_norms(const Core::LinAlg::Vector& F,
+          virtual double get_constraint_rhs_norms(const Core::LinAlg::Vector<double>& F,
               NOX::Nln::StatusTest::QuantityType chQ, ::NOX::Abstract::Vector::NormType type,
               bool isScaled) const = 0;
 
           //! Returns the Root Mean Square (abbr.: RMS) of the Lagrange multiplier updates
-          double get_lagrange_multiplier_update_rms(const Core::LinAlg::Vector& xNew,
-              const Core::LinAlg::Vector& xOld, double aTol, double rTol,
+          double get_lagrange_multiplier_update_rms(const Core::LinAlg::Vector<double>& xNew,
+              const Core::LinAlg::Vector<double>& xOld, double aTol, double rTol,
               NOX::Nln::StatusTest::QuantityType checkQuantity) const
           {
             return get_lagrange_multiplier_update_rms(xNew, xOld, aTol, rTol, checkQuantity, false);
           };
-          virtual double get_lagrange_multiplier_update_rms(const Core::LinAlg::Vector& xNew,
-              const Core::LinAlg::Vector& xOld, double aTol, double rTol,
-              NOX::Nln::StatusTest::QuantityType checkQuantity,
+          virtual double get_lagrange_multiplier_update_rms(
+              const Core::LinAlg::Vector<double>& xNew, const Core::LinAlg::Vector<double>& xOld,
+              double aTol, double rTol, NOX::Nln::StatusTest::QuantityType checkQuantity,
               bool disable_implicit_weighting) const = 0;
 
           //! Returns the increment norm of the largange multiplier DoFs
-          virtual double get_lagrange_multiplier_update_norms(const Core::LinAlg::Vector& xNew,
-              const Core::LinAlg::Vector& xOld, NOX::Nln::StatusTest::QuantityType checkQuantity,
+          virtual double get_lagrange_multiplier_update_norms(
+              const Core::LinAlg::Vector<double>& xNew, const Core::LinAlg::Vector<double>& xOld,
+              NOX::Nln::StatusTest::QuantityType checkQuantity,
               ::NOX::Abstract::Vector::NormType type = ::NOX::Abstract::Vector::TwoNorm,
               bool isScaled = false) const = 0;
 
           //! Returns the previous solution norm of the largange multiplier DoFs
-          virtual double get_previous_lagrange_multiplier_norms(const Core::LinAlg::Vector& xOld,
+          virtual double get_previous_lagrange_multiplier_norms(
+              const Core::LinAlg::Vector<double>& xOld,
               NOX::Nln::StatusTest::QuantityType checkQuantity,
               ::NOX::Abstract::Vector::NormType type = ::NOX::Abstract::Vector::TwoNorm,
               bool isScaled = false) const = 0;

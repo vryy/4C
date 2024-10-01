@@ -1055,7 +1055,7 @@ void XFEM::UTILS::evalute_stateat_gp(const Core::Elements::Element *sele,
   std::vector<double> ivel;
   Core::Elements::LocationArray las(1);
   sele->location_vector(discret, las, false);
-  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discret.get_state(state);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state = discret.get_state(state);
   Core::FE::extract_my_values(*matrix_state, ivel, las[0].lm_);
 
   // 4 // evaluate slave velocity at guasspoint

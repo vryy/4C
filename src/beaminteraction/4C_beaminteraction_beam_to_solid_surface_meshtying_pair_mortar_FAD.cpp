@@ -48,7 +48,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Core::LinAlg::Vector& global_lambda, const Core::LinAlg::Vector& displacement_vector)
+    const Core::LinAlg::Vector<double>& global_lambda,
+    const Core::LinAlg::Vector<double>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -135,7 +136,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam,
     Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
     Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-    const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_vector)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -469,7 +470,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Core::LinAlg::Vector& global_lambda, const Core::LinAlg::Vector& displacement_vector)
+    const Core::LinAlg::Vector<double>& global_lambda,
+    const Core::LinAlg::Vector<double>& displacement_vector)
 {
   base_class::evaluate_and_assemble(
       discret, mortar_manager, force_vector, stiffness_matrix, global_lambda, displacement_vector);
@@ -734,7 +736,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
     Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
     Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-    const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_vector)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   base_class::evaluate_and_assemble_mortar_contributions(discret, mortar_manager,
       global_constraint_lin_beam, global_constraint_lin_solid, global_force_beam_lin_lambda,

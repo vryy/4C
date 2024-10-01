@@ -172,7 +172,7 @@ class Beam3ContactOctTree
    *  \param OutVec   (in) Target/Output vector
    *  \param doexport (in) export flag
    *  \param doimport (in) import flag */
-  void communicate_vector(Core::LinAlg::Vector& InVec, Core::LinAlg::Vector& OutVec,
+  void communicate_vector(Core::LinAlg::Vector<double>& InVec, Core::LinAlg::Vector<double>& OutVec,
       bool zerofy = false, bool doexport = true, bool doimport = true);
   /*! \brief communicate MultiVector to all participating processors
    *  \param InVec    (in) Source/Input vector
@@ -273,7 +273,7 @@ class Beam3ContactOctTree
   Teuchos::RCP<std::vector<double>> extrusionvalue_;
 
   //!\brief diameters of all beam elements
-  Teuchos::RCP<Core::LinAlg::Vector> diameter_;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> diameter_;
 
   //!\brief stores the IDs and the coordinates of all bounding boxes
   Teuchos::RCP<Epetra_MultiVector> allbboxes_;
@@ -289,7 +289,7 @@ class Beam3ContactOctTree
 
   //!\brief vector holding information on how many times a bounding box is shifted due to periodic
   //! boundary conditions
-  Teuchos::RCP<Core::LinAlg::Vector> numshifts_;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> numshifts_;
 
   //!\brief Bounding Box type
   Beam3ContactOctTree::BboxType boundingbox_;

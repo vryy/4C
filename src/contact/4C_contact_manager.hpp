@@ -23,6 +23,7 @@ namespace Core::FE
 
 namespace Core::LinAlg
 {
+  template <typename T>
   class Vector;
 }
 
@@ -99,7 +100,8 @@ namespace CONTACT
 
     */
     void read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<Core::LinAlg::Vector> dis, Teuchos::RCP<Core::LinAlg::Vector> zero) final;
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> zero) final;
 
     /*!
     \brief Write interface quantities for postprocessing

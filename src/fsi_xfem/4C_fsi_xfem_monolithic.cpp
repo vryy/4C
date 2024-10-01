@@ -574,7 +574,7 @@ void FSI::MonolithicXFEM::setup_rhs()
 /*----------------------------------------------------------------------*/
 // setup RHS contributions based on single field residuals
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::setup_rhs_residual(Core::LinAlg::Vector& f)
+void FSI::MonolithicXFEM::setup_rhs_residual(Core::LinAlg::Vector<double>& f)
 {
   /*----------------------------------------------------------------------*/
   // get time integration parameters of structure and fluid time integrators
@@ -599,10 +599,10 @@ void FSI::MonolithicXFEM::setup_rhs_residual(Core::LinAlg::Vector& f)
 
   /*----------------------------------------------------------------------*/
   // get single field residuals
-  Teuchos::RCP<Core::LinAlg::Vector> sv =
-      Teuchos::rcp(new Core::LinAlg::Vector(*structure_poro()->rhs()));
-  Teuchos::RCP<Core::LinAlg::Vector> fv =
-      Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->rhs()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> sv =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*structure_poro()->rhs()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fv =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluid_field()->rhs()));
 
   // scale the structural rhs
   sv->Scale(scaling_S);
@@ -633,7 +633,7 @@ void FSI::MonolithicXFEM::apply_dbc()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::initial_guess(Teuchos::RCP<Core::LinAlg::Vector> ig)
+void FSI::MonolithicXFEM::initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> ig)
 {
   // TODO: what to do with this function???
   //  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::initial_guess");
@@ -714,9 +714,9 @@ void FSI::MonolithicXFEM::set_dof_row_maps(const std::vector<Teuchos::RCP<const 
  | Put two field vectors together to a monolithic vector
  *----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::combine_field_vectors(
-    Core::LinAlg::Vector& v,                      ///< composed vector containing all field vectors
-    Teuchos::RCP<const Core::LinAlg::Vector> sv,  ///< structuralporo DOFs
-    Teuchos::RCP<const Core::LinAlg::Vector> fv   ///< fluid DOFs
+    Core::LinAlg::Vector<double>& v,  ///< composed vector containing all field vectors
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,  ///< structuralporo DOFs
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fv   ///< fluid DOFs
 )
 {
   extractor_merged_poro().add_vector(*sv, structp_block_, v);
@@ -729,9 +729,10 @@ void FSI::MonolithicXFEM::combine_field_vectors(
  |                                                        schott 08/14 |
  |   extract the two field vectors from a given composed vector        |
  ----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
-    Teuchos::RCP<const Core::LinAlg::Vector>& sx, Teuchos::RCP<const Core::LinAlg::Vector>& fx,
-    Teuchos::RCP<const Core::LinAlg::Vector>& ax)
+void FSI::MonolithicXFEM::extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& ax)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicXFEM::extract_field_vectors");
 
@@ -1063,7 +1064,7 @@ bool FSI::MonolithicXFEM::newton()
     // safe velnp_i+1 - veln in fx_sum_ as start for the Newton as Fluid-Evaluate expects the full
     // step-increment
 
-    fx_sum_ = Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->dof_row_map()));
+    fx_sum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map()));
     int errfx = fx_sum_->Update(1.0, *fluid_field()->velnp(), -1.0, *fluid_field()->veln(), 0.0);
     if (errfx != 0) FOUR_C_THROW("update not successful");
 
@@ -1073,7 +1074,7 @@ bool FSI::MonolithicXFEM::newton()
 
     if (have_ale())
     {
-      ax_sum_ = Teuchos::rcp(new Core::LinAlg::Vector(*(extractor().Map(ale_i_block_))));
+      ax_sum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*(extractor().Map(ale_i_block_))));
       int errax = ax_sum_->Update(1.0,
           *ale_field()->interface()->extract_other_vector(ale_field()->dispnp()), -1.0,
           *ale_field()->interface()->extract_other_vector(ale_field()->dispn()), 0.0);
@@ -1086,8 +1087,9 @@ bool FSI::MonolithicXFEM::newton()
     //-------------------
     /*
         // save the current structural step-increment (also possible // sx_sum_ = sx;
-        sx_sum_ = Teuchos::rcp(new Core::LinAlg::Vector(*(Extractor().Map(structp_block_))));
-        if(x_sum_ != Teuchos::null)
+        sx_sum_ = Teuchos::rcp(new
+       Core::LinAlg::Vector<double>(*(Extractor().Map(structp_block_)))); if(x_sum_ !=
+       Teuchos::null)
         {
           int errsx = sx_sum_->Update(1.0, *Extractor().extract_vector(x_sum_,structp_block_), 0.0);
           if(errsx != 0) FOUR_C_THROW("update not successful");
@@ -1122,7 +1124,7 @@ bool FSI::MonolithicXFEM::newton()
 
 
       //-------------------
-      // Create a new Core::LinAlg::Vector with a given row map and initialize it!
+      // Create a new Core::LinAlg::Vector<double> with a given row map and initialize it!
       // dof_row_map() contains all DOFS for the monolithic system w.r.t the respective interface
       // position and returns the dof_row_map of the blockrowdofmap_, a MapExtractor object for a
       // DOF map, split into blocks.
@@ -1441,9 +1443,9 @@ bool FSI::MonolithicXFEM::evaluate()
   // sx contains the current step increment w.r.t. Pred(disp(t^n)) for the structure block
   // fx contains the current step increment w.r.t. t^n from the last Newton restart for the fluid
   // block
-  Teuchos::RCP<const Core::LinAlg::Vector> sx;
-  Teuchos::RCP<const Core::LinAlg::Vector> fx;
-  Teuchos::RCP<const Core::LinAlg::Vector> ax;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> sx;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fx;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> ax;
 
 
   // update the whole step-increment vector
@@ -1495,8 +1497,8 @@ bool FSI::MonolithicXFEM::evaluate()
     // ------------------------------------------------------------------
     if (have_ale() && ax != Teuchos::null)  // we should move this into the ALE Field!
     {
-      Teuchos::RCP<Core::LinAlg::Vector> DispnpAle =
-          Teuchos::rcp(new Core::LinAlg::Vector(*ale_field()->dof_row_map()), true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> DispnpAle =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*ale_field()->dof_row_map()), true);
       DispnpAle->Update(1.0, *ale_field()->interface()->insert_other_vector(ax), 1.0,
           *ale_field()->dispn(), 0.0);  // update ale disp here...
       ale_field()->get_dbc_map_extractor()->insert_other_vector(
@@ -1507,7 +1509,7 @@ bool FSI::MonolithicXFEM::evaluate()
 
     // Set new state in StructurePoro
     if (sx == Teuchos::null)
-      sx = Teuchos::rcp(new Core::LinAlg::Vector(*structure_poro()->dof_row_map(), true));
+      sx = Teuchos::rcp(new Core::LinAlg::Vector<double>(*structure_poro()->dof_row_map(), true));
     structure_poro()->update_state_incrementally(sx);
     if (have_contact_)
       structure_poro()->meshtying_contact_bridge()->get_strategy().set_state(
@@ -1522,11 +1524,11 @@ bool FSI::MonolithicXFEM::evaluate()
   // first potentially valid permutation is set and available after the second fluid-evaluate call
   //--------------------------------------------------------
 
-  Teuchos::RCP<Core::LinAlg::Vector> fx_permuted = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fx_permuted = Teuchos::null;
 
   if (fx != Teuchos::null)
   {
-    fx_permuted = Teuchos::rcp(new Core::LinAlg::Vector(*fx));
+    fx_permuted = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fx));
 
     permute_fluid_dofs_forward(fx_permuted);
   }
@@ -1897,7 +1899,7 @@ void FSI::MonolithicXFEM::build_fluid_permutation()
  | forward to a vector (based on dofsets) w.r.t. new interface position|
  |                                                        schott 08/14 |
  ----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::permute_fluid_dofs_forward(Teuchos::RCP<Core::LinAlg::Vector>& fx)
+void FSI::MonolithicXFEM::permute_fluid_dofs_forward(Teuchos::RCP<Core::LinAlg::Vector<double>>& fx)
 {
   //---------------------------------
   // forward permutation of dofsets
@@ -1950,7 +1952,8 @@ void FSI::MonolithicXFEM::permute_fluid_dofs_forward(Teuchos::RCP<Core::LinAlg::
  | backward to a vector (based on dofsets) w.r.t. new interface        |
  | position                                               schott 08/14 |
  ----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::permute_fluid_dofs_backward(Teuchos::RCP<Core::LinAlg::Vector>& fx)
+void FSI::MonolithicXFEM::permute_fluid_dofs_backward(
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& fx)
 {
   //---------------------------------
   // backward permutation of dofsets
@@ -2415,12 +2418,13 @@ void FSI::MonolithicXFEM::linear_solve()
   // permute the increment and rhs vector back to the reference configuration w.r.t which iterinc_
   // and rhs are defined
 
-  Teuchos::RCP<Core::LinAlg::Vector> f_iterinc_permuted = extractor().extract_vector(iterinc_, 1);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> f_iterinc_permuted =
+      extractor().extract_vector(iterinc_, 1);
   permute_fluid_dofs_backward(f_iterinc_permuted);
   extractor().insert_vector(*f_iterinc_permuted, 1, *iterinc_);
 
 
-  Teuchos::RCP<Core::LinAlg::Vector> f_rhs_permuted = extractor().extract_vector(rhs_, 1);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> f_rhs_permuted = extractor().extract_vector(rhs_, 1);
   permute_fluid_dofs_backward(f_rhs_permuted);
   extractor().insert_vector(*f_rhs_permuted, 1, *rhs_);
 
@@ -2438,7 +2442,7 @@ void FSI::MonolithicXFEM::linear_solve()
 // apply infnorm scaling to linear block system            schott 10/14 |
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::scale_system(
-    Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& b)
+    Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector<double>& b)
 {
   if (scaling_infnorm_)
   {
@@ -2446,8 +2450,8 @@ void FSI::MonolithicXFEM::scale_system(
     // The matrices are modified here. Do we have to change them back later on?
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
-    srowsum_ = Teuchos::rcp(new Core::LinAlg::Vector(A->RowMap(), false));
-    scolsum_ = Teuchos::rcp(new Core::LinAlg::Vector(A->RowMap(), false));
+    srowsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    scolsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
     A->InvRowSums(*srowsum_->get_ptr_of_Epetra_Vector());
     A->InvColSums(*scolsum_->get_ptr_of_Epetra_Vector());
 
@@ -2457,7 +2461,7 @@ void FSI::MonolithicXFEM::scale_system(
       FOUR_C_THROW("structure scaling failed");
 
 
-    Teuchos::RCP<Core::LinAlg::Vector> sx = extractor().extract_vector(b, 0);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sx = extractor().extract_vector(b, 0);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
 
@@ -2470,18 +2474,18 @@ void FSI::MonolithicXFEM::scale_system(
 /*----------------------------------------------------------------------*/
 // undo infnorm scaling from scaled solution               schott 10/14 |
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::unscale_solution(
-    Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& x, Core::LinAlg::Vector& b)
+void FSI::MonolithicXFEM::unscale_solution(Core::LinAlg::BlockSparseMatrixBase& mat,
+    Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& b)
 {
   if (scaling_infnorm_)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> sy = extractor().extract_vector(x, 0);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sy = extractor().extract_vector(x, 0);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
 
     extractor().insert_vector(*sy, 0, x);
 
-    Teuchos::RCP<Core::LinAlg::Vector> sx = extractor().extract_vector(b, 0);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sx = extractor().extract_vector(b, 0);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
 

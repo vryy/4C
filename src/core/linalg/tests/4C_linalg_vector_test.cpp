@@ -45,10 +45,11 @@ namespace
     Epetra_Vector my_epetra_vector = Epetra_Vector(*map_, true);
 
     // try to copy zero vector into wrapper
-    Core::LinAlg::Vector epetra_based_test_vector = Core::LinAlg::Vector(my_epetra_vector);
+    Core::LinAlg::Vector<double> epetra_based_test_vector =
+        Core::LinAlg::Vector<double>(my_epetra_vector);
 
     // create vector
-    Core::LinAlg::Vector test_vector = Core::LinAlg::Vector(*map_, true);
+    Core::LinAlg::Vector<double> test_vector = Core::LinAlg::Vector<double>(*map_, true);
 
     // initialize with wrong value
     double norm_of_test_vector = 1;
@@ -81,10 +82,10 @@ namespace
 
   TEST_F(VectorTest, DeepCopying)
   {
-    Core::LinAlg::Vector a(*map_, true);
+    Core::LinAlg::Vector<double> a(*map_, true);
     a.PutScalar(1.0);
 
-    Core::LinAlg::Vector b(*map_, true);
+    Core::LinAlg::Vector<double> b(*map_, true);
     // copy assign
     b = a;
     b.PutScalar(2.0);
@@ -97,7 +98,7 @@ namespace
     EXPECT_FLOAT_EQ(norm_b, 2.0 * std::sqrt(NumGlobalElements));
 
     // copy constructor
-    Core::LinAlg::Vector c(a);
+    Core::LinAlg::Vector<double> c(a);
     c.PutScalar(3.0);
     double norm_c = 0.0;
     c.Norm2(&norm_c);
@@ -110,7 +111,7 @@ namespace
     double norm_of_test_vector = 0.0;
 
     // copy zero vector into new interface
-    Core::LinAlg::Vector test_vector = Core::LinAlg::Vector(*map_, true);
+    Core::LinAlg::Vector<double> test_vector = Core::LinAlg::Vector<double>(*map_, true);
 
     test_vector.PutScalar(2.0);
 
@@ -121,10 +122,10 @@ namespace
 
   TEST_F(VectorTest, Update)
   {
-    Core::LinAlg::Vector a = Core::LinAlg::Vector(*map_, true);
+    Core::LinAlg::Vector<double> a = Core::LinAlg::Vector<double>(*map_, true);
     a.PutScalar(1.0);
 
-    Core::LinAlg::Vector b = Core::LinAlg::Vector(*map_, true);
+    Core::LinAlg::Vector<double> b = Core::LinAlg::Vector<double>(*map_, true);
     b.PutScalar(1.0);
 
     // update the vector
@@ -137,7 +138,7 @@ namespace
     b.Norm2(&b_norm);
     ASSERT_FLOAT_EQ(NumGlobalElements * (2.0 + 3.0) * (2.0 + 3.0), b_norm * b_norm);
 
-    Core::LinAlg::Vector c = Core::LinAlg::Vector(*map_, true);
+    Core::LinAlg::Vector<double> c = Core::LinAlg::Vector<double>(*map_, true);
     c.Update(1, a, -1, b, 0);
 
     // initialize with false value
@@ -158,10 +159,10 @@ namespace
       Core::LinAlg::VectorView a_view(a);
 
       double norm = 0.0;
-      ((Core::LinAlg::Vector&)a_view).Norm2(&norm);
+      ((Core::LinAlg::Vector<double>&)a_view).Norm2(&norm);
       EXPECT_EQ(norm, std::sqrt(NumGlobalElements));
 
-      ((Core::LinAlg::Vector&)a_view).PutScalar(2.0);
+      ((Core::LinAlg::Vector<double>&)a_view).PutScalar(2.0);
 
       // Change must be reflected in a
       a.Norm2(&norm);

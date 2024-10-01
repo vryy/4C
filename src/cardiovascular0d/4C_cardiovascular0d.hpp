@@ -86,8 +86,8 @@ namespace UTILS
     bool have_cardiovascular0_d() { return cardiovascular0dtype_ != none; };
 
     /// Set state of the underlying discretization
-    void set_state(const std::string& state,  ///< name of state to set
-        Teuchos::RCP<Core::LinAlg::Vector> V  ///< values to set
+    void set_state(const std::string& state,          ///< name of state to set
+        Teuchos::RCP<Core::LinAlg::Vector<double>> V  ///< values to set
     );
 
 
@@ -96,9 +96,10 @@ namespace UTILS
     virtual void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector> sysvec1,  ///< distributed vector that may be filled by
-                                                     ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector>
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            sysvec1,  ///< distributed vector that may be filled by
+                      ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
             sysvec2  ///< distributed vector that may be filled by assembly of element contributions
     );
 
@@ -112,11 +113,13 @@ namespace UTILS
             sysmat2,  ///< Cardiovascular0D offdiagonal matrix dV/dd
         Teuchos::RCP<Core::LinAlg::SparseOperator>
             sysmat3,  ///< Cardiovascular0D offdiagonal matrix dfext/dp
-        Teuchos::RCP<Core::LinAlg::Vector> sysvec1,  ///< distributed vectors that may be filled by
-                                                     ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector> sysvec2, Teuchos::RCP<Core::LinAlg::Vector> sysvec3,
-        const Teuchos::RCP<Core::LinAlg::Vector> sysvec4,
-        Teuchos::RCP<Core::LinAlg::Vector> sysvec5);
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            sysvec1,  ///< distributed vectors that may be filled by
+                      ///< assembly of element contributions
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec3,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec4,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec5);
 
     /// Return type of Cardiovascular0D function
     Cardiovascular0DType type() { return cardiovascular0dtype_; }

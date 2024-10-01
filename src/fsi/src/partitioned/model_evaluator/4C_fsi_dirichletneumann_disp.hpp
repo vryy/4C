@@ -66,8 +66,8 @@ namespace FSI
      *
      * \returns interface force
      */
-    Teuchos::RCP<Core::LinAlg::Vector> fluid_op(
-        Teuchos::RCP<Core::LinAlg::Vector> idisp, const FillType fillFlag) override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_op(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, const FillType fillFlag) override;
 
     /** \brief interface structural operator
      *
@@ -79,11 +79,11 @@ namespace FSI
      *
      * \returns interface displacement
      */
-    Teuchos::RCP<Core::LinAlg::Vector> struct_op(
-        Teuchos::RCP<Core::LinAlg::Vector> iforce, const FillType fillFlag) final;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> struct_op(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag) final;
 
     //! Predictor
-    Teuchos::RCP<Core::LinAlg::Vector> initial_guess() override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess() override;
   };
 
 }  // namespace FSI

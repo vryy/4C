@@ -25,19 +25,19 @@
 FOUR_C_NAMESPACE_OPEN
 
 void CONTACT::NitscheStrategyTsi::set_state(
-    const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec)
+    const enum Mortar::StateType& statename, const Core::LinAlg::Vector<double>& vec)
 {
   if (statename == Mortar::state_temperature)
   {
     double inf_delta = 0.;
     if (curr_state_temp_ == Teuchos::null)
     {
-      curr_state_temp_ = Teuchos::rcp(new Core::LinAlg::Vector(vec));
+      curr_state_temp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(vec));
       inf_delta = 1.e12;
     }
     else
     {
-      Core::LinAlg::Vector delta(vec);
+      Core::LinAlg::Vector<double> delta(vec);
       delta.Update(-1., *curr_state_temp_, 1.);
       delta.NormInf(&inf_delta);
     }
@@ -60,12 +60,12 @@ void CONTACT::NitscheStrategyTsi::set_state(
  |                                                             seitz 10/16|
  *------------------------------------------------------------------------*/
 void CONTACT::NitscheStrategyTsi::set_parent_state(const enum Mortar::StateType& statename,
-    const Core::LinAlg::Vector& vec, const Core::FE::Discretization& dis)
+    const Core::LinAlg::Vector<double>& vec, const Core::FE::Discretization& dis)
 {
   if (statename == Mortar::state_temperature)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> global =
-        Teuchos::rcp(new Core::LinAlg::Vector(*dis.dof_col_map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> global =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*dis.dof_col_map(), true));
     Core::LinAlg::export_to(vec, *global);
 
     // set state on interfaces
@@ -135,7 +135,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyTsi::setup_rhs_block_vec(
   }
 }
 
-Teuchos::RCP<const Core::LinAlg::Vector> CONTACT::NitscheStrategyTsi::get_rhs_block_ptr(
+Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::NitscheStrategyTsi::get_rhs_block_ptr(
     const enum CONTACT::VecBlockType& bt) const
 {
   if (bt == CONTACT::VecBlockType::constraint) return Teuchos::null;
@@ -147,7 +147,7 @@ Teuchos::RCP<const Core::LinAlg::Vector> CONTACT::NitscheStrategyTsi::get_rhs_bl
   switch (bt)
   {
     case CONTACT::VecBlockType::temp:
-      return Teuchos::rcp(new Core::LinAlg::Vector(*ft_));
+      return Teuchos::rcp(new Core::LinAlg::Vector<double>(*ft_));
     default:
       return CONTACT::NitscheStrategy::get_rhs_block_ptr(bt);
   }

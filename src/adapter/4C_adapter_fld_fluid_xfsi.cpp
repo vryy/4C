@@ -107,7 +107,7 @@ Teuchos::RCP<Core::FE::Discretization> Adapter::XFluidFSI::boundary_discretizati
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::XFluidFSI::extract_struct_interface_forces()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::XFluidFSI::extract_struct_interface_forces()
 {
   // the trueresidual vector has to match the solid dis
   // it contains the forces acting on the structural surface
@@ -117,7 +117,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::XFluidFSI::extract_struct_interface_
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::XFluidFSI::extract_struct_interface_veln()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::XFluidFSI::extract_struct_interface_veln()
 {
   // it depends, when this method is called, and when velnp is updated
   // the FSI algorithm expects first an time update and then asks for the old time step velocity
@@ -131,7 +131,8 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::XFluidFSI::extract_struct_interface_
 /*----------------------------------------------------------------------*/
 // apply the interface velocities to the fluid
 /*----------------------------------------------------------------------*/
-void Adapter::XFluidFSI::apply_struct_interface_velocities(Teuchos::RCP<Core::LinAlg::Vector> ivel)
+void Adapter::XFluidFSI::apply_struct_interface_velocities(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel)
 {
   structinterface_->insert_fsi_cond_vector(ivel, mesh_coupling_fsi_->i_velnp());
 }
@@ -141,7 +142,7 @@ void Adapter::XFluidFSI::apply_struct_interface_velocities(Teuchos::RCP<Core::Li
 //  apply the interface displacements to the fluid
 /*----------------------------------------------------------------------*/
 void Adapter::XFluidFSI::apply_struct_mesh_displacement(
-    Teuchos::RCP<const Core::LinAlg::Vector> interface_disp)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> interface_disp)
 {
   // update last increment, before we set new idispnp
   mesh_coupling_fsi_->update_displacement_iteration_vectors();
@@ -164,7 +165,8 @@ void Adapter::XFluidFSI::set_mesh_map(Teuchos::RCP<const Epetra_Map> mm, const i
 /*----------------------------------------------------------------------*/
 //  apply the ale displacements to the fluid
 /*----------------------------------------------------------------------*/
-void Adapter::XFluidFSI::apply_mesh_displacement(Teuchos::RCP<const Core::LinAlg::Vector> fluiddisp)
+void Adapter::XFluidFSI::apply_mesh_displacement(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fluiddisp)
 {
   meshmap_->insert_cond_vector(fluiddisp, xfluid_->write_access_dispnp());
 
@@ -180,11 +182,11 @@ void Adapter::XFluidFSI::apply_mesh_displacement(Teuchos::RCP<const Core::LinAlg
  * via first order or second order OST-discretization of d/dt d(t) = u(t)
  *----------------------------------------------------------------------*/
 void Adapter::XFluidFSI::displacement_to_velocity(
-    Teuchos::RCP<Core::LinAlg::Vector> fcx  /// Delta d = d^(n+1,i+1)-d^n
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fcx  /// Delta d = d^(n+1,i+1)-d^n
 )
 {
   // get interface velocity at t(n)
-  const Teuchos::RCP<const Core::LinAlg::Vector> veln =
+  const Teuchos::RCP<const Core::LinAlg::Vector<double>> veln =
       structinterface_->extract_fsi_cond_vector(mesh_coupling_fsi_->i_veln());
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -226,7 +228,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::XFluidFSI::c_struct_struct_mat
 }
 
 /// return xfluid coupling matrix between structure and structure as sparse matrices
-Teuchos::RCP<const Core::LinAlg::Vector> Adapter::XFluidFSI::rhs_struct_vec()
+Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::XFluidFSI::rhs_struct_vec()
 {
   return xfluid_->rhs_s_vec(coupling_name_);
 }
@@ -234,9 +236,9 @@ Teuchos::RCP<const Core::LinAlg::Vector> Adapter::XFluidFSI::rhs_struct_vec()
 /// GmshOutput for background mesh and cut mesh
 void Adapter::XFluidFSI::gmsh_output(const std::string& name,  ///< name for output file
     const int step,                                            ///< step number
-    const int count,                         ///< counter for iterations within a global time step
-    Teuchos::RCP<Core::LinAlg::Vector> vel,  ///< vector holding velocity and pressure dofs
-    Teuchos::RCP<Core::LinAlg::Vector> acc   ///< vector holding accelerations
+    const int count,  ///< counter for iterations within a global time step
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vel,  ///< vector holding velocity and pressure dofs
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acc   ///< vector holding accelerations
 )
 {
   // TODO (kruse): find a substitute!

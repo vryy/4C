@@ -71,12 +71,12 @@ void Adapter::FSIStructureWrapper::use_block_matrix()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FSIStructureWrapper::relaxation_solve(
-    Teuchos::RCP<Core::LinAlg::Vector> iforce)
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FSIStructureWrapper::relaxation_solve(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iforce)
 {
   apply_interface_forces(iforce);
   fsi_model_evaluator()->set_is_relaxation_solve(true);
-  Teuchos::RCP<const Core::LinAlg::Vector> idisi =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> idisi =
       fsi_model_evaluator()->solve_relaxation_linear(structure_);
   fsi_model_evaluator()->set_is_relaxation_solve(false);
 
@@ -86,17 +86,17 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FSIStructureWrapper::relaxation_solv
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FSIStructureWrapper::predict_interface_dispnp()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FSIStructureWrapper::predict_interface_dispnp()
 {
   // prestressing business
-  Teuchos::RCP<Core::LinAlg::Vector> idis;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> idis;
 
   if (predictor_ == "d(n)")
   {
     // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
     if (prestress_is_active(time()))
     {
-      idis = Teuchos::rcp(new Core::LinAlg::Vector(*interface_->fsi_cond_map(), true));
+      idis = Teuchos::rcp(new Core::LinAlg::Vector<double>(*interface_->fsi_cond_map(), true));
     }
     else
     {
@@ -115,7 +115,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FSIStructureWrapper::predict_interfa
     double current_dt = dt();
 
     idis = interface_->extract_fsi_cond_vector(dispn());
-    Teuchos::RCP<Core::LinAlg::Vector> ivel = interface_->extract_fsi_cond_vector(veln());
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = interface_->extract_fsi_cond_vector(veln());
 
     idis->Update(current_dt, *ivel, 1.0);
   }
@@ -127,8 +127,8 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FSIStructureWrapper::predict_interfa
     double current_dt = dt();
 
     idis = interface_->extract_fsi_cond_vector(dispn());
-    Teuchos::RCP<Core::LinAlg::Vector> ivel = interface_->extract_fsi_cond_vector(veln());
-    Teuchos::RCP<Core::LinAlg::Vector> iacc = interface_->extract_fsi_cond_vector(accn());
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = interface_->extract_fsi_cond_vector(veln());
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iacc = interface_->extract_fsi_cond_vector(accn());
 
     idis->Update(current_dt, *ivel, 0.5 * current_dt * current_dt, *iacc, 1.0);
   }
@@ -147,7 +147,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FSIStructureWrapper::predict_interfa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FSIStructureWrapper::extract_interface_dispn()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FSIStructureWrapper::extract_interface_dispn()
 {
   FOUR_C_ASSERT(interface_->full_map()->PointSameAs(dispn()->Map()),
       "Full map of map extractor and Dispn() do not match.");
@@ -155,7 +155,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FSIStructureWrapper::extract_interfa
   // prestressing business
   if (prestress_is_active(time()))
   {
-    return Teuchos::rcp(new Core::LinAlg::Vector(*interface_->fsi_cond_map(), true));
+    return Teuchos::rcp(new Core::LinAlg::Vector<double>(*interface_->fsi_cond_map(), true));
   }
   else
   {
@@ -166,7 +166,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FSIStructureWrapper::extract_interfa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FSIStructureWrapper::extract_interface_dispnp()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FSIStructureWrapper::extract_interface_dispnp()
 {
   FOUR_C_ASSERT(interface_->full_map()->PointSameAs(dispnp()->Map()),
       "Full map of map extractor and Dispnp() do not match.");
@@ -177,7 +177,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FSIStructureWrapper::extract_interfa
     if (discretization()->get_comm().MyPID() == 0)
       std::cout << "Applying no displacements to the fluid since we do prestressing" << std::endl;
 
-    return Teuchos::rcp(new Core::LinAlg::Vector(*interface_->fsi_cond_map(), true));
+    return Teuchos::rcp(new Core::LinAlg::Vector<double>(*interface_->fsi_cond_map(), true));
   }
   else
   {
@@ -189,7 +189,8 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FSIStructureWrapper::extract_interfa
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 // Apply interface forces
-void Adapter::FSIStructureWrapper::apply_interface_forces(Teuchos::RCP<Core::LinAlg::Vector> iforce)
+void Adapter::FSIStructureWrapper::apply_interface_forces(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iforce)
 {
   fsi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
   interface_->add_fsi_cond_vector(iforce, fsi_model_evaluator()->get_interface_force_np_ptr());
@@ -201,9 +202,10 @@ void Adapter::FSIStructureWrapper::apply_interface_forces(Teuchos::RCP<Core::Lin
 /*----------------------------------------------------------------------*/
 // Apply interface forces deprecated version ! Remove as soon as possible!
 void Adapter::FSIStructureWrapper::apply_interface_forces_temporary_deprecated(
-    Teuchos::RCP<Core::LinAlg::Vector> iforce)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iforce)
 {
-  Teuchos::RCP<Core::LinAlg::Vector> fifc = Core::LinAlg::create_vector(*dof_row_map(), true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fifc =
+      Core::LinAlg::create_vector(*dof_row_map(), true);
 
   interface_->add_fsi_cond_vector(iforce, fifc);
 

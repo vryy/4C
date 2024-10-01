@@ -64,10 +64,10 @@ namespace SSTI
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix) = 0;
 
     //! assemble RHS
-    void assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector> RHS,
-        Teuchos::RCP<const Core::LinAlg::Vector> RHSscatra,
-        Teuchos::RCP<const Core::LinAlg::Vector> RHSstructure,
-        Teuchos::RCP<const Core::LinAlg::Vector> RHSthermo);
+    void assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> RHS,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> RHSscatra,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> RHSstructure,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> RHSthermo);
 
     //! assemble ScaTra-Block into system matrix
     virtual void assemble_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,

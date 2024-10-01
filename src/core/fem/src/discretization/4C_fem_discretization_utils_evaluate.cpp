@@ -23,10 +23,10 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-    const Teuchos::RCP<Core::LinAlg::Vector>& systemvector, const Epetra_Map* col_ele_map)
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector, const Epetra_Map* col_ele_map)
 {
   std::vector<Teuchos::RCP<Core::LinAlg::SparseOperator>> systemmatrices(2, Teuchos::null);
-  std::vector<Teuchos::RCP<Core::LinAlg::Vector>> systemvectors(3, Teuchos::null);
+  std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> systemvectors(3, Teuchos::null);
 
   systemmatrices[0] = systemmatrix;
   systemvectors[0] = systemvector;
@@ -38,7 +38,8 @@ void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::Param
  *----------------------------------------------------------------------------*/
 void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
     std::vector<Teuchos::RCP<Core::LinAlg::SparseOperator>>& systemmatrices,
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector>>& systemvectors, const Epetra_Map* col_ele_map)
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& systemvectors,
+    const Epetra_Map* col_ele_map)
 {
   FOUR_C_ASSERT(systemmatrices.size() <= 2,
       "Currently a maximum number of two "

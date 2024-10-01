@@ -47,9 +47,11 @@ void ScaTra::LevelSetAlgorithm::set_velocity_field(bool init)
  | set convective velocity field (+ pressure and acceleration field as  |
  | well as fine-scale velocity field, if required)      rasthofer 11/13 |
  *----------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::set_velocity_field(Teuchos::RCP<const Core::LinAlg::Vector> convvel,
-    Teuchos::RCP<const Core::LinAlg::Vector> acc, Teuchos::RCP<const Core::LinAlg::Vector> vel,
-    Teuchos::RCP<const Core::LinAlg::Vector> fsvel, bool setpressure, bool init)
+void ScaTra::LevelSetAlgorithm::set_velocity_field(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> acc,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fsvel, bool setpressure, bool init)
 {
   // call routine of base class
   ScaTraTimIntImpl::set_velocity_field(convvel, acc, vel, fsvel, setpressure);
@@ -240,8 +242,8 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
 
         // get initial field
         const Epetra_Map* dofrowmap = discret_->dof_row_map();
-        Teuchos::RCP<Core::LinAlg::Vector> phiref =
-            Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap, true));
+        Teuchos::RCP<Core::LinAlg::Vector<double>> phiref =
+            Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap, true));
 
         // get function
         int startfuncno = params_->get<int>("INITFUNCNO");
@@ -282,8 +284,8 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
 
         double errL1 = (*errors)[0] / (*errors)[1];  // division by thickness of element layer for
                                                      // 2D problems with domain size 1
-        Teuchos::RCP<Core::LinAlg::Vector> phidiff =
-            Teuchos::rcp(new Core::LinAlg::Vector(*phinp_));
+        Teuchos::RCP<Core::LinAlg::Vector<double>> phidiff =
+            Teuchos::rcp(new Core::LinAlg::Vector<double>(*phinp_));
         phidiff->Update(-1.0, *phiref, 1.0);
         double errLinf = 0.0;
         phidiff->NormInf(&errLinf);
@@ -328,11 +330,12 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
   std::map<int, std::vector<double>> nodal_correction;
 
   // extract convective velocity field
-  Teuchos::RCP<const Core::LinAlg::Vector> convel =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
       discret_->get_state(nds_vel(), "convective velocity field");
   if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
-  Teuchos::RCP<Core::LinAlg::Vector> convel_new = Teuchos::rcp(new Core::LinAlg::Vector(*convel));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> convel_new =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*convel));
 
   // loop all conditions
   for (std::size_t icond = 0; icond < lscontactpoint.size(); icond++)
@@ -477,18 +480,18 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     Core::IO::cout << "--- extension of flow field in interface region to entire domain"
                    << Core::IO::endl;
 
-  Teuchos::RCP<const Core::LinAlg::Vector> convel_col =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> convel_col =
       discret_->get_state(nds_vel(), "convective velocity field");
   if (convel_col == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
-  Teuchos::RCP<Core::LinAlg::Vector> convel =
-      Teuchos::rcp(new Core::LinAlg::Vector(*discret_->dof_row_map(nds_vel()), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> convel =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret_->dof_row_map(nds_vel()), true));
   Core::LinAlg::export_to(*convel_col, *convel);
 
   // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
   // remark: operations must not be performed on 'convel', because the vector is accessed by both
   //         master and slave nodes, if periodic bounday conditions are present
-  Teuchos::RCP<Core::LinAlg::Vector> conveltmp =
-      Teuchos::rcp(new Core::LinAlg::Vector(*discret_->dof_row_map(nds_vel()), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> conveltmp =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret_->dof_row_map(nds_vel()), true));
 
   const int numproc = discret_->get_comm().NumProc();
   std::vector<int> allproc(numproc);
@@ -571,8 +574,8 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   Teuchos::RCP<std::set<int>> allcollectedelements = Teuchos::rcp(new std::set<int>);
 
   // export phinp to column map
-  const Teuchos::RCP<Core::LinAlg::Vector> phinpcol =
-      Teuchos::rcp(new Core::LinAlg::Vector(*discret_->dof_col_map()));
+  const Teuchos::RCP<Core::LinAlg::Vector<double>> phinpcol =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret_->dof_col_map()));
   Core::LinAlg::export_to(*phinp_, *phinpcol);
 
   // this loop determines how many layers around the cut elements will be collected
@@ -598,7 +601,8 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
           const int dofgid = discret_->dof(0, node, 0);
           const int doflid = phinpcol->Map().LID(dofgid);
           if (doflid < 0)
-            FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector", myrank_, dofgid);
+            FOUR_C_THROW(
+                "Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>", myrank_, dofgid);
 
           if (plus_domain((*phinpcol)[doflid]) == false)
             gotnegativephi = true;
@@ -1025,7 +1029,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   // -------------------------------------------------------------------
 
   // solutions at time n+1 and n
-  Teuchos::RCP<Core::LinAlg::Vector> old;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> old;
   Teuchos::RCP<Epetra_MultiVector> oldMulti;
 
   if (phinp_ != Teuchos::null)

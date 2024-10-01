@@ -138,8 +138,8 @@ namespace Core::LinAlg
         Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b,
         const SolverParams &params);
 
-    int solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Core::LinAlg::Vector> x,
-        Teuchos::RCP<Core::LinAlg::Vector> b, const SolverParams &params);
+    int solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Core::LinAlg::Vector<double>> x,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> b, const SolverParams &params);
 
     /*!
     \brief Reset the solver and clear data

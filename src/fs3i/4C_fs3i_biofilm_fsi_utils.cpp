@@ -20,19 +20,19 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FS3I::BioFilm::UTILS::scatra_change_config(Teuchos::RCP<Core::FE::Discretization> scatradis,
-    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::LinAlg::Vector> disp)
+    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::LinAlg::Vector<double>> disp)
 {
   const int numnode = (scatradis->node_col_map())->NumMyElements();
 
   // Create Vector which holds all col-displacments of processor
-  Teuchos::RCP<Core::LinAlg::Vector> coldisp =
-      Teuchos::rcp(new Core::LinAlg::Vector(*(dis->dof_col_map())));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> coldisp =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*(dis->dof_col_map())));
 
   // Export row-displacments to col-displacements
   Core::LinAlg::export_to(*disp, *coldisp);
 
 
-  const Core::LinAlg::Vector& gvector = *coldisp;
+  const Core::LinAlg::Vector<double>& gvector = *coldisp;
 
   // loop over all nodes
   for (int index = 0; index < numnode; ++index)
@@ -59,8 +59,8 @@ void FS3I::BioFilm::UTILS::scatra_change_config(Teuchos::RCP<Core::FE::Discretiz
       const int lid = gvector.Map().LID(nodedofs[i]);
 
       if (lid < 0)
-        FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector", gvector.Comm().MyPID(),
-            nodedofs[i]);
+        FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
+            gvector.Comm().MyPID(), nodedofs[i]);
       nvector[i] += gvector[lid];
     }
 

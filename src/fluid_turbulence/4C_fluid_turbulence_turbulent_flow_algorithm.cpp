@@ -137,7 +137,8 @@ void FLD::TurbulentFlowAlgorithm::transfer_inflow_velocity()
     std::cout << "#   transfer solution of inflow section ..." << std::flush;
 
   // velocity/pressure at time n+1 of inflow section
-  Teuchos::RCP<const Core::LinAlg::Vector> inflowvelnp = inflowfluidalgo_->fluid_field()->velnp();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> inflowvelnp =
+      inflowfluidalgo_->fluid_field()->velnp();
 
   // velocity/pressure at time n+1 to be transferred to the complete fluid field
   // get a vector layout from the complete discretization
@@ -179,23 +180,23 @@ void FLD::TurbulentFlowAlgorithm::read_restart(const int restart)
 
   // vectors to be transferred to the inflow field
   // get a vector layout from the inflow discretization
-  Teuchos::RCP<Core::LinAlg::Vector> velnp;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> velnp;
   velnp = Core::LinAlg::create_vector(*inflowdis_->dof_row_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector> veln;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> veln;
   veln = Core::LinAlg::create_vector(*inflowdis_->dof_row_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector> velnm;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> velnm;
   velnm = Core::LinAlg::create_vector(*inflowdis_->dof_row_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector> accnp;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> accnp;
   accnp = Core::LinAlg::create_vector(*inflowdis_->dof_row_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector> accn;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> accn;
   accn = Core::LinAlg::create_vector(*inflowdis_->dof_row_map(), true);
 
   // get all vectors of restart
-  Teuchos::RCP<const Core::LinAlg::Vector> fluidvelnp = fluidalgo_->fluid_field()->velnp();
-  Teuchos::RCP<const Core::LinAlg::Vector> fluidveln = fluidalgo_->fluid_field()->veln();
-  Teuchos::RCP<const Core::LinAlg::Vector> fluidvelnm = fluidalgo_->fluid_field()->velnm();
-  Teuchos::RCP<const Core::LinAlg::Vector> fluidaccnp = fluidalgo_->fluid_field()->accnp();
-  Teuchos::RCP<const Core::LinAlg::Vector> fluidaccn = fluidalgo_->fluid_field()->accn();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidvelnp = fluidalgo_->fluid_field()->velnp();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidveln = fluidalgo_->fluid_field()->veln();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidvelnm = fluidalgo_->fluid_field()->velnm();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidaccnp = fluidalgo_->fluid_field()->accnp();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidaccn = fluidalgo_->fluid_field()->accn();
 
   // export vectors to inflow discretization
   int err = 0;

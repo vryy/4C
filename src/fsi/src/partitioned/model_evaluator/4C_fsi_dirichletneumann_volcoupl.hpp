@@ -65,26 +65,27 @@ namespace FSI
      *
      * \returns interface force
      */
-    Teuchos::RCP<Core::LinAlg::Vector> fluid_op(
-        Teuchos::RCP<Core::LinAlg::Vector> idisp, const FillType fillFlag) final;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_op(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, const FillType fillFlag) final;
 
 
     void extract_previous_interface_solution() override;
 
     /// structure to ale mapping
-    Teuchos::RCP<Core::LinAlg::Vector> stucture_to_ale(Teuchos::RCP<Core::LinAlg::Vector> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> stucture_to_ale(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
 
     /// structure to ale mapping
-    Teuchos::RCP<Core::LinAlg::Vector> structure_to_ale(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> structure_to_ale(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
 
     /// ale to structure mapping
-    Teuchos::RCP<Core::LinAlg::Vector> ale_to_structure(
-        Teuchos::RCP<Core::LinAlg::Vector> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_structure(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
 
     /// ale to structure
-    Teuchos::RCP<Core::LinAlg::Vector> ale_to_structure(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_structure(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
 
     /// coupling of structure and ale at the interface
     Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> coupsa_;
@@ -106,17 +107,18 @@ namespace FSI
 
     virtual void setup(Teuchos::RCP<Adapter::FluidAle> fluidale);
 
-    void set_interface_displacements(
-        Teuchos::RCP<Core::LinAlg::Vector>& idisp_struct, Coupling::Adapter::Coupling& icoupfs);
+    void set_interface_displacements(Teuchos::RCP<Core::LinAlg::Vector<double>>& idisp_struct,
+        Coupling::Adapter::Coupling& icoupfs);
 
-    virtual void correct_interface_displacements(Teuchos::RCP<Core::LinAlg::Vector> idisp_fluid,
+    virtual void correct_interface_displacements(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
    private:
-    Teuchos::RCP<const Core::LinAlg::Vector> idisp_;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp_;
     Teuchos::RCP<Coupling::Adapter::Coupling> icoupfs_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> deltadisp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> deltadisp_;
     Teuchos::RCP<Adapter::FluidAle> fluidale_;
 
     Teuchos::RCP<VolCorrector> volcorrector_;
@@ -135,19 +137,19 @@ namespace FSI
     virtual void setup(const int dim, Teuchos::RCP<Adapter::FluidAle> fluidale);
 
     virtual void correct_vol_displacements(Teuchos::RCP<Adapter::FluidAle> fluidale,
-        Teuchos::RCP<Core::LinAlg::Vector> deltadisp,
-        Teuchos::RCP<Core::LinAlg::Vector> idisp_fluid,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> deltadisp,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
    private:
     virtual void correct_vol_displacements_para_space(Teuchos::RCP<Adapter::FluidAle> fluidale,
-        Teuchos::RCP<Core::LinAlg::Vector> deltadisp,
-        Teuchos::RCP<Core::LinAlg::Vector> idisp_fluid,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> deltadisp,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
     virtual void correct_vol_displacements_phys_space(Teuchos::RCP<Adapter::FluidAle> fluidale,
-        Teuchos::RCP<Core::LinAlg::Vector> deltadisp,
-        Teuchos::RCP<Core::LinAlg::Vector> idisp_fluid,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> deltadisp,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_fluid,
         Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
 
     void init_dop_normals();

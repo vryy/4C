@@ -136,17 +136,18 @@ namespace Core::LinAlg
     /** \name Computational methods */
     //@{
 
-    /// Returns the result of a matrix multiplied by a Core::LinAlg::Vector x in y.
-    int multiply(bool TransA, const Core::LinAlg::Vector& x, Core::LinAlg::Vector& y) const;
+    /// Returns the result of a matrix multiplied by a Core::LinAlg::Vector<double> x in y.
+    int multiply(
+        bool TransA, const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& y) const;
 
     /// Returns the result of a Epetra_CrsMatrix multiplied by a Epetra_MultiVector X in Y.
     int multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
-    /// Scales the Epetra_CrsMatrix on the left with a Core::LinAlg::Vector x.
-    int left_scale(const Core::LinAlg::Vector& x);
+    /// Scales the Epetra_CrsMatrix on the left with a Core::LinAlg::Vector<double> x.
+    int left_scale(const Core::LinAlg::Vector<double>& x);
 
-    /// Scales the Epetra_CrsMatrix on the right with a Core::LinAlg::Vector x.
-    int right_scale(const Core::LinAlg::Vector& x);
+    /// Scales the Epetra_CrsMatrix on the right with a Core::LinAlg::Vector<double> x.
+    int right_scale(const Core::LinAlg::Vector<double>& x);
 
     //@}
 
@@ -160,7 +161,7 @@ namespace Core::LinAlg
     int scale(double ScalarConstant) override;
 
     /// Replaces diagonal values of the matrix with those in the user-provided vector.
-    int replace_diagonal_values(const Core::LinAlg::Vector& Diagonal);
+    int replace_diagonal_values(const Core::LinAlg::Vector<double>& Diagonal);
 
     //@}
 
@@ -168,7 +169,7 @@ namespace Core::LinAlg
     //@{
 
     /// Returns a copy of the main diagonal in a user-provided vector.
-    int extract_diagonal_copy(Core::LinAlg::Vector& Diagonal) const;
+    int extract_diagonal_copy(Core::LinAlg::Vector<double>& Diagonal) const;
 
     //@}
 

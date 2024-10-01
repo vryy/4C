@@ -432,7 +432,7 @@ class PostResult
    *
    *  \returns vector with results read
    */
-  Teuchos::RCP<Core::LinAlg::Vector> read_result(const std::string name);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> read_result(const std::string name);
 
   /*! \brief Reads the data of the result vector 'name' from the current result block
    *

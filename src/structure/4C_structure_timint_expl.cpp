@@ -101,9 +101,9 @@ void Solid::TimIntExpl::setup()
 /*----------------------------------------------------------------------*/
 /* evaluate external forces at t_{n+1} */
 void Solid::TimIntExpl::apply_force_external(const double time,  //!< evaluation time
-    const Teuchos::RCP<Core::LinAlg::Vector> dis,                //!< displacement state
-    const Teuchos::RCP<Core::LinAlg::Vector> vel,                //!< velocity state
-    Teuchos::RCP<Core::LinAlg::Vector>& fext                     //!< external force
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> dis,        //!< displacement state
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> vel,        //!< velocity state
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& fext             //!< external force
 )
 {
   Teuchos::ParameterList p;

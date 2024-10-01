@@ -355,12 +355,12 @@ namespace XFEM
         Teuchos::RCP<Cut::CutWizard> wizard_new,    /// cut wizard w.r.t. new interface position
         Teuchos::RCP<XFEM::XFEMDofSet> dofset_old,  /// XFEM dofset w.r.t. old interface position
         Teuchos::RCP<XFEM::XFEMDofSet> dofset_new,  /// XFEM dofset w.r.t. new interface position
-        std::vector<Teuchos::RCP<Core::LinAlg::Vector>>
+        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>
             oldVectors,  /// vector of col-vectors w.r.t. old interface position
-        Teuchos::RCP<Core::LinAlg::Vector> dispn,   /// displacment n
-        Teuchos::RCP<Core::LinAlg::Vector> dispnp,  /// displacment n +1
-        const Epetra_Map& olddofcolmap,             /// dofcolmap w.r.t. old interface position
-        const Epetra_Map& newdofrowmap,             /// dofcolmap w.r.t. new interface position
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dispn,   /// displacment n
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp,  /// displacment n +1
+        const Epetra_Map& olddofcolmap,  /// dofcolmap w.r.t. old interface position
+        const Epetra_Map& newdofrowmap,  /// dofcolmap w.r.t. new interface position
         const Teuchos::RCP<std::map<int, std::vector<int>>>
             pbcmap  /// map of periodic boundary conditions
     );
@@ -368,8 +368,8 @@ namespace XFEM
     //! destructor
     virtual ~XfluidTimeintBase() = default;
     //! perform the computation
-    virtual void compute(std::vector<Teuchos::RCP<Core::LinAlg::Vector>> newRowVectorsn,
-        std::vector<Teuchos::RCP<Core::LinAlg::Vector>> newRowVectorsnp)
+    virtual void compute(std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> newRowVectorsn,
+        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> newRowVectorsnp)
     {
       FOUR_C_THROW("Unused function! Use a function of the derived classes");
     };
@@ -402,7 +402,7 @@ namespace XFEM
 
    protected:
     //! initialize data to be set in every computation
-    void handle_vectors(std::vector<Teuchos::RCP<Core::LinAlg::Vector>>& newRowVectorsn);
+    void handle_vectors(std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& newRowVectorsn);
 
     //! return the number of Epetra vectors which shall get new values for a given node with
     //! according data
@@ -584,15 +584,15 @@ namespace XFEM
     const Epetra_Map olddofcolmap_;  //! dofcolmap w.r.t. old interface position
     const Epetra_Map newdofrowmap_;  //! dofcolmap w.r.t. new interface position
 
-    const std::vector<Teuchos::RCP<Core::LinAlg::Vector>>
+    const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>
         oldVectors_;  //! vector of col!-vectors w.r.t. old interface position
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector>>
+    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>
         newVectors_;  //! vector of row!-vectors w.r.t. new interface position (overwritten with
                       //! new information for non-predictor case and filled otherwise)
 
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         dispn_;  //! col!-displacement vector for timestep n w.r.t. old interface position
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         dispnp_;  //! col!-displacement vector for timestep n + 1 w.r.t. old interface position
 
     Teuchos::RCP<std::vector<TimeIntData>>
@@ -645,9 +645,9 @@ namespace XFEM
         const std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>>&
             reconstr_method,                      ///< reconstruction map for nodes and its dofsets
         Inpar::XFEM::XFluidTimeInt& timeIntType,  ///< type of time integration
-        const Teuchos::RCP<Core::LinAlg::Vector> veln,  ///< velocity at time t^n
-        const double& dt,                               ///< time step size
-        const bool initialize                           ///< is initialization?
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> veln,  ///< velocity at time t^n
+        const double& dt,                                       ///< time step size
+        const bool initialize                                   ///< is initialization?
     );
 
     /*========================================================================*/
@@ -655,7 +655,7 @@ namespace XFEM
     /*========================================================================*/
 
     //! perform the computation
-    virtual void compute(std::vector<Teuchos::RCP<Core::LinAlg::Vector>>& newRowVectorsn);
+    virtual void compute(std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& newRowVectorsn);
 
     /*========================================================================*/
     //! element based routines
@@ -678,8 +678,9 @@ namespace XFEM
         Core::LinAlg::Matrix<3, 3>& vel_deriv,        ///< determine velocity derivatives at point
         double& pres,                                 ///< pressure
         Core::LinAlg::Matrix<1, 3>& pres_deriv,       ///< pressure gradient
-        Teuchos::RCP<const Core::LinAlg::Vector> vel_vec,  ///< vector used for interpolating at gp
-        bool compute_deriv = true                          ///< shall derivatives be computed?
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            vel_vec,               ///< vector used for interpolating at gp
+        bool compute_deriv = true  ///< shall derivatives be computed?
     ) const;
 
     //! interpolate velocity and derivatives for a point in an element
@@ -692,18 +693,19 @@ namespace XFEM
         Core::LinAlg::Matrix<3, 3>& vel_deriv,   ///< determine velocity derivatives at point
         double& pres,                            ///< pressure
         Core::LinAlg::Matrix<1, 3>& pres_deriv,  ///< pressure gradient
-        Teuchos::RCP<const Core::LinAlg::Vector> vel_vec,  ///< vector used for interpolating at gp
-        bool compute_deriv = true                          ///< shall derivatives be computed?
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            vel_vec,               ///< vector used for interpolating at gp
+        bool compute_deriv = true  ///< shall derivatives be computed?
     ) const;
 
     //!  back-tracking of data at final Lagrangian origin of a point                       schott
     //!  04/12 *
     template <const int numnode>
     void extract_nodal_values_from_vector(
-        Core::LinAlg::Matrix<3, numnode>& evel,      ///< element velocities
-        Core::LinAlg::Matrix<numnode, 1>& epre,      ///< element pressure
-        Teuchos::RCP<Core::LinAlg::Vector> vel_vec,  ///< global vector
-        std::vector<int>& lm                         ///< local map
+        Core::LinAlg::Matrix<3, numnode>& evel,              ///< element velocities
+        Core::LinAlg::Matrix<numnode, 1>& epre,              ///< element pressure
+        Teuchos::RCP<Core::LinAlg::Vector<double>> vel_vec,  ///< global vector
+        std::vector<int>& lm                                 ///< local map
     )
     {
       const int nsd = 3;
@@ -949,7 +951,7 @@ namespace XFEM
     Inpar::XFEM::XFluidTimeInt
         timeIntType_;  //! which computation/reconstruction algorithm for standard dofs
 
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         veln_;  //! velocity w.r.t old interface position in column map
 
     const double dt_;  //! time step size

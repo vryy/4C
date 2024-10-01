@@ -1717,7 +1717,8 @@ void EnsightWriter::write_nurbs_cell(const Core::FE::CellType distype, const int
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const int numdf,
-    const Teuchos::RCP<Core::LinAlg::Vector> data, const std::string name, const int offset) const
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> data, const std::string name,
+    const int offset) const
 {
   using namespace FourC;
 
@@ -1912,8 +1913,8 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   coldofmapvec.clear();
 
   const Epetra_Map* fulldofmap = &(*coldofmap);
-  const Teuchos::RCP<Core::LinAlg::Vector> coldata =
-      Teuchos::rcp(new Core::LinAlg::Vector(*fulldofmap, true));
+  const Teuchos::RCP<Core::LinAlg::Vector<double>> coldata =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*fulldofmap, true));
 
   // create an importer and import the data
   Epetra_Import importer((*coldata).Map(), (*data).Map());
@@ -3537,8 +3538,8 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   {
     for (int idf = 0; idf < numdf; ++idf)
     {
-      Teuchos::RCP<Core::LinAlg::Vector> column =
-          Teuchos::rcp(new Core::LinAlg::Vector(*(*allsols)(idf)));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> column =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*(*allsols)(idf)));
       for (int inode = 0; inode < finalnumnode;
            inode++)  // inode == lid of node because we use proc0map_
       {

@@ -158,10 +158,10 @@ namespace FSI
 
     //! @name Transfer helpers that need access from outside
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector> struct_to_fluid(
-        Teuchos::RCP<Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_struct(
-        Teuchos::RCP<Core::LinAlg::Vector> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_fluid(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_struct(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
     //@}
 
    protected:
@@ -185,38 +185,38 @@ namespace FSI
 
     //! @name Transfer helpers
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector> struct_to_ale(
-        Teuchos::RCP<Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_struct(
-        Teuchos::RCP<Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_fluid(
-        Teuchos::RCP<Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_ale_interface(
-        Teuchos::RCP<Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_fluid_interface(
-        Teuchos::RCP<Core::LinAlg::Vector> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_ale(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_struct(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale_interface(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid_interface(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector> struct_to_ale(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_struct(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> struct_to_fluid(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_struct(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_fluid(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_ale_interface(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_fluid_interface(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_ale(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_struct(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_fluid(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_struct(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale_interface(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid_interface(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
 
     //@}
 
     //! @name Predictor/inhomogeneous Dirichlet related stuff
 
     //! structural displacement increment of interface DOFs due to predictor or inhomogeneous DBCs
-    Teuchos::RCP<Core::LinAlg::Vector> ddgpred_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ddgpred_;
 
     //@}
 
@@ -372,18 +372,20 @@ namespace FSI
         const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override;
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
             step_increment  ///< increment between time step n and n+1
     );
 
     /// apply infnorm scaling to linear block system
-    void scale_system(Core::LinAlg::Vector& b) override {}
+    void scale_system(Core::LinAlg::Vector<double>& b) override {}
 
     /// undo infnorm scaling from scaled solution
-    void unscale_solution(Core::LinAlg::Vector& x, Core::LinAlg::Vector& b) override {}
+    void unscale_solution(Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& b) override
+    {
+    }
 
     /// return Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface
-    virtual Teuchos::RCP<Core::LinAlg::Vector> get_lambda()
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> get_lambda()
     {
       FOUR_C_THROW("GetLambda not implemented in the base class");
       return Teuchos::null;
@@ -409,7 +411,7 @@ namespace FSI
      *  \sa setup_rhs_lambda()
      *  \sa setup_rhs_firstiter()
      */
-    void setup_rhs(Core::LinAlg::Vector& f,  ///< empty rhs vector (to be filled)
+    void setup_rhs(Core::LinAlg::Vector<double>& f,  ///< empty rhs vector (to be filled)
         bool firstcall = false  ///< indicates whether this is the first nonlinear iteration or not
         ) override;
 
@@ -441,9 +443,10 @@ namespace FSI
      *  \param fx (o) fluid velocities and pressure
      *  \param ax (o) ale displacements
      */
-    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
-        Teuchos::RCP<const Core::LinAlg::Vector>& sx, Teuchos::RCP<const Core::LinAlg::Vector>& fx,
-        Teuchos::RCP<const Core::LinAlg::Vector>& ax){};
+    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& ax){};
 
     /*! \brief Put all field vectors together to a monolithic vector
      *
@@ -456,8 +459,10 @@ namespace FSI
      *  @param [in] fv Fluid DOFs
      *  @param [in] av ALE DOfs
      */
-    void combine_field_vectors(Core::LinAlg::Vector& v, Teuchos::RCP<const Core::LinAlg::Vector> sv,
-        Teuchos::RCP<const Core::LinAlg::Vector> fv, Teuchos::RCP<const Core::LinAlg::Vector> av);
+    void combine_field_vectors(Core::LinAlg::Vector<double>& v,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> av);
 
     /*! @brief Put three field vectors together to a monolithic vector
      *
@@ -482,9 +487,10 @@ namespace FSI
      *  @param [in] slave_vectors_contain_interface_dofs  Flag to indicate wheter all vectors
      * contain all DOFs (true) or slave vectors contain only inner DOFs (false)
      */
-    virtual void combine_field_vectors(Core::LinAlg::Vector& v,
-        Teuchos::RCP<const Core::LinAlg::Vector> sv, Teuchos::RCP<const Core::LinAlg::Vector> fv,
-        Teuchos::RCP<const Core::LinAlg::Vector> av,
+    virtual void combine_field_vectors(Core::LinAlg::Vector<double>& v,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> av,
         const bool slave_vectors_contain_interface_dofs) = 0;
 
     //! @name Access methods for subclasses
@@ -535,7 +541,7 @@ namespace FSI
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     //! Create initial guess for monolithic solution vector from data of the single fields
-    virtual void initial_guess(Teuchos::RCP<Core::LinAlg::Vector> initial_guess);
+    virtual void initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess);
 
     //! @name FSI time adaptivity
     //@{
@@ -678,17 +684,17 @@ namespace FSI
     //! setup RHS contributions based on single field residuals
     //!
     //! \sa setup_rhs()
-    virtual void setup_rhs_residual(Core::LinAlg::Vector& f) = 0;
+    virtual void setup_rhs_residual(Core::LinAlg::Vector<double>& f) = 0;
 
     //! setup RHS contributions based on the Lagrange multiplier field
     //!
     //! \sa setup_rhs()
-    virtual void setup_rhs_lambda(Core::LinAlg::Vector& f) = 0;
+    virtual void setup_rhs_lambda(Core::LinAlg::Vector<double>& f) = 0;
 
     //! setup RHS contributions based on terms for first nonlinear iteration
     //!
     //! \sa setup_rhs()
-    virtual void setup_rhs_firstiter(Core::LinAlg::Vector& f) = 0;
+    virtual void setup_rhs_firstiter(Core::LinAlg::Vector<double>& f) = 0;
 
     //@}
 
@@ -1017,10 +1023,13 @@ namespace FSI
      *  This affects only the main diagonal blocks, not the off-diagonal
      *  coupling blocks.
      */
-    void scale_system(Core::LinAlg::Vector& b) override { scale_system(*system_matrix(), b); }
+    void scale_system(Core::LinAlg::Vector<double>& b) override
+    {
+      scale_system(*system_matrix(), b);
+    }
 
     /// undo infnorm scaling from scaled solution
-    void unscale_solution(Core::LinAlg::Vector& x, Core::LinAlg::Vector& b) override
+    void unscale_solution(Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& b) override
     {
       unscale_solution(*system_matrix(), x, b);
     }
@@ -1030,11 +1039,14 @@ namespace FSI
      *  This affects only the main diagonal blocks, not the off-diagonal
      *  coupling blocks.
      */
-    virtual void scale_system(Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& b) {}
+    virtual void scale_system(
+        Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector<double>& b)
+    {
+    }
 
     /// undo infnorm scaling from scaled solution
-    virtual void unscale_solution(
-        Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& x, Core::LinAlg::Vector& b)
+    virtual void unscale_solution(Core::LinAlg::BlockSparseMatrixBase& mat,
+        Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& b)
     {
     }
 
@@ -1073,8 +1085,10 @@ namespace FSI
         Teuchos::RCP<::NOX::Utils> utils   ///< NOX utils
         ) override;
 
-    void combine_field_vectors(Core::LinAlg::Vector& v, Teuchos::RCP<const Core::LinAlg::Vector> sv,
-        Teuchos::RCP<const Core::LinAlg::Vector> fv, Teuchos::RCP<const Core::LinAlg::Vector> av,
+    void combine_field_vectors(Core::LinAlg::Vector<double>& v,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> av,
         const bool slave_vectors_contain_interface_dofs) override{};
 
     /// debug writer to be used inside preconditioner
@@ -1096,13 +1110,13 @@ namespace FSI
     //@{
 
     /// setup RHS contributions based on single field residuals
-    void setup_rhs_residual(Core::LinAlg::Vector& f) override = 0;
+    void setup_rhs_residual(Core::LinAlg::Vector<double>& f) override = 0;
 
     /// setup RHS contributions based on the Lagrange multiplier field
-    void setup_rhs_lambda(Core::LinAlg::Vector& f) override = 0;
+    void setup_rhs_lambda(Core::LinAlg::Vector<double>& f) override = 0;
 
     /// setup RHS contributions based on terms for first nonlinear iteration
-    void setup_rhs_firstiter(Core::LinAlg::Vector& f) override = 0;
+    void setup_rhs_firstiter(Core::LinAlg::Vector<double>& f) override = 0;
 
     //@}
 

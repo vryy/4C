@@ -94,13 +94,13 @@ namespace Adapter
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() = 0;
 
     //! right-hand side alias the dynamic force residual
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> rhs() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() const = 0;
 
     //! return pressure field at time n+1
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> pressurenp() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> pressurenp() const = 0;
 
     //! iterative update of primary variable
-    virtual void update_iter(const Teuchos::RCP<const Core::LinAlg::Vector> inc) = 0;
+    virtual void update_iter(const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) = 0;
 
     // solve scalar transport in arteries
     virtual void solve_scatra() = 0;

@@ -149,13 +149,13 @@ namespace LowMach
     Teuchos::RCP<Epetra_Map> lomadbcmap_;
 
     /// incremental vector for monolithic solver
-    Teuchos::RCP<Core::LinAlg::Vector> lomaincrement_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lomaincrement_;
 
     /// rhs vector for monolithic solver
-    Teuchos::RCP<Core::LinAlg::Vector> lomarhs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lomarhs_;
 
     /// vector of zeros for Dirichlet boundary conditions for monolithic solver
-    Teuchos::RCP<Core::LinAlg::Vector> zeros_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;
 
     /// block matrix for monolithic solver
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> lomasystemmatrix_;

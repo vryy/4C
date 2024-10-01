@@ -80,40 +80,40 @@ namespace Adapter
         const std::string& couplingcond) override;
 
     /// perform interface integration
-    virtual void integrate(Teuchos::RCP<const Core::LinAlg::Vector> disp, const double dt);
+    virtual void integrate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp, const double dt);
 
     /// perform condensation of contact Lagrange multipliers
     virtual void condense_contact(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector>& combined_RHS,
-        Teuchos::RCP<const Core::LinAlg::Vector> disp, const double dt);
-    virtual void recover_coupled(
-        Teuchos::RCP<Core::LinAlg::Vector> sinc, Teuchos::RCP<Core::LinAlg::Vector> tinc);
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& combined_RHS,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp, const double dt);
+    virtual void recover_coupled(Teuchos::RCP<Core::LinAlg::Vector<double>> sinc,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> tinc);
 
     void evaluate_rel_mov();
     void store_dirichlet_status(Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps);
 
     /// check whether this displacement state has already been evaluated
-    virtual bool already_evaluated(Teuchos::RCP<const Core::LinAlg::Vector> disp);
+    virtual bool already_evaluated(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp);
 
     /// Assemble linearization D_{ij,k}*x_i
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> assemble_ehl_lin_d(
-        const Teuchos::RCP<Core::LinAlg::Vector> x);
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> x);
 
     /// Assemble linearization M_{il,k}*x_i
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> assemble_ehl_lin_m(
-        const Teuchos::RCP<Core::LinAlg::Vector> x);
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> x);
 
     /// Assemble linearization G_{ij,k}*x_i
     Teuchos::RCP<Core::LinAlg::SparseMatrix> assemble_surf_grad_deriv(
-        const Teuchos::RCP<const Core::LinAlg::Vector> x);
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> x);
 
     virtual void write_restart(Core::IO::DiscretizationWriter& output);
     virtual void read_restart(Core::IO::DiscretizationReader& reader);
-    void create_active_slip_toggle(Teuchos::RCP<Core::LinAlg::Vector>* active,
-        Teuchos::RCP<Core::LinAlg::Vector>* slip,
-        Teuchos::RCP<Core::LinAlg::Vector>* active_old = nullptr);
-    void create_force_vec(
-        Teuchos::RCP<Core::LinAlg::Vector>& n, Teuchos::RCP<Core::LinAlg::Vector>& t);
+    void create_active_slip_toggle(Teuchos::RCP<Core::LinAlg::Vector<double>>* active,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>* slip,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>* active_old = nullptr);
+    void create_force_vec(Teuchos::RCP<Core::LinAlg::Vector<double>>& n,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& t);
     bool has_contact() { return contact_regularization_; }
     double contact_res() { return contact_rhs_norm_; }
     double contact_incr() { return contact_LM_incr_norm_; }
@@ -125,25 +125,25 @@ namespace Adapter
     //@{
 
     /// relative tangential velocity
-    virtual Teuchos::RCP<Core::LinAlg::Vector> rel_tang_vel() { return relTangVel_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> rel_tang_vel() { return relTangVel_; }
     /// relative tangential velocity derivative
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> rel_tang_vel_deriv()
     {
       return relTangVel_deriv_;
     }
     /// average tangential velocity
-    virtual Teuchos::RCP<Core::LinAlg::Vector> av_tang_vel() { return avTangVel_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> av_tang_vel() { return avTangVel_; }
     /// average tangential velocity derivative
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> av_tang_vel_deriv()
     {
       return avTangVel_deriv_;
     }
     /// nodal gap (not weighted)
-    virtual Teuchos::RCP<Core::LinAlg::Vector> nodal_gap() { return nodal_gap_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> nodal_gap() { return nodal_gap_; }
     /// nodal gap (not weighted) derivative
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> nodal_gap_deriv() { return deriv_nodal_gap_; }
     /// nodal normals
-    virtual Teuchos::RCP<Core::LinAlg::Vector> normals() { return normals_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> normals() { return normals_; }
     /// nodal normals derivative
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> nderiv_matrix() { return Nderiv_; }
     /// surfrace gradient operator
@@ -155,7 +155,7 @@ namespace Adapter
    private:
     //! @name Unwanted parent functions
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector> gap() override
+    Teuchos::RCP<Core::LinAlg::Vector<double>> gap() override
     {
       FOUR_C_THROW("stop");
       return Teuchos::null;
@@ -166,13 +166,16 @@ namespace Adapter
       return Teuchos::null;
     }
     void evaluate() override { FOUR_C_THROW("stop"); }
-    void evaluate(Teuchos::RCP<Core::LinAlg::Vector> idisp) override { FOUR_C_THROW("stop"); }
+    void evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp) override
+    {
+      FOUR_C_THROW("stop");
+    }
     void evaluate_with_mesh_relocation(
-        Teuchos::RCP<Core::FE::Discretization> slavedis,  ///< slave discretization
-        Teuchos::RCP<Core::FE::Discretization> aledis,    ///< ALE discretization
-        Teuchos::RCP<Core::LinAlg::Vector>& idisp,        ///< ALE displacements
-        const Epetra_Comm& comm,                          ///< communicator
-        bool slavewithale                                 ///< flag defining if slave is ALE
+        Teuchos::RCP<Core::FE::Discretization> slavedis,    ///< slave discretization
+        Teuchos::RCP<Core::FE::Discretization> aledis,      ///< ALE discretization
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& idisp,  ///< ALE displacements
+        const Epetra_Comm& comm,                            ///< communicator
+        bool slavewithale                                   ///< flag defining if slave is ALE
         ) override
     {
       FOUR_C_THROW("stop");
@@ -206,27 +209,28 @@ namespace Adapter
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         SurfGrad_;  ///< matrix to compute surface gradient at nodes: Grad(x) \approx TangGrad * x
-    Teuchos::RCP<Core::LinAlg::Vector> relTangVel_;  ///< relative tangential velocity
+    Teuchos::RCP<Core::LinAlg::Vector<double>> relTangVel_;  ///< relative tangential velocity
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
-        relTangVel_deriv_;                          ///< derivative of relative tangential velocity
-    Teuchos::RCP<Core::LinAlg::Vector> avTangVel_;  ///< average tangential velocity
+        relTangVel_deriv_;  ///< derivative of relative tangential velocity
+    Teuchos::RCP<Core::LinAlg::Vector<double>> avTangVel_;  ///< average tangential velocity
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
-        avTangVel_deriv_;                           ///< derivative of average tangential velocity
-    Teuchos::RCP<Core::LinAlg::Vector> nodal_gap_;  ///< NOT the weighted gap but the real distance
+        avTangVel_deriv_;  ///< derivative of average tangential velocity
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        nodal_gap_;  ///< NOT the weighted gap but the real distance
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
-        deriv_nodal_gap_;                         ///< derivative of nodal_gap_ w.r.t. displacements
-    Teuchos::RCP<Core::LinAlg::Vector> normals_;  ///< nodal normals (slave side)
+        deriv_nodal_gap_;  ///< derivative of nodal_gap_ w.r.t. displacements
+    Teuchos::RCP<Core::LinAlg::Vector<double>> normals_;  ///< nodal normals (slave side)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> Nderiv_;  ///< derivtative of nodal slave-sided normals
 
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         evaluated_state_;  ///< displacement state that has last been evaluated
 
     bool as_converged_;
     double contact_rhs_norm_;
     double contact_LM_incr_norm_;
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         fscn_;  // structural contact forces of last time step (needed for time integration)
-    Teuchos::RCP<Core::LinAlg::Vector> z_;  //  contact lagrange mulitplier
+    Teuchos::RCP<Core::LinAlg::Vector<double>> z_;  //  contact lagrange mulitplier
 
     // recovery of contact LM
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
@@ -235,9 +239,10 @@ namespace Adapter
         kss_a_;  // Part of structure-stiffness (kss) that corresponds to active slave rows
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         kst_a_;  // Part of coupling-stiffness  (kst) that corresponds to active slave rows
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         rs_a_;  // Part of structural residual that corresponds to active slave rows
-    Teuchos::RCP<Core::LinAlg::Vector> sdirichtoggle_;  // global dirichlet toggle of all slave dofs
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        sdirichtoggle_;  // global dirichlet toggle of all slave dofs
 
     bool contact_regularization_;
     double regularization_thickness_;

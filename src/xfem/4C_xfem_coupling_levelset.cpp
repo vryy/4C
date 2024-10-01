@@ -380,7 +380,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
 
   // make a copy of last time step
 
-  Teuchos::RCP<Core::LinAlg::Vector> delta_phi =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> delta_phi =
       Core::LinAlg::create_vector(cutter_phinp_->Map(), true);
   delta_phi->Update(1.0, *cutter_phinp_, 0.0);
 
@@ -454,8 +454,8 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
       // nice implementation?
       const Epetra_Map* modphinp_dofrowmap =
           Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)->initial_dof_row_map();
-      Teuchos::RCP<Core::LinAlg::Vector> modphinp =
-          Teuchos::rcp(new Core::LinAlg::Vector(*modphinp_dofrowmap, true));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> modphinp =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*modphinp_dofrowmap, true));
 
       double* val = cutter_phinp_->Values();
 
@@ -540,9 +540,9 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
  *---------------------------------------------------------------------------*/
 void XFEM::LevelSetCoupling::map_cutter_to_bg_vector(
     const Teuchos::RCP<Core::FE::Discretization>& source_dis,
-    const Teuchos::RCP<Core::LinAlg::Vector>& source_vec_dofbased, const int source_nds,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>& source_vec_dofbased, const int source_nds,
     const Teuchos::RCP<Core::FE::Discretization>& target_dis,
-    const Teuchos::RCP<Core::LinAlg::Vector>& target_vec_dofbased, const int target_nds)
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>& target_vec_dofbased, const int target_nds)
 {
   if (have_matching_nodes(source_dis, target_dis))  // check for equal node positions
   {
@@ -582,9 +582,10 @@ void XFEM::LevelSetCoupling::map_cutter_to_bg_vector(
   }
 }
 
-Teuchos::RCP<Core::LinAlg::Vector> XFEM::LevelSetCoupling::get_level_set_field_as_node_row_vector()
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+XFEM::LevelSetCoupling::get_level_set_field_as_node_row_vector()
 {
-  Teuchos::RCP<Core::LinAlg::Vector> bg_phinp_nodemap_ =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> bg_phinp_nodemap_ =
       Core::LinAlg::create_vector(*bg_dis_->node_row_map(), true);
 
   // loop the nodes

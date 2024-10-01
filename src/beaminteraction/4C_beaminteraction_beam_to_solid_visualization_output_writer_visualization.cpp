@@ -100,8 +100,9 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
     FOUR_C_THROW("discretization or node GID map is not set!");
 
   // Extract the vector according to the GIDs needed on this rank.
-  Teuchos::RCP<Core::LinAlg::Vector> vector_extract =
-      Teuchos::rcp<Core::LinAlg::Vector>(new Core::LinAlg::Vector(*node_gid_map_, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> vector_extract =
+      Teuchos::rcp<Core::LinAlg::Vector<double>>(
+          new Core::LinAlg::Vector<double>(*node_gid_map_, true));
   Core::LinAlg::export_to(*vector, *vector_extract);
 
   // Add the values form the vector to the writer data.
@@ -113,7 +114,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
 }
 
 void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::add_discretization_nodal_data(
-    const std::string& data_name, const Teuchos::RCP<const Core::LinAlg::Vector>& vector)
+    const std::string& data_name, const Teuchos::RCP<const Core::LinAlg::Vector<double>>& vector)
 {
   add_discretization_nodal_data_from_multivector(
       data_name, vector->get_ptr_of_const_Epetra_Vector());

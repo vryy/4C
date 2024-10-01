@@ -22,8 +22,6 @@
 #include "4C_rebalance_print.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_IntVector.h>
-
 #include <utility>
 
 FOUR_C_NAMESPACE_OPEN
@@ -37,7 +35,7 @@ void Core::Rebalance::rebalance_discretizations_by_binning(
     const std::vector<Teuchos::RCP<Core::FE::Discretization>>& vector_of_discretizations,
     std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node,
     std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
-        const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector> disnp)>
+        const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)>
         determine_relevant_points,
     bool revertextendedghosting)
 {
@@ -546,9 +544,9 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> Core::Rebalance::get_col_version_of_row_vector(
+Teuchos::RCP<const Core::LinAlg::Vector<double>> Core::Rebalance::get_col_version_of_row_vector(
     const Teuchos::RCP<const Core::FE::Discretization> dis,
-    const Teuchos::RCP<const Core::LinAlg::Vector> state, const int nds)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> state, const int nds)
 {
   // note that this routine has the same functionality as set_state,
   // although here we do not store the new vector anywhere
@@ -567,7 +565,7 @@ Teuchos::RCP<const Core::LinAlg::Vector> Core::Rebalance::get_col_version_of_row
   // if it's not in column map export and allocate
   else
   {
-    Teuchos::RCP<Core::LinAlg::Vector> tmp = Core::LinAlg::create_vector(*colmap, false);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> tmp = Core::LinAlg::create_vector(*colmap, false);
     Core::LinAlg::export_to(*state, *tmp);
     return tmp;
   }

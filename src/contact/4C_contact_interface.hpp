@@ -170,13 +170,13 @@ namespace CONTACT
 
     inline Teuchos::RCP<const SelfBinaryTree> binary_tree_self() const { return binarytreeself_; }
 
-    inline Teuchos::RCP<Core::LinAlg::Vector>& cn_values() { return cn_values_; }
+    inline Teuchos::RCP<Core::LinAlg::Vector<double>>& cn_values() { return cn_values_; }
 
-    inline Teuchos::RCP<const Core::LinAlg::Vector> cn_values() const { return cn_values_; }
+    inline Teuchos::RCP<const Core::LinAlg::Vector<double>> cn_values() const { return cn_values_; }
 
-    inline Teuchos::RCP<Core::LinAlg::Vector>& ct_values() { return ct_values_; }
+    inline Teuchos::RCP<Core::LinAlg::Vector<double>>& ct_values() { return ct_values_; }
 
-    inline Teuchos::RCP<const Core::LinAlg::Vector> ct_values() const { return ct_values_; }
+    inline Teuchos::RCP<const Core::LinAlg::Vector<double>> ct_values() const { return ct_values_; }
 
     inline int& sm_pairs() { return smpairs_; }
 
@@ -271,10 +271,10 @@ namespace CONTACT
     Teuchos::RCP<SelfBinaryTree> binarytreeself_;
 
     //! cn-values of each node
-    Teuchos::RCP<Core::LinAlg::Vector> cn_values_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> cn_values_;
 
     //! ct-values of each node
-    Teuchos::RCP<Core::LinAlg::Vector> ct_values_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ct_values_;
 
     //! proc local number of slave/master pairs
     int smpairs_;
@@ -824,7 +824,7 @@ namespace CONTACT
     evaluated here.
 
     */
-    virtual void evaluate_relative_movement(const Teuchos::RCP<Core::LinAlg::Vector> xsmod,
+    virtual void evaluate_relative_movement(const Teuchos::RCP<Core::LinAlg::Vector<double>> xsmod,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrixmod,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix> doldmod);
 
@@ -832,7 +832,7 @@ namespace CONTACT
       \brief Evaluate nodal distances and linearization
 
     */
-    virtual void evaluate_distances(const Teuchos::RCP<const Core::LinAlg::Vector>& vec,
+    virtual void evaluate_distances(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec,
         std::map<int, std::vector<double>>& mynormals,
         std::map<int, std::vector<Core::Gen::Pairedvector<int, double>>>& dmynormals,
         std::map<int, double>& mygap, std::map<int, std::map<int, double>>& dmygap);
@@ -841,7 +841,7 @@ namespace CONTACT
     \brief Assemble slave coordinates (xs)
 
     */
-    virtual void assemble_slave_coord(Teuchos::RCP<Core::LinAlg::Vector>& xsmod);
+    virtual void assemble_slave_coord(Teuchos::RCP<Core::LinAlg::Vector<double>>& xsmod);
 
     /*!
     \brief Evaluate L2 Norm of tangential contact conditions
@@ -968,17 +968,17 @@ namespace CONTACT
     in CONTACT::AbstractStrategy::initialize_mortar()/assemble_mortar() -> gsnoderowmap_!!!
 
     */
-    virtual void assemble_g(Core::LinAlg::Vector& gglobal);
+    virtual void assemble_g(Core::LinAlg::Vector<double>& gglobal);
 
     /*!
     \brief Assemble inactive rhs (incremental delta_z_)
     */
-    virtual void assemble_inactiverhs(Core::LinAlg::Vector& inactiverhs);
+    virtual void assemble_inactiverhs(Core::LinAlg::Vector<double>& inactiverhs);
 
     /*!
     \brief Assemble tangential rhs (incremental delta_z_)
     */
-    virtual void assemble_tangrhs(Core::LinAlg::Vector& tangrhs);
+    virtual void assemble_tangrhs(Core::LinAlg::Vector<double>& tangrhs);
 
     /*!
     \brief Assemble matrix LinStick containing linearizations
@@ -990,7 +990,8 @@ namespace CONTACT
 
     */
     virtual void assemble_lin_stick(Core::LinAlg::SparseMatrix& linstickLMglobal,
-        Core::LinAlg::SparseMatrix& linstickDISglobal, Core::LinAlg::Vector& linstickRHSglobal);
+        Core::LinAlg::SparseMatrix& linstickDISglobal,
+        Core::LinAlg::Vector<double>& linstickRHSglobal);
     /*!
     \brief Assemble matrix LinSlip containing linearizations
 
@@ -1001,20 +1002,21 @@ namespace CONTACT
 
     */
     virtual void assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLMglobal,
-        Core::LinAlg::SparseMatrix& linslipDISglobal, Core::LinAlg::Vector& linslipRHSglobal);
+        Core::LinAlg::SparseMatrix& linslipDISglobal,
+        Core::LinAlg::Vector<double>& linslipRHSglobal);
 
     /*!
       \brief Assemble linearization of regularized normal constraint
     */
     virtual void assemble_normal_contact_regularization(Core::LinAlg::SparseMatrix& d_disp,
-        Core::LinAlg::SparseMatrix& d_lm, Core::LinAlg::Vector& f);
+        Core::LinAlg::SparseMatrix& d_lm, Core::LinAlg::Vector<double>& f);
 
     /*!
       \brief Assemble linearization of slip condition with regularized normal constraint
     */
     virtual void assemble_lin_slip_normal_regularization(
         Core::LinAlg::SparseMatrix& linslipLMglobal, Core::LinAlg::SparseMatrix& linslipDISglobal,
-        Core::LinAlg::Vector& linslipRHSglobal);
+        Core::LinAlg::Vector<double>& linslipRHSglobal);
 
 
     /*!
@@ -1081,7 +1083,7 @@ namespace CONTACT
     \brief Assemble normal coupling weighted condition. It is useful for poro contact
 
     */
-    virtual void assemble_normal_coupling(Core::LinAlg::Vector& gglobal);
+    virtual void assemble_normal_coupling(Core::LinAlg::Vector<double>& gglobal);
 
     /*!
     \brief Assemble linearisation of normal coupling weighted condition for poro contact
@@ -1102,7 +1104,7 @@ namespace CONTACT
     @param x ??
     */
     virtual void assemble_coup_lin_d(
-        Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Core::LinAlg::Vector> x);
+        Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Core::LinAlg::Vector<double>> x);
 
     /*! \brief Derivative of (transposed) M-matrix multiplied with a slave dof vector
 
@@ -1112,7 +1114,7 @@ namespace CONTACT
     @param x ??
     */
     virtual void assemble_coup_lin_m(
-        Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Core::LinAlg::Vector> x);
+        Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Core::LinAlg::Vector<double>> x);
 
     /*!
     \brief Store current (contact) nodal entries to old ones
@@ -1294,34 +1296,34 @@ namespace CONTACT
 
     //! @}
    public:
-    Teuchos::RCP<const Core::LinAlg::Vector> cn() const { return cnValues_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> cn() const { return cnValues_; };
 
-    const Core::LinAlg::Vector& cn_ref() const
+    const Core::LinAlg::Vector<double>& cn_ref() const
     {
       if (cnValues_.is_null()) FOUR_C_THROW("The cnValues_ is not initialized!");
       return *cnValues_;
     }
 
-    Teuchos::RCP<const Core::LinAlg::Vector> ct() const { return ctValues_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> ct() const { return ctValues_; };
 
-    const Core::LinAlg::Vector& ct_ref() const
+    const Core::LinAlg::Vector<double>& ct_ref() const
     {
       if (ctValues_.is_null()) FOUR_C_THROW("The ctValues_ is not initialized!");
       return *ctValues_;
     }
 
    private:
-    Teuchos::RCP<Core::LinAlg::Vector>& get_cn() { return cnValues_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& get_cn() { return cnValues_; };
 
-    Core::LinAlg::Vector& get_cn_ref()
+    Core::LinAlg::Vector<double>& get_cn_ref()
     {
       if (cnValues_.is_null()) FOUR_C_THROW("The cnValues_ is not initialized!");
       return *cnValues_;
     }
 
-    Teuchos::RCP<Core::LinAlg::Vector>& get_ct() { return ctValues_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& get_ct() { return ctValues_; };
 
-    Core::LinAlg::Vector& get_ct_ref()
+    Core::LinAlg::Vector<double>& get_ct_ref()
     {
       if (ctValues_.is_null()) FOUR_C_THROW("The ctValues_ is not initialized!");
       return *ctValues_;
@@ -1646,8 +1648,8 @@ namespace CONTACT
     Teuchos::RCP<SelfBinaryTree>& binarytreeself_;  ///< ref. to binary tree for self contact search
 
     //! cn-values of each node
-    Teuchos::RCP<Core::LinAlg::Vector>& cnValues_;  ///< ref. to cn
-    Teuchos::RCP<Core::LinAlg::Vector>& ctValues_;  ///< ref. to ct
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& cnValues_;  ///< ref. to cn
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& ctValues_;  ///< ref. to ct
 
     int& smpairs_;     ///< ref. to proc local number of slave/master pairs
     int& smintpairs_;  ///< ref. to proc local number of slave/master integration pairs

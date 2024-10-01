@@ -18,7 +18,6 @@
 #include "4C_fem_dofset_base.hpp"
 #include "4C_fem_general_node.hpp"
 
-#include <Epetra_IntVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -325,7 +324,7 @@ namespace Core::DOFSets
 
     //! map containing the mapping of the target node GID to the corresponding source node GID
     //! (value)
-    Teuchos::RCP<Epetra_IntVector> targetlidtosourcegidmapping_;
+    Teuchos::RCP<Core::LinAlg::Vector<int>> targetlidtosourcegidmapping_;
 
     //! source discretization
     Teuchos::RCP<const Core::FE::Discretization> sourcedis_;

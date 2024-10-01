@@ -100,7 +100,7 @@ namespace FLD
     \brief update within iteration
 
     */
-    void iter_update(const Teuchos::RCP<const Core::LinAlg::Vector> increment) override;
+    void iter_update(const Teuchos::RCP<const Core::LinAlg::Vector<double>> increment) override;
 
     /*!
     \brief Update the solution after convergence of the nonlinear
@@ -143,9 +143,9 @@ namespace FLD
     \brief accessor to interior velocity
 
     */
-    virtual Teuchos::RCP<Core::LinAlg::Vector> return_int_velnp() { return intvelnp_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector> return_int_veln() { return intveln_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector> return_int_velnm() { return intvelnm_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> return_int_velnp() { return intvelnp_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> return_int_veln() { return intveln_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> return_int_velnm() { return intvelnm_; }
 
 
    protected:
@@ -166,24 +166,25 @@ namespace FLD
 
     //! @name mixed variable, density and momentum at time n+1, n, n-1
     //!  and n+alpha_F for element interior in HDG
-    Teuchos::RCP<Core::LinAlg::Vector> intvelnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> intveln_;
-    Teuchos::RCP<Core::LinAlg::Vector> intvelnm_;
-    Teuchos::RCP<Core::LinAlg::Vector> intvelaf_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intveln_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intvelnm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intvelaf_;
     //@}
 
     //! @name time derivatives at time n+1, n and n+alpha_M/(n+alpha_M/n)
     //!  and n-1 for element interior in HDG
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector> intaccnp_;  ///< acceleration at time \f$t^{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> intaccn_;   ///< acceleration at time \f$t^{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> intaccnm_;  ///< acceleration at time \f$t^{n-1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> intaccam_;  ///< acceleration at time \f$t^{n+\alpha_M}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intaccnp_;  ///< acceleration at time \f$t^{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intaccn_;   ///< acceleration at time \f$t^{n}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> intaccnm_;  ///< acceleration at time \f$t^{n-1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        intaccam_;  ///< acceleration at time \f$t^{n+\alpha_M}\f$
     //@}
 
     //! @name other HDG-specific auxiliary vectors for output
     Teuchos::RCP<Epetra_MultiVector> interpolatedMixedVar_;
-    Teuchos::RCP<Core::LinAlg::Vector> interpolatedDensity_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> interpolatedDensity_;
     //@}
 
 

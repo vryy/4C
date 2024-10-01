@@ -331,7 +331,7 @@ void PoroElast::print_logo()
 }
 
 double PoroElast::UTILS::calculate_vector_norm(const enum Inpar::PoroElast::VectorNorm norm,
-    const Teuchos::RCP<const Core::LinAlg::Vector> vect)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> vect)
 {
   // L1 norm
   // norm = sum_0^i vect[i]

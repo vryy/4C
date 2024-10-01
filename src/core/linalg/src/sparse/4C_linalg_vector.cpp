@@ -9,106 +9,207 @@
 
 #include <Epetra_Vector.h>
 
+// Do not lint the file for identifier names, since the naming of the Wrapper functions follow the
+// naming of the Epetra_Vector
+
+// NOLINTBEGIN(readability-identifier-naming)
+
 FOUR_C_NAMESPACE_OPEN
-Core::LinAlg::Vector::Vector(const Epetra_BlockMap& Map, bool zeroOut)
+template <typename T>
+Core::LinAlg::Vector<T>::Vector(const Epetra_BlockMap& Map, bool zeroOut)
     : vector_(Teuchos::make_rcp<Epetra_Vector>(Map, zeroOut))
 {
 }
 
-Core::LinAlg::Vector::Vector(const Epetra_Vector& Source)
+template <typename T>
+Core::LinAlg::Vector<T>::Vector(const Epetra_Vector& Source)
     : vector_(Teuchos::make_rcp<Epetra_Vector>(Source))
 {
 }
 
-Core::LinAlg::Vector::Vector(const Epetra_FEVector& Source)
+template <typename T>
+Core::LinAlg::Vector<T>::Vector(const Epetra_FEVector& Source)
     : vector_(Teuchos::make_rcp<Epetra_Vector>(Epetra_DataAccess::Copy, Source, 0))
 {
 }
 
-Core::LinAlg::Vector::Vector(const Vector& other)
+template <typename T>
+Core::LinAlg::Vector<T>::Vector(const Vector& other)
     : vector_(Teuchos::make_rcp<Epetra_Vector>(other.get_ref_of_Epetra_Vector()))
 {
 }
 
 
-Core::LinAlg::Vector::Vector(Vector&& other) noexcept : vector_(std::move(other.vector_)) {}
+template <typename T>
+Core::LinAlg::Vector<T>::Vector(Vector&& other) noexcept : vector_(std::move(other.vector_))
+{
+}
 
 
-Core::LinAlg::Vector& Core::LinAlg::Vector::operator=(const Vector& other)
+template <typename T>
+Core::LinAlg::Vector<T>& Core::LinAlg::Vector<T>::operator=(const Vector& other)
 {
   vector_ = Teuchos::rcp(new Epetra_Vector(other.get_ref_of_Epetra_Vector()));
   return *this;
 }
 
-Core::LinAlg::Vector& Core::LinAlg::Vector::operator=(Vector&& other) noexcept
+template <typename T>
+Core::LinAlg::Vector<T>& Core::LinAlg::Vector<T>::operator=(Vector&& other) noexcept
 {
   vector_ = std::move(other.vector_);
   return *this;
 }
 
 
-int Core::LinAlg::Vector::Norm1(double* Result) const { return vector_->Norm1(Result); }
+template <typename T>
+int Core::LinAlg::Vector<T>::Norm1(double* Result) const
+{
+  return vector_->Norm1(Result);
+}
 
-int Core::LinAlg::Vector::Norm2(double* Result) const { return vector_->Norm2(Result); }
+template <typename T>
+int Core::LinAlg::Vector<T>::Norm2(double* Result) const
+{
+  return vector_->Norm2(Result);
+}
 
-int Core::LinAlg::Vector::NormInf(double* Result) const { return vector_->NormInf(Result); }
+template <typename T>
+int Core::LinAlg::Vector<T>::NormInf(double* Result) const
+{
+  return vector_->NormInf(Result);
+}
 
-int Core::LinAlg::Vector::MinValue(double* Result) const { return vector_->MinValue(Result); }
+template <typename T>
+int Core::LinAlg::Vector<T>::MinValue(double* Result) const
+{
+  return vector_->MinValue(Result);
+}
 
-int Core::LinAlg::Vector::MaxValue(double* Result) const { return vector_->MaxValue(Result); }
+template <typename T>
+int Core::LinAlg::Vector<T>::MaxValue(double* Result) const
+{
+  return vector_->MaxValue(Result);
+}
 
-int Core::LinAlg::Vector::MeanValue(double* Result) const { return vector_->MeanValue(Result); }
+template <typename T>
+int Core::LinAlg::Vector<T>::MeanValue(double* Result) const
+{
+  return vector_->MeanValue(Result);
+}
 
-int Core::LinAlg::Vector::Dot(const Epetra_MultiVector& A, double* Result) const
+template <typename T>
+int Core::LinAlg::Vector<T>::Dot(const Epetra_MultiVector& A, double* Result) const
 {
   return vector_->Dot(A, Result);
 }
 
-int Core::LinAlg::Vector::Abs(const Epetra_MultiVector& A) { return vector_->Abs(A); }
+template <typename T>
+int Core::LinAlg::Vector<T>::Abs(const Epetra_MultiVector& A)
+{
+  return vector_->Abs(A);
+}
 
-int Core::LinAlg::Vector::Scale(double ScalarA, const Epetra_MultiVector& A)
+template <typename T>
+int Core::LinAlg::Vector<T>::Scale(double ScalarA, const Epetra_MultiVector& A)
 {
   return vector_->Scale(ScalarA, A);
 }
 
-int Core::LinAlg::Vector::Update(double ScalarA, const Epetra_MultiVector& A, double ScalarThis)
+template <typename T>
+int Core::LinAlg::Vector<T>::Update(double ScalarA, const Epetra_MultiVector& A, double ScalarThis)
 {
   return vector_->Update(ScalarA, A, ScalarThis);
 }
 
-int Core::LinAlg::Vector::Update(double ScalarA, const Epetra_MultiVector& A, double ScalarB,
+template <typename T>
+int Core::LinAlg::Vector<T>::Update(double ScalarA, const Epetra_MultiVector& A, double ScalarB,
     const Epetra_MultiVector& B, double ScalarThis)
 {
   return vector_->Update(ScalarA, A, ScalarB, B, ScalarThis);
 }
 
 
-int Core::LinAlg::Vector::Dot(const Vector& A, double* Result) const
+template <typename T>
+int Core::LinAlg::Vector<T>::Dot(const Vector& A, double* Result) const
 {
   return vector_->Dot(A, Result);
 }
 
-int Core::LinAlg::Vector::Abs(const Vector& A) { return vector_->Abs(A); }
+template <typename T>
+int Core::LinAlg::Vector<T>::Abs(const Vector& A)
+{
+  return vector_->Abs(A);
+}
 
-int Core::LinAlg::Vector::Scale(double ScalarA, const Vector& A)
+template <typename T>
+int Core::LinAlg::Vector<T>::Scale(double ScalarA, const Vector& A)
 {
   return vector_->Scale(ScalarA, A);
 }
 
-int Core::LinAlg::Vector::Update(double ScalarA, const Vector& A, double ScalarThis)
+template <typename T>
+int Core::LinAlg::Vector<T>::Update(double ScalarA, const Vector& A, double ScalarThis)
 {
   return vector_->Update(ScalarA, A, ScalarThis);
 }
 
-int Core::LinAlg::Vector::Update(
+template <typename T>
+int Core::LinAlg::Vector<T>::Update(
     double ScalarA, const Vector& A, double ScalarB, const Vector& B, double ScalarThis)
 {
   return vector_->Update(ScalarA, A, ScalarB, B.get_ref_of_Epetra_Vector(), ScalarThis);
 }
 
-int Core::LinAlg::Vector::PutScalar(double ScalarConstant)
+template <typename T>
+int Core::LinAlg::Vector<T>::PutScalar(double ScalarConstant)
 {
   return vector_->PutScalar(ScalarConstant);
 }
 
+// explicit instantiation
+template class Core::LinAlg::Vector<double>;
+
+
+
+Core::LinAlg::Vector<int>::Vector(const Epetra_BlockMap& map, bool zeroOut)
+    : vector_(Teuchos::make_rcp<Epetra_IntVector>(map, zeroOut))
+{
+}
+
+Core::LinAlg::Vector<int>::Vector(const Epetra_BlockMap& map, int* values)
+    : vector_(Teuchos::make_rcp<Epetra_IntVector>(Epetra_DataAccess::Copy, map, values))
+{
+}
+
+Core::LinAlg::Vector<int>::Vector(const Vector& other)
+    : vector_(Teuchos::make_rcp<Epetra_IntVector>(*other.vector_))
+{
+}
+
+Core::LinAlg::Vector<int>::Vector(Vector&& other) noexcept : vector_(std::move(other.vector_)) {}
+
+Core::LinAlg::Vector<int>& Core::LinAlg::Vector<int>::operator=(const Vector& other)
+{
+  vector_ = Teuchos::rcp(new Epetra_IntVector(*other.vector_));
+  return *this;
+}
+
+Core::LinAlg::Vector<int>& Core::LinAlg::Vector<int>::operator=(Vector&& other) noexcept
+{
+  vector_ = std::move(other.vector_);
+  return *this;
+}
+
+
+int Core::LinAlg::Vector<int>::PutValue(int Value) { return vector_->PutValue(Value); }
+
+int Core::LinAlg::Vector<int>::MaxValue() { return vector_->MaxValue(); }
+
+int Core::LinAlg::Vector<int>::MinValue() { return vector_->MinValue(); }
+
+void Core::LinAlg::Vector<int>::Print(std::ostream& os) const { vector_->Print(os); }
+
+
 FOUR_C_NAMESPACE_CLOSE
+
+// NOLINTEND(readability-identifier-naming)

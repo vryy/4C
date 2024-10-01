@@ -94,8 +94,8 @@ namespace FLD
     //! Old routine handling Dirichlet conditions on the master side of the internal interface
     /// During prepare_time_step() DC are projected from the master to the slave
     void project_master_to_slave_for_overlapping_bc(
-        Teuchos::RCP<Core::LinAlg::Vector>& velnp,  ///> solution vector n+1
-        Teuchos::RCP<const Epetra_Map> bmaps        ///> map of boundary condition
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp,  ///> solution vector n+1
+        Teuchos::RCP<const Epetra_Map> bmaps                ///> map of boundary condition
     );
 
     //! Check whether Dirichlet BC are defined on the master
@@ -104,50 +104,52 @@ namespace FLD
 
     //! Preparation for including Dirichlet conditions in the condensation process
     void include_dirichlet_in_condensation(
-        const Teuchos::RCP<Core::LinAlg::Vector>& velnp,  ///> solution vector n+1
-        const Teuchos::RCP<Core::LinAlg::Vector>& veln    ///> solution vector n
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp,  ///> solution vector n+1
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& veln    ///> solution vector n
     );
 
     //! evaluation of matrix P with potential mesh relocation in ALE case
     void evaluate_with_mesh_relocation(
-        Teuchos::RCP<Core::LinAlg::Vector>& dispnp);  ///> current ALE displacement vector
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp);  ///> current ALE displacement vector
 
     //! Prepare matrix, shapederivatives and residual for meshtying
     void prepare_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>&
                                sysmat,  ///> sysmat established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector>&
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
             residual,  ///> residual established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector>& velnp,  ///> current ALE displacement vector
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
+            velnp,  ///> current ALE displacement vector
         Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>&
             shapederivatives);  ///> shapederivatives established by the element routine
 
     //! Prepare matrix and residual for meshtying
     void prepare_meshtying_system(const Teuchos::RCP<Core::LinAlg::SparseOperator>&
                                       sysmat,  ///> sysmat established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector>&
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
             residual,  ///> residual established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector>& velnp);  ///> current ALE displacement vector
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
+            velnp);  ///> current ALE displacement vector
 
     //! The residual has another length in case of bmat_merged --> residual has to be calculated in
     //! split form
     void apply_pt_to_residual(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector> residual,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> residual,
         Teuchos::RCP<Core::LinAlg::KrylovProjector> projector);
 
     //! Solve mesh-tying problem (including ALE case)
     void solve_meshtying(Core::LinAlg::Solver& solver,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
-        const Teuchos::RCP<Core::LinAlg::Vector>& incvel,
-        const Teuchos::RCP<Core::LinAlg::Vector>& residual,
-        const Teuchos::RCP<Core::LinAlg::Vector>& velnp, const int itnum,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& incvel,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp, const int itnum,
         Core::LinAlg::SolverParams& solver_params);
 
     //! Adjust null-space for Krylov projector (slave node are in-active)
-    Teuchos::RCP<Core::LinAlg::Vector> adapt_krylov_projector(
-        Teuchos::RCP<Core::LinAlg::Vector> vec);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> adapt_krylov_projector(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> vec);
 
     //! Output: split vector
-    void output_vector_split(Teuchos::RCP<Core::LinAlg::Vector> vector);
+    void output_vector_split(Teuchos::RCP<Core::LinAlg::Vector<double>> vector);
 
     //! Analyze system matrix
     void analyze_matrix(
@@ -159,8 +161,8 @@ namespace FLD
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sparsematrix);  ///> sparse matrix to analyze
 
     //! Compute and update the increments of the slave node (including ALE case)
-    void update_slave_dof(const Teuchos::RCP<Core::LinAlg::Vector>& inc,
-        const Teuchos::RCP<Core::LinAlg::Vector>& velnp);
+    void update_slave_dof(const Teuchos::RCP<Core::LinAlg::Vector<double>>& inc,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp);
 
     //! Set the flag for multifield problems
     void is_multifield(Teuchos::RCP<std::set<int>> condelements,  ///< conditioned elements of fluid
@@ -198,16 +200,16 @@ namespace FLD
     //! Prepare condensation for sparse matrix (including ALE case)
     void condensation_sparse_matrix(const Teuchos::RCP<Core::LinAlg::SparseOperator>&
                                         sysmat,  ///> sysmat established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector>&
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
             residual,  ///> residual established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector>& velnp);
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp);
 
     //! Prepare condensation for a block matrix (including ALE case)
     void condensation_block_matrix(const Teuchos::RCP<Core::LinAlg::SparseOperator>&
                                        sysmat,  ///> sysmat established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector>&
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
             residual,  ///> residual established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector>& velnp);  ///> current velocity vector
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp);  ///> current velocity vector
 
     //! split sparse global system matrix into 3x3 block sparse matrix associated with interior,
     //! master, and slave dofs
@@ -217,15 +219,15 @@ namespace FLD
             splitmatrix  //!< resulting block sparse matrix after split
     );
 
-    //! Split vector and save parts in a std::vector<Teuchos::RCP<Core::LinAlg::Vector> >
-    void split_vector(Teuchos::RCP<Core::LinAlg::Vector> vector,  ///> vector to split
-        std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
+    //! Split vector and save parts in a std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>> >
+    void split_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> vector,  ///> vector to split
+        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
             splitvector);  ///> container for the split vector
 
-    //! Split vector and save parts in a std::vector<Teuchos::RCP<Core::LinAlg::Vector> >
-    void split_vector_based_on3x3(
-        Teuchos::RCP<Core::LinAlg::Vector> orgvector,  ///> original vector based on 3x3 blockmatrix
-        Teuchos::RCP<Core::LinAlg::Vector>
+    //! Split vector and save parts in a std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>> >
+    void split_vector_based_on3x3(Teuchos::RCP<Core::LinAlg::Vector<double>>
+                                      orgvector,  ///> original vector based on 3x3 blockmatrix
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
             vectorbasedon2x2);  ///> split vector based on 2x2 blockmatrix
 
     //! Condensation operation for a sparse matrix (including ALE case):
@@ -234,13 +236,13 @@ namespace FLD
     void condensation_operation_sparse_matrix(
         const Teuchos::RCP<Core::LinAlg::SparseOperator>&
             sysmat,  ///> sysmat established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector>&
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
             residual,  ///> residual established by the element routine
         const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>&
             splitmatrix,  ///> container with split original sysmat
-        const std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
+        const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
             splitres,  ///> container with split original residual
-        const std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
+        const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
             splitvel  ///> container with split velocity vector
     );
 
@@ -251,11 +253,11 @@ namespace FLD
     void condensation_operation_block_matrix(
         const Teuchos::RCP<Core::LinAlg::SparseOperator>&
             sysmat,  ///> sysmat established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector>&
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
             residual,  ///> residual established by the element routine
-        const std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
+        const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
             splitres,  ///> container with split original residual
-        const std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
+        const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
             splitvel);  ///> container with split velocity vector
 
    private:
@@ -304,14 +306,14 @@ namespace FLD
 
     //! vector containing time-depending values of the dirichlet condition
     /// valuesdc_ = (velnp after applying DC) - (veln)
-    Teuchos::RCP<Core::LinAlg::Vector> valuesdc_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> valuesdc_;
 
     //! adapter to mortar framework
     Teuchos::RCP<Coupling::Adapter::CouplingMortar> adaptermeshtying_;
 
     //! 2x2 (3x3) block matrix for solving condensed system (3x3 block matrix)
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmatsolve_;
-    Teuchos::RCP<Core::LinAlg::Vector> residual_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
     //! flag defining pressure coupling
     bool pcoupled_;
 

@@ -61,17 +61,19 @@ namespace Adapter
         Core::FE::ShapeFunctionType shape_function_type);
 
 
-    virtual void evaluate_poro_mt(Teuchos::RCP<Core::LinAlg::Vector> fvel,
-        Teuchos::RCP<Core::LinAlg::Vector> svel, Teuchos::RCP<Core::LinAlg::Vector> fpres,
-        Teuchos::RCP<Core::LinAlg::Vector> sdisp, const Teuchos::RCP<Core::FE::Discretization> sdis,
+    virtual void evaluate_poro_mt(Teuchos::RCP<Core::LinAlg::Vector<double>> fvel,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> svel,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> fpres,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sdisp,
+        const Teuchos::RCP<Core::FE::Discretization> sdis,
         Teuchos::RCP<Core::LinAlg::SparseMatrix>& f, Teuchos::RCP<Core::LinAlg::SparseMatrix>& k_fs,
-        Teuchos::RCP<Core::LinAlg::Vector>& frhs, Coupling::Adapter::Coupling& coupfs,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& frhs, Coupling::Adapter::Coupling& coupfs,
         Teuchos::RCP<const Epetra_Map> fdofrowmap);
 
     void update_poro_mt();
 
-    void recover_fluid_lm_poro_mt(Teuchos::RCP<Core::LinAlg::Vector> disi,
-        Teuchos::RCP<Core::LinAlg::Vector> veli);  // h.Willmann
+    void recover_fluid_lm_poro_mt(Teuchos::RCP<Core::LinAlg::Vector<double>> disi,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> veli);  // h.Willmann
 
     // return the used poro lagrange strategy
     Teuchos::RCP<CONTACT::LagrangeStrategyPoro> get_poro_strategy()

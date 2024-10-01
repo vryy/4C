@@ -152,7 +152,8 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_global_vectors(
   interior_acc_.resize((msd_ + 1 + nsd_) * shapes_->ndofs_);
 
   // read the trace values
-  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state(0, "velaf");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+      discretization.get_state(0, "velaf");
   Core::FE::extract_my_values(*matrix_state, trace_val_, lm);
 
   // get local dofs
@@ -197,7 +198,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_ale_vectors(
       }
 
       // initialize matrix state
-      Teuchos::RCP<const Core::LinAlg::Vector> matrix_state;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state;
 
       // read the ale displacement
       matrix_state = discretization.get_state(2, "dispnp");
@@ -296,7 +297,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::update_local_solution(
   // extract local trace increments
   std::vector<double> localtraceinc_vec;
   localtraceinc_vec.resize(nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);
-  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
       discretization.get_state(0, "globaltraceinc");
   Core::FE::extract_my_values(*matrix_state, localtraceinc_vec, lm);
 
@@ -342,7 +343,8 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::compute_error(
   const double time = local_solver_->fldparatimint_->time();
 
   // get interior values
-  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state(1, "intvelnp");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+      discretization.get_state(1, "intvelnp");
   std::vector<int> localDofs = discretization.dof(1, ele);
   std::vector<double> vecValues(localDofs.size());
   for (unsigned int i = 0; i < localDofs.size(); ++i)
@@ -677,7 +679,8 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to
   // get local solution values
   // The vector "matrix_state" contains the interior velocity values following
   // the local id numbers
-  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state(1, "intvelnp");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+      discretization.get_state(1, "intvelnp");
   // Vector of the ids of the DOF for the element
   std::vector<int> localDofs = discretization.dof(1, ele);
   // SOLution VALUES

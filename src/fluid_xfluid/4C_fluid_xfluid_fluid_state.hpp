@@ -74,10 +74,10 @@ namespace FLD
     bool destroy() override;
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
-    Teuchos::RCP<Core::LinAlg::Vector>& residual() override { return xffluidresidual_; }
-    Teuchos::RCP<Core::LinAlg::Vector>& zeros() override { return xffluidzeros_; }
-    Teuchos::RCP<Core::LinAlg::Vector>& inc_vel() override { return xffluidincvel_; }
-    Teuchos::RCP<Core::LinAlg::Vector>& velnp() override { return xffluidvelnp_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& residual() override { return xffluidresidual_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& zeros() override { return xffluidzeros_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& inc_vel() override { return xffluidincvel_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp() override { return xffluidvelnp_; }
     //@}
 
     void complete_coupling_matrices_and_rhs() override;
@@ -103,20 +103,20 @@ namespace FLD
     Teuchos::RCP<Core::LinAlg::SparseOperator> xffluidsysmat_;
 
     /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
-    Teuchos::RCP<Core::LinAlg::Vector> xffluidzeros_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> xffluidzeros_;
 
     /// (standard) residual vector (rhs for the incremental form),
-    Teuchos::RCP<Core::LinAlg::Vector> xffluidresidual_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> xffluidresidual_;
 
     //! @name combined background and embedded fluid velocity and pressure at time n+1, n and
     //! increment
     //@{
     /// \f$ \mathbf{u}^{b\cup e,n+1} \f$
-    Teuchos::RCP<Core::LinAlg::Vector> xffluidvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> xffluidvelnp_;
     /// \f$ \mathbf{u}^{b\cup e,n+1} \f$
-    Teuchos::RCP<Core::LinAlg::Vector> xffluidveln_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> xffluidveln_;
     /// \f$ \Delta \mathbf{u}^{b\cup e,n+1}_{i+1} \f$
-    Teuchos::RCP<Core::LinAlg::Vector> xffluidincvel_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> xffluidincvel_;
     //@}
 
    private:

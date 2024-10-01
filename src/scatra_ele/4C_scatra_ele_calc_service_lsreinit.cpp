@@ -41,8 +41,9 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_action
     case ScaTra::Action::calc_mat_and_rhs_lsreinit_correction_step:
     {
       // extract local values from the global vectors
-      Teuchos::RCP<const Core::LinAlg::Vector> phizero = discretization.get_state("phizero");
-      Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state("phinp");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> phizero =
+          discretization.get_state("phizero");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
@@ -78,8 +79,9 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_action
     case ScaTra::Action::calc_node_based_reinit_velocity:
     {
       // extract local values from the global vectors
-      Teuchos::RCP<const Core::LinAlg::Vector> phizero = discretization.get_state("phizero");
-      Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state("phinp");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> phizero =
+          discretization.get_state("phizero");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
       if (phizero == Teuchos::null or phinp == Teuchos::null)
         FOUR_C_THROW("Cannot get state vector 'phizero' and/ or 'phinp'!");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);

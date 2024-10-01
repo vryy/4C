@@ -188,12 +188,12 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Discret::ELEMENTS:
   double CiDeltaSq = 0.0;
   if (my::fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> ele_CsDeltaSq =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ele_CsDeltaSq =
         params.sublist("TURBULENCE MODEL")
-            .get<Teuchos::RCP<Core::LinAlg::Vector>>("col_Cs_delta_sq");
-    Teuchos::RCP<Core::LinAlg::Vector> ele_CiDeltaSq =
+            .get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_Cs_delta_sq");
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ele_CiDeltaSq =
         params.sublist("TURBULENCE MODEL")
-            .get<Teuchos::RCP<Core::LinAlg::Vector>>("col_Ci_delta_sq");
+            .get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_Ci_delta_sq");
     const int id = ele->lid();
     CsDeltaSq = (*ele_CsDeltaSq)[id];
     CiDeltaSq = (*ele_CiDeltaSq)[id];

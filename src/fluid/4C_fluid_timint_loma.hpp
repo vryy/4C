@@ -44,10 +44,10 @@ namespace FLD
     \brief set scalar fields within outer iteration loop
 
     */
-    void set_loma_iter_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector> scalaraf,
-        Teuchos::RCP<const Core::LinAlg::Vector> scalaram,
-        Teuchos::RCP<const Core::LinAlg::Vector> scalardtam,
-        Teuchos::RCP<const Core::LinAlg::Vector> fsscalaraf, const double thermpressaf,
+    void set_loma_iter_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> scalaraf,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> scalaram,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> scalardtam,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
         Teuchos::RCP<Core::FE::Discretization> scatradis) override;
 
@@ -55,8 +55,8 @@ namespace FLD
     \brief set scalar fields
 
     */
-    void set_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector> scalarnp,
-        const double thermpressnp, Teuchos::RCP<const Core::LinAlg::Vector> scatraresidual,
+    void set_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarnp,
+        const double thermpressnp, Teuchos::RCP<const Core::LinAlg::Vector<double>> scatraresidual,
         Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar = -1) override;
 
     /*!

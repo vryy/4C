@@ -502,7 +502,7 @@ namespace CONTACT
     /*!
     \brief Evaluate this contact element pair
     */
-    bool evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fint,
+    bool evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector<double>& fint,
         const double& pp,
         std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
         Teuchos::ParameterList& timeintparams, bool fdcheck = false) override;
@@ -641,7 +641,7 @@ namespace CONTACT
     \brief Evaluate active large angle pairs
     */
     void evaluate_active_large_angle_pairs(
-        Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fint);
+        Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector<double>& fint);
 
     /*!
     \brief Get active small angle pairs
@@ -656,7 +656,7 @@ namespace CONTACT
     \brief Evaluate active small angle pairs
     */
     void evaluate_active_small_angle_pairs(Core::LinAlg::SparseMatrix& stiffmatrix,
-        Core::LinAlg::Vector& fint, std::pair<int, int>* iminmax = nullptr,
+        Core::LinAlg::Vector<double>& fint, std::pair<int, int>* iminmax = nullptr,
         std::pair<bool, bool>* leftrightsolutionwithinsegment = nullptr,
         std::pair<double, double>* eta1_leftrightboundary = nullptr);
 
@@ -671,7 +671,7 @@ namespace CONTACT
     \brief Evaluate active endpoint pairs
     */
     void evaluate_active_end_point_pairs(
-        Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fint);
+        Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector<double>& fint);
 
     /*!
     \brief Find segments close to each other
@@ -746,8 +746,9 @@ namespace CONTACT
     /*!
      \brief Compute contact forces
      */
-    void evaluate_fc_contact(Core::LinAlg::Vector* fint, const Core::LinAlg::Matrix<3, 1, TYPE>& r1,
-        const Core::LinAlg::Matrix<3, 1, TYPE>& r2, const Core::LinAlg::Matrix<3, 1, TYPE>& r1_xi,
+    void evaluate_fc_contact(Core::LinAlg::Vector<double>* fint,
+        const Core::LinAlg::Matrix<3, 1, TYPE>& r1, const Core::LinAlg::Matrix<3, 1, TYPE>& r2,
+        const Core::LinAlg::Matrix<3, 1, TYPE>& r1_xi,
         const Core::LinAlg::Matrix<3, 1, TYPE>& r2_xi,
         const Core::LinAlg::Matrix<3, 1, TYPE>& r1_xixi,
         const Core::LinAlg::Matrix<3, 1, TYPE>& r2_xixi,
@@ -1067,7 +1068,7 @@ namespace CONTACT
     /*!
       \brief FD-Check of stiffness matrix
     */
-    void fd_check(Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector& fint,
+    void fd_check(Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector<double>& fint,
         const double& pp,
         std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
         Teuchos::ParameterList& timeintparams, bool fdcheck);

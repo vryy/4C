@@ -78,7 +78,7 @@ namespace Arteries
       /*!
       \brief Wrapper for ArtJunctionBc::update_residual
      */
-      void update_residual(Teuchos::RCP<Core::LinAlg::Vector> residual);
+      void update_residual(Teuchos::RCP<Core::LinAlg::Vector<double>> residual);
 
       /*!
       \brief Standard solver
@@ -192,11 +192,11 @@ namespace Arteries
       /*!
       \Update the Residual
       */
-      void update_residual(Teuchos::RCP<Core::LinAlg::Vector> residual);
+      void update_residual(Teuchos::RCP<Core::LinAlg::Vector<double>> residual);
 
 
      protected:
-      Teuchos::RCP<Core::LinAlg::Vector> junctionbc_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> junctionbc_;
 
      private:
       //! ID of present condition

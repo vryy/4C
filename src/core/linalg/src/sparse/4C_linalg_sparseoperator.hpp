@@ -201,7 +201,7 @@ namespace Core::LinAlg
 
     /// Apply dirichlet boundary condition to a matrix
     virtual void apply_dirichlet(
-        const Core::LinAlg::Vector& dbctoggle, bool diagonalblock = true) = 0;
+        const Core::LinAlg::Vector<double>& dbctoggle, bool diagonalblock = true) = 0;
 
     /// Apply dirichlet boundary condition to a matrix
     ///

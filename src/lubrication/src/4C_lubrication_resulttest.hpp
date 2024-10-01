@@ -77,7 +77,7 @@ namespace LUBRICATION
     /// Teuchos::RCP to lubrication discretization
     Teuchos::RCP<Core::FE::Discretization> dis_;
     /// Teuchos::RCP to solution vector
-    Teuchos::RCP<Core::LinAlg::Vector> mysol_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mysol_;
     /// number of iterations in last newton iteration
     int mynumiter_;
   };

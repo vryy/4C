@@ -152,35 +152,35 @@ namespace Solid
       ///@{
 
       /// Return displacements at the restart step \f$D_{restart}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector> get_dis_restart() const
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_dis_restart() const
       {
         check_init_setup();
         return dis_restart_;
       }
 
       /// Return displacements at the restart step \f$D_{restart}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector> get_dis_restart_col() const
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_dis_restart_col() const
       {
         check_init_setup();
         return dis_restart_col_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector> get_dis_np() const
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_dis_np() const
       {
         check_init_setup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector> get_dis_col_np() const
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_dis_col_np() const
       {
         check_init_setup();
         return discolnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector> get_dis_n() const
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_dis_n() const
       {
         check_init_setup();
         return (*dis_)(0);
@@ -214,42 +214,42 @@ namespace Solid
       ///@{
 
       /// Return displacements at the restart step \f$D_{restart}\f$
-      Teuchos::RCP<Core::LinAlg::Vector>& get_dis_restart()
+      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_dis_restart()
       {
         check_init_setup();
         return dis_restart_;
       }
 
       /// Return displacements at the restart step \f$D_{restart}\f$
-      Teuchos::RCP<Core::LinAlg::Vector>& get_dis_restart_col()
+      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_dis_restart_col()
       {
         check_init_setup();
         return dis_restart_col_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector>& get_dis_np()
+      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_dis_np()
       {
         check_init_setup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector>& get_dis_col_np()
+      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_dis_col_np()
       {
         check_init_setup();
         return discolnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector> get_dis_n()
+      Teuchos::RCP<Core::LinAlg::Vector<double>> get_dis_n()
       {
         check_init_setup();
         return (*dis_)(0);
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>> get_multi_dis()
+      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> get_multi_dis()
       {
         check_init_setup();
         return dis_;
@@ -332,14 +332,14 @@ namespace Solid
       ///@{
 
       /// global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector>> dis_;
+      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> dis_;
 
       /// global displacements at the restart step \f${D}_{restart}\f$ at \f$t_{restart}\f$
-      Teuchos::RCP<Core::LinAlg::Vector> dis_restart_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> dis_restart_;
 
       /// global displacements at the restart step \f${D}_{restart}\f$ at \f$t_{restart}\f$. This
       /// vector will be used to export disrestart_ to the current partitioning.
-      Teuchos::RCP<Core::LinAlg::Vector> dis_restart_col_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> dis_restart_col_;
 
       /// flag if coupling, i.e. mesh tying terms should be evaluated at the restart configuration.
       /// This is stored here, since it is directly related to the vectors dis_restart_ and
@@ -347,10 +347,10 @@ namespace Solid
       bool is_restart_coupling_;
 
       /// global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector> disnp_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_;
 
       /// global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector> discolnp_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> discolnp_;
 
       /// global internal force vector at \f$t_{n}\f$
       Teuchos::RCP<Epetra_FEVector> forcen_;

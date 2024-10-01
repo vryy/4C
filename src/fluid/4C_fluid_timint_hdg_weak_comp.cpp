@@ -301,7 +301,7 @@ void FLD::TimIntHDGWeakComp::clear_state_assemble_mat_and_rhs()
   {
     // Wrote into the state vector during element calls, need to transfer the
     // data back before it disappears when clearing the state (at least for nproc>1)
-    const Core::LinAlg::Vector& intvelnpGhosted = *discret_->get_state(1, "intvelnp");
+    const Core::LinAlg::Vector<double>& intvelnpGhosted = *discret_->get_state(1, "intvelnp");
     for (int i = 0; i < intvelnp_->MyLength(); ++i)
       (*intvelnp_)[i] = intvelnpGhosted[intvelnpGhosted.Map().LID(intvelnp_->Map().GID(i))];
   }
@@ -313,7 +313,8 @@ void FLD::TimIntHDGWeakComp::clear_state_assemble_mat_and_rhs()
 /*----------------------------------------------------------------------*
 | update within iteration                                 laspina 08/19 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntHDGWeakComp::iter_update(const Teuchos::RCP<const Core::LinAlg::Vector> increment)
+void FLD::TimIntHDGWeakComp::iter_update(
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> increment)
 {
   // call element routine to update local solution
   Teuchos::ParameterList params;
@@ -333,7 +334,8 @@ void FLD::TimIntHDGWeakComp::iter_update(const Teuchos::RCP<const Core::LinAlg::
   Core::LinAlg::SerialDenseVector elemintinc;
 
   // initialize increments of local variables
-  Teuchos::RCP<Core::LinAlg::Vector> intvelincnp = Core::LinAlg::create_vector(*intdofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> intvelincnp =
+      Core::LinAlg::create_vector(*intdofrowmap, true);
 
   // set state
   set_state_tim_int();
@@ -652,10 +654,11 @@ namespace
 {
   // internal helper function for output
   void get_node_vectors_hdg_weak_comp(Core::FE::Discretization& dis,
-      const Teuchos::RCP<Core::LinAlg::Vector>& interiorValues,
-      const Teuchos::RCP<Core::LinAlg::Vector>& traceValues, const int ndim,
-      Teuchos::RCP<Epetra_MultiVector>& mixedvar, Teuchos::RCP<Core::LinAlg::Vector>& density,
-      Teuchos::RCP<Core::LinAlg::Vector>& traceden)
+      const Teuchos::RCP<Core::LinAlg::Vector<double>>& interiorValues,
+      const Teuchos::RCP<Core::LinAlg::Vector<double>>& traceValues, const int ndim,
+      Teuchos::RCP<Epetra_MultiVector>& mixedvar,
+      Teuchos::RCP<Core::LinAlg::Vector<double>>& density,
+      Teuchos::RCP<Core::LinAlg::Vector<double>>& traceden)
   {
     const int msd = ndim * (ndim + 1.0) / 2.0;
 
@@ -663,9 +666,9 @@ namespace
     if (density.get() == nullptr || density->GlobalLength() != dis.num_global_nodes())
     {
       mixedvar.reset(new Epetra_MultiVector(*dis.node_row_map(), msd));
-      density.reset(new Core::LinAlg::Vector(*dis.node_row_map()));
+      density.reset(new Core::LinAlg::Vector<double>(*dis.node_row_map()));
     }
-    traceden.reset(new Core::LinAlg::Vector(density->Map()));
+    traceden.reset(new Core::LinAlg::Vector<double>(density->Map()));
 
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
@@ -729,7 +732,7 @@ void FLD::TimIntHDGWeakComp::output()
     const unsigned int nsd = params_->get<int>("number of velocity degrees of freedom");
 
     // initialize trace variables
-    Teuchos::RCP<Core::LinAlg::Vector> traceDen;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> traceDen;
     Teuchos::RCP<Epetra_MultiVector> traceMom;
 
     // get node vectors
@@ -746,8 +749,8 @@ void FLD::TimIntHDGWeakComp::output()
 
     // evaluate derived variables
     Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity;
-    Teuchos::RCP<Core::LinAlg::Vector> interpolatedPressure;
-    interpolatedPressure.reset(new Core::LinAlg::Vector(interpolatedDensity_->Map()));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> interpolatedPressure;
+    interpolatedPressure.reset(new Core::LinAlg::Vector<double>(interpolatedDensity_->Map()));
     for (int i = 0; i < interpolatedDensity_->MyLength(); ++i)
     {
       (*interpolatedPressure)[i] =

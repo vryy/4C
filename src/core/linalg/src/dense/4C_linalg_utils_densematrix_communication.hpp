@@ -554,7 +554,7 @@ namespace Core::LinAlg
           on a distinct processor, all other procs create empty maps instead.
 
    This method is currently used within the parallel post_ensight
-   filter in order to import all values stored in a distributed Core::LinAlg::Vector
+   filter in order to import all values stored in a distributed Core::LinAlg::Vector<double>
    to processor 0 for writing them into file.
 
    \note see also documentation for the usual allreduce_e_map methods

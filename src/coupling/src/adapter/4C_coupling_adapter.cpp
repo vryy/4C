@@ -17,7 +17,6 @@
 #include "4C_linalg_utils_densematrix_communication.hpp"
 
 #include <Epetra_Export.h>
-#include <Epetra_IntVector.h>
 
 #include <algorithm>
 #include <numeric>
@@ -424,11 +423,11 @@ void Coupling::Adapter::Coupling::finish_coupling(const Core::FE::Discretization
   // To do so we create vectors that contain the values of the master
   // maps, assigned to the slave maps. On the master side we actually
   // create just a view on the map! This vector must not be changed!
-  Teuchos::RCP<Epetra_IntVector> masternodevec = Teuchos::rcp(
-      new Epetra_IntVector(View, *permslavenodemap, masternodemap->MyGlobalElements()));
+  Teuchos::RCP<Core::LinAlg::Vector<int>> masternodevec = Teuchos::rcp(
+      new Core::LinAlg::Vector<int>(*permslavenodemap, masternodemap->MyGlobalElements()));
 
-  Teuchos::RCP<Epetra_IntVector> permmasternodevec =
-      Teuchos::rcp(new Epetra_IntVector(*slavenodemap));
+  Teuchos::RCP<Core::LinAlg::Vector<int>> permmasternodevec =
+      Teuchos::rcp(new Core::LinAlg::Vector<int>(*slavenodemap));
 
   Epetra_Export masternodeexport(*permslavenodemap, *slavenodemap);
   const int err = permmasternodevec->Export(*masternodevec, masternodeexport, Insert);
@@ -582,10 +581,11 @@ void Coupling::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Coupling::Adapter::Coupling::master_to_slave(
-    Teuchos::RCP<const Core::LinAlg::Vector> mv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::Coupling::master_to_slave(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> mv) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector> sv = Teuchos::rcp(new Core::LinAlg::Vector(*slavedofmap_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> sv =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*slavedofmap_));
 
   master_to_slave(mv->get_ptr_of_const_Epetra_Vector(), sv->get_ptr_of_Epetra_Vector());
 
@@ -595,10 +595,11 @@ Teuchos::RCP<Core::LinAlg::Vector> Coupling::Adapter::Coupling::master_to_slave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Coupling::Adapter::Coupling::slave_to_master(
-    Teuchos::RCP<const Core::LinAlg::Vector> sv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::Coupling::slave_to_master(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector> mv = Teuchos::rcp(new Core::LinAlg::Vector(*masterdofmap_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> mv =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*masterdofmap_));
 
   slave_to_master(sv->get_ptr_of_const_Epetra_Vector(), mv->get_ptr_of_Epetra_Vector());
 
@@ -685,9 +686,9 @@ void Coupling::Adapter::Coupling::master_to_slave(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::Coupling::master_to_slave(
-    const Epetra_IntVector& mv, Epetra_IntVector& sv) const
+    const Core::LinAlg::Vector<int>& mv, Core::LinAlg::Vector<int>& sv) const
 {
-  Epetra_IntVector perm(*permslavedofmap_);
+  Core::LinAlg::Vector<int> perm(*permslavedofmap_);
   std::copy(mv.Values(), mv.Values() + (mv.MyLength()), perm.Values());
 
   const int err = sv.Export(perm, *slaveexport_, Insert);
@@ -725,9 +726,9 @@ void Coupling::Adapter::Coupling::slave_to_master(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::Coupling::slave_to_master(
-    const Epetra_IntVector& sv, Epetra_IntVector& mv) const
+    const Core::LinAlg::Vector<int>& sv, Core::LinAlg::Vector<int>& mv) const
 {
-  Epetra_IntVector perm(*permmasterdofmap_);
+  Core::LinAlg::Vector<int> perm(*permmasterdofmap_);
   std::copy(sv.Values(), sv.Values() + (sv.MyLength()), perm.Values());
 
   const int err = mv.Export(perm, *masterexport_, Insert);

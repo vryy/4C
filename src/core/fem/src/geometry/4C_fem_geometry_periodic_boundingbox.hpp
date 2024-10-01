@@ -280,8 +280,8 @@ namespace Core::Geo
       /// discretization with one volume element representing the box ( used e.g. for output)
       Teuchos::RCP<Core::FE::Discretization> boxdiscret_;
       /// box displacement vector
-      Teuchos::RCP<Core::LinAlg::Vector> disn_row_;
-      Teuchos::RCP<Core::LinAlg::Vector> disn_col_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> disn_row_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> disn_col_;
 
       bool empty_;
       /// set global pbc flag

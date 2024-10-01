@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
- |  export a Core::LinAlg::Vector                                   mwgee 12/06|
+ |  export a Core::LinAlg::Vector<double>                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
 void Core::LinAlg::export_to(const Epetra_MultiVector& source, Epetra_MultiVector& target)
 {
@@ -97,9 +97,9 @@ void Core::LinAlg::export_to(const Epetra_MultiVector& source, Epetra_MultiVecto
 }
 
 /*----------------------------------------------------------------------*
- |  export a Epetra_IntVector                                mwgee 01/13|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::export_to(const Epetra_IntVector& source, Epetra_IntVector& target)
+void Core::LinAlg::export_to(
+    const Core::LinAlg::Vector<int>& source, Core::LinAlg::Vector<int>& target)
 {
   try
   {
@@ -162,10 +162,11 @@ void Core::LinAlg::export_to(const Epetra_IntVector& source, Epetra_IntVector& t
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Core::LinAlg::extract_my_vector(
-    const Core::LinAlg::Vector& source, const Epetra_Map& target_map)
+Teuchos::RCP<Core::LinAlg::Vector<double>> Core::LinAlg::extract_my_vector(
+    const Core::LinAlg::Vector<double>& source, const Epetra_Map& target_map)
 {
-  Teuchos::RCP<Core::LinAlg::Vector> target = Teuchos::rcp(new Core::LinAlg::Vector(target_map));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> target =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(target_map));
 
   extract_my_vector(source, *target);
 
@@ -175,7 +176,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Core::LinAlg::extract_my_vector(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Core::LinAlg::extract_my_vector(
-    const Core::LinAlg::Vector& source, Core::LinAlg::Vector& target)
+    const Core::LinAlg::Vector<double>& source, Core::LinAlg::Vector<double>& target)
 {
   const int my_num_target_gids = target.Map().NumMyElements();
   const int* my_target_gids = target.Map().MyGlobalElements();
@@ -302,7 +303,7 @@ void Core::LinAlg::split_matrix2x2(
   // find out about how the column map is linked to the individual processors.
   // this is done by filling the information about the rowmap into a vector that
   // is then exported to the column map
-  Core::LinAlg::Vector dselector(A->DomainMap());
+  Core::LinAlg::Vector<double> dselector(A->DomainMap());
   for (int i = 0; i < dselector.MyLength(); ++i)
   {
     const int gid = A->DomainMap().GID(i);
@@ -313,7 +314,7 @@ void Core::LinAlg::split_matrix2x2(
     else
       dselector[i] = -1.;
   }
-  Core::LinAlg::Vector selector(A->ColMap());
+  Core::LinAlg::Vector<double> selector(A->ColMap());
   Core::LinAlg::export_to(dselector, selector);
 
   std::vector<int> gcindices1(A->MaxNumEntries());
@@ -391,9 +392,9 @@ void Core::LinAlg::split_matrixmxn(
   const Epetra_CrsMatrix& A = *ASparse.epetra_matrix();
 
   // associate each global column ID of SparseMatrix with corresponding block ID of
-  // BlockSparseMatrixBase this is done via an Core::LinAlg::Vector which is filled using domain map
-  // information and then exported to column map
-  Core::LinAlg::Vector dselector(ASparse.domain_map());
+  // BlockSparseMatrixBase this is done via an Core::LinAlg::Vector<double> which is filled using
+  // domain map information and then exported to column map
+  Core::LinAlg::Vector<double> dselector(ASparse.domain_map());
   for (int collid = 0; collid < dselector.MyLength(); ++collid)
   {
     const int colgid = ASparse.domain_map().GID(collid);
@@ -410,7 +411,7 @@ void Core::LinAlg::split_matrixmxn(
     }
     if (n == N) FOUR_C_THROW("Matrix column was not found in BlockSparseMatrixBase!");
   }
-  Core::LinAlg::Vector selector(A.ColMap());
+  Core::LinAlg::Vector<double> selector(A.ColMap());
   Core::LinAlg::export_to(dselector, selector);
 
   // allocate vectors storing global column indexes and values of matrix entries in a given row,
@@ -465,7 +466,7 @@ void Core::LinAlg::split_matrixmxn(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int Core::LinAlg::insert_my_row_diagonal_into_unfilled_matrix(
-    Core::LinAlg::SparseMatrix& mat, const Core::LinAlg::Vector& diag)
+    Core::LinAlg::SparseMatrix& mat, const Core::LinAlg::Vector<double>& diag)
 {
   if (mat.filled()) return -1;
 
@@ -634,9 +635,9 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::intersect_map(const Epetra_Map& map1, con
 /*----------------------------------------------------------------------*
  | split a vector into 2 pieces with given submaps            popp 02/08|
  *----------------------------------------------------------------------*/
-bool Core::LinAlg::split_vector(const Epetra_Map& xmap, const Core::LinAlg::Vector& x,
-    Teuchos::RCP<Epetra_Map>& x1map, Teuchos::RCP<Core::LinAlg::Vector>& x1,
-    Teuchos::RCP<Epetra_Map>& x2map, Teuchos::RCP<Core::LinAlg::Vector>& x2)
+bool Core::LinAlg::split_vector(const Epetra_Map& xmap, const Core::LinAlg::Vector<double>& x,
+    Teuchos::RCP<Epetra_Map>& x1map, Teuchos::RCP<Core::LinAlg::Vector<double>>& x1,
+    Teuchos::RCP<Epetra_Map>& x2map, Teuchos::RCP<Core::LinAlg::Vector<double>>& x2)
 {
   // map extractor with fullmap(xmap) and two other maps (x1map and x2map)
   Core::LinAlg::MapExtractor extractor(xmap, x1map, x2map);
@@ -651,9 +652,9 @@ bool Core::LinAlg::split_vector(const Epetra_Map& xmap, const Core::LinAlg::Vect
 /*----------------------------------------------------------------------*
  | split a vector into 2 pieces with given submaps           farah 02/16|
  *----------------------------------------------------------------------*/
-bool Core::LinAlg::split_vector(const Epetra_Map& xmap, const Core::LinAlg::Vector& x,
-    Teuchos::RCP<const Epetra_Map>& x1map, Teuchos::RCP<Core::LinAlg::Vector>& x1,
-    Teuchos::RCP<const Epetra_Map>& x2map, Teuchos::RCP<Core::LinAlg::Vector>& x2)
+bool Core::LinAlg::split_vector(const Epetra_Map& xmap, const Core::LinAlg::Vector<double>& x,
+    Teuchos::RCP<const Epetra_Map>& x1map, Teuchos::RCP<Core::LinAlg::Vector<double>>& x1,
+    Teuchos::RCP<const Epetra_Map>& x2map, Teuchos::RCP<Core::LinAlg::Vector<double>>& x2)
 {
   // map extractor with fullmap(xmap) and two other maps (x1map and x2map)
   Core::LinAlg::MapExtractor extractor(xmap, x1map, x2map);

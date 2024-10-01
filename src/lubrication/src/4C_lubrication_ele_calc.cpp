@@ -206,7 +206,8 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_an
   const int ndsvel = 1;
 
   // get the global vector
-  Teuchos::RCP<const Core::LinAlg::Vector> vel = discretization.get_state(ndsvel, "av_tang_vel");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> vel =
+      discretization.get_state(ndsvel, "av_tang_vel");
   if (vel.is_null()) FOUR_C_THROW("got nullptr pointer for \"av_tang_vel\"");
 
   const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
@@ -247,7 +248,8 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_an
   {
     // get number of dofset associated with displacement related dofs
     const int ndsdisp = 1;  // needs further implementation: params.get<int>("ndsdisp");
-    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discretization.get_state(ndsdisp, "dispnp");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+        discretization.get_state(ndsdisp, "dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
@@ -271,7 +273,8 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_an
   const int ndsheight = 1;  // needs further implementation: params.get<int>("ndsheight");
 
   // get the global vector containing the heights
-  Teuchos::RCP<const Core::LinAlg::Vector> height = discretization.get_state(ndsheight, "height");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> height =
+      discretization.get_state(ndsheight, "height");
   if (height == Teuchos::null) FOUR_C_THROW("Cannot get state vector height");
 
   // determine number of height related dofs per node
@@ -313,7 +316,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::extract_element_an
   // 4. Extract the pressure field at the element nodes
 
   // get the global vector containing the pressure
-  Teuchos::RCP<const Core::LinAlg::Vector> prenp = discretization.get_state("prenp");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> prenp = discretization.get_state("prenp");
   if (prenp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'prenp'");
 
   // values of pressure field are always in first dofset
@@ -1262,7 +1265,7 @@ int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_action(
       if (elevec1_epetra.length() < 1) FOUR_C_THROW("Result vector too short");
 
       // need current solution
-      Teuchos::RCP<const Core::LinAlg::Vector> prenp = discretization.get_state("prenp");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> prenp = discretization.get_state("prenp");
       if (prenp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'prenp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 
@@ -1278,7 +1281,7 @@ int Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::evaluate_action(
 
       // need current pressure vector
       // -> extract local values from the global vectors
-      Teuchos::RCP<const Core::LinAlg::Vector> prenp = discretization.get_state("prenp");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> prenp = discretization.get_state("prenp");
       if (prenp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'prenp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*prenp, eprenp_, lm);
 

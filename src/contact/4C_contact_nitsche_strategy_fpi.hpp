@@ -66,7 +66,7 @@ namespace CONTACT
     }
     //! Set Contact State and update search tree and normals
     void set_state(
-        const enum Mortar::StateType& statename, const Core::LinAlg::Vector& vec) override;
+        const enum Mortar::StateType& statename, const Core::LinAlg::Vector<double>& vec) override;
 
     //! The the contact state at local coord of Element cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated

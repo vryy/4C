@@ -240,14 +240,14 @@ void FS3I::BiofilmFSI::setup()
   scatra_struct_growth_disp_->PutScalar(0.0);
   scatra_fluid_growth_disp_->PutScalar(0.0);
 
-  norminflux_ = Teuchos::rcp(
-      new Core::LinAlg::Vector(*(fsi_->structure_field()->discretization()->node_row_map())));
-  normtraction_ = Teuchos::rcp(
-      new Core::LinAlg::Vector(*(fsi_->structure_field()->discretization()->node_row_map())));
-  tangtractionone_ = Teuchos::rcp(
-      new Core::LinAlg::Vector(*(fsi_->structure_field()->discretization()->node_row_map())));
-  tangtractiontwo_ = Teuchos::rcp(
-      new Core::LinAlg::Vector(*(fsi_->structure_field()->discretization()->node_row_map())));
+  norminflux_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(
+      *(fsi_->structure_field()->discretization()->node_row_map())));
+  normtraction_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(
+      *(fsi_->structure_field()->discretization()->node_row_map())));
+  tangtractionone_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(
+      *(fsi_->structure_field()->discretization()->node_row_map())));
+  tangtractiontwo_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(
+      *(fsi_->structure_field()->discretization()->node_row_map())));
 
   return;
 }
@@ -370,14 +370,18 @@ void FS3I::BiofilmFSI::inner_timeloop()
       Global::Problem::instance()->biofilm_control_params();
   const bool avgrowth = biofilmcontrol.get<bool>("AVGROWTH");
   // in case of averaged values we need temporary variables
-  Teuchos::RCP<Core::LinAlg::Vector> normtempinflux_ = Teuchos::rcp(
-      new Core::LinAlg::Vector(*(fsi_->structure_field()->discretization()->node_row_map())));
-  Teuchos::RCP<Core::LinAlg::Vector> normtemptraction_ = Teuchos::rcp(
-      new Core::LinAlg::Vector(*(fsi_->structure_field()->discretization()->node_row_map())));
-  Teuchos::RCP<Core::LinAlg::Vector> tangtemptractionone_ = Teuchos::rcp(
-      new Core::LinAlg::Vector(*(fsi_->structure_field()->discretization()->node_row_map())));
-  Teuchos::RCP<Core::LinAlg::Vector> tangtemptractiontwo_ = Teuchos::rcp(
-      new Core::LinAlg::Vector(*(fsi_->structure_field()->discretization()->node_row_map())));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> normtempinflux_ =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(
+          *(fsi_->structure_field()->discretization()->node_row_map())));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> normtemptraction_ =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(
+          *(fsi_->structure_field()->discretization()->node_row_map())));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tangtemptractionone_ =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(
+          *(fsi_->structure_field()->discretization()->node_row_map())));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tangtemptractiontwo_ =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(
+          *(fsi_->structure_field()->discretization()->node_row_map())));
   normtempinflux_->PutScalar(0.0);
   normtemptraction_->PutScalar(0.0);
   tangtemptractionone_->PutScalar(0.0);
@@ -439,8 +443,8 @@ void FS3I::BiofilmFSI::inner_timeloop()
     // recovery of forces at the interface nodes based on lagrange multipliers values
     // lambda_ is defined only at the interface, while lambdafull on the entire fluid/structure
     // field.
-    Teuchos::RCP<Core::LinAlg::Vector> lambda_;
-    Teuchos::RCP<Core::LinAlg::Vector> lambdafull;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull;
 
     // at the purpose to compute lambdafull, it is necessary to know which coupling algorithm is
     // used however the imposition of a Dirichlet condition on the interface produce wrong lambda_
@@ -449,7 +453,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
     const auto coupling = Teuchos::getIntegralValue<FsiCoupling>(fsidyn, "COUPALGO");
     if (coupling == fsi_iter_monolithicfluidsplit)
     {
-      Teuchos::RCP<Core::LinAlg::Vector> lambdafluid = fsi_->get_lambda();
+      Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafluid = fsi_->get_lambda();
       lambda_ = fsi_->fluid_to_struct(lambdafluid);
     }
     else if (coupling == fsi_iter_monolithicstructuresplit)
@@ -460,8 +464,8 @@ void FS3I::BiofilmFSI::inner_timeloop()
     lambdafull = fsi_->structure_field()->interface()->insert_fsi_cond_vector(lambda_);
 
     // calculate interface normals in deformed configuration
-    Teuchos::RCP<Core::LinAlg::Vector> nodalnormals =
-        Teuchos::rcp(new Core::LinAlg::Vector(*(strudis->dof_row_map())));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> nodalnormals =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*(strudis->dof_row_map())));
 
     Teuchos::ParameterList eleparams;
     eleparams.set("action", "calc_cur_nodal_normals");
@@ -662,9 +666,10 @@ void FS3I::BiofilmFSI::set_fsi_solution()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::compute_interface_vectors(Teuchos::RCP<Core::LinAlg::Vector> idispnp,
-    Teuchos::RCP<Core::LinAlg::Vector> iveln, Teuchos::RCP<Core::LinAlg::Vector> struidispnp,
-    Teuchos::RCP<Core::LinAlg::Vector> struiveln)
+void FS3I::BiofilmFSI::compute_interface_vectors(Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iveln,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> struidispnp,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> struiveln)
 {
   // initialize structure interface displacement at time t^{n+1}
   // shouldn't that be zeroed?
@@ -675,8 +680,8 @@ void FS3I::BiofilmFSI::compute_interface_vectors(Teuchos::RCP<Core::LinAlg::Vect
 
   // set action for elements: compute normal vectors at nodes (for reference configuration)
   Teuchos::RCP<Core::FE::Discretization> strudis = fsi_->structure_field()->discretization();
-  Teuchos::RCP<Core::LinAlg::Vector> nodalnormals =
-      Teuchos::rcp(new Core::LinAlg::Vector(*(strudis->dof_row_map())));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> nodalnormals =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*(strudis->dof_row_map())));
   Teuchos::ParameterList eleparams;
   eleparams.set("action", "calc_ref_nodal_normals");
   strudis->evaluate_condition(eleparams, Teuchos::null, Teuchos::null, nodalnormals, Teuchos::null,
@@ -742,7 +747,7 @@ void FS3I::BiofilmFSI::compute_interface_vectors(Teuchos::RCP<Core::LinAlg::Vect
 
   struidispnp->Update(dt_bio_, *struiveln_, 0.0);
 
-  Teuchos::RCP<Core::LinAlg::Vector> fluididisp = fsi_->struct_to_fluid(struidispnp);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fluididisp = fsi_->struct_to_fluid(struidispnp);
   idispnp->Update(1.0, *fluididisp, 0.0);
 
   return;
@@ -769,7 +774,7 @@ void FS3I::BiofilmFSI::fluid_ale_solve()
   fsi_->ale_field()->update_iter();
 
   // change nodes reference position of the fluid field
-  Teuchos::RCP<Core::LinAlg::Vector> fluiddisp =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fluiddisp =
       ale_to_fluid_field(fsi_->ale_field()->write_access_dispnp());
   Teuchos::RCP<Core::FE::Discretization> fluiddis = fsi_->fluid_field()->discretization();
   Core::Geo::update_reference_config_with_disp(fluiddis, fluiddisp);
@@ -777,7 +782,8 @@ void FS3I::BiofilmFSI::fluid_ale_solve()
 
 
   // change nodes reference position also for the fluid ale field
-  Teuchos::RCP<Core::LinAlg::Vector> fluidaledisp = fsi_->ale_field()->write_access_dispnp();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fluidaledisp =
+      fsi_->ale_field()->write_access_dispnp();
   Core::Geo::update_reference_config_with_disp(fluidaledis, fluidaledisp);
 
   // change nodes reference position also for scatra fluid field
@@ -818,7 +824,8 @@ void FS3I::BiofilmFSI::struct_ale_solve()
   ale_->update_iter();
 
   // change nodes reference position of the structure field
-  Teuchos::RCP<Core::LinAlg::Vector> structdisp = ale_to_struct_field(ale_->write_access_dispnp());
+  Teuchos::RCP<Core::LinAlg::Vector<double>> structdisp =
+      ale_to_struct_field(ale_->write_access_dispnp());
   Teuchos::RCP<Core::FE::Discretization> structdis = fsi_->structure_field()->discretization();
   Core::Geo::update_reference_config_with_disp(structdis, structdisp);
   structdis->fill_complete(false, true, true);
@@ -848,8 +855,8 @@ void FS3I::BiofilmFSI::struct_ale_solve()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FS3I::BiofilmFSI::fluid_to_ale(
-    Teuchos::RCP<Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::fluid_to_ale(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
   return icoupfa_->master_to_slave(iv);
 }
@@ -857,40 +864,40 @@ Teuchos::RCP<Core::LinAlg::Vector> FS3I::BiofilmFSI::fluid_to_ale(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FS3I::BiofilmFSI::ale_to_fluid_field(
-    Teuchos::RCP<Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::ale_to_fluid_field(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
   return coupfa_->slave_to_master(iv);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FS3I::BiofilmFSI::ale_to_struct_field(
-    Teuchos::RCP<Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::ale_to_struct_field(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
   return coupsa_->slave_to_master(iv);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FS3I::BiofilmFSI::ale_to_struct_field(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::ale_to_struct_field(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupsa_->slave_to_master(iv);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FS3I::BiofilmFSI::struct_to_ale(
-    Teuchos::RCP<Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::struct_to_ale(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
   return icoupsa_->master_to_slave(iv);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> FS3I::BiofilmFSI::struct_to_ale(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::struct_to_ale(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return icoupsa_->master_to_slave(iv);
 }
@@ -899,7 +906,7 @@ Teuchos::RCP<Core::LinAlg::Vector> FS3I::BiofilmFSI::struct_to_ale(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::vec_to_scatravec(Teuchos::RCP<Core::FE::Discretization> scatradis,
-    Teuchos::RCP<Core::LinAlg::Vector> vec, Teuchos::RCP<Epetra_MultiVector> scatravec)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vec, Teuchos::RCP<Epetra_MultiVector> scatravec)
 {
   // define error variable
   int err(0);
@@ -946,7 +953,7 @@ void FS3I::BiofilmFSI::struct_gmsh_output()
       structdis->get_comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
 
-  Teuchos::RCP<const Core::LinAlg::Vector> structdisp = fsi_->structure_field()->dispn();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> structdisp = fsi_->structure_field()->dispn();
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
@@ -956,7 +963,7 @@ void FS3I::BiofilmFSI::struct_gmsh_output()
     gmshfilecontent << "};" << std::endl;
   }
 
-  Teuchos::RCP<const Core::LinAlg::Vector> structaledisp = ale_->dispnp();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> structaledisp = ale_->dispnp();
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
@@ -966,7 +973,8 @@ void FS3I::BiofilmFSI::struct_gmsh_output()
     gmshfilecontent << "};" << std::endl;
   }
 
-  Teuchos::RCP<const Core::LinAlg::Vector> structphi = scatravec_[1]->scatra_field()->phinp();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> structphi =
+      scatravec_[1]->scatra_field()->phinp();
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
@@ -996,7 +1004,7 @@ void FS3I::BiofilmFSI::fluid_gmsh_output()
       fluiddis->get_comm().MyPID());
   std::ofstream gmshfilecontent(filenamefluid.c_str());
 
-  Teuchos::RCP<const Core::LinAlg::Vector> fluidvel = fsi_->fluid_field()->velnp();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidvel = fsi_->fluid_field()->velnp();
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
@@ -1006,7 +1014,8 @@ void FS3I::BiofilmFSI::fluid_gmsh_output()
     gmshfilecontent << "};" << std::endl;
   }
 
-  Teuchos::RCP<Core::LinAlg::Vector> fluidaledisp = fsi_->ale_field()->write_access_dispnp();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fluidaledisp =
+      fsi_->ale_field()->write_access_dispnp();
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "
@@ -1016,7 +1025,7 @@ void FS3I::BiofilmFSI::fluid_gmsh_output()
     gmshfilecontent << "};" << std::endl;
   }
 
-  Teuchos::RCP<Core::LinAlg::Vector> fluidphi = scatravec_[0]->scatra_field()->phinp();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fluidphi = scatravec_[0]->scatra_field()->phinp();
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" "

@@ -129,8 +129,8 @@ namespace EleMag
     /*!
     \brief Import initial electric field from scatra solution
     */
-    void set_initial_electric_field(
-        Teuchos::RCP<Core::LinAlg::Vector> phi, Teuchos::RCP<Core::FE::Discretization>& scatradis);
+    void set_initial_electric_field(Teuchos::RCP<Core::LinAlg::Vector<double>> phi,
+        Teuchos::RCP<Core::FE::Discretization>& scatradis);
 
     /*!
     \brief Compare the numerical solution to the analytical one.
@@ -333,7 +333,7 @@ namespace EleMag
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
 
     /// residual vector
-    Teuchos::RCP<Core::LinAlg::Vector> residual_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
 
     /// all equilibration of global system matrix and RHS is done in here
     Teuchos::RCP<Core::LinAlg::EquilibrationSparse> equilibration_;
@@ -342,7 +342,7 @@ namespace EleMag
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
 
     /// vector of zeros to be used for enforcing zero Dirichlet boundary conditions
-    Teuchos::RCP<Core::LinAlg::Vector> zeros_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;
 
 
     //  The fomulation relies on the variables:
@@ -351,16 +351,16 @@ namespace EleMag
     //  o   \Lambda (hybrid varible)
 
     /// Trace vector to be solved at every iteration
-    Teuchos::RCP<Core::LinAlg::Vector> trace_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> trace_;
 
     /// Output vectors
     Teuchos::RCP<Epetra_MultiVector> electric;
     Teuchos::RCP<Epetra_MultiVector> electric_post;
     Teuchos::RCP<Epetra_MultiVector> magnetic;
     Teuchos::RCP<Epetra_MultiVector> trace;
-    Teuchos::RCP<Core::LinAlg::Vector> conductivity;
-    Teuchos::RCP<Core::LinAlg::Vector> permittivity;
-    Teuchos::RCP<Core::LinAlg::Vector> permeability;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> conductivity;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> permittivity;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> permeability;
   };
 
 }  // namespace EleMag

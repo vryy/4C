@@ -142,8 +142,8 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
-    const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors, const Epetra_IntVector& toggle,
-    const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+    const Core::LinAlg::Vector<int>& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
   // no need to check the cast, because it has been done during
   // the build process (see build_dbc())
@@ -157,8 +157,8 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
  *----------------------------------------------------------------------*/
 void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
-    double time, const Teuchos::RCP<Core::LinAlg::Vector>* systemvectors,
-    const Epetra_IntVector& toggle) const
+    double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+    const Core::LinAlg::Vector<int>& toggle) const
 {
   // call corresponding method from base class; safety checks inside
   Core::FE::UTILS::Dbc::do_dirichlet_condition(
@@ -179,7 +179,8 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to
   unsigned deg = 0;  // highest degree of requested time derivative
-  Teuchos::RCP<Core::LinAlg::Vector> systemvectoraux = Teuchos::null;  // auxiliar system vector
+  Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectoraux =
+      Teuchos::null;  // auxiliar system vector
   if (systemvectors[0] != Teuchos::null)
   {
     deg = 0;

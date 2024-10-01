@@ -126,7 +126,7 @@ namespace ScaTra
      */
     virtual void condense_mat_and_rhs(
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Core::LinAlg::Vector>& residual,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
         const bool calcinittimederiv = false) const {};
 
     //! return global map of degrees of freedom
@@ -162,9 +162,9 @@ namespace ScaTra
     virtual void evaluate_condition(Teuchos::ParameterList& params,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector1,
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector2,
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector3, const std::string& condstring,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3, const std::string& condstring,
         const int condid)
     {
       FOUR_C_THROW("evaluate_condition(...) is not implemented in MeshtyingStrategyBase.");
@@ -237,8 +237,8 @@ namespace ScaTra
     \date 12/16
     \author rauch
     */
-    virtual void set_state(
-        unsigned nds, const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector> state)
+    virtual void set_state(unsigned nds, const std::string& name,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> state)
     {
       FOUR_C_THROW(
           "set_state(...) is not implemented in MeshtyingStrategyBase.\n"
@@ -263,9 +263,9 @@ namespace ScaTra
      */
     virtual void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Core::LinAlg::Vector>& increment,
-        const Teuchos::RCP<Core::LinAlg::Vector>& residual,
-        const Teuchos::RCP<Core::LinAlg::Vector>& phinp, const int iteration,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& increment,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp, const int iteration,
         Core::LinAlg::SolverParams& solver_params) const = 0;
 
     //! return linear solver for global system of linear equations

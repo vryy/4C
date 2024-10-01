@@ -75,26 +75,27 @@ namespace Adapter
     double read_restart(int step  ///< step number to restart from
         ) override;
 
-    void nonlinear_solve(
-        Teuchos::RCP<Core::LinAlg::Vector> idisp, Teuchos::RCP<Core::LinAlg::Vector> ivel) override;
+    void nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override;
 
-    virtual void nonlinear_solve_vol_coupl(Teuchos::RCP<Core::LinAlg::Vector> idisp,
-        Teuchos::RCP<Core::LinAlg::Vector> ivel, Teuchos::RCP<FSI::InterfaceCorrector> icorrector);
+    virtual void nonlinear_solve_vol_coupl(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel,
+        Teuchos::RCP<FSI::InterfaceCorrector> icorrector);
 
-    void apply_interface_values(
-        Teuchos::RCP<Core::LinAlg::Vector> idisp, Teuchos::RCP<Core::LinAlg::Vector> ivel) override;
+    void apply_interface_values(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override;
 
-    Teuchos::RCP<Core::LinAlg::Vector> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector> idisp, double dt) override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, double dt) override;
 
-    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_forces() override;
-    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_velnp() override;
-    Teuchos::RCP<Core::LinAlg::Vector> extract_interface_veln() override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_forces() override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_velnp() override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_veln() override;
 
     int itemax() const override { return fluid_->itemax(); }
     void set_itemax(int itemax) override { fluid_->set_itemax(itemax); }
 
-    Teuchos::RCP<Core::LinAlg::Vector> integrate_interface_shape() override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
 
     Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
 
@@ -103,23 +104,23 @@ namespace Adapter
     //@{
 
     /// field transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_fluid_field(
-        Teuchos::RCP<Core::LinAlg::Vector> iv  ///< ALE vector (to be converted)
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid_field(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iv  ///< ALE vector (to be converted)
     ) const;
 
     /// field transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_fluid_field(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv  ///< ALE vector (to be converted)
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid_field(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv  ///< ALE vector (to be converted)
     ) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_ale(
-        Teuchos::RCP<Core::LinAlg::Vector> iv  ///< Fluid vector (to be converted)
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> iv  ///< Fluid vector (to be converted)
     ) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_ale(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv  ///< Fluid vector (to be converted)
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv  ///< Fluid vector (to be converted)
     ) const;
 
     //@}

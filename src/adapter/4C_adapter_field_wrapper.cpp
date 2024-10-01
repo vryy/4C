@@ -24,7 +24,7 @@ void Adapter::FieldWrapper::prepare_time_step()
 
 
 void Adapter::FieldWrapper::update_state_incrementally(
-    Teuchos::RCP<const Core::LinAlg::Vector> disiterinc)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc)
 {
   if (nox_correction_) get_iterinc(disiterinc);
   field_->update_state_incrementally(disiterinc);
@@ -33,7 +33,7 @@ void Adapter::FieldWrapper::update_state_incrementally(
 /*-----------------------------------------------------------------------/
 | update dofs and evaluate elements                                      |
 /-----------------------------------------------------------------------*/
-void Adapter::FieldWrapper::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> disiterinc)
+void Adapter::FieldWrapper::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc)
 {
   if (nox_correction_) get_iterinc(disiterinc);
   field_->evaluate(disiterinc);
@@ -43,7 +43,7 @@ void Adapter::FieldWrapper::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> di
 | update dofs and evaluate elements                                      |
 /-----------------------------------------------------------------------*/
 void Adapter::FieldWrapper::evaluate(
-    Teuchos::RCP<const Core::LinAlg::Vector> disiterinc, bool firstiter)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc, bool firstiter)
 {
   if (nox_correction_) get_iterinc(disiterinc);
   field_->evaluate(disiterinc, firstiter);
@@ -60,7 +60,7 @@ void Adapter::FieldWrapper::reset_stepinc()
 /*-----------------------------------------------------------------------/
 | Get Iteration Increment from Step Increment                            |
 /-----------------------------------------------------------------------*/
-void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector>& stepinc)
+void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector<double>>& stepinc)
 {
   // The field solver always expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
@@ -74,7 +74,8 @@ void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector>
   if (stepinc != Teuchos::null)
   {
     // iteration increments
-    Teuchos::RCP<Core::LinAlg::Vector> iterinc = Teuchos::rcp(new Core::LinAlg::Vector(*stepinc));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*stepinc));
     if (stepinc_ != Teuchos::null)
     {
       iterinc->Update(-1.0, *stepinc_, 1.0);
@@ -85,10 +86,10 @@ void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector>
     }
     else
     {
-      stepinc_ = Teuchos::rcp(new Core::LinAlg::Vector(*stepinc));
+      stepinc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*stepinc));
     }
     // output is iterinc!
-    stepinc = Teuchos::rcp(new const Core::LinAlg::Vector(*iterinc));
+    stepinc = Teuchos::rcp(new const Core::LinAlg::Vector<double>(*iterinc));
   }
 }
 

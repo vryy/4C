@@ -12,6 +12,7 @@
 #include "4C_config.hpp"
 
 #include <Epetra_FEVector.h>
+#include <Epetra_IntVector.h>
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
@@ -25,9 +26,15 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
 {
+  template <typename T>
+  class VectorView;
+
   // Sparse Vector which will replace the Epetra_Vector
+  template <typename T>
   class Vector
   {
+    static_assert(std::is_same<T, double>::value, "Only double is supported for now");
+
    public:
     /// Basic vector constructor to create vector based on a map and initialize memory with zeros
     explicit Vector(const Epetra_BlockMap &Map, bool zeroOut = true);
@@ -307,19 +314,91 @@ namespace Core::LinAlg
    private:
     Teuchos::RCP<Epetra_Vector> vector_;
 
-    friend class VectorView;
+    friend class VectorView<T>;
+  };
+
+  /**
+   * Specialization of the Vector class for int.
+   *
+   * @note Currently, this specialization is mandated by a separate implementation of
+   * Epetra_IntVector.
+   */
+  template <>
+  class Vector<int>
+  {
+   public:
+    explicit Vector(const Epetra_BlockMap &map, bool zeroOut = true);
+
+    Vector(const Epetra_BlockMap &map, int *values);
+
+    Vector(const Vector &other);
+    Vector &operator=(const Vector &other);
+    Vector(Vector &&other) noexcept;
+    Vector &operator=(Vector &&other) noexcept;
+
+    int PutValue(int Value);
+
+    int MaxValue();
+
+    int MinValue();
+
+    int &operator[](int index) { return (*vector_)[index]; }
+
+    const int &operator[](int index) const { return (*vector_)[index]; }
+
+    int *Values() const { return vector_->Values(); };
+
+    int MyLength() const { return vector_->MyLength(); };
+
+    int GlobalLength() const { return vector_->GlobalLength(); };
+
+    void Print(std::ostream &os) const;
+
+    const Epetra_BlockMap &Map() const { return (vector_->Map()); };
+
+    //! Imports an Epetra_DistObject using the Epetra_Import object.
+    int Import(const Vector &A, const Epetra_Import &Importer, Epetra_CombineMode CombineMode,
+        const Epetra_OffsetIndex *Indexor = nullptr)
+    {
+      return vector_->Import(*A.vector_, Importer, CombineMode, Indexor);
+    }
+
+    //! Imports an Epetra_DistObject using the Epetra_Export object.
+    int Import(const Vector &A, const Epetra_Export &Exporter, Epetra_CombineMode CombineMode,
+        const Epetra_OffsetIndex *Indexor = nullptr)
+    {
+      return vector_->Import(*A.vector_, Exporter, CombineMode, Indexor);
+    }
+
+    int Export(const Vector &A, const Epetra_Import &Importer, Epetra_CombineMode CombineMode,
+        const Epetra_OffsetIndex *Indexor = nullptr)
+    {
+      return vector_->Export(*A.vector_, Importer, CombineMode, Indexor);
+    }
+
+    int Export(const Vector &A, const Epetra_Export &Exporter, Epetra_CombineMode CombineMode,
+        const Epetra_OffsetIndex *Indexor = nullptr)
+    {
+      return vector_->Export(*A.vector_, Exporter, CombineMode, Indexor);
+    }
+
+    const Epetra_Comm &Comm() const { return vector_->Comm(); };
+
+   private:
+    Teuchos::RCP<Epetra_IntVector> vector_;
   };
 
   /**
    * Temporary helper class for migration. View an Epetra_Vector as a Vector. Make sure that the
    * viewed vector lives longer than the view.
    */
+  template <typename T>
   class VectorView
   {
    public:
     VectorView(Epetra_Vector &vector)
         // Construct something cheap, it will be overwritten anyway.
-        : view_vector_(Teuchos::make_rcp<Vector>(vector.Map(), false))
+        : view_vector_(Teuchos::make_rcp<Vector<T>>(vector.Map(), false))
     {
       // Replace the internals of the Vector with a viewing RCP.
       view_vector_->vector_ = Teuchos::rcpFromRef(vector);
@@ -333,16 +412,19 @@ namespace Core::LinAlg
     ~VectorView() = default;
 
     //! Allow implicit conversion to Vector for use in new interfaces.
-    operator Vector &() { return *view_vector_; }
+    operator Vector<T> &() { return *view_vector_; }
 
     //! Allow implicit conversion to RCP<Vector> for use in new interfaces.
-    Teuchos::RCP<Vector> &get_non_owning_rcp_ref() { return view_vector_; }
+    Teuchos::RCP<Vector<T>> &get_non_owning_rcp_ref() { return view_vector_; }
 
    private:
     //! Store inside an RCP because our interfaces frequently take references to RCPs.
-    Teuchos::RCP<Vector> view_vector_;
+    Teuchos::RCP<Vector<T>> view_vector_;
   };
 
+
+  // Template deduction guide for view of Epetra_Vector
+  VectorView(Epetra_Vector &)->VectorView<double>;
 
 }  // namespace Core::LinAlg
 

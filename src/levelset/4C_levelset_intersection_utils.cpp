@@ -46,7 +46,7 @@ void ScaTra::LevelSet::Intersection::reset()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ScaTra::LevelSet::Intersection::capture_zero_level_set(
-    const Teuchos::RCP<const Core::LinAlg::Vector>& phi,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& phi,
     const Teuchos::RCP<const Core::FE::Discretization>& scatradis, double& volumedomainminus,
     double& volumedomainplus, double& zerosurface,
     std::map<int, Core::Geo::BoundaryIntCells>& elementBoundaryIntCells)
@@ -73,13 +73,13 @@ void ScaTra::LevelSet::Intersection::capture_zero_level_set(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <typename T>
-void ScaTra::LevelSet::Intersection::get_zero_level_set(const Core::LinAlg::Vector& phi,
+void ScaTra::LevelSet::Intersection::get_zero_level_set(const Core::LinAlg::Vector<double>& phi,
     const Core::FE::Discretization& scatradis, std::map<int, T>& elementBoundaryIntCells,
     bool cut_screenoutput)
 {
   // export phi from row to column map
-  const Teuchos::RCP<Core::LinAlg::Vector> phicol =
-      Teuchos::rcp(new Core::LinAlg::Vector(*scatradis.dof_col_map()));
+  const Teuchos::RCP<Core::LinAlg::Vector<double>> phicol =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*scatradis.dof_col_map()));
   Core::LinAlg::export_to(phi, *phicol);
 
   // remark: loop over row elements is sufficient
@@ -291,7 +291,7 @@ void ScaTra::LevelSet::Intersection::collect_cut_eles(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ScaTra::LevelSet::Intersection::prepare_cut(const Core::Elements::Element* ele,
-    const Core::FE::Discretization& scatradis, const Core::LinAlg::Vector& phicol,
+    const Core::FE::Discretization& scatradis, const Core::LinAlg::Vector<double>& phicol,
     Core::LinAlg::SerialDenseMatrix& xyze, std::vector<double>& phi_nodes,
     std::vector<int>& node_ids) const
 {
@@ -601,10 +601,10 @@ void ScaTra::LevelSet::Intersection::unpack_boundary_int_cells(
 
 
 template void ScaTra::LevelSet::Intersection::get_zero_level_set<Core::Geo::BoundaryIntCells>(
-    const Core::LinAlg::Vector& phi, const Core::FE::Discretization& scatradis,
+    const Core::LinAlg::Vector<double>& phi, const Core::FE::Discretization& scatradis,
     std::map<int, Core::Geo::BoundaryIntCells>& elementBoundaryIntCells, bool cut_screenoutput);
 template void ScaTra::LevelSet::Intersection::get_zero_level_set<Core::Geo::BoundaryIntCellPtrs>(
-    const Core::LinAlg::Vector& phi, const Core::FE::Discretization& scatradis,
+    const Core::LinAlg::Vector<double>& phi, const Core::FE::Discretization& scatradis,
     std::map<int, Core::Geo::BoundaryIntCellPtrs>& elementBoundaryIntCells, bool cut_screenoutput);
 
 FOUR_C_NAMESPACE_CLOSE

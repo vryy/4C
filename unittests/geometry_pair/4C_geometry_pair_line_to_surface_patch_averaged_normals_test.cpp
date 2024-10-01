@@ -152,7 +152,7 @@ namespace
     // Set the state in the face element, here also the FAD variables for each patch are set.
     auto gid_map = Teuchos::rcp(new Epetra_Map(discret_->num_global_nodes() * 3,
         discret_->num_global_nodes() * 3, 0, discret_->get_comm()));
-    auto displacement_vector = Teuchos::rcp(new Core::LinAlg::Vector(*gid_map));
+    auto displacement_vector = Teuchos::rcp(new Core::LinAlg::Vector<double>(*gid_map));
     for (int i = 0; i < displacement_vector->GlobalLength(); i++)
       (*displacement_vector)[i] = i * 0.01;
     face_element->set_state(displacement_vector, face_elements_map);

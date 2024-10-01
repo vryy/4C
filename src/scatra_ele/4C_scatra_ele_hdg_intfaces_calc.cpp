@@ -89,13 +89,13 @@ Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::ScaTraHDGIntFaceImpl()
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
-    Discret::ELEMENTS::ScaTraHDGIntFace* intface,           ///< internal face element
-    std::vector<int>& nds_master,                           ///< nodal dofset w.r.t. master element
-    std::vector<int>& nds_slave,                            ///< nodal dofset w.r.t. slave element
-    Teuchos::ParameterList& params,                         ///< parameter list
-    Core::FE::DiscretizationFaces& discretization,          ///< faces discretization
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,  ///< systemmatrix
-    Teuchos::RCP<Core::LinAlg::Vector> systemvector         ///< systemvector
+    Discret::ELEMENTS::ScaTraHDGIntFace* intface,            ///< internal face element
+    std::vector<int>& nds_master,                            ///< nodal dofset w.r.t. master element
+    std::vector<int>& nds_slave,                             ///< nodal dofset w.r.t. slave element
+    Teuchos::ParameterList& params,                          ///< parameter list
+    Core::FE::DiscretizationFaces& discretization,           ///< faces discretization
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
 )
 {
   return;

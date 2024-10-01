@@ -324,7 +324,8 @@ void ElCh::MovingBoundaryAlgorithm::output()
 
 
 void ElCh::MovingBoundaryAlgorithm::compute_interface_vectors(
-    Teuchos::RCP<Core::LinAlg::Vector> idispnp, Teuchos::RCP<Core::LinAlg::Vector> iveln)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iveln)
 {
   // calculate normal flux vector field at FSI boundaries (no output to file)
   fluxnp_ = scatra_field()->calc_flux_at_boundary(false);

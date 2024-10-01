@@ -55,19 +55,19 @@ namespace FLD
     /// nodal value test (one can specify discretization and corresponding solution here!)
     void test_node(const Core::IO::InputParameterContainer& container, int& nerr, int& test_count,
         int node, const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const Teuchos::RCP<const Core::LinAlg::Vector>& velnp);
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& velnp);
 
     /// XFEM discretization
     Teuchos::RCP<const Core::FE::Discretization> discret_;
 
     /// solution vector for XFEM discretization
-    Teuchos::RCP<const Core::LinAlg::Vector> velnp_;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp_;
 
     /// optional additional discretization for the same field (fluid-fluid coupling)
     Teuchos::RCP<const Core::FE::Discretization> coupl_discret_;
 
     /// solution vector for additional coupling discretization
-    Teuchos::RCP<const Core::LinAlg::Vector> coupl_velnp_;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> coupl_velnp_;
 
     /// take care of node numbering off-by-one (will be removed soon)
     const bool node_from_zero_;

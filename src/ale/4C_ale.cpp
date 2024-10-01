@@ -211,7 +211,7 @@ void ALE::Ale::create_system_matrix(Teuchos::RCP<const ALE::UTILS::MapExtractor>
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> stepinc,
+void ALE::Ale::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc,
     ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
 {
   // We save the current solution here. This will not change the
@@ -252,8 +252,8 @@ void ALE::Ale::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> stepinc,
 
     // When using local systems, a rotated dispnp_ vector needs to be used as dbcval for
     // apply_dirichlet_to_system
-    Teuchos::RCP<Core::LinAlg::Vector> dispnp_local =
-        Teuchos::rcp(new Core::LinAlg::Vector(*(zeros_)));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_local =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*(zeros_)));
     locsys_manager()->rotate_global_to_local(dispnp_local);
 
     if (get_loc_sys_trafo() != Teuchos::null)
@@ -287,7 +287,8 @@ void ALE::Ale::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> stepinc,
 int ALE::Ale::solve()
 {
   // We need the negative residual here as right hand side of the linear problem
-  Teuchos::RCP<Core::LinAlg::Vector> rhs = Teuchos::rcp(new Core::LinAlg::Vector(*residual_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*residual_));
   rhs->Scale(-1.0);
 
   // ToDo (mayr) Why can't we use rhs_ instead of local variable rhs???
@@ -687,9 +688,9 @@ Teuchos::RCP<Core::UTILS::ResultTest> ALE::Ale::create_field_test()
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void ALE::Ale::apply_dirichlet_bc(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::Vector> systemvector,
-    Teuchos::RCP<Core::LinAlg::Vector> systemvectord,
-    Teuchos::RCP<Core::LinAlg::Vector> systemvectordd, bool recreatemap)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectord,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectordd, bool recreatemap)
 {
   // In the case of local coordinate systems, we have to rotate forward ...
   // ---------------------------------------------------------------------------
@@ -778,7 +779,7 @@ Teuchos::RCP<const Core::LinAlg::SparseMatrix> ALE::Ale::get_loc_sys_trafo() con
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector>& a)
+void ALE::Ale::update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& a)
 {
   if (msht_ != Inpar::ALE::no_meshtying)
   {

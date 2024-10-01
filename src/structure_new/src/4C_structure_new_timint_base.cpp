@@ -167,8 +167,9 @@ bool Solid::TimeInt::Base::not_finished() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Base::set_restart(int stepn, double timen,
-    Teuchos::RCP<Core::LinAlg::Vector> disn, Teuchos::RCP<Core::LinAlg::Vector> veln,
-    Teuchos::RCP<Core::LinAlg::Vector> accn, Teuchos::RCP<std::vector<char>> elementdata,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> accn, Teuchos::RCP<std::vector<char>> elementdata,
     Teuchos::RCP<std::vector<char>> nodedata)
 {
   check_init_setup();
@@ -398,8 +399,9 @@ Teuchos::RCP<Core::UTILS::ResultTest> Solid::TimeInt::Base::create_field_test()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Base::get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
-    Teuchos::RCP<Core::LinAlg::Vector> disnp, Teuchos::RCP<Core::LinAlg::Vector> velnp,
-    Teuchos::RCP<Core::LinAlg::Vector> accnp, Teuchos::RCP<std::vector<char>> elementdata,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> disnp,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> accnp, Teuchos::RCP<std::vector<char>> elementdata,
     Teuchos::RCP<std::vector<char>> nodedata)
 {
   check_init_setup();
@@ -431,8 +433,8 @@ void Solid::TimeInt::Base::prepare_output(bool force_prepare_timestep)
 
     if (dataio_->is_write_current_ele_volume())
     {
-      Teuchos::RCP<Core::LinAlg::Vector> elevolumes = Teuchos::null;
-      Teuchos::RCP<const Core::LinAlg::Vector> disnp = dataglobalstate_->get_dis_np();
+      Teuchos::RCP<Core::LinAlg::Vector<double>> elevolumes = Teuchos::null;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp = dataglobalstate_->get_dis_np();
 
       int_ptr_->determine_element_volumes(*disnp, elevolumes);
       int_ptr_->eval_data().set_element_volume_data(elevolumes);
@@ -930,10 +932,10 @@ void Solid::TimeInt::Base::read_restart(const int stepn)
   setup();
 
   // (2) read (or overwrite) the general dynamic state
-  Teuchos::RCP<Core::LinAlg::Vector>& velnp = dataglobalstate_->get_vel_np();
+  Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp = dataglobalstate_->get_vel_np();
   ioreader.read_vector(velnp, "velocity");
   dataglobalstate_->get_multi_vel()->update_steps(*velnp);
-  Teuchos::RCP<Core::LinAlg::Vector>& accnp = dataglobalstate_->get_acc_np();
+  Teuchos::RCP<Core::LinAlg::Vector<double>>& accnp = dataglobalstate_->get_acc_np();
   ioreader.read_vector(accnp, "acceleration");
   dataglobalstate_->get_multi_acc()->update_steps(*accnp);
 

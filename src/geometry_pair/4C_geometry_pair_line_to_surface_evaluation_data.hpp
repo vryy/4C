@@ -59,7 +59,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Calculate the averaged nodal normals.
      */
-    void set_state(const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_col_np);
+    void set_state(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_col_np);
 
     /**
      * \brief Get a reference to the face element map.

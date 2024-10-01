@@ -60,7 +60,7 @@ namespace Adapter
     virtual Teuchos::RCP<const Solid::MapExtractor> interface() const { return interface_; }
 
     //! apply interface force to structure interface
-    void apply_interface_force(Teuchos::RCP<const Core::LinAlg::Vector> intfforce);
+    void apply_interface_force(Teuchos::RCP<const Core::LinAlg::Vector<double>> intfforce);
 
    protected:
     //! The structural model evaluator object.

@@ -74,7 +74,7 @@ namespace PoroMultiPhaseScaTra
      * @return: the norm
      */
     double calculate_vector_norm(const enum Inpar::PoroMultiPhaseScaTra::VectorNorm norm,
-        const Teuchos::RCP<const Core::LinAlg::Vector> vect);
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> vect);
 
     /**
      * Get oxygen partial pressure from oxygen concentration via numerical inversion

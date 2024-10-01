@@ -61,7 +61,8 @@ namespace Core::DOFSets
 
     /// Constructor
     DofSetPredefinedDoFNumber(int numdofpernode,
-        const Teuchos::RCP<Epetra_IntVector> numdofperelement, int numdofperface, bool uniqueGIDs)
+        const Teuchos::RCP<Core::LinAlg::Vector<int>> numdofperelement, int numdofperface,
+        bool uniqueGIDs)
         : DofSet(),
           numdofpernode_(numdofpernode),
           numdofpernodenodewise_(Teuchos::null),
@@ -75,9 +76,9 @@ namespace Core::DOFSets
     }
 
     /// Constructor
-    explicit DofSetPredefinedDoFNumber(const Teuchos::RCP<Epetra_IntVector> numdofpernode,
-        const Teuchos::RCP<Epetra_IntVector> numdofperelement,
-        const Teuchos::RCP<Epetra_IntVector> numdofperface, bool uniqueGIDs)
+    explicit DofSetPredefinedDoFNumber(const Teuchos::RCP<Core::LinAlg::Vector<int>> numdofpernode,
+        const Teuchos::RCP<Core::LinAlg::Vector<int>> numdofperelement,
+        const Teuchos::RCP<Core::LinAlg::Vector<int>> numdofperface, bool uniqueGIDs)
         : DofSet(),
           numdofpernode_(0),
           numdofpernodenodewise_(numdofpernode),
@@ -115,17 +116,18 @@ namespace Core::DOFSets
       if (numdofpernodenodewise_ != Teuchos::null and
           not numdofpernodenodewise_->Map().SameAs(*dis.node_col_map()))
       {
-        Epetra_IntVector numdofpernodenodewise_rowmap(*dis.node_row_map());
+        Core::LinAlg::Vector<int> numdofpernodenodewise_rowmap(*dis.node_row_map());
         Core::LinAlg::export_to(*numdofpernodenodewise_, numdofpernodenodewise_rowmap);
-        numdofpernodenodewise_ = Teuchos::rcp(new Epetra_IntVector(*dis.node_col_map()));
+        numdofpernodenodewise_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.node_col_map()));
         Core::LinAlg::export_to(numdofpernodenodewise_rowmap, *numdofpernodenodewise_);
       }
       if (numdofperelementelewise_ != Teuchos::null and
           not numdofperelementelewise_->Map().SameAs(*dis.element_col_map()))
       {
-        Epetra_IntVector numdofperelementelewise_rowmap(*dis.element_row_map());
+        Core::LinAlg::Vector<int> numdofperelementelewise_rowmap(*dis.element_row_map());
         Core::LinAlg::export_to(*numdofperelementelewise_, numdofperelementelewise_rowmap);
-        numdofperelementelewise_ = Teuchos::rcp(new Epetra_IntVector(*dis.element_col_map()));
+        numdofperelementelewise_ =
+            Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.element_col_map()));
         Core::LinAlg::export_to(numdofperelementelewise_rowmap, *numdofperelementelewise_);
       }
       if (numdofperfacefacewise_ != Teuchos::null)
@@ -171,19 +173,19 @@ namespace Core::DOFSets
     const int numdofpernode_;
 
     /// another member
-    Teuchos::RCP<Epetra_IntVector> numdofpernodenodewise_;
+    Teuchos::RCP<Core::LinAlg::Vector<int>> numdofpernodenodewise_;
 
     /// number of dofs per element of dofset
     const int numdofperelement_;
 
     /// another member
-    Teuchos::RCP<Epetra_IntVector> numdofperelementelewise_;
+    Teuchos::RCP<Core::LinAlg::Vector<int>> numdofperelementelewise_;
 
     /// number of dofs per element of dofset
     const int numdofperface_;
 
     /// another member
-    Teuchos::RCP<Epetra_IntVector> numdofperfacefacewise_;
+    Teuchos::RCP<Core::LinAlg::Vector<int>> numdofperfacefacewise_;
 
     /// bool indicating if the dofs should get unique global IDs
     /// can be set to false, if the dofs never appear in a global map)

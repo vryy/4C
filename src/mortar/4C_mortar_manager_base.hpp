@@ -120,7 +120,8 @@ namespace Mortar
 
     //! Read restart data from disk
     virtual void read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<Core::LinAlg::Vector> dis, Teuchos::RCP<Core::LinAlg::Vector> zero) = 0;
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> zero) = 0;
 
     //! Write restart data to disk
     virtual void write_restart(

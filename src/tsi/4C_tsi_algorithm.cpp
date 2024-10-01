@@ -246,7 +246,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
     }
     else
     {
-      Teuchos::RCP<const Core::LinAlg::Vector> dummy =
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> dummy =
           volcoupl_->apply_vector_mapping21(structure_field()->dispnp());
 
       // determine number of space dimensions
@@ -303,7 +303,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
     if (not matchinggrid_)
     {
       //************************************************************************************
-      Teuchos::RCP<const Core::LinAlg::Vector> dummy1 =
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> dummy1 =
           volcoupl_->apply_vector_mapping12(thermo_field()->tempnp());
 
       // loop over all local nodes of thermal discretisation
@@ -339,7 +339,8 @@ void TSI::Algorithm::output(bool forced_writerestart)
  | communicate the displacement vector to Thermo field          dano 12/11 |
  | enable visualisation of thermal variables on deformed body           |
  *----------------------------------------------------------------------*/
-void TSI::Algorithm::output_deformation_in_thr(Teuchos::RCP<const Core::LinAlg::Vector> dispnp,
+void TSI::Algorithm::output_deformation_in_thr(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp,
     Teuchos::RCP<Core::FE::Discretization> structdis)
 {
   if (dispnp == Teuchos::null) FOUR_C_THROW("Got null pointer for displacements");
@@ -397,12 +398,12 @@ void TSI::Algorithm::output_deformation_in_thr(Teuchos::RCP<const Core::LinAlg::
  | calculate velocities                                      dano 12/10 |
  | like interface_velocity(disp) in FSI::DirichletNeumann                |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> TSI::Algorithm::calc_velocity(
-    Teuchos::RCP<const Core::LinAlg::Vector> dispnp)
+Teuchos::RCP<const Core::LinAlg::Vector<double>> TSI::Algorithm::calc_velocity(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp)
 {
-  Teuchos::RCP<Core::LinAlg::Vector> vel = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> vel = Teuchos::null;
   // copy D_n onto V_n+1
-  vel = Teuchos::rcp(new Core::LinAlg::Vector(*(structure_field()->dispn())));
+  vel = Teuchos::rcp(new Core::LinAlg::Vector<double>(*(structure_field()->dispn())));
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
   vel->Update(1. / dt(), *dispnp, -1. / dt());
@@ -414,8 +415,9 @@ Teuchos::RCP<const Core::LinAlg::Vector> TSI::Algorithm::calc_velocity(
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void TSI::Algorithm::apply_thermo_coupling_state(Teuchos::RCP<const Core::LinAlg::Vector> temp,
-    Teuchos::RCP<const Core::LinAlg::Vector> temp_res)
+void TSI::Algorithm::apply_thermo_coupling_state(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> temp,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> temp_res)
 {
   if (matchinggrid_)
   {
@@ -446,7 +448,8 @@ void TSI::Algorithm::apply_thermo_coupling_state(Teuchos::RCP<const Core::LinAlg
  |                                                                      |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::apply_struct_coupling_state(
-    Teuchos::RCP<const Core::LinAlg::Vector> disp, Teuchos::RCP<const Core::LinAlg::Vector> vel)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
 {
   if (matchinggrid_)
   {
@@ -545,8 +548,8 @@ void TSI::Algorithm::prepare_contact_strategy()
 
     contact_strategy_lagrange_->store_dirichlet_status(structure_field()->get_dbc_map_extractor());
 
-    Teuchos::RCP<Core::LinAlg::Vector> zero_disp =
-        Teuchos::rcp(new Core::LinAlg::Vector(*structure_field()->dof_row_map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zero_disp =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*structure_field()->dof_row_map(), true));
     contact_strategy_lagrange_->set_state(Mortar::state_new_displacement, *zero_disp);
     contact_strategy_lagrange_->save_reference_state(zero_disp);
     contact_strategy_lagrange_->evaluate_reference_state();

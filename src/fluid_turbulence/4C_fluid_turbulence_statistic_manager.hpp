@@ -102,7 +102,7 @@ namespace FLD
     \brief Get current velnp for meshtying, since it may have changed
 
     */
-    void get_current_velnp(Teuchos::RCP<Core::LinAlg::Vector>);
+    void get_current_velnp(Teuchos::RCP<Core::LinAlg::Vector<double>>);
 
     /*!
     \brief Include current quantities in the time
@@ -134,8 +134,9 @@ namespace FLD
     \brief ???
 
     */
-    void do_time_sample(int step, Teuchos::RCP<Core::LinAlg::Vector> velnp,
-        Teuchos::RCP<Core::LinAlg::Vector> force, Teuchos::RCP<Core::LinAlg::Vector> phi,
+    void do_time_sample(int step, Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> force,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> phi,
         Teuchos::RCP<const Core::DOFSets::DofSet> stddofset);
 
     /*!
@@ -225,40 +226,40 @@ namespace FLD
     bool alefluid_;
 
     //! all my solution vectors needed for element evaluation
-    Teuchos::RCP<Core::LinAlg::Vector> myaccnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> myaccn_;
-    Teuchos::RCP<Core::LinAlg::Vector> myaccam_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myaccnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myaccn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myaccam_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> myvelnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> myveln_;
-    Teuchos::RCP<Core::LinAlg::Vector> myvelaf_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myvelnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myveln_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myvelaf_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> myhist_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myhist_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> myscaaf_;
-    Teuchos::RCP<Core::LinAlg::Vector> myscaam_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myscaaf_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myscaam_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> mydispnp_;
-    Teuchos::RCP<Core::LinAlg::Vector> mydispn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mydispnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mydispn_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> mygridvelaf_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mygridvelaf_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> myforce_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myforce_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> myfsvelaf_;
-    Teuchos::RCP<Core::LinAlg::Vector> myfsscaaf_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myfsvelaf_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myfsscaaf_;
     // xwall object is required for evaluating inner element planes of channel
     Teuchos::RCP<FLD::XWall> myxwall_;
 
     Teuchos::RCP<FLD::UTILS::StressManager> mystressmanager_;
 
     //! scatra result vector (defined on the scatra dofrowmap!)
-    Teuchos::RCP<Core::LinAlg::Vector> myphinp_;
-    Teuchos::RCP<Core::LinAlg::Vector> myphiaf_;
-    Teuchos::RCP<Core::LinAlg::Vector> myphiam_;
-    Teuchos::RCP<Core::LinAlg::Vector> myfsphi_;
-    Teuchos::RCP<Core::LinAlg::Vector> myscatrahist_;
-    Teuchos::RCP<Core::LinAlg::Vector> myphidtam_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myphinp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myphiaf_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myphiam_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myfsphi_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myscatrahist_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> myphidtam_;
 
     //! specifies the special flow
     enum SpecialFlow

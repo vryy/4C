@@ -131,25 +131,25 @@ namespace FPSI
 
    protected:
     //! @name Transfer helpers
-    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_ale(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_fluid(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector> struct_to_fluid_fsi(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_struct_fsi(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> struct_to_ale_fsi(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_struct_fsi(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> fluid_to_ale_fsi(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_fluid_fsi(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector> ale_to_fluid_interface_fsi(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_fluid_fsi(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_struct_fsi(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_ale_fsi(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_struct_fsi(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale_fsi(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid_fsi(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid_interface_fsi(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
 
     //@}
 
@@ -234,7 +234,7 @@ namespace FPSI
         Teuchos::RCP<Epetra_CrsMatrix> dst);  ///< destination Matrix (will be filled!)
 
     //! Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
             stepinc);  ///< increment between time step n and n+1
 
     //! setup of newton scheme
@@ -280,7 +280,10 @@ namespace FPSI
     void set_conductivity(double conduct);
 
     //! external acces to rhs vector (used by xfpsi)
-    Teuchos::RCP<Core::LinAlg::Vector>& rhs() { return rhs_; }  // TodoAge: will be removed again!
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs()
+    {
+      return rhs_;
+    }  // TodoAge: will be removed again!
 
    protected:
     //! block systemmatrix
@@ -290,19 +293,19 @@ namespace FPSI
     //! dof row map (not splitted)
     Teuchos::RCP<Epetra_Map> fullmap_;
     //! increment between Newton steps k and k+1
-    Teuchos::RCP<Core::LinAlg::Vector> iterinc_;
-    Teuchos::RCP<Core::LinAlg::Vector> iterincold_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iterincold_;
     //! zero vector of full length
-    Teuchos::RCP<Core::LinAlg::Vector> zeros_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;
     //! linear algebraic solver
     Teuchos::RCP<Core::LinAlg::Solver> solver_;
     //! rhs of FPSI system
-    Teuchos::RCP<Core::LinAlg::Vector> rhs_;
-    Teuchos::RCP<Core::LinAlg::Vector> rhsold_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhsold_;
 
-    Teuchos::RCP<const Core::LinAlg::Vector> meshdispold_;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> meshdispold_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> porointerfacedisplacementsold_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> porointerfacedisplacementsold_;
 
     //! adapt solver tolerancePoroField()->SystemSparseMatrix()
     bool solveradapttol_;
@@ -321,10 +324,11 @@ namespace FPSI
      \param ax (o) ale displacements
      \param firstiter_ (i) firstiteration? - how to evaluate FSI-velocities
      */
-    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> x,
-        Teuchos::RCP<const Core::LinAlg::Vector>& sx, Teuchos::RCP<const Core::LinAlg::Vector>& pfx,
-        Teuchos::RCP<const Core::LinAlg::Vector>& fx, Teuchos::RCP<const Core::LinAlg::Vector>& ax,
-        bool firstiter_) = 0;
+    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& pfx,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& ax, bool firstiter_) = 0;
 
     /// setup list with default parameters
     void set_default_parameters(const Teuchos::ParameterList& fpsidynparams);

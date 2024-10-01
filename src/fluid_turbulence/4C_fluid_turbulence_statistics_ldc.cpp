@@ -526,7 +526,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Core::FE::Dis
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsLdc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp)
+void FLD::TurbulenceStatisticsLdc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp)
 {
   //----------------------------------------------------------------------
   // increase sample counter
@@ -800,8 +800,10 @@ void FLD::TurbulenceStatisticsLdc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsLdc::do_loma_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp,
-    Teuchos::RCP<Core::LinAlg::Vector> scanp, Core::LinAlg::Vector& force, const double eosfac)
+void FLD::TurbulenceStatisticsLdc::do_loma_time_sample(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scanp, Core::LinAlg::Vector<double>& force,
+    const double eosfac)
 {
   //----------------------------------------------------------------------
   // increase sample counter

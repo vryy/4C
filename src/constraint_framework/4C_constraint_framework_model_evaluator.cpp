@@ -35,7 +35,7 @@ void Solid::ModelEvaluator::Constraints::setup()
       new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
 
   constraint_force_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view(), true));
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
 
   set_sub_model_types();
   create_sub_model_evaluators();
@@ -119,7 +119,7 @@ void Solid::ModelEvaluator::Constraints::create_sub_model_evaluators()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Constraints::reset(const Core::LinAlg::Vector& x)
+void Solid::ModelEvaluator::Constraints::reset(const Core::LinAlg::Vector<double>& x)
 {
   for (auto& sme_iter : sub_model_vec_ptr_)
   {
@@ -186,7 +186,7 @@ void Solid::ModelEvaluator::Constraints::pre_evaluate()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::Constraints::assemble_force(
-    Core::LinAlg::Vector& f, const double& timefac_np) const
+    Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
   Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *constraint_force_ptr_);
   constraint_force_ptr_->PutScalar(0.0);
@@ -230,7 +230,7 @@ void Solid::ModelEvaluator::Constraints::update_step_state(const double& timefac
 {
   if (not constraint_force_ptr_.is_null())
   {
-    Teuchos::RCP<Core::LinAlg::Vector>& fstruct_ptr = global_state().get_fstructure_old();
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& fstruct_ptr = global_state().get_fstructure_old();
     fstruct_ptr->Update(timefac_n, *constraint_force_ptr_, 1.0);
   }
 }
@@ -303,7 +303,7 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Constraints::get_block_dof
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector>
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Constraints::get_current_solution_ptr() const
 {
   FOUR_C_THROW("This function is not yet implemented");
@@ -311,7 +311,7 @@ Solid::ModelEvaluator::Constraints::get_current_solution_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector>
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Constraints::get_last_time_step_solution_ptr() const
 {
   FOUR_C_THROW("This function is not yet implemented");
@@ -339,7 +339,8 @@ void Solid::ModelEvaluator::Constraints::assemble_jacobian_contributions_from_el
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Constraints::create_backup_state(const Core::LinAlg::Vector& dir)
+void Solid::ModelEvaluator::Constraints::create_backup_state(
+    const Core::LinAlg::Vector<double>& dir)
 {
   FOUR_C_THROW("This function is not yet implemented");
 }

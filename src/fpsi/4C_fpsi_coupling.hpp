@@ -88,47 +88,47 @@ namespace FPSI
     //@}
 
     // Poro Coupling RHS (structure)
-    Teuchos::RCP<Core::LinAlg::Vector>& rhs_s() { return c_rhs_s_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs_s() { return c_rhs_s_; }
     // Poro Coupling RHS (fluid)
-    Teuchos::RCP<Core::LinAlg::Vector>& rhs_pf() { return c_rhs_pf_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs_pf() { return c_rhs_pf_; }
     // Fluid Coupling RHS
-    Teuchos::RCP<Core::LinAlg::Vector>& rhs_f() { return c_rhs_f_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs_f() { return c_rhs_f_; }
 
     //! @name transform helpers
 
     // Vector Transform
-    Teuchos::RCP<Core::LinAlg::Vector> i_fluid_to_porofluid(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_fluid_to_porofluid(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
     {
       return icoup_pf_f_->slave_to_master(iv);
     }
 
-    Teuchos::RCP<Core::LinAlg::Vector> i_porofluid_to_fluid(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_porofluid_to_fluid(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
     {
       return icoup_pf_f_->master_to_slave(iv);
     }
 
-    Teuchos::RCP<Core::LinAlg::Vector> i_fluid_to_porostruct(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_fluid_to_porostruct(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
     {
       return icoup_ps_f_->slave_to_master(iv);
     }
 
-    Teuchos::RCP<Core::LinAlg::Vector> i_porostruct_to_fluid(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_porostruct_to_fluid(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
     {
       return icoup_ps_f_->master_to_slave(iv);
     }
 
-    Teuchos::RCP<Core::LinAlg::Vector> i_ale_to_porostruct(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_ale_to_porostruct(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
     {
       return icoup_ps_a_->slave_to_master(iv);
     }
 
-    Teuchos::RCP<Core::LinAlg::Vector> i_porostruct_to_ale(
-        Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+    Teuchos::RCP<Core::LinAlg::Vector<double>> i_porostruct_to_ale(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
     {
       return icoup_ps_a_->master_to_slave(iv);
     }
@@ -205,10 +205,10 @@ namespace FPSI
                 // condensed to structural dofs!)
 
     // Poro Coupling RHS
-    Teuchos::RCP<Core::LinAlg::Vector> c_rhs_s_;
-    Teuchos::RCP<Core::LinAlg::Vector> c_rhs_pf_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> c_rhs_s_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> c_rhs_pf_;
     // Fluid Coupling RHS
-    Teuchos::RCP<Core::LinAlg::Vector> c_rhs_f_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> c_rhs_f_;
 
     // Interface Coupling PoroFluid - Fluid velocities and pressure are/is coupled
     Teuchos::RCP<Coupling::Adapter::Coupling> icoup_pf_f_;

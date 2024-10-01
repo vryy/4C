@@ -55,10 +55,10 @@ namespace XFEM
         const std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>>&
             reconstr_method,                      ///< reconstruction map for nodes and its dofsets
         Inpar::XFEM::XFluidTimeInt& timeIntType,  ///< type of time integration
-        const Teuchos::RCP<Core::LinAlg::Vector> veln,  ///< velocity at time t^n
-        const double& dt,                               ///< time step size
-        const double& theta,                            ///< OST theta
-        bool initialize                                 ///< is initialization?
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> veln,  ///< velocity at time t^n
+        const double& dt,                                       ///< time step size
+        const double& theta,                                    ///< OST theta
+        bool initialize                                         ///< is initialization?
 
     );
 
@@ -67,7 +67,7 @@ namespace XFEM
     /*========================================================================*/
 
     //! get startvalues in time step for nodes which changed interface-side
-    void compute(std::vector<Teuchos::RCP<Core::LinAlg::Vector>>& newRowVectorsn) override;
+    void compute(std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& newRowVectorsn) override;
 
    private:
     /*========================================================================*/
@@ -110,10 +110,12 @@ namespace XFEM
     void get_data_for_not_converged_nodes();
 
     //! prepare new iteration
-    void new_iteration_prepare(std::vector<Teuchos::RCP<Core::LinAlg::Vector>> newRowVectors);
+    void new_iteration_prepare(
+        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> newRowVectors);
 
     //! gradients at a node
-    void new_iteration_nodal_data(std::vector<Teuchos::RCP<Core::LinAlg::Vector>> newRowVectors);
+    void new_iteration_nodal_data(
+        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> newRowVectors);
 
     //! reinitialize some data for new computations, e.g. at a new FGI
     void reinitialize_data();
@@ -152,7 +154,7 @@ namespace XFEM
 
     //! compute the nodal gradient
     void compute_nodal_gradient(
-        const std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
+        const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
             colVectors,           ///< all vectors for that we reconstruct the their gradients
         Core::Nodes::Node* node,  ///< node at which we reconstruct the gradients
         std::vector<Core::Elements::Element*>&

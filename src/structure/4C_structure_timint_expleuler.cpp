@@ -149,7 +149,7 @@ int Solid::TimIntExplEuler::integrate_step()
   // ordinary internal force and stiffness
   {
     // displacement increment in step
-    Core::LinAlg::Vector disinc = Core::LinAlg::Vector(*disn_);
+    Core::LinAlg::Vector<double> disinc = Core::LinAlg::Vector<double>(*disn_);
     disinc.Update(-1.0, *(*dis_)(0), 1.0);
     // internal force
     apply_force_internal(timen_, dt, disn_, Teuchos::rcp(&disinc, false), veln_, fintn_);
@@ -227,7 +227,7 @@ int Solid::TimIntExplEuler::integrate_step()
     else
     {
       // extract the diagonal values of the mass matrix
-      Teuchos::RCP<Core::LinAlg::Vector> diag = Core::LinAlg::create_vector(
+      Teuchos::RCP<Core::LinAlg::Vector<double>> diag = Core::LinAlg::create_vector(
           (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_))->row_map(), false);
       (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_))->extract_diagonal_copy(*diag);
       // A_{n+1} = M^{-1} . ( -fint + fext )

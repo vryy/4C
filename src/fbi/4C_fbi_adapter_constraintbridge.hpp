@@ -102,8 +102,8 @@ namespace Adapter
      */
     virtual void evaluate(Teuchos::RCP<const Core::FE::Discretization> discretization1,
         Teuchos::RCP<const Core::FE::Discretization> discretization2,
-        Teuchos::RCP<const Core::LinAlg::Vector> fluid_vel,
-        Teuchos::RCP<const Core::LinAlg::Vector> beam_vel) = 0;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_vel,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> beam_vel) = 0;
 
     /**
      * \brief Wraps the ResetState function of the pair

@@ -85,11 +85,12 @@ namespace XFEM
 
     /// Export Vector with initialdofrowmap (all nodes have one dofset) - to Vector with all active
     /// dofs
-    void export_initialto_active_vector(Teuchos::RCP<const Core::LinAlg::Vector>& initialvec,
-        Teuchos::RCP<Core::LinAlg::Vector>& activevec);
+    void export_initialto_active_vector(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& initialvec,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& activevec);
 
-    void export_activeto_initial_vector(Teuchos::RCP<const Core::LinAlg::Vector> activevec,
-        Teuchos::RCP<Core::LinAlg::Vector> initialvec);
+    void export_activeto_initial_vector(Teuchos::RCP<const Core::LinAlg::Vector<double>> activevec,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> initialvec);
 
 
 
@@ -223,8 +224,8 @@ namespace XFEM
 
     \note This class will not take ownership or in any way modify the solution vector.
     */
-    virtual void set_initial_state(
-        unsigned nds, const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector> state);
+    virtual void set_initial_state(unsigned nds, const std::string& name,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> state);
 
     /** \brief Get number of standard (w/o enrichment) dofs for given node.
      *

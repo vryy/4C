@@ -34,7 +34,7 @@ void Discret::ELEMENTS::assemble_gauss_point_values(
 }
 
 void Discret::ELEMENTS::assemble_nodal_element_count(
-    Epetra_IntVector& global_count, const Core::Elements::Element& ele)
+    Core::LinAlg::Vector<int>& global_count, const Core::Elements::Element& ele)
 {
   for (int n = 0; n < ele.num_node(); ++n)
   {

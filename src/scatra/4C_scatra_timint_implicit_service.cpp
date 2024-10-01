@@ -122,9 +122,9 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_in_domain()
   // evaluate flux vector field inside the whole computational domain (e.g., for visualization of
   // particle path lines)
   {
-    auto f0 = Teuchos::make_rcp<Core::LinAlg::Vector>(dofrowmap);
-    auto f1 = Teuchos::make_rcp<Core::LinAlg::Vector>(dofrowmap);
-    auto f2 = Teuchos::make_rcp<Core::LinAlg::Vector>(dofrowmap);
+    auto f0 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dofrowmap);
+    auto f1 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dofrowmap);
+    auto f2 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dofrowmap);
     discret_->evaluate(params, Teuchos::null, Teuchos::null, f0, f1, f2);
     (*flux)(0)->Update(1., *f0, 0.);
     (*flux)(1)->Update(1., *f1, 0.);
@@ -134,7 +134,8 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_in_domain()
   if (calcflux_domain_lumped_)
   {
     // vector for integrated shape functions
-    Teuchos::RCP<Core::LinAlg::Vector> integratedshapefcts = Core::LinAlg::create_vector(dofrowmap);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> integratedshapefcts =
+        Core::LinAlg::create_vector(dofrowmap);
 
     // overwrite action for elements
     Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
@@ -346,11 +347,12 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
     const Epetra_Map& dofrowmap = *flux_boundary_maps_->Map(icond + 1);
 
     // extract part of true residual vector associated with current boundary segment
-    const Teuchos::RCP<Core::LinAlg::Vector> trueresidual_boundary =
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> trueresidual_boundary =
         flux_boundary_maps_->extract_vector(*trueresidual_, icond + 1);
 
     // initialize vector for nodal values of normal boundary fluxes
-    Teuchos::RCP<Core::LinAlg::Vector> normalfluxes = Core::LinAlg::create_vector(dofrowmap);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> normalfluxes =
+        Core::LinAlg::create_vector(dofrowmap);
 
     // create parameter list for boundary elements
     Teuchos::ParameterList params;
@@ -368,7 +370,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
           "action", ScaTra::BoundaryAction::integrate_shape_functions, params);
 
       // create vector (+ initialization with zeros)
-      const Teuchos::RCP<Core::LinAlg::Vector> integratedshapefunc =
+      const Teuchos::RCP<Core::LinAlg::Vector<double>> integratedshapefunc =
           Core::LinAlg::create_vector(dofrowmap);
 
       // call loop over elements
@@ -603,7 +605,7 @@ void ScaTra::ScaTraTimIntImpl::calc_initial_time_derivative()
   // before the first time step. However, in levelset simulations with reinitialization, this
   // routine might be called before every single time step. For this reason, the history vector
   // needs to be manually set to zero here and restored at the end of this routine.
-  Teuchos::RCP<Core::LinAlg::Vector> hist = hist_;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> hist = hist_;
   hist_ = zeros_;
 
   // In a first step, we assemble the standard global system of equations.
@@ -790,7 +792,8 @@ void ScaTra::ScaTraTimIntImpl::output_domain_or_boundary_integrals(const std::st
  | Evaluate surface/interface permeability for FS3I          Thon 11/14 |
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::surface_permeability(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Teuchos::RCP<Core::LinAlg::Vector> rhs)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
 {
   // time measurement: evaluate condition 'SurfacePermeability'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ScaTraCoupling'");
@@ -839,8 +842,8 @@ void ScaTra::ScaTraTimIntImpl::surface_permeability(
  |  see e.g. Kedem, O. T., and A. Katchalsky. "Thermodynamic analysis of the permeability of
  biological membranes to non-electrolytes." Biochimica et biophysica Acta 27 (1958): 229-246.
  *----------------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntImpl::kedem_katchalsky(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Teuchos::RCP<Core::LinAlg::Vector> rhs)
+void ScaTra::ScaTraTimIntImpl::kedem_katchalsky(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
 {
   // time measurement: evaluate condition 'SurfacePermeability'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ScaTraCoupling'");
@@ -1021,7 +1024,8 @@ void ScaTra::ScaTraTimIntImpl::compute_null_space_if_necessary() const
  | evaluate Neumann inflow boundary condition                  vg 03/09 |
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::compute_neumann_inflow(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Teuchos::RCP<Core::LinAlg::Vector> rhs)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
 {
   // time measurement: evaluate condition 'Neumann inflow'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'TransportNeumannInflow'");
@@ -1048,7 +1052,8 @@ void ScaTra::ScaTraTimIntImpl::compute_neumann_inflow(
  | evaluate boundary cond. due to convective heat transfer     vg 10/11 |
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::evaluate_convective_heat_transfer(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Teuchos::RCP<Core::LinAlg::Vector> rhs)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
 {
   // time measurement: evaluate condition 'TransportThermoConvections'
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'TransportThermoConvections'");
@@ -1174,7 +1179,7 @@ void ScaTra::ScaTraTimIntImpl::output_to_gmsh(const int step, const double time)
                     << "Convective Velocity \" {" << std::endl;
 
     // extract convective velocity from discretization
-    Teuchos::RCP<const Core::LinAlg::Vector> convel =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
         discret_->get_state(nds_vel(), "convective velocity field");
     if (convel == Teuchos::null)
       FOUR_C_THROW("Cannot extract convective velocity field from discretization");
@@ -1385,7 +1390,7 @@ void ScaTra::ScaTraTimIntImpl::avm3_preparation()
     Core::LinearSolver::Parameters::compute_solver_parameters(*discret_, params);
 
     // get toggle vector for Dirchlet boundary conditions
-    const Teuchos::RCP<const Core::LinAlg::Vector> dbct = dirichlet_toggle();
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dbct = dirichlet_toggle();
 
     // get nullspace parameters
     double* nullspace = params.get("null space: vectors", (double*)nullptr);
@@ -1408,9 +1413,11 @@ void ScaTra::ScaTraTimIntImpl::avm3_preparation()
     // compute scale-separation matrix: S = I - Ptent*Ptent^T
     Sep_ = Core::LinAlg::matrix_multiply(Ptent, false, Ptent, true);
     Sep_->scale(-1.0);
-    Teuchos::RCP<Core::LinAlg::Vector> tmp = Core::LinAlg::create_vector(Sep_->row_map(), false);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
+        Core::LinAlg::create_vector(Sep_->row_map(), false);
     tmp->PutScalar(1.0);
-    Teuchos::RCP<Core::LinAlg::Vector> diag = Core::LinAlg::create_vector(Sep_->row_map(), false);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> diag =
+        Core::LinAlg::create_vector(Sep_->row_map(), false);
     Sep_->extract_diagonal_copy(*diag);
     diag->Update(1.0, *tmp, 1.0);
     Sep_->replace_diagonal_values(*diag);
@@ -1475,13 +1482,13 @@ void ScaTra::ScaTraTimIntImpl::avm3_scaling(Teuchos::ParameterList& eleparams)
  | construct toggle vector for Dirichlet dofs                  gjb 11/08|
  | assures backward compatibility for avm3 solver; should go away once  |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> ScaTra::ScaTraTimIntImpl::dirichlet_toggle()
+Teuchos::RCP<const Core::LinAlg::Vector<double>> ScaTra::ScaTraTimIntImpl::dirichlet_toggle()
 {
   if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Dirichlet map has not been allocated");
-  Teuchos::RCP<Core::LinAlg::Vector> dirichones =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> dirichones =
       Core::LinAlg::create_vector(*(dbcmaps_->cond_map()), false);
   dirichones->PutScalar(1.0);
-  Teuchos::RCP<Core::LinAlg::Vector> dirichtoggle =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> dirichtoggle =
       Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
   dbcmaps_->insert_cond_vector(dirichones, dirichtoggle);
   return dirichtoggle;
@@ -1671,7 +1678,8 @@ void ScaTra::ScaTraTimIntImpl::calc_intermediate_solution()
 
       // temporary store velnp_ since it will be modified in nonlinear_solve()
       const Epetra_Map* dofrowmap = discret_->dof_row_map();
-      Teuchos::RCP<Core::LinAlg::Vector> tmp = Core::LinAlg::create_vector(*dofrowmap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
+          Core::LinAlg::create_vector(*dofrowmap, true);
       tmp->Update(1.0, *phinp_, 0.0);
 
       // compute intermediate solution without forcing
@@ -1729,8 +1737,8 @@ void ScaTra::ScaTraTimIntImpl::set_sc_str_gr_disp(
  | Calculate the reconstructed nodal gradient of phi        winter 04/17|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::compute_superconvergent_patch_recovery(
-    Teuchos::RCP<const Core::LinAlg::Vector> state, const std::string& statename, const int numvec,
-    Teuchos::ParameterList& eleparams, const int dim)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> state, const std::string& statename,
+    const int numvec, Teuchos::ParameterList& eleparams, const int dim)
 {
   // Warning, this is only tested so far for 1 scalar field!!!
 
@@ -1782,8 +1790,8 @@ bool ScaTra::ScaTraTimIntImpl::convergence_check(int itnum, int itmax, const dou
   // distinguish whether one or two scalars are considered
   if (num_scal() == 2)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> vec1 = splitter_->extract_other_vector(residual_);
-    Teuchos::RCP<Core::LinAlg::Vector> vec2 = splitter_->extract_cond_vector(residual_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vec1 = splitter_->extract_other_vector(residual_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vec2 = splitter_->extract_cond_vector(residual_);
     vec1->Norm2(&res1norm_L2);
     vec2->Norm2(&res2norm_L2);
 
@@ -1901,8 +1909,8 @@ void ScaTra::ScaTraTimIntImpl::fd_check()
     std::cout << std::endl << "FINITE DIFFERENCE CHECK FOR SCATRA SYSTEM MATRIX" << std::endl;
 
   // make a copy of state variables to undo perturbations later
-  Teuchos::RCP<Core::LinAlg::Vector> phinp_original =
-      Teuchos::rcp(new Core::LinAlg::Vector(*phinp_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_original =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*phinp_));
 
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
@@ -1924,8 +1932,8 @@ void ScaTra::ScaTraTimIntImpl::fd_check()
   sysmat_original->FillComplete();
 
   // make a copy of system right-hand side vector
-  Teuchos::RCP<Core::LinAlg::Vector> rhs_original =
-      Teuchos::rcp(new Core::LinAlg::Vector(*residual_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_original =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*residual_));
 
   // initialize counter for system matrix entries with failing finite difference check
   int counter(0);
@@ -2313,8 +2321,8 @@ void ScaTra::ScaTraTimIntImpl::explicit_predictor() const
  | perform Aitken relaxation                                     fang 08/17 |
  *--------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::perform_aitken_relaxation(
-    Core::LinAlg::Vector& phinp,  //!< state vector to be relaxed
-    const Core::LinAlg::Vector&
+    Core::LinAlg::Vector<double>& phinp,  //!< state vector to be relaxed
+    const Core::LinAlg::Vector<double>&
         phinp_inc_diff  //!< difference between current and previous state vector increments
 )
 {
@@ -2355,7 +2363,8 @@ void ScaTra::ScaTraTimIntImpl::apply_bc_to_system()
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::evaluate_initial_time_derivative(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Teuchos::RCP<Core::LinAlg::Vector> rhs)
+    Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
 {
   // create and fill parameter list for elements
   Teuchos::ParameterList eleparams;

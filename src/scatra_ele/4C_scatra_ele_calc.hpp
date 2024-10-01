@@ -573,14 +573,15 @@ namespace Discret
           Teuchos::RCP<Epetra_MultiVector>& col_filtered_dens_vel,
           Teuchos::RCP<Epetra_MultiVector>& col_filtered_dens_vel_temp,
           Teuchos::RCP<Epetra_MultiVector>& col_filtered_dens_rateofstrain_temp,
-          Teuchos::RCP<Core::LinAlg::Vector>& col_filtered_temp,
-          Teuchos::RCP<Core::LinAlg::Vector>& col_filtered_dens,
-          Teuchos::RCP<Core::LinAlg::Vector>& col_filtered_dens_temp, double& LkMk, double& MkMk,
-          double& xcenter, double& ycenter, double& zcenter, const Core::Elements::Element* ele);
+          Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_temp,
+          Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_dens,
+          Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_dens_temp, double& LkMk,
+          double& MkMk, double& xcenter, double& ycenter, double& zcenter,
+          const Core::Elements::Element* ele);
 
       void scatra_calc_vreman_dt(Teuchos::RCP<Epetra_MultiVector>& col_filtered_phi,
-          Teuchos::RCP<Core::LinAlg::Vector>& col_filtered_phi2,
-          Teuchos::RCP<Core::LinAlg::Vector>& col_filtered_phiexpression,
+          Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_phi2,
+          Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_phiexpression,
           Teuchos::RCP<Epetra_MultiVector>& col_filtered_alphaijsc, double& dt_numerator,
           double& dt_denominator, const Core::Elements::Element* ele);
 

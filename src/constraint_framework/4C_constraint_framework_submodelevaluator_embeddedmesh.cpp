@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager::EmbeddedMeshConstraintManager(
-    Teuchos::RCP<Core::FE::Discretization> discret_ptr, const Core::LinAlg::Vector& dispnp)
+    Teuchos::RCP<Core::FE::Discretization> discret_ptr, const Core::LinAlg::Vector<double>& dispnp)
 {
   // Get the parameter lists and get information from them
   auto embedded_mesh_parameter_list = Global::Problem::instance()->embedded_mesh_params();
@@ -75,10 +75,10 @@ CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager::EmbeddedMeshConst
 }
 
 bool CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager::evaluate_force_stiff(
-    const Core::LinAlg::Vector& displacement_vector,
+    const Core::LinAlg::Vector<double>& displacement_vector,
     Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> me_stiff_ptr,
-    Teuchos::RCP<Core::LinAlg::Vector> me_force_ptr)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> me_force_ptr)
 {
   // Evaluate the global mortar matrices
   mortar_manager_->evaluate_global_coupling_contributions(displacement_vector);

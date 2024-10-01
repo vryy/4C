@@ -108,7 +108,7 @@ namespace NOX
          * \param linsys : read only access to the linear system object
          */
         virtual void run_pre_compute_jacobian(Core::LinAlg::SparseOperator& jac,
-            const Core::LinAlg::Vector& x, const NOX::Nln::LinearSystem& linsys);
+            const Core::LinAlg::Vector<double>& x, const NOX::Nln::LinearSystem& linsys);
 
         /** User defined method that will be executed at the end of a call to
          * NOX::Nln::LinearSystem::applyJacobianInverse().
@@ -118,7 +118,7 @@ namespace NOX
          * \param linsys : read only access to the linear system object
          */
         virtual void run_post_compute_jacobian(Core::LinAlg::SparseOperator& jac,
-            const Core::LinAlg::Vector& x, const NOX::Nln::LinearSystem& linsys);
+            const Core::LinAlg::Vector<double>& x, const NOX::Nln::LinearSystem& linsys);
 
         /** User defined method that will be executed at the start of a call to
          * NOX::Nln::LinearSystem::compute_f_and_jacobian().
@@ -128,8 +128,8 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void run_pre_compute_fand_jacobian(Core::LinAlg::Vector& rhs,
-            Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector& x,
+        virtual void run_pre_compute_fand_jacobian(Core::LinAlg::Vector<double>& rhs,
+            Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector<double>& x,
             const NOX::Nln::LinearSystem& linsys);
 
         /** User defined method that will be executed at the end of a call to
@@ -140,8 +140,8 @@ namespace NOX
          * \param x      : read only access to the current solution point
          * \param linsys : read only access to the linear system object
          */
-        virtual void run_post_compute_fand_jacobian(Core::LinAlg::Vector& rhs,
-            Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector& x,
+        virtual void run_post_compute_fand_jacobian(Core::LinAlg::Vector<double>& rhs,
+            Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector<double>& x,
             const NOX::Nln::LinearSystem& linsys);
 
        protected:
@@ -188,7 +188,7 @@ inline void NOX::Nln::LinSystem::PrePostOperator::run_post_apply_jacobian_invers
 }
 
 inline void NOX::Nln::LinSystem::PrePostOperator::run_pre_compute_jacobian(
-    Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector& x,
+    Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector<double>& x,
     const NOX::Nln::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
@@ -200,7 +200,7 @@ inline void NOX::Nln::LinSystem::PrePostOperator::run_pre_compute_jacobian(
 }
 
 inline void NOX::Nln::LinSystem::PrePostOperator::run_post_compute_jacobian(
-    Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector& x,
+    Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector<double>& x,
     const NOX::Nln::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
@@ -212,8 +212,8 @@ inline void NOX::Nln::LinSystem::PrePostOperator::run_post_compute_jacobian(
 }
 
 inline void NOX::Nln::LinSystem::PrePostOperator::run_pre_compute_fand_jacobian(
-    Core::LinAlg::Vector& rhs, Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector& x,
-    const NOX::Nln::LinearSystem& linsys)
+    Core::LinAlg::Vector<double>& rhs, Core::LinAlg::SparseOperator& jac,
+    const Core::LinAlg::Vector<double>& x, const NOX::Nln::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
   {
@@ -224,8 +224,8 @@ inline void NOX::Nln::LinSystem::PrePostOperator::run_pre_compute_fand_jacobian(
 }
 
 inline void NOX::Nln::LinSystem::PrePostOperator::run_post_compute_fand_jacobian(
-    Core::LinAlg::Vector& rhs, Core::LinAlg::SparseOperator& jac, const Core::LinAlg::Vector& x,
-    const NOX::Nln::LinearSystem& linsys)
+    Core::LinAlg::Vector<double>& rhs, Core::LinAlg::SparseOperator& jac,
+    const Core::LinAlg::Vector<double>& x, const NOX::Nln::LinearSystem& linsys)
 {
   if (havePrePostOperator_)
   {

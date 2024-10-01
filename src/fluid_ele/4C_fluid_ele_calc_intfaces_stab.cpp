@@ -693,7 +693,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   //------------- extract patch velaf velocity---------
   // velocities (intermediate time step, n+alpha_F)
-  Teuchos::RCP<const Core::LinAlg::Vector> velaf = discretization.get_state("velaf");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> velaf = discretization.get_state("velaf");
   if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
 
@@ -728,7 +728,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   if (fldparatimint.is_genalpha_np())
   {
     // velocities (intermediate time step, n+1)
-    Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state("velnp");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp = discretization.get_state("velnp");
     if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
     std::vector<double> patch_velnp(ndofinpatch);
@@ -769,14 +769,14 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   if (pele->is_ale())
   {
     // mesh displacements, new time step, n+1
-    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discretization.get_state("dispnp");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
     if (dispnp == Teuchos::null)
     {
       FOUR_C_THROW("Cannot get state vector 'dispnp'");
     }
 
     // ALE-grid velocities
-    Teuchos::RCP<const Core::LinAlg::Vector> gridv = discretization.get_state("gridv");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> gridv = discretization.get_state("gridv");
     if (gridv == Teuchos::null)
     {
       FOUR_C_THROW("Cannot get state vector 'gridv'");

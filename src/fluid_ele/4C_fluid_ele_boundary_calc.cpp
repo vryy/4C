@@ -77,7 +77,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
   {
     case FLD::integrate_Shapefunction:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
       std::vector<double> mydispnp;
 
       if (isale)
@@ -130,7 +130,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
     }
     case FLD::ba_calc_node_normal:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
       std::vector<double> mydispnp;
 
       if (isale)
@@ -150,7 +150,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
     }
     case FLD::calc_node_curvature:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
       std::vector<double> mydispnp;
 
       if (isale)
@@ -163,7 +163,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
         }
       }
 
-      Teuchos::RCP<const Core::LinAlg::Vector> normals;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> normals;
       std::vector<double> mynormals;
 
       normals = discretization.get_state("normals");
@@ -249,7 +249,7 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
   // THESE ARE NEEDED IF DENSITY OR A SCALAR IS USED in the BC (which normally is NOT the case)
   //========================================================
   // get scalar vector
-  Teuchos::RCP<const Core::LinAlg::Vector> scaaf = discretization.get_state("scaaf");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> scaaf = discretization.get_state("scaaf");
   if (scaaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'scaaf'");
 
   // extract local values from global vector
@@ -276,7 +276,7 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
   if (fldpara->physical_type() == Inpar::FLUID::weakly_compressible or
       fldpara->physical_type() == Inpar::FLUID::weakly_compressible_stokes)
   {
-    Teuchos::RCP<const Core::LinAlg::Vector> velaf = discretization.get_state("velaf");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> velaf = discretization.get_state("velaf");
     if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
     // extract local values from global vector
@@ -303,7 +303,7 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
   // add potential ALE displacements
   if (ele->parent_element()->is_ale())
   {
-    Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
     std::vector<double> mydispnp;
     dispnp = discretization.get_state("dispnp");
     if (dispnp != Teuchos::null)
@@ -552,7 +552,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
       ele, xyze_);
 
   // add potential ALE displacements
-  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
   std::vector<double> mydispnp;
   if (isale)
   {
@@ -573,8 +573,8 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
   }
 
   // get velocity and scalar vector at time n+alpha_F/n+1
-  Teuchos::RCP<const Core::LinAlg::Vector> velaf = discretization.get_state("velaf");
-  Teuchos::RCP<const Core::LinAlg::Vector> scaaf = discretization.get_state("scaaf");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> velaf = discretization.get_state("velaf");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> scaaf = discretization.get_state("scaaf");
   if (velaf == Teuchos::null or scaaf == Teuchos::null)
     FOUR_C_THROW("Cannot get state vector 'velaf' and/or 'scaaf'");
 
@@ -1021,7 +1021,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::area_calculation(
       ele, xyze_);
 
   // add potential ALE displacements
-  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
   std::vector<double> mydispnp;
   if (ele->parent_element()->is_ale())
   {
@@ -1078,7 +1078,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::pressure_boundary_integral(
 {
   // extract pressure values from global velocity/pressure vector
   // renamed to "velaf" to be consistent in fluidimplicitintegration.cpp (krank 12/13)
-  Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state("velaf");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp = discretization.get_state("velaf");
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> myvelnp(lm.size());
@@ -1095,7 +1095,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::pressure_boundary_integral(
       ele, xyze_);
 
   // add potential ALE displacements
-  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
   std::vector<double> mydispnp;
   if (ele->parent_element()->is_ale())
   {
@@ -1167,7 +1167,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::center_of_mass_calculation(
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
-  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
   std::vector<double> mydispnp;
 
   if (ele->parent_element()->is_ale())
@@ -1258,7 +1258,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::compute_flow_rate(
 
   // extract local values from the global vectors
   // renamed to "velaf" to be consistent in fluidimplicitintegration.cpp (krank 12/13)
-  Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state("velaf");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp = discretization.get_state("velaf");
 
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
@@ -1286,7 +1286,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::compute_flow_rate(
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
-  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
   std::vector<double> mydispnp;
 
   if (ele->parent_element()->is_ale())
@@ -1381,7 +1381,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
   // get status of Ale
   const bool isale = ele->parent_element()->is_ale();
 
-  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
   std::vector<double> edispnp;
 
   if (isale)
@@ -1423,7 +1423,8 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
   }
 
   // get nodal velocities and pressures
-  Teuchos::RCP<const Core::LinAlg::Vector> convelnp = discretization.get_state("convectivevel");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> convelnp =
+      discretization.get_state("convectivevel");
 
   if (convelnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'convectivevel'");
 
@@ -1671,7 +1672,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::impedance_integration(
   // displacements
   if (ele->parent_element()->is_ale())
   {
-    Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
     std::vector<double> mydispnp;
 
     dispnp = discretization.get_state("dispnp");
@@ -1732,7 +1733,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::d_qdu(Discret::ELEMENTS::Flu
   // displacements
   if (ele->parent_element()->is_ale())
   {
-    Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
     std::vector<double> mydispnp;
 
     dispnp = discretization.get_state("dispnp");
@@ -1901,7 +1902,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_compo
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // extract local values from the global vectors
-  Teuchos::RCP<const Core::LinAlg::Vector> velnp = discretization.get_state("velaf");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp = discretization.get_state("velaf");
 
   if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
@@ -1921,8 +1922,8 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_compo
   }
 
 
-  Teuchos::RCP<Core::LinAlg::Vector> cond_velocities =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector>>("condition velocities");
+  Teuchos::RCP<Core::LinAlg::Vector<double>> cond_velocities =
+      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("condition velocities");
   Teuchos::RCP<Epetra_Map> cond_dofrowmap =
       params.get<Teuchos::RCP<Epetra_Map>>("condition dofrowmap");
 
@@ -1978,7 +1979,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_compo
 
   // Add the deformation of the ALE mesh to the nodes coordinates
   // displacements
-  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
   std::vector<double> mydispnp;
 
   if (ele->parent_element()->is_ale())

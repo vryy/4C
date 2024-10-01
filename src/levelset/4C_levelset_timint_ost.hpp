@@ -46,10 +46,10 @@ namespace ScaTra
     void redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph);
 
     /// interpolate phi to intermediate time n+theta with 0<theta<1
-    Teuchos::RCP<Core::LinAlg::Vector> phinptheta(const double theta_inter);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phinptheta(const double theta_inter);
 
     /// interpolate phidt to intermediate time n+theta with 0<theta<1
-    Teuchos::RCP<Core::LinAlg::Vector> phidtnptheta(const double theta_inter);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtnptheta(const double theta_inter);
 
    protected:
     /// Print information about current time step to screen (reimplementation for OST)

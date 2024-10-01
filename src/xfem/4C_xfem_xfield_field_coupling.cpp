@@ -39,17 +39,18 @@ void XFEM::XFieldField::Coupling::init(const enum MinDofDiscretization& min_dof_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> XFEM::XFieldField::Coupling::master_to_slave(
-    const Teuchos::RCP<const Core::LinAlg::Vector>& mv, const enum XFEM::MapType& map_type) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::master_to_slave(
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& mv,
+    const enum XFEM::MapType& map_type) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector> sv = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> sv = Teuchos::null;
   switch (map_type)
   {
     case XFEM::map_dofs:
       return ::FourC::Coupling::Adapter::Coupling::master_to_slave(mv);
       break;
     case XFEM::map_nodes:
-      sv = Teuchos::rcp(new Core::LinAlg::Vector(*slavenodemap_));
+      sv = Teuchos::rcp(new Core::LinAlg::Vector<double>(*slavenodemap_));
       break;
   }
 
@@ -59,17 +60,18 @@ Teuchos::RCP<Core::LinAlg::Vector> XFEM::XFieldField::Coupling::master_to_slave(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> XFEM::XFieldField::Coupling::slave_to_master(
-    const Teuchos::RCP<const Core::LinAlg::Vector>& sv, const enum XFEM::MapType& map_type) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::slave_to_master(
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& sv,
+    const enum XFEM::MapType& map_type) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector> mv = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> mv = Teuchos::null;
   switch (map_type)
   {
     case XFEM::map_dofs:
       return ::FourC::Coupling::Adapter::Coupling::slave_to_master(sv);
       break;
     case XFEM::map_nodes:
-      mv = Teuchos::rcp(new Core::LinAlg::Vector(*masternodemap_));
+      mv = Teuchos::rcp(new Core::LinAlg::Vector<double>(*masternodemap_));
       break;
   }
 

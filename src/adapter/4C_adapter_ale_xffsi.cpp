@@ -39,7 +39,7 @@ Teuchos::RCP<const Core::LinAlg::MapExtractor> Adapter::AleXFFsiWrapper::get_dbc
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Adapter::AleXFFsiWrapper::evaluate(Teuchos::RCP<const Core::LinAlg::Vector> stepinc)
+void Adapter::AleXFFsiWrapper::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc)
 {
   AleFsiWrapper::evaluate(stepinc, ALE::UTILS::MapExtractor::dbc_set_x_ff);
 

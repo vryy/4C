@@ -21,7 +21,6 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Export.h>
 #include <Epetra_Import.h>
-#include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
@@ -57,12 +56,12 @@ namespace Core::LinAlg
       const SparseMatrix& matrix, double* nullspace, Teuchos::ParameterList& params);
 
   /*!
-   \brief Create a new Core::LinAlg::Vector and return RefcountPtr to it
+   \brief Create a new Core::LinAlg::Vector<double> and return RefcountPtr to it
 
    \param rowmap (in): row map of vector
    \param init (in): initialize vector to zero upon construction
    */
-  Teuchos::RCP<Core::LinAlg::Vector> create_vector(
+  Teuchos::RCP<Core::LinAlg::Vector<double>> create_vector(
       const Epetra_BlockMap& rowmap, const bool init = true);
 
   /*!

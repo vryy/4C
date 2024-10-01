@@ -166,16 +166,16 @@ namespace BEAMINTERACTION
         Teuchos::RCP<Epetra_FEVector> beam_force, Teuchos::RCP<Core::LinAlg::SparseMatrix> kbb,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> kbf, Teuchos::RCP<Core::LinAlg::SparseMatrix> kff,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> kfb,
-        Teuchos::RCP<const Core::LinAlg::Vector> beam_vel,
-        Teuchos::RCP<const Core::LinAlg::Vector> fluid_vel) const;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> beam_vel,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_vel) const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers.
      * @param[in] vel Global velocity vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Core::LinAlg::Vector> get_global_lambda(
-        Teuchos::RCP<const Core::LinAlg::Vector> vel) const;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get_global_lambda(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
@@ -183,8 +183,8 @@ namespace BEAMINTERACTION
      * @param vel (in) Global velocity vector.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Core::LinAlg::Vector> get_global_lambda_col(
-        Teuchos::RCP<const Core::LinAlg::Vector> vel) const;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get_global_lambda_col(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) const;
 
    protected:
     /**
@@ -219,7 +219,7 @@ namespace BEAMINTERACTION
      *
      * @return Inverted global_kappa_ vector.
      */
-    Teuchos::RCP<Core::LinAlg::Vector> invert_kappa() const;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> invert_kappa() const;
 
    private:
     //! Flag if setup was called.

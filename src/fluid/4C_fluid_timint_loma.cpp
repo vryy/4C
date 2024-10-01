@@ -84,10 +84,11 @@ void FLD::TimIntLoma::init()
  | set fields for scatra - fluid coupling, esp.                         |
  | set fields for low-Mach-number flow within iteration loop   vg 09/09 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::set_loma_iter_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector> scalaraf,
-    Teuchos::RCP<const Core::LinAlg::Vector> scalaram,
-    Teuchos::RCP<const Core::LinAlg::Vector> scalardtam,
-    Teuchos::RCP<const Core::LinAlg::Vector> fsscalaraf, const double thermpressaf,
+void FLD::TimIntLoma::set_loma_iter_scalar_fields(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> scalaraf,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> scalaram,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> scalardtam,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fsscalaraf, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
     Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
@@ -177,8 +178,8 @@ void FLD::TimIntLoma::set_loma_iter_scalar_fields(Teuchos::RCP<const Core::LinAl
 /*----------------------------------------------------------------------*
  | set scalar fields     vg 09/09 |
  *----------------------------------------------------------------------*/
-void FLD::TimIntLoma::set_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector> scalarnp,
-    const double thermpressnp, Teuchos::RCP<const Core::LinAlg::Vector> scatraresidual,
+void FLD::TimIntLoma::set_scalar_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarnp,
+    const double thermpressnp, Teuchos::RCP<const Core::LinAlg::Vector<double>> scatraresidual,
     Teuchos::RCP<Core::FE::Discretization> scatradis, const int whichscalar)
 {
   FluidImplicitTimeInt::set_scalar_fields(

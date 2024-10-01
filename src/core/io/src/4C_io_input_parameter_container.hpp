@@ -56,7 +56,7 @@ namespace Core::IO
 
   The intention of this class is to store rather 'small' units of data. Though possible,
   it is not meant to be used at the system level to store huge data sets such as sparse matrices or
-  vectors of system length. It does therefore not support any Core::LinAlg::Vector
+  vectors of system length. It does therefore not support any Core::LinAlg::Vector<double>
   or Epetra_CrsMatrix objects and is not supposed to in the future either.
   */
   class InputParameterContainer

@@ -51,7 +51,8 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::pre_evaluate(Teuchos::Parame
             la[1].size(), nen_ * numdofpernode_thr);
       }
       // check if you can get the temperature state
-      Teuchos::RCP<const Core::LinAlg::Vector> tempnp = discretization.get_state(1, "temperature");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+          discretization.get_state(1, "temperature");
       if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'.");
 
       // extract local values of the global vectors
@@ -200,8 +201,9 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       // elemat1+2, elevec2+3 are not used anyway
 
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state(0, "displacement");
-      Teuchos::RCP<const Core::LinAlg::Vector> res =
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+          discretization.get_state(0, "displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
           discretization.get_state(0, "residual displacement");
 
       if ((disp == Teuchos::null) or (res == Teuchos::null))
@@ -224,7 +226,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Core::LinAlg::Vector> tempnp =
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
             discretization.get_state(1, "temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
@@ -295,7 +297,8 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       // elemat1 only for geometrically nonlinear analysis
 
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state(0, "displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+          discretization.get_state(0, "displacement");
 
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement' ");
 
@@ -314,7 +317,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Core::LinAlg::Vector> tempnp =
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
             discretization.get_state(1, "temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
@@ -391,7 +394,8 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       // elemat1 only for geometrically nonlinear analysis
 
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state(0, "displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+          discretization.get_state(0, "displacement");
 
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
 
@@ -411,7 +415,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Core::LinAlg::Vector> tempnp =
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
             discretization.get_state(1, "temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
@@ -482,7 +486,8 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
     case calc_struct_stress:
     {
       // elemat1+2,elevec1-3 are not used anyway
-      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state(0, "displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+          discretization.get_state(0, "displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
 
       std::vector<double> mydisp((la[0].lm_).size());
@@ -517,7 +522,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Core::LinAlg::Vector> tempnp =
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
             discretization.get_state(1, "temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
@@ -635,7 +640,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
         if (discretization.has_state(1, "temperature"))
         {
           // check if you can get the temperature state
-          Teuchos::RCP<const Core::LinAlg::Vector> tempnp =
+          Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
               discretization.get_state(1, "temperature");
           if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
@@ -708,7 +713,8 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       Core::LinAlg::Matrix<numdofperelement_, nen_> stiffmatrix_kdT(elemat1_epetra.values(), true);
       // elemat2,elevec1-3 are not used anyway
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state(0, "displacement");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+          discretization.get_state(0, "displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp((la[0].lm_).size());
       // build the location vector only for the structure field
@@ -726,7 +732,7 @@ int Discret::ELEMENTS::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Core::LinAlg::Vector> tempnp =
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
             discretization.get_state(1, "temperature");
         if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 

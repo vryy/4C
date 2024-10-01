@@ -116,7 +116,8 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate(Discret::ELEMENTS::Flu
   interiorebofoaf_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_, 0.0);
   if (params.get<bool>("forcing", false))
   {
-    Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state(1, "forcing");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+        discretization.get_state(1, "forcing");
     std::vector<int> localDofs = discretization.dof(1, ele);
     Core::FE::extract_my_values(*matrix_state, interiorebofoaf_, localDofs);
   }
@@ -192,7 +193,7 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::read_global_vectors(
   interior_val_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_ + 1);
   interior_acc_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_ + 1);
   FOUR_C_ASSERT(lm.size() == trace_val_.size(), "Internal error");
-  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state("velaf");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state = discretization.get_state("velaf");
   Core::FE::extract_my_values(*matrix_state, trace_val_, lm);
 
   // read the interior values from solution vector
@@ -211,14 +212,16 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::update_secondary_solution(
     const Core::Elements::Element& ele, Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseVector& updateG, const Core::LinAlg::SerialDenseVector& updateUp)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state(1, "intvelnp");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+      discretization.get_state(1, "intvelnp");
   std::vector<int> localDofs = discretization.dof(1, &ele);
   FOUR_C_ASSERT(localDofs.size() == static_cast<std::size_t>(updateG.length() + updateUp.length()),
       "Internal error");
 
   // update vector content by making the vector writeable (need to adjust in calling site before
   // clearing the state when used in parallel)
-  Core::LinAlg::Vector& secondary = const_cast<Core::LinAlg::Vector&>(*matrix_state);
+  Core::LinAlg::Vector<double>& secondary =
+      const_cast<Core::LinAlg::Vector<double>&>(*matrix_state);
   const Epetra_Map* intdofcolmap = discretization.dof_col_map(1);
 
   double valfac;
@@ -327,7 +330,8 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::compute_error(Discret::ELEMENTS
   shapes_->evaluate(*ele);
   const double time = local_solver_->fldparatimint_->time();
 
-  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state(1, "intvelnp");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+      discretization.get_state(1, "intvelnp");
   std::vector<int> localDofs = discretization.dof(1, ele);
   std::vector<double> vecValues(localDofs.size());
 
@@ -688,7 +692,8 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
   // get local solution values
   // The vector "matrix_state" contains the interior velocity values following
   // the local id numbers
-  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state(1, "intvelnp");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+      discretization.get_state(1, "intvelnp");
   // Vector of the ids of the DOF for the element
   std::vector<int> localDofs = discretization.dof(1, ele);
   // SOLution VALUES
@@ -882,7 +887,8 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_for_hit(
         l++;
       }
   // get local solution values
-  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state(1, "intvelnp");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+      discretization.get_state(1, "intvelnp");
   std::vector<int> localDofs = discretization.dof(1, ele);
   std::vector<double> solvalues(localDofs.size());
 

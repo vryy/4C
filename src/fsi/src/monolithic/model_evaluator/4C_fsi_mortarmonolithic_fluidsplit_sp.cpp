@@ -181,8 +181,8 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::MortarMonolithicFluidSplitSaddlePoin
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplitSaddlePoint::set_lag_mult()
 {
-  lag_mult_ = Teuchos::rcp(new Core::LinAlg::Vector(*lag_mult_dof_map_, true));
-  lag_mult_old_ = Teuchos::rcp(new Core::LinAlg::Vector(*lag_mult_dof_map_, true));
+  lag_mult_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*lag_mult_dof_map_, true));
+  lag_mult_old_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*lag_mult_dof_map_, true));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -243,7 +243,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system()
     // build ale system matrix in splitted system
     ale_field()->create_system_matrix(ale_field()->interface());
 
-    aleresidual_ = Teuchos::rcp(new Core::LinAlg::Vector(*ale_field()->interface()->other_map()));
+    aleresidual_ =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*ale_field()->interface()->other_map()));
 
     // -------------------------------------------------------------------------
     // Build the global Dirichlet map extractor
@@ -544,12 +545,12 @@ FSI::MortarMonolithicFluidSplitSaddlePoint::system_matrix() const
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplitSaddlePoint::initial_guess(
-    Teuchos::RCP<Core::LinAlg::Vector> initial_guess)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicFluidSplitSaddlePoint::initial_guess");
 
-  Teuchos::RCP<const Core::LinAlg::Vector> lag_mult_initial_guess =
-      Teuchos::rcp(new Core::LinAlg::Vector(*lag_mult_dof_map_, true));
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> lag_mult_initial_guess =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*lag_mult_dof_map_, true));
 
   combine_field_vectors(*initial_guess, structure_field()->initial_guess(),
       fluid_field()->initial_guess(), ale_field()->initial_guess(), lag_mult_initial_guess, true);
@@ -557,16 +558,16 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::initial_guess(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplitSaddlePoint::combine_field_vectors(Core::LinAlg::Vector& f,
-    Teuchos::RCP<const Core::LinAlg::Vector> solid_vector,
-    Teuchos::RCP<const Core::LinAlg::Vector> fluid_vector,
-    Teuchos::RCP<const Core::LinAlg::Vector> ale_vector,
-    Teuchos::RCP<const Core::LinAlg::Vector> lag_mult_vector, bool fullvectors)
+void FSI::MortarMonolithicFluidSplitSaddlePoint::combine_field_vectors(
+    Core::LinAlg::Vector<double>& f, Teuchos::RCP<const Core::LinAlg::Vector<double>> solid_vector,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_vector,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> ale_vector,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> lag_mult_vector, bool fullvectors)
 {
   if (fullvectors)
   {
     // extract inner DOFs from slave vectors
-    Teuchos::RCP<const Core::LinAlg::Vector> ale_other_vector =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> ale_other_vector =
         ale_field()->interface()->extract_other_vector(ale_vector);
 
     extractor().add_vector(*solid_vector, 0, f);
@@ -585,17 +586,17 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::combine_field_vectors(Core::Lin
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_residual(Core::LinAlg::Vector& f)
+void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_residual(Core::LinAlg::Vector<double>& f)
 {
   // get single field residuals
-  Teuchos::RCP<const Core::LinAlg::Vector> solid_single_field_rhs_vector =
-      Teuchos::rcp(new Core::LinAlg::Vector(*structure_field()->rhs()));
-  Teuchos::RCP<const Core::LinAlg::Vector> fluid_single_field_rhs_vector =
-      Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->rhs()));
-  Teuchos::RCP<const Core::LinAlg::Vector> ale_single_field_rhs_vector =
-      Teuchos::rcp(new Core::LinAlg::Vector(*ale_field()->rhs()));
-  Teuchos::RCP<Core::LinAlg::Vector> lag_mult_rhs_vector =
-      Teuchos::rcp(new Core::LinAlg::Vector(*lag_mult_dof_map_, true));
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> solid_single_field_rhs_vector =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*structure_field()->rhs()));
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_single_field_rhs_vector =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluid_field()->rhs()));
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> ale_single_field_rhs_vector =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*ale_field()->rhs()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lag_mult_rhs_vector =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*lag_mult_dof_map_, true));
 
   // put the single field residuals together
   combine_field_vectors(f, solid_single_field_rhs_vector, fluid_single_field_rhs_vector,
@@ -607,7 +608,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_residual(Core::LinAlg
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_lambda(Core::LinAlg::Vector& f)
+void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_lambda(Core::LinAlg::Vector<double>& f)
 {
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
@@ -627,22 +628,22 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_lambda(Core::LinAlg::
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mortar_d_transf =
       Mortar::matrix_row_transform_gids(mortar_d, lag_mult_dof_map_);
 
-  Teuchos::RCP<Core::LinAlg::Vector> lag_mult_step_increment =
-      Teuchos::rcp(new Core::LinAlg::Vector(*lag_mult_dof_map_, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lag_mult_step_increment =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*lag_mult_dof_map_, true));
   lag_mult_step_increment->Update(1.0, *lag_mult_, -1.0, *lag_mult_old_, 0.0);
 
   // helper variables
-  Teuchos::RCP<Core::LinAlg::Vector> lag_mult_old_rhs_struc_interf =
-      Teuchos::rcp(new Core::LinAlg::Vector(mortar_m_transf->domain_map(), true));
-  Teuchos::RCP<Core::LinAlg::Vector> lag_mult_old_rhs_fluid_interf =
-      Teuchos::rcp(new Core::LinAlg::Vector(mortar_d_transf->domain_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lag_mult_old_rhs_struc_interf =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(mortar_m_transf->domain_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lag_mult_old_rhs_fluid_interf =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(mortar_d_transf->domain_map(), true));
 
   mortar_m_transf->multiply(true, *lag_mult_old_, *lag_mult_old_rhs_struc_interf);
   mortar_d_transf->multiply(true, *lag_mult_old_, *lag_mult_old_rhs_fluid_interf);
 
-  Teuchos::RCP<Core::LinAlg::Vector> lag_mult_old_rhs_struc_interf_full =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lag_mult_old_rhs_struc_interf_full =
       structure_field()->interface()->insert_fsi_cond_vector(lag_mult_old_rhs_struc_interf);
-  Teuchos::RCP<Core::LinAlg::Vector> lag_mult_old_rhs_fluid_interf_full =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lag_mult_old_rhs_fluid_interf_full =
       fluid_field()->interface()->insert_fsi_cond_vector(lag_mult_old_rhs_fluid_interf);
 
   lag_mult_old_rhs_fluid_interf_full->Scale(-1.0 / fluid_res_scale);
@@ -652,20 +653,20 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_lambda(Core::LinAlg::
   extractor().add_vector(*lag_mult_old_rhs_fluid_interf_full, 1, f);
 
   // helper variables
-  Teuchos::RCP<Core::LinAlg::Vector> lag_mult_step_increment_rhs_struc_interf =
-      Teuchos::rcp(new Core::LinAlg::Vector(mortar_m_transf->domain_map(), true));
-  Teuchos::RCP<Core::LinAlg::Vector> lag_mult_step_increment_rhs_fluid_interf =
-      Teuchos::rcp(new Core::LinAlg::Vector(mortar_d_transf->domain_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lag_mult_step_increment_rhs_struc_interf =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(mortar_m_transf->domain_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lag_mult_step_increment_rhs_fluid_interf =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(mortar_d_transf->domain_map(), true));
 
   mortar_m_transf->multiply(
       true, *lag_mult_step_increment, *lag_mult_step_increment_rhs_struc_interf);
   mortar_d_transf->multiply(
       true, *lag_mult_step_increment, *lag_mult_step_increment_rhs_fluid_interf);
 
-  Teuchos::RCP<Core::LinAlg::Vector> lag_mult_step_increment_rhs_struc_interf_full =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lag_mult_step_increment_rhs_struc_interf_full =
       structure_field()->interface()->insert_fsi_cond_vector(
           lag_mult_step_increment_rhs_struc_interf);
-  Teuchos::RCP<Core::LinAlg::Vector> lag_mult_step_increment_rhs_fluid_interf_full =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lag_mult_step_increment_rhs_fluid_interf_full =
       fluid_field()->interface()->insert_fsi_cond_vector(lag_mult_step_increment_rhs_fluid_interf);
 
   lag_mult_step_increment_rhs_struc_interf_full->Scale(1.0 * (1. - solid_time_int_param));
@@ -680,10 +681,11 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_lambda(Core::LinAlg::
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Core::LinAlg::Vector& f)
+void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(
+    Core::LinAlg::Vector<double>& f)
 {
   // old interface velocity of fluid field
-  const Teuchos::RCP<const Core::LinAlg::Vector> fluid_veln =
+  const Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_veln =
       fluid_field()->extract_interface_veln();
 
   // get the mortar structure to fluid coupling matrix M
@@ -710,7 +712,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Core::LinAl
   const Core::LinAlg::SparseMatrix& ale_inner_interf = aleblock->matrix(0, 1);
 
   // right hand side of single set of DOFs
-  Teuchos::RCP<Core::LinAlg::Vector> rhs = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs = Teuchos::null;
 
   /* Different contributions/terms to the rhs are separated by the following
    * comment line */
@@ -727,7 +729,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Core::LinAl
   {
     const Core::LinAlg::SparseMatrix& fluid_mesh_inner_interf = fluid_shape_deriv->matrix(0, 1);
 
-    rhs = Teuchos::rcp(new Core::LinAlg::Vector(fluid_mesh_inner_interf.range_map(), true));
+    rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(fluid_mesh_inner_interf.range_map(), true));
 
     fluid_mesh_inner_interf.Apply(*fluid_veln, *rhs);
 
@@ -752,7 +754,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Core::LinAl
   if (fluid_shape_deriv != Teuchos::null)
   {
     const Core::LinAlg::SparseMatrix& fluid_mesh_interf_interf = fluid_shape_deriv->matrix(1, 1);
-    rhs = Teuchos::rcp(new Core::LinAlg::Vector(fluid_mesh_interf_interf.range_map(), true));
+    rhs =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(fluid_mesh_interf_interf.range_map(), true));
 
     fluid_mesh_interf_interf.Apply(*fluid_veln, *rhs);
     rhs->Scale(dt());
@@ -772,7 +775,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Core::LinAl
    *
    */
   // ----------addressing term 1
-  rhs = Teuchos::rcp(new Core::LinAlg::Vector(ale_inner_interf.range_map(), true));
+  rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(ale_inner_interf.range_map(), true));
   ale_inner_interf.Apply(*fluid_veln, *rhs);
   rhs->Scale(-1. * dt());
 
@@ -791,7 +794,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Core::LinAl
    *
    */
   // ----------addressing term 1
-  rhs = Teuchos::rcp(new Core::LinAlg::Vector(*lag_mult_dof_map_, true));
+  rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(*lag_mult_dof_map_, true));
 
   mortar_d_transf->Apply(*fluid_veln, *rhs);
   rhs->Scale(dt());
@@ -800,7 +803,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_rhs_firstiter(Core::LinAl
   // ----------end of term 1
 
   // ----------addressing term 2
-  rhs = Teuchos::rcp(new Core::LinAlg::Vector(*lag_mult_dof_map_, true));
+  rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(*lag_mult_dof_map_, true));
 
   mortar_m_transf->Apply(*ddgpred_, *rhs);
   rhs->Scale(-1.);
@@ -974,7 +977,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system_matrix(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplitSaddlePoint::scale_system(
-    Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& b)
+    Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector<double>& b)
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -984,8 +987,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::scale_system(
   {
     // do scaling of structure rows
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
-    srowsum_ = Teuchos::rcp(new Core::LinAlg::Vector(A->RowMap(), false));
-    scolsum_ = Teuchos::rcp(new Core::LinAlg::Vector(A->RowMap(), false));
+    srowsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    scolsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
     A->InvRowSums(*srowsum_->get_ptr_of_Epetra_Vector());
     A->InvColSums(*scolsum_->get_ptr_of_Epetra_Vector());
     if (A->LeftScale(*srowsum_) or A->RightScale(*scolsum_) or
@@ -999,8 +1002,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::scale_system(
 
     // do scaling of ale rows
     A = mat.matrix(2, 2).epetra_matrix();
-    arowsum_ = Teuchos::rcp(new Core::LinAlg::Vector(A->RowMap(), false));
-    acolsum_ = Teuchos::rcp(new Core::LinAlg::Vector(A->RowMap(), false));
+    arowsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    acolsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
     A->InvRowSums(*arowsum_->get_ptr_of_Epetra_Vector());
     A->InvColSums(*acolsum_->get_ptr_of_Epetra_Vector());
     if (A->LeftScale(*arowsum_) or A->RightScale(*acolsum_) or
@@ -1013,8 +1016,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::scale_system(
       FOUR_C_THROW("ale scaling failed");
 
     // do scaling of structure and ale rhs vectors
-    Teuchos::RCP<Core::LinAlg::Vector> sx = extractor().extract_vector(b, 0);
-    Teuchos::RCP<Core::LinAlg::Vector> ax = extractor().extract_vector(b, 2);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sx = extractor().extract_vector(b, 0);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ax = extractor().extract_vector(b, 2);
 
     if (sx->Multiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->Multiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
@@ -1028,7 +1031,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::scale_system(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplitSaddlePoint::unscale_solution(
-    Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector& x, Core::LinAlg::Vector& b)
+    Core::LinAlg::BlockSparseMatrixBase& mat, Core::LinAlg::Vector<double>& x,
+    Core::LinAlg::Vector<double>& b)
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
@@ -1036,8 +1040,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::unscale_solution(
 
   if (scaling_infnorm)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> sy = extractor().extract_vector(x, 0);
-    Teuchos::RCP<Core::LinAlg::Vector> ay = extractor().extract_vector(x, 2);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sy = extractor().extract_vector(x, 0);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ay = extractor().extract_vector(x, 2);
 
     if (sy->Multiply(1.0, *scolsum_, *sy, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ay->Multiply(1.0, *acolsum_, *ay, 0.0)) FOUR_C_THROW("ale scaling failed");
@@ -1045,8 +1049,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::unscale_solution(
     extractor().insert_vector(*sy, 0, x);
     extractor().insert_vector(*ay, 2, x);
 
-    Teuchos::RCP<Core::LinAlg::Vector> sx = extractor().extract_vector(b, 0);
-    Teuchos::RCP<Core::LinAlg::Vector> ax = extractor().extract_vector(b, 2);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sx = extractor().extract_vector(b, 0);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ax = extractor().extract_vector(b, 2);
 
     if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0)) FOUR_C_THROW("structure scaling failed");
     if (ax->ReciprocalMultiply(1.0, *arowsum_, *ax, 0.0)) FOUR_C_THROW("ale scaling failed");
@@ -1079,14 +1083,14 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::unscale_solution(
       FOUR_C_THROW("ale scaling failed");
   }
 
-  Core::LinAlg::Vector r(b.Map());
+  Core::LinAlg::Vector<double> r(b.Map());
   mat.Apply(x, r);
   r.Update(1., b, 1.);
 
-  Teuchos::RCP<Core::LinAlg::Vector> sr = extractor().extract_vector(r, 0);
-  Teuchos::RCP<Core::LinAlg::Vector> fr = extractor().extract_vector(r, 1);
-  Teuchos::RCP<Core::LinAlg::Vector> ar = extractor().extract_vector(r, 2);
-  Teuchos::RCP<Core::LinAlg::Vector> lmr = extractor().extract_vector(r, 3);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> sr = extractor().extract_vector(r, 0);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fr = extractor().extract_vector(r, 1);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> ar = extractor().extract_vector(r, 2);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lmr = extractor().extract_vector(r, 3);
 
   // increment additional ale residual
   aleresidual_->Update(-1., *ar, 0.);
@@ -1118,7 +1122,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::unscale_solution(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplitSaddlePoint::evaluate(
-    Teuchos::RCP<const Core::LinAlg::Vector> step_increment)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> step_increment)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicFluidSplitSaddlePoint::Evaluate");
 
@@ -1127,10 +1131,10 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::evaluate(
   check_if_dts_same();
 #endif
 
-  Teuchos::RCP<const Core::LinAlg::Vector> sx;
-  Teuchos::RCP<const Core::LinAlg::Vector> fx;
-  Teuchos::RCP<const Core::LinAlg::Vector> ax;
-  Teuchos::RCP<const Core::LinAlg::Vector> lagx;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> sx;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fx;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> ax;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagx;
 
   if (step_increment != Teuchos::null)
   {
@@ -1159,7 +1163,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::evaluate(
   }
 
   // transfer the current ale mesh positions to the fluid field
-  Teuchos::RCP<Core::LinAlg::Vector> fluiddisp = ale_to_fluid(ale_field()->dispnp());
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fluiddisp = ale_to_fluid(ale_field()->dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
 
   {
@@ -1185,9 +1189,11 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::evaluate(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplitSaddlePoint::extract_field_vectors(
-    Teuchos::RCP<const Core::LinAlg::Vector> x, Teuchos::RCP<const Core::LinAlg::Vector>& sx,
-    Teuchos::RCP<const Core::LinAlg::Vector>& fx, Teuchos::RCP<const Core::LinAlg::Vector>& ax,
-    Teuchos::RCP<const Core::LinAlg::Vector>& lagx)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& ax,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& lagx)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicFluidSplitSaddlePoint::extract_field_vectors");
 
@@ -1224,15 +1230,16 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::extract_field_vectors(
   // process ale unknowns
   // ---------------------------------------------------------------------------
   // extract inner ALE solution increment from NOX increment
-  Teuchos::RCP<const Core::LinAlg::Vector> aox = extractor().extract_vector(x, 2);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> aox = extractor().extract_vector(x, 2);
 
   // convert fluid interface velocities into ALE interface displacements
-  Teuchos::RCP<Core::LinAlg::Vector> fcx = fluid_field()->interface()->extract_fsi_cond_vector(fx);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fcx =
+      fluid_field()->interface()->extract_fsi_cond_vector(fx);
   fluid_field()->velocity_to_displacement(fcx);
-  Teuchos::RCP<Core::LinAlg::Vector> acx = fluid_to_ale_interface(fcx);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> acx = fluid_to_ale_interface(fcx);
 
   // put inner and interface ALE solution increments together
-  Teuchos::RCP<Core::LinAlg::Vector> a = ale_field()->interface()->insert_other_vector(aox);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> a = ale_field()->interface()->insert_other_vector(aox);
   ale_field()->interface()->insert_fsi_cond_vector(acx, a);
 
   lagx = extractor().extract_vector(x, 3);
@@ -1279,9 +1286,9 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::output_lambda()
    * 'lambdafull' that is defined on the entire fluid field. Then, we need to write
    * output or restart data.
    */
-  auto copy = Teuchos::rcp(new Core::LinAlg::Vector(*lag_mult_));
+  auto copy = Teuchos::rcp(new Core::LinAlg::Vector<double>(*lag_mult_));
   copy->ReplaceMap(*fluid_field()->interface()->fsi_cond_map());
-  Teuchos::RCP<Core::LinAlg::Vector> lambdafull =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
       fluid_field()->interface()->insert_fsi_cond_vector(copy);
   const int uprestart = timeparams_.get<int>("RESTARTEVRY");
   const int upres = timeparams_.get<int>("RESULTSEVRY");
@@ -1298,8 +1305,8 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::read_restart(int step)
   fluid_field()->read_restart(step);
 
   // read Lagrange multiplier into fluid map
-  Teuchos::RCP<Core::LinAlg::Vector> lambdafull =
-      Teuchos::rcp(new Core::LinAlg::Vector(*fluid_field()->dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map(), true));
   Core::IO::DiscretizationReader reader = Core::IO::DiscretizationReader(
       fluid_field()->discretization(), Global::Problem::instance()->input_control_file(), step);
   reader.read_vector(lambdafull, "fsilambda");
@@ -1307,11 +1314,11 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::read_restart(int step)
 
   // Convert Lagrange multipliers to their actual map
   lag_mult_old_on_fluid_map->ReplaceMap(*lag_mult_dof_map_);
-  lag_mult_old_ = Teuchos::RCP(new Core::LinAlg::Vector(*lag_mult_old_on_fluid_map));
+  lag_mult_old_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*lag_mult_old_on_fluid_map));
 
   // Note: the above is normally enough. However, we can use the restart in order to periodically
   // repeat the fsi simulation (see AC-FS3I)
-  lag_mult_ = Teuchos::RCP(new Core::LinAlg::Vector(*lag_mult_old_on_fluid_map));
+  lag_mult_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*lag_mult_old_on_fluid_map));
 
   setup_system();
 

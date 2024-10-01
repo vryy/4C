@@ -65,10 +65,11 @@ namespace CONSTRAINTS
             constr,  ///< constraint matrix with Dirichlet zeros
         Teuchos::RCP<Core::LinAlg::SparseMatrix>
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
-        Teuchos::RCP<Core::LinAlg::Vector> dispinc,  ///< displacement increment to compute
-        Teuchos::RCP<Core::LinAlg::Vector> lagrinc,  ///< lagrange multiplier increment to compute
-        const Teuchos::RCP<Core::LinAlg::Vector> rhsstandard,  ///< standard right hand side
-        const Teuchos::RCP<Core::LinAlg::Vector> rhsconstr     ///< constraint errors
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc,  ///< displacement increment to compute
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            lagrinc,  ///< lagrange multiplier increment to compute
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsstandard,  ///< standard right hand side
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsconstr     ///< constraint errors
     );
 
     /*!
@@ -107,10 +108,11 @@ namespace CONSTRAINTS
             constr,  ///< constraint matrix with Dirichlet zeros
         Teuchos::RCP<Core::LinAlg::SparseMatrix>
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
-        Teuchos::RCP<Core::LinAlg::Vector> dispinc,  ///< displacement increment to compute
-        Teuchos::RCP<Core::LinAlg::Vector> lagrinc,  ///< lagrange multiplier increment to compute
-        const Teuchos::RCP<Core::LinAlg::Vector> rhsstandard,  ///< standard right hand side
-        const Teuchos::RCP<Core::LinAlg::Vector> rhsconstr     ///< constraint errors
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc,  ///< displacement increment to compute
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            lagrinc,  ///< lagrange multiplier increment to compute
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsstandard,  ///< standard right hand side
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsconstr     ///< constraint errors
     );
 
     /*!
@@ -121,10 +123,11 @@ namespace CONSTRAINTS
             constr,  ///< constraint matrix with Dirichlet zeros
         Teuchos::RCP<Core::LinAlg::SparseMatrix>
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
-        Teuchos::RCP<Core::LinAlg::Vector> dispinc,  ///< displacement increment to compute
-        Teuchos::RCP<Core::LinAlg::Vector> lagrinc,  ///< lagrange multiplier increment to compute
-        const Teuchos::RCP<Core::LinAlg::Vector> rhsstandard,  ///< standard right hand side
-        const Teuchos::RCP<Core::LinAlg::Vector> rhsconstr     ///< constraint errors
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc,  ///< displacement increment to compute
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            lagrinc,  ///< lagrange multiplier increment to compute
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsstandard,  ///< standard right hand side
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsconstr     ///< constraint errors
     );
 
     /*!
@@ -135,10 +138,11 @@ namespace CONSTRAINTS
             constr,  ///< constraint matrix with Dirichlet zeros
         Teuchos::RCP<Core::LinAlg::SparseMatrix>
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
-        Teuchos::RCP<Core::LinAlg::Vector> dispinc,  ///< displacement increment to compute
-        Teuchos::RCP<Core::LinAlg::Vector> lagrinc,  ///< lagrange multiplier increment to compute
-        const Teuchos::RCP<Core::LinAlg::Vector> rhsstandard,  ///< standard right hand side
-        const Teuchos::RCP<Core::LinAlg::Vector> rhsconstr     ///< constraint errors
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc,  ///< displacement increment to compute
+        Teuchos::RCP<Core::LinAlg::Vector<double>>
+            lagrinc,  ///< lagrange multiplier increment to compute
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsstandard,  ///< standard right hand side
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsconstr     ///< constraint errors
     );
 
     Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization
@@ -148,12 +152,13 @@ namespace CONSTRAINTS
     double iterationtol_;  ///< tolerance
     double tolres_;        ///< tolerance for residual
     double tolconstr_;     ///< tolerance for constraint
-    Teuchos::RCP<Core::LinAlg::Vector> dirichtoggle_;   ///< \b only for compatability: dirichlet
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        dirichtoggle_;                                  ///< \b only for compatability: dirichlet
                                                         ///< toggle -- monitor its target change!
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         firstdispinc_;  ///< history variable holding displacement increment for first NRI
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         firstlagrinc_;    ///< history variable holding multiplier increment for first NRI
     bool isadapttol_;     ///< adaptive tolerance for solver?
     bool adaptolbetter_;  ///< adaptive tolerance for solver useful?

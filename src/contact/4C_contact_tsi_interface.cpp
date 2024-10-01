@@ -39,7 +39,7 @@ CONTACT::TSIInterface::TSIInterface(
 }
 void CONTACT::TSIInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstickLMglobal,
     Core::LinAlg::SparseMatrix& linstickDISglobal, Core::LinAlg::SparseMatrix& linstickTEMPglobal,
-    Core::LinAlg::Vector& linstickRHSglobal)
+    Core::LinAlg::Vector<double>& linstickRHSglobal)
 {
   CONTACT::Interface::assemble_lin_stick(linstickLMglobal, linstickDISglobal, linstickRHSglobal);
 
@@ -158,7 +158,7 @@ void CONTACT::TSIInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linst
 }
 void CONTACT::TSIInterface::assemble_lin_slip(Core::LinAlg::SparseMatrix& linslipLMglobal,
     Core::LinAlg::SparseMatrix& linslipDISglobal, Core::LinAlg::SparseMatrix& linslipTEMPglobal,
-    Core::LinAlg::Vector& linslipRHSglobal)
+    Core::LinAlg::Vector<double>& linslipRHSglobal)
 {
   CONTACT::Interface::assemble_lin_slip(linslipLMglobal, linslipDISglobal, linslipRHSglobal);
 

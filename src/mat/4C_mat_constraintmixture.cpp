@@ -86,7 +86,7 @@ Mat::PAR::ConstraintMixture::ConstraintMixture(const Core::Mat::PAR::Parameter::
   Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::instance()->get_communicators()->local_comm()));
   for (int i = first; i <= last; i++)
   {
-    matparams_.push_back(Teuchos::rcp(new Core::LinAlg::Vector(dummy_map, true)));
+    matparams_.push_back(Teuchos::rcp(new Core::LinAlg::Vector<double>(dummy_map, true)));
   }
   matparams_.at(growthfactor)->PutScalar(matdata.parameters.get<double>("GROWTHFAC"));
   matparams_.at(elastin_survival)->PutScalar(matdata.parameters.get<double>("ELASTINFAC"));
@@ -3136,7 +3136,7 @@ void Mat::constraint_mixture_output_to_gmsh(
     std::vector<int> lmowner;
     std::vector<int> lmstride;
     actele->location_vector(*dis, lm, lmowner, lmstride);
-    Teuchos::RCP<const Core::LinAlg::Vector> disp = dis->get_state("displacement");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = dis->get_state("displacement");
     std::vector<double> mydisp(lm.size(), 0);
     Core::FE::extract_my_values(*disp, mydisp, lm);
 

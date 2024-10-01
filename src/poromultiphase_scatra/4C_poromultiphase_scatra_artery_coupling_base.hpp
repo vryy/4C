@@ -52,8 +52,8 @@ namespace PoroMultiPhaseScaTra
     const Teuchos::RCP<Core::LinAlg::MultiMapExtractor>& global_extractor() const;
 
     //! check if initial fields on coupled DOFs are equal
-    virtual void check_initial_fields(Teuchos::RCP<const Core::LinAlg::Vector> vec_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector> vec_art) = 0;
+    virtual void check_initial_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_art) = 0;
 
     //! access artery (1D) dof row map
     virtual Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const = 0;
@@ -66,22 +66,22 @@ namespace PoroMultiPhaseScaTra
 
     //! Evaluate the 1D-3D coupling
     virtual void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector> rhs) = 0;
+        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs) = 0;
 
     //! set-up of global system of equations of coupled problem
     virtual void setup_system(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector> rhs,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
-        Teuchos::RCP<const Core::LinAlg::Vector> rhs_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector> rhs_art,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_art,
         Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
         Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art) = 0;
 
     //! set solution vectors of single fields
-    virtual void set_solution_vectors(Teuchos::RCP<const Core::LinAlg::Vector> phinp_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector> phin_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector> phinp_art);
+    virtual void set_solution_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phin_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp_art);
 
     //! set the element pairs that are close as found by search algorithm
     virtual void set_nearby_ele_pairs(const std::map<int, std::set<int>>* nearbyelepairs);
@@ -93,9 +93,9 @@ namespace PoroMultiPhaseScaTra
      * @param[in]   vec_cont vector containing quantities from continuous field
      * @param[in]   vec_art vector containing quantities from artery field
      */
-    virtual void setup_vector(Teuchos::RCP<Core::LinAlg::Vector> vec,
-        Teuchos::RCP<const Core::LinAlg::Vector> vec_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector> vec_art) = 0;
+    virtual void setup_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_art) = 0;
 
     /*!
      * @brief extract single field vectors
@@ -104,9 +104,10 @@ namespace PoroMultiPhaseScaTra
      * @param[in]   vec_cont vector containing quantities from continuous field
      * @param[in]   vec_art vector containing quantities from artery field
      */
-    virtual void extract_single_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector> globalvec,
-        Teuchos::RCP<const Core::LinAlg::Vector>& vec_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector>& vec_art) = 0;
+    virtual void extract_single_field_vectors(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> globalvec,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_cont,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_art) = 0;
 
     //! init the strategy
     virtual void init() = 0;
@@ -118,7 +119,7 @@ namespace PoroMultiPhaseScaTra
     virtual void apply_mesh_movement() = 0;
 
     //! return blood vessel volume fraction inside each 2D/3D element
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> blood_vessel_volume_fraction() = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> blood_vessel_volume_fraction() = 0;
 
    protected:
     //! communicator

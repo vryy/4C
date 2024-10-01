@@ -62,7 +62,7 @@ namespace XFEM
     // in ... idx[0] first discretization index , idx[1] second discretization index, ... in the
     // blockmatrix in ... scaling between xfluid evaluated coupling matrixes and coupled
     // systemmatrix
-    virtual void add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs,
+    virtual void add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
         const Core::LinAlg::MultiMapExtractor& me, double scaling) = 0;
 
     //! Update (Perform after Each Timestep)

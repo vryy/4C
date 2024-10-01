@@ -19,10 +19,10 @@ FOUR_C_NAMESPACE_OPEN
 
 
 bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_force_stiff(
-    const Core::LinAlg::Vector& displacement_vector,
+    const Core::LinAlg::Vector<double>& displacement_vector,
     Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> me_stiff_ptr,
-    Teuchos::RCP<Core::LinAlg::Vector> me_force_ptr)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> me_force_ptr)
 {
   if (me_stiff_ptr == Teuchos::null && me_force_ptr == Teuchos::null)
     FOUR_C_THROW("Both stiffness and force point are null");
@@ -45,8 +45,8 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_force_stiff(
   if (me_force_ptr != Teuchos::null)
   {
     //  Calculate force contribution
-    Teuchos::RCP<Core::LinAlg::Vector> r_pen =
-        Teuchos::rcp(new Core::LinAlg::Vector(stiff_ptr_->row_map(), true));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> r_pen =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(stiff_ptr_->row_map(), true));
     Q_Ld_->multiply(true, *constraint_vector_, *r_pen);
     Core::LinAlg::assemble_my_vector(1.0, *me_force_ptr, penalty_parameter_, *r_pen);
   }
@@ -64,7 +64,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_coupling_terms(
   n_condition_map_ = Teuchos::rcp(new Epetra_Map(ncon_, 0, stiff_ptr_->Comm()));
 
   // initialise all global coupling objects
-  constraint_vector_ = Teuchos::rcp(new Core::LinAlg::Vector(*n_condition_map_, true));
+  constraint_vector_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*n_condition_map_, true));
   Q_Ld_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*n_condition_map_, 4));
   Q_dL_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(stiff_ptr_->row_map(), 4));
   Q_dd_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(stiff_ptr_->row_map(), 0));
@@ -72,7 +72,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_coupling_terms(
   // set Q_dd to zero as default
   Q_dd_->zero();
   // Evaluate the Constraint Pairs / equations objects
-  Teuchos::RCP<const Core::LinAlg::Vector> dis_np = gstate.get_dis_np();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dis_np = gstate.get_dis_np();
   for (const auto& obj : listMPCs_)
   {
     obj->evaluate_equation(*Q_dd_, *Q_dL_, *Q_Ld_, *constraint_vector_, *dis_np);

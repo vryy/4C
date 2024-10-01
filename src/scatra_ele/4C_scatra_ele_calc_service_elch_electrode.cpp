@@ -151,9 +151,10 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
     FOUR_C_THROW("Electrode state of charge can only be computed for one transported scalar!");
 
   // get global state vectors
-  const Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state("phinp");
+  const Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phinp\"!");
-  const Teuchos::RCP<const Core::LinAlg::Vector> phidtnp = discretization.get_state("phidtnp");
+  const Teuchos::RCP<const Core::LinAlg::Vector<double>> phidtnp =
+      discretization.get_state("phidtnp");
   if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phidtnp\"!");
 
   // extract local nodal values from global state vectors
@@ -208,7 +209,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
   {
     const int ndsvel = my::scatrapara_->nds_vel();
     // extract velocities
-    const Teuchos::RCP<const Core::LinAlg::Vector> vel =
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> vel =
         discretization.get_state(ndsvel, "velocity field");
     if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"velocity field\"!");
     Core::FE::extract_my_values(*vel, my::evelnp_, la[ndsvel].lm_);

@@ -132,7 +132,7 @@ void PostVtiWriter::write_geo()
 
 
 void PostVtiWriter::write_dof_result_step(std::ofstream& file,
-    const Teuchos::RCP<Core::LinAlg::Vector>& data,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
@@ -151,7 +151,7 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
   // TODO: wic, once the vtu pressure writer is fixed, apply the same solution here.
   const int offset = (fillzeros) ? 0 : vecmap.MinAllGID() - dis->dof_row_map(0)->MinAllGID();
 
-  Teuchos::RCP<Core::LinAlg::Vector> ghostedData;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
   else
@@ -273,8 +273,8 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
 
       for (int idf = 0; idf < numdf; ++idf)
       {
-        Teuchos::RCP<Core::LinAlg::Vector> column =
-            Teuchos::rcp(new Core::LinAlg::Vector(*(*ghostedData)(idf)));
+        Teuchos::RCP<Core::LinAlg::Vector<double>> column =
+            Teuchos::rcp(new Core::LinAlg::Vector<double>(*(*ghostedData)(idf)));
 
         const int lid = ghostedData->Map().LID(gid);
 
@@ -353,8 +353,8 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
     const int inpos = ncomponents * (eidmapping_.find(egid)->second);
     for (int d = 0; d < numdf; ++d)
     {
-      Teuchos::RCP<Core::LinAlg::Vector> column =
-          Teuchos::rcp(new Core::LinAlg::Vector(*(*importedData)(d + from)));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> column =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(*(*importedData)(d + from)));
       solution[inpos + d] = (*column)[e];
     }
   }

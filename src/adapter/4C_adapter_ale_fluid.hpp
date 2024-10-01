@@ -61,13 +61,13 @@ namespace Adapter
     int solve() override;
 
     //! apply displacements at the free surface nodes
-    void apply_free_surface_displacements(Teuchos::RCP<const Core::LinAlg::Vector> fsdisp);
+    void apply_free_surface_displacements(Teuchos::RCP<const Core::LinAlg::Vector<double>> fsdisp);
 
     //! apply displacements at the ale update condition nodes
-    void apply_ale_update_displacements(Teuchos::RCP<const Core::LinAlg::Vector> audisp);
+    void apply_ale_update_displacements(Teuchos::RCP<const Core::LinAlg::Vector<double>> audisp);
 
     //! apply FSI interface displacements (required for staggered FSI)
-    void apply_interface_displacements(Teuchos::RCP<const Core::LinAlg::Vector> idisp);
+    void apply_interface_displacements(Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp);
 
    private:
     Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;

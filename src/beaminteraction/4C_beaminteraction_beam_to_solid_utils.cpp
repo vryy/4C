@@ -168,7 +168,7 @@ BEAMINTERACTION::mortar_shape_functions_to_number_of_lagrange_values(
  *
  */
 void BEAMINTERACTION::get_beam_triad_interpolation_scheme(const Core::FE::Discretization& discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_vector,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector,
     const Core::Elements::Element* ele,
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double>& triad_interpolation_scheme,
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&

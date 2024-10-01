@@ -155,7 +155,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
   bool is_interface_element_surface(Teuchos::RCP<Core::Elements::Element> ele);
 
   void get_current_element_displacement(Core::FE::Discretization const& discret,
-      Core::Elements::Element const* ele, const Core::LinAlg::Vector& displacement_vector,
+      Core::Elements::Element const* ele, const Core::LinAlg::Vector<double>& displacement_vector,
       std::vector<double>& eledisp);
 
   Core::FE::GaussIntegration create_gauss_integration_from_collection(

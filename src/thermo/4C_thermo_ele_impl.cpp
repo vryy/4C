@@ -161,7 +161,8 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(
   if (discretization.has_state(0, "temperature"))
   {
     std::vector<double> mytempnp((la[0].lm_).size());
-    Teuchos::RCP<const Core::LinAlg::Vector> tempnp = discretization.get_state(0, "temperature");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+        discretization.get_state(0, "temperature");
     if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
     Core::FE::extract_my_values(*tempnp, mytempnp, la[0].lm_);
     // build the element temperature
@@ -172,7 +173,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(
   if (discretization.has_state(0, "last temperature"))
   {
     std::vector<double> mytempn((la[0].lm_).size());
-    Teuchos::RCP<const Core::LinAlg::Vector> tempn =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> tempn =
         discretization.get_state(0, "last temperature");
     if (tempn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempn'");
     Core::FE::extract_my_values(*tempn, mytempn, la[0].lm_);
@@ -386,7 +387,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(
         // efcap = ecapa . R_{n+alpham}
         if (discretization.has_state(0, "mid-temprate"))
         {
-          Teuchos::RCP<const Core::LinAlg::Vector> ratem =
+          Teuchos::RCP<const Core::LinAlg::Vector<double>> ratem =
               discretization.get_state(0, "mid-temprate");
           if (ratem == Teuchos::null) FOUR_C_THROW("Cannot get mid-temprate state vector for fcap");
           std::vector<double> myratem((la[0].lm_).size());
@@ -649,7 +650,8 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate_neumann(const Core::Element
   if (discretization.has_state(0, "temperature"))
   {
     std::vector<double> mytempnp(lm.size());
-    Teuchos::RCP<const Core::LinAlg::Vector> tempnp = discretization.get_state("temperature");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+        discretization.get_state("temperature");
     if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
     Core::FE::extract_my_values(*tempnp, mytempnp, lm);
     Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> etemp(mytempnp.data(), true);  // view only!
@@ -2656,13 +2658,14 @@ void Discret::ELEMENTS::TemperImpl<distype>::extract_disp_vel(
   if ((discretization.has_state(1, "displacement")) and (discretization.has_state(1, "velocity")))
   {
     // get the displacements
-    Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state(1, "displacement");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+        discretization.get_state(1, "displacement");
     if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
     // extract the displacements
     Core::FE::extract_my_values(*disp, mydisp, la[1].lm_);
 
     // get the velocities
-    Teuchos::RCP<const Core::LinAlg::Vector> vel = discretization.get_state(1, "velocity");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel = discretization.get_state(1, "velocity");
     if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
     // extract the displacements
     Core::FE::extract_my_values(*vel, myvel, la[1].lm_);

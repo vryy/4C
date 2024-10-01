@@ -84,7 +84,7 @@ namespace BEAMINTERACTION
         FOUR_C_THROW("Not implemented!");
       }
 
-      virtual double get_energy(const Teuchos::RCP<const Core::LinAlg::Vector>& disp) const
+      virtual double get_energy(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& disp) const
       {
         return 0.0;
       }

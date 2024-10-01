@@ -80,7 +80,7 @@ int Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate(RedInterAcinarDep* 
     Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
 {
   // Get the vector with inter-acinar linkers
-  Teuchos::RCP<const Core::LinAlg::Vector> ial = discretization.get_state("intr_ac_link");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> ial = discretization.get_state("intr_ac_link");
 
   // Extract local values from the global vectors
   std::vector<double> myial(lm.size());
@@ -171,7 +171,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
   const int numnode = lm.size();
 
   // Get state for pressure
-  Teuchos::RCP<const Core::LinAlg::Vector> pnp = discretization.get_state("pnp");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
   if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
   // Extract local values from the global vectors

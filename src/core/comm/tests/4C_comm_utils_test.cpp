@@ -51,9 +51,9 @@ namespace
       // create arbitrary distributed map within each group
       Teuchos::RCP<Epetra_Map> map = Teuchos::rcp(
           new Epetra_Map(numberOfElementsToDistribute_, 0, *communicators_->local_comm()));
-      epetraVector_ = Teuchos::rcp(new Core::LinAlg::Vector(*map, false));
+      epetraVector_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*map, false));
 
-      // fill test Core::LinAlg::Vector with entry equals gid
+      // fill test Core::LinAlg::Vector<double> with entry equals gid
       int numMyEles = map->NumMyElements();
       double* values = new double[numMyEles];
       int* indices = new int[numMyEles];
@@ -70,7 +70,7 @@ namespace
    public:
     Teuchos::RCP<Core::Communication::Communicators> communicators_;
     const int numberOfElementsToDistribute_ = 791;
-    Teuchos::RCP<Core::LinAlg::Vector> epetraVector_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> epetraVector_;
   };
 
   /**

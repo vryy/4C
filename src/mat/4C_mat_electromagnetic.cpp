@@ -30,7 +30,7 @@ Mat::PAR::ElectromagneticMat::ElectromagneticMat(const Core::Mat::PAR::Parameter
   Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::instance()->get_communicators()->local_comm()));
   for (int i = first; i <= last; i++)
   {
-    matparams_.push_back(Teuchos::rcp(new Core::LinAlg::Vector(dummy_map, true)));
+    matparams_.push_back(Teuchos::rcp(new Core::LinAlg::Vector<double>(dummy_map, true)));
   }
   matparams_.at(sigma_)->PutScalar(matdata.parameters.get<double>("CONDUCTIVITY"));
   matparams_.at(epsilon_)->PutScalar(matdata.parameters.get<double>("PERMITTIVITY"));

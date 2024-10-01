@@ -84,8 +84,8 @@ void Adapter::ScaTraFluidAleCouplingAlgorithm::setup()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::ScaTraFluidAleCouplingAlgorithm::fluid_ale_nonlinear_solve(
-    Teuchos::RCP<Core::LinAlg::Vector> idisp, Teuchos::RCP<Core::LinAlg::Vector> ivel,
-    bool pseudotransient)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel, bool pseudotransient)
 {
   if (idisp != Teuchos::null)
   {
@@ -103,7 +103,7 @@ void Adapter::ScaTraFluidAleCouplingAlgorithm::fluid_ale_nonlinear_solve(
   // notice.
 
   ale_field()->solve();
-  Teuchos::RCP<Core::LinAlg::Vector> fluiddisp =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fluiddisp =
       ale_to_fluid_field(ale_field()->write_access_dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
 
@@ -119,8 +119,9 @@ void Adapter::ScaTraFluidAleCouplingAlgorithm::fluid_ale_nonlinear_solve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::ScaTraFluidAleCouplingAlgorithm::ale_to_fluid_field(
-    Teuchos::RCP<Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+Adapter::ScaTraFluidAleCouplingAlgorithm::ale_to_fluid_field(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
   return coupfa_->slave_to_master(iv);
 }
@@ -128,8 +129,9 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::ScaTraFluidAleCouplingAlgorithm::ale
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::ScaTraFluidAleCouplingAlgorithm::ale_to_fluid_field(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+Adapter::ScaTraFluidAleCouplingAlgorithm::ale_to_fluid_field(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupfa_->slave_to_master(iv);
 }
@@ -137,8 +139,8 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::ScaTraFluidAleCouplingAlgorithm::ale
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::ScaTraFluidAleCouplingAlgorithm::fluid_to_ale(
-    Teuchos::RCP<Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::ScaTraFluidAleCouplingAlgorithm::fluid_to_ale(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
   return icoupfa_->master_to_slave(iv);
 }
@@ -146,8 +148,8 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::ScaTraFluidAleCouplingAlgorithm::flu
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::ScaTraFluidAleCouplingAlgorithm::fluid_to_ale(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::ScaTraFluidAleCouplingAlgorithm::fluid_to_ale(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
   return icoupfa_->master_to_slave(iv);
 }

@@ -49,7 +49,7 @@ namespace Adapter
     //@{
 
     /// right-hand-side of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector> rhs() override { return field_->rhs(); }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override { return field_->rhs(); }
 
     //@}
 
@@ -82,15 +82,16 @@ namespace Adapter
 
     /// update state with given increment vector
     void update_state_incrementally(
-        Teuchos::RCP<const Core::LinAlg::Vector> disi  ///< iterative solution increment
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disi  ///< iterative solution increment
         ) override;
 
     /// update state and evaluate elements
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> disiterinc) override;
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc) override;
 
 
     /// update state and evaluate elements
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> disiterinc, bool firstiter) override;
+    void evaluate(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc, bool firstiter) override;
 
     /// update at time step end
     void update() override { field_->update(); }
@@ -121,7 +122,7 @@ namespace Adapter
     virtual void reset_stepinc();
 
     /// Get Iteration Increment from Step Increment
-    virtual void get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector>& stepinc);
+    virtual void get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector<double>>& stepinc);
 
     const bool nox_correction_;  ///< if (true) adapter gets stepincrements!
 
@@ -132,7 +133,7 @@ namespace Adapter
     /// x^n+1_i+1 = x^n+1_i + iterinc  (also referred to as residual increment)
     ///
     /// x^n+1_i+1 = x^n     + stepinc
-    Teuchos::RCP<Core::LinAlg::Vector> stepinc_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> stepinc_;
   };
 }  // namespace Adapter
 

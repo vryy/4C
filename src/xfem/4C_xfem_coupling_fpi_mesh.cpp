@@ -133,7 +133,7 @@ void XFEM::MeshCouplingFPI::complete_state_vectors()
   // finalize itrueresidual vector
 
   // need to export the interface forces
-  Core::LinAlg::Vector iforce_tmp(itrueresidual_->Map(), true);
+  Core::LinAlg::Vector<double> iforce_tmp(itrueresidual_->Map(), true);
   Epetra_Export exporter_iforce(iforcecol_->Map(), iforce_tmp.Map());
   int err1 = iforce_tmp.Export(*iforcecol_, exporter_iforce, Add);
   if (err1) FOUR_C_THROW("Export using exporter returned err=%d", err1);
@@ -687,7 +687,7 @@ void XFEM::MeshCouplingFPI::gmsh_output_discretization(std::ostream& gmshfilecon
   std::map<int, Core::LinAlg::Matrix<3, 1>> currsolidpositions;
 
   // write dis with zero solid displacements here!
-  Teuchos::RCP<Core::LinAlg::Vector> solid_dispnp =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> solid_dispnp =
       Core::LinAlg::create_vector(*cond_dis_->dof_row_map(), true);
 
   XFEM::UTILS::extract_node_vectors(cond_dis_, currsolidpositions, solid_dispnp);
@@ -835,7 +835,7 @@ void XFEM::MeshCouplingFPI::lift_drag(const int step, const double time) const
 {
   // get forces on all procs
   // create interface DOF vectors using the fluid parallel distribution
-  Teuchos::RCP<const Core::LinAlg::Vector> iforcecol =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> iforcecol =
       Core::Rebalance::get_col_version_of_row_vector(cutter_dis_, itrueresidual_);
 
   if (myrank_ == 0)

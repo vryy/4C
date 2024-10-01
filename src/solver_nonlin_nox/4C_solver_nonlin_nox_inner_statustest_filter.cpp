@@ -902,7 +902,8 @@ void NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::solve(
   const Epetra_BlockMap& map =
       dynamic_cast<const ::NOX::Epetra::Vector&>(x).getEpetraVector().Map();
 
-  Teuchos::RCP<Core::LinAlg::Vector> dir_ptr = Teuchos::rcp(new Core::LinAlg::Vector(map, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> dir_ptr =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(map, true));
   Teuchos::RCP<::NOX::Epetra::Vector> nox_dir = Teuchos::rcp(new ::NOX::Epetra::Vector(
       dir_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
 

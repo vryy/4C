@@ -76,36 +76,36 @@ namespace Adapter
 
     //! apply moving mesh data
     virtual void apply_mesh_movement(
-        Teuchos::RCP<const Core::LinAlg::Vector> dispnp  //!< displacement vector
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp  //!< displacement vector
         ) = 0;
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
     virtual void set_velocity_field(
-        Teuchos::RCP<const Core::LinAlg::Vector> vel  //!< velocity vector
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel  //!< velocity vector
         ) = 0;
 
     //! set state on discretization
-    virtual void set_state(
-        unsigned nds, const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector> state) = 0;
+    virtual void set_state(unsigned nds, const std::string& name,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> state) = 0;
 
     //! return primary field at time n+1
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> phinp() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp() const = 0;
 
     //! return primary field at time n
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> phin() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> phin() const = 0;
 
     //! return solid pressure field at time n+1
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> solid_pressure() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> solid_pressure() const = 0;
 
     //! return pressure field at time n+1
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> pressure() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> pressure() const = 0;
 
     //! return saturation field at time n+1
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> saturation() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> saturation() const = 0;
 
     //! return valid volume fraction species dof vector
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> valid_vol_frac_spec_dofs() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> valid_vol_frac_spec_dofs() const = 0;
 
     //! return phase flux field at time n+1
     virtual Teuchos::RCP<const Epetra_MultiVector> flux() const = 0;
@@ -138,13 +138,13 @@ namespace Adapter
     virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const = 0;
 
     //! right-hand side alias the dynamic force residual
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> rhs() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() const = 0;
 
     //! right-hand side alias the dynamic force residual for coupled system
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> artery_porofluid_rhs() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> artery_porofluid_rhs() const = 0;
 
     //! iterative update of phinp
-    virtual void update_iter(const Teuchos::RCP<const Core::LinAlg::Vector> inc) = 0;
+    virtual void update_iter(const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) = 0;
 
     //! reconstruct pressures and saturation from current solution
     virtual void reconstruct_pressures_and_saturations() = 0;

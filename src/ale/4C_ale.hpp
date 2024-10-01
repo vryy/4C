@@ -144,7 +144,7 @@ namespace ALE
      *  Update in case of monolithic coupling is done by passing stepinc, Teuchos::null is assumed
      * for non monolithic case.
      */
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> stepinc =
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc =
                       Teuchos::null,  ///< step increment such that \f$ x_{n+1}^{k+1} =
                                       ///< x_{n}^{converged}+ stepinc \f$
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
@@ -235,27 +235,33 @@ namespace ALE
     //@{
 
     /// get the whole displacement field at time step \f$t^{n+1}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector> dispnp() const override { return dispnp_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp() const override { return dispnp_; }
 
     /// get the whole displacement field at time step \f$t^{n}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector> dispn() const override { return dispn_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn() const override { return dispn_; }
 
     //@}
 
     //! @name Writing access to displacement
 
     /// write access to whole displacement field at time step \f$t^{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> write_access_dispnp() const override { return dispnp_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispnp() const override
+    {
+      return dispnp_;
+    }
 
     //@}
 
     //! @name Vector access
 
     /// initial guess of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() const override { return zeros_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() const override
+    {
+      return zeros_;
+    }
 
     /// rhs of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector> rhs() const override { return rhs_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() const override { return rhs_; }
 
     //@}
 
@@ -317,21 +323,21 @@ namespace ALE
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_loc_sys_trafo() const;
 
     //! Update slave dofs for multifield simulations with ale
-    void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector>& a) override;
+    void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& a) override;
 
     //! Return locsys manager
     Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() override { return locsysman_; }
 
     //! Apply Dirichlet boundary conditions on provided state vectors
     void apply_dirichlet_bc(Teuchos::ParameterList& params,
-        Teuchos::RCP<Core::LinAlg::Vector> systemvector,    //!< (may be Teuchos::null)
-        Teuchos::RCP<Core::LinAlg::Vector> systemvectord,   //!< (may be Teuchos::null)
-        Teuchos::RCP<Core::LinAlg::Vector> systemvectordd,  //!< (may be Teuchos::null)
-        bool recreatemap                                    //!< recreate mapextractor/toggle-vector
-                                                            //!< which stores the DOF IDs subjected
-                                                            //!< to Dirichlet BCs
-        //!< This needs to be true if the bounded DOFs
-        //!< have been changed.
+        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,    //!< (may be Teuchos::null)
+        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectord,   //!< (may be Teuchos::null)
+        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectordd,  //!< (may be Teuchos::null)
+        bool recreatemap  //!< recreate mapextractor/toggle-vector
+                          //!< which stores the DOF IDs subjected
+                          //!< to Dirichlet BCs
+                          //!< This needs to be true if the bounded DOFs
+                          //!< have been changed.
     );
 
     /// Reset state vectors to zero
@@ -351,7 +357,10 @@ namespace ALE
     const Teuchos::ParameterList& params() const { return *params_; }
 
     //! write access to residual
-    virtual Teuchos::RCP<Core::LinAlg::Vector> write_access_residual() const { return residual_; }
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_residual() const
+    {
+      return residual_;
+    }
 
    private:
     virtual bool update_sys_mat_every_step() const { return true; }
@@ -397,7 +406,7 @@ namespace ALE
      *
      *  \author mayr.mt \date 10/2014
      */
-    Teuchos::RCP<Core::LinAlg::Vector> residual_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
 
     /*! \brief right hand side of Newton-type algorithm
      *
@@ -410,13 +419,13 @@ namespace ALE
      *
      *  \author mayr.mt \date 10/2014
      */
-    Teuchos::RCP<Core::LinAlg::Vector> rhs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> dispnp_;       ///< unknown solution at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> dispn_;        ///< known solution at \f$t_{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> disi_;         ///< iterative displacement increment
-    double normdisi_;                                 ///< norm of iterative displacement increment
-    Teuchos::RCP<const Core::LinAlg::Vector> zeros_;  ///< zero vector for dbc handling
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_;  ///< unknown solution at \f$t_{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dispn_;   ///< known solution at \f$t_{n}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> disi_;    ///< iterative displacement increment
+    double normdisi_;  ///< norm of iterative displacement increment
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> zeros_;  ///< zero vector for dbc handling
 
     //@}
 
@@ -439,7 +448,7 @@ namespace ALE
     virtual bool evaluate_element_quality();
 
     //! det of element jacobian
-    Teuchos::RCP<Core::LinAlg::Vector> eledetjac_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> eledetjac_;
 
     /*! \brief Element quality measure according to [Oddy et al. 1988a]
      *
@@ -450,7 +459,7 @@ namespace ALE
      *  for isoparametric finite elements, Trans. Can. Soc. Mech. Engrg.,
      *  Vol. 12 (4), pp. 213-217
      */
-    Teuchos::RCP<Core::LinAlg::Vector> elequality_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> elequality_;
 
     //! Flag to activate (true) and deactivate (false) assessment of mesh quality
     const bool elequalityyesno_;

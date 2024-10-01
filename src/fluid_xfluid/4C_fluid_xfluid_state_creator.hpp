@@ -95,7 +95,7 @@ namespace FLD
     /// create a state-object after a cut (pure XFEM fluid)
     Teuchos::RCP<XFluidState> create(const Teuchos::RCP<XFEM::DiscretizationXFEM>&
                                          xdiscret,  //!< xfluid background discretization
-        Teuchos::RCP<const Core::LinAlg::Vector>
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis
         Teuchos::ParameterList& solver_params,  //!< solver parameters
         const int step,                         //!< current time step
@@ -107,7 +107,7 @@ namespace FLD
                                               xdiscret,  //!< xfluid background discretization
         const Teuchos::RCP<Core::FE::Discretization>&
             embfluiddiscret,  //!< embedded fluid discretization
-        Teuchos::RCP<const Core::LinAlg::Vector>
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis
         Teuchos::ParameterList& solver_params,  //!< solver parameters
         const int step,                         //!< current time step
@@ -123,7 +123,7 @@ namespace FLD
             wizard,  //!< cut wizard associated with current intersection state
         const Teuchos::RCP<XFEM::DiscretizationXFEM>&
             xdiscret,  //!< xfluid background discretization
-        Teuchos::RCP<const Core::LinAlg::Vector>
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
             back_disp_col,  //!< col vector holding background ALE displacements for backdis
         Teuchos::ParameterList& solver_params,  //!< solver parameters
         const int step                          //!< current time step

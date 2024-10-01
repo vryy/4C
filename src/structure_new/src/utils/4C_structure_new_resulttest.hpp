@@ -222,13 +222,13 @@ namespace Solid
     Teuchos::RCP<const Core::FE::Discretization> strudisc_;
     // our solution
     //! global displacement DOFs
-    Teuchos::RCP<const Core::LinAlg::Vector> disn_;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disn_;
     //! global velocity DOFs
-    Teuchos::RCP<const Core::LinAlg::Vector> veln_;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> veln_;
     //! global acceleration DOFs
-    Teuchos::RCP<const Core::LinAlg::Vector> accn_;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> accn_;
     //! global reaction DOFs
-    Teuchos::RCP<const Core::LinAlg::Vector> reactn_;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> reactn_;
     /* NOTE: these have to be present explicitly
      * as they are not part of the problem instance like in fluid3
      */

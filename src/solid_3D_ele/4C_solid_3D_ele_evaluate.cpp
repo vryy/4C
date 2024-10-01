@@ -30,7 +30,7 @@ namespace
   std::vector<double> get_acceleration_vector(
       const Core::FE::Discretization& discretization, const std::vector<int>& lm)
   {
-    const Core::LinAlg::Vector& acceleration = *discretization.get_state("acceleration");
+    const Core::LinAlg::Vector<double>& acceleration = *discretization.get_state("acceleration");
     std::vector<double> my_acceleration(lm.size());
     Core::FE::extract_my_values(acceleration, my_acceleration, lm);
 

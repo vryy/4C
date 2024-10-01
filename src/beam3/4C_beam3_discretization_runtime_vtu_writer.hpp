@@ -88,21 +88,21 @@ class BeamDiscretizationRuntimeOutputWriter
    *  \author grill
    *  \date 03/17 */
   void append_triad_field(
-      Teuchos::RCP<const Core::LinAlg::Vector> const& displacement_state_vector);
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
 
   /** \brief append discplacement state
    *
    *  \author grill
    *  \date 03/17 */
   void append_displacement_field(
-      Teuchos::RCP<const Core::LinAlg::Vector> const& displacement_state_vector);
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
 
   /** \brief append tangent vector field determined from given displacement state to output data
    *
    *  \author grill
    *  \date 03/17 */
   //  void AppendTangentVectorField(
-  //      Teuchos::RCP<const Core::LinAlg::Vector> const& displacement_state_vector);
+  //      Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
 
 
   /** \brief append information about element owning processor to output data
@@ -151,7 +151,7 @@ class BeamDiscretizationRuntimeOutputWriter
    *  \author grill
    *  \date 03/17 */
   void append_point_circular_cross_section_information_vector(
-      Teuchos::RCP<const Core::LinAlg::Vector> const& displacement_state_vector);
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
 
   /** \brief append material cross-section strain resultant values at Gauss points to output data
    *
@@ -191,14 +191,14 @@ class BeamDiscretizationRuntimeOutputWriter
    *  \author eichinger
    *  \date 08/17 */
   void append_element_orientation_paramater(
-      Teuchos::RCP<const Core::LinAlg::Vector> const& displacement_state_vector);
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
 
   /** \brief append sum of all element (node 0) internal energy cut in direction cut_dim
    *
    *  \author eichinger
    *  \date 08/17 */
   void append_rve_crosssection_forces(
-      Teuchos::RCP<const Core::LinAlg::Vector> const& displacement_state_vector);
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
 
   /** \brief append current internal energy of the elements to output data
    *
@@ -221,7 +221,7 @@ class BeamDiscretizationRuntimeOutputWriter
    *  \author grill
    *  \date 03/17 */
   void set_geometry_from_beam_discretization(
-      Teuchos::RCP<const Core::LinAlg::Vector> const& displacement_state_vector);
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
 
  private:
   /** \brief insert all values of a given std::vector at the end of another given std::vector

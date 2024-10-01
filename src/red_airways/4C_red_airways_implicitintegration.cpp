@@ -300,8 +300,10 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   evaluation_data.elemArea0 = elemArea0_;
   eleparams.set("action", "get_initial_state");
 
-  Teuchos::RCP<Core::LinAlg::Vector> radii_in = Core::LinAlg::create_vector(*dofrowmap, true);
-  Teuchos::RCP<Core::LinAlg::Vector> radii_out = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> radii_in =
+      Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> radii_out =
+      Core::LinAlg::create_vector(*dofrowmap, true);
 
   discret_->evaluate(eleparams, Teuchos::null, Teuchos::null, radii_in, radii_out, n_intr_ac_ln_);
 
@@ -534,7 +536,7 @@ void Airway::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
  *-----------------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
     Teuchos::RCP<Core::FE::Discretization const> search_discret, std::set<int>* elecolset,
-    std::set<int>* nodecolset, Teuchos::RCP<Core::LinAlg::Vector> airway_acinus_dep)
+    std::set<int>* nodecolset, Teuchos::RCP<Core::LinAlg::Vector<double>> airway_acinus_dep)
 {
   // Loop over all airways contained on this proc
   for (int j = 0; j < (search_discret->num_my_col_elements()); j++)
@@ -859,8 +861,10 @@ void Airway::RedAirwayImplicitTimeInt::non_lin_solve(
     double maxP = 0.0;
     double minQ = 0.0;
     double minP = 0.0;
-    Teuchos::RCP<Core::LinAlg::Vector> qabs = Teuchos::rcp(new Core::LinAlg::Vector(*qin_np_));
-    Teuchos::RCP<Core::LinAlg::Vector> pabs = Teuchos::rcp(new Core::LinAlg::Vector(*pnp_));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> qabs =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*qin_np_));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pabs =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*pnp_));
     qabs->Abs(*qin_np_);
     pabs->Abs(*pnp_);
 
@@ -1362,7 +1366,8 @@ void Airway::RedAirwayImplicitTimeInt::solve_scatra(
     evaluation_data.time = time_;
 
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Core::LinAlg::Vector> dummy = Core::LinAlg::create_vector(*dofrowmap, true);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dummy =
+        Core::LinAlg::create_vector(*dofrowmap, true);
     discret_->evaluate(eleparams, sysmat_, Teuchos::null, scatraO2np_, dummy, Teuchos::null);
     discret_->clear_state();
   }
@@ -1426,11 +1431,14 @@ void Airway::RedAirwayImplicitTimeInt::solve_scatra(
   // define an empty capillary flowrate vector
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
   // Diffusion surface (from the acinar side)
-  Teuchos::RCP<Core::LinAlg::Vector> nodal_surfaces = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> nodal_surfaces =
+      Core::LinAlg::create_vector(*dofrowmap, true);
   // Fluid volume
-  Teuchos::RCP<Core::LinAlg::Vector> nodal_volumes = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> nodal_volumes =
+      Core::LinAlg::create_vector(*dofrowmap, true);
   // Average concentration in Acini and in Capillar
-  Teuchos::RCP<Core::LinAlg::Vector> nodal_avg_conc = Core::LinAlg::create_vector(*dofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> nodal_avg_conc =
+      Core::LinAlg::create_vector(*dofrowmap, true);
 
   {
     // get the diffusion surfaces at the acini
@@ -1847,7 +1855,8 @@ void Airway::RedAirwayImplicitTimeInt::output(
         eleparams.set("action", "eval_PO2_from_concentration");
 
         const Epetra_Map* dofrowmap = discret_->dof_row_map();
-        Teuchos::RCP<Core::LinAlg::Vector> po2 = Core::LinAlg::create_vector(*dofrowmap, true);
+        Teuchos::RCP<Core::LinAlg::Vector<double>> po2 =
+            Core::LinAlg::create_vector(*dofrowmap, true);
         discret_->clear_state();
 
         evaluation_data.po2 = po2;
@@ -1871,7 +1880,8 @@ void Airway::RedAirwayImplicitTimeInt::output(
         eleparams.set("action", "eval_PO2_from_concentration");
 
         const Epetra_Map* dofrowmap = discret_->dof_row_map();
-        Teuchos::RCP<Core::LinAlg::Vector> po2 = Core::LinAlg::create_vector(*dofrowmap, true);
+        Teuchos::RCP<Core::LinAlg::Vector<double>> po2 =
+            Core::LinAlg::create_vector(*dofrowmap, true);
         discret_->clear_state();
 
         evaluation_data.po2 = po2;
@@ -2425,7 +2435,7 @@ void Airway::RedAirwayImplicitTimeInt::eval_residual(
  |                                                                      |
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::set_airway_flux_from_tissue(
-    Teuchos::RCP<Core::LinAlg::Vector> coupflux)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> coupflux)
 {
   const Epetra_BlockMap& condmap = coupflux->Map();
 
@@ -2472,7 +2482,8 @@ void Airway::RedAirwayImplicitTimeInt::setup_for_coupling()
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::extract_pressure(Teuchos::RCP<Core::LinAlg::Vector> couppres)
+void Airway::RedAirwayImplicitTimeInt::extract_pressure(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> couppres)
 {
   for (int i = 0; i < coupmap_->NumMyElements(); i++)
   {
@@ -2506,7 +2517,8 @@ void Airway::RedAirwayImplicitTimeInt::extract_pressure(Teuchos::RCP<Core::LinAl
  |                                                          ismail 11/12|
  *----------------------------------------------------------------------*/
 bool Airway::RedAirwayImplicitTimeInt::sum_all_col_elem_val(
-    Teuchos::RCP<Core::LinAlg::Vector> vec, Teuchos::RCP<Core::LinAlg::Vector> sumCond, double& sum)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sumCond, double& sum)
 {
   // Check if the vector is a ColElement vector
   const Epetra_Map* elementcolmap = discret_->element_col_map();

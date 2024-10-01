@@ -106,16 +106,16 @@ namespace Thermo
     //@{
 
     /// initial guess of Newton's method
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() = 0;
 
     /// RHS of Newton's method
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> rhs() = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() = 0;
 
     /// unknown temperatures at t(n+1)
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> tempnp() = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp() = 0;
 
     /// unknown temperatures at t(n)
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> tempn() = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> tempn() = 0;
 
     //@}
 
@@ -181,13 +181,13 @@ namespace Thermo
     virtual void prepare_time_step() = 0;
 
     /// evaluate residual at given temperature increment
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> tempi) = 0;
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi) = 0;
 
     /// evaluate residual at given temperature increment
     virtual void evaluate() = 0;
 
     /// update temperature increment after Newton step
-    virtual void update_newton(Teuchos::RCP<const Core::LinAlg::Vector> tempi) = 0;
+    virtual void update_newton(Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi) = 0;
 
     /// update at time step end
     virtual void update() = 0;
@@ -218,7 +218,7 @@ namespace Thermo
     virtual void set_nitsche_contact_parameters(Teuchos::RCP<CONTACT::ParamsInterface> params) = 0;
 
     /// apply interface loads on the thermal field
-    virtual void set_force_interface(Teuchos::RCP<Core::LinAlg::Vector> ithermoload) = 0;
+    virtual void set_force_interface(Teuchos::RCP<Core::LinAlg::Vector<double>> ithermoload) = 0;
 
 
     //@}
@@ -244,10 +244,10 @@ namespace Thermo
     //! @name Extract temperature values needed for TSI
     //@{
     /// extract temperatures for inserting in structure field
-    virtual Teuchos::RCP<Core::LinAlg::Vector> write_access_tempn() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_tempn() = 0;
 
     /// extract current temperatures for inserting in structure field
-    virtual Teuchos::RCP<Core::LinAlg::Vector> write_access_tempnp() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_tempnp() = 0;
     //@}
 
     /// Identify residual

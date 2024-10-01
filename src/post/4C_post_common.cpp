@@ -876,7 +876,7 @@ void PostResult::open_result_files(MAP* field_info)
  * reads the data of the result vector 'name' from the current result
  * block and returns it as an Epetra Vector.
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> PostResult::read_result(const std::string name)
+Teuchos::RCP<Core::LinAlg::Vector<double>> PostResult::read_result(const std::string name)
 {
   MAP* result = map_read_map(group_, name.c_str());
   int columns;
@@ -886,7 +886,7 @@ Teuchos::RCP<Core::LinAlg::Vector> PostResult::read_result(const std::string nam
   }
   Teuchos::RCP<Epetra_Vector> test =
       Teuchos::rcp_dynamic_cast<Epetra_Vector>(read_multi_result(name));
-  return Teuchos::RCP<Core::LinAlg::Vector>(new Core::LinAlg::Vector(*test));
+  return Teuchos::RCP<Core::LinAlg::Vector<double>>(new Core::LinAlg::Vector<double>(*test));
 }
 
 /*----------------------------------------------------------------------*

@@ -25,7 +25,7 @@ void Adapter::StructureNOXCorrectionWrapper::prepare_time_step()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::StructureNOXCorrectionWrapper::evaluate(
-    Teuchos::RCP<const Core::LinAlg::Vector> disstepinc)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disstepinc)
 {
   // The field solver always expects an iteration increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
@@ -40,8 +40,8 @@ void Adapter::StructureNOXCorrectionWrapper::evaluate(
   if (disstepinc != Teuchos::null)
   {
     // iteration increments
-    Teuchos::RCP<Core::LinAlg::Vector> disiterinc =
-        Teuchos::rcp(new Core::LinAlg::Vector(*disstepinc));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> disiterinc =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*disstepinc));
     if (disstepinc_ != Teuchos::null)
     {
       disiterinc->Update(-1.0, *disstepinc_, 1.0);
@@ -52,7 +52,7 @@ void Adapter::StructureNOXCorrectionWrapper::evaluate(
     }
     else
     {
-      disstepinc_ = Teuchos::rcp(new Core::LinAlg::Vector(*disstepinc));
+      disstepinc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*disstepinc));
     }
 
     // do structural update with provided residual displacements - iteration increment

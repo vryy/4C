@@ -86,7 +86,8 @@ namespace CONSTRAINTS
     \return void
     \date 09/16
     \author rauch  */
-    void setup(Teuchos::RCP<const Core::LinAlg::Vector> disp, Teuchos::ParameterList params);
+    void setup(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp, Teuchos::ParameterList params);
 
     /*!
       \brief Change stiffness matrix and force vector according to the constraints.
@@ -94,10 +95,11 @@ namespace CONSTRAINTS
       Difference between current and prescribed values is calculated and stored as well.
     */
     void evaluate_force_stiff(const double time,  ///< time at end of time step
-        Teuchos::RCP<const Core::LinAlg::Vector>
-            displast,                                   ///< displacement at beginning of time step
-        Teuchos::RCP<const Core::LinAlg::Vector> disp,  ///< displacement at end of time step
-        Teuchos::RCP<Core::LinAlg::Vector> fint,        ///< vector of internal forces
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            displast,  ///< displacement at beginning of time step
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+            disp,                                          ///< displacement at end of time step
+        Teuchos::RCP<Core::LinAlg::Vector<double>> fint,   ///< vector of internal forces
         Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,  ///< stiffness matrix
         Teuchos::ParameterList scalelist);
 
@@ -137,19 +139,19 @@ namespace CONSTRAINTS
     void update_lagr_mult(double factor);
 
     /// Add a vector as residual increment to the vector of Lagrange multipliers
-    void update_lagr_mult(Teuchos::RCP<Core::LinAlg::Vector> vect  ///< vector to add
+    void update_lagr_mult(Teuchos::RCP<Core::LinAlg::Vector<double>> vect  ///< vector to add
     );
 
     /// Add a vector as total increment to the vector of Lagrange multipliers
-    void update_tot_lagr_mult(Teuchos::RCP<Core::LinAlg::Vector> vect  ///< vector to add
+    void update_tot_lagr_mult(Teuchos::RCP<Core::LinAlg::Vector<double>> vect  ///< vector to add
     );
 
     /*!
          \brief Compute difference between current and prescribed values at a given time and a given
        displacement
     */
-    void compute_error(double time,              ///< time, at which the error is to compute at
-        Teuchos::RCP<Core::LinAlg::Vector> disp  ///< displacement vector at the given time
+    void compute_error(double time,  ///< time, at which the error is to compute at
+        Teuchos::RCP<Core::LinAlg::Vector<double>> disp  ///< displacement vector at the given time
     );
 
     /*!
@@ -162,7 +164,7 @@ namespace CONSTRAINTS
     }
 
     /// return vector of differences between prescribed and actual values
-    Teuchos::RCP<Core::LinAlg::Vector> get_error() const { return constrainterr_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get_error() const { return constrainterr_; }
 
     /*!
      \brief Return EpetraMap that determined distribution of constraints and lagrange
@@ -188,12 +190,15 @@ namespace CONSTRAINTS
     /*!
       \brief Return lagrange multiplier vector
     */
-    Teuchos::RCP<Core::LinAlg::Vector> get_lagr_mult_vector() const { return lagr_mult_vec_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get_lagr_mult_vector() const
+    {
+      return lagr_mult_vec_;
+    };
 
     /*!
       \brief Return lagrange multiplier of last converged step
     */
-    Teuchos::RCP<Core::LinAlg::Vector> get_lagr_mult_vector_old() const
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get_lagr_mult_vector_old() const
     {
       return lagr_mult_vec_old_;
     };
@@ -240,25 +245,26 @@ namespace CONSTRAINTS
     /*!
        \brief Compute values described by a monitor boundary condition
     */
-    void compute_monitor_values(Teuchos::RCP<Core::LinAlg::Vector> disp  ///< current displacement
+    void compute_monitor_values(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> disp  ///< current displacement
     );
 
     /*!
        \brief Compute values described by a monitor boundary condition
     */
     void compute_monitor_values(
-        Teuchos::RCP<const Core::LinAlg::Vector> disp  ///< current displacement
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp  ///< current displacement
     );
 
     /// Reset reference base values for restart computations
     void set_ref_base_values(
-        Teuchos::RCP<Core::LinAlg::Vector> newrefvals,  ///< new reference base values
-        const double& time                              ///< current time
+        Teuchos::RCP<Core::LinAlg::Vector<double>> newrefvals,  ///< new reference base values
+        const double& time                                      ///< current time
     );
 
     /// Reset lagrange multipliers
     void set_lagr_mult_vector(
-        Teuchos::RCP<Core::LinAlg::Vector> newlagrmult  ///< new lagrange multipliers
+        Teuchos::RCP<Core::LinAlg::Vector<double>> newlagrmult  ///< new lagrange multipliers
     )
     {
       lagr_mult_vec_->Update(1.0, *newlagrmult, 0.0);
@@ -267,7 +273,10 @@ namespace CONSTRAINTS
     }
 
     /// Return Reference base values to write restart
-    Teuchos::RCP<Core::LinAlg::Vector> get_ref_base_values() const { return refbasevalues_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get_ref_base_values() const
+    {
+      return refbasevalues_;
+    }
 
     //! switch constraint matrix to block matrix
     void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
@@ -293,25 +302,28 @@ namespace CONSTRAINTS
     Teuchos::RCP<Epetra_Map> redmonmap_;   ///< fully redundant map of monitor values
     Teuchos::RCP<Epetra_Export>
         monimpo_;  ///< importer for fully redundant monitor vector into distributed one
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         referencevalues_;  ///< reference at current time step to constrain values to
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         refbasevalues_;  ///< reference base values at activation time of constrained structures
-    Teuchos::RCP<Core::LinAlg::Vector> actvalues_;  ///< current values of constrained structures
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        actvalues_;  ///< current values of constrained structures
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         constrainterr_;  ///< vector with deflection between reference and current values
-    Teuchos::RCP<Core::LinAlg::Vector> monitorvalues_;  ///< current values of monitored structures
-    Teuchos::RCP<Core::LinAlg::Vector>
-        initialmonvalues_;                             ///< initial values of monitored structures
-    Teuchos::RCP<Core::LinAlg::Vector> monitortypes_;  ///< vector containing type of monitors
-    int offset_id_;                            ///< smallest constraint boundary condition ID
-    int max_constr_id_;                        ///< max number of constraints
-    int num_constr_id_;                        ///< number of constraint boundary conditions
-    int num_monitor_id_;                       ///< smallest monitor boundary condition ID
-    int min_monitor_id_;                       ///< number monitor boundary condition ID
-    Teuchos::RCP<Core::LinAlg::Vector> fact_;  ///< vector with current time curve values
-    Teuchos::RCP<Core::LinAlg::Vector> lagr_mult_vec_;          ///< lagrange multipliers
-    Teuchos::RCP<Core::LinAlg::Vector> lagr_mult_vec_old_;      ///< lagrange multipliers
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        monitorvalues_;  ///< current values of monitored structures
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        initialmonvalues_;  ///< initial values of monitored structures
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        monitortypes_;    ///< vector containing type of monitors
+    int offset_id_;       ///< smallest constraint boundary condition ID
+    int max_constr_id_;   ///< max number of constraints
+    int num_constr_id_;   ///< number of constraint boundary conditions
+    int num_monitor_id_;  ///< smallest monitor boundary condition ID
+    int min_monitor_id_;  ///< number monitor boundary condition ID
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fact_;  ///< vector with current time curve values
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lagr_mult_vec_;      ///< lagrange multipliers
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lagr_mult_vec_old_;  ///< lagrange multipliers
     Teuchos::RCP<Core::LinAlg::SparseOperator> constr_matrix_;  ///< additional rectangular matrix
     bool haveconstraint_;                                       ///< are there constraints at all?
     bool havelagrconstr_;  ///< are there constraints controlled by Lagrange multiplier?

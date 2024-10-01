@@ -25,14 +25,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 
-Teuchos::RCP<Core::LinAlg::Vector> Coupling::Adapter::CouplingMasterConverter::src_to_dst(
-    Teuchos::RCP<const Core::LinAlg::Vector> source_vector) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMasterConverter::src_to_dst(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> source_vector) const
 {
   return coup_.master_to_slave(source_vector);
 }
 
-Teuchos::RCP<Core::LinAlg::Vector> Coupling::Adapter::CouplingMasterConverter::dst_to_src(
-    Teuchos::RCP<const Core::LinAlg::Vector> destination_vector) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMasterConverter::dst_to_src(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> destination_vector) const
 {
   return coup_.slave_to_master(destination_vector);
 }
@@ -64,14 +64,14 @@ void Coupling::Adapter::CouplingMasterConverter::fill_src_to_dst_map(
 }
 
 
-Teuchos::RCP<Core::LinAlg::Vector> Coupling::Adapter::CouplingSlaveConverter::src_to_dst(
-    Teuchos::RCP<const Core::LinAlg::Vector> source_vector) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingSlaveConverter::src_to_dst(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> source_vector) const
 {
   return coup_.slave_to_master(source_vector);
 }
 
-Teuchos::RCP<Core::LinAlg::Vector> Coupling::Adapter::CouplingSlaveConverter::dst_to_src(
-    Teuchos::RCP<const Core::LinAlg::Vector> destination_vector) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingSlaveConverter::dst_to_src(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> destination_vector) const
 {
   return coup_.master_to_slave(destination_vector);
 }
@@ -195,7 +195,7 @@ void Coupling::Adapter::MatrixLogicalSplitAndTransform::internal_add(
 {
   if (not esrc->Filled()) FOUR_C_THROW("filled source matrix expected");
 
-  Core::LinAlg::Vector dselector(esrc->DomainMap());
+  Core::LinAlg::Vector<double> dselector(esrc->DomainMap());
   for (int i = 0; i < dselector.MyLength(); ++i)
   {
     const int gid = esrc->DomainMap().GID(i);
@@ -204,7 +204,7 @@ void Coupling::Adapter::MatrixLogicalSplitAndTransform::internal_add(
     else
       dselector[i] = 0.;
   }
-  Core::LinAlg::Vector selector(esrc->ColMap());
+  Core::LinAlg::Vector<double> selector(esrc->ColMap());
   Core::LinAlg::export_to(dselector, selector);
 
   if (edst->Filled())
@@ -221,7 +221,7 @@ void Coupling::Adapter::MatrixLogicalSplitAndTransform::internal_add(
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_filled(
     Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
-    const Epetra_Map& logical_domain_map, const Core::LinAlg::Vector& selector,
+    const Epetra_Map& logical_domain_map, const Core::LinAlg::Vector<double>& selector,
     const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
     double scale)
 {
@@ -309,7 +309,7 @@ void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_filled(
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_unfilled(
     Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
-    const Epetra_Map& logical_domain_map, const Core::LinAlg::Vector& selector,
+    const Epetra_Map& logical_domain_map, const Core::LinAlg::Vector<double>& selector,
     const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
     double scale)
 {

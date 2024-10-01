@@ -57,19 +57,22 @@ namespace CONSTRAINTS
 
     //! add contribution of spring dashpot BC to residual vector and stiffness matrix
     void stiffness_and_internal_forces(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
-        Teuchos::RCP<Core::LinAlg::Vector> fint, Teuchos::RCP<Core::LinAlg::Vector> disn,
-        Teuchos::RCP<Core::LinAlg::Vector> veln, Teuchos::ParameterList parlist);
+        Teuchos::RCP<Core::LinAlg::Vector<double>> fint,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> veln, Teuchos::ParameterList parlist);
 
     //! update for each new time step
     void update();
 
     //! output of gap, normal, and nodal stiffness
     void output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
-        Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Core::LinAlg::Vector> disp);
+        Teuchos::RCP<Core::FE::Discretization> discret,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> disp);
 
     //! output of prestressing offset for restart
     void output_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output_restart,
-        Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Core::LinAlg::Vector> disp);
+        Teuchos::RCP<Core::FE::Discretization> discret,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> disp);
 
     /*!
      \brief Read restart information
@@ -77,7 +80,7 @@ namespace CONSTRAINTS
     void read_restart(Core::IO::DiscretizationReader& reader, const double& time);
 
     //! reset spring after having done a MULF prestressing update (mhv 12/2015)
-    void reset_prestress(Teuchos::RCP<Core::LinAlg::Vector> disold);
+    void reset_prestress(Teuchos::RCP<Core::LinAlg::Vector<double>> disold);
 
    private:
     Teuchos::RCP<Core::FE::Discretization> actdisc_;    ///< standard discretization

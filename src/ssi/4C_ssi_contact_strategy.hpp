@@ -52,7 +52,8 @@ namespace SSI
         Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
 
     //! apply contact contributions to the scatra residual
-    void apply_contact_to_scatra_residual(Teuchos::RCP<Core::LinAlg::Vector> scatra_residual);
+    void apply_contact_to_scatra_residual(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> scatra_residual);
 
     //! apply contact contributions to scatra sub matrix
     virtual void apply_contact_to_scatra_scatra(

@@ -149,15 +149,17 @@ Teuchos::RCP<Epetra_MultiVector> Cardiovascular0D::ProperOrthogonalDecomposition
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Cardiovascular0D::ProperOrthogonalDecomposition::reduce_residual(
-    Teuchos::RCP<Core::LinAlg::Vector> v)
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+Cardiovascular0D::ProperOrthogonalDecomposition::reduce_residual(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> v)
 {
-  Teuchos::RCP<Core::LinAlg::Vector> v_tmp =
-      Teuchos::rcp(new Core::LinAlg::Vector(*redstructmapr_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> v_tmp =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*redstructmapr_));
   int err = v_tmp->Multiply('T', 'N', 1.0, *projmatrix_, *v, 0.0);
   if (err) FOUR_C_THROW("Multiplication V^T * v failed.");
 
-  Teuchos::RCP<Core::LinAlg::Vector> v_red = Teuchos::rcp(new Core::LinAlg::Vector(*structmapr_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> v_red =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*structmapr_));
   v_red->Import(*v_tmp, *structrimpo_, Insert, nullptr);
 
   return v_red;
@@ -165,14 +167,15 @@ Teuchos::RCP<Core::LinAlg::Vector> Cardiovascular0D::ProperOrthogonalDecompositi
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Cardiovascular0D::ProperOrthogonalDecomposition::extend_solution(
-    Teuchos::RCP<Core::LinAlg::Vector> v_red)
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+Cardiovascular0D::ProperOrthogonalDecomposition::extend_solution(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> v_red)
 {
-  Teuchos::RCP<Core::LinAlg::Vector> v_tmp =
-      Teuchos::rcp(new Core::LinAlg::Vector(*redstructmapr_, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> v_tmp =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*redstructmapr_, true));
   v_tmp->Import(*v_red, *structrinvimpo_, Insert, nullptr);
-  Teuchos::RCP<Core::LinAlg::Vector> v =
-      Teuchos::rcp(new Core::LinAlg::Vector(*full_model_dof_row_map_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> v =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*full_model_dof_row_map_));
   int err = v->Multiply('N', 'N', 1.0, *projmatrix_, *v_tmp, 0.0);
   if (err) FOUR_C_THROW("Multiplication V * v_red failed.");
 

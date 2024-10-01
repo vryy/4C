@@ -37,13 +37,15 @@ namespace Solid
       void setup() override;
 
       //! Apply the right hand side only (derived)
-      bool apply_force(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f) override;
+      bool apply_force(
+          const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& f) override;
 
       //! \brief Apply the stiffness only (derived)
-      bool apply_stiff(const Core::LinAlg::Vector& x, Core::LinAlg::SparseOperator& jac) override;
+      bool apply_stiff(
+          const Core::LinAlg::Vector<double>& x, Core::LinAlg::SparseOperator& jac) override;
 
       //! \brief Apply force and stiff at once (derived)
-      bool apply_force_stiff(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f,
+      bool apply_force_stiff(const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& f,
           Core::LinAlg::SparseOperator& jac) override;
 
       /*! \brief (derived)
@@ -51,7 +53,7 @@ namespace Solid
        */
       bool apply_correction_system(const enum NOX::Nln::CorrectionType type,
           const std::vector<Inpar::Solid::ModelType>& constraint_models,
-          const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f,
+          const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& f,
           Core::LinAlg::SparseOperator& jac) override
       {
         return false;
@@ -70,7 +72,7 @@ namespace Solid
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr) override;
 
       //! Assemble the right hand side
-      bool assemble_force(Core::LinAlg::Vector& f,
+      bool assemble_force(Core::LinAlg::Vector<double>& f,
           const std::vector<Inpar::Solid::ModelType>* without_these_models =
               nullptr) const override;
 
@@ -93,7 +95,8 @@ namespace Solid
       /*! \brief Remove contributions from the structural right-hand side stemming
        *  from any condensation operations (typical example is contact) (derived)
        */
-      void remove_condensed_contributions_from_rhs(Core::LinAlg::Vector& rhs) const override;
+      void remove_condensed_contributions_from_rhs(
+          Core::LinAlg::Vector<double>& rhs) const override;
       //! @}
 
       //! @name Attribute access functions
@@ -153,12 +156,14 @@ namespace NOX
           void runPreSolve(const ::NOX::Solver::Generic& nlnSolver) override;
 
           //! derived
-          void run_pre_compute_x(const NOX::Nln::Group& input_grp, const Core::LinAlg::Vector& dir,
-              const double& step, const NOX::Nln::Group& curr_grp) override;
+          void run_pre_compute_x(const NOX::Nln::Group& input_grp,
+              const Core::LinAlg::Vector<double>& dir, const double& step,
+              const NOX::Nln::Group& curr_grp) override;
 
           //! derived
-          void run_post_compute_x(const NOX::Nln::Group& input_grp, const Core::LinAlg::Vector& dir,
-              const double& step, const NOX::Nln::Group& curr_grp) override;
+          void run_post_compute_x(const NOX::Nln::Group& input_grp,
+              const Core::LinAlg::Vector<double>& dir, const double& step,
+              const NOX::Nln::Group& curr_grp) override;
 
          private:
           //! default step length

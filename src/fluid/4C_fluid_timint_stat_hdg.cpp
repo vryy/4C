@@ -143,7 +143,8 @@ void FLD::TimIntStationaryHDG::set_old_part_of_righthandside()
 void FLD::TimIntStationaryHDG::set_state_tim_int()
 {
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
-  Teuchos::RCP<Core::LinAlg::Vector> zerovec = Core::LinAlg::create_vector(*intdofrowmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> zerovec =
+      Core::LinAlg::create_vector(*intdofrowmap, true);
 
   discret_->set_state(0, "velaf", velnp_);
   discret_->set_state(1, "intvelaf", intvelnp_);  // TODO als fill in intvelnp_!
@@ -160,7 +161,7 @@ void FLD::TimIntStationaryHDG::clear_state_assemble_mat_and_rhs()
   {
     // Wrote into the state vector during element calls, need to transfer the
     // data back before it disappears when clearing the state (at least for nproc>1)
-    const Core::LinAlg::Vector& intvelnpGhosted = *discret_->get_state(1, "intvelnp");
+    const Core::LinAlg::Vector<double>& intvelnpGhosted = *discret_->get_state(1, "intvelnp");
     for (int i = 0; i < intvelnp_->MyLength(); ++i)
       (*intvelnp_)[i] = intvelnpGhosted[intvelnpGhosted.Map().LID(intvelnp_->Map().GID(i))];
   }

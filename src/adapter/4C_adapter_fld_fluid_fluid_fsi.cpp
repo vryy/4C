@@ -141,10 +141,10 @@ Adapter::FluidFluidFSI::x_fluid_fluid_map_extractor()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FluidFluidFSI::apply_mesh_displacement(
-    Teuchos::RCP<const Core::LinAlg::Vector> fluiddisp)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fluiddisp)
 {
   // store old state
-  Teuchos::RCP<const Core::LinAlg::Vector> disp =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
       meshmap_->extract_cond_vector(fluidimpl_->dispnp());
   meshmap_->insert_cond_vector(disp, xfluidfluid_->write_access_disp_old_state());
   // apply mesh displacement and update grid velocity
@@ -172,7 +172,7 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Adapter::FluidFluidFSI::block_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Adapter::FluidFluidFSI::evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+void Adapter::FluidFluidFSI::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
         stepinc  ///< solution increment between time step n and n+1
 )
 {
@@ -192,35 +192,35 @@ void Adapter::FluidFluidFSI::evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> Adapter::FluidFluidFSI::grid_vel()
+Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::grid_vel()
 {
   return fluidimpl_->grid_vel();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidFluidFSI::write_access_grid_vel()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::write_access_grid_vel()
 {
   return fluidimpl_->write_access_grid_vel();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> Adapter::FluidFluidFSI::dispnp()
+Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::dispnp()
 {
   return fluidimpl_->dispnp();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FluidFluidFSI::write_access_dispnp()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::write_access_dispnp()
 {
   return fluidimpl_->write_access_dispnp();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> Adapter::FluidFluidFSI::dispn()
+Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::dispn()
 {
   return fluidimpl_->dispn();
 }

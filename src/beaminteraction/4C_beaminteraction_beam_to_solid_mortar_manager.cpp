@@ -476,8 +476,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_force_stiff_penalty_reg
 /**
  *
  */
-Teuchos::RCP<Core::LinAlg::Vector> BEAMINTERACTION::BeamToSolidMortarManager::get_global_lambda()
-    const
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+BEAMINTERACTION::BeamToSolidMortarManager::get_global_lambda() const
 {
   auto penalty_regularization = get_penalty_regularization(false);
   return std::get<0>(penalty_regularization);
@@ -486,11 +486,11 @@ Teuchos::RCP<Core::LinAlg::Vector> BEAMINTERACTION::BeamToSolidMortarManager::ge
 /**
  *
  */
-Teuchos::RCP<Core::LinAlg::Vector>
+Teuchos::RCP<Core::LinAlg::Vector<double>>
 BEAMINTERACTION::BeamToSolidMortarManager::get_global_lambda_col() const
 {
-  Teuchos::RCP<Core::LinAlg::Vector> lambda_col =
-      Teuchos::rcp(new Core::LinAlg::Vector(*lambda_dof_colmap_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_col =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*lambda_dof_colmap_));
   Core::LinAlg::export_to(*get_global_lambda(), *lambda_col);
   return lambda_col;
 }
@@ -507,7 +507,7 @@ double BEAMINTERACTION::BeamToSolidMortarManager::get_energy() const
     return 0.0;
 
   // Calculate the penalty potential.
-  Teuchos::RCP<Core::LinAlg::Vector> lambda = get_global_lambda();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lambda = get_global_lambda();
   double dot_product = 0.0;
   constraint_->Dot(*lambda, &dot_product);
   return 0.5 * dot_product;
@@ -517,7 +517,7 @@ double BEAMINTERACTION::BeamToSolidMortarManager::get_energy() const
  *
  */
 void BEAMINTERACTION::BeamToSolidMortarManager::evaluate_and_assemble_global_coupling_contributions(
-    const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_vector)
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   check_setup();
   check_global_maps();
@@ -632,18 +632,18 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
 
     // Multiply the lambda vector with FB_L and FS_L to get the forces on the beam and solid,
     // respectively.
-    Teuchos::RCP<Core::LinAlg::Vector> beam_force =
-        Teuchos::rcp(new Core::LinAlg::Vector(*beam_dof_rowmap_));
-    Teuchos::RCP<Core::LinAlg::Vector> solid_force =
-        Teuchos::rcp(new Core::LinAlg::Vector(*solid_dof_rowmap_));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> beam_force =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*beam_dof_rowmap_));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> solid_force =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*solid_dof_rowmap_));
     beam_force->PutScalar(0.);
     solid_force->PutScalar(0.);
     linalg_error = force_beam_lin_lambda_->multiply(false, *lambda, *beam_force);
     if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
     linalg_error = force_solid_lin_lambda_->multiply(false, *lambda, *solid_force);
     if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
-    Teuchos::RCP<Core::LinAlg::Vector> global_temp =
-        Teuchos::rcp(new Core::LinAlg::Vector(*discret_->dof_row_map()));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> global_temp =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret_->dof_row_map()));
     Core::LinAlg::export_to(*beam_force, *global_temp);
     Core::LinAlg::export_to(*solid_force, *global_temp);
 
@@ -653,7 +653,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
   }
 
   // Add the force and stiffness contributions that are assembled directly by the pairs.
-  auto lambda_col = Teuchos::rcp(new Core::LinAlg::Vector(*lambda_dof_colmap_));
+  auto lambda_col = Teuchos::rcp(new Core::LinAlg::Vector<double>(*lambda_dof_colmap_));
   Core::LinAlg::export_to(*lambda, *lambda_col);
   for (const auto& elepairptr : contact_pairs_)
     elepairptr->evaluate_and_assemble(
@@ -663,8 +663,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
 /**
  *
  */
-std::tuple<Teuchos::RCP<Core::LinAlg::Vector>, Teuchos::RCP<Core::LinAlg::Vector>,
-    Teuchos::RCP<Core::LinAlg::Vector>>
+std::tuple<Teuchos::RCP<Core::LinAlg::Vector<double>>, Teuchos::RCP<Core::LinAlg::Vector<double>>,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>>
 BEAMINTERACTION::BeamToSolidMortarManager::get_penalty_regularization(
     const bool compute_linearization) const
 {
@@ -672,14 +672,14 @@ BEAMINTERACTION::BeamToSolidMortarManager::get_penalty_regularization(
   check_global_maps();
 
   // Get the inverted kappa matrix.
-  Teuchos::RCP<Core::LinAlg::Vector> penalty_kappa_inv = penalty_invert_kappa();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> penalty_kappa_inv = penalty_invert_kappa();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> penalty_kappa_inv_mat =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*penalty_kappa_inv));
   penalty_kappa_inv_mat->complete();
 
   // Multiply the inverted kappa matrix with the constraint equations.
-  Teuchos::RCP<Core::LinAlg::Vector> lambda =
-      Teuchos::rcp(new Core::LinAlg::Vector(*lambda_dof_rowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*lambda_dof_rowmap_));
   int linalg_error = penalty_kappa_inv_mat->multiply(false, *constraint_, *lambda);
   if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
 
@@ -696,12 +696,12 @@ BEAMINTERACTION::BeamToSolidMortarManager::get_penalty_regularization(
 /**
  *
  */
-Teuchos::RCP<Core::LinAlg::Vector> BEAMINTERACTION::BeamToSolidMortarManager::penalty_invert_kappa()
-    const
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+BEAMINTERACTION::BeamToSolidMortarManager::penalty_invert_kappa() const
 {
   // Create the inverse vector.
-  Teuchos::RCP<Core::LinAlg::Vector> kappa_inv =
-      Teuchos::rcp(new Core::LinAlg::Vector(*lambda_dof_rowmap_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> kappa_inv =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*lambda_dof_rowmap_));
 
   // Get the penalty parameters.
   const double penalty_translation = beam_to_solid_params_->get_penalty_parameter();

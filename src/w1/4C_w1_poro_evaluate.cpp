@@ -38,7 +38,8 @@ void Discret::ELEMENTS::Wall1Poro<distype>::pre_evaluate(Teuchos::ParameterList&
       if (discretization.has_state(2, "scalar"))
       {
         // check if you can get the scalar state
-        Teuchos::RCP<const Core::LinAlg::Vector> scalarnp = discretization.get_state(2, "scalar");
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarnp =
+            discretization.get_state(2, "scalar");
 
         // extract local values of the global vectors
         std::vector<double> myscalar(la[2].lm_.size());
@@ -263,7 +264,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
           {
             // get primary variables of multiphase porous medium flow
             std::vector<double> myephi(la[1].size());
-            Teuchos::RCP<const Core::LinAlg::Vector> matrix_state =
+            Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
                 discretization.get_state(1, "porofluid");
             Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
@@ -333,7 +334,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
           {
             // get primary variables of multiphase porous medium flow
             std::vector<double> myephi(la[1].size());
-            Teuchos::RCP<const Core::LinAlg::Vector> matrix_state =
+            Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
                 discretization.get_state(1, "porofluid");
             Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
@@ -391,7 +392,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
         {
           // get primary variables of multiphase porous medium flow
           std::vector<double> myephi(la[1].size());
-          Teuchos::RCP<const Core::LinAlg::Vector> matrix_state =
+          Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
               discretization.get_state(1, "porofluid");
           Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
@@ -448,7 +449,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
         {
           // get primary variables of multiphase porous medium flow
           std::vector<double> myephi(la[1].size());
-          Teuchos::RCP<const Core::LinAlg::Vector> matrix_state =
+          Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
               discretization.get_state(1, "porofluid");
           Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
@@ -2388,7 +2389,8 @@ void Discret::ELEMENTS::Wall1Poro<distype>::extract_values_from_global_vector(
 {
   // put on higher level
   // get state of the global vector
-  Teuchos::RCP<const Core::LinAlg::Vector> matrix_state = discretization.get_state(dofset, state);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+      discretization.get_state(dofset, state);
   if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   const int numdofpernode = discretization.num_dof(dofset, nodes()[0]);

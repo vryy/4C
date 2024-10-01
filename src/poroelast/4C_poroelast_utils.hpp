@@ -99,7 +99,7 @@ namespace PoroElast
 
     //! Determine norm of vector
     double calculate_vector_norm(const enum Inpar::PoroElast::VectorNorm norm,  //!< norm to use
-        const Teuchos::RCP<const Core::LinAlg::Vector> vect  //!< the vector of interest
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> vect  //!< the vector of interest
     );
 
     //! Set the slave and master elements of the face element

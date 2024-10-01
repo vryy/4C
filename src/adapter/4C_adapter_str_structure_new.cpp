@@ -179,9 +179,10 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
         return node;
     };
 
-    auto determine_relevant_points =
-        [correct_node](const Core::FE::Discretization& discret, const Core::Elements::Element& ele,
-            Teuchos::RCP<const Core::LinAlg::Vector> disnp) -> std::vector<std::array<double, 3>>
+    auto determine_relevant_points = [correct_node](const Core::FE::Discretization& discret,
+                                         const Core::Elements::Element& ele,
+                                         Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)
+        -> std::vector<std::array<double, 3>>
     {
       if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&ele))
       {

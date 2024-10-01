@@ -73,7 +73,7 @@ namespace BEAMINTERACTION
         Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
         Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
         Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-        const Teuchos::RCP<const Core::LinAlg::Vector>& displacement_vector) override;
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector) override;
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness
@@ -83,8 +83,8 @@ namespace BEAMINTERACTION
         const BeamToSolidMortarManager* mortar_manager,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-        const Core::LinAlg::Vector& global_lambda,
-        const Core::LinAlg::Vector& displacement_vector) override;
+        const Core::LinAlg::Vector<double>& global_lambda,
+        const Core::LinAlg::Vector<double>& displacement_vector) override;
 
     /**
      * \brief Add the visualization of this pair to the beam to solid visualization output writer.

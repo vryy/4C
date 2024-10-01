@@ -376,7 +376,8 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and
     // get number of dofset associated with displacement related dofs
     const int ndsdisp = my::scatrapara_->nds_disp();
 
-    Teuchos::RCP<const Core::LinAlg::Vector> dispnp = discretization.get_state(ndsdisp, "dispnp");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+        discretization.get_state(ndsdisp, "dispnp");
     if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     // determine number of displacement related dofs per node
@@ -404,8 +405,8 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and
   //---------------------------------------------------------------------------------------------
 
   // extract local values from the global vectors
-  Teuchos::RCP<const Core::LinAlg::Vector> hist = discretization.get_state("hist");
-  Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state("phinp");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
   if (hist == Teuchos::null || phinp == Teuchos::null)
     FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phinp'");
 
@@ -417,7 +418,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and
   if (my::scatraparatimint_->is_gen_alpha() and not my::scatraparatimint_->is_incremental())
   {
     // extract additional local values from global vector
-    Teuchos::RCP<const Core::LinAlg::Vector> phin = discretization.get_state("phin");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
     if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
     Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
   }
@@ -505,7 +506,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_nodal_flux(
     statename << stateprefix << curphase;
 
     // get convective (velocity - mesh displacement) velocity at nodes
-    Teuchos::RCP<const Core::LinAlg::Vector> convel =
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
         discretization.get_state(ndsvel, statename.str());
     if (convel == Teuchos::null)
       FOUR_C_THROW("Cannot get state vector %s", statename.str().c_str());

@@ -25,9 +25,9 @@ FOUR_C_NAMESPACE_OPEN
 
 void XFEM::UTILS::extract_node_vectors(Teuchos::RCP<Core::FE::Discretization> dis,
     std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap,
-    Teuchos::RCP<Core::LinAlg::Vector> idispnp)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> dispcol =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispcol =
       Core::Rebalance::get_col_version_of_row_vector(dis, idispnp);
   nodevecmap.clear();
 

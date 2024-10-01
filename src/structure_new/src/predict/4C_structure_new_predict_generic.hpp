@@ -33,6 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
 {
+  template <typename T>
   class Vector;
 }
 namespace Solid
@@ -94,7 +95,7 @@ namespace Solid
       void print() const;
 
       //! Run before the external force are computed and assembled
-      virtual bool pre_apply_force_external(Core::LinAlg::Vector& fextnp) const;
+      virtual bool pre_apply_force_external(Core::LinAlg::Vector<double>& fextnp) const;
 
      protected:
       //! returns init state

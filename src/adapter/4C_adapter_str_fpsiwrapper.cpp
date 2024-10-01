@@ -41,7 +41,8 @@ Adapter::FPSIStructureWrapper::FPSIStructureWrapper(Teuchos::RCP<Structure> stru
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FPSIStructureWrapper::extract_interface_dispn(bool FPSI)
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FPSIStructureWrapper::extract_interface_dispn(
+    bool FPSI)
 {
   if (!FPSI)
   {
@@ -52,7 +53,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FPSIStructureWrapper::extract_interf
     // prestressing business
     if (prestress_is_active(time_old()))
     {
-      return Teuchos::rcp(new Core::LinAlg::Vector(*interface_->fpsi_cond_map(), true));
+      return Teuchos::rcp(new Core::LinAlg::Vector<double>(*interface_->fpsi_cond_map(), true));
     }
     else
     {
@@ -64,7 +65,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FPSIStructureWrapper::extract_interf
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Adapter::FPSIStructureWrapper::extract_interface_dispnp(
+Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FPSIStructureWrapper::extract_interface_dispnp(
     bool FPSI)
 {
   if (!FPSI)
@@ -76,7 +77,7 @@ Teuchos::RCP<Core::LinAlg::Vector> Adapter::FPSIStructureWrapper::extract_interf
     // prestressing business
     if (prestress_is_active(time()))
     {
-      return Teuchos::rcp(new Core::LinAlg::Vector(*interface_->fpsi_cond_map(), true));
+      return Teuchos::rcp(new Core::LinAlg::Vector<double>(*interface_->fpsi_cond_map(), true));
     }
     else
     {

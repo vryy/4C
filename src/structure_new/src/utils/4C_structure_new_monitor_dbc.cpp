@@ -443,8 +443,8 @@ void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Conditio
   Core::LinAlg::SerialDenseMatrix xyze_curr;
 
   const std::map<int, Teuchos::RCP<Core::Elements::Element>>& celes = rcond->geometry();
-  Teuchos::RCP<const Core::LinAlg::Vector> dispn = gstate_ptr_->get_dis_np();
-  Core::LinAlg::Vector dispn_col(*discret.dof_col_map(), true);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn = gstate_ptr_->get_dis_np();
+  Core::LinAlg::Vector<double> dispn_col(*discret.dof_col_map(), true);
   Core::LinAlg::export_to(*dispn, dispn_col);
 
   for (auto& cele_pair : celes)
@@ -510,13 +510,13 @@ void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Conditio
 double Solid::MonitorDbc::get_reaction_force(
     Core::LinAlg::Matrix<DIM, 1>& rforce_xyz, const Teuchos::RCP<Epetra_Map>* react_maps) const
 {
-  Core::LinAlg::Vector complete_freact(*gstate_ptr_->get_freact_np());
+  Core::LinAlg::Vector<double> complete_freact(*gstate_ptr_->get_freact_np());
   dbc_ptr_->rotate_global_to_local(Teuchos::rcpFromRef(complete_freact));
 
   Core::LinAlg::Matrix<DIM, 1> lrforce_xyz(true);
   for (unsigned d = 0; d < DIM; ++d)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> partial_freact_ptr =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> partial_freact_ptr =
         Core::LinAlg::extract_my_vector(complete_freact, *(react_maps[d]));
 
     double& lrforce_comp = lrforce_xyz(d, 0);
@@ -533,9 +533,9 @@ double Solid::MonitorDbc::get_reaction_force(
 double Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmoment_xyz,
     const Teuchos::RCP<Epetra_Map>* react_maps, const Core::Conditions::Condition* rcond) const
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> dispn = gstate_ptr_->get_dis_np();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn = gstate_ptr_->get_dis_np();
 
-  Core::LinAlg::Vector complete_freact(*gstate_ptr_->get_freact_np());
+  Core::LinAlg::Vector<double> complete_freact(*gstate_ptr_->get_freact_np());
   dbc_ptr_->rotate_global_to_local(Teuchos::rcpFromRef(complete_freact));
 
   Core::LinAlg::Matrix<DIM, 1> lrmoment_xyz(true);
@@ -575,7 +575,7 @@ double Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmom
       {
         const int lid = complete_freact.Map().LID(node_gid[i]);
         if (lid < 0)
-          FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector",
+          FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
               complete_freact.Comm().MyPID(), node_gid[i]);
         node_reaction_force(i) = complete_freact[lid];
       }

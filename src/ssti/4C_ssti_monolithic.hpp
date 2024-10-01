@@ -98,8 +98,8 @@ namespace SSTI
 
     //! state vectors
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector> increment() const { return increment_; };
-    Teuchos::RCP<Core::LinAlg::Vector> residual() const { return residual_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>> increment() const { return increment_; };
+    Teuchos::RCP<Core::LinAlg::Vector<double>> residual() const { return residual_; };
     //}
 
     //! statistics for evaluation and solving
@@ -119,7 +119,7 @@ namespace SSTI
     void evaluate_subproblems();
 
     //! get solution increment for given subproblem
-    Teuchos::RCP<Core::LinAlg::Vector> extract_sub_increment(Subproblem sub);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_sub_increment(Subproblem sub);
 
     // build and return vector of equilibration methods for each block of system matrix
     std::vector<Core::LinAlg::EquilibrationMethod> get_block_equilibration();
@@ -146,8 +146,8 @@ namespace SSTI
 
     //! Newton Raphson loop
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector> increment_;
-    Teuchos::RCP<Core::LinAlg::Vector> residual_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> increment_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
     Teuchos::RCP<Core::LinAlg::Solver> solver_;
     //@}
 

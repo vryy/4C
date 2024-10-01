@@ -35,7 +35,7 @@ namespace Thermo
   {
     //! Determine norm of force residual
     double calculate_vector_norm(const enum Inpar::Thermo::VectorNorm norm,  //!< norm to use
-        const Teuchos::RCP<Core::LinAlg::Vector> vect  //!< the vector of interest
+        const Teuchos::RCP<Core::LinAlg::Vector<double>> vect  //!< the vector of interest
     );
 
   }  // namespace Aux

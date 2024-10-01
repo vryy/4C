@@ -102,7 +102,7 @@ namespace Coupling::Adapter
         std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node =
             nullptr,
         std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
-            const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector> disnp)>
+            const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)>
             determine_relevant_points = nullptr);
 
 
@@ -117,10 +117,10 @@ namespace Coupling::Adapter
     \brief Mortar mapping for 1 to 2 and 2 to 1 - for vectors
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector> apply_vector_mapping12(
-        Teuchos::RCP<const Core::LinAlg::Vector> vec) const;
-    Teuchos::RCP<const Core::LinAlg::Vector> apply_vector_mapping21(
-        Teuchos::RCP<const Core::LinAlg::Vector> vec) const;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> apply_vector_mapping12(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec) const;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> apply_vector_mapping21(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec) const;
 
     /*!
     \brief Mortar mapping for 1 to 2 and 2 to 1 - for matrices
@@ -146,17 +146,17 @@ namespace Coupling::Adapter
     /// idea is the same for all of them.
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Core::LinAlg::Vector> master_to_slave(
-        Teuchos::RCP<Core::LinAlg::Vector> mv) const override
+    Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> mv) const override
     {
-      return master_to_slave(Teuchos::rcp_static_cast<const Core::LinAlg::Vector>(mv));
+      return master_to_slave(Teuchos::rcp_static_cast<const Core::LinAlg::Vector<double>>(mv));
     }
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Core::LinAlg::Vector> slave_to_master(
-        Teuchos::RCP<Core::LinAlg::Vector> sv) const override
+    Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sv) const override
     {
-      return slave_to_master(Teuchos::rcp_static_cast<const Core::LinAlg::Vector>(sv));
+      return slave_to_master(Teuchos::rcp_static_cast<const Core::LinAlg::Vector<double>>(sv));
     }
 
     /// transfer a dof vector from master to slave
@@ -174,12 +174,12 @@ namespace Coupling::Adapter
     }
 
     /// transfer a dof vector from master to slave
-    Teuchos::RCP<Core::LinAlg::Vector> master_to_slave(
-        Teuchos::RCP<const Core::LinAlg::Vector> mv) const override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> mv) const override;
 
     /// transfer a dof vector from slave to master
-    Teuchos::RCP<Core::LinAlg::Vector> slave_to_master(
-        Teuchos::RCP<const Core::LinAlg::Vector> sv) const override;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv) const override;
 
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_MultiVector> master_to_slave(

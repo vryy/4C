@@ -42,7 +42,7 @@ namespace CONTACT
     //! @name Evaluation methods
 
     void do_read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<const Core::LinAlg::Vector> dis,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> dis,
         Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
     /*! \brief Setup this strategy object (maps, vectors, etc.)
@@ -103,8 +103,8 @@ namespace CONTACT
     void evaluate_poro_no_pen_contact(
         Teuchos::RCP<Core::LinAlg::SparseMatrix>&
             k_fseff,  // global poro Coupling Matrix Fluid Structure K_FS
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& Feff,  // global fluid Matrix in poro
-        Teuchos::RCP<Core::LinAlg::Vector>& feff);       // global RHS of fluid in poro
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& Feff,     // global fluid Matrix in poro
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff);  // global RHS of fluid in poro
 
     /*!
     \brief Evaluate poro no penetration contact
@@ -114,7 +114,7 @@ namespace CONTACT
     */
     void evaluate_poro_no_pen_contact(Teuchos::RCP<Core::LinAlg::SparseMatrix>& k_fseff,
         std::map<int, Teuchos::RCP<Core::LinAlg::SparseMatrix>*>& Feff,
-        Teuchos::RCP<Core::LinAlg::Vector>& feff);
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff);
 
     /*!
     \brief Evaluate poro no penetration contact
@@ -123,7 +123,7 @@ namespace CONTACT
     */
     void evaluate_mat_poro_no_pen(Teuchos::RCP<Core::LinAlg::SparseMatrix>&
                                       k_fseff,  // global poro Coupling Matrix Fluid Structure K_FS
-        Teuchos::RCP<Core::LinAlg::Vector>& feff);  // global RHS of fluid in poro
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff);  // global RHS of fluid in poro
 
     /*!
     \brief Evaluate poro no penetration contact
@@ -139,11 +139,11 @@ namespace CONTACT
     We only recover the Lagrange multipliers for poro no penetration condition here, which had been
     statically condensated during the setup of the global problem!*/
 
-    void recover_poro_no_pen(
-        Teuchos::RCP<Core::LinAlg::Vector> disi, Teuchos::RCP<Core::LinAlg::Vector> inc);
+    void recover_poro_no_pen(Teuchos::RCP<Core::LinAlg::Vector<double>> disi,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> inc);
 
-    void recover_poro_no_pen(Teuchos::RCP<Core::LinAlg::Vector> disi,
-        std::map<int, Teuchos::RCP<Core::LinAlg::Vector>> inc);
+    void recover_poro_no_pen(Teuchos::RCP<Core::LinAlg::Vector<double>> disi,
+        std::map<int, Teuchos::RCP<Core::LinAlg::Vector<double>>> inc);
 
 
     void update_poro_contact();
@@ -162,17 +162,17 @@ namespace CONTACT
     overview) \param vec (in): current global state of the quantity defined by statetype
     */
     void set_state(
-        const enum Mortar::StateType& statetype, const Core::LinAlg::Vector& vec) override;
+        const enum Mortar::StateType& statetype, const Core::LinAlg::Vector<double>& vec) override;
 
-    void set_parent_state(const enum Mortar::StateType& statetype, const Core::LinAlg::Vector& vec,
-        const Core::FE::Discretization& dis) override;
+    void set_parent_state(const enum Mortar::StateType& statetype,
+        const Core::LinAlg::Vector<double>& vec, const Core::FE::Discretization& dis) override;
 
     // Flag for Poro No Penetration Condition
     bool has_poro_no_penetration() const override { return no_penetration_; }
 
     // Return Lagrange Multiplier for No Penetration Condition!
-    Teuchos::RCP<Core::LinAlg::Vector>& lambda_no_pen() { return lambda_; }
-    Teuchos::RCP<const Core::LinAlg::Vector> lambda_no_pen() const { return lambda_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& lambda_no_pen() { return lambda_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> lambda_no_pen() const { return lambda_; }
 
     // Return all active fluid slave dofs
     Teuchos::RCP<Epetra_Map>& fluid_active_n_dof_map() { return fgactiven_; };
@@ -199,7 +199,7 @@ namespace CONTACT
         csfss_;  // poro coupling stiffness block Csf_ss (needed for LM)
 
     // For Recovery of no penetration lagrange multiplier!!!
-    Teuchos::RCP<Core::LinAlg::Vector> ffs_;  // poro fluid RHS (needed for no pen LM)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ffs_;  // poro fluid RHS (needed for no pen LM)
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         cfssn_;  // poro coupling stiffness block Cfs_sn (needed for no pen LM)
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
@@ -263,19 +263,19 @@ namespace CONTACT
     Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> invDatransform_;
 
 
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         lambda_;  // current vector of Lagrange multipliers(for poro no pen.) at t_n+1
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         lambdaold_;  // old vector of Lagrange multipliers(for poro no pen.) at t_n
 
     //... add the relevant matrices !!!
-    Teuchos::RCP<Core::LinAlg::Vector> NCoup_;  ///< normal coupling vector (for RHS)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> NCoup_;  ///< normal coupling vector (for RHS)
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         NCoup_lindisp_;  ///< linearisation of normal coupling w.r.t. displacements
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         NCoup_linvel_;  ///< linearisation of normal coupling w.r.t. fluid velocity
 
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         fNCoup_;  ///< normal coupling vector (for RHS) -- transformed to fluid dofs
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         fNCoup_lindisp_;  ///< linearisation of normal coupling w.r.t. displacements -- transformed

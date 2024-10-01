@@ -165,11 +165,12 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::MultiMapExtractor::intersect_maps(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Core::LinAlg::MultiMapExtractor::extract_vector(
-    const Core::LinAlg::Vector& full, int block) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> Core::LinAlg::MultiMapExtractor::extract_vector(
+    const Core::LinAlg::Vector<double>& full, int block) const
 {
   if (maps_[block] == Teuchos::null) FOUR_C_THROW("null map at block %d", block);
-  Teuchos::RCP<Core::LinAlg::Vector> vec = Teuchos::rcp(new Core::LinAlg::Vector(*maps_[block]));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> vec =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*maps_[block]));
   extract_vector(full, block, *vec);
   return vec;
 }
@@ -201,10 +202,11 @@ void Core::LinAlg::MultiMapExtractor::extract_vector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Core::LinAlg::MultiMapExtractor::insert_vector(
-    const Core::LinAlg::Vector& partial, int block) const
+Teuchos::RCP<Core::LinAlg::Vector<double>> Core::LinAlg::MultiMapExtractor::insert_vector(
+    const Core::LinAlg::Vector<double>& partial, int block) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector> full = Teuchos::rcp(new Core::LinAlg::Vector(*fullmap_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> full =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*fullmap_));
   insert_vector(partial, block, *full);
   return full;
 }
@@ -248,7 +250,7 @@ void Core::LinAlg::MultiMapExtractor::add_vector(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::LinAlg::MultiMapExtractor::put_scalar(
-    Core::LinAlg::Vector& full, int block, double scalar) const
+    Core::LinAlg::Vector<double>& full, int block, double scalar) const
 {
   const Epetra_Map& bm = *Map(block);
   const Epetra_Map& fm = *full_map();
@@ -267,7 +269,8 @@ void Core::LinAlg::MultiMapExtractor::put_scalar(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double Core::LinAlg::MultiMapExtractor::norm2(const Core::LinAlg::Vector& full, int block) const
+double Core::LinAlg::MultiMapExtractor::norm2(
+    const Core::LinAlg::Vector<double>& full, int block) const
 {
   const Epetra_Map& bm = *Map(block);
   const Epetra_Map& fm = *full_map();
@@ -295,7 +298,7 @@ double Core::LinAlg::MultiMapExtractor::norm2(const Core::LinAlg::Vector& full, 
  | Scale one block only                                      fang 08/16 |
  *----------------------------------------------------------------------*/
 void Core::LinAlg::MultiMapExtractor::scale(
-    Core::LinAlg::Vector& full, int block, double scalar) const
+    Core::LinAlg::Vector<double>& full, int block, double scalar) const
 {
   const Epetra_Map& bm = *Map(block);
   const Epetra_Map& fm = *full_map();

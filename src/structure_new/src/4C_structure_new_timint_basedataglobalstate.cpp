@@ -168,13 +168,13 @@ void Solid::TimeInt::BaseDataGlobalState::setup()
   // --------------------------------------
   // displacements D_{n}
   dis_ = Teuchos::rcp(
-      new TimeStepping::TimIntMStep<Core::LinAlg::Vector>(0, 0, dof_row_map_view(), true));
+      new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true));
   // velocities V_{n}
   vel_ = Teuchos::rcp(
-      new TimeStepping::TimIntMStep<Core::LinAlg::Vector>(0, 0, dof_row_map_view(), true));
+      new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true));
   // accelerations A_{n}
   acc_ = Teuchos::rcp(
-      new TimeStepping::TimIntMStep<Core::LinAlg::Vector>(0, 0, dof_row_map_view(), true));
+      new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true));
 
   // displacements D_{n+1} at t_{n+1}
   disnp_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
@@ -582,8 +582,8 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
     const Teuchos::RCP<const Solid::ModelEvaluatorManager>& modeleval) const
 {
   check_init();
-  Teuchos::RCP<Core::LinAlg::Vector> xvec_ptr =
-      Teuchos::rcp(new Core::LinAlg::Vector(global_problem_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> xvec_ptr =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(global_problem_map(), true));
 
   // switch between the different vector initialization options
   switch (vecinittype)
@@ -598,7 +598,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
       {
         // get the partial solution vector of the last time step
-        Teuchos::RCP<const Core::LinAlg::Vector> model_sol_ptr =
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> model_sol_ptr =
             modeleval->evaluator(ci->first).get_last_time_step_solution_ptr();
         // if there is a partial solution, we insert it into the full vector
         if (not model_sol_ptr.is_null())
@@ -617,7 +617,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
       {
         // get the partial solution vector of the current state
-        Teuchos::RCP<const Core::LinAlg::Vector> model_sol_ptr =
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> model_sol_ptr =
             modeleval->evaluator(ci->first).get_current_solution_ptr();
         // if there is a partial solution, we insert it into the full vector
         if (not model_sol_ptr.is_null())
@@ -742,18 +742,20 @@ const Epetra_Map* Solid::TimeInt::BaseDataGlobalState::rot_vec_dof_row_map_view(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Solid::TimeInt::BaseDataGlobalState::extract_displ_entries(
-    const Core::LinAlg::Vector& source) const
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+Solid::TimeInt::BaseDataGlobalState::extract_displ_entries(
+    const Core::LinAlg::Vector<double>& source) const
 {
   return extract_model_entries(Inpar::Solid::model_structure, source);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Solid::TimeInt::BaseDataGlobalState::extract_model_entries(
-    const Inpar::Solid::ModelType& mt, const Core::LinAlg::Vector& source) const
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+Solid::TimeInt::BaseDataGlobalState::extract_model_entries(
+    const Inpar::Solid::ModelType& mt, const Core::LinAlg::Vector<double>& source) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector> model_ptr = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> model_ptr = Teuchos::null;
   // extract from the full state vector
   if (source.Map().NumGlobalElements() == block_extractor().full_map()->NumGlobalElements())
   {
@@ -762,12 +764,12 @@ Teuchos::RCP<Core::LinAlg::Vector> Solid::TimeInt::BaseDataGlobalState::extract_
   // copy the vector
   else if (source.Map().NumGlobalElements() == model_maps_.at(mt)->NumGlobalElements())
   {
-    model_ptr = Teuchos::rcp(new Core::LinAlg::Vector(source));
+    model_ptr = Teuchos::rcp(new Core::LinAlg::Vector<double>(source));
   }
   // otherwise do a standard export
   else
   {
-    model_ptr = Teuchos::rcp(new Core::LinAlg::Vector(*model_maps_.at(mt)));
+    model_ptr = Teuchos::rcp(new Core::LinAlg::Vector<double>(*model_maps_.at(mt)));
     Core::LinAlg::export_to(source, *model_ptr);
   }
 
@@ -777,10 +779,11 @@ Teuchos::RCP<Core::LinAlg::Vector> Solid::TimeInt::BaseDataGlobalState::extract_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Solid::TimeInt::BaseDataGlobalState::extract_rot_vec_entries(
-    const Core::LinAlg::Vector& source) const
+Teuchos::RCP<Core::LinAlg::Vector<double>>
+Solid::TimeInt::BaseDataGlobalState::extract_rot_vec_entries(
+    const Core::LinAlg::Vector<double>& source) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector> addit_ptr =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> addit_ptr =
       get_element_technology_map_extractor(Inpar::Solid::EleTech::rotvec).extract_vector(source, 1);
 
   return addit_ptr;
@@ -1103,7 +1106,7 @@ NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::RotVecUpdater(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::run_pre_compute_x(
-    const NOX::Nln::Group& input_grp, const Core::LinAlg::Vector& dir, const double& step,
+    const NOX::Nln::Group& input_grp, const Core::LinAlg::Vector<double>& dir, const double& step,
     const NOX::Nln::Group& curr_grp)
 {
   const auto& xold = dynamic_cast<const ::NOX::Epetra::Vector&>(input_grp.getX()).getEpetraVector();
@@ -1111,13 +1114,14 @@ void NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::run_pre_compute_x(
   // cast the const away so that the new x vector can be set after the update
   NOX::Nln::Group& curr_grp_mutable = const_cast<NOX::Nln::Group&>(curr_grp);
 
-  Teuchos::RCP<Core::LinAlg::Vector> xnew =
-      Teuchos::rcp(new Core::LinAlg::Vector(xold.Map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> xnew =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(xold.Map(), true));
 
   /* we do the multiplicative update only for those entries which belong to
    * rotation (pseudo-)vectors */
-  Core::LinAlg::Vector x_rotvec = *gstate_ptr_->extract_rot_vec_entries(Core::LinAlg::Vector(xold));
-  Core::LinAlg::Vector dir_rotvec = *gstate_ptr_->extract_rot_vec_entries(dir);
+  Core::LinAlg::Vector<double> x_rotvec =
+      *gstate_ptr_->extract_rot_vec_entries(Core::LinAlg::Vector<double>(xold));
+  Core::LinAlg::Vector<double> dir_rotvec = *gstate_ptr_->extract_rot_vec_entries(dir);
 
   Core::LinAlg::Matrix<4, 1> Qold;
   Core::LinAlg::Matrix<4, 1> deltaQ;

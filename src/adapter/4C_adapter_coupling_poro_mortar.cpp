@@ -401,11 +401,13 @@ void Adapter::CouplingPoroMortar::complete_interface(
 /*----------------------------------------------------------------------*
  |  evaluate blockmatrices for poro meshtying             ager 10/15    |
  *----------------------------------------------------------------------*/
-void Adapter::CouplingPoroMortar::evaluate_poro_mt(Teuchos::RCP<Core::LinAlg::Vector> fvel,
-    Teuchos::RCP<Core::LinAlg::Vector> svel, Teuchos::RCP<Core::LinAlg::Vector> fpres,
-    Teuchos::RCP<Core::LinAlg::Vector> sdisp, const Teuchos::RCP<Core::FE::Discretization> sdis,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& f, Teuchos::RCP<Core::LinAlg::SparseMatrix>& k_fs,
-    Teuchos::RCP<Core::LinAlg::Vector>& frhs, Coupling::Adapter::Coupling& coupfs,
+void Adapter::CouplingPoroMortar::evaluate_poro_mt(Teuchos::RCP<Core::LinAlg::Vector<double>> fvel,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> svel,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fpres,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sdisp,
+    const Teuchos::RCP<Core::FE::Discretization> sdis, Teuchos::RCP<Core::LinAlg::SparseMatrix>& f,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& k_fs,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& frhs, Coupling::Adapter::Coupling& coupfs,
     Teuchos::RCP<const Epetra_Map> fdofrowmap)
 {
   // safety check
@@ -453,7 +455,8 @@ void Adapter::CouplingPoroMortar::update_poro_mt()
  |  recover fluid coupling lagrange multiplier            ager 10/15    |
  *----------------------------------------------------------------------*/
 void Adapter::CouplingPoroMortar::recover_fluid_lm_poro_mt(
-    Teuchos::RCP<Core::LinAlg::Vector> disi, Teuchos::RCP<Core::LinAlg::Vector> veli)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> disi,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> veli)
 {
   // safety check
   check_setup();

@@ -44,9 +44,11 @@ CONTACT::MonoCoupledLagrangeStrategy::MonoCoupledLagrangeStrategy(
  | integrator + condensation of offdiagonal Matrixes (public) ager 02/15|
  *----------------------------------------------------------------------*/
 void CONTACT::MonoCoupledLagrangeStrategy::apply_force_stiff_cmt_coupled(
-    Teuchos::RCP<Core::LinAlg::Vector> dis, Teuchos::RCP<Core::LinAlg::SparseOperator>& k_ss,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& k_ss,
     std::map<int, Teuchos::RCP<Core::LinAlg::SparseOperator>*> k_sx,
-    Teuchos::RCP<Core::LinAlg::Vector>& rhs_s, const int step, const int iter, bool predictor)
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs_s, const int step, const int iter,
+    bool predictor)
 {
   // call the main routine for contact!!!
   CONTACT::AbstractStrategy::apply_force_stiff_cmt(dis, k_ss, rhs_s, step, iter, predictor);
@@ -66,9 +68,11 @@ void CONTACT::MonoCoupledLagrangeStrategy::apply_force_stiff_cmt_coupled(
  | integrator + condensation of one!!! offdiagonal Matrixes (public) ager 02/15|
  *----------------------------------------------------------------------------*/
 void CONTACT::MonoCoupledLagrangeStrategy::apply_force_stiff_cmt_coupled(
-    Teuchos::RCP<Core::LinAlg::Vector> dis, Teuchos::RCP<Core::LinAlg::SparseOperator>& k_ss,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& k_sx, Teuchos::RCP<Core::LinAlg::Vector>& rhs_s,
-    const int step, const int iter, bool predictor)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& k_ss,
+    Teuchos::RCP<Core::LinAlg::SparseOperator>& k_sx,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs_s, const int step, const int iter,
+    bool predictor)
 {
   // call the main routine for contact!!!
   CONTACT::AbstractStrategy::apply_force_stiff_cmt(dis, k_ss, rhs_s, step, iter, predictor);
@@ -282,7 +286,8 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
  | Coupled Recovery method for contact LM                       ager 02/15|
  *-----------------------------------------------------------------------*/
 void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
-    Teuchos::RCP<Core::LinAlg::Vector> disi, std::map<int, Teuchos::RCP<Core::LinAlg::Vector>> inc)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> disi,
+    std::map<int, Teuchos::RCP<Core::LinAlg::Vector<double>>> inc)
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
@@ -330,7 +335,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
     invdmod->complete();
 
     std::map<int, Teuchos::RCP<Core::LinAlg::SparseOperator>>::iterator matiter;
-    std::map<int, Teuchos::RCP<Core::LinAlg::Vector>>::iterator inciter;
+    std::map<int, Teuchos::RCP<Core::LinAlg::Vector<double>>>::iterator inciter;
 
     // loop over all offdiag blocks!!!
     for (matiter = csx_s_.begin(); matiter != csx_s_.end(); ++matiter)
@@ -352,41 +357,42 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
         FOUR_C_THROW(
             "Trying to make coupled selfcontact condensation... Check if this makes any sense!!!");
         // approximate update
-        // z_ = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
+        // z_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
         // invdmod->Multiply(false,*fs_,*z_);
 
         // full update
-        //      z_ = Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
+        //      z_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
         //      z_->Update(1.0,*fs_,0.0);
-        //      Teuchos::RCP<Core::LinAlg::Vector> mod = Teuchos::rcp(new
-        //      Core::LinAlg::Vector(*gsdofrowmap_)); kss_->Multiply(false,*disis,*mod);
+        //      Teuchos::RCP<Core::LinAlg::Vector<double>> mod = Teuchos::rcp(new
+        //      Core::LinAlg::Vector<double>(*gsdofrowmap_)); kss_->Multiply(false,*disis,*mod);
         //      z_->Update(-1.0,*mod,1.0);
         //      ksm_->Multiply(false,*disim,*mod);
         //      z_->Update(-1.0,*mod,1.0);
         //      ksn_->Multiply(false,*disin,*mod);
         //      z_->Update(-1.0,*mod,1.0);
-        //      Teuchos::RCP<Core::LinAlg::Vector> mod2 = Teuchos::rcp(new
-        //      Core::LinAlg::Vector((dold_->RowMap()))); if (dold_->RowMap().NumGlobalElements())
-        //      Core::LinAlg::export_to(*zold_,*mod2); Teuchos::RCP<Core::LinAlg::Vector> mod3 =
-        //      Teuchos::rcp(new Core::LinAlg::Vector((dold_->RowMap())));
-        //      dold_->Multiply(true,*mod2,*mod3); Teuchos::RCP<Core::LinAlg::Vector> mod4 =
-        //      Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_)); if
-        //      (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*mod3,*mod4);
-        //      z_->Update(-alphaf_,*mod4,1.0);
-        //      Teuchos::RCP<Core::LinAlg::Vector> zcopy = Teuchos::rcp(new
-        //      Core::LinAlg::Vector(*z_)); invdmod->Multiply(true,*zcopy,*z_);
+        //      Teuchos::RCP<Core::LinAlg::Vector<double>> mod2 = Teuchos::rcp(new
+        //      Core::LinAlg::Vector<double>((dold_->RowMap()))); if
+        //      (dold_->RowMap().NumGlobalElements()) Core::LinAlg::export_to(*zold_,*mod2);
+        //      Teuchos::RCP<Core::LinAlg::Vector<double>> mod3 = Teuchos::rcp(new
+        //      Core::LinAlg::Vector<double>((dold_->RowMap()))); dold_->Multiply(true,*mod2,*mod3);
+        //      Teuchos::RCP<Core::LinAlg::Vector<double>> mod4 = Teuchos::rcp(new
+        //      Core::LinAlg::Vector<double>(*gsdofrowmap_)); if (gsdofrowmap_->NumGlobalElements())
+        //      Core::LinAlg::export_to(*mod3,*mod4); z_->Update(-alphaf_,*mod4,1.0);
+        //      Teuchos::RCP<Core::LinAlg::Vector<double>> zcopy = Teuchos::rcp(new
+        //      Core::LinAlg::Vector<double>(*z_)); invdmod->Multiply(true,*zcopy,*z_);
         //      z_->Scale(1/(1-alphaf_));
       }
       else
       {
-        Teuchos::RCP<Core::LinAlg::Vector> zfluid =
-            Teuchos::rcp(new Core::LinAlg::Vector(z_->Map(), true));
+        Teuchos::RCP<Core::LinAlg::Vector<double>> zfluid =
+            Teuchos::rcp(new Core::LinAlg::Vector<double>(z_->Map(), true));
 
-        Teuchos::RCP<Core::LinAlg::Vector> mod =
-            Teuchos::rcp(new Core::LinAlg::Vector(*gsdofrowmap_));
+        Teuchos::RCP<Core::LinAlg::Vector<double>> mod =
+            Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
         matiter->second->multiply(false, *inciter->second, *mod);
         zfluid->Update(-1.0, *mod, 0.0);
-        Teuchos::RCP<Core::LinAlg::Vector> zcopy = Teuchos::rcp(new Core::LinAlg::Vector(*zfluid));
+        Teuchos::RCP<Core::LinAlg::Vector<double>> zcopy =
+            Teuchos::rcp(new Core::LinAlg::Vector<double>(*zfluid));
         invdmod->multiply(true, *zcopy, *zfluid);
         zfluid->Scale(1 / (1 - alphaf_));
 
@@ -418,10 +424,10 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
  | Coupled Recovery method for contact LM with one offdiag block ager 02/15|
  *------------------------------------------------------------------------*/
 void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
-    Teuchos::RCP<Core::LinAlg::Vector> disi, Teuchos::RCP<Core::LinAlg::Vector> inc)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> disi, Teuchos::RCP<Core::LinAlg::Vector<double>> inc)
 {
-  std::map<int, Teuchos::RCP<Core::LinAlg::Vector>> incm;
-  incm.insert(std::pair<int, Teuchos::RCP<Core::LinAlg::Vector>>(0, inc));
+  std::map<int, Teuchos::RCP<Core::LinAlg::Vector<double>>> incm;
+  incm.insert(std::pair<int, Teuchos::RCP<Core::LinAlg::Vector<double>>>(0, inc));
 
   recover_coupled(disi, incm);
   return;

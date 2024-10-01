@@ -124,8 +124,8 @@ bool NOX::FSI::LinearSystem::applyJacobianInverse(
   const int maxit = p.get("Max Iterations", 30);
   const double tol = p.get("Tolerance", 1.0e-10);
 
-  Teuchos::RCP<Core::LinAlg::Vector> fres =
-      Teuchos::rcp(new Core::LinAlg::Vector(input.getEpetraVector()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fres =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(input.getEpetraVector()));
   Core::LinAlg::VectorView disi = Core::LinAlg::VectorView(result.getEpetraVector());
 
   // get the hopefully adaptive linear solver convergence tolerance

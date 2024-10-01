@@ -245,11 +245,11 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
     FOUR_C_THROW("Invalid material!");
 
   // get actual values of transported scalars
-  Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state("phinp");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
 
   // get history variable (needed for double layer modeling)
-  Teuchos::RCP<const Core::LinAlg::Vector> hist = discretization.get_state("hist");
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
   if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'hist'");
 
   // state and history variables at element nodes
@@ -353,7 +353,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
   else
   {
     // get actual values of transported scalars
-    Teuchos::RCP<const Core::LinAlg::Vector> phidtnp = discretization.get_state("phidtnp");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phidtnp = discretization.get_state("phidtnp");
     if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'ephidtnp'");
     std::vector<Core::LinAlg::Matrix<nen_, 1>> ephidtnp(
         my::numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true));

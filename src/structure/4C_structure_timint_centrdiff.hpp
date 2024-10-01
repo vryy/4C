@@ -171,10 +171,10 @@ namespace Solid
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> fext() override { return fextn_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fext() override { return fextn_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> fext_new() override
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fext_new() override
     {
       FOUR_C_THROW("FextNew() not available in CentrDiff");
       return Teuchos::null;
@@ -192,18 +192,19 @@ namespace Solid
    protected:
     //! @name Global forces at \f$t_{n+1}\f$
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector> fextn_;   //!< external force
-                                                 //!< \f$F_{int;n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> fintn_;   //!< internal force
-                                                 //!< \f$F_{int;n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> fviscn_;  //!< Rayleigh viscous forces
-                                                 //!< \f$C \cdot V_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> fcmtn_;   //!< contact or meshtying forces
-                                                 //!< \f$F_{cmt;n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> frimpn_;  //!< time derivative of
-                                                 //!< linear momentum
-                                                 //!< (temporal rate of impulse)
-                                                 //!< \f$\dot{P}_{n+1} = M \cdot \dot{V}_{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fextn_;   //!< external force
+                                                         //!< \f$F_{int;n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fintn_;   //!< internal force
+                                                         //!< \f$F_{int;n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fviscn_;  //!< Rayleigh viscous forces
+                                                         //!< \f$C \cdot V_{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fcmtn_;   //!< contact or meshtying forces
+                                                         //!< \f$F_{cmt;n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        frimpn_;  //!< time derivative of
+                  //!< linear momentum
+                  //!< (temporal rate of impulse)
+                  //!< \f$\dot{P}_{n+1} = M \cdot \dot{V}_{n+1}\f$
     //@}
 
   };  // class TimIntCentrDiff

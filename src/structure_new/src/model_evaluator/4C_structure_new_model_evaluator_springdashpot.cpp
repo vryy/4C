@@ -58,7 +58,8 @@ void Solid::ModelEvaluator::SpringDashpot::setup()
   disnp_ptr_ = global_state().get_dis_np();
   velnp_ptr_ = global_state().get_vel_np();
 
-  fspring_np_ptr_ = Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view()));
+  fspring_np_ptr_ =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view()));
   stiff_spring_ptr_ = Teuchos::rcp(
       new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
 
@@ -68,7 +69,7 @@ void Solid::ModelEvaluator::SpringDashpot::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::SpringDashpot::reset(const Core::LinAlg::Vector& x)
+void Solid::ModelEvaluator::SpringDashpot::reset(const Core::LinAlg::Vector<double>& x)
 {
   check_init_setup();
 
@@ -93,7 +94,8 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_force()
 
   Teuchos::ParameterList springdashpotparams;
   // loop over all spring dashpot conditions and evaluate them
-  fspring_np_ptr_ = Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view()));
+  fspring_np_ptr_ =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view()));
   for (const auto& spring : springs_)
   {
     const CONSTRAINTS::SpringDashpot::SpringType stype = spring->get_spring_type();
@@ -122,7 +124,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_stiff()
   check_init_setup();
 
   fspring_np_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view(), true));
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
 
   // factors from time-integrator for derivative of d(v_{n+1}) / d(d_{n+1})
   // needed for stiffness contribution from dashpot
@@ -164,7 +166,8 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_force_stiff()
   check_init_setup();
 
   // get displacement DOFs
-  fspring_np_ptr_ = Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map(), true));
+  fspring_np_ptr_ =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map(), true));
 
   // factors from time-integrator for derivative of d(v_{n+1}) / d(d_{n+1})
   // needed for stiffness contribution from dashpot
@@ -203,7 +206,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_force_stiff()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::SpringDashpot::assemble_force(
-    Core::LinAlg::Vector& f, const double& timefac_np) const
+    Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
   Core::LinAlg::assemble_my_vector(1.0, f, timefac_np, *fspring_np_ptr_);
   return true;
@@ -228,8 +231,8 @@ void Solid::ModelEvaluator::SpringDashpot::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // row maps for export
-  Teuchos::RCP<Core::LinAlg::Vector> springoffsetprestr =
-      Teuchos::rcp(new Core::LinAlg::Vector(*discret().dof_row_map()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> springoffsetprestr =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret().dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> springoffsetprestr_old =
       Teuchos::rcp(new Epetra_MultiVector(*(discret().node_row_map()), 3, true));
 
@@ -256,8 +259,8 @@ void Solid::ModelEvaluator::SpringDashpot::write_restart(
  *----------------------------------------------------------------------*/
 void Solid::ModelEvaluator::SpringDashpot::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
-  Teuchos::RCP<Core::LinAlg::Vector> tempvec =
-      Teuchos::rcp(new Core::LinAlg::Vector(*discret().dof_row_map()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret().dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> tempvecold =
       Teuchos::rcp(new Epetra_MultiVector(*(discret().node_row_map()), 3, true));
 
@@ -282,7 +285,7 @@ void Solid::ModelEvaluator::SpringDashpot::read_restart(Core::IO::Discretization
 void Solid::ModelEvaluator::SpringDashpot::update_step_state(const double& timefac_n)
 {
   // add the old time factor scaled contributions to the residual
-  Teuchos::RCP<Core::LinAlg::Vector>& fstructold_ptr = global_state().get_fstructure_old();
+  Teuchos::RCP<Core::LinAlg::Vector<double>>& fstructold_ptr = global_state().get_fstructure_old();
   fstructold_ptr->Update(timefac_n, *fspring_np_ptr_, 1.0);
 
   // check for prestressing and reset if necessary
@@ -310,8 +313,8 @@ void Solid::ModelEvaluator::SpringDashpot::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   // row maps for export
-  Teuchos::RCP<Core::LinAlg::Vector> gap =
-      Teuchos::rcp(new Core::LinAlg::Vector(*(discret().node_row_map()), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> gap =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*(discret().node_row_map()), true));
   Teuchos::RCP<Epetra_MultiVector> normals =
       Teuchos::rcp(new Epetra_MultiVector(*(discret().node_row_map()), 3, true));
   Teuchos::RCP<Epetra_MultiVector> springstress =
@@ -363,7 +366,7 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::SpringDashpot::get_block_d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector>
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::SpringDashpot::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
@@ -372,7 +375,7 @@ Solid::ModelEvaluator::SpringDashpot::get_current_solution_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector>
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::SpringDashpot::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries

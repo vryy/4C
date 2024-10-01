@@ -132,7 +132,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_system()
           *extractor(), *extractor(), 81, false, true));
 
   // Initialize rhs
-  rhs_ = Teuchos::rcp(new Core::LinAlg::Vector(*dof_row_map(), true));
+  rhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
 
   k_sf_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(struct_dof_row_map()), 81, true, true));
   k_fs_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(fluid_dof_row_map()), 81, true, true));
@@ -250,7 +250,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::build_combined_dbc_map()
  | Evaluate (build global Matrix and RHS)            kremheller 03/17   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::evaluate(
-    Teuchos::RCP<const Core::LinAlg::Vector> iterinc)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iterinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::Evaluate");
 
@@ -261,8 +261,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::evaluate(
   // *********** time measurement ***********
 
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Core::LinAlg::Vector> s_iterinc;
-  Teuchos::RCP<const Core::LinAlg::Vector> f_iterinc;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> s_iterinc;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> f_iterinc;
   extract_field_vectors(iterinc, s_iterinc, f_iterinc);
 
   evaluate(s_iterinc, f_iterinc, itnum_ == 0);
@@ -278,8 +278,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::evaluate(
  | from outside --> monolithic scatra-coupling)        kremheller 06/17 |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::evaluate(
-    Teuchos::RCP<const Core::LinAlg::Vector> sx, Teuchos::RCP<const Core::LinAlg::Vector> fx,
-    const bool firstcall)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> sx,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fx, const bool firstcall)
 {
   // (1) Update fluid Field and reconstruct pressures and saturations
   fluid_field()->update_iter(fx);
@@ -500,8 +500,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::apply_fluid_coupl_matrix(
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::update_fields_after_convergence()
 {
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Core::LinAlg::Vector> sx;
-  Teuchos::RCP<const Core::LinAlg::Vector> fx;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> sx;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fx;
   extract_field_vectors(iterinc_, sx, fx);
 
   update_fields_after_convergence(sx, fx);
@@ -513,7 +513,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::update_fields_after_converg
  | update fields after convergence as phi_i+1=phi_i+iterinc   kremheller 07/17 |
  *-----------------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::update_fields_after_convergence(
-    Teuchos::RCP<const Core::LinAlg::Vector>& sx, Teuchos::RCP<const Core::LinAlg::Vector>& fx)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx)
 {
   // (1) Update fluid Field and reconstruct pressures and saturations
   fluid_field()->update_iter(fx);
@@ -757,8 +758,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::build_convergence_norms()
 {
   //------------------------------------------------------------ build residual force norms
   normrhs_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_);
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_s;
-  Teuchos::RCP<const Core::LinAlg::Vector> rhs_f;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_s;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_f;
 
   // get structure and fluid RHS
   extract_structure_and_fluid_vectors(rhs_, rhs_s, rhs_f);
@@ -769,8 +770,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::build_convergence_norms()
 
   //------------------------------------------------------------- build residual increment norms
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Core::LinAlg::Vector> iterincs;
-  Teuchos::RCP<const Core::LinAlg::Vector> iterincf;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincs;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincf;
 
   // get structure and fluid increment
   extract_structure_and_fluid_vectors(iterinc_, iterincs, iterincf);
@@ -952,7 +953,7 @@ Teuchos::RCP<const Epetra_Map> POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::d
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_rhs()
 {
   // get structure part
-  Teuchos::RCP<Core::LinAlg::Vector> str_rhs = setup_structure_partof_rhs();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> str_rhs = setup_structure_partof_rhs();
 
   // fill the Poroelasticity rhs vector rhs_ with the single field rhss
   setup_vector(*rhs_, str_rhs, fluid_field()->rhs());
@@ -962,12 +963,13 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_rhs()
 /*----------------------------------------------------------------------*
  | setup RHS (like fsimon)                             kremheller 05/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector>
+Teuchos::RCP<Core::LinAlg::Vector<double>>
 POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_structure_partof_rhs()
 {
   // Copy from TSI
-  Teuchos::RCP<Core::LinAlg::Vector> str_rhs = struct_zeros_;
-  if (solve_structure_) str_rhs = Teuchos::rcp(new Core::LinAlg::Vector(*structure_field()->rhs()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> str_rhs = struct_zeros_;
+  if (solve_structure_)
+    str_rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(*structure_field()->rhs()));
   if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(str_rhs);
 
   return str_rhs;
@@ -976,8 +978,9 @@ POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_structure_partof_rhs()
 /*----------------------------------------------------------------------*
  | setup vector of the structure and fluid field         kremheller 03/17|
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_vector(Core::LinAlg::Vector& f,
-    Teuchos::RCP<const Core::LinAlg::Vector> sv, Teuchos::RCP<const Core::LinAlg::Vector> fv)
+void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_vector(Core::LinAlg::Vector<double>& f,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fv)
 {
   extractor()->insert_vector(*sv, 0, f);
 
@@ -989,8 +992,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_vector(Core::LinAlg::
  | single fields                                                        |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::extract_field_vectors(
-    Teuchos::RCP<const Core::LinAlg::Vector> x, Teuchos::RCP<const Core::LinAlg::Vector>& sx,
-    Teuchos::RCP<const Core::LinAlg::Vector>& fx)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
       "POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::extract_field_vectors");
@@ -1005,8 +1009,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::extract_field_vectors(
  | extract 3D field vecotrs (structure and fluid)    kremheller 10/20   |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::extract_structure_and_fluid_vectors(
-    Teuchos::RCP<const Core::LinAlg::Vector> x, Teuchos::RCP<const Core::LinAlg::Vector>& sx,
-    Teuchos::RCP<const Core::LinAlg::Vector>& fx)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx)
 {
   PoroMultiPhaseMonolithicTwoWay::extract_field_vectors(x, sx, fx);
 }
@@ -1042,8 +1047,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
   std::cout << "structure field has " << dof_struct << " DOFs" << std::endl;
   std::cout << "fluid field has " << dof_fluid << " DOFs" << std::endl;
 
-  Teuchos::RCP<Core::LinAlg::Vector> iterinc = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::Vector> abs_iterinc = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> abs_iterinc = Teuchos::null;
   iterinc = Core::LinAlg::create_vector(*dof_row_map(), true);
   abs_iterinc = Core::LinAlg::create_vector(*dof_row_map(), true);
 
@@ -1060,11 +1065,11 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
   stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
-  Teuchos::RCP<Core::LinAlg::Vector> rhs_old =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_old =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
   rhs_old->Update(1.0, *rhs_, 0.0);
-  Teuchos::RCP<Core::LinAlg::Vector> rhs_copy =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dof_row_map(), true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_copy =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_copy =
@@ -1338,8 +1343,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::setup_maps()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::build_convergence_norms()
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> arteryrhs = extractor()->extract_vector(rhs_, 2);
-  Teuchos::RCP<const Core::LinAlg::Vector> arteryinc = extractor()->extract_vector(iterinc_, 2);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryrhs = extractor()->extract_vector(rhs_, 2);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryinc =
+      extractor()->extract_vector(iterinc_, 2);
 
   // build also norms for artery
   normrhsart_ = UTILS::calculate_vector_norm(vectornormfres_, arteryrhs);
@@ -1357,8 +1363,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::build_converg
  | single fields                                                        |
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::extract_field_vectors(
-    Teuchos::RCP<const Core::LinAlg::Vector> x, Teuchos::RCP<const Core::LinAlg::Vector>& sx,
-    Teuchos::RCP<const Core::LinAlg::Vector>& fx)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
       "POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::extract_field_vectors");
@@ -1367,11 +1374,11 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::extract_field
   sx = extractor()->extract_vector(x, 0);
 
   // process artery and porofluid unknowns
-  Teuchos::RCP<const Core::LinAlg::Vector> porofluid = extractor()->extract_vector(x, 1);
-  Teuchos::RCP<const Core::LinAlg::Vector> artery = extractor()->extract_vector(x, 2);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> porofluid = extractor()->extract_vector(x, 1);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> artery = extractor()->extract_vector(x, 2);
 
-  Teuchos::RCP<Core::LinAlg::Vector> dummy =
-      Teuchos::rcp(new Core::LinAlg::Vector(*fullmap_artporo_));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> dummy =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*fullmap_artporo_));
 
   blockrowdofmap_artporo_->insert_vector(porofluid, 0, dummy);
   blockrowdofmap_artporo_->insert_vector(artery, 1, dummy);
@@ -1407,7 +1414,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::setup_system_
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::setup_rhs()
 {
   // get structure part
-  Teuchos::RCP<Core::LinAlg::Vector> str_rhs = setup_structure_partof_rhs();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> str_rhs = setup_structure_partof_rhs();
 
   // insert and scale
   extractor()->insert_vector(*str_rhs, 0, *rhs_);

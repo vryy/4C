@@ -109,7 +109,7 @@ namespace Core::IO
       Right now an Epetra_MultiVector has to be read along with its map. Thus
       we read an integer and a double array here.
 
-      \note If columns==1, we create an Core::LinAlg::Vector.
+      \note If columns==1, we create an Core::LinAlg::Vector<double>.
 
       \param id_path      (in): hdf5 path to map array (from control file)
       \param value_path   (in): hdf5 path to value array (from control file)

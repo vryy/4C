@@ -71,7 +71,7 @@ namespace Adapter
     virtual void prepare_time_step() = 0;
 
     /// evaluate elements with given displacement
-    // virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector> vel) = 0;
+    // virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) = 0;
 
     /// update at time step end
     virtual void update() = 0;
@@ -87,33 +87,34 @@ namespace Adapter
     //! @name Solver calls
 
     /// nonlinear solve
-    virtual void nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector> idisp = Teuchos::null,
-        Teuchos::RCP<Core::LinAlg::Vector> ivel = Teuchos::null) = 0;
+    virtual void nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp = Teuchos::null,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = Teuchos::null) = 0;
 
     /// nonlinear solve
-    virtual void apply_interface_values(Teuchos::RCP<Core::LinAlg::Vector> idisp = Teuchos::null,
-        Teuchos::RCP<Core::LinAlg::Vector> ivel = Teuchos::null)
+    virtual void apply_interface_values(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp = Teuchos::null,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = Teuchos::null)
     {
       FOUR_C_THROW("Not implemented in base class");
     }
 
     /// linear fluid solve with just a interface load
-    virtual Teuchos::RCP<Core::LinAlg::Vector> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector> idisp, double dt) = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
+        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, double dt) = 0;
 
     //@}
 
     //! @name Extract interface forces
 
     /// After the fluid solve we need the forces at the FSI interface.
-    virtual Teuchos::RCP<Core::LinAlg::Vector> extract_interface_forces() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_forces() = 0;
 
     //@}
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector> extract_interface_velnp() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_velnp() = 0;
 
     /// extract old velocities
-    virtual Teuchos::RCP<Core::LinAlg::Vector> extract_interface_veln() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_veln() = 0;
 
     //! @name Number of Newton iterations
     //! For simplified FD MFNK solve we want to temporally limit the
@@ -125,7 +126,7 @@ namespace Adapter
     //@}
 
     /// integrate FSI interface shape functions
-    virtual Teuchos::RCP<Core::LinAlg::Vector> integrate_interface_shape() = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape() = 0;
 
     /// create result test for encapulated fluid algorithm
     virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() = 0;

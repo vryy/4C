@@ -58,11 +58,11 @@ namespace PoroElastScaTra
     bool convergence_check(int itnum);
 
     //! scalar increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector> scaincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scaincnp_;
     //! structure increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector> structincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> structincnp_;
     //! fluid increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector> fluidincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fluidincnp_;
 
     //! maximum iteration steps
     int itmax_;

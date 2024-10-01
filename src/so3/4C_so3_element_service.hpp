@@ -12,7 +12,6 @@
 
 #include "4C_so3_base.hpp"
 
-#include <Epetra_IntVector.h>
 #include <Epetra_MultiVector.h>
 
 FOUR_C_NAMESPACE_OPEN
@@ -32,7 +31,7 @@ namespace Discret
      * \param ele element
      */
     void assemble_nodal_element_count(
-        Epetra_IntVector& global_count, const Core::Elements::Element& ele);
+        Core::LinAlg::Vector<int>& global_count, const Core::Elements::Element& ele);
 
     /*!
      * \brief Assemble Gauss point data into an array of global cell data

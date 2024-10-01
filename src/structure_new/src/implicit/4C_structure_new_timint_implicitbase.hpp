@@ -58,13 +58,13 @@ namespace Solid
       /// @name Access linear system of equation via adapter (implicit only!)
       /// @{
       /// initial guess of Newton's method
-      Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() override;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override;
 
       /// right-hand-side of Newton's method
-      Teuchos::RCP<const Core::LinAlg::Vector> get_f() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_f() const override;
 
       /// Return reaction forces at \f$t_{n+1}\f$ (read and write)
-      Teuchos::RCP<Core::LinAlg::Vector> freact() override;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> freact() override;
 
       //! Return stiffness,
       //! i.e. force residual differentiated by displacements

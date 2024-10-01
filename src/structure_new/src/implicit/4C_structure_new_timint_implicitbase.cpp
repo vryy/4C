@@ -33,16 +33,17 @@ Solid::TimeInt::ImplicitBase::ImplicitBase()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> Solid::TimeInt::ImplicitBase::get_f() const
+Teuchos::RCP<const Core::LinAlg::Vector<double>> Solid::TimeInt::ImplicitBase::get_f() const
 {
   const ::NOX::Abstract::Group& solgrp = get_solution_group();
   const ::NOX::Epetra::Vector& F = dynamic_cast<const ::NOX::Epetra::Vector&>(solgrp.getF());
-  return get_data_global_state().extract_displ_entries(Core::LinAlg::Vector(F.getEpetraVector()));
+  return get_data_global_state().extract_displ_entries(
+      Core::LinAlg::Vector<double>(F.getEpetraVector()));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Solid::TimeInt::ImplicitBase::freact()
+Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::TimeInt::ImplicitBase::freact()
 {
   check_init_setup();
   return data_global_state().get_freact_np();
@@ -97,7 +98,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::ImplicitBase::get_stc_m
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> Solid::TimeInt::ImplicitBase::initial_guess()
+Teuchos::RCP<const Core::LinAlg::Vector<double>> Solid::TimeInt::ImplicitBase::initial_guess()
 {
   check_init_setup();
   FOUR_C_THROW("Not yet implemented!");

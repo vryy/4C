@@ -46,7 +46,7 @@ namespace Solid
 
       //! get pointer to force vector at time level n+1 (full structural map)
       //! interface part is inserted in Adapter::PASIStructureWrapper
-      const Teuchos::RCP<Core::LinAlg::Vector>& get_interface_force_np_ptr()
+      const Teuchos::RCP<Core::LinAlg::Vector<double>>& get_interface_force_np_ptr()
       {
         return interface_force_np_ptr_;
       };
@@ -61,7 +61,7 @@ namespace Solid
       }
 
       //! reset class variables (without jacobian) [derived]
-      void reset(const Core::LinAlg::Vector& x) override { return; };
+      void reset(const Core::LinAlg::Vector<double>& x) override { return; };
 
       //! [derived]
       bool evaluate_force() override { return true; };
@@ -79,7 +79,7 @@ namespace Solid
       void post_evaluate() override { return; };
 
       //! [derived]
-      bool assemble_force(Core::LinAlg::Vector& f, const double& timefac_np) const override;
+      bool assemble_force(Core::LinAlg::Vector<double>& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$ not needed in partitioned scheme
       bool assemble_jacobian(
@@ -99,15 +99,16 @@ namespace Solid
       void read_restart(Core::IO::DiscretizationReader& ioreader) override { return; };
 
       //! [derived]
-      void run_pre_compute_x(const Core::LinAlg::Vector& xold, Core::LinAlg::Vector& dir_mutable,
-          const NOX::Nln::Group& curr_grp) override
+      void run_pre_compute_x(const Core::LinAlg::Vector<double>& xold,
+          Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) override
       {
         return;
       };
 
       //! recover condensed Lagrange multipliers
-      void run_post_compute_x(const Core::LinAlg::Vector& xold, const Core::LinAlg::Vector& dir,
-          const Core::LinAlg::Vector& xnew) override
+      void run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
+          const Core::LinAlg::Vector<double>& dir,
+          const Core::LinAlg::Vector<double>& xnew) override
       {
         return;
       };
@@ -146,16 +147,17 @@ namespace Solid
       Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Core::LinAlg::Vector> get_current_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Core::LinAlg::Vector> get_last_time_step_solution_ptr() const override;
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+          const override;
 
       //! @}
 
      private:
       //! pasi interface force at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector> interface_force_np_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> interface_force_np_ptr_;
     };
 
   }  // namespace ModelEvaluator

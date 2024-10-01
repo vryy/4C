@@ -48,20 +48,22 @@ namespace Solid
       void post_setup() override;
 
       //! Reset state variables [derived]
-      void set_state(const Core::LinAlg::Vector& x) override;
+      void set_state(const Core::LinAlg::Vector<double>& x) override;
 
       //! Apply the rhs only [derived]
-      bool apply_force(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f) override;
+      bool apply_force(
+          const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& f) override;
 
       //! Apply the stiffness only [derived]
-      bool apply_stiff(const Core::LinAlg::Vector& x, Core::LinAlg::SparseOperator& jac) override;
+      bool apply_stiff(
+          const Core::LinAlg::Vector<double>& x, Core::LinAlg::SparseOperator& jac) override;
 
       //! Apply force and stiff at once [derived]
-      bool apply_force_stiff(const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f,
+      bool apply_force_stiff(const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& f,
           Core::LinAlg::SparseOperator& jac) override;
 
       //! [derived]
-      bool assemble_force(Core::LinAlg::Vector& f,
+      bool assemble_force(Core::LinAlg::Vector<double>& f,
           const std::vector<Inpar::Solid::ModelType>* without_these_models =
               nullptr) const override;
 
@@ -106,16 +108,16 @@ namespace Solid
       //!@{
 
       //! predict constant displacements, consistent velocities and accelerations [derived]
-      void predict_const_dis_consist_vel_acc(Core::LinAlg::Vector& disnp,
-          Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const override;
+      void predict_const_dis_consist_vel_acc(Core::LinAlg::Vector<double>& disnp,
+          Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& accnp) const override;
 
       //! predict displacements based on constant velocities and consistent accelerations [derived]
-      bool predict_const_vel_consist_acc(Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp,
-          Core::LinAlg::Vector& accnp) const override;
+      bool predict_const_vel_consist_acc(Core::LinAlg::Vector<double>& disnp,
+          Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& accnp) const override;
 
       //! predict displacements based on constant accelerations and consistent velocities [derived]
-      bool predict_const_acc(Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp,
-          Core::LinAlg::Vector& accnp) const override;
+      bool predict_const_acc(Core::LinAlg::Vector<double>& disnp,
+          Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& accnp) const override;
 
       /*! \brief Time integration coefficients container
        *
@@ -259,7 +261,7 @@ namespace Solid
        *
        *  \author hiermeier
        *  \date 03/2016 */
-      void add_visco_mass_contributions(Core::LinAlg::Vector& f) const override;
+      void add_visco_mass_contributions(Core::LinAlg::Vector<double>& f) const override;
 
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        *
@@ -303,7 +305,7 @@ namespace Solid
 
 
       /// Return a reliable model value which can be used for line search
-      double get_model_value(const Core::LinAlg::Vector& x) override;
+      double get_model_value(const Core::LinAlg::Vector<double>& x) override;
 
 
 
@@ -353,16 +355,16 @@ namespace Solid
       //!@{
 
       //! viscous force vector F_viscous F_{viscous;n+1}
-      Teuchos::RCP<Core::LinAlg::Vector> fvisconp_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> fvisconp_ptr_;
 
       //! viscous force vector F_viscous F_{viscous;n}
-      Teuchos::RCP<Core::LinAlg::Vector> fviscon_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> fviscon_ptr_;
 
       //! pointer to inertial force vector F_{inertial,n+1} at new time
-      Teuchos::RCP<Core::LinAlg::Vector> finertianp_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> finertianp_ptr_;
 
       //! pointer to inertial force vector F_{inertial,n} at last time
-      Teuchos::RCP<Core::LinAlg::Vector> finertian_ptr_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> finertian_ptr_;
 
       //!@}
     };  // namespace IMPLICIT

@@ -99,7 +99,7 @@ namespace Core::IO
      * \param[in]     name  name of vector to read in
      */
     void read_vector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
-    void read_vector(Teuchos::RCP<Core::LinAlg::Vector> vec, std::string name);
+    void read_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> vec, std::string name);
     /**
      * \brief read in and return multi-vector
      *
@@ -287,8 +287,8 @@ namespace Core::IO
       \param vec  : the result data vector
       \param vt   : vector type
     */
-    virtual void write_vector(const std::string name, Teuchos::RCP<const Core::LinAlg::Vector> vec,
-        VectorType vt = dofvector);
+    virtual void write_vector(const std::string name,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec, VectorType vt = dofvector);
 
     virtual void write_multi_vector(const std::string name,
         Teuchos::RCP<const Epetra_MultiVector> vec, VectorType vt = dofvector);

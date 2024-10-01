@@ -344,8 +344,8 @@ void PoroElast::PoroBase::test_results(const Epetra_Comm& comm)
   Global::Problem::instance()->test_all(comm);
 }
 
-Teuchos::RCP<Core::LinAlg::Vector> PoroElast::PoroBase::structure_to_fluid_field(
-    Teuchos::RCP<const Core::LinAlg::Vector> iv)
+Teuchos::RCP<Core::LinAlg::Vector<double>> PoroElast::PoroBase::structure_to_fluid_field(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv)
 {
   if (matchinggrid_)
   {
@@ -356,9 +356,9 @@ Teuchos::RCP<Core::LinAlg::Vector> PoroElast::PoroBase::structure_to_fluid_field
   }
   else
   {
-    Teuchos::RCP<const Core::LinAlg::Vector> mv = volcoupl_->apply_vector_mapping21(iv);
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> mv = volcoupl_->apply_vector_mapping21(iv);
 
-    Teuchos::RCP<Core::LinAlg::Vector> sv =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> sv =
         Core::LinAlg::create_vector(*(fluid_field()->vel_pres_splitter()->other_map()));
 
     std::copy(mv->Values(),
@@ -369,7 +369,7 @@ Teuchos::RCP<Core::LinAlg::Vector> PoroElast::PoroBase::structure_to_fluid_field
 
 void PoroElast::PoroBase::set_struct_solution()
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> dispnp;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
   // apply current displacements and velocities to the fluid field
   if (structure_field()->have_constraint())
   {
@@ -379,14 +379,14 @@ void PoroElast::PoroBase::set_struct_solution()
   else
     dispnp = structure_field()->dispnp();
 
-  Teuchos::RCP<const Core::LinAlg::Vector> velnp = structure_field()->velnp();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp = structure_field()->velnp();
 
   // transfer the current structure displacement to the fluid field
-  Teuchos::RCP<Core::LinAlg::Vector> structdisp = structure_to_fluid_field(dispnp);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> structdisp = structure_to_fluid_field(dispnp);
   fluid_field()->apply_mesh_displacement(structdisp);
 
   // transfer the current structure velocity to the fluid field
-  Teuchos::RCP<Core::LinAlg::Vector> structvel = structure_to_fluid_field(velnp);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> structvel = structure_to_fluid_field(velnp);
   fluid_field()->apply_mesh_velocity(structvel);
 }
 
@@ -566,7 +566,8 @@ void PoroElast::NoPenetrationConditionHandle::buid_no_penetration_map(
 }
 
 void PoroElast::NoPenetrationConditionHandle::apply_cond_rhs(
-    Teuchos::RCP<Core::LinAlg::Vector> iterinc, Teuchos::RCP<Core::LinAlg::Vector> rhs)
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
 {
   if (has_cond_)
   {
@@ -606,9 +607,9 @@ void PoroElast::NoPenetrationConditionHandle::setup(
 {
   if (has_cond_)
   {
-    cond_rhs_ = Teuchos::rcp(new Core::LinAlg::Vector(*dofRowMap, true));
+    cond_rhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofRowMap, true));
 
-    cond_dofs_ = Teuchos::rcp(new Core::LinAlg::Vector(*dofRowMapFluid, true));
+    cond_dofs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofRowMapFluid, true));
 
     fluid_fluid_constraint_matrix_ =
         Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofRowMapFluid, 81, true, true));

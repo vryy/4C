@@ -67,7 +67,7 @@ namespace SSI
      *
      * @param[in,out] rhs  global right hand side vector
      */
-    void apply_dbc_to_rhs(Teuchos::RCP<Core::LinAlg::Vector> rhs);
+    void apply_dbc_to_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs);
 
     /*!
      * @brief apply Dirichlet boundary conditions to global system matrix

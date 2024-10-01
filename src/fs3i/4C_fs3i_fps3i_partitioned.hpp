@@ -103,14 +103,14 @@ namespace FS3I
 
 
     /// extract fluid convective and structure convective velocities
-    void extract_vel(std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& vel,
-        std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& convel);
+    void extract_vel(std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& vel,
+        std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& convel);
 
     /// extract Wall Shear Stresses at the interface
-    void extract_wss(std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& wss);
+    void extract_wss(std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& wss);
 
     /// extracts pressures at the interface
-    void extract_pressure(std::vector<Teuchos::RCP<const Core::LinAlg::Vector>>& pressure);
+    void extract_pressure(std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>& pressure);
 
     /// provide velocities from FPSI subproblem for scatra subproblem
     void set_velocity_fields();

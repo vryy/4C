@@ -48,21 +48,23 @@ namespace Wear
 
     */
     void condense_wear_discr(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector>& feff, Teuchos::RCP<Core::LinAlg::Vector>& gact);
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& gact);
 
     /*!
     \brief Condense lm. for frictional contact with explicit/implicit wear algorithm
 
     */
     void condense_wear_impl_expl(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector>& feff, Teuchos::RCP<Core::LinAlg::Vector>& gact);
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& gact);
 
     /*!
     \brief Prepare SaddlePointSystem
 
     */
     void prepare_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector>& feff);
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff);
 
     /*!
     \brief Recovery method
@@ -73,7 +75,7 @@ namespace Wear
     conditions can be checked, too.
 
     */
-    void recover(Teuchos::RCP<Core::LinAlg::Vector> disi) override;
+    void recover(Teuchos::RCP<Core::LinAlg::Vector<double>> disi) override;
 
     /*!
     \brief Redistribute all contact interfaces in parallel
@@ -89,8 +91,8 @@ namespace Wear
 
     \return TRUE if the interface has been redistributed. Return FALSE otherwise.
     */
-    bool redistribute_contact(Teuchos::RCP<const Core::LinAlg::Vector> dis,
-        Teuchos::RCP<const Core::LinAlg::Vector> vel) final;
+    bool redistribute_contact(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) final;
 
     /*!
     \brief Build 2x2 saddle point system
@@ -100,24 +102,25 @@ namespace Wear
     \param sold (in): the displacement dof solution increment
     \param dirichtoggle (in): toggle vector for dirichlet conditions
     \param blockMat (out): Epetra_Operator containing the 2x2 block sparse matrix object
-    \param mergedsol (out): Core::LinAlg::Vector for merged solution vector
-    \param mergedrhs (out): Core::LinAlg::Vector for merged right hand side vector
+    \param mergedsol (out): Core::LinAlg::Vector<double> for merged solution vector
+    \param mergedrhs (out): Core::LinAlg::Vector<double> for merged right hand side vector
     */
     void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
-        Teuchos::RCP<Core::LinAlg::Vector> fd, Teuchos::RCP<Core::LinAlg::Vector> sold,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> fd,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
-        Teuchos::RCP<Core::LinAlg::Vector>& blocksol,
-        Teuchos::RCP<Core::LinAlg::Vector>& blockrhs) override;
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& blocksol,
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& blockrhs) override;
 
     /*!
     \brief Update internal member variables after solving the 2x2 saddle point contact system
 
     \param sold (out): the displacement dof solution increment (associated with displacement dofs)
-    \param mergedsol (in): Core::LinAlg::Vector for merged solution vector (containing the new
-    solution vector of the full merged linear system)
+    \param mergedsol (in): Core::LinAlg::Vector<double> for merged solution vector (containing the
+    new solution vector of the full merged linear system)
     */
-    void update_displacements_and_l_mincrements(Teuchos::RCP<Core::LinAlg::Vector> sold,
-        Teuchos::RCP<const Core::LinAlg::Vector> blocksol) override;
+    void update_displacements_and_l_mincrements(Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> blocksol) override;
 
     /*!
       \brief Reset the wear vector
@@ -151,7 +154,7 @@ namespace Wear
 
     */
     void do_write_restart(
-        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>>& restart_vectors,
+        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>& restart_vectors,
         bool forcedrestart = false) const override;
 
     /*!
@@ -163,7 +166,7 @@ namespace Wear
 
     */
     void do_read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<const Core::LinAlg::Vector> dis) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) override;
 
     /*!
     \brief Update active set and check for convergence
@@ -204,7 +207,7 @@ namespace Wear
     \brief Update wear contact at end of time step
 
     */
-    void update(Teuchos::RCP<const Core::LinAlg::Vector> dis) override;
+    void update(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) override;
 
     /*!
     \brief Store wear data into wear data container
@@ -216,12 +219,12 @@ namespace Wear
     \brief Return vector of wear (t_n+1) - D^-1 \times weighted wear!
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector> contact_wear() const override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_wear() const override
     {
       return wearoutput_;
     }  // for slave side
 
-    Teuchos::RCP<const Core::LinAlg::Vector> contact_wear2() const
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> contact_wear2() const
     {
       return wearoutput2_;
     }  // for master side
@@ -248,37 +251,46 @@ namespace Wear
      \brief Return discrete wear vector (t_n+1)
 
      */
-    Teuchos::RCP<const Core::LinAlg::Vector> wear_var() const { return w_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> wear_var() const { return w_; }
 
     /*!
      \brief Return discrete wear vector (t_n+1) Master
 
      */
-    Teuchos::RCP<const Core::LinAlg::Vector> wear_var_m() const { return wm_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> wear_var_m() const { return wm_; }
 
     /*!
      \brief Return wear rhs vector (only in saddle-point formulation
 
      */
-    Teuchos::RCP<const Core::LinAlg::Vector> wear_rhs() const override { return wearrhs_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> wear_rhs() const override { return wearrhs_; }
 
     /*!
      \brief Return wear-master rhs vector (only in saddle-point formulation
 
      */
-    Teuchos::RCP<const Core::LinAlg::Vector> wear_m_rhs() const override { return wearmrhs_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> wear_m_rhs() const override
+    {
+      return wearmrhs_;
+    }
 
     /*!
      \brief Returns increment of W solution vector in SaddlePointSolve routine
 
      */
-    Teuchos::RCP<const Core::LinAlg::Vector> w_solve_incr() const override { return wincr_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> w_solve_incr() const override
+    {
+      return wincr_;
+    }
 
     /*!
      \brief Returns increment of W-master solution vector in SaddlePointSolve routine
 
      */
-    Teuchos::RCP<const Core::LinAlg::Vector> wm_solve_incr() const override { return wmincr_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> wm_solve_incr() const override
+    {
+      return wmincr_;
+    }
 
     /*!
      \brief Return global both sided wear status
@@ -298,7 +310,7 @@ namespace Wear
 
     */
     void evaluate_friction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector>& feff) override;
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff) override;
 
     /*!
     \brief Initialize and evaluate Mortar stuff for the next Newton step
@@ -354,19 +366,19 @@ namespace Wear
     std::vector<Teuchos::RCP<Wear::WearInterface>> interface_;
 
     // basic data
-    bool weightedwear_;                     // flag for contact with wear (is) --> weighted wear
-    bool wbothpv_;                          // flag for both sided wear disrete
-    Teuchos::RCP<Core::LinAlg::Vector> w_;  // current vector of pv wear at t_n+1 (slave)
-    Teuchos::RCP<Core::LinAlg::Vector>
+    bool weightedwear_;  // flag for contact with wear (is) --> weighted wear
+    bool wbothpv_;       // flag for both sided wear disrete
+    Teuchos::RCP<Core::LinAlg::Vector<double>> w_;  // current vector of pv wear at t_n+1 (slave)
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         wincr_;  // Wear variables vector increment within SaddlePointSolve (this is NOT the
                  // increment of w_ between t_{n+1} and t_{n}!)
-    Teuchos::RCP<Core::LinAlg::Vector> wearrhs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> wearrhs_;
 
-    Teuchos::RCP<Core::LinAlg::Vector> wm_;  // current vector of pv wear at t_n+1 (master)
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>> wm_;  // current vector of pv wear at t_n+1 (master)
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         wmincr_;  // Wear variables vector increment within SaddlePointSolve (this is NOT the
                   // increment of w_ between t_{n+1} and t_{n}!)
-    Teuchos::RCP<Core::LinAlg::Vector> wearmrhs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> wearmrhs_;
 
     // implicit wear algorithm
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
@@ -403,10 +415,11 @@ namespace Wear
     Teuchos::RCP<Epetra_Map> gmslipnodes_;     // global master slip nodes
     Teuchos::RCP<Epetra_Map> gmactivenodes_;   // global master active nodes
 
-    Teuchos::RCP<Core::LinAlg::Vector> wearoutput_;  // vector of unweighted wear at t_n+1  -- slave
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        wearoutput_;  // vector of unweighted wear at t_n+1  -- slave
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         wearoutput2_;  // vector of unweighted wear at t_n+1  -- master
-    Teuchos::RCP<Core::LinAlg::Vector> wearvector_;  // global weighted wear vector w
+    Teuchos::RCP<Core::LinAlg::Vector<double>> wearvector_;  // global weighted wear vector w
 
     int maxdofwear_;  // highest dof number in problem discretization
 
@@ -425,8 +438,9 @@ namespace Wear
     Teuchos::RCP<Core::LinAlg::SparseMatrix> linedis_;   // Lin E w.r.t. displ: Lin(E*w)
     Teuchos::RCP<Core::LinAlg::SparseMatrix>
         linslip_w_;  // global matrix containing derivatives (LM) of slip condition
-    Teuchos::RCP<Core::LinAlg::Vector> inactive_wear_rhs_;  // inactive wear rhs: -w_i
-    Teuchos::RCP<Core::LinAlg::Vector> wear_cond_rhs_;  // rhs wear condition: -E*w_i + k*T*n*lm_i
+    Teuchos::RCP<Core::LinAlg::Vector<double>> inactive_wear_rhs_;  // inactive wear rhs: -w_i
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
+        wear_cond_rhs_;  // rhs wear condition: -E*w_i + k*T*n*lm_i
 
     // discrete wear algorithm (MASTER)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> twmatrix_m_;  // global Mortar wear matrix T
@@ -444,7 +458,7 @@ namespace Wear
     Teuchos::RCP<Core::LinAlg::SparseMatrix> dmblock_;
     Teuchos::RCP<Core::LinAlg::SparseMatrix> diblock_;
     Teuchos::RCP<Core::LinAlg::SparseMatrix> dablock_;
-    Teuchos::RCP<Core::LinAlg::Vector> fw_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fw_;
 
     Teuchos::RCP<Epetra_Map> gidofs_;
 

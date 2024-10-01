@@ -85,15 +85,16 @@ namespace FLD
     added to global vectors. This method allows to do the time average
     of the nodal values after a certain amount of timesteps.
     */
-    void do_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp);
+    void do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp);
 
     /*!
     \brief The values of velocity, pressure, temperature and its squared
     values are added to global vectors. This method allows to do the time
     average of the nodal values after a certain amount of timesteps.
     */
-    void do_loma_time_sample(Teuchos::RCP<Core::LinAlg::Vector> velnp,
-        Teuchos::RCP<Core::LinAlg::Vector> scanp, Core::LinAlg::Vector& force, const double eosfac);
+    void do_loma_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> scanp, Core::LinAlg::Vector<double>& force,
+        const double eosfac);
 
     /*!
     \brief Dump the result to file for incompressible flow.
@@ -171,10 +172,10 @@ namespace FLD
     const std::string statistics_outfilename_;
 
     //! toogle vectors: sums are computed by scalarproducts
-    Teuchos::RCP<Core::LinAlg::Vector> toggleu_;
-    Teuchos::RCP<Core::LinAlg::Vector> togglev_;
-    Teuchos::RCP<Core::LinAlg::Vector> togglew_;
-    Teuchos::RCP<Core::LinAlg::Vector> togglep_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> toggleu_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> togglev_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> togglew_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> togglep_;
 
     //! the coordinates of the centerlines in x1-, x2- and x3-direction
     Teuchos::RCP<std::vector<double>> x1coordinates_;

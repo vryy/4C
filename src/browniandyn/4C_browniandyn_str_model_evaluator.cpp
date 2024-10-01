@@ -78,8 +78,10 @@ void Solid::ModelEvaluator::BrownianDyn::setup()
   // -------------------------------------------------------------------------
   // setup the brownian forces and the external force pointers
   // -------------------------------------------------------------------------
-  f_brown_np_ptr_ = Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map(), true));
-  f_ext_np_ptr_ = Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map(), true));
+  f_brown_np_ptr_ =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map(), true));
+  f_ext_np_ptr_ =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map(), true));
   // -------------------------------------------------------------------------
   // setup the brownian forces and the external force pointers
   // -------------------------------------------------------------------------
@@ -109,7 +111,7 @@ void Solid::ModelEvaluator::BrownianDyn::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::BrownianDyn::reset(const Core::LinAlg::Vector& x)
+void Solid::ModelEvaluator::BrownianDyn::reset(const Core::LinAlg::Vector<double>& x)
 {
   check_init_setup();
 
@@ -207,7 +209,7 @@ bool Solid::ModelEvaluator::BrownianDyn::evaluate_force_stiff()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::BrownianDyn::assemble_force(
-    Core::LinAlg::Vector& f, const double& timefac_np) const
+    Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
   check_init_setup();
 
@@ -278,7 +280,7 @@ bool Solid::ModelEvaluator::BrownianDyn::apply_force_brownian()
   // currently a fixed number of matrix and vector pointers are supported
   // set default matrices and vectors
   // -------------------------------------------------------------------------
-  std::array<Teuchos::RCP<Core::LinAlg::Vector>, 3> eval_vec = {
+  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
   std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
       Teuchos::null, Teuchos::null};
@@ -341,7 +343,7 @@ bool Solid::ModelEvaluator::BrownianDyn::apply_force_stiff_brownian()
   // currently a fixed number of matrix and vector pointers are supported
   // set default matrices and vectors
   // -------------------------------------------------------------------------
-  std::array<Teuchos::RCP<Core::LinAlg::Vector>, 3> eval_vec = {
+  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
       Teuchos::null, Teuchos::null, Teuchos::null};
   std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
       Teuchos::null, Teuchos::null};
@@ -371,7 +373,7 @@ bool Solid::ModelEvaluator::BrownianDyn::apply_force_stiff_brownian()
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BrownianDyn::evaluate_brownian(
     Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-    Teuchos::RCP<Core::LinAlg::Vector>* eval_vec)
+    Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec)
 {
   check_init_setup();
 
@@ -388,7 +390,7 @@ void Solid::ModelEvaluator::BrownianDyn::evaluate_brownian(
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BrownianDyn::evaluate_brownian(Teuchos::ParameterList& p,
     Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-    Teuchos::RCP<Core::LinAlg::Vector>* eval_vec)
+    Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec)
 {
   check_init_setup();
 
@@ -407,7 +409,7 @@ void Solid::ModelEvaluator::BrownianDyn::evaluate_brownian(Teuchos::ParameterLis
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BrownianDyn::evaluate_neumann_brownian_dyn(
-    Teuchos::RCP<Core::LinAlg::Vector> eval_vec,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> eval_vec,
     Teuchos::RCP<Core::LinAlg::SparseOperator> eval_mat)
 {
   check_init_setup();
@@ -441,8 +443,9 @@ void Solid::ModelEvaluator::BrownianDyn::read_restart(Core::IO::DiscretizationRe
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::BrownianDyn::run_post_compute_x(const Core::LinAlg::Vector& xold,
-    const Core::LinAlg::Vector& dir, const Core::LinAlg::Vector& xnew)
+void Solid::ModelEvaluator::BrownianDyn::run_post_compute_x(
+    const Core::LinAlg::Vector<double>& xold, const Core::LinAlg::Vector<double>& dir,
+    const Core::LinAlg::Vector<double>& xnew)
 {
   // empty
 }
@@ -456,7 +459,7 @@ void Solid::ModelEvaluator::BrownianDyn::update_step_state(const double& timefac
   // add brownian force contributions to the old structural
   // residual state vector
   // -------------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector>& fstructold_ptr = global_state().get_fstructure_old();
+  Teuchos::RCP<Core::LinAlg::Vector<double>>& fstructold_ptr = global_state().get_fstructure_old();
   fstructold_ptr->Update(timefac_n, *f_brown_np_ptr_, 1.0);
   fstructold_ptr->Update(-timefac_n, *f_ext_np_ptr_, 1.0);
 
@@ -521,7 +524,7 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::BrownianDyn::get_block_dof
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector>
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::BrownianDyn::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
@@ -530,7 +533,7 @@ Solid::ModelEvaluator::BrownianDyn::get_current_solution_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector>
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::BrownianDyn::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries

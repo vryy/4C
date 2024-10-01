@@ -92,7 +92,7 @@ void FLD::XFluidState::CouplingState::complete_coupling_matrices_and_rhs(
   //  C_ss_->EpetraMatrix()->MaxNumEntries() << std::endl;
   //-------------------------------------------------------------------------------
   // export the rhs coupling vector to a row vector
-  Core::LinAlg::Vector rhC_s_tmp(rhC_s_->Map(), true);
+  Core::LinAlg::Vector<double> rhC_s_tmp(rhC_s_->Map(), true);
   Epetra_Export exporter_rhC_s_col(rhC_s_col_->Map(), rhC_s_tmp.Map());
   int err = rhC_s_tmp.Export(*rhC_s_col_, exporter_rhC_s_col, Add);
   if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
@@ -253,8 +253,9 @@ void FLD::XFluidState::init_coupling_matrices_and_rhs()
         // create weak rcp's which simplifies deleting the systemmatrix
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_weakRCP =
             sysmat_.create_weak();  // no increment in strong reference counter
-        Teuchos::RCP<Core::LinAlg::Vector> residual_weakRCP = residual_.create_weak();
-        Teuchos::RCP<Core::LinAlg::Vector> residual_col_weakRCP = residual_col_.create_weak();
+        Teuchos::RCP<Core::LinAlg::Vector<double>> residual_weakRCP = residual_.create_weak();
+        Teuchos::RCP<Core::LinAlg::Vector<double>> residual_col_weakRCP =
+            residual_col_.create_weak();
 
         coup_state = Teuchos::rcp(new XFluidState::CouplingState(sysmat_weakRCP, sysmat_weakRCP,
             sysmat_weakRCP, residual_weakRCP, residual_col_weakRCP));
@@ -282,8 +283,8 @@ void FLD::XFluidState::init_coupling_matrices_and_rhs()
  *----------------------------------------------------------------------*/
 void FLD::XFluidState::init_ale_state_vectors(
     const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,
-    Teuchos::RCP<const Core::LinAlg::Vector> dispnp_initmap,
-    Teuchos::RCP<const Core::LinAlg::Vector> gridvnp_initmap)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_initmap,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> gridvnp_initmap)
 {
   //! @name Ale Displacement at time n+1
   dispnp_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);

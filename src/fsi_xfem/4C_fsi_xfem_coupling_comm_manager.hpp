@@ -81,19 +81,19 @@ namespace XFEM
     virtual ~CouplingCommManager() = default;
 
     //! Insert a Vector A into vector B (choose type of transfer, add or scaling) - Version vor
-    //! RCP<const Core::LinAlg::Vector> vecA
-    void insert_vector(const int idxA, Teuchos::RCP<const Core::LinAlg::Vector> vecA,
-        const int idxB, Teuchos::RCP<Core::LinAlg::Vector> vecB,
+    //! RCP<const Core::LinAlg::Vector<double>> vecA
+    void insert_vector(const int idxA, Teuchos::RCP<const Core::LinAlg::Vector<double>> vecA,
+        const int idxB, Teuchos::RCP<Core::LinAlg::Vector<double>> vecB,
         const CouplingCommManager::TransferType ttype, bool add = false, double scale = 1.0);
 
     //! Insert a Vector A into vector B (choose type of transfer, add or scaling) - Version vor
-    //! RCP<Core::LinAlg::Vector> vecA
-    void insert_vector(const int idxA, Teuchos::RCP<Core::LinAlg::Vector> vecA, const int idxB,
-        Teuchos::RCP<Core::LinAlg::Vector> vecB, const CouplingCommManager::TransferType ttype,
-        bool add = false, double scale = 1.0)
+    //! RCP<Core::LinAlg::Vector<double>> vecA
+    void insert_vector(const int idxA, Teuchos::RCP<Core::LinAlg::Vector<double>> vecA,
+        const int idxB, Teuchos::RCP<Core::LinAlg::Vector<double>> vecB,
+        const CouplingCommManager::TransferType ttype, bool add = false, double scale = 1.0)
     {
-      insert_vector(idxA, Teuchos::rcp_static_cast<const Core::LinAlg::Vector>(vecA), idxB, vecB,
-          ttype, add, scale);
+      insert_vector(idxA, Teuchos::rcp_static_cast<const Core::LinAlg::Vector<double>>(vecA), idxB,
+          vecB, ttype, add, scale);
     }
 
     //! Insert a Matrix A (from discretization A) into Matrix B (from discretization B) (choose type

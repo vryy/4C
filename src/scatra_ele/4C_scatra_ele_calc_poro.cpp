@@ -84,7 +84,7 @@ int Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::evaluate_action(Core::Element
 
       // need current scalar vector
       // -> extract local values from the global vectors
-      Teuchos::RCP<const Core::LinAlg::Vector> phinp = discretization.get_state("phinp");
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
       if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, la[0].lm_);
 
@@ -147,7 +147,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_val
   const int ndsvel = my::scatrapara_->nds_vel();
 
   // get velocity values at nodes
-  const Teuchos::RCP<const Core::LinAlg::Vector> convel =
+  const Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
       discretization.get_state(ndsvel, "convective velocity field");
 
   // safety check
@@ -177,7 +177,8 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_val
     // get number of dof-set associated with velocity related dofs
     const int ndsdisp = my::scatrapara_->nds_disp();
 
-    Teuchos::RCP<const Core::LinAlg::Vector> disp = discretization.get_state(ndsdisp, "dispnp");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+        discretization.get_state(ndsdisp, "dispnp");
 
     if (disp != Teuchos::null)
     {

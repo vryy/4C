@@ -25,7 +25,6 @@
 #include "4C_scatra_timint_meshtying_strategy_base.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Epetra_IntVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -110,7 +109,7 @@ namespace ScaTra
     void compute_time_derivative() const override;
 
     void condense_mat_and_rhs(const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Core::LinAlg::Vector>& residual,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
         const bool calcinittimederiv = false) const override;
 
     //! return interface coupling adapter
@@ -152,13 +151,13 @@ namespace ScaTra
      * @param extendedresidual      global residual vector
      */
     void fd_check(const Core::LinAlg::BlockSparseMatrixBase& extendedsystemmatrix,
-        const Teuchos::RCP<Core::LinAlg::Vector>& extendedresidual) const;
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& extendedresidual) const;
 
     //! return state vector of discrete scatra-scatra interface layer thicknesses at time n
-    const Teuchos::RCP<Core::LinAlg::Vector>& growth_var_n() const { return growthn_; };
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>& growth_var_n() const { return growthn_; };
 
     //! return state vector of discrete scatra-scatra interface layer thicknesses at time n+1
-    const Teuchos::RCP<Core::LinAlg::Vector>& growth_var_np() const { return growthnp_; };
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>& growth_var_np() const { return growthnp_; };
 
     //! perform initialization of scatra-scatra interface coupling
     void init_meshtying() override;
@@ -203,13 +202,13 @@ namespace ScaTra
     }
 
     //! return vector of Lagrange multiplier dofs
-    Teuchos::RCP<const Core::LinAlg::Vector> lm() const { return lm_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> lm() const { return lm_; };
 
     //! return constraint residual vector associated with Lagrange multiplier dofs
-    Teuchos::RCP<const Core::LinAlg::Vector> lm_residual() const { return lmresidual_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> lm_residual() const { return lmresidual_; };
 
     //! return constraint increment vector associated with Lagrange multiplier dofs
-    Teuchos::RCP<const Core::LinAlg::Vector> lm_increment() const { return lmincrement_; };
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> lm_increment() const { return lmincrement_; };
 
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. master dofs
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& master_matrix() const
@@ -276,9 +275,9 @@ namespace ScaTra
 
     void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Core::LinAlg::Vector>& increment,
-        const Teuchos::RCP<Core::LinAlg::Vector>& residual,
-        const Teuchos::RCP<Core::LinAlg::Vector>& phinp, const int iteration,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& increment,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp, const int iteration,
         Core::LinAlg::SolverParams& solver_params) const override;
 
     //! return linear solver for global system of linear equations
@@ -327,13 +326,13 @@ namespace ScaTra
 
     //! vectors for node-to-segment connectivity, i.e., for pairings between slave nodes and master
     //! elements
-    std::map<int, Teuchos::RCP<Epetra_IntVector>> islavenodestomasterelements_;
+    std::map<int, Teuchos::RCP<Core::LinAlg::Vector<int>>> islavenodestomasterelements_;
 
     //! vectors for physical implementation types of slave-side nodes
-    std::map<int, Teuchos::RCP<Epetra_IntVector>> islavenodesimpltypes_;
+    std::map<int, Teuchos::RCP<Core::LinAlg::Vector<int>>> islavenodesimpltypes_;
 
     //! vectors for lumped interface area fractions associated with slave-side nodes
-    std::map<int, Teuchos::RCP<Core::LinAlg::Vector>> islavenodeslumpedareas_;
+    std::map<int, Teuchos::RCP<Core::LinAlg::Vector<double>>> islavenodeslumpedareas_;
 
     //! auxiliary system matrix for linearizations of slave fluxes w.r.t. slave dofs (non-mortar
     //! case) or for linearizations of slave fluxes w.r.t. slave and master dofs (mortar case)
@@ -365,17 +364,17 @@ namespace ScaTra
     Teuchos::RCP<Core::LinAlg::SparseMatrix> Q_;
 
     //! vector of Lagrange multiplier dofs
-    Teuchos::RCP<Core::LinAlg::Vector> lm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lm_;
 
     //! extended map extractor (0: standard dofs, 1: Lagrange multiplier dofs or scatra-scatra
     //! interface layer thickness variables)
     Teuchos::RCP<Core::LinAlg::MapExtractor> extendedmaps_;
 
     //! constraint residual vector associated with Lagrange multiplier dofs
-    Teuchos::RCP<Core::LinAlg::Vector> lmresidual_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lmresidual_;
 
     //! constraint increment vector associated with Lagrange multiplier dofs
-    Teuchos::RCP<Core::LinAlg::Vector> lmincrement_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lmincrement_;
 
     //! transformation operators for auxiliary system matrices
     Teuchos::RCP<Coupling::Adapter::MatrixColTransform> islavetomastercoltransform_;
@@ -383,19 +382,19 @@ namespace ScaTra
     Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> islavetomasterrowcoltransform_;
 
     //! auxiliary residual vector for slave residuals
-    Teuchos::RCP<Core::LinAlg::Vector> islaveresidual_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> islaveresidual_;
 
     //! auxiliary residual vector for master residuals
     Teuchos::RCP<Epetra_FEVector> imasterresidual_;
 
     //! time derivative of slave dofs of scatra-scatra interface
-    Teuchos::RCP<Core::LinAlg::Vector> islavephidtnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> islavephidtnp_;
 
     //! time derivative of master dofs transformed to slave side of scatra-scatra interface
-    Teuchos::RCP<Core::LinAlg::Vector> imasterphidt_on_slave_side_np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> imasterphidt_on_slave_side_np_;
 
     //! master dofs transformed to slave side of scatra-scatra interface
-    Teuchos::RCP<Core::LinAlg::Vector> imasterphi_on_slave_side_np_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> imasterphi_on_slave_side_np_;
 
     //! flag for interface side underlying Lagrange multiplier definition
     const Inpar::S2I::InterfaceSides lmside_;
@@ -438,30 +437,30 @@ namespace ScaTra
     Teuchos::RCP<Core::LinAlg::Solver> extendedsolver_;
 
     //! state vector of discrete scatra-scatra interface layer thicknesses at time n
-    Teuchos::RCP<Core::LinAlg::Vector> growthn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> growthn_;
 
     //! state vector of discrete scatra-scatra interface layer thicknesses at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector> growthnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> growthnp_;
 
     //! state vector of time derivatives of discrete scatra-scatra interface layer thicknesses at
     //! time n
-    Teuchos::RCP<Core::LinAlg::Vector> growthdtn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> growthdtn_;
 
     //! state vector of time derivatives of discrete scatra-scatra interface layer thicknesses at
     //! time n+1
-    Teuchos::RCP<Core::LinAlg::Vector> growthdtnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> growthdtnp_;
 
     //! state vector of history values associated with discrete scatra-scatra interface layer
     //! thicknesses
-    Teuchos::RCP<Core::LinAlg::Vector> growthhist_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> growthhist_;
 
     //! state vector of residual values associated with discrete scatra-scatra interface layer
     //! thicknesses
-    Teuchos::RCP<Core::LinAlg::Vector> growthresidual_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> growthresidual_;
 
     //! state vector of Newton-Raphson increment values associated with discrete scatra-scatra
     //! interface layer thicknesses
-    Teuchos::RCP<Core::LinAlg::Vector> growthincrement_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> growthincrement_;
 
     //! scatra-growth block of extended global system matrix (derivatives of discrete scatra
     //! residuals w.r.t. discrete scatra-scatra interface layer thicknesses)
@@ -641,10 +640,10 @@ namespace ScaTra
      * @param systemvector2         system vector 2
      * @param vector2_side          interface side associated with system vector 2
      */
-    void evaluate_nts(const Epetra_IntVector& islavenodestomasterelements,
-        const Core::LinAlg::Vector& islavenodeslumpedareas,
-        const Epetra_IntVector& islavenodesimpltypes, const Core::FE::Discretization& idiscret,
-        const Teuchos::ParameterList& params,
+    void evaluate_nts(const Core::LinAlg::Vector<int>& islavenodestomasterelements,
+        const Core::LinAlg::Vector<double>& islavenodeslumpedareas,
+        const Core::LinAlg::Vector<int>& islavenodesimpltypes,
+        const Core::FE::Discretization& idiscret, const Teuchos::ParameterList& params,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
         const Inpar::S2I::InterfaceSides matrix1_side_rows,
         const Inpar::S2I::InterfaceSides matrix1_side_cols,
@@ -687,7 +686,7 @@ namespace ScaTra
      * @param vector2_side       interface side associated with system vector 2
      */
     void evaluate_mortar_elements(const Epetra_Map& ielecolmap,
-        const Epetra_IntVector& ieleimpltypes, const Core::FE::Discretization& idiscret,
+        const Core::LinAlg::Vector<int>& ieleimpltypes, const Core::FE::Discretization& idiscret,
         const Teuchos::ParameterList& params,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
         const Inpar::S2I::InterfaceSides matrix1_side_rows,

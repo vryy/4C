@@ -99,7 +99,7 @@ namespace Solid
       void post_setup() override;
 
       //! Reset state variables [derived]
-      void set_state(const Core::LinAlg::Vector& x) override;
+      void set_state(const Core::LinAlg::Vector<double>& x) override;
 
       //! [derived]
       void write_restart(
@@ -120,18 +120,18 @@ namespace Solid
       //! @name Predictor routines (dependent on the implicit integration scheme)
       //! @{
       /*! predict constant displacements, consistent velocities and accelerations [derived] */
-      void predict_const_dis_consist_vel_acc(Core::LinAlg::Vector& disnp,
-          Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const override;
+      void predict_const_dis_consist_vel_acc(Core::LinAlg::Vector<double>& disnp,
+          Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& accnp) const override;
 
       /*! predict displacements based on constant velocities
        *  and consistent accelerations [derived] */
-      bool predict_const_vel_consist_acc(Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp,
-          Core::LinAlg::Vector& accnp) const override;
+      bool predict_const_vel_consist_acc(Core::LinAlg::Vector<double>& disnp,
+          Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& accnp) const override;
 
       /*! predict displacements based on constant accelerations
        *  and consistent velocities [derived] */
-      bool predict_const_acc(Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp,
-          Core::LinAlg::Vector& accnp) const override;
+      bool predict_const_acc(Core::LinAlg::Vector<double>& disnp,
+          Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& accnp) const override;
       //! @}
      protected:
       //! reset the time step dependent parameters for the element evaluation [derived]
@@ -148,7 +148,7 @@ namespace Solid
        *  \f]
        *     * Remark: In the case of a Lie group Gen-Alpha time integration scheme,
        *               all forces are evaluated at the end point n+1. */
-      void add_visco_mass_contributions(Core::LinAlg::Vector& f) const override;
+      void add_visco_mass_contributions(Core::LinAlg::Vector<double>& f) const override;
 
       /*! \brief Calculate the structural stiffness block at \f$ t_{n+1} \f$  [derived]
        *
@@ -198,7 +198,7 @@ namespace Solid
        *  state variable. */
       //! @{
       //! modified acceleration vector acc_{mod;n}
-      Teuchos::RCP<Core::LinAlg::Vector> accn_mod_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> accn_mod_;
 
       //! @}
     };

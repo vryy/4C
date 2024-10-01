@@ -120,11 +120,11 @@ void PoroElastScaTra::PoroScatraBase::set_poro_solution()
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraBase::set_scatra_solution()
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> phinp_s = Teuchos::null;
-  Teuchos::RCP<const Core::LinAlg::Vector> phin_s = Teuchos::null;
-  Teuchos::RCP<const Core::LinAlg::Vector> phinp_f = Teuchos::null;
-  Teuchos::RCP<const Core::LinAlg::Vector> phin_f = Teuchos::null;
-  Teuchos::RCP<const Core::LinAlg::Vector> phidtnp = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp_s = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> phin_s = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp_f = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> phin_f = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> phidtnp = Teuchos::null;
 
   if (matchinggrid_)
   {
@@ -158,8 +158,8 @@ void PoroElastScaTra::PoroScatraBase::set_scatra_solution()
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraBase::set_velocity_fields()
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> convel = Teuchos::null;
-  Teuchos::RCP<const Core::LinAlg::Vector> velnp = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> convel = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp = Teuchos::null;
 
   if (matchinggrid_)
   {
@@ -185,7 +185,7 @@ void PoroElastScaTra::PoroScatraBase::set_velocity_fields()
  *----------------------------------------------------------------------*/
 void PoroElastScaTra::PoroScatraBase::set_mesh_disp()
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> dispnp = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = Teuchos::null;
 
   if (matchinggrid_)
   {
@@ -198,7 +198,7 @@ void PoroElastScaTra::PoroScatraBase::set_mesh_disp()
 
   scatra_->scatra_field()->apply_mesh_movement(dispnp);
 
-  Teuchos::RCP<const Core::LinAlg::Vector> sdispnp = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> sdispnp = Teuchos::null;
 
   if (matchinggrid_)
   {

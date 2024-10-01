@@ -41,7 +41,8 @@ void Solid::IMPLICIT::GenAlphaLieGroup::setup()
   // ---------------------------------------------------------------------------
   // setup additional state vectors of modified acceleration
   // ---------------------------------------------------------------------------
-  accn_mod_ = Teuchos::rcp(new Core::LinAlg::Vector(*global_state().dof_row_map_view(), true));
+  accn_mod_ =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
 
   // Call the setup() of the parent GenAlpha class
   GenAlpha::setup();
@@ -66,7 +67,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::post_setup()
     if (tim_int().is_restarting()) return;
 
     // so far, we are restricted to vanishing initial accelerations
-    Teuchos::RCP<Core::LinAlg::Vector> accnp_ptr = global_state().get_acc_np();
+    Teuchos::RCP<Core::LinAlg::Vector<double>> accnp_ptr = global_state().get_acc_np();
     accnp_ptr->PutScalar(0.0);
 
     // sanity check whether assumption is fulfilled
@@ -91,7 +92,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::post_setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::IMPLICIT::GenAlphaLieGroup::set_state(const Core::LinAlg::Vector& x)
+void Solid::IMPLICIT::GenAlphaLieGroup::set_state(const Core::LinAlg::Vector<double>& x)
 {
   check_init_setup();
 
@@ -103,7 +104,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::set_state(const Core::LinAlg::Vector& x)
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector> disnp_ptr = global_state().extract_displ_entries(x);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_ptr = global_state().extract_displ_entries(x);
   global_state().get_dis_np()->Scale(1.0, *disnp_ptr);
 
   /* ToDo in case we want to handle rotation vector DoFs correctly on time
@@ -205,7 +206,8 @@ double Solid::IMPLICIT::GenAlphaLieGroup::get_int_param() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(Core::LinAlg::Vector& f) const
+void Solid::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
+    Core::LinAlg::Vector<double>& f) const
 {
   // viscous damping forces at t_{n+1}
   Core::LinAlg::assemble_my_vector(1.0, f, 1.0, *fvisconp_ptr_);
@@ -231,12 +233,13 @@ void Solid::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::IMPLICIT::GenAlphaLieGroup::predict_const_dis_consist_vel_acc(
-    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
+    Core::LinAlg::Vector<double>& disnp, Core::LinAlg::Vector<double>& velnp,
+    Core::LinAlg::Vector<double>& accnp) const
 {
   check_init_setup();
-  Teuchos::RCP<const Core::LinAlg::Vector> disn = global_state().get_dis_n();
-  Teuchos::RCP<const Core::LinAlg::Vector> veln = global_state().get_vel_n();
-  Teuchos::RCP<const Core::LinAlg::Vector> accn = global_state().get_acc_n();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
   const double& dt = (*global_state().get_delta_time())[0];
 
   // constant predictor: displacement in domain
@@ -259,7 +262,8 @@ void Solid::IMPLICIT::GenAlphaLieGroup::predict_const_dis_consist_vel_acc(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::IMPLICIT::GenAlphaLieGroup::predict_const_vel_consist_acc(
-    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
+    Core::LinAlg::Vector<double>& disnp, Core::LinAlg::Vector<double>& velnp,
+    Core::LinAlg::Vector<double>& accnp) const
 {
   check_init_setup();
 
@@ -272,8 +276,8 @@ bool Solid::IMPLICIT::GenAlphaLieGroup::predict_const_vel_consist_acc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::IMPLICIT::GenAlphaLieGroup::predict_const_acc(
-    Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const
+bool Solid::IMPLICIT::GenAlphaLieGroup::predict_const_acc(Core::LinAlg::Vector<double>& disnp,
+    Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& accnp) const
 {
   check_init_setup();
 

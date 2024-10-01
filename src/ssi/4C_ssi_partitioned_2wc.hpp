@@ -122,13 +122,13 @@ namespace SSI
     virtual bool convergence_check(int itnum);
 
     /// velocity calculation given the displacements
-    Teuchos::RCP<Core::LinAlg::Vector> calc_velocity(
-        Teuchos::RCP<const Core::LinAlg::Vector> dispnp);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> calc_velocity(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp);
 
     //! scalar increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector> scaincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scaincnp_;
     //! displacement increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector> dispincnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dispincnp_;
 
     //! convergence tolerance
     double ittol_ = -1.0;
@@ -210,7 +210,7 @@ namespace SSI
     void calc_omega(double& omega, const int itnum) override;
 
     //! old displacement increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector> dispincnpold_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dispincnpold_;
   };
 
   //! class to deal with scalar relaxated 2WC partioned SSI. Relaxation parameter is constant
@@ -287,7 +287,7 @@ namespace SSI
     void calc_omega(double& omega, const int itnum) override;
 
     //! old scatra increment of the outer loop
-    Teuchos::RCP<Core::LinAlg::Vector> scaincnpold_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> scaincnpold_;
   };
 }  // namespace SSI
 

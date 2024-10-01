@@ -93,13 +93,13 @@ namespace FLD
     void prepare_time_step() override;
 
     /// get initial guess for both fluids
-    Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() override;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override;
 
     /// prepare solution (cut happens here)
     void prepare_xfem_solve() override;
 
     /// Monolithic FSI needs to access the linear fluid problem.
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
             stepinc  ///< solution increment between time step n and n+1
         ) override;
 
@@ -128,16 +128,28 @@ namespace FLD
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix(
         Teuchos::RCP<Epetra_Map> innermap, Teuchos::RCP<Epetra_Map> condmap);
 
-    Teuchos::RCP<const Core::LinAlg::Vector> rhs() override { return xff_state_->xffluidresidual_; }
-    Teuchos::RCP<const Core::LinAlg::Vector> velnp() override { return xff_state_->xffluidvelnp_; }
-    Teuchos::RCP<Core::LinAlg::Vector> write_access_velnp() override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override
+    {
+      return xff_state_->xffluidresidual_;
+    }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp() override
     {
       return xff_state_->xffluidvelnp_;
     }
-    Teuchos::RCP<const Core::LinAlg::Vector> veln() override { return xff_state_->xffluidveln_; }
-    Teuchos::RCP<const Core::LinAlg::Vector> stepinc() override { return stepinc_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_velnp() override
+    {
+      return xff_state_->xffluidvelnp_;
+    }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> veln() override
+    {
+      return xff_state_->xffluidveln_;
+    }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc() override { return stepinc_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector> write_access_disp_old_state() { return dispnpoldstate_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_disp_old_state()
+    {
+      return dispnpoldstate_;
+    }
 
     /// get merged fluid dofmap
     Teuchos::RCP<const Epetra_Map> dof_row_map() override
@@ -212,9 +224,9 @@ namespace FLD
     /// for all nodes
     bool x_timint_project_from_embedded_discretization(
         const Teuchos::RCP<XFEM::XFluidTimeInt>& xfluid_timeint,  ///< xfluid time integration class
-        std::vector<Teuchos::RCP<Core::LinAlg::Vector>>&
+        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
             newRowStateVectors,  ///< vectors to be reconstructed
-        Teuchos::RCP<const Core::LinAlg::Vector>
+        Teuchos::RCP<const Core::LinAlg::Vector<double>>
             target_dispnp,     ///< displacement col - vector timestep n+1
         const bool screen_out  ///< screen output?
         ) override;
@@ -254,10 +266,10 @@ namespace FLD
     Teuchos::RCP<FLD::XFluidFluidState> xff_state_;
 
     /// vector with Newton increments (used for monolithic fully newton fsi approach)
-    Teuchos::RCP<Core::LinAlg::Vector> stepinc_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> stepinc_;
 
     /// ALE-displacements of previous step
-    Teuchos::RCP<Core::LinAlg::Vector> dispnpoldstate_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnpoldstate_;
 
     /// shape derivatives matrix (linearization with respect to mesh motion),
     /// including background fluid dof (set to zero)

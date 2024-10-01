@@ -48,11 +48,12 @@ namespace Solid
       //! derived
       bool apply_correction_system(const enum NOX::Nln::CorrectionType type,
           const std::vector<Inpar::Solid::ModelType>& constraint_models,
-          const Core::LinAlg::Vector& x, Core::LinAlg::Vector& f,
+          const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& f,
           Core::LinAlg::SparseOperator& jac) override;
 
       //! derived
-      void remove_condensed_contributions_from_rhs(Core::LinAlg::Vector& rhs) const override;
+      void remove_condensed_contributions_from_rhs(
+          Core::LinAlg::Vector<double>& rhs) const override;
 
       //! derived
       bool assemble_jac(Core::LinAlg::SparseOperator& jac,
@@ -99,8 +100,8 @@ namespace Solid
        * integrator since the calculation of consistent velocities and accelerations
        * depends on the actual time integration scheme.
        */
-      virtual void predict_const_dis_consist_vel_acc(Core::LinAlg::Vector& disnp,
-          Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const = 0;
+      virtual void predict_const_dis_consist_vel_acc(Core::LinAlg::Vector<double>& disnp,
+          Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& accnp) const = 0;
 
       /*! \brief predict displacements based on the assumption of constant velocities.
        *
@@ -115,8 +116,8 @@ namespace Solid
        * \param[in/out] velnp Velocity vector
        * \param[in/out] accnp Acceleration vector
        */
-      virtual bool predict_const_vel_consist_acc(Core::LinAlg::Vector& disnp,
-          Core::LinAlg::Vector& velnp, Core::LinAlg::Vector& accnp) const = 0;
+      virtual bool predict_const_vel_consist_acc(Core::LinAlg::Vector<double>& disnp,
+          Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& accnp) const = 0;
 
       /*! \brief predict displacements based on the assumption of constant accelerations.
        *
@@ -130,8 +131,8 @@ namespace Solid
        * \param[in/out] velnp Velocity vector
        * \param[in/out] accnp Acceleration vector
        */
-      virtual bool predict_const_acc(Core::LinAlg::Vector& disnp, Core::LinAlg::Vector& velnp,
-          Core::LinAlg::Vector& accnp) const = 0;
+      virtual bool predict_const_acc(Core::LinAlg::Vector<double>& disnp,
+          Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& accnp) const = 0;
       //!@}
 
       /*! \brief Set the predictor state flag
@@ -235,8 +236,9 @@ namespace NOX
            *  step.
            *
            *  \author hiermeier \date 03/17 */
-          void run_pre_compute_x(const NOX::Nln::Group& input_grp, const Core::LinAlg::Vector& dir,
-              const double& step, const NOX::Nln::Group& curr_grp) override;
+          void run_pre_compute_x(const NOX::Nln::Group& input_grp,
+              const Core::LinAlg::Vector<double>& dir, const double& step,
+              const NOX::Nln::Group& curr_grp) override;
 
           /*! \brief Derived function, which is called at the end of a call to
            * NOX::Nln::Group::computeX()
@@ -249,8 +251,9 @@ namespace NOX
            *  mortar dual strategies.
            *
            *  \author hiermeier \date 07/16 */
-          void run_post_compute_x(const NOX::Nln::Group& input_grp, const Core::LinAlg::Vector& dir,
-              const double& step, const NOX::Nln::Group& curr_grp) override;
+          void run_post_compute_x(const NOX::Nln::Group& input_grp,
+              const Core::LinAlg::Vector<double>& dir, const double& step,
+              const NOX::Nln::Group& curr_grp) override;
 
           /*! \brief Derived function, which is called at the very end of a call to
            *  ::NOX::Solver::Generic::step()

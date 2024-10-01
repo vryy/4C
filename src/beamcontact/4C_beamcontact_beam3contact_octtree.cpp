@@ -423,11 +423,12 @@ void Beam3ContactOctTree::initialize_octree_search()
   // number of shifts across volume boundaries in case of periodic boundary conditions (for
   // intersection optimization)
   if (periodic_bc_)
-    numshifts_ = Teuchos::rcp(new Core::LinAlg::Vector(*(searchdis_.element_col_map()), true));
+    numshifts_ =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*(searchdis_.element_col_map()), true));
 
   // determine radius factor by looking at the absolute mean variance of a bounding box (not quite
   // sure...) beam diameter
-  diameter_ = Teuchos::rcp(new Core::LinAlg::Vector(*(searchdis_.element_col_map())));
+  diameter_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*(searchdis_.element_col_map())));
   switch (boundingbox_)
   {
     // for this case, the diameter is calculated in create_spbb()
@@ -572,7 +573,7 @@ void Beam3ContactOctTree::create_bounding_boxes(
   // separately, i.e., here
   if (boundingbox_ == Beam3ContactOctTree::spherical)
   {
-    Core::LinAlg::Vector diameterrow(*(searchdis_.element_row_map()), true);
+    Core::LinAlg::Vector<double> diameterrow(*(searchdis_.element_row_map()), true);
     communicate_vector(diameterrow, *diameter_);
   }
   // communication of findings
@@ -581,7 +582,7 @@ void Beam3ContactOctTree::create_bounding_boxes(
 
   if (periodic_bc_)
   {
-    Core::LinAlg::Vector numshiftsrow(*(searchdis_.element_row_map()), true);
+    Core::LinAlg::Vector<double> numshiftsrow(*(searchdis_.element_row_map()), true);
     communicate_vector(numshiftsrow, *numshifts_);
   }
 
@@ -1803,8 +1804,8 @@ bool Beam3ContactOctTree::intersection_spbb(
 /*-----------------------------------------------------------------------*
  | communicate Vector to all Processors                    mueller 11/11 |
  *-----------------------------------------------------------------------*/
-void Beam3ContactOctTree::communicate_vector(Core::LinAlg::Vector& InVec,
-    Core::LinAlg::Vector& OutVec, bool zerofy, bool doexport, bool doimport)
+void Beam3ContactOctTree::communicate_vector(Core::LinAlg::Vector<double>& InVec,
+    Core::LinAlg::Vector<double>& OutVec, bool zerofy, bool doexport, bool doimport)
 {
   /* zerofy InVec at the beginning of each search except for Proc 0
    * for subsequent export and reimport. This way, we guarantee redundant information

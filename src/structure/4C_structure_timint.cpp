@@ -315,13 +315,13 @@ void Solid::TimInt::create_all_solution_vectors()
 {
   // displacements D_{n}
   dis_ = Teuchos::rcp(
-      new TimeStepping::TimIntMStep<Core::LinAlg::Vector>(0, 0, dof_row_map_view(), true));
+      new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true));
   // velocities V_{n}
   vel_ = Teuchos::rcp(
-      new TimeStepping::TimIntMStep<Core::LinAlg::Vector>(0, 0, dof_row_map_view(), true));
+      new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true));
   // accelerations A_{n}
   acc_ = Teuchos::rcp(
-      new TimeStepping::TimIntMStep<Core::LinAlg::Vector>(0, 0, dof_row_map_view(), true));
+      new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true));
 
   // displacements D_{n+1} at t_{n+1}
   disn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
@@ -544,7 +544,7 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
     {
       // (2) perform mesh initialization for rotational invariance (interface)
       // and return the modified slave node positions in vector Xslavemod
-      Teuchos::RCP<const Core::LinAlg::Vector> Xslavemod =
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> Xslavemod =
           cmtbridge_->mt_manager()->get_strategy().mesh_initialization();
 
       // (3) apply result of mesh initialization to underlying problem discretization
@@ -895,7 +895,8 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Solid::TimInt::apply_mesh_initialization(Teuchos::RCP<const Core::LinAlg::Vector> Xslavemod)
+void Solid::TimInt::apply_mesh_initialization(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> Xslavemod)
 {
   // check modified positions vector
   if (Xslavemod == Teuchos::null) return;
@@ -906,13 +907,13 @@ void Solid::TimInt::apply_mesh_initialization(Teuchos::RCP<const Core::LinAlg::V
   Teuchos::RCP<Epetra_Map> allreduceslavemap = Core::LinAlg::allreduce_e_map(*slavemap);
 
   // export modified node positions to column map of problem discretization
-  Teuchos::RCP<Core::LinAlg::Vector> Xslavemodcol =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> Xslavemodcol =
       Core::LinAlg::create_vector(*discret_->dof_col_map(), false);
   Core::LinAlg::export_to(*Xslavemod, *Xslavemodcol);
 
   const int numnode = allreduceslavemap->NumMyElements();
   const int numdim = Global::Problem::instance()->n_dim();
-  const Core::LinAlg::Vector& gvector = *Xslavemodcol;
+  const Core::LinAlg::Vector<double>& gvector = *Xslavemodcol;
 
   // loop over all slave nodes (for all procs)
   for (int index = 0; index < numnode; ++index)
@@ -935,8 +936,8 @@ void Solid::TimInt::apply_mesh_initialization(Teuchos::RCP<const Core::LinAlg::V
       const int lid = gvector.Map().LID(nodedofs[i]);
 
       if (lid < 0)
-        FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector", gvector.Comm().MyPID(),
-            nodedofs[i]);
+        FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
+            gvector.Comm().MyPID(), nodedofs[i]);
 
       nvector[i] += gvector[lid];
     }
@@ -981,12 +982,12 @@ void Solid::TimInt::post_time_loop()
 void Solid::TimInt::determine_mass_damp_consist_accel()
 {
   // temporary right hand sinde vector in this routing
-  Teuchos::RCP<Core::LinAlg::Vector> rhs =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs =
       Core::LinAlg::create_vector(*dof_row_map_view(), true);  // right hand side
   // temporary force vectors in this routine
-  Teuchos::RCP<Core::LinAlg::Vector> fext =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fext =
       Core::LinAlg::create_vector(*dof_row_map_view(), true);  // external force
-  Teuchos::RCP<Core::LinAlg::Vector> fint =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> fint =
       Core::LinAlg::create_vector(*dof_row_map_view(), true);  // internal force
 
   // initialise matrices
@@ -996,7 +997,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
   // auxiliary vector in order to store accelerations of inhomogeneous Dirichilet-DoFs
   // Meier 2015: This contribution is necessary in order to determine correct initial
   // accelerations in case of inhomogeneous Dirichlet conditions
-  Teuchos::RCP<Core::LinAlg::Vector> acc_aux =
+  Teuchos::RCP<Core::LinAlg::Vector<double>> acc_aux =
       Core::LinAlg::create_vector(*dof_row_map_view(), true);
   acc_aux->PutScalar(0.0);
 
@@ -1110,7 +1111,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
     }
 
     // Contribution to rhs due to inertia forces of inhomogeneous Dirichlet conditions
-    Teuchos::RCP<Core::LinAlg::Vector> finert0 =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> finert0 =
         Core::LinAlg::create_vector(*dof_row_map_view(), true);
     finert0->PutScalar(0.0);
     mass_->multiply(false, *acc_aux, *finert0);
@@ -1165,9 +1166,9 @@ void Solid::TimInt::determine_mass()
 
 /*---------------------------------------------------------------*/
 /* Apply Dirichlet boundary conditions on provided state vectors */
-void Solid::TimInt::apply_dirichlet_bc(const double time, Teuchos::RCP<Core::LinAlg::Vector> dis,
-    Teuchos::RCP<Core::LinAlg::Vector> vel, Teuchos::RCP<Core::LinAlg::Vector> acc,
-    bool recreatemap)
+void Solid::TimInt::apply_dirichlet_bc(const double time,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dis, Teuchos::RCP<Core::LinAlg::Vector<double>> vel,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> acc, bool recreatemap)
 {
   // In the case of local coordinate systems, we have to rotate forward ...
   // --------------------------------------------------------------------------------
@@ -1348,7 +1349,7 @@ void Solid::TimInt::update_step_contact_vum()
           Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Minv =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*Mass));
-      Teuchos::RCP<Core::LinAlg::Vector> diag = Core::LinAlg::create_vector(*dofmap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> diag = Core::LinAlg::create_vector(*dofmap, true);
       int err = 0;
       Minv->extract_diagonal_copy(*diag);
       err = diag->Reciprocal(*diag);
@@ -1357,7 +1358,7 @@ void Solid::TimInt::update_step_contact_vum()
       Minv->complete(*dofmap, *dofmap);
 
       // displacement increment Dd
-      Teuchos::RCP<Core::LinAlg::Vector> Dd = Core::LinAlg::create_vector(*dofmap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> Dd = Core::LinAlg::create_vector(*dofmap, true);
       Dd->Update(1.0, *disn_, 0.0);
       Dd->Update(-1.0, (*dis_)[0], 1.0);
 
@@ -1393,10 +1394,12 @@ void Solid::TimInt::update_step_contact_vum()
           cmtbridge_->get_strategy().evaluate_normals(disn_);
 
       // lagrange multiplier z
-      Teuchos::RCP<const Core::LinAlg::Vector> LM =
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> LM =
           cmtbridge_->get_strategy().lagrange_multiplier();
-      Teuchos::RCP<Core::LinAlg::Vector> Z = Core::LinAlg::create_vector(*slavenodemap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> z = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> Z =
+          Core::LinAlg::create_vector(*slavenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> z =
+          Core::LinAlg::create_vector(*activenodemap, true);
       N->multiply(false, *LM, *Z);
       Core::LinAlg::export_to(*Z, *z);
 
@@ -1419,13 +1422,17 @@ void Solid::TimInt::update_step_contact_vum()
       A->complete(*activenodemap, *activenodemap);
 
       // diagonal of A
-      Teuchos::RCP<Core::LinAlg::Vector> AD = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> AD =
+          Core::LinAlg::create_vector(*activenodemap, true);
       A->extract_diagonal_copy(*AD);
 
       // operator b
-      Teuchos::RCP<Core::LinAlg::Vector> btemp1 = Core::LinAlg::create_vector(*dofmap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> btemp2 = Core::LinAlg::create_vector(*slavenodemap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> b = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> btemp1 =
+          Core::LinAlg::create_vector(*dofmap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> btemp2 =
+          Core::LinAlg::create_vector(*slavenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> b =
+          Core::LinAlg::create_vector(*activenodemap, true);
       btemp1->Update(R1, *Dd, 0.0);
       btemp1->Update(R2, (*vel_)[0], 1.0);
       btemp1->Update(R3, (*acc_)[0], 1.0);
@@ -1433,22 +1440,29 @@ void Solid::TimInt::update_step_contact_vum()
       Core::LinAlg::export_to(*btemp2, *b);
 
       // operatior c
-      Teuchos::RCP<Core::LinAlg::Vector> ctemp = Core::LinAlg::create_vector(*slavenodemap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> c = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> ctemp =
+          Core::LinAlg::create_vector(*slavenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> c =
+          Core::LinAlg::create_vector(*activenodemap, true);
       BN->multiply(true, *Dd, *ctemp);
       Core::LinAlg::export_to(*ctemp, *c);
 
       // contact work wc
-      Teuchos::RCP<Core::LinAlg::Vector> wc = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> wc =
+          Core::LinAlg::create_vector(*activenodemap, true);
       wc->Multiply(1.0, *c, *z, 0.0);
 
       // gain and loss of energy
       double gain = 0;
       double loss = 0;
-      Teuchos::RCP<Core::LinAlg::Vector> wp = Core::LinAlg::create_vector(*activenodemap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> wn = Core::LinAlg::create_vector(*activenodemap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> wd = Core::LinAlg::create_vector(*activenodemap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> wt = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> wp =
+          Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> wn =
+          Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> wd =
+          Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> wt =
+          Core::LinAlg::create_vector(*activenodemap, true);
       for (int i = 0; i < activenodemap->NumMyElements(); ++i)
       {
         if ((*wc)[i] > 0)
@@ -1478,9 +1492,12 @@ void Solid::TimInt::update_step_contact_vum()
 
       // manipulated contact work w
       double tolerance = 0.01;
-      Teuchos::RCP<Core::LinAlg::Vector> wtemp1 = Core::LinAlg::create_vector(*activenodemap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> wtemp2 = Core::LinAlg::create_vector(*activenodemap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> w = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> wtemp1 =
+          Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> wtemp2 =
+          Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> w =
+          Core::LinAlg::create_vector(*activenodemap, true);
       if (abs(gain - loss) < 1.0e-8)
       {
         return;
@@ -1511,9 +1528,12 @@ void Solid::TimInt::update_step_contact_vum()
       }
 
       // (1) initial solution p_0
-      Teuchos::RCP<Core::LinAlg::Vector> p1 = Core::LinAlg::create_vector(*activenodemap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> p2 = Core::LinAlg::create_vector(*activenodemap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> p = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> p1 =
+          Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> p2 =
+          Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> p =
+          Core::LinAlg::create_vector(*activenodemap, true);
       if (gain > loss)
       {
         for (int i = 0; i < activenodemap->NumMyElements(); ++i)
@@ -1550,8 +1570,10 @@ void Solid::TimInt::update_step_contact_vum()
       }
 
       // (2) initial residual f_0, |f_0|, DF_0
-      Teuchos::RCP<Core::LinAlg::Vector> x = Core::LinAlg::create_vector(*activenodemap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> f = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> x =
+          Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> f =
+          Core::LinAlg::create_vector(*activenodemap, true);
       int NumEntries = 0;
       int* Indices = nullptr;
       double* Values = nullptr;
@@ -1604,8 +1626,10 @@ void Solid::TimInt::update_step_contact_vum()
       DF->complete(*activenodemap, *activenodemap);
 
       // (3) Newton-Iteration
-      Teuchos::RCP<Core::LinAlg::Vector> mf = Core::LinAlg::create_vector(*activenodemap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> dp = Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> mf =
+          Core::LinAlg::create_vector(*activenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> dp =
+          Core::LinAlg::create_vector(*activenodemap, true);
       double tol = 0.00000001;
       double numiter = 0;
       double stopcrit = 100;
@@ -1674,9 +1698,11 @@ void Solid::TimInt::update_step_contact_vum()
       }
 
       // (4) VelocityUpdate
-      Teuchos::RCP<Core::LinAlg::Vector> ptemp1 = Core::LinAlg::create_vector(*slavenodemap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> ptemp2 = Core::LinAlg::create_vector(*dofmap, true);
-      Teuchos::RCP<Core::LinAlg::Vector> VU = Core::LinAlg::create_vector(*dofmap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> ptemp1 =
+          Core::LinAlg::create_vector(*slavenodemap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> ptemp2 =
+          Core::LinAlg::create_vector(*dofmap, true);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> VU = Core::LinAlg::create_vector(*dofmap, true);
       Core::LinAlg::export_to(*p, *ptemp1);
       BN->multiply(false, *ptemp1, *ptemp2);
       Minv->multiply(false, *ptemp2, *VU);
@@ -1737,9 +1763,11 @@ void Solid::TimInt::read_restart(const int step)
 
 /*----------------------------------------------------------------------*/
 /* Set restart values passed down from above */
-void Solid::TimInt::set_restart(int step, double time, Teuchos::RCP<Core::LinAlg::Vector> disn,
-    Teuchos::RCP<Core::LinAlg::Vector> veln, Teuchos::RCP<Core::LinAlg::Vector> accn,
-    Teuchos::RCP<std::vector<char>> elementdata, Teuchos::RCP<std::vector<char>> nodedata)
+void Solid::TimInt::set_restart(int step, double time,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> accn, Teuchos::RCP<std::vector<char>> elementdata,
+    Teuchos::RCP<std::vector<char>> nodedata)
 {
   step_ = step;
   stepn_ = step_ + 1;
@@ -1788,9 +1816,10 @@ void Solid::TimInt::read_restart_state()
 
 /*----------------------------------------------------------------------*/
 /* Read and set restart state */
-void Solid::TimInt::set_restart_state(Teuchos::RCP<Core::LinAlg::Vector> disn,
-    Teuchos::RCP<Core::LinAlg::Vector> veln, Teuchos::RCP<Core::LinAlg::Vector> accn,
-    Teuchos::RCP<std::vector<char>> elementdata, Teuchos::RCP<std::vector<char>> nodedata
+void Solid::TimInt::set_restart_state(Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> accn, Teuchos::RCP<std::vector<char>> elementdata,
+    Teuchos::RCP<std::vector<char>> nodedata
 
 )
 {
@@ -2094,8 +2123,9 @@ bool Solid::TimInt::has_final_state_been_written() const
  * continuation
  */
 void Solid::TimInt::get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
-    Teuchos::RCP<Core::LinAlg::Vector> disn, Teuchos::RCP<Core::LinAlg::Vector> veln,
-    Teuchos::RCP<Core::LinAlg::Vector> accn, Teuchos::RCP<std::vector<char>> elementdata,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> accn, Teuchos::RCP<std::vector<char>> elementdata,
     Teuchos::RCP<std::vector<char>> nodedata)
 {
   // at some point we have to create a copy
@@ -2172,7 +2202,8 @@ void Solid::TimInt::output_restart(bool& datawritten)
           Teuchos::rcp(new Teuchos::ParameterList());
       cmtOutputParams->set<int>("step", step_);
       cmtOutputParams->set<double>("time", (*time_)[0]);
-      cmtOutputParams->set<Teuchos::RCP<const Core::LinAlg::Vector>>("displacement", (*dis_)(0));
+      cmtOutputParams->set<Teuchos::RCP<const Core::LinAlg::Vector<double>>>(
+          "displacement", (*dis_)(0));
       cmtbridge_->postprocess_quantities_per_interface(cmtOutputParams);
     }
   }
@@ -2249,14 +2280,15 @@ void Solid::TimInt::output_state(bool& datawritten)
           Teuchos::rcp(new Teuchos::ParameterList());
       cmtOutputParams->set<int>("step", step_);
       cmtOutputParams->set<double>("time", (*time_)[0]);
-      cmtOutputParams->set<Teuchos::RCP<const Core::LinAlg::Vector>>("displacement", (*dis_)(0));
+      cmtOutputParams->set<Teuchos::RCP<const Core::LinAlg::Vector<double>>>(
+          "displacement", (*dis_)(0));
       cmtbridge_->postprocess_quantities_per_interface(cmtOutputParams);
     }
   }
 
   if (porositysplitter_ != Teuchos::null)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> porosity =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> porosity =
         porositysplitter_->extract_cond_vector((*dis_)(0));
     output_->write_vector("porosity_p1", porosity);
   }
@@ -2370,7 +2402,7 @@ void Solid::TimInt::determine_stress_strain()
     discret_->set_state(0, "displacement", disn_);
 
     Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix = Teuchos::null;
-    Teuchos::RCP<Core::LinAlg::Vector> system_vector = Teuchos::null;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> system_vector = Teuchos::null;
     Core::FE::UTILS::evaluate(
         *discret_, p, system_matrix, system_vector, discret_->element_row_map());
     discret_->clear_state();
@@ -2404,7 +2436,7 @@ void Solid::TimInt::determine_energy()
     // global calculation of kinetic energy
     kinergy_ = 0.0;  // total kinetic energy
     {
-      Teuchos::RCP<Core::LinAlg::Vector> linmom =
+      Teuchos::RCP<Core::LinAlg::Vector<double>> linmom =
           Core::LinAlg::create_vector(*dof_row_map_view(), true);
       mass_->multiply(false, *veln_, *linmom);
       linmom->Dot(*veln_, &kinergy_);
@@ -2416,7 +2448,7 @@ void Solid::TimInt::determine_energy()
     {
       // WARNING: This will only work with dead loads and implicit time
       // integration (otherwise there is no fextn_)!!!
-      Teuchos::RCP<Core::LinAlg::Vector> fext = fext_new();
+      Teuchos::RCP<Core::LinAlg::Vector<double>> fext = fext_new();
       fext->Dot(*disn_, &extergy_);
     }
   }
@@ -2627,7 +2659,7 @@ void Solid::TimInt::output_contact()
     int dim = cmtbridge_->get_strategy().n_dim();
 
     // global linear momentum (M*v)
-    Teuchos::RCP<Core::LinAlg::Vector> mv =
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mv =
         Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
     mass_->multiply(false, (*vel_)[0], *mv);
 
@@ -2862,8 +2894,10 @@ void Solid::TimInt::prepare_output_micro()
 /*----------------------------------------------------------------------*/
 /* evaluate external forces at t_{n+1} */
 void Solid::TimInt::apply_force_external(const double time,
-    const Teuchos::RCP<Core::LinAlg::Vector> dis, const Teuchos::RCP<Core::LinAlg::Vector> disn,
-    const Teuchos::RCP<Core::LinAlg::Vector> vel, Teuchos::RCP<Core::LinAlg::Vector>& fext)
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> vel,
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& fext)
 {
   Teuchos::ParameterList p;
   // other parameters needed by the elements
@@ -2893,9 +2927,12 @@ int Solid::TimInt::have_nonlinear_mass() const
 
 /*----------------------------------------------------------------------*/
 /* check whether the initial conditions are fulfilled */
-void Solid::TimInt::nonlinear_mass_sanity_check(Teuchos::RCP<const Core::LinAlg::Vector> fext,
-    Teuchos::RCP<const Core::LinAlg::Vector> dis, Teuchos::RCP<const Core::LinAlg::Vector> vel,
-    Teuchos::RCP<const Core::LinAlg::Vector> acc, const Teuchos::ParameterList* sdynparams) const
+void Solid::TimInt::nonlinear_mass_sanity_check(
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fext,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dis,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> acc,
+    const Teuchos::ParameterList* sdynparams) const
 {
   double fextnorm;
   fext->Norm2(&fextnorm);
@@ -2953,8 +2990,10 @@ void Solid::TimInt::nonlinear_mass_sanity_check(Teuchos::RCP<const Core::LinAlg:
 /*----------------------------------------------------------------------*/
 /* evaluate ordinary internal force */
 void Solid::TimInt::apply_force_internal(const double time, const double dt,
-    Teuchos::RCP<const Core::LinAlg::Vector> dis, Teuchos::RCP<const Core::LinAlg::Vector> disi,
-    Teuchos::RCP<const Core::LinAlg::Vector> vel, Teuchos::RCP<Core::LinAlg::Vector> fint)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dis,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disi,
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fint)
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -3301,13 +3340,13 @@ void Solid::TimInt::reset()
 {
   // displacements D_{n}
   dis_ = Teuchos::rcp(
-      new TimeStepping::TimIntMStep<Core::LinAlg::Vector>(0, 0, dof_row_map_view(), true));
+      new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true));
   // velocities V_{n}
   vel_ = Teuchos::rcp(
-      new TimeStepping::TimIntMStep<Core::LinAlg::Vector>(0, 0, dof_row_map_view(), true));
+      new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true));
   // accelerations A_{n}
   acc_ = Teuchos::rcp(
-      new TimeStepping::TimIntMStep<Core::LinAlg::Vector>(0, 0, dof_row_map_view(), true));
+      new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true));
 
   // displacements D_{n+1} at t_{n+1}
   disn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
@@ -3324,7 +3363,7 @@ void Solid::TimInt::reset()
 
 /*----------------------------------------------------------------------*/
 /* set structure displacement vector due to biofilm growth              */
-void Solid::TimInt::set_str_gr_disp(Teuchos::RCP<Core::LinAlg::Vector> struct_growth_disp)
+void Solid::TimInt::set_str_gr_disp(Teuchos::RCP<Core::LinAlg::Vector<double>> struct_growth_disp)
 {
   strgrdisp_ = struct_growth_disp;
 }

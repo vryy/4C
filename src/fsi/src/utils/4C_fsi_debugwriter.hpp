@@ -54,7 +54,7 @@ namespace FSI
         This includes an internal transfer of the interface vector to the
         interface discretization.
        */
-      void write_vector(const std::string& name, const Core::LinAlg::Vector& v);
+      void write_vector(const std::string& name, const Core::LinAlg::Vector<double>& v);
 
      private:
       /// internal interface discretization
@@ -96,7 +96,7 @@ namespace FSI
         This includes an internal transfer of the interface vector to the
         interface discretization.
        */
-      virtual void write_vector(const std::string& name, Core::LinAlg::Vector& v);
+      virtual void write_vector(const std::string& name, Core::LinAlg::Vector<double>& v);
 
      private:
       /// discretization
@@ -138,7 +138,7 @@ namespace FSI
         interface discretization.
        */
       virtual void write_vector(
-          const std::string& name, const Teuchos::RCP<Core::LinAlg::Vector>& v);
+          const std::string& name, const Teuchos::RCP<Core::LinAlg::Vector<double>>& v);
 
      private:
       FSI::Monolithic& algorithm_;

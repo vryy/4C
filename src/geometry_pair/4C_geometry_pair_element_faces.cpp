@@ -50,7 +50,7 @@ void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::setup(
  */
 template <typename Surface, typename ScalarType>
 void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::set_state(
-    const Teuchos::RCP<const Core::LinAlg::Vector>& displacement,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Get all displacements for the current face / patch.
@@ -249,7 +249,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::setup(
  */
 template <typename Surface, typename ScalarType>
 void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::set_state(
-    const Teuchos::RCP<const Core::LinAlg::Vector>& displacement,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Get all displacements for the current face / patch.
@@ -548,7 +548,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume
  */
 template <typename Surface, typename ScalarType, typename Volume>
 void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume>::set_state(
-    const Teuchos::RCP<const Core::LinAlg::Vector>& displacement,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Get all displacements for the current face / volume.

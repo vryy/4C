@@ -49,7 +49,8 @@ namespace FLD
     /*!
     \brief evaluate dissipation
     */
-    void evaluate_residuals(std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> statevecs,
+    void evaluate_residuals(
+        std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> statevecs,
         std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> statetenss,
         const double thermpressaf, const double thermpressam, const double thermpressdtaf,
         const double thermpressdtam);

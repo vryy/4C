@@ -99,7 +99,7 @@ bool Solid::TimeInt::NoxInterface::computeF(
   check_init_setup();
 
   Core::LinAlg::VectorView F_view(F);
-  if (not int_ptr_->apply_force(Core::LinAlg::Vector(x), F_view)) return false;
+  if (not int_ptr_->apply_force(Core::LinAlg::Vector<double>(x), F_view)) return false;
 
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
@@ -117,7 +117,7 @@ bool Solid::TimeInt::NoxInterface::computeJacobian(const Epetra_Vector& x, Epetr
   Core::LinAlg::SparseOperator* jac_ptr = dynamic_cast<Core::LinAlg::SparseOperator*>(&jac);
   FOUR_C_ASSERT(jac_ptr != nullptr, "Dynamic cast failed.");
 
-  if (not int_ptr_->apply_stiff(Core::LinAlg::Vector(x), *jac_ptr)) return false;
+  if (not int_ptr_->apply_stiff(Core::LinAlg::Vector<double>(x), *jac_ptr)) return false;
 
   /* We do not consider the jacobian DBC at this point. The Dirichlet conditions
    * are applied inside the NOX::Nln::LinearSystem::applyJacobianInverse()
@@ -138,7 +138,8 @@ bool Solid::TimeInt::NoxInterface::compute_f_and_jacobian(
   FOUR_C_ASSERT(jac_ptr != nullptr, "Dynamic cast failed!");
 
   Core::LinAlg::VectorView rhs_view(rhs);
-  if (not int_ptr_->apply_force_stiff(Core::LinAlg::Vector(x), rhs_view, *jac_ptr)) return false;
+  if (not int_ptr_->apply_force_stiff(Core::LinAlg::Vector<double>(x), rhs_view, *jac_ptr))
+    return false;
 
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
@@ -168,7 +169,7 @@ bool Solid::TimeInt::NoxInterface::compute_correction_system(
 
   Core::LinAlg::VectorView rhs_view(rhs);
   if (not int_ptr_->apply_correction_system(
-          type, constraint_models, Core::LinAlg::Vector(x), rhs_view, *jac_ptr))
+          type, constraint_models, Core::LinAlg::Vector<double>(x), rhs_view, *jac_ptr))
     return false;
 
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
@@ -207,7 +208,7 @@ double Solid::TimeInt::NoxInterface::get_primary_rhs_norms(const Epetra_Vector& 
     case NOX::Nln::StatusTest::quantity_cardiovascular0d:
     {
       // export the model specific solution if necessary
-      auto rhs_ptr = gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector(F));
+      auto rhs_ptr = gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(F));
 
       int_ptr_->remove_condensed_contributions_from_rhs(*rhs_ptr);
 
@@ -218,7 +219,7 @@ double Solid::TimeInt::NoxInterface::get_primary_rhs_norms(const Epetra_Vector& 
     case NOX::Nln::StatusTest::quantity_pressure:
     {
       // export the model specific solution if necessary
-      auto rhs_ptr = gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector(F));
+      auto rhs_ptr = gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(F));
 
       rhsnorm = calculate_norm(rhs_ptr->get_ptr_of_Epetra_Vector(), type, isscaled);
 
@@ -254,21 +255,25 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetr
     case NOX::Nln::StatusTest::quantity_cardiovascular0d:
     {
       // export the displacement solution if necessary
-      Teuchos::RCP<Epetra_Vector> model_incr_ptr = Teuchos::rcp(
-          new Epetra_Vector(*gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector(xold))));
-      auto model_xnew_ptr = gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector(xnew));
+      Teuchos::RCP<Epetra_Vector> model_incr_ptr = Teuchos::rcp(new Epetra_Vector(
+          *gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xold))));
+      auto model_xnew_ptr =
+          gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xnew));
 
       model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
       rms = NOX::Nln::Aux::root_mean_square_norm(atol, rtol, model_xnew_ptr,
-          Teuchos::make_rcp<Core::LinAlg::Vector>(*model_incr_ptr), disable_implicit_weighting);
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*model_incr_ptr),
+          disable_implicit_weighting);
 
       break;
     }
     case NOX::Nln::StatusTest::quantity_pressure:
     {
       // export the displacement solution if necessary
-      auto model_incr_ptr = gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector(xold));
-      auto model_xnew_ptr = gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector(xnew));
+      auto model_incr_ptr =
+          gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xold));
+      auto model_xnew_ptr =
+          gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xnew));
 
       model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
       rms = NOX::Nln::Aux::root_mean_square_norm(
@@ -310,8 +315,10 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_norms(const Epe
     case NOX::Nln::StatusTest::quantity_cardiovascular0d:
     {
       // export the displacement solution if necessary
-      auto model_incr_ptr = gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector(xold));
-      auto model_xnew_ptr = gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector(xnew));
+      auto model_incr_ptr =
+          gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xold));
+      auto model_xnew_ptr =
+          gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xnew));
 
       model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
       updatenorm = calculate_norm(model_incr_ptr->get_ptr_of_Epetra_Vector(), type, isscaled);
@@ -321,8 +328,10 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_norms(const Epe
     case NOX::Nln::StatusTest::quantity_pressure:
     {
       // export the displacement solution if necessary
-      auto model_incr_ptr = gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector(xold));
-      auto model_xnew_ptr = gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector(xnew));
+      auto model_incr_ptr =
+          gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xold));
+      auto model_xnew_ptr =
+          gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xnew));
 
       model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
       updatenorm = calculate_norm(model_incr_ptr->get_ptr_of_Epetra_Vector(), type, isscaled);
@@ -371,7 +380,8 @@ double Solid::TimeInt::NoxInterface::get_previous_primary_solution_norms(const E
     case NOX::Nln::StatusTest::quantity_cardiovascular0d:
     {
       // export the displacement solution if necessary
-      auto model_xold_ptr = gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector(xold));
+      auto model_xold_ptr =
+          gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xold));
 
       xoldnorm = calculate_norm(model_xold_ptr->get_ptr_of_Epetra_Vector(), type, isscaled);
 
@@ -380,7 +390,8 @@ double Solid::TimeInt::NoxInterface::get_previous_primary_solution_norms(const E
     case NOX::Nln::StatusTest::quantity_pressure:
     {
       // export the displacement solution if necessary
-      auto model_xold_ptr = gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector(xold));
+      auto model_xold_ptr =
+          gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xold));
 
       xoldnorm = calculate_norm(model_xold_ptr->get_ptr_of_Epetra_Vector(), type, isscaled);
 
@@ -439,8 +450,8 @@ double Solid::TimeInt::NoxInterface::get_model_value(const Epetra_Vector& x, con
     case NOX::Nln::MeritFunction::mrtfct_energy:
     {
       Core::IO::cout(Core::IO::debug) << __LINE__ << " - " << __FUNCTION__ << "\n";
-      int_ptr_->get_total_mid_time_str_energy(Core::LinAlg::Vector(x));
-      omval = int_ptr_->get_model_value(Core::LinAlg::Vector(x));
+      int_ptr_->get_total_mid_time_str_energy(Core::LinAlg::Vector<double>(x));
+      omval = int_ptr_->get_model_value(Core::LinAlg::Vector<double>(x));
 
       break;
     }
@@ -507,7 +518,7 @@ double Solid::TimeInt::NoxInterface::get_linearized_energy_model_terms(
         case NOX::Nln::MeritFunction::lin_wrt_all_dofs:
         case NOX::Nln::MeritFunction::lin_wrt_primary_dofs:
         {
-          Core::LinAlg::Vector str_gradient(dir.Map(), true);
+          Core::LinAlg::Vector<double> str_gradient(dir.Map(), true);
 
           std::vector<Inpar::Solid::ModelType> constraint_models;
           find_constraint_models(group, constraint_models);
@@ -593,7 +604,7 @@ Solid::TimeInt::NoxInterface::calc_jacobian_contributions_from_element_level_for
 void Solid::TimeInt::NoxInterface::create_backup_state(const Epetra_Vector& dir)
 {
   check_init_setup();
-  int_ptr_->create_backup_state(Core::LinAlg::Vector(dir));
+  int_ptr_->create_backup_state(Core::LinAlg::Vector<double>(dir));
 }
 
 /*----------------------------------------------------------------------------*
@@ -612,7 +623,7 @@ bool Solid::TimeInt::NoxInterface::compute_element_volumes(
   check_init_setup();
   Core::LinAlg::VectorView ele_vols_view(*ele_vols);
   return int_ptr_->determine_element_volumes(
-      Core::LinAlg::Vector(x), ele_vols_view.get_non_owning_rcp_ref());
+      Core::LinAlg::Vector<double>(x), ele_vols_view.get_non_owning_rcp_ref());
 }
 
 /*----------------------------------------------------------------------------*

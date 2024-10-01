@@ -136,10 +136,10 @@ void Solid::ModelEvaluator::Contact::set_time_integration_info(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Contact::reset(const Core::LinAlg::Vector& x)
+void Solid::ModelEvaluator::Contact::reset(const Core::LinAlg::Vector<double>& x)
 {
   check_init_setup();
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> eval_vec(2, Teuchos::null);
+  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> eval_vec(2, Teuchos::null);
   eval_vec[0] = global_state().get_dis_np();
   eval_vec[1] = Teuchos::rcpFromRef(x);
   eval_contact().set_action_type(Mortar::eval_reset);
@@ -210,9 +210,9 @@ void Solid::ModelEvaluator::Contact::post_evaluate()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::Contact::assemble_force(
-    Core::LinAlg::Vector& f, const double& timefac_np) const
+    Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
-  Teuchos::RCP<const Core::LinAlg::Vector> block_vec_ptr = Teuchos::null;
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> block_vec_ptr = Teuchos::null;
 
   if (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(strategy().params(), "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts ||
@@ -236,7 +236,7 @@ bool Solid::ModelEvaluator::Contact::assemble_force(
     // --- constr. - block --------------------------------------------------
     block_vec_ptr = strategy().get_rhs_block_ptr(CONTACT::VecBlockType::constraint);
     if (block_vec_ptr.is_null()) return true;
-    Core::LinAlg::Vector tmp(f.Map());
+    Core::LinAlg::Vector<double> tmp(f.Map());
     Core::LinAlg::export_to(*block_vec_ptr, tmp);
     f.Update(1., tmp, 1.);
   }
@@ -325,8 +325,8 @@ bool Solid::ModelEvaluator::Contact::assemble_jacobian(
      * matrix at the (lm,lm)-block */
     else
     {
-      Teuchos::RCP<Core::LinAlg::Vector> ones =
-          Teuchos::rcp(new Core::LinAlg::Vector(global_state().block_map(type()), false));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> ones =
+          Teuchos::rcp(new Core::LinAlg::Vector<double>(global_state().block_map(type()), false));
       err = ones->PutScalar(1.0);
       block_ptr = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*ones));
       global_state().assign_model_block(jac, *block_ptr, type(), Solid::MatBlockType::lm_lm);
@@ -347,12 +347,12 @@ void Solid::ModelEvaluator::Contact::write_restart(
   iowriter.clear_map_cache();
 
   // quantities to be written for restart
-  std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>> restart_vectors;
+  std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> restart_vectors;
 
   strategy().do_write_restart(restart_vectors, forced_writerestart);
 
   // write all vectors specified by used strategy
-  std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector>>::const_iterator p;
+  std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>::const_iterator p;
   for (p = restart_vectors.begin(); p != restart_vectors.end(); ++p)
     iowriter.write_vector(p->first, p->second);
 
@@ -381,11 +381,12 @@ void Solid::ModelEvaluator::Contact::read_restart(Core::IO::DiscretizationReader
 void Solid::ModelEvaluator::Contact::update_step_state(const double& timefac_n)
 {
   // add the contact forces to the old structural residual state vector
-  Teuchos::RCP<const Core::LinAlg::Vector> strcontactrhs_ptr =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> strcontactrhs_ptr =
       strategy().get_rhs_block_ptr(CONTACT::VecBlockType::displ);
   if (not strcontactrhs_ptr.is_null())
   {
-    Teuchos::RCP<Core::LinAlg::Vector>& fstructold_ptr = global_state().get_fstructure_old();
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& fstructold_ptr =
+        global_state().get_fstructure_old();
     fstructold_ptr->Update(timefac_n, *strcontactrhs_ptr, 1.0);
   }
 
@@ -421,12 +422,12 @@ void Solid::ModelEvaluator::Contact::update_step_element()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Contact::run_post_compute_x(const Core::LinAlg::Vector& xold,
-    const Core::LinAlg::Vector& dir, const Core::LinAlg::Vector& xnew)
+void Solid::ModelEvaluator::Contact::run_post_compute_x(const Core::LinAlg::Vector<double>& xold,
+    const Core::LinAlg::Vector<double>& dir, const Core::LinAlg::Vector<double>& xnew)
 {
   check_init_setup();
 
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> eval_vec(3, Teuchos::null);
+  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> eval_vec(3, Teuchos::null);
   eval_vec[0] = Teuchos::rcpFromRef(xold);
   eval_vec[1] = Teuchos::rcpFromRef(dir);
   eval_vec[2] = Teuchos::rcpFromRef(xnew);
@@ -484,41 +485,41 @@ void Solid::ModelEvaluator::Contact::output_step_state(
   // *********************************************************************
 
   // evaluate active set and slip set
-  Teuchos::RCP<Core::LinAlg::Vector> activeset =
-      Teuchos::rcp(new Core::LinAlg::Vector(*strategy().active_row_nodes()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> activeset =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().active_row_nodes()));
   activeset->PutScalar(1.0);
   if (strategy().is_friction())
   {
-    Teuchos::RCP<Core::LinAlg::Vector> slipset =
-        Teuchos::rcp(new Core::LinAlg::Vector(*strategy().slip_row_nodes()));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> slipset =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().slip_row_nodes()));
     slipset->PutScalar(1.0);
-    Teuchos::RCP<Core::LinAlg::Vector> slipsetexp =
-        Teuchos::rcp(new Core::LinAlg::Vector(*strategy().active_row_nodes()));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> slipsetexp =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().active_row_nodes()));
     Core::LinAlg::export_to(*slipset, *slipsetexp);
     activeset->Update(1.0, *slipsetexp, 1.0);
   }
 
   // export to problem node row map
   Teuchos::RCP<const Epetra_Map> problemnodes = strategy().problem_nodes();
-  Teuchos::RCP<Core::LinAlg::Vector> activesetexp =
-      Teuchos::rcp(new Core::LinAlg::Vector(*problemnodes));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> activesetexp =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problemnodes));
   Core::LinAlg::export_to(*activeset, *activesetexp);
 
   if (strategy().wear_both_discrete())
   {
-    Teuchos::RCP<Core::LinAlg::Vector> mactiveset =
-        Teuchos::rcp(new Core::LinAlg::Vector(*strategy().master_active_nodes()));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mactiveset =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().master_active_nodes()));
     mactiveset->PutScalar(1.0);
-    Teuchos::RCP<Core::LinAlg::Vector> slipset =
-        Teuchos::rcp(new Core::LinAlg::Vector(*strategy().master_slip_nodes()));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> slipset =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().master_slip_nodes()));
     slipset->PutScalar(1.0);
-    Teuchos::RCP<Core::LinAlg::Vector> slipsetexp =
-        Teuchos::rcp(new Core::LinAlg::Vector(*strategy().master_active_nodes()));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> slipsetexp =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().master_active_nodes()));
     Core::LinAlg::export_to(*slipset, *slipsetexp);
     mactiveset->Update(1.0, *slipsetexp, 1.0);
 
-    Teuchos::RCP<Core::LinAlg::Vector> mactivesetexp =
-        Teuchos::rcp(new Core::LinAlg::Vector(*problemnodes));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> mactivesetexp =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*problemnodes));
     Core::LinAlg::export_to(*mactiveset, *mactivesetexp);
     activesetexp->Update(1.0, *mactivesetexp, 1.0);
   }
@@ -533,16 +534,17 @@ void Solid::ModelEvaluator::Contact::output_step_state(
   Teuchos::RCP<const Epetra_Map> problemdofs = strategy().problem_dofs();
 
   // normal direction
-  Teuchos::RCP<const Core::LinAlg::Vector> normalstresses = strategy().contact_normal_stress();
-  Teuchos::RCP<Core::LinAlg::Vector> normalstressesexp =
-      Teuchos::rcp(new Core::LinAlg::Vector(*problemdofs));
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> normalstresses =
+      strategy().contact_normal_stress();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> normalstressesexp =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problemdofs));
   Core::LinAlg::export_to(*normalstresses, *normalstressesexp);
 
   // tangential plane
-  Teuchos::RCP<const Core::LinAlg::Vector> tangentialstresses =
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> tangentialstresses =
       strategy().contact_tangential_stress();
-  Teuchos::RCP<Core::LinAlg::Vector> tangentialstressesexp =
-      Teuchos::rcp(new Core::LinAlg::Vector(*problemdofs));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tangentialstressesexp =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problemdofs));
   Core::LinAlg::export_to(*tangentialstresses, *tangentialstressesexp);
 
   // write to output
@@ -556,9 +558,9 @@ void Solid::ModelEvaluator::Contact::output_step_state(
   if (strategy().weighted_wear())
   {
     // write output
-    Teuchos::RCP<const Core::LinAlg::Vector> wearoutput = strategy().contact_wear();
-    Teuchos::RCP<Core::LinAlg::Vector> wearoutputexp =
-        Teuchos::rcp(new Core::LinAlg::Vector(*problemdofs));
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> wearoutput = strategy().contact_wear();
+    Teuchos::RCP<Core::LinAlg::Vector<double>> wearoutputexp =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*problemdofs));
     Core::LinAlg::export_to(*wearoutput, *wearoutputexp);
     iowriter.write_vector("wear", wearoutputexp);
   }
@@ -571,9 +573,9 @@ void Solid::ModelEvaluator::Contact::output_step_state(
     // output of poro no penetration lagrange multiplier!
     const CONTACT::LagrangeStrategyPoro& poro_strategy =
         dynamic_cast<const CONTACT::LagrangeStrategyPoro&>(strategy());
-    Teuchos::RCP<const Core::LinAlg::Vector> lambdaout = poro_strategy.lambda_no_pen();
-    Teuchos::RCP<Core::LinAlg::Vector> lambdaoutexp =
-        Teuchos::rcp(new Core::LinAlg::Vector(*problemdofs));
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> lambdaout = poro_strategy.lambda_no_pen();
+    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdaoutexp =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*problemdofs));
     Core::LinAlg::export_to(*lambdaout, *lambdaoutexp);
     iowriter.write_vector("poronopen_lambda", lambdaoutexp);
   }
@@ -655,8 +657,8 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Contact::get_block_dof_row
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> Solid::ModelEvaluator::Contact::get_current_solution_ptr()
-    const
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
+Solid::ModelEvaluator::Contact::get_current_solution_ptr() const
 {
   // TODO: this should be removed!
   Global::Problem* problem = Global::Problem::instance();
@@ -666,8 +668,8 @@ Teuchos::RCP<const Core::LinAlg::Vector> Solid::ModelEvaluator::Contact::get_cur
 
   if (strategy().lagrange_multiplier_np(false) != Teuchos::null)
   {
-    Teuchos::RCP<Core::LinAlg::Vector> curr_lm_ptr =
-        Teuchos::rcp(new Core::LinAlg::Vector(*strategy().lagrange_multiplier_np(false)));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> curr_lm_ptr =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().lagrange_multiplier_np(false)));
     if (not curr_lm_ptr.is_null()) curr_lm_ptr->ReplaceMap(strategy().lm_dof_row_map(false));
 
     extend_lagrange_multiplier_domain(curr_lm_ptr);
@@ -680,7 +682,7 @@ Teuchos::RCP<const Core::LinAlg::Vector> Solid::ModelEvaluator::Contact::get_cur
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector>
+Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Contact::get_last_time_step_solution_ptr() const
 {
   Global::Problem* problem = Global::Problem::instance();
@@ -690,8 +692,8 @@ Solid::ModelEvaluator::Contact::get_last_time_step_solution_ptr() const
 
   if (strategy().lagrange_multiplier_n(false).is_null()) return Teuchos::null;
 
-  Teuchos::RCP<Core::LinAlg::Vector> old_lm_ptr =
-      Teuchos::rcp(new Core::LinAlg::Vector(*strategy().lagrange_multiplier_n(false)));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> old_lm_ptr =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().lagrange_multiplier_n(false)));
   if (not old_lm_ptr.is_null()) old_lm_ptr->ReplaceMap(strategy().lm_dof_row_map(false));
 
   extend_lagrange_multiplier_domain(old_lm_ptr);
@@ -702,7 +704,7 @@ Solid::ModelEvaluator::Contact::get_last_time_step_solution_ptr() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Contact::extend_lagrange_multiplier_domain(
-    Teuchos::RCP<Core::LinAlg::Vector>& lm_vec) const
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& lm_vec) const
 {
   // default case: do nothing
   if (strategy().lm_dof_row_map(false).NumGlobalElements() ==
@@ -712,8 +714,8 @@ void Solid::ModelEvaluator::Contact::extend_lagrange_multiplier_domain(
   if (strategy().lm_dof_row_map(false).NumGlobalElements() <
       get_block_dof_row_map_ptr()->NumGlobalElements())
   {
-    Teuchos::RCP<Core::LinAlg::Vector> tmp_ptr =
-        Teuchos::rcp(new Core::LinAlg::Vector(*get_block_dof_row_map_ptr()));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> tmp_ptr =
+        Teuchos::rcp(new Core::LinAlg::Vector<double>(*get_block_dof_row_map_ptr()));
     Core::LinAlg::export_to(*lm_vec, *tmp_ptr);
     lm_vec = tmp_ptr;
   }
@@ -731,15 +733,15 @@ void Solid::ModelEvaluator::Contact::post_output()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Contact::run_pre_compute_x(const Core::LinAlg::Vector& xold,
-    Core::LinAlg::Vector& dir_mutable, const NOX::Nln::Group& curr_grp)
+void Solid::ModelEvaluator::Contact::run_pre_compute_x(const Core::LinAlg::Vector<double>& xold,
+    Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp)
 {
   check_init_setup();
 
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> eval_vec(1, Teuchos::null);
+  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> eval_vec(1, Teuchos::null);
   eval_vec[0] = Teuchos::rcpFromRef(xold);
 
-  std::vector<Teuchos::RCP<Core::LinAlg::Vector>> eval_vec_mutable(1, Teuchos::null);
+  std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> eval_vec_mutable(1, Teuchos::null);
   eval_vec_mutable[0] = Teuchos::rcpFromRef(dir_mutable);
 
   eval_contact().set_action_type(Mortar::eval_run_pre_compute_x);
@@ -759,9 +761,9 @@ void Solid::ModelEvaluator::Contact::run_post_iterate(const ::NOX::Solver::Gener
       dynamic_cast<const ::NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
 
   // displacement vector after the predictor call
-  Teuchos::RCP<Core::LinAlg::Vector> curr_disp =
-      global_state().extract_displ_entries(Core::LinAlg::Vector(nox_x.getEpetraVector()));
-  Teuchos::RCP<const Core::LinAlg::Vector> curr_vel = global_state().get_vel_np();
+  Teuchos::RCP<Core::LinAlg::Vector<double>> curr_disp =
+      global_state().extract_displ_entries(Core::LinAlg::Vector<double>(nox_x.getEpetraVector()));
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> curr_vel = global_state().get_vel_np();
 
   if (strategy().dyn_redistribute_contact(curr_disp, curr_vel, solver.getNumIterations()))
     evaluate_force();
@@ -772,12 +774,13 @@ void Solid::ModelEvaluator::Contact::run_post_iterate(const ::NOX::Solver::Gener
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Contact::run_pre_apply_jacobian_inverse(const Core::LinAlg::Vector& rhs,
-    Core::LinAlg::Vector& result, const Core::LinAlg::Vector& xold, const NOX::Nln::Group& grp)
+void Solid::ModelEvaluator::Contact::run_pre_apply_jacobian_inverse(
+    const Core::LinAlg::Vector<double>& rhs, Core::LinAlg::Vector<double>& result,
+    const Core::LinAlg::Vector<double>& xold, const NOX::Nln::Group& grp)
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd = global_state().jacobian_displ_block();
   const_cast<CONTACT::AbstractStrategy&>(strategy())
-      .run_pre_apply_jacobian_inverse(jac_dd, const_cast<Core::LinAlg::Vector&>(rhs));
+      .run_pre_apply_jacobian_inverse(jac_dd, const_cast<Core::LinAlg::Vector<double>&>(rhs));
 }
 
 /*----------------------------------------------------------------------------*
@@ -789,10 +792,10 @@ void Solid::ModelEvaluator::Contact::run_pre_solve(const ::NOX::Solver::Generic&
       dynamic_cast<const ::NOX::Epetra::Vector&>(solver.getSolutionGroup().getX());
 
   // displacement vector after the predictor call
-  Teuchos::RCP<Core::LinAlg::Vector> curr_disp =
-      global_state().extract_displ_entries(Core::LinAlg::Vector(nox_x.getEpetraVector()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> curr_disp =
+      global_state().extract_displ_entries(Core::LinAlg::Vector<double>(nox_x.getEpetraVector()));
 
-  std::vector<Teuchos::RCP<const Core::LinAlg::Vector>> eval_vec(1, Teuchos::null);
+  std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> eval_vec(1, Teuchos::null);
   eval_vec[0] = curr_disp;
 
   eval_contact().set_action_type(Mortar::eval_run_pre_solve);
@@ -802,8 +805,8 @@ void Solid::ModelEvaluator::Contact::run_pre_solve(const ::NOX::Solver::Generic&
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Contact::run_post_apply_jacobian_inverse(
-    const Core::LinAlg::Vector& rhs, Core::LinAlg::Vector& result, const Core::LinAlg::Vector& xold,
-    const NOX::Nln::Group& grp)
+    const Core::LinAlg::Vector<double>& rhs, Core::LinAlg::Vector<double>& result,
+    const Core::LinAlg::Vector<double>& xold, const NOX::Nln::Group& grp)
 {
   check_init_setup();
 
@@ -832,7 +835,7 @@ Teuchos::RCP<const Core::LinAlg::SparseMatrix> Solid::ModelEvaluator::Contact::g
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> Solid::ModelEvaluator::Contact::assemble_force_of_models(
+Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Contact::assemble_force_of_models(
     const std::vector<Inpar::Solid::ModelType>* without_these_models, const bool apply_dbc) const
 {
   Teuchos::RCP<::NOX::Epetra::Vector> force_nox = global_state().create_global_vector();
@@ -843,8 +846,8 @@ Teuchos::RCP<Core::LinAlg::Vector> Solid::ModelEvaluator::Contact::assemble_forc
 
   // copy the vector, otherwise the storage will be freed at the end of this
   // function, resulting in a segmentation fault
-  Teuchos::RCP<Core::LinAlg::Vector> force =
-      Teuchos::rcp(new Core::LinAlg::Vector(force_nox->getEpetraVector()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> force =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(force_nox->getEpetraVector()));
 
   if (apply_dbc) tim_int().get_dbc().apply_dirichlet_to_rhs(force);
 
@@ -895,7 +898,7 @@ bool Solid::ModelEvaluator::Contact::evaluate_cheap_soc_rhs()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::Contact::assemble_cheap_soc_rhs(
-    Core::LinAlg::Vector& f, const double& timefac_np) const
+    Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
   return assemble_force(f, timefac_np);
 }
@@ -919,12 +922,12 @@ bool Solid::ModelEvaluator::Contact::correct_parameters(NOX::Nln::CorrectionType
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Contact::remove_condensed_contributions_from_rhs(
-    Core::LinAlg::Vector& rhs)
+    Core::LinAlg::Vector<double>& rhs)
 {
   check_init_setup();
   eval_contact().set_action_type(Mortar::remove_condensed_contributions_from_str_rhs);
 
-  std::vector<Teuchos::RCP<Core::LinAlg::Vector>> mutable_vec(1, Teuchos::rcpFromRef(rhs));
+  std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> mutable_vec(1, Teuchos::rcpFromRef(rhs));
   strategy().evaluate(eval_contact(), nullptr, &mutable_vec);
 }
 

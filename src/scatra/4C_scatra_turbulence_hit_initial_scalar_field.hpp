@@ -64,8 +64,8 @@ namespace ScaTra
     Teuchos::RCP<Core::FE::Discretization> discret_;
 
     //! state vectors to be initialized
-    Teuchos::RCP<Core::LinAlg::Vector> phinp_;
-    Teuchos::RCP<Core::LinAlg::Vector> phin_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phin_;
 
     //! type of energy spectrum for initialization
     Inpar::ScaTra::InitialField type_;

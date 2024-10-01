@@ -42,11 +42,12 @@ namespace FLD
       virtual ~FluidInfNormScaling() = default;
 
       //! perform infnorm-scaling of linear system
-      void scale_system(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Core::LinAlg::Vector& b);
+      void scale_system(
+          Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Core::LinAlg::Vector<double>& b);
 
       //! perform un-scaling of solution (and the system, just to be on the safe side)
       void unscale_solution(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,
-          Core::LinAlg::Vector& x, Core::LinAlg::Vector& b);
+          Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& b);
 
      private:
       //! processor id
@@ -55,10 +56,10 @@ namespace FLD
       //! Extractor for splitting of velocity and pressure dofs
       Core::LinAlg::MapExtractor& velpressplitter_;
 
-      Teuchos::RCP<Core::LinAlg::Vector> srowsum_;
-      Teuchos::RCP<Core::LinAlg::Vector> scolsum_;
-      Teuchos::RCP<Core::LinAlg::Vector> prowsum_;
-      Teuchos::RCP<Core::LinAlg::Vector> pcolsum_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> srowsum_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> scolsum_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> prowsum_;
+      Teuchos::RCP<Core::LinAlg::Vector<double>> pcolsum_;
 
       // flags
       const bool leftscale_momentum_;

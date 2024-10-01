@@ -80,16 +80,16 @@ namespace Adapter
     //! @name Vector access
 
     //! initial guess of Newton's method
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> initial_guess() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() const = 0;
 
     //! rhs of Newton's method
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> rhs() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() const = 0;
 
     //! unknown displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> dispnp() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp() const = 0;
 
     //! known displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<const Core::LinAlg::Vector> dispn() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn() const = 0;
 
     //@}
 
@@ -172,7 +172,7 @@ namespace Adapter
      *  In case the StructureNOXCorrectionWrapper is applied, the step increment
      *  is expected which is then transformed into an iteration increment
      */
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector>
+    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
                               disiterinc,  ///< step increment such that \f$ x_{n+1}^{k+1} =
                                            ///< x_{n}^{converged}+ stepinc \f$
         ALE::UTILS::MapExtractor::AleDBCSetType
@@ -223,7 +223,7 @@ namespace Adapter
     //@{
 
     //! write access to extract displacements at \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector> write_access_dispnp() const = 0;
+    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispnp() const = 0;
 
     //@}
 
@@ -242,7 +242,7 @@ namespace Adapter
         Teuchos::RCP<const ALE::UTILS::MapExtractor> interface = Teuchos::null) = 0;
 
     //! update slave dofs for multifield simulations with ale mesh tying
-    virtual void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector>& a) = 0;
+    virtual void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& a) = 0;
 
   };  // class Ale
 

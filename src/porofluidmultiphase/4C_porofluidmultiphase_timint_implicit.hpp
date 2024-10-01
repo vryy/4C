@@ -138,17 +138,18 @@ namespace POROFLUIDMULTIPHASE
 
     //! apply moving mesh data
     void apply_mesh_movement(
-        Teuchos::RCP<const Core::LinAlg::Vector> dispnp  //!< displacement vector
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp  //!< displacement vector
         ) override;
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
-    void set_velocity_field(Teuchos::RCP<const Core::LinAlg::Vector> vel  //!< velocity vector
+    void set_velocity_field(
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel  //!< velocity vector
         ) override;
 
     //! set state on discretization
     void set_state(unsigned nds, const std::string& name,
-        Teuchos::RCP<const Core::LinAlg::Vector> state) override;
+        Teuchos::RCP<const Core::LinAlg::Vector<double>> state) override;
 
     //! calculate error compared to analytical solution
     void evaluate_error_compared_to_analytical_sol() override;
@@ -160,7 +161,7 @@ namespace POROFLUIDMULTIPHASE
 
     //! iterative update of phinp
     void update_iter(
-        const Teuchos::RCP<const Core::LinAlg::Vector> inc  //!< increment vector for phi
+        const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc  //!< increment vector for phi
         ) override;
 
     //! build linear system tangent matrix, rhs/force residual
@@ -182,10 +183,10 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Core::LinAlg::Vector> rhs() const override { return residual_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() const override { return residual_; }
 
     //! right-hand side alias the dynamic force residual for coupled system
-    Teuchos::RCP<const Core::LinAlg::Vector> artery_porofluid_rhs() const override;
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> artery_porofluid_rhs() const override;
 
     //! return discretization
     Teuchos::RCP<Core::FE::Discretization> discretization() const override { return discret_; }
@@ -241,22 +242,22 @@ namespace POROFLUIDMULTIPHASE
     /*--- query and output ---------------------------------------------------*/
 
     //! return pressure field at time n+1
-    Teuchos::RCP<const Core::LinAlg::Vector> phinp() const override { return phinp_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp() const override { return phinp_; }
 
     //! return scalar field phi at time n
-    Teuchos::RCP<const Core::LinAlg::Vector> phin() const override { return phin_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phin() const override { return phin_; }
 
     //! return time derivative of scalar field phi at time n
-    Teuchos::RCP<const Core::LinAlg::Vector> phidtn() const { return phidtn_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phidtn() const { return phidtn_; }
 
     //! return time derivative of scalar field phi at time n+1
-    Teuchos::RCP<const Core::LinAlg::Vector> phidtnp() const { return phidtnp_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> phidtnp() const { return phidtnp_; }
 
     //! return scalar field history
-    Teuchos::RCP<const Core::LinAlg::Vector> hist() const { return hist_; }
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> hist() const { return hist_; }
 
     //! return solid pressure field
-    Teuchos::RCP<const Core::LinAlg::Vector> solid_pressure() const override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> solid_pressure() const override
     {
       if (!output_solidpress_)
         FOUR_C_THROW("solid pressure requested but flag OUTPUT_SOLIDPRESS set to no");
@@ -264,7 +265,7 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! return pressure field
-    Teuchos::RCP<const Core::LinAlg::Vector> pressure() const override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> pressure() const override
     {
       if (!output_satpress_)
         FOUR_C_THROW("pressure requested but flag OUTPUT_SATANDPRESS set to no");
@@ -272,7 +273,7 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! return saturation field
-    Teuchos::RCP<const Core::LinAlg::Vector> saturation() const override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> saturation() const override
     {
       if (!output_satpress_)
         FOUR_C_THROW("saturation requested but flag OUTPUT_SATANDPRESS set to no");
@@ -289,7 +290,7 @@ namespace POROFLUIDMULTIPHASE
     int get_dof_set_number_of_solid_pressure() const override { return nds_solidpressure_; };
 
     //! return valid volume fraction species
-    Teuchos::RCP<const Core::LinAlg::Vector> valid_vol_frac_spec_dofs() const override
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> valid_vol_frac_spec_dofs() const override
     {
       return valid_volfracspec_dofs_;
     }
@@ -342,9 +343,9 @@ namespace POROFLUIDMULTIPHASE
     /*--- calculate and update -----------------------------------------------*/
 
     //! Apply Dirichlet boundary conditions on provided state vector
-    void apply_dirichlet_bc(const double time,     //!< evaluation time
-        Teuchos::RCP<Core::LinAlg::Vector> prenp,  //!< pressure (may be = null)
-        Teuchos::RCP<Core::LinAlg::Vector> predt   //!< first time derivative (may be = null)
+    void apply_dirichlet_bc(const double time,             //!< evaluation time
+        Teuchos::RCP<Core::LinAlg::Vector<double>> prenp,  //!< pressure (may be = null)
+        Teuchos::RCP<Core::LinAlg::Vector<double>> predt  //!< first time derivative (may be = null)
     );
 
     //! potential residual scaling and potential addition of Neumann terms
@@ -355,7 +356,7 @@ namespace POROFLUIDMULTIPHASE
 
     //! Apply Neumann boundary conditions
     void apply_neumann_bc(
-        const Teuchos::RCP<Core::LinAlg::Vector>& neumann_loads  //!< Neumann loads
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& neumann_loads  //!< Neumann loads
     );
 
     //! call elements to calculate system matrix and rhs and assemble
@@ -594,34 +595,34 @@ namespace POROFLUIDMULTIPHASE
     /*========================================================================*/
 
     //! phi at time n
-    Teuchos::RCP<Core::LinAlg::Vector> phin_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phin_;
     //! phi at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector> phinp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_;
 
     //! time derivative of phi at time n
-    Teuchos::RCP<Core::LinAlg::Vector> phidtn_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtn_;
     //! time derivative of phi at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector> phidtnp_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtnp_;
 
     //! histvector --- a linear combination of phinm, phin (BDF)
     //!                or phin, phidtn (One-Step-Theta)
-    Teuchos::RCP<Core::LinAlg::Vector> hist_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> hist_;
 
     /*========================================================================*/
     //! @name degrees of freedom and related
     /*========================================================================*/
 
     //! pressure at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector> pressure_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pressure_;
 
     //! saturation at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector> saturation_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> saturation_;
 
     //! solid pressure at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector> solidpressure_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> solidpressure_;
 
     //! porosity at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector> porosity_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> porosity_;
 
     //! vector with valid volume fraction pressure dofs, this vector identifies volume fraction
     //! pressure DOFs,
@@ -632,8 +633,8 @@ namespace POROFLUIDMULTIPHASE
     //  for volume fraction species we only evaluate if all nodal volume fraction values of the
     //  element are bigger than the threshold (min volfrac), this turned out to be the most stable
     //  approach
-    Teuchos::RCP<Core::LinAlg::Vector> valid_volfracpress_dofs_;
-    Teuchos::RCP<Core::LinAlg::Vector> valid_volfracspec_dofs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> valid_volfracpress_dofs_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> valid_volfracspec_dofs_;
 
     //! flux of each phase at time n+1 (post-processed from pressure solution)
     Teuchos::RCP<Epetra_MultiVector> flux_;
@@ -667,7 +668,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
 
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
-    Teuchos::RCP<Core::LinAlg::Vector> zeros_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;
 
     //! maps for extracting Dirichlet and free DOF sets
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
@@ -682,16 +683,16 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_starting_condition_;
 
     //! the vector containing body and surface forces
-    Teuchos::RCP<Core::LinAlg::Vector> neumann_loads_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> neumann_loads_;
 
     //! residual vector
-    Teuchos::RCP<Core::LinAlg::Vector> residual_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
 
     //! true (rescaled) residual vector without zeros at Dirichlet conditions
-    Teuchos::RCP<Core::LinAlg::Vector> trueresidual_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> trueresidual_;
 
     //! nonlinear iteration increment vector
-    Teuchos::RCP<Core::LinAlg::Vector> increment_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> increment_;
 
     //! meshtying strategy (includes standard case without meshtying)
     Teuchos::RCP<POROFLUIDMULTIPHASE::MeshtyingStrategyBase> strategy_;

@@ -240,7 +240,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::redistribute(
 
   // now do all the ost specfic steps
   const Epetra_Map* newdofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector> old;
+  Teuchos::RCP<Core::LinAlg::Vector<double>> old;
 
   if (fsphinp_ != Teuchos::null)
   {
@@ -269,12 +269,12 @@ void ScaTra::LevelSetTimIntOneStepTheta::read_restart(
 /*----------------------------------------------------------------------*
  | interpolate phi to intermediate time level n+theta   rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> ScaTra::LevelSetTimIntOneStepTheta::phinptheta(
+Teuchos::RCP<Core::LinAlg::Vector<double>> ScaTra::LevelSetTimIntOneStepTheta::phinptheta(
     const double theta_inter)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector> phi_tmp =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> phi_tmp =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap, true));
   phi_tmp->Update((1.0 - theta_inter), *phin_, theta_inter, *phinp_, 0.0);
   return phi_tmp;
 }
@@ -283,12 +283,12 @@ Teuchos::RCP<Core::LinAlg::Vector> ScaTra::LevelSetTimIntOneStepTheta::phinpthet
 /*----------------------------------------------------------------------*
  | interpolate phidt to intermediate time level n+theta rasthofer 09/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> ScaTra::LevelSetTimIntOneStepTheta::phidtnptheta(
+Teuchos::RCP<Core::LinAlg::Vector<double>> ScaTra::LevelSetTimIntOneStepTheta::phidtnptheta(
     const double theta_inter)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector> phidt_tmp =
-      Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> phidt_tmp =
+      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap, true));
   phidt_tmp->Update((1.0 - theta_inter), *phidtn_, theta_inter, *phidtnp_, 0.0);
   return phidt_tmp;
 }

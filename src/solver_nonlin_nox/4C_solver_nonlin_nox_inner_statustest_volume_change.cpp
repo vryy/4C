@@ -87,7 +87,7 @@ std::ostream& NOX::Nln::Inner::StatusTest::VolumeChange::print(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 ::NOX::Abstract::Group::ReturnType NOX::Nln::Inner::StatusTest::VolumeChange::set_element_volumes(
-    const ::NOX::Abstract::Group& grp, Teuchos::RCP<Core::LinAlg::Vector>& ele_vols) const
+    const ::NOX::Abstract::Group& grp, Teuchos::RCP<Core::LinAlg::Vector<double>>& ele_vols) const
 {
   const NOX::Nln::Group& nln_grp = dynamic_cast<const NOX::Nln::Group&>(grp);
 

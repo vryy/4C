@@ -252,7 +252,7 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 ::NOX::Abstract::Group::ReturnType NOX::Nln::Group::compute_element_volumes(
-    Teuchos::RCP<Core::LinAlg::Vector>& ele_vols) const
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& ele_vols) const
 {
   auto ele_vols_epetra = ele_vols->get_ptr_of_Epetra_Vector();
   const bool success = get_nln_req_interface_ptr()->compute_element_volumes(
@@ -264,7 +264,8 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 ::NOX::Abstract::Group::ReturnType NOX::Nln::Group::compute_trial_element_volumes(
-    Teuchos::RCP<Core::LinAlg::Vector>& ele_vols, const ::NOX::Abstract::Vector& dir, double step)
+    Teuchos::RCP<Core::LinAlg::Vector<double>>& ele_vols, const ::NOX::Abstract::Vector& dir,
+    double step)
 {
   if (tmpVectorPtr.is_null() or !tmpVectorPtr->Map().SameAs(xVector.getEpetraVector().Map()) or
       tmpVectorPtr.get() == &xVector.getEpetraVector())
@@ -619,9 +620,9 @@ void NOX::Nln::Group::adjust_pseudo_time_step(double& delta, const double& stepS
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector> NOX::Nln::Group::get_lumped_mass_matrix_ptr() const
+Teuchos::RCP<const Core::LinAlg::Vector<double>> NOX::Nln::Group::get_lumped_mass_matrix_ptr() const
 {
-  return Teuchos::make_rcp<Core::LinAlg::Vector>(
+  return Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
       *Teuchos::rcp_dynamic_cast<NOX::Nln::Interface::Required>(userInterfacePtr)
            ->get_lumped_mass_matrix_ptr());
 }
@@ -715,7 +716,7 @@ const Epetra_Map& NOX::Nln::Group::get_jacobian_range_map(unsigned rbid, unsigne
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector> NOX::Nln::Group::get_diagonal_of_jacobian(
+Teuchos::RCP<Core::LinAlg::Vector<double>> NOX::Nln::Group::get_diagonal_of_jacobian(
     unsigned diag_bid) const
 {
   if (not isJacobian())
@@ -732,7 +733,7 @@ Teuchos::RCP<Core::LinAlg::Vector> NOX::Nln::Group::get_diagonal_of_jacobian(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void NOX::Nln::Group::replace_diagonal_of_jacobian(
-    const Core::LinAlg::Vector& new_diag, unsigned diag_bid) const
+    const Core::LinAlg::Vector<double>& new_diag, unsigned diag_bid) const
 {
   if (not isJacobian())
     FOUR_C_THROW(

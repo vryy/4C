@@ -282,10 +282,10 @@ namespace Solid
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> fext() override { return fext_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fext() override { return fext_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> fext_new() override { return fextn_; }
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fext_new() override { return fextn_; }
 
     //@}
 
@@ -297,9 +297,10 @@ namespace Solid
 
     //! Build total residual vector and effective tangential stiffness
     //! matrix in case of nonlinear, rotational inertia effects
-    void build_res_stiff_nl_mass_rot(Teuchos::RCP<Core::LinAlg::Vector> fres_,
-        Teuchos::RCP<Core::LinAlg::Vector> fextn_, Teuchos::RCP<Core::LinAlg::Vector> fintn_,
-        Teuchos::RCP<Core::LinAlg::Vector> finertn_,
+    void build_res_stiff_nl_mass_rot(Teuchos::RCP<Core::LinAlg::Vector<double>> fres_,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> fextn_,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> fintn_,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> finertn_,
         Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_,
         Teuchos::RCP<Core::LinAlg::SparseOperator> mass_);
 
@@ -348,34 +349,34 @@ namespace Solid
     //@{
 
     //! mid-displacements \f$D_m = D_{n+1-\alpha_f}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> dism_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dism_;
 
     //! mid-velocities \f$V_m = V_{n+1-\alpha_f}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> velm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> velm_;
 
     //! mid-accelerations \f$A_m = A_{n+1-\alpha_m}\f$
-    Teuchos::RCP<Core::LinAlg::Vector> accm_;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> accm_;
 
     //@}
 
     //! @name Global force vectors
     //! Residual \c fres_ exists already in base class
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector> fint_;   //!< internal force at \f$t_n\f$
-    Teuchos::RCP<Core::LinAlg::Vector> fintm_;  //!< internal mid-force
-    Teuchos::RCP<Core::LinAlg::Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fint_;   //!< internal force at \f$t_n\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fintm_;  //!< internal mid-force
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Core::LinAlg::Vector> fext_;   //!< external force at \f$t_n\f$
-    Teuchos::RCP<Core::LinAlg::Vector> fextm_;  //!< external mid-force
-    Teuchos::RCP<Core::LinAlg::Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fext_;   //!< external force at \f$t_n\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fextm_;  //!< external mid-force
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fextn_;  //!< external force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Core::LinAlg::Vector> finert_;   //!< inertia force at \f$t_n\f$
-    Teuchos::RCP<Core::LinAlg::Vector> finertm_;  //!< inertia mid-force
-    Teuchos::RCP<Core::LinAlg::Vector> finertn_;  //!< inertia force at \f$t_{n+1}\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> finert_;   //!< inertia force at \f$t_n\f$
+    Teuchos::RCP<Core::LinAlg::Vector<double>> finertm_;  //!< inertia mid-force
+    Teuchos::RCP<Core::LinAlg::Vector<double>> finertn_;  //!< inertia force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Core::LinAlg::Vector> fviscm_;  //!< viscous force
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fviscm_;  //!< viscous force
 
-    Teuchos::RCP<Core::LinAlg::Vector>
+    Teuchos::RCP<Core::LinAlg::Vector<double>>
         fint_str_;  //!< pure structural global internal force at \f$t_n\f$
                     //!< i.e. no condensation of EAS,pasticity,...
     //@}

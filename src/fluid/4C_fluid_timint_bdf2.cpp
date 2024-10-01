@@ -119,11 +119,12 @@ void FLD::TimIntBDF2::set_state_tim_int()
 /*----------------------------------------------------------------------*
 | calculate acceleration                                       bk 12/13 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntBDF2::calculate_acceleration(const Teuchos::RCP<const Core::LinAlg::Vector> velnp,
-    const Teuchos::RCP<const Core::LinAlg::Vector> veln,
-    const Teuchos::RCP<const Core::LinAlg::Vector> velnm,
-    const Teuchos::RCP<const Core::LinAlg::Vector> accn,
-    const Teuchos::RCP<Core::LinAlg::Vector> accnp)
+void FLD::TimIntBDF2::calculate_acceleration(
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> veln,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm,
+    const Teuchos::RCP<const Core::LinAlg::Vector<double>> accn,
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> accnp)
 {
   /*
 
@@ -169,12 +170,12 @@ void FLD::TimIntBDF2::sep_multiply()
 /*----------------------------------------------------------------------*
  | paraview output of filtered velocity                  rasthofer 02/11|
  *----------------------------------------------------------------------*/
-void FLD::TimIntBDF2::outputof_filtered_vel(
-    Teuchos::RCP<Core::LinAlg::Vector> outvec, Teuchos::RCP<Core::LinAlg::Vector> fsoutvec)
+void FLD::TimIntBDF2::outputof_filtered_vel(Teuchos::RCP<Core::LinAlg::Vector<double>> outvec,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fsoutvec)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector> row_finescaleveltmp;
-  row_finescaleveltmp = Teuchos::rcp(new Core::LinAlg::Vector(*dofrowmap, true));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> row_finescaleveltmp;
+  row_finescaleveltmp = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap, true));
 
   // get fine scale velocity
   if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)
