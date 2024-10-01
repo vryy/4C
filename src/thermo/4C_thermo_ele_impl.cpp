@@ -1814,15 +1814,23 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
         for (int i = 0; i < nsd_; ++i)
         {
           dCinv_dd(0, gid) += -2 * Cinv(0, i) * derxy_(i, n) * invdefgrd(0, k);
-          dCinv_dd(1, gid) += -2 * Cinv(1, i) * derxy_(i, n) * invdefgrd(1, k);
-          dCinv_dd(2, gid) += -2 * Cinv(2, i) * derxy_(i, n) * invdefgrd(2, k);
-          /* ~~~ */
-          dCinv_dd(3, gid) += -Cinv(0, i) * derxy_(i, n) * invdefgrd(1, k) -
-                              invdefgrd(0, k) * derxy_(i, n) * Cinv(1, i);
-          dCinv_dd(4, gid) += -Cinv(1, i) * derxy_(i, n) * invdefgrd(2, k) -
-                              invdefgrd(1, k) * derxy_(i, n) * Cinv(2, i);
-          dCinv_dd(5, gid) += -Cinv(2, i) * derxy_(i, n) * invdefgrd(0, k) -
-                              invdefgrd(2, k) * derxy_(i, n) * Cinv(0, i);
+          if constexpr (nsd_ == 2)
+          {
+            dCinv_dd(1, gid) += -2 * Cinv(1, i) * derxy_(i, n) * invdefgrd(1, k);
+            dCinv_dd(2, gid) += -Cinv(0, i) * derxy_(i, n) * invdefgrd(1, k) -
+                                invdefgrd(0, k) * derxy_(i, n) * Cinv(1, i);
+          }
+          else if constexpr (nsd_ == 3)
+          {
+            dCinv_dd(1, gid) += -2 * Cinv(1, i) * derxy_(i, n) * invdefgrd(1, k);
+            dCinv_dd(2, gid) += -2 * Cinv(2, i) * derxy_(i, n) * invdefgrd(2, k);
+            dCinv_dd(3, gid) += -Cinv(0, i) * derxy_(i, n) * invdefgrd(1, k) -
+                                invdefgrd(0, k) * derxy_(i, n) * Cinv(1, i);
+            dCinv_dd(4, gid) += -Cinv(1, i) * derxy_(i, n) * invdefgrd(2, k) -
+                                invdefgrd(1, k) * derxy_(i, n) * Cinv(2, i);
+            dCinv_dd(5, gid) += -Cinv(2, i) * derxy_(i, n) * invdefgrd(0, k) -
+                                invdefgrd(2, k) * derxy_(i, n) * Cinv(0, i);
+          }
         }
       }
     }  // end DCinv_dd
@@ -2277,13 +2285,11 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_dissipation_fint_tang(
   {
     const auto& x = nodes[i]->x();
     // (8x3) = (nen_xnsd_)
-    xrefe(i, 0) = x[0];
-    xrefe(i, 1) = x[1];
-    xrefe(i, 2) = x[2];
-
-    xcurr(i, 0) = xrefe(i, 0) + disp[i * nsd_ + 0];
-    xcurr(i, 1) = xrefe(i, 1) + disp[i * nsd_ + 1];
-    xcurr(i, 2) = xrefe(i, 2) + disp[i * nsd_ + 2];
+    for (int j = 0; j < nsd_; ++j)
+    {
+      xrefe(i, j) = x[j];
+      xcurr(i, j) = x[j] + disp[i * nsd_ + j];
+    }
   }
 
   // --------------------------------------------------------------- initialise
@@ -2731,9 +2737,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::radiation(
     {
       const auto& x = nodes[i]->x();
       // (8x3) = (nen_xnsd_)
-      xrefe(i, 0) = x[0];
-      xrefe(i, 1) = x[1];
-      xrefe(i, 2) = x[2];
+      for (int j = 0; j < nsd_; j++) xrefe(i, j) = x[j];
     }
 
 
@@ -2886,13 +2890,11 @@ void Discret::ELEMENTS::TemperImpl<distype>::initial_and_current_nodal_position_
       ele, xyze_);
   for (int i = 0; i < nen_; ++i)
   {
-    xcurr(i, 0) = xyze_(0, i) + disp[i * nsd_ + 0];
-    xcurr(i, 1) = xyze_(1, i) + disp[i * nsd_ + 1];
-    xcurr(i, 2) = xyze_(2, i) + disp[i * nsd_ + 2];
-
-    xcurrrate(i, 0) = vel[i * nsd_ + 0];
-    xcurrrate(i, 1) = vel[i * nsd_ + 1];
-    xcurrrate(i, 2) = vel[i * nsd_ + 2];
+    for (int j = 0; j < nsd_; ++j)
+    {
+      xcurr(i, j) = xyze_(j, i) + disp[i * nsd_ + j];
+      xcurrrate(i, j) = vel[i * nsd_ + j];
+    }
   }
 }
 
@@ -3213,24 +3215,51 @@ void Discret::ELEMENTS::TemperImpl<distype>::calculate_cauchy_greens(
   // copy to matrix notation
   // rate vector Crate C'
   // C' = { C11', C22', C33', C12', C23', C31' }
-  Cratevct(0) = Crate(0, 0);
-  Cratevct(1) = Crate(1, 1);
-  Cratevct(2) = Crate(2, 2);
-  Cratevct(3) = Crate(0, 1);
-  Cratevct(4) = Crate(1, 2);
-  Cratevct(5) = Crate(2, 0);
+  if constexpr (nsd_ == 1)
+  {
+    Cratevct(0) = Crate(0, 0);
+  }
+  else if constexpr (nsd_ == 2)
+  {
+    Cratevct(0) = Crate(0, 0);
+    Cratevct(1) = Crate(1, 1);
+    Cratevct(2) = Crate(0, 1);
+  }
+  else if constexpr (nsd_ == 3)
+  {
+    Cratevct(0) = Crate(0, 0);
+    Cratevct(1) = Crate(1, 1);
+    Cratevct(2) = Crate(2, 2);
+    Cratevct(3) = Crate(0, 1);
+    Cratevct(4) = Crate(1, 2);
+    Cratevct(5) = Crate(2, 0);
+  }
 
   // build the inverse of the right Cauchy-Green deformation gradient C^{-1}
   // C^{-1} = F^{-1} . F^{-T}
   Cinv.multiply_nt((*invdefgrd), (*invdefgrd));
   // Cinvvct: C^{-1} in Voigt-/vector notation
   // C^{-1} = { C11^{-1}, C22^{-1}, C33^{-1}, C12^{-1}, C23^{-1}, C31^{-1} }
-  Cinvvct(0) = Cinv(0, 0);
-  Cinvvct(1) = Cinv(1, 1);
-  Cinvvct(2) = Cinv(2, 2);
-  Cinvvct(3) = Cinv(0, 1);
-  Cinvvct(4) = Cinv(1, 2);
-  Cinvvct(5) = Cinv(2, 0);
+
+  if constexpr (nsd_ == 1)
+  {
+    Cinvvct(0) = Cinv(0, 0);
+  }
+  else if constexpr (nsd_ == 2)
+  {
+    Cinvvct(0) = Cinv(0, 0);
+    Cinvvct(1) = Cinv(1, 1);
+    Cinvvct(2) = Cinv(0, 1);
+  }
+  else if constexpr (nsd_ == 3)
+  {
+    Cinvvct(0) = Cinv(0, 0);
+    Cinvvct(1) = Cinv(1, 1);
+    Cinvvct(2) = Cinv(2, 2);
+    Cinvvct(3) = Cinv(0, 1);
+    Cinvvct(4) = Cinv(1, 2);
+    Cinvvct(5) = Cinv(2, 0);
+  }
 }
 
 template <Core::FE::CellType distype>

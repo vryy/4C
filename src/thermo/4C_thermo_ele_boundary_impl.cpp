@@ -72,26 +72,6 @@ Thermo::TemperBoundaryImplInterface* Thermo::TemperBoundaryImplInterface::impl(
       if (cp3 == nullptr) cp3 = new TemperBoundaryImpl<Core::FE::CellType::tri3>(numdofpernode);
       return cp3;
     }
-    /*  case Core::FE::CellType::tri6:
-    {
-      static TemperBoundaryImpl<Core::FE::CellType::tri6>* cp6;
-      if (cp6 == nullptr)
-        cp6 = new TemperBoundaryImpl<Core::FE::CellType::tri6>(numdofpernode);
-      return cp6;
-    }*/
-    case Core::FE::CellType::line2:
-    {
-      static TemperBoundaryImpl<Core::FE::CellType::line2>* cl2;
-      if (cl2 == nullptr) cl2 = new TemperBoundaryImpl<Core::FE::CellType::line2>(numdofpernode);
-      return cl2;
-    } /*
-     case Core::FE::CellType::line3:
-     {
-       static TemperBoundaryImpl<Core::FE::CellType::line3>* cl3;
-       if (cl3 == nullptr)
-         cl3 = new TemperBoundaryImpl<Core::FE::CellType::line3>(numdofpernode);
-       return cl3;
-     }*/
     default:
       FOUR_C_THROW("Shape %d (%d nodes) not supported", ele->shape(), ele->num_node());
       break;
