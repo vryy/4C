@@ -300,10 +300,9 @@ std::vector<double> Discret::ELEMENTS::SoTet4::element_center_refe_coords()
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
   }
-  const Core::FE::CellType distype = shape();
   Core::LinAlg::Matrix<NUMNOD_SOTET4, 1> funct;
   // Centroid of a tet with (0,1)(0,1)(0,1) is (0.25, 0.25, 0.25)
-  Core::FE::shape_function_3d(funct, 0.25, 0.25, 0.25, distype);
+  Core::FE::shape_function_3d(funct, 0.25, 0.25, 0.25, Core::FE::CellType::tet4);
   Core::LinAlg::Matrix<1, NUMDIM_SOTET4> midpoint;
   // midpoint.multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.multiply_tn(funct, xrefe);
