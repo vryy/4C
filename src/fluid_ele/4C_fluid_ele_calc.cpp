@@ -8878,17 +8878,24 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_grad
   // cauchystress = tau
   cauchystress.scale(fluiddynamicviscosity);
   // cauchystress finished
-  cauchystress(0, 0) += -pressint(0, 0);
-  cauchystress(1, 1) += -pressint(0, 0);
-  cauchystress(2, 2) += -pressint(0, 0);
+  for (int d = 0; d < nsd_; ++d) cauchystress(d, d) += -pressint(0, 0);
 
   // save cauchystress row for row as vector [11 22 33 12 23 13]
-  elevec1_epetra(0) = cauchystress(0, 0);
-  elevec1_epetra(1) = cauchystress(1, 1);
-  elevec1_epetra(2) = cauchystress(2, 2);
-  elevec1_epetra(3) = cauchystress(0, 1);
-  elevec1_epetra(4) = cauchystress(1, 2);
-  elevec1_epetra(5) = cauchystress(0, 2);
+  if constexpr (nsd_ == 2)
+  {
+    elevec1_epetra(0) = cauchystress(0, 0);
+    elevec1_epetra(1) = cauchystress(1, 1);
+    elevec1_epetra(2) = cauchystress(0, 1);
+  }
+  else if constexpr (nsd_ == 3)
+  {
+    elevec1_epetra(0) = cauchystress(0, 0);
+    elevec1_epetra(1) = cauchystress(1, 1);
+    elevec1_epetra(2) = cauchystress(2, 2);
+    elevec1_epetra(3) = cauchystress(0, 1);
+    elevec1_epetra(4) = cauchystress(1, 2);
+    elevec1_epetra(5) = cauchystress(0, 2);
+  }
 
   if (elevec1_epetra.numRows() == 7)
   {
@@ -9067,9 +9074,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
     for (int node = 0; node < nen_; node++)
     {
       std::vector<double> backgrdxi(nsd_);
-      backgrdxi[0] = nodalrefcoords[node][0];
-      backgrdxi[1] = nodalrefcoords[node][1];
-      backgrdxi[2] = nodalrefcoords[node][2];
+      for (int i = 0; i < nsd_; i++) backgrdxi[i] = nodalrefcoords[node][i];
 
       if (static_cast<Core::Nodes::ImmersedNode*>(ele->nodes()[node])->is_matched())
       {
@@ -9170,9 +9175,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
              iquad != intpoints_fluid_bound.end(); ++iquad)
         {
           std::vector<double> backgrdxi(nsd_);
-          backgrdxi[0] = iquad.point()[0];
-          backgrdxi[1] = iquad.point()[1];
-          backgrdxi[2] = iquad.point()[2];
+          for (int i = 0; i < nsd_; i++) backgrdxi[i] = iquad.point()[i];
 
           bool gp_has_projected_divergence = false;
           if (immersedele->get_rcp_int_point_has_projected_divergence() != Teuchos::null)
@@ -9373,9 +9376,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_ve
     for (int node = 0; node < this->nen_; node++)
     {
       std::vector<double> backgrdfluidxi(nsd_);
-      backgrdfluidxi[0] = nodalrefcoords[node][0];
-      backgrdfluidxi[1] = nodalrefcoords[node][1];
-      backgrdfluidxi[2] = nodalrefcoords[node][2];
+      for (int i = 0; i < nsd_; i++) backgrdfluidxi[i] = nodalrefcoords[node][i];
 
       if (static_cast<Core::Nodes::ImmersedNode*>(ele->nodes()[node])->is_matched())
       {
