@@ -50,6 +50,8 @@ function(four_c_add_google_test_executable TESTNAME)
     ${assert_mpi_file}
     ${FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_SOURCE}
     )
+  # Store unit test executables directly inside the tests/ directory
+  set_target_properties(${TESTNAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
   # Do not try to build tests as unity files.
   set_target_properties(${TESTNAME} PROPERTIES UNITY_BUILD OFF)
 
