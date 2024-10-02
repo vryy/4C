@@ -74,11 +74,12 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
       for (int gp = 0; gp < numgp; ++gp)
       {
         // get gauss points from integration rule
-        double xi_gp = (Membrane<distype>::intpoints_).qxg[gp][0];
-        double eta_gp = (Membrane<distype>::intpoints_).qxg[gp][1];
+        Core::LinAlg::Matrix<2, 1> xi_eta;
+        xi_eta(0) = (Membrane<distype>::intpoints_).qxg[gp][0];
+        xi_eta(1) = (Membrane<distype>::intpoints_).qxg[gp][1];
 
         // get shape functions and derivatives in the plane of the element
-        Core::FE::shape_function_2d(shapefcts, xi_gp, eta_gp, shape());
+        Core::FE::shape_function<distype>(xi_eta, shapefcts);
 
         // scalar at current gp
         std::vector<double> scalar_curr_gp(numscal, 0.0);

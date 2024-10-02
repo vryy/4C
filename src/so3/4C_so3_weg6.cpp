@@ -263,10 +263,9 @@ std::vector<double> Discret::ELEMENTS::SoWeg6::element_center_refe_coords()
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];
   }
-  const Core::FE::CellType distype = shape();
   Core::LinAlg::Matrix<NUMNOD_WEG6, 1> funct;
   // Element midpoint at r=s=1/3, t=0.0
-  Core::FE::shape_function_3d(funct, 1.0 / 3.0, 1.0 / 3.0, 0.0, distype);
+  Core::FE::shape_function_3d(funct, 1.0 / 3.0, 1.0 / 3.0, 0.0, Core::FE::CellType::wedge6);
   Core::LinAlg::Matrix<1, NUMDIM_WEG6> midpoint;
   // midpoint.multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.multiply_tn(funct, xrefe);

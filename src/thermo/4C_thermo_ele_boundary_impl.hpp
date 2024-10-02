@@ -102,6 +102,8 @@ namespace Thermo
   template <Core::FE::CellType distype>
   class TemperBoundaryImpl : public TemperBoundaryImplInterface
   {
+    static_assert(Core::FE::dim<distype> == 2, "Only 2D elements are supported.");
+
    public:
     /// Constructor
     TemperBoundaryImpl(int numdofpernode);

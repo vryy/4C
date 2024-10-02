@@ -366,39 +366,9 @@ Mortar::Projector* Mortar::Projector::impl(const Mortar::Element& sele, const Mo
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs4,
               Core::FE::CellType::nurbs4>::instance();
         }
-        case Core::FE::CellType::nurbs8:
-        {
-          return ProjectorCalcEleBased<Core::FE::CellType::nurbs4,
-              Core::FE::CellType::nurbs8>::instance();
-        }
         case Core::FE::CellType::nurbs9:
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs4,
-              Core::FE::CellType::nurbs9>::instance();
-        }
-        default:
-          FOUR_C_THROW("Element shape not supported!");
-          break;
-      }
-      break;
-    }
-    case Core::FE::CellType::nurbs8:
-    {
-      switch (mele.shape())
-      {
-        case Core::FE::CellType::nurbs4:
-        {
-          return ProjectorCalcEleBased<Core::FE::CellType::nurbs8,
-              Core::FE::CellType::nurbs4>::instance();
-        }
-        case Core::FE::CellType::nurbs8:
-        {
-          return ProjectorCalcEleBased<Core::FE::CellType::nurbs8,
-              Core::FE::CellType::nurbs8>::instance();
-        }
-        case Core::FE::CellType::nurbs9:
-        {
-          return ProjectorCalcEleBased<Core::FE::CellType::nurbs8,
               Core::FE::CellType::nurbs9>::instance();
         }
         default:
@@ -415,11 +385,6 @@ Mortar::Projector* Mortar::Projector::impl(const Mortar::Element& sele, const Mo
         {
           return ProjectorCalcEleBased<Core::FE::CellType::nurbs9,
               Core::FE::CellType::nurbs4>::instance();
-        }
-        case Core::FE::CellType::nurbs8:
-        {
-          return ProjectorCalcEleBased<Core::FE::CellType::nurbs9,
-              Core::FE::CellType::nurbs8>::instance();
         }
         case Core::FE::CellType::nurbs9:
         {
