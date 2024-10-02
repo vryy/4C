@@ -194,17 +194,22 @@ namespace Core::LinAlg
    */
   Teuchos::RCP<SparseMatrix> matrix_transpose(const SparseMatrix& A);
 
-  /*!
-   \brief Compute sparse inverse matrix of a sparse matrix explicitly
-
-   \warning This is an expensive operation depending on the density of the sparse operator!
-
-   \pre Matrix needs to be completed for this operation.
-
-   \param A                (in) : Matrix to invert
-   \param sparsity_pattern (in) : Sparsity pattern to calculate the sparse inverse of A on
-
-   \return Sparse inverse A^(-1) of the input matrix A.
+  /**
+   * \brief Compute sparse inverse matrix of a sparse matrix explicitly
+   *
+   * \warning This is an expensive operation depending on the density of the sparse operator!
+   *
+   * \pre Matrix needs to be completed for this operation.
+   *
+   * \param A                (in) : Matrix to invert
+   * \param sparsity_pattern (in) : Sparsity pattern to calculate the sparse inverse of A on
+   *
+   * The implementation is loosely based on:
+   * M. J. Grote and T. Huckle: Parallel preconditioning with sparse approximate inverses.
+   * SIAM Journal on Scientific Computing, 18(3):838-853, 1997,
+   * https://doi.org/10.1137/S1064827594276552
+   *
+   * \return Sparse inverse A^(-1) of the input matrix A.
    */
   Teuchos::RCP<SparseMatrix> matrix_sparse_inverse(
       const SparseMatrix& A, Teuchos::RCP<Epetra_CrsGraph> sparsity_pattern);

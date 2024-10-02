@@ -1,23 +1,20 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Unit tests for the Vector wrapper
+\brief Unit tests for the sparse algebra math utils
 
 \level 0
 */
-
+/*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
 
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
-#include "4C_linalg_utils_sparse_algebra_print.hpp"
+#include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
-// Epetra related headers
-#include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
 #include <EpetraExt_CrsMatrixIn.h>
-#include <Teuchos_RCPDecl.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -28,7 +25,6 @@ namespace
    public:
     //! Testing parameters
     Teuchos::RCP<Epetra_Comm> comm_;
-    static constexpr double TOL = 1.0e-14;
 
    protected:
     SparseAlgebraMathTest() { comm_ = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_WORLD)); }
@@ -59,7 +55,7 @@ namespace
     EXPECT_EQ(A_sparse_nnz, A_inverse_nnz);
 
     // Check for overall norm of matrix inverse
-    EXPECT_NEAR(A_inverse->norm_frobenius(), 3.037251711528645, SparseAlgebraMathTest::TOL);
+    EXPECT_NEAR(A_inverse->norm_frobenius(), 3.037251711528645, 1e-12);
   }
 
   /** The test setup is based on the given nonsymmetric matrix "nonsym.mm" constructed with MATLAB.
@@ -97,7 +93,7 @@ namespace
     EXPECT_EQ(A_sparse_nnz, A_inverse_nnz);
 
     // Check for overall norm of matrix inverse
-    EXPECT_NEAR(A_inverse->norm_frobenius(), 0.1235706050986417, SparseAlgebraMathTest::TOL);
+    EXPECT_NEAR(A_inverse->norm_frobenius(), 0.1235706050986417, 1e-12);
 
     // Check fist matrix row of inverse
     if (comm_->MyPID() == 0)
@@ -106,12 +102,53 @@ namespace
       int length;
       A_inverse->epetra_matrix()->ExtractMyRowView(0, length, values);
 
-      EXPECT_NEAR(values[0], 0.1, SparseAlgebraMathTest::TOL);
-      EXPECT_NEAR(values[1], -0.016666666666666673, SparseAlgebraMathTest::TOL);
-      EXPECT_NEAR(values[2], 0.0046666666666666688, SparseAlgebraMathTest::TOL);
+      EXPECT_NEAR(values[0], 0.1, 1e-12);
+      EXPECT_NEAR(values[1], -0.016666666666666673, 1e-12);
+      EXPECT_NEAR(values[2], 0.0046666666666666688, 1e-12);
     }
   }
 
+  /** The test setup is based on a beam discretization with the given block-diagonal matrix
+   * "beam.mm", as they appear in beam-solid volume meshtying.
+   *
+   * In a first step the matrix graph of A is sparsified, then a sparse inverse of A is calculated
+   * on that sparsity pattern and finally the inverse matrix is again filtered. The algorithmic
+   * procedure is loosely based on ParaSails and the following publications:
+   *
+   * E. Chow: Parallel implementation and practical use of sparse approximate inverse
+   * preconditioners with a priori sparsity patterns.
+   * The International Journal of High Performance Computing Applications, 15(1):56-74, 2001,
+   * https://doi.org/10.1177/109434200101500106
+   *
+   * E. Chow: A Priori Sparsity Patterns for Parallel Sparse Approximate Inverse Preconditioners.
+   * SIAM Journal on Scientific Computing, 21(5):1804-1822, 2000,
+   * https://doi.org/10.1137/S106482759833913X
+   */
+  TEST_F(SparseAlgebraMathTest, MatrixSparseInverse3)
+  {
+    Epetra_CrsMatrix* A;
+    const char* filename = "test_matrices/beam.mm";
+
+    int err = EpetraExt::MatrixMarketFileToCrsMatrix(filename, *comm_, A);
+    if (err != 0) FOUR_C_THROW("Matrix read failed.");
+    Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
+    Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
+
+    const double tol = 1e-8;
+    Teuchos::RCP<Epetra_CrsGraph> sparsity_pattern =
+        Core::LinAlg::threshold_matrix_graph(A_sparse, tol);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> A_inverse =
+        Core::LinAlg::matrix_sparse_inverse(A_sparse, sparsity_pattern);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> A_thresh =
+        Core::LinAlg::threshold_matrix(*A_inverse, tol);
+
+    // Check for global entries
+    const int A_inverse_nnz = A_inverse->epetra_matrix()->NumGlobalNonzeros();
+    EXPECT_EQ(A_inverse_nnz, 115760);
+
+    // Check for overall norm of matrix inverse
+    EXPECT_NEAR(A_inverse->norm_frobenius(), 8.31688788510637e+06, 1e-6);
+  }
 }  // namespace
 
 FOUR_C_NAMESPACE_CLOSE

@@ -1,4 +1,4 @@
-%% MatrixMarket matrix coordinate real general
+%%MatrixMarket matrix coordinate real general
 5 5 9
 1 1 10.0
 1 3 5.0
