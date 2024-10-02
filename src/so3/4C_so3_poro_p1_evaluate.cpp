@@ -451,24 +451,6 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::nonlinear_stiffness_poroelas
         }
       }
     }
-    else
-    {
-      const double dt = params.get<double>("delta time");
-      // if the reaction part is not supposed to be computed separately, we add it to the stiffness
-      //(this is not the best way to do it, but it only happens once during initialization)
-      for (int k = 0; k < Base::numnod_; k++)
-      {
-        for (int l = 0; l < Base::numdim_; l++)
-        {
-          for (int i = 0; i < Base::numnod_; i++)
-          {
-            for (int j = 0; j < Base::numdim_; j++)
-              (*stiffmatrix)(i * noddof_ + j, k * noddof_ + l) +=
-                  erea_v(i * Base::numdim_ + j, k * Base::numdim_ + l) / dt;
-          }
-        }
-      }
-    }
 
     for (int k = 0; k < Base::numnod_; k++)
     {
