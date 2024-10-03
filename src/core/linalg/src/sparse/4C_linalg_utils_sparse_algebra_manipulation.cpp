@@ -10,6 +10,7 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
 #include "4C_linalg_sparsematrix.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_ArrayRCP.hpp>
@@ -288,6 +289,23 @@ Teuchos::RCP<Epetra_CrsGraph> Core::LinAlg::threshold_matrix_graph(
   sparsity_pattern->FillComplete();
 
   return sparsity_pattern;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsGraph> Core::LinAlg::enrich_matrix_graph(const SparseMatrix& A, int power)
+{
+  SparseMatrix AA(A, Core::LinAlg::Copy);
+  AA.complete();
+
+  for (int pow = 0; pow < power - 1; pow++)
+  {
+    Teuchos::RCP<SparseMatrix> AAA = Core::LinAlg::matrix_multiply(AA, false, A, false, true);
+    AAA->complete();
+    AA = *AAA;
+  }
+
+  return Teuchos::rcp(new Epetra_CrsGraph(AA.epetra_matrix()->Graph()));
 }
 
 /*----------------------------------------------------------------------*

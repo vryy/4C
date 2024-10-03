@@ -134,20 +134,45 @@ namespace
     Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
 
-    const double tol = 1e-8;
-    Teuchos::RCP<Epetra_CrsGraph> sparsity_pattern =
-        Core::LinAlg::threshold_matrix_graph(A_sparse, tol);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> A_inverse =
-        Core::LinAlg::matrix_sparse_inverse(A_sparse, sparsity_pattern);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> A_thresh =
-        Core::LinAlg::threshold_matrix(*A_inverse, tol);
+    {
+      const double tol = 1e-8;
+      Teuchos::RCP<Epetra_CrsGraph> sparsity_pattern =
+          Core::LinAlg::threshold_matrix_graph(A_sparse, tol);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> A_inverse =
+          Core::LinAlg::matrix_sparse_inverse(A_sparse, sparsity_pattern);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> A_thresh =
+          Core::LinAlg::threshold_matrix(*A_inverse, tol);
 
-    // Check for global entries
-    const int A_inverse_nnz = A_inverse->epetra_matrix()->NumGlobalNonzeros();
-    EXPECT_EQ(A_inverse_nnz, 115760);
+      // Check for global entries
+      const int A_inverse_nnz = A_inverse->epetra_matrix()->NumGlobalNonzeros();
+      EXPECT_EQ(A_inverse_nnz, 115760);
 
-    // Check for overall norm of matrix inverse
-    EXPECT_NEAR(A_inverse->norm_frobenius(), 8.31688788510637e+06, 1e-6);
+      // Check for overall norm of matrix inverse
+      EXPECT_NEAR(A_inverse->norm_frobenius(), 8.31688788510637e+06, 1e-6);
+    }
+
+    {
+      const double tol = 1e-10;
+      const int power = 3;
+
+      Teuchos::RCP<Epetra_CrsGraph> sparsity_pattern =
+          Teuchos::rcp(new Epetra_CrsGraph(A->Graph()));
+
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> A_thresh =
+          Core::LinAlg::threshold_matrix(A_sparse, tol);
+      Teuchos::RCP<Epetra_CrsGraph> sparsity_pattern_enriched =
+          Core::LinAlg::enrich_matrix_graph(*A_thresh, power);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> A_inverse =
+          Core::LinAlg::matrix_sparse_inverse(A_sparse, sparsity_pattern_enriched);
+      A_thresh = Core::LinAlg::threshold_matrix(*A_inverse, tol);
+
+      // Check for global entries
+      const int A_inverse_nnz = A_thresh->epetra_matrix()->NumGlobalNonzeros();
+      EXPECT_EQ(A_inverse_nnz, 228388);
+
+      // Check for overall norm of matrix inverse
+      EXPECT_NEAR(A_thresh->norm_frobenius(), 1.1473820881252188e+07, 1e-6);
+    }
   }
 }  // namespace
 

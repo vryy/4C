@@ -105,6 +105,97 @@ namespace
     const int A_thresh_nnz = G->NumGlobalNonzeros();
     EXPECT_EQ(A_thresh_nnz, 13);
   }
+
+  /** The test setup is based on the one-dimensional Poisson matrix "poisson1d.mm" constructed
+   * with MATLAB.
+   *
+   * Taking the powers of a matrix and therefore enriching it's graph (a little bit related to
+   * MATLAB's: B = mpower(A, power)
+   */
+  TEST_F(SparseAlgebraManipulationTest, EnrichMatrixGraph1)
+  {
+    Epetra_CrsMatrix* A;
+    const char* filename = "test_matrices/poisson1d.mm";
+
+    int err = EpetraExt::MatrixMarketFileToCrsMatrix(filename, *comm_, A);
+    if (err != 0) FOUR_C_THROW("Matrix read failed.");
+    Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
+    Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
+
+    {
+      const int power = 0;
+      Teuchos::RCP<Epetra_CrsGraph> graph_enriched =
+          Core::LinAlg::enrich_matrix_graph(A_sparse, power);
+
+      // Check for global entries
+      EXPECT_EQ(graph_enriched->NumGlobalNonzeros(), 58);
+    }
+
+    {
+      const int power = -3;
+      Teuchos::RCP<Epetra_CrsGraph> graph_enriched =
+          Core::LinAlg::enrich_matrix_graph(A_sparse, power);
+
+      // Check for global entries
+      EXPECT_EQ(graph_enriched->NumGlobalNonzeros(), 58);
+    }
+
+    {
+      const int power = 1;
+      Teuchos::RCP<Epetra_CrsGraph> graph_enriched =
+          Core::LinAlg::enrich_matrix_graph(A_sparse, power);
+
+      // Check for global entries
+      EXPECT_EQ(graph_enriched->NumGlobalNonzeros(), 58);
+    }
+
+    {
+      const int power = 2;
+      Teuchos::RCP<Epetra_CrsGraph> graph_enriched =
+          Core::LinAlg::enrich_matrix_graph(A_sparse, power);
+
+      // Check for global entries
+      EXPECT_EQ(graph_enriched->NumGlobalNonzeros(), 94);
+    }
+
+    {
+      const int power = 3;
+      Teuchos::RCP<Epetra_CrsGraph> graph_enriched =
+          Core::LinAlg::enrich_matrix_graph(A_sparse, power);
+
+      // Check for global entries
+      EXPECT_EQ(graph_enriched->NumGlobalNonzeros(), 128);
+    }
+
+    {
+      const int power = 4;
+      Teuchos::RCP<Epetra_CrsGraph> graph_enriched =
+          Core::LinAlg::enrich_matrix_graph(A_sparse, power);
+
+      // Check for global entries
+      EXPECT_EQ(graph_enriched->NumGlobalNonzeros(), 160);
+    }
+  }
+
+  TEST_F(SparseAlgebraManipulationTest, EnrichMatrixGraph2)
+  {
+    Epetra_CrsMatrix* A;
+    const char* filename = "test_matrices/beam.mm";
+
+    int err = EpetraExt::MatrixMarketFileToCrsMatrix(filename, *comm_, A);
+    if (err != 0) FOUR_C_THROW("Matrix read failed.");
+    Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
+    Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
+
+    {
+      const int power = 3;
+      Teuchos::RCP<Epetra_CrsGraph> graph_enriched =
+          Core::LinAlg::enrich_matrix_graph(A_sparse, power);
+
+      // Check for global entries
+      EXPECT_EQ(graph_enriched->NumGlobalNonzeros(), 228400);
+    }
+  }
 }  // namespace
 
 FOUR_C_NAMESPACE_CLOSE
