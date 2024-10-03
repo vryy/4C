@@ -11,9 +11,10 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_multi_vector.hpp"
+
 #include <Epetra_FEVector.h>
 #include <Epetra_IntVector.h>
-#include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
@@ -33,7 +34,7 @@ namespace Core::LinAlg
   template <typename T>
   class Vector
   {
-    static_assert(std::is_same<T, double>::value, "Only double is supported for now");
+    static_assert(std::is_same_v<T, double>, "Only double is supported for now");
 
    public:
     /// Basic vector constructor to create vector based on a map and initialize memory with zeros
@@ -50,11 +51,12 @@ namespace Core::LinAlg
 
     Vector &operator=(const Vector &other);
 
-    Vector(Vector &&other) noexcept;
-
-    Vector &operator=(Vector &&other) noexcept;
-
     ~Vector() = default;
+
+    // Implicit conversion to MultiVector: the MultiVector will view the same content and only have
+    // a single column.
+    operator const MultiVector<T> &() const;
+    operator MultiVector<T> &();
 
     // (Implicit) conversions: they all return references or RCPs, never copies
     const Epetra_Vector &get_ref_of_Epetra_Vector() const { return *vector_; }
@@ -225,7 +227,7 @@ namespace Core::LinAlg
     //! Puts element-wise reciprocal values of input Multi-vector in target.
     int Reciprocal(const Epetra_MultiVector &A) { return vector_->Reciprocal(A); }
 
-    //! Multiply a Epetra_MultiVector with another, element-by-element.
+    //! Multiply a Core::LinAlg::MultiVector<double> with another, element-by-element.
     int Multiply(double ScalarAB, const Epetra_MultiVector &A, const Epetra_MultiVector &B,
         double ScalarThis)
     {
@@ -312,9 +314,34 @@ namespace Core::LinAlg
     }
 
    private:
-    Teuchos::RCP<Epetra_Vector> vector_;
+    Vector() = default;
 
-    friend class VectorView<T>;
+    /**
+     * This function ensures the view necessary to obtain MultiVector object is in sync.
+     * Internally, it will be only called once. However, it is important that this call is delayed
+     * until a view is actually required. If views were constructed ahead of time, we could run into
+     * an infinite recursion between Vector and MultiVector.
+     */
+    void sync_view() const;
+
+    /**
+     * Special constructor useful for converting a column of our MultiVector to our Vector.
+     * @param view The internals that this Vector should view.
+     */
+    [[nodiscard]] static Teuchos::RCP<Vector<T>> create_view(const Epetra_Vector &view)
+    {
+      Teuchos::RCP<Vector<T>> ret(new Vector<T>);
+      ret->vector_ = Teuchos::make_rcp<Epetra_Vector>(Epetra_DataAccess::View, view, 0);
+      return ret;
+    }
+
+    //! The actual Epetra_Vector object.
+    Teuchos::RCP<Epetra_Vector> vector_;
+    //! MultiVector view of the Vector. This is used to allow implicit conversion to MultiVector.
+    mutable Teuchos::RCP<MultiVector<T>> multi_vector_view_;
+
+    friend class VectorView<Vector<T>>;
+    friend class MultiVector<T>;
   };
 
   /**
@@ -392,13 +419,14 @@ namespace Core::LinAlg
    * Temporary helper class for migration. View an Epetra_Vector as a Vector. Make sure that the
    * viewed vector lives longer than the view.
    */
-  template <typename T>
+  template <typename VectorType>
   class VectorView
   {
    public:
-    VectorView(Epetra_Vector &vector)
+    template <typename EpetraVectorType>
+    VectorView(EpetraVectorType &vector)
         // Construct something cheap, it will be overwritten anyway.
-        : view_vector_(Teuchos::make_rcp<Vector<T>>(vector.Map(), false))
+        : view_vector_(VectorType::create_view(vector))
     {
       // Replace the internals of the Vector with a viewing RCP.
       view_vector_->vector_ = Teuchos::rcpFromRef(vector);
@@ -412,19 +440,21 @@ namespace Core::LinAlg
     ~VectorView() = default;
 
     //! Allow implicit conversion to Vector for use in new interfaces.
-    operator Vector<T> &() { return *view_vector_; }
+    operator VectorType &() { return *view_vector_; }
 
     //! Allow implicit conversion to RCP<Vector> for use in new interfaces.
-    Teuchos::RCP<Vector<T>> &get_non_owning_rcp_ref() { return view_vector_; }
+    Teuchos::RCP<VectorType> &get_non_owning_rcp_ref() { return view_vector_; }
 
    private:
     //! Store inside an RCP because our interfaces frequently take references to RCPs.
-    Teuchos::RCP<Vector<T>> view_vector_;
+    Teuchos::RCP<VectorType> view_vector_;
   };
 
 
   // Template deduction guide for view of Epetra_Vector
-  VectorView(Epetra_Vector &)->VectorView<double>;
+  VectorView(Epetra_Vector &)->VectorView<Vector<double>>;
+  // Template deduction guide for view of Epetra_MultiVector
+  VectorView(Epetra_MultiVector &)->VectorView<MultiVector<double>>;
 
 }  // namespace Core::LinAlg
 
