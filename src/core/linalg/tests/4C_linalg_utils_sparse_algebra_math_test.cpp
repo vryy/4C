@@ -12,6 +12,7 @@
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
+#include "4C_unittest_utils_support_files_test.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <EpetraExt_CrsMatrixIn.h>
@@ -39,9 +40,9 @@ namespace
   TEST_F(SparseAlgebraMathTest, MatrixSparseInverse1)
   {
     Epetra_CrsMatrix* A;
-    const char* filename = "test_matrices/poisson1d.mm";
 
-    int err = EpetraExt::MatrixMarketFileToCrsMatrix(filename, *comm_, A);
+    int err = EpetraExt::MatrixMarketFileToCrsMatrix(
+        TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(), *comm_, A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
     Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
@@ -77,9 +78,9 @@ namespace
   TEST_F(SparseAlgebraMathTest, MatrixSparseInverse2)
   {
     Epetra_CrsMatrix* A;
-    const char* filename = "test_matrices/nonsym.mm";
 
-    int err = EpetraExt::MatrixMarketFileToCrsMatrix(filename, *comm_, A);
+    int err = EpetraExt::MatrixMarketFileToCrsMatrix(
+        TESTING::get_support_file_path("test_matrices/nonsym.mm").c_str(), *comm_, A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
     Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
@@ -127,9 +128,9 @@ namespace
   TEST_F(SparseAlgebraMathTest, MatrixSparseInverse3)
   {
     Epetra_CrsMatrix* A;
-    const char* filename = "test_matrices/beam.mm";
 
-    int err = EpetraExt::MatrixMarketFileToCrsMatrix(filename, *comm_, A);
+    int err = EpetraExt::MatrixMarketFileToCrsMatrix(
+        TESTING::get_support_file_path("test_matrices/beam.mm").c_str(), *comm_, A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
     Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);

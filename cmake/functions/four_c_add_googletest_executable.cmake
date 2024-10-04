@@ -1,7 +1,21 @@
 #! Add a unit test executable
 #
 # This executable may be run in serial or with NP*THREADS processors given as arguments
-# Usage: four_c_add_google_test_executable(<name> [NP <number of MPI-processes>] [THREADS <number of OpenMP threads>] SOURCE source1 [source2 ...])
+#
+# Usage: four_c_add_google_test_executable(
+#   <name>
+#   SOURCE source1 [source2 ...]
+#   [NP <number of MPI-processes>]
+#   [THREADS <number of OpenMP threads>]
+#   [SUPPORT_FILES support_file1 [support_file2 ...]])
+#
+# Arguments:
+#   <name> (required): The name of the test executable
+#   SOURCE (required): The source files of the test executable
+#   NP (optional): The number of MPI processes to use (default: 1)
+#   THREADS (optional): The number of OpenMP threads to use (default: 1)
+#   SUPPORT_FILES (optional): Additional files to be copied to the test directory. These files can be used as input
+#     files inside the tests and should be referred to relative to the current CMakeLists.txt file.
 #
 # Note: This function will do nothing if unit tests are not configured.
 function(four_c_add_google_test_executable TESTNAME)
@@ -11,7 +25,7 @@ function(four_c_add_google_test_executable TESTNAME)
 
   set(options "")
   set(oneValueArgs NP THREADS)
-  set(multiValueArgs SOURCE)
+  set(multiValueArgs SOURCE SUPPORT_FILES)
   cmake_parse_arguments(
     FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE
     "${options}"
@@ -52,6 +66,7 @@ function(four_c_add_google_test_executable TESTNAME)
     )
   # Store unit test executables directly inside the tests/ directory
   set_target_properties(${TESTNAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/tests)
+
   # Do not try to build tests as unity files.
   set_target_properties(${TESTNAME} PROPERTIES UNITY_BUILD OFF)
 
@@ -102,6 +117,20 @@ function(four_c_add_google_test_executable TESTNAME)
   set_tests_properties(
     ${TESTNAME}
     PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=${FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_THREADS}"
+    )
+
+  # Deal with additional support files
+  set(_support_file_dir "${CMAKE_BINARY_DIR}/tests/support_files/${TESTNAME}/")
+
+  foreach(support_file ${FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_SUPPORT_FILES})
+    # Get file name relative to current list file
+    cmake_path(RELATIVE_PATH support_file)
+    message(DEBUG "Copying support file ${support_file} to ${_support_file_dir}/${support_file}")
+
+    configure_file(${support_file} ${_support_file_dir}/${support_file} COPYONLY)
+  endforeach()
+  target_compile_definitions(
+    ${TESTNAME} PRIVATE -DFOUR_C_TEST_SUPPORT_FILE_DIR="${_support_file_dir}"
     )
 
   add_dependencies(unittests ${TESTNAME})

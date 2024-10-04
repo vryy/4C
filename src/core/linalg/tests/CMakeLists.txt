@@ -21,13 +21,14 @@ set(SOURCE_LIST
     4C_linalg_vector_test.cpp
     )
 
+file(GLOB_RECURSE SUPPORT_FILES test_matrices/*.mm)
+
 four_c_add_google_test_executable(
   ${TESTNAME}
   NP
   2
   SOURCE
   ${SOURCE_LIST}
+  SUPPORT_FILES
+  ${SUPPORT_FILES}
   )
-
-# copy test matrices to the unit-test build
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/test_matrices DESTINATION ${CMAKE_BINARY_DIR}/tests)
