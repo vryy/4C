@@ -7,14 +7,14 @@ RESTART                               0
 OUTPUT_BIN                            no
 STRUCT_DISP                           No
 FILESTEPS                             1000
-VERBOSITY                             Minimal
+VERBOSITY                             standard
 --------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                         1
 INT_STRATEGY                          Standard
 DYNAMICTYP                            Statics
 RESULTSEVRY                           1
 NLNSOL                                fullnewton
-PREDICT                               TangDis
+PREDICT                               ConstDis
 TIMESTEP                              0.1
 NUMSTEP                               10
 MAXTIME                               1.0
@@ -23,62 +23,21 @@ LOADLIN                               no
 NAME                                  Structure_Solver
 SOLVER                                Belos
 AZSOLVE                               GMRES
-AZPREC                                MueLu_BeamSolid
-MUELU_XML_FILE                        beam3eb_static_beam_to_solid_volume_meshtying_composite_muelu_linear.xml
-AZOUTPUT                              1
-AZTOL                                 1.0e-8
+AZPREC                                Teko
+TEKO_XML_FILE                         xml/block_preconditioner/beam_solid.xml
+AZTOL                                 1.0e-6
 AZCONV                                AZ_r0
--------------------------------------------------------------STRUCT NOX/Printing
-Error                               = Yes
-Warning                             = Yes
-Outer Iteration                     = Yes
-Inner Iteration                     = No
-Parameters                          = No
-Details                             = Yes
-Outer Iteration StatusTest          = Yes
-Linear Solver Details               = Yes
-Test Details                        = Yes
-Debug                               = No
------------------------------------------------------------IO/RUNTIME VTK OUTPUT
-OUTPUT_DATA_FORMAT                    binary
-INTERVAL_STEPS                        1
-EVERY_ITERATION                       no
--------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
-OUTPUT_STRUCTURE                      yes
-DISPLACEMENT                          yes
-ELEMENT_OWNER                         yes
-ELEMENT_GID                           yes
------------------------------------------------------IO/RUNTIME VTK OUTPUT/BEAMS
-OUTPUT_BEAMS                          yes
-DISPLACEMENT                          yes
-USE_ABSOLUTE_POSITIONS                no
-TRIAD_VISUALIZATIONPOINT              no
-STRAINS_GAUSSPOINT                    yes
-ELEMENT_GID                           yes
---------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT
-WRITE_OUTPUT                          yes
-NODAL_FORCES                          yes
-MORTAR_LAMBDA_DISCRET                 yes
-MORTAR_LAMBDA_CONTINUOUS              yes
-MORTAR_LAMBDA_CONTINUOUS_SEGMENTS     5
-SEGMENTATION                          yes
-INTEGRATION_POINTS                    yes
------------------------BEAM INTERACTION/BEAM TO SOLID SURFACE/RUNTIME VTK OUTPUT
-WRITE_OUTPUT                          yes
-NODAL_FORCES                          yes
-MORTAR_LAMBDA_DISCRET                 yes
-MORTAR_LAMBDA_CONTINUOUS              yes
-MORTAR_LAMBDA_CONTINUOUS_SEGMENTS     5
-SEGMENTATION                          yes
-INTEGRATION_POINTS                    yes
-AVERAGED_NORMALS                      yes
+AZREUSE                               1
+AZOUTPUT                              5
 ----------------------------------------------------------------BEAM INTERACTION
 REPARTITIONSTRATEGY                   Everydt
 --------------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                        Standard
 ----------------------------------------------------------------BINNING STRATEGY
-BIN_SIZE_LOWER_BOUND                  0.1
+BIN_SIZE_LOWER_BOUND                  0.3
 DOMAINBOUNDINGBOX -2.2 -1.2 -0.6 4 1.2 0.6
+---------------------------------------------------------------MESH PARTITIONING
+METHOD                                recursive_coordinate_bisection
 ---------------------------------BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING
 CONSTRAINT_STRATEGY                   penalty
 PENALTY_PARAMETER                     1000
@@ -87,8 +46,6 @@ CONTACT_DISCRETIZATION                mortar
 MORTAR_SHAPE_FUNCTION                 line2
 GEOMETRY_PAIR_STRATEGY                segmentation
 GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           2
-----------------------------------------------------------STRUCT NOX/Status Test
-XML File                            = beam3eb_static_beam_to_solid_volume_meshtying_composite_muelu_nonlinear.xml
 -----------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 10 NUE 0.3 DENS 0.0
 MAT 2 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 1000 DENS 0.0 CROSSAREA 6.361725123519332e-05 MOMIN 3.220623343781663e-10
@@ -99,8 +56,8 @@ STRUCTURE DIS structure NODE 181 QUANTITY dispz VALUE -4.81384962614363476e-02 T
 STRUCTURE DIS structure NODE 169 QUANTITY dispx VALUE  3.42055810667642735e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 169 QUANTITY dispy VALUE  1.58031845853480908e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 169 QUANTITY dispz VALUE  4.79646727419917179e-02 TOLERANCE 1e-8
-STRUCTURE SPECIAL QUANTITY num_iter_step_10 VALUE 3 TOLERANCE 1e-8
-STRUCTURE SPECIAL QUANTITY lin_iter_step_10 VALUE 1 TOLERANCE 1e-8
+STRUCTURE SPECIAL QUANTITY num_iter_step_10 VALUE 5 TOLERANCE 1e-8
+STRUCTURE SPECIAL QUANTITY lin_iter_step_10 VALUE 10 TOLERANCE 1e-8
 --------------------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 --------------------------------------------------DESIGN POINT DIRICH CONDITIONS
