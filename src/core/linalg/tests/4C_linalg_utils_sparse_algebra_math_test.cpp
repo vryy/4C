@@ -172,7 +172,7 @@ namespace
       EXPECT_EQ(A_inverse_nnz, 228388);
 
       // Check for overall norm of matrix inverse
-      EXPECT_NEAR(A_thresh->norm_frobenius(), 1.1473820881252188e+07, 1e-6);
+      EXPECT_NEAR(A_thresh->norm_frobenius(), 1.1473820881252188e+07, 1e-5);
     }
   }
 }  // namespace

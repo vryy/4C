@@ -295,17 +295,18 @@ Teuchos::RCP<Epetra_CrsGraph> Core::LinAlg::threshold_matrix_graph(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_CrsGraph> Core::LinAlg::enrich_matrix_graph(const SparseMatrix& A, int power)
 {
-  SparseMatrix AA(A, Core::LinAlg::Copy);
-  AA.complete();
+  SparseMatrix A_copy(A, Core::LinAlg::Copy);
+  A_copy.complete();
 
   for (int pow = 0; pow < power - 1; pow++)
   {
-    Teuchos::RCP<SparseMatrix> AAA = Core::LinAlg::matrix_multiply(AA, false, A, false, true);
-    AAA->complete();
-    AA = *AAA;
+    Teuchos::RCP<SparseMatrix> A_power =
+        Core::LinAlg::matrix_multiply(A_copy, false, A, false, true);
+    A_power->complete();
+    A_copy = *A_power;
   }
 
-  return Teuchos::rcp(new Epetra_CrsGraph(AA.epetra_matrix()->Graph()));
+  return Teuchos::rcp(new Epetra_CrsGraph(A_copy.epetra_matrix()->Graph()));
 }
 
 /*----------------------------------------------------------------------*

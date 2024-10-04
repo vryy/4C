@@ -108,7 +108,7 @@ namespace Core::LinAlg
   Teuchos::RCP<Epetra_CrsGraph> threshold_matrix_graph(
       const Core::LinAlg::SparseMatrix& A, const double threshold);
 
-  /*! \brief Enrich a graph based on it's powers.
+  /*! \brief Enrich a matrix graph based on it's powers.
    *
    *  \param A     (in) : Sparse matrix, which graph needs to be enriched
    *  \param power (in) : Power value

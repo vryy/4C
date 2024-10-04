@@ -390,13 +390,13 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_sparse_inverse(
     // 4. get direction-vector
     // diagonal needs an entry!
     Core::LinAlg::SerialDenseVector ek(Jk.size(), true);
-    ek[std::find(Jk.begin(), Jk.end(), k) - Jk.begin()] = 1.0;
+    ek[std::distance(Jk.begin(), std::find(Jk.begin(), Jk.end(), k))] = 1.0;
 
     // 5. solve linear system for x
     Core::LinAlg::SerialDenseVector localX(Ik_size);
     Teuchos::SerialQRDenseSolver<int, double> qrSolver;
-    qrSolver.setMatrix(Teuchos::rcp(&localA, false));
-    qrSolver.setVectors(Teuchos::rcp(&localX, false), Teuchos::rcp(&ek, false));
+    qrSolver.setMatrix(Teuchos::rcpFromRef(localA));
+    qrSolver.setVectors(Teuchos::rcpFromRef(localX), Teuchos::rcpFromRef(ek));
     const int err = qrSolver.solve();
     if (err != 0) FOUR_C_THROW("Error in serial QR solve.");
 
