@@ -166,67 +166,6 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_s
 
       break;
     }
-    case Core::LinearSolver::PreconditionerType::multigrid_muelu_beamsolid:
-    {
-      // Create the beam and solid maps
-      std::vector<int> solidDofs(0);
-      std::vector<int> beamDofs(0);
-
-      // right now we only allow euler-bernoulli beam elements
-      for (int i = 0; i < actdis.num_my_row_elements(); i++)
-      {
-        Core::Elements::Element* element = actdis.l_row_element(i);
-
-        if (BEAMINTERACTION::UTILS::is_beam_element(*element) &&
-            (element->element_type() != Discret::ELEMENTS::Beam3ebType::instance()))
-          FOUR_C_THROW("Only beam3eb elements are currently allowed!");
-      }
-
-      for (int i = 0; i < actdis.num_my_row_nodes(); i++)
-      {
-        const Core::Nodes::Node* node = actdis.l_row_node(i);
-
-        if (BEAMINTERACTION::UTILS::is_beam_node(*node))
-          actdis.dof(node, beamDofs);
-        else
-          actdis.dof(node, solidDofs);
-      }
-
-      Teuchos::RCP<Epetra_Map> rowmap1 = Teuchos::make_rcp<Epetra_Map>(
-          -1, solidDofs.size(), solidDofs.data(), 0, actdis.get_comm());
-      Teuchos::RCP<Epetra_Map> rowmap2 =
-          Teuchos::make_rcp<Epetra_Map>(-1, beamDofs.size(), beamDofs.data(), 0, actdis.get_comm());
-
-      std::vector<Teuchos::RCP<const Epetra_Map>> maps;
-      maps.emplace_back(rowmap1);
-      maps.emplace_back(rowmap2);
-
-      Teuchos::RCP<Core::LinAlg::MultiMapExtractor> extractor =
-          Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*actdis.dof_row_map(), maps));
-      linsolver->params()
-          .sublist("Teko Parameters")
-          .set<Teuchos::RCP<Core::LinAlg::MultiMapExtractor>>("extractor", extractor);
-
-      linsolver->put_solver_params_to_sub_params("Inverse1", linsolverparams,
-          Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
-      linsolver->params()
-          .sublist("Inverse1")
-          .set<Teuchos::RCP<Epetra_Map>>("null space: map", rowmap1);
-      actdis.compute_null_space_if_necessary(linsolver->params().sublist("Inverse1"));
-
-      linsolver->put_solver_params_to_sub_params("Inverse2", linsolverparams,
-          Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
-      linsolver->params()
-          .sublist("Inverse2")
-          .set<Teuchos::RCP<Epetra_Map>>("null space: map", rowmap2);
-      actdis.compute_null_space_if_necessary(linsolver->params().sublist("Inverse2"));
-
-      break;
-    }
     default:
     {
     }

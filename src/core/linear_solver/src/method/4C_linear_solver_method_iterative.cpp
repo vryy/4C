@@ -268,11 +268,6 @@ Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::create_precondition
   {
     preconditioner = Teuchos::make_rcp<Core::LinearSolver::MueLuPreconditioner>(params());
   }
-  else if (params().isSublist("MueLu (BeamSolid) Parameters"))
-  {
-    preconditioner =
-        Teuchos::make_rcp<Core::LinearSolver::MueLuBeamSolidBlockPreconditioner>(params());
-  }
   else if (params().isSublist("MueLu (Contact) Parameters"))
   {
     preconditioner = Teuchos::make_rcp<Core::LinearSolver::MueLuContactSpPreconditioner>(params());
