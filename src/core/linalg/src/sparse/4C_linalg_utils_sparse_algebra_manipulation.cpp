@@ -9,6 +9,8 @@
 
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
+#include "4C_linalg_sparsematrix.hpp"
+#include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_ArrayRCP.hpp>
@@ -197,6 +199,114 @@ void Core::LinAlg::extract_my_vector(
 
     target_values[tar_lid] = src_values[src_lid];
   }
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::threshold_matrix(
+    const Core::LinAlg::SparseMatrix& A, const double threshold)
+{
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> A_thresh =
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(A.row_map(), A.max_num_entries()));
+
+  for (int row = 0; row < A.epetra_matrix()->NumMyRows(); row++)
+  {
+    int nnz_of_row;
+    double* values;
+    int* indices;
+    A.epetra_matrix()->ExtractMyRowView(row, nnz_of_row, values, indices);
+
+    std::vector<double> values_thresh(nnz_of_row);
+    std::vector<int> indices_thresh(nnz_of_row);
+    int nnz_thresh = 0;
+
+    for (int i = 0; i < nnz_of_row; i++)
+    {
+      const int global_row = A.row_map().GID(row);
+      const int col = A.col_map().LID(global_row);
+
+      if (col == indices[i] || std::abs(values[i]) > std::abs(threshold))
+      {
+        indices_thresh[nnz_thresh] = A.col_map().GID(indices[i]);
+        values_thresh[nnz_thresh] = values[i];
+        nnz_thresh++;
+      }
+    }
+
+    indices_thresh.resize(nnz_thresh);
+    values_thresh.resize(nnz_thresh);
+
+    A_thresh->epetra_matrix()->InsertGlobalValues(
+        A.row_map().GID(row), nnz_thresh, values_thresh.data(), indices_thresh.data());
+  }
+
+  A_thresh->complete(A.domain_map(), A.range_map());
+
+  return A_thresh;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsGraph> Core::LinAlg::threshold_matrix_graph(
+    const Core::LinAlg::SparseMatrix& A, const double threshold)
+{
+  Teuchos::RCP<Epetra_CrsGraph> sparsity_pattern =
+      Teuchos::rcp(new Epetra_CrsGraph(Epetra_DataAccess::Copy, A.row_map(), A.max_num_entries()));
+
+  Core::LinAlg::Vector<double> diagonal(A.row_map(), true);
+  A.extract_diagonal_copy(diagonal);
+
+  Core::LinAlg::Vector<double> ghosted_diagonal(A.col_map(), true);
+  const Epetra_Import importer = Epetra_Import(A.col_map(), A.row_map());
+  ghosted_diagonal.Import(
+      diagonal.get_ref_of_Epetra_Vector(), importer, Epetra_CombineMode::Insert);
+
+  double* D = ghosted_diagonal.Values();
+
+  for (int row = 0; row < A.epetra_matrix()->NumMyRows(); row++)
+  {
+    int nnz_of_row;
+    double* values;
+    int* indices;
+    A.epetra_matrix()->ExtractMyRowView(row, nnz_of_row, values, indices);
+
+    const int global_row = A.row_map().GID(row);
+    const int col = A.col_map().LID(global_row);
+
+    const double Dk = D[col] > 0.0 ? D[col] : 1.0;
+    std::vector<int> indices_new;
+
+    for (int i = 0; i < nnz_of_row; i++)
+    {
+      if (col == indices[i] ||
+          std::abs(std::sqrt(Dk) * values[i] * std::sqrt(Dk)) > std::abs(threshold))
+        indices_new.emplace_back(A.col_map().GID(indices[i]));
+    }
+
+    sparsity_pattern->InsertGlobalIndices(global_row, indices_new.size(), indices_new.data());
+  }
+
+  sparsity_pattern->FillComplete();
+
+  return sparsity_pattern;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_CrsGraph> Core::LinAlg::enrich_matrix_graph(const SparseMatrix& A, int power)
+{
+  SparseMatrix A_copy(A, Core::LinAlg::Copy);
+  A_copy.complete();
+
+  for (int pow = 0; pow < power - 1; pow++)
+  {
+    Teuchos::RCP<SparseMatrix> A_power =
+        Core::LinAlg::matrix_multiply(A_copy, false, A, false, true);
+    A_power->complete();
+    A_copy = *A_power;
+  }
+
+  return Teuchos::rcp(new Epetra_CrsGraph(A_copy.epetra_matrix()->Graph()));
 }
 
 /*----------------------------------------------------------------------*

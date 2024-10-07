@@ -82,6 +82,41 @@ namespace Core::LinAlg
   void extract_my_vector(
       const Core::LinAlg::Vector<double>& source, Core::LinAlg::Vector<double>& target);
 
+  /*! \brief Filter a sparse matrix based on a threshold value.
+   *
+   *  \param A         (in) : Matrix to filter
+   *  \param threshold (in) : Filter value
+   *
+   *  \return Returned the filtered sparse matrix.
+   */
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> threshold_matrix(
+      const Core::LinAlg::SparseMatrix& A, const double threshold);
+
+  /*! \brief Filter the graph of a sparse matrix based on a threshold value and diagonal Jacobi
+   *         scaling.
+   *
+   * E. Chow: Parallel implementation and practical use of sparse approximate inverse
+   * preconditioners with a priori sparsity patterns.
+   * The International Journal of High Performance Computing Applications, 15(1):56-74, 2001,
+   * https://doi.org/10.1177/109434200101500106
+   *
+   *  \param A         (in) : Matrix to filter
+   *  \param threshold (in) : Filter value
+   *
+   *  \return Returned the filtered sparse matrix graph.
+   */
+  Teuchos::RCP<Epetra_CrsGraph> threshold_matrix_graph(
+      const Core::LinAlg::SparseMatrix& A, const double threshold);
+
+  /*! \brief Enrich a matrix graph based on it's powers.
+   *
+   *  \param A     (in) : Sparse matrix, which graph needs to be enriched
+   *  \param power (in) : Power value
+   *
+   *  \return Returned the enriched graph G(A^(power))
+   */
+  Teuchos::RCP<Epetra_CrsGraph> enrich_matrix_graph(const SparseMatrix& A, int power);
+
   /*!
    \brief split a matrix into a 2x2 block system where the rowmap of one of the blocks is given
           and return a block matrix

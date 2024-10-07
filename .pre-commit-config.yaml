@@ -6,6 +6,7 @@ repos:
         name: Format C/C++
         # Only use on C and C++ files and not on other files that clang could format (e.g. json).
         types_or: [c++, c]
+        exclude: 'mm$'
 
   - repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: v0.6.13
@@ -63,13 +64,14 @@ repos:
         language: system
         types_or: [c++, c]
         entry: utilities/python-venv/bin/check-file-header
+        exclude: 'mm$'
 
       - id: cpp-filename-includes
         name: C++ file names and include style
         description: 'Check that all C++ files have the correct file name and include style'
         language: system
         types_or: [c++, c]
-        exclude: 'tests/cut_test/'
+        exclude: 'tests/cut_test/|mm$'
         entry: utilities/python-venv/bin/check-filenames-and-includes
         args: ['--paths', 'src/', 'unittests/', 'apps/', '--files']
 

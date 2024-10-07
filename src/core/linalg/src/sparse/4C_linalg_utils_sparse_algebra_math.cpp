@@ -9,10 +9,14 @@
 
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
+#include "4C_linalg_serialdensematrix.hpp"
+#include "4C_linalg_serialdensevector.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <Epetra_Import.h>
 #include <EpetraExt_MatrixMatrix.h>
 #include <EpetraExt_Transpose_RowMatrix.h>
+#include <Teuchos_SerialQRDenseSolver.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -328,6 +332,80 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_transpose(const Sp
       Teuchos::rcp(a_prime, false), Core::LinAlg::Copy, A.explicit_dirichlet(), A.save_graph()));
 
   return matrix;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_sparse_inverse(
+    const SparseMatrix& A, Teuchos::RCP<Epetra_CrsGraph> sparsity_pattern)
+{
+  // construct the inverse matrix with the given sparsity pattern
+  Teuchos::RCP<Core::LinAlg::MultiMapExtractor> dbc_map = Teuchos::null;
+  Teuchos::RCP<SparseMatrix> A_inverse = Teuchos::rcp(new SparseMatrix(sparsity_pattern, dbc_map));
+
+  // gather missing rows from other procs to generate an overlapping map
+  Epetra_Import rowImport = Epetra_Import(sparsity_pattern->ColMap(), sparsity_pattern->RowMap());
+  Epetra_CrsMatrix A_overlap = Epetra_CrsMatrix(*A.epetra_matrix(), rowImport);
+
+  // loop over all rows of the inverse sparsity pattern (this can be done in parallel)
+  for (int k = 0; k < sparsity_pattern->NumMyRows(); k++)
+  {
+    // 1. get column indices Ik of local row k
+    int* Ik;
+    int Ik_size;
+    sparsity_pattern->ExtractMyRowView(k, Ik_size, Ik);
+
+    // 2. get all local A(Ik,:) rows
+    std::vector<int*> J(Ik_size);
+    std::vector<int> J_size;
+    std::vector<double*> Ak(Ik_size);
+    std::vector<int> Jk;
+    for (int i = 0; i < Ik_size; i++)
+    {
+      int Jk_size;
+      A_overlap.ExtractMyRowView(Ik[i], Jk_size, Ak[i], J[i]);
+      J_size.emplace_back(Jk_size);
+
+      // store all local column indices
+      for (int j = 0; j < J_size[i]; j++) Jk.emplace_back(J[i][j]);
+    }
+
+    // create set of unique column indices Jk
+    std::sort(Jk.begin(), Jk.end());
+    Jk.erase(std::unique(Jk.begin(), Jk.end()), Jk.end());
+    // create map
+    std::map<int, int> G;
+    for (size_t i = 0; i < Jk.size(); i++) G.insert(std::pair<int, int>(Jk[i], i));
+
+    // 3. merge local rows together
+    Core::LinAlg::SerialDenseMatrix localA(Jk.size(), Ik_size, true);
+    for (int i = 0; i < Ik_size; i++)
+    {
+      for (int j = 0; j < J_size[i]; j++)
+      {
+        localA(G.at(J[i][j]), i) = Ak[i][j];
+      }
+    }
+
+    // 4. get direction-vector
+    // diagonal needs an entry!
+    Core::LinAlg::SerialDenseVector ek(Jk.size(), true);
+    ek[std::distance(Jk.begin(), std::find(Jk.begin(), Jk.end(), k))] = 1.0;
+
+    // 5. solve linear system for x
+    Core::LinAlg::SerialDenseVector localX(Ik_size);
+    Teuchos::SerialQRDenseSolver<int, double> qrSolver;
+    qrSolver.setMatrix(Teuchos::rcpFromRef(localA));
+    qrSolver.setVectors(Teuchos::rcpFromRef(localX), Teuchos::rcpFromRef(ek));
+    const int err = qrSolver.solve();
+    if (err != 0) FOUR_C_THROW("Error in serial QR solve.");
+
+    // 6. set calculated row into Ainv
+    A_inverse->epetra_matrix()->ReplaceMyValues(k, localX.length(), localX.values(), Ik);
+  }
+  A_inverse->complete();
+
+  return A_inverse;
 }
 
 FOUR_C_NAMESPACE_CLOSE
