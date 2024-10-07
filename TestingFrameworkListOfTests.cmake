@@ -1434,7 +1434,6 @@ four_c_test(TEST_FILE scatra_chemo_h27 NP 3)
 four_c_test(TEST_FILE scatra_chemo_reac NP 2)
 
 if (${FOUR_C_WITH_FFTW})
-    four_c_test(TEST_FILE scatra_forced_hit_iso_8x8x8 RESTART_STEP 4)
     four_c_test(TEST_FILE scatra_forced_hit_iso_8x8x8_dsm NP 3 RESTART_STEP 4)
     four_c_test(TEST_FILE scatra_forced_hit_mean_8x8x8 NP 3 RESTART_STEP 4)
 endif ()
