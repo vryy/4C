@@ -20,15 +20,8 @@
 #include <Teko_StratimikosFactory.hpp>
 #include <Teuchos_XMLParameterListHelpers.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
-#include <Xpetra_StridedMap.hpp>
-#include <Xpetra_ThyraUtils.hpp>
 
 FOUR_C_NAMESPACE_OPEN
-
-using SC = Scalar;
-using LO = LocalOrdinal;
-using GO = GlobalOrdinal;
-using NO = Node;
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -42,9 +35,8 @@ Core::LinearSolver::TekoPreconditioner::TekoPreconditioner(Teuchos::ParameterLis
 void Core::LinearSolver::TekoPreconditioner::setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
-  using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<GO, NO>;
-  using EpetraMap = Xpetra::EpetraMapT<GO, NO>;
-  using EpetraMultiVector = Xpetra::EpetraMultiVectorT<GO, NO>;
+  using EpetraMultiVector = Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>;
+  using XpetraMultiVector = Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>;
 
   if (create)
   {
@@ -60,66 +52,36 @@ void Core::LinearSolver::TekoPreconditioner::setup(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
         Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
 
-    Teuchos::RCP<Xpetra::BlockedCrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> bop;
-
+    // wrap linear operators
     if (A.is_null())
     {
-      Teuchos::RCP<Epetra_CrsMatrix> crsA =
-          Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcp(matrix, false));
-      pmatrix_ = Thyra::epetraLinearOp(crsA);
+      auto A_crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcp(matrix, false));
+      pmatrix_ = Thyra::epetraLinearOp(A_crs);
     }
     else
     {
-      std::vector<Teuchos::RCP<const Xpetra::Map<LO, GO, NO>>> maps;
+      pmatrix_ = Thyra::defaultBlockedLinearOp<double>();
 
-      for (int block = 0; block < A->rows(); block++)
-      {
-        Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> crsA =
-            Teuchos::rcp(new EpetraCrsMatrix(A->matrix(block, block).epetra_matrix()));
-
-        Teuchos::RCP<Xpetra::Map<LO, GO, NO>> map =
-            Xpetra::MapFactory<LO, GO, NO>::Build(crsA->getRowMap()->lib(),
-                crsA->getRowMap()->getGlobalNumElements(), crsA->getRowMap()->getLocalElementList(),
-                crsA->getRowMap()->getIndexBase(), crsA->getRowMap()->getComm());
-
-        maps.emplace_back(map);
-      }
-
-      Teuchos::RCP<const EpetraMap> fullrangemap =
-          Teuchos::rcp(new EpetraMap(Teuchos::rcpFromRef(A->full_range_map())));
-      Teuchos::RCP<const Xpetra::MapExtractor<SC, LO, GO, NO>> map_extractor =
-          Xpetra::MapExtractorFactory<SC, LO, GO, NO>::Build(fullrangemap, maps);
-
-      bop = Teuchos::rcp(
-          new Xpetra::BlockedCrsMatrix<SC, LO, GO, NO>(map_extractor, map_extractor, 42));
-
+      Teko::toBlockedLinearOp(pmatrix_)->beginBlockFill(A->rows(), A->cols());
       for (int row = 0; row < A->rows(); row++)
       {
         for (int col = 0; col < A->cols(); col++)
         {
-          Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> crsA =
-              Teuchos::rcp(new EpetraCrsMatrix(A->matrix(row, col).epetra_matrix()));
-          Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> mat =
-              Xpetra::MatrixFactory<SC, LO, GO, NO>::BuildCopy(
-                  Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(crsA)));
-
-          bop->setMatrix(row, col, mat);
+          auto A_crs = Teuchos::rcp(new Epetra_CrsMatrix(*A->matrix(row, col).epetra_matrix()));
+          Teko::toBlockedLinearOp(pmatrix_)->setBlock(row, col, Thyra::epetraLinearOp(A_crs));
         }
       }
-      bop->fillComplete();
-      pmatrix_ = bop->getThyraOperator();
+      Teko::toBlockedLinearOp(pmatrix_)->endBlockFill();
 
-      // Check if multigrid is used as preconditioner for single field inverse approximation and
+      // check if multigrid is used as preconditioner for single field inverse approximation and
       // attach nullspace and coordinate information to the respective inverse parameter list.
-      for (size_t block = 0; block < bop->Rows(); block++)
+      for (int block = 0; block < A->rows(); block++)
       {
-        // Get the single field preconditioner sub-list of a matrix block hardwired under
-        // "Inverse<1...n>".
         std::string inverse = "Inverse" + std::to_string(block + 1);
 
         if (tekolist_.isSublist(inverse))
         {
-          // Get the single field preconditioner sub-list of a matrix block hardwired under
+          // get the single field preconditioner sub-list of a matrix block hardwired under
           // "Inverse<1...n>".
           Teuchos::ParameterList& inverseList = tekolist_.sublist(inverse);
 
@@ -129,13 +91,11 @@ void Core::LinearSolver::TekoPreconditioner::setup(
           {
             const int number_of_equations = inverseList.get<int>("PDE equations");
 
-            Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace =
-                Teuchos::rcp(new EpetraMultiVector(
-                    inverseList.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace")));
+            Teuchos::RCP<XpetraMultiVector> nullspace = Teuchos::rcp(new EpetraMultiVector(
+                inverseList.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace")));
 
-            Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> coordinates =
-                Teuchos::rcp(new EpetraMultiVector(
-                    inverseList.get<Teuchos::RCP<Epetra_MultiVector>>("Coordinates")));
+            Teuchos::RCP<XpetraMultiVector> coordinates = Teuchos::rcp(new EpetraMultiVector(
+                inverseList.get<Teuchos::RCP<Epetra_MultiVector>>("Coordinates")));
 
             tekoParams->sublist("Inverse Factory Library")
                 .sublist(inverse)
@@ -150,9 +110,11 @@ void Core::LinearSolver::TekoPreconditioner::setup(
       }
     }
 
+    // setup preconditioner builder and enable relevant packages
     Teuchos::RCP<Stratimikos::LinearSolverBuilder<double>> builder =
         Teuchos::rcp(new Stratimikos::DefaultLinearSolverBuilder);
-    Stratimikos::enableMueLu<SC, LO, GO, NO>(*builder);
+
+    Stratimikos::enableMueLu<Scalar, LocalOrdinal, GlobalOrdinal, Node>(*builder);
     Teko::addTekoToStratimikosBuilder(*builder);
 
     Teuchos::RCP<Teuchos::ParameterList> stratimikos_params =
