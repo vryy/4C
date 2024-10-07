@@ -549,27 +549,29 @@ function(
   set_run_serial(${name_of_test})
 endfunction()
 
-###------------------------------------------------------------------ Compare absolute
-# Compare arbitrary result csv file to corresponding reference file with absolute difference
+###------------------------------------------------------------------ Compare CSV
+# Compare arbitrary result csv file to corresponding reference file with tolerances
 # Implementation can be found in 'utilities/diff_with_tolerance.py'
-# CAUTION: This tests bases on results of a previous simulation/test
-# Usage in TestingFrameworkListOfTests.cmake: "four_c_test_result_file_abs(<name_of_input_file> <num_proc> <filetag> <resultfilename> <referencefilename> <tolerance>)"
+# CAUTION: This tests are based on results of a previous simulation/test
+# Usage in TestingFrameworkListOfTests.cmake: "four_c_test_result_file(<name_of_input_file> <num_proc> <filetag> <resultfilename> <referencefilename> <relative tolerance> <absolute tolerance>)"
 # <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <num_proc>: number of processors the test should use
 # <num_proc_base_run>: number of processors of precursor base run
 # <filetag>: add tag to test name
 # <resultfilename>: file that should be compared
 # <referencefilename>: file to compare with
-# <tolerance>: difference the values in <resultfilename> may have to the values in <referencefilename>
+# <relative tolerance>: relative tolerance, see `numpy.isclose`
+# <absolute tolerance>: absolute tolerance, see `numpy.isclose`
 function(
-  four_c_test_result_file_abs
+  four_c_test_result_file
   name_of_input_file
   num_proc
   num_proc_base_run
   filetag
   resultfilename
   referencefilename
-  tolerance
+  r_tol
+  a_tol
   )
   set(name_of_test ${name_of_input_file}-p${num_proc}-${filetag})
   set(test_directory
@@ -581,56 +583,8 @@ function(
     NAME ${name_of_test}
     COMMAND
       ${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3
-      ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${tolerance}
-      ${test_directory}/${resultfilename}
-      ${PROJECT_SOURCE_DIR}/tests/input_files/${referencefilename} abs_tol 0.0
-    )
-
-  require_fixture(
-    ${name_of_input_file}-p${num_proc}-${filetag}
-    "${name_of_input_file}-p${num_proc_base_run};test_cleanup"
-    )
-  set_processors(${name_of_test} 1)
-  set_timeout(${name_of_test})
-endfunction()
-
-###------------------------------------------------------------------ Compare Relative
-# Compare arbitrary result csv file to corresponding reference file with relative difference
-# Implementation can be found in 'utilities/diff_with_tolerance.py'
-# CAUTION: This tests bases on results of a previous simulation/test
-# Usage in TestingFrameworkListOfTests.cmake: "four_c_test_result_file_rel(<name_of_input_file> <num_proc> <filetag> <resultfilename> <referencefilename> <tolerance>)"
-# <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
-# <num_proc>: number of processors the test should use
-# <num_proc_base_run>: number of processors of precursor base run
-# <filetag>: add tag to test name
-# <resultfilename>: file that should be compared
-# <referencefilename>: file to compare with
-# <tolerance>: difference the values in <resultfilename> may have to the values in <referencefilename>
-# <min_val>: minimum value of denominator for calculation of relative difference
-function(
-  four_c_test_result_file_rel
-  name_of_input_file
-  num_proc
-  num_proc_base_run
-  filetag
-  resultfilename
-  referencefilename
-  tolerance
-  min_val
-  )
-  set(name_of_test ${name_of_input_file}-p${num_proc}-${filetag})
-  set(test_directory
-      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}-p${num_proc_base_run}
-      )
-
-  # add test to testing framework
-  add_test(
-    NAME ${name_of_test}
-    COMMAND
-      ${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3
-      ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${tolerance}
-      ${test_directory}/${resultfilename}
-      ${PROJECT_SOURCE_DIR}/tests/input_files/${referencefilename} rel_tol ${min_val}
+      ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${test_directory}/${resultfilename}
+      ${PROJECT_SOURCE_DIR}/tests/input_files/${referencefilename} ${r_tol} ${a_tol}
     )
 
   require_fixture(${name_of_test} "${name_of_input_file}-p${num_proc_base_run};test_cleanup")
