@@ -7,6 +7,9 @@
 *----------------------------------------------------------------------*/
 #include "4C_linalg_vector.hpp"
 
+#include "4C_linalg_multi_vector.hpp"
+#include "4C_utils_exceptions.hpp"
+
 #include <Epetra_Vector.h>
 
 // Do not lint the file for identifier names, since the naming of the Wrapper functions follow the
@@ -15,6 +18,7 @@
 // NOLINTBEGIN(readability-identifier-naming)
 
 FOUR_C_NAMESPACE_OPEN
+
 template <typename T>
 Core::LinAlg::Vector<T>::Vector(const Epetra_BlockMap& Map, bool zeroOut)
     : vector_(Teuchos::make_rcp<Epetra_Vector>(Map, zeroOut))
@@ -41,23 +45,28 @@ Core::LinAlg::Vector<T>::Vector(const Vector& other)
 
 
 template <typename T>
-Core::LinAlg::Vector<T>::Vector(Vector&& other) noexcept : vector_(std::move(other.vector_))
-{
-}
-
-
-template <typename T>
 Core::LinAlg::Vector<T>& Core::LinAlg::Vector<T>::operator=(const Vector& other)
 {
-  vector_ = Teuchos::rcp(new Epetra_Vector(other.get_ref_of_Epetra_Vector()));
+  *vector_ = other.get_ref_of_Epetra_Vector();
   return *this;
 }
 
+
 template <typename T>
-Core::LinAlg::Vector<T>& Core::LinAlg::Vector<T>::operator=(Vector&& other) noexcept
+Core::LinAlg::Vector<T>::operator const Core::LinAlg::MultiVector<T>&() const
 {
-  vector_ = std::move(other.vector_);
-  return *this;
+  sync_view();
+  FOUR_C_ASSERT(multi_vector_view_ != Teuchos::null, "Internal error.");
+  return *multi_vector_view_;
+}
+
+
+template <typename T>
+Core::LinAlg::Vector<T>::operator Core::LinAlg::MultiVector<T>&()
+{
+  sync_view();
+  FOUR_C_ASSERT(multi_vector_view_ != Teuchos::null, "Internal error.");
+  return *multi_vector_view_;
 }
 
 
@@ -164,6 +173,13 @@ template <typename T>
 int Core::LinAlg::Vector<T>::PutScalar(double ScalarConstant)
 {
   return vector_->PutScalar(ScalarConstant);
+}
+
+template <typename T>
+void Core::LinAlg::Vector<T>::sync_view() const
+{
+  // Only do this once.
+  if (!multi_vector_view_) multi_vector_view_ = MultiVector<T>::create_view(*vector_);
 }
 
 // explicit instantiation
