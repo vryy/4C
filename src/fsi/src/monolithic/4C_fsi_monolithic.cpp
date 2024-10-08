@@ -940,7 +940,7 @@ void FSI::Monolithic::set_default_parameters(
 
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
   dirParams.set<std::string>("Method", "User Defined");
-  Teuchos::RCP<::NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::RCP(this, false);
+  Teuchos::RCP<::NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcpFromRef(*this);
   dirParams.set("User Defined Direction Factory", newtonfactory);
 
   // status tests are expensive, but instructive
@@ -988,7 +988,7 @@ bool FSI::Monolithic::computeF(const Epetra_Vector& x, Epetra_Vector& F, const F
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::computeF");
   Core::LinAlg::Vector<double> x_new = Core::LinAlg::Vector<double>(x);
-  evaluate(Teuchos::RCP(&x_new, false));
+  evaluate(Teuchos::rcpFromRef(x_new));
   Core::LinAlg::Vector<double> F_new = Core::LinAlg::Vector<double>(F);
   setup_rhs(F_new);
   F = F_new;
@@ -1105,7 +1105,7 @@ bool FSI::BlockMonolithic::computeJacobian(const Epetra_Vector& x, Epetra_Operat
   TEUCHOS_FUNC_TIME_MONITOR("FSI::BlockMonolithic::computeJacobian");
 
   Core::LinAlg::Vector<double> x_new = Core::LinAlg::Vector<double>(x);
-  evaluate(Teuchos::RCP(&x_new, false));
+  evaluate(Teuchos::rcpFromRef(x_new));
   Core::LinAlg::BlockSparseMatrixBase& mat =
       Teuchos::dyn_cast<Core::LinAlg::BlockSparseMatrixBase>(Jac);
   setup_system_matrix(mat);
@@ -1245,7 +1245,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
   }
 
   linSys = Teuchos::make_rcp<NOX::FSI::LinearSystem>(
-      printParams, lsParams, Teuchos::RCP(iJac, false), J, noxSoln, solver);
+      printParams, lsParams, Teuchos::rcpFromRef(*iJac), J, noxSoln, solver);
 
   return linSys;
 }

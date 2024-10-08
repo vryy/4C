@@ -378,7 +378,7 @@ void CONSTRAINTS::MPConstraint3::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
     int eid = actele->id();
     int condID = eletocond_id_.find(eid)->second;
     Core::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
-    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::RCP(cond, false));
+    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcpFromRef(*cond));
 
     // computation only if time is larger or equal than initialization time for constraint
     if (inittimes_.find(condID)->second <= time)
@@ -502,7 +502,7 @@ void CONSTRAINTS::MPConstraint3::initialize_constraint(Teuchos::RCP<Core::FE::Di
     int eid = actele->id();
     int condID = eletocond_id_.find(eid)->second;
     Core::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
-    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::RCP(cond, false));
+    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcpFromRef(*cond));
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;

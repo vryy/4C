@@ -106,7 +106,7 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epet
     (*A_)(0, 0).ExtractDiagonalCopy(diag);
     int err = diag.Reciprocal(diag);
     if (err) FOUR_C_THROW("Epetra_MultiVector::Reciprocal returned %d", err);
-    diagAinv_ = Teuchos::make_rcp<SparseMatrix>(diag);
+    diagAinv_ = Teuchos::RCP(new SparseMatrix(diag));
     diagAinv_->Complete(*mmex_.Map(0), *mmex_.Map(0));
   }
 #endif

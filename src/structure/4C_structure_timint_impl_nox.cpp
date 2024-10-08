@@ -350,7 +350,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> Solid::TimIntImpl::nox_create_linear_s
   const Teuchos::RCP<Epetra_Operator> J = stiff_;
 
   linSys = Teuchos::make_rcp<NOX::Solid::LinearSystem>(
-      printParams, lsParams, Teuchos::RCP(iJac, false), J, noxSoln, solver_);
+      printParams, lsParams, Teuchos::rcpFromRef(*iJac), J, noxSoln, solver_);
 
   return linSys;
 }
@@ -373,7 +373,7 @@ int Solid::TimIntImpl::nox_solve()
 
   // Create group
   Teuchos::RCP<NOX::Solid::Group> grp = Teuchos::make_rcp<NOX::Solid::Group>(
-      *this, printParams, Teuchos::RCP(this, false), noxSoln, linSys);
+      *this, printParams, Teuchos::rcpFromRef(*this), noxSoln, linSys);
 
   // Create status test
   noxstatustest_ = nox_create_status_test(grp);

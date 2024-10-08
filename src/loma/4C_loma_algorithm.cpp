@@ -155,7 +155,7 @@ void LowMach::Algorithm::setup()
     {
       dofrowmaps.push_back(fluid_field()->dof_row_map(0));
       const Epetra_Map* dofrowmapscatra = (scatra_field()->discretization())->dof_row_map(0);
-      dofrowmaps.push_back(Teuchos::RCP(dofrowmapscatra, false));
+      dofrowmaps.push_back(Teuchos::rcpFromRef(*dofrowmapscatra));
     }
 
     // check existence of elements

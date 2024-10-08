@@ -145,7 +145,7 @@ Teuchos::RCP<const Epetra_Map> Adapter::FluidFSI::dof_row_map() { return dof_row
 Teuchos::RCP<const Epetra_Map> Adapter::FluidFSI::dof_row_map(unsigned nds)
 {
   const Epetra_Map* dofrowmap = dis_->dof_row_map(nds);
-  return Teuchos::RCP(dofrowmap, false);
+  return Teuchos::rcpFromRef(*dofrowmap);
 }
 
 

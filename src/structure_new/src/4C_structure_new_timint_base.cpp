@@ -95,7 +95,7 @@ void Solid::TimeInt::Base::setup()
    * discretization routines. Therefore many methods need a slight modification
    * (most times adding a "const" should fix the problem).          hiermeier */
   Teuchos::RCP<Core::FE::Discretization> discret_ptr = data_global_state().get_discret();
-  dbc_ptr_->init(discret_ptr, data_global_state().get_freact_np(), Teuchos::RCP(this, false));
+  dbc_ptr_->init(discret_ptr, data_global_state().get_freact_np(), Teuchos::rcpFromRef(*this));
   dbc_ptr_->setup();
 
   // ---------------------------------------------------------------------------
@@ -103,7 +103,7 @@ void Solid::TimeInt::Base::setup()
   // ---------------------------------------------------------------------------
   int_ptr_ = Solid::build_integrator(data_sdyn());
   int_ptr_->init(data_s_dyn_ptr(), data_global_state_ptr(), data_io_ptr(), dbc_ptr_,
-      Teuchos::RCP(this, false));
+      Teuchos::rcpFromRef(*this));
   int_ptr_->setup();
   int_ptr_->post_setup();
   // Initialize and Setup the input/output writer for every Newton iteration

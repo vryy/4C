@@ -164,7 +164,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
 
   // Check if we have a face discretization which supports degrees of freedom on faces
   Teuchos::RCP<const Core::FE::DiscretizationHDG> facedis =
-      Teuchos::rcp_dynamic_cast<const Core::FE::DiscretizationHDG>(Teuchos::RCP(&dis, false));
+      Teuchos::rcp_dynamic_cast<const Core::FE::DiscretizationHDG>(Teuchos::rcpFromRef(dis));
 
   // set count to 0 in case of dofset 2 in HDG discretizations
   if (facedis != Teuchos::null && dspos_ == 2) count = 0;

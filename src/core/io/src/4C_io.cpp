@@ -503,7 +503,7 @@ Core::IO::DiscretizationWriter::DiscretizationWriter() /* PROTECTED */
 Core::IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<Core::FE::Discretization> dis,
     Teuchos::RCP<OutputControl> output_control,
     const Core::FE::ShapeFunctionType shape_function_type)
-    : dis_(Teuchos::RCP(dis.get(), false)),  // no ownership to break circle discretization<>writer
+    : dis_(Teuchos::rcpFromRef(*dis.get())),  // no ownership to break circle discretization<>writer
       step_(-1),
       time_(-1.0),
       meshfile_(-1),
@@ -527,7 +527,7 @@ Core::IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<Core::FE::Disc
 /*----------------------------------------------------------------------*/
 Core::IO::DiscretizationWriter::DiscretizationWriter(const Core::IO::DiscretizationWriter& writer,
     const Teuchos::RCP<OutputControl>& control, enum CopyType type)
-    : dis_(Teuchos::RCP(writer.dis_.get(), false)),
+    : dis_(Teuchos::rcpFromRef(*writer.dis_.get())),
       step_(-1),
       time_(-1.0),
       meshfile_(-1),
@@ -1353,7 +1353,7 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
         ele_counter++;
       }
 
-      write_multi_vector(name, Teuchos::RCP(&sysdata, false), elementvector);
+      write_multi_vector(name, Teuchos::rcpFromRef(sysdata), elementvector);
     }
   }
 }
@@ -1415,7 +1415,7 @@ void Core::IO::DiscretizationWriter::write_node_data(bool writeowner)
         for (int j = 0; j < dimension; ++j) (*sysdata(j))[i] = nodedata[j];
       }
 
-      write_multi_vector(fool->first, Teuchos::RCP(&sysdata, false), Core::IO::nodevector);
+      write_multi_vector(fool->first, Teuchos::rcpFromRef(sysdata), Core::IO::nodevector);
 
     }  // for (fool = names.begin(); fool!= names.end(); ++fool)
   }

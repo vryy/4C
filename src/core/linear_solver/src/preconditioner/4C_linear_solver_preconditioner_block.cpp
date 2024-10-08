@@ -55,7 +55,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
       // adapt ML null space for contact/meshtying/constraint problems
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
-              Teuchos::RCP(matrix, false));
+              Teuchos::rcpFromRef(*matrix));
       if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
       Teuchos::ParameterList& inv2 = params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2");
@@ -100,7 +100,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
 
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
-              Teuchos::RCP(matrix, false));
+              Teuchos::rcpFromRef(*matrix));
       if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
       // this is a fix for the old SIMPLER sublist
@@ -191,7 +191,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
 
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
-              Teuchos::RCP(matrix, false));
+              Teuchos::rcpFromRef(*matrix));
       if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
 

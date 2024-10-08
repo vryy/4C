@@ -95,7 +95,7 @@ namespace Core::LinAlg
       \warning Only low level solver routines are interested in the internal
       Epetra_Operator.
      */
-    virtual Teuchos::RCP<Epetra_Operator> epetra_operator() { return Teuchos::RCP(this, false); }
+    virtual Teuchos::RCP<Epetra_Operator> epetra_operator() { return Teuchos::rcpFromRef(*this); }
 
     /// set matrix to zero
     virtual void zero() = 0;

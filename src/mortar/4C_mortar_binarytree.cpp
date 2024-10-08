@@ -295,14 +295,14 @@ void Mortar::BinaryTreeNode::divide_tree_node()
     }
 
     // build left child treenode
-    leftchild_ = Teuchos::make_rcp<BinaryTreeNode>(lefttype, discret(), Teuchos::RCP(this, false),
+    leftchild_ = Teuchos::make_rcp<BinaryTreeNode>(lefttype, discret(), Teuchos::rcpFromRef(*this),
         leftelements, dopnormals(), kdop(), n_dim(), use_aux_pos(), (get_layer() + 1),
         streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_);
 
     // build right child treenode
-    rightchild_ = Teuchos::make_rcp<BinaryTreeNode>(righttype, discret(), Teuchos::RCP(this, false),
-        rightelements, dopnormals(), kdop(), n_dim(), use_aux_pos(), (get_layer() + 1),
-        streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_);
+    rightchild_ = Teuchos::make_rcp<BinaryTreeNode>(righttype, discret(),
+        Teuchos::rcpFromRef(*this), rightelements, dopnormals(), kdop(), n_dim(), use_aux_pos(),
+        (get_layer() + 1), streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_);
 
     // update slave and mastertreenodes map
     // if parent treenode is slave

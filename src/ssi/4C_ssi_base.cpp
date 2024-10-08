@@ -452,7 +452,8 @@ SSI::RedistributionType SSI::SSIBase::init_field_coupling(const std::string& str
 
   // initialize coupling objects including dof sets
   Global::Problem* problem = Global::Problem::instance();
-  ssicoupling_->init(problem->n_dim(), problem->get_dis(struct_disname), Teuchos::RCP(this, false));
+  ssicoupling_->init(
+      problem->n_dim(), problem->get_dis(struct_disname), Teuchos::rcpFromRef(*this));
 
   return redistribution_required;
 }
@@ -501,7 +502,7 @@ void SSI::SSIBase::test_results(const Epetra_Comm& comm) const
   problem->add_field_test(scatra_base_algorithm()->create_scatra_field_test());
   if (is_scatra_manifold())
     problem->add_field_test(scatra_manifold_base_algorithm()->create_scatra_field_test());
-  problem->add_field_test(Teuchos::make_rcp<SSI::SSIResultTest>(Teuchos::RCP(this, false)));
+  problem->add_field_test(Teuchos::make_rcp<SSI::SSIResultTest>(Teuchos::rcpFromRef(*this)));
   problem->test_all(comm);
 }
 

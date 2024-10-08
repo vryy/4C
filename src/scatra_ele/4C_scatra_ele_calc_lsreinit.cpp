@@ -397,7 +397,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
         Core::Geo::BoundaryIntCells::iterator cit_vec;
         for (cit_vec = cit_map->second.begin(); cit_vec != cit_map->second.end(); ++cit_vec)
         {
-          boundaryIntCells.push_back(Teuchos::RCP(&(*cit_vec), false));
+          boundaryIntCells.push_back(Teuchos::rcpFromRef((*cit_vec)));
         }
       }
 

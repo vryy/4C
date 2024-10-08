@@ -3305,7 +3305,7 @@ double ScaTra::ScaTraTimIntElch::get_current_temperature() const
  *-----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::ScaTraTimIntElch::create_scatra_field_test()
 {
-  return Teuchos::make_rcp<ScaTra::ElchResultTest>(Teuchos::RCP(this, false));
+  return Teuchos::make_rcp<ScaTra::ElchResultTest>(Teuchos::rcpFromRef(*this));
 }
 
 /*----------------------------------------------------------------------*

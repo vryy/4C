@@ -80,7 +80,7 @@ void FSI::UTILS::DebugWriter::new_iteration()
 void FSI::UTILS::DebugWriter::write_vector(
     const std::string& name, const Core::LinAlg::Vector<double>& v)
 {
-  writer_->write_vector(name, coup_->master_to_slave(Teuchos::RCP(&v, false)));
+  writer_->write_vector(name, coup_->master_to_slave(Teuchos::rcpFromRef(v)));
 }
 
 
@@ -133,7 +133,7 @@ void FSI::UTILS::SimpleDebugWriter::new_iteration()
 void FSI::UTILS::SimpleDebugWriter::write_vector(
     const std::string& name, Core::LinAlg::Vector<double>& v)
 {
-  writer_->write_vector(name, Teuchos::RCP(&v, false));
+  writer_->write_vector(name, Teuchos::rcpFromRef(v));
 }
 
 

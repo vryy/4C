@@ -85,7 +85,7 @@ void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& 
 {
   // get stiffness matrix
   Epetra_CrsMatrix* stiffmat = dynamic_cast<Epetra_CrsMatrix*>(problem.GetMatrix());
-  Teuchos::RCP<Epetra_CrsMatrix> stiff_epetra = Teuchos::RCP(stiffmat, false);
+  Teuchos::RCP<Epetra_CrsMatrix> stiff_epetra = Teuchos::rcpFromRef(*stiffmat);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_linalg =
       Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(stiff_epetra, Core::LinAlg::View);
 

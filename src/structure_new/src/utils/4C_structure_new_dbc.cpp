@@ -108,7 +108,7 @@ void Solid::Dbc::setup()
           NOX::Nln::LinSystem::PrePostOp::get_map(p_linsolver);
       // create the new pre/post operator for the nox nln linear system
       Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> prepostdbc_ptr =
-          Teuchos::make_rcp<NOX::Nln::LinSystem::PrePostOp::Dbc>(Teuchos::RCP(this, false));
+          Teuchos::make_rcp<NOX::Nln::LinSystem::PrePostOp::Dbc>(Teuchos::rcpFromRef(*this));
       // insert/replace the old pointer in the map
       prepostlinsystem_map[NOX::Nln::LinSystem::prepost_dbc] = prepostdbc_ptr;
     }
@@ -503,7 +503,7 @@ void NOX::Nln::LinSystem::PrePostOp::Dbc::run_pre_apply_jacobian_inverse(
 {
   ::NOX::Epetra::Vector& rhs_epetra = dynamic_cast<::NOX::Epetra::Vector&>(rhs);
   Core::LinAlg::VectorView rhs_view(rhs_epetra.getEpetraVector());
-  Teuchos::RCP<Core::LinAlg::SparseOperator> jac_ptr = Teuchos::RCP(&jac, false);
+  Teuchos::RCP<Core::LinAlg::SparseOperator> jac_ptr = Teuchos::rcpFromRef(jac);
   // apply the dirichlet condition and rotate the system if desired
   dbc_ptr_->apply_dirichlet_to_local_system(jac_ptr, rhs_view.get_non_owning_rcp_ref());
 }

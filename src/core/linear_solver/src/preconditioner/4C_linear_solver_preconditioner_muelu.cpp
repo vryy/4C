@@ -58,12 +58,13 @@ void Core::LinearSolver::MueLuPreconditioner::setup(
   if (create)
   {
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
-        Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(Teuchos::RCP(matrix, false));
+        Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
+            Teuchos::rcpFromRef(*matrix));
 
     if (A.is_null())
     {
       Teuchos::RCP<Epetra_CrsMatrix> crsA =
-          Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::RCP(matrix, false));
+          Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcpFromRef(*matrix));
 
       Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> mueluA =
           Teuchos::make_rcp<EpetraCrsMatrix>(crsA);
@@ -200,7 +201,7 @@ void Core::LinearSolver::MueLuContactSpPreconditioner::setup(
 
   // Check whether input matrix is an actual blocked operator
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(Teuchos::RCP(matrix, false));
+      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(Teuchos::rcpFromRef(*matrix));
   if (A == Teuchos::null) FOUR_C_THROW("Matrix is not a BlockSparseMatrix");
 
   // store blocked operator
@@ -485,7 +486,7 @@ void Core::LinearSolver::MueLuBeamSolidBlockPreconditioner::setup(
 
   // first we check if the input matrix is of normal CRS type
   Teuchos::RCP<Epetra_CrsMatrix> A =
-      Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::RCP(matrix, false));
+      Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcpFromRef(*matrix));
   if (A == Teuchos::null) FOUR_C_THROW("Matrix is not a SparseMatrix");
 
   ///////////////////////////////////////////////////////////////////////

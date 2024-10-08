@@ -87,7 +87,7 @@ Teuchos::RCP<const std::vector<double>> NOX::Nln::StatusTest::NormF::compute_nor
   }
 
   Teuchos::RCP<const std::vector<double>> norms =
-      nlnGrp->get_rhs_norms(normType_, checkList_, Teuchos::RCP(&scaleType_, false));
+      nlnGrp->get_rhs_norms(normType_, checkList_, Teuchos::rcpFromRef(scaleType_));
 
   return norms;
 }

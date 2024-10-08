@@ -52,7 +52,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::distribute_linker_to_bins(
   {
     Core::Nodes::Node* node = binstrategy_->bin_discret()->g_node(linkerrowmap->GID(lid));
     const double* currpos = node->x().data();
-    place_node_correctly(Teuchos::RCP(node, false), currpos, homelesslinker);
+    place_node_correctly(Teuchos::rcpFromRef(*node), currpos, homelesslinker);
   }
 
   // start round robin loop to fill linker into their correct bins
@@ -571,7 +571,7 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::transfer_l
         // (looping over nodes and deleting at the same time is detrimental)
         tobemoved.push_back(currnode->id());
         // find new bin for linker
-        place_node_correctly(Teuchos::RCP(currnode, false), pos.data(), homelesslinker);
+        place_node_correctly(Teuchos::rcpFromRef(*currnode), pos.data(), homelesslinker);
       }
     }
 

@@ -324,7 +324,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
   {
     if (sourceele_iter->second->owner() == myrank)
     {
-      targetdis->add_element(Teuchos::RCP(sourceele_iter->second->clone(), false));
+      targetdis->add_element(Teuchos::rcpFromRef(*sourceele_iter->second->clone()));
     }
   }
 

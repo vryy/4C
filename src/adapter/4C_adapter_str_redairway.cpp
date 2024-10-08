@@ -94,7 +94,7 @@ void Adapter::StructureRedAirway::calc_vol(std::map<int, double>& V)
     Core::Conditions::Condition& cond = *(coupcond_[condID]);
     double tmp = 0.;
     params.set("ConditionID", condID);
-    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::RCP(&cond, false));
+    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcpFromRef(cond));
 
     // define element matrices and vectors
     Core::LinAlg::SerialDenseMatrix elematrix1;

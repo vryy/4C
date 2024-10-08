@@ -293,7 +293,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
         solver_params.refactor = true;
         solver_params.reset = true;
         solver->solve_with_multi_vector(massmatrix.epetra_operator(),
-            Teuchos::RCP(((*nodevec)(i)), false), Teuchos::RCP((rhs(i)), false), solver_params);
+            Teuchos::rcpFromRef(*((*nodevec)(i))), Teuchos::rcpFromRef(*(rhs(i))), solver_params);
       }
       break;
     }

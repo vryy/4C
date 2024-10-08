@@ -46,7 +46,7 @@ void CONSTRAINTS::ConstraintSolver::setup(Teuchos::RCP<Core::FE::Discretization>
     Core::LinAlg::Solver& solver, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
     Teuchos::ParameterList params)
 {
-  solver_ = Teuchos::RCP(&solver, false);
+  solver_ = Teuchos::rcpFromRef(solver);
 
   algochoice_ = Teuchos::getIntegralValue<Inpar::Solid::ConSolveAlgo>(params, "UZAWAALGO");
 

@@ -1199,12 +1199,12 @@ void SSTI::AssembleStrategyBlock::apply_structural_dbc_system_matrix(
     for (int iblock = 0; iblock < systemmatrix_block->cols(); ++iblock)
     {
       locsysmanager_structure->rotate_global_to_local(
-          Teuchos::RCP(&systemmatrix_block->matrix(position_structure(), iblock), false));
+          Teuchos::rcpFromRef(systemmatrix_block->matrix(position_structure(), iblock)));
       systemmatrix_block->matrix(position_structure(), iblock)
           .apply_dirichlet_with_trafo(
               *locsysmanager_structure->trafo(), *dbcmap_structure, iblock == position_structure());
       locsysmanager_structure->rotate_local_to_global(
-          Teuchos::RCP(&systemmatrix_block->matrix(position_structure(), iblock), false));
+          Teuchos::rcpFromRef(systemmatrix_block->matrix(position_structure(), iblock)));
     }
   }
 }

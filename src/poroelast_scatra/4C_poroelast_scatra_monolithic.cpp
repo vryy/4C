@@ -346,7 +346,7 @@ void PoroElastScaTra::PoroScatraMono::setup_system()
     vecSpaces.push_back(poro_field()->dof_row_map_structure());
     vecSpaces.push_back(poro_field()->dof_row_map_fluid());
     const Epetra_Map* dofrowmapscatra = (scatra_field()->discretization())->dof_row_map(0);
-    vecSpaces.push_back(Teuchos::RCP(dofrowmapscatra, false));
+    vecSpaces.push_back(Teuchos::rcpFromRef(*dofrowmapscatra));
   }
 
   if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro structure equation. Panic.");
@@ -376,7 +376,7 @@ void PoroElastScaTra::PoroScatraMono::setup_system()
   {
     std::vector<Teuchos::RCP<const Epetra_Map>> scatravecSpaces;
     const Epetra_Map* dofrowmapscatra = (scatra_field()->discretization())->dof_row_map(0);
-    scatravecSpaces.push_back(Teuchos::RCP(dofrowmapscatra, false));
+    scatravecSpaces.push_back(Teuchos::rcpFromRef(*dofrowmapscatra));
     scatrarowdofmap_.setup(*dofrowmapscatra, scatravecSpaces);
   }
 

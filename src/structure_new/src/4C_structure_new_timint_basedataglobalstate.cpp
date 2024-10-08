@@ -701,7 +701,7 @@ Teuchos::RCP<const Epetra_Map> Solid::TimeInt::BaseDataGlobalState::dof_row_map(
   check_init();
   const Epetra_Map* dofrowmap_ptr = discret_->dof_row_map();
   // since it's const, we do not need to copy the map
-  return Teuchos::RCP(dofrowmap_ptr, false);
+  return Teuchos::rcpFromRef(*dofrowmap_ptr);
 }
 
 
@@ -712,7 +712,7 @@ Teuchos::RCP<const Epetra_Map> Solid::TimeInt::BaseDataGlobalState::dof_row_map(
   check_init();
   const Epetra_Map* dofrowmap_ptr = discret_->dof_row_map(nds);
   // since it's const, we do not need to copy the map
-  return Teuchos::RCP(dofrowmap_ptr, false);
+  return Teuchos::rcpFromRef(*dofrowmap_ptr);
 }
 
 

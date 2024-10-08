@@ -726,7 +726,7 @@ void XFEM::MultiFieldMapExtractor::build_element_map_extractor()
   for (cit = sl_dis_vec().begin(); cit != sl_dis_vec().end(); ++cit)
   {
     // get the element row map of each wrapped discretization
-    partial_maps[d] = Teuchos::RCP((*cit)->element_row_map(), false);
+    partial_maps[d] = Teuchos::rcpFromRef(*(*cit)->element_row_map());
 
     // merge the partial maps to the full map
     fullmap = Core::LinAlg::merge_map(fullmap, partial_maps[d], false);

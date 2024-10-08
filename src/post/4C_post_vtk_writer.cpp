@@ -151,7 +151,7 @@ void PostVtkWriter::write_special_field(SpecialFieldInterface &special,
   // Vtk writes everything into the same file, so create to each output the
   // pointer to the same output writer
   std::vector<Teuchos::RCP<std::ofstream>> files(fieldnames.size());
-  for (unsigned int i = 0; i < fieldnames.size(); ++i) files[i] = Teuchos::RCP(&currentout_, false);
+  for (unsigned int i = 0; i < fieldnames.size(); ++i) files[i] = Teuchos::rcpFromRef(currentout_);
 
   bool foundit = false;
   PostResult activeresult(result.field());

@@ -82,7 +82,7 @@ void Solid::Integrator::setup()
   // ---------------------------------------------------------------------------
   modelevaluator_ptr_ = Teuchos::make_rcp<Solid::ModelEvaluatorManager>();
   modelevaluator_ptr_->init(
-      eval_data_ptr_, sdyn_ptr_, gstate_ptr_, io_ptr_, Teuchos::RCP(this, false), timint_ptr_);
+      eval_data_ptr_, sdyn_ptr_, gstate_ptr_, io_ptr_, Teuchos::rcpFromRef(*this), timint_ptr_);
   modelevaluator_ptr_->setup();
 
   // ---------------------------------------------------------------------------

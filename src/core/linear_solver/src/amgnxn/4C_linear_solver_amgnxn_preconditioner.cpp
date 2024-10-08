@@ -59,7 +59,7 @@ void Core::LinearSolver::AmGnxnPreconditioner::setup(
         "The AMGnxn preconditioner works only for BlockSparseMatrixBase or derived classes");
 
   // Do all the setup
-  setup(Teuchos::RCP(A_bl, false));
+  setup(Teuchos::rcpFromRef(*A_bl));
 
   return;
 }

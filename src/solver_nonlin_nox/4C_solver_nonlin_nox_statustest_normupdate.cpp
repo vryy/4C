@@ -64,10 +64,10 @@ void NOX::Nln::StatusTest::NormUpdate::compute_norm(
 
   // (1) of the increment of the given quantities
   normUpdate_ = nlngrp->get_solution_update_norms(
-      xOld, normType_, checkList_, Teuchos::RCP(&scaleType_, false));
+      xOld, normType_, checkList_, Teuchos::rcpFromRef(scaleType_));
   // (2) of the last accepted Newton step
   normRefSol_ = nlngrp->get_previous_solution_norms(
-      xOld, normType_, checkList_, Teuchos::RCP(&scaleType_, false));
+      xOld, normType_, checkList_, Teuchos::rcpFromRef(scaleType_));
 
   for (std::size_t i = 0; i < nChecks_; ++i)
   {

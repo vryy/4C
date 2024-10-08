@@ -2468,12 +2468,12 @@ Cut::Edge* Cut::Mesh::get_edge(const plain_int_set& nids, const std::vector<Node
     Point* ep2 = e->end_node()->point();
     if (p1 == ep1 and p2 == ep2)
     {
-      edges_[nids] = Teuchos::RCP(e, false);
+      edges_[nids] = Teuchos::rcpFromRef(*e);
       return e;
     }
     if (p1 == ep2 and p2 == ep1)
     {
-      edges_[nids] = Teuchos::RCP(e, false);
+      edges_[nids] = Teuchos::rcpFromRef(*e);
       return e;
     }
   }

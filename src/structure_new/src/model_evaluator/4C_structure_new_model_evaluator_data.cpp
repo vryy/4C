@@ -227,14 +227,14 @@ void Solid::ModelEvaluator::Data::setup()
       case Inpar::Solid::model_contact:
       {
         contact_data_ptr_ = Teuchos::make_rcp<ContactData>();
-        contact_data_ptr_->init(Teuchos::RCP(this, false));
+        contact_data_ptr_->init(Teuchos::rcpFromRef(*this));
         contact_data_ptr_->setup();
         break;
       }
       case Inpar::Solid::model_browniandyn:
       {
         browniandyn_data_ptr_ = Teuchos::make_rcp<BrownianDynData>();
-        browniandyn_data_ptr_->init(Teuchos::RCP(this, false));
+        browniandyn_data_ptr_->init(Teuchos::rcpFromRef(*this));
         browniandyn_data_ptr_->setup();
         break;
       }

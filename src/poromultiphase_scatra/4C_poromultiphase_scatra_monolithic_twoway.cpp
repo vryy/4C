@@ -177,7 +177,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_maps()
     vecSpaces.push_back(poro_field()->fluid_dof_row_map());
     const Epetra_Map* dofrowmapscatra =
         (scatra_algo()->scatra_field()->discretization())->dof_row_map(0);
-    vecSpaces.push_back(Teuchos::RCP(dofrowmapscatra, false));
+    vecSpaces.push_back(Teuchos::rcpFromRef(*dofrowmapscatra));
 
     if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro structure equation. Panic.");
     if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No poro fluid equation. Panic.");
@@ -188,7 +188,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_maps()
     vecSpaces.push_back(poro_field()->fluid_dof_row_map());
     const Epetra_Map* dofrowmapscatra =
         (scatra_algo()->scatra_field()->discretization())->dof_row_map(0);
-    vecSpaces.push_back(Teuchos::RCP(dofrowmapscatra, false));
+    vecSpaces.push_back(Teuchos::rcpFromRef(*dofrowmapscatra));
 
     if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro fluid equation. Panic.");
     if (vecSpaces[1]->NumGlobalElements() == 0) FOUR_C_THROW("No scatra equation. Panic.");
@@ -1369,7 +1369,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
     vecSpaces.push_back(poro_field()->fluid_dof_row_map());
     const Epetra_Map* dofrowmapscatra =
         (scatra_algo()->scatra_field()->discretization())->dof_row_map(0);
-    vecSpaces.push_back(Teuchos::RCP(dofrowmapscatra, false));
+    vecSpaces.push_back(Teuchos::rcpFromRef(*dofrowmapscatra));
     vecSpaces.push_back(poro_field()->artery_dof_row_map());
     vecSpaces.push_back(scatramsht_->art_scatra_dof_row_map());
     if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro structure equation. Panic.");
@@ -1383,7 +1383,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
     vecSpaces.push_back(poro_field()->fluid_dof_row_map());
     const Epetra_Map* dofrowmapscatra =
         (scatra_algo()->scatra_field()->discretization())->dof_row_map(0);
-    vecSpaces.push_back(Teuchos::RCP(dofrowmapscatra, false));
+    vecSpaces.push_back(Teuchos::rcpFromRef(*dofrowmapscatra));
     vecSpaces.push_back(poro_field()->artery_dof_row_map());
     vecSpaces.push_back(scatramsht_->art_scatra_dof_row_map());
     if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro fluid equation. Panic.");

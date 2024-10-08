@@ -1453,7 +1453,7 @@ void ScaTra::TimIntHDG::assemble_rhs()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::TimIntHDG::create_scatra_field_test()
 {
-  return Teuchos::make_rcp<ScaTra::HDGResultTest>(Teuchos::RCP(this, false));
+  return Teuchos::make_rcp<ScaTra::HDGResultTest>(Teuchos::rcpFromRef(*this));
 }
 
 FOUR_C_NAMESPACE_CLOSE

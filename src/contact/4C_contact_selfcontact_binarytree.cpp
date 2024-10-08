@@ -61,7 +61,7 @@ void CONTACT::SelfBinaryTreeNode::complete_tree(int layer, double& enlarge)
   {
     set_layer(0);
     if (type_ == SELFCO_INNER)
-      treenodes_[layer].push_back(Teuchos::RCP(this, false));
+      treenodes_[layer].push_back(Teuchos::rcpFromRef(*this));
     else
       FOUR_C_THROW("root must be inner node in treenodes scheme");
   }

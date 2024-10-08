@@ -1049,7 +1049,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
           solver_params.refactor = true;
           solver_params.reset = true;
           solver->solve_with_multi_vector(stiff_->epetra_operator(),
-              Teuchos::RCP(((*iterinc)(i)), false), Teuchos::RCP(((*rhs_)(i)), false),
+              Teuchos::rcpFromRef(*((*iterinc)(i))), Teuchos::rcpFromRef(*((*rhs_)(i))),
               solver_params);
         }
         break;

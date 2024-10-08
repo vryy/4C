@@ -524,7 +524,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
         for (int q = 0; q < nqpoints; ++q)
         {
           auto material_internal_state_component =
-              Teuchos::RCP((*material_internal_state)(k * nqpoints + q), false);
+              Teuchos::rcpFromRef(*(*material_internal_state)(k * nqpoints + q));
           material->set_internal_state(k, (*material_internal_state_component)[ele->id()], q);
         }
       }

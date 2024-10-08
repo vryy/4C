@@ -399,7 +399,7 @@ std::string ALE::Ale::element_action_string(const enum Inpar::ALE::AleDynamic na
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> ALE::Ale::dof_row_map() const
 {
-  return Teuchos::RCP(discret_->dof_row_map(), false);
+  return Teuchos::rcpFromRef(*discret_->dof_row_map());
 }
 
 /*----------------------------------------------------------------------------*/

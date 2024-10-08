@@ -565,7 +565,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
       Core::LinAlg::Matrix<3, 1> minDistCoords;
       if (dim == 2)
       {
-        Core::Geo::nearest_2d_object_in_node(Teuchos::RCP(&interfacedis, false),
+        Core::Geo::nearest_2d_object_in_node(Teuchos::rcpFromRef(interfacedis),
             structreduelements_[mnit->first], currentpositions, closeeles, alenodecurr,
             minDistCoords);
         finaldxyz[0] = minDistCoords(0, 0) - node->x()[0];
@@ -573,7 +573,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
       }
       else
       {
-        Core::Geo::nearest_3d_object_in_node(Teuchos::RCP(&interfacedis, false),
+        Core::Geo::nearest_3d_object_in_node(Teuchos::rcpFromRef(interfacedis),
             structreduelements_[mnit->first], currentpositions, closeeles, alenodecurr,
             minDistCoords);
         finaldxyz[0] = minDistCoords(0, 0) - node->x()[0];

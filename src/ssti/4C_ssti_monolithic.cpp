@@ -360,7 +360,7 @@ void SSTI::SSTIMono::setup_system()
 
   // initialize strategy for assembly
   strategy_assemble_ = SSTI::build_assemble_strategy(
-      Teuchos::RCP(this, false), matrixtype_, scatra_field()->matrix_type());
+      Teuchos::rcpFromRef(*this), matrixtype_, scatra_field()->matrix_type());
 
   // initialize evaluation objects for coupling between subproblems
   scatrastructureoffdiagcoupling_ = Teuchos::make_rcp<SSI::ScatraStructureOffDiagCouplingSSTI>(

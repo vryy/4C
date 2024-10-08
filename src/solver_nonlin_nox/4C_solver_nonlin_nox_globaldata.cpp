@@ -46,8 +46,8 @@ NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
     const NOX::Nln::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
     const Teuchos::RCP<::NOX::Epetra::Scaling>& iScale)
-    : comm_(Teuchos::RCP(&comm, false)),
-      nlnparams_(Teuchos::RCP(&noxParams, false)),
+    : comm_(Teuchos::rcpFromRef(comm)),
+      nlnparams_(Teuchos::rcpFromRef(noxParams)),
       opt_type_(type),
       lin_solvers_(linSolvers),
       i_req_ptr_(iReq),
@@ -72,8 +72,8 @@ NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const OptimizationProblemType& type, const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iConstr)
-    : comm_(Teuchos::RCP(&comm, false)),
-      nlnparams_(Teuchos::RCP(&noxParams, false)),
+    : comm_(Teuchos::rcpFromRef(comm)),
+      nlnparams_(Teuchos::rcpFromRef(noxParams)),
       opt_type_(type),
       lin_solvers_(linSolvers),
       i_req_ptr_(iReq),
@@ -96,8 +96,8 @@ NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec)
-    : comm_(Teuchos::RCP(&comm, false)),
-      nlnparams_(Teuchos::RCP(&noxParams, false)),
+    : comm_(Teuchos::rcpFromRef(comm)),
+      nlnparams_(Teuchos::rcpFromRef(noxParams)),
       opt_type_(opt_unconstrained),
       lin_solvers_(linSolvers),
       i_req_ptr_(iReq),
@@ -118,8 +118,8 @@ NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
     const NOX::Nln::LinearSystem::SolverMap& linSolvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac)
-    : comm_(Teuchos::RCP(&comm, false)),
-      nlnparams_(Teuchos::RCP(&noxParams, false)),
+    : comm_(Teuchos::rcpFromRef(comm)),
+      nlnparams_(Teuchos::rcpFromRef(noxParams)),
       opt_type_(opt_unconstrained),
       lin_solvers_(linSolvers),
       i_req_ptr_(iReq),

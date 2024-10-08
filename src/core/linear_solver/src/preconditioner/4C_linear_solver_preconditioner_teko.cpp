@@ -50,12 +50,13 @@ void Core::LinearSolver::TekoPreconditioner::setup(
     Teuchos::updateParametersFromXmlFileAndBroadcast(xmlFileName, tekoParams.ptr(), *comm);
 
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
-        Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(Teuchos::RCP(matrix, false));
+        Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
+            Teuchos::rcpFromRef(*matrix));
 
     // wrap linear operators
     if (A.is_null())
     {
-      auto A_crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::RCP(matrix, false));
+      auto A_crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcpFromRef(*matrix));
       pmatrix_ = Thyra::epetraLinearOp(A_crs);
     }
     else

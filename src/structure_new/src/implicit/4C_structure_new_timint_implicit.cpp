@@ -51,7 +51,7 @@ void Solid::TimeInt::Implicit::setup()
   Teuchos::RCP<Solid::TimeInt::NoxInterface> noxinterface_ptr =
       Teuchos::make_rcp<Solid::TimeInt::NoxInterface>();
   noxinterface_ptr->init(
-      data_global_state_ptr(), implint_ptr_, dbc_ptr(), Teuchos::RCP(this, false));
+      data_global_state_ptr(), implint_ptr_, dbc_ptr(), Teuchos::rcpFromRef(*this));
   noxinterface_ptr->setup();
 
   // ---------------------------------------------------------------------------
@@ -74,7 +74,7 @@ void Solid::TimeInt::Implicit::setup()
               << std::endl;
   nlnsolver_ptr_ = Solid::Nln::SOLVER::build_nln_solver(nlnSolverType);
   nlnsolver_ptr_->init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, implint_ptr_,
-      Teuchos::RCP(this, false));
+      Teuchos::rcpFromRef(*this));
   nlnsolver_ptr_->setup();
 
   // set setup flag
@@ -168,7 +168,7 @@ void Solid::TimeInt::Implicit::update_state_incrementally(
 
   // cast away const-qualifier for building the Nox Vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> mutable_disiterinc =
-      Teuchos::RCP(const_cast<Core::LinAlg::Vector<double>*>(disiterinc.get()), false);
+      Teuchos::rcpFromRef(*const_cast<Core::LinAlg::Vector<double>*>(disiterinc.get()));
 
   // wrap the displacement vector in a nox_epetra_Vector
   Teuchos::RCP<const ::NOX::Epetra::Vector> nox_disiterinc_ptr =

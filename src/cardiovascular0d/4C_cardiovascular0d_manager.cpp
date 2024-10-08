@@ -907,7 +907,7 @@ void UTILS::Cardiovascular0DManager::print_pres_flux(bool init) const
 void UTILS::Cardiovascular0DManager::solver_setup(
     Core::LinAlg::Solver& solver, Teuchos::ParameterList params)
 {
-  solver_ = Teuchos::RCP(&solver, false);
+  solver_ = Teuchos::rcpFromRef(solver);
 
   // different setup for #adapttol_
   isadapttol_ = true;

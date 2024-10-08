@@ -1443,9 +1443,9 @@ Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::LocalSolver(
   upUpd.resize((nsd_ + 1) * ndofs_ + 1);
 
   // pointer to class FluidEleParameter (access to the general parameter)
-  fldparatimint_ = Teuchos::RCP(Discret::ELEMENTS::FluidEleParameterTimInt::instance(), false);
+  fldparatimint_ = Teuchos::rcpFromRef(*Discret::ELEMENTS::FluidEleParameterTimInt::instance());
   // initialize also general parameter list, also it will be overwritten in derived subclasses
-  fldpara_ = Teuchos::RCP(Discret::ELEMENTS::FluidEleParameterStd::instance(), false);
+  fldpara_ = Teuchos::rcpFromRef(*Discret::ELEMENTS::FluidEleParameterStd::instance());
 }
 
 

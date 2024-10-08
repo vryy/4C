@@ -624,7 +624,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> POROFLUIDMULTIPHASE::TimIntImpl::dof_row_map(unsigned nds) const
 {
-  return Teuchos::RCP(discret_->dof_row_map(nds), false);
+  return Teuchos::rcpFromRef(*discret_->dof_row_map(nds));
 }
 
 /*----------------------------------------------------------------------*

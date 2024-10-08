@@ -74,7 +74,7 @@ EleMag::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<Core::FE::Discretization
 void EleMag::ElemagTimeInt::init()
 {
   // get dof row map
-  Teuchos::RCP<const Epetra_Map> dofrowmap = Teuchos::RCP(discret_->dof_row_map(), false);
+  Teuchos::RCP<const Epetra_Map> dofrowmap = Teuchos::rcpFromRef(*discret_->dof_row_map());
 
   // check time-step length
   if (dtp_ <= 0.0) FOUR_C_THROW("Zero or negative time-step length!");

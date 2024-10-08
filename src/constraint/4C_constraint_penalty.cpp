@@ -234,7 +234,8 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
         (*lagrvalues_force_)[condID - 1] = (*lagrvalues_)[condID - 1] + rho_[condID] * diff;
 
       // elements might need condition
-      params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::RCP(cond, false));
+      params.set<Teuchos::RCP<Core::Conditions::Condition>>(
+          "condition", Teuchos::rcpFromRef(*cond));
 
       // define element matrices and vectors
       Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -328,7 +329,8 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_error(
     // if current time is larger than initialization time of the condition, start computing
     if (inittimes_.find(condID)->second <= time)
     {
-      params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::RCP(cond, false));
+      params.set<Teuchos::RCP<Core::Conditions::Condition>>(
+          "condition", Teuchos::rcpFromRef(*cond));
 
       // define element matrices and vectors
       Core::LinAlg::SerialDenseMatrix elematrix1;

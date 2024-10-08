@@ -329,7 +329,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_transpose(const Sp
 
   Epetra_CrsMatrix* a_prime = &(dynamic_cast<Epetra_CrsMatrix&>(transposer(*A.epetra_matrix())));
   matrix = Teuchos::make_rcp<SparseMatrix>(
-      Teuchos::RCP(a_prime, false), Core::LinAlg::Copy, A.explicit_dirichlet(), A.save_graph());
+      Teuchos::rcpFromRef(*a_prime), Core::LinAlg::Copy, A.explicit_dirichlet(), A.save_graph());
 
   return matrix;
 }

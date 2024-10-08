@@ -446,7 +446,7 @@ void ScaTra::LevelSetAlgorithm::output_of_level_set_specific_values()
  *----------------------------------------------------------------------*/
 void ScaTra::LevelSetAlgorithm::test_results()
 {
-  problem_->add_field_test(Teuchos::make_rcp<ScaTra::ScaTraResultTest>(Teuchos::RCP(this, false)));
+  problem_->add_field_test(Teuchos::make_rcp<ScaTra::ScaTraResultTest>(Teuchos::rcpFromRef(*this)));
   problem_->test_all(discret_->get_comm());
 }
 

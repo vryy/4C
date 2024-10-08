@@ -332,8 +332,7 @@ void CONSTRAINTS::MPConstraint2::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
       if (assemblevec3) elevector3.size(1);  // elevector3 always contains a scalar
 
       params.set("ConditionID", condID);
-      params.set<Teuchos::RCP<Core::Conditions::Condition>>(
-          "condition", Teuchos::RCP(&cond, false));
+      params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcpFromRef(cond));
       // call the element evaluate method
       int err = actele->evaluate(
           params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);

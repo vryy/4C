@@ -1505,7 +1505,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> ScaTra::ScaTraTimIntImpl::diric
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::access_dyn_smag_filter(Teuchos::RCP<FLD::DynSmagFilter> dynSmag)
 {
-  DynSmag_ = Teuchos::RCP(dynSmag.get(), false);
+  DynSmag_ = Teuchos::rcpFromRef(*dynSmag.get());
 
   // access to the dynamic Smagorinsky class is provided
   // by the fluid scatra coupling algorithm
@@ -1527,7 +1527,7 @@ void ScaTra::ScaTraTimIntImpl::access_dyn_smag_filter(Teuchos::RCP<FLD::DynSmagF
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::access_vreman(Teuchos::RCP<FLD::Vreman> vrem)
 {
-  Vrem_ = Teuchos::RCP(vrem.get(), false);
+  Vrem_ = Teuchos::rcpFromRef(*vrem.get());
 
   // access to the dynamic Vreman class is provided
   // by the fluid scatra coupling algorithm

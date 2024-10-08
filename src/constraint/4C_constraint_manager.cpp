@@ -449,7 +449,7 @@ void CONSTRAINTS::ConstrManager::compute_monitor_values(
         Core::LinAlg::merge_map(*actdisc_->dof_row_map(), *constrmap_, false);
 
     Core::LinAlg::MapExtractor conmerger;
-    conmerger.setup(*largemap, Teuchos::RCP(actdisc_->dof_row_map(), false), constrmap_);
+    conmerger.setup(*largemap, Teuchos::rcpFromRef(*actdisc_->dof_row_map()), constrmap_);
     actdisc_->set_state("displacement", conmerger.extract_cond_vector(*disp));
   }
   else

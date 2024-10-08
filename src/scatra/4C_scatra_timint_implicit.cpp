@@ -3283,7 +3283,7 @@ Teuchos::RCP<const Epetra_Map> ScaTra::ScaTraTimIntImpl::dof_row_map() { return 
 Teuchos::RCP<const Epetra_Map> ScaTra::ScaTraTimIntImpl::dof_row_map(int nds)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map(nds);
-  return Teuchos::RCP(dofrowmap, false);
+  return Teuchos::rcpFromRef(*dofrowmap);
 }
 
 /*----------------------------------------------------------------------*
@@ -3960,7 +3960,7 @@ void ScaTra::ScaTraTimIntImpl::set_time_stepping_to_micro_scale()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::ScaTraTimIntImpl::create_scatra_field_test()
 {
-  return Teuchos::make_rcp<ScaTra::ScaTraResultTest>(Teuchos::RCP(this, false));
+  return Teuchos::make_rcp<ScaTra::ScaTraResultTest>(Teuchos::rcpFromRef(*this));
 }
 
 /*----------------------------------------------------------------------*

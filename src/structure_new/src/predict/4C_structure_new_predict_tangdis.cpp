@@ -53,7 +53,7 @@ void Solid::Predict::TangDis::setup()
       NOX::Nln::GROUP::PrePostOp::get_map(p_grp_opt);
   // create the new tangdis pre/post operator
   Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> preposttangdis_ptr =
-      Teuchos::make_rcp<NOX::Nln::GROUP::PrePostOp::TangDis>(Teuchos::RCP(this, false));
+      Teuchos::make_rcp<NOX::Nln::GROUP::PrePostOp::TangDis>(Teuchos::rcpFromRef(*this));
   // insert/replace the old pointer in the map
   prepostgroup_map[NOX::Nln::GROUP::prepost_tangdis] = preposttangdis_ptr;
 
