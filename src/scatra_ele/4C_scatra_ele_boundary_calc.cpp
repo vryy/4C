@@ -52,7 +52,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCal
       normal_(true),
       velint_(true),
       metrictensor_(true),
-      rotsymmpbc_(Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1,
+      rotsymmpbc_(Teuchos::RCP(new FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1,
           Discret::ELEMENTS::Fluid::none>()))
 {
 }

@@ -72,17 +72,17 @@ void Solid::ModelEvaluator::BeamInteractionDataState::setup(
   myrank_ = ia_discret->get_comm().MyPID();
 
   // displacements
-  dis_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(
-      0, 0, ia_discret->dof_row_map(), true));
-  disnp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*ia_discret->dof_col_map()));
-  discolnp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*ia_discret->dof_col_map()));
+  dis_ = Teuchos::make_rcp<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
+      0, 0, ia_discret->dof_row_map(), true);
+  disnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ia_discret->dof_col_map());
+  discolnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ia_discret->dof_col_map());
 
   // force
-  forcen_ = Teuchos::rcp(new Epetra_FEVector(*ia_discret->dof_row_map()));
-  forcenp_ = Teuchos::rcp(new Epetra_FEVector(*ia_discret->dof_row_map()));
+  forcen_ = Teuchos::make_rcp<Epetra_FEVector>(*ia_discret->dof_row_map());
+  forcenp_ = Teuchos::make_rcp<Epetra_FEVector>(*ia_discret->dof_row_map());
 
-  stiff_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      *ia_discret->dof_row_map(), 81, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  stiff_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *ia_discret->dof_row_map(), 81, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   issetup_ = true;
 }

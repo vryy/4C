@@ -926,7 +926,7 @@ void Cut::VolumeCell::dump_gmsh_gauss_points_tessellation()
   dump_gmsh(file);
 
   Teuchos::RCP<Core::FE::GaussPointsComposite> gpc =
-      Teuchos::rcp(new Core::FE::GaussPointsComposite(0));
+      Teuchos::make_rcp<Core::FE::GaussPointsComposite>(0);
 
   const plain_integrationcell_set& cells = integration_cells();
   for (plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
@@ -978,7 +978,7 @@ void Cut::VolumeCell::dump_gmsh_gauss_points_tessellation()
 void Cut::VolumeCell::integrate_specific_functions_tessellation()
 {
   Teuchos::RCP<Core::FE::GaussPointsComposite> gpc =
-      Teuchos::rcp(new Core::FE::GaussPointsComposite(0));
+      Teuchos::make_rcp<Core::FE::GaussPointsComposite>(0);
 
   const plain_integrationcell_set& cells = integration_cells();
   for (plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
@@ -1054,7 +1054,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::VolumeCell::create_projected(Cut::Integ
 Teuchos::RCP<Core::FE::GaussPoints> Cut::VolumeCell::gauss_points_fitting()
 {
   Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-      Teuchos::rcp(new Core::FE::CollectedGaussPoints(0));
+      Teuchos::make_rcp<Core::FE::CollectedGaussPoints>(0);
 
   for (unsigned i = 0; i < gaus_pts_.size(); i++)
   {
@@ -1393,7 +1393,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::VolumeCell::generate_internal_gauss_rul
   Core::FE::GaussIntegration grule(gp);
 
   Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-      Teuchos::rcp(new Core::FE::CollectedGaussPoints(0));
+      Teuchos::make_rcp<Core::FE::CollectedGaussPoints>(0);
 
   for (Core::FE::GaussIntegration::iterator quadint = grule.begin(); quadint != grule.end();
        ++quadint)

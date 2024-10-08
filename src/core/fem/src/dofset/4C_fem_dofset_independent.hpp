@@ -63,7 +63,7 @@ namespace Core::DOFSets
 
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> clone() override { return Teuchos::rcp(new IndependentDofSet(*this)); }
+    Teuchos::RCP<DofSet> clone() override { return Teuchos::make_rcp<IndependentDofSet>(*this); }
 
     /// Add Dof Set to list #static_dofsets_
     void add_dof_setto_list() override;

@@ -56,7 +56,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
       isnodalporosity_(false)
 {
   // initialization of diffusion manager (override initialization in base class)
-  my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerPoro(my::numscal_));
+  my::diffmanager_ = Teuchos::make_rcp<ScaTraEleDiffManagerPoro>(my::numscal_);
 
   return;
 }
@@ -356,7 +356,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_porosity(
     if (structmat == Teuchos::null) FOUR_C_THROW("cast to Mat::StructPoro failed!");
 
     // just evaluate the first scalar (used only in case of reactive porosity)
-    Teuchos::RCP<std::vector<double>> scalars = Teuchos::rcp(new std::vector<double>(0));
+    Teuchos::RCP<std::vector<double>> scalars = Teuchos::make_rcp<std::vector<double>>(0);
     for (int k = 0; k < my::numscal_; ++k)
     {
       const double phinp = my::ephinp_[k].dot(my::funct_);

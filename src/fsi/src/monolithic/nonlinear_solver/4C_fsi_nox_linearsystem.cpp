@@ -43,7 +43,7 @@ NOX::FSI::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       solver_(solver),
       timer_("", true)
 {
-  tmp_vector_ptr_ = Teuchos::rcp(new ::NOX::Epetra::Vector(cloneVector));
+  tmp_vector_ptr_ = Teuchos::make_rcp<::NOX::Epetra::Vector>(cloneVector);
 
   jac_type_ = get_operator_type(*jac_ptr_);
 
@@ -125,7 +125,7 @@ bool NOX::FSI::LinearSystem::applyJacobianInverse(
   const double tol = p.get("Tolerance", 1.0e-10);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fres =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(input.getEpetraVector()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(input.getEpetraVector());
   Core::LinAlg::VectorView disi = Core::LinAlg::VectorView(result.getEpetraVector());
 
   // get the hopefully adaptive linear solver convergence tolerance

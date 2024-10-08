@@ -937,7 +937,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
     Core::Conditions::Condition& cond = *(cardiovascular0dcond_[i]);
 
     // elements might need condition
-    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(&cond, false));
+    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcpFromRef(cond));
 
     const std::string conditiontype =
         cardiovascular0dcond_[i]->parameters().get<std::string>("TYPE");
@@ -9216,7 +9216,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::initialize(
     int condID = cond->parameters().get<int>("id");
     params.set("id", condID);
 
-    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
+    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcpFromRef(*cond));
 
     // define element matrices and vectors
     Core::LinAlg::SerialDenseMatrix elematrix1;

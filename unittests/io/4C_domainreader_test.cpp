@@ -21,7 +21,7 @@ namespace
   {
    public:
     DatFileReaderStub() = default;
-    Teuchos::RCP<Epetra_Comm> comm() const { return Teuchos::rcp(new Epetra_SerialComm); }
+    Teuchos::RCP<Epetra_Comm> comm() const { return Teuchos::make_rcp<Epetra_SerialComm>(); }
   };
 
   class DomainReaderTest : public ::testing::Test
@@ -29,7 +29,7 @@ namespace
    public:
     DomainReaderTest()
     {
-      testdis_ = Teuchos::rcp(new Core::FE::Discretization("dummy", testreader_.comm(), 3));
+      testdis_ = Teuchos::make_rcp<Core::FE::Discretization>("dummy", testreader_.comm(), 3);
     }
 
    protected:

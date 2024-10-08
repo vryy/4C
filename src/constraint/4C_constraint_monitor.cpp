@@ -113,7 +113,7 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
     // Get ConditionID of current condition if defined and write value in parameterlist
     const int condID = cond->parameters().get<int>("ConditionID");
     const int offsetID = params.get("OffsetID", 0);
-    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
+    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcpFromRef(*cond));
 
     // define element matrices and vectors
     Core::LinAlg::SerialDenseMatrix elematrix1;

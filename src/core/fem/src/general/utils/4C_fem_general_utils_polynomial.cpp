@@ -729,7 +729,7 @@ namespace Core::FE
 
     // this is expensive and should not be done too often
     Teuchos::RCP<PolynomialSpace<nsd>> ps;
-    ps = Teuchos::rcp(new PolynomialSpace<nsd>(params));
+    ps = Teuchos::make_rcp<PolynomialSpace<nsd>>(params);
 
     ps_cache_[params] = ps;
 

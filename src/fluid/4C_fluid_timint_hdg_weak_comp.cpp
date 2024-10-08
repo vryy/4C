@@ -72,16 +72,16 @@ void FLD::TimIntHDGWeakComp::init()
   dofmapvec_r.reserve(dofset_r.size());
   dofmapvec_r.assign(dofset_r.begin(), dofset_r.end());
   dofset_r.clear();
-  Teuchos::RCP<Epetra_Map> dofmap_r = Teuchos::rcp(
-      new Epetra_Map(-1, dofmapvec_r.size(), dofmapvec_r.data(), 0, hdgdis->get_comm()));
+  Teuchos::RCP<Epetra_Map> dofmap_r = Teuchos::make_rcp<Epetra_Map>(
+      -1, dofmapvec_r.size(), dofmapvec_r.data(), 0, hdgdis->get_comm());
 
   // define momentum dof map
   std::vector<int> dofmapvec_w;
   dofmapvec_w.reserve(dofset_w.size());
   dofmapvec_w.assign(dofset_w.begin(), dofset_w.end());
   dofset_w.clear();
-  Teuchos::RCP<Epetra_Map> dofmap_w = Teuchos::rcp(
-      new Epetra_Map(-1, dofmapvec_w.size(), dofmapvec_w.data(), 0, hdgdis->get_comm()));
+  Teuchos::RCP<Epetra_Map> dofmap_w = Teuchos::make_rcp<Epetra_Map>(
+      -1, dofmapvec_w.size(), dofmapvec_w.data(), 0, hdgdis->get_comm());
 
   // build density/momentum (actually velocity/pressure) splitter
   velpressplitter_->setup(*hdgdis->dof_row_map(), dofmap_r, dofmap_w);
@@ -510,7 +510,7 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
       // [0]: absolute L2 mixed variable error
       // [1]: absolute L2 density error
       // [2]: absolute L2 momentum error
-      Teuchos::RCP<std::vector<double>> abserror = Teuchos::rcp(new std::vector<double>(3));
+      Teuchos::RCP<std::vector<double>> abserror = Teuchos::make_rcp<std::vector<double>>(3);
 
       // create the parameters for the discretization
       Teuchos::ParameterList eleparams;
@@ -537,7 +537,7 @@ FLD::TimIntHDGWeakComp::evaluate_error_compared_to_analytical_sol()
       // (4: analytical density for L2 norm)
       // (5: analytical momentum for L2 norm)
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-          Teuchos::rcp(new Core::LinAlg::SerialDenseVector(3 + 3));
+          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(3 + 3);
 
       // call loop over elements (assemble nothing)
       discret_->evaluate_scalars(eleparams, errors);
@@ -665,10 +665,10 @@ namespace
     // create dofsets for mixed variable, density and momentum at nodes
     if (density.get() == nullptr || density->GlobalLength() != dis.num_global_nodes())
     {
-      mixedvar.reset(new Epetra_MultiVector(*dis.node_row_map(), msd));
-      density.reset(new Core::LinAlg::Vector<double>(*dis.node_row_map()));
+      mixedvar = Teuchos::make_rcp<Epetra_MultiVector>(*dis.node_row_map(), msd);
+      density = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis.node_row_map());
     }
-    traceden.reset(new Core::LinAlg::Vector<double>(density->Map()));
+    traceden = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(density->Map());
 
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
@@ -750,7 +750,8 @@ void FLD::TimIntHDGWeakComp::output()
     // evaluate derived variables
     Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity;
     Teuchos::RCP<Core::LinAlg::Vector<double>> interpolatedPressure;
-    interpolatedPressure.reset(new Core::LinAlg::Vector<double>(interpolatedDensity_->Map()));
+    interpolatedPressure =
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(interpolatedDensity_->Map());
     for (int i = 0; i < interpolatedDensity_->MyLength(); ++i)
     {
       (*interpolatedPressure)[i] =
@@ -770,7 +771,7 @@ void FLD::TimIntHDGWeakComp::output()
     if (alefluid_)
     {
       Teuchos::RCP<Epetra_MultiVector> AleDisplacement;
-      AleDisplacement.reset(new Epetra_MultiVector(*discret_->node_row_map(), nsd));
+      AleDisplacement = Teuchos::make_rcp<Epetra_MultiVector>(*discret_->node_row_map(), nsd);
       for (int i = 0; i < interpolatedDensity_->MyLength(); ++i)
         for (unsigned int d = 0; d < nsd; ++d) (*AleDisplacement)[d][i] = (*dispnp_)[(i * nsd) + d];
 

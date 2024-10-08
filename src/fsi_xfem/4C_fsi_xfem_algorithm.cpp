@@ -62,10 +62,10 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
     Teuchos::RCP<Core::FE::Discretization> structdis =
         Global::Problem::instance()->get_dis("structure");
     Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure =
-        Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
-            timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
-    structureporo_ = Teuchos::rcp(new Adapter::StructurePoroWrapper(
-        structure->structure_field(), Adapter::StructurePoroWrapper::type_StructureField, true));
+        Teuchos::make_rcp<Adapter::StructureBaseAlgorithm>(
+            timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+    structureporo_ = Teuchos::make_rcp<Adapter::StructurePoroWrapper>(
+        structure->structure_field(), Adapter::StructurePoroWrapper::type_StructureField, true);
   }
   else if (type == Adapter::StructurePoroWrapper::type_PoroField)
   {
@@ -86,8 +86,8 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
       FOUR_C_THROW(
           "You created a different poroelast algorithm than monolithic (not combineable with xfpsi "
           "at the moment)--> check your COUPALGO in the POROELASTICITY DYNAMIC section!");
-    structureporo_ = Teuchos::rcp(new Adapter::StructurePoroWrapper(
-        poro, Adapter::StructurePoroWrapper::type_PoroField, true));
+    structureporo_ = Teuchos::make_rcp<Adapter::StructurePoroWrapper>(
+        poro, Adapter::StructurePoroWrapper::type_PoroField, true);
   }
   else
     FOUR_C_THROW("AlgorithmXFEM cannot handle this Fieldtype for structure!");
@@ -99,8 +99,8 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
     Global::Problem* problem = Global::Problem::instance();
     const Teuchos::ParameterList& fsidynparams = problem->fsi_dynamic_params();
     // ask base algorithm for the ale time integrator
-    Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::rcp(
-        new Adapter::AleBaseAlgorithm(fsidynparams, Global::Problem::instance()->get_dis("ale")));
+    Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::make_rcp<Adapter::AleBaseAlgorithm>(
+        fsidynparams, Global::Problem::instance()->get_dis("ale"));
     ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleFpsiWrapper>(ale->ale_field());
     if (ale_ == Teuchos::null)
       FOUR_C_THROW("Cast from Adapter::Ale to Adapter::AleFpsiWrapper failed");
@@ -115,7 +115,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
   // ask base algorithm for the fluid time integrator
   // do not init in ale case!!! (will be done in MonolithicAFSI_XFEM::Setup System())
   Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluid =
-      Teuchos::rcp(new Adapter::FluidBaseAlgorithm(timeparams, fdyn, "fluid", ale, false));
+      Teuchos::make_rcp<Adapter::FluidBaseAlgorithm>(timeparams, fdyn, "fluid", ale, false);
   fluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluid>(fluid->fluid_field());
   if (fluid_ == Teuchos::null)
     FOUR_C_THROW("Cast of Fluid to XFluid failed! - Everything fine in setup_fluid()?");

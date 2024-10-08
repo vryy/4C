@@ -107,7 +107,7 @@ void CONTACT::MtPenaltyStrategy::mortar_coupling(
   }
 
   // full stiffness matrix
-  stiff_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
+  stiff_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*problem_dofs(), 100, false, true);
   double pp = params().get<double>("PENALTYPARAM");
 
   // add penalty meshtying stiffness terms
@@ -227,17 +227,17 @@ void CONTACT::MtPenaltyStrategy::evaluate_meshtying(
   // exact rotational invariance (+).
   //***************************************************************************
   Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec1 =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec2 =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   Core::LinAlg::export_to(*dis, *tempvec1);
   dmatrix_->multiply(false, *tempvec1, *tempvec2);
   g_->Update(-1.0, *tempvec2, 0.0);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec3 =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec4 =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   Core::LinAlg::export_to(*dis, *tempvec3);
   mmatrix_->multiply(false, *tempvec3, *tempvec4);
   g_->Update(1.0, *tempvec4, 1.0);
@@ -252,35 +252,35 @@ void CONTACT::MtPenaltyStrategy::evaluate_meshtying(
 
   // add penalty meshtying force terms
   Teuchos::RCP<Core::LinAlg::Vector<double>> fm =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
   mmatrix_->multiply(true, *z_, *fm);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fmexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fm, *fmexp);
   feff->Update(1.0, *fmexp, 1.0);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fs =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   dmatrix_->multiply(true, *z_, *fs);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fsexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fs, *fsexp);
   feff->Update(-1.0, *fsexp, 1.0);
 
   // add old contact forces (t_n)
   Teuchos::RCP<Core::LinAlg::Vector<double>> fsold =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   dmatrix_->multiply(true, *zold_, *fsold);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fsoldexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fsold, *fsoldexp);
   feff->Update(alphaf_, *fsoldexp, 1.0);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fmold =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
   mmatrix_->multiply(true, *zold_, *fmold);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fmoldexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fmold, *fmoldexp);
   feff->Update(-alphaf_, *fmoldexp, 1.0);
 }
@@ -293,18 +293,18 @@ void CONTACT::MtPenaltyStrategy::initialize_uzawa(Teuchos::RCP<Core::LinAlg::Spa
 {
   // remove penalty meshtying force terms
   Teuchos::RCP<Core::LinAlg::Vector<double>> fm =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
   mmatrix_->multiply(true, *z_, *fm);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fmexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fm, *fmexp);
   feff->Update(-1.0, *fmexp, 1.0);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fs =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   dmatrix_->multiply(false, *z_, *fs);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fsexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fs, *fsexp);
   feff->Update(1.0, *fsexp, 1.0);
 
@@ -315,18 +315,18 @@ void CONTACT::MtPenaltyStrategy::initialize_uzawa(Teuchos::RCP<Core::LinAlg::Spa
 
   // add penalty meshtying force terms
   Teuchos::RCP<Core::LinAlg::Vector<double>> fmnew =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
   mmatrix_->multiply(true, *z_, *fmnew);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fmexpnew =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fmnew, *fmexpnew);
   feff->Update(1.0, *fmexpnew, 1.0);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fsnew =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   dmatrix_->multiply(false, *z_, *fsnew);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fsexpnew =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fsnew, *fsexpnew);
   feff->Update(-1.0, *fsexpnew, 1.0);
 }
@@ -432,7 +432,7 @@ void CONTACT::MtPenaltyStrategy::update_uzawa_augmented_lagrange()
   // (note that this is also done after the last Uzawa step of one
   // time step and thus also gives the guess for the initial
   // Lagrange multiplier lambda_0 of the next time step)
-  zuzawa_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*z_));
+  zuzawa_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*z_);
   store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
 }
 
@@ -441,7 +441,7 @@ void CONTACT::MtPenaltyStrategy::update_uzawa_augmented_lagrange()
 bool CONTACT::MtPenaltyStrategy::evaluate_force(
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> dis)
 {
-  if (force_.is_null()) force_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*problem_dofs()));
+  if (force_.is_null()) force_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   if (stiff_->multiply(false, *dis, *force_)) FOUR_C_THROW("multiply failed");
 
   return true;

@@ -56,7 +56,7 @@ void FLD::TimIntHDG::init()
 
   // set degrees of freedom in the discretization
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, elementndof, 0, false));
+      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(0, elementndof, 0, false);
   discret_->add_dof_set(dofsetaux);
   discret_->fill_complete();
 
@@ -80,14 +80,14 @@ void FLD::TimIntHDG::init()
   conddofmapvec.reserve(conddofset.size());
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
-  Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::rcp(
-      new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, hdgdis->get_comm()));
+  Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, conddofmapvec.size(), conddofmapvec.data(), 0, hdgdis->get_comm());
   std::vector<int> otherdofmapvec;
   otherdofmapvec.reserve(otherdofset.size());
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
-  Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
-      new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->get_comm()));
+  Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->get_comm());
   velpressplitter_->setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
 
   // implement ost and bdf2 through gen-alpha facilities
@@ -342,7 +342,7 @@ void FLD::TimIntHDG::set_initial_flow_field(
   {
     // initialize calculation of initial field based on fast Fourier transformation
     Teuchos::RCP<HomIsoTurbInitialField> HitInitialFieldHDG =
-        Teuchos::rcp(new FLD::HomIsoTurbInitialFieldHDG(*this, initfield));
+        Teuchos::make_rcp<FLD::HomIsoTurbInitialFieldHDG>(*this, initfield);
     // calculate initial field
     HitInitialFieldHDG->calculate_initial_field();
 
@@ -474,11 +474,11 @@ namespace
     // create dofsets for velocity and pressure at nodes
     if (pressure.get() == nullptr || pressure->GlobalLength() != dis.num_global_nodes())
     {
-      velocity.reset(new Epetra_MultiVector(*dis.node_row_map(), ndim));
-      pressure.reset(new Core::LinAlg::Vector<double>(*dis.node_row_map()));
+      velocity = Teuchos::make_rcp<Epetra_MultiVector>(*dis.node_row_map(), ndim);
+      pressure = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis.node_row_map());
     }
-    tracevel.reset(new Epetra_MultiVector(velocity->Map(), ndim));
-    cellPres.reset(new Core::LinAlg::Vector<double>(*dis.element_row_map()));
+    tracevel = Teuchos::make_rcp<Epetra_MultiVector>(velocity->Map(), ndim);
+    cellPres = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis.element_row_map());
 
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
@@ -626,7 +626,7 @@ void FLD::TimIntHDG::init_forcing()
         special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or
         special_flow_ == "decaying_homogeneous_isotropic_turbulence")
     {
-      forcing_interface_ = Teuchos::rcp(new FLD::HomIsoTurbForcingHDG(*this));
+      forcing_interface_ = Teuchos::make_rcp<FLD::HomIsoTurbForcingHDG>(*this);
     }
     else
       FOUR_C_THROW("forcing interface doesn't know this flow");

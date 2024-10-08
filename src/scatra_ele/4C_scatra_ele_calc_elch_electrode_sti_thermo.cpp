@@ -216,8 +216,8 @@ Discret::ELEMENTS::ScaTraEleCalcElchElectrodeSTIThermo<
   // replace internal variable manager for isothermal electrodes by internal variable manager for
   // thermodynamic electrodes
   my::scatravarmanager_ =
-      Teuchos::rcp(new ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<nsd_, nen_>(
-          my::numscal_, myelch::elchparams_));
+      Teuchos::make_rcp<ScaTraEleInternalVariableManagerElchElectrodeSTIThermo<nsd_, nen_>>(
+          my::numscal_, myelch::elchparams_);
 }
 
 

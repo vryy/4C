@@ -62,16 +62,15 @@ CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager::EmbeddedMeshConst
       .cut_params_ = cut_parameter_list};
 
   // Initialize visualization manager
-  auto visualization_manager = Teuchos::rcp(new Core::IO::VisualizationManager(
+  auto visualization_manager = Teuchos::make_rcp<Core::IO::VisualizationManager>(
       Core::IO::visualization_parameters_factory(
           Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
           *Global::Problem::instance()->output_control_file(), 0.0),  // Fix time
-      discret_ptr->get_comm(), "embedded_mesh"));
+      discret_ptr->get_comm(), "embedded_mesh");
 
-  mortar_manager_ = Teuchos::rcp<CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager>(
-      new CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager(discret_ptr, dispnp,
-          embedded_mesh_coupling_params, visualization_manager,
-          discret_ptr->dof_row_map()->MaxAllGID() + 1));
+  mortar_manager_ = Teuchos::make_rcp<CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager>(
+      discret_ptr, dispnp, embedded_mesh_coupling_params, visualization_manager,
+      discret_ptr->dof_row_map()->MaxAllGID() + 1);
 }
 
 bool CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager::evaluate_force_stiff(

@@ -183,7 +183,7 @@ namespace Mat
     //! return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new Robinson(*this));
+      return Teuchos::make_rcp<Robinson>(*this);
     }
 
     //! initialise internal stress variables

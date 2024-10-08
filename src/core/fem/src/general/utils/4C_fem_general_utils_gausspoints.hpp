@@ -289,7 +289,7 @@ namespace Core::FE
     {
       Teuchos::RCP<GaussPoints> gp = GaussPointCache::instance().create(distype, degree);
       Teuchos::RCP<CollectedGaussPoints> cgp =
-          Teuchos::rcp(new CollectedGaussPoints(gp->num_points()));
+          Teuchos::make_rcp<CollectedGaussPoints>(gp->num_points());
 
       GaussIntegration intpoints(gp);
 
@@ -353,7 +353,7 @@ namespace Core::FE
       Core::LinAlg::Matrix<nsd, 1> xi;
 
       Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-          Teuchos::rcp(new Core::FE::CollectedGaussPoints(intpoints.num_points()));
+          Teuchos::make_rcp<Core::FE::CollectedGaussPoints>(intpoints.num_points());
 
       for (Core::FE::GaussIntegration::iterator iquad = intpoints.begin(); iquad != intpoints.end();
            ++iquad)

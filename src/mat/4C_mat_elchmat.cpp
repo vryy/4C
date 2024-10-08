@@ -48,7 +48,7 @@ Mat::PAR::ElchMat::ElchMat(const Core::Mat::PAR::Parameter::Data& matdata)
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ElchMat::create_material()
 {
-  return Teuchos::rcp(new Mat::ElchMat(this));
+  return Teuchos::make_rcp<Mat::ElchMat>(this);
 }
 
 

@@ -221,12 +221,12 @@ void TSI::UTILS::setup_tsi(const Epetra_Comm& comm)
     const int ndofpernode_struct = Global::Problem::instance()->n_dim();
     const int ndofperelement_struct = 0;
     Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-    dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
-        ndofpernode_thermo, ndofperelement_thermo, 0, true));
+    dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+        ndofpernode_thermo, ndofperelement_thermo, 0, true);
     if (structdis->add_dof_set(dofsetaux) != 1)
       FOUR_C_THROW("unexpected dof sets in structure field");
-    dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
-        ndofpernode_struct, ndofperelement_struct, 0, true));
+    dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+        ndofpernode_struct, ndofperelement_struct, 0, true);
     if (thermdis->add_dof_set(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in thermo field");
 
     // call assign_degrees_of_freedom also for auxiliary dofsets

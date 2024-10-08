@@ -118,14 +118,14 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   // const Teuchos::ParameterList& probtype
   //  = problem->ProblemTypeParams();
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
-      Teuchos::rcp(new Teuchos::ParameterList(problem->io_params()));
+      Teuchos::make_rcp<Teuchos::ParameterList>(problem->io_params());
   Teuchos::RCP<Teuchos::ParameterList> tap =
-      Teuchos::rcp(new Teuchos::ParameterList(sdyn.sublist("TIMEADAPTIVITY")));
+      Teuchos::make_rcp<Teuchos::ParameterList>(sdyn.sublist("TIMEADAPTIVITY"));
   Teuchos::RCP<Teuchos::ParameterList> snox =
-      Teuchos::rcp(new Teuchos::ParameterList(problem->structural_nox_params()));
+      Teuchos::make_rcp<Teuchos::ParameterList>(problem->structural_nox_params());
 
   // add extra parameters (a kind of work-around)
-  Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
+  Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::make_rcp<Teuchos::ParameterList>();
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
   nox = *snox;
 
@@ -169,22 +169,22 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
     // Note: We assume 3d here!
 
     Teuchos::RCP<Epetra_Vector> nsv1 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->dof_row_map()), ns->data()));
+        Teuchos::make_rcp<Epetra_Vector>(View, *(actdis->dof_row_map()), ns->data());
     Teuchos::RCP<Epetra_Vector> nsv2 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->dof_row_map()), &ns->at(size)));
+        Teuchos::make_rcp<Epetra_Vector>(View, *(actdis->dof_row_map()), &ns->at(size));
     Teuchos::RCP<Epetra_Vector> nsv3 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->dof_row_map()), &ns->at(2 * size)));
+        Teuchos::make_rcp<Epetra_Vector>(View, *(actdis->dof_row_map()), &ns->at(2 * size));
     Teuchos::RCP<Epetra_Vector> nsv4 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->dof_row_map()), &ns->at(3 * size)));
+        Teuchos::make_rcp<Epetra_Vector>(View, *(actdis->dof_row_map()), &ns->at(3 * size));
     Teuchos::RCP<Epetra_Vector> nsv5 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->dof_row_map()), &ns->at(4 * size)));
+        Teuchos::make_rcp<Epetra_Vector>(View, *(actdis->dof_row_map()), &ns->at(4 * size));
     Teuchos::RCP<Epetra_Vector> nsv6 =
-        Teuchos::rcp(new Epetra_Vector(View, *(actdis->dof_row_map()), &ns->at(5 * size)));
+        Teuchos::make_rcp<Epetra_Vector>(View, *(actdis->dof_row_map()), &ns->at(5 * size));
 
 
     // prepare matrix for scaled thickness business of thin shell structures
     Teuchos::RCP<Core::LinAlg::SparseMatrix> stcinv =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*actdis->dof_row_map(), 81, true, true));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*actdis->dof_row_map(), 81, true, true);
 
     stcinv->zero();
     // create the parameters for the discretization
@@ -206,7 +206,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
       p.set("stc_layer", lay);
 
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpstcmat =
-          Teuchos::rcp(new Core::LinAlg::SparseMatrix(*actdis->dof_row_map(), 81, true, true));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*actdis->dof_row_map(), 81, true, true);
       tmpstcmat->zero();
 
       actdis->evaluate(p, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -336,7 +336,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
     {
       case Core::ProblemType::structure:  // pure structural time adaptivity
       {
-        structure_ = Teuchos::rcp(new StructureTimIntAda(sta, tmpstr));
+        structure_ = Teuchos::make_rcp<StructureTimIntAda>(sta, tmpstr);
         break;
       }
       case Core::ProblemType::fsi:  // structure based time adaptivity within an FSI simulation
@@ -346,8 +346,8 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
           Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
 
         Teuchos::RCP<FSIStructureWrapper> fsiwrapperwithadaptivity =
-            Teuchos::rcp(new StructureFSITimIntAda(
-                sta, Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
+            Teuchos::make_rcp<StructureFSITimIntAda>(
+                sta, Teuchos::make_rcp<StructureNOXCorrectionWrapper>(tmpstr));
         // strTeuchos::rcp_dynamic_cast<StructureFSITimIntAda>(fsiwrapperwithadaptivity)->GetStrTimIntPtr();
         structure_ = fsiwrapperwithadaptivity;
         // structure_->GetStrTimIntPtr()-(prbdyn,sdyn,*xparams,actdis,solver);
@@ -377,30 +377,30 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
         if (tmpstr->have_constraint())
         {
-          structure_ = Teuchos::rcp(
-              new StructureConstrMerged(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
+          structure_ = Teuchos::make_rcp<StructureConstrMerged>(
+              Teuchos::make_rcp<StructureNOXCorrectionWrapper>(tmpstr));
         }
         else
         {
-          structure_ = Teuchos::rcp(
-              new FSIStructureWrapper(Teuchos::rcp(new StructureNOXCorrectionWrapper(tmpstr))));
+          structure_ = Teuchos::make_rcp<FSIStructureWrapper>(
+              Teuchos::make_rcp<StructureNOXCorrectionWrapper>(tmpstr));
         }
       }
       break;
       case Core::ProblemType::immersed_fsi:
       {
-        structure_ = Teuchos::rcp(new FSIStructureWrapperImmersed(tmpstr));
+        structure_ = Teuchos::make_rcp<FSIStructureWrapperImmersed>(tmpstr);
       }
       break;
       case Core::ProblemType::ssi:
       case Core::ProblemType::ssti:
       {
-        structure_ = Teuchos::rcp(new SSIStructureWrapper(tmpstr));
+        structure_ = Teuchos::make_rcp<SSIStructureWrapper>(tmpstr);
       }
       break;
       case Core::ProblemType::redairways_tissue:
       {
-        structure_ = Teuchos::rcp(new StructureRedAirway(tmpstr));
+        structure_ = Teuchos::make_rcp<StructureRedAirway>(tmpstr);
       }
       break;
       case Core::ProblemType::poroelast:
@@ -418,20 +418,20 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
           if (coupling == Inpar::PoroElast::Monolithic_structuresplit or
               coupling == Inpar::PoroElast::Monolithic_fluidsplit or
               coupling == Inpar::PoroElast::Monolithic_nopenetrationsplit)
-            structure_ = Teuchos::rcp(new FPSIStructureWrapper(tmpstr));
+            structure_ = Teuchos::make_rcp<FPSIStructureWrapper>(tmpstr);
           else
-            structure_ = Teuchos::rcp(new StructureConstrMerged(tmpstr));
+            structure_ = Teuchos::make_rcp<StructureConstrMerged>(tmpstr);
         }
         else
         {
-          structure_ = Teuchos::rcp(new FPSIStructureWrapper(tmpstr));
+          structure_ = Teuchos::make_rcp<FPSIStructureWrapper>(tmpstr);
         }
       }
       break;
       default:
       {
         /// wrap time loop for pure structure problems
-        structure_ = (Teuchos::rcp(new StructureTimeLoop(tmpstr)));
+        structure_ = (Teuchos::make_rcp<StructureTimeLoop>(tmpstr));
       }
       break;
     }
@@ -460,11 +460,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_linea
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
-  solver = Teuchos::rcp(
-      new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
-          actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY")));
+  solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+      Global::Problem::instance()->solver_params(linsolvernumber), actdis->get_comm(),
+      Global::Problem::instance()->solver_params_callback(),
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   actdis->compute_null_space_if_necessary(solver->params());
 
@@ -530,11 +530,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
       }
 
       // build meshtying/contact solver
-      solver = Teuchos::rcp(
-          new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
-              actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY")));
+      solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+          Global::Problem::instance()->solver_params(linsolvernumber), actdis->get_comm(),
+          Global::Problem::instance()->solver_params_callback(),
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
 
       actdis->compute_null_space_if_necessary(solver->params());
 
@@ -583,11 +583,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
     default:
     {
       // build meshtying solver
-      solver = Teuchos::rcp(
-          new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
-              actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY")));
+      solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+          Global::Problem::instance()->solver_params(linsolvernumber), actdis->get_comm(),
+          Global::Problem::instance()->solver_params_callback(),
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
       actdis->compute_null_space_if_necessary(solver->params());
     }
     break;

@@ -48,7 +48,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGType::create(
 {
   if (eletype == "FLUIDHDG")
   {
-    return Teuchos::rcp(new Discret::ELEMENTS::FluidHDG(id, owner));
+    return Teuchos::make_rcp<Discret::ELEMENTS::FluidHDG>(id, owner);
   }
   return Teuchos::null;
 }
@@ -60,7 +60,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGType::create(
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGType::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Discret::ELEMENTS::FluidHDG(id, owner));
+  return Teuchos::make_rcp<Discret::ELEMENTS::FluidHDG>(id, owner);
 }
 
 

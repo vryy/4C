@@ -106,7 +106,7 @@ MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::
       params_(params),
       full_constrained_mixture_fiber_(),
       anisotropy_extension_(params_->init_, 0.0, false,
-          Teuchos::rcp(new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
+          Teuchos::make_rcp<Mat::Elastic::StructuralTensorStrategyStandard>(nullptr),
           {params_->fiber_id_})
 {
   anisotropy_extension_.register_needed_tensors(

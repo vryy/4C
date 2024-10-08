@@ -465,7 +465,7 @@ beam_to_solid_surface_contact_pair_mortar_factory_template_beam_surface(
   switch (beam_to_surface_contact_params->get_mortar_shape_function_type())
   {
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line2:
-      return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam,
+      return Teuchos::RCP(new BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam,
           Surface, t_line2_scalar>);
     default:
       FOUR_C_THROW("Got unexpected mortar shape function");

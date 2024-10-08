@@ -91,8 +91,8 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
   //----------------------------------------------------------------------
   // create sets of coordinates
   //----------------------------------------------------------------------
-  x1coordinates_ = Teuchos::rcp(new std::vector<double>);
-  x2coordinates_ = Teuchos::rcp(new std::vector<double>);
+  x1coordinates_ = Teuchos::make_rcp<std::vector<double>>();
+  x2coordinates_ = Teuchos::make_rcp<std::vector<double>>();
 
   // the criterion allows differences in coordinates by 1e-9
   std::set<double, LineSortCriterion> x1avcoords;
@@ -279,8 +279,8 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
   // push coordinates in vectors
   //----------------------------------------------------------------------
   {
-    x1coordinates_ = Teuchos::rcp(new std::vector<double>);
-    x2coordinates_ = Teuchos::rcp(new std::vector<double>);
+    x1coordinates_ = Teuchos::make_rcp<std::vector<double>>();
+    x2coordinates_ = Teuchos::make_rcp<std::vector<double>>();
 
     for (std::set<double, LineSortCriterion>::iterator coord1 = x1avcoords.begin();
          coord1 != x1avcoords.end(); ++coord1)
@@ -449,83 +449,83 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
   // allocate arrays for sums of mean values
   //----------------------------------------------------------------------
   // x1-direction
-  x1sump_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x1sump_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x1sump_->reshape(numx2statlocations_, numx1coor_);
 
-  x1sumu_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x1sumu_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x1sumu_->reshape(numx2statlocations_, numx1coor_);
 
   // the following vectors are only necessary for low-Mach-number flow
-  x1sumrho_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x1sumrho_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x1sumrho_->reshape(numx2statlocations_, numx1coor_);
 
-  x1sum_t_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x1sum_t_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x1sum_t_->reshape(numx2statlocations_, numx1coor_);
 
-  x1sumtauw_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x1sumtauw_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x1sumtauw_->reshape(numx2statlocations_, numx1coor_);
 
   // x2-direction
   // first-order moments
-  x2sumu_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumu_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumu_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumv_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumv_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumw_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumw_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumw_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sump_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sump_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sump_->reshape(numx1statlocations_, numx2coor_);
 
   // second-order moments
-  x2sumsqu_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumsqu_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumsqu_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumsqv_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumsqv_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqw_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumsqw_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumsqw_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqp_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumsqp_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumsqp_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumuv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumuv_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumuv_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumuw_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumuw_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumuw_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumvw_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumvw_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumvw_->reshape(numx1statlocations_, numx2coor_);
 
   // the following vectors are only necessary for low-Mach-number flow
   // first-order moments
-  x2sumrho_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumrho_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumrho_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sum_t_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sum_t_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sum_t_->reshape(numx1statlocations_, numx2coor_);
 
   // second-order moments
-  x2sumsqrho_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumsqrho_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumsqrho_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsq_t_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumsq_t_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumsq_t_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumrhou_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumrhou_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumrhou_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumu_t_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumu_t_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumu_t_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumrhov_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumrhov_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumrhov_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumv_t_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  x2sumv_t_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   x2sumv_t_->reshape(numx1statlocations_, numx2coor_);
 
   // set number of samples to zero
@@ -556,7 +556,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
     {
       s.append(".loma_statistics");
 
-      log = Teuchos::rcp(new std::ofstream(s.c_str(), std::ios::out));
+      log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::out);
       (*log) << "# Statistics for turbulent variable-density flow over a backward-facing step at "
                 "low Mach number (first- and second-order moments)\n\n";
     }
@@ -564,7 +564,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
     {
       s.append(".flow_statistics");
 
-      log = Teuchos::rcp(new std::ofstream(s.c_str(), std::ios::out));
+      log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::out);
       (*log) << "# Statistics for turbulent incompressible flow over a backward-facing step "
                 "(first- and second-order moments)\n\n";
     }
@@ -1405,7 +1405,7 @@ void FLD::TurbulenceStatisticsBfs::dump_statistics(int step)
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(), std::ios::out));
+    log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::out);
     (*log) << "# Statistics for turbulent incompressible flow over a backward-facing step (first- "
               "and second-order moments)";
     (*log) << "\n\n";
@@ -1547,7 +1547,7 @@ void FLD::TurbulenceStatisticsBfs::dump_loma_statistics(int step)
     std::string s(statistics_outfilename_);
     s.append(".loma_statistics");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(), std::ios::out));
+    log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::out);
     (*log) << "# Statistics for turbulent variable-density flow over a backward-facing step at low "
               "Mach number (first- and second-order moments)";
     (*log) << "\n\n";
@@ -1742,7 +1742,7 @@ void FLD::TurbulenceStatisticsBfs::dump_scatra_statistics(int step)
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(), std::ios::out));
+    log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::out);
     (*log) << "# Statistics for turbulent flow with passive scalar over a backward-facing step "
               "(first- and second-order moments)";
     (*log) << "\n\n";

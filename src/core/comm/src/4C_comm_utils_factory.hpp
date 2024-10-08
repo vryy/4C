@@ -137,8 +137,8 @@ namespace Core::Communication
       }
 
       // allocate a new boundary element
-      boundaryeles[iele] = Teuchos::rcp(new BoundaryEle(
-          iele, ele.owner(), nodeids.size(), nodeids.data(), nodes.data(), &ele, iele));
+      boundaryeles[iele] = Teuchos::make_rcp<BoundaryEle>(
+          iele, ele.owner(), nodeids.size(), nodeids.data(), nodes.data(), &ele, iele);
     }
 
     return boundaryeles;
@@ -177,8 +177,8 @@ namespace Core::Communication
   )
   {
     // create a new internal face element
-    return Teuchos::rcp(new IntFaceEle(id, owner, nnode, nodeids, nodes, master_ele, slave_ele,
-        lsurface_master, lsurface_slave, localtrafomap));
+    return Teuchos::make_rcp<IntFaceEle>(id, owner, nnode, nodeids, nodes, master_ele, slave_ele,
+        lsurface_master, lsurface_slave, localtrafomap);
   }
 
   template <class BoundaryEle, class ParentEle>

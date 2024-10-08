@@ -43,7 +43,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarType::create(
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::SoHex8fbar(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::SoHex8fbar>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -54,7 +54,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::SoHex8fbar(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::SoHex8fbar>(id, owner);
   return ele;
 }
 
@@ -101,7 +101,7 @@ void Discret::ELEMENTS::SoHex8fbarType::setup_element_definition(
 Discret::ELEMENTS::SoHex8fbar::SoHex8fbar(int id, int owner) : Discret::ELEMENTS::SoHex8(id, owner)
 {
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8 + 1));
+    prestress_ = Teuchos::make_rcp<Discret::ELEMENTS::PreStress>(NUMNOD_SOH8, NUMGPT_SOH8 + 1);
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();

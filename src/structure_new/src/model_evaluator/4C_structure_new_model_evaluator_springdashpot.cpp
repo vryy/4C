@@ -52,16 +52,16 @@ void Solid::ModelEvaluator::SpringDashpot::setup()
   // new instance of spring dashpot BC for each condition
   for (auto& springdashpot : springdashpots)
     springs_.emplace_back(
-        Teuchos::rcp(new CONSTRAINTS::SpringDashpot(discret_ptr(), springdashpot)));
+        Teuchos::make_rcp<CONSTRAINTS::SpringDashpot>(discret_ptr(), springdashpot));
 
   // setup the displacement pointer
   disnp_ptr_ = global_state().get_dis_np();
   velnp_ptr_ = global_state().get_vel_np();
 
   fspring_np_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view()));
-  stiff_spring_ptr_ = Teuchos::rcp(
-      new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view());
+  stiff_spring_ptr_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *global_state().dof_row_map_view(), 81, true, true);
 
   // set flag
   issetup_ = true;
@@ -95,7 +95,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_force()
   Teuchos::ParameterList springdashpotparams;
   // loop over all spring dashpot conditions and evaluate them
   fspring_np_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view());
   for (const auto& spring : springs_)
   {
     const CONSTRAINTS::SpringDashpot::SpringType stype = spring->get_spring_type();
@@ -124,7 +124,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_stiff()
   check_init_setup();
 
   fspring_np_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
 
   // factors from time-integrator for derivative of d(v_{n+1}) / d(d_{n+1})
   // needed for stiffness contribution from dashpot
@@ -167,7 +167,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_force_stiff()
 
   // get displacement DOFs
   fspring_np_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
 
   // factors from time-integrator for derivative of d(v_{n+1}) / d(d_{n+1})
   // needed for stiffness contribution from dashpot
@@ -232,9 +232,9 @@ void Solid::ModelEvaluator::SpringDashpot::write_restart(
 {
   // row maps for export
   Teuchos::RCP<Core::LinAlg::Vector<double>> springoffsetprestr =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret().dof_row_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret().dof_row_map());
   Teuchos::RCP<Epetra_MultiVector> springoffsetprestr_old =
-      Teuchos::rcp(new Epetra_MultiVector(*(discret().node_row_map()), 3, true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*(discret().node_row_map()), 3, true);
 
   // collect outputs from all spring dashpot conditions
   for (const auto& spring : springs_)
@@ -260,9 +260,9 @@ void Solid::ModelEvaluator::SpringDashpot::write_restart(
 void Solid::ModelEvaluator::SpringDashpot::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret().dof_row_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret().dof_row_map());
   Teuchos::RCP<Epetra_MultiVector> tempvecold =
-      Teuchos::rcp(new Epetra_MultiVector(*(discret().node_row_map()), 3, true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*(discret().node_row_map()), 3, true);
 
   ioreader.read_vector(tempvec, "springoffsetprestr");
   ioreader.read_multi_vector(tempvecold, "springoffsetprestr_old");
@@ -314,11 +314,11 @@ void Solid::ModelEvaluator::SpringDashpot::output_step_state(
 {
   // row maps for export
   Teuchos::RCP<Core::LinAlg::Vector<double>> gap =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*(discret().node_row_map()), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret().node_row_map()), true);
   Teuchos::RCP<Epetra_MultiVector> normals =
-      Teuchos::rcp(new Epetra_MultiVector(*(discret().node_row_map()), 3, true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*(discret().node_row_map()), 3, true);
   Teuchos::RCP<Epetra_MultiVector> springstress =
-      Teuchos::rcp(new Epetra_MultiVector(*(discret().node_row_map()), 3, true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*(discret().node_row_map()), 3, true);
 
   // collect outputs from all spring dashpot conditions
   bool found_cursurfnormal = false;

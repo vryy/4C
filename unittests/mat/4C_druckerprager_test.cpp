@@ -47,8 +47,8 @@ namespace
       problem.materials()->set_read_from_problem(0);
       problem.materials()->insert(1, param_druckprag_);
       problem.materials().assert_not_null();
-      druckprag_ = Teuchos::rcp(new Mat::PlasticDruckerPrager(
-          dynamic_cast<Mat::PAR::PlasticDruckerPrager*>(param_druckprag_.get())));
+      druckprag_ = Teuchos::make_rcp<Mat::PlasticDruckerPrager>(
+          dynamic_cast<Mat::PAR::PlasticDruckerPrager*>(param_druckprag_.get()));
     }
 
     void TearDown() override
@@ -85,7 +85,7 @@ namespace
     std::vector<char> dataSend;
     swap(dataSend, data());
     for (int i = 0; i < 4; i++) dataSend.erase(dataSend.begin());
-    auto plastic = Teuchos::rcp(new Mat::PlasticDruckerPrager());
+    auto plastic = Teuchos::make_rcp<Mat::PlasticDruckerPrager>();
     Core::Communication::UnpackBuffer buffer(dataSend);
     plastic->unpack(buffer);
     plastic->evaluate(&defgrad, &input_strain, paras, &result_stress, &result_cmat, 0, 0);

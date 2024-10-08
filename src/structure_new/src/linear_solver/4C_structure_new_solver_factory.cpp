@@ -45,7 +45,7 @@ Teuchos::RCP<Solid::SOLVER::Factory::LinSolMap> Solid::SOLVER::Factory::build_li
     Core::FE::Discretization& actdis) const
 {
   // create a new standard map
-  Teuchos::RCP<LinSolMap> linsolvers = Teuchos::rcp(new LinSolMap());
+  Teuchos::RCP<LinSolMap> linsolvers = Teuchos::make_rcp<LinSolMap>();
 
   std::set<enum Inpar::Solid::ModelType>::const_iterator mt_iter;
   // loop over all model types
@@ -110,10 +110,10 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_s
   const Teuchos::ParameterList& linsolverparams =
       Global::Problem::instance()->solver_params(linsolvernumber);
 
-  Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::rcp(new Core::LinAlg::Solver(
+  Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::make_rcp<Core::LinAlg::Solver>(
       linsolverparams, actdis.get_comm(), Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::instance()->io_params(), "VERBOSITY")));
+          Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   const auto azprectype =
       Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(linsolverparams, "AZPREC");
@@ -153,10 +153,10 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_s
           actdis.dof(node, solidDofs);
       }
 
-      Teuchos::RCP<Epetra_Map> rowmap1 = Teuchos::rcp(
-          new Epetra_Map(-1, solidDofs.size(), solidDofs.data(), 0, actdis.get_comm()));
+      Teuchos::RCP<Epetra_Map> rowmap1 = Teuchos::make_rcp<Epetra_Map>(
+          -1, solidDofs.size(), solidDofs.data(), 0, actdis.get_comm());
       Teuchos::RCP<Epetra_Map> rowmap2 =
-          Teuchos::rcp(new Epetra_Map(-1, beamDofs.size(), beamDofs.data(), 0, actdis.get_comm()));
+          Teuchos::make_rcp<Epetra_Map>(-1, beamDofs.size(), beamDofs.data(), 0, actdis.get_comm());
 
       linsolver->put_solver_params_to_sub_params("Inverse1", linsolverparams,
           Global::Problem::instance()->solver_params_callback(),
@@ -257,11 +257,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
       }
 
       // build meshtying/contact solver
-      linsolver = Teuchos::rcp(
-          new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(lin_solver_id),
-              actdis.get_comm(), Global::Problem::instance()->solver_params_callback(),
-              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY")));
+      linsolver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+          Global::Problem::instance()->solver_params(lin_solver_id), actdis.get_comm(),
+          Global::Problem::instance()->solver_params_callback(),
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
 
       actdis.compute_null_space_if_necessary(linsolver->params());
 
@@ -305,11 +305,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
             "Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
       // build meshtying solver
-      linsolver = Teuchos::rcp(
-          new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(lin_solver_id),
-              actdis.get_comm(), Global::Problem::instance()->solver_params_callback(),
-              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY")));
+      linsolver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+          Global::Problem::instance()->solver_params(lin_solver_id), actdis.get_comm(),
+          Global::Problem::instance()->solver_params_callback(),
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
       actdis.compute_null_space_if_necessary(linsolver->params());
     }
     break;
@@ -340,11 +340,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_constra
       const int linsolvernumber = strparams.get<int>("LINEAR_SOLVER");
 
       // build constraint-structural linear solver
-      linsolver = Teuchos::rcp(
-          new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
-              actdis.get_comm(), Global::Problem::instance()->solver_params_callback(),
-              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY")));
+      linsolver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+          Global::Problem::instance()->solver_params(linsolvernumber), actdis.get_comm(),
+          Global::Problem::instance()->solver_params_callback(),
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
 
       linsolver->params() = Core::LinAlg::Solver::translate_solver_parameters(
           Global::Problem::instance()->solver_params(linsolvernumber),
@@ -358,11 +358,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_constra
       const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
 
       // build constraint-structural linear solver
-      linsolver = Teuchos::rcp(
-          new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
-              actdis.get_comm(), Global::Problem::instance()->solver_params_callback(),
-              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY")));
+      linsolver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+          Global::Problem::instance()->solver_params(linsolvernumber), actdis.get_comm(),
+          Global::Problem::instance()->solver_params_callback(),
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
 
       linsolver->params() = Core::LinAlg::Solver::translate_solver_parameters(
           Global::Problem::instance()->solver_params(linsolvernumber),
@@ -436,11 +436,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_cardiovascular0
   const int linsolvernumber = cardvasc0dstructparams.get<int>("LINEAR_COUPLED_SOLVER");
 
   // build 0D cardiovascular-structural linear solver
-  linsolver = Teuchos::rcp(
-      new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
-          actdis.get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY")));
+  linsolver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+      Global::Problem::instance()->solver_params(linsolvernumber), actdis.get_comm(),
+      Global::Problem::instance()->solver_params_callback(),
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   linsolver->params() = Core::LinAlg::Solver::translate_solver_parameters(
       Global::Problem::instance()->solver_params(linsolvernumber),

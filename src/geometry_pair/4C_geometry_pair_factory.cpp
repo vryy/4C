@@ -41,12 +41,12 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::geometry_pair_line_to_vol
     case Inpar::GEOMETRYPAIR::LineTo3DStrategy::
         gauss_point_projection_without_boundary_segmentation:
     case Inpar::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new GeometryPairLineToVolumeGaussPointProjection<ScalarType, Line, Volume>(
               element1, element2, line_to_3d_evaluation_data));
     case Inpar::GEOMETRYPAIR::LineTo3DStrategy::segmentation:
-      return Teuchos::rcp(new GeometryPairLineToVolumeSegmentation<ScalarType, Line, Volume>(
-          element1, element2, line_to_3d_evaluation_data));
+      return Teuchos::make_rcp<GeometryPairLineToVolumeSegmentation<ScalarType, Line, Volume>>(
+          element1, element2, line_to_3d_evaluation_data);
     default:
     {
       FOUR_C_THROW(
@@ -109,12 +109,12 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::geometry_pair_line_to_sur
     case Inpar::GEOMETRYPAIR::LineTo3DStrategy::
         gauss_point_projection_without_boundary_segmentation:
     case Inpar::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new GeometryPairLineToSurfaceGaussPointProjection<ScalarType, Line, Surface>(
               element1, element2, line_to_surface_evaluation_data));
     case Inpar::GEOMETRYPAIR::LineTo3DStrategy::segmentation:
-      return Teuchos::rcp(new GeometryPairLineToSurfaceSegmentation<ScalarType, Line, Surface>(
-          element1, element2, line_to_surface_evaluation_data));
+      return Teuchos::make_rcp<GeometryPairLineToSurfaceSegmentation<ScalarType, Line, Surface>>(
+          element1, element2, line_to_surface_evaluation_data);
     default:
     {
       FOUR_C_THROW("The given geometry pair strategy is not valid.");
@@ -139,8 +139,8 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::geometry_pair_line_to_sur
           true);
 
   // Create the wrapper.
-  return Teuchos::rcp(new GeometryPairLineToSurfaceFADWrapper<ScalarType, Line, Surface>(
-      element1, element2, internal_geometry_pair_double));
+  return Teuchos::make_rcp<GeometryPairLineToSurfaceFADWrapper<ScalarType, Line, Surface>>(
+      element1, element2, internal_geometry_pair_double);
 }
 
 

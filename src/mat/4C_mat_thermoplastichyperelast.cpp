@@ -68,7 +68,7 @@ Mat::PAR::ThermoPlasticHyperElast::ThermoPlasticHyperElast(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ThermoPlasticHyperElast::create_material()
 {
-  return Teuchos::rcp(new Mat::ThermoPlasticHyperElast(this));
+  return Teuchos::make_rcp<Mat::ThermoPlasticHyperElast>(this);
 }
 
 Mat::ThermoPlasticHyperElastType Mat::ThermoPlasticHyperElastType::instance_;
@@ -197,22 +197,22 @@ void Mat::ThermoPlasticHyperElast::unpack(Core::Communication::UnpackBuffer& buf
   // if system is not yet initialised, the history vectors have to be intialized
   if (histsize == 0) isinit_ = false;
 
-  defgrdlast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
-  defgrdcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
+  defgrdlast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  defgrdcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
 
-  bebarlast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
-  bebarcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
+  bebarlast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  bebarcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
 
-  accplstrainlast_ = Teuchos::rcp(new std::vector<double>);
-  accplstraincurr_ = Teuchos::rcp(new std::vector<double>);
+  accplstrainlast_ = Teuchos::make_rcp<std::vector<double>>();
+  accplstraincurr_ = Teuchos::make_rcp<std::vector<double>>();
 
-  mechdiss_ = Teuchos::rcp(new std::vector<double>);
-  mechdiss_k_tt_ = Teuchos::rcp(new std::vector<double>);
-  mechdiss_k_td_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  cmat_kd_t_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  thrplheat_ = Teuchos::rcp(new std::vector<double>);
-  thrplheat_k_tt_ = Teuchos::rcp(new std::vector<double>);
-  thrplheat_k_td_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  mechdiss_ = Teuchos::make_rcp<std::vector<double>>();
+  mechdiss_k_tt_ = Teuchos::make_rcp<std::vector<double>>();
+  mechdiss_k_td_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  cmat_kd_t_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  thrplheat_ = Teuchos::make_rcp<std::vector<double>>();
+  thrplheat_k_tt_ = Teuchos::make_rcp<std::vector<double>>();
+  thrplheat_k_td_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
   for (int var = 0; var < histsize; ++var)
   {
@@ -276,22 +276,22 @@ void Mat::ThermoPlasticHyperElast::setup(
     int numgp, const Core::IO::InputParameterContainer& container)
 {
   // initialise hist variables
-  defgrdlast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
-  defgrdcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
+  defgrdlast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  defgrdcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
 
-  bebarlast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
-  bebarcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
+  bebarlast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  bebarcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
 
-  accplstrainlast_ = Teuchos::rcp(new std::vector<double>);
-  accplstraincurr_ = Teuchos::rcp(new std::vector<double>);
+  accplstrainlast_ = Teuchos::make_rcp<std::vector<double>>();
+  accplstraincurr_ = Teuchos::make_rcp<std::vector<double>>();
 
-  mechdiss_ = Teuchos::rcp(new std::vector<double>);
-  mechdiss_k_tt_ = Teuchos::rcp(new std::vector<double>);
-  mechdiss_k_td_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<6, 1>>);
-  cmat_kd_t_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<6, 1>>);
-  thrplheat_ = Teuchos::rcp(new std::vector<double>);
-  thrplheat_k_tt_ = Teuchos::rcp(new std::vector<double>);
-  thrplheat_k_td_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<6, 1>>);
+  mechdiss_ = Teuchos::make_rcp<std::vector<double>>();
+  mechdiss_k_tt_ = Teuchos::make_rcp<std::vector<double>>();
+  mechdiss_k_td_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<6, 1>>>();
+  cmat_kd_t_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<6, 1>>>();
+  thrplheat_ = Teuchos::make_rcp<std::vector<double>>();
+  thrplheat_k_tt_ = Teuchos::make_rcp<std::vector<double>>();
+  thrplheat_k_td_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<6, 1>>>();
 
   defgrdlast_->resize(numgp);
   defgrdcurr_->resize(numgp);
@@ -349,9 +349,9 @@ void Mat::ThermoPlasticHyperElast::update()
   accplstrainlast_ = accplstraincurr_;
 
   // empty vectors of current data
-  defgrdcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
-  bebarcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 3>>);
-  accplstraincurr_ = Teuchos::rcp(new std::vector<double>);
+  defgrdcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  bebarcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  accplstraincurr_ = Teuchos::make_rcp<std::vector<double>>();
 
   // get the size of the vector
   // (use the last vector, because it includes latest results, current is empty)

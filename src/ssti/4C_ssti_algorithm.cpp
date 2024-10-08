@@ -86,16 +86,16 @@ void SSTI::SSTIAlgorithm::init(const Epetra_Comm& comm,
       sstitimeparams, const_cast<Teuchos::ParameterList&>(structparams), structuredis);
 
   // create and initialize scatra problem and thermo problem
-  scatra_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(sstitimeparams,
+  scatra_ = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(sstitimeparams,
       SSI::UTILS::modify_sca_tra_params(scatraparams),
-      problem->solver_params(scatraparams.get<int>("LINEAR_SOLVER")), "scatra", true));
+      problem->solver_params(scatraparams.get<int>("LINEAR_SOLVER")), "scatra", true);
   scatra_->init();
   scatra_->scatra_field()->set_number_of_dof_set_displacement(1);
   scatra_->scatra_field()->set_number_of_dof_set_velocity(1);
   scatra_->scatra_field()->set_number_of_dof_set_thermo(2);
-  thermo_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(sstitimeparams,
+  thermo_ = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(sstitimeparams,
       clone_thermo_params(scatraparams, thermoparams),
-      problem->solver_params(thermoparams.get<int>("LINEAR_SOLVER")), "thermo", true));
+      problem->solver_params(thermoparams.get<int>("LINEAR_SOLVER")), "thermo", true);
   thermo_->init();
   thermo_->scatra_field()->set_number_of_dof_set_displacement(1);
   thermo_->scatra_field()->set_number_of_dof_set_velocity(1);
@@ -212,8 +212,8 @@ void SSTI::SSTIAlgorithm::setup()
       FOUR_C_THROW("SSTI only implemented for interface coupling with matching interface nodes!");
 
     // setup everything for SSTI structure meshtying
-    ssti_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIMeshTying(
-        "SSTIInterfaceMeshtying", structure_->discretization(), true, true));
+    ssti_structure_meshtying_ = Teuchos::make_rcp<SSI::UTILS::SSIMeshTying>(
+        "SSTIInterfaceMeshtying", structure_->discretization(), true, true);
   }
 
   issetup_ = true;
@@ -269,7 +269,7 @@ void SSTI::SSTIAlgorithm::test_results(const Epetra_Comm& comm) const
   problem->add_field_test(structure_->create_field_test());
   problem->add_field_test(scatra_->create_scatra_field_test());
   problem->add_field_test(thermo_->create_scatra_field_test());
-  problem->add_field_test(Teuchos::rcp(new SSTI::SSTIResultTest(*this)));
+  problem->add_field_test(Teuchos::make_rcp<SSTI::SSTIResultTest>(*this));
   problem->test_all(comm);
 }
 
@@ -482,7 +482,7 @@ Teuchos::RCP<SSTI::SSTIAlgorithm> SSTI::build_ssti(Inpar::SSTI::SolutionScheme c
   {
     case Inpar::SSTI::SolutionScheme::monolithic:
     {
-      ssti = Teuchos::rcp(new SSTI::SSTIMono(comm, sstiparams));
+      ssti = Teuchos::make_rcp<SSTI::SSTIMono>(comm, sstiparams);
       break;
     }
     default:

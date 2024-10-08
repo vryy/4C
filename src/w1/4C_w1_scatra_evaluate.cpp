@@ -44,7 +44,7 @@ void Discret::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params
 
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double>> myphi =
-          Teuchos::rcp(new std::vector<double>(la[1].lm_.size()));
+          Teuchos::make_rcp<std::vector<double>>(la[1].lm_.size());
       Core::FE::extract_my_values(*phinp, *myphi, la[1].lm_);
 
       double meanphi = 0.0;

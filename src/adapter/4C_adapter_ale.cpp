@@ -81,7 +81,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
   // set some pointers and variables
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> adyn =
-      Teuchos::rcp(new Teuchos::ParameterList(Global::Problem::instance()->ale_dynamic_params()));
+      Teuchos::make_rcp<Teuchos::ParameterList>(Global::Problem::instance()->ale_dynamic_params());
 
   // ---------------------------------------------------------------------------
   // create a linear solver
@@ -93,11 +93,11 @@ void Adapter::AleBaseAlgorithm::setup_ale(
         "No linear solver defined for ALE problems. Please set "
         "LINEAR_SOLVER in ALE DYNAMIC to a valid number!");
 
-  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(
-      new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
-          actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY")));
+  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+      Global::Problem::instance()->solver_params(linsolvernumber), actdis->get_comm(),
+      Global::Problem::instance()->solver_params_callback(),
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::instance()->io_params(), "VERBOSITY"));
   actdis->compute_null_space_if_necessary(solver->params());
 
   // ---------------------------------------------------------------------------
@@ -130,7 +130,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
     case Inpar::ALE::laplace_spatial:
     case Inpar::ALE::springs_spatial:
     {
-      ale = Teuchos::rcp(new ALE::Ale(actdis, solver, adyn, output));
+      ale = Teuchos::make_rcp<ALE::Ale>(actdis, solver, adyn, output);
 
       break;
     }
@@ -139,7 +139,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
     case Inpar::ALE::laplace_material:
     case Inpar::ALE::springs_material:
     {
-      ale = Teuchos::rcp(new ALE::AleLinear(actdis, solver, adyn, output));
+      ale = Teuchos::make_rcp<ALE::AleLinear>(actdis, solver, adyn, output);
 
       break;
     }
@@ -173,19 +173,19 @@ void Adapter::AleBaseAlgorithm::setup_ale(
           coupling == fsi_iter_mortar_monolithicfluidsplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit_saddlepoint)
       {
-        ale_ = Teuchos::rcp(new Adapter::AleFsiWrapper(ale));
+        ale_ = Teuchos::make_rcp<Adapter::AleFsiWrapper>(ale);
       }
       else if (coupling == fsi_iter_sliding_monolithicfluidsplit or
                coupling == fsi_iter_sliding_monolithicstructuresplit)
       {
-        ale_ = Teuchos::rcp(new Adapter::AleFsiMshtWrapper(ale));
+        ale_ = Teuchos::make_rcp<Adapter::AleFsiMshtWrapper>(ale);
       }
       else if (coupling == fsi_iter_fluidfluid_monolithicstructuresplit or
                coupling == fsi_iter_fluidfluid_monolithicfluidsplit or
                coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nonox or
                coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nonox)
       {
-        ale_ = Teuchos::rcp(new Adapter::AleXFFsiWrapper(ale));
+        ale_ = Teuchos::make_rcp<Adapter::AleXFFsiWrapper>(ale);
       }
       else if (coupling == fsi_iter_stagg_AITKEN_rel_force or
                coupling == fsi_iter_stagg_AITKEN_rel_param or
@@ -196,7 +196,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
                coupling == fsi_iter_stagg_fixed_rel_param or
                coupling == fsi_iter_stagg_steep_desc or coupling == fsi_iter_stagg_steep_desc_force)
       {
-        ale_ = Teuchos::rcp(new Adapter::AleFluidWrapper(ale));
+        ale_ = Teuchos::make_rcp<Adapter::AleFluidWrapper>(ale);
       }
       else
       {
@@ -217,7 +217,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
           coupling == fsi_iter_sliding_monolithicfluidsplit or
           coupling == fsi_iter_sliding_monolithicstructuresplit)
       {
-        ale_ = Teuchos::rcp(new Adapter::AleFsiWrapper(ale));
+        ale_ = Teuchos::make_rcp<Adapter::AleFsiWrapper>(ale);
       }
       else if (coupling == fsi_iter_stagg_AITKEN_rel_force or
                coupling == fsi_iter_stagg_AITKEN_rel_param or
@@ -228,7 +228,7 @@ void Adapter::AleBaseAlgorithm::setup_ale(
                coupling == fsi_iter_stagg_fixed_rel_param or
                coupling == fsi_iter_stagg_steep_desc or coupling == fsi_iter_stagg_steep_desc_force)
       {
-        ale_ = Teuchos::rcp(new Adapter::AleFluidWrapper(ale));
+        ale_ = Teuchos::make_rcp<Adapter::AleFluidWrapper>(ale);
       }
       else
       {
@@ -243,14 +243,14 @@ void Adapter::AleBaseAlgorithm::setup_ale(
     case Core::ProblemType::fsi_xfem:
     case Core::ProblemType::fpsi_xfem:
     {
-      ale_ = Teuchos::rcp(new Adapter::AleFpsiWrapper(ale));
+      ale_ = Teuchos::make_rcp<Adapter::AleFpsiWrapper>(ale);
       break;
     }
     case Core::ProblemType::fluid_ale:
     case Core::ProblemType::elch:
     case Core::ProblemType::fluid_xfem:
     {
-      ale_ = Teuchos::rcp(new Adapter::AleFluidWrapper(ale));
+      ale_ = Teuchos::make_rcp<Adapter::AleFluidWrapper>(ale);
       break;
     }
     default:

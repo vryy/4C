@@ -51,7 +51,7 @@ CONSTRAINTS::SpringDashpot::SpringDashpot(
       offset_prestr_(),
       offset_prestr_new_(Teuchos::null)
 {
-  offset_prestr_new_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*actdisc_->dof_row_map()));
+  offset_prestr_new_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*actdisc_->dof_row_map());
   offset_prestr_new_->PutScalar(0.0);
 
   // set type of this spring
@@ -759,10 +759,10 @@ void CONSTRAINTS::SpringDashpot::output_prestr_offset_old(
 void CONSTRAINTS::SpringDashpot::initialize_cur_surf_normal()
 {
   // create MORTAR interface
-  mortar_ = Teuchos::rcp(new Adapter::CouplingNonLinMortar(Global::Problem::instance()->n_dim(),
+  mortar_ = Teuchos::make_rcp<Adapter::CouplingNonLinMortar>(Global::Problem::instance()->n_dim(),
       Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
-      Global::Problem::instance()->spatial_approximation_type()));
+      Global::Problem::instance()->spatial_approximation_type());
 
   // create CONTACT elements at interface for normal and gap calculation
   mortar_->setup_spring_dashpot(actdisc_, actdisc_, spring_, coupling_, actdisc_->get_comm());

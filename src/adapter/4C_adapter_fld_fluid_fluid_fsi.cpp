@@ -59,7 +59,7 @@ void Adapter::FluidFluidFSI::init()
 
   // create map extractor for combined fluid domains
   // (to distinguish between FSI interface DOF / merged inner embedded & background fluid DOF)
-  mergedfluidinterface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
+  mergedfluidinterface_ = Teuchos::make_rcp<FLD::UTILS::MapExtractor>();
   // call base class init
   FluidFSI::init();
 }
@@ -164,9 +164,9 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Adapter::FluidFluidFSI::block_
   // Create a local copy of the inner & conditioned map
   // Reason: the matrix splitting method from Core::LINALG expects non-const maps
   Teuchos::RCP<Epetra_Map> innermap =
-      Teuchos::rcp(new Epetra_Map(*mergedfluidinterface_->other_map()));
+      Teuchos::make_rcp<Epetra_Map>(*mergedfluidinterface_->other_map());
   Teuchos::RCP<Epetra_Map> condmap =
-      Teuchos::rcp(new Epetra_Map(*mergedfluidinterface_->fsi_cond_map()));
+      Teuchos::make_rcp<Epetra_Map>(*mergedfluidinterface_->fsi_cond_map());
   return xfluidfluid_->block_system_matrix(innermap, condmap);
 }
 

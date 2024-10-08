@@ -2895,8 +2895,8 @@ Teuchos::RCP<CONTACT::Beam3tosolidcontactinterface> CONTACT::Beam3tosolidcontact
           //        }
         case 2:
         {
-          return Teuchos::rcp(new CONTACT::Beam3tosolidcontact<4, 2, 2>(
-              pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
+          return Teuchos::make_rcp<CONTACT::Beam3tosolidcontact<4, 2, 2>>(
+              pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams);
         }
       }
       break;
@@ -2973,8 +2973,8 @@ Teuchos::RCP<CONTACT::Beam3tosolidcontactinterface> CONTACT::Beam3tosolidcontact
           //        }
         case 2:
         {
-          return Teuchos::rcp(new CONTACT::Beam3tosolidcontact<8, 2, 2>(
-              pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
+          return Teuchos::make_rcp<CONTACT::Beam3tosolidcontact<8, 2, 2>>(
+              pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams);
         }
       }
       break;

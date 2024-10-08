@@ -38,7 +38,7 @@ Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::ScaTraEleCalcArtery(
   }
   // replace internal variable manager by internal variable manager for artery
   my::scatravarmanager_ =
-      Teuchos::rcp(new ScaTraEleInternalVariableManagerArtery<nsd_, nen_>(my::numscal_));
+      Teuchos::make_rcp<ScaTraEleInternalVariableManagerArtery<nsd_, nen_>>(my::numscal_);
 }
 
 /*----------------------------------------------------------------------*

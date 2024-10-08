@@ -58,7 +58,7 @@ Mat::PAR::PlasticLinElast::PlasticLinElast(const Core::Mat::PAR::Parameter::Data
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticLinElast::create_material()
 {
-  return Teuchos::rcp(new Mat::PlasticLinElast(this));
+  return Teuchos::make_rcp<Mat::PlasticLinElast>(this);
 }
 
 
@@ -169,15 +169,15 @@ void Mat::PlasticLinElast::unpack(Core::Communication::UnpackBuffer& buffer)
   if (histsize == 0) isinit_ = false;
 
   // unpack plastic history vectors
-  strainpllast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  strainplcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  strainpllast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  strainplcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
   // unpack back stress vectors (for kinematic hardening)
-  backstresslast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  backstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  backstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  backstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
-  strainbarpllast_ = Teuchos::rcp(new std::vector<double>);
-  strainbarplcurr_ = Teuchos::rcp(new std::vector<double>);
+  strainbarpllast_ = Teuchos::make_rcp<std::vector<double>>();
+  strainbarplcurr_ = Teuchos::make_rcp<std::vector<double>>();
 
   for (int var = 0; var < histsize; ++var)
   {
@@ -220,14 +220,14 @@ void Mat::PlasticLinElast::unpack(Core::Communication::UnpackBuffer& buffer)
 void Mat::PlasticLinElast::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
   // initialise history variables
-  strainpllast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  strainplcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  strainpllast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  strainplcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
-  backstresslast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  backstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  backstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  backstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
-  strainbarpllast_ = Teuchos::rcp(new std::vector<double>);
-  strainbarplcurr_ = Teuchos::rcp(new std::vector<double>);
+  strainbarpllast_ = Teuchos::make_rcp<std::vector<double>>();
+  strainbarplcurr_ = Teuchos::make_rcp<std::vector<double>>();
 
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> emptyvect(true);
   strainpllast_->resize(numgp);
@@ -269,10 +269,10 @@ void Mat::PlasticLinElast::update()
   strainbarpllast_ = strainbarplcurr_;
 
   // empty vectors of current data
-  strainplcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  backstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  strainplcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  backstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
-  strainbarplcurr_ = Teuchos::rcp(new std::vector<double>);
+  strainbarplcurr_ = Teuchos::make_rcp<std::vector<double>>();
 
   // get the size of the vector
   // (use the last vector, because it includes latest results, current is empty)

@@ -48,7 +48,7 @@ Mat::Elastic::RemodelFiber::RemodelFiber(Mat::Elastic::PAR::RemodelFiber* params
     const int matid = *m;
     Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
     if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
-    potsumfiber_.push_back(Teuchos::rcp(new FiberData(sum)));
+    potsumfiber_.push_back(Teuchos::make_rcp<FiberData>(sum));
   }
 }
 
@@ -124,8 +124,8 @@ void Mat::Elastic::RemodelFiber::unpack_summand(Core::Communication::UnpackBuffe
     extract_from_pack(buffer, potsumfiber_[k]->G);
     extract_from_pack(buffer, cauchystress_[k]);
 
-    potsumfiber_[k]->growth = Teuchos::rcp(new GrowthEvolution(k_sig, sig_h));
-    potsumfiber_[k]->remodel = Teuchos::rcp(new RemodelEvolution(k_sig, sig_h, t_decay));
+    potsumfiber_[k]->growth = Teuchos::make_rcp<GrowthEvolution>(k_sig, sig_h);
+    potsumfiber_[k]->remodel = Teuchos::make_rcp<RemodelEvolution>(k_sig, sig_h, t_decay);
   }
 
   extract_from_pack(buffer, init_rho_col_);
@@ -199,9 +199,9 @@ void Mat::Elastic::RemodelFiber::setup(
       t1->get_derivatives_aniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
       sig_pre = 2.0 * dPI(0) * potsumfiber_[k]->G * potsumfiber_[k]->G;
       for (int gp = 0; gp < numgp; ++gp) cauchystress_[k][gp] = sig_pre;
-      potsumfiber_[k]->growth = Teuchos::rcp(new GrowthEvolution(params_->k_growth_, sig_pre));
+      potsumfiber_[k]->growth = Teuchos::make_rcp<GrowthEvolution>(params_->k_growth_, sig_pre);
       potsumfiber_[k]->remodel =
-          Teuchos::rcp(new RemodelEvolution(params_->k_growth_, sig_pre, params_->t_decay_));
+          Teuchos::make_rcp<RemodelEvolution>(params_->k_growth_, sig_pre, params_->t_decay_);
     }
     else if ((t2 = Teuchos::rcp_dynamic_cast<Mat::Elastic::CoupAnisoExpoActive>(
                   potsumfiber_[k]->fiber))
@@ -214,9 +214,9 @@ void Mat::Elastic::RemodelFiber::setup(
       Core::LinAlg::Voigt::Stresses::vector_to_matrix(stressactv, stressactM);
       sig_pre += stressactM.dot(potsumfiber_[k]->AM);
       for (int gp = 0; gp < numgp; ++gp) cauchystress_[k][gp] = sig_pre;
-      potsumfiber_[k]->growth = Teuchos::rcp(new GrowthEvolution(params_->k_growth_, sig_pre));
+      potsumfiber_[k]->growth = Teuchos::make_rcp<GrowthEvolution>(params_->k_growth_, sig_pre);
       potsumfiber_[k]->remodel =
-          Teuchos::rcp(new RemodelEvolution(params_->k_growth_, sig_pre, params_->t_decay_));
+          Teuchos::make_rcp<RemodelEvolution>(params_->k_growth_, sig_pre, params_->t_decay_);
     }
     else
       FOUR_C_THROW(

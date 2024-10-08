@@ -54,7 +54,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Bele3Type::create(
       int numdof = -1;
       is >> numdof;
       Teuchos::RCP<Discret::ELEMENTS::Bele3> ele =
-          Teuchos::rcp(new Discret::ELEMENTS::Bele3(id, owner));
+          Teuchos::make_rcp<Discret::ELEMENTS::Bele3>(id, owner);
       ele->set_num_dof_per_node(numdof);
       return ele;
     }
@@ -71,7 +71,8 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Bele3Type::create(
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Bele3Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(new Discret::ELEMENTS::Bele3(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::make_rcp<Discret::ELEMENTS::Bele3>(id, owner);
   return ele;
 }
 

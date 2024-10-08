@@ -48,7 +48,7 @@ Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::ScaTraEleCalcElchNP(
 {
   // replace elch internal variable manager by internal variable manager for Nernst-Planck
   // formulation
-  my::scatravarmanager_ = Teuchos::rcp(
+  my::scatravarmanager_ = Teuchos::RCP(
       new ScaTraEleInternalVariableManagerElchNP<nsd_, nen_>(my::numscal_, myelch::elchparams_));
 
   return;

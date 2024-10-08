@@ -66,7 +66,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::unpack(
 
   if (is_init_porosity_)
   {
-    init_porosity_ = Teuchos::rcp(new Core::LinAlg::Matrix<Base::numnod_, 1>(true));
+    init_porosity_ = Teuchos::make_rcp<Core::LinAlg::Matrix<Base::numnod_, 1>>(true);
     extract_from_pack(buffer, *init_porosity_);
   }
 

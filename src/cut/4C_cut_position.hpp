@@ -764,12 +764,12 @@ namespace Cut
 
       if (probdim > dim)
       {
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             PositionCreator<true, probdim, dim, eletype>::create(xyze, px, floattype));
       }
       else if (probdim == dim)
       {
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             PositionCreator<false, probdim, dim, eletype>::create(xyze, px, floattype));
       }
       else
@@ -830,12 +830,12 @@ namespace Cut
 
       if (probdim > dim)
       {
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             PositionCreator<true, probdim, dim, eletype>::create(xyze, xyz, floattype));
       }
       else if (probdim == dim)
       {
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             PositionCreator<false, probdim, dim, eletype>::create(xyze, xyz, floattype));
       }
       else
@@ -900,12 +900,12 @@ namespace Cut
     {
       if (probdim > dim)
       {
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             PositionCreator<true, probdim, dim, eletype>::create(xyze, xyz, floattype));
       }
       else if (probdim == dim)
       {
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             PositionCreator<false, probdim, dim, eletype>::create(xyze, xyz, floattype));
       }
       else
@@ -978,12 +978,12 @@ namespace Cut
 
       if (probdim > dim)
       {
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             PositionCreator<true, probdim, dim, eletype>::create(xyze, xyz, floattype));
       }
       else if (probdim == dim)
       {
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             PositionCreator<false, probdim, dim, eletype>::create(xyze, xyz, floattype));
       }
       else

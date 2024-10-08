@@ -50,7 +50,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype,
     :  // constructor of base class
       myelectrode::ScaTraEleBoundaryCalcElchElectrode(numdofpernode, numscal, disname),
       // initialization of diffusion manager
-      dmedc_(Teuchos::rcp(new ScaTraEleDiffManagerElchDiffCond(my::numscal_)))
+      dmedc_(Teuchos::make_rcp<ScaTraEleDiffManagerElchDiffCond>(my::numscal_))
 {
 }
 

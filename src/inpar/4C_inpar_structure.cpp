@@ -396,15 +396,15 @@ namespace Inpar
 
       // structural Robin spring dashpot boundary condition (spring and dashpot in parallel)
 
-      auto robinspringdashpotsurf = Teuchos::rcp(
-          new Core::Conditions::ConditionDefinition("DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS",
-              "RobinSpringDashpot", "Robin Spring Dashpot", Core::Conditions::RobinSpringDashpot,
-              true, Core::Conditions::geometry_type_surface));
+      auto robinspringdashpotsurf = Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN SURF ROBIN SPRING DASHPOT CONDITIONS", "RobinSpringDashpot",
+          "Robin Spring Dashpot", Core::Conditions::RobinSpringDashpot, true,
+          Core::Conditions::geometry_type_surface);
 
-      auto robinspringdashpotpoint = Teuchos::rcp(
-          new Core::Conditions::ConditionDefinition("DESIGN POINT ROBIN SPRING DASHPOT CONDITIONS",
-              "RobinSpringDashpot", "Robin Spring Dashpot", Core::Conditions::RobinSpringDashpot,
-              true, Core::Conditions::geometry_type_point));
+      auto robinspringdashpotpoint = Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN POINT ROBIN SPRING DASHPOT CONDITIONS", "RobinSpringDashpot",
+          "Robin Spring Dashpot", Core::Conditions::RobinSpringDashpot, true,
+          Core::Conditions::geometry_type_point);
 
       for (const auto& cond : {robinspringdashpotpoint, robinspringdashpotsurf})
       {
@@ -429,12 +429,12 @@ namespace Inpar
       // pfaller Apr15
 
       Teuchos::RCP<Core::Conditions::ConditionDefinition> springdashpotcoupcond =
-          Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+          Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
               "DESIGN SURF ROBIN SPRING DASHPOT COUPLING CONDITIONS", "RobinSpringDashpotCoupling",
               "RobinSpring Dashpot Coupling", Core::Conditions::RobinSpringDashpotCoupling, true,
-              Core::Conditions::geometry_type_surface));
+              Core::Conditions::geometry_type_surface);
 
-      springdashpotcoupcond->add_component(Teuchos::rcp(new Input::IntComponent("COUPLING")));
+      springdashpotcoupcond->add_component(Teuchos::make_rcp<Input::IntComponent>("COUPLING"));
 
       condlist.push_back(springdashpotcoupcond);
 
@@ -443,12 +443,12 @@ namespace Inpar
       // surfactant
 
       Teuchos::RCP<Core::Conditions::ConditionDefinition> surfactant =
-          Teuchos::rcp(new Core::Conditions::ConditionDefinition("SURFACTANT CONDITIONS",
+          Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("SURFACTANT CONDITIONS",
               "SurfaceStress", "Surface Stress (surfactant)", Core::Conditions::Surfactant, true,
-              Core::Conditions::geometry_type_surface));
+              Core::Conditions::geometry_type_surface);
 
       surfactant->add_component(
-          Teuchos::rcp(new Input::IntComponent("funct", {0, true, true, false})));
+          Teuchos::make_rcp<Input::IntComponent>("funct", IntComponentData{0, true, true, false}));
       Input::add_named_real(surfactant, "k1xCbulk");
       Input::add_named_real(surfactant, "k2");
       Input::add_named_real(surfactant, "m1");

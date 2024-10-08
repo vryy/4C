@@ -151,7 +151,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new ScatraMat(*this));
+      return Teuchos::make_rcp<ScatraMat>(*this);
     }
 
     /// diffusivity

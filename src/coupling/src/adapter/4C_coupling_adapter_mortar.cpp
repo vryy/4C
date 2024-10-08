@@ -212,7 +212,8 @@ void Coupling::Adapter::CouplingMortar::check_slave_dirichlet_overlap(
   Teuchos::ParameterList p;
   p.set("total time", 0.0);
   p.set<const Core::UTILS::FunctionManager*>("function_manager", &function_manager);
-  Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps = Teuchos::rcp(new Core::LinAlg::MapExtractor());
+  Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps =
+      Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
   Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
       Core::LinAlg::create_vector(*(slavedis->dof_row_map()), true);
   slavedis->evaluate_dirichlet(p, temp, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps);
@@ -353,7 +354,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
       }
     }
     Teuchos::RCP<Mortar::Node> mrtrnode =
-        Teuchos::rcp(new Mortar::Node(node->id(), node->x(), node->owner(), dofids, false));
+        Teuchos::make_rcp<Mortar::Node>(node->id(), node->x(), node->owner(), dofids, false);
 
     if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, mrtrnode);
     interface_->add_mortar_node(mrtrnode);
@@ -377,8 +378,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
         ii += 1;
       }
     }
-    Teuchos::RCP<Mortar::Node> mrtrnode = Teuchos::rcp(
-        new Mortar::Node(node->id() + nodeoffset, node->x(), node->owner(), dofids, true));
+    Teuchos::RCP<Mortar::Node> mrtrnode = Teuchos::make_rcp<Mortar::Node>(
+        node->id() + nodeoffset, node->x(), node->owner(), dofids, true);
 
     if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, mrtrnode);
     interface_->add_mortar_node(mrtrnode);
@@ -405,8 +406,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
     Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
-    Teuchos::RCP<Mortar::Element> mrtrele = Teuchos::rcp(new Mortar::Element(
-        ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), false, nurbs));
+    Teuchos::RCP<Mortar::Element> mrtrele = Teuchos::make_rcp<Mortar::Element>(
+        ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), false, nurbs);
 
     if (nurbs) Mortar::UTILS::prepare_nurbs_element(*masterdis, ele, mrtrele, spatial_dimension_);
     interface_->add_mortar_element(mrtrele);
@@ -423,8 +424,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
     if (slidingale == false)
     {
       Teuchos::RCP<Mortar::Element> mrtrele =
-          Teuchos::rcp(new Mortar::Element(ele->id() + eleoffset, ele->owner(), ele->shape(),
-              ele->num_node(), ele->node_ids(), true, nurbs));
+          Teuchos::make_rcp<Mortar::Element>(ele->id() + eleoffset, ele->owner(), ele->shape(),
+              ele->num_node(), ele->node_ids(), true, nurbs);
 
       if (nurbs) Mortar::UTILS::prepare_nurbs_element(*slavedis, ele, mrtrele, spatial_dimension_);
       interface_->add_mortar_element(mrtrele);
@@ -438,8 +439,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
       }
 
       Teuchos::RCP<Mortar::Element> mrtrele =
-          Teuchos::rcp(new Mortar::Element(ele->id() + eleoffset, ele->owner(), ele->shape(),
-              ele->num_node(), nidsoff.data(), true, nurbs));
+          Teuchos::make_rcp<Mortar::Element>(ele->id() + eleoffset, ele->owner(), ele->shape(),
+              ele->num_node(), nidsoff.data(), true, nurbs);
 
       interface_->add_mortar_element(mrtrele);
     }
@@ -468,8 +469,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
   issetup_ = true;
 
   // store old row maps (before parallel redistribution)
-  pslavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface_->slave_row_dofs()));
-  pmasterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface_->master_row_dofs()));
+  pslavedofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface_->slave_row_dofs());
+  pmasterdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface_->master_row_dofs());
 
   // print parallel distribution
   interface_->print_parallel_distribution();
@@ -492,8 +493,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
   //**********************************************************************
 
   // store row maps (after parallel redistribution)
-  slavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface_->slave_row_dofs()));
-  masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface_->master_row_dofs()));
+  slavedofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface_->slave_row_dofs());
+  masterdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface_->master_row_dofs());
 
   // create binary search tree
   interface_->create_search_tree();
@@ -605,10 +606,10 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
 
   // compute g-vector at global level
   Teuchos::RCP<Core::LinAlg::Vector<double>> Dxs =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*slavedofrowmap));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavedofrowmap);
   D_->multiply(false, *xs, *Dxs);
   Teuchos::RCP<Core::LinAlg::Vector<double>> Mxm =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*slavedofrowmap));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavedofrowmap);
   M_->multiply(false, *xm, *Mxm);
   Teuchos::RCP<Core::LinAlg::Vector<double>> gold =
       Core::LinAlg::create_vector(*slavedofrowmap, true);
@@ -965,9 +966,9 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
   }
 
   // compute g-vector at global level
-  Dxs = Teuchos::rcp(new Core::LinAlg::Vector<double>(*slavedofrowmap));
+  Dxs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavedofrowmap);
   D_->multiply(false, *xs, *Dxs);
-  Mxm = Teuchos::rcp(new Core::LinAlg::Vector<double>(*slavedofrowmap));
+  Mxm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavedofrowmap);
   M_->multiply(false, *xm, *Mxm);
   Teuchos::RCP<Core::LinAlg::Vector<double>> gnew =
       Core::LinAlg::create_vector(*slavedofrowmap, true);
@@ -1022,7 +1023,7 @@ void Coupling::Adapter::CouplingMortar::create_p()
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
   /********************************************************************/
   D_->complete();
-  Dinv_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*D_));
+  Dinv_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*D_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> diag =
       Core::LinAlg::create_vector(*slavedofrowmap_, true);
   int err = 0;
@@ -1097,9 +1098,9 @@ void Coupling::Adapter::CouplingMortar::evaluate(Teuchos::RCP<Core::LinAlg::Vect
   Teuchos::RCP<Epetra_Map> dofrowmap =
       Core::LinAlg::merge_map(*pmasterdofrowmap_, *pslavedofrowmap_, false);
   Teuchos::RCP<Epetra_Import> master_importer =
-      Teuchos::rcp(new Epetra_Import(*dofrowmap, *pmasterdofrowmap_));
+      Teuchos::make_rcp<Epetra_Import>(*dofrowmap, *pmasterdofrowmap_);
   Teuchos::RCP<Epetra_Import> slaveImporter =
-      Teuchos::rcp(new Epetra_Import(*dofrowmap, *pslavedofrowmap_));
+      Teuchos::make_rcp<Epetra_Import>(*dofrowmap, *pslavedofrowmap_);
 
   // Import master and slave displacements into a single vector
   int err = 0;
@@ -1157,9 +1158,9 @@ void Coupling::Adapter::CouplingMortar::evaluate()
   // after parallel redistribution. If no redistribution was performed, they
   // are of course identical to slavedofrowmap_/masterdofrowmap_!)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrix =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 10));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 10);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 100);
   interface_->assemble_dm(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
@@ -1225,9 +1226,9 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
   // after parallel redistribution. If no redistribution was performed, they
   // are of course identical to slavedofrowmap_/masterdofrowmap_!)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrix =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 10));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 10);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 100);
   interface_->assemble_dm(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
@@ -1237,7 +1238,7 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
   M_ = mmatrix;
 
   // Build Dinv
-  Dinv_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*D_));
+  Dinv_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*D_);
 
   // extract diagonal of invd into diag
   Teuchos::RCP<Core::LinAlg::Vector<double>> diag =
@@ -1287,7 +1288,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::ma
   if (M_->multiply(false, *mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> sv =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*pslavedofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pslavedofrowmap_);
 
   if (Dinv_->multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
 
@@ -1310,7 +1311,7 @@ Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::CouplingMortar::master_to_sl
   if (M_->multiply(false, *mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
 
   Teuchos::RCP<Epetra_MultiVector> sv =
-      Teuchos::rcp(new Epetra_MultiVector(*pslavedofrowmap_, mv->NumVectors()));
+      Teuchos::make_rcp<Epetra_MultiVector>(*pslavedofrowmap_, mv->NumVectors());
 
   if (Dinv_->multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
 
@@ -1332,7 +1333,7 @@ Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::CouplingMortar::master_to_sl
   if (M_->multiply(false, *mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
 
   Teuchos::RCP<Epetra_MultiVector> sv =
-      Teuchos::rcp(new Epetra_MultiVector(*pslavedofrowmap_, mv->NumVectors()));
+      Teuchos::make_rcp<Epetra_MultiVector>(*pslavedofrowmap_, mv->NumVectors());
 
   if (Dinv_->multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
 
@@ -1354,7 +1355,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::ma
   if (M_->multiply(false, *mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> sv =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*pslavedofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pslavedofrowmap_);
 
   if (Dinv_->multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
 
@@ -1408,7 +1409,7 @@ void Coupling::Adapter::CouplingMortar::slave_to_master(
   std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> tempm =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*pmasterdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pmasterdofrowmap_);
   if (M_->multiply(true, tmp, *tempm)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   // copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
@@ -1433,7 +1434,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::sl
   std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> mv =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*pmasterdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pmasterdofrowmap_);
   if (M_->multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   return mv;
@@ -1451,7 +1452,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::sl
   std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> mv =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*pmasterdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pmasterdofrowmap_);
   if (M_->multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   return mv;
@@ -1469,7 +1470,7 @@ Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::CouplingMortar::slave_to_mas
   std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
   Teuchos::RCP<Epetra_MultiVector> mv =
-      Teuchos::rcp(new Epetra_MultiVector(*pmasterdofrowmap_, sv->NumVectors()));
+      Teuchos::make_rcp<Epetra_MultiVector>(*pmasterdofrowmap_, sv->NumVectors());
   if (M_->multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   return mv;
@@ -1487,7 +1488,7 @@ Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::CouplingMortar::slave_to_mas
   std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
   Teuchos::RCP<Epetra_MultiVector> mv =
-      Teuchos::rcp(new Epetra_MultiVector(*pmasterdofrowmap_, sv->NumVectors()));
+      Teuchos::make_rcp<Epetra_MultiVector>(*pmasterdofrowmap_, sv->NumVectors());
   if (M_->multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   return mv;

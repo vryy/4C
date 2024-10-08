@@ -38,19 +38,19 @@ Teuchos::RCP<LargeRotations::TriadInterpolation<T>> LargeRotations::TriadInterpo
   {
     case 2:
     {
-      return Teuchos::rcp(new LargeRotations::TriadInterpolationLocalRotationVectors<2, T>());
+      return Teuchos::make_rcp<LargeRotations::TriadInterpolationLocalRotationVectors<2, T>>();
     }
     case 3:
     {
-      return Teuchos::rcp(new LargeRotations::TriadInterpolationLocalRotationVectors<3, T>());
+      return Teuchos::make_rcp<LargeRotations::TriadInterpolationLocalRotationVectors<3, T>>();
     }
     case 4:
     {
-      return Teuchos::rcp(new LargeRotations::TriadInterpolationLocalRotationVectors<4, T>());
+      return Teuchos::make_rcp<LargeRotations::TriadInterpolationLocalRotationVectors<4, T>>();
     }
     case 5:
     {
-      return Teuchos::rcp(new LargeRotations::TriadInterpolationLocalRotationVectors<5, T>());
+      return Teuchos::make_rcp<LargeRotations::TriadInterpolationLocalRotationVectors<5, T>>();
     }
     default:
     {

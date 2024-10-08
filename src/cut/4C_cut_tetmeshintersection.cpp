@@ -48,7 +48,7 @@ FOUR_C_NAMESPACE_OPEN
 Cut::TetMeshIntersection::TetMeshIntersection(Options& options, Element* element,
     const std::vector<std::vector<int>>& tets, const std::vector<int>& accept_tets,
     const std::vector<Point*>& points, const plain_side_set& cut_sides)
-    : pp_(Teuchos::rcp(new PointPool)), mesh_(options, 1, pp_), cut_mesh_(options, 1, pp_, true)
+    : pp_(Teuchos::make_rcp<PointPool>()), mesh_(options, 1, pp_), cut_mesh_(options, 1, pp_, true)
 {
   // Create the nodes and make the connectivity to the parent_mesh.
   for (std::vector<Point*>::const_iterator i = points.begin(); i != points.end(); ++i)
@@ -220,7 +220,7 @@ void Cut::TetMeshIntersection::find_edge_cuts()
   for (plain_edge_set::iterator i = cut_edges.begin(); i != cut_edges.end(); ++i)
   {
     Edge* ce = *i;
-    Teuchos::RCP<BoundingBox> edgebox = Teuchos::rcp(BoundingBox::create(*ce));
+    Teuchos::RCP<BoundingBox> edgebox = Teuchos::RCP(BoundingBox::create(*ce));
     plain_edge_set edges;
     pp_->collect_edges(*edgebox, edges);
     // edges.erase( ce );

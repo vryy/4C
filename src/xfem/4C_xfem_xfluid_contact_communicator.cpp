@@ -1233,8 +1233,8 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
             p->coordinates(coord);
             coord += 3;
           }
-          Teuchos::RCP<Cut::Tri3BoundaryCell> tmp_bc = Teuchos::rcp(
-              new Cut::Tri3BoundaryCell(tcoords, facet, facet->triangulation()[triangle]));
+          Teuchos::RCP<Cut::Tri3BoundaryCell> tmp_bc = Teuchos::make_rcp<Cut::Tri3BoundaryCell>(
+              tcoords, facet, facet->triangulation()[triangle]);
           tmp_bc->normal(Core::LinAlg::Matrix<2, 1>(true), normal_bc);
           if (normal_bc.dot(normal_side) < 0.0)
             bcs.push_back(tmp_bc);
@@ -1252,7 +1252,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
               coord += 3;
             }
             Teuchos::RCP<Cut::Tri3BoundaryCell> tmp_bc_rev =
-                Teuchos::rcp(new Cut::Tri3BoundaryCell(tcoords, facet, points));
+                Teuchos::make_rcp<Cut::Tri3BoundaryCell>(tcoords, facet, points);
             bcs.push_back(tmp_bc_rev);
           }
         }
@@ -1261,7 +1261,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
       {
         facet->coordinates(tcoords.values());
         Teuchos::RCP<Cut::Tri3BoundaryCell> tmp_bc =
-            Teuchos::rcp(new Cut::Tri3BoundaryCell(tcoords, facet, facet->points()));
+            Teuchos::make_rcp<Cut::Tri3BoundaryCell>(tcoords, facet, facet->points());
         tmp_bc->normal(Core::LinAlg::Matrix<2, 1>(true), normal_bc);
         if (normal_bc.dot(normal_side) < 0.0)
           bcs.push_back(tmp_bc);
@@ -1278,7 +1278,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
             coord += 3;
           }
           Teuchos::RCP<Cut::Tri3BoundaryCell> tmp_bc_rev =
-              Teuchos::rcp(new Cut::Tri3BoundaryCell(tcoords, facet, points));
+              Teuchos::make_rcp<Cut::Tri3BoundaryCell>(tcoords, facet, points);
           bcs.push_back(tmp_bc_rev);
         }
       }
@@ -1307,7 +1307,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
         for (unsigned p = 0; p < side->num_nodes(); ++p)
           points.push_back(side->nodes()[p]->point());
         Teuchos::RCP<Cut::Tri3BoundaryCell> tmp_bc =
-            Teuchos::rcp(new Cut::Tri3BoundaryCell(tcoords, nullptr, points));
+            Teuchos::make_rcp<Cut::Tri3BoundaryCell>(tcoords, nullptr, points);
         tmp_bc->normal(Core::LinAlg::Matrix<2, 1>(true), normal_bc);
         if (normal_bc.dot(normal_side) < 0.0)
           bcs.push_back(tmp_bc);
@@ -1324,7 +1324,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
             coord += 3;
           }
           Teuchos::RCP<Cut::Tri3BoundaryCell> tmp_bc_rev =
-              Teuchos::rcp(new Cut::Tri3BoundaryCell(tcoords, nullptr, tmp_points));
+              Teuchos::make_rcp<Cut::Tri3BoundaryCell>(tcoords, nullptr, tmp_points);
           bcs.push_back(tmp_bc_rev);
         }
       }
@@ -1396,8 +1396,8 @@ void XFEM::XFluidContactComm::fill_complete_sele_map()
     }
   }
   std::vector<int> my_sele_ids(my_sele_ids_.begin(), my_sele_ids_.end());
-  contact_ele_rowmap_fluidownerbased_ = Teuchos::rcp(
-      new Epetra_Map(-1, my_sele_ids.size(), my_sele_ids.data(), 0, fluiddis_->get_comm()));
+  contact_ele_rowmap_fluidownerbased_ = Teuchos::make_rcp<Epetra_Map>(
+      -1, my_sele_ids.size(), my_sele_ids.data(), 0, fluiddis_->get_comm());
 }
 
 void XFEM::XFluidContactComm::prepare_time_step()

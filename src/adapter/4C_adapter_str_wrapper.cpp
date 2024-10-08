@@ -41,7 +41,7 @@ void Adapter::StructureNOXCorrectionWrapper::evaluate(
   {
     // iteration increments
     Teuchos::RCP<Core::LinAlg::Vector<double>> disiterinc =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*disstepinc));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*disstepinc);
     if (disstepinc_ != Teuchos::null)
     {
       disiterinc->Update(-1.0, *disstepinc_, 1.0);
@@ -52,7 +52,7 @@ void Adapter::StructureNOXCorrectionWrapper::evaluate(
     }
     else
     {
-      disstepinc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*disstepinc));
+      disstepinc_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*disstepinc);
     }
 
     // do structural update with provided residual displacements - iteration increment

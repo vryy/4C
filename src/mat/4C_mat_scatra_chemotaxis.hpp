@@ -121,7 +121,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new ScatraChemotaxisMat(*this));
+      return Teuchos::make_rcp<ScatraChemotaxisMat>(*this);
     }
 
     /// return number of scalars for this reaction

@@ -32,7 +32,7 @@ FLD::Vreman::Vreman(Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::Para
       params_(params),
       physicaltype_(Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(params_, "Physical Type"))
 {
-  boxf_ = Teuchos::rcp(new FLD::Boxfilter(discret_, params_));
+  boxf_ = Teuchos::make_rcp<FLD::Boxfilter>(discret_, params_);
   // Initialize Boxfilter
   boxf_->initialize_vreman();
 
@@ -47,7 +47,7 @@ void FLD::Vreman::add_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
-  boxfsc_ = Teuchos::rcp(new FLD::Boxfilter(scatradiscret_, params_));
+  boxfsc_ = Teuchos::make_rcp<FLD::Boxfilter>(scatradiscret_, params_);
 
   // Initialize Boxfilter
   boxfsc_->initialize_vreman_scatra(scatradiscret_);
@@ -69,10 +69,10 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_cv(
   const Epetra_Map* nodecolmap = discret_->node_col_map();
 
 
-  col_filtered_strainrate_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
-  col_filtered_alphaij_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
-  col_filtered_expression_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
-  col_filtered_alpha2_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
+  col_filtered_strainrate_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
+  col_filtered_alphaij_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
+  col_filtered_expression_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+  col_filtered_alpha2_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
 
 
   // perform filtering
@@ -97,10 +97,10 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_dt(
 {
   const Epetra_Map* nodecolmap = scatradiscret_->node_col_map();
 
-  col_filtered_phi_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 3, true));
-  col_filtered_phi2_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
-  col_filtered_phiexpression_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*nodecolmap, true));
-  col_filtered_alphaijsc_ = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, 9, true));
+  col_filtered_phi_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
+  col_filtered_phi2_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+  col_filtered_phiexpression_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+  col_filtered_alphaijsc_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
 
 
   // perform filtering
@@ -144,7 +144,7 @@ double FLD::Vreman::dyn_vreman_compute_cv()
 
   // loop all elements on this proc (excluding ghosted ones)
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> Cv_num_denom =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(2);
 
 
   // call loop over elements (assemble nothing)
@@ -199,7 +199,7 @@ void FLD::Vreman::dyn_vreman_compute_dt(Teuchos::ParameterList& extraparams)
   calc_vreman_params_scatra.set("col_filtered_alphaijsc", col_filtered_alphaijsc_);
   // loop all elements on this proc (excluding ghosted ones)
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> Dt_num_denom =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(2);
   // call loop over elements (assemble nothing)
   scatradiscret_->evaluate_scalars(calc_vreman_params_scatra, Dt_num_denom);
   scatradiscret_->clear_state();

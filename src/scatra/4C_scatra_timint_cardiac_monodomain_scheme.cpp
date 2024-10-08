@@ -92,10 +92,10 @@ void ScaTra::TimIntCardiacMonodomainOST::read_restart(
 
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
-        discret_, Global::Problem::instance()->input_control_file(), step));
+    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+        discret_, Global::Problem::instance()->input_control_file(), step);
   else
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(discret_, input, step);
 
   // Cardiac Monodomain specific
   reader->read_vector(activation_time_np_, "activation_time_np");
@@ -192,10 +192,10 @@ void ScaTra::TimIntCardiacMonodomainBDF2::read_restart(
 
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
-        discret_, Global::Problem::instance()->input_control_file(), step));
+    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+        discret_, Global::Problem::instance()->input_control_file(), step);
   else
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(discret_, input, step);
 
   // Cardiac Monodomain specific
   reader->read_vector(activation_time_np_, "activation_time_np");

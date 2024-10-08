@@ -53,7 +53,7 @@ void Solid::Predict::TangDis::setup()
       NOX::Nln::GROUP::PrePostOp::get_map(p_grp_opt);
   // create the new tangdis pre/post operator
   Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> preposttangdis_ptr =
-      Teuchos::rcp(new NOX::Nln::GROUP::PrePostOp::TangDis(Teuchos::rcp(this, false)));
+      Teuchos::make_rcp<NOX::Nln::GROUP::PrePostOp::TangDis>(Teuchos::rcpFromRef(*this));
   // insert/replace the old pointer in the map
   prepostgroup_map[NOX::Nln::GROUP::prepost_tangdis] = preposttangdis_ptr;
 
@@ -124,7 +124,7 @@ void Solid::Predict::TangDis::compute(::NOX::Abstract::Group& grp)
   grp_ptr->computeX(*grp_ptr, grp_ptr->getNewton(), 1.0);
   // add the DBC values to the current state vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> dbc_incr_exp_ptr =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(global_state().global_problem_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(global_state().global_problem_map(), true);
   Core::LinAlg::export_to(*dbc_incr_ptr_, *dbc_incr_exp_ptr);
   grp_ptr->computeX(*grp_ptr, dbc_incr_exp_ptr->get_ref_of_Epetra_Vector(), 1.0);
   // Reset the state variables
@@ -207,8 +207,9 @@ void NOX::Nln::GROUP::PrePostOp::TangDis::run_post_compute_f(
   // check if the jacobian is filled
   if (not stiff_ptr->filled()) FOUR_C_THROW("The jacobian is not yet filled!");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> freact_ptr = Teuchos::rcp(
-      new Core::LinAlg::Vector<double>(*tang_predict_ptr_->global_state().dof_row_map_view()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> freact_ptr =
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+          *tang_predict_ptr_->global_state().dof_row_map_view());
   if (stiff_ptr->multiply(false, dbc_incr, *freact_ptr)) FOUR_C_THROW("Multiply failed!");
 
   // finally add the linear reaction forces to the current rhs

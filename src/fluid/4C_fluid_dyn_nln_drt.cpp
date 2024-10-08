@@ -67,7 +67,7 @@ void dyn_fluid_drt(const int restart)
 
     // create instance of fluid turbulent flow algorithm
     Teuchos::RCP<FLD::TurbulentFlowAlgorithm> turbfluidalgo =
-        Teuchos::rcp(new FLD::TurbulentFlowAlgorithm(comm, fdyn));
+        Teuchos::make_rcp<FLD::TurbulentFlowAlgorithm>(comm, fdyn);
 
     // read the restart information, set vectors and variables
     if (restart) turbfluidalgo->read_restart(restart);
@@ -88,7 +88,7 @@ void dyn_fluid_drt(const int restart)
   {
     // create instance of fluid basis algorithm
     Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluidalgo =
-        Teuchos::rcp(new Adapter::FluidBaseAlgorithm(fdyn, fdyn, "fluid", false));
+        Teuchos::make_rcp<Adapter::FluidBaseAlgorithm>(fdyn, fdyn, "fluid", false);
 
     // read the restart information, set vectors and variables
     if (restart) fluidalgo->fluid_field()->read_restart(restart);

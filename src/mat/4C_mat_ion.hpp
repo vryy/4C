@@ -124,7 +124,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new Ion(*this));
+      return Teuchos::make_rcp<Ion>(*this);
     }
 
     /// valence (= charge number)

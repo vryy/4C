@@ -45,7 +45,7 @@ Mat::PAR::PlasticDruckerPrager::PlasticDruckerPrager(const Core::Mat::PAR::Param
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticDruckerPrager::create_material()
 {
-  return Teuchos::rcp(new Mat::PlasticDruckerPrager(this));
+  return Teuchos::make_rcp<Mat::PlasticDruckerPrager>(this);
 }
 Mat::PlasticDruckerPragerType Mat::PlasticDruckerPragerType::instance_;
 

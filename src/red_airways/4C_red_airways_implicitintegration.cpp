@@ -121,14 +121,14 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
     // extended ghosting for elements (also revert fully overlapping here)
     std::vector<int> coleles(elecolset.begin(), elecolset.end());
     Teuchos::RCP<const Epetra_Map> extendedelecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, coleles.size(), coleles.data(), 0, discret_->get_comm()));
+        Teuchos::make_rcp<Epetra_Map>(-1, coleles.size(), coleles.data(), 0, discret_->get_comm());
 
     discret_->export_column_elements(*extendedelecolmap);
 
     // extended ghosting for nodes
     std::vector<int> colnodes(nodecolset.begin(), nodecolset.end());
-    Teuchos::RCP<const Epetra_Map> extendednodecolmap =
-        Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), colnodes.data(), 0, discret_->get_comm()));
+    Teuchos::RCP<const Epetra_Map> extendednodecolmap = Teuchos::make_rcp<Epetra_Map>(
+        -1, colnodes.size(), colnodes.data(), 0, discret_->get_comm());
 
     discret_->export_column_nodes(*extendednodecolmap);
 
@@ -165,7 +165,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   // a 'good' estimate
 
   // initialize standard (stabilized) system matrix
-  sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 3, false, true));
+  sysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 3, false, true);
 
   // Vectors passed to the element
   // Pressures at time n+1, n and n-1
@@ -352,7 +352,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
     std::vector<int> lm;
     std::vector<int> lmstride;
     // vector<int> lmowner;
-    Teuchos::RCP<std::vector<int>> lmowner = Teuchos::rcp(new std::vector<int>);
+    Teuchos::RCP<std::vector<int>> lmowner = Teuchos::make_rcp<std::vector<int>>();
     ele->location_vector(*discret_, lm, *lmowner, lmstride);
 
     // loop all nodes of this element, add values to the global vectors
@@ -862,9 +862,9 @@ void Airway::RedAirwayImplicitTimeInt::non_lin_solve(
     double minQ = 0.0;
     double minP = 0.0;
     Teuchos::RCP<Core::LinAlg::Vector<double>> qabs =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*qin_np_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*qin_np_);
     Teuchos::RCP<Core::LinAlg::Vector<double>> pabs =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*pnp_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pnp_);
     qabs->Abs(*qin_np_);
     pabs->Abs(*pnp_);
 
@@ -2262,7 +2262,7 @@ void Airway::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::UTILS::ResultTest> Airway::RedAirwayImplicitTimeInt::create_field_test()
 {
-  return Teuchos::rcp(new RedAirwayResultTest(*this));
+  return Teuchos::make_rcp<RedAirwayResultTest>(*this);
 }
 
 
@@ -2475,7 +2475,7 @@ void Airway::RedAirwayImplicitTimeInt::setup_for_coupling()
   unsigned int numcond = tmp.size();
   if (numcond == 0) FOUR_C_THROW("no coupling conditions found");
   coupmap_ =
-      Teuchos::rcp(new Epetra_Map(tmp.size(), tmp.size(), tmp.data(), 0, discret_->get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(tmp.size(), tmp.size(), tmp.data(), 0, discret_->get_comm());
 }
 
 

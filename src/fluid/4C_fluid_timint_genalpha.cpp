@@ -206,7 +206,7 @@ void FLD::TimIntGenAlpha::gen_alpha_update_acceleration()
         velpressplitter_->extract_other_vector(*velnp_);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccnp =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(onlyaccn->Map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(onlyaccn->Map());
 
     onlyaccnp->Update(fact2, *onlyaccn, 0.0);
     onlyaccnp->Update(fact1, *onlyvelnp, -fact1, *onlyveln, 1.0);
@@ -249,7 +249,7 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values()
         velpressplitter_->extract_other_vector(*accnp_);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccam =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(onlyaccnp->Map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(onlyaccnp->Map());
 
     onlyaccam->Update((alphaM_), *onlyaccnp, (1.0 - alphaM_), *onlyaccn, 0.0);
 
@@ -293,8 +293,8 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values(
   //    vec         = alpha_F * vecnp     + (1-alpha_F) *  vecn
 
   // do stupid conversion into Epetra map
-  Teuchos::RCP<Epetra_Map> vecmap = Teuchos::rcp(new Epetra_Map(vecnp->Map().NumGlobalElements(),
-      vecnp->Map().NumMyElements(), vecnp->Map().MyGlobalElements(), 0, vecnp->Map().Comm()));
+  Teuchos::RCP<Epetra_Map> vecmap = Teuchos::make_rcp<Epetra_Map>(vecnp->Map().NumGlobalElements(),
+      vecnp->Map().NumMyElements(), vecnp->Map().MyGlobalElements(), 0, vecnp->Map().Comm());
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> vecam = Core::LinAlg::create_vector(*vecmap, true);
   vecam->Update((alphaM_), *vecnp, (1.0 - alphaM_), *vecn, 0.0);
@@ -393,7 +393,7 @@ void FLD::TimIntGenAlpha::outputof_filtered_vel(Teuchos::RCP<Core::LinAlg::Vecto
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
   Teuchos::RCP<Core::LinAlg::Vector<double>> row_finescaleveltmp;
-  row_finescaleveltmp = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap, true));
+  row_finescaleveltmp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap, true);
 
   // get fine scale velocity
   if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)

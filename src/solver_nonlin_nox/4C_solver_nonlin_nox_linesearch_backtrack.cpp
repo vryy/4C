@@ -74,7 +74,7 @@ bool NOX::Nln::LineSearch::Backtrack::reset(
 
   fp_except_.shall_be_caught_ = p.get("Allow Exceptions", false);
 
-  prePostOperatorPtr_ = Teuchos::rcp(new PrePostOperator(params));
+  prePostOperatorPtr_ = Teuchos::make_rcp<PrePostOperator>(params);
 
   return true;
 }

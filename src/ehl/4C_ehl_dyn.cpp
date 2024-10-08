@@ -103,12 +103,12 @@ void ehl_dyn()
   switch (coupling)
   {
     case Inpar::EHL::ehl_IterStagg:
-      ehl = Teuchos::rcp(
-          new EHL::Partitioned(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
+      ehl = Teuchos::make_rcp<EHL::Partitioned>(
+          comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication");
       break;
     case Inpar::EHL::ehl_Monolithic:
-      ehl = Teuchos::rcp(
-          new EHL::Monolithic(comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication"));
+      ehl = Teuchos::make_rcp<EHL::Monolithic>(
+          comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication");
       break;
     default:
       FOUR_C_THROW("unknown coupling algorithm for EHL!");

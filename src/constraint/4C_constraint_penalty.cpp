@@ -55,14 +55,14 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
       nummyele = numele;
     }
     // initialize maps and importer
-    errormap_ = Teuchos::rcp(new Epetra_Map(numele, nummyele, 0, actdisc_->get_comm()));
+    errormap_ = Teuchos::make_rcp<Epetra_Map>(numele, nummyele, 0, actdisc_->get_comm());
     rederrormap_ = Core::LinAlg::allreduce_e_map(*errormap_);
-    errorexport_ = Teuchos::rcp(new Epetra_Export(*rederrormap_, *errormap_));
-    errorimport_ = Teuchos::rcp(new Epetra_Import(*rederrormap_, *errormap_));
-    acterror_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*rederrormap_));
-    initerror_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*rederrormap_));
-    lagrvalues_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*rederrormap_));
-    lagrvalues_force_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*rederrormap_));
+    errorexport_ = Teuchos::make_rcp<Epetra_Export>(*rederrormap_, *errormap_);
+    errorimport_ = Teuchos::make_rcp<Epetra_Import>(*rederrormap_, *errormap_);
+    acterror_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*rederrormap_);
+    initerror_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*rederrormap_);
+    lagrvalues_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*rederrormap_);
+    lagrvalues_force_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*rederrormap_);
   }
   else
   {
@@ -234,7 +234,8 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
         (*lagrvalues_force_)[condID - 1] = (*lagrvalues_)[condID - 1] + rho_[condID] * diff;
 
       // elements might need condition
-      params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
+      params.set<Teuchos::RCP<Core::Conditions::Condition>>(
+          "condition", Teuchos::rcpFromRef(*cond));
 
       // define element matrices and vectors
       Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -328,7 +329,8 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_error(
     // if current time is larger than initialization time of the condition, start computing
     if (inittimes_.find(condID)->second <= time)
     {
-      params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
+      params.set<Teuchos::RCP<Core::Conditions::Condition>>(
+          "condition", Teuchos::rcpFromRef(*cond));
 
       // define element matrices and vectors
       Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -379,7 +381,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_error(
     }
   }
   Teuchos::RCP<Core::LinAlg::Vector<double>> acterrdist =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*errormap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*errormap_);
   acterrdist->Export(*systemvector, *errorexport_, Add);
   systemvector->Import(*acterrdist, *errorimport_, Insert);
 }  // end of evaluate_error

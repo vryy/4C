@@ -63,11 +63,11 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     Teuchos::RCP<Core::FE::Discretization> fluiddis =
         Global::Problem::instance()->get_dis("porofluid");
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_ = Teuchos::rcp(new Coupling::Adapter::MortarVolCoupl());
+    volcoupl_ = Teuchos::make_rcp<Coupling::Adapter::MortarVolCoupl>();
 
     // build material strategy
     Teuchos::RCP<UTILS::PoroMaterialStrategy> materialstrategy =
-        Teuchos::rcp(new UTILS::PoroMaterialStrategy());
+        Teuchos::make_rcp<UTILS::PoroMaterialStrategy>();
 
     // setup projection matrices
     volcoupl_->init(Global::Problem::instance()->n_dim(), structdis, fluiddis, nullptr, nullptr,
@@ -91,8 +91,8 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   if (oldstructimint_)
   {
     Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure =
-        Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
-            timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+        Teuchos::make_rcp<Adapter::StructureBaseAlgorithm>(
+            timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     structure_ =
         Teuchos::rcp_dynamic_cast<Adapter::FPSIStructureWrapper>(structure->structure_field());
     structure_->setup();
@@ -114,7 +114,7 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   Global::Problem* problem = Global::Problem::instance();
   const Teuchos::ParameterList& fluiddynparams = problem->fluid_dynamic_params();
   Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluid =
-      Teuchos::rcp(new Adapter::FluidBaseAlgorithm(timeparams, fluiddynparams, "porofluid", true));
+      Teuchos::make_rcp<Adapter::FluidBaseAlgorithm>(timeparams, fluiddynparams, "porofluid", true);
   fluid_ = Teuchos::rcp_dynamic_cast<Adapter::FluidPoro>(fluid->fluid_field());
 
   if (fluid_ == Teuchos::null)
@@ -134,8 +134,8 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   // known to the discretization (without lagrange multipliers)
   // while structure_field()->dof_row_map() returns the dof_row_map known to
   // the constraint manager (with lagrange multipliers)
-  cond_splitter_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
-      *structure_field()->dof_row_map(), structure_field()->dof_row_map(0)));
+  cond_splitter_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+      *structure_field()->dof_row_map(), structure_field()->dof_row_map(0));
 
   // look for special poro conditions and set flags
   check_for_poro_conditions();
@@ -285,7 +285,7 @@ void PoroElast::PoroBase::read_restart(const int step)
     {
       // build material strategy
       Teuchos::RCP<UTILS::PoroMaterialStrategy> materialstrategy =
-          Teuchos::rcp(new UTILS::PoroMaterialStrategy());
+          Teuchos::make_rcp<UTILS::PoroMaterialStrategy>();
 
       volcoupl_->assign_materials(structure_field()->discretization(),
           fluid_field()->discretization(), Global::Problem::instance()->volmortar_params(),
@@ -458,7 +458,7 @@ void PoroElast::PoroBase::setup_coupling()
     }
   }
 
-  coupling_fluid_structure_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  coupling_fluid_structure_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
   int ndof = ndim;
 
   // if the porosity is a primary variable, we get one more dof
@@ -488,8 +488,8 @@ void PoroElast::PoroBase::setup_coupling()
     fluid_field()->set_mesh_map(coupling_fluid_structure_->slave_dof_map());
 
     if (submeshes_)
-      psi_extractor_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
-          *structure_field()->dof_row_map(), coupling_fluid_structure_->master_dof_map()));
+      psi_extractor_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+          *structure_field()->dof_row_map(), coupling_fluid_structure_->master_dof_map());
   }
   else
   {
@@ -510,10 +510,12 @@ void PoroElast::PoroBase::replace_dof_sets()
    */
   if (submeshes_)
   {
-    Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structsubdofset = Teuchos::rcp(
-        new Core::DOFSets::DofSetGIDBasedWrapper(structdis, structdis->get_dof_set_proxy()));
-    Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> fluidsubdofset = Teuchos::rcp(
-        new Core::DOFSets::DofSetGIDBasedWrapper(fluiddis, fluiddis->get_dof_set_proxy()));
+    Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structsubdofset =
+        Teuchos::make_rcp<Core::DOFSets::DofSetGIDBasedWrapper>(
+            structdis, structdis->get_dof_set_proxy());
+    Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> fluidsubdofset =
+        Teuchos::make_rcp<Core::DOFSets::DofSetGIDBasedWrapper>(
+            fluiddis, fluiddis->get_dof_set_proxy());
 
     fluiddis->replace_dof_set(1, structsubdofset);
     structdis->replace_dof_set(1, fluidsubdofset);
@@ -537,7 +539,7 @@ void PoroElast::PoroBase::check_for_poro_conditions()
 {
   std::vector<Core::Conditions::Condition*> nopencond;
   fluid_field()->discretization()->get_condition("no_penetration", nopencond);
-  nopen_handle_ = Teuchos::rcp(new PoroElast::NoPenetrationConditionHandle(nopencond));
+  nopen_handle_ = Teuchos::make_rcp<PoroElast::NoPenetrationConditionHandle>(nopencond);
 
   part_int_cond_ = false;
   std::vector<Core::Conditions::Condition*> poroPartInt;
@@ -560,9 +562,9 @@ void PoroElast::NoPenetrationConditionHandle::buid_no_penetration_map(
     condIDs.push_back(*it);
   }
   Teuchos::RCP<Epetra_Map> nopendofmap =
-      Teuchos::rcp(new Epetra_Map(-1, int(condIDs.size()), condIDs.data(), 0, comm));
+      Teuchos::make_rcp<Epetra_Map>(-1, int(condIDs.size()), condIDs.data(), 0, comm);
 
-  nopenetration_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(*dofRowMap, nopendofmap));
+  nopenetration_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*dofRowMap, nopendofmap);
 }
 
 void PoroElast::NoPenetrationConditionHandle::apply_cond_rhs(
@@ -607,18 +609,18 @@ void PoroElast::NoPenetrationConditionHandle::setup(
 {
   if (has_cond_)
   {
-    cond_rhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofRowMap, true));
+    cond_rhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofRowMap, true);
 
-    cond_dofs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofRowMapFluid, true));
+    cond_dofs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofRowMapFluid, true);
 
     fluid_fluid_constraint_matrix_ =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofRowMapFluid, 81, true, true));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofRowMapFluid, 81, true, true);
 
     fluid_structure_constraint_matrix_ =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofRowMapFluid, 81, true, true));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofRowMapFluid, 81, true, true);
 
     structure_vel_constraint_matrix_ =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofRowMapFluid, 81, true, true));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofRowMapFluid, 81, true, true);
   }
 }
 

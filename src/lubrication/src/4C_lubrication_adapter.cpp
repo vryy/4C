@@ -57,10 +57,10 @@ void LUBRICATION::LubricationBaseAlgorithm::setup(
   // -------------------------------------------------------------------
   // TODO: TAW use of solverparams??? change input parameter to solver number instead of parameter
   // list? -> no default paramter possible any more
-  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams,
+  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::make_rcp<Core::LinAlg::Solver>(solverparams,
       actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::instance()->io_params(), "VERBOSITY")));
+          Global::Problem::instance()->io_params(), "VERBOSITY"));
   actdis->compute_null_space_if_necessary(solver->params());
 
   // -------------------------------------------------------------------
@@ -68,7 +68,7 @@ void LUBRICATION::LubricationBaseAlgorithm::setup(
   // -------------------------------------------------------------------
   // make a copy (inside an Teuchos::rcp) containing also all sublists
   Teuchos::RCP<Teuchos::ParameterList> lubricationtimeparams =
-      Teuchos::rcp(new Teuchos::ParameterList(lubricationdyn));
+      Teuchos::make_rcp<Teuchos::ParameterList>(lubricationdyn);
 
   // -------------------------------------------------------------------
   // overrule certain parameters for coupled problems
@@ -88,14 +88,14 @@ void LUBRICATION::LubricationBaseAlgorithm::setup(
   // list for extra parameters
   // (put here everything that is not available in lubricationdyn or its sublists)
   // -------------------------------------------------------------------
-  Teuchos::RCP<Teuchos::ParameterList> extraparams = Teuchos::rcp(new Teuchos::ParameterList());
+  Teuchos::RCP<Teuchos::ParameterList> extraparams = Teuchos::make_rcp<Teuchos::ParameterList>();
 
   // ----------------Eulerian or ALE formulation of transport equation(s)
   extraparams->set<bool>("isale", isale);
 
   // create instance of time integration class (call the constructor)
-  lubrication_ = Teuchos::rcp(new LUBRICATION::TimIntStationary(
-      actdis, solver, lubricationtimeparams, extraparams, output));
+  lubrication_ = Teuchos::make_rcp<LUBRICATION::TimIntStationary>(
+      actdis, solver, lubricationtimeparams, extraparams, output);
 
   lubrication_->init();
   // initialize algorithm for specific time-integration scheme
@@ -108,7 +108,7 @@ void LUBRICATION::LubricationBaseAlgorithm::setup(
 Teuchos::RCP<Core::UTILS::ResultTest>
 LUBRICATION::LubricationBaseAlgorithm::create_lubrication_field_test()
 {
-  return Teuchos::rcp(new LUBRICATION::ResultTest(lubrication_));
+  return Teuchos::make_rcp<LUBRICATION::ResultTest>(lubrication_);
 }
 
 Teuchos::RCP<Core::IO::DiscretizationWriter> LUBRICATION::LubricationBaseAlgorithm::disc_writer()

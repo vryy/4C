@@ -967,10 +967,10 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
       double volumeele;
       // first partial derivatives
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> Vdiff1 =
-          Teuchos::rcp(new Core::LinAlg::SerialDenseVector);
+          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
       // second partial derivatives
       Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Vdiff2 =
-          Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+          Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
 
       // get projection method
       Teuchos::RCP<Core::Conditions::Condition> condition =
@@ -1184,10 +1184,10 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
       double elearea;
       // first partial derivatives
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> Adiff =
-          Teuchos::rcp(new Core::LinAlg::SerialDenseVector);
+          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
       // second partial derivatives
       Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Adiff2 =
-          Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+          Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
 
       // call submethod
       compute_area_deriv(xscurr, num_node(), numdim * num_node(), elearea, Adiff, Adiff2);
@@ -1210,10 +1210,10 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
       double elearea;
       // first partial derivatives
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> Adiff =
-          Teuchos::rcp(new Core::LinAlg::SerialDenseVector);
+          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
       // second partial derivatives
       Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Adiff2 =
-          Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+          Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
 
       // call submethod
       compute_area_deriv(xscurr, num_node(), numdim * num_node(), elearea, Adiff, Adiff2);
@@ -2413,7 +2413,7 @@ void Discret::ELEMENTS::StructuralSurface::calculate_surface_porosity(
   const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
   const int ngp = intpoints.nquad;
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> poro =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(ngp));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(ngp);
   const int numdim = 3;
   const int numnode = num_node();
   const int noddof = num_dof_per_node(*(nodes()[0]));

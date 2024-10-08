@@ -36,7 +36,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Shell7pType::create(
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Shell7pType::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Discret::ELEMENTS::Shell7p(id, owner));
+  return Teuchos::make_rcp<Discret::ELEMENTS::Shell7p>(id, owner);
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::Shell7pType::create(

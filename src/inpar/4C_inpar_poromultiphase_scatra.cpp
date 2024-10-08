@@ -143,26 +143,26 @@ void Inpar::PoroMultiPhaseScaTra::set_valid_conditions(
   {
     // definition of oxygen partial pressure calculation condition
     Teuchos::RCP<Core::Conditions::ConditionDefinition> oxypartpressline =
-        Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
             "DESIGN OXYGEN PARTIAL PRESSURE CALCULATION LINE CONDITIONS",
             "PoroMultiphaseScatraOxyPartPressCalcCond",
             "PoroMultiphaseScatra Oxygen Partial Pressure Calculation line condition",
             Core::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
-            Core::Conditions::geometry_type_line));
+            Core::Conditions::geometry_type_line);
     Teuchos::RCP<Core::Conditions::ConditionDefinition> oxypartpresssurf =
-        Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
             "DESIGN OXYGEN PARTIAL PRESSURE CALCULATION SURF CONDITIONS",
             "PoroMultiphaseScatraOxyPartPressCalcCond",
             "PoroMultiphaseScatra Oxygen Partial Pressure Calculation surface condition",
             Core::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
-            Core::Conditions::geometry_type_surface));
+            Core::Conditions::geometry_type_surface);
     Teuchos::RCP<Core::Conditions::ConditionDefinition> oxypartpressvol =
-        Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
             "DESIGN OXYGEN PARTIAL PRESSURE CALCULATION VOL CONDITIONS",
             "PoroMultiphaseScatraOxyPartPressCalcCond",
             "PoroMultiphaseScatra Oxygen Partial Pressure Calculation volume condition",
             Core::Conditions::PoroMultiphaseScatraOxyPartPressCalcCond, true,
-            Core::Conditions::geometry_type_volume));
+            Core::Conditions::geometry_type_volume);
 
     for (const auto& cond : {oxypartpressline, oxypartpresssurf, oxypartpressvol})
     {

@@ -173,7 +173,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new ViscoElastHyper(*this));
+      return Teuchos::make_rcp<ViscoElastHyper>(*this);
     }
 
     /// Check if history variables are already initialized

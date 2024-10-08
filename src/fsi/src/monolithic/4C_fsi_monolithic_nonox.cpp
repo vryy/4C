@@ -47,13 +47,13 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
   // enable debugging
   if (fsidyn.get<bool>("DEBUGOUTPUT"))
   {
-    sdbg_ = Teuchos::rcp(new UTILS::DebugWriter(structure_field()->discretization()));
+    sdbg_ = Teuchos::make_rcp<UTILS::DebugWriter>(structure_field()->discretization());
     // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->discretization()));
   }
 
   std::string s = Global::Problem::instance()->output_control_file()->file_name();
   s.append(".iteration");
-  log_ = Teuchos::rcp(new std::ofstream(s.c_str()));
+  log_ = Teuchos::make_rcp<std::ofstream>(s.c_str());
   itermax_ = fsimono.get<int>("ITEMAX");
   normtypeinc_ = Teuchos::getIntegralValue<Inpar::FSI::ConvNorm>(fsimono, "NORM_INC");
   normtypefres_ = Teuchos::getIntegralValue<Inpar::FSI::ConvNorm>(fsimono, "NORM_RESF");
@@ -304,11 +304,11 @@ void FSI::MonolithicNoNOX::linear_solve()
 
   const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
   const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");
-  solver_ =
-      Teuchos::rcp(new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(fluidsolver),
-          get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY")));
+  solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(
+      Global::Problem::instance()->solver_params(fluidsolver), get_comm(),
+      Global::Problem::instance()->solver_params_callback(),
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::instance()->io_params(), "VERBOSITY"));
 
 
   // standard solver call
@@ -634,8 +634,8 @@ void FSI::MonolithicNoNOX::prepare_time_step()
   // as we have to deal with a new map extrator
   create_combined_dof_row_map();
   systemmatrix_ =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          extractor(), extractor(), 81, false, true));
+      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+          extractor(), extractor(), 81, false, true);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -44,7 +44,7 @@ NOX::Nln::LineSearch::PrePostOperator::map& NOX::Nln::LineSearch::PrePostOperato
     Teuchos::ParameterList& p_ls_list)
 {
   Teuchos::RCP<map>& mapptr =
-      p_ls_list.get<Teuchos::RCP<map>>("User Defined Pre/Post Operator", Teuchos::rcp(new map()));
+      p_ls_list.get<Teuchos::RCP<map>>("User Defined Pre/Post Operator", Teuchos::make_rcp<map>());
 
   return *mapptr;
 }

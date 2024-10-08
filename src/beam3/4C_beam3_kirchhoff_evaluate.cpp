@@ -661,7 +661,7 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(
 
   // create object of triad interpolation scheme
   Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<BEAM3K_COLLOCATION_POINTS, T>>
-      triad_interpolation_scheme_ptr = Teuchos::rcp(
+      triad_interpolation_scheme_ptr = Teuchos::RCP(
           new LargeRotations::TriadInterpolationLocalRotationVectors<BEAM3K_COLLOCATION_POINTS,
               T>());
 
@@ -3161,7 +3161,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_rotational_damping(
 
   // create object of triad interpolation scheme
   Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<BEAM3K_COLLOCATION_POINTS, T>>
-      triad_interpolation_scheme_ptr = Teuchos::rcp(
+      triad_interpolation_scheme_ptr = Teuchos::RCP(
           new LargeRotations::TriadInterpolationLocalRotationVectors<BEAM3K_COLLOCATION_POINTS,
               T>());
 

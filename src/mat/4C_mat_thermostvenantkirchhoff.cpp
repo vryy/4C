@@ -49,7 +49,7 @@ Mat::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ThermoStVenantKirchhoff::create_material()
 {
-  return Teuchos::rcp(new Mat::ThermoStVenantKirchhoff(this));
+  return Teuchos::make_rcp<Mat::ThermoStVenantKirchhoff>(this);
 }
 
 

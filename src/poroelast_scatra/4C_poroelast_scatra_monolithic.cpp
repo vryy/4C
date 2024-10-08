@@ -56,7 +56,7 @@ PoroElastScaTra::PoroScatraMono::PoroScatraMono(
   solveradapttol_ = (sdynparams.get<bool>("ADAPTCONV"));
   solveradaptolbetter_ = (sdynparams.get<double>("ADAPTCONV_BETTER"));
 
-  blockrowdofmap_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor);
+  blockrowdofmap_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
 }
 
 /*----------------------------------------------------------------------*
@@ -346,7 +346,7 @@ void PoroElastScaTra::PoroScatraMono::setup_system()
     vecSpaces.push_back(poro_field()->dof_row_map_structure());
     vecSpaces.push_back(poro_field()->dof_row_map_fluid());
     const Epetra_Map* dofrowmapscatra = (scatra_field()->discretization())->dof_row_map(0);
-    vecSpaces.push_back(Teuchos::rcp(dofrowmapscatra, false));
+    vecSpaces.push_back(Teuchos::rcpFromRef(*dofrowmapscatra));
   }
 
   if (vecSpaces[0]->NumGlobalElements() == 0) FOUR_C_THROW("No poro structure equation. Panic.");
@@ -364,34 +364,34 @@ void PoroElastScaTra::PoroScatraMono::setup_system()
         Core::LinAlg::merge_map(porocondmap, scatracondmap, false);
 
     // Finally, create the global FSI Dirichlet map extractor
-    dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(*dof_row_map(), dbcmap, true));
+    dbcmaps_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*dof_row_map(), dbcmap, true);
     if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Creation of Dirichlet map extractor failed.");
   }
 
   // initialize Poroscatra-systemmatrix_
   systemmatrix_ =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *extractor(), *extractor(), 81, false, true));
+      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+          *extractor(), *extractor(), 81, false, true);
 
   {
     std::vector<Teuchos::RCP<const Epetra_Map>> scatravecSpaces;
     const Epetra_Map* dofrowmapscatra = (scatra_field()->discretization())->dof_row_map(0);
-    scatravecSpaces.push_back(Teuchos::rcp(dofrowmapscatra, false));
+    scatravecSpaces.push_back(Teuchos::rcpFromRef(*dofrowmapscatra));
     scatrarowdofmap_.setup(*dofrowmapscatra, scatravecSpaces);
   }
 
-  k_pss_ = Teuchos::rcp(
-      new Core::LinAlg::SparseMatrix(*(poro_field()->dof_row_map_structure()), 81, true, true));
-  k_pfs_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(poro_field()->dof_row_map_fluid()),
+  k_pss_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *(poro_field()->dof_row_map_structure()), 81, true, true);
+  k_pfs_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*(poro_field()->dof_row_map_fluid()),
       //*(fluid_field()->dof_row_map()),
-      81, true, true));
+      81, true, true);
 
-  k_sps_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      *(scatra_field()->discretization()->dof_row_map()), 81, true, true));
-  k_spf_ = Teuchos::rcp(
-      new Core::LinAlg::SparseMatrix(*(scatra_field()->discretization()->dof_row_map()),
-          //*(fluid_field()->dof_row_map()),
-          81, true, true));
+  k_sps_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *(scatra_field()->discretization()->dof_row_map()), 81, true, true);
+  k_spf_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *(scatra_field()->discretization()->dof_row_map()),
+      //*(fluid_field()->dof_row_map()),
+      81, true, true);
 }
 
 /*----------------------------------------------------------------------*
@@ -401,7 +401,7 @@ void PoroElastScaTra::PoroScatraMono::setup_rhs(bool firstcall)
 {
   // create full monolithic rhs vector
   if (rhs_ == Teuchos::null)
-    rhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
+    rhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
 
   // fill the Poroelasticity rhs vector rhs_ with the single field rhss
   setup_vector(*rhs_, poro_field()->rhs(), scatra_field()->residual());
@@ -580,10 +580,10 @@ bool PoroElastScaTra::PoroScatraMono::setup_solver()
 
   if (directsolve_)
   {
-    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, get_comm(),
+    solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(solverparams, get_comm(),
         Global::Problem::instance()->solver_params_callback(),
         Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-            Global::Problem::instance()->io_params(), "VERBOSITY")));
+            Global::Problem::instance()->io_params(), "VERBOSITY"));
   }
   else
     // create a linear solver
@@ -1241,14 +1241,14 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
   stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_old =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
   rhs_old->Update(1.0, *rhs_, 0.0);
   Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_copy =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_copy =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*sparse, Core::LinAlg::Copy));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*sparse, Core::LinAlg::Copy);
 
 
   const int zeilennr = -1;
@@ -1336,7 +1336,7 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_approx_sparse = Teuchos::null;
   stiff_approx_sparse =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(stiff_approx, Core::LinAlg::Copy));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(stiff_approx, Core::LinAlg::Copy);
 
   stiff_approx_sparse->add(*sparse_copy, false, -1.0, 1.0);
 

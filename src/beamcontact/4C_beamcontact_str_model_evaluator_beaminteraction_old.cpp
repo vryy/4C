@@ -44,13 +44,13 @@ void Solid::ModelEvaluator::BeamInteractionOld::setup()
 
   // setup the pointers for displacement and stiffness
   disnp_ptr_ = global_state().get_dis_np();
-  stiff_beaminteract_ptr_ = Teuchos::rcp(
-      new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
+  stiff_beaminteract_ptr_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *global_state().dof_row_map_view(), 81, true, true);
   f_beaminteract_np_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
 
   // create beam contact manager
-  beamcman_ = Teuchos::rcp(new CONTACT::Beam3cmanager(*discret_ptr(), 0.0));
+  beamcman_ = Teuchos::make_rcp<CONTACT::Beam3cmanager>(*discret_ptr(), 0.0);
 
   // gmsh output at beginning of simulation
 #ifdef GMSHTIMESTEPS

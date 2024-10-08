@@ -179,8 +179,8 @@ double NOX::FSI::PartialNormF::compute_norm(const ::NOX::Abstract::Group& grp)
   const ::NOX::Abstract::Vector& abstract_f = grp.getF();
   const ::NOX::Epetra::Vector& f = Teuchos::dyn_cast<const ::NOX::Epetra::Vector>(abstract_f);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> f_copy = Teuchos::RCP<Core::LinAlg::Vector<double>>(
-      new Core::LinAlg::Vector<double>(f.getEpetraVector()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> f_copy =
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(f.getEpetraVector());
   // extract the inner vector elements we are interested in
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> v = extractor_.extract_vector(*f_copy, blocknum_);

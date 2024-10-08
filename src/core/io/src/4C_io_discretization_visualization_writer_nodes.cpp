@@ -29,8 +29,8 @@ namespace Core::IO
       const Teuchos::RCP<const Core::FE::Discretization>& discretization,
       VisualizationParameters parameters)
       : discretization_(discretization),
-        visualization_manager_(Teuchos::rcp(new Core::IO::VisualizationManager(
-            std::move(parameters), discretization->get_comm(), discretization->name())))
+        visualization_manager_(Teuchos::make_rcp<Core::IO::VisualizationManager>(
+            std::move(parameters), discretization->get_comm(), discretization->name()))
   {
   }
 

@@ -59,7 +59,7 @@ void Core::LinearSolver::AmGnxnPreconditioner::setup(
         "The AMGnxn preconditioner works only for BlockSparseMatrixBase or derived classes");
 
   // Do all the setup
-  setup(Teuchos::rcp(A_bl, false));
+  setup(Teuchos::rcpFromRef(*A_bl));
 
   return;
 }
@@ -95,16 +95,16 @@ void Core::LinearSolver::AmGnxnPreconditioner::setup(
   // Create the Operator
   if (myInterface.get_preconditioner_type() == "AMG(BlockSmoother)")
   {
-    p_ = Teuchos::rcp(
-        new AmGnxnOperator(a_, myInterface.get_num_pdes(), myInterface.get_null_spaces_dim(),
-            myInterface.get_null_spaces_data(), myInterface.get_preconditioner_params(),
-            myInterface.get_smoothers_params(), myInterface.get_smoothers_params()));
+    p_ = Teuchos::make_rcp<AmGnxnOperator>(a_, myInterface.get_num_pdes(),
+        myInterface.get_null_spaces_dim(), myInterface.get_null_spaces_data(),
+        myInterface.get_preconditioner_params(), myInterface.get_smoothers_params(),
+        myInterface.get_smoothers_params());
   }
   else if (myInterface.get_preconditioner_type() == "BlockSmoother(X)")
   {
-    p_ = Teuchos::rcp(new BlockSmootherOperator(a_, myInterface.get_num_pdes(),
+    p_ = Teuchos::make_rcp<BlockSmootherOperator>(a_, myInterface.get_num_pdes(),
         myInterface.get_null_spaces_dim(), myInterface.get_null_spaces_data(),
-        myInterface.get_preconditioner_params(), myInterface.get_smoothers_params()));
+        myInterface.get_preconditioner_params(), myInterface.get_smoothers_params());
   }
   else
     FOUR_C_THROW("Unknown preconditioner type: %s", myInterface.get_preconditioner_type().c_str());
@@ -241,7 +241,7 @@ Core::LinearSolver::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& par
     if (nullspace == Teuchos::null) FOUR_C_THROW("Nullspace vector is null!");
 
     Teuchos::RCP<std::vector<double>> ns =
-        Teuchos::rcp(new std::vector<double>(nullspace->MyLength() * nullspace->NumVectors()));
+        Teuchos::make_rcp<std::vector<double>>(nullspace->MyLength() * nullspace->NumVectors());
 
     Core::LinAlg::epetra_multi_vector_to_std_vector(nullspace, *ns, null_spaces_dim_[block]);
     null_spaces_data_[block] = ns;
@@ -350,10 +350,10 @@ int Core::LinearSolver::AmGnxnOperator::ApplyInverse(
   for (int i = 0; i < NumBlocks; i++)
   {
     Teuchos::RCP<Epetra_MultiVector> Xi =
-        Teuchos::rcp(new Epetra_MultiVector(*(range_ex.Map(i)), NV));
+        Teuchos::make_rcp<Epetra_MultiVector>(*(range_ex.Map(i)), NV);
 
     Teuchos::RCP<Epetra_MultiVector> Yi =
-        Teuchos::rcp(new Epetra_MultiVector(*(domain_ex.Map(i)), NV));
+        Teuchos::make_rcp<Epetra_MultiVector>(*(domain_ex.Map(i)), NV);
 
     range_ex.extract_vector(X, i, *Xi);
     domain_ex.extract_vector(Y, i, *Yi);
@@ -384,20 +384,20 @@ void Core::LinearSolver::AmGnxnOperator::setup()
 
   // Extract the blockedMatrix
   Teuchos::RCP<AMGNxN::BlockedMatrix> Abl =
-      Teuchos::rcp(new AMGNxN::BlockedMatrix(NumBlocks, NumBlocks));
+      Teuchos::make_rcp<AMGNxN::BlockedMatrix>(NumBlocks, NumBlocks);
   for (int i = 0; i < NumBlocks; i++)
   {
     for (int j = 0; j < NumBlocks; j++)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Aij =
-          Teuchos::rcp(new Core::LinAlg::SparseMatrix(a_->matrix(i, j), Core::LinAlg::View));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(a_->matrix(i, j), Core::LinAlg::View);
       Abl->set_matrix(Aij, i, j);
     }
   }
 
 
-  v_ = Teuchos::rcp(new AMGNxN::CoupledAmg(Abl, num_pdes_, null_spaces_dim_, null_spaces_data_,
-      amgnxn_params_, smoothers_params_, muelu_params_));
+  v_ = Teuchos::make_rcp<AMGNxN::CoupledAmg>(Abl, num_pdes_, null_spaces_dim_, null_spaces_data_,
+      amgnxn_params_, smoothers_params_, muelu_params_);
 
 
   is_setup_flag_ = true;
@@ -468,9 +468,9 @@ int Core::LinearSolver::BlockSmootherOperator::ApplyInverse(
   for (int i = 0; i < NumBlocks; i++)
   {
     Teuchos::RCP<Epetra_MultiVector> Xi =
-        Teuchos::rcp(new Epetra_MultiVector(*(range_ex.Map(i)), NV));
+        Teuchos::make_rcp<Epetra_MultiVector>(*(range_ex.Map(i)), NV);
     Teuchos::RCP<Epetra_MultiVector> Yi =
-        Teuchos::rcp(new Epetra_MultiVector(*(domain_ex.Map(i)), NV));
+        Teuchos::make_rcp<Epetra_MultiVector>(*(domain_ex.Map(i)), NV);
     range_ex.extract_vector(X, i, *Xi);
     domain_ex.extract_vector(Y, i, *Yi);
     Xbl.set_vector(Xi, i);
@@ -523,13 +523,13 @@ void Core::LinearSolver::BlockSmootherOperator::setup()
     null_space_blocks.push_back(myNS);
   }
   Teuchos::RCP<AMGNxN::BlockedMatrix> Abl =
-      Teuchos::rcp(new AMGNxN::BlockedMatrix(NumBlocks, NumBlocks));
+      Teuchos::make_rcp<AMGNxN::BlockedMatrix>(NumBlocks, NumBlocks);
   for (int i = 0; i < NumBlocks; i++)
   {
     for (int j = 0; j < NumBlocks; j++)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Aij =
-          Teuchos::rcp(new Core::LinAlg::SparseMatrix(a_->matrix(i, j), Core::LinAlg::View));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(a_->matrix(i, j), Core::LinAlg::View);
       Abl->set_matrix(Aij, i, j);
     }
   }

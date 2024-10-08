@@ -31,12 +31,12 @@ namespace
       container.add("DENS", rho_);
 
       // initialize parameter class for StVenantKirchhoff material with container
-      parameters_stvenantkirchhoff_ = Teuchos::rcp(new Mat::PAR::StVenantKirchhoff(
-          Core::Mat::PAR::Parameter::Data{.parameters = container}));
+      parameters_stvenantkirchhoff_ = Teuchos::make_rcp<Mat::PAR::StVenantKirchhoff>(
+          Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize stvenantkirchhoff material with parameter class
       stvenantkirchhoff_ =
-          Teuchos::rcp(new Mat::StVenantKirchhoff(parameters_stvenantkirchhoff_.get()));
+          Teuchos::make_rcp<Mat::StVenantKirchhoff>(parameters_stvenantkirchhoff_.get());
     }
 
     //! material parameters
@@ -69,11 +69,11 @@ namespace
 
     // Resulting material stiffness matrix
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> result_cmat =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(6, 6));
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(6, 6);
 
     // Resulting stress
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> result_stress =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(6));
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(6);
 
     // Call evaluate function with test strain
     stvenantkirchhoff_->evaluate(&input_glstrain, result_cmat.get(), result_stress.get());

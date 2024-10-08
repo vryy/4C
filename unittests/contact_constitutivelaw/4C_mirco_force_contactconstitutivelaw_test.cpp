@@ -33,10 +33,13 @@ namespace
       Global::Problem& problem = (*Global::Problem::instance());
       problem.materials()->set_read_from_problem(problemid);
 
+      std::vector<Teuchos::RCP<Core::UTILS::FunctionVariable>> variables;
       Teuchos::RCP<Core::UTILS::SymbolicFunctionOfSpaceTime> FFUNCT1 =
-          Teuchos::rcp(new Core::UTILS::SymbolicFunctionOfSpaceTime({"0.7"}, {}));
+          Teuchos::make_rcp<Core::UTILS::SymbolicFunctionOfSpaceTime>(
+              std::vector<std::string>{"0.7"}, variables);
       Teuchos::RCP<Core::UTILS::SymbolicFunctionOfSpaceTime> FFUNCT2 =
-          Teuchos::rcp(new Core::UTILS::SymbolicFunctionOfSpaceTime({"20.0"}, {}));
+          Teuchos::make_rcp<Core::UTILS::SymbolicFunctionOfSpaceTime>(
+              std::vector<std::string>{"20.0"}, variables);
 
       Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> FUNCT1 = FFUNCT1;
       Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> FUNCT2 = FFUNCT2;
@@ -57,8 +60,8 @@ namespace
 
       // initialize container for material parameters
       const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
-          Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::Container(
-              1, Inpar::CONTACT::ConstitutiveLawType::colaw_mirco, "Mirco Constitutivelaw"));
+          Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::Container>(
+              1, Inpar::CONTACT::ConstitutiveLawType::colaw_mirco, "Mirco Constitutivelaw");
 
       // add parameters to container
       container->add("FirstMatID", 1);
@@ -93,9 +96,9 @@ namespace
       bool randomseedflag = container->get<bool>("RandomSeedFlag");
       int randomgeneratorseed = container->get<int>("RandomGeneratorSeed");
 
-      cnode = Teuchos::rcp(new CONTACT::RoughNode(1, x, 1, dofs, true, true, hurstexponentfunct,
+      cnode = Teuchos::make_rcp<CONTACT::RoughNode>(1, x, 1, dofs, true, true, hurstexponentfunct,
           initialtopologystddevfunct, resolution, randomtopologyflag, randomseedflag,
-          randomgeneratorseed));
+          randomgeneratorseed);
     }
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
 

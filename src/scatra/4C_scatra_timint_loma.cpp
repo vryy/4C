@@ -73,7 +73,7 @@ void ScaTra::ScaTraTimIntLoma::setup_splitter()
   // set up a species-temperature splitter (if more than one scalar)
   if (num_scal() > 1)
   {
-    splitter_ = Teuchos::rcp(new Core::LinAlg::MapExtractor);
+    splitter_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
     Core::LinAlg::create_map_extractor_from_discretization(*discret_, num_scal() - 1, *splitter_);
   }
 
@@ -139,7 +139,7 @@ void ScaTra::ScaTraTimIntLoma::compute_initial_mass()
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(num_scal() + 1));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_scal() + 1);
   discret_->evaluate_scalars(eleparams, scalars);
   discret_->clear_state();  // clean up
 
@@ -181,7 +181,7 @@ void ScaTra::ScaTraTimIntLoma::compute_therm_pressure_from_mass_cons()
 
   // evaluate integral of inverse temperature
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(num_scal() + 1));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_scal() + 1);
   discret_->evaluate_scalars(eleparams, scalars);
   discret_->clear_state();  // clean up
 

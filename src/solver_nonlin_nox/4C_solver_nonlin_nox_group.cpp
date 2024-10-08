@@ -32,7 +32,7 @@ NOX::Nln::Group::Group(Teuchos::ParameterList& printParams, Teuchos::ParameterLi
     : ::NOX::Epetra::Group(printParams, i, x, linSys),
       skipUpdateX_(false),
       corr_type_(NOX::Nln::CorrectionType::vague),
-      prePostOperatorPtr_(Teuchos::rcp(new NOX::Nln::GROUP::PrePostOperator(grpOptionParams)))
+      prePostOperatorPtr_(Teuchos::make_rcp<NOX::Nln::GROUP::PrePostOperator>(grpOptionParams))
 {
   // empty constructor
 }
@@ -63,7 +63,7 @@ NOX::Nln::Group::Group(const NOX::Nln::Group& source, ::NOX::CopyType type)
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::Abstract::Group> NOX::Nln::Group::clone(::NOX::CopyType type) const
 {
-  Teuchos::RCP<::NOX::Abstract::Group> newgrp = Teuchos::rcp(new NOX::Nln::Group(*this, type));
+  Teuchos::RCP<::NOX::Abstract::Group> newgrp = Teuchos::make_rcp<NOX::Nln::Group>(*this, type);
   return newgrp;
 }
 
@@ -269,7 +269,7 @@ void NOX::Nln::Group::set_skip_update_x(bool skipUpdateX) { skipUpdateX_ = skipU
 {
   if (tmpVectorPtr.is_null() or !tmpVectorPtr->Map().SameAs(xVector.getEpetraVector().Map()) or
       tmpVectorPtr.get() == &xVector.getEpetraVector())
-    tmpVectorPtr = Teuchos::rcp(new Epetra_Vector(xVector.getEpetraVector()));
+    tmpVectorPtr = Teuchos::make_rcp<Epetra_Vector>(xVector.getEpetraVector());
   else
     tmpVectorPtr->Scale(1.0, xVector.getEpetraVector());
 
@@ -375,10 +375,10 @@ Teuchos::RCP<const std::vector<double>> NOX::Nln::Group::get_rhs_norms(
     Teuchos::RCP<const std::vector<::NOX::StatusTest::NormF::ScaleType>> scale) const
 {
   if (scale.is_null())
-    scale = Teuchos::rcp(new std::vector<::NOX::StatusTest::NormF::ScaleType>(
-        chQ.size(), ::NOX::StatusTest::NormF::Unscaled));
+    scale = Teuchos::make_rcp<std::vector<::NOX::StatusTest::NormF::ScaleType>>(
+        chQ.size(), ::NOX::StatusTest::NormF::Unscaled);
 
-  Teuchos::RCP<std::vector<double>> norms = Teuchos::rcp(new std::vector<double>(0));
+  Teuchos::RCP<std::vector<double>> norms = Teuchos::make_rcp<std::vector<double>>(0);
 
   double rval = -1.0;
   for (std::size_t i = 0; i < chQ.size(); ++i)
@@ -411,7 +411,7 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::Group::get_solution_update_rms(
     const std::vector<bool>& disable_implicit_weighting) const
 {
   const ::NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(xOld);
-  Teuchos::RCP<std::vector<double>> rms = Teuchos::rcp(new std::vector<double>(0));
+  Teuchos::RCP<std::vector<double>> rms = Teuchos::make_rcp<std::vector<double>>(0);
 
   double rval = -1.0;
   for (std::size_t i = 0; i < chQ.size(); ++i)
@@ -448,7 +448,7 @@ double NOX::Nln::Group::get_trial_update_norm(const ::NOX::Abstract::Vector& dir
 
   if (tmpVectorPtr.is_null() or !tmpVectorPtr->Map().SameAs(xVector.getEpetraVector().Map()) or
       tmpVectorPtr.get() == &xVector.getEpetraVector())
-    tmpVectorPtr = Teuchos::rcp(new Epetra_Vector(xVector.getEpetraVector()));
+    tmpVectorPtr = Teuchos::make_rcp<Epetra_Vector>(xVector.getEpetraVector());
   else
     tmpVectorPtr->Scale(1.0, xVector.getEpetraVector());
 
@@ -476,10 +476,10 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::Group::get_solution_update_norms(
 {
   const ::NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(xOld);
   if (scale.is_null())
-    scale = Teuchos::rcp(new std::vector<StatusTest::NormUpdate::ScaleType>(
-        chQ.size(), StatusTest::NormUpdate::Unscaled));
+    scale = Teuchos::make_rcp<std::vector<StatusTest::NormUpdate::ScaleType>>(
+        chQ.size(), StatusTest::NormUpdate::Unscaled);
 
-  Teuchos::RCP<std::vector<double>> norms = Teuchos::rcp(new std::vector<double>(0));
+  Teuchos::RCP<std::vector<double>> norms = Teuchos::make_rcp<std::vector<double>>(0);
 
   double rval = -1.0;
   for (std::size_t i = 0; i < chQ.size(); ++i)
@@ -514,10 +514,10 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::Group::get_previous_solution_norms(
 {
   const ::NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(xOld);
   if (scale.is_null())
-    scale = Teuchos::rcp(new std::vector<StatusTest::NormUpdate::ScaleType>(
-        chQ.size(), StatusTest::NormUpdate::Unscaled));
+    scale = Teuchos::make_rcp<std::vector<StatusTest::NormUpdate::ScaleType>>(
+        chQ.size(), StatusTest::NormUpdate::Unscaled);
 
-  Teuchos::RCP<std::vector<double>> norms = Teuchos::rcp(new std::vector<double>(0));
+  Teuchos::RCP<std::vector<double>> norms = Teuchos::make_rcp<std::vector<double>>(0);
 
   double rval = -1.0;
   for (std::size_t i = 0; i < chQ.size(); ++i)

@@ -153,7 +153,7 @@ namespace Mat
     /// \return copy of this material
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new Mixture(*this));
+      return Teuchos::make_rcp<Mixture>(*this);
     }
 
 

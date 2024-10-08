@@ -79,9 +79,9 @@ int Mortar::DofSet::assign_degrees_of_freedom(
 
   // we have new vectors, so recreate Epetra maps and replace old ones with them
   Teuchos::RCP<Epetra_Map> newdofrowmap =
-      Teuchos::rcp(new Epetra_Map(-1, nummyrow, myrow.data(), 0, dofrowmap_->Comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, nummyrow, myrow.data(), 0, dofrowmap_->Comm());
   Teuchos::RCP<Epetra_Map> newdofcolmap =
-      Teuchos::rcp(new Epetra_Map(-1, nummycol, mycol.data(), 0, dofcolmap_->Comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, nummycol, mycol.data(), 0, dofcolmap_->Comm());
 
   // be a little psychotic in checking whether everything is ok....
   if (newdofrowmap->NumMyElements() != dofrowmap_->NumMyElements() ||

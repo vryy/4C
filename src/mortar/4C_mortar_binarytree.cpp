@@ -295,14 +295,14 @@ void Mortar::BinaryTreeNode::divide_tree_node()
     }
 
     // build left child treenode
-    leftchild_ = Teuchos::rcp(new BinaryTreeNode(lefttype, discret(), Teuchos::rcp(this, false),
+    leftchild_ = Teuchos::make_rcp<BinaryTreeNode>(lefttype, discret(), Teuchos::rcpFromRef(*this),
         leftelements, dopnormals(), kdop(), n_dim(), use_aux_pos(), (get_layer() + 1),
-        streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+        streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_);
 
     // build right child treenode
-    rightchild_ = Teuchos::rcp(new BinaryTreeNode(righttype, discret(), Teuchos::rcp(this, false),
-        rightelements, dopnormals(), kdop(), n_dim(), use_aux_pos(), (get_layer() + 1),
-        streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+    rightchild_ = Teuchos::make_rcp<BinaryTreeNode>(righttype, discret(),
+        Teuchos::rcpFromRef(*this), rightelements, dopnormals(), kdop(), n_dim(), use_aux_pos(),
+        (get_layer() + 1), streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_);
 
     // update slave and mastertreenodes map
     // if parent treenode is slave
@@ -423,9 +423,9 @@ void Mortar::BinaryTree::init()
   // check slave root node case
   if (slist.size() >= 2)
   {
-    sroot_ = Teuchos::rcp(
-        new BinaryTreeNode(Mortar::SLAVE_INNER, discret(), sroot_, slist, dop_normals(), kdop(),
-            n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+    sroot_ = Teuchos::make_rcp<BinaryTreeNode>(Mortar::SLAVE_INNER, discret(), sroot_, slist,
+        dop_normals(), kdop(), n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_,
+        mleafsmap_);
 
     // do initialization
     streenodesmap_[0].push_back(sroot_);
@@ -433,9 +433,9 @@ void Mortar::BinaryTree::init()
   }
   else if (slist.size() == 1)
   {
-    sroot_ = Teuchos::rcp(
-        new BinaryTreeNode(Mortar::SLAVE_LEAF, discret(), sroot_, slist, dop_normals(), kdop(),
-            n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+    sroot_ = Teuchos::make_rcp<BinaryTreeNode>(Mortar::SLAVE_LEAF, discret(), sroot_, slist,
+        dop_normals(), kdop(), n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_,
+        mleafsmap_);
 
     // trivial initialization
     streenodesmap_[0].push_back(sroot_);
@@ -443,9 +443,9 @@ void Mortar::BinaryTree::init()
   }
   else
   {
-    sroot_ = Teuchos::rcp(new BinaryTreeNode(Mortar::NOSLAVE_ELEMENTS, discret(), sroot_, slist,
+    sroot_ = Teuchos::make_rcp<BinaryTreeNode>(Mortar::NOSLAVE_ELEMENTS, discret(), sroot_, slist,
         dop_normals(), kdop(), n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_,
-        mleafsmap_));
+        mleafsmap_);
 
     // trivial initialization
     streenodesmap_[0].push_back(sroot_);
@@ -454,9 +454,9 @@ void Mortar::BinaryTree::init()
   // check master root node case
   if (mlist.size() >= 2)
   {
-    mroot_ = Teuchos::rcp(
-        new BinaryTreeNode(Mortar::MASTER_INNER, discret(), mroot_, mlist, dop_normals(), kdop(),
-            n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+    mroot_ = Teuchos::make_rcp<BinaryTreeNode>(Mortar::MASTER_INNER, discret(), mroot_, mlist,
+        dop_normals(), kdop(), n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_,
+        mleafsmap_);
 
     // do initialization
     mtreenodesmap_[0].push_back(mroot_);
@@ -464,9 +464,9 @@ void Mortar::BinaryTree::init()
   }
   else if (mlist.size() == 1)
   {
-    mroot_ = Teuchos::rcp(
-        new BinaryTreeNode(Mortar::MASTER_LEAF, discret(), mroot_, mlist, dop_normals(), kdop(),
-            n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_, mleafsmap_));
+    mroot_ = Teuchos::make_rcp<BinaryTreeNode>(Mortar::MASTER_LEAF, discret(), mroot_, mlist,
+        dop_normals(), kdop(), n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_,
+        mleafsmap_);
 
     // trivial initialization
     mtreenodesmap_[0].push_back(mroot_);
@@ -474,9 +474,9 @@ void Mortar::BinaryTree::init()
   }
   else
   {
-    mroot_ = Teuchos::rcp(new BinaryTreeNode(Mortar::NOMASTER_ELEMENTS, discret(), mroot_, mlist,
+    mroot_ = Teuchos::make_rcp<BinaryTreeNode>(Mortar::NOMASTER_ELEMENTS, discret(), mroot_, mlist,
         dop_normals(), kdop(), n_dim(), useauxpos_, 0, streenodesmap_, mtreenodesmap_, sleafsmap_,
-        mleafsmap_));
+        mleafsmap_);
 
     // trivial initialization / error
     mtreenodesmap_[0].push_back(mroot_);

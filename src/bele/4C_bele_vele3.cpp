@@ -37,7 +37,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3Type::create(
   if (eletype == "VELE3")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Vele3(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::Vele3>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -47,7 +47,8 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3Type::create(
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(new Discret::ELEMENTS::Vele3(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele =
+      Teuchos::make_rcp<Discret::ELEMENTS::Vele3>(id, owner);
   return ele;
 }
 

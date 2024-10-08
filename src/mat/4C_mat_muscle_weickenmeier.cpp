@@ -100,7 +100,7 @@ Mat::PAR::MuscleWeickenmeier::MuscleWeickenmeier(const Core::Mat::PAR::Parameter
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MuscleWeickenmeier::create_material()
 {
-  return Teuchos::rcp(new Mat::MuscleWeickenmeier(this));
+  return Teuchos::make_rcp<Mat::MuscleWeickenmeier>(this);
 }
 
 Mat::MuscleWeickenmeierType Mat::MuscleWeickenmeierType::instance_;
@@ -118,7 +118,7 @@ Mat::MuscleWeickenmeier::MuscleWeickenmeier()
       lambda_m_old_(1.0),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::rcp<Mat::Elastic::StructuralTensorStrategyBase>(
+          Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
               new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0})
 {
@@ -129,7 +129,7 @@ Mat::MuscleWeickenmeier::MuscleWeickenmeier(Mat::PAR::MuscleWeickenmeier* params
       lambda_m_old_(1.0),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::rcp<Mat::Elastic::StructuralTensorStrategyBase>(
+          Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
               new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0})
 {

@@ -87,10 +87,12 @@ namespace PoroElast
          */
         if (numglobalstructnodes != numglobalfluidnodes)
         {
-          Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structsubdofset = Teuchos::rcp(
-              new Core::DOFSets::DofSetGIDBasedWrapper(structdis, structdis->get_dof_set_proxy()));
-          Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> fluidsubdofset = Teuchos::rcp(
-              new Core::DOFSets::DofSetGIDBasedWrapper(fluiddis, fluiddis->get_dof_set_proxy()));
+          Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structsubdofset =
+              Teuchos::make_rcp<Core::DOFSets::DofSetGIDBasedWrapper>(
+                  structdis, structdis->get_dof_set_proxy());
+          Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> fluidsubdofset =
+              Teuchos::make_rcp<Core::DOFSets::DofSetGIDBasedWrapper>(
+                  fluiddis, fluiddis->get_dof_set_proxy());
 
           // check if fluid_field has 2 discretizations, so that coupling is possible
           if (fluiddis->add_dof_set(structsubdofset) != 1)
@@ -137,12 +139,12 @@ namespace PoroElast
         const int ndofperelement_struct = 0;
 
         Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-        dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
-            ndofpernode_fluid, ndofperelement_fluid, 0, true));
+        dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+            ndofpernode_fluid, ndofperelement_fluid, 0, true);
         if (structdis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in structure field");
-        dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
-            ndofpernode_struct, ndofperelement_struct, 0, true));
+        dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+            ndofpernode_struct, ndofperelement_struct, 0, true);
         if (fluiddis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in fluid field");
 

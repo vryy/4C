@@ -164,7 +164,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
 
   // Check if we have a face discretization which supports degrees of freedom on faces
   Teuchos::RCP<const Core::FE::DiscretizationHDG> facedis =
-      Teuchos::rcp_dynamic_cast<const Core::FE::DiscretizationHDG>(Teuchos::rcp(&dis, false));
+      Teuchos::rcp_dynamic_cast<const Core::FE::DiscretizationHDG>(Teuchos::rcpFromRef(dis));
 
   // set count to 0 in case of dofset 2 in HDG discretizations
   if (facedis != Teuchos::null && dspos_ == 2) count = 0;
@@ -186,16 +186,16 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
   // or element.
 
   // numdf for all nodes and elements
-  numdfcolnodes_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.node_col_map()));
-  numdfcolelements_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.element_col_map()));
+  numdfcolnodes_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
+  numdfcolelements_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.element_col_map());
   if (facedis != Teuchos::null && facedis->face_col_map() != nullptr)
-    numdfcolfaces_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*facedis->face_col_map()));
+    numdfcolfaces_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*facedis->face_col_map());
 
   // index of first dof for all nodes and elements
-  idxcolnodes_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.node_col_map()));
-  idxcolelements_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.element_col_map()));
+  idxcolnodes_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
+  idxcolelements_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.element_col_map());
   if (facedis != Teuchos::null && facedis->face_col_map() != nullptr)
-    idxcolfaces_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*facedis->face_col_map()));
+    idxcolfaces_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*facedis->face_col_map());
 
   //////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////
@@ -531,20 +531,20 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
     std::copy(dofs.begin(), dofs.end(), std::back_inserter(localcoldofs));
   }
 
-  dofrowmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, localrowdofs.size(), localrowdofs.data(), 0, dis.get_comm()));
+  dofrowmap_ = Teuchos::make_rcp<Epetra_Map>(
+      -1, localrowdofs.size(), localrowdofs.data(), 0, dis.get_comm());
   if (!dofrowmap_->UniqueGIDs()) FOUR_C_THROW("Dof row map is not unique");
-  dofcolmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, localcoldofs.size(), localcoldofs.data(), 0, dis.get_comm()));
+  dofcolmap_ = Teuchos::make_rcp<Epetra_Map>(
+      -1, localcoldofs.size(), localcoldofs.data(), 0, dis.get_comm());
 
   // **********************************************************************
   // **********************************************************************
   // build map of all (non-unique) column DoFs
-  dofscolnodes_ = Teuchos::rcp(new Epetra_Map(
-      -1, allnodelocalcoldofs.size(), allnodelocalcoldofs.data(), 0, dis.get_comm()));
+  dofscolnodes_ = Teuchos::make_rcp<Epetra_Map>(
+      -1, allnodelocalcoldofs.size(), allnodelocalcoldofs.data(), 0, dis.get_comm());
 
   // build shift vector
-  shiftcolnodes_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.node_col_map()));
+  shiftcolnodes_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
   int numcolnodes = dis.num_my_col_nodes();
   for (int i = 0; i < numcolnodes; ++i)
   {

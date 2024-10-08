@@ -40,7 +40,7 @@ namespace
       Teuchos::ParameterList line_to_volume_params_list;
       Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(line_to_volume_params_list);
       evaluation_data_ =
-          Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
+          Teuchos::make_rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(line_to_volume_params_list);
     }
 
     /**
@@ -60,10 +60,10 @@ namespace
       // Create the elements.
       const int dummy_node_ids[2] = {0, 1};
       Teuchos::RCP<Core::Elements::Element> beam_element =
-          Teuchos::rcp(new Discret::ELEMENTS::Beam3r(0, 0));
+          Teuchos::make_rcp<Discret::ELEMENTS::Beam3r>(0, 0);
       beam_element->set_node_ids(2, dummy_node_ids);
       Teuchos::RCP<Core::Elements::Element> solid_element =
-          Teuchos::rcp(new Discret::ELEMENTS::SoHex8(1, 0));
+          Teuchos::make_rcp<Discret::ELEMENTS::SoHex8>(1, 0);
 
       // Set up the beam element.
       std::vector<double> xrefe(6);

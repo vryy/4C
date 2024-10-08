@@ -96,7 +96,7 @@ Mat::PAR::Robinson::Robinson(const Core::Mat::PAR::Parameter::Data& matdata)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Robinson::create_material()
 {
-  return Teuchos::rcp(new Mat::Robinson(this));
+  return Teuchos::make_rcp<Mat::Robinson>(this);
 }
 
 
@@ -220,16 +220,17 @@ void Mat::Robinson::unpack(Core::Communication::UnpackBuffer& buffer)
   if (numgp == 0) isinit_ = false;
 
   // unpack strain vectors
-  strainpllast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  strainplcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  strainpllast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  strainplcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
   // unpack back stress vectors (for kinematic hardening)
-  backstresslast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  backstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  backstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  backstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
   // unpack matrices needed for condensed system
-  kvarva_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<2 * NUM_STRESS_3D, 1>>);
-  kvakvae_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<2 * NUM_STRESS_3D, NUM_STRESS_3D>>);
+  kvarva_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<2 * NUM_STRESS_3D, 1>>>();
+  kvakvae_ =
+      Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<2 * NUM_STRESS_3D, NUM_STRESS_3D>>>();
   strain_last_.resize(0);
 
   for (int var = 0; var < numgp; ++var)
@@ -274,15 +275,15 @@ void Mat::Robinson::setup(const int numgp, const Core::IO::InputParameterContain
   std::string buffer;
 
   // initialise history variables
-  strainpllast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>);
-  strainplcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>);
+  strainpllast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
+  strainplcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
 
-  backstresslast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>);
-  backstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>);
+  backstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
+  backstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
 
-  kvarva_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<2 * Mat::NUM_STRESS_3D, 1>>);
-  kvakvae_ = Teuchos::rcp(
-      new std::vector<Core::LinAlg::Matrix<2 * Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>>);
+  kvarva_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<2 * Mat::NUM_STRESS_3D, 1>>>();
+  kvakvae_ = Teuchos::make_rcp<
+      std::vector<Core::LinAlg::Matrix<2 * Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>>>();
 
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> emptymat(true);
   strainpllast_->resize(numgp);
@@ -328,8 +329,8 @@ void Mat::Robinson::update()
   // the matrices do not have to be updated. They are reset after each time step
 
   // empty vectors of current data
-  strainplcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>);
-  backstresscurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>);
+  strainplcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
+  backstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>>();
 
   // get size of the vector
   // (use the last vector, because it includes latest results, current is empty)

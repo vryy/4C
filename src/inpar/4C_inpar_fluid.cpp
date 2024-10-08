@@ -1380,20 +1380,20 @@ void Inpar::FLUID::set_valid_conditions(
   // transfer boundary condition for turbulent inflow
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> tbc_turb_inflow =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF TURBULENT INFLOW TRANSFER", "TransferTurbulentInflow",
           "TransferTurbulentInflow", Core::Conditions::TransferTurbulentInflow, true,
-          Core::Conditions::geometry_type_surface));
+          Core::Conditions::geometry_type_surface);
 
   // we attach all the components of this condition to this weak line DBC
   add_named_int(tbc_turb_inflow, "ID", "", 0, false, false, true);
-  tbc_turb_inflow->add_component(Teuchos::rcp(new Input::SelectionComponent("toggle", "master",
+  tbc_turb_inflow->add_component(Teuchos::make_rcp<Input::SelectionComponent>("toggle", "master",
       Teuchos::tuple<std::string>("master", "slave"),
-      Teuchos::tuple<std::string>("master", "slave"))));
+      Teuchos::tuple<std::string>("master", "slave")));
   add_named_selection_component(tbc_turb_inflow, "DIRECTION", "transfer direction", "x",
       Teuchos::tuple<std::string>("x", "y", "z"), Teuchos::tuple<std::string>("x", "y", "z"));
   tbc_turb_inflow->add_component(
-      Teuchos::rcp(new Input::IntComponent("curve", {0, true, true, false})));
+      Teuchos::make_rcp<Input::IntComponent>("curve", IntComponentData{0, true, true, false}));
 
   // and append it to the list of all conditions
   condlist.push_back(tbc_turb_inflow);
@@ -1402,9 +1402,9 @@ void Inpar::FLUID::set_valid_conditions(
   // separate domain for turbulent inflow generation
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> turbulentinflowgeneration =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("FLUID TURBULENT INFLOW VOLUME",
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("FLUID TURBULENT INFLOW VOLUME",
           "TurbulentInflowSection", "TurbulentInflowSection",
-          Core::Conditions::TurbulentInflowSection, true, Core::Conditions::geometry_type_volume));
+          Core::Conditions::TurbulentInflowSection, true, Core::Conditions::geometry_type_volume);
 
   condlist.push_back(turbulentinflowgeneration);
 
@@ -1412,43 +1412,46 @@ void Inpar::FLUID::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // flow-dependent pressure conditions
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineflowdeppressure = Teuchos::rcp(
-      new Core::Conditions::ConditionDefinition("DESIGN LINE FLOW-DEPENDENT PRESSURE CONDITIONS",
-          "LineFlowDepPressure", "LineFlowDepPressure", Core::Conditions::LineFlowDepPressure, true,
-          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineflowdeppressure =
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN LINE FLOW-DEPENDENT PRESSURE CONDITIONS", "LineFlowDepPressure",
+          "LineFlowDepPressure", Core::Conditions::LineFlowDepPressure, true,
+          Core::Conditions::geometry_type_line);
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfflowdeppressure = Teuchos::rcp(
-      new Core::Conditions::ConditionDefinition("DESIGN SURFACE FLOW-DEPENDENT PRESSURE CONDITIONS",
-          "SurfaceFlowDepPressure", "SurfaceFlowDepPressure",
-          Core::Conditions::SurfaceFlowDepPressure, true, Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfflowdeppressure =
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN SURFACE FLOW-DEPENDENT PRESSURE CONDITIONS", "SurfaceFlowDepPressure",
+          "SurfaceFlowDepPressure", Core::Conditions::SurfaceFlowDepPressure, true,
+          Core::Conditions::geometry_type_surface);
 
   // we attach all the components of this condition to this weak line DBC
   for (const auto& cond : {lineflowdeppressure, surfflowdeppressure})
   {
     // flow-dependent pressure conditions can be imposed either based on
     // (out)flow rate or (out)flow volume (e.g., for air-cushion condition)
-    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("type of flow dependence",
+    cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>("type of flow dependence",
         "flow_rate", Teuchos::tuple<std::string>("flow_rate", "flow_volume", "fixed_pressure"),
-        Teuchos::tuple<std::string>("flow_rate", "flow_volume", "fixed_pressure"))));
+        Teuchos::tuple<std::string>("flow_rate", "flow_volume", "fixed_pressure")));
 
     // constant coefficient for (linear) flow-rate-based condition
     // and constant fixed pressure
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("ConstCoeff")));
+    cond->add_component(Teuchos::make_rcp<Input::RealComponent>("ConstCoeff"));
 
     // linear coefficient for (linear) flow-rate-based condition
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("LinCoeff")));
+    cond->add_component(Teuchos::make_rcp<Input::RealComponent>("LinCoeff"));
 
     // initial (air-cushion) volume outside of boundary
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("InitialVolume")));
+    cond->add_component(Teuchos::make_rcp<Input::RealComponent>("InitialVolume"));
 
     // reference pressure outside of boundary
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("ReferencePressure")));
+    cond->add_component(Teuchos::make_rcp<Input::RealComponent>("ReferencePressure"));
 
     // adiabatic exponent
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("AdiabaticExponent")));
+    cond->add_component(Teuchos::make_rcp<Input::RealComponent>("AdiabaticExponent"));
 
     // values for time curve
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("curve", {0, true, true, false})));
+    cond->add_component(
+        Teuchos::make_rcp<Input::IntComponent>("curve", IntComponentData{0, true, true, false}));
 
     // and append it to the list of all conditions
     condlist.emplace_back(cond);
@@ -1458,16 +1461,16 @@ void Inpar::FLUID::set_valid_conditions(
   // Slip Supplemental Curved Boundary conditions
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> lineslipsupp =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE SLIP SUPPLEMENTAL CURVED BOUNDARY CONDITIONS", "LineSlipSupp",
           "LineSlipSupp", Core::Conditions::LineSlipSupp, true,
-          Core::Conditions::geometry_type_line));
+          Core::Conditions::geometry_type_line);
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfslipsupp =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN SURFACE SLIP SUPPLEMENTAL CURVED BOUNDARY CONDITIONS", "SurfaceSlipSupp",
           "SurfaceSlipSupp", Core::Conditions::SurfaceSlipSupp, true,
-          Core::Conditions::geometry_type_surface));
+          Core::Conditions::geometry_type_surface);
 
   for (const auto& cond : {lineslipsupp, surfslipsupp})
   {
@@ -1479,14 +1482,14 @@ void Inpar::FLUID::set_valid_conditions(
   // Navier-slip boundary conditions
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> linenavierslip =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE NAVIER-SLIP BOUNDARY CONDITIONS", "LineNavierSlip", "LineNavierSlip",
-          Core::Conditions::LineNavierSlip, true, Core::Conditions::geometry_type_line));
+          Core::Conditions::LineNavierSlip, true, Core::Conditions::geometry_type_line);
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfnavierslip =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF NAVIER-SLIP BOUNDARY CONDITIONS", "SurfNavierSlip", "SurfNavierSlip",
-          Core::Conditions::SurfNavierSlip, true, Core::Conditions::geometry_type_surface));
+          Core::Conditions::SurfNavierSlip, true, Core::Conditions::geometry_type_surface);
 
   for (const auto& cond : {linenavierslip, surfnavierslip})
   {
@@ -1498,11 +1501,11 @@ void Inpar::FLUID::set_valid_conditions(
   // consistent outflow bcs for conservative element formulations
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfconsistentoutflowconsistency =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY",
           "SurfaceConservativeOutflowConsistency", "SurfaceConservativeOutflowConsistency",
           Core::Conditions::SurfaceConservativeOutflowConsistency, true,
-          Core::Conditions::geometry_type_surface));
+          Core::Conditions::geometry_type_surface);
 
   condlist.push_back(surfconsistentoutflowconsistency);
 
@@ -1510,13 +1513,14 @@ void Inpar::FLUID::set_valid_conditions(
   // Neumann condition for fluid that can handle inflow/backflow
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> linefluidneumanninflow =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("FLUID NEUMANN INFLOW LINE CONDITIONS",
-          "FluidNeumannInflow", "Line Fluid Neumann Inflow", Core::Conditions::FluidNeumannInflow,
-          true, Core::Conditions::geometry_type_line));
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "FLUID NEUMANN INFLOW LINE CONDITIONS", "FluidNeumannInflow", "Line Fluid Neumann Inflow",
+          Core::Conditions::FluidNeumannInflow, true, Core::Conditions::geometry_type_line);
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surffluidneumanninflow =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("FLUID NEUMANN INFLOW SURF CONDITIONS",
-          "FluidNeumannInflow", "Surface Fluid Neumann Inflow",
-          Core::Conditions::FluidNeumannInflow, true, Core::Conditions::geometry_type_surface));
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "FLUID NEUMANN INFLOW SURF CONDITIONS", "FluidNeumannInflow",
+          "Surface Fluid Neumann Inflow", Core::Conditions::FluidNeumannInflow, true,
+          Core::Conditions::geometry_type_surface);
 
   condlist.push_back(linefluidneumanninflow);
   condlist.push_back(surffluidneumanninflow);
@@ -1524,44 +1528,46 @@ void Inpar::FLUID::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // mixed/hybrid Dirichlet conditions
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linemixhybDirichlet = Teuchos::rcp(
-      new Core::Conditions::ConditionDefinition("DESIGN LINE MIXED/HYBRID DIRICHLET CONDITIONS",
-          "LineMixHybDirichlet", "LineMixHybDirichlet", Core::Conditions::LineMixHybDirichlet, true,
-          Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linemixhybDirichlet =
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN LINE MIXED/HYBRID DIRICHLET CONDITIONS", "LineMixHybDirichlet",
+          "LineMixHybDirichlet", Core::Conditions::LineMixHybDirichlet, true,
+          Core::Conditions::geometry_type_line);
 
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfmixhybDirichlet = Teuchos::rcp(
-      new Core::Conditions::ConditionDefinition("DESIGN SURFACE MIXED/HYBRID DIRICHLET CONDITIONS",
-          "SurfaceMixHybDirichlet", "SurfaceMixHybDirichlet",
-          Core::Conditions::SurfaceMixHybDirichlet, true, Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfmixhybDirichlet =
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN SURFACE MIXED/HYBRID DIRICHLET CONDITIONS", "SurfaceMixHybDirichlet",
+          "SurfaceMixHybDirichlet", Core::Conditions::SurfaceMixHybDirichlet, true,
+          Core::Conditions::geometry_type_surface);
 
   // we attach all the components of this condition to this condition
   for (const auto& cond : {linemixhybDirichlet, surfmixhybDirichlet})
   {
     // we provide a vector of 3 values for velocities
-    cond->add_component(Teuchos::rcp(new Input::RealVectorComponent("val", 3)));
+    cond->add_component(Teuchos::make_rcp<Input::RealVectorComponent>("val", 3));
 
     // and optional spatial functions
-    cond->add_component(
-        Teuchos::rcp(new Input::IntVectorComponent("funct", 3, {0, false, false, true})));
+    cond->add_component(Teuchos::make_rcp<Input::IntVectorComponent>(
+        "funct", 3, IntComponentData{0, false, false, true}));
 
     // characteristic velocity
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("u_C")));
+    cond->add_component(Teuchos::make_rcp<Input::RealComponent>("u_C"));
 
     // the penalty parameter could be computed dynamically (using Spaldings
     // law of the wall) or using a fixed value (1)
     cond->add_component(
-        Teuchos::rcp(new Input::SelectionComponent("Definition of penalty parameter", "constant",
+        Teuchos::make_rcp<Input::SelectionComponent>("Definition of penalty parameter", "constant",
             Teuchos::tuple<std::string>("constant", "Spalding"),
-            Teuchos::tuple<std::string>("constant", "Spalding"))));
+            Teuchos::tuple<std::string>("constant", "Spalding")));
 
     // scaling factor for penalty parameter tauB
-    cond->add_component(Teuchos::rcp(new Input::RealComponent("hB_divided_by")));
+    cond->add_component(Teuchos::make_rcp<Input::RealComponent>("hB_divided_by"));
 
     // if Spaldings law is used, this defines the way how the traction at y is computed from utau
-    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("utau_computation", "at_wall",
+    cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>("utau_computation", "at_wall",
         Teuchos::tuple<std::string>("at_wall", "viscous_tangent"),
-        Teuchos::tuple<std::string>("at_wall", "viscous_tangent"))));
+        Teuchos::tuple<std::string>("at_wall", "viscous_tangent")));
 
     // we append it to the list of all conditions
     condlist.push_back(cond);
@@ -1571,12 +1577,12 @@ void Inpar::FLUID::set_valid_conditions(
   // surface tension
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surftension =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("SURFACE TENSION CONDITIONS",
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("SURFACE TENSION CONDITIONS",
           "SurfaceStress", "Surface Stress (ideal water)", Core::Conditions::SurfaceTension, true,
-          Core::Conditions::geometry_type_surface));
+          Core::Conditions::geometry_type_surface);
 
   surftension->add_component(
-      Teuchos::rcp(new Input::IntComponent("curve", {0, true, true, false})));
+      Teuchos::make_rcp<Input::IntComponent>("curve", IntComponentData{0, true, true, false}));
   Input::add_named_real(surftension, "gamma");
 
   condlist.push_back(surftension);
@@ -1585,14 +1591,16 @@ void Inpar::FLUID::set_valid_conditions(
   // fluid stress
 
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linefluidstress = Teuchos::rcp(
-      new Core::Conditions::ConditionDefinition("DESIGN FLUID STRESS CALC LINE CONDITIONS",
-          "FluidStressCalc", "Line Fluid Stress Calculation", Core::Conditions::FluidStressCalc,
-          true, Core::Conditions::geometry_type_line));
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surffluidstress = Teuchos::rcp(
-      new Core::Conditions::ConditionDefinition("DESIGN FLUID STRESS CALC SURF CONDITIONS",
-          "FluidStressCalc", "Surf Fluid Stress Calculation", Core::Conditions::FluidStressCalc,
-          true, Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linefluidstress =
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN FLUID STRESS CALC LINE CONDITIONS", "FluidStressCalc",
+          "Line Fluid Stress Calculation", Core::Conditions::FluidStressCalc, true,
+          Core::Conditions::geometry_type_line);
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surffluidstress =
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN FLUID STRESS CALC SURF CONDITIONS", "FluidStressCalc",
+          "Surf Fluid Stress Calculation", Core::Conditions::FluidStressCalc, true,
+          Core::Conditions::geometry_type_surface);
 
   condlist.push_back(linefluidstress);
   condlist.push_back(surffluidstress);
@@ -1600,17 +1608,17 @@ void Inpar::FLUID::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // lift & drag
   Teuchos::RCP<Core::Conditions::ConditionDefinition> lineliftdrag =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FLUID LINE LIFT&DRAG",
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN FLUID LINE LIFT&DRAG",
           "LIFTDRAG", "Line LIFTDRAG", Core::Conditions::LineLIFTDRAG, true,
-          Core::Conditions::geometry_type_line));
+          Core::Conditions::geometry_type_line);
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfliftdrag =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FLUID SURF LIFT&DRAG",
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN FLUID SURF LIFT&DRAG",
           "LIFTDRAG", "Surface LIFTDRAG", Core::Conditions::SurfLIFTDRAG, true,
-          Core::Conditions::geometry_type_surface));
+          Core::Conditions::geometry_type_surface);
 
   for (const auto& cond : {lineliftdrag, surfliftdrag})
   {
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("label")));
+    cond->add_component(Teuchos::make_rcp<Input::IntComponent>("label"));
     add_named_real_vector(cond, "CENTER", "", 3);
     add_named_real_vector(cond, "AXIS", "", 3, 0.0, true);
 
@@ -1621,11 +1629,11 @@ void Inpar::FLUID::set_valid_conditions(
   // flow rate through line
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> lineflowrate =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FLOW RATE LINE CONDITIONS",
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN FLOW RATE LINE CONDITIONS",
           "LineFlowRate", "Line Flow Rate", Core::Conditions::FlowRateThroughLine_2D, true,
-          Core::Conditions::geometry_type_line));
+          Core::Conditions::geometry_type_line);
 
-  lineflowrate->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+  lineflowrate->add_component(Teuchos::make_rcp<Input::IntComponent>("ConditionID"));
 
   condlist.push_back(lineflowrate);
 
@@ -1633,11 +1641,11 @@ void Inpar::FLUID::set_valid_conditions(
   // flow rate through surface
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfflowrate =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FLOW RATE SURF CONDITIONS",
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN FLOW RATE SURF CONDITIONS",
           "SurfFlowRate", "Surface Flow Rate", Core::Conditions::FlowRateThroughSurface_3D, true,
-          Core::Conditions::geometry_type_surface));
+          Core::Conditions::geometry_type_surface);
 
-  surfflowrate->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+  surfflowrate->add_component(Teuchos::make_rcp<Input::IntComponent>("ConditionID"));
 
   condlist.push_back(surfflowrate);
 
@@ -1645,42 +1653,43 @@ void Inpar::FLUID::set_valid_conditions(
   // impuls rate through surface
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfimpulsrate =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN IMPULS RATE SURF CONDITIONS",
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN IMPULS RATE SURF CONDITIONS",
           "SurfImpulsRate", "Surface Impuls Rate", Core::Conditions::ImpulsRateThroughSurface_3D,
-          true, Core::Conditions::geometry_type_surface));
+          true, Core::Conditions::geometry_type_surface);
 
-  surfimpulsrate->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+  surfimpulsrate->add_component(Teuchos::make_rcp<Input::IntComponent>("ConditionID"));
 
   condlist.push_back(surfimpulsrate);
 
   /*--------------------------------------------------------------------*/
   // Volumetric surface flow profile condition
   Teuchos::RCP<Core::Conditions::ConditionDefinition> volumetric_surface_flow_cond =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF VOLUMETRIC FLOW CONDITIONS", "VolumetricSurfaceFlowCond",
           "volumetric surface flow condition", Core::Conditions::VolumetricSurfaceFlowCond, true,
-          Core::Conditions::geometry_type_surface));
+          Core::Conditions::geometry_type_surface);
 
-  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+  volumetric_surface_flow_cond->add_component(
+      Teuchos::make_rcp<Input::IntComponent>("ConditionID"));
 
-  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::SelectionComponent(
+  volumetric_surface_flow_cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>(
       "ConditionType", "WOMERSLEY", Teuchos::tuple<std::string>("WOMERSLEY", "POLYNOMIAL"),
-      Teuchos::tuple<std::string>("WOMERSLEY", "POLYNOMIAL"), true)));
+      Teuchos::tuple<std::string>("WOMERSLEY", "POLYNOMIAL"), true));
 
   volumetric_surface_flow_cond->add_component(
-      Teuchos::rcp(new Input::SelectionComponent("prebiased", "NOTPREBIASED",
+      Teuchos::make_rcp<Input::SelectionComponent>("prebiased", "NOTPREBIASED",
           Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"),
-          Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"), true)));
+          Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"), true));
 
 
-  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::SelectionComponent("FlowType",
-      "InFlow", Teuchos::tuple<std::string>("InFlow", "OutFlow"),
-      Teuchos::tuple<std::string>("InFlow", "OutFlow"), true)));
+  volumetric_surface_flow_cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>(
+      "FlowType", "InFlow", Teuchos::tuple<std::string>("InFlow", "OutFlow"),
+      Teuchos::tuple<std::string>("InFlow", "OutFlow"), true));
 
   volumetric_surface_flow_cond->add_component(
-      Teuchos::rcp(new Input::SelectionComponent("CorrectionFlag", "WithOutCorrection",
+      Teuchos::make_rcp<Input::SelectionComponent>("CorrectionFlag", "WithOutCorrection",
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"),
-          Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"), true)));
+          Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"), true));
   Input::add_named_real(volumetric_surface_flow_cond, "Period");
   Input::add_named_int(volumetric_surface_flow_cond, "Order");
   Input::add_named_int(volumetric_surface_flow_cond, "Harmonics");
@@ -1688,24 +1697,24 @@ void Inpar::FLUID::set_valid_conditions(
   Input::add_named_int(volumetric_surface_flow_cond, "Funct");
 
   volumetric_surface_flow_cond->add_component(
-      Teuchos::rcp(new Input::SelectionComponent("NORMAL", "SelfEvaluateNormal",
+      Teuchos::make_rcp<Input::SelectionComponent>("NORMAL", "SelfEvaluateNormal",
           Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"),
-          Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"), true)));
+          Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"), true));
 
 
-  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::RealComponent("n1")));
-  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::RealComponent("n2")));
-  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::RealComponent("n3")));
+  volumetric_surface_flow_cond->add_component(Teuchos::make_rcp<Input::RealComponent>("n1"));
+  volumetric_surface_flow_cond->add_component(Teuchos::make_rcp<Input::RealComponent>("n2"));
+  volumetric_surface_flow_cond->add_component(Teuchos::make_rcp<Input::RealComponent>("n3"));
 
 
-  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::SelectionComponent(
+  volumetric_surface_flow_cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>(
       "CenterOfMass", "SelfEvaluateCenterOfMass",
       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"),
-      Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"), true)));
+      Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"), true));
 
-  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::RealComponent("c1")));
-  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::RealComponent("c2")));
-  volumetric_surface_flow_cond->add_component(Teuchos::rcp(new Input::RealComponent("c3")));
+  volumetric_surface_flow_cond->add_component(Teuchos::make_rcp<Input::RealComponent>("c1"));
+  volumetric_surface_flow_cond->add_component(Teuchos::make_rcp<Input::RealComponent>("c2"));
+  volumetric_surface_flow_cond->add_component(Teuchos::make_rcp<Input::RealComponent>("c3"));
 
   condlist.push_back(volumetric_surface_flow_cond);
 
@@ -1714,44 +1723,46 @@ void Inpar::FLUID::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // Volumetric flow border nodes condition
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volumetric_border_nodes_cond = Teuchos::rcp(
-      new Core::Conditions::ConditionDefinition("DESIGN LINE VOLUMETRIC FLOW BORDER NODES",
-          "VolumetricFlowBorderNodesCond", "volumetric flow border nodes condition",
-          Core::Conditions::VolumetricFlowBorderNodes, true, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> volumetric_border_nodes_cond =
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN LINE VOLUMETRIC FLOW BORDER NODES", "VolumetricFlowBorderNodesCond",
+          "volumetric flow border nodes condition", Core::Conditions::VolumetricFlowBorderNodes,
+          true, Core::Conditions::geometry_type_line);
 
-  volumetric_border_nodes_cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+  volumetric_border_nodes_cond->add_component(
+      Teuchos::make_rcp<Input::IntComponent>("ConditionID"));
 
   condlist.push_back(volumetric_border_nodes_cond);
 
   /*--------------------------------------------------------------------*/
   // Volumetric surface total traction corrector
   Teuchos::RCP<Core::Conditions::ConditionDefinition> total_traction_correction_cond =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF TOTAL TRACTION CORRECTION CONDITIONS", "TotalTractionCorrectionCond",
           "total traction correction condition", Core::Conditions::TotalTractionCorrectionCond,
-          true, Core::Conditions::geometry_type_surface));
+          true, Core::Conditions::geometry_type_surface);
 
 
   total_traction_correction_cond->add_component(
-      Teuchos::rcp(new Input::IntComponent("ConditionID")));
+      Teuchos::make_rcp<Input::IntComponent>("ConditionID"));
 
-  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::SelectionComponent(
+  total_traction_correction_cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>(
       "ConditionType", "POLYNOMIAL", Teuchos::tuple<std::string>("POLYNOMIAL", "WOMERSLEY"),
-      Teuchos::tuple<std::string>("POLYNOMIAL", "WOMERSLEY"), true)));
+      Teuchos::tuple<std::string>("POLYNOMIAL", "WOMERSLEY"), true));
 
   total_traction_correction_cond->add_component(
-      Teuchos::rcp(new Input::SelectionComponent("prebiased", "NOTPREBIASED",
+      Teuchos::make_rcp<Input::SelectionComponent>("prebiased", "NOTPREBIASED",
           Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"),
-          Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"), true)));
+          Teuchos::tuple<std::string>("NOTPREBIASED", "PREBIASED", "FORCED"), true));
 
-  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::SelectionComponent(
+  total_traction_correction_cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>(
       "FlowType", "InFlow", Teuchos::tuple<std::string>("InFlow", "OutFlow"),
-      Teuchos::tuple<std::string>("InFlow", "OutFlow"), true)));
+      Teuchos::tuple<std::string>("InFlow", "OutFlow"), true));
 
   total_traction_correction_cond->add_component(
-      Teuchos::rcp(new Input::SelectionComponent("CorrectionFlag", "WithOutCorrection",
+      Teuchos::make_rcp<Input::SelectionComponent>("CorrectionFlag", "WithOutCorrection",
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"),
-          Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"), true)));
+          Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"), true));
   Input::add_named_real(total_traction_correction_cond, "Period");
   Input::add_named_int(total_traction_correction_cond, "Order");
   Input::add_named_int(total_traction_correction_cond, "Harmonics");
@@ -1759,22 +1770,22 @@ void Inpar::FLUID::set_valid_conditions(
   Input::add_named_int(total_traction_correction_cond, "Funct");
 
   total_traction_correction_cond->add_component(
-      Teuchos::rcp(new Input::SelectionComponent("NORMAL", "SelfEvaluateNormal",
+      Teuchos::make_rcp<Input::SelectionComponent>("NORMAL", "SelfEvaluateNormal",
           Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"),
-          Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"), true)));
+          Teuchos::tuple<std::string>("SelfEvaluateNormal", "UsePrescribedNormal"), true));
 
-  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::RealComponent("n1")));
-  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::RealComponent("n2")));
-  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::RealComponent("n3")));
+  total_traction_correction_cond->add_component(Teuchos::make_rcp<Input::RealComponent>("n1"));
+  total_traction_correction_cond->add_component(Teuchos::make_rcp<Input::RealComponent>("n2"));
+  total_traction_correction_cond->add_component(Teuchos::make_rcp<Input::RealComponent>("n3"));
 
-  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::SelectionComponent(
+  total_traction_correction_cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>(
       "CenterOfMass", "SelfEvaluateCenterOfMass",
       Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"),
-      Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"), true)));
+      Teuchos::tuple<std::string>("SelfEvaluateCenterOfMass", "UsePrescribedCenterOfMass"), true));
 
-  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::RealComponent("c1")));
-  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::RealComponent("c2")));
-  total_traction_correction_cond->add_component(Teuchos::rcp(new Input::RealComponent("c3")));
+  total_traction_correction_cond->add_component(Teuchos::make_rcp<Input::RealComponent>("c1"));
+  total_traction_correction_cond->add_component(Teuchos::make_rcp<Input::RealComponent>("c2"));
+  total_traction_correction_cond->add_component(Teuchos::make_rcp<Input::RealComponent>("c3"));
 
   condlist.push_back(total_traction_correction_cond);
 
@@ -1782,15 +1793,15 @@ void Inpar::FLUID::set_valid_conditions(
   // Volumetric flow traction correction border nodes condition
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> traction_corrector_border_nodes_cond =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE TOTAL TRACTION CORRECTION BORDER NODES",
           "TotalTractionCorrectionBorderNodesCond",
           "total traction correction border nodes condition",
           Core::Conditions::TotalTractionCorrectionBorderNodes, true,
-          Core::Conditions::geometry_type_line));
+          Core::Conditions::geometry_type_line);
 
   traction_corrector_border_nodes_cond->add_component(
-      Teuchos::rcp(new Input::IntComponent("ConditionID")));
+      Teuchos::make_rcp<Input::IntComponent>("ConditionID"));
 
   condlist.push_back(traction_corrector_border_nodes_cond);
 
@@ -1799,9 +1810,9 @@ void Inpar::FLUID::set_valid_conditions(
   // no penetration for darcy flow in porous media
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> nopenetration_surf =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN SURFACE NORMAL NO PENETRATION CONDITION", "no_penetration", "No Penetration",
-          Core::Conditions::no_penetration, true, Core::Conditions::geometry_type_surface));
+          Core::Conditions::no_penetration, true, Core::Conditions::geometry_type_surface);
 
   condlist.push_back(nopenetration_surf);
 
@@ -1809,9 +1820,9 @@ void Inpar::FLUID::set_valid_conditions(
   // no penetration for darcy flow in porous media
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> nopenetration_line =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE NORMAL NO PENETRATION CONDITION", "no_penetration", "No Penetration",
-          Core::Conditions::no_penetration, true, Core::Conditions::geometry_type_line));
+          Core::Conditions::no_penetration, true, Core::Conditions::geometry_type_line);
 
   condlist.push_back(nopenetration_line);
 
@@ -1819,9 +1830,9 @@ void Inpar::FLUID::set_valid_conditions(
   // condition for evaluation of coupling terms in porous media
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> porocoupling_vol =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOLUME POROCOUPLING CONDITION",
-          "PoroCoupling", "Poro Coupling", Core::Conditions::PoroCoupling, true,
-          Core::Conditions::geometry_type_volume));
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN VOLUME POROCOUPLING CONDITION", "PoroCoupling", "Poro Coupling",
+          Core::Conditions::PoroCoupling, true, Core::Conditions::geometry_type_volume);
 
   condlist.push_back(porocoupling_vol);
 
@@ -1829,9 +1840,9 @@ void Inpar::FLUID::set_valid_conditions(
   // condition for evaluation of coupling terms in porous media
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> porocoupling_surf =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN SURFACE POROCOUPLING CONDITION", "PoroCoupling", "Poro Coupling",
-          Core::Conditions::PoroCoupling, true, Core::Conditions::geometry_type_surface));
+          Core::Conditions::PoroCoupling, true, Core::Conditions::geometry_type_surface);
 
   condlist.push_back(porocoupling_surf);
 
@@ -1839,9 +1850,9 @@ void Inpar::FLUID::set_valid_conditions(
   // condition for evaluation of boundary terms in porous media problems
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> poropartint_surf =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN SURFACE PORO PARTIAL INTEGRATION", "PoroPartInt", "Poro Partial Integration",
-          Core::Conditions::PoroPartInt, true, Core::Conditions::geometry_type_surface));
+          Core::Conditions::PoroPartInt, true, Core::Conditions::geometry_type_surface);
 
   condlist.push_back(poropartint_surf);
 
@@ -1849,9 +1860,9 @@ void Inpar::FLUID::set_valid_conditions(
   // condition for evaluation of boundary terms in porous media problems
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> poropartint_line =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE PORO PARTIAL INTEGRATION",
-          "PoroPartInt", "Poro Partial Integration", Core::Conditions::PoroPartInt, true,
-          Core::Conditions::geometry_type_line));
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN LINE PORO PARTIAL INTEGRATION", "PoroPartInt", "Poro Partial Integration",
+          Core::Conditions::PoroPartInt, true, Core::Conditions::geometry_type_line);
 
   condlist.push_back(poropartint_line);
 
@@ -1859,9 +1870,9 @@ void Inpar::FLUID::set_valid_conditions(
   // condition for evaluation of boundary terms in porous media problems
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> poropresint_surf =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN SURFACE PORO PRESSURE INTEGRATION", "PoroPresInt", "Poro Pressure Integration",
-          Core::Conditions::PoroPresInt, true, Core::Conditions::geometry_type_surface));
+          Core::Conditions::PoroPresInt, true, Core::Conditions::geometry_type_surface);
 
   condlist.push_back(poropresint_surf);
 
@@ -1869,9 +1880,9 @@ void Inpar::FLUID::set_valid_conditions(
   // condition for evaluation of boundary terms in porous media problems
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> poropresint_line =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE PORO PRESSURE INTEGRATION", "PoroPresInt", "Poro Pressure Integration",
-          Core::Conditions::PoroPresInt, true, Core::Conditions::geometry_type_line));
+          Core::Conditions::PoroPresInt, true, Core::Conditions::geometry_type_line);
 
   condlist.push_back(poropresint_line);
 
@@ -1879,32 +1890,33 @@ void Inpar::FLUID::set_valid_conditions(
   // Fluctuating Hydrodynamics Statistics on a surface
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> fluctHydro_statisticsSurf =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN FLUCTHYDRO STATISTICS SURF CONDITIONS", "FluctHydroStatisticsSurf",
           "FluctHydro_StatisticsSurf", Core::Conditions::FluctHydro_StatisticsSurf, true,
-          Core::Conditions::geometry_type_surface));
+          Core::Conditions::geometry_type_surface);
 
-  fluctHydro_statisticsSurf->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+  fluctHydro_statisticsSurf->add_component(Teuchos::make_rcp<Input::IntComponent>("ConditionID"));
   fluctHydro_statisticsSurf->add_component(
-      Teuchos::rcp(new Input::SelectionComponent("evaluation type", "nodalbased",
+      Teuchos::make_rcp<Input::SelectionComponent>("evaluation type", "nodalbased",
           Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased"),
-          Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased"))));
+          Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased")));
 
   condlist.push_back(fluctHydro_statisticsSurf);
 
   /*--------------------------------------------------------------------*/
   // Fluctuating Hydrodynamics Statistics on a line
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> fluctHydro_statisticsLine = Teuchos::rcp(
-      new Core::Conditions::ConditionDefinition("DESIGN FLUCTHYDRO STATISTICS LINE CONDITIONS",
-          "FluctHydroStatisticsLine", "FluctHydro_StatisticsLine",
-          Core::Conditions::FluctHydro_StatisticsLine, true, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> fluctHydro_statisticsLine =
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN FLUCTHYDRO STATISTICS LINE CONDITIONS", "FluctHydroStatisticsLine",
+          "FluctHydro_StatisticsLine", Core::Conditions::FluctHydro_StatisticsLine, true,
+          Core::Conditions::geometry_type_line);
 
-  fluctHydro_statisticsLine->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+  fluctHydro_statisticsLine->add_component(Teuchos::make_rcp<Input::IntComponent>("ConditionID"));
   fluctHydro_statisticsLine->add_component(
-      Teuchos::rcp(new Input::SelectionComponent("evaluation type", "nodalbased",
+      Teuchos::make_rcp<Input::SelectionComponent>("evaluation type", "nodalbased",
           Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased"),
-          Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased"))));
+          Teuchos::tuple<std::string>("elebased", "nodalbased", "ele_and_nodalbased")));
 
   condlist.push_back(fluctHydro_statisticsLine);
 }

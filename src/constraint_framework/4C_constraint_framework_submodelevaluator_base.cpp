@@ -46,7 +46,7 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_force_stiff(
   {
     //  Calculate force contribution
     Teuchos::RCP<Core::LinAlg::Vector<double>> r_pen =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(stiff_ptr_->row_map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(stiff_ptr_->row_map(), true);
     Q_Ld_->multiply(true, *constraint_vector_, *r_pen);
     Core::LinAlg::assemble_my_vector(1.0, *me_force_ptr, penalty_parameter_, *r_pen);
   }
@@ -61,13 +61,13 @@ void CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_coupling_terms(
   for (const auto& mpc : listMPCs_) ncon_ += mpc->get_number_of_mp_cs();
 
   // ToDo: Add an offset to the contraint dof map.
-  n_condition_map_ = Teuchos::rcp(new Epetra_Map(ncon_, 0, stiff_ptr_->Comm()));
+  n_condition_map_ = Teuchos::make_rcp<Epetra_Map>(ncon_, 0, stiff_ptr_->Comm());
 
   // initialise all global coupling objects
-  constraint_vector_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*n_condition_map_, true));
-  Q_Ld_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*n_condition_map_, 4));
-  Q_dL_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(stiff_ptr_->row_map(), 4));
-  Q_dd_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(stiff_ptr_->row_map(), 0));
+  constraint_vector_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*n_condition_map_, true);
+  Q_Ld_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*n_condition_map_, 4);
+  Q_dL_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(stiff_ptr_->row_map(), 4);
+  Q_dd_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(stiff_ptr_->row_map(), 0);
 
   // set Q_dd to zero as default
   Q_dd_->zero();

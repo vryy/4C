@@ -114,7 +114,7 @@ void PARTICLEENGINE::ParticleEngine::read_restart(
     std::vector<ParticleObjShrdPtr>& particlestoread) const
 {
   // read particle data
-  Teuchos::RCP<std::vector<char>> particledata = Teuchos::rcp(new std::vector<char>);
+  Teuchos::RCP<std::vector<char>> particledata = Teuchos::make_rcp<std::vector<char>>();
   reader->read_char_vector(particledata, "ParticleData");
 
   Core::Communication::UnpackBuffer buffer(*particledata);
@@ -939,8 +939,8 @@ void PARTICLEENGINE::ParticleEngine::setup_binning_strategy()
   binrowmap_ = binstrategy_->create_linear_map_for_numbin(comm_);
 
   // initialize vector for storage of bin center coordinates and bin weights
-  bincenters_ = Teuchos::rcp(new Epetra_MultiVector(*binrowmap_, 3));
-  binweights_ = Teuchos::rcp(new Epetra_MultiVector(*binrowmap_, 1));
+  bincenters_ = Teuchos::make_rcp<Epetra_MultiVector>(*binrowmap_, 3);
+  binweights_ = Teuchos::make_rcp<Epetra_MultiVector>(*binrowmap_, 1);
 
   // get all bin centers needed for repartitioning
   binstrategy_->get_all_bin_centers(binrowmap_, bincenters_);
@@ -1009,8 +1009,8 @@ void PARTICLEENGINE::ParticleEngine::setup_bin_ghosting()
 
   // copy bin gids to a vector and create bincolmap
   std::vector<int> bincolmapvec(bins.begin(), bins.end());
-  bincolmap_ = Teuchos::rcp(
-      new Epetra_Map(-1, static_cast<int>(bincolmapvec.size()), bincolmapvec.data(), 0, comm_));
+  bincolmap_ = Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(bincolmapvec.size()), bincolmapvec.data(), 0, comm_);
 
   if (bincolmap_->NumGlobalElements() == 1 && comm_.NumProc() > 1)
     FOUR_C_THROW("one bin cannot be run in parallel -> reduce BIN_SIZE_LOWER_BOUND");

@@ -71,8 +71,8 @@ XFEM::XfpCouplingManager::XfpCouplingManager(Teuchos::RCP<XFEM::ConditionManager
 
   // storage of the resulting Robin-type structural forces from the old timestep
   // Recovering of Lagrange multiplier happens on fluid field
-  lambda_ps_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*get_map_extractor(0)->Map(1), true));
-  lambda_pf_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*get_map_extractor(0)->Map(1), true));
+  lambda_ps_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->Map(1), true);
+  lambda_pf_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->Map(1), true);
 }
 
 void XFEM::XfpCouplingManager::init_coupling_states()
@@ -99,12 +99,12 @@ void XFEM::XfpCouplingManager::set_coupling_states()
   Teuchos::RCP<Epetra_Map> sfulldofmap =
       Core::LinAlg::allreduce_e_map(*poro_->structure_field()->discretization()->dof_row_map());
   Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_col =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*sfulldofmap, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*sfulldofmap, true);
   Core::LinAlg::export_to(*poro_->structure_field()->dispnp(), *dispnp_col);
   Teuchos::RCP<Epetra_Map> ffulldofmap =
       Core::LinAlg::allreduce_e_map(*poro_->fluid_field()->discretization()->dof_row_map());
   Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_col =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*ffulldofmap, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ffulldofmap, true);
   Core::LinAlg::export_to(*poro_->fluid_field()->velnp(), *velnp_col);
 
   mcfpi_ps_ps_->set_full_state(dispnp_col, velnp_col);
@@ -148,13 +148,14 @@ void XFEM::XfpCouplingManager::add_coupling_matrix(
     C_fs_block.add(*xfluid_->c_xs_matrix(cond_name_ps_ps_), false, scaling * scaling_disp_vel, 1.0);
 
     // 2// Add Blocks f-pf(5), ps-pf(6)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_ps_pf = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-        xfluid_->c_ss_matrix(cond_name_ps_pf_)->row_map(), 81, false));
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_ps_pf =
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+            xfluid_->c_ss_matrix(cond_name_ps_pf_)->row_map(), 81, false);
     insert_matrix(-1, 0, *xfluid_->c_ss_matrix(cond_name_ps_pf_), 1, *C_ps_pf,
         CouplingCommManager::col, 1, true, false);
     C_ps_pf->complete(*get_map_extractor(1)->Map(1), *get_map_extractor(0)->Map(1));
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_f_pf = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-        xfluid_->c_xs_matrix(cond_name_ps_pf_)->row_map(), 81, false));
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_f_pf = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+        xfluid_->c_xs_matrix(cond_name_ps_pf_)->row_map(), 81, false);
     insert_matrix(-1, 0, *xfluid_->c_xs_matrix(cond_name_ps_pf_), 1, *C_f_pf,
         CouplingCommManager::col, 1, true, false);
     C_f_pf->complete(*get_map_extractor(1)->Map(1), C_fs_block.range_map());
@@ -163,9 +164,9 @@ void XFEM::XfpCouplingManager::add_coupling_matrix(
 
     // 3// Add Blocks pf-f(7), pf-ps(8)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> C_pf_ps =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*get_map_extractor(1)->Map(1), 81, false));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*get_map_extractor(1)->Map(1), 81, false);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> C_pf_f =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*get_map_extractor(1)->Map(1), 81, false));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*get_map_extractor(1)->Map(1), 81, false);
     insert_matrix(-1, 0, *xfluid_->c_ss_matrix(cond_name_pf_ps_), 1, *C_pf_ps,
         CouplingCommManager::row, 1, true, false);
     C_pf_ps->complete(*get_map_extractor(0)->Map(1), *get_map_extractor(1)->Map(1));
@@ -177,7 +178,7 @@ void XFEM::XfpCouplingManager::add_coupling_matrix(
 
     // 4// Add Block pf-pf(9)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> C_pf_pf =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*get_map_extractor(1)->Map(1), 81, false));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*get_map_extractor(1)->Map(1), 81, false);
     insert_matrix(-1, 0, *xfluid_->c_ss_matrix(cond_name_pf_pf_), 1, *C_pf_pf,
         CouplingCommManager::row_and_col);
     C_pf_pf->complete(*get_map_extractor(1)->Map(1), *get_map_extractor(1)->Map(1));
@@ -243,7 +244,7 @@ void XFEM::XfpCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vecto
         xfluid_->rhs_s_vec(cond_name_pf_pf_);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> prhs =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*me.Map(idx_[0]), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*me.Map(idx_[0]), true);
 
     insert_vector(0, rhs_C_ps_ps, 0, prhs, CouplingCommManager::partial_to_global, true, scaling);
     insert_vector(0, rhs_C_ps_pf, 0, prhs, CouplingCommManager::partial_to_global, true, scaling);
@@ -291,9 +292,9 @@ void XFEM::XfpCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vecto
         xfluid_->rhs_s_vec(cond_name_pf_pf_);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> srhs =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*me.Map(idx_[0]), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*me.Map(idx_[0]), true);
     Teuchos::RCP<Core::LinAlg::Vector<double>> pfrhs =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*me.Map(idx_[2]), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*me.Map(idx_[2]), true);
 
     insert_vector(0, rhs_C_ps_ps, 0, srhs, CouplingCommManager::partial_to_full, true, scaling);
     insert_vector(0, rhs_C_ps_pf, 0, srhs, CouplingCommManager::partial_to_full, true, scaling);
@@ -366,12 +367,12 @@ void XFEM::XfpCouplingManager::output(Core::IO::DiscretizationWriter& writer)
   // consisting of fluid forces and the Nitsche penalty term contribution)
   //--------------------------------
   Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*get_map_extractor(0)->full_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->full_map(), true);
   insert_vector(0, lambda_ps_, 0, lambdafull, CouplingCommManager::partial_to_full);
   writer.write_vector("fpilambda_ps", lambdafull);
 
   lambdafull =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*get_map_extractor(0)->full_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->full_map(), true);
   insert_vector(0, lambda_pf_, 0, lambdafull, CouplingCommManager::partial_to_full);
   writer.write_vector("fpilambda_pf", lambdafull);
   return;
@@ -382,12 +383,12 @@ void XFEM::XfpCouplingManager::output(Core::IO::DiscretizationWriter& writer)
 void XFEM::XfpCouplingManager::read_restart(Core::IO::DiscretizationReader& reader)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*get_map_extractor(0)->full_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->full_map(), true);
   reader.read_vector(lambdafull, "fpilambda_ps");
   insert_vector(0, lambdafull, 0, lambda_ps_, CouplingCommManager::full_to_partial);
 
   lambdafull =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*get_map_extractor(0)->full_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->full_map(), true);
   reader.read_vector(lambdafull, "fpilambda_pf");
   insert_vector(0, lambdafull, 0, lambda_pf_, CouplingCommManager::full_to_partial);
   return;

@@ -109,8 +109,8 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshtying::setup(
   // -------------------
 
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat;
-  mat = Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>(
-      extractor, extractor, 108, false, true));
+  mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>>(
+      extractor, extractor, 108, false, true);
   // nodes on the interface
   Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
 
@@ -128,8 +128,8 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshtying::setup(
   Core::LinAlg::MapExtractor rowmapext(*mergedmap_, gmdofrowmap_, gndofrowmap_);
   Core::LinAlg::MapExtractor dommapext(*mergedmap_, gmdofrowmap_, gndofrowmap_);
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>> matsolve =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          dommapext, rowmapext, 1, false, true));
+      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+          dommapext, rowmapext, 1, false, true);
   sysmatsolve_ = matsolve;
 
   return mat;
@@ -164,8 +164,8 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshtying::msht_split()
   // -------------------
 
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat;
-  mat = Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>(
-      extractor, extractor, 108, false, true));
+  mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>>(
+      extractor, extractor, 108, false, true);
   // nodes on the interface
   Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
   mat->set_cond_elements(condelements);
@@ -252,8 +252,8 @@ void ALE::Meshtying::split_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> vec
   Core::LinAlg::split_vector(*dofrowmap_, *vector, gsmdofrowmap_, fsm, gndofrowmap_, fn);
 
   // we want to split fsm into 2 groups s,m
-  fs = Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
-  fm = Teuchos::rcp(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+  fs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  fm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
 
   // do the vector splitting sm -> s+m
   Core::LinAlg::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
@@ -334,8 +334,8 @@ void ALE::Meshtying::msht_split(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysm
     // -------------------
 
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat;
-    mat = Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>(
-        extractor, extractor, 108, false, true));
+    mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>>(
+        extractor, extractor, 108, false, true);
     // nodes on the interface
     Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
     mat->set_cond_elements(condelements);
@@ -356,11 +356,11 @@ void ALE::Meshtying::multifield_split(Teuchos::RCP<Core::LinAlg::SparseOperator>
         Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> ones =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(sysmatnew->matrix(2, 2).row_map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(sysmatnew->matrix(2, 2).row_map());
     ones->PutScalar(1.0);
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*ones));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*ones);
     onesdiag->complete();
 
     sysmatnew->matrix(0, 2).un_complete();
@@ -384,8 +384,8 @@ void ALE::Meshtying::multifield_split(Teuchos::RCP<Core::LinAlg::SparseOperator>
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mergedmatrix = sysmatnew->merge();
 
     Teuchos::RCP<Core::LinAlg::MapExtractor> extractor =
-        Teuchos::rcp(new Core::LinAlg::MapExtractor(
-            *multifield_interface_.full_map(), multifield_interface_.Map(1)));
+        Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+            *multifield_interface_.full_map(), multifield_interface_.Map(1));
 
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat =
         Core::LinAlg::split_matrix<ALE::UTILS::InterfaceSplitStrategy>(
@@ -403,10 +403,10 @@ void ALE::Meshtying::multifield_split(Teuchos::RCP<Core::LinAlg::SparseOperator>
 /*-------------------------------------------------------*/
 void ALE::Meshtying::adapter_mortar(std::vector<int> coupleddof)
 {
-  adaptermeshtying_ = Teuchos::rcp(new Coupling::Adapter::CouplingMortar(
+  adaptermeshtying_ = Teuchos::make_rcp<Coupling::Adapter::CouplingMortar>(
       Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
-      Global::Problem::instance()->spatial_approximation_type()));
+      Global::Problem::instance()->spatial_approximation_type());
 
   // Setup of meshtying adapter
   adaptermeshtying_->setup(discret_, discret_, Teuchos::null, coupleddof, "Mortar",
@@ -516,8 +516,8 @@ void ALE::Meshtying::condensation_operation_block_matrix(
 
   if (dconmaster_ == true and firstnonliniter_ == true)
   {
-    dcnm = Teuchos::rcp(new Core::LinAlg::Vector<double>(*gndofrowmap_, true));
-    dcmm = Teuchos::rcp(new Core::LinAlg::Vector<double>(*gmdofrowmap_, true));
+    dcnm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gndofrowmap_, true);
+    dcmm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_, true);
 
     split_vector(valuesdc_, splitdcmaster);
   }
@@ -575,7 +575,7 @@ void ALE::Meshtying::condensation_operation_block_matrix(
 
   // r_m: add P^T*r_s
   Teuchos::RCP<Core::LinAlg::Vector<double>> fm_mod =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gmdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_, true);
   P->multiply(true, *(splitres[2]), *fm_mod);
 
   // r_m: insert Dirichlet boundary conditions
@@ -583,21 +583,21 @@ void ALE::Meshtying::condensation_operation_block_matrix(
 
   // export and add r_m subvector to residual
   Teuchos::RCP<Core::LinAlg::Vector<double>> fm_modexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
   Core::LinAlg::export_to(*fm_mod, *fm_modexp);
   residual->Update(1.0, *fm_modexp, 1.0);
 
   if (dconmaster_ == true and firstnonliniter_ == true)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> fn_exp =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_, true);
     Core::LinAlg::export_to(*dcnm, *fn_exp);
     residual->Update(-1.0, *fn_exp, 1.0);
   }
 
   // export r_s = zero to residual
   Teuchos::RCP<Core::LinAlg::Vector<double>> fs_mod =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
   Core::LinAlg::export_to(*fs_mod, *residual);
 
   return;
@@ -640,7 +640,7 @@ void ALE::Meshtying::update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>
 
   // delta_vp^s: add P*delta_vp^m
   Teuchos::RCP<Core::LinAlg::Vector<double>> fs_mod =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
   P->multiply(false, *(splitinc[1]), *fs_mod);
 
   // delta_vp^s: subtract vp_i^s
@@ -648,7 +648,7 @@ void ALE::Meshtying::update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>
 
   // delta_vp^s: add P*vp_i^m
   Teuchos::RCP<Core::LinAlg::Vector<double>> fs_mod_m =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
   P->multiply(false, *(splitdisp[1]), *fs_mod_m);
   fs_mod->Update(1.0, *fs_mod_m, 1.0);
 
@@ -656,26 +656,26 @@ void ALE::Meshtying::update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>
   if (dconmaster_ == true and firstnonliniter_ == true)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> fsdc_mod =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
     P->multiply(false, *(splitdcmaster[1]), *fsdc_mod);
     fs_mod->Update(1.0, *fsdc_mod, 1.0);
   }
 
   // export interior degrees of freedom
   Teuchos::RCP<Core::LinAlg::Vector<double>> fnexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap);
   Core::LinAlg::export_to(*(splitinc[0]), *fnexp);
   incnew->Update(1.0, *fnexp, 1.0);
 
   // export master degrees of freedom
   Teuchos::RCP<Core::LinAlg::Vector<double>> fmexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap);
   Core::LinAlg::export_to(*(splitinc[1]), *fmexp);
   incnew->Update(1.0, *fmexp, 1.0);
 
   // export slave degrees of freedom
   Teuchos::RCP<Core::LinAlg::Vector<double>> fs_modexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap);
   Core::LinAlg::export_to(*fs_mod, *fs_modexp);
   incnew->Update(1.0, *fs_modexp, 1.0);
 
@@ -714,7 +714,7 @@ int ALE::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
   res = Core::LinAlg::create_vector(*mergedmap_, true);
   dis = Core::LinAlg::create_vector(*mergedmap_, true);
 
-  mergedmatrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*mergedmap_, 108, false, true));
+  mergedmatrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*mergedmap_, 108, false, true);
 
   int errorcode = 0;
 

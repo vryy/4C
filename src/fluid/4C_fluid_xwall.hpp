@@ -84,7 +84,7 @@ namespace FLD
     Teuchos::RCP<Core::LinAlg::Vector<double>> get_tauw_vector()
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> tauw =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(*(discret_->node_row_map()), true));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->node_row_map()), true);
       Core::LinAlg::export_to(*tauw_, *tauw);
       return tauw;
     }

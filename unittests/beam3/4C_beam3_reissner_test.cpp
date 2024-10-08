@@ -28,16 +28,16 @@ namespace
    public:
     Beam3r()
     {
-      testdis_ = Teuchos::rcp(
-          new Core::FE::Discretization("Beam3r", Teuchos::rcp(new Epetra_SerialComm), 3));
+      testdis_ = Teuchos::make_rcp<Core::FE::Discretization>(
+          "Beam3r", Teuchos::make_rcp<Epetra_SerialComm>(), 3);
 
       std::vector<std::vector<double>> xrefe{{-0.05, 0.05, 0.3}, {0.45, -0.05, 0.1}};
       std::vector<double> xrefe_full{-0.05, 0.05, 0.3, 0.45, -0.05, 0.1};
 
       for (int lid = 0; lid < 2; ++lid)
-        testdis_->add_node(Teuchos::rcp(new Core::Nodes::Node(lid, xrefe[lid], 0)));
+        testdis_->add_node(Teuchos::make_rcp<Core::Nodes::Node>(lid, xrefe[lid], 0));
 
-      testele_ = Teuchos::rcp(new Discret::ELEMENTS::Beam3r(0, 0));
+      testele_ = Teuchos::make_rcp<Discret::ELEMENTS::Beam3r>(0, 0);
       std::array<int, 2> node_ids{0, 1};
       testele_->set_node_ids(2, node_ids.data());
 

@@ -28,12 +28,12 @@ Teuchos::RCP<Adapter::FBIConstraintenforcer> Adapter::ConstraintEnforcerFactory:
     const Teuchos::ParameterList& fsidyn, const Teuchos::ParameterList& fbidyn)
 {
   Teuchos::RCP<Adapter::FBIConstraintBridge> bridge =
-      Teuchos::rcp(new Adapter::FBIConstraintBridgePenalty());
+      Teuchos::RCP(new Adapter::FBIConstraintBridgePenalty());
 
   Teuchos::RCP<FBI::FBIGeometryCoupler> coupler =
       FBI::GeometryCouplerFactory::create_geometry_coupler(fbidyn);
 
-  return Teuchos::rcp(new Adapter::FBIPenaltyConstraintenforcer(bridge, coupler));
+  return Teuchos::RCP(new Adapter::FBIPenaltyConstraintenforcer(bridge, coupler));
 }
 
 FOUR_C_NAMESPACE_CLOSE

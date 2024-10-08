@@ -192,9 +192,9 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
   {
     if (boundingbox_dis == Teuchos::null)
     {
-      auto com = Teuchos::rcp(comm.Clone());
-      boxdiscret_ = Teuchos::rcp(
-          new Core::FE::Discretization("boundingbox", Teuchos::rcp(comm.Clone()), n_dim));
+      auto com = Teuchos::RCP(comm.Clone());
+      boxdiscret_ = Teuchos::make_rcp<Core::FE::Discretization>(
+          "boundingbox", Teuchos::RCP(comm.Clone()), n_dim);
     }
     else
     {
@@ -210,7 +210,7 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
       node_ids[corner_i] = corner_i;
 
       Teuchos::RCP<Core::Nodes::Node> newnode =
-          Teuchos::rcp(new Core::Nodes::Node(corner_i, cornerpos, 0));
+          Teuchos::make_rcp<Core::Nodes::Node>(corner_i, cornerpos, 0);
       boxdiscret_->add_node(newnode);
     }
 
@@ -223,7 +223,7 @@ void Core::Geo::MeshFree::BoundingBox::setup_bounding_box_discretization(
 
   // build independent dof set
   Teuchos::RCP<Core::DOFSets::IndependentDofSet> independentdofset =
-      Teuchos::rcp(new Core::DOFSets::IndependentDofSet(true));
+      Teuchos::make_rcp<Core::DOFSets::IndependentDofSet>(true);
   boxdiscret_->replace_dof_set(independentdofset);
   boxdiscret_->fill_complete();
 }
@@ -627,9 +627,9 @@ void Core::Geo::MeshFree::BoundingBox::init_runtime_output(
   const double restart_time(0.0);
 
   visualization_output_writer_ptr_ =
-      Teuchos::rcp(new Core::IO::DiscretizationVisualizationWriterMesh(
+      Teuchos::make_rcp<Core::IO::DiscretizationVisualizationWriterMesh>(
           boxdiscret_, Core::IO::visualization_parameters_factory(
-                           io_params.sublist("RUNTIME VTK OUTPUT"), output_control, restart_time)));
+                           io_params.sublist("RUNTIME VTK OUTPUT"), output_control, restart_time));
 }
 
 /*----------------------------------------------------------------------------*

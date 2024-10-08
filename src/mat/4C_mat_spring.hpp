@@ -123,7 +123,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new Spring(*this));
+      return Teuchos::make_rcp<Spring>(*this);
     }
 
     /// stiffness (translational or rotational)

@@ -127,51 +127,51 @@ namespace XFEM
       if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FSI_PART or
           cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FSI_MONO)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(
-            new MeshCouplingFSI(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
+        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingFSI>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FPI_MONO)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFPI(
-            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::ps_ps)));
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFPI(
-            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::ps_pf)));
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFPI(
-            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::pf_ps)));
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFPI(
-            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::pf_pf)));
+        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingFPI>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::ps_ps));
+        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingFPI>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::ps_pf));
+        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingFPI>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::pf_ps));
+        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingFPI>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::pf_pf));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingWeakDirichlet(
-            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis))));
+        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingWeakDirichlet>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis)));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_NEUMANN)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNeumann(
-            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis))));
+        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingNeumann>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis)));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNavierSlip(
-            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis))));
+        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingNavierSlip>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis)));
       }
       else if (cond_type_string_to_enum(cond_name) ==
                Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNavierSlipTwoPhase(
-            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis))));
+        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingNavierSlipTwoPhase>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis)));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(
-            new MeshCouplingFluidFluid(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
+        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCouplingFluidFluid>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_));
       }
       else if (cond_type_string_to_enum(cond_name) ==
                Inpar::XFEM::CouplingCond_EMBEDDEDMESH_SOLID_SURF)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(
-            new MeshCoupling(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, "", false)));
+        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCoupling>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, "", false));
       }
       else if (cond_type_string_to_enum(cond_name) ==
                Inpar::XFEM::CouplingCond_EMBEDDEDMESH_BACKGROUND_SOLID_VOL)
@@ -180,8 +180,8 @@ namespace XFEM
       }
       else
       {
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCoupling(
-            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, "", (bg_dis_ == cond_dis))));
+        mesh_coupl_.push_back(Teuchos::make_rcp<MeshCoupling>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, "", (bg_dis_ == cond_dis)));
       }
     }
 
@@ -193,24 +193,24 @@ namespace XFEM
     {
       if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET)
       {
-        levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingWeakDirichlet(
-            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
+        levelset_coupl_.push_back(Teuchos::make_rcp<LevelSetCouplingWeakDirichlet>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN)
       {
-        levelset_coupl_.push_back(Teuchos::rcp(
-            new LevelSetCouplingNeumann(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
+        levelset_coupl_.push_back(Teuchos::make_rcp<LevelSetCouplingNeumann>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_));
       }
       else if (cond_type_string_to_enum(cond_name) ==
                Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
       {
-        levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNavierSlip(
-            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
+        levelset_coupl_.push_back(Teuchos::make_rcp<LevelSetCouplingNavierSlip>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_));
       }
       else
       {
-        levelset_coupl_.push_back(Teuchos::rcp(
-            new LevelSetCoupling(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
+        levelset_coupl_.push_back(Teuchos::make_rcp<LevelSetCoupling>(
+            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_));
       }
     }
 

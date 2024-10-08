@@ -46,8 +46,8 @@ namespace Core::Binstrategy::Utils
     }
 
     std::vector<int> colnodes(nodes.begin(), nodes.end());
-    Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(
-        new Epetra_Map(-1, (int)colnodes.size(), colnodes.data(), 0, discret->get_comm()));
+    Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::make_rcp<Epetra_Map>(
+        -1, (int)colnodes.size(), colnodes.data(), 0, discret->get_comm());
 
     // now ghost the nodes
     discret->export_column_nodes(*nodecolmap);
@@ -135,7 +135,7 @@ namespace Core::Binstrategy::Utils
           Communication::UnpackBuffer data_buffer(data);
           // this Teuchos::rcp holds the memory of the node
           Teuchos::RCP<Core::Communication::ParObject> object =
-              Teuchos::rcp(Core::Communication::factory(data_buffer), true);
+              Teuchos::RCP(Core::Communication::factory(data_buffer), true);
           Teuchos::RCP<Core::Elements::Element> element =
               Teuchos::rcp_dynamic_cast<Core::Elements::Element>(object);
           if (element == Teuchos::null) FOUR_C_THROW("Received object is not a element");

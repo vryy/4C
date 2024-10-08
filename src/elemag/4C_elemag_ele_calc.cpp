@@ -279,23 +279,23 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::initialize_shapes(
     const Discret::ELEMENTS::Elemag* ele)
 {
   if (shapes_ == Teuchos::null)
-    shapes_ = Teuchos::rcp(
+    shapes_ = Teuchos::RCP(
         new Core::FE::ShapeValues<distype>(ele->degree(), usescompletepoly_, 2 * ele->degree()));
   else if (shapes_->degree_ != unsigned(ele->degree()) ||
            shapes_->usescompletepoly_ != usescompletepoly_)
-    shapes_ = Teuchos::rcp(
+    shapes_ = Teuchos::RCP(
         new Core::FE::ShapeValues<distype>(ele->degree(), usescompletepoly_, 2 * ele->degree()));
 
   if (shapesface_ == Teuchos::null)
   {
     Core::FE::ShapeValuesFaceParams svfparams(ele->degree(), usescompletepoly_, 2 * ele->degree());
-    shapesface_ = Teuchos::rcp(new Core::FE::ShapeValuesFace<distype>(svfparams));
+    shapesface_ = Teuchos::make_rcp<Core::FE::ShapeValuesFace<distype>>(svfparams);
   }
 
   if (local_solver_ == Teuchos::null)
-    local_solver_ = Teuchos::rcp(new LocalSolver(ele, *shapes_, shapesface_, dyna_));
+    local_solver_ = Teuchos::make_rcp<LocalSolver>(ele, *shapes_, shapesface_, dyna_);
   else if (local_solver_->ndofs_ != shapes_->ndofs_)
-    local_solver_ = Teuchos::rcp(new LocalSolver(ele, *shapes_, shapesface_, dyna_));
+    local_solver_ = Teuchos::make_rcp<LocalSolver>(ele, *shapes_, shapesface_, dyna_);
 }
 
 /*----------------------------------------------------------------------*

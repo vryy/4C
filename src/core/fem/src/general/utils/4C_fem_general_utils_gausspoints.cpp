@@ -262,49 +262,49 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::FE::GaussPointCache::create(
   switch (distype)
   {
     case Core::FE::CellType::quad4:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Quadrilateral<4>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Quadrilateral<4>>>(degree);
       break;
     case Core::FE::CellType::quad8:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Quadrilateral<8>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Quadrilateral<8>>>(degree);
       break;
     case Core::FE::CellType::quad9:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Quadrilateral<9>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Quadrilateral<9>>>(degree);
       break;
     case Core::FE::CellType::tri3:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Triangle<3>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Triangle<3>>>(degree);
       break;
     case Core::FE::CellType::tri6:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Triangle<6>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Triangle<6>>>(degree);
       break;
     case Core::FE::CellType::hex8:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Hexahedron<8>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Hexahedron<8>>>(degree);
       break;
     case Core::FE::CellType::hex20:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Hexahedron<20>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Hexahedron<20>>>(degree);
       break;
     case Core::FE::CellType::hex27:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Hexahedron<27>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Hexahedron<27>>>(degree);
       break;
     case Core::FE::CellType::tet4:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Tetrahedron<4>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Tetrahedron<4>>>(degree);
       break;
     case Core::FE::CellType::tet10:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Tetrahedron<10>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Tetrahedron<10>>>(degree);
       break;
     case Core::FE::CellType::wedge6:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Wedge<6>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Wedge<6>>>(degree);
       break;
     case Core::FE::CellType::wedge15:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Wedge<15>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Wedge<15>>>(degree);
       break;
     case Core::FE::CellType::pyramid5:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Pyramid<5>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Pyramid<5>>>(degree);
       break;
     case Core::FE::CellType::line2:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Line<2>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Line<2>>>(degree);
       break;
     case Core::FE::CellType::line3:
-      gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Line<3>>(degree));
+      gp = Teuchos::make_rcp<IntrepidGaussPoints<shards::Line<3>>>(degree);
       break;
     default:
       FOUR_C_THROW("unsupported element shape");

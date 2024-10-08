@@ -43,10 +43,11 @@ void Inpar::RveMpc::set_valid_conditions(
   using namespace Input;
 
   // ================================================================================================
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> rve_lineperiodic_condition = Teuchos::rcp(
-      new Core::Conditions::ConditionDefinition("DESIGN LINE PERIODIC RVE 2D BOUNDARY CONDITIONS",
-          "LinePeriodicRve", "definition of edges forming 2D periodic boundary conditions",
-          Core::Conditions::LineRvePeriodic, false, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> rve_lineperiodic_condition =
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN LINE PERIODIC RVE 2D BOUNDARY CONDITIONS", "LinePeriodicRve",
+          "definition of edges forming 2D periodic boundary conditions",
+          Core::Conditions::LineRvePeriodic, false, Core::Conditions::geometry_type_line);
 
   add_named_selection_component(rve_lineperiodic_condition, "EDGE", "edge line id", "undefined",
       Teuchos::tuple<std::string>("x+", "x-", "y+", "y-", "undefined"),
@@ -55,10 +56,11 @@ void Inpar::RveMpc::set_valid_conditions(
   condlist.push_back(rve_lineperiodic_condition);
 
   // ================================================================================================
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> rve_surfperiodic_condition = Teuchos::rcp(
-      new Core::Conditions::ConditionDefinition("DESIGN SURF PERIODIC RVE 3D BOUNDARY CONDITIONS",
-          "SurfacePeriodicRve", "definition of surfaces forming 3D periodic boundary conditions",
-          Core::Conditions::SurfaceRvePeriodic, false, Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> rve_surfperiodic_condition =
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN SURF PERIODIC RVE 3D BOUNDARY CONDITIONS", "SurfacePeriodicRve",
+          "definition of surfaces forming 3D periodic boundary conditions",
+          Core::Conditions::SurfaceRvePeriodic, false, Core::Conditions::geometry_type_surface);
 
   add_named_selection_component(rve_surfperiodic_condition, "SURF", "surface id", "undefined",
       Teuchos::tuple<std::string>("x+", "x-", "y+", "y-", "z+", "z-", "undefined"),
@@ -68,13 +70,13 @@ void Inpar::RveMpc::set_valid_conditions(
 
   // ================================================================================================
   Teuchos::RCP<Core::Conditions::ConditionDefinition> rve_cornerpoint_condition =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT PERIODIC RVE 2D BOUNDARY REFERENCE CONDITIONS",
           "PointPeriodicRveReferenceNode",
           "definition of reference points defining the reference vector of the periodic boundary"
           "condition -  only required if RVE_REFERENCE_POINTS = automatic",
           Core::Conditions::PointRvePeriodicReference, false,
-          Core::Conditions::geometry_type_point));
+          Core::Conditions::geometry_type_point);
 
   add_named_selection_component(rve_cornerpoint_condition, "POSITION", "position of reference node",
       "undefined", Teuchos::tuple<std::string>("N1L", "N1B", "N2", "N4", "N1", "N3", "undefined"),
@@ -84,13 +86,13 @@ void Inpar::RveMpc::set_valid_conditions(
 
   // ================================================================================================
   Teuchos::RCP<Core::Conditions::ConditionDefinition> linear_ce =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT COUPLED DOF EQUATION CONDITIONS", "PointLinearCoupledEquation",
           "definition of the term of a linear couple equation coupling different degrees of "
           "freedom in "
           "2d",
           Core::Conditions::PointLinearCoupledEquation, false,
-          Core::Conditions::geometry_type_point));
+          Core::Conditions::geometry_type_point);
 
   add_named_int(linear_ce, "EQUATION", "EQUATION");
   add_named_selection_component(linear_ce, "ADD", "degrees of freedom", "undefined",

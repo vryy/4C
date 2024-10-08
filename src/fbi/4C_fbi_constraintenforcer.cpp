@@ -52,7 +52,7 @@ Adapter::FBIConstraintenforcer::FBIConstraintenforcer(
       column_structure_displacement_(Teuchos::null),
       column_structure_velocity_(Teuchos::null),
       column_fluid_velocity_(Teuchos::null),
-      velocity_pressure_splitter_(Teuchos::rcp(new Core::LinAlg::MapExtractor()))
+      velocity_pressure_splitter_(Teuchos::make_rcp<Core::LinAlg::MapExtractor>())
 {
 }
 
@@ -88,9 +88,9 @@ void Adapter::FBIConstraintenforcer::setup(Teuchos::RCP<Adapter::FSIStructureWra
   }
   else
   {
-    fluidmatrix = Teuchos::rcp(
-        new Core::LinAlg::SparseMatrix(*(fluid_->discretization()->dof_row_map()), 30, true, true,
-            Core::LinAlg::SparseMatrix::FE_MATRIX));  // todo Is there a better estimator?
+    fluidmatrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+        *(fluid_->discretization()->dof_row_map()), 30, true, true,
+        Core::LinAlg::SparseMatrix::FE_MATRIX);  // todo Is there a better estimator?
   }
 
   bridge_->setup(structure_->discretization()->dof_row_map(),

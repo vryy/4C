@@ -160,7 +160,7 @@ void Core::IO::DiscretizationReader::read_serial_dense_matrix(
   for (int i = 0; i < elemap->NumMyElements(); ++i)
   {
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> matrix =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
     extract_from_pack(buffer, *matrix);
     (*mapdata)[elemap->GID(i)] = matrix;
   }
@@ -230,12 +230,12 @@ void Core::IO::DiscretizationReader::read_history_data(int step)
       meshreader_->read_element_data(step, get_comm().NumProc(), get_comm().MyPID());
 
   // before we unpack nodes/elements we store a copy of the nodal row/col map
-  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*dis_->node_row_map()));
-  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(*dis_->node_col_map()));
+  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::make_rcp<Epetra_Map>(*dis_->node_row_map());
+  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::make_rcp<Epetra_Map>(*dis_->node_col_map());
 
   // before we unpack nodes/elements we store a copy of the nodal row/col map
-  Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::rcp(new Epetra_Map(*dis_->element_row_map()));
-  Teuchos::RCP<Epetra_Map> elecolmap = Teuchos::rcp(new Epetra_Map(*dis_->element_col_map()));
+  Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::make_rcp<Epetra_Map>(*dis_->element_row_map());
+  Teuchos::RCP<Epetra_Map> elecolmap = Teuchos::make_rcp<Epetra_Map>(*dis_->element_col_map());
 
   // unpack nodes and elements and redistributed to current layout
 
@@ -470,7 +470,7 @@ Teuchos::RCP<Core::IO::HDFReader> Core::IO::DiscretizationReader::open_files(
 
   const std::string filename = map_read_string(result_step, filestring);
 
-  Teuchos::RCP<HDFReader> reader = Teuchos::rcp(new HDFReader(dirname));
+  Teuchos::RCP<HDFReader> reader = Teuchos::make_rcp<HDFReader>(dirname);
   reader->open(filename, numoutputproc, get_comm().NumProc(), get_comm().MyPID());
   return reader;
 }
@@ -503,7 +503,7 @@ Core::IO::DiscretizationWriter::DiscretizationWriter() /* PROTECTED */
 Core::IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<Core::FE::Discretization> dis,
     Teuchos::RCP<OutputControl> output_control,
     const Core::FE::ShapeFunctionType shape_function_type)
-    : dis_(Teuchos::rcp(dis.get(), false)),  // no ownership to break circle discretization<>writer
+    : dis_(Teuchos::rcpFromRef(*dis.get())),  // no ownership to break circle discretization<>writer
       step_(-1),
       time_(-1.0),
       meshfile_(-1),
@@ -527,7 +527,7 @@ Core::IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<Core::FE::Disc
 /*----------------------------------------------------------------------*/
 Core::IO::DiscretizationWriter::DiscretizationWriter(const Core::IO::DiscretizationWriter& writer,
     const Teuchos::RCP<OutputControl>& control, enum CopyType type)
-    : dis_(Teuchos::rcp(writer.dis_.get(), false)),
+    : dis_(Teuchos::rcpFromRef(*writer.dis_.get())),
       step_(-1),
       time_(-1.0),
       meshfile_(-1),
@@ -1353,7 +1353,7 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
         ele_counter++;
       }
 
-      write_multi_vector(name, Teuchos::rcp(&sysdata, false), elementvector);
+      write_multi_vector(name, Teuchos::rcpFromRef(sysdata), elementvector);
     }
   }
 }
@@ -1415,7 +1415,7 @@ void Core::IO::DiscretizationWriter::write_node_data(bool writeowner)
         for (int j = 0; j < dimension; ++j) (*sysdata(j))[i] = nodedata[j];
       }
 
-      write_multi_vector(fool->first, Teuchos::rcp(&sysdata, false), Core::IO::nodevector);
+      write_multi_vector(fool->first, Teuchos::rcpFromRef(sysdata), Core::IO::nodevector);
 
     }  // for (fool = names.begin(); fool!= names.end(); ++fool)
   }

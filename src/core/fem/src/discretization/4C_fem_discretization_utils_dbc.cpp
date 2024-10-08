@@ -42,14 +42,14 @@ Teuchos::RCP<const Core::FE::UTILS::Dbc> Core::FE::UTILS::build_dbc(
 {
   // HDG discretization
   if (dynamic_cast<const Core::FE::DiscretizationHDG*>(discret_ptr) != nullptr)
-    return Teuchos::rcp<const Core::FE::UTILS::Dbc>(new const Core::FE::UTILS::DbcHDG());
+    return Teuchos::RCP<const Core::FE::UTILS::Dbc>(new const Core::FE::UTILS::DbcHDG());
 
   // Nurbs discretization
   if (dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(discret_ptr) != nullptr)
-    return Teuchos::rcp<const Core::FE::UTILS::Dbc>(new const Core::FE::UTILS::DbcNurbs());
+    return Teuchos::RCP<const Core::FE::UTILS::Dbc>(new const Core::FE::UTILS::DbcNurbs());
 
   // default case
-  return Teuchos::rcp<const Core::FE::UTILS::Dbc>(new const Core::FE::UTILS::Dbc());
+  return Teuchos::make_rcp<const Core::FE::UTILS::Dbc>();
 }
 
 /*----------------------------------------------------------------------------*
@@ -76,8 +76,7 @@ void Core::FE::UTILS::Dbc::operator()(const Core::FE::Discretization& discret,
 
   // vector of DOF-IDs which are Dirichlet BCs
   std::array<Teuchos::RCP<std::set<int>>, 2> dbcgids = {Teuchos::null, Teuchos::null};
-  if (dbcmapextractor != Teuchos::null)
-    dbcgids[set_row] = Teuchos::rcp<std::set<int>>(new std::set<int>());
+  if (dbcmapextractor != Teuchos::null) dbcgids[set_row] = Teuchos::make_rcp<std::set<int>>();
 
   const std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> systemvectors = {
       systemvector, systemvectord, systemvectordd};
@@ -120,15 +119,15 @@ Teuchos::RCP<Core::LinAlg::Vector<int>> Core::FE::UTILS::Dbc::create_toggle_vect
   {
     if (not systemvectors[0].is_null())
     {
-      toggleaux = Teuchos::rcp(new Core::LinAlg::Vector<int>(systemvectors[0]->Map()));
+      toggleaux = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(systemvectors[0]->Map());
     }
     else if (not systemvectors[1].is_null())
     {
-      toggleaux = Teuchos::rcp(new Core::LinAlg::Vector<int>(systemvectors[1]->Map()));
+      toggleaux = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(systemvectors[1]->Map());
     }
     else if (not systemvectors[2].is_null())
     {
-      toggleaux = Teuchos::rcp(new Core::LinAlg::Vector<int>(systemvectors[2]->Map()));
+      toggleaux = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(systemvectors[2]->Map());
     }
     else if (systemvectors[0].is_null() and systemvectors[1].is_null() and
              systemvectors[2].is_null())
@@ -595,8 +594,8 @@ void Core::FE::UTILS::Dbc::build_dbc_map_extractor(const Core::FE::Discretizatio
     nummyelements = dbcgidsv.size();
     myglobalelements = dbcgidsv.data();
   }
-  Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements,
-      discret.dof_row_map()->IndexBase(), discret.dof_row_map()->Comm()));
+  Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::make_rcp<Epetra_Map>(-1, nummyelements,
+      myglobalelements, discret.dof_row_map()->IndexBase(), discret.dof_row_map()->Comm());
   // build the map extractor of Dirichlet-conditioned and free DOFs
   dbcmapextractor->setup(*(discret.dof_row_map()), dbcmap);
 }

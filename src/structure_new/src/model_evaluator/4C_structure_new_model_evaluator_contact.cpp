@@ -326,9 +326,9 @@ bool Solid::ModelEvaluator::Contact::assemble_jacobian(
     else
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> ones =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(global_state().block_map(type()), false));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(global_state().block_map(type()), false);
       err = ones->PutScalar(1.0);
-      block_ptr = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*ones));
+      block_ptr = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*ones);
       global_state().assign_model_block(jac, *block_ptr, type(), Solid::MatBlockType::lm_lm);
     }
     // reset the block pointer, just to be on the safe side
@@ -486,15 +486,15 @@ void Solid::ModelEvaluator::Contact::output_step_state(
 
   // evaluate active set and slip set
   Teuchos::RCP<Core::LinAlg::Vector<double>> activeset =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().active_row_nodes()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().active_row_nodes());
   activeset->PutScalar(1.0);
   if (strategy().is_friction())
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> slipset =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().slip_row_nodes()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().slip_row_nodes());
     slipset->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::Vector<double>> slipsetexp =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().active_row_nodes()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().active_row_nodes());
     Core::LinAlg::export_to(*slipset, *slipsetexp);
     activeset->Update(1.0, *slipsetexp, 1.0);
   }
@@ -502,24 +502,24 @@ void Solid::ModelEvaluator::Contact::output_step_state(
   // export to problem node row map
   Teuchos::RCP<const Epetra_Map> problemnodes = strategy().problem_nodes();
   Teuchos::RCP<Core::LinAlg::Vector<double>> activesetexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problemnodes));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemnodes);
   Core::LinAlg::export_to(*activeset, *activesetexp);
 
   if (strategy().wear_both_discrete())
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> mactiveset =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().master_active_nodes()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().master_active_nodes());
     mactiveset->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::Vector<double>> slipset =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().master_slip_nodes()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().master_slip_nodes());
     slipset->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::Vector<double>> slipsetexp =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().master_active_nodes()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().master_active_nodes());
     Core::LinAlg::export_to(*slipset, *slipsetexp);
     mactiveset->Update(1.0, *slipsetexp, 1.0);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> mactivesetexp =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*problemnodes));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemnodes);
     Core::LinAlg::export_to(*mactiveset, *mactivesetexp);
     activesetexp->Update(1.0, *mactivesetexp, 1.0);
   }
@@ -537,14 +537,14 @@ void Solid::ModelEvaluator::Contact::output_step_state(
   Teuchos::RCP<const Core::LinAlg::Vector<double>> normalstresses =
       strategy().contact_normal_stress();
   Teuchos::RCP<Core::LinAlg::Vector<double>> normalstressesexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problemdofs));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemdofs);
   Core::LinAlg::export_to(*normalstresses, *normalstressesexp);
 
   // tangential plane
   Teuchos::RCP<const Core::LinAlg::Vector<double>> tangentialstresses =
       strategy().contact_tangential_stress();
   Teuchos::RCP<Core::LinAlg::Vector<double>> tangentialstressesexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problemdofs));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemdofs);
   Core::LinAlg::export_to(*tangentialstresses, *tangentialstressesexp);
 
   // write to output
@@ -560,7 +560,7 @@ void Solid::ModelEvaluator::Contact::output_step_state(
     // write output
     Teuchos::RCP<const Core::LinAlg::Vector<double>> wearoutput = strategy().contact_wear();
     Teuchos::RCP<Core::LinAlg::Vector<double>> wearoutputexp =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*problemdofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemdofs);
     Core::LinAlg::export_to(*wearoutput, *wearoutputexp);
     iowriter.write_vector("wear", wearoutputexp);
   }
@@ -575,7 +575,7 @@ void Solid::ModelEvaluator::Contact::output_step_state(
         dynamic_cast<const CONTACT::LagrangeStrategyPoro&>(strategy());
     Teuchos::RCP<const Core::LinAlg::Vector<double>> lambdaout = poro_strategy.lambda_no_pen();
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdaoutexp =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*problemdofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemdofs);
     Core::LinAlg::export_to(*lambdaout, *lambdaoutexp);
     iowriter.write_vector("poronopen_lambda", lambdaoutexp);
   }
@@ -669,7 +669,7 @@ Solid::ModelEvaluator::Contact::get_current_solution_ptr() const
   if (strategy().lagrange_multiplier_np(false) != Teuchos::null)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> curr_lm_ptr =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().lagrange_multiplier_np(false)));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().lagrange_multiplier_np(false));
     if (not curr_lm_ptr.is_null()) curr_lm_ptr->ReplaceMap(strategy().lm_dof_row_map(false));
 
     extend_lagrange_multiplier_domain(curr_lm_ptr);
@@ -693,7 +693,7 @@ Solid::ModelEvaluator::Contact::get_last_time_step_solution_ptr() const
   if (strategy().lagrange_multiplier_n(false).is_null()) return Teuchos::null;
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> old_lm_ptr =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*strategy().lagrange_multiplier_n(false)));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().lagrange_multiplier_n(false));
   if (not old_lm_ptr.is_null()) old_lm_ptr->ReplaceMap(strategy().lm_dof_row_map(false));
 
   extend_lagrange_multiplier_domain(old_lm_ptr);
@@ -715,7 +715,7 @@ void Solid::ModelEvaluator::Contact::extend_lagrange_multiplier_domain(
       get_block_dof_row_map_ptr()->NumGlobalElements())
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> tmp_ptr =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*get_block_dof_row_map_ptr()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_block_dof_row_map_ptr());
     Core::LinAlg::export_to(*lm_vec, *tmp_ptr);
     lm_vec = tmp_ptr;
   }
@@ -847,7 +847,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Contact::assem
   // copy the vector, otherwise the storage will be freed at the end of this
   // function, resulting in a segmentation fault
   Teuchos::RCP<Core::LinAlg::Vector<double>> force =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(force_nox->getEpetraVector()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(force_nox->getEpetraVector());
 
   if (apply_dbc) tim_int().get_dbc().apply_dirichlet_to_rhs(force);
 

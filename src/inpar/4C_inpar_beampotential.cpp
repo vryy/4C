@@ -164,16 +164,16 @@ void Inpar::BEAMPOTENTIAL::set_valid_conditions(
   /*-------------------------------------------------------------------*/
   // beam potential interaction: atom/charge density per unit length on LINE
   Teuchos::RCP<Core::Conditions::ConditionDefinition> rigidsphere_potential_charge =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT RIGIDSPHERE POTENTIAL CHARGE CONDITIONS", "RigidspherePotentialPointCharge",
           "Rigidsphere_Potential_Point_Charge", Core::Conditions::RigidspherePotential_PointCharge,
-          false, Core::Conditions::geometry_type_point));
+          false, Core::Conditions::geometry_type_point);
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> beam_potential_line_charge =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE BEAM POTENTIAL CHARGE CONDITIONS", "BeamPotentialLineCharge",
           "Beam_Potential_Line_Charge_Density", Core::Conditions::BeamPotential_LineChargeDensity,
-          false, Core::Conditions::geometry_type_line));
+          false, Core::Conditions::geometry_type_line);
 
   add_named_int(rigidsphere_potential_charge, "POTLAW");
   add_named_real(rigidsphere_potential_charge, "VAL");

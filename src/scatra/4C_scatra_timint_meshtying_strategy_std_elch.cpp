@@ -52,8 +52,8 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::MeshtyingStrategyStdElch::ini
     Core::LinAlg::MapExtractor splitter;
     Core::LinAlg::create_map_extractor_from_discretization(
         *(scatratimint_->discretization()), scatratimint_->num_scal(), splitter);
-    systemmatrix = Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<ScaTra::SplitStrategy>(
-        splitter, splitter, 27, false, true));
+    systemmatrix = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<ScaTra::SplitStrategy>>(
+        splitter, splitter, 27, false, true);
     Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrix<ScaTra::SplitStrategy>>(systemmatrix)
         ->set_num_scal(scatratimint_->num_scal());
   }
@@ -65,17 +65,18 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::MeshtyingStrategyStdElch::ini
     {
       case Core::LinAlg::MatrixType::sparse:
       {
-        systemmatrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-            *scatratimint_->discretization()->dof_row_map(), 27, false, true));
+        systemmatrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+            *scatratimint_->discretization()->dof_row_map(), 27, false, true);
         break;
       }
 
       case Core::LinAlg::MatrixType::block_condition:
       case Core::LinAlg::MatrixType::block_condition_dof:
       {
-        systemmatrix = Teuchos::rcp(
-            new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                *scatratimint_->block_maps(), *scatratimint_->block_maps(), 81, false, true));
+        systemmatrix = Teuchos::make_rcp<
+            Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+
+            *scatratimint_->block_maps(), *scatratimint_->block_maps(), 81, false, true);
 
         break;
       }
@@ -99,13 +100,13 @@ void ScaTra::MeshtyingStrategyStdElch::init_conv_check_strategy()
 {
   if (elch_tim_int()->macro_scale())
   {
-    convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStdMacroScaleElch(
-        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
+    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyStdMacroScaleElch>(
+        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
   }
   else
   {
-    convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStdElch(
-        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
+    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyStdElch>(
+        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
   }
 }  // ScaTra::MeshtyingStrategyStdElch::init_conv_check_strategy
 

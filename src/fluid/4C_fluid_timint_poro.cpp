@@ -179,7 +179,7 @@ void FLD::TimIntPoro::output()
   if (step_ % upres_ == 0)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> convel =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*velnp_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*velnp_);
     convel->Update(-1.0, *gridv_, 1.0);
     output_->write_vector("convel", convel);
     output_->write_vector("gridv", gridv_);

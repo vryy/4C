@@ -548,8 +548,8 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
         extract_from_pack(data_recv_buffer, node_dofsetnumber_map);
 
         // create a new dofSetData object with unpacked data
-        dof_set_data_.push_back(Teuchos::rcp(new Cut::MeshIntersection::DofSetData(
-            set_index, (bool)inside_cell, cut_points_coords, peid, node_dofsetnumber_map)));
+        dof_set_data_.push_back(Teuchos::make_rcp<Cut::MeshIntersection::DofSetData>(
+            set_index, (bool)inside_cell, cut_points_coords, peid, node_dofsetnumber_map));
       }
 
 

@@ -50,7 +50,7 @@ NOX::Nln::CONSTRAINT::Group::Group(const NOX::Nln::CONSTRAINT::Group& source, ::
 Teuchos::RCP<::NOX::Abstract::Group> NOX::Nln::CONSTRAINT::Group::clone(::NOX::CopyType type) const
 {
   Teuchos::RCP<::NOX::Abstract::Group> newgrp =
-      Teuchos::rcp(new NOX::Nln::CONSTRAINT::Group(*this, type));
+      Teuchos::make_rcp<NOX::Nln::CONSTRAINT::Group>(*this, type);
   return newgrp;
 }
 
@@ -151,10 +151,10 @@ Teuchos::RCP<const std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_rhs_nor
     Teuchos::RCP<const std::vector<::NOX::StatusTest::NormF::ScaleType>> scale) const
 {
   if (scale.is_null())
-    scale = Teuchos::rcp(new std::vector<::NOX::StatusTest::NormF::ScaleType>(
-        chQ.size(), ::NOX::StatusTest::NormF::Unscaled));
+    scale = Teuchos::make_rcp<std::vector<::NOX::StatusTest::NormF::ScaleType>>(
+        chQ.size(), ::NOX::StatusTest::NormF::Unscaled);
 
-  Teuchos::RCP<std::vector<double>> norms = Teuchos::rcp(new std::vector<double>(0));
+  Teuchos::RCP<std::vector<double>> norms = Teuchos::make_rcp<std::vector<double>>(0);
 
   double rval = -1.0;
   for (std::size_t i = 0; i < chQ.size(); ++i)
@@ -212,10 +212,10 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_solution_upda
 {
   const ::NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(xOld);
   if (scale.is_null())
-    scale = Teuchos::rcp(new std::vector<StatusTest::NormUpdate::ScaleType>(
-        chQ.size(), StatusTest::NormUpdate::Unscaled));
+    scale = Teuchos::make_rcp<std::vector<StatusTest::NormUpdate::ScaleType>>(
+        chQ.size(), StatusTest::NormUpdate::Unscaled);
 
-  Teuchos::RCP<std::vector<double>> norms = Teuchos::rcp(new std::vector<double>(0));
+  Teuchos::RCP<std::vector<double>> norms = Teuchos::make_rcp<std::vector<double>>(0);
 
   double rval = -1.0;
   for (std::size_t i = 0; i < chQ.size(); ++i)
@@ -262,10 +262,10 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_previous_solu
 {
   const ::NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(xOld);
   if (scale.is_null())
-    scale = Teuchos::rcp(new std::vector<StatusTest::NormUpdate::ScaleType>(
-        chQ.size(), StatusTest::NormUpdate::Unscaled));
+    scale = Teuchos::make_rcp<std::vector<StatusTest::NormUpdate::ScaleType>>(
+        chQ.size(), StatusTest::NormUpdate::Unscaled);
 
-  Teuchos::RCP<std::vector<double>> norms = Teuchos::rcp(new std::vector<double>(0));
+  Teuchos::RCP<std::vector<double>> norms = Teuchos::make_rcp<std::vector<double>>(0);
 
   double rval = -1.0;
   for (std::size_t i = 0; i < chQ.size(); ++i)
@@ -310,7 +310,7 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_solution_upda
     const std::vector<bool>& disable_implicit_weighting) const
 {
   const ::NOX::Epetra::Vector& xOldEpetra = dynamic_cast<const ::NOX::Epetra::Vector&>(xOld);
-  Teuchos::RCP<std::vector<double>> rms = Teuchos::rcp(new std::vector<double>(0));
+  Teuchos::RCP<std::vector<double>> rms = Teuchos::make_rcp<std::vector<double>>(0);
 
   double rval = -1.0;
   for (std::size_t i = 0; i < chQ.size(); ++i)

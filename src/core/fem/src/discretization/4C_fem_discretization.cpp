@@ -39,7 +39,7 @@ Core::FE::Discretization::Discretization(
       havedof_(false),
       n_dim_(n_dim)
 {
-  dofsets_.emplace_back(Teuchos::rcp(new Core::DOFSets::DofSet()));
+  dofsets_.emplace_back(Teuchos::make_rcp<Core::DOFSets::DofSet>());
 }
 
 /*----------------------------------------------------------------------*
@@ -462,7 +462,7 @@ Teuchos::RCP<Core::DOFSets::DofSetInterface> Core::FE::Discretization::get_dof_s
 {
   FOUR_C_ASSERT(
       nds < (int)dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
-  return Teuchos::rcp(new Core::DOFSets::DofSetProxy(&*dofsets_[nds]));
+  return Teuchos::make_rcp<Core::DOFSets::DofSetProxy>(&*dofsets_[nds]);
 }
 
 /*----------------------------------------------------------------------*
@@ -566,7 +566,7 @@ void Core::FE::Discretization::set_state(const unsigned nds, const std::string& 
         not stateimporter_[nds]->SourceMap().SameAs(state->Map()) or
         not stateimporter_[nds]->TargetMap().SameAs(*colmap))
     {
-      stateimporter_[nds] = Teuchos::rcp(new Epetra_Import(*colmap, state->Map()));
+      stateimporter_[nds] = Teuchos::make_rcp<Epetra_Import>(*colmap, state->Map());
     }
 
     // transfer data
@@ -676,7 +676,7 @@ Teuchos::RCP<std::vector<char>> Core::FE::Discretization::pack_my_elements() con
 
   for (auto* ele : elerowptr_) ele->pack(buffer);
 
-  auto block = Teuchos::rcp(new std::vector<char>);
+  auto block = Teuchos::make_rcp<std::vector<char>>();
   std::swap(*block, buffer());
   return block;
 }
@@ -693,7 +693,7 @@ Teuchos::RCP<std::vector<char>> Core::FE::Discretization::pack_my_nodes() const
 
   for (auto* node : noderowptr_) node->pack(buffer);
 
-  auto block = Teuchos::rcp(new std::vector<char>);
+  auto block = Teuchos::make_rcp<std::vector<char>>();
   std::swap(*block, buffer());
   return block;
 }
@@ -714,7 +714,7 @@ void Core::FE::Discretization::unpack_my_elements(Teuchos::RCP<std::vector<char>
     FOUR_C_THROW_UNLESS(ele != nullptr,
         "Failed to build an element from the element data for discretization %s", name_.c_str());
     ele->set_owner(comm_->MyPID());
-    add_element(Teuchos::rcp(ele));
+    add_element(Teuchos::RCP(ele));
   }
   // in case add_element forgets...
   reset();
@@ -735,7 +735,7 @@ void Core::FE::Discretization::unpack_my_nodes(Teuchos::RCP<std::vector<char>> e
     FOUR_C_THROW_UNLESS(node != nullptr,
         "Failed to build a node from the node data for discretization %s", name_.c_str());
     node->set_owner(comm_->MyPID());
-    add_node(Teuchos::rcp(node));
+    add_node(Teuchos::RCP(node));
   }
   // in case add_node forgets...
   reset();
@@ -858,14 +858,14 @@ void Core::FE::Discretization::add_multi_vector_to_parameter_list(
     {
       // make a copy as in parallel such that no additional RCP points to the state vector
       Teuchos::RCP<Epetra_MultiVector> tmp =
-          Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, numcol));
+          Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, numcol);
       tmp->Update(1.0, *vec, 0.0);
       p.set(name, tmp);
     }
     else  // if it's not in column map export and allocate
     {
       Teuchos::RCP<Epetra_MultiVector> tmp =
-          Teuchos::rcp(new Epetra_MultiVector(*nodecolmap, numcol));
+          Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, numcol);
       Core::LinAlg::export_to(*vec, *tmp);
       p.set(name, tmp);
     }

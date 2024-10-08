@@ -88,7 +88,7 @@ void immersed_problem_drt()
 
           Teuchos::RCP<Immersed::ImmersedPartitionedFSIDirichletNeumann> algo = Teuchos::null;
           if (scheme == Inpar::Immersed::dirichletneumann)
-            algo = Teuchos::rcp(new Immersed::ImmersedPartitionedFSIDirichletNeumann(comm));
+            algo = Teuchos::make_rcp<Immersed::ImmersedPartitionedFSIDirichletNeumann>(comm);
           else
           {
             FOUR_C_THROW("unknown coupling scheme");

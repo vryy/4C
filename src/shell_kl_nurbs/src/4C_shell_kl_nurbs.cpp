@@ -56,7 +56,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::KirchhoffLoveShellNurbs
 {
   if (eletype == "SHELL_KIRCHHOFF_LOVE_NURBS" and eledistype == "NURBS9")
   {
-    return Teuchos::rcp(new Discret::ELEMENTS::KirchhoffLoveShellNurbs(id, owner));
+    return Teuchos::make_rcp<Discret::ELEMENTS::KirchhoffLoveShellNurbs>(id, owner);
   }
   return Teuchos::null;
 }
@@ -67,7 +67,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::KirchhoffLoveShellNurbs
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::KirchhoffLoveShellNurbsType::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Discret::ELEMENTS::KirchhoffLoveShellNurbs(id, owner));
+  return Teuchos::make_rcp<Discret::ELEMENTS::KirchhoffLoveShellNurbs>(id, owner);
 }
 
 /**

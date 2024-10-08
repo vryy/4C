@@ -159,7 +159,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
 
   // DOF-COL-MAP
   const Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_col =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret->dof_col_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret->dof_col_map());
   // export dof_row_map to DofColMap phinp
   Core::LinAlg::export_to(*state, *phinp_col);
 
@@ -167,7 +167,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
 
   // before we can export to NodeColMap we need reconstruction with a NodeRowMap
   const Teuchos::RCP<Epetra_MultiVector> gradphirow =
-      Teuchos::rcp(new Epetra_MultiVector(*discret->dof_row_map(), nsd));
+      Teuchos::make_rcp<Epetra_MultiVector>(*discret->dof_row_map(), nsd);
   gradphirow->PutScalar(0.0);
 
   // map of pointers to nodes which must be reconstructed by this processor <local id, node>

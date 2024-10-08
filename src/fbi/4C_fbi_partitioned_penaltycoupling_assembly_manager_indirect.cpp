@@ -41,9 +41,8 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerInd
     : PartitionedBeamInteractionAssemblyManager(assembly_contact_elepairs)
 {
   // Create the mortar manager.
-  mortar_manager_ = Teuchos::rcp<BEAMINTERACTION::BeamToFluidMortarManager>(
-      new BEAMINTERACTION::BeamToFluidMortarManager(discretization1, discretization2,
-          beam_contact_params_ptr, discretization1->dof_row_map()->MaxAllGID()));
+  mortar_manager_ = Teuchos::make_rcp<BEAMINTERACTION::BeamToFluidMortarManager>(discretization1,
+      discretization2, beam_contact_params_ptr, discretization1->dof_row_map()->MaxAllGID());
 
   // Setup the mortar manager.
   mortar_manager_->setup();

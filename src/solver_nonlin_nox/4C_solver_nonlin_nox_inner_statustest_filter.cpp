@@ -169,7 +169,7 @@ void NOX::Nln::Inner::StatusTest::Filter::Point::reinit_filter(
 
   scale_max_theta_values(downscale_fac);
 
-  Teuchos::RCP<Point> point_ptr = Teuchos::rcp(new Point);
+  Teuchos::RCP<Point> point_ptr = Teuchos::RCP(new Point);
   Point& point = *point_ptr;
 
   const unsigned num_thetas = global_scaled_max_thetas_.length();
@@ -188,7 +188,7 @@ Teuchos::RCP<NOX::Nln::Inner::StatusTest::Filter::Point>
 NOX::Nln::Inner::StatusTest::Filter::Point::create(const ::NOX::MeritFunction::Generic& merit_func,
     const Infeasibility& infeasibility_func, const ::NOX::Abstract::Group& grp)
 {
-  Teuchos::RCP<Point> point_ptr = Teuchos::rcp(new Point);
+  Teuchos::RCP<Point> point_ptr = Teuchos::RCP(new Point);
   Point& point = *point_ptr;
 
   point(0) = merit_func.computef(grp);
@@ -204,7 +204,7 @@ NOX::Nln::Inner::StatusTest::Filter::Point::create(const ::NOX::MeritFunction::G
 Teuchos::RCP<NOX::Nln::Inner::StatusTest::Filter::Point>
 NOX::Nln::Inner::StatusTest::Filter::Point::make_filter_point(const Point& p, const bool do_scaling)
 {
-  Teuchos::RCP<Point> fp_ptr = Teuchos::rcp(new Point(p));
+  Teuchos::RCP<Point> fp_ptr = Teuchos::RCP(new Point(p));
   Point& fp = *fp_ptr;
 
   if (not fp.is_filter_point_)
@@ -903,9 +903,9 @@ void NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::solve(
       dynamic_cast<const ::NOX::Epetra::Vector&>(x).getEpetraVector().Map();
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> dir_ptr =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(map, true));
-  Teuchos::RCP<::NOX::Epetra::Vector> nox_dir = Teuchos::rcp(new ::NOX::Epetra::Vector(
-      dir_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(map, true);
+  Teuchos::RCP<::NOX::Epetra::Vector> nox_dir = Teuchos::make_rcp<::NOX::Epetra::Vector>(
+      dir_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
   // compute the new direction
   const NOX::Nln::Solver::LineSearchBased& nln_solver =
@@ -952,7 +952,7 @@ void NOX::Nln::Inner::StatusTest::Filter::BackupState::create(
   {
     const ::NOX::Epetra::Vector& nox_epetra_x =
         dynamic_cast<const ::NOX::Epetra::Vector&>(grp.getX());
-    xvector_ = Teuchos::rcp(new ::NOX::Epetra::Vector(nox_epetra_x));
+    xvector_ = Teuchos::make_rcp<::NOX::Epetra::Vector>(nox_epetra_x);
   }
   else
     xvector_->update(1.0, grp.getX(), 0.0);

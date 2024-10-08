@@ -1390,7 +1390,8 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule(
   }
   else  // hex8
   {
-    cgp_ = Teuchos::rcp(new Core::FE::CollectedGaussPoints(numgpnorm_ * numgpplane_ * numgpplane_));
+    cgp_ =
+        Teuchos::make_rcp<Core::FE::CollectedGaussPoints>(numgpnorm_ * numgpplane_ * numgpplane_);
     // get the quad9 gaussrule for the in plane integration
     Core::FE::GaussIntegration intpointsplane(Core::FE::CellType::quad8, 2 * numgpplane_ - 1);
     // get the quad9 gaussrule for the in normal integration

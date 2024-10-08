@@ -32,8 +32,8 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // ask ALE::AleBaseAlgorithm for the ale time integrator
   // -------------------------------------------------------------------
-  Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::rcp(
-      new Adapter::AleBaseAlgorithm(Global::Problem::instance()->ale_dynamic_params(), actdis));
+  Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::make_rcp<Adapter::AleBaseAlgorithm>(
+      Global::Problem::instance()->ale_dynamic_params(), actdis);
   Teuchos::RCP<Adapter::Ale> aletimint = ale->ale_field();
 
   // -------------------------------------------------------------------

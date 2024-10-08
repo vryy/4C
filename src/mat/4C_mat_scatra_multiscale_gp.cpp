@@ -95,8 +95,8 @@ void Mat::ScatraMultiScaleGP::init()
         Global::Problem::instance()->scalar_transport_dynamic_params();
 
     // extract micro-scale parameter list and create deep copy
-    Teuchos::RCP<Teuchos::ParameterList> sdyn_micro = Teuchos::rcp(new Teuchos::ParameterList(
-        Global::Problem::instance(microdisnum_)->scalar_transport_dynamic_params()));
+    Teuchos::RCP<Teuchos::ParameterList> sdyn_micro = Teuchos::make_rcp<Teuchos::ParameterList>(
+        Global::Problem::instance(microdisnum_)->scalar_transport_dynamic_params());
 
     // preliminary safety check
     if (Global::Problem::instance(microdisnum_)->n_dim() != 1)
@@ -172,8 +172,8 @@ void Mat::ScatraMultiScaleGP::init()
 
     // add proxy of velocity related degrees of freedom to scatra discretization
     Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-        Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
-            Global::Problem::instance(microdisnum_)->n_dim() + 1, 0, 0, true));
+        Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+            Global::Problem::instance(microdisnum_)->n_dim() + 1, 0, 0, true);
     if (microdis->add_dof_set(dofsetaux) != 1)
       FOUR_C_THROW("Micro-scale discretization has illegal number of dofsets!");
 
@@ -192,17 +192,17 @@ void Mat::ScatraMultiScaleGP::init()
     }
 
     // create solver
-    Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(
+    Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
         Global::Problem::instance(microdisnum_)->solver_params(linsolvernumber),
         microdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
         Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-            Global::Problem::instance()->io_params(), "VERBOSITY")));
+            Global::Problem::instance()->io_params(), "VERBOSITY"));
 
     // provide solver with null space information if necessary
     microdis->compute_null_space_if_necessary(solver->params());
 
     // supplementary parameter list
-    Teuchos::RCP<Teuchos::ParameterList> extraparams = Teuchos::rcp(new Teuchos::ParameterList());
+    Teuchos::RCP<Teuchos::ParameterList> extraparams = Teuchos::make_rcp<Teuchos::ParameterList>();
     extraparams->set<bool>("isale", false);
     extraparams->sublist("TURBULENT INFLOW") =
         Global::Problem::instance(microdisnum_)->fluid_dynamic_params().sublist("TURBULENT INFLOW");
@@ -210,8 +210,8 @@ void Mat::ScatraMultiScaleGP::init()
         Global::Problem::instance(microdisnum_)->fluid_dynamic_params().sublist("TURBULENCE MODEL");
 
     // instantiate and initialize micro-scale time integrator
-    microdisnum_microtimint_map_[microdisnum_] = Teuchos::rcp(new ScaTra::TimIntOneStepTheta(
-        microdis, solver, sdyn_micro, extraparams, Teuchos::null, microdisnum_));
+    microdisnum_microtimint_map_[microdisnum_] = Teuchos::make_rcp<ScaTra::TimIntOneStepTheta>(
+        microdis, solver, sdyn_micro, extraparams, Teuchos::null, microdisnum_);
     microdisnum_microtimint_map_[microdisnum_]->init();
     microdisnum_microtimint_map_[microdisnum_]->set_number_of_dof_set_velocity(1);
     microdisnum_microtimint_map_[microdisnum_]->setup();
@@ -327,7 +327,7 @@ double Mat::ScatraMultiScaleGP::evaluate_mean_concentration() const
   // initialize result vector: first component = concentration integral, second component = domain
   // integral
   const Teuchos::RCP<Core::LinAlg::SerialDenseVector> integrals =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(2);
 
   // evaluate concentration and domain integrals on micro scale
   discret.evaluate_scalars(eleparams, integrals);
@@ -358,7 +358,7 @@ double Mat::ScatraMultiScaleGP::evaluate_mean_concentration_time_derivative() co
   // initialize result vector: first component = integral of concentration time derivative, second
   // component = integral of domain
   const Teuchos::RCP<Core::LinAlg::SerialDenseVector> integrals =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(2);
 
   // evaluate integrals of domain and time derivative of concentration on micro scale
   discret.evaluate_scalars(eleparams, integrals);
@@ -427,14 +427,14 @@ void Mat::ScatraMultiScaleGP::new_result_file()
     // in case of restart, the new output file name has already been adapted
     if (restart) adaptname = false;
 
-    Teuchos::RCP<Core::IO::OutputControl> microcontrol = Teuchos::rcp(new Core::IO::OutputControl(
+    Teuchos::RCP<Core::IO::OutputControl> microcontrol = Teuchos::make_rcp<Core::IO::OutputControl>(
         microdis->get_comm(), "Scalar_Transport", microproblem->spatial_approximation_type(),
         "micro-input-file-not-known", restartname_, newfilename, ndim, restart,
         Global::Problem::instance(microdisnum_)->io_params().get<int>("FILESTEPS"),
-        Global::Problem::instance(microdisnum_)->io_params().get<bool>("OUTPUT_BIN"), adaptname));
+        Global::Problem::instance(microdisnum_)->io_params().get<bool>("OUTPUT_BIN"), adaptname);
 
-    micro_output_ = Teuchos::rcp(new Core::IO::DiscretizationWriter(
-        microdis, microcontrol, microproblem->spatial_approximation_type()));
+    micro_output_ = Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+        microdis, microcontrol, microproblem->spatial_approximation_type());
     micro_output_->set_output(microcontrol);
     micro_output_->write_mesh(
         step_, Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time());
@@ -558,7 +558,7 @@ void Mat::ScatraMultiScaleGP::read_restart()
       Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time());
 
   // read restart on micro scale
-  auto inputcontrol = Teuchos::rcp(new Core::IO::InputControl(restartname_, true));
+  auto inputcontrol = Teuchos::make_rcp<Core::IO::InputControl>(restartname_, true);
   microtimint->read_restart(step_, inputcontrol);
 
   // safety check
@@ -570,13 +570,13 @@ void Mat::ScatraMultiScaleGP::read_restart()
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (inputcontrol == Teuchos::null)
   {
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
-        microtimint->discretization(), Global::Problem::instance()->input_control_file(), step_));
+    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+        microtimint->discretization(), Global::Problem::instance()->input_control_file(), step_);
   }
   else
   {
-    reader = Teuchos::rcp(
-        new Core::IO::DiscretizationReader(microtimint->discretization(), inputcontrol, step_));
+    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+        microtimint->discretization(), inputcontrol, step_);
   }
 
   if (is_ale_)

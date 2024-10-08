@@ -92,20 +92,21 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
       couplingcondname, "COUPLEDDOFS_ART", "COUPLEDDOFS_PORO", evaluate_on_lateral_surface);
 
   // Initialize rhs vector
-  rhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*arttoporofluidcoupling_->full_map(), true));
+  rhs_ =
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*arttoporofluidcoupling_->full_map(), true);
 
   // Initialize increment vector
   comb_increment_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*arttoporofluidcoupling_->full_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*arttoporofluidcoupling_->full_map(), true);
   // Initialize phinp vector
   comb_phinp_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*arttoporofluidcoupling_->full_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*arttoporofluidcoupling_->full_map(), true);
 
   // initialize Poromultiphase-elasticity-systemmatrix_
   comb_systemmatrix_ =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           *arttoporofluidcoupling_->global_extractor(),
-          *arttoporofluidcoupling_->global_extractor(), 81, false, true));
+          *arttoporofluidcoupling_->global_extractor(), 81, false, true);
 
   return;
 }

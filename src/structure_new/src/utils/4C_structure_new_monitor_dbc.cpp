@@ -115,8 +115,8 @@ void Solid::MonitorDbc::create_reaction_force_condition(
   const int new_id = get_unique_id(tagged_cond.id(), tagged_cond.g_type());
 
   Teuchos::RCP<Core::Conditions::Condition> rcond_ptr =
-      Teuchos::rcp(new Core::Conditions::Condition(
-          new_id, Core::Conditions::ElementTag, true, tagged_cond.g_type()));
+      Teuchos::make_rcp<Core::Conditions::Condition>(
+          new_id, Core::Conditions::ElementTag, true, tagged_cond.g_type());
 
   rcond_ptr->parameters().add("ONOFF", (tagged_cond.parameters().get<std::vector<int>>("ONOFF")));
   rcond_ptr->set_nodes(*tagged_cond.get_nodes());
@@ -211,7 +211,8 @@ void Solid::MonitorDbc::create_reaction_maps(const Core::FE::Discretization& dis
   }
 
   for (unsigned i = 0; i < DIM; ++i)
-    react_maps[i] = Teuchos::rcp(new Epetra_Map(-1, my_dofs[i].size(), my_dofs[i].data(), 0, comm));
+    react_maps[i] =
+        Teuchos::make_rcp<Epetra_Map>(-1, my_dofs[i].size(), my_dofs[i].data(), 0, comm);
 }
 
 /*----------------------------------------------------------------------------*

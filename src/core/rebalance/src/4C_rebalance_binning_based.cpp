@@ -69,10 +69,10 @@ void Core::Rebalance::rebalance_discretizations_by_binning(
     std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
 
     // binning strategy is created and parallel redistribution is performed
-    auto binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
+    auto binningstrategy = Teuchos::make_rcp<Core::Binstrategy::BinningStrategy>(binning_params,
         output_control, vector_of_discretizations[0]->get_comm(),
         vector_of_discretizations[0]->get_comm().MyPID(), std::move(correct_node),
-        std::move(determine_relevant_points), vector_of_discretizations));
+        std::move(determine_relevant_points), vector_of_discretizations);
 
     binningstrategy
         ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
@@ -95,7 +95,7 @@ void Core::Rebalance::ghost_discretization_on_all_procs(
     const Teuchos::RCP<Core::FE::Discretization> distobeghosted)
 {
   // clone communicator of target discretization
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(distobeghosted->get_comm().Clone());
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(distobeghosted->get_comm().Clone());
 
   if (com->MyPID() == 0)
   {
@@ -128,7 +128,7 @@ void Core::Rebalance::ghost_discretization_on_all_procs(
 
   // build new node column map (on ALL processors)
   Teuchos::RCP<Epetra_Map> newnodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, *com));
+      Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, *com);
   sdata.clear();
   rdata.clear();
 
@@ -147,7 +147,7 @@ void Core::Rebalance::ghost_discretization_on_all_procs(
 
   // build new element column map (on ALL processors)
   Teuchos::RCP<Epetra_Map> newelecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, *com));
+      Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, *com);
   sdata.clear();
   rdata.clear();
   allproc.clear();
@@ -181,7 +181,7 @@ void Core::Rebalance::match_element_distribution_of_matching_discretizations(
     Core::FE::Discretization& dis_template, Core::FE::Discretization& dis_to_rebalance)
 {
   // clone communicator of target discretization
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis_template.get_comm().Clone());
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(dis_template.get_comm().Clone());
   if (com->NumProc() > 1)
   {
     // print to screen
@@ -210,12 +210,12 @@ void Core::Rebalance::match_element_distribution_of_matching_discretizations(
         dis_template, dis_to_rebalance, rebalance_rowelegid_vec, rebalance_colelegid_vec);
 
     // construct rebalanced element row map
-    Teuchos::RCP<Epetra_Map> rebalanced_elerowmap = Teuchos::rcp(new Epetra_Map(
-        -1, rebalance_rowelegid_vec.size(), rebalance_rowelegid_vec.data(), 0, *com));
+    Teuchos::RCP<Epetra_Map> rebalanced_elerowmap = Teuchos::make_rcp<Epetra_Map>(
+        -1, rebalance_rowelegid_vec.size(), rebalance_rowelegid_vec.data(), 0, *com);
 
     // construct rebalanced element col map
-    Teuchos::RCP<Epetra_Map> rebalanced_elecolmap = Teuchos::rcp(new Epetra_Map(
-        -1, rebalance_colelegid_vec.size(), rebalance_colelegid_vec.data(), 0, *com));
+    Teuchos::RCP<Epetra_Map> rebalanced_elecolmap = Teuchos::make_rcp<Epetra_Map>(
+        -1, rebalance_colelegid_vec.size(), rebalance_colelegid_vec.data(), 0, *com);
 
     ////////////////////////////////////////
     // MATCH NODES
@@ -229,12 +229,12 @@ void Core::Rebalance::match_element_distribution_of_matching_discretizations(
         dis_template, dis_to_rebalance, rebalance_nodegid_vec, rebalance_colnodegid_vec);
 
     // construct rebalanced node row map
-    Teuchos::RCP<Epetra_Map> rebalanced_noderowmap = Teuchos::rcp(
-        new Epetra_Map(-1, rebalance_nodegid_vec.size(), rebalance_nodegid_vec.data(), 0, *com));
+    Teuchos::RCP<Epetra_Map> rebalanced_noderowmap = Teuchos::make_rcp<Epetra_Map>(
+        -1, rebalance_nodegid_vec.size(), rebalance_nodegid_vec.data(), 0, *com);
 
     // construct rebalanced node col map
-    Teuchos::RCP<Epetra_Map> rebalanced_nodecolmap = Teuchos::rcp(new Epetra_Map(
-        -1, rebalance_colnodegid_vec.size(), rebalance_colnodegid_vec.data(), 0, *com));
+    Teuchos::RCP<Epetra_Map> rebalanced_nodecolmap = Teuchos::make_rcp<Epetra_Map>(
+        -1, rebalance_colnodegid_vec.size(), rebalance_colnodegid_vec.data(), 0, *com);
 
     ////////////////////////////////////////
     // REBALANCE
@@ -267,7 +267,7 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
     const std::string& condname_template, const std::string& condname_rebalance, const bool print)
 {
   // clone communicator of target discretization
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(dis_template.get_comm().Clone());
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(dis_template.get_comm().Clone());
   if (com->NumProc() > 1)
   {
     // print to screen
@@ -307,7 +307,7 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
     Teuchos::RCP<Core::FE::Discretization> dis_from_template_condition;
 
     Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discreator =
-        Teuchos::rcp(new Core::FE::DiscretizationCreatorBase());
+        Teuchos::make_rcp<Core::FE::DiscretizationCreatorBase>();
     std::vector<std::string> conditions_to_copy(0);
     dis_from_template_condition = discreator->create_matching_discretization_from_condition(
         dis_template,        ///< discretization with condition
@@ -413,12 +413,12 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
 
 
     // construct rebalanced element row map
-    Teuchos::RCP<Epetra_Map> rebalanced_elerowmap = Teuchos::rcp(new Epetra_Map(
-        -1, rebalance_rowelegid_vec.size(), rebalance_rowelegid_vec.data(), 0, *com));
+    Teuchos::RCP<Epetra_Map> rebalanced_elerowmap = Teuchos::make_rcp<Epetra_Map>(
+        -1, rebalance_rowelegid_vec.size(), rebalance_rowelegid_vec.data(), 0, *com);
 
     // construct rebalanced element col map
-    Teuchos::RCP<Epetra_Map> rebalanced_elecolmap = Teuchos::rcp(new Epetra_Map(
-        -1, rebalance_colelegid_vec.size(), rebalance_colelegid_vec.data(), 0, *com));
+    Teuchos::RCP<Epetra_Map> rebalanced_elecolmap = Teuchos::make_rcp<Epetra_Map>(
+        -1, rebalance_colelegid_vec.size(), rebalance_colelegid_vec.data(), 0, *com);
 
 
     ////////////////////////////////////////
@@ -510,12 +510,12 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
     }
 
     // construct rebalanced node row map
-    Teuchos::RCP<Epetra_Map> rebalanced_noderowmap = Teuchos::rcp(new Epetra_Map(
-        -1, rebalance_rownodegid_vec.size(), rebalance_rownodegid_vec.data(), 0, *com));
+    Teuchos::RCP<Epetra_Map> rebalanced_noderowmap = Teuchos::make_rcp<Epetra_Map>(
+        -1, rebalance_rownodegid_vec.size(), rebalance_rownodegid_vec.data(), 0, *com);
 
     // construct rebalanced node col map
-    Teuchos::RCP<Epetra_Map> rebalanced_nodecolmap = Teuchos::rcp(new Epetra_Map(
-        -1, rebalance_colnodegid_vec.size(), rebalance_colnodegid_vec.data(), 0, *com));
+    Teuchos::RCP<Epetra_Map> rebalanced_nodecolmap = Teuchos::make_rcp<Epetra_Map>(
+        -1, rebalance_colnodegid_vec.size(), rebalance_colnodegid_vec.data(), 0, *com);
 
 
     ////////////////////////////////////////
@@ -597,8 +597,8 @@ Teuchos::RCP<Epetra_Map> Core::Rebalance::compute_node_col_map(
   }
 
   // now reconstruct the extended colmap
-  Teuchos::RCP<Epetra_Map> newcolnodemap = Teuchos::rcp(
-      new Epetra_Map(-1, mycolnodes.size(), mycolnodes.data(), 0, sourcedis->get_comm()));
+  Teuchos::RCP<Epetra_Map> newcolnodemap = Teuchos::make_rcp<Epetra_Map>(
+      -1, mycolnodes.size(), mycolnodes.data(), 0, sourcedis->get_comm());
   return newcolnodemap;
 }  // Core::Rebalance::ComputeNodeColMap
 

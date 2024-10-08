@@ -75,13 +75,13 @@ int UTILS::Cardiovascular0DDofSet::assign_degrees_of_freedom(
     count = mor->get_red_dim();
 
   // dofrowmap with index base = count, which is undesired
-  Teuchos::RCP<Epetra_Map> dofrowmap = Teuchos::rcp(new Epetra_Map(ndofs, count, dis->get_comm()));
+  Teuchos::RCP<Epetra_Map> dofrowmap = Teuchos::make_rcp<Epetra_Map>(ndofs, count, dis->get_comm());
 
   std::vector<int> gids;
   for (int i = 0; i < dofrowmap->NumMyElements(); i++) gids.push_back(dofrowmap->GID(i));
 
   // dofrowmap with index base = 0
-  dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, gids.size(), gids.data(), 0, dis->get_comm()));
+  dofrowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, gids.size(), gids.data(), 0, dis->get_comm());
 
   return count;
 }

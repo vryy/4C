@@ -310,7 +310,7 @@ void CONTACT::FriNode::unpack(Core::Communication::UnpackBuffer& buffer)
   bool hasdata = extract_int(buffer);
   if (hasdata)
   {
-    fridata_ = Teuchos::rcp(new CONTACT::FriNodeDataContainer());
+    fridata_ = Teuchos::make_rcp<CONTACT::FriNodeDataContainer>();
     fridata_->unpack(buffer);
   }
   else
@@ -321,7 +321,7 @@ void CONTACT::FriNode::unpack(Core::Communication::UnpackBuffer& buffer)
   bool hasdataplus = extract_int(buffer);
   if (hasdataplus)
   {
-    weardata_ = Teuchos::rcp(new CONTACT::FriNodeWearDataContainer());
+    weardata_ = Teuchos::make_rcp<CONTACT::FriNodeWearDataContainer>();
     weardata_->unpack(buffer);
   }
   else
@@ -554,16 +554,16 @@ void CONTACT::FriNode::initialize_data_container()
   // only initialize if not yet done
   if (modata_ == Teuchos::null && codata_ == Teuchos::null && fridata_ == Teuchos::null)
   {
-    modata_ = Teuchos::rcp(new Mortar::NodeDataContainer());
-    codata_ = Teuchos::rcp(new CONTACT::NodeDataContainer());
-    fridata_ = Teuchos::rcp(new CONTACT::FriNodeDataContainer());
+    modata_ = Teuchos::make_rcp<Mortar::NodeDataContainer>();
+    codata_ = Teuchos::make_rcp<CONTACT::NodeDataContainer>();
+    fridata_ = Teuchos::make_rcp<CONTACT::FriNodeDataContainer>();
   }
 
   // initialize data container for wear and tsi problems
   if (wear_ == true)
   {
     if (weardata_ == Teuchos::null)
-      weardata_ = Teuchos::rcp(new CONTACT::FriNodeWearDataContainer());
+      weardata_ = Teuchos::make_rcp<CONTACT::FriNodeWearDataContainer>();
   }
 }
 

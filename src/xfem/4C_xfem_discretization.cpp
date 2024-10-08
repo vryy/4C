@@ -128,7 +128,7 @@ void XFEM::DiscretizationXFEM::export_initialto_active_vector(
   initialized();
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fullvec =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*initialpermdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*initialpermdofrowmap_, true);
 
   {  // Export manually as target.Map().UniqueGIDs() gives = true, although this shouldn't be the
      // case
@@ -208,7 +208,7 @@ Teuchos::RCP<Epetra_Map> XFEM::DiscretizationXFEM::extend_map(
     }
   }
 
-  return Teuchos::rcp(new Epetra_Map(-1, dstgids.size(), dstgids.data(), 0, srcmap->Comm()));
+  return Teuchos::make_rcp<Epetra_Map>(-1, dstgids.size(), dstgids.data(), 0, srcmap->Comm());
 }
 
 /*----------------------------------------------------------------------*

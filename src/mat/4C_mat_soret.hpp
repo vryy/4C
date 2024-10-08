@@ -116,7 +116,7 @@ namespace Mat
     //! clone Soret material
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new Soret(*this));
+      return Teuchos::make_rcp<Soret>(*this);
     };
 
     //! return Soret coefficient

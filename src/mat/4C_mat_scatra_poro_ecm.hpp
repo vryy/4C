@@ -111,7 +111,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new ScatraMatPoroECM(*this));
+      return Teuchos::make_rcp<ScatraMatPoroECM>(*this);
     }
 
     /// Return quick accessible material parameter data

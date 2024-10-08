@@ -39,17 +39,18 @@ Mat::PAR::ParameterAniso::ParameterAniso(const Core::Mat::PAR::Parameter::Data& 
   if (strategy == "Standard")
   {
     structural_tensor_strategy_ =
-        Teuchos::rcp(new Mat::Elastic::StructuralTensorStrategyStandard(params));
+        Teuchos::make_rcp<Mat::Elastic::StructuralTensorStrategyStandard>(params);
   }
   else if (strategy == "ByDistributionFunction")
   {
     structural_tensor_strategy_ =
-        Teuchos::rcp(new Mat::Elastic::StructuralTensorStrategyByDistributionFunction(params));
+        Teuchos::make_rcp<Mat::Elastic::StructuralTensorStrategyByDistributionFunction>(params);
   }
   else if (strategy == "DispersedTransverselyIsotropic")
   {
-    structural_tensor_strategy_ = Teuchos::rcp(
-        new Mat::Elastic::StructuralTensorStrategyDispersedTransverselyIsotropic(params));
+    structural_tensor_strategy_ =
+        Teuchos::make_rcp<Mat::Elastic::StructuralTensorStrategyDispersedTransverselyIsotropic>(
+            params);
   }
   else
     FOUR_C_THROW("Unknown type of structural tensor strategy for anisotropic material chosen.");

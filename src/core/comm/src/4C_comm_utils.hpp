@@ -95,7 +95,7 @@ namespace Core::Communication
     {
       const Epetra_MpiComm& mpiComm = dynamic_cast<const Epetra_MpiComm&>(comm);
       Teuchos::RCP<Teuchos::MpiComm<Datatype>> mpicomm =
-          Teuchos::rcp(new Teuchos::MpiComm<Datatype>(Teuchos::opaqueWrapper(mpiComm.Comm())));
+          Teuchos::make_rcp<Teuchos::MpiComm<Datatype>>(Teuchos::opaqueWrapper(mpiComm.Comm()));
       return Teuchos::rcp_dynamic_cast<const Teuchos::Comm<Datatype>>(mpicomm);
     }
     catch (std::bad_cast& b)

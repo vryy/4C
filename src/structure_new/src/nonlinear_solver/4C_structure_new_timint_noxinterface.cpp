@@ -255,8 +255,8 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetr
     case NOX::Nln::StatusTest::quantity_cardiovascular0d:
     {
       // export the displacement solution if necessary
-      Teuchos::RCP<Epetra_Vector> model_incr_ptr = Teuchos::rcp(new Epetra_Vector(
-          *gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xold))));
+      Teuchos::RCP<Epetra_Vector> model_incr_ptr = Teuchos::make_rcp<Epetra_Vector>(
+          *gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xold)));
       auto model_xnew_ptr =
           gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xnew));
 
@@ -425,7 +425,7 @@ double Solid::TimeInt::NoxInterface::calculate_norm(Teuchos::RCP<Epetra_Vector> 
     const ::NOX::Abstract::Vector::NormType type, const bool isscaled) const
 {
   Teuchos::RCP<const ::NOX::Epetra::Vector> quantity_nox =
-      Teuchos::rcp(new ::NOX::Epetra::Vector(quantity, ::NOX::Epetra::Vector::CreateView));
+      Teuchos::make_rcp<::NOX::Epetra::Vector>(quantity, ::NOX::Epetra::Vector::CreateView);
 
   double norm = quantity_nox->norm(type);
   // do the scaling if desired
@@ -593,7 +593,7 @@ Solid::TimeInt::NoxInterface::calc_jacobian_contributions_from_element_level_for
 {
   check_init_setup();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> scalingMatrixOpPtr =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gstate_ptr_->dof_row_map(), 81, true, true));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gstate_ptr_->dof_row_map(), 81, true, true);
   int_ptr_->compute_jacobian_contributions_from_element_level_for_ptc(scalingMatrixOpPtr);
 
   return scalingMatrixOpPtr;

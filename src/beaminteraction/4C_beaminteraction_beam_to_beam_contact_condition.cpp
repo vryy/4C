@@ -97,19 +97,19 @@ BEAMINTERACTION::BeamToBeamContactCondition::create_contact_pair(
       {
         case 2:
         {
-          return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamContactPair<2, 1>());
+          return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamContactPair<2, 1>>();
         }
         case 3:
         {
-          return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamContactPair<3, 1>());
+          return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamContactPair<3, 1>>();
         }
         case 4:
         {
-          return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamContactPair<4, 1>());
+          return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamContactPair<4, 1>>();
         }
         case 5:
         {
-          return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamContactPair<5, 1>());
+          return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamContactPair<5, 1>>();
         }
         default:
         {
@@ -129,7 +129,7 @@ BEAMINTERACTION::BeamToBeamContactCondition::create_contact_pair(
       {
         case 2:
         {
-          return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamContactPair<2, 2>());
+          return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamContactPair<2, 2>>();
         }
         default:
         {

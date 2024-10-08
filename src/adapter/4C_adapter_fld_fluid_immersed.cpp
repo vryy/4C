@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Adapter::FluidImmersed::FluidImmersed(const Teuchos::ParameterList& prbdyn, std::string condname)
 {
-  fluid_ = Teuchos::rcp(new FluidBaseAlgorithm(
-      prbdyn, Global::Problem::instance()->fluid_dynamic_params(), "fluid", false));
+  fluid_ = Teuchos::make_rcp<FluidBaseAlgorithm>(
+      prbdyn, Global::Problem::instance()->fluid_dynamic_params(), "fluid", false);
   fluidadapter_ = fluid_->fluid_field();
 
   return;

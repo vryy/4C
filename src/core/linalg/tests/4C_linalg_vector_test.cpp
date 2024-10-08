@@ -32,10 +32,10 @@ namespace
     VectorTest()
     {
       // set up communicator
-      comm_ = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
+      comm_ = Teuchos::make_rcp<Epetra_MpiComm>(MPI_COMM_WORLD);
 
       // set up a map
-      map_ = Teuchos::rcp(new Epetra_Map(NumGlobalElements, 0, *comm_));
+      map_ = Teuchos::make_rcp<Epetra_Map>(NumGlobalElements, 0, *comm_);
     }
   };
 

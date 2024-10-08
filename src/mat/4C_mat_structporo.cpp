@@ -78,7 +78,7 @@ Mat::PAR::StructPoro::StructPoro(const Core::Mat::PAR::Parameter::Data& matdata)
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::StructPoro::create_material()
 {
-  return Teuchos::rcp(new Mat::StructPoro(this));
+  return Teuchos::make_rcp<Mat::StructPoro>(this);
 }
 
 Mat::StructPoroType Mat::StructPoroType::instance_;
@@ -113,8 +113,8 @@ Mat::StructPoro::StructPoro(Mat::PAR::StructPoro* params)
 
 void Mat::StructPoro::poro_setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
-  porosity_ = Teuchos::rcp(new std::vector<double>(numgp, params_->init_porosity_));
-  surf_porosity_ = Teuchos::rcp(new std::map<int, std::vector<double>>);
+  porosity_ = Teuchos::make_rcp<std::vector<double>>(numgp, params_->init_porosity_);
+  surf_porosity_ = Teuchos::make_rcp<std::map<int, std::vector<double>>>();
 
   is_initialized_ = true;
 }
@@ -200,7 +200,7 @@ void Mat::StructPoro::unpack(Core::Communication::UnpackBuffer& buffer)
   // porosity_
   int size = 0;
   extract_from_pack(buffer, size);
-  porosity_ = Teuchos::rcp(new std::vector<double>);
+  porosity_ = Teuchos::make_rcp<std::vector<double>>();
   double tmp = 0.0;
   for (int i = 0; i < size; ++i)
   {
@@ -210,7 +210,7 @@ void Mat::StructPoro::unpack(Core::Communication::UnpackBuffer& buffer)
 
   // surface porosity (i think it is not necessary to pack/unpack this...)
   extract_from_pack(buffer, size);
-  surf_porosity_ = Teuchos::rcp(new std::map<int, std::vector<double>>);
+  surf_porosity_ = Teuchos::make_rcp<std::map<int, std::vector<double>>>();
   for (int i = 0; i < size; i++)
   {
     int dof;
@@ -232,7 +232,7 @@ void Mat::StructPoro::unpack(Core::Communication::UnpackBuffer& buffer)
         Core::Communication::factory(buffer_datamat);  // Unpack is done here
     auto* mat = dynamic_cast<Mat::So3Material*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack elastic material");
-    mat_ = Teuchos::rcp(mat);
+    mat_ = Teuchos::RCP(mat);
   }
   else
     mat_ = Teuchos::null;

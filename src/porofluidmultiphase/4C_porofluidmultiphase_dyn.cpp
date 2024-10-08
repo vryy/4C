@@ -104,7 +104,7 @@ void porofluidmultiphase_dyn(int restart)
   // assign dof set for solid pressures
   // -------------------------------------------------------------------
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(1, 0, 0, false));
+      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(1, 0, 0, false);
   const int nds_solidpressure = actdis->add_dof_set(dofsetaux);
 
   // -------------------------------------------------------------------

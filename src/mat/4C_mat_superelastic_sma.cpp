@@ -130,7 +130,7 @@ struct Mat::SuperElasticSMA::LoadingData
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::SuperElasticSMA::create_material()
 {
-  return Teuchos::rcp(new Mat::SuperElasticSMA(this));
+  return Teuchos::make_rcp<Mat::SuperElasticSMA>(this);
 }
 
 
@@ -238,10 +238,10 @@ void Mat::SuperElasticSMA::unpack(Core::Communication::UnpackBuffer& buffer)
 
   // if system is not yet initialized, the history vectors have to be intialized
   if (histsize == 0) isinit_ = false;
-  druckerpragerloadinglast_ = Teuchos::rcp(new std::vector<double>);
-  druckerpragerloadingcurr_ = Teuchos::rcp(new std::vector<double>);
-  xi_s_curr_ = Teuchos::rcp(new std::vector<double>);
-  xi_s_last_ = Teuchos::rcp(new std::vector<double>);
+  druckerpragerloadinglast_ = Teuchos::make_rcp<std::vector<double>>();
+  druckerpragerloadingcurr_ = Teuchos::make_rcp<std::vector<double>>();
+  xi_s_curr_ = Teuchos::make_rcp<std::vector<double>>();
+  xi_s_last_ = Teuchos::make_rcp<std::vector<double>>();
 
 
   for (int var = 0; var < histsize; ++var)
@@ -275,10 +275,10 @@ void Mat::SuperElasticSMA::unpack(Core::Communication::UnpackBuffer& buffer)
  *---------------------------------------------------------------------*/
 void Mat::SuperElasticSMA::setup(int numgp, const Core::IO::InputParameterContainer& container)
 {
-  druckerpragerloadingcurr_ = Teuchos::rcp(new std::vector<double>);
-  druckerpragerloadinglast_ = Teuchos::rcp(new std::vector<double>);
-  xi_s_curr_ = Teuchos::rcp(new std::vector<double>);
-  xi_s_last_ = Teuchos::rcp(new std::vector<double>);
+  druckerpragerloadingcurr_ = Teuchos::make_rcp<std::vector<double>>();
+  druckerpragerloadinglast_ = Teuchos::make_rcp<std::vector<double>>();
+  xi_s_curr_ = Teuchos::make_rcp<std::vector<double>>();
+  xi_s_last_ = Teuchos::make_rcp<std::vector<double>>();
 
   druckerpragerloadingcurr_->resize(numgp);
   druckerpragerloadinglast_->resize(numgp);
@@ -308,8 +308,8 @@ void Mat::SuperElasticSMA::update()
   druckerpragerloadinglast_ = druckerpragerloadingcurr_;
   xi_s_last_ = xi_s_curr_;
 
-  druckerpragerloadingcurr_ = Teuchos::rcp(new std::vector<double>);
-  xi_s_curr_ = Teuchos::rcp(new std::vector<double>);
+  druckerpragerloadingcurr_ = Teuchos::make_rcp<std::vector<double>>();
+  xi_s_curr_ = Teuchos::make_rcp<std::vector<double>>();
 
   // Empty vectors of current data
   const int histsize = xi_s_last_->size();

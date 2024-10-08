@@ -49,7 +49,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PlastType::create
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>>(id, owner);
 
     return ele;
   }
@@ -65,7 +65,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PlastType::create
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>>(id, owner);
   return ele;
 
 }  // Create()
@@ -153,7 +153,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex18PlastType::creat
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -168,7 +168,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex18PlastType::creat
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>>(id, owner);
   return ele;
 }  // Create()
 
@@ -256,7 +256,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27PlastType::creat
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex27>(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex27>>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -271,7 +271,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27PlastType::creat
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex27>(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex27>>(id, owner);
   return ele;
 }  // Create()
 
@@ -355,7 +355,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PlastType::create
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::So3Plast<Core::FE::CellType::tet4>(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::So3Plast<Core::FE::CellType::tet4>>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -370,7 +370,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PlastType::create
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::So3Plast<Core::FE::CellType::tet4>(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::So3Plast<Core::FE::CellType::tet4>>(id, owner);
   return ele;
 }  // Create()
 
@@ -452,7 +452,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoNurbs27PlastType::cre
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::So3Plast<Core::FE::CellType::nurbs27>(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::So3Plast<Core::FE::CellType::nurbs27>>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -467,7 +467,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoNurbs27PlastType::cre
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::So3Plast<Core::FE::CellType::nurbs27>(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::So3Plast<Core::FE::CellType::nurbs27>>(id, owner);
   return ele;
 }  // Create()
 

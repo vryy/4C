@@ -63,8 +63,9 @@ double CONTACT::MtNoxInterface::get_constraint_rhs_norms(const Core::LinAlg::Vec
   // no constraint contributions present
   if (constrRhs.is_null()) return 0.0;
 
-  Teuchos::RCP<const ::NOX::Epetra::Vector> constrRhs_nox = Teuchos::rcp(new ::NOX::Epetra::Vector(
-      constrRhs->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const ::NOX::Epetra::Vector> constrRhs_nox =
+      Teuchos::make_rcp<::NOX::Epetra::Vector>(
+          constrRhs->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
   double constrNorm = -1.0;
   constrNorm = constrRhs_nox->norm(type);
@@ -92,8 +93,8 @@ double CONTACT::MtNoxInterface::get_lagrange_multiplier_update_rms(
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagincr_nox_ptr =
-      Teuchos::rcp(new ::NOX::Epetra::Vector(
-          lagincr_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
+      Teuchos::make_rcp<::NOX::Epetra::Vector>(
+          lagincr_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
   rms = NOX::Nln::Aux::root_mean_square_norm(
       aTol, rTol, lagnew_ptr, lagincr_ptr, disable_implicit_weighting);
@@ -118,8 +119,8 @@ double CONTACT::MtNoxInterface::get_lagrange_multiplier_update_norms(
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagincr_nox_ptr =
-      Teuchos::rcp(new ::NOX::Epetra::Vector(
-          lagincr_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
+      Teuchos::make_rcp<::NOX::Epetra::Vector>(
+          lagincr_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
   double updatenorm = -1.0;
 
@@ -142,8 +143,9 @@ double CONTACT::MtNoxInterface::get_previous_lagrange_multiplier_norms(
   Teuchos::RCP<Core::LinAlg::Vector<double>> lagold_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xOld);
 
-  Teuchos::RCP<const ::NOX::Epetra::Vector> lagold_nox_ptr = Teuchos::rcp(new ::NOX::Epetra::Vector(
-      lagold_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const ::NOX::Epetra::Vector> lagold_nox_ptr =
+      Teuchos::make_rcp<::NOX::Epetra::Vector>(
+          lagold_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
   double lagoldnorm = -1.0;
 

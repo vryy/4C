@@ -22,7 +22,7 @@ Adapter::FluidFPSI::FluidFPSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond),
-      fpsiinterface_(Teuchos::rcp(new FLD::UTILS::MapExtractor()))
+      fpsiinterface_(Teuchos::make_rcp<FLD::UTILS::MapExtractor>())
 {
   return;
 }  // constructor

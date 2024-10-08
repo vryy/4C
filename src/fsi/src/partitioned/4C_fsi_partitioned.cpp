@@ -83,10 +83,10 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
     std::cout << "\n setup_coupling in FSI::Partitioned ..." << std::endl;
 
   Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
-  coupsfm_ = Teuchos::rcp(new Coupling::Adapter::CouplingMortar(
+  coupsfm_ = Teuchos::make_rcp<Coupling::Adapter::CouplingMortar>(
       Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
-      Global::Problem::instance()->spatial_approximation_type()));
+      Global::Problem::instance()->spatial_approximation_type());
 
 
   if (fsidyn.sublist("PARTITIONED SOLVER").get<std::string>("COUPMETHOD") == "conforming" and
@@ -149,7 +149,7 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
 
   // enable debugging
   if (fsidyn.get<bool>("DEBUGOUTPUT"))
-    debugwriter_ = Teuchos::rcp(new UTILS::DebugWriter(structure_field()->discretization()));
+    debugwriter_ = Teuchos::make_rcp<UTILS::DebugWriter>(structure_field()->discretization());
 }
 
 
@@ -193,7 +193,7 @@ void FSI::Partitioned::set_default_parameters(
 
       dirParams.set("Method", "User Defined");
       Teuchos::RCP<::NOX::Direction::UserDefinedFactory> fixpointfactory =
-          Teuchos::rcp(new NOX::FSI::FixPointFactory());
+          Teuchos::make_rcp<NOX::FSI::FixPointFactory>();
       dirParams.set("User Defined Direction Factory", fixpointfactory);
 
       // Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
@@ -212,11 +212,11 @@ void FSI::Partitioned::set_default_parameters(
 
       dirParams.set("Method", "User Defined");
       Teuchos::RCP<::NOX::Direction::UserDefinedFactory> fixpointfactory =
-          Teuchos::rcp(new NOX::FSI::FixPointFactory());
+          Teuchos::make_rcp<NOX::FSI::FixPointFactory>();
       dirParams.set("User Defined Direction Factory", fixpointfactory);
 
       Teuchos::RCP<::NOX::LineSearch::UserDefinedFactory> linesearchfactory =
-          Teuchos::rcp(new NOX::FSI::AitkenFactory());
+          Teuchos::make_rcp<NOX::FSI::AitkenFactory>();
       lineSearchParams.set("Method", "User Defined");
       lineSearchParams.set("User Defined Line Search Factory", linesearchfactory);
 
@@ -234,11 +234,11 @@ void FSI::Partitioned::set_default_parameters(
 
       dirParams.set("Method", "User Defined");
       Teuchos::RCP<::NOX::Direction::UserDefinedFactory> fixpointfactory =
-          Teuchos::rcp(new NOX::FSI::FixPointFactory());
+          Teuchos::make_rcp<NOX::FSI::FixPointFactory>();
       dirParams.set("User Defined Direction Factory", fixpointfactory);
 
       Teuchos::RCP<::NOX::LineSearch::UserDefinedFactory> linesearchfactory =
-          Teuchos::rcp(new NOX::FSI::SDFactory());
+          Teuchos::make_rcp<NOX::FSI::SDFactory>();
       lineSearchParams.set("Method", "User Defined");
       lineSearchParams.set("User Defined Line Search Factory", linesearchfactory);
       break;
@@ -304,7 +304,7 @@ void FSI::Partitioned::set_default_parameters(
       dirParams.set("Method", "User Defined");
 
       Teuchos::RCP<::NOX::Direction::UserDefinedFactory> factory =
-          Teuchos::rcp(new NOX::FSI::MinimalPolynomialFactory());
+          Teuchos::make_rcp<NOX::FSI::MinimalPolynomialFactory>();
       dirParams.set("User Defined Direction Factory", factory);
 
       Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
@@ -328,7 +328,7 @@ void FSI::Partitioned::set_default_parameters(
       dirParams.set("Method", "User Defined");
 
       Teuchos::RCP<::NOX::Direction::UserDefinedFactory> factory =
-          Teuchos::rcp(new NOX::FSI::MinimalPolynomialFactory());
+          Teuchos::make_rcp<NOX::FSI::MinimalPolynomialFactory>();
       dirParams.set("User Defined Direction Factory", factory);
 
       Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
@@ -353,7 +353,7 @@ void FSI::Partitioned::set_default_parameters(
 
       dirParams.set("Method", "User Defined");
       Teuchos::RCP<::NOX::Direction::UserDefinedFactory> fixpointfactory =
-          Teuchos::rcp(new NOX::FSI::FixPointFactory());
+          Teuchos::make_rcp<NOX::FSI::FixPointFactory>();
       dirParams.set("User Defined Direction Factory", fixpointfactory);
 
       lineSearchParams.set("Method", "Full Step");
@@ -400,7 +400,7 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
 
   // Create printing utilities
-  utils_ = Teuchos::rcp(new ::NOX::Utils(printParams));
+  utils_ = Teuchos::make_rcp<::NOX::Utils>(printParams);
 
   // ==================================================================
 
@@ -411,7 +411,7 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
   {
     std::string s = Global::Problem::instance()->output_control_file()->file_name();
     s.append(".iteration");
-    log = Teuchos::rcp(new std::ofstream(s.c_str()));
+    log = Teuchos::make_rcp<std::ofstream>(s.c_str());
     (*log) << "# num procs      = " << get_comm().NumProc() << "\n"
            << "# Method         = " << nlParams.sublist("Direction").get("Method", "Newton") << "\n"
            << "# Jacobian       = " << nlParams.get("Jacobian", "None") << "\n"
@@ -447,7 +447,7 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
 
     // start time measurement
     Teuchos::RCP<Teuchos::TimeMonitor> timemonitor =
-        Teuchos::rcp(new Teuchos::TimeMonitor(timer, true));
+        Teuchos::make_rcp<Teuchos::TimeMonitor>(timer, true);
 
     /*----------------- CSD - predictor for itnum==0 --------------------*/
 
@@ -465,7 +465,7 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
 
     // Create the Group
     Teuchos::RCP<::NOX::Epetra::Group> grp =
-        Teuchos::rcp(new ::NOX::Epetra::Group(printParams, interface, noxSoln, linSys));
+        Teuchos::make_rcp<::NOX::Epetra::Group>(printParams, interface, noxSoln, linSys);
 
     // Convergence Tests
     Teuchos::RCP<::NOX::StatusTest::Combo> combo = create_status_test(nlParams, grp);
@@ -587,7 +587,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
 
     // This is the default method.
 
-    FSIMF = Teuchos::rcp(new NOX::FSI::FSIMatrixFree(printParams, interface, noxSoln));
+    FSIMF = Teuchos::make_rcp<NOX::FSI::FSIMatrixFree>(printParams, interface, noxSoln);
     iJac = FSIMF;
     J = FSIMF;
   }
@@ -604,8 +604,8 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
     // MatrixFree seems to be the most interessting choice. But you
     // must set a rather low tolerance for the linear solver.
 
-    MF = Teuchos::rcp(
-        new ::NOX::Epetra::MatrixFree(printParams, interface, noxSoln, kelleyPerturbation));
+    MF = Teuchos::make_rcp<::NOX::Epetra::MatrixFree>(
+        printParams, interface, noxSoln, kelleyPerturbation);
     MF->setLambda(lambda);
     iJac = MF;
     J = MF;
@@ -636,8 +636,8 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
     else
       FOUR_C_THROW("unsupported difference type '%s'", dt.c_str());
 
-    FD = Teuchos::rcp(new ::NOX::Epetra::FiniteDifference(
-        printParams, interface, noxSoln, raw_graph_, beta, alpha));
+    FD = Teuchos::make_rcp<::NOX::Epetra::FiniteDifference>(
+        printParams, interface, noxSoln, raw_graph_, beta, alpha);
     FD->setDifferenceMethod(dtype);
 
     iJac = FD;
@@ -664,13 +664,13 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
           utils->out() << "Warning: No Jacobian for solver " << dirParams.get("Method", "Newton")
                        << "\n";
       }
-      linSys = Teuchos::rcp(
-          new ::NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, interface, noxSoln));
+      linSys = Teuchos::make_rcp<::NOX::Epetra::LinearSystemAztecOO>(
+          printParams, lsParams, interface, noxSoln);
     }
     else
     {
-      linSys = Teuchos::rcp(
-          new NOX::FSI::LinearSystemGCR(printParams, lsParams, interface, iJac, J, noxSoln));
+      linSys = Teuchos::make_rcp<NOX::FSI::LinearSystemGCR>(
+          printParams, lsParams, interface, iJac, J, noxSoln);
     }
   }
 
@@ -688,13 +688,13 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
     double beta = fdParams.get("beta", 1.0e-6);
 
     Teuchos::RCP<::NOX::Epetra::FiniteDifference> precFD =
-        Teuchos::rcp(new ::NOX::Epetra::FiniteDifference(
-            printParams, interface, noxSoln, raw_graph_, beta, alpha));
+        Teuchos::make_rcp<::NOX::Epetra::FiniteDifference>(
+            printParams, interface, noxSoln, raw_graph_, beta, alpha);
     iPrec = precFD;
     M = precFD;
 
-    linSys = Teuchos::rcp(
-        new ::NOX::Epetra::LinearSystemAztecOO(printParams, lsParams, iJac, J, iPrec, M, noxSoln));
+    linSys = Teuchos::make_rcp<::NOX::Epetra::LinearSystemAztecOO>(
+        printParams, lsParams, iJac, J, iPrec, M, noxSoln);
   }
 
   else
@@ -713,14 +713,14 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::Partitioned::create_status_test(
 {
   // Create the convergence tests
   Teuchos::RCP<::NOX::StatusTest::Combo> combo =
-      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
+      Teuchos::make_rcp<::NOX::StatusTest::Combo>(::NOX::StatusTest::Combo::OR);
   Teuchos::RCP<::NOX::StatusTest::Combo> converged =
-      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
+      Teuchos::make_rcp<::NOX::StatusTest::Combo>(::NOX::StatusTest::Combo::AND);
 
   Teuchos::RCP<::NOX::StatusTest::MaxIters> maxiters =
-      Teuchos::rcp(new ::NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
+      Teuchos::make_rcp<::NOX::StatusTest::MaxIters>(nlParams.get("Max Iterations", 100));
   Teuchos::RCP<::NOX::StatusTest::FiniteValue> fv =
-      Teuchos::rcp(new ::NOX::StatusTest::FiniteValue);
+      Teuchos::make_rcp<::NOX::StatusTest::FiniteValue>();
 
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
@@ -739,20 +739,20 @@ void FSI::Partitioned::create_status_test(Teuchos::ParameterList& nlParams,
     Teuchos::RCP<::NOX::Epetra::Group> grp, Teuchos::RCP<::NOX::StatusTest::Combo> converged)
 {
   Teuchos::RCP<::NOX::StatusTest::NormF> absresid =
-      Teuchos::rcp(new ::NOX::StatusTest::NormF(nlParams.get("Norm abs F", 1.0e-6)));
+      Teuchos::make_rcp<::NOX::StatusTest::NormF>(nlParams.get("Norm abs F", 1.0e-6));
   converged->addStatusTest(absresid);
 
   if (nlParams.isParameter("Norm Update"))
   {
     Teuchos::RCP<::NOX::StatusTest::NormUpdate> update =
-        Teuchos::rcp(new ::NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
+        Teuchos::make_rcp<::NOX::StatusTest::NormUpdate>(nlParams.get("Norm Update", 1.0e-5));
     converged->addStatusTest(update);
   }
 
   if (nlParams.isParameter("Norm rel F"))
   {
     Teuchos::RCP<::NOX::StatusTest::NormF> relresid =
-        Teuchos::rcp(new ::NOX::StatusTest::NormF(*grp.get(), nlParams.get("Norm rel F", 1.0e-2)));
+        Teuchos::make_rcp<::NOX::StatusTest::NormF>(*grp.get(), nlParams.get("Norm rel F", 1.0e-2));
     converged->addStatusTest(relresid);
   }
 }
@@ -868,12 +868,12 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::interface_velocity(
 
   if (fsidyn.get<bool>("SECONDORDER"))
   {
-    ivel = Teuchos::rcp(new Core::LinAlg::Vector<double>(*iveln_));
+    ivel = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*iveln_);
     ivel->Update(2. / dt(), *idispnp, -2. / dt(), *idispn_, -1.);
   }
   else
   {
-    ivel = Teuchos::rcp(new Core::LinAlg::Vector<double>(*idispn_));
+    ivel = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*idispn_);
     ivel->Update(1. / dt(), *idispnp, -1. / dt());
   }
   return ivel;
@@ -913,7 +913,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::fluid_to_struct(
     const Teuchos::RCP<Core::LinAlg::Vector<double>> ishape =
         mb_fluid_field()->integrate_interface_shape();
     const Teuchos::RCP<Core::LinAlg::Vector<double>> iforce =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(iv->Map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(iv->Map());
 
     if (iforce->ReciprocalMultiply(1.0, *ishape, *iv, 0.0))
       FOUR_C_THROW("ReciprocalMultiply failed");

@@ -148,8 +148,8 @@ template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType side
 bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num_nodes_edge,
     num_nodes_side>::check_bounding_box_overlap()
 {
-  Teuchos::RCP<BoundingBox> sbb = Teuchos::rcp(BoundingBox::create(get_side()));
-  Teuchos::RCP<BoundingBox> ebb = Teuchos::rcp(BoundingBox::create(get_edge()));
+  Teuchos::RCP<BoundingBox> sbb = Teuchos::RCP(BoundingBox::create(get_side()));
+  Teuchos::RCP<BoundingBox> ebb = Teuchos::RCP(BoundingBox::create(get_edge()));
 
   return check_bounding_box_overlap(*sbb, *ebb);
 }
@@ -696,12 +696,12 @@ Cut::ParallelIntersectionStatus Cut::Intersection<probdim, edgetype, sidetype, d
       // ------------------------------------------------------------------------
       /* Try to find intersection of the current edge with all edges of the side   */
       // ------------------------------------------------------------------------
-      Teuchos::RCP<BoundingBox> edge_bb = Teuchos::rcp(BoundingBox::create(get_edge()));
+      Teuchos::RCP<BoundingBox> edge_bb = Teuchos::RCP(BoundingBox::create(get_edge()));
       const std::vector<Edge*>& side_edges = get_side().edges();
       for (std::vector<Edge*>::const_iterator i = side_edges.begin(); i != side_edges.end(); ++i)
       {
         Edge* e = *i;
-        Teuchos::RCP<BoundingBox> side_edge_bb = Teuchos::rcp(BoundingBox::create(*e));
+        Teuchos::RCP<BoundingBox> side_edge_bb = Teuchos::RCP(BoundingBox::create(*e));
         // skip this edge if it is too far or intersection has been done already
         if (not side_edge_bb->within(1.0, *edge_bb)) continue;
 
@@ -1340,7 +1340,7 @@ bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
       p2.update(1.0, surfpoints[smallestedge], alphap, v1);
       p3.update(1.0, surfpoints[smallestedge], alpha, v2);
       p4.update(1.0, surfpoints[smallestedge], alphap, v2);
-      Teuchos::RCP<BoundingBox> sbb = Teuchos::rcp(BoundingBox::create());
+      Teuchos::RCP<BoundingBox> sbb = Teuchos::RCP(BoundingBox::create());
       sbb->add_point(p1);
       sbb->add_point(p2);
       sbb->add_point(p3);
@@ -1354,7 +1354,7 @@ bool Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimside, num
         double lalphap = (linestep + act_steps) * dmax_steps;
         lp1.update(1.0, linepoints[0], lalpha, v3);
         lp2.update(1.0, linepoints[0], lalphap, v3);
-        Teuchos::RCP<BoundingBox> ebb = Teuchos::rcp(BoundingBox::create());
+        Teuchos::RCP<BoundingBox> ebb = Teuchos::RCP(BoundingBox::create());
         ebb->add_point(lp1);
         ebb->add_point(lp2);
 
@@ -1396,7 +1396,7 @@ Teuchos::RCP<Cut::IntersectionBase> Cut::IntersectionFactory::create_intersectio
   switch (edge_type)
   {
     case Core::FE::CellType::line2:
-      return Teuchos::rcp(create_intersection<Core::FE::CellType::line2>(side_type, probdim));
+      return Teuchos::RCP(create_intersection<Core::FE::CellType::line2>(side_type, probdim));
     default:
       FOUR_C_THROW(
           "Unsupported edgeType! If meaningful, add your edgeType here. \n"

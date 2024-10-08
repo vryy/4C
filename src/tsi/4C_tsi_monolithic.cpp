@@ -106,7 +106,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   structure_->setup();
   structure_field()->discretization()->clear_state(true);
 
-  blockrowdofmap_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor);
+  blockrowdofmap_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
 
   // initialise internal varible with new velocities V_{n+1} at t_{n+1}
   vel_ = Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
@@ -127,13 +127,13 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     const Teuchos::ParameterList& tsisolverparams =
         Global::Problem::instance()->solver_params(linsolvernumber);
 
-    Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::rcp(new Teuchos::ParameterList);
+    Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::make_rcp<Teuchos::ParameterList>();
     *solverparams = tsisolverparams;
 
-    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(*solverparams, get_comm(),
+    solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(*solverparams, get_comm(),
         Global::Problem::instance()->solver_params_callback(),
         Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-            Global::Problem::instance()->io_params(), "VERBOSITY")));
+            Global::Problem::instance()->io_params(), "VERBOSITY"));
   }  // end BlockMatrixMerge
 
   // structure_field: check whether we have locsys BCs, i.e. inclined structural
@@ -202,7 +202,7 @@ void TSI::Monolithic::read_restart(int step)
   else
   {
     Teuchos::RCP<TSI::UTILS::TSIMaterialStrategy> strategy =
-        Teuchos::rcp(new TSI::UTILS::TSIMaterialStrategy());
+        Teuchos::make_rcp<TSI::UTILS::TSIMaterialStrategy>();
     volcoupl_->assign_materials(structure_field()->discretization(),
         thermo_field()->discretization(), Global::Problem::instance()->volmortar_params(),
         Global::Problem::instance()->cut_general_params(), strategy);
@@ -211,7 +211,7 @@ void TSI::Monolithic::read_restart(int step)
   Teuchos::ParameterList p;
   //! pointer to the model evaluator data container
   Teuchos::RCP<Core::Elements::ParamsMinimal> EvalData =
-      Teuchos::rcp(new Core::Elements::ParamsMinimal());
+      Teuchos::make_rcp<Core::Elements::ParamsMinimal>();
   EvalData->set_action_type(Core::Elements::struct_calc_reset_istep);
   p.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", EvalData);
   p.set<std::string>("action", "calc_struct_reset_istep");
@@ -280,10 +280,10 @@ void TSI::Monolithic::create_linear_solver()
   }
 
   // prepare linear solvers and preconditioners
-  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(tsisolverparams, get_comm(),
+  solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(tsisolverparams, get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::instance()->io_params(), "VERBOSITY")));
+          Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   const auto azprectype =
       Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(tsisolverparams, "AZPREC");
@@ -984,7 +984,7 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> stepin
 
 #ifdef TSIMONOLITHASOUTPUT
   Teuchos::RCP<Core::LinAlg::Vector<double>> tempera =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(ThermoField()->Tempn()->Map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(ThermoField()->Tempn()->Map());
 
   if (ThermoField()->Tempnp() != Teuchos::null) tempera->Update(1.0, *ThermoField()->Tempnp(), 0.0);
 
@@ -1109,16 +1109,16 @@ void TSI::Monolithic::setup_system()
   /*----------------------------------------------------------------------*/
   // initialise TSI-systemmatrix_
   systemmatrix_ =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *extractor(), *extractor(), 81, false, true));
+      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+          *extractor(), *extractor(), 81, false, true);
 
   // create empty matrix
-  k_st_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      *(structure_field()->discretization()->dof_row_map(0)), 81, false, true));
+  k_st_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *(structure_field()->discretization()->dof_row_map(0)), 81, false, true);
 
   // create empty matrix
-  k_ts_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      *(thermo_field()->discretization()->dof_row_map(0)), 81, false, true));
+  k_ts_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *(thermo_field()->discretization()->dof_row_map(0)), 81, false, true);
 
 }  // SetupSystem()
 
@@ -1246,11 +1246,11 @@ void TSI::Monolithic::setup_rhs()
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::setup_rhs");
 
   // create full monolithic rhs vector
-  rhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
+  rhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
 
   // get the structural rhs
   Teuchos::RCP<Core::LinAlg::Vector<double>> str_rhs =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*structure_field()->rhs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*structure_field()->rhs());
   if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
           Global::Problem::instance()->structural_dynamic_params(), "INT_STRATEGY") ==
       Inpar::Solid::int_standard)
@@ -1913,7 +1913,7 @@ void TSI::Monolithic::apply_str_coupl_matrix(
 
   //! pointer to the model evaluator data container
   Teuchos::RCP<Core::Elements::ParamsMinimal> EvalData =
-      Teuchos::rcp(new Core::Elements::ParamsMinimal());
+      Teuchos::make_rcp<Core::Elements::ParamsMinimal>();
 
   // set parameters needed for element evalutation
   EvalData->set_action_type(Core::Elements::struct_calc_stifftemp);
@@ -2249,8 +2249,8 @@ void TSI::Monolithic::scale_system(
     // The matrices are modified here. Do we have to change them back later on?
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
-    srowsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
-    scolsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    srowsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A->RowMap(), false);
+    scolsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A->RowMap(), false);
     A->InvRowSums(srowsum_->get_ref_of_Epetra_Vector());
     A->InvColSums(scolsum_->get_ref_of_Epetra_Vector());
     if ((A->LeftScale(*srowsum_)) or (A->RightScale(*scolsum_)) or
@@ -2259,8 +2259,8 @@ void TSI::Monolithic::scale_system(
       FOUR_C_THROW("structure scaling failed");
 
     A = mat.matrix(1, 1).epetra_matrix();
-    trowsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
-    tcolsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    trowsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A->RowMap(), false);
+    tcolsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A->RowMap(), false);
     A->InvRowSums(trowsum_->get_ref_of_Epetra_Vector());
     A->InvColSums(tcolsum_->get_ref_of_Epetra_Vector());
     if ((A->LeftScale(*trowsum_)) or (A->RightScale(*tcolsum_)) or
@@ -2625,8 +2625,8 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   }      // loop over all STRUCTURAL DBC conditions
 
   // map containing all z-displacement DOFs which have a DBC
-  Teuchos::RCP<Epetra_Map> newdofmap = Teuchos::rcp(new Epetra_Map(
-      -1, (int)sdata.size(), sdata.data(), 0, structure_field()->discretization()->get_comm()));
+  Teuchos::RCP<Epetra_Map> newdofmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, (int)sdata.size(), sdata.data(), 0, structure_field()->discretization()->get_comm());
 
   //---------------------------------------------------------------------------
   // ------------------------------------ initialse STRUCTURAL output variables
@@ -2635,9 +2635,9 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   // ---------------------------------------------------------------- top force
   // nodal reaction force at outer edge for whole support area
   Teuchos::RCP<Core::LinAlg::Vector<double>> tension =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*newdofmap,  // map containing
-                                                                 // all DOFs at top surf with DBC
-          false));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*newdofmap,  // map containing
+                                                                   // all DOFs at top surf with DBC
+          false);
   // copy the structural reaction force to tension
   Core::LinAlg::export_to(*(structure_field()->freact()), *tension);
   double top_force_local = 0.0;  // local force
@@ -2914,14 +2914,14 @@ void TSI::Monolithic::fix_time_integration_params()
 void TSI::Monolithic::apply_dbc()
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ss =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(systemmatrix_->matrix(0, 0).epetra_matrix(),
-          Core::LinAlg::Copy, true, false, Core::LinAlg::SparseMatrix::CRS_MATRIX));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(0, 0).epetra_matrix(),
+          Core::LinAlg::Copy, true, false, Core::LinAlg::SparseMatrix::CRS_MATRIX);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_st =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(systemmatrix_->matrix(0, 1)));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(0, 1));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ts =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(systemmatrix_->matrix(1, 0)));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(1, 0));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_tt =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(systemmatrix_->matrix(1, 1)));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(1, 1));
   if (locsysman_ != Teuchos::null)
   {
     {

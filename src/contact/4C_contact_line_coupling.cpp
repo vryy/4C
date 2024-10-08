@@ -226,8 +226,8 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
   // Dual shape functions coefficient matrix and linearization
   Core::LinAlg::SerialDenseMatrix ae(nnodes, nnodes, true);
   surface_element().mo_data().deriv_dual_shape() =
-      Teuchos::rcp(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
-          (nnodes + mnodes) * ndof, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes)));
+      Teuchos::make_rcp<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>(
+          (nnodes + mnodes) * ndof, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes));
   Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& derivae =
       *(surface_element().mo_data().deriv_dual_shape());
 
@@ -406,7 +406,7 @@ void CONTACT::LineToSurfaceCoupling3d::consist_dual_shape()
   }
 
   // store ae matrix in slave element data container
-  surface_element().mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+  surface_element().mo_data().dual_shape() = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(ae);
 
   return;
 }
@@ -1322,10 +1322,10 @@ void CONTACT::LineToSurfaceCoupling3d::create_integration_lines(
   }
 
   // create Integration Line
-  int_line() = Teuchos::rcp(new Mortar::IntCell(parent_element().id(), 2, coords, auxn(),
+  int_line() = Teuchos::make_rcp<Mortar::IntCell>(parent_element().id(), 2, coords, auxn(),
       Core::FE::CellType::line2, linvertex[0], linvertex[1],
       linvertex[1],  // dummy
-      get_deriv_auxn()));
+      get_deriv_auxn());
 
   return;
 }

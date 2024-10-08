@@ -1167,7 +1167,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::gauss_point_loop(Teuchos::Par
     porosity_ = 0.0;
 
     // compute scalar at n+alpha_F or n+1
-    Teuchos::RCP<std::vector<double>> scalars = Teuchos::rcp(new std::vector<double>(0));
+    Teuchos::RCP<std::vector<double>> scalars = Teuchos::make_rcp<std::vector<double>>(0);
     const double scalaraf = Base::funct_.dot(escaaf);
     scalars->push_back(scalaraf);
     params.set<Teuchos::RCP<std::vector<double>>>("scalar", scalars);
@@ -1672,7 +1672,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::gauss_point_loop_od(
     //************************************************auxilary variables for computing the porosity_
 
     // compute scalar at n+alpha_F or n+1
-    Teuchos::RCP<std::vector<double>> scalars = Teuchos::rcp(new std::vector<double>(0));
+    Teuchos::RCP<std::vector<double>> scalars = Teuchos::make_rcp<std::vector<double>>(0);
     const double scalaraf = Base::funct_.dot(escaaf);
     scalars->push_back(scalaraf);
     params.set<Teuchos::RCP<std::vector<double>>>("scalar", scalars);

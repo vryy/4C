@@ -81,9 +81,9 @@ Teuchos::RCP<CONTACT::Interface> CONTACT::Interface::create(const int id, const 
     const int spatialDim, const Teuchos::ParameterList& icontact, const bool selfcontact)
 {
   Teuchos::RCP<Mortar::InterfaceDataContainer> interfaceData_ptr =
-      Teuchos::rcp(new CONTACT::InterfaceDataContainer());
-  return Teuchos::rcp(
-      new Interface(interfaceData_ptr, id, comm, spatialDim, icontact, selfcontact));
+      Teuchos::make_rcp<CONTACT::InterfaceDataContainer>();
+  return Teuchos::make_rcp<Interface>(
+      interfaceData_ptr, id, comm, spatialDim, icontact, selfcontact);
 }
 
 /*----------------------------------------------------------------------------*
@@ -278,13 +278,13 @@ void CONTACT::Interface::update_master_slave_sets()
     }
 
     sdofVertexRowmap_ =
-        Teuchos::rcp(new Epetra_Map(-1, (int)sVr.size(), sVr.data(), 0, get_comm()));
+        Teuchos::make_rcp<Epetra_Map>(-1, (int)sVr.size(), sVr.data(), 0, get_comm());
     sdofVertexColmap_ =
-        Teuchos::rcp(new Epetra_Map(-1, (int)sVc.size(), sVc.data(), 0, get_comm()));
-    sdofEdgeRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sEr.size(), sEr.data(), 0, get_comm()));
-    sdofEdgeColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sEc.size(), sEc.data(), 0, get_comm()));
-    sdofSurfRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sSr.size(), sSr.data(), 0, get_comm()));
-    sdofSurfColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sSc.size(), sSc.data(), 0, get_comm()));
+        Teuchos::make_rcp<Epetra_Map>(-1, (int)sVc.size(), sVc.data(), 0, get_comm());
+    sdofEdgeRowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sEr.size(), sEr.data(), 0, get_comm());
+    sdofEdgeColmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sEc.size(), sEc.data(), 0, get_comm());
+    sdofSurfRowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sSr.size(), sSr.data(), 0, get_comm());
+    sdofSurfColmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sSc.size(), sSc.data(), 0, get_comm());
   }
 }
 
@@ -463,7 +463,7 @@ void CONTACT::Interface::fill_complete_new(const bool isFinalParallelDistributio
    * specialized DofSet class will not assign new dofs but will assign the dofs stored in the nodes.
    */
   {
-    Teuchos::RCP<Mortar::DofSet> mrtrdofset = Teuchos::rcp(new Mortar::DofSet());
+    Teuchos::RCP<Mortar::DofSet> mrtrdofset = Teuchos::make_rcp<Mortar::DofSet>();
     discret().replace_dof_set(mrtrdofset);
   }
 
@@ -504,10 +504,10 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
   // thus store the standard column maps first
   {
     // get standard nodal column map (overlap=1)
-    oldnodecolmap_ = Teuchos::rcp(new Epetra_Map(*(discret().node_col_map())));
+    oldnodecolmap_ = Teuchos::make_rcp<Epetra_Map>(*(discret().node_col_map()));
 
     // get standard element column map (overlap=1)
-    oldelecolmap_ = Teuchos::rcp(new Epetra_Map(*(discret().element_col_map())));
+    oldelecolmap_ = Teuchos::make_rcp<Epetra_Map>(*(discret().element_col_map()));
   }
 
   switch (interface_data_->get_extend_ghosting())
@@ -534,7 +534,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
 
       // build completely overlapping map of nodes (on ALL processors)
       Teuchos::RCP<Epetra_Map> newnodecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, get_comm()));
+          Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
       sdata.clear();
       rdata.clear();
 
@@ -549,7 +549,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
 
       // build complete overlapping map of elements (on ALL processors)
       Teuchos::RCP<Epetra_Map> newelecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, get_comm()));
+          Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
       sdata.clear();
       rdata.clear();
       allproc.clear();
@@ -602,7 +602,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
 
       // build new node column map (on ALL processors)
       Teuchos::RCP<Epetra_Map> newnodecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, get_comm()));
+          Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
       sdata.clear();
       rdata.clear();
 
@@ -635,7 +635,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
 
       // build new element column map (on ALL processors)
       Teuchos::RCP<Epetra_Map> newelecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, get_comm()));
+          Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
       sdata.clear();
       rdata.clear();
       allproc.clear();
@@ -696,7 +696,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
 
       std::vector<int> colnodes(nodes.begin(), nodes.end());
       Teuchos::RCP<Epetra_Map> nodecolmap =
-          Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), colnodes.data(), 0, get_comm()));
+          Teuchos::make_rcp<Epetra_Map>(-1, (int)colnodes.size(), colnodes.data(), 0, get_comm());
 
       discret().export_column_nodes(*nodecolmap);
       break;
@@ -727,7 +727,7 @@ void CONTACT::Interface::redistribute()
         "input file. ");
 
   // some local variables
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(Interface::get_comm().Clone());
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(Interface::get_comm().Clone());
   const int myrank = comm->MyPID();
   const int numproc = comm->NumProc();
   Teuchos::Time time("", true);
@@ -770,11 +770,11 @@ void CONTACT::Interface::redistribute()
   }
 
   // we need an arbitrary preliminary element row map
-  Teuchos::RCP<Epetra_Map> slaveCloseRowEles = Teuchos::rcp(
-      new Epetra_Map(-1, (int)closeele.size(), closeele.data(), 0, Interface::get_comm()));
-  Teuchos::RCP<Epetra_Map> slaveNonCloseRowEles = Teuchos::rcp(
-      new Epetra_Map(-1, (int)noncloseele.size(), noncloseele.data(), 0, Interface::get_comm()));
-  Teuchos::RCP<Epetra_Map> masterRowEles = Teuchos::rcp(new Epetra_Map(*master_row_elements()));
+  Teuchos::RCP<Epetra_Map> slaveCloseRowEles = Teuchos::make_rcp<Epetra_Map>(
+      -1, (int)closeele.size(), closeele.data(), 0, Interface::get_comm());
+  Teuchos::RCP<Epetra_Map> slaveNonCloseRowEles = Teuchos::make_rcp<Epetra_Map>(
+      -1, (int)noncloseele.size(), noncloseele.data(), 0, Interface::get_comm());
+  Teuchos::RCP<Epetra_Map> masterRowEles = Teuchos::make_rcp<Epetra_Map>(*master_row_elements());
 
   // check for consistency
   if (slaveCloseRowEles->NumGlobalElements() == 0 && slaveNonCloseRowEles->NumGlobalElements() == 0)
@@ -847,7 +847,7 @@ void CONTACT::Interface::redistribute()
   //**********************************************************************
   // create graph object
   Teuchos::RCP<Epetra_CrsGraph> graph =
-      Teuchos::rcp(new Epetra_CrsGraph(Copy, *slave_row_nodes(), 108, false));
+      Teuchos::make_rcp<Epetra_CrsGraph>(Copy, *slave_row_nodes(), 108, false);
 
   // loop over all row nodes to fill graph
   const int numMySlaveRowNodes = slave_row_nodes()->NumMyElements();
@@ -987,8 +987,8 @@ void CONTACT::Interface::redistribute()
     }
     mygids.resize(count);
     sort(mygids.begin(), mygids.end());
-    srownodes = Teuchos::rcp(
-        new Epetra_Map(-1, (int)mygids.size(), mygids.data(), 0, slaveCloseRowNodes->Comm()));
+    srownodes = Teuchos::make_rcp<Epetra_Map>(
+        -1, (int)mygids.size(), mygids.data(), 0, slaveCloseRowNodes->Comm());
   }
 
   // merge interface node row map from slave and master parts
@@ -1006,7 +1006,7 @@ void CONTACT::Interface::redistribute()
 
   // create the output graph (with new slave node row map) and export to it
   Teuchos::RCP<Epetra_CrsGraph> outgraph =
-      Teuchos::rcp(new Epetra_CrsGraph(Copy, *srownodes, 108, false));
+      Teuchos::make_rcp<Epetra_CrsGraph>(Copy, *srownodes, 108, false);
   Epetra_Export exporter(graph->RowMap(), *srownodes);
   int err = outgraph->Export(*graph, exporter, Add);
   if (err < 0) FOUR_C_THROW("Graph export returned err=%d", err);
@@ -1021,8 +1021,8 @@ void CONTACT::Interface::redistribute()
   // get column map from the graph -> build slave node column map
   // (do stupid conversion from Epetra_BlockMap to Epetra_Map)
   const Epetra_BlockMap& bcol = outgraph->ColMap();
-  Teuchos::RCP<Epetra_Map> scolnodes = Teuchos::rcp(new Epetra_Map(bcol.NumGlobalElements(),
-      bcol.NumMyElements(), bcol.MyGlobalElements(), 0, Interface::get_comm()));
+  Teuchos::RCP<Epetra_Map> scolnodes = Teuchos::make_rcp<Epetra_Map>(bcol.NumGlobalElements(),
+      bcol.NumMyElements(), bcol.MyGlobalElements(), 0, Interface::get_comm());
 
   // trash new graph
   outgraph = Teuchos::null;
@@ -1148,7 +1148,7 @@ void CONTACT::Interface::create_search_tree()
     {
       // set state in interface to intialize all kinds of quantities
       Teuchos::RCP<Core::LinAlg::Vector<double>> zero =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(*idiscret_->dof_row_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*idiscret_->dof_row_map());
       set_state(Mortar::state_new_displacement, *zero);
 
       // create fully overlapping map of all contact elements
@@ -1159,15 +1159,15 @@ void CONTACT::Interface::create_search_tree()
       if (!two_half_pass())
       {
         // (NOTE THAT SELF CONTACT SEARCH IS NOT YET FULLY PARALLELIZED!)
-        binarytreeself_ = Teuchos::rcp(new CONTACT::SelfBinaryTree(
-            discret(), interface_params(), elefullmap, n_dim(), search_param()));
+        binarytreeself_ = Teuchos::make_rcp<CONTACT::SelfBinaryTree>(
+            discret(), interface_params(), elefullmap, n_dim(), search_param());
       }
       else
       {
         // if we use the two half pass algorithm, we use the unbiased self binary tree
         // implementation
-        binarytreeself_ = Teuchos::rcp(new CONTACT::UnbiasedSelfBinaryTree(
-            discret(), interface_params(), elefullmap, n_dim(), search_param()));
+        binarytreeself_ = Teuchos::make_rcp<CONTACT::UnbiasedSelfBinaryTree>(
+            discret(), interface_params(), elefullmap, n_dim(), search_param());
       }
       // initialize the self binary tree
       binarytreeself_->init();
@@ -1203,8 +1203,8 @@ void CONTACT::Interface::create_search_tree()
             interface_params(), "BINARYTREE_UPDATETYPE");
 
         // create binary tree object for contact search and setup tree
-        binarytree_ = Teuchos::rcp(new Mortar::BinaryTree(discret(), selecolmap_, melefullmap,
-            n_dim(), search_param(), updatetype, search_use_aux_pos()));
+        binarytree_ = Teuchos::make_rcp<Mortar::BinaryTree>(discret(), selecolmap_, melefullmap,
+            n_dim(), search_param(), updatetype, search_use_aux_pos());
         // initialize the binary tree
         binarytree_->init();
       }
@@ -4079,7 +4079,7 @@ void CONTACT::Interface::export_master_nodal_normals() const
 
     // fill nodal matrix
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, 3));
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, 3);
     (*loc)(0, 0) = cnode->mo_data().n()[0];
     (*loc)(1, 0) = cnode->mo_data().n()[1];
     (*loc)(2, 0) = cnode->mo_data().n()[2];
@@ -4407,8 +4407,8 @@ void CONTACT::Interface::compute_scaling_ltl()
           donebeforeS.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
-              j, selement->owner(), Core::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+              j, selement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
           // get nodes
           std::array<Core::Nodes::Node*, 2> nodes = {
@@ -4505,8 +4505,8 @@ void CONTACT::Interface::compute_scaling_ltl()
             donebeforeM.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
-                j, melement->owner(), Core::FE::CellType::line2, 2, nodeIds, false));
+            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+                j, melement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
             // get nodes
             std::array<Core::Nodes::Node*, 2> nodes = {
@@ -5218,8 +5218,8 @@ double CONTACT::Interface::compute_cpp_normal_3d(Mortar::Node& mrtrnode,
           donebefore.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
-              j, meles[ele]->owner(), Core::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+              j, meles[ele]->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
           // get nodes
           Core::Nodes::Node* nodes[2] = {
@@ -5727,7 +5727,7 @@ void CONTACT::Interface::export_nodal_normals() const
 
     // Fill nodal matrix
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, 3));
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, 3);
     (*loc)(0, 0) = cnode->mo_data().n()[0];
     (*loc)(1, 0) = cnode->mo_data().n()[1];
     (*loc)(2, 0) = cnode->mo_data().n()[2];
@@ -6003,8 +6003,8 @@ void CONTACT::Interface::evaluate_stl()
             donebefore.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
-                j, melement->owner(), Core::FE::CellType::line2, 2, nodeIds, false));
+            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+                j, melement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
             // get nodes
             std::array<Core::Nodes::Node*, 2> nodes = {
@@ -6042,7 +6042,7 @@ void CONTACT::Interface::evaluate_nts_master()
 {
   // create one interpolator instance which is valid for all nodes!
   Teuchos::RCP<NTS::Interpolator> interpolator =
-      Teuchos::rcp(new NTS::Interpolator(interface_params(), n_dim()));
+      Teuchos::make_rcp<NTS::Interpolator>(interface_params(), n_dim());
 
   // guarantee uniquness
   std::set<int> donebefore;
@@ -6292,8 +6292,8 @@ void CONTACT::Interface::evaluate_lts_master()
           donebefore.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
-              j, meleElements[m]->owner(), Core::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+              j, meleElements[m]->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
           // get nodes
           std::array<Core::Nodes::Node*, 2> nodes = {
@@ -6513,8 +6513,8 @@ void CONTACT::Interface::evaluate_lts()
         donebefore.insert(actIDstw);
 
         // create line ele:
-        Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
-            j, selement->owner(), Core::FE::CellType::line2, 2, nodeIds, false));
+        Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+            j, selement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
         // get nodes
         std::array<Core::Nodes::Node*, 2> nodes = {
@@ -6629,8 +6629,8 @@ void CONTACT::Interface::evaluate_ltl()
           donebeforeS.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
-              j, selement->owner(), Core::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+              j, selement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
           // get nodes
           std::array<Core::Nodes::Node*, 2> nodes = {
@@ -6699,8 +6699,8 @@ void CONTACT::Interface::evaluate_ltl()
           donebeforeS.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
-              j, selement->owner(), Core::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+              j, selement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
           // get nodes
           std::array<Core::Nodes::Node*, 2> nodes = {
@@ -6797,8 +6797,8 @@ void CONTACT::Interface::evaluate_ltl()
             donebeforeM.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
-                j, melement->owner(), Core::FE::CellType::line2, 2, nodeIds, false));
+            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+                j, melement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
             // get nodes
             std::array<Core::Nodes::Node*, 2> nodes = {
@@ -6869,8 +6869,8 @@ void CONTACT::Interface::evaluate_ltl()
             donebeforeM.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::rcp(new Mortar::Element(
-                j, melement->owner(), Core::FE::CellType::line2, 2, nodeIds, false));
+            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+                j, melement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
             // get nodes
             std::array<Core::Nodes::Node*, 2> nodes = {
@@ -6917,7 +6917,7 @@ void CONTACT::Interface::evaluate_nts()
 {
   // create one interpolator instance which is valid for all nodes!
   Teuchos::RCP<NTS::Interpolator> interpolator =
-      Teuchos::rcp(new NTS::Interpolator(interface_params(), n_dim()));
+      Teuchos::make_rcp<NTS::Interpolator>(interface_params(), n_dim());
 
   // loop over slave nodes
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -7064,7 +7064,7 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
       // do the element integration of kappa and store into gap
       int nrow = sele.num_node();
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> gseg =
-          Teuchos::rcp(new Core::LinAlg::SerialDenseVector(nrow));
+          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(nrow);
 
       // create a CONTACT integrator instance with correct num_gp and Dim
       CONTACT::Integrator integrator(imortar_, sele.shape(), get_comm());
@@ -7082,7 +7082,7 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
         // do the int element integration of kappa and store into gap
         int nrow = sauxelements[i]->num_node();
         Teuchos::RCP<Core::LinAlg::SerialDenseVector> gseg =
-            Teuchos::rcp(new Core::LinAlg::SerialDenseVector(nrow));
+            Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(nrow);
 
         // create a CONTACT integrator instance with correct num_gp and Dim
         CONTACT::Integrator integrator(imortar_, sauxelements[i]->shape(), get_comm());
@@ -7105,7 +7105,7 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
     // do the element integration of kappa and store into gap
     int nrow = sele.num_node();
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> gseg =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(nrow));
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(nrow);
 
     // create a CONTACT integrator instance with correct num_gp and Dim
     CONTACT::Integrator integrator(imortar_, sele.shape(), get_comm());
@@ -7469,7 +7469,7 @@ void CONTACT::Interface::evaluate_distances(
 
   // create an interpolator instance
   Teuchos::RCP<NTS::Interpolator> interpolator =
-      Teuchos::rcp(new NTS::Interpolator(imortar_, n_dim()));
+      Teuchos::make_rcp<NTS::Interpolator>(imortar_, n_dim());
 
   // create normals
   pre_evaluate(-1, -1);  // dummy values
@@ -8189,17 +8189,17 @@ bool CONTACT::Interface::split_active_dofs()
   // get out of here if active set is empty
   if (activenodes_ == Teuchos::null)
   {
-    activen_ = Teuchos::rcp(new Epetra_Map(0, 0, get_comm()));
-    activet_ = Teuchos::rcp(new Epetra_Map(0, 0, get_comm()));
-    slipt_ = Teuchos::rcp(new Epetra_Map(0, 0, get_comm()));
+    activen_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+    activet_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+    slipt_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
     return true;
   }
 
   else if (activenodes_->NumGlobalElements() == 0)
   {
-    activen_ = Teuchos::rcp(new Epetra_Map(0, 0, get_comm()));
-    activet_ = Teuchos::rcp(new Epetra_Map(0, 0, get_comm()));
-    slipt_ = Teuchos::rcp(new Epetra_Map(0, 0, get_comm()));
+    activen_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+    activet_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+    slipt_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
     return true;
   }
 
@@ -8248,8 +8248,8 @@ bool CONTACT::Interface::split_active_dofs()
     FOUR_C_THROW("split_active_dofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  activen_ = Teuchos::rcp(new Epetra_Map(gcountN, countN, myNgids.data(), 0, get_comm()));
-  activet_ = Teuchos::rcp(new Epetra_Map(gcountT, countT, myTgids.data(), 0, get_comm()));
+  activen_ = Teuchos::make_rcp<Epetra_Map>(gcountN, countN, myNgids.data(), 0, get_comm());
+  activet_ = Teuchos::make_rcp<Epetra_Map>(gcountT, countT, myTgids.data(), 0, get_comm());
 
   // *******************************************************************
   // FRICTION - EXTRACTING TANGENTIAL DOFS FROM SLIP DOFS
@@ -8261,13 +8261,13 @@ bool CONTACT::Interface::split_active_dofs()
   // get out of here if slip set is empty
   if (slipnodes_ == Teuchos::null)
   {
-    slipt_ = Teuchos::rcp(new Epetra_Map(0, 0, get_comm()));
+    slipt_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
     return true;
   }
 
   if (slipnodes_->NumGlobalElements() == 0)
   {
-    slipt_ = Teuchos::rcp(new Epetra_Map(0, 0, get_comm()));
+    slipt_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
     return true;
   }
 
@@ -8304,7 +8304,8 @@ bool CONTACT::Interface::split_active_dofs()
   get_comm().SumAll(&countslipT, &gcountslipT, 1);
 
   // create Tslipmap objects
-  slipt_ = Teuchos::rcp(new Epetra_Map(gcountslipT, countslipT, myslipTgids.data(), 0, get_comm()));
+  slipt_ =
+      Teuchos::make_rcp<Epetra_Map>(gcountslipT, countslipT, myslipTgids.data(), 0, get_comm());
 
   return true;
 }
@@ -8387,8 +8388,8 @@ void CONTACT::Interface::update_self_contact_lag_mult_set(
     lmdofs.push_back(ref_lmgids[ref_lid]);
   }
 
-  lmdofmap_ = Teuchos::rcp(
-      new Epetra_Map(-1, static_cast<int>(lmdofs.size()), lmdofs.data(), 0, get_comm()));
+  lmdofmap_ = Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(lmdofs.size()), lmdofs.data(), 0, get_comm());
 }
 
 /*----------------------------------------------------------------------------*
@@ -8563,7 +8564,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Nodes: node-based vector with '0' at slave nodes and '1' at master nodes
   {
     RCP<Core::LinAlg::Vector<double>> masterVec =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*mnoderowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mnoderowmap_);
     masterVec->PutScalar(1.0);
 
     RCP<const Epetra_Map> nodeRowMap = Core::LinAlg::merge_map(snoderowmap_, mnoderowmap_, false);
@@ -8578,23 +8579,23 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   {
     // evaluate active set and slip set
     RCP<Core::LinAlg::Vector<double>> activeset =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*activenodes_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*activenodes_);
     activeset->PutScalar(1.0);
 
     if (is_friction())
     {
       RCP<Core::LinAlg::Vector<double>> slipset =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(*slipnodes_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slipnodes_);
       slipset->PutScalar(1.0);
       RCP<Core::LinAlg::Vector<double>> slipsetexp =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(*activenodes_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*activenodes_);
       Core::LinAlg::export_to(*slipset, *slipsetexp);
       activeset->Update(1.0, *slipsetexp, 1.0);
     }
 
     // export to interface node row map
     RCP<Core::LinAlg::Vector<double>> activesetexp =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*(idiscret_->node_row_map())));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(idiscret_->node_row_map()));
     Core::LinAlg::export_to(*activeset, *activesetexp);
 
     writer->write_vector("activeset", activesetexp, Core::IO::VectorType::nodevector);
@@ -8603,7 +8604,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Elements: element-based vector with '0' at slave elements and '1' at master elements
   {
     RCP<Core::LinAlg::Vector<double>> masterVec =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*melerowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*melerowmap_);
     masterVec->PutScalar(1.0);
 
     RCP<const Epetra_Map> eleRowMap = Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);

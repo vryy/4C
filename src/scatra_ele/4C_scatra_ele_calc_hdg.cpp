@@ -99,12 +99,12 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::initialize_shapes(
     usescompletepoly_ = hdgele->uses_complete_polynomial_space();
 
     if (shapes_ == Teuchos::null)
-      shapes_ = Teuchos::rcp(new Core::FE::ShapeValues<distype>(
-          hdgele->degree(), usescompletepoly_, 2 * hdgele->degree()));
+      shapes_ = Teuchos::make_rcp<Core::FE::ShapeValues<distype>>(
+          hdgele->degree(), usescompletepoly_, 2 * hdgele->degree());
     else if (shapes_->degree_ != unsigned(hdgele->degree()) ||
              shapes_->usescompletepoly_ != usescompletepoly_)
-      shapes_ = Teuchos::rcp(new Core::FE::ShapeValues<distype>(
-          hdgele->degree(), usescompletepoly_, 2 * hdgele->degree()));
+      shapes_ = Teuchos::make_rcp<Core::FE::ShapeValues<distype>>(
+          hdgele->degree(), usescompletepoly_, 2 * hdgele->degree());
 
     int onfdofs = 0;
     for (unsigned int i = 0; i < nfaces_; ++i)
@@ -122,8 +122,8 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::initialize_shapes(
     if (numscal_ > 1) FOUR_C_THROW("Not implemented for multiple scalars");
 
     if (local_solver_ == Teuchos::null)
-      local_solver_ =
-          Teuchos::rcp(new LocalSolver(ele, *shapes_, *shapesface_, usescompletepoly_, disname, 1));
+      local_solver_ = Teuchos::make_rcp<LocalSolver>(
+          ele, *shapes_, *shapesface_, usescompletepoly_, disname, 1);
   }
   else
     FOUR_C_THROW("Only works for HDG transport elements");
@@ -578,7 +578,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::compute
 
   bool usescompletepoly = hdgele->uses_complete_polynomial_space();
 
-  shapes_ = Teuchos::rcp(
+  shapes_ = Teuchos::RCP(
       new Core::FE::ShapeValues<distype>(hdgele->degree(), usescompletepoly, 2 * ele->degree()));
   shapes_->evaluate(*ele);
   compute_interior_matrices(hdgele);
@@ -1386,7 +1386,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::prepare_material_par
 )
 {
   Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor =
-      Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseMatrix>);
+      Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseMatrix>>();
 
   // get the material
   Teuchos::RCP<Core::Mat::Material> material = ele->material();
@@ -1890,8 +1890,8 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::project_field(
   hdgele->set_padapt_ele(false);
 
   Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes_old =
-      Teuchos::rcp(new Core::FE::ShapeValues<distype>(
-          hdgele->degree_old(), usescompletepoly_, 2 * hdgele->degree_old()));
+      Teuchos::make_rcp<Core::FE::ShapeValues<distype>>(
+          hdgele->degree_old(), usescompletepoly_, 2 * hdgele->degree_old());
 
   FOUR_C_ASSERT(
       elevec2.numRows() == 0 || unsigned(elevec2.numRows()) == shapes_->ndofs_ * (nsd_ + 1),

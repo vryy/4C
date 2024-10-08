@@ -54,7 +54,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18PlastType::create
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::SoSh18Plast(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::SoSh18Plast>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -68,7 +68,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18PlastType::create
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::SoSh18Plast(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::SoSh18Plast>(id, owner);
   return ele;
 }
 
@@ -215,24 +215,27 @@ void Discret::ELEMENTS::SoSh18Plast::sync_eas()
   {
     eastype_ = soh18p_eassosh18;
     neas_ = num_eas;
-    So3Plast<Core::FE::CellType::hex18>::KaaInv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(
-        Teuchos::View, SoSh18::KaaInv_.data(), num_eas, num_eas, num_eas));
-    So3Plast<Core::FE::CellType::hex18>::Kad_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(
-        Teuchos::View, SoSh18::Kad_.data(), num_eas, num_eas, numdofperelement_));
-    So3Plast<Core::FE::CellType::hex18>::feas_ = Teuchos::rcp(
-        new Core::LinAlg::SerialDenseVector(Teuchos::View, SoSh18::feas_.data(), num_eas));
-    So3Plast<Core::FE::CellType::hex18>::alpha_eas_ = Teuchos::rcp(
-        new Core::LinAlg::SerialDenseVector(Teuchos::View, SoSh18::alpha_eas_.data(), num_eas));
+    So3Plast<Core::FE::CellType::hex18>::KaaInv_ =
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(
+            Teuchos::View, SoSh18::KaaInv_.data(), num_eas, num_eas, num_eas);
+    So3Plast<Core::FE::CellType::hex18>::Kad_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(
+        Teuchos::View, SoSh18::Kad_.data(), num_eas, num_eas, numdofperelement_);
+    So3Plast<Core::FE::CellType::hex18>::feas_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+        Teuchos::View, SoSh18::feas_.data(), num_eas);
+    So3Plast<Core::FE::CellType::hex18>::alpha_eas_ =
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+            Teuchos::View, SoSh18::alpha_eas_.data(), num_eas);
     So3Plast<Core::FE::CellType::hex18>::alpha_eas_last_timestep_ =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(
-            Teuchos::View, SoSh18::alpha_eas_last_timestep_.data(), num_eas));
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+            Teuchos::View, SoSh18::alpha_eas_last_timestep_.data(), num_eas);
     So3Plast<Core::FE::CellType::hex18>::alpha_eas_delta_over_last_timestep_ =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(
-            Teuchos::View, SoSh18::alpha_eas_delta_over_last_timestep_.data(), num_eas));
-    So3Plast<Core::FE::CellType::hex18>::alpha_eas_inc_ = Teuchos::rcp(
-        new Core::LinAlg::SerialDenseVector(Teuchos::View, SoSh18::alpha_eas_inc_.data(), num_eas));
-    Kba_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseMatrix>(
-        numgpt_, Core::LinAlg::SerialDenseMatrix(plspintype_, num_eas, true)));
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+            Teuchos::View, SoSh18::alpha_eas_delta_over_last_timestep_.data(), num_eas);
+    So3Plast<Core::FE::CellType::hex18>::alpha_eas_inc_ =
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+            Teuchos::View, SoSh18::alpha_eas_inc_.data(), num_eas);
+    Kba_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseMatrix>>(
+        numgpt_, Core::LinAlg::SerialDenseMatrix(plspintype_, num_eas, true));
   }
   else
   {

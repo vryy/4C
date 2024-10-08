@@ -102,7 +102,7 @@ void ParticleRigidBody::RigidBodyHandler::write_restart() const
   affiliationpairs_->write_restart();
 
   // get packed rigid body state data
-  Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
+  Teuchos::RCP<std::vector<char>> buffer = Teuchos::make_rcp<std::vector<char>>();
   get_packed_rigid_body_states(*buffer);
 
   // write rigid body state data
@@ -125,7 +125,7 @@ void ParticleRigidBody::RigidBodyHandler::read_restart(
   allocate_rigid_body_states();
 
   // read rigid body state data
-  Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
+  Teuchos::RCP<std::vector<char>> buffer = Teuchos::make_rcp<std::vector<char>>();
   reader->read_char_vector(buffer, "RigidBodyStateData");
 
   // extract packed rigid body state data

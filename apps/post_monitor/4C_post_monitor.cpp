@@ -1547,11 +1547,11 @@ void ThermoMonWriter::write_thr_result(std::ofstream& outfile, PostField*& field
   p.set("total time", -1.0);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> heatfluxx =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*(dis->dof_row_map())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dis->dof_row_map()));
   Teuchos::RCP<Core::LinAlg::Vector<double>> heatfluxy =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*(dis->dof_row_map())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dis->dof_row_map()));
   Teuchos::RCP<Core::LinAlg::Vector<double>> heatfluxz =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*(dis->dof_row_map())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dis->dof_row_map()));
   dis->evaluate(p, Teuchos::null, Teuchos::null, heatfluxx, heatfluxy, heatfluxz);
 
   const unsigned numdofpernode = 1;

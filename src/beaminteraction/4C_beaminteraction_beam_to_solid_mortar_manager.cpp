@@ -166,10 +166,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::setup()
 
   // Rowmap for the additional GIDs used by the mortar contact discretization.
   lambda_dof_rowmap_translations_ =
-      Teuchos::rcp(new Epetra_Map(-1, my_lambda_gid_translational.size(),
-          my_lambda_gid_translational.data(), 0, discret_->get_comm()));
-  lambda_dof_rowmap_rotations_ = Teuchos::rcp(new Epetra_Map(-1, my_lambda_gid_rotational.size(),
-      my_lambda_gid_rotational.data(), 0, discret_->get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, my_lambda_gid_translational.size(),
+          my_lambda_gid_translational.data(), 0, discret_->get_comm());
+  lambda_dof_rowmap_rotations_ = Teuchos::make_rcp<Epetra_Map>(-1, my_lambda_gid_rotational.size(),
+      my_lambda_gid_rotational.data(), 0, discret_->get_comm());
   lambda_dof_rowmap_ =
       Core::LinAlg::merge_map(lambda_dof_rowmap_translations_, lambda_dof_rowmap_rotations_, false);
 
@@ -177,9 +177,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::setup()
   // of a node or element. To do so, we 'abuse' the Epetra_MultiVector as map between the
   // global node / element ids and the global Lagrange multiplier DOF ids.
   Teuchos::RCP<Epetra_Map> node_gid_rowmap =
-      Teuchos::rcp(new Epetra_Map(-1, n_nodes, my_nodes_gid.data(), 0, discret_->get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, n_nodes, my_nodes_gid.data(), 0, discret_->get_comm());
   Teuchos::RCP<Epetra_Map> element_gid_rowmap =
-      Teuchos::rcp(new Epetra_Map(-1, n_element, my_elements_gid.data(), 0, discret_->get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, n_element, my_elements_gid.data(), 0, discret_->get_comm());
 
   // Map from global node / element ids to global lagrange multiplier ids. Only create the
   // multivector if it hase one or more columns.
@@ -187,10 +187,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::setup()
   element_gid_to_lambda_gid_ = Teuchos::null;
   if (n_lambda_node_ > 0)
     node_gid_to_lambda_gid_ =
-        Teuchos::rcp(new Epetra_MultiVector(*node_gid_rowmap, n_lambda_node_, true));
+        Teuchos::make_rcp<Epetra_MultiVector>(*node_gid_rowmap, n_lambda_node_, true);
   if (n_lambda_element_ > 0)
     element_gid_to_lambda_gid_ =
-        Teuchos::rcp(new Epetra_MultiVector(*element_gid_rowmap, n_lambda_element_, true));
+        Teuchos::make_rcp<Epetra_MultiVector>(*element_gid_rowmap, n_lambda_element_, true);
 
   // Fill in the entries in the node / element global id to Lagrange multiplier global id vector.
   int error_code = 0;
@@ -227,21 +227,21 @@ void BEAMINTERACTION::BeamToSolidMortarManager::setup()
   set_global_maps();
 
   // Create the global coupling matrices.
-  constraint_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
-  constraint_lin_beam_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      *lambda_dof_rowmap_, 30, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  constraint_lin_solid_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      *lambda_dof_rowmap_, 100, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  force_beam_lin_lambda_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      *beam_dof_rowmap_, 30, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  force_solid_lin_lambda_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      *solid_dof_rowmap_, 100, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  kappa_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
-  kappa_lin_beam_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      *lambda_dof_rowmap_, 30, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  kappa_lin_solid_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      *lambda_dof_rowmap_, 100, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  lambda_active_ = Teuchos::rcp(new Epetra_FEVector(*lambda_dof_rowmap_));
+  constraint_ = Teuchos::make_rcp<Epetra_FEVector>(*lambda_dof_rowmap_);
+  constraint_lin_beam_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *lambda_dof_rowmap_, 30, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  constraint_lin_solid_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *lambda_dof_rowmap_, 100, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  force_beam_lin_lambda_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *beam_dof_rowmap_, 30, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  force_solid_lin_lambda_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *solid_dof_rowmap_, 100, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  kappa_ = Teuchos::make_rcp<Epetra_FEVector>(*lambda_dof_rowmap_);
+  kappa_lin_beam_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *lambda_dof_rowmap_, 30, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  kappa_lin_solid_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *lambda_dof_rowmap_, 100, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  lambda_active_ = Teuchos::make_rcp<Epetra_FEVector>(*lambda_dof_rowmap_);
 
   // Set flag for successful setup.
   is_setup_ = true;
@@ -266,10 +266,10 @@ void BEAMINTERACTION::BeamToSolidMortarManager::set_global_maps()
   }
 
   // Create the beam and solid maps.
-  beam_dof_rowmap_ =
-      Teuchos::rcp(new Epetra_Map(-1, beam_dofs.size(), beam_dofs.data(), 0, discret_->get_comm()));
-  solid_dof_rowmap_ = Teuchos::rcp(
-      new Epetra_Map(-1, solid_dofs.size(), solid_dofs.data(), 0, discret_->get_comm()));
+  beam_dof_rowmap_ = Teuchos::make_rcp<Epetra_Map>(
+      -1, beam_dofs.size(), beam_dofs.data(), 0, discret_->get_comm());
+  solid_dof_rowmap_ = Teuchos::make_rcp<Epetra_Map>(
+      -1, solid_dofs.size(), solid_dofs.data(), 0, discret_->get_comm());
 
   // Reset the local maps.
   node_gid_to_lambda_gid_map_.clear();
@@ -331,20 +331,20 @@ void BEAMINTERACTION::BeamToSolidMortarManager::set_local_maps(
   element_gid_needed.resize(std::distance(element_gid_needed.begin(), it));
 
   // Create the maps for the extraction of the values.
-  Teuchos::RCP<Epetra_Map> node_gid_needed_rowmap = Teuchos::rcp<Epetra_Map>(
-      new Epetra_Map(-1, node_gid_needed.size(), node_gid_needed.data(), 0, discret_->get_comm()));
-  Teuchos::RCP<Epetra_Map> element_gid_needed_rowmap = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
-      -1, element_gid_needed.size(), element_gid_needed.data(), 0, discret_->get_comm()));
+  Teuchos::RCP<Epetra_Map> node_gid_needed_rowmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, node_gid_needed.size(), node_gid_needed.data(), 0, discret_->get_comm());
+  Teuchos::RCP<Epetra_Map> element_gid_needed_rowmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, element_gid_needed.size(), element_gid_needed.data(), 0, discret_->get_comm());
 
   // Create the Multivectors that will be filled with all values needed on this rank.
   Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_copy = Teuchos::null;
   Teuchos::RCP<Epetra_MultiVector> element_gid_to_lambda_gid_copy = Teuchos::null;
   if (node_gid_to_lambda_gid_ != Teuchos::null)
-    node_gid_to_lambda_gid_copy = Teuchos::rcp<Epetra_MultiVector>(
-        new Epetra_MultiVector(*node_gid_needed_rowmap, n_lambda_node_, true));
+    node_gid_to_lambda_gid_copy =
+        Teuchos::make_rcp<Epetra_MultiVector>(*node_gid_needed_rowmap, n_lambda_node_, true);
   if (element_gid_to_lambda_gid_ != Teuchos::null)
-    element_gid_to_lambda_gid_copy = Teuchos::rcp<Epetra_MultiVector>(
-        new Epetra_MultiVector(*element_gid_needed_rowmap, n_lambda_element_, true));
+    element_gid_to_lambda_gid_copy =
+        Teuchos::make_rcp<Epetra_MultiVector>(*element_gid_needed_rowmap, n_lambda_element_, true);
 
   // Export values from the global multi vector to the ones needed on this rank.
   if (node_gid_to_lambda_gid_ != Teuchos::null)
@@ -383,8 +383,8 @@ void BEAMINTERACTION::BeamToSolidMortarManager::set_local_maps(
   }
 
   // Create the global lambda col map.
-  lambda_dof_colmap_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
-      -1, lambda_gid_for_col_map.size(), lambda_gid_for_col_map.data(), 0, discret_->get_comm()));
+  lambda_dof_colmap_ = Teuchos::make_rcp<Epetra_Map>(
+      -1, lambda_gid_for_col_map.size(), lambda_gid_for_col_map.data(), 0, discret_->get_comm());
 
   // Set flags for local maps.
   is_local_maps_build_ = true;
@@ -490,7 +490,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>>
 BEAMINTERACTION::BeamToSolidMortarManager::get_global_lambda_col() const
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_col =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*lambda_dof_colmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lambda_dof_colmap_);
   Core::LinAlg::export_to(*get_global_lambda(), *lambda_col);
   return lambda_col;
 }
@@ -580,7 +580,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
   {
     // Penalty regularization linearized w.r.t. the constraint equations
     auto penalty_regularization_lin_constaint =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*std::get<1>(penalty_regularization)));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*std::get<1>(penalty_regularization));
     penalty_regularization_lin_constaint->complete();
     auto regularized_constraint_lin_beam =
         Core::LinAlg::matrix_multiply(*penalty_regularization_lin_constaint, false,
@@ -593,7 +593,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
     if (kappa_lin_beam_->NormInf() > 1e-12 && kappa_lin_solid_->NormInf() > 1e-12)
     {
       auto penalty_regularization_lin_kappa =
-          Teuchos::rcp(new Core::LinAlg::SparseMatrix(*std::get<2>(penalty_regularization)));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*std::get<2>(penalty_regularization));
       penalty_regularization_lin_kappa->complete();
       const auto kappa_lin_beam_scaled = Core::LinAlg::matrix_multiply(
           *penalty_regularization_lin_kappa, false, *kappa_lin_beam_, false, false, false, true);
@@ -633,9 +633,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
     // Multiply the lambda vector with FB_L and FS_L to get the forces on the beam and solid,
     // respectively.
     Teuchos::RCP<Core::LinAlg::Vector<double>> beam_force =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*beam_dof_rowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*beam_dof_rowmap_);
     Teuchos::RCP<Core::LinAlg::Vector<double>> solid_force =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*solid_dof_rowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*solid_dof_rowmap_);
     beam_force->PutScalar(0.);
     solid_force->PutScalar(0.);
     linalg_error = force_beam_lin_lambda_->multiply(false, *lambda, *beam_force);
@@ -643,7 +643,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
     linalg_error = force_solid_lin_lambda_->multiply(false, *lambda, *solid_force);
     if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
     Teuchos::RCP<Core::LinAlg::Vector<double>> global_temp =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret_->dof_row_map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->dof_row_map());
     Core::LinAlg::export_to(*beam_force, *global_temp);
     Core::LinAlg::export_to(*solid_force, *global_temp);
 
@@ -653,7 +653,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::add_global_force_stiffness_penal
   }
 
   // Add the force and stiffness contributions that are assembled directly by the pairs.
-  auto lambda_col = Teuchos::rcp(new Core::LinAlg::Vector<double>(*lambda_dof_colmap_));
+  auto lambda_col = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lambda_dof_colmap_);
   Core::LinAlg::export_to(*lambda, *lambda_col);
   for (const auto& elepairptr : contact_pairs_)
     elepairptr->evaluate_and_assemble(
@@ -674,12 +674,12 @@ BEAMINTERACTION::BeamToSolidMortarManager::get_penalty_regularization(
   // Get the inverted kappa matrix.
   Teuchos::RCP<Core::LinAlg::Vector<double>> penalty_kappa_inv = penalty_invert_kappa();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> penalty_kappa_inv_mat =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*penalty_kappa_inv));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*penalty_kappa_inv);
   penalty_kappa_inv_mat->complete();
 
   // Multiply the inverted kappa matrix with the constraint equations.
   Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*lambda_dof_rowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);
   int linalg_error = penalty_kappa_inv_mat->multiply(false, *constraint_, *lambda);
   if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
 
@@ -701,7 +701,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::penalty_invert_kappa() const
 {
   // Create the inverse vector.
   Teuchos::RCP<Core::LinAlg::Vector<double>> kappa_inv =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*lambda_dof_rowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);
 
   // Get the penalty parameters.
   const double penalty_translation = beam_to_solid_params_->get_penalty_parameter();

@@ -351,9 +351,9 @@ namespace NOX
                 Filter& filter, const bool use_soc, const CorrectionType user_type)
             {
               if (use_soc)
-                return Teuchos::rcp<SOCBase>(new SecondOrderCorrection(filter, user_type));
+                return Teuchos::RCP<SOCBase>(new SecondOrderCorrection(filter, user_type));
               else
-                return Teuchos::rcp<SOCBase>(new SOCBase(filter, NOX::Nln::CorrectionType::vague));
+                return Teuchos::make_rcp<SOCBase>(filter, NOX::Nln::CorrectionType::vague);
             }
 
             /// base class constructor
@@ -445,7 +445,7 @@ namespace NOX
             /// simple create method
             static Teuchos::RCP<Blocking> create(Filter& filter, const FilterParams& fparams)
             {
-              return Teuchos::rcp(new Blocking(filter, fparams));
+              return Teuchos::make_rcp<Blocking>(filter, fparams);
             }
 
             /// constructor

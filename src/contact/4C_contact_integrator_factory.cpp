@@ -35,37 +35,37 @@ Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integrator
       if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::tsi)
       {
         integrator =
-            Teuchos::rcp(new CONTACT::IntegratorNitscheTsi(mortar_params, slave_type, comm));
+            Teuchos::make_rcp<CONTACT::IntegratorNitscheTsi>(mortar_params, slave_type, comm);
       }
       else if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::ssi)
       {
         integrator =
-            Teuchos::rcp(new CONTACT::IntegratorNitscheSsi(mortar_params, slave_type, comm));
+            Teuchos::make_rcp<CONTACT::IntegratorNitscheSsi>(mortar_params, slave_type, comm);
       }
       else if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::ssi_elch)
       {
         integrator =
-            Teuchos::rcp(new CONTACT::IntegratorNitscheSsiElch(mortar_params, slave_type, comm));
+            Teuchos::make_rcp<CONTACT::IntegratorNitscheSsiElch>(mortar_params, slave_type, comm);
       }
       else if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::poroelast ||
                mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::poroscatra)
       {
         integrator =
-            Teuchos::rcp(new CONTACT::IntegratorNitschePoro(mortar_params, slave_type, comm));
+            Teuchos::make_rcp<CONTACT::IntegratorNitschePoro>(mortar_params, slave_type, comm);
       }
       else if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::fsi)
       {
         integrator =
-            Teuchos::rcp(new CONTACT::IntegratorNitscheFsi(mortar_params, slave_type, comm));
+            Teuchos::make_rcp<CONTACT::IntegratorNitscheFsi>(mortar_params, slave_type, comm);
       }
       else if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::fpi)
       {
         integrator =
-            Teuchos::rcp(new CONTACT::IntegratorNitscheFpi(mortar_params, slave_type, comm));
+            Teuchos::make_rcp<CONTACT::IntegratorNitscheFpi>(mortar_params, slave_type, comm);
       }
       else
       {
-        integrator = Teuchos::rcp(new CONTACT::IntegratorNitsche(mortar_params, slave_type, comm));
+        integrator = Teuchos::make_rcp<CONTACT::IntegratorNitsche>(mortar_params, slave_type, comm);
       }
       break;
     }
@@ -74,20 +74,20 @@ Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::build_integrator
     {
       if (Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(mortar_params, "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts)
-        integrator = Teuchos::rcp(new CONTACT::IntegratorNitsche(mortar_params, slave_type, comm));
+        integrator = Teuchos::make_rcp<CONTACT::IntegratorNitsche>(mortar_params, slave_type, comm);
       else
-        integrator = Teuchos::rcp(new CONTACT::Integrator(mortar_params, slave_type, comm));
+        integrator = Teuchos::make_rcp<CONTACT::Integrator>(mortar_params, slave_type, comm);
       break;
     }
     case Inpar::CONTACT::solution_lagmult:
     case Inpar::CONTACT::solution_uzawa:
     {
-      integrator = Teuchos::rcp(new CONTACT::Integrator(mortar_params, slave_type, comm));
+      integrator = Teuchos::make_rcp<CONTACT::Integrator>(mortar_params, slave_type, comm);
       break;
     }
     case Inpar::CONTACT::solution_ehl:
     {
-      integrator = Teuchos::rcp(new CONTACT::IntegratorEhl(mortar_params, slave_type, comm));
+      integrator = Teuchos::make_rcp<CONTACT::IntegratorEhl>(mortar_params, slave_type, comm);
 
       break;
     }

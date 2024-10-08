@@ -57,7 +57,7 @@ void FLD::TimIntStationaryHDG::init()
 
   // set degrees of freedom in the discretization
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, elementndof, 0, false));
+      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(0, elementndof, 0, false);
   discret_->add_dof_set(dofsetaux);
   discret_->fill_complete();
 
@@ -81,14 +81,14 @@ void FLD::TimIntStationaryHDG::init()
   conddofmapvec.reserve(conddofset.size());
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
-  Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::rcp(
-      new Epetra_Map(-1, conddofmapvec.size(), conddofmapvec.data(), 0, hdgdis->get_comm()));
+  Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, conddofmapvec.size(), conddofmapvec.data(), 0, hdgdis->get_comm());
   std::vector<int> otherdofmapvec;
   otherdofmapvec.reserve(otherdofset.size());
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
-  Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::rcp(
-      new Epetra_Map(-1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->get_comm()));
+  Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->get_comm());
   velpressplitter_->setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
 
   // call init()-functions of base classes

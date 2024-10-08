@@ -37,7 +37,7 @@ Mat::PAR::MicroMaterial::MicroMaterial(const Core::Mat::PAR::Parameter::Data& ma
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MicroMaterial::create_material()
 {
-  return Teuchos::rcp(new Mat::MicroMaterial(this));
+  return Teuchos::make_rcp<Mat::MicroMaterial>(this);
 }
 
 

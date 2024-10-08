@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::AleFpsiWrapper::AleFpsiWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 {
   // create the FSI interface
-  interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
+  interface_ = Teuchos::make_rcp<ALE::UTILS::MapExtractor>();
   interface_->setup(*discretization(), true);  // create overlapping maps for fpsi problem
 
   return;

@@ -1009,10 +1009,10 @@ beam_to_solid_surface_meshtying_pair_mortar_fad_factory_mortar_rotation(
   using namespace GEOMETRYPAIR;
 
   if (!rotational_coupling)
-    return Teuchos::rcp(
+    return Teuchos::RCP(
         new BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface, Mortar>());
   else
-    return Teuchos::rcp(
+    return Teuchos::RCP(
         new BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface, Mortar>());
 }
 

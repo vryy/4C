@@ -97,8 +97,8 @@ void dyn_nlnstructural_drt()
     case Inpar::Solid::int_old:
     {
       Teuchos::RCP<Adapter::StructureBaseAlgorithm> adapterbase_old_ptr =
-          Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
-              sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+          Teuchos::make_rcp<Adapter::StructureBaseAlgorithm>(
+              sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
       structadapter = adapterbase_old_ptr->structure_field();
       structadapter->setup();
       break;

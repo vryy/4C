@@ -129,7 +129,7 @@ namespace Mat
             "kinematics version is planned.");
     }
 
-    Teuchos::RCP<Material> clone() const override { return Teuchos::rcp(new PlasticGTN(*this)); }
+    Teuchos::RCP<Material> clone() const override { return Teuchos::make_rcp<PlasticGTN>(*this); }
 
     void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
     void update() override;

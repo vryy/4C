@@ -120,8 +120,8 @@ BEAMINTERACTION::Beam3TangentSmoothing::determine_neigbors(const Core::Elements:
     }
   }
 
-  return Teuchos::rcp(new BEAMINTERACTION::B3CNeighbor(
-      left_neighbor, right_neighbor, connecting_node_left, connecting_node_right));
+  return Teuchos::make_rcp<BEAMINTERACTION::B3CNeighbor>(
+      left_neighbor, right_neighbor, connecting_node_left, connecting_node_right);
 }
 
 

@@ -81,8 +81,8 @@ void MultiScale::np_support_drt()
       {
         // receive data from the master proc
         int tag = 0;
-        Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 0, &tag, 0, *subcomm));
-        Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
+        Teuchos::RCP<Epetra_Map> oldmap = Teuchos::make_rcp<Epetra_Map>(1, 0, &tag, 0, *subcomm);
+        Teuchos::RCP<Epetra_Map> newmap = Teuchos::make_rcp<Epetra_Map>(1, 1, &tag, 0, *subcomm);
         // create an exporter object that will figure out the communication pattern
         Core::Communication::Exporter exporter(*oldmap, *newmap, *subcomm);
         std::map<int, Teuchos::RCP<MultiScale::MicroStaticParObject>> condnamemap;
@@ -131,8 +131,8 @@ void MultiScale::np_support_drt()
       {
         // receive data from the master proc for restart
         int tag = 0;
-        Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 0, &tag, 0, *subcomm));
-        Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
+        Teuchos::RCP<Epetra_Map> oldmap = Teuchos::make_rcp<Epetra_Map>(1, 0, &tag, 0, *subcomm);
+        Teuchos::RCP<Epetra_Map> newmap = Teuchos::make_rcp<Epetra_Map>(1, 1, &tag, 0, *subcomm);
         // create an exporter object that will figure out the communication pattern
         Core::Communication::Exporter exporter(*oldmap, *newmap, *subcomm);
         std::map<int, Teuchos::RCP<MultiScale::MicroStaticParObject>> condnamemap;

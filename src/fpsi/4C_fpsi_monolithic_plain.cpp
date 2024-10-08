@@ -47,29 +47,29 @@ FPSI::MonolithicPlain::MonolithicPlain(const Epetra_Comm& comm,
   // create transformation object for the condensation
 
 
-  fggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
-  fggtransform2_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
-  fmgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
+  fggtransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowColTransform>();
+  fggtransform2_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowColTransform>();
+  fmgitransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowColTransform>();
 
-  fgitransform1_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
-  fgitransform2_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
-  cfgtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
-  cfptransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
-  cfptransform2_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  fgitransform1_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
+  fgitransform2_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
+  cfgtransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
+  cfptransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
+  cfptransform2_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
 
-  figtransform1_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-  figtransform2_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-  figtransform3_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-  figtransform4_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-  aigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-  aigtransform2_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  figtransform1_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
+  figtransform2_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
+  figtransform3_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
+  figtransform4_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
+  aigtransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
+  aigtransform2_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
 
-  couplingcoltransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-  couplingcoltransformfs_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  couplingcoltransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
+  couplingcoltransformfs_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
 
   // Recovery of Lagrange multiplier happens on fluid field
-  lambda_ = Teuchos::rcp(
-      new Core::LinAlg::Vector<double>(*fluid_field()->interface()->fsi_cond_map(), true));
+  lambda_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+      *fluid_field()->interface()->fsi_cond_map(), true);
   fmgiprev_ = Teuchos::null;
   fmgicur_ = Teuchos::null;
   fmggprev_ = Teuchos::null;
@@ -196,8 +196,8 @@ void FPSI::MonolithicPlain::setup_system()
 
   // initialize FPSI-systemmatrix_
   systemmatrix_ =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          extractor(), extractor(), 81, false, true));
+      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+          extractor(), extractor(), 81, false, true);
 }
 
 /*----------------------------------------------------------------------*/
@@ -228,7 +228,7 @@ void FPSI::MonolithicPlain::setup_rhs(bool firstcall)
   TEUCHOS_FUNC_TIME_MONITOR("FPSI::MonolithicPlain::setup_rhs");
   // create full monolithic rhs vector
 
-  rhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
+  rhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
 
   firstcall_ = firstcall;
 
@@ -538,10 +538,10 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
 
   // if (FSI_Interface_exists_)
   {
-    fgicur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-        fbm->matrix(FLD::UTILS::MapExtractor::cond_fsi, FLD::UTILS::MapExtractor::cond_other)));
-    fggcur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-        fbm->matrix(FLD::UTILS::MapExtractor::cond_fsi, FLD::UTILS::MapExtractor::cond_fsi)));
+    fgicur_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+        fbm->matrix(FLD::UTILS::MapExtractor::cond_fsi, FLD::UTILS::MapExtractor::cond_other));
+    fggcur_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+        fbm->matrix(FLD::UTILS::MapExtractor::cond_fsi, FLD::UTILS::MapExtractor::cond_fsi));
 
     // store parts of fluid matrix to know them in the next iteration as previous iteration matrices
     fgiprev_ = fgicur_;
@@ -553,10 +553,10 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
     fmggprev_ = fmggcur_;
     if (fluidalematrix != Teuchos::null)
     {
-      fmgicur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(fluidalematrix->matrix(
-          FLD::UTILS::MapExtractor::cond_fsi, FLD::UTILS::MapExtractor::cond_other)));
-      fmggcur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(fluidalematrix->matrix(
-          FLD::UTILS::MapExtractor::cond_fsi, FLD::UTILS::MapExtractor::cond_fsi)));
+      fmgicur_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(fluidalematrix->matrix(
+          FLD::UTILS::MapExtractor::cond_fsi, FLD::UTILS::MapExtractor::cond_other));
+      fmggcur_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(fluidalematrix->matrix(
+          FLD::UTILS::MapExtractor::cond_fsi, FLD::UTILS::MapExtractor::cond_fsi));
     }
   }
 }
@@ -711,7 +711,7 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Core::LinAlg::Vector<double>& f
    *
    */
   // ----------addressing term 1
-  rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(fgg.range_map(), true));
+  rhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fgg.range_map(), true);
 
   fgg.Apply(*fveln, *rhs);
 
@@ -776,7 +776,7 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Core::LinAlg::Vector<double>& f
    *
    */
   // ----------addressing term 1
-  rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(fig.range_map(), true));
+  rhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fig.range_map(), true);
 
   fig.Apply(*fveln, *rhs);
 
@@ -932,7 +932,7 @@ void FPSI::MonolithicPlain::extract_field_vectors(
       ddginc_->Update(1.0, *scx_fsi, -1.0, *disgprev_, 0.0);  // compute current iteration increment
     else
       ddginc_ =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(*scx_fsi));  // first iteration increment
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*scx_fsi);  // first iteration increment
 
     disgprev_ = scx_fsi;  // store current step increment
     // ------------------------------------
@@ -946,7 +946,8 @@ void FPSI::MonolithicPlain::extract_field_vectors(
   if (solialeprev_ != Teuchos::null)
     ddialeinc_->Update(1.0, *aox, -1.0, *solialeprev_, 0.0);  // compute current iteration increment
   else
-    ddialeinc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*aox));  // first iteration increment
+    ddialeinc_ =
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*aox);  // first iteration increment
 
   solialeprev_ = aox;  // store current step increment
   // ------------------------------------
@@ -956,7 +957,7 @@ void FPSI::MonolithicPlain::extract_field_vectors(
     duiinc_->Update(1.0, *fox, -1.0, *soliprev_, 0.0);
   else
     // first iteration increment
-    duiinc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fox));
+    duiinc_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fox);
   // store current step increment
   soliprev_ = fox;
   // ------------------------------------
@@ -1042,11 +1043,11 @@ void FPSI::MonolithicPlain::recover_lagrange_multiplier()
     Teuchos::RCP<Core::LinAlg::Vector<double>> fluidresidual =
         fluid_field()->interface()->extract_fsi_cond_vector(*fluid_field()->rhs());
     fluidresidual->Scale(-1.0);  // invert sign to obtain residual, not rhs
-    tmpvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluidresidual));
+    tmpvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluidresidual);
     // ---------End of term (3)
 
     // ---------Addressing term (4)
-    auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fggprev_->range_map(), true));
+    auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fggprev_->range_map(), true);
 
     fggprev_->Apply(*struct_to_fluid_fsi(ddginc_), *auxvec);
     tmpvec->Update(timescale, *auxvec, 1.0);
@@ -1055,16 +1056,16 @@ void FPSI::MonolithicPlain::recover_lagrange_multiplier()
     // ---------Addressing term (5)
     if (fmggprev_ != Teuchos::null)
     {
-      auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fmggprev_->range_map(), true));
+      auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fmggprev_->range_map(), true);
       fmggprev_->Apply(*struct_to_fluid_fsi(ddginc_), *auxvec);
       tmpvec->Update(1.0, *auxvec, 1.0);
     }
     // ---------End of term (5)
 
     // ---------Addressing term (6)
-    auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fgiprev_->range_map(), true));
+    auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fgiprev_->range_map(), true);
     Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(fgiprev_->domain_map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fgiprev_->domain_map(), true);
     Core::LinAlg::export_to(*duiinc_, *tmp);
     fgiprev_->Apply(*tmp, *auxvec);
     tmpvec->Update(1.0, *auxvec, 1.0);
@@ -1093,18 +1094,18 @@ void FPSI::MonolithicPlain::recover_lagrange_multiplier()
           *fluid_field()->velocity_row_map(), *interface_fluid_ale_coupling_fsi().master_dof_map());
       Core::LinAlg::MapExtractor velothermapext =
           Core::LinAlg::MapExtractor(*fluid_field()->velocity_row_map(), velothermap, false);
-      auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(*velothermap, true));
+      auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*velothermap, true);
       velothermapext.extract_other_vector(
           *ale_to_fluid(ale_field()->interface()->insert_other_vector(*ddialeinc_)), *auxvec);
 
       // add pressure DOFs
       Core::LinAlg::MapExtractor velotherpressuremapext =
           Core::LinAlg::MapExtractor(fmgiprev_->domain_map(), velothermap);
-      auxauxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fmgiprev_->domain_map(), true));
+      auxauxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fmgiprev_->domain_map(), true);
       velotherpressuremapext.insert_cond_vector(*auxvec, *auxauxvec);
 
       // prepare vector to store result of matrix-vector-product
-      auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fmgiprev_->range_map(), true));
+      auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fmgiprev_->range_map(), true);
 
       // Now, do the actual matrix-vector-product
       fmgiprev_->Apply(*auxauxvec, *auxvec);
@@ -1115,7 +1116,7 @@ void FPSI::MonolithicPlain::recover_lagrange_multiplier()
     // ---------Addressing term (8)
     if (firstcall_)
     {
-      auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fggprev_->range_map(), true));
+      auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fggprev_->range_map(), true);
       fggprev_->Apply(*fluid_field()->extract_interface_veln(), *auxvec);
       tmpvec->Update(dt() * timescale, *auxvec, 1.0);
     }

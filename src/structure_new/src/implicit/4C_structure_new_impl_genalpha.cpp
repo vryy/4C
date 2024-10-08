@@ -108,7 +108,7 @@ void Solid::IMPLICIT::GenAlpha::setup()
   // setup mid-point vectors
   // ---------------------------------------------------------------------------
   const_vel_acc_update_ptr_ =
-      Teuchos::rcp(new Epetra_MultiVector(*global_state().dof_row_map_view(), 2, true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*global_state().dof_row_map_view(), 2, true);
 
   // ---------------------------------------------------------------------------
   // setup pointers to the force vectors of the global state data container

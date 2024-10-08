@@ -63,30 +63,30 @@ void ssi_drt()
     {
       case Inpar::SSI::SolutionSchemeOverFields::ssi_OneWay_ScatraToSolid:
       {
-        ssi = Teuchos::rcp(new SSI::SSIPart1WCScatraToSolid(comm, ssiparams));
+        ssi = Teuchos::make_rcp<SSI::SSIPart1WCScatraToSolid>(comm, ssiparams);
         isale = false;
       }
       break;
       case Inpar::SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra:
-        ssi = Teuchos::rcp(new SSI::SSIPart1WCSolidToScatra(comm, ssiparams));
+        ssi = Teuchos::make_rcp<SSI::SSIPart1WCSolidToScatra>(comm, ssiparams);
         break;
       case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStagg:
-        ssi = Teuchos::rcp(new SSI::SSIPart2WC(comm, ssiparams));
+        ssi = Teuchos::make_rcp<SSI::SSIPart2WC>(comm, ssiparams);
         break;
       case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStaggFixedRel_ScatraToSolid:
-        ssi = Teuchos::rcp(new SSI::SSIPart2WCScatraToSolidRelax(comm, ssiparams));
+        ssi = Teuchos::make_rcp<SSI::SSIPart2WCScatraToSolidRelax>(comm, ssiparams);
         break;
       case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStaggFixedRel_SolidToScatra:
-        ssi = Teuchos::rcp(new SSI::SSIPart2WCSolidToScatraRelax(comm, ssiparams));
+        ssi = Teuchos::make_rcp<SSI::SSIPart2WCSolidToScatraRelax>(comm, ssiparams);
         break;
       case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStaggAitken_ScatraToSolid:
-        ssi = Teuchos::rcp(new SSI::SSIPart2WCScatraToSolidRelaxAitken(comm, ssiparams));
+        ssi = Teuchos::make_rcp<SSI::SSIPart2WCScatraToSolidRelaxAitken>(comm, ssiparams);
         break;
       case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStaggAitken_SolidToScatra:
-        ssi = Teuchos::rcp(new SSI::SSIPart2WCSolidToScatraRelaxAitken(comm, ssiparams));
+        ssi = Teuchos::make_rcp<SSI::SSIPart2WCSolidToScatraRelaxAitken>(comm, ssiparams);
         break;
       case Inpar::SSI::SolutionSchemeOverFields::ssi_Monolithic:
-        ssi = Teuchos::rcp(new SSI::SsiMono(comm, ssiparams));
+        ssi = Teuchos::make_rcp<SSI::SsiMono>(comm, ssiparams);
         break;
       default:
         FOUR_C_THROW("unknown coupling algorithm for SSI!");
@@ -129,7 +129,7 @@ void ssi_drt()
         flag_readscatra)
     {
       std::string filename = Teuchos::getNumericStringParameter(ssiparams, "SCATRA_FILENAME");
-      auto inputscatra = Teuchos::rcp(new Core::IO::InputControl(filename, comm));
+      auto inputscatra = Teuchos::make_rcp<Core::IO::InputControl>(filename, comm);
       problem->set_input_control_file(inputscatra);
     }
 

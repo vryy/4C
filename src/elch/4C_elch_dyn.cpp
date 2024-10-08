@@ -77,12 +77,12 @@ void elch_dyn(int restart)
       }
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      auto scatraonly = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
-          scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber)));
+      auto scatraonly = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(
+          scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      auto dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
-          Global::Problem::instance()->n_dim() + 1, 0, 0, true));
+      auto dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+          Global::Problem::instance()->n_dim() + 1, 0, 0, true);
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       scatraonly->scatra_field()->set_number_of_dof_set_velocity(1);
@@ -193,8 +193,8 @@ void elch_dyn(int restart)
 
         // create an ElCh::MovingBoundaryAlgorithm instance
         // NOTE: elch reads time parameters from scatra dynamic section!
-        auto elch = Teuchos::rcp(new ElCh::MovingBoundaryAlgorithm(
-            comm, elchcontrol, scatradyn, problem->solver_params(linsolvernumber)));
+        auto elch = Teuchos::make_rcp<ElCh::MovingBoundaryAlgorithm>(
+            comm, elchcontrol, scatradyn, problem->solver_params(linsolvernumber));
 
         // add proxy of fluid degrees of freedom to scatra discretization
         if (scatradis->add_dof_set(fluiddis->get_dof_set_proxy()) != 1)
@@ -243,8 +243,8 @@ void elch_dyn(int restart)
 
         // create an ElCh::Algorithm instance
         // NOTE: elch reads time parameters from scatra dynamic section!
-        auto elch = Teuchos::rcp(new ElCh::Algorithm(
-            comm, elchcontrol, scatradyn, fdyn, problem->solver_params(linsolvernumber)));
+        auto elch = Teuchos::make_rcp<ElCh::Algorithm>(
+            comm, elchcontrol, scatradyn, fdyn, problem->solver_params(linsolvernumber));
 
         // add proxy of fluid degrees of freedom to scatra discretization
         if (scatradis->add_dof_set(fluiddis->get_dof_set_proxy()) != 1)

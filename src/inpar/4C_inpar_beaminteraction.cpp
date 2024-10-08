@@ -182,10 +182,10 @@ void Inpar::BEAMINTERACTION::set_valid_conditions(
   /*-------------------------------------------------------------------*/
   // beam potential interaction: atom/charge density per unit length on LINE
   Teuchos::RCP<Core::Conditions::ConditionDefinition> beam_filament_condition =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE BEAM FILAMENT CONDITIONS",
-          "BeamLineFilamentCondition", "Beam_Line_Filament_Condition",
-          Core::Conditions::FilamentBeamLineCondition, false,
-          Core::Conditions::geometry_type_line));
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN LINE BEAM FILAMENT CONDITIONS", "BeamLineFilamentCondition",
+          "Beam_Line_Filament_Condition", Core::Conditions::FilamentBeamLineCondition, false,
+          Core::Conditions::geometry_type_line);
 
   add_named_int(beam_filament_condition, "ID", "filament id");
   add_named_selection_component(beam_filament_condition, "TYPE", "", "Arbitrary",
@@ -198,11 +198,12 @@ void Inpar::BEAMINTERACTION::set_valid_conditions(
   condlist.push_back(beam_filament_condition);
 
   /*-------------------------------------------------------------------*/
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> penalty_coupling_condition = Teuchos::rcp(
-      new Core::Conditions::ConditionDefinition("DESIGN POINT PENALTY COUPLING CONDITIONS",
-          "PenaltyPointCouplingCondition", "Couples beam nodes that lie on the same position",
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> penalty_coupling_condition =
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN POINT PENALTY COUPLING CONDITIONS", "PenaltyPointCouplingCondition",
+          "Couples beam nodes that lie on the same position",
           Core::Conditions::PenaltyPointCouplingCondition, false,
-          Core::Conditions::geometry_type_point));
+          Core::Conditions::geometry_type_point);
 
   Input::add_named_real(penalty_coupling_condition, "POSITIONAL_PENALTY_PARAMETER");
   Input::add_named_real(penalty_coupling_condition, "ROTATIONAL_PENALTY_PARAMETER");

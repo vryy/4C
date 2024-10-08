@@ -125,7 +125,7 @@ void fluid_ale_drt()
           "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
   }
 
-  Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::rcp(new FSI::FluidAleAlgorithm(comm));
+  Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::make_rcp<FSI::FluidAleAlgorithm>(comm);
   const int restart = problem->restart();
   if (restart)
   {
@@ -185,7 +185,7 @@ void fluid_xfem_drt()
   {
     // create instance of fluid xfem algorithm, for moving interfaces
     Teuchos::RCP<FSI::FluidXFEMAlgorithm> fluidalgo =
-        Teuchos::rcp(new FSI::FluidXFEMAlgorithm(comm));
+        Teuchos::make_rcp<FSI::FluidXFEMAlgorithm>(comm);
 
     const int restart = Global::Problem::instance()->restart();
     if (restart)
@@ -208,7 +208,7 @@ void fluid_xfem_drt()
     const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
 
     Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluidalgo =
-        Teuchos::rcp(new Adapter::FluidBaseAlgorithm(fdyn, fdyn, "fluid", false));
+        Teuchos::make_rcp<Adapter::FluidBaseAlgorithm>(fdyn, fdyn, "fluid", false);
 
     //--------------------------------------------------------------
     // restart the simulation
@@ -298,9 +298,9 @@ void fsi_immersed_drt()
       binning_params);
 
 
-  auto binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
+  auto binningstrategy = Teuchos::make_rcp<Core::Binstrategy::BinningStrategy>(binning_params,
       Global::Problem::instance()->output_control_file(), comm, comm.MyPID(), correct_node,
-      determine_relevant_points, dis));
+      determine_relevant_points, dis);
 
   const Teuchos::ParameterList& fbidyn = problem->fbi_params();
 
@@ -470,9 +470,9 @@ void fsi_ale_drt()
         Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
             "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
-        auto binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
+        auto binningstrategy = Teuchos::make_rcp<Core::Binstrategy::BinningStrategy>(binning_params,
             Global::Problem::instance()->output_control_file(), comm, comm.MyPID(), correct_node,
-            determine_relevant_points, dis));
+            determine_relevant_points, dis);
         binningstrategy
             ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
                 dis, stdelecolmap, stdnodecolmap);
@@ -506,39 +506,39 @@ void fsi_ale_drt()
       // call constructor to initialize the base class
       if (coupling == fsi_iter_monolithicfluidsplit)
       {
-        fsi = Teuchos::rcp(new FSI::MonolithicFluidSplit(comm, fsidyn));
+        fsi = Teuchos::make_rcp<FSI::MonolithicFluidSplit>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_monolithicstructuresplit)
       {
-        fsi = Teuchos::rcp(new FSI::MonolithicStructureSplit(comm, fsidyn));
+        fsi = Teuchos::make_rcp<FSI::MonolithicStructureSplit>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_mortar_monolithicstructuresplit)
       {
-        fsi = Teuchos::rcp(new FSI::MortarMonolithicStructureSplit(comm, fsidyn));
+        fsi = Teuchos::make_rcp<FSI::MortarMonolithicStructureSplit>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_mortar_monolithicfluidsplit)
       {
-        fsi = Teuchos::rcp(new FSI::MortarMonolithicFluidSplit(comm, fsidyn));
+        fsi = Teuchos::make_rcp<FSI::MortarMonolithicFluidSplit>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_mortar_monolithicfluidsplit_saddlepoint)
       {
-        fsi = Teuchos::rcp(new FSI::MortarMonolithicFluidSplitSaddlePoint(comm, fsidyn));
+        fsi = Teuchos::make_rcp<FSI::MortarMonolithicFluidSplitSaddlePoint>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_fluidfluid_monolithicfluidsplit)
       {
-        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplit(comm, fsidyn));
+        fsi = Teuchos::make_rcp<FSI::FluidFluidMonolithicFluidSplit>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
       {
-        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplit(comm, fsidyn));
+        fsi = Teuchos::make_rcp<FSI::FluidFluidMonolithicStructureSplit>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_sliding_monolithicfluidsplit)
       {
-        fsi = Teuchos::rcp(new FSI::SlidingMonolithicFluidSplit(comm, fsidyn));
+        fsi = Teuchos::make_rcp<FSI::SlidingMonolithicFluidSplit>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_sliding_monolithicstructuresplit)
       {
-        fsi = Teuchos::rcp(new FSI::SlidingMonolithicStructureSplit(comm, fsidyn));
+        fsi = Teuchos::make_rcp<FSI::SlidingMonolithicStructureSplit>(comm, fsidyn);
       }
       else
       {
@@ -570,7 +570,7 @@ void fsi_ale_drt()
       Global::Problem::instance()->add_field_test(fsi->structure_field()->create_field_test());
 
       // create fsi specific result test
-      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi, fsidyn));
+      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::make_rcp<FSI::FSIResultTest>(fsi, fsidyn);
       Global::Problem::instance()->add_field_test(fsitest);
 
       // do the actual testing
@@ -584,11 +584,11 @@ void fsi_ale_drt()
       Teuchos::RCP<FSI::MonolithicNoNOX> fsi;
       if (coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nonox)
       {
-        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicFluidSplitNoNOX(comm, fsidyn));
+        fsi = Teuchos::make_rcp<FSI::FluidFluidMonolithicFluidSplitNoNOX>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nonox)
       {
-        fsi = Teuchos::rcp(new FSI::FluidFluidMonolithicStructureSplitNoNOX(comm, fsidyn));
+        fsi = Teuchos::make_rcp<FSI::FluidFluidMonolithicStructureSplitNoNOX>(comm, fsidyn);
       }
       else
         FOUR_C_THROW("Unsupported monolithic XFFSI scheme");
@@ -615,7 +615,7 @@ void fsi_ale_drt()
       Global::Problem::instance()->add_field_test(fsi->structure_field()->create_field_test());
 
       // create fsi specific result test
-      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi, fsidyn));
+      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::make_rcp<FSI::FSIResultTest>(fsi, fsidyn);
       Global::Problem::instance()->add_field_test(fsitest);
 
       // do the actual testing
@@ -745,7 +745,7 @@ void xfsi_drt()
         FOUR_C_THROW("Only Newton-Krylov scheme with XFEM fluid");
 
       // create the MonolithicXFEM object that does the whole work
-      Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(new FSI::MonolithicXFEM(comm, fsidyn));
+      Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::make_rcp<FSI::MonolithicXFEM>(comm, fsidyn);
 
       // read the restart information, set vectors and variables ---
       // be careful, dofmaps might be changed here in a redistribute() call
@@ -896,8 +896,8 @@ void xfpsi_drt()
       if (linearsolverstrategy != Inpar::FSI::PreconditionedKrylov)
         FOUR_C_THROW("Only Newton-Krylov scheme with XFEM fluid");
 
-      Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(
-          new FSI::MonolithicXFEM(comm, fsidyn, Adapter::FieldWrapper::type_PoroField));
+      Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::make_rcp<FSI::MonolithicXFEM>(
+          comm, fsidyn, Adapter::FieldWrapper::type_PoroField);
 
       // read the restart information, set vectors and variables ---
 

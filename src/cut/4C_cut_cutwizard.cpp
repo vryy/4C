@@ -55,11 +55,11 @@ const Core::Elements::Element* Cut::CutWizard::BackMesh::l_col_element(int lid) 
  *-------------------------------------------------------------*/
 Cut::CutWizard::CutWizard(const Teuchos::RCP<Core::FE::Discretization>& backdis,
     std::function<void(const Core::Nodes::Node& node, std::vector<int>& lm)> global_dof_indices)
-    : back_mesh_(Teuchos::rcp(new CutWizard::BackMesh(backdis, this))),
+    : back_mesh_(Teuchos::make_rcp<CutWizard::BackMesh>(backdis, this)),
       global_dof_indices_(std::move(global_dof_indices)),
       comm_(backdis->get_comm()),
       myrank_(backdis->get_comm().MyPID()),
-      intersection_(Teuchos::rcp(new Cut::CombIntersection(myrank_))),
+      intersection_(Teuchos::make_rcp<Cut::CombIntersection>(myrank_)),
       do_mesh_intersection_(false),
       do_levelset_intersection_(false),
       level_set_sid_(-1),
@@ -80,7 +80,7 @@ Cut::CutWizard::CutWizard(const Epetra_Comm& comm)
     : back_mesh_(Teuchos::null),
       comm_(comm),
       myrank_(comm.MyPID()),
-      intersection_(Teuchos::rcp(new Cut::CombIntersection(myrank_))),
+      intersection_(Teuchos::make_rcp<Cut::CombIntersection>(myrank_)),
       do_mesh_intersection_(false),
       do_levelset_intersection_(false),
       level_set_sid_(-1),
@@ -173,7 +173,8 @@ void Cut::CutWizard::add_cutter_state(const int mc_idx,
   if (cm != cutter_meshes_.end())
     FOUR_C_THROW("cutter mesh with mesh coupling index %i already set", mc_idx);
 
-  cutter_meshes_[mc_idx] = Teuchos::rcp(new CutterMesh(cutter_dis, cutter_disp_col, start_ele_gid));
+  cutter_meshes_[mc_idx] =
+      Teuchos::make_rcp<CutterMesh>(cutter_dis, cutter_disp_col, start_ele_gid);
 
   do_mesh_intersection_ = true;
 }
@@ -852,7 +853,7 @@ void Cut::CutWizard::find_position_dof_sets(bool include_inner)
 
     if (communicate)
     {
-      cut_parallel = Teuchos::rcp(new Cut::Parallel(back_mesh_->get_ptr(), m, *intersection_));
+      cut_parallel = Teuchos::make_rcp<Cut::Parallel>(back_mesh_->get_ptr(), m, *intersection_);
     }
 
     // find inside and outside positions of nodes

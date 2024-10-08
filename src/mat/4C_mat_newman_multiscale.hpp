@@ -125,7 +125,7 @@ namespace Mat
     //! clone Newman multi-scale material
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new NewmanMultiScale(*this));
+      return Teuchos::make_rcp<NewmanMultiScale>(*this);
     };
 
     //! compute electronic conductivity and scale by function evaluated at @p gp

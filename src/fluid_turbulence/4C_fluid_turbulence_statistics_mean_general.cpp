@@ -1215,14 +1215,14 @@ void FLD::TurbulenceStatisticsGeneralMean::redistribute(
   if (curr_avg_ != Teuchos::null)
   {
     old = curr_avg_;
-    curr_avg_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap), true);
+    curr_avg_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap);
     Core::LinAlg::export_to(*old, *curr_avg_);
   }
 
   if (prev_avg_ != Teuchos::null)
   {
     old = prev_avg_;
-    prev_avg_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap), true);
+    prev_avg_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap);
     Core::LinAlg::export_to(*old, *prev_avg_);
   }
 
@@ -1231,14 +1231,14 @@ void FLD::TurbulenceStatisticsGeneralMean::redistribute(
     if (curr_avg_sca_ != Teuchos::null)
     {
       old = curr_avg_sca_;
-      curr_avg_sca_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap), true);
+      curr_avg_sca_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap);
       Core::LinAlg::export_to(*old, *curr_avg_sca_);
     }
 
     if (prev_avg_sca_ != Teuchos::null)
     {
       old = prev_avg_sca_;
-      prev_avg_sca_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap), true);
+      prev_avg_sca_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap);
       Core::LinAlg::export_to(*old, *prev_avg_sca_);
     }
 
@@ -1249,14 +1249,14 @@ void FLD::TurbulenceStatisticsGeneralMean::redistribute(
       if (curr_avg_scatra_ != Teuchos::null)
       {
         old = curr_avg_scatra_;
-        curr_avg_scatra_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*scatradofrowmap), true);
+        curr_avg_scatra_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*scatradofrowmap);
         Core::LinAlg::export_to(*old, *curr_avg_scatra_);
       }
 
       if (prev_avg_scatra_ != Teuchos::null)
       {
         old = prev_avg_scatra_;
-        prev_avg_scatra_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*scatradofrowmap), true);
+        prev_avg_scatra_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*scatradofrowmap);
         Core::LinAlg::export_to(*old, *prev_avg_scatra_);
       }
     }

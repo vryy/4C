@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::AleFsiWrapper::AleFsiWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 {
   // create the FSI interface
-  interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
+  interface_ = Teuchos::make_rcp<ALE::UTILS::MapExtractor>();
   interface_->setup(*discretization());
 
   return;

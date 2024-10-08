@@ -81,14 +81,14 @@ void Core::IO::EveryIterationWriter::setup()
 
   Teuchos::RCP<Core::IO::OutputControl> control_iteration = Teuchos::null;
   control_iteration =
-      Teuchos::rcp(new Core::IO::OutputControl(*parent_writer().output(), prefix.c_str()));
+      Teuchos::make_rcp<Core::IO::OutputControl>(*parent_writer().output(), prefix.c_str());
 
   // adjust steps per file
   adjust_steps_per_file(*control_iteration);
 
   // create new output writer object
-  every_iter_writer_ = Teuchos::rcp(new Core::IO::DiscretizationWriter(
-      parent_writer(), control_iteration, Core::IO::CopyType::shape));
+  every_iter_writer_ = Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+      parent_writer(), control_iteration, Core::IO::CopyType::shape);
 
   // save base file name
   base_filename_ = every_iter_writer_->output()->file_name();

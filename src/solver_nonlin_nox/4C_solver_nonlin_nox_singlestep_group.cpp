@@ -38,7 +38,7 @@ NOX::Nln::SINGLESTEP::Group::Group(const NOX::Nln::SINGLESTEP::Group& source, ::
 Teuchos::RCP<::NOX::Abstract::Group> NOX::Nln::SINGLESTEP::Group::clone(::NOX::CopyType type) const
 {
   Teuchos::RCP<::NOX::Abstract::Group> newgrp =
-      Teuchos::rcp(new NOX::Nln::SINGLESTEP::Group(*this, type));
+      Teuchos::make_rcp<NOX::Nln::SINGLESTEP::Group>(*this, type);
   return newgrp;
 }
 

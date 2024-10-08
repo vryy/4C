@@ -498,10 +498,10 @@ namespace Cut
       switch (probdim)
       {
         case 2:
-          point = Teuchos::rcp(new ConcretePoint<2>(pid, x, cut_edge, cut_side, tolerance));
+          point = Teuchos::make_rcp<ConcretePoint<2>>(pid, x, cut_edge, cut_side, tolerance);
           break;
         case 3:
-          point = Teuchos::rcp(new ConcretePoint<3>(pid, x, cut_edge, cut_side, tolerance));
+          point = Teuchos::make_rcp<ConcretePoint<3>>(pid, x, cut_edge, cut_side, tolerance);
           break;
         default:
           FOUR_C_THROW("Unsupported problem dimension! (probdim=%d)", probdim);

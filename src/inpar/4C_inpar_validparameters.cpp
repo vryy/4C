@@ -333,7 +333,7 @@ void print_default_dat_header()
 
 Teuchos::RCP<const Teuchos::ParameterList> Input::valid_parameters()
 {
-  Teuchos::RCP<Teuchos::ParameterList> list = Teuchos::rcp(new Teuchos::ParameterList);
+  Teuchos::RCP<Teuchos::ParameterList> list = Teuchos::make_rcp<Teuchos::ParameterList>();
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& discret = list->sublist("DISCRETISATION", false, "");

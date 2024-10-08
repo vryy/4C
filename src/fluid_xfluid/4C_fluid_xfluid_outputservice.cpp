@@ -39,8 +39,8 @@ FLD::XFluidOutputService::XFluidOutputService(const Teuchos::RCP<XFEM::Discretiz
 {
   // Vector & map extractor for paraview output,
   // mapped to initial fluid dofmap
-  dofset_out_ = Teuchos::rcp(new Core::DOFSets::IndependentDofSet());
-  velpressplitter_out_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
+  dofset_out_ = Teuchos::make_rcp<Core::DOFSets::IndependentDofSet>();
+  velpressplitter_out_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
   prepare_output();
 }
 
@@ -177,19 +177,19 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
 
     // write ale displacement for t^{n+1}
     Teuchos::RCP<Core::LinAlg::Vector<double>> dispnprm =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*dispnp));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dispnp);
     dispnprm->ReplaceMap(outvec_fluid_->Map());  // to get dofs starting by 0 ...
     discret_->writer()->write_vector("dispnp", dispnprm);
 
     // write grid velocity for t^{n+1}
     Teuchos::RCP<Core::LinAlg::Vector<double>> gridvnprm =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*gridvnp));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gridvnp);
     gridvnprm->ReplaceMap(outvec_fluid_->Map());  // to get dofs starting by 0 ...
     discret_->writer()->write_vector("gridv", gridvnprm);
 
     // write convective velocity for t^{n+1}
     Teuchos::RCP<Core::LinAlg::Vector<double>> convvel =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(outvec_fluid_->Map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(outvec_fluid_->Map(), true);
     convvel->Update(1.0, *outvec_fluid_, -1.0, *gridvnprm, 0.0);
     discret_->writer()->write_vector("convel", convvel);
   }

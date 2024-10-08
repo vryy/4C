@@ -76,10 +76,10 @@ Thermo::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     if (mrtrcond != nullptr)
     {
       adaptermeshtying_ =
-          Teuchos::rcp(new Coupling::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
+          Teuchos::make_rcp<Coupling::Adapter::CouplingMortar>(Global::Problem::instance()->n_dim(),
               Global::Problem::instance()->mortar_coupling_params(),
               Global::Problem::instance()->contact_dynamic_params(),
-              Global::Problem::instance()->spatial_approximation_type()));
+              Global::Problem::instance()->spatial_approximation_type());
 
       std::vector<int> coupleddof(1, 1);
       adaptermeshtying_->setup(actdis, actdis, Teuchos::null, coupleddof, "Mortar",
@@ -1050,16 +1050,16 @@ void Thermo::TimIntImpl::fd_check()
 
   // initialise rhs
   Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_old =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret_->dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->dof_row_map(), true);
   rhs_old->Update(1.0, *fres_, 0.0);
   Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_copy =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret_->dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->dof_row_map(), true);
 
   // initialise approximation of tangent
   Teuchos::RCP<Epetra_CrsMatrix> tang_approx = Core::LinAlg::create_matrix((tang_->row_map()), 81);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tang_copy =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(tang_->epetra_matrix(), Core::LinAlg::Copy));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(tang_->epetra_matrix(), Core::LinAlg::Copy);
   std::cout << "\n****************** Thermo finite difference check ******************"
             << std::endl;
   std::cout << "thermo field has " << dofs << " DOFs" << std::endl;
@@ -1109,7 +1109,7 @@ void Thermo::TimIntImpl::fd_check()
   tang_approx->FillComplete();
   // copy tang_approx
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tang_approx_sparse =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(tang_approx, Core::LinAlg::Copy));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(tang_approx, Core::LinAlg::Copy);
   // tang_approx_sparse = tang_approx_sparse - tang_copy
   tang_approx_sparse->add(*tang_copy, false, -1.0, 1.0);
 

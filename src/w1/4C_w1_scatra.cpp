@@ -38,7 +38,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1ScatraType::create
   {
     if (eledistype != "NURBS4" and eledistype != "NURBS9")
     {
-      return Teuchos::rcp(new Discret::ELEMENTS::Wall1Scatra(id, owner));
+      return Teuchos::make_rcp<Discret::ELEMENTS::Wall1Scatra>(id, owner);
     }
   }
   return Teuchos::null;
@@ -47,7 +47,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1ScatraType::create
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1ScatraType::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Discret::ELEMENTS::Wall1Scatra(id, owner));
+  return Teuchos::make_rcp<Discret::ELEMENTS::Wall1Scatra>(id, owner);
 }
 
 void Discret::ELEMENTS::Wall1ScatraType::setup_element_definition(

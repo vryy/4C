@@ -68,7 +68,7 @@ namespace
       const double ref_conc(46456.0);
 
       // create linear shape evaluation object
-      linear_shape_ = Teuchos::rcp(new Mat::InelasticDefgradLinearShape(growth_fac, ref_conc));
+      linear_shape_ = Teuchos::make_rcp<Mat::InelasticDefgradLinearShape>(growth_fac, ref_conc);
 
       // prepare variables needed to instantiate polynomial shape evaluation object
       std::vector<double> poly_coeffs{0.1051717305, -3.9012322937, 31.9658107225, -122.8624633232,
@@ -78,7 +78,7 @@ namespace
 
       // create polynomial shape evaluation object
       polynomial_shape_ =
-          Teuchos::rcp(new Mat::InelasticDefgradPolynomialShape(poly_coeffs, x_min, x_max));
+          Teuchos::make_rcp<Mat::InelasticDefgradPolynomialShape>(poly_coeffs, x_min, x_max);
 
       // parameter list to be passed to pre_evaluate
       Teuchos::ParameterList params_lin;
@@ -98,8 +98,8 @@ namespace
                   inelastic_defgrad_scalar_data)));
 
       // setup pointer to InelasticDefgradLinScalarIso object
-      lin_scalar_iso_ = Teuchos::rcp(
-          new Mat::InelasticDefgradLinScalarIso(params_inelastic_defgrad_lin_scalar_iso_.get()));
+      lin_scalar_iso_ = Teuchos::make_rcp<Mat::InelasticDefgradLinScalarIso>(
+          params_inelastic_defgrad_lin_scalar_iso_.get());
 
       // call pre_evaluate to set the concentration value
       lin_scalar_iso_->pre_evaluate(params_lin, 0);
@@ -120,8 +120,8 @@ namespace
                   inelastic_defgrad_lin_scalar_aniso_data)));
 
       // set up pointer to InelasticDefgradLinScalarAniso object
-      lin_scalar_aniso_ = Teuchos::rcp(new Mat::InelasticDefgradLinScalarAniso(
-          params_inelastic_defgrad_lin_scalar_aniso_.get()));
+      lin_scalar_aniso_ = Teuchos::make_rcp<Mat::InelasticDefgradLinScalarAniso>(
+          params_inelastic_defgrad_lin_scalar_aniso_.get());
 
       // call pre_evaluate to set the concentration value
       lin_scalar_aniso_->pre_evaluate(params_lin, 0);
@@ -203,8 +203,8 @@ namespace
           polynomial_shape_->compute_polynomial(x_ref));
 
       // set up pointer to InelasticDefgradPolyIntercalFracIso object
-      poly_intercal_frac_iso_ = Teuchos::rcp(new Mat::InelasticDefgradPolyIntercalFracIso(
-          params_inelastic_defgrad_poly_intercal_frac_.get()));
+      poly_intercal_frac_iso_ = Teuchos::make_rcp<Mat::InelasticDefgradPolyIntercalFracIso>(
+          params_inelastic_defgrad_poly_intercal_frac_.get());
 
       // call pre_evaluate to set the concentration value
       poly_intercal_frac_iso_->pre_evaluate(params_poly, 0);
@@ -234,8 +234,8 @@ namespace
           polynomial_shape_->compute_polynomial(x_ref));
 
       // set up pointer to InelasticDefgradPolyIntercalFracIso object
-      poly_intercal_frac_aniso_ = Teuchos::rcp(new Mat::InelasticDefgradPolyIntercalFracAniso(
-          params_inelastic_defgrad_poly_intercal_frac_aniso_.get()));
+      poly_intercal_frac_aniso_ = Teuchos::make_rcp<Mat::InelasticDefgradPolyIntercalFracAniso>(
+          params_inelastic_defgrad_poly_intercal_frac_aniso_.get());
 
       // call pre_evaluate to set the concentration value
       poly_intercal_frac_aniso_->pre_evaluate(params_poly, 0);
@@ -252,7 +252,8 @@ namespace
               inelastic_defgrad_temp_iso_data)));
 
       // setup pointer to InelasticDefgradLinScalarIso object
-      lin_temp_iso_ = Teuchos::rcp(new Mat::InelasticDefgradLinTempIso(params_lin_temp_iso_.get()));
+      lin_temp_iso_ =
+          Teuchos::make_rcp<Mat::InelasticDefgradLinTempIso>(params_lin_temp_iso_.get());
 
       // parameter list for pre_evaluate call with gp temerature
       Teuchos::ParameterList params_temp{};

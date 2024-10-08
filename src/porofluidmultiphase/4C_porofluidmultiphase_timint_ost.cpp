@@ -177,8 +177,8 @@ void POROFLUIDMULTIPHASE::TimIntOneStepTheta::read_restart(const int step)
   POROFLUIDMULTIPHASE::TimIntImpl::read_restart(step);
 
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
-  reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
-      discret_, Global::Problem::instance()->input_control_file(), step));
+  reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+      discret_, Global::Problem::instance()->input_control_file(), step);
 
   time_ = reader->read_double("time");
   step_ = reader->read_int("step");

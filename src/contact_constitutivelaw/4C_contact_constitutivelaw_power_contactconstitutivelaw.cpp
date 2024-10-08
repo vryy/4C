@@ -37,7 +37,7 @@ CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams::PowerConstitutiveLawParams
 Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
 CONTACT::CONSTITUTIVELAW::PowerConstitutiveLawParams::create_constitutive_law()
 {
-  return Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw(this));
+  return Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::PowerConstitutiveLaw>(this);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -37,10 +37,10 @@ ALE::Meshsliding::Meshsliding(Teuchos::RCP<Core::FE::Discretization> dis,
 /*-------------------------------------------------------*/
 void ALE::Meshsliding::adapter_mortar(std::vector<int> coupleddof)
 {
-  adaptermeshsliding_ = Teuchos::rcp(new Adapter::CouplingNonLinMortar(
+  adaptermeshsliding_ = Teuchos::make_rcp<Adapter::CouplingNonLinMortar>(
       Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
-      Global::Problem::instance()->spatial_approximation_type()));
+      Global::Problem::instance()->spatial_approximation_type());
 
   // Setup and Output of Nonlinear meshtying adapter
   adaptermeshsliding_->setup(discret_, discret_, coupleddof, "Mortar");
@@ -165,11 +165,11 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
   /* Store some quantities for static condensation of LM                */
   /**********************************************************************/
 
-  a_ss_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(sysmatnew->matrix(2, 2)));
-  a_sm_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(sysmatnew->matrix(2, 1)));
-  a_sn_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(sysmatnew->matrix(2, 0)));
+  a_ss_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmatnew->matrix(2, 2));
+  a_sm_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmatnew->matrix(2, 1));
+  a_sn_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmatnew->matrix(2, 0));
   d_inv_ = adaptermeshsliding_->get_mortar_matrix_dinv();
-  rs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*splitres[2]));
+  rs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*splitres[2]);
 
   /**********************************************************************/
   /* Step 2: condensate the system matrix                               */
@@ -262,12 +262,12 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // r_m: add P^T*r_s
   Teuchos::RCP<Core::LinAlg::Vector<double>> rm_mod =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gmdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_, true);
   P->multiply(true, *(splitres[2]), *rm_mod);
 
   // export and add r_m subvector to residual
   Teuchos::RCP<Core::LinAlg::Vector<double>> rm_modexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
   Core::LinAlg::export_to(*rm_mod, *rm_modexp);
   residual->Update(1.0, *rm_modexp, 1.0);
 
@@ -275,27 +275,27 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // r_s: * 0
   Teuchos::RCP<Core::LinAlg::Vector<double>> rs_delete =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
   Core::LinAlg::export_to(*(splitres[2]), *rs_delete);
   residual->Update(-1.0, *rs_delete, 1.0);
 
   // r_s: add - T*D^(-1)*r_s
   Teuchos::RCP<Core::LinAlg::Vector<double>> rs_mod_interm =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
   d_inv_->multiply(false, *rs_, *rs_mod_interm);
   Teuchos::RCP<Core::LinAlg::Vector<double>> rs_mod =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
   T->multiply(false, *rs_mod_interm, *rs_mod);
 
   // export and subtract rs_mod from residual
   Teuchos::RCP<Core::LinAlg::Vector<double>> rs_modexp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
   Core::LinAlg::export_to(*rs_mod, *rs_modexp);
   residual->Update(-1.0, *rs_modexp, 1.0);
 
   // r_s: add gap
   Teuchos::RCP<Core::LinAlg::Vector<double>> g_exp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
   Core::LinAlg::export_to(*gap, *g_exp);
   residual->Update(1.0, *g_exp, 1.0);
 
@@ -367,9 +367,9 @@ void ALE::Meshsliding::recover(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc)
   split_vector(inc, splitinc);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> lm_temp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
   Teuchos::RCP<Core::LinAlg::Vector<double>> mod =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
 
   // r_s
   lm_temp->Update(1.0, *rs_, 1.0);
@@ -409,7 +409,7 @@ int ALE::Meshsliding::solve_meshtying(Core::LinAlg::Solver& solver,
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mergedmatrix = Teuchos::null;
 
-  mergedmatrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*mergedmap_, 108, false, true));
+  mergedmatrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*mergedmap_, 108, false, true);
 
   int errorcode = 0;
 

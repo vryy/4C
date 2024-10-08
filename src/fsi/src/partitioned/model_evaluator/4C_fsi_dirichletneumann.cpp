@@ -44,7 +44,7 @@ void FSI::DirichletNeumann::fsi_op(
   if (kinematiccoupling_)  // coupling variable: interface displacements/velocity
   {
     const Teuchos::RCP<Core::LinAlg::Vector<double>> icoupn =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(x));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(x);
     if (my_debug_writer() != Teuchos::null) my_debug_writer()->write_vector("icoupn", *icoupn);
 
     const Teuchos::RCP<Core::LinAlg::Vector<double>> iforce = fluid_op(icoupn, fillFlag);
@@ -58,7 +58,7 @@ void FSI::DirichletNeumann::fsi_op(
   else  // coupling variable: interface forces
   {
     const Teuchos::RCP<Core::LinAlg::Vector<double>> iforcen =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(x));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(x);
     if (my_debug_writer() != Teuchos::null) my_debug_writer()->write_vector("iforcen", *iforcen);
 
     const Teuchos::RCP<Core::LinAlg::Vector<double>> icoupn = struct_op(iforcen, fillFlag);

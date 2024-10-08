@@ -40,7 +40,7 @@ namespace
 
   TEST(PiecewiseVariableTest, ContainTimeSingle)
   {
-    auto stub = Teuchos::rcp(new FunctionVariableStub(0.0, 1.0));
+    auto stub = Teuchos::make_rcp<FunctionVariableStub>(0.0, 1.0);
     Core::UTILS::PiecewiseVariable piecewiseVariable("test", {stub});
 
     EXPECT_TRUE(piecewiseVariable.contain_time(0.0));
@@ -51,7 +51,7 @@ namespace
 
   TEST(PiecewiseVariableTest, ValueSingle)
   {
-    auto stub = Teuchos::rcp(new FunctionVariableStub(0.0, 1.0));
+    auto stub = Teuchos::make_rcp<FunctionVariableStub>(0.0, 1.0);
     Core::UTILS::PiecewiseVariable piecewiseVariable("test", {stub});
 
     EXPECT_EQ(piecewiseVariable.value(0.0), 0.0);
@@ -62,7 +62,7 @@ namespace
 
   TEST(PiecewiseVariableTest, TimeDerivativeValueSingle)
   {
-    auto stub = Teuchos::rcp(new FunctionVariableStub(0.0, 1.0));
+    auto stub = Teuchos::make_rcp<FunctionVariableStub>(0.0, 1.0);
     Core::UTILS::PiecewiseVariable piecewiseVariable("test", {stub});
 
     EXPECT_EQ(piecewiseVariable.time_derivative_value(0.0, 1), 0.0);
@@ -75,9 +75,9 @@ namespace
   {
     // define a piece-wise variable which has overlapping areas
     Core::UTILS::PiecewiseVariable piecewiseVariable(
-        "test", {Teuchos::rcp(new FunctionVariableStub(0.0, 1.0, 1.0)),
-                    Teuchos::rcp(new FunctionVariableStub(0.5, 2.0, 2.0)),
-                    Teuchos::rcp(new FunctionVariableStub(1.0, 3.0, 3.0))});
+        "test", {Teuchos::make_rcp<FunctionVariableStub>(0.0, 1.0, 1.0),
+                    Teuchos::make_rcp<FunctionVariableStub>(0.5, 2.0, 2.0),
+                    Teuchos::make_rcp<FunctionVariableStub>(1.0, 3.0, 3.0)});
 
     EXPECT_TRUE(piecewiseVariable.contain_time(0.0));
     EXPECT_TRUE(piecewiseVariable.contain_time(1.0));
@@ -91,9 +91,9 @@ namespace
   {
     // define a piece-wise variable which has overlapping areas
     Core::UTILS::PiecewiseVariable piecewiseVariable(
-        "test", {Teuchos::rcp(new FunctionVariableStub(0.0, 1.0, 1.0)),
-                    Teuchos::rcp(new FunctionVariableStub(0.5, 2.0, 2.0)),
-                    Teuchos::rcp(new FunctionVariableStub(1.0, 3.0, 3.0))});
+        "test", {Teuchos::make_rcp<FunctionVariableStub>(0.0, 1.0, 1.0),
+                    Teuchos::make_rcp<FunctionVariableStub>(0.5, 2.0, 2.0),
+                    Teuchos::make_rcp<FunctionVariableStub>(1.0, 3.0, 3.0)});
 
     EXPECT_EQ(piecewiseVariable.value(0.0), 1.0);
     EXPECT_EQ(piecewiseVariable.value(0.8), 1.0);
@@ -105,9 +105,9 @@ namespace
   {
     // define a piece-wise variable which has overlapping areas
     Core::UTILS::PiecewiseVariable piecewiseVariable(
-        "test", {Teuchos::rcp(new FunctionVariableStub(0.0, 1.0, 1.0)),
-                    Teuchos::rcp(new FunctionVariableStub(0.5, 2.0, 2.0)),
-                    Teuchos::rcp(new FunctionVariableStub(1.0, 3.0, 3.0))});
+        "test", {Teuchos::make_rcp<FunctionVariableStub>(0.0, 1.0, 1.0),
+                    Teuchos::make_rcp<FunctionVariableStub>(0.5, 2.0, 2.0),
+                    Teuchos::make_rcp<FunctionVariableStub>(1.0, 3.0, 3.0)});
 
     EXPECT_EQ(piecewiseVariable.time_derivative_value(0.0, 0), 1.0);
     EXPECT_EQ(piecewiseVariable.time_derivative_value(0.8, 0), 1.0);

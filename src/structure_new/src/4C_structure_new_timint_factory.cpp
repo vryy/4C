@@ -75,7 +75,7 @@ Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_implicit_strat
   if (is_prestress or dyntype == Inpar::Solid::dyna_statics or  // dynamic type
       dyntype == Inpar::Solid::dyna_genalpha or dyntype == Inpar::Solid::dyna_genalpha_liegroup or
       dyntype == Inpar::Solid::dyna_onesteptheta)
-    ti_strategy = Teuchos::rcp(new Solid::TimeInt::Implicit());
+    ti_strategy = Teuchos::make_rcp<Solid::TimeInt::Implicit>();
 
   return ti_strategy;
 }
@@ -99,7 +99,7 @@ Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_explicit_strat
 
   if (dyntype == Inpar::Solid::dyna_expleuler or dyntype == Inpar::Solid::dyna_centrdiff or
       dyntype == Inpar::Solid::dyna_ab2 or dyntype == Inpar::Solid::dyna_ab4)
-    ti_strategy = Teuchos::rcp(new Solid::TimeInt::Explicit());
+    ti_strategy = Teuchos::make_rcp<Solid::TimeInt::Explicit>();
 
   return ti_strategy;
 }
@@ -117,16 +117,16 @@ Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> Solid::TimeInt::Factory::build_data_s
   {
     case Inpar::Solid::dyna_genalpha:
     case Inpar::Solid::dyna_genalpha_liegroup:
-      sdyndata_ptr = Teuchos::rcp(new Solid::TimeInt::GenAlphaDataSDyn());
+      sdyndata_ptr = Teuchos::make_rcp<Solid::TimeInt::GenAlphaDataSDyn>();
       break;
     case Inpar::Solid::dyna_onesteptheta:
-      sdyndata_ptr = Teuchos::rcp(new Solid::TimeInt::OneStepThetaDataSDyn());
+      sdyndata_ptr = Teuchos::make_rcp<Solid::TimeInt::OneStepThetaDataSDyn>();
       break;
     case Inpar::Solid::dyna_expleuler:
-      sdyndata_ptr = Teuchos::rcp(new Solid::TimeInt::ExplEulerDataSDyn());
+      sdyndata_ptr = Teuchos::make_rcp<Solid::TimeInt::ExplEulerDataSDyn>();
       break;
     default:
-      sdyndata_ptr = Teuchos::rcp(new Solid::TimeInt::BaseDataSDyn());
+      sdyndata_ptr = Teuchos::make_rcp<Solid::TimeInt::BaseDataSDyn>();
       break;
   }
 
@@ -138,7 +138,7 @@ Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> Solid::TimeInt::Factory::build_data_s
 Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> Solid::TimeInt::Factory::build_data_global_state()
     const
 {
-  return Teuchos::rcp(new Solid::TimeInt::BaseDataGlobalState());
+  return Teuchos::make_rcp<Solid::TimeInt::BaseDataGlobalState>();
 }
 
 

@@ -278,7 +278,7 @@ void Core::Conditions::LocsysManager::update(const double time,
   // GIDs of all DoFs subjected to local co-ordinate systems
   std::set<int> locsysdofset;
 
-  trafo_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 3));
+  trafo_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 3);
 
   for (int i = 0; i < noderowmap->NumMyElements(); ++i)
   {
@@ -407,8 +407,8 @@ void Core::Conditions::LocsysManager::update(const double time,
     nummyentries = static_cast<int>(locsysdofs.size());
     myglobalentries = locsysdofs.data();
   }
-  locsysdofmap_ = Teuchos::rcp(new Epetra_Map(
-      -1, nummyentries, myglobalentries, discret_.dof_row_map()->IndexBase(), discret_.get_comm()));
+  locsysdofmap_ = Teuchos::make_rcp<Epetra_Map>(
+      -1, nummyentries, myglobalentries, discret_.dof_row_map()->IndexBase(), discret_.get_comm());
   if (locsysdofmap_ == Teuchos::null) FOUR_C_THROW("Creation failed.");
 
   // The matrix subtrafo_ is used in order to apply the Dirichlet Conditions in a more efficient

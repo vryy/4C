@@ -42,7 +42,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::setup()
   // setup additional state vectors of modified acceleration
   // ---------------------------------------------------------------------------
   accn_mod_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
 
   // Call the setup() of the parent GenAlpha class
   GenAlpha::setup();

@@ -1149,11 +1149,11 @@ Teuchos::RCP<Cut::Impl::PointGraph::Graph> Cut::Impl::PointGraph::create_graph(u
   switch (dim)
   {
     case 1:
-      return Teuchos::rcp(new SimplePointGraph1D::Graph());
+      return Teuchos::make_rcp<SimplePointGraph1D::Graph>();
     case 2:
-      return Teuchos::rcp(new SimplePointGraph2D::Graph());
+      return Teuchos::make_rcp<SimplePointGraph2D::Graph>();
     case 3:
-      return Teuchos::rcp(new PointGraph::Graph());
+      return Teuchos::make_rcp<PointGraph::Graph>();
     default:
       FOUR_C_THROW("Unsupported element dimension!");
       exit(EXIT_FAILURE);

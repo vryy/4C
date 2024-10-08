@@ -155,7 +155,7 @@ void ScaTra::LevelSetAlgorithm::setup()
         // velocities (always three velocity components per node)
         // (get noderowmap of discretization for creating this multivector)
         const Epetra_Map* noderowmap = discret_->node_row_map();
-        nb_grad_val_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
+        nb_grad_val_ = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, 3, true);
       }
 
       // get dimension
@@ -183,7 +183,7 @@ void ScaTra::LevelSetAlgorithm::setup()
         // gradients (always three gradient components per node)
         // (get noderowmap of discretization for creating this multivector)
         const Epetra_Map* noderowmap = discret_->node_row_map();
-        nb_grad_val_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
+        nb_grad_val_ = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, 3, true);
       }
     }
 
@@ -446,7 +446,7 @@ void ScaTra::LevelSetAlgorithm::output_of_level_set_specific_values()
  *----------------------------------------------------------------------*/
 void ScaTra::LevelSetAlgorithm::test_results()
 {
-  problem_->add_field_test(Teuchos::rcp(new ScaTra::ScaTraResultTest(Teuchos::rcp(this, false))));
+  problem_->add_field_test(Teuchos::make_rcp<ScaTra::ScaTraResultTest>(Teuchos::rcpFromRef(*this)));
   problem_->test_all(discret_->get_comm());
 }
 

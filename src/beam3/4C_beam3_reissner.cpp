@@ -53,7 +53,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3rType::create(
   if (eletype == "BEAM3R")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Beam3r(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::Beam3r>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -65,7 +65,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3rType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Beam3r(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::Beam3r>(id, owner);
   return ele;
 }
 
@@ -225,7 +225,7 @@ int Discret::ELEMENTS::Beam3rType::initialize(Core::FE::Discretization& dis)
     // the next section is needed in case of periodic boundary conditions and a shifted
     // configuration (i.e. elements cut by the periodic boundary) in the input file
     Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox =
-        Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
+        Teuchos::make_rcp<Core::Geo::MeshFree::BoundingBox>();
     periodic_boundingbox->init(
         Global::Problem::instance()->binning_strategy_params());  // no setup() call needed here
 
@@ -793,7 +793,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
 
     // create object of triad interpolation scheme
     Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>>
-        triad_interpolation_scheme_ptr = Teuchos::rcp(
+        triad_interpolation_scheme_ptr = Teuchos::RCP(
             new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>());
 
     // Get DiscretizationType
@@ -1942,8 +1942,8 @@ void Discret::ELEMENTS::Beam3r::
 {
   // create object of triad interpolation scheme
   Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
-      triad_interpolation_scheme_ptr =
-          Teuchos::rcp(new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>());
+      triad_interpolation_scheme_ptr = Teuchos::make_rcp<
+          LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>();
 
   // reset triad interpolation scheme with nodal quaternions
   triad_interpolation_scheme_ptr->reset(Qnode);

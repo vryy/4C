@@ -142,7 +142,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new MatList(*this));
+      return Teuchos::make_rcp<MatList>(*this);
     }
 
     /// number of materials

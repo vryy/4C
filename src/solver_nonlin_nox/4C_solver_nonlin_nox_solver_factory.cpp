@@ -48,16 +48,16 @@ Teuchos::RCP<::NOX::Solver::Generic> NOX::Nln::Solver::Factory::build_solver(
   if ((method == "Newton") or (method == "Line Search Based"))
   {
     solver =
-        Teuchos::rcp(new NOX::Nln::Solver::LineSearchBased(grp, outerTests, innerTests, params));
+        Teuchos::make_rcp<NOX::Nln::Solver::LineSearchBased>(grp, outerTests, innerTests, params);
   }
   else if (method == "Pseudo Transient")
   {
     solver =
-        Teuchos::rcp(new NOX::Nln::Solver::PseudoTransient(grp, outerTests, innerTests, params));
+        Teuchos::make_rcp<NOX::Nln::Solver::PseudoTransient>(grp, outerTests, innerTests, params);
   }
   else if (method == "Single Step")
   {
-    solver = Teuchos::rcp(new NOX::Nln::Solver::SingleStep(grp, innerTests, params));
+    solver = Teuchos::make_rcp<NOX::Nln::Solver::SingleStep>(grp, innerTests, params);
   }
   else if (not nlnGlobalData->is_constrained())
   {

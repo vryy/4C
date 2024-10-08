@@ -154,7 +154,7 @@ void FLD::TimIntOneStepTheta::outputof_filtered_vel(
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
   Teuchos::RCP<Core::LinAlg::Vector<double>> row_finescaleveltmp;
-  row_finescaleveltmp = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap, true));
+  row_finescaleveltmp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap, true);
 
   // get fine scale velocity
   if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)
@@ -233,7 +233,7 @@ void FLD::TimIntOneStepTheta::apply_external_forces(Teuchos::RCP<Epetra_MultiVec
   // initialize external force for t_n
   if (step_ <= numstasteps_)
   {
-    external_loadsn_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*(*fext)(0)));
+    external_loadsn_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*fext)(0));
     external_loadsnp_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
     external_loads_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   }

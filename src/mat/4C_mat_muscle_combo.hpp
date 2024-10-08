@@ -138,7 +138,7 @@ namespace Mat
 
     [[nodiscard]] Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new MuscleCombo(*this));
+      return Teuchos::make_rcp<MuscleCombo>(*this);
     }
 
     [[nodiscard]] Core::Mat::PAR::Parameter* parameter() const override { return params_; }

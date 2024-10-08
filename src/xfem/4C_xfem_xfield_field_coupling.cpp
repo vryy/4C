@@ -50,7 +50,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::master_t
       return ::FourC::Coupling::Adapter::Coupling::master_to_slave(mv);
       break;
     case XFEM::map_nodes:
-      sv = Teuchos::rcp(new Core::LinAlg::Vector<double>(*slavenodemap_));
+      sv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavenodemap_);
       break;
   }
 
@@ -71,7 +71,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::slave_to
       return ::FourC::Coupling::Adapter::Coupling::slave_to_master(sv);
       break;
     case XFEM::map_nodes:
-      mv = Teuchos::rcp(new Core::LinAlg::Vector<double>(*masternodemap_));
+      mv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*masternodemap_);
       break;
   }
 
@@ -91,7 +91,7 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::XFieldField::Coupling::master_to_slave(
       return ::FourC::Coupling::Adapter::Coupling::master_to_slave(mv);
       break;
     case XFEM::map_nodes:
-      sv = Teuchos::rcp(new Epetra_MultiVector(*slavenodemap_, mv->NumVectors()));
+      sv = Teuchos::make_rcp<Epetra_MultiVector>(*slavenodemap_, mv->NumVectors());
       break;
   }
 
@@ -111,7 +111,7 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::XFieldField::Coupling::slave_to_master(
       return ::FourC::Coupling::Adapter::Coupling::slave_to_master(sv);
       break;
     case XFEM::map_nodes:
-      mv = Teuchos::rcp(new Epetra_MultiVector(*masternodemap_, sv->NumVectors()));
+      mv = Teuchos::make_rcp<Epetra_MultiVector>(*masternodemap_, sv->NumVectors());
       break;
   }
 
@@ -249,10 +249,8 @@ void XFEM::XFieldField::Coupling::save_node_maps(
   permmasternodemap_ = permmasternodemap;
   permslavenodemap_ = permslavenodemap;
 
-  nodal_masterexport_ =
-      Teuchos::rcp<Epetra_Export>(new Epetra_Export(*permmasternodemap, *masternodemap));
-  nodal_slaveexport_ =
-      Teuchos::rcp<Epetra_Export>(new Epetra_Export(*permslavenodemap, *slavenodemap));
+  nodal_masterexport_ = Teuchos::make_rcp<Epetra_Export>(*permmasternodemap, *masternodemap);
+  nodal_slaveexport_ = Teuchos::make_rcp<Epetra_Export>(*permslavenodemap, *slavenodemap);
 }
 
 /*----------------------------------------------------------------------------*
@@ -284,7 +282,7 @@ void XFEM::XFieldField::Coupling::build_min_dof_maps(const Core::FE::Discretizat
 
   // dof map is the original, unpermuted distribution of dofs
   min_dofmap =
-      Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, min_dis.get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, min_dis.get_comm());
 
   dofmapvec.clear();
 
@@ -315,11 +313,11 @@ void XFEM::XFieldField::Coupling::build_min_dof_maps(const Core::FE::Discretizat
 
   // permuted dof map according to a given permuted node map
   min_permdofmap =
-      Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, min_dis.get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, min_dis.get_comm());
 
   /* prepare communication plan to create a dofmap out of a permuted
    * dof map */
-  min_exporter = Teuchos::rcp<Epetra_Export>(new Epetra_Export(*min_permdofmap, *min_dofmap));
+  min_exporter = Teuchos::make_rcp<Epetra_Export>(*min_permdofmap, *min_dofmap);
 }
 
 /*----------------------------------------------------------------------------*
@@ -362,7 +360,7 @@ void XFEM::XFieldField::Coupling::build_max_dof_maps(const Core::FE::Discretizat
 
   // dof map is the original, unpermuted distribution of dofs
   max_dofmap =
-      Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, max_dis.get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, max_dis.get_comm());
 
   dofmapvec.clear();
 
@@ -382,11 +380,11 @@ void XFEM::XFieldField::Coupling::build_max_dof_maps(const Core::FE::Discretizat
 
   // permuted dof map according to a given permuted node map
   max_permdofmap =
-      Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, max_dis.get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, max_dis.get_comm());
 
   /* prepare communication plan to create a dofmap out of a permuted
    * dof map */
-  max_exporter = Teuchos::rcp<Epetra_Export>(new Epetra_Export(*max_permdofmap, *max_dofmap));
+  max_exporter = Teuchos::make_rcp<Epetra_Export>(*max_permdofmap, *max_dofmap);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -42,7 +42,7 @@ NOX::FSI::LinearSystemGCR::LinearSystemGCR(Teuchos::ParameterList& printParams,
       timeApplyJacbianInverse(0.0)
 {
   // Allocate solver
-  tmpVectorPtr = Teuchos::rcp(new ::NOX::Epetra::Vector(cloneVector));
+  tmpVectorPtr = Teuchos::make_rcp<::NOX::Epetra::Vector>(cloneVector);
 
   // Jacobian operator is supplied
   jacType = get_operator_type(*jacPtr);
@@ -203,9 +203,9 @@ int NOX::FSI::LinearSystemGCR::solve_gcr(
   while (error / normb >= tol)
   {
     // this is GCR, not GMRESR
-    u.push_back(Teuchos::rcp(new ::NOX::Epetra::Vector(r)));
+    u.push_back(Teuchos::make_rcp<::NOX::Epetra::Vector>(r));
     if (not applyJacobian(r, tmp)) throw_error("SolveGCR", "applyJacobian failed");
-    c.push_back(Teuchos::rcp(new ::NOX::Epetra::Vector(tmp)));
+    c.push_back(Teuchos::make_rcp<::NOX::Epetra::Vector>(tmp));
 
     for (int i = 0; i < k; ++i)
     {
@@ -278,7 +278,7 @@ int NOX::FSI::LinearSystemGCR::solve_gmres(
   while (j <= max_iter)
   {
     v.clear();
-    v.push_back(Teuchos::rcp(new ::NOX::Epetra::Vector(r, ::NOX::ShapeCopy)));
+    v.push_back(Teuchos::make_rcp<::NOX::Epetra::Vector>(r, ::NOX::ShapeCopy));
     v[0]->update(1. / beta, r, 0.);
     s.putScalar(0.0);
     s(0) = beta;
@@ -294,7 +294,7 @@ int NOX::FSI::LinearSystemGCR::solve_gmres(
         w.update(H(k, i), *v[k], -1.);
       }
       H(i + 1, i) = w.norm();
-      v.push_back(Teuchos::rcp(new ::NOX::Epetra::Vector(w)));
+      v.push_back(Teuchos::make_rcp<::NOX::Epetra::Vector>(w));
       v.back()->scale(1.0 / H(i + 1, i));
 
       for (int k = 0; k < i; k++) apply_plane_rotation(H(k, i), H(k + 1, i), cs(k), sn(k));

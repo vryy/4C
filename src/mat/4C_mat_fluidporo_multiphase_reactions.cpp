@@ -60,7 +60,7 @@ Mat::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroMultiPhaseReactions::create_material()
 {
-  return Teuchos::rcp(new Mat::FluidPoroMultiPhaseReactions(this));
+  return Teuchos::make_rcp<Mat::FluidPoroMultiPhaseReactions>(this);
 }
 
 

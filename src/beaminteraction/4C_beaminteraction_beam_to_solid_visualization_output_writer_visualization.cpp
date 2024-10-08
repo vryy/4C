@@ -85,8 +85,8 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
       point_coordinates.push_back(current_node->x()[dim]);
     }
   }
-  node_gid_map_ = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
-      -1, my_global_dof_ids.size(), my_global_dof_ids.data(), 0, discret_->get_comm()));
+  node_gid_map_ = Teuchos::make_rcp<Epetra_Map>(
+      -1, my_global_dof_ids.size(), my_global_dof_ids.data(), 0, discret_->get_comm());
 }
 
 /**
@@ -101,8 +101,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
 
   // Extract the vector according to the GIDs needed on this rank.
   Teuchos::RCP<Core::LinAlg::Vector<double>> vector_extract =
-      Teuchos::rcp<Core::LinAlg::Vector<double>>(
-          new Core::LinAlg::Vector<double>(*node_gid_map_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*node_gid_map_, true);
   Core::LinAlg::export_to(*vector, *vector_extract);
 
   // Add the values form the vector to the writer data.

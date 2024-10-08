@@ -48,7 +48,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoWeg6Type::create(
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::SoWeg6(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::SoWeg6>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -59,7 +59,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoWeg6Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::SoWeg6(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::SoWeg6>(id, owner);
   return ele;
 }
 
@@ -124,7 +124,7 @@ Discret::ELEMENTS::SoWeg6::SoWeg6(int id, int owner)
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_WEG6, NUMGPT_WEG6));
+    prestress_ = Teuchos::make_rcp<Discret::ELEMENTS::PreStress>(NUMNOD_WEG6, NUMGPT_WEG6);
 }
 
 /*----------------------------------------------------------------------*
@@ -141,7 +141,7 @@ Discret::ELEMENTS::SoWeg6::SoWeg6(const Discret::ELEMENTS::SoWeg6& old)
   }
 
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(*(old.prestress_)));
+    prestress_ = Teuchos::make_rcp<Discret::ELEMENTS::PreStress>(*(old.prestress_));
 }
 
 /*----------------------------------------------------------------------*
@@ -217,7 +217,7 @@ void Discret::ELEMENTS::SoWeg6::unpack(Core::Communication::UnpackBuffer& buffer
     std::vector<char> tmpprestress(0);
     extract_from_pack(buffer, tmpprestress);
     if (prestress_ == Teuchos::null)
-      prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_WEG6, NUMGPT_WEG6));
+      prestress_ = Teuchos::make_rcp<Discret::ELEMENTS::PreStress>(NUMNOD_WEG6, NUMGPT_WEG6);
     Core::Communication::UnpackBuffer tmpprestress_buffer(tmpprestress);
     prestress_->unpack(tmpprestress_buffer);
   }

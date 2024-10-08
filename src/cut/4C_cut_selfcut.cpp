@@ -37,7 +37,7 @@ Cut::SelfCut::SelfCut(MeshHandle& cut_mesh_handle, int myrank)
   for (std::map<plain_int_set, Teuchos::RCP<Side>>::const_iterator sit = mesh_.sides().begin();
        sit != mesh_.sides().end(); ++sit)
   {
-    Teuchos::RCP<BoundingBox> sbb = Teuchos::rcp(BoundingBox::create(*(sit->second)));
+    Teuchos::RCP<BoundingBox> sbb = Teuchos::RCP(BoundingBox::create(*(sit->second)));
     meshsizeparam_ = std::min(meshsizeparam_, sbb->diagonal());
   }
 }
@@ -1283,7 +1283,7 @@ void Cut::SelfCut::find_islands()
     islandsides.insert(cutside);
     selfcutsides.erase(cutside);
 
-    Teuchos::RCP<BoundingBox> tmp_bb = Teuchos::rcp(BoundingBox::create(*cutside));
+    Teuchos::RCP<BoundingBox> tmp_bb = Teuchos::RCP(BoundingBox::create(*cutside));
     next_sides(cutside, tmp_bb, selfcutsides, islandsides, IsIsland);
 
     if (tmp_bb->diagonal() <=

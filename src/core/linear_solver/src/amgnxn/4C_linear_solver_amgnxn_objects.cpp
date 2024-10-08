@@ -36,7 +36,7 @@ Core::LinearSolver::AMGNxN::BlockedVector Core::LinearSolver::AMGNxN::BlockedVec
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::BlockedVector::DeepCopy");
   BlockedVector out(this->get_num_blocks());
   for (int i = 0; i < get_num_blocks(); i++)
-    out.set_vector(Teuchos::rcp(new Epetra_MultiVector(*(this->get_vector(i)))), i);
+    out.set_vector(Teuchos::make_rcp<Epetra_MultiVector>(*(this->get_vector(i))), i);
   return out;
 }
 
@@ -48,9 +48,9 @@ Teuchos::RCP<Core::LinearSolver::AMGNxN::BlockedVector>
 Core::LinearSolver::AMGNxN::BlockedVector::deep_copy_rcp() const
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::BlockedVector::DeepCopyRCP");
-  Teuchos::RCP<BlockedVector> out = Teuchos::rcp(new BlockedVector(this->get_num_blocks()));
+  Teuchos::RCP<BlockedVector> out = Teuchos::make_rcp<BlockedVector>(this->get_num_blocks());
   for (int i = 0; i < get_num_blocks(); i++)
-    out->set_vector(Teuchos::rcp(new Epetra_MultiVector(*(this->get_vector(i)))), i);
+    out->set_vector(Teuchos::make_rcp<Epetra_MultiVector>(*(this->get_vector(i))), i);
   return out;
 }
 
@@ -62,13 +62,13 @@ Teuchos::RCP<Core::LinearSolver::AMGNxN::BlockedVector>
 Core::LinearSolver::AMGNxN::BlockedVector::new_rcp(bool ZeroIt) const
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::BlockedVector::NewRCP");
-  Teuchos::RCP<BlockedVector> out = Teuchos::rcp(new BlockedVector(this->get_num_blocks()));
+  Teuchos::RCP<BlockedVector> out = Teuchos::make_rcp<BlockedVector>(this->get_num_blocks());
   for (int i = 0; i < get_num_blocks(); i++)
   {
     // const Epetra_BlockMap&  Map = this->GetVector(i)->Map();
     // int NV = this->GetNumBlocks();
     // out->SetVector(Teuchos::rcp( new Epetra_MultiVector(Map,NV,ZeroIt)),i); //This is buggy
-    out->set_vector(Teuchos::rcp(new Epetra_MultiVector(*(this->get_vector(i)))),
+    out->set_vector(Teuchos::make_rcp<Epetra_MultiVector>(*(this->get_vector(i))),
         i);  // This works, I don't know why...
   }
   return out;
@@ -115,7 +115,7 @@ Core::LinearSolver::AMGNxN::BlockedVector::get_blocked_vector_rcp(
   int NumSubBlocks = blocks.size();
   if (NumSubBlocks > get_num_blocks()) FOUR_C_THROW("Input error too long");
 
-  Teuchos::RCP<BlockedVector> out = Teuchos::rcp(new BlockedVector(NumSubBlocks));
+  Teuchos::RCP<BlockedVector> out = Teuchos::make_rcp<BlockedVector>(NumSubBlocks);
   for (int i = 0; i < NumSubBlocks; i++)
   {
     int j = blocks[i];
@@ -151,7 +151,7 @@ void Core::LinearSolver::AMGNxN::BlockedMatrix::apply(
     Teuchos::RCP<Epetra_MultiVector> Yi = out.get_vector(i);
     Yi->PutScalar(0.0);
     Teuchos::RCP<Epetra_MultiVector> Yitmp =
-        Teuchos::rcp(new Epetra_MultiVector(Yi->Map(), Yi->NumVectors(), true));
+        Teuchos::make_rcp<Epetra_MultiVector>(Yi->Map(), Yi->NumVectors(), true);
 
     for (int j = 0; j < get_num_cols(); j++)
     {
@@ -196,25 +196,26 @@ Core::LinearSolver::AMGNxN::BlockedMatrix::get_block_sparse_matrix(Core::LinAlg:
   // build the partial and full domain maps
   std::vector<Teuchos::RCP<const Epetra_Map>> domain_maps(cols, Teuchos::null);
   for (int i = 0; i < cols; i++)
-    domain_maps[i] = Teuchos::rcp(new Epetra_Map(matrices_[0 * cols + i]->domain_map()));
+    domain_maps[i] = Teuchos::make_rcp<Epetra_Map>(matrices_[0 * cols + i]->domain_map());
   Teuchos::RCP<Epetra_Map> fullmap_domain =
       Core::LinAlg::MultiMapExtractor::merge_maps(domain_maps);
   Teuchos::RCP<Core::LinAlg::MultiMapExtractor> domainmaps =
-      Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*fullmap_domain, domain_maps));
+      Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>(*fullmap_domain, domain_maps);
 
   // build the partial and full range maps
   std::vector<Teuchos::RCP<const Epetra_Map>> range_maps(rows, Teuchos::null);
   for (int i = 0; i < rows; i++)
-    range_maps[i] = Teuchos::rcp(new Epetra_Map(matrices_[i * cols + 0]->range_map()));
+    range_maps[i] = Teuchos::make_rcp<Epetra_Map>(matrices_[i * cols + 0]->range_map());
   Teuchos::RCP<Epetra_Map> fullmap_range = Core::LinAlg::MultiMapExtractor::merge_maps(range_maps);
   Teuchos::RCP<Core::LinAlg::MultiMapExtractor> rangemaps =
-      Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*fullmap_range, range_maps));
+      Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>(*fullmap_range, range_maps);
 
   // Create the concrete matrix
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
-      the_matrix = Teuchos::rcp(
-          new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *domainmaps, *rangemaps, npr, true, false));
+      the_matrix = Teuchos::make_rcp<
+          Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+
+          *domainmaps, *rangemaps, npr, true, false);
 
   // Assign the blocks
   for (int i = 0; i < rows; i++)
@@ -412,13 +413,13 @@ void Core::LinearSolver::AMGNxN::BlockedMatrix::parse_blocks(const std::string& 
 Teuchos::RCP<Core::LinearSolver::AMGNxN::BlockedVector>
 Core::LinearSolver::AMGNxN::BlockedMatrix::new_domain_blocked_vector(int NV, bool ZeroIt) const
 {
-  Teuchos::RCP<BlockedVector> out = Teuchos::rcp(new BlockedVector(get_num_cols()));
+  Teuchos::RCP<BlockedVector> out = Teuchos::make_rcp<BlockedVector>(get_num_cols());
   for (int i = 0; i < get_num_cols(); i++)
   {
     const Epetra_Map& Map = get_matrix(0, i)->domain_map();
-    Teuchos::RCP<Epetra_MultiVector> Vi = Teuchos::rcp(new Epetra_MultiVector(
-        Map, NV, ZeroIt));  // This constructor seems to be buggy inside function
-                            // BlockedVector::NewRCP. I don't know why here works well.
+    Teuchos::RCP<Epetra_MultiVector> Vi = Teuchos::make_rcp<Epetra_MultiVector>(
+        Map, NV, ZeroIt);  // This constructor seems to be buggy inside function
+                           // BlockedVector::NewRCP. I don't know why here works well.
 
     out->set_vector(Vi, i);
   }
@@ -432,11 +433,11 @@ Core::LinearSolver::AMGNxN::BlockedMatrix::new_domain_blocked_vector(int NV, boo
 Teuchos::RCP<Core::LinearSolver::AMGNxN::BlockedVector>
 Core::LinearSolver::AMGNxN::BlockedMatrix::new_range_blocked_vector(int NV, bool ZeroIt) const
 {
-  Teuchos::RCP<BlockedVector> out = Teuchos::rcp(new BlockedVector(get_num_rows()));
+  Teuchos::RCP<BlockedVector> out = Teuchos::make_rcp<BlockedVector>(get_num_rows());
   for (int i = 0; i < get_num_rows(); i++)
   {
     const Epetra_Map& Map = get_matrix(i, 0)->range_map();
-    Teuchos::RCP<Epetra_MultiVector> Vi = Teuchos::rcp(new Epetra_MultiVector(Map, NV, ZeroIt));
+    Teuchos::RCP<Epetra_MultiVector> Vi = Teuchos::make_rcp<Epetra_MultiVector>(Map, NV, ZeroIt);
 
     out->set_vector(Vi, i);
   }
@@ -451,11 +452,11 @@ Teuchos::RCP<Core::LinearSolver::AMGNxN::BlockedVector>
 Core::LinearSolver::AMGNxN::DiagonalBlockedMatrix::new_domain_blocked_vector(
     int NV, bool ZeroIt) const
 {
-  Teuchos::RCP<BlockedVector> out = Teuchos::rcp(new BlockedVector(get_num_cols()));
+  Teuchos::RCP<BlockedVector> out = Teuchos::make_rcp<BlockedVector>(get_num_cols());
   for (int i = 0; i < get_num_cols(); i++)
   {
     const Epetra_Map& Map = get_matrix(i, i)->domain_map();
-    Teuchos::RCP<Epetra_MultiVector> Vi = Teuchos::rcp(new Epetra_MultiVector(Map, NV, ZeroIt));
+    Teuchos::RCP<Epetra_MultiVector> Vi = Teuchos::make_rcp<Epetra_MultiVector>(Map, NV, ZeroIt);
 
     out->set_vector(Vi, i);
   }
@@ -470,11 +471,11 @@ Teuchos::RCP<Core::LinearSolver::AMGNxN::BlockedVector>
 Core::LinearSolver::AMGNxN::DiagonalBlockedMatrix::new_range_blocked_vector(
     int NV, bool ZeroIt) const
 {
-  Teuchos::RCP<BlockedVector> out = Teuchos::rcp(new BlockedVector(get_num_rows()));
+  Teuchos::RCP<BlockedVector> out = Teuchos::make_rcp<BlockedVector>(get_num_rows());
   for (int i = 0; i < get_num_rows(); i++)
   {
     const Epetra_Map& Map = get_matrix(i, i)->range_map();
-    Teuchos::RCP<Epetra_MultiVector> Vi = Teuchos::rcp(new Epetra_MultiVector(Map, NV, ZeroIt));
+    Teuchos::RCP<Epetra_MultiVector> Vi = Teuchos::make_rcp<Epetra_MultiVector>(Map, NV, ZeroIt);
 
     out->set_vector(Vi, i);
   }

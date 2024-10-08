@@ -44,7 +44,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidXWallType::create(
 {
   if (eletype == "FLUIDXW")
   {
-    return Teuchos::rcp(new Discret::ELEMENTS::FluidXWall(id, owner));
+    return Teuchos::make_rcp<Discret::ELEMENTS::FluidXWall>(id, owner);
   }
   return Teuchos::null;
 }
@@ -52,7 +52,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidXWallType::create(
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidXWallType::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Discret::ELEMENTS::FluidXWall(id, owner));
+  return Teuchos::make_rcp<Discret::ELEMENTS::FluidXWall>(id, owner);
 }
 
 void Discret::ELEMENTS::FluidXWallType::nodal_block_information(

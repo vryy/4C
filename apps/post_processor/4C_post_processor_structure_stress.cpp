@@ -246,8 +246,8 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
     p.set("action", "postprocess_thickness");
     p.set("optquantitytype", "ndxyz");
     p.set("gpthickmap", data);
-    Epetra_MultiVector* tmp = new Epetra_MultiVector(*noderowmap, 1, true);
-    Teuchos::RCP<Epetra_MultiVector> nodal_thickness = Teuchos::rcp(tmp);
+    Teuchos::RCP<Epetra_MultiVector> nodal_thickness =
+        Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, 1, true);
     p.set("postthick", nodal_thickness);
     dis->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     if (nodal_thickness == Teuchos::null)
@@ -420,9 +420,9 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
     // Epetra_MultiVector with eigenvalues (3) and eigenvectors (9 components) in each row (=node)
     std::vector<Teuchos::RCP<Epetra_MultiVector>> nodal_eigen_val_vec(6);
     for (int i = 0; i < 3; ++i)
-      nodal_eigen_val_vec[i] = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 1));
+      nodal_eigen_val_vec[i] = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, 1);
     for (int i = 3; i < 6; ++i)
-      nodal_eigen_val_vec[i] = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3));
+      nodal_eigen_val_vec[i] = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, 3);
 
     const int numnodes = dis->num_my_row_nodes();
     bool threedim = true;
@@ -535,9 +535,9 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
 
     std::vector<Teuchos::RCP<Epetra_MultiVector>> nodal_eigen_val_vec(6);
     for (int i = 0; i < 3; ++i)
-      nodal_eigen_val_vec[i] = Teuchos::rcp(new Epetra_MultiVector(*(dis->element_row_map()), 1));
+      nodal_eigen_val_vec[i] = Teuchos::make_rcp<Epetra_MultiVector>(*(dis->element_row_map()), 1);
     for (int i = 3; i < 6; ++i)
-      nodal_eigen_val_vec[i] = Teuchos::rcp(new Epetra_MultiVector(*(dis->element_row_map()), 3));
+      nodal_eigen_val_vec[i] = Teuchos::make_rcp<Epetra_MultiVector>(*(dis->element_row_map()), 3);
 
     const int numnodes = dis->num_my_row_nodes();
     bool threedim = true;

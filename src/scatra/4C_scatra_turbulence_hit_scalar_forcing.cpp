@@ -187,7 +187,7 @@ namespace ScaTra
     }
     // push coordinates in vectors
     {
-      coordinates_ = Teuchos::rcp(new std::vector<double>);
+      coordinates_ = Teuchos::make_rcp<std::vector<double>>();
 
       for (std::set<double, LineSortCriterion>::iterator coord1 = coords.begin();
            coord1 != coords.end(); ++coord1)
@@ -202,16 +202,16 @@ namespace ScaTra
 
     // push wave numbers in vector
     {
-      wavenumbers_ = Teuchos::rcp(new std::vector<double>);
+      wavenumbers_ = Teuchos::make_rcp<std::vector<double>>();
 
       wavenumbers_->resize((std::size_t)nummodes_);
       for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++) (*wavenumbers_)[rr] = rr;
     }
 
     // set size of energy-spectrum vector
-    scalarvariancespectrum_n_ = Teuchos::rcp(new std::vector<double>);
+    scalarvariancespectrum_n_ = Teuchos::make_rcp<std::vector<double>>();
     scalarvariancespectrum_n_->resize(wavenumbers_->size());
-    scalarvariancespectrum_np_ = Teuchos::rcp(new std::vector<double>);
+    scalarvariancespectrum_np_ = Teuchos::make_rcp<std::vector<double>>();
     scalarvariancespectrum_np_->resize(wavenumbers_->size());
     // and initialize with zeros, just to be sure
     for (std::size_t rr = 0; rr < scalarvariancespectrum_n_->size(); rr++)
@@ -221,8 +221,8 @@ namespace ScaTra
     }
 
     // linear compensation factor for isotropic forcing
-    force_fac_ = Teuchos::rcp(
-        new Core::LinAlg::SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
+    force_fac_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+        nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
     return;
   }
@@ -285,12 +285,13 @@ namespace ScaTra
     //-------------------------------------------------------------------------------
 
     // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat = Teuchos::rcp(
-        new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat =
+        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
+            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
     Teuchos::RCP<Teuchos::Array<double>> local_phi =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
     Teuchos::RCP<Teuchos::Array<double>> global_phi =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
 
     //-----------------------------------
     // prepare Fourier transformation
@@ -624,12 +625,13 @@ namespace ScaTra
       //-------------------------------------------------------------------------------
 
       // set and initialize working arrays
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat = Teuchos::rcp(
-          new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat =
+          Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
+              nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
       Teuchos::RCP<Teuchos::Array<double>> local_phi =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
       Teuchos::RCP<Teuchos::Array<double>> global_phi =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
 
       //-----------------------------------
       // prepare Fourier transformation
@@ -723,13 +725,14 @@ namespace ScaTra
       //----------------------------------------
 
       // Fourier coefficients of forcing
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> fphi_hat = Teuchos::rcp(
-          new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> fphi_hat =
+          Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
+              nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
       // where f_hat = -C(k) * u_hat according to Hickel 2007
       // C denotes a linear compensation factor
 
       Teuchos::RCP<Teuchos::Array<double>> fphi =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
 
       for (int rr = 0; rr < (nummodes_ * nummodes_ * (nummodes_ / 2 + 1)); rr++)
       {

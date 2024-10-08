@@ -90,7 +90,7 @@ void Solid::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
     gmsh_out_ = ioparams.get<bool>("OUTPUT_GMSH");
     printiter_ = true;
     p_io_every_iteration_ =
-        Teuchos::rcp(new Teuchos::ParameterList(ioparams.sublist("EVERY ITERATION")));
+        Teuchos::make_rcp<Teuchos::ParameterList>(ioparams.sublist("EVERY ITERATION"));
     outputeveryiter_ = p_io_every_iteration_->get<bool>("OUTPUT_EVERY_ITER");
     writerestartevery_ = sdynparams.get<int>("RESTARTEVRY");
     writetimestepoffset_ = sdynparams.get<int>("OUTPUT_STEP_OFFSET");
@@ -112,14 +112,14 @@ void Solid::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
     writeoptquantity_ = ioparams.get<Inpar::Solid::OptQuantityType>("STRUCT_OPTIONAL_QUANTITY");
 
     // build params container for monitoring reaction forces
-    params_monitor_dbc_ = Teuchos::rcp(new ParamsMonitorDBC());
+    params_monitor_dbc_ = Teuchos::make_rcp<ParamsMonitorDBC>();
     params_monitor_dbc_->init(ioparams.sublist("MONITOR STRUCTURE DBC"));
     params_monitor_dbc_->setup();
 
     // check whether VTK output at runtime is desired
     if (ioparams.sublist("RUNTIME VTK OUTPUT").get<int>("INTERVAL_STEPS") != -1)
     {
-      params_runtime_vtk_output_ = Teuchos::rcp(new ParamsRuntimeOutput());
+      params_runtime_vtk_output_ = Teuchos::make_rcp<ParamsRuntimeOutput>();
 
       params_runtime_vtk_output_->init(ioparams.sublist("RUNTIME VTK OUTPUT"));
       params_runtime_vtk_output_->setup();
@@ -128,7 +128,7 @@ void Solid::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
     // check whether VTP output at runtime is desired
     if (ioparams.sublist("RUNTIME VTP OUTPUT STRUCTURE").get<int>("INTERVAL_STEPS") != -1)
     {
-      params_runtime_vtp_output_ = Teuchos::rcp(new ParamsRuntimeVtpOutput());
+      params_runtime_vtp_output_ = Teuchos::make_rcp<ParamsRuntimeVtpOutput>();
 
       params_runtime_vtp_output_->init(ioparams.sublist("RUNTIME VTP OUTPUT STRUCTURE"));
       params_runtime_vtp_output_->setup();
@@ -146,7 +146,7 @@ void Solid::TimeInt::BaseDataIO::setup()
   // safety check
   FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
 
-  if (outputeveryiter_) writer_every_iter_ = Teuchos::rcp(new Core::IO::EveryIterationWriter());
+  if (outputeveryiter_) writer_every_iter_ = Teuchos::make_rcp<Core::IO::EveryIterationWriter>();
 
   issetup_ = true;
 }
@@ -171,8 +171,9 @@ void Solid::TimeInt::BaseDataIO::init_setup_every_iteration_writer(
   // insert the every_iter output writer as ppo for the solver object
   Teuchos::ParameterList& p_sol_opt = p_nox.sublist("Solver Options");
 
-  Teuchos::RCP<::NOX::Observer> prepost_solver_ptr = Teuchos::rcp(
-      new NOX::Nln::Solver::PrePostOp::TimeInt::WriteOutputEveryIteration(*writer_every_iter_));
+  Teuchos::RCP<::NOX::Observer> prepost_solver_ptr =
+      Teuchos::make_rcp<NOX::Nln::Solver::PrePostOp::TimeInt::WriteOutputEveryIteration>(
+          *writer_every_iter_);
 
   NOX::Nln::Aux::add_to_pre_post_op_vector(p_sol_opt, prepost_solver_ptr);
 
@@ -197,7 +198,7 @@ void Solid::TimeInt::BaseDataIO::setup_energy_output_file()
     std::string energy_file_name =
         Global::Problem::instance()->output_control_file()->file_name() + "_energy.csv";
 
-    energyfile_ = Teuchos::rcp(new std::ofstream(energy_file_name.c_str()));
+    energyfile_ = Teuchos::make_rcp<std::ofstream>(energy_file_name.c_str());
   }
 }
 

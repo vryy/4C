@@ -75,7 +75,7 @@ namespace TimeStepping
     )
     {
       if (not step_exists(step)) FOUR_C_THROW("Step %d is not admissible", step);
-      return Teuchos::rcp<STATE>(&(state_[index_by_step(step)]), false);
+      return Teuchos::RCP<STATE>(&(state_[index_by_step(step)]), false);
     }
 
     //@}

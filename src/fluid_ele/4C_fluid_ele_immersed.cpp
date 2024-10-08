@@ -35,7 +35,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidTypeImmersed::create(
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidTypeImmersed::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Discret::ELEMENTS::FluidImmersed(id, owner));
+  return Teuchos::make_rcp<Discret::ELEMENTS::FluidImmersed>(id, owner);
 }
 
 void Discret::ELEMENTS::FluidTypeImmersed::setup_element_definition(

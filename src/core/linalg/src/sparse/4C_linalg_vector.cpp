@@ -206,7 +206,7 @@ Core::LinAlg::Vector<int>::Vector(Vector&& other) noexcept : vector_(std::move(o
 
 Core::LinAlg::Vector<int>& Core::LinAlg::Vector<int>::operator=(const Vector& other)
 {
-  vector_ = Teuchos::rcp(new Epetra_IntVector(*other.vector_));
+  vector_ = Teuchos::make_rcp<Epetra_IntVector>(*other.vector_);
   return *this;
 }
 

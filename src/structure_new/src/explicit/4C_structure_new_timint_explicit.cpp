@@ -44,9 +44,9 @@ void Solid::TimeInt::Explicit::setup()
   // build NOX interface
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Solid::TimeInt::NoxInterface> noxinterface_ptr =
-      Teuchos::rcp(new Solid::TimeInt::NoxInterface);
+      Teuchos::make_rcp<Solid::TimeInt::NoxInterface>();
   noxinterface_ptr->init(
-      data_global_state_ptr(), explint_ptr_, dbc_ptr(), Teuchos::rcp(this, false));
+      data_global_state_ptr(), explint_ptr_, dbc_ptr(), Teuchos::rcpFromRef(*this));
   noxinterface_ptr->setup();
   // ---------------------------------------------------------------------------
   // build non-linear solver
@@ -61,7 +61,7 @@ void Solid::TimeInt::Explicit::setup()
   }
   nlnsolver_ptr_ = Solid::Nln::SOLVER::build_nln_solver(nlnSolverType);
   nlnsolver_ptr_->init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, explint_ptr_,
-      Teuchos::rcp(this, false));
+      Teuchos::rcpFromRef(*this));
   nlnsolver_ptr_->setup();
   // set setup flag
   issetup_ = true;

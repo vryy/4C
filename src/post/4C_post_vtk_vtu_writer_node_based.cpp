@@ -280,8 +280,8 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
     std::vector<int> gids(vecmap.NumMyElements());
     for (int i = 0; i < vecmap.NumMyElements(); ++i)
       gids[i] = vecmap.MyGlobalElements()[i] - offset;
-    Teuchos::RCP<Epetra_Map> rowmap = Teuchos::rcp(new Epetra_Map(
-        vecmap.NumGlobalElements(), vecmap.NumMyElements(), gids.data(), 0, vecmap.Comm()));
+    Teuchos::RCP<Epetra_Map> rowmap = Teuchos::make_rcp<Epetra_Map>(
+        vecmap.NumGlobalElements(), vecmap.NumMyElements(), gids.data(), 0, vecmap.Comm());
     Teuchos::RCP<Core::LinAlg::Vector<double>> dofvec = Core::LinAlg::create_vector(*rowmap, false);
     for (int i = 0; i < vecmap.NumMyElements(); ++i) (*dofvec)[i] = (*data)[i];
 
@@ -371,7 +371,7 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
     ghostedData = data;
   else
   {
-    ghostedData = Teuchos::rcp(new Epetra_MultiVector(*colmap, data->NumVectors(), false));
+    ghostedData = Teuchos::make_rcp<Epetra_MultiVector>(*colmap, data->NumVectors(), false);
     Core::LinAlg::export_to(*data, *ghostedData);
   }
 
@@ -391,7 +391,7 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
     for (int idf = 0; idf < numdf; ++idf)
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> column =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(*(*ghostedData)(idf)));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*ghostedData)(idf));
       solution.push_back((*column)[i]);
     }
     for (int d = numdf; d < ncomponents; ++d) solution.push_back(0.);

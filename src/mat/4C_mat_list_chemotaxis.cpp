@@ -55,7 +55,7 @@ Mat::PAR::MatListChemotaxis::MatListChemotaxis(const Core::Mat::PAR::Parameter::
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatListChemotaxis::create_material()
 {
-  return Teuchos::rcp(new Mat::MatListChemotaxis(this));
+  return Teuchos::make_rcp<Mat::MatListChemotaxis>(this);
 }
 
 

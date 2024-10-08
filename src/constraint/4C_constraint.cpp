@@ -285,7 +285,8 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
       const double lagraval = (*lagramul)[lindex];
 
       // elements might need condition
-      params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
+      params.set<Teuchos::RCP<Core::Conditions::Condition>>(
+          "condition", Teuchos::rcpFromRef(*cond));
 
       // define element matrices and vectors
       Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -381,7 +382,8 @@ void CONSTRAINTS::Constraint::initialize_constraint(
     // if current time is larger than initialization time of the condition, start computing
     if ((inittimes_.find(condID)->second <= time) && (!(activecons_.find(condID)->second)))
     {
-      params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcp(cond, false));
+      params.set<Teuchos::RCP<Core::Conditions::Condition>>(
+          "condition", Teuchos::rcpFromRef(*cond));
 
       // define element matrices and vectors
       Core::LinAlg::SerialDenseMatrix elematrix1;

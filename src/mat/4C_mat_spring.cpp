@@ -30,7 +30,7 @@ Mat::PAR::Spring::Spring(const Core::Mat::PAR::Parameter::Data& matdata)
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Spring::create_material()
 {
-  return Teuchos::rcp(new Mat::Spring(this));
+  return Teuchos::make_rcp<Mat::Spring>(this);
 }
 
 Mat::SpringType Mat::SpringType::instance_;

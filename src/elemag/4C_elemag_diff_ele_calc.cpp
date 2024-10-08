@@ -316,24 +316,24 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::initialize_shapes(
   if (shapes_ == Teuchos::null || shapes_->degree_ != unsigned(ele->degree()) ||
       shapes_->usescompletepoly_ != usescompletepoly_)
   {
-    shapes_ = Teuchos::rcp(
+    shapes_ = Teuchos::RCP(
         new Core::FE::ShapeValues<distype>(ele->degree(), usescompletepoly_, 2 * ele->degree()));
 
     // TODO: Check wheter 2 * (ele->Degree()+1) is required as exact integration degree
-    postproc_shapes_ = Teuchos::rcp(new Core::FE::ShapeValues<distype>(
-        ele->degree() + 1, usescompletepoly_, 2 * (ele->degree() + 1)));
+    postproc_shapes_ = Teuchos::make_rcp<Core::FE::ShapeValues<distype>>(
+        ele->degree() + 1, usescompletepoly_, 2 * (ele->degree() + 1));
   }
 
   if (shapesface_ == Teuchos::null)
   {
     Core::FE::ShapeValuesFaceParams svfparams(ele->degree(), usescompletepoly_, 2 * ele->degree());
-    shapesface_ = Teuchos::rcp(new Core::FE::ShapeValuesFace<distype>(svfparams));
+    shapesface_ = Teuchos::make_rcp<Core::FE::ShapeValuesFace<distype>>(svfparams);
   }
 
   if (local_solver_ == Teuchos::null || local_solver_->ndofs_ != shapes_->ndofs_)
   {
     local_solver_ =
-        Teuchos::rcp(new LocalSolver(ele, *shapes_, shapesface_, dyna_, *postproc_shapes_));
+        Teuchos::make_rcp<LocalSolver>(ele, *shapes_, shapesface_, dyna_, *postproc_shapes_);
   }
 }
 

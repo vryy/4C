@@ -72,7 +72,7 @@ namespace Discret::ELEMENTS
 
     // format as Discret::UTILS::GaussIntegration
     Teuchos::RCP<Core::FE::CollectedGaussPoints> gp =
-        Teuchos::rcp(new Core::FE::CollectedGaussPoints);
+        Teuchos::make_rcp<Core::FE::CollectedGaussPoints>();
 
     std::array<double, 3> xi = {0., 0., 0.};
     for (int i = 0; i < intpoints.ip().nquad; ++i)

@@ -186,7 +186,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfAnything> Core::UTILS::try_create_symbolic_f
           "CONSTANTS");
     }
 
-    return Teuchos::rcp(new Core::UTILS::SymbolicFunctionOfAnything(component, constants));
+    return Teuchos::make_rcp<Core::UTILS::SymbolicFunctionOfAnything>(component, constants);
   }
   else
   {
@@ -300,7 +300,7 @@ Core::UTILS::try_create_symbolic_function_of_space_time(
                   description_vec.size());
             }
 
-            return Teuchos::rcp(new ParsedFunctionVariable(varname, description_vec.front()));
+            return Teuchos::make_rcp<ParsedFunctionVariable>(varname, description_vec.front());
           }
           else if (vartype == "linearinterpolation")
           {
@@ -310,8 +310,8 @@ Core::UTILS::try_create_symbolic_function_of_space_time(
             // read values
             auto values = line.container().get<std::vector<double>>("VALUES");
 
-            return Teuchos::rcp(
-                new LinearInterpolationVariable(varname, times, values, periodicdata));
+            return Teuchos::make_rcp<LinearInterpolationVariable>(
+                varname, times, values, periodicdata);
           }
           else if (vartype == "multifunction")
           {
@@ -326,8 +326,8 @@ Core::UTILS::try_create_symbolic_function_of_space_time(
             if (numtimes != numdescriptions + 1)
               FOUR_C_THROW("the number of TIMES and the number of DESCRIPTIONs must be consistent");
 
-            return Teuchos::rcp(
-                new MultiFunctionVariable(varname, times, description_vec, periodicdata));
+            return Teuchos::make_rcp<MultiFunctionVariable>(
+                varname, times, description_vec, periodicdata);
           }
           else if (vartype == "fourierinterpolation")
           {
@@ -337,8 +337,8 @@ Core::UTILS::try_create_symbolic_function_of_space_time(
             // read values
             auto values = line.container().get<std::vector<double>>("VALUES");
 
-            return Teuchos::rcp(
-                new FourierInterpolationVariable(varname, times, values, periodicdata));
+            return Teuchos::make_rcp<FourierInterpolationVariable>(
+                varname, times, values, periodicdata);
           }
           else
           {
@@ -366,11 +366,11 @@ Core::UTILS::try_create_symbolic_function_of_space_time(
       if (not names_of_all_pieces_equal)
         FOUR_C_THROW("Variable %d has a piece-wise definition with inconsistent names.", id);
 
-      functvarvector.emplace_back(Teuchos::rcp(new PiecewiseVariable(name, pieces)));
+      functvarvector.emplace_back(Teuchos::make_rcp<PiecewiseVariable>(name, pieces));
     }
   }
 
-  return Teuchos::rcp(new SymbolicFunctionOfSpaceTime(functstring, functvarvector));
+  return Teuchos::make_rcp<SymbolicFunctionOfSpaceTime>(functstring, functvarvector);
 }
 
 Core::UTILS::SymbolicFunctionOfSpaceTime::SymbolicFunctionOfSpaceTime(
@@ -382,7 +382,7 @@ Core::UTILS::SymbolicFunctionOfSpaceTime::SymbolicFunctionOfSpaceTime(
   {
     {
       auto symbolicexpression =
-          Teuchos::rcp(new Core::UTILS::SymbolicExpression<double>(expression));
+          Teuchos::make_rcp<Core::UTILS::SymbolicExpression<double>>(expression);
       expr_.push_back(symbolicexpression);
     }
   }
@@ -532,7 +532,7 @@ Core::UTILS::SymbolicFunctionOfAnything::SymbolicFunctionOfAnything(
     : constants_from_input_(std::move(constants))
 {
   // build the parser for the function evaluation
-  auto symbolicexpression = Teuchos::rcp(new Core::UTILS::SymbolicExpression<double>(component));
+  auto symbolicexpression = Teuchos::make_rcp<Core::UTILS::SymbolicExpression<double>>(component);
 
   // save the parsers
   expr_.push_back(symbolicexpression);

@@ -1338,7 +1338,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
             ele->nodes()[i]->get_condition("ArtPrescribedCond");
         Cparams.set<std::string>("Condition Name", "ArtPrescribedCond");
         Arteries::UTILS::solve_prescribed_terminal_bc(
-            Teuchos::rcp(&discretization, false), condition, Cparams);
+            Teuchos::rcpFromRef(discretization), condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1355,7 +1355,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
         Cparams.set<std::string>("Condition Name", "Art_redD_3D_CouplingCond");
 
         Arteries::UTILS::solve_prescribed_terminal_bc(
-            Teuchos::rcp(&discretization, false), condition, Cparams);
+            Teuchos::rcpFromRef(discretization), condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1365,7 +1365,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
       {
         const Core::Conditions::Condition* condition = ele->nodes()[i]->get_condition("ArtRfCond");
         Arteries::UTILS::solve_reflective_terminal(
-            Teuchos::rcp(&discretization, false), condition, Cparams);
+            Teuchos::rcpFromRef(discretization), condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1379,7 +1379,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
         Cparams.set<double>("terminal volumetric flow rate", qn_(i));
         Cparams.set<double>("terminal cross-sectional area", an_(i));
         Arteries::UTILS::solve_expl_windkessel_bc(
-            Teuchos::rcp(&discretization, false), condition, Cparams);
+            Teuchos::rcpFromRef(discretization), condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------

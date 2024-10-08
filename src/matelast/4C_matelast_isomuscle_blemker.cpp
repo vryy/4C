@@ -52,7 +52,7 @@ Mat::Elastic::PAR::IsoMuscleBlemker::IsoMuscleBlemker(
 Mat::Elastic::IsoMuscleBlemker::IsoMuscleBlemker(Mat::Elastic::PAR::IsoMuscleBlemker* params)
     : params_(params),
       anisotropy_extension_(true, 0.0, false,
-          Teuchos::rcp<Mat::Elastic::StructuralTensorStrategyBase>(
+          Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
               new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0})
 

@@ -58,7 +58,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::PoroFluidMultiPhaseType
   if (eletype == "POROFLUIDMULTIPHASE")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::PoroFluidMultiPhase(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::PoroFluidMultiPhase>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -71,7 +71,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::PoroFluidMultiPhaseType
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::PoroFluidMultiPhase(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::PoroFluidMultiPhase>(id, owner);
   return ele;
 }
 

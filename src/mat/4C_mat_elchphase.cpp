@@ -50,7 +50,7 @@ Mat::PAR::ElchPhase::ElchPhase(const Core::Mat::PAR::Parameter::Data& matdata)
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ElchPhase::create_material()
 {
-  return Teuchos::rcp(new Mat::ElchPhase(this));
+  return Teuchos::make_rcp<Mat::ElchPhase>(this);
 }
 
 Mat::ElchPhaseType Mat::ElchPhaseType::instance_;

@@ -67,19 +67,19 @@ void Solid::MapExtractor::setup(
   Core::Conditions::MultiConditionSelector mcs;
   mcs.set_overlapping(overlapping);
   mcs.add_selector(
-      Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
+      Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(dis, "FSICoupling", 0, ndim));
+  mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+      dis, "StructAleCoupling", 0, ndim));
   mcs.add_selector(
-      Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "StructAleCoupling", 0, ndim)));
+      Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(dis, "BioGrCoupling", 0, ndim));
   mcs.add_selector(
-      Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "BioGrCoupling", 0, ndim)));
+      Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(dis, "AleWear", 0, ndim));
   mcs.add_selector(
-      Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "AleWear", 0, ndim)));
+      Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(dis, "fpsi_coupling", 0, ndim));
   mcs.add_selector(
-      Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "fpsi_coupling", 0, ndim)));
+      Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(dis, "IMMERSEDCoupling", 0, ndim));
   mcs.add_selector(
-      Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "IMMERSEDCoupling", 0, ndim)));
-  mcs.add_selector(
-      Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "ParticleWall", 0, ndim)));
+      Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(dis, "ParticleWall", 0, ndim));
 
   mcs.setup_extractor(dis, fullmap, *this);
 }

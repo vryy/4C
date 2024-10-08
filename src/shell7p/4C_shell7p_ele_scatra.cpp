@@ -67,7 +67,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Shell7pScatraType::crea
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Shell7pScatraType::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Discret::ELEMENTS::Shell7pScatra(id, owner));
+  return Teuchos::make_rcp<Discret::ELEMENTS::Shell7pScatra>(id, owner);
 }
 
 void Discret::ELEMENTS::Shell7pScatraType::setup_element_definition(

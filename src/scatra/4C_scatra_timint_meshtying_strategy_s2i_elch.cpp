@@ -360,17 +360,17 @@ void ScaTra::MeshtyingStrategyS2IElch::init_conv_check_strategy()
   if (couplingtype_ == Inpar::S2I::coupling_mortar_saddlepoint_petrov or
       couplingtype_ == Inpar::S2I::coupling_mortar_saddlepoint_bubnov)
   {
-    convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyS2ILMElch(
-        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
+    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyS2ILMElch>(
+        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
   }
   else if (elch_tim_int()->macro_scale())
   {
-    convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStdMacroScaleElch(
-        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
+    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyStdMacroScaleElch>(
+        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
   }
   else
-    convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStdElch(
-        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
+    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyStdElch>(
+        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
 }  // ScaTra::MeshtyingStrategyS2IElch::init_conv_check_strategy
 
 
@@ -1248,7 +1248,7 @@ void ScaTra::MeshtyingStrategyS2IElchSCL::setup_meshtying()
   std::vector<int> islavenodegidvec(islavenodegidset.begin(), islavenodegidset.end());
   std::vector<int> imasternodegidvec(imasternodegidset.begin(), imasternodegidset.end());
 
-  icoup_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  icoup_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
   icoup_->setup_coupling(*(scatratimint_->discretization()), *(scatratimint_->discretization()),
       imasternodegidvec, islavenodegidvec, 2, true, 1.0e-8);
 }

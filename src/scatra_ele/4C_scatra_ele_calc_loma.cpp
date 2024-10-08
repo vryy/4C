@@ -59,7 +59,7 @@ Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(
       shc_(1.0)
 {
   // set appropriate reaction manager
-  my::reamanager_ = Teuchos::rcp(new ScaTraEleReaManagerLoma(my::numscal_));
+  my::reamanager_ = Teuchos::make_rcp<ScaTraEleReaManagerLoma>(my::numscal_);
 
   // safety check
   if (my::turbparams_->mfs_conservative())

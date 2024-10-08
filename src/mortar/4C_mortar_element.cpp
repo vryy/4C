@@ -270,7 +270,7 @@ void Mortar::Element::unpack(Core::Communication::UnpackBuffer& buffer)
   bool hasdata = extract_int(buffer);
   if (hasdata)
   {
-    modata_ = Teuchos::rcp(new Mortar::MortarEleDataContainer());
+    modata_ = Teuchos::make_rcp<Mortar::MortarEleDataContainer>();
     modata_->unpack(buffer);
   }
   else
@@ -1582,7 +1582,7 @@ double Mortar::Element::max_edge_size() const
 void Mortar::Element::initialize_data_container()
 {
   // only initialize if not yet done
-  if (modata_ == Teuchos::null) modata_ = Teuchos::rcp(new Mortar::MortarEleDataContainer());
+  if (modata_ == Teuchos::null) modata_ = Teuchos::make_rcp<Mortar::MortarEleDataContainer>();
 
   if (parent_element() != nullptr)
   {
@@ -1682,19 +1682,19 @@ Mortar::ElementNitscheContainer& Mortar::Element::get_nitsche_container()
     {
       case Core::FE::CellType::hex8:
         nitsche_container_ =
-            Teuchos::rcp(new Mortar::ElementNitscheData<Core::FE::CellType::hex8>());
+            Teuchos::make_rcp<Mortar::ElementNitscheData<Core::FE::CellType::hex8>>();
         break;
       case Core::FE::CellType::tet4:
         nitsche_container_ =
-            Teuchos::rcp(new Mortar::ElementNitscheData<Core::FE::CellType::tet4>());
+            Teuchos::make_rcp<Mortar::ElementNitscheData<Core::FE::CellType::tet4>>();
         break;
       case Core::FE::CellType::hex27:
         nitsche_container_ =
-            Teuchos::rcp(new Mortar::ElementNitscheData<Core::FE::CellType::hex27>());
+            Teuchos::make_rcp<Mortar::ElementNitscheData<Core::FE::CellType::hex27>>();
         break;
       case Core::FE::CellType::nurbs27:
         nitsche_container_ =
-            Teuchos::rcp(new Mortar::ElementNitscheData<Core::FE::CellType::nurbs27>());
+            Teuchos::make_rcp<Mortar::ElementNitscheData<Core::FE::CellType::nurbs27>>();
         break;
       default:
         FOUR_C_THROW("Nitsche data container not ready. Just add it here...");

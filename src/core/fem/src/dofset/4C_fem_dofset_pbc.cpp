@@ -44,7 +44,7 @@ int Core::DOFSets::PBCDofSet::assign_degrees_of_freedom(
 {
   // temporarily store the slave node set
   Teuchos::RCP<std::set<int>> tempset = slavenodeids_;
-  slavenodeids_ = Teuchos::rcp(new std::set<int>);
+  slavenodeids_ = Teuchos::make_rcp<std::set<int>>();
 
   // assign dofs using the empty slave node set. This way the dofrowmap_
   // contains exactly the entries as in a regular dofset
@@ -110,7 +110,7 @@ void Core::DOFSets::PBCDofSet::set_coupled_nodes(
     Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes)
 {
   perbndcouples_ = couplednodes;
-  slavenodeids_ = Teuchos::rcp(new std::set<int>);
+  slavenodeids_ = Teuchos::make_rcp<std::set<int>>();
 
   for (std::map<int, std::vector<int>>::iterator curr = perbndcouples_->begin();
        curr != perbndcouples_->end(); ++curr)
@@ -131,7 +131,7 @@ void Core::DOFSets::PBCDofSet::set_coupled_nodes(
  *----------------------------------------------------------------------*/
 void Core::DOFSets::PBCDofSet::build_slave_to_master_node_connectivity()
 {
-  perbnd_slavetomaster_ = Teuchos::rcp(new std::map<int, int>);
+  perbnd_slavetomaster_ = Teuchos::make_rcp<std::map<int, int>>();
 
   for (std::map<int, std::vector<int>>::const_iterator masterslavepair = perbndcouples_->begin();
        masterslavepair != perbndcouples_->end(); ++masterslavepair)

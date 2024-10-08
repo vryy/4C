@@ -139,8 +139,8 @@ CONTACT::AbstractStrategy::AbstractStrategy(
   unbalanceNumSlaveElements_.clear();
 
   // build the NOX::Nln::CONSTRAINT::Interface::Required object
-  noxinterface_ptr_ = Teuchos::rcp(new CONTACT::NoxInterface);
-  noxinterface_ptr_->init(Teuchos::rcp(this, false));
+  noxinterface_ptr_ = Teuchos::make_rcp<CONTACT::NoxInterface>();
+  noxinterface_ptr_->init(Teuchos::rcpFromRef(*this));
   noxinterface_ptr_->setup();
 }
 
@@ -555,7 +555,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
 
     // store initial element col map for binning strategy
     initial_elecolmap_.push_back(
-        Teuchos::rcp<Epetra_Map>(new Epetra_Map(*interfaces()[i]->discret().element_col_map())));
+        Teuchos::make_rcp<Epetra_Map>(*interfaces()[i]->discret().element_col_map()));
 
     // ****************************************************
     // friction
@@ -609,16 +609,16 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
   if (!redistributed)
   {
     // setup Lagrange multiplier vectors
-    z_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
-    zincr_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
-    zold_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
-    zuzawa_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+    z_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
+    zincr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
+    zold_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
+    zuzawa_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
 
     // setup global mortar matrices Dold and Mold
-    dold_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 1, true, false));
+    dold_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slave_dof_row_map(true), 1, true, false);
     dold_->zero();
     dold_->complete();
-    mold_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 1, true, false));
+    mold_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slave_dof_row_map(true), 1, true, false);
     mold_->zero();
     mold_->complete(*gmdofrowmap_, slave_dof_row_map(true));
   }
@@ -632,44 +632,44 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
     // setup Lagrange multiplier vectors
     if (z_ == Teuchos::null)
     {
-      z_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+      z_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
     }
     else
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> newz =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
       Core::LinAlg::export_to(*z_, *newz);
       z_ = newz;
     }
 
     if (zincr_ == Teuchos::null)
     {
-      zincr_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+      zincr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
     }
     else
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> newzincr =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
       Core::LinAlg::export_to(*zincr_, *newzincr);
       zincr_ = newzincr;
     }
 
     if (zold_ == Teuchos::null)
-      zold_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+      zold_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
     else
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> newzold =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
       Core::LinAlg::export_to(*zold_, *newzold);
       zold_ = newzold;
     }
 
     if (zuzawa_ == Teuchos::null)
-      zuzawa_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+      zuzawa_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
     else
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> newzuzawa =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
       Core::LinAlg::export_to(*zuzawa_, *newzuzawa);
       zuzawa_ = newzuzawa;
     }
@@ -677,7 +677,8 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
     // setup global Mortar matrices Dold and Mold
     if (dold_ == Teuchos::null)
     {
-      dold_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 1, true, false));
+      dold_ =
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slave_dof_row_map(true), 1, true, false);
       dold_->zero();
       dold_->complete();
     }
@@ -687,7 +688,8 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
 
     if (mold_ == Teuchos::null)
     {
-      mold_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 1, true, false));
+      mold_ =
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slave_dof_row_map(true), 1, true, false);
       mold_->zero();
       mold_->complete(*gmdofrowmap_, slave_dof_row_map(true));
     }
@@ -696,8 +698,8 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
   }
 
   // output contact stress vectors
-  stressnormal_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
-  stresstangential_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+  stressnormal_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
+  stresstangential_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
 
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
@@ -728,13 +730,13 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
     // and otherwise, only consider slave DOFs
     if (lagmultquad == Inpar::Mortar::lagmult_lin)
     {
-      trafo_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsmdofrowmap_, 10));
-      invtrafo_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsmdofrowmap_, 10));
+      trafo_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsmdofrowmap_, 10);
+      invtrafo_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsmdofrowmap_, 10);
     }
     else
     {
-      trafo_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 10));
-      invtrafo_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 10));
+      trafo_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
+      invtrafo_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
     }
 
     // set of already processed nodes
@@ -757,7 +759,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
     if (doldmod_ == Teuchos::null)
     {
       doldmod_ =
-          Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 1, true, false));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slave_dof_row_map(true), 1, true, false);
       doldmod_->zero();
       doldmod_->complete();
     }
@@ -776,10 +778,10 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
       for (std::size_t i = 0; i < interfaces().size(); ++i)
         interfaces()[i]->store_unredistributed_maps();
       if (lm_dof_row_map_ptr(true) != Teuchos::null)
-        non_redist_glmdofrowmap_ = Teuchos::rcp(new Epetra_Map(lm_dof_row_map(true)));
-      non_redist_gsdofrowmap_ = Teuchos::rcp(new Epetra_Map(slave_dof_row_map(true)));
-      non_redist_gmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gmdofrowmap_));
-      non_redist_gsmdofrowmap_ = Teuchos::rcp(new Epetra_Map(*gsmdofrowmap_));
+        non_redist_glmdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(lm_dof_row_map(true));
+      non_redist_gsdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(slave_dof_row_map(true));
+      non_redist_gmdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*gmdofrowmap_);
+      non_redist_gsmdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*gsmdofrowmap_);
     }
   }
 
@@ -828,8 +830,8 @@ Teuchos::RCP<Epetra_Map> CONTACT::AbstractStrategy::create_deterministic_lm_dof_
 
     my_lm_gids[slid] = interface_lmgid;
   }
-  return Teuchos::rcp(
-      new Epetra_Map(-1, static_cast<int>(my_lm_gids.size()), my_lm_gids.data(), 0, get_comm()));
+  return Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(my_lm_gids.size()), my_lm_gids.data(), 0, get_comm());
 }
 
 
@@ -990,10 +992,10 @@ void CONTACT::AbstractStrategy::update_global_self_contact_state()
   if (not is_self_contact()) return;
 
   // reset global slave / master Epetra Maps
-  gsnoderowmap_ = Teuchos::rcp(new Epetra_Map(0, 0, get_comm()));
-  gsdofrowmap_ = Teuchos::rcp(new Epetra_Map(0, 0, get_comm()));
-  gmdofrowmap_ = Teuchos::rcp(new Epetra_Map(0, 0, get_comm()));
-  glmdofrowmap_ = Teuchos::rcp(new Epetra_Map(0, 0, get_comm()));
+  gsnoderowmap_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+  gsdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+  gmdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+  glmdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
 
   // make numbering of LM dofs consecutive and unique across N interfaces
   int offset_if = 0;
@@ -1020,7 +1022,7 @@ void CONTACT::AbstractStrategy::update_global_self_contact_state()
   }
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> tmp_ptr =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
 
   {
     const int* oldgids = zincr_->Map().MyGlobalElements();
@@ -1037,7 +1039,7 @@ void CONTACT::AbstractStrategy::update_global_self_contact_state()
           (*tmp_ptr)[new_lid] = (*zincr_)[i];
       }
     }
-    zincr_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*tmp_ptr));
+    zincr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*tmp_ptr);
   }
 
   tmp_ptr->PutScalar(0.0);
@@ -1072,7 +1074,7 @@ void CONTACT::AbstractStrategy::calc_mean_velocity_for_binning(
   for (const auto& interface : interfaces())
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> interfaceVelocity =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*interface->discret().dof_row_map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface->discret().dof_row_map());
     Core::LinAlg::export_to(velocity, *interfaceVelocity);
 
     double meanVelocity = 0.0;
@@ -1304,20 +1306,20 @@ void CONTACT::AbstractStrategy::initialize_mortar()
   // initialize Dold and Mold if not done already
   if (dold_ == Teuchos::null)
   {
-    dold_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 10));
+    dold_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slave_dof_row_map(true), 10);
     dold_->zero();
     dold_->complete();
   }
   if (mold_ == Teuchos::null)
   {
-    mold_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 100));
+    mold_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slave_dof_row_map(true), 100);
     mold_->zero();
     mold_->complete(*gmdofrowmap_, slave_dof_row_map(true));
   }
 
   // (re)setup global Mortar Core::LinAlg::SparseMatrices and Core::LinAlg::Vectors
-  dmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 10));
-  mmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 100));
+  dmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slave_dof_row_map(true), 10);
+  mmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slave_dof_row_map(true), 100);
 
   if (constr_direction_ == Inpar::CONTACT::constr_xyz)
     wgap_ = Core::LinAlg::create_vector(slave_dof_row_map(true), true);
@@ -1332,12 +1334,12 @@ void CONTACT::AbstractStrategy::initialize_mortar()
     // initialize Dold and Mold if not done already
     if (doldmod_ == Teuchos::null)
     {
-      doldmod_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 10));
+      doldmod_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slave_dof_row_map(true), 10);
       doldmod_->zero();
       doldmod_->complete();
     }
     // setup of dmatrixmod_
-    dmatrixmod_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 10));
+    dmatrixmod_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slave_dof_row_map(true), 10);
   }
 }
 
@@ -1490,7 +1492,7 @@ void CONTACT::AbstractStrategy::evaluate_relative_movement()
 
   // vector of slave coordinates xs
   Teuchos::RCP<Core::LinAlg::Vector<double>> xsmod =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
 
   for (int i = 0; i < (int)interfaces().size(); ++i) interfaces()[i]->assemble_slave_coord(xsmod);
 
@@ -1502,7 +1504,7 @@ void CONTACT::AbstractStrategy::evaluate_relative_movement()
   // slave dof row map to obtain fully overlapping slave dof map.
   Teuchos::RCP<Epetra_Map> fullsdofs = Core::LinAlg::allreduce_e_map(slave_dof_row_map(true));
   Teuchos::RCP<Core::LinAlg::Vector<double>> xsmodfull =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*fullsdofs));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fullsdofs);
   Core::LinAlg::export_to(*xsmod, *xsmodfull);
   xsmod = xsmodfull;
 
@@ -1544,7 +1546,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::AbstractStrategy::evaluate_nor
   // create empty global matrix
   // (rectangular: rows=snodes, cols=sdofs)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> normals =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_row_nodes(), 3));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slave_row_nodes(), 3);
 
   // assemble nodal normals
   for (int i = 0; i < (int)interfaces().size(); ++i) interfaces()[i]->assemble_normals(*normals);
@@ -1613,7 +1615,7 @@ void CONTACT::AbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Qua
 
     // export global quantity to current interface slave dof map (column or row)
     Teuchos::RCP<Core::LinAlg::Vector<double>> vectorinterface = Teuchos::null;
-    vectorinterface = Teuchos::rcp(new Core::LinAlg::Vector<double>(*sdofmap));
+    vectorinterface = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*sdofmap);
     if (vectorglobal != Teuchos::null)  // necessary for case "activeold" and wear
       Core::LinAlg::export_to(*vectorglobal, *vectorinterface);
 
@@ -1695,8 +1697,8 @@ void CONTACT::AbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Qua
 void CONTACT::AbstractStrategy::compute_contact_stresses()
 {
   // reset contact stress class variables
-  stressnormal_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
-  stresstangential_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+  stressnormal_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
+  stresstangential_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
 
   // loop over all interfaces
   for (int i = 0; i < (int)interfaces().size(); ++i)
@@ -1794,7 +1796,7 @@ void CONTACT::AbstractStrategy::store_dirichlet_status(
   // create old style dirichtoggle vector (supposed to go away)
   non_redist_gsdirichtoggle_ = Core::LinAlg::create_vector(slave_dof_row_map(true), true);
   Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*(dbcmaps->cond_map())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dbcmaps->cond_map()));
   temp->PutScalar(1.0);
   Core::LinAlg::export_to(*temp, *non_redist_gsdirichtoggle_);
 
@@ -1846,7 +1848,7 @@ void CONTACT::AbstractStrategy::update(Teuchos::RCP<const Core::LinAlg::Vector<d
   // (we need this for interpolation of the next generalized mid-point)
   // in the case of self contact, the size of z may have changed
   if (is_self_contact())
-    zold_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+    zold_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
 
   zold_->Scale(1.0, *z_);
   store_nodal_quantities(Mortar::StrategyBase::lmold);
@@ -1902,14 +1904,14 @@ void CONTACT::AbstractStrategy::do_write_restart(
 {
   // initalize
   Teuchos::RCP<Core::LinAlg::Vector<double>> activetoggle =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_row_nodes()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_row_nodes());
   Teuchos::RCP<Core::LinAlg::Vector<double>> sliptoggle = Teuchos::null;
 
   // write toggle
   restart_vectors["activetoggle"] = activetoggle;
   if (friction_)
   {
-    sliptoggle = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_row_nodes()));
+    sliptoggle = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_row_nodes());
     restart_vectors["sliptoggle"] = sliptoggle;
   }
 
@@ -1994,7 +1996,7 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
   // read restart information on active set and slip set (leave sets empty
   // if this is a restart with contact of a non-contact simulation run)
   Teuchos::RCP<Core::LinAlg::Vector<double>> activetoggle =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_row_nodes(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_row_nodes(), true);
   if (!restartwithcontact) reader.read_vector(activetoggle, "activetoggle");
 
   // friction
@@ -2003,7 +2005,7 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
 
   if (friction_)
   {
-    sliptoggle = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_row_nodes()));
+    sliptoggle = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_row_nodes());
     if (!restartwithcontact) reader.read_vector(sliptoggle, "sliptoggle");
   }
 
@@ -2037,8 +2039,8 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
   }
 
   // read restart information on Lagrange multipliers
-  z_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
-  zold_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+  z_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
+  zold_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
   if (!restartwithcontact)
     if (not(Global::Problem::instance()
                     ->structural_dynamic_params()
@@ -2051,7 +2053,7 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
     }
 
   // Lagrange multiplier increment is always zero (no restart value to be read)
-  zincr_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+  zincr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
   // store restart information on Lagrange multipliers into nodes
   store_nodal_quantities(Mortar::StrategyBase::lmcurrent);
   store_nodal_quantities(Mortar::StrategyBase::lmold);
@@ -2060,7 +2062,7 @@ void CONTACT::AbstractStrategy::do_read_restart(Core::IO::DiscretizationReader& 
   // TODO: this should be moved to contact_penalty_strategy
   if (stype_ == Inpar::CONTACT::solution_uzawa)
   {
-    zuzawa_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+    zuzawa_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
     if (!restartwithcontact) reader.read_vector(data().lm_uzawa_ptr(), "lagrmultold");
     store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
   }
@@ -2132,16 +2134,16 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
 
   // compute discrete slave and master interface forces
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcslavetemp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(dmatrix_->row_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcmastertemp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(mmatrix_->domain_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mmatrix_->domain_map());
 
   // for self contact, slave and master sets may have changed,
   // thus we have to export z to new D and M dimensions
   if (is_self_contact())
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> zexp =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(dmatrix_->row_map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
     if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*z_, *zexp);
     dmatrix_->multiply(true, *zexp, *fcslavetemp);
     mmatrix_->multiply(true, *zexp, *fcmastertemp);
@@ -2155,9 +2157,9 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
 
   // export the interface forces to full dof layout
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcslave =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcmaster =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fcslavetemp, *fcslave);
   Core::LinAlg::export_to(*fcmastertemp, *fcmaster);
 
@@ -2178,9 +2180,9 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
 
   // weighted gap vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> gapslave =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(dmatrix_->row_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
   Teuchos::RCP<Core::LinAlg::Vector<double>> gapmaster =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(mmatrix_->domain_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mmatrix_->domain_map());
 
   // loop over all interfaces
   for (int i = 0; i < (int)interfaces().size(); ++i)
@@ -2270,13 +2272,13 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
 
   // weighted gap
   Teuchos::RCP<Core::LinAlg::Vector<double>> gapslavefinal =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(dmatrix_->row_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
   Teuchos::RCP<Core::LinAlg::Vector<double>> gapmasterfinal =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(mmatrix_->row_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mmatrix_->row_map());
   dmatrix_->multiply(false, *gapslave, *gapslavefinal);
   mmatrix_->multiply(false, *gapmaster, *gapmasterfinal);
   Teuchos::RCP<Core::LinAlg::Vector<double>> gapfinal =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(dmatrix_->row_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
   gapfinal->Update(1.0, *gapslavefinal, 0.0);
   gapfinal->Update(-1.0, *gapmasterfinal, 1.0);
 
@@ -3198,7 +3200,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::AbstractStrategy::lagr
   if ((redist) or not parallel_redistribution_status()) return z_;
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> z_unredist =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(false)));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(false));
   Core::LinAlg::export_to(*z_, *z_unredist);
   return z_unredist;
 }
@@ -3211,7 +3213,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::AbstractStrategy::lagr
   if ((redist) or not parallel_redistribution_status()) return zold_;
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> zold_unredist =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(false)));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(false));
   Core::LinAlg::export_to(*zold_, *zold_unredist);
   return zold_unredist;
 }
@@ -3249,9 +3251,9 @@ void CONTACT::AbstractStrategy::postprocess_quantities_per_interface(
   // Evaluate slave and master forces
   {
     RCP<Core::LinAlg::Vector<double>> fcslave =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(slave_dof_row_map(true), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true), true);
     RCP<Core::LinAlg::Vector<double>> fcmaster =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(master_dof_row_map(true), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(master_dof_row_map(true), true);
 
     // Mortar matrices might not be initialized, e.g. in the initial state. If so, keep zero vector.
     if (!d_matrix().is_null()) d_matrix()->multiply(true, *zold_, *fcslave);

@@ -162,9 +162,9 @@ void NTS::Interpolator::interpolate_2d(Mortar::Node& snode, std::vector<Mortar::
       Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> mcoordold;
       Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult;
 
-      scoordold = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, sele->num_node()));
-      mcoordold = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, ncol));
-      lagmult = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, sele->num_node()));
+      scoordold = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, sele->num_node());
+      mcoordold = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, ncol);
+      lagmult = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, sele->num_node());
       sele->get_nodal_coords_old(*scoordold);
       meles[nummaster]->get_nodal_coords_old(*mcoordold);
       sele->get_nodal_lag_mult(*lagmult);
@@ -417,9 +417,9 @@ bool NTS::Interpolator::interpolate_3d(Mortar::Node& snode, std::vector<Mortar::
       Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> mcoordold;
       Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult;
 
-      scoordold = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, sele->num_node()));
-      mcoordold = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, ncol));
-      lagmult = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, sele->num_node()));
+      scoordold = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, sele->num_node());
+      mcoordold = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, ncol);
+      lagmult = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, sele->num_node());
       sele->get_nodal_coords_old(*scoordold);
       meles[nummaster]->get_nodal_coords_old(*mcoordold);
       sele->get_nodal_lag_mult(*lagmult);

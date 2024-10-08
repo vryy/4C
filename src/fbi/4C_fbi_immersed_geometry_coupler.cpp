@@ -54,8 +54,8 @@ void FBI::FBIGeometryCoupler::setup(
   Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("FBI::FBICoupler::Setup");
   Teuchos::TimeMonitor monitor(*t);
 
-  fluidpositions_ = Teuchos::rcp(new std::map<int, Core::LinAlg::Matrix<3, 1>>);
-  beampositions_ = Teuchos::rcp(new std::map<int, Core::LinAlg::Matrix<3, 1>>);
+  fluidpositions_ = Teuchos::make_rcp<std::map<int, Core::LinAlg::Matrix<3, 1>>>();
+  beampositions_ = Teuchos::make_rcp<std::map<int, Core::LinAlg::Matrix<3, 1>>>();
 
   // todo Specific for fixed grids.. we will have to do something here for ALE (overload?)
   compute_fixed_positions(*discretizations[1], fluidpositions_);
@@ -78,7 +78,7 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIGeometryCoupler::search(
 
   // Vector to hand elements pointers to the bridge object
   Teuchos::RCP<std::map<int, std::vector<int>>> pairids =
-      Teuchos::rcp(new std::map<int, std::vector<int>>);
+      Teuchos::make_rcp<std::map<int, std::vector<int>>>();
 
   // todo Specific to 'linearized penalty'. Maybe have to do something for structure+beam in
   // discretization.
@@ -147,8 +147,8 @@ void FBI::FBIGeometryCoupler::extend_beam_ghosting(Core::FE::Discretization& dis
       sdata, rdata, (int)allproc.size(), allproc.data(), discretization.get_comm());
 
   // build completely overlapping map of nodes (on ALL processors)
-  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(
-      new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, discretization.get_comm()));
+  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, (int)rdata.size(), rdata.data(), 0, discretization.get_comm());
   sdata.clear();
   rdata.clear();
 
@@ -163,8 +163,8 @@ void FBI::FBIGeometryCoupler::extend_beam_ghosting(Core::FE::Discretization& dis
       sdata, rdata, (int)allproc.size(), allproc.data(), discretization.get_comm());
 
   // build complete overlapping map of elements (on ALL processors)
-  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
-      new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, discretization.get_comm()));
+  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, (int)rdata.size(), rdata.data(), 0, discretization.get_comm());
   sdata.clear();
   rdata.clear();
   allproc.clear();
@@ -252,8 +252,8 @@ void FBI::FBIGeometryCoupler::prepare_pair_creation(
   }
 
   // build overlapping column map of the elements
-  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(-1,
-      (int)element_recvdata.size(), element_recvdata.data(), 0, discretizations[1]->get_comm()));
+  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, (int)element_recvdata.size(), element_recvdata.data(), 0, discretizations[1]->get_comm());
 
 
   if (!newelecolmap->SameAs(*elecolmap))
@@ -288,8 +288,8 @@ void FBI::FBIGeometryCoupler::prepare_pair_creation(
     }
 
     // build complete overlapping map of elements (on ALL processors)
-    Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(
-        -1, (int)node_recvdata.size(), node_recvdata.data(), 0, discretizations[1]->get_comm()));
+    Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::make_rcp<Epetra_Map>(
+        -1, (int)node_recvdata.size(), node_recvdata.data(), 0, discretizations[1]->get_comm());
 
     // export nodes and elements
     discretizations[1]->export_column_nodes(*newnodecolmap);

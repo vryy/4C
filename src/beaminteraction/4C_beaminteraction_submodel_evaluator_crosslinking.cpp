@@ -70,7 +70,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup()
   check_init();
 
   // construct, init and setup data container for crosslinking
-  crosslinking_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::CrosslinkingParams());
+  crosslinking_params_ptr_ = Teuchos::make_rcp<BEAMINTERACTION::CrosslinkingParams>();
   crosslinking_params_ptr_->init(g_state());
   crosslinking_params_ptr_->setup();
 
@@ -88,11 +88,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup()
     init_output_runtime_structure();
 
   // store old maps prior to redistribution
-  cl_noderowmap_prior_redistr_ = Teuchos::rcp(new Epetra_Map(*bin_discret().node_row_map()));
-  cl_nodecolmap_prior_redistr_ = Teuchos::rcp(new Epetra_Map(*bin_discret().node_col_map()));
+  cl_noderowmap_prior_redistr_ = Teuchos::make_rcp<Epetra_Map>(*bin_discret().node_row_map());
+  cl_nodecolmap_prior_redistr_ = Teuchos::make_rcp<Epetra_Map>(*bin_discret().node_col_map());
   beam_elerowmap_prior_redistr_ =
-      Teuchos::rcp(new Epetra_Map(*ele_type_map_extractor().beam_map()));
-  beam_elecolmap_prior_redistr_ = Teuchos::rcp(new Epetra_Map(*discret().element_col_map()));
+      Teuchos::make_rcp<Epetra_Map>(*ele_type_map_extractor().beam_map());
+  beam_elecolmap_prior_redistr_ = Teuchos::make_rcp<Epetra_Map>(*discret().element_col_map());
 
   // set flag
   issetup_ = true;
@@ -121,7 +121,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
     BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), beamele_i,
         beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
 
-    beam_data_[i] = Teuchos::rcp(new BEAMINTERACTION::Data::BeamData());
+    beam_data_[i] = Teuchos::make_rcp<BEAMINTERACTION::Data::BeamData>();
     beam_data_[i]->set_id(beamele_i->id());
 
     // loop over all binding spots of current element
@@ -159,7 +159,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
   for (unsigned int i = 0; i < numrowcl; ++i)
   {
     Core::Nodes::Node* cl = bin_discret().l_row_node(i);
-    crosslinker_data_[cl->lid()] = Teuchos::rcp(new BEAMINTERACTION::Data::CrosslinkerData());
+    crosslinker_data_[cl->lid()] = Teuchos::make_rcp<BEAMINTERACTION::Data::CrosslinkerData>();
 
     crosslinker_data_[cl->lid()]->set_id(cl->id());
   }
@@ -208,7 +208,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_setup()
 
     // store displacement of restart step as displacement state of last redistribution
     dis_at_last_redistr_ =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*bin_discret().dof_row_map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*bin_discret().dof_row_map(), true);
     for (int i = 0; i < bin_discret().num_my_row_nodes(); ++i)
     {
       CrossLinking::CrosslinkerNode* crosslinker_i =
@@ -542,7 +542,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
   // initialize a box within linker are spawned
   std::vector<bool> dummy(3, false);
   Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> linker_init_box =
-      Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
+      Teuchos::make_rcp<Core::Geo::MeshFree::BoundingBox>();
   linker_init_box->init(
       crosslinking_params_ptr_->linker_initialization_box(), dummy);  // no setup() call needed here
 
@@ -601,7 +601,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
 
       // store data of new crosslinker
       Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cldata =
-          Teuchos::rcp(new BEAMINTERACTION::Data::CrosslinkerData());
+          Teuchos::make_rcp<BEAMINTERACTION::Data::CrosslinkerData>();
 
       // set positions
       clpos.clear();
@@ -656,7 +656,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup_my_initial_double_b
     for (unsigned int dim = 0; dim < 3; ++dim) X[dim] = newlinker[i]->get_position()(dim);
 
     Teuchos::RCP<CrossLinking::CrosslinkerNode> newcrosslinker =
-        Teuchos::rcp(new CrossLinking::CrosslinkerNode(gid, X, g_state().get_my_rank()));
+        Teuchos::make_rcp<CrossLinking::CrosslinkerNode>(gid, X, g_state().get_my_rank());
     newcrosslinker->set_material(Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(
         Mat::factory(newlinkermatid[i])));  // HACK HACK HACK
     bin_discret_ptr()->add_node(newcrosslinker);
@@ -710,7 +710,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::add_crosslinker_to_bin_di
   // initialize a box within linker are spawned
   std::vector<bool> dummy(3, false);
   Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> linker_init_box =
-      Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
+      Teuchos::make_rcp<Core::Geo::MeshFree::BoundingBox>();
   linker_init_box->init(
       crosslinking_params_ptr_->linker_initialization_box(), dummy);  // no setup() call needed here
 
@@ -736,7 +736,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::add_crosslinker_to_bin_di
 
         // construct node, init data container, set material and add to bin discret
         Teuchos::RCP<CrossLinking::CrosslinkerNode> newcrosslinker =
-            Teuchos::rcp(new CrossLinking::CrosslinkerNode(gid++, X, g_state().get_my_rank()));
+            Teuchos::make_rcp<CrossLinking::CrosslinkerNode>(gid++, X, g_state().get_my_rank());
         newcrosslinker->set_material(matcrosslinkerpertype[cltype_i]);
         bin_discret_ptr()->add_node(newcrosslinker);
       }
@@ -1003,9 +1003,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_update_step_element(b
 #endif
 
   linker_disnp_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*bin_discret().dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*bin_discret().dof_row_map(), true);
   Teuchos::RCP<Core::LinAlg::Vector<double>> dis_increment =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*bin_discret().dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*bin_discret().dof_row_map(), true);
 
   Core::LinAlg::Matrix<3, 1> d;
   Core::LinAlg::Matrix<3, 1> ref;
@@ -1054,7 +1054,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_update_step_element(b
   if (linker_redist or beam_redist)
   {
     // current displacement state gets new reference state
-    dis_at_last_redistr_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*linker_disnp_));
+    dis_at_last_redistr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*linker_disnp_);
     // transfer crosslinker to new bins
     Teuchos::RCP<std::list<int>> lostcl = beam_crosslinker_handler_ptr()->transfer_linker(true);
     if (not lostcl->empty())
@@ -1143,10 +1143,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::init_output_runtime_struc
   check_init();
 
   visualization_output_writer_ptr_ =
-      Teuchos::rcp(new Core::IO::DiscretizationVisualizationWriterNodes(bin_discret_ptr(),
+      Teuchos::make_rcp<Core::IO::DiscretizationVisualizationWriterNodes>(bin_discret_ptr(),
           Core::IO::visualization_parameters_factory(
               Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
-              *Global::Problem::instance()->output_control_file(), g_state().get_time_n())));
+              *Global::Problem::instance()->output_control_file(), g_state().get_time_n()));
 }
 
 /*----------------------------------------------------------------------------*
@@ -1352,7 +1352,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
     btbl->pack(linker_buffer);
   }
 
-  Teuchos::RCP<std::vector<char>> db_linker = Teuchos::rcp(new std::vector<char>);
+  Teuchos::RCP<std::vector<char>> db_linker = Teuchos::make_rcp<std::vector<char>>();
   std::swap(*db_linker, linker_buffer());
 
   // -------------------------------------------------------------------------
@@ -1369,7 +1369,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
     cl_data_i->pack(cldata_buffer);
   }
 
-  Teuchos::RCP<std::vector<char>> cldata = Teuchos::rcp(new std::vector<char>);
+  Teuchos::RCP<std::vector<char>> cldata = Teuchos::make_rcp<std::vector<char>>();
   std::swap(*cldata, cldata_buffer());
 
   // -------------------------------------------------------------------------
@@ -1391,7 +1391,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
     beam_data_i->pack(beamdata_buffer);
   }
 
-  Teuchos::RCP<std::vector<char>> beamdata = Teuchos::rcp(new std::vector<char>);
+  Teuchos::RCP<std::vector<char>> beamdata = Teuchos::make_rcp<std::vector<char>>();
   std::swap(*beamdata, beamdata_buffer());
 
   // -------------------------------------------------------------------------
@@ -1431,7 +1431,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
       extract_from_pack(buffer, data);
       Core::Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<Core::Communication::ParObject> object =
-          Teuchos::rcp(Core::Communication::factory(data_buffer), true);
+          Teuchos::RCP(Core::Communication::factory(data_buffer), true);
       Teuchos::RCP<BEAMINTERACTION::BeamLink> beamtobeamlink =
           Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLink>(object);
       if (beamtobeamlink == Teuchos::null)
@@ -1463,7 +1463,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
 
 
     Core::Communication::UnpackBuffer recv_singlecontainer_buffer(recv_singlecontainer_data);
-    Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data = Teuchos::rcp(
+    Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data = Teuchos::RCP(
         BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
             recv_singlecontainer_buffer),
         true);
@@ -1478,13 +1478,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   }
 
   // build dummy map according to read data on myrank
-  Teuchos::RCP<Epetra_Map> dummy_cl_map = Teuchos::rcp(
-      new Epetra_Map(-1, read_node_ids.size(), read_node_ids.data(), 0, bin_discret().get_comm()));
+  Teuchos::RCP<Epetra_Map> dummy_cl_map = Teuchos::make_rcp<Epetra_Map>(
+      -1, read_node_ids.size(), read_node_ids.data(), 0, bin_discret().get_comm());
 
   // build exporter object
   Teuchos::RCP<Core::Communication::Exporter> exporter =
-      Teuchos::rcp(new Core::Communication::Exporter(
-          *dummy_cl_map, *bin_discret().node_col_map(), bin_discret().get_comm()));
+      Teuchos::make_rcp<Core::Communication::Exporter>(
+          *dummy_cl_map, *bin_discret().node_col_map(), bin_discret().get_comm());
 
   // export
   exporter->do_export(cl_datapacks);
@@ -1501,7 +1501,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
     extract_from_pack(cl_buffer, data);
 
     Core::Communication::UnpackBuffer data_buffer(data);
-    Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data = Teuchos::rcp(
+    Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data = Teuchos::RCP(
         BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
             data_buffer),
         true);
@@ -1528,7 +1528,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
 
     Core::Communication::UnpackBuffer recv_singlecontainer_buffer(recv_singlecontainer_data);
     Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data =
-        Teuchos::rcp(BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(
+        Teuchos::RCP(BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(
                          recv_singlecontainer_buffer),
             true);
 
@@ -1542,12 +1542,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   }
 
   // build dummy map according to read data on myrank
-  Teuchos::RCP<Epetra_Map> dummy_beam_map = Teuchos::rcp(
-      new Epetra_Map(-1, read_ele_ids.size(), read_ele_ids.data(), 0, discret().get_comm()));
+  Teuchos::RCP<Epetra_Map> dummy_beam_map = Teuchos::make_rcp<Epetra_Map>(
+      -1, read_ele_ids.size(), read_ele_ids.data(), 0, discret().get_comm());
 
   // build exporter object
-  exporter = Teuchos::rcp(new Core::Communication::Exporter(
-      *dummy_beam_map, *discret().element_col_map(), discret().get_comm()));
+  exporter = Teuchos::make_rcp<Core::Communication::Exporter>(
+      *dummy_beam_map, *discret().element_col_map(), discret().get_comm());
 
   // export
   exporter->do_export(beam_datapacks);
@@ -1561,7 +1561,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
     extract_from_pack(buffer, data);
 
     Core::Communication::UnpackBuffer data_buffer(data);
-    Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data = Teuchos::rcp(
+    Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data = Teuchos::RCP(
         BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(data_buffer),
         true);
     beam_data_[discret().element_col_map()->LID(beam_data->get_id())] = beam_data;
@@ -1582,7 +1582,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_read_restart()
 
   // store displacement of restart step as displacement state of last redistribution
   dis_at_last_redistr_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*bin_discret().dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*bin_discret().dof_row_map(), true);
   for (int i = 0; i < bin_discret().num_my_row_nodes(); ++i)
   {
     Core::Nodes::Node* crosslinker_i = bin_discret().l_row_node(i);
@@ -2074,8 +2074,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crossli
   //  BinDiscret().Comm().MaxAll( &loc_changed_maps, &g_changed_maps, 1 );
   //
   //  if ( g_changed_maps )
-  cl_exporter_ = Teuchos::rcp(new Core::Communication::Exporter(
-      *cl_noderowmap_prior_redistr_, *bin_discret().node_col_map(), bin_discret().get_comm()));
+  cl_exporter_ = Teuchos::make_rcp<Core::Communication::Exporter>(
+      *cl_noderowmap_prior_redistr_, *bin_discret().node_col_map(), bin_discret().get_comm());
 
   // we first need to pack our stuff into and std::vector< char > for communication
   std::map<int, std::vector<char>> allpacks;
@@ -2104,7 +2104,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_crossli
     extract_from_pack(buffer1, data);
 
     Core::Communication::UnpackBuffer buffer2(data);
-    Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data = Teuchos::rcp(
+    Teuchos::RCP<BEAMINTERACTION::Data::CrosslinkerData> cl_data = Teuchos::RCP(
         BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::CrosslinkerData>(
             buffer2),
         true);
@@ -2136,8 +2136,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
   //  discret().Comm().MaxAll( &loc_changed_maps, &g_changed_maps, 1 );
   //
   //  if ( g_changed_maps )
-  beam_exporter_ = Teuchos::rcp(new Core::Communication::Exporter(
-      *beam_elerowmap_prior_redistr_, *discret().element_col_map(), discret().get_comm()));
+  beam_exporter_ = Teuchos::make_rcp<Core::Communication::Exporter>(
+      *beam_elerowmap_prior_redistr_, *discret().element_col_map(), discret().get_comm());
 
   // we first need to pack our row stuff into and std::vector< char > for communication
   std::map<int, std::vector<char>> allpacks;
@@ -2209,7 +2209,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
     extract_from_pack(buffer1, data);
 
     Core::Communication::UnpackBuffer buffer2(data);
-    Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data = Teuchos::rcp(
+    Teuchos::RCP<BEAMINTERACTION::Data::BeamData> beam_data = Teuchos::RCP(
         BEAMINTERACTION::Data::create_data_container<BEAMINTERACTION::Data::BeamData>(buffer2),
         true);
     beam_data_[discret().element_col_map()->LID(beam_data->get_id())] = beam_data;
@@ -2513,7 +2513,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(Core::Nod
       // corresponding map
       // ---------------------------------------------------------------------
       Teuchos::RCP<BEAMINTERACTION::Data::BindEventData> bindeventdata =
-          Teuchos::rcp(new BEAMINTERACTION::Data::BindEventData());
+          Teuchos::make_rcp<BEAMINTERACTION::Data::BindEventData>();
       // default permission is true, is changed if owner of cl has something against it
       bindeventdata->init(crosslinker_i->id(), nbbeam->id(), locnbspot, g_state().get_my_rank(), 1);
 
@@ -3757,7 +3757,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::dissolve_bond(Core::Nodes
 
   // store unbinding event data
   Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData> unbindevent =
-      Teuchos::rcp(new BEAMINTERACTION::Data::UnBindEventData());
+      Teuchos::make_rcp<BEAMINTERACTION::Data::UnBindEventData>();
   unbindevent->set_cl_id(linker->id());
   unbindevent->set_ele_toupdate(cldata->get_b_spots()[freedbspotid]);
   unbindevent->set_linker_type(crosslinker->get_material()->linker_type());
@@ -4030,7 +4030,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_beam_link_aft
       // this Teuchos::rcp holds the memory
       Core::Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<Core::Communication::ParObject> object =
-          Teuchos::rcp(Core::Communication::factory(data_buffer), true);
+          Teuchos::RCP(Core::Communication::factory(data_buffer), true);
       Teuchos::RCP<BEAMINTERACTION::BeamLink> beamtobeamlink =
           Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLink>(object);
       if (beamtobeamlink == Teuchos::null)
@@ -4158,7 +4158,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::recv_any(
 
       Core::Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<T> data_container =
-          Teuchos::rcp(BEAMINTERACTION::Data::create_data_container<T>(data_buffer), true);
+          Teuchos::RCP(BEAMINTERACTION::Data::create_data_container<T>(data_buffer), true);
 
       // add received data to list
       recv.push_back(data_container);

@@ -97,9 +97,9 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
 
   const Epetra_Map* elementrowmap = dis.element_row_map();
   Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered =
-      Teuchos::rcp(new Epetra_MultiVector(*elementrowmap, numvec, true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*elementrowmap, numvec, true);
   Teuchos::RCP<Epetra_MultiVector> centercoords =
-      Teuchos::rcp(new Epetra_MultiVector(*elementrowmap, dim, true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*elementrowmap, dim, true);
 
   std::vector<int> lm;
   std::vector<int> lmowner;
@@ -151,15 +151,15 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   }  // end element loop
 
   Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered_col =
-      Teuchos::rcp(new Epetra_MultiVector(*(dis.element_col_map()), numvec, true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*(dis.element_col_map()), numvec, true);
   Core::LinAlg::export_to(*elevec_toberecovered, *elevec_toberecovered_col);
   Teuchos::RCP<Epetra_MultiVector> centercoords_col =
-      Teuchos::rcp(new Epetra_MultiVector(*(dis.element_col_map()), dim, true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*(dis.element_col_map()), dim, true);
   Core::LinAlg::export_to(*centercoords, *centercoords_col);
 
   // step 2: use precalculated (velocity) gradient for patch-recovery of gradient
   // solution vector based on reduced node row map
-  Teuchos::RCP<Epetra_FEVector> nodevec = Teuchos::rcp(new Epetra_FEVector(noderowmap, numvec));
+  Teuchos::RCP<Epetra_FEVector> nodevec = Teuchos::make_rcp<Epetra_FEVector>(noderowmap, numvec);
 
   std::vector<Core::Conditions::Condition*> conds;
   dis.get_condition("SPRboundary", conds);
@@ -552,7 +552,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   // solution vector based on full row map in which the solution of the master node is inserted into
   // slave nodes
   Teuchos::RCP<Epetra_MultiVector> fullnodevec =
-      Teuchos::rcp(new Epetra_MultiVector(*fullnoderowmap, numvec));
+      Teuchos::make_rcp<Epetra_MultiVector>(*fullnoderowmap, numvec);
 
   for (int i = 0; i < fullnoderowmap->NumMyElements(); ++i)
   {

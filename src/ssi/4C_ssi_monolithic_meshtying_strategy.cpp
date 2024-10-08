@@ -442,14 +442,14 @@ Teuchos::RCP<SSI::MeshtyingStrategyBase> SSI::build_meshtying_strategy(
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
-      meshtying_strategy = Teuchos::rcp(
-          new SSI::MeshtyingStrategyBlock(is_scatra_manifold, ssi_maps, ssi_structure_meshtying));
+      meshtying_strategy = Teuchos::make_rcp<SSI::MeshtyingStrategyBlock>(
+          is_scatra_manifold, ssi_maps, ssi_structure_meshtying);
       break;
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      meshtying_strategy = Teuchos::rcp(
-          new SSI::MeshtyingStrategySparse(is_scatra_manifold, ssi_maps, ssi_structure_meshtying));
+      meshtying_strategy = Teuchos::make_rcp<SSI::MeshtyingStrategySparse>(
+          is_scatra_manifold, ssi_maps, ssi_structure_meshtying);
       break;
     }
 

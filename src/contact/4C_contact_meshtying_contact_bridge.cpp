@@ -42,16 +42,16 @@ CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(Core::FE::Discretization
   // create meshtying and contact manager
   if (onlymeshtying)
   {
-    mtman_ = Teuchos::rcp(new CONTACT::MtManager(dis, timeIntegrationMidPoint));
+    mtman_ = Teuchos::make_rcp<CONTACT::MtManager>(dis, timeIntegrationMidPoint);
   }
   else if (onlycontact)
   {
-    cman_ = Teuchos::rcp(new CONTACT::Manager(dis, timeIntegrationMidPoint));
+    cman_ = Teuchos::make_rcp<CONTACT::Manager>(dis, timeIntegrationMidPoint);
   }
   else if (meshtyingandcontact)
   {
-    mtman_ = Teuchos::rcp(new CONTACT::MtManager(dis, timeIntegrationMidPoint));
-    cman_ = Teuchos::rcp(new CONTACT::Manager(dis, timeIntegrationMidPoint));
+    mtman_ = Teuchos::make_rcp<CONTACT::MtManager>(dis, timeIntegrationMidPoint);
+    cman_ = Teuchos::make_rcp<CONTACT::Manager>(dis, timeIntegrationMidPoint);
   }
 
   // Sanity check for writing output for each interface

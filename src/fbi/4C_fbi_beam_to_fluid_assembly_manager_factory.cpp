@@ -36,14 +36,16 @@ BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
   switch (meshtying_discretization)
   {
     case Inpar::FBI::BeamToFluidDiscretization::mortar:
-      return Teuchos::rcp(
-          new BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect(
-              interaction_pairs, discretization1, discretization2, params_ptr));
+      return Teuchos::make_rcp<
+          BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect>(
+
+          interaction_pairs, discretization1, discretization2, params_ptr);
       break;
     case Inpar::FBI::BeamToFluidDiscretization::gauss_point_to_segment:
-      return Teuchos::rcp(
-          new BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect(
-              interaction_pairs, assemblystrategy));
+      return Teuchos::make_rcp<
+          BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect>(
+
+          interaction_pairs, assemblystrategy);
       break;
     default:
       FOUR_C_THROW("Beam To Fluid Meshtying discretization Type not supported!");

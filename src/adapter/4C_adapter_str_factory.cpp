@@ -39,7 +39,7 @@ Adapter::StructureFactory::build_structure_algorithm(const Teuchos::ParameterLis
   switch (intstrat)
   {
     case Inpar::Solid::int_standard:
-      adapterbase = Teuchos::rcp(new Adapter::StructureBaseAlgorithmNew());
+      adapterbase = Teuchos::make_rcp<Adapter::StructureBaseAlgorithmNew>();
       break;
     default:
       FOUR_C_THROW("Unknown integration strategy!");

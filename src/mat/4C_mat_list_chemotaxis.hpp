@@ -131,7 +131,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new MatListChemotaxis(*this));
+      return Teuchos::make_rcp<MatListChemotaxis>(*this);
     }
 
     /// number of reactions

@@ -54,9 +54,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8ThermoType::creat
 {
   if (eletype == "SOLIDH8THERMO")
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
-        new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(
-            id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+        Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>>(
+
+        id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -70,9 +71,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8ThermoType::creat
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8ThermoType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
-      new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(
-          id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+      Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>>(
+
+      id, owner);
   return ele;
 
 }  // Create()
@@ -162,9 +164,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarThermoType::c
 {
   if (eletype == "SOLIDH8FBARTHERMO")
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
-        new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>(
-            id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+        Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>>(
+
+        id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -178,9 +181,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarThermoType::c
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarThermoType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
-      new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>(
-          id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+      Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>>(
+
+      id, owner);
   return ele;
 }  // Create()
 
@@ -274,9 +278,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4ThermoType::creat
 {
   if (eletype == "SOLIDT4THERMO")
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
-        new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(
-            id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+        Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>>(
+
+        id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -290,9 +295,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4ThermoType::creat
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4ThermoType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
-      new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(
-          id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+      Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>>(
+
+      id, owner);
   return ele;
 }  // Create()
 
@@ -380,9 +386,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10ThermoType::crea
 {
   if (eletype == "SOLIDT10THERMO")
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
-        new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>(
-            id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+        Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>>(
+
+        id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -396,9 +403,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10ThermoType::crea
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10ThermoType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
-      new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>(
-          id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+      Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>>(
+
+      id, owner);
   return ele;
 }  // Create()
 
@@ -487,9 +495,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27ThermoType::crea
 {
   if (eletype == "SOLIDH27THERMO")
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
-        new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>(
-            id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+        Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>>(
+
+        id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -503,9 +512,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27ThermoType::crea
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27ThermoType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
-      new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>(
-          id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+      Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>>(
+
+      id, owner);
   return ele;
 }  // Create ()
 
@@ -594,9 +604,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex20ThermoType::crea
 {
   if (eletype == "SOLIDH20THERMO")
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
-        new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>(
-            id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+        Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>>(
+
+        id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -610,9 +621,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex20ThermoType::crea
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex20ThermoType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
-      new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>(
-          id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+      Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>>(
+
+      id, owner);
   return ele;
 }  // Create ()
 
@@ -703,8 +715,8 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoNurbs27ThermoType::cr
   if (eletype == "SONURBS27THERMO")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27,
-            Core::FE::CellType::nurbs27>(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27,
+            Core::FE::CellType::nurbs27>>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -719,8 +731,8 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoNurbs27ThermoType::cr
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27,
-          Core::FE::CellType::nurbs27>(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27,
+          Core::FE::CellType::nurbs27>>(id, owner);
   return ele;
 }  // Create ()
 

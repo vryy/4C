@@ -57,7 +57,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::pre_evaluate(Teuchos::ParameterList&
         }
 
         Teuchos::RCP<std::vector<double>> scalar =
-            Teuchos::rcp(new std::vector<double>(numscal, 0.0));
+            Teuchos::make_rcp<std::vector<double>>(numscal, 0.0);
         if ((int)myscalar.size() != numscal * numnod_) FOUR_C_THROW("sizes do not match!");
 
         for (int i = 0; i < numnod_; i++)

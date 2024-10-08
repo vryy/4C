@@ -53,8 +53,8 @@ void lubrication_dyn(int restart)
 
   // add proxy of velocity related degrees of freedom to lubrication discretization
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
-          Global::Problem::instance()->n_dim(), 0, 0, true));
+      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+          Global::Problem::instance()->n_dim(), 0, 0, true);
   if (lubricationdis->add_dof_set(dofsetaux) != 1)
     FOUR_C_THROW("lub discretization has illegal number of dofsets!");
 
@@ -70,7 +70,7 @@ void lubrication_dyn(int restart)
 
   // create instance of Lubrication basis algorithm
   Teuchos::RCP<LUBRICATION::LubricationBaseAlgorithm> lubricationonly =
-      Teuchos::rcp(new LUBRICATION::LubricationBaseAlgorithm());
+      Teuchos::make_rcp<LUBRICATION::LubricationBaseAlgorithm>();
 
   // setup Lubrication basis algorithm
   lubricationonly->setup(

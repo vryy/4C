@@ -1408,7 +1408,7 @@ void ScaTra::LevelSetAlgorithm::correct_volume()
   const double thickness = -voldelta / surface;
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> one =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(phin_->Map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(phin_->Map());
   one->PutScalar(1.0);
 
   // update phi
@@ -1426,7 +1426,7 @@ void ScaTra::LevelSetAlgorithm::reinit_elliptic(
     std::map<int, Core::Geo::BoundaryIntCells>& interface)
 {
   // store interface
-  interface_eleq_ = Teuchos::rcp(new std::map<int, Core::Geo::BoundaryIntCells>(interface));
+  interface_eleq_ = Teuchos::make_rcp<std::map<int, Core::Geo::BoundaryIntCells>>(interface);
 
   // call the executing method
   reinitialize_with_elliptic_equation();
@@ -1464,9 +1464,9 @@ void ScaTra::LevelSetAlgorithm::reinitialize_with_elliptic_equation()
 
   // some preparations
   Teuchos::RCP<Core::LinAlg::Vector<double>> phinmloc =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*phinp_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*phinp_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> inc =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*(discret_->dof_row_map()), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
   int step = 0;
   bool not_conv = true;
 

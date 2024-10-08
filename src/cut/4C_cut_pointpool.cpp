@@ -396,7 +396,7 @@ void Cut::OctTreeNode::split(int level)
 
     for (int i = 0; i < 8; ++i)
     {
-      nodes_[i] = Teuchos::rcp(new OctTreeNode(norm_));
+      nodes_[i] = Teuchos::make_rcp<OctTreeNode>(norm_);
     }
 
     // avoid empty room (room not covered by boundary boxes)
@@ -444,7 +444,7 @@ void Cut::OctTreeNode::collect_edges(const BoundingBox& edgebox, plain_edge_set&
   }
   else
   {
-    Teuchos::RCP<BoundingBox> sbox = Teuchos::rcp(BoundingBox::create());
+    Teuchos::RCP<BoundingBox> sbox = Teuchos::RCP(BoundingBox::create());
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
     {
       Point* p = &**i;
@@ -483,7 +483,7 @@ void Cut::OctTreeNode::collect_sides(const BoundingBox& sidebox, plain_side_set&
   }
   else
   {
-    Teuchos::RCP<BoundingBox> sbox = Teuchos::rcp(BoundingBox::create());
+    Teuchos::RCP<BoundingBox> sbox = Teuchos::RCP(BoundingBox::create());
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
     {
       Point* p = &**i;
@@ -530,7 +530,7 @@ void Cut::OctTreeNode::collect_elements(const BoundingBox& sidebox, plain_elemen
   }
   else
   {
-    Teuchos::RCP<BoundingBox> elementbox = Teuchos::rcp(BoundingBox::create());
+    Teuchos::RCP<BoundingBox> elementbox = Teuchos::RCP(BoundingBox::create());
     for (RCPPointSet::iterator i = points_.begin(); i != points_.end(); ++i)
     {
       Point* p = &**i;

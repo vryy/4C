@@ -61,7 +61,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::setup()
   check_init();
 
   // construct, init and setup data container for crosslinking
-  spherebeamlinking_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::SphereBeamLinkingParams());
+  spherebeamlinking_params_ptr_ = Teuchos::make_rcp<BEAMINTERACTION::SphereBeamLinkingParams>();
   spherebeamlinking_params_ptr_->init(g_state());
   spherebeamlinking_params_ptr_->setup();
 
@@ -606,11 +606,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_output_runtime(
 {
   check_init();
 
-  visualization_manager_ptr_ = Teuchos::rcp(new Core::IO::VisualizationManager(
+  visualization_manager_ptr_ = Teuchos::make_rcp<Core::IO::VisualizationManager>(
       Core::IO::visualization_parameters_factory(
           Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
           *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
-      bin_discret_ptr()->get_comm(), "spherebeamlinker"));
+      bin_discret_ptr()->get_comm(), "spherebeamlinker");
 }
 
 /*-------------------------------------------------------------------------------*

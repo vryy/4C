@@ -130,8 +130,8 @@ void Core::FE::UTILS::DbcNurbs::evaluate(const Teuchos::ParameterList& params,
   discret.get_condition("NurbsLSDirichlet", conds);
 
   Teuchos::RCP<std::set<int>> dbcgids_nurbs[2] = {Teuchos::null, Teuchos::null};
-  dbcgids_nurbs[set_row] = Teuchos::rcp<std::set<int>>(new std::set<int>());
-  dbcgids_nurbs[set_col] = Teuchos::rcp<std::set<int>>(new std::set<int>());
+  dbcgids_nurbs[set_row] = Teuchos::make_rcp<std::set<int>>();
+  dbcgids_nurbs[set_col] = Teuchos::make_rcp<std::set<int>>();
 
   // create a new toggle vector with column layout
   const Core::FE::Nurbs::NurbsDiscretization* discret_nurbs =
@@ -173,7 +173,7 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
 
   // create map extractor to always (re)build dbcmapextractor which is needed later
   Teuchos::RCP<Core::LinAlg::MapExtractor> auxdbcmapextractor =
-      Teuchos::rcp(new Core::LinAlg::MapExtractor());
+      Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
   {
     // build map of Dirichlet DOFs
     int nummyelements = 0;
@@ -186,8 +186,8 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
       nummyelements = dbcgidsv.size();
       myglobalelements = dbcgidsv.data();
     }
-    Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements,
-        myglobalelements, discret.dof_row_map()->IndexBase(), discret.dof_row_map()->Comm()));
+    Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::make_rcp<Epetra_Map>(-1, nummyelements,
+        myglobalelements, discret.dof_row_map()->IndexBase(), discret.dof_row_map()->Comm());
     // build the map extractor of Dirichlet-conditioned and free DOFs
     *auxdbcmapextractor = Core::LinAlg::MapExtractor(*(discret.dof_row_map()), dbcmap);
   }
@@ -206,8 +206,8 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
       nummyelements = dbcgidsv.size();
       myglobalelements = dbcgidsv.data();
     }
-    dbccolmap = Teuchos::rcp(new Epetra_Map(-1, nummyelements, myglobalelements,
-        nurbs_dis.dof_col_map()->IndexBase(), discret.dof_row_map()->Comm()));
+    dbccolmap = Teuchos::make_rcp<Epetra_Map>(-1, nummyelements, myglobalelements,
+        nurbs_dis.dof_col_map()->IndexBase(), discret.dof_row_map()->Comm());
   }
 
   // -------------------------------------------------------------------
@@ -254,7 +254,7 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   // create empty mass matrix
   // -------------------------------------------------------------------
   Teuchos::RCP<Core::LinAlg::SparseMatrix> massmatrix =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 108, false, true));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 108, false, true);
 
   // -------------------------------------------------------------------
   // create empty right hand side vector

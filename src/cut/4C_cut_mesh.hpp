@@ -527,7 +527,7 @@ namespace Cut
     const std::map<int, Teuchos::RCP<Node>>& nodes() const { return nodes_; }
 
     /// Creates a new node in the cutmesh
-    void get_node(int nid, Node* node) { nodes_[nid] = Teuchos::rcp(node); }
+    void get_node(int nid, Node* node) { nodes_[nid] = Teuchos::RCP(node); }
 
     /// Creates a new edge in the cutmesh
     void get_edge(plain_int_set eid, const Teuchos::RCP<Edge>& edge) { edges_[eid] = edge; }

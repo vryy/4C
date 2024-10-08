@@ -42,7 +42,7 @@ Mat::PAR::ParticleWallMaterialDEM::ParticleWallMaterialDEM(
  *---------------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ParticleWallMaterialDEM::create_material()
 {
-  return Teuchos::rcp(new Mat::ParticleWallMaterialDEM(this));
+  return Teuchos::make_rcp<Mat::ParticleWallMaterialDEM>(this);
 }
 
 /*---------------------------------------------------------------------------*

@@ -49,22 +49,22 @@ void Discret::ELEMENTS::So3Plast<distype>::eas_init()
 
   if (eastype_ != soh8p_easnone)
   {
-    KaaInv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, neas_, true));
-    Kad_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, numdofperelement_, true));
-    feas_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
-    alpha_eas_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
-    alpha_eas_last_timestep_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
+    KaaInv_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, neas_, true);
+    Kad_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, numdofperelement_, true);
+    feas_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
+    alpha_eas_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
+    alpha_eas_last_timestep_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
     alpha_eas_delta_over_last_timestep_ =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
-    alpha_eas_inc_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
-    Kba_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseMatrix>(
-        numgpt_, Core::LinAlg::SerialDenseMatrix(5, neas_, true)));
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
+    alpha_eas_inc_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
+    Kba_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseMatrix>>(
+        numgpt_, Core::LinAlg::SerialDenseMatrix(5, neas_, true));
 
     Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
     if (probtype == Core::ProblemType::tsi)
     {
-      KaT_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, nen_, true));
-      KdT_eas_ = Teuchos::rcp(new Core::LinAlg::Matrix<numdofperelement_, nen_>);
+      KaT_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, nen_, true);
+      KdT_eas_ = Teuchos::make_rcp<Core::LinAlg::Matrix<numdofperelement_, nen_>>();
     }
   }
 

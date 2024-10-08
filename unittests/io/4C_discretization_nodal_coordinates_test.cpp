@@ -43,8 +43,8 @@ namespace
     {
       create_material_in_global_problem();
 
-      comm_ = Teuchos::rcp(new Epetra_SerialComm());
-      test_discretization_ = Teuchos::rcp(new Core::FE::Discretization("dummy", comm_, 3));
+      comm_ = Teuchos::make_rcp<Epetra_SerialComm>();
+      test_discretization_ = Teuchos::make_rcp<Core::FE::Discretization>("dummy", comm_, 3);
 
       Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
 
@@ -101,7 +101,7 @@ namespace
     {
       std::array<int, 4> nodeList{0, 2, 4, 10};  // GID list of first 4 elements
       Teuchos::RCP<Epetra_Map> node_row_map =
-          Teuchos::rcp(new Epetra_Map(-1, nodeList.size(), nodeList.data(), 0, *comm_));
+          Teuchos::make_rcp<Epetra_Map>(-1, nodeList.size(), nodeList.data(), 0, *comm_);
       Teuchos::RCP<Epetra_MultiVector> nodal_test_coordinates =
           test_discretization_->build_node_coordinates(node_row_map);
 
@@ -126,7 +126,7 @@ namespace
     {
       std::array<int, 3> nodeList{50, 62, 114};  // random GIDs
       Teuchos::RCP<Epetra_Map> node_row_map =
-          Teuchos::rcp(new Epetra_Map(-1, nodeList.size(), nodeList.data(), 0, *comm_));
+          Teuchos::make_rcp<Epetra_Map>(-1, nodeList.size(), nodeList.data(), 0, *comm_);
       Teuchos::RCP<Epetra_MultiVector> nodal_test_coordinates =
           test_discretization_->build_node_coordinates(node_row_map);
 

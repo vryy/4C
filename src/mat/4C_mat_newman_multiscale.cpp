@@ -32,7 +32,7 @@ Mat::PAR::NewmanMultiScale::NewmanMultiScale(const Core::Mat::PAR::Parameter::Da
  *--------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::NewmanMultiScale::create_material()
 {
-  return Teuchos::rcp(new Mat::NewmanMultiScale(this));
+  return Teuchos::make_rcp<Mat::NewmanMultiScale>(this);
 }
 
 

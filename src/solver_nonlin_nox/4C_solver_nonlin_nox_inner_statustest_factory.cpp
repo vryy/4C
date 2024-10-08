@@ -113,10 +113,10 @@ NOX::Nln::Inner::StatusTest::Factory::build_armijo_test(
 
   Teuchos::RCP<NOX::Nln::Inner::StatusTest::Armijo> status_test = Teuchos::null;
   if (isMonotone)
-    status_test = Teuchos::rcp(new NOX::Nln::Inner::StatusTest::Armijo(c_1));
+    status_test = Teuchos::make_rcp<NOX::Nln::Inner::StatusTest::Armijo>(c_1);
   else
     status_test =
-        Teuchos::rcp(new NOX::Nln::Inner::StatusTest::Armijo(c_1, isMonotone, maxHistSize));
+        Teuchos::make_rcp<NOX::Nln::Inner::StatusTest::Armijo>(c_1, isMonotone, maxHistSize);
 
   return status_test;
 }
@@ -142,7 +142,7 @@ NOX::Nln::Inner::StatusTest::Factory::build_filter_test(
 
     // build infeasibility function object
     infeasibility_vec.push_back(
-        Teuchos::rcp(new NOX::Nln::MeritFunction::Infeasibility(p_infeasibility, u)));
+        Teuchos::make_rcp<NOX::Nln::MeritFunction::Infeasibility>(p_infeasibility, u));
 
     /// clear and increase infeasibility function count string
     infeasibility_count.str("");
@@ -198,7 +198,7 @@ NOX::Nln::Inner::StatusTest::Factory::build_filter_test(
   }
 
   Teuchos::RCP<NOX::Nln::Inner::StatusTest::Filter> status_test_ptr =
-      Teuchos::rcp(new NOX::Nln::Inner::StatusTest::Filter(fparams, u));
+      Teuchos::make_rcp<NOX::Nln::Inner::StatusTest::Filter>(fparams, u);
 
   return status_test_ptr;
 }
@@ -247,7 +247,7 @@ NOX::Nln::Inner::StatusTest::Factory::build_upper_bound_test(
   }
 
   Teuchos::RCP<NOX::Nln::Inner::StatusTest::UpperBound> status_test =
-      Teuchos::rcp(new NOX::Nln::Inner::StatusTest::UpperBound(upperboundval, norm_type, qtype));
+      Teuchos::make_rcp<NOX::Nln::Inner::StatusTest::UpperBound>(upperboundval, norm_type, qtype);
 
   return status_test;
 }
@@ -272,7 +272,7 @@ NOX::Nln::Inner::StatusTest::Factory::build_combo_test(Teuchos::ParameterList& p
               ::NOX::StatusTest::Combo::AND, ::NOX::StatusTest::Combo::OR));
 
   Teuchos::RCP<NOX::Nln::Inner::StatusTest::Combo> combo_test =
-      Teuchos::rcp(new NOX::Nln::Inner::StatusTest::Combo(combo_type, &u));
+      Teuchos::make_rcp<NOX::Nln::Inner::StatusTest::Combo>(combo_type, &u);
 
   int i = 0;
   std::ostringstream subtest_name;
@@ -342,7 +342,7 @@ NOX::Nln::Inner::StatusTest::Factory::build_volume_change_test(
   vcparams.upper_bound_ = p.get<double>("Upper Bound", 2.0);
   vcparams.lower_bound_ = p.get<double>("Lower Bound", 0.5);
 
-  return Teuchos::rcp(new VolumeChange(vcparams, u));
+  return Teuchos::make_rcp<VolumeChange>(vcparams, u);
 }
 
 FOUR_C_NAMESPACE_CLOSE

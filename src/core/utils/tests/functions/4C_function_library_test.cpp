@@ -28,7 +28,7 @@ namespace
       setup_template_csv_file(csv_template_file_name);
 
       cubic_spline_from_csv_ =
-          Teuchos::rcp(new Core::UTILS::CubicSplineFromCSV(csv_template_file_name));
+          Teuchos::make_rcp<Core::UTILS::CubicSplineFromCSV>(csv_template_file_name);
     }
 
     void setup_template_csv_file(const std::string& csv_template_file_name) const

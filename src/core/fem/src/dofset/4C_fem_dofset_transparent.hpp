@@ -45,7 +45,7 @@ namespace Core::DOFSets
 
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> clone() override { return Teuchos::rcp(new TransparentDofSet(*this)); }
+    Teuchos::RCP<DofSet> clone() override { return Teuchos::make_rcp<TransparentDofSet>(*this); }
 
     /// Assign dof numbers to all elements and nodes of the discretization.
     int assign_degrees_of_freedom(

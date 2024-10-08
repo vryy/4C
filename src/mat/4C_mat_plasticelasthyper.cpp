@@ -86,7 +86,7 @@ Mat::PAR::PlasticElastHyper::PlasticElastHyper(const Core::Mat::PAR::Parameter::
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticElastHyper::create_material()
 {
-  return Teuchos::rcp(new Mat::PlasticElastHyper(this));
+  return Teuchos::make_rcp<Mat::PlasticElastHyper>(this);
 }
 
 
@@ -309,14 +309,14 @@ void Mat::PlasticElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
   else
   {
     int ngp = last_alpha_isotropic_.size();
-    HepDiss_ = Teuchos::rcp(new std::vector<double>(ngp, 0.0));
+    HepDiss_ = Teuchos::make_rcp<std::vector<double>>(ngp, 0.0);
     int numdofperelement = extract_int(buffer);
-    dHepDissdd_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseVector>(
-        ngp, Core::LinAlg::SerialDenseVector(numdofperelement)));
-    dHepDissdT_ = Teuchos::rcp(new std::vector<double>(ngp, 0.0));
+    dHepDissdd_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseVector>>(
+        ngp, Core::LinAlg::SerialDenseVector(numdofperelement));
+    dHepDissdT_ = Teuchos::make_rcp<std::vector<double>>(ngp, 0.0);
     if (tsi_eas)
-      dHepDissdTeas_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseVector>(
-          ngp, Core::LinAlg::SerialDenseVector(numdofperelement / 3)));
+      dHepDissdTeas_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseVector>>(
+          ngp, Core::LinAlg::SerialDenseVector(numdofperelement / 3));
   }
 
   // dissipation mode
@@ -398,13 +398,13 @@ void Mat::PlasticElastHyper::setup_tsi(const int numgp, const int numdofpereleme
   set_dissipation_mode(mode);
 
   // allocate memory
-  HepDiss_ = Teuchos::rcp(new std::vector<double>(numgp, 0.0));
-  dHepDissdd_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseVector>(
-      numgp, Core::LinAlg::SerialDenseVector(numdofperelement)));
-  dHepDissdT_ = Teuchos::rcp(new std::vector<double>(numgp, 0.0));
+  HepDiss_ = Teuchos::make_rcp<std::vector<double>>(numgp, 0.0);
+  dHepDissdd_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseVector>>(
+      numgp, Core::LinAlg::SerialDenseVector(numdofperelement));
+  dHepDissdT_ = Teuchos::make_rcp<std::vector<double>>(numgp, 0.0);
   if (eas)
-    dHepDissdTeas_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseVector>(
-        numgp, Core::LinAlg::SerialDenseVector(numdofperelement / 3)));
+    dHepDissdTeas_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseVector>>(
+        numgp, Core::LinAlg::SerialDenseVector(numdofperelement / 3));
 
   // no TSI with kinematic hardening yet
   // be aware that in that case, another dependency of the NCP function on the

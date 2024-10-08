@@ -283,7 +283,7 @@ void BEAMINTERACTION::BeamLinkRigidJointed::reset_state(
 Teuchos::RCP<BEAMINTERACTION::BeamLinkRigidJointed> BEAMINTERACTION::BeamLinkRigidJointed::create()
 {
   // for now, we always use a 2-noded linear Reissner element
-  return Teuchos::rcp(new BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed());
+  return Teuchos::make_rcp<BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed>();
 }
 
 /*----------------------------------------------------------------------------*

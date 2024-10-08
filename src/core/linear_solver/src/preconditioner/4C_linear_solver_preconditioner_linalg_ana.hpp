@@ -181,7 +181,7 @@ namespace Core::LinAlg
 
       Teuchos::RCP<LightWeightOperatorBase> clone() const override
       {
-        return Teuchos::rcp(new LightWeightOperator(*this));
+        return Teuchos::make_rcp<LightWeightOperator>(*this);
       }
 
 
@@ -243,7 +243,7 @@ namespace Core::LinAlg
 
       Teuchos::RCP<LightWeightOperatorBase> clone() const override
       {
-        return Teuchos::rcp(new OperatorTransposed(*this));
+        return Teuchos::make_rcp<OperatorTransposed>(*this);
       }
 
       int set_use_transpose(bool UseTranspose) override
@@ -320,7 +320,7 @@ namespace Core::LinAlg
 
       Teuchos::RCP<LightWeightOperatorBase> clone() const override
       {
-        return Teuchos::rcp(new OperatorScaled(*this));
+        return Teuchos::make_rcp<OperatorScaled>(*this);
       }
 
       int set_use_transpose(bool UseTranspose) override
@@ -397,7 +397,7 @@ namespace Core::LinAlg
 
       Teuchos::RCP<LightWeightOperatorBase> clone() const override
       {
-        return Teuchos::rcp(new OperatorProduct(*this));
+        return Teuchos::make_rcp<OperatorProduct>(*this);
       }
 
       int set_use_transpose(bool UseTranspose) override
@@ -483,7 +483,7 @@ namespace Core::LinAlg
 
       Teuchos::RCP<LightWeightOperatorBase> clone() const override
       {
-        return Teuchos::rcp(new OperatorSum(*this));
+        return Teuchos::make_rcp<OperatorSum>(*this);
       }
 
       int set_use_transpose(bool UseTranspose) override
@@ -581,8 +581,8 @@ namespace Core::LinAlg
                   Teuchos::ParameterList solvparams;
                   Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
                       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-                  return Teuchos::rcp(new Core::LinAlg::Solver(
-                      solvparams, op.Comm(), nullptr, Core::IO::Verbositylevel::standard));
+                  return Teuchos::make_rcp<Core::LinAlg::Solver>(
+                      solvparams, op.Comm(), nullptr, Core::IO::Verbositylevel::standard);
                 })),
             solver_(*defaultsolver_),
             op_(op)
@@ -597,8 +597,8 @@ namespace Core::LinAlg
                   Teuchos::ParameterList solvparams;
                   Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
                       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
-                  return Teuchos::rcp(new Core::LinAlg::Solver(
-                      solvparams, op.Comm(), nullptr, Core::IO::Verbositylevel::standard));
+                  return Teuchos::make_rcp<Core::LinAlg::Solver>(
+                      solvparams, op.Comm(), nullptr, Core::IO::Verbositylevel::standard);
                 })),
             solver_(*defaultsolver_),
             op_(*(const_cast<Core::LinAlg::SparseOperator&>(op).epetra_operator()))
@@ -617,7 +617,7 @@ namespace Core::LinAlg
 
       Teuchos::RCP<LightWeightOperatorBase> clone() const override
       {
-        return Teuchos::rcp(new OperatorInverse(*this));
+        return Teuchos::make_rcp<OperatorInverse>(*this);
       }
 
       int set_use_transpose(bool UseTranspose) override

@@ -95,11 +95,11 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
   // make sure we set up everything properly
   heterogeneous_reaction_sanity_check();
 
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(scatratimint_->discretization()->get_comm().Clone());
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(scatratimint_->discretization()->get_comm().Clone());
 
   // standard case
-  discret_ = Teuchos::rcp(new Core::FE::Discretization(
-      scatratimint_->discretization()->name(), com, Global::Problem::instance()->n_dim()));
+  discret_ = Teuchos::make_rcp<Core::FE::Discretization>(
+      scatratimint_->discretization()->name(), com, Global::Problem::instance()->n_dim());
 
   // call complete without assigning degrees of freedom
   discret_->fill_complete(false, true, false);
@@ -138,8 +138,8 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
     // slave side is supposed to be the surface discretization
     //
     Teuchos::RCP<Core::DOFSets::DofSetMergedWrapper> newdofset =
-        Teuchos::rcp(new Core::DOFSets::DofSetMergedWrapper(scatradis->get_dof_set_proxy(),
-            scatradis, "ScatraHeteroReactionMaster", "ScatraHeteroReactionSlave"));
+        Teuchos::make_rcp<Core::DOFSets::DofSetMergedWrapper>(scatradis->get_dof_set_proxy(),
+            scatradis, "ScatraHeteroReactionMaster", "ScatraHeteroReactionSlave");
 
     // assign the dofset to the reaction discretization
     discret_->replace_dof_set(newdofset, false);
@@ -148,8 +148,8 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
     for (int ndofset = 1; ndofset < scatratimint_->discretization()->num_dof_sets(); ++ndofset)
     {
       Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> gidmatchingdofset =
-          Teuchos::rcp(new Core::DOFSets::DofSetGIDBasedWrapper(scatratimint_->discretization(),
-              scatratimint_->discretization()->get_dof_set_proxy(ndofset)));
+          Teuchos::make_rcp<Core::DOFSets::DofSetGIDBasedWrapper>(scatratimint_->discretization(),
+              scatratimint_->discretization()->get_dof_set_proxy(ndofset));
       discret_->add_dof_set(gidmatchingdofset);
     }
 

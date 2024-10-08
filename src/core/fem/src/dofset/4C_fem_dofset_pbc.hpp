@@ -74,7 +74,7 @@ namespace Core::DOFSets
     int min_all_gid() const override;
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> clone() override { return Teuchos::rcp(new PBCDofSet(*this)); }
+    Teuchos::RCP<DofSet> clone() override { return Teuchos::make_rcp<PBCDofSet>(*this); }
 
     /// Assign dof numbers using all elements and nodes of the discretization.
     int assign_degrees_of_freedom(

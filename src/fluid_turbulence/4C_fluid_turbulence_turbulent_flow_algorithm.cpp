@@ -36,7 +36,7 @@ FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(
   }
   // initialize fluid algorithm
   // this is the first and main fluid algorithm
-  fluidalgo_ = Teuchos::rcp(new Adapter::FluidBaseAlgorithm(fdyn, fdyn, "fluid", false));
+  fluidalgo_ = Teuchos::make_rcp<Adapter::FluidBaseAlgorithm>(fdyn, fdyn, "fluid", false);
 
   // get the compete fluid discretization
   fluiddis_ = fluidalgo_->fluid_field()->discretization();
@@ -48,7 +48,7 @@ FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(
   }
   // build extra discretization for turbulent inflow generation
   inflowgenerator_ =
-      Teuchos::rcp(new FluidDiscretExtractor(fluiddis_, "TurbulentInflowSection", true));
+      Teuchos::make_rcp<FluidDiscretExtractor>(fluiddis_, "TurbulentInflowSection", true);
   // and get this discretization
   inflowdis_ = inflowgenerator_->get_child_discretization();
 
@@ -64,7 +64,7 @@ FLD::TurbulentFlowAlgorithm::TurbulentFlowAlgorithm(
 
   // initialize fluid inflow algorithm
   // this is a second fluid algorithm
-  inflowfluidalgo_ = Teuchos::rcp(new Adapter::FluidBaseAlgorithm(fdyn, inflowdis_));
+  inflowfluidalgo_ = Teuchos::make_rcp<Adapter::FluidBaseAlgorithm>(fdyn, inflowdis_);
 
   return;
 }

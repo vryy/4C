@@ -81,28 +81,28 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
   check_init();
 
   // build a new data container to manage beam interaction parameters
-  beam_interaction_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionParams());
+  beam_interaction_params_ptr_ = Teuchos::make_rcp<BEAMINTERACTION::BeamInteractionParams>();
   beam_interaction_params_ptr_->init();
   beam_interaction_params_ptr_->setup();
 
   // build a new data container to manage geometric search parameters
-  geometric_search_params_ptr_ = Teuchos::rcp(new Core::GeometricSearch::GeometricSearchParams(
+  geometric_search_params_ptr_ = Teuchos::make_rcp<Core::GeometricSearch::GeometricSearchParams>(
       Global::Problem::instance()->geometric_search_params(),
-      Global::Problem::instance()->io_params()));
+      Global::Problem::instance()->io_params());
   if (beam_interaction_params_ptr_->get_search_strategy() ==
           Inpar::BEAMINTERACTION::SearchStrategy::bounding_volume_hierarchy &&
       geometric_search_params_ptr_->get_write_visualization_flag())
   {
     geometric_search_visualization_ptr_ =
-        Teuchos::rcp(new Core::GeometricSearch::GeometricSearchVisualization(
+        Teuchos::make_rcp<Core::GeometricSearch::GeometricSearchVisualization>(
             Core::IO::visualization_parameters_factory(
                 Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
                 *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
-            discret_ptr()->get_comm(), "beam-interaction-geometric-search"));
+            discret_ptr()->get_comm(), "beam-interaction-geometric-search");
   }
 
   // build a new data container to manage beam contact parameters
-  beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
+  beam_contact_params_ptr_ = Teuchos::make_rcp<BEAMINTERACTION::BeamContactParams>();
 
   // build runtime visualization writer if desired
   if (Global::Problem::instance()
@@ -162,13 +162,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
             ->get_output_flag())
     {
       beam_to_solid_volume_meshtying_visualization_output_writer_ptr_ =
-          Teuchos::rcp<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>(
-              new BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter(
-                  Core::IO::visualization_parameters_factory(
-                      Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
-                      *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
-                  beam_contact_params_ptr_->beam_to_solid_volume_meshtying_params()
-                      ->get_visualization_output_params_ptr()));
+          Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>(
+
+              Core::IO::visualization_parameters_factory(
+                  Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+                  *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
+              beam_contact_params_ptr_->beam_to_solid_volume_meshtying_params()
+                  ->get_visualization_output_params_ptr());
     }
   }
 
@@ -190,13 +190,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
             ->get_output_flag())
     {
       beam_to_solid_surface_visualization_output_writer_ptr_ =
-          Teuchos::rcp<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>(
-              new BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter(
-                  Core::IO::visualization_parameters_factory(
-                      Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
-                      *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
-                  beam_contact_params_ptr_->beam_to_solid_surface_meshtying_params()
-                      ->get_visualization_output_params_ptr()));
+          Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>(
+
+              Core::IO::visualization_parameters_factory(
+                  Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+                  *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
+              beam_contact_params_ptr_->beam_to_solid_surface_meshtying_params()
+                  ->get_visualization_output_params_ptr());
     }
   }
 
@@ -218,18 +218,19 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
             ->get_output_flag())
     {
       beam_to_solid_surface_visualization_output_writer_contact_ptr_ =
-          Teuchos::rcp<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriterContact>(
-              new BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriterContact(
-                  Core::IO::visualization_parameters_factory(
-                      Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
-                      *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
-                  beam_contact_params_ptr_->beam_to_solid_surface_contact_params()
-                      ->get_visualization_output_params_ptr()));
+          Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriterContact>(
+
+              Core::IO::visualization_parameters_factory(
+                  Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
+                  *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
+              beam_contact_params_ptr_->beam_to_solid_surface_contact_params()
+                  ->get_visualization_output_params_ptr());
     }
   }
 
   // Build the container to manage beam-to-solid conditions and get all coupling conditions.
-  beam_interaction_conditions_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamInteractionConditions());
+  beam_interaction_conditions_ptr_ =
+      Teuchos::make_rcp<BEAMINTERACTION::BeamInteractionConditions>();
   beam_interaction_conditions_ptr_->set_beam_interaction_conditions(
       discret_ptr(), beam_contact_params_ptr_);
 
@@ -473,11 +474,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_output_runtime_beam_c
 {
   check_init();
 
-  visualization_manager_ptr_ = Teuchos::rcp(
-      new Core::IO::VisualizationManager(beam_contact_params()
-                                             .beam_contact_runtime_visualization_output_params()
-                                             ->get_visualization_parameters(),
-          discret().get_comm(), "beam-contact"));
+  visualization_manager_ptr_ = Teuchos::make_rcp<Core::IO::VisualizationManager>(
+      beam_contact_params()
+          .beam_contact_runtime_visualization_output_params()
+          ->get_visualization_parameters(),
+      discret().get_comm(), "beam-contact");
 }
 
 /*----------------------------------------------------------------------------*
@@ -1043,9 +1044,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
   // Create the needed assembly manager.
   if (global_direct_pairs > 0)
     assembly_managers_.push_back(
-        Teuchos::rcp<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(
-            new BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect(
-                assembly_pairs_direct)));
+        Teuchos::make_rcp<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect>(
+
+            assembly_pairs_direct));
 
   // Each indirect assembly manager depends on a beam interaction.
   beam_interaction_conditions_ptr_->create_indirect_assembly_managers(

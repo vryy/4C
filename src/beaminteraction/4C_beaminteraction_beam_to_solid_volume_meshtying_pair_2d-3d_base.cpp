@@ -37,7 +37,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<ScalarType, Beam,
     FOUR_C_THROW(
         "The 2D-3D beam-to-volume mesh tying pair only works with the cross section projection "
         "geometry pair. This has to be specified in the input file.");
-  this->geometry_pair_ = Teuchos::rcp(
+  this->geometry_pair_ = Teuchos::RCP(
       new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, Beam,
           Solid>(element1, element2, line_to_3d_evaluation_data));
 }

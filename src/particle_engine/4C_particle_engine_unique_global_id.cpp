@@ -48,7 +48,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::write_restart(
 
   // write reusable global ids
   {
-    Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
+    Teuchos::RCP<std::vector<char>> buffer = Teuchos::make_rcp<std::vector<char>>();
 
     Core::Communication::PackBuffer data;
     add_to_pack(data, reusableglobalids_);
@@ -67,7 +67,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::read_restart(
 
   // get reusable global ids from restart
   {
-    Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
+    Teuchos::RCP<std::vector<char>> buffer = Teuchos::make_rcp<std::vector<char>>();
 
     reader->read_char_vector(buffer, objectname_ + "reusableglobalids");
 

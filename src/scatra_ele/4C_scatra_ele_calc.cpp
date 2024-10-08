@@ -41,13 +41,13 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
       scatrapara_(Discret::ELEMENTS::ScaTraEleParameterStd::instance(disname)),
       turbparams_(Discret::ELEMENTS::ScaTraEleParameterTurbulence::instance(disname)),
       scatraparatimint_(Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(disname)),
-      diffmanager_(Teuchos::rcp(new ScaTraEleDiffManager(numscal_))),
-      reamanager_(Teuchos::rcp(new ScaTraEleReaManager(numscal_))),
+      diffmanager_(Teuchos::make_rcp<ScaTraEleDiffManager>(numscal_)),
+      reamanager_(Teuchos::make_rcp<ScaTraEleReaManager>(numscal_)),
       ephin_(numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true)),
       ephinp_(numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true)),
       ehist_(numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true)),
       fsphinp_(numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true)),
-      rotsymmpbc_(Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1,
+      rotsymmpbc_(Teuchos::RCP(new FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1,
           Discret::ELEMENTS::Fluid::none>())),
       evelnp_(true),
       econvelnp_(true),
@@ -71,7 +71,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
       myknots_(nsd_),
       eid_(0),
       ele_(nullptr),
-      scatravarmanager_(Teuchos::rcp(new ScaTraEleInternalVariableManager<nsd_, nen_>(numscal_)))
+      scatravarmanager_(Teuchos::make_rcp<ScaTraEleInternalVariableManager<nsd_, nen_>>(numscal_))
 {
   FOUR_C_ASSERT(
       nsd_ >= nsd_ele_, "problem dimension has to be equal or larger than the element dimension!");

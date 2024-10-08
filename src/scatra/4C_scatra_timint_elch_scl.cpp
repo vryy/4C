@@ -72,7 +72,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
   auto* problem = Global::Problem::instance();
 
   auto sdyn_micro =
-      Teuchos::rcp(new Teuchos::ParameterList(problem->scalar_transport_dynamic_params()));
+      Teuchos::make_rcp<Teuchos::ParameterList>(problem->scalar_transport_dynamic_params());
 
   std::string initial_field_type;
   switch (Teuchos::getIntegralValue<Inpar::ScaTra::InitialField>(
@@ -94,12 +94,12 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
   sdyn_micro->set("INITIALFIELD", initial_field_type);
   sdyn_micro->set("INITFUNCNO", elchparams_->sublist("SCL").get<int>("INITFUNCNO"));
 
-  micro_timint_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(*sdyn_micro, *sdyn_micro,
-      problem->solver_params(sdyn_micro->get<int>("LINEAR_SOLVER")), "scatra_micro", false));
+  micro_timint_ = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(*sdyn_micro, *sdyn_micro,
+      problem->solver_params(sdyn_micro->get<int>("LINEAR_SOLVER")), "scatra_micro", false);
 
   micro_timint_->init();
 
-  auto dofset_vel = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(3, 0, 0, true));
+  auto dofset_vel = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(3, 0, 0, true);
   if (micro_timint_->scatra_field()->discretization()->add_dof_set(dofset_vel) != 1)
     FOUR_C_THROW("unexpected number of dofsets in the scatra micro discretization");
   micro_scatra_field()->set_number_of_dof_set_velocity(1);
@@ -131,7 +131,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
       break;
   }
   full_block_map_elch_scl_ =
-      Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*full_map_elch_scl_, block_map_vec_scl));
+      Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>(*full_map_elch_scl_, block_map_vec_scl);
 
   // setup matrix, rhs, and increment for coupled problem
   increment_elch_scl_ = Core::LinAlg::create_vector(*full_map_elch_scl_, true);
@@ -145,8 +145,8 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
       const int expected_entries_per_row = 27;
       const bool explicitdirichlet = false;
       const bool savegraph = true;
-      system_matrix_elch_scl_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-          *full_map_elch_scl_, expected_entries_per_row, explicitdirichlet, savegraph));
+      system_matrix_elch_scl_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+          *full_map_elch_scl_, expected_entries_per_row, explicitdirichlet, savegraph);
       break;
     }
     case Core::LinAlg::MatrixType::block_field:
@@ -154,10 +154,11 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
       const int expected_entries_per_row = 81;
       const bool explicitdirichlet = false;
       const bool savegraph = true;
-      system_matrix_elch_scl_ = Teuchos::rcp(
-          new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *full_block_map_elch_scl_, *full_block_map_elch_scl_, expected_entries_per_row,
-              explicitdirichlet, savegraph));
+      system_matrix_elch_scl_ = Teuchos::make_rcp<
+          Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+
+          *full_block_map_elch_scl_, *full_block_map_elch_scl_, expected_entries_per_row,
+          explicitdirichlet, savegraph);
       break;
     }
     default:
@@ -166,18 +167,18 @@ void ScaTra::ScaTraTimIntElchSCL::setup()
   }
 
   // extractor to get micro or macro dofs from global vector
-  macro_micro_dofs_ = Teuchos::rcp(
-      new Core::LinAlg::MapExtractor(*full_map_elch_scl_, micro_scatra_field()->dof_row_map()));
+  macro_micro_dofs_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+      *full_map_elch_scl_, micro_scatra_field()->dof_row_map());
 
   dbcmaps_elch_scl_ =
-      Teuchos::rcp(new Core::LinAlg::MapExtractor(*full_map_elch_scl_, dbcmaps_->cond_map()));
+      Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*full_map_elch_scl_, dbcmaps_->cond_map());
 
   // setup solver for coupled problem
-  solver_elch_scl_ = Teuchos::rcp(new Core::LinAlg::Solver(
+  solver_elch_scl_ = Teuchos::make_rcp<Core::LinAlg::Solver>(
       problem->solver_params(elchparams_->sublist("SCL").get<int>("SOLVER")), discret_->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::instance()->io_params(), "VERBOSITY")));
+          Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   switch (matrixtype_elch_scl_)
   {
@@ -366,7 +367,7 @@ void ScaTra::ScaTraTimIntElchSCL::copy_solution_to_micro_field()
  *----------------------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElchSCL::create_meshtying_strategy()
 {
-  strategy_ = Teuchos::rcp(new MeshtyingStrategyS2IElchSCL(this, *params_));
+  strategy_ = Teuchos::make_rcp<MeshtyingStrategyS2IElchSCL>(this, *params_);
 }
 
 /*----------------------------------------------------------------------------------------*
@@ -753,16 +754,16 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
         glob_macro_micro_coupled_node_gids, glob_macro_slave_node_master_node_gids);
 
   // setup Epetra maps for coupled nodes
-  auto master_node_map = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
-      -1, static_cast<int>(my_macro_node_gids.size()), &my_macro_node_gids[0], 0, comm));
-  auto slave_node_map = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
-      -1, static_cast<int>(my_micro_node_gids.size()), &my_micro_node_gids[0], 0, comm));
-  auto perm_slave_node_map = Teuchos::rcp<Epetra_Map>(
-      new Epetra_Map(-1, static_cast<int>(my_micro_permuted_node_gids.size()),
-          &my_micro_permuted_node_gids[0], 0, comm));
+  auto master_node_map = Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(my_macro_node_gids.size()), &my_macro_node_gids[0], 0, comm);
+  auto slave_node_map = Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(my_micro_node_gids.size()), &my_micro_node_gids[0], 0, comm);
+  auto perm_slave_node_map =
+      Teuchos::make_rcp<Epetra_Map>(-1, static_cast<int>(my_micro_permuted_node_gids.size()),
+          &my_micro_permuted_node_gids[0], 0, comm);
 
   // setup coupling adapter between micro (slave) and macro (master) for all dof of the nodes
-  auto macro_micro_coupling_adapter_temp = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  auto macro_micro_coupling_adapter_temp = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
   macro_micro_coupling_adapter_temp->setup_coupling(*discret_, *microdis, *master_node_map,
       *slave_node_map, *perm_slave_node_map, num_dof_per_node());
 
@@ -806,25 +807,25 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
     }
   }
 
-  auto slave_dof_map = Teuchos::rcp<Epetra_Map>(
-      new Epetra_Map(-1, static_cast<int>(my_slave_dofs.size()), &my_slave_dofs[0], 0, comm));
-  auto perm_slave_dof_map = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
-      -1, static_cast<int>(my_perm_slave_dofs.size()), &my_perm_slave_dofs[0], 0, comm));
-  auto master_dof_map = Teuchos::rcp<Epetra_Map>(
-      new Epetra_Map(-1, static_cast<int>(my_master_dofs.size()), &my_master_dofs[0], 0, comm));
-  auto perm_master_dof_map = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
-      -1, static_cast<int>(my_perm_master_dofs.size()), &my_perm_master_dofs[0], 0, comm));
+  auto slave_dof_map = Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(my_slave_dofs.size()), &my_slave_dofs[0], 0, comm);
+  auto perm_slave_dof_map = Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(my_perm_slave_dofs.size()), &my_perm_slave_dofs[0], 0, comm);
+  auto master_dof_map = Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(my_master_dofs.size()), &my_master_dofs[0], 0, comm);
+  auto perm_master_dof_map = Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(my_perm_master_dofs.size()), &my_perm_master_dofs[0], 0, comm);
 
 
-  macro_micro_coupling_adapter_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  macro_micro_coupling_adapter_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
   macro_micro_coupling_adapter_->setup_coupling(
       slave_dof_map, perm_slave_dof_map, master_dof_map, perm_master_dof_map);
 
-  macro_coupling_dofs_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
-      *dof_row_map(), macro_micro_coupling_adapter_->master_dof_map()));
+  macro_coupling_dofs_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+      *dof_row_map(), macro_micro_coupling_adapter_->master_dof_map());
 
-  micro_coupling_dofs_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
-      *microdis->dof_row_map(), macro_micro_coupling_adapter_->slave_dof_map()));
+  micro_coupling_dofs_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+      *microdis->dof_row_map(), macro_micro_coupling_adapter_->slave_dof_map());
 
   // setup relation between first node of micro sub problem and following nodes. This is required
   // for scaling (see scale_micro_problem())
@@ -945,8 +946,8 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
 
       sparse_systemmatrix->add(*system_matrix(), false, 1.0, 1.0);
 
-      auto micro_side_converter = Teuchos::rcp(
-          new Coupling::Adapter::CouplingSlaveConverter(*macro_micro_coupling_adapter_));
+      auto micro_side_converter = Teuchos::make_rcp<Coupling::Adapter::CouplingSlaveConverter>(
+          *macro_micro_coupling_adapter_);
 
       // micro: interior - interior
       Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
@@ -976,8 +977,8 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
 
       block_systemmatrix->matrix(0, 0).add(*system_matrix(), false, 1.0, 1.0);
 
-      auto micro_side_converter = Teuchos::rcp(
-          new Coupling::Adapter::CouplingSlaveConverter(*macro_micro_coupling_adapter_));
+      auto micro_side_converter = Teuchos::make_rcp<Coupling::Adapter::CouplingSlaveConverter>(
+          *macro_micro_coupling_adapter_);
 
       // micro: interior - interior
       Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
@@ -1077,11 +1078,11 @@ void ScaTra::ScaTraTimIntElchSCL::redistribute_micro_discretization()
   if (myPID > 0) my_col_nodes.emplace_back(my_row_nodes[0] - 1);
   if (myPID < num_proc - 1) my_col_nodes.emplace_back(my_row_nodes.back() + 1);
 
-  auto new_node_row_map = Teuchos::rcp<Epetra_Map>(new Epetra_Map(num_nodes,
-      static_cast<int>(my_row_nodes.size()), &my_row_nodes[0], 0, micro_dis->get_comm()));
+  auto new_node_row_map = Teuchos::make_rcp<Epetra_Map>(
+      num_nodes, static_cast<int>(my_row_nodes.size()), &my_row_nodes[0], 0, micro_dis->get_comm());
 
-  auto new_node_col_map = Teuchos::rcp<Epetra_Map>(new Epetra_Map(
-      -1, static_cast<int>(my_col_nodes.size()), &my_col_nodes[0], 0, micro_dis->get_comm()));
+  auto new_node_col_map = Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(my_col_nodes.size()), &my_col_nodes[0], 0, micro_dis->get_comm());
 
   micro_dis->redistribute(*new_node_row_map, *new_node_col_map, true, true, true);
 }
@@ -1275,8 +1276,8 @@ void ScaTra::ScaTraTimIntElchSCL::calc_initial_potential_field()
 
 Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::ScaTraTimIntElchSCL::create_micro_field_test()
 {
-  return Teuchos::rcp(new ScaTra::ElchResultTest(
-      Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(micro_scatra_field())));
+  return Teuchos::make_rcp<ScaTra::ElchResultTest>(
+      Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(micro_scatra_field()));
 }
 
 /*----------------------------------------------------------------------*
