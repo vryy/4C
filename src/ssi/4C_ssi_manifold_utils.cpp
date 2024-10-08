@@ -652,7 +652,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_scatra_manifold_domain_int
     auto domainintegral_cond = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(1);
 
     scatra_->scatra_field()->discretization()->evaluate_scalars(
-        condparams, domainintegral_cond, "SSISurfaceManifold", kineticsID);
+        condparams, *domainintegral_cond, "SSISurfaceManifold", kineticsID);
 
     domainintegral_.insert(std::make_pair(kineticsID, domainintegral_cond->values()[0]));
   }
@@ -679,7 +679,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_scatra_manifold_inflow_int
       scatra_->scatra_field()->num_dof_per_node());
 
   scatra_->scatra_field()->discretization()->evaluate_scalars(
-      condparams, inflow_cond, "SSISurfaceManifold", kineticsID);
+      condparams, *inflow_cond, "SSISurfaceManifold", kineticsID);
 
   for (int i = 0; i < inflow_cond->length(); ++i)
     inflow_.at(kineticsID).at(i) += inflow_cond->values()[i];

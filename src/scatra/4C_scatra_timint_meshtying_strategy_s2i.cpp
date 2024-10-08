@@ -3359,7 +3359,7 @@ void ScaTra::MeshtyingStrategyS2I::output_interface_flux() const
             "action", ScaTra::BoundaryAction::calc_s2icoupling_flux, condparams);
 
         scatratimint_->discretization()->evaluate_scalars(
-            condparams, s2i_flux, "S2IKinetics", condition_id);
+            condparams, *s2i_flux, "S2IKinetics", condition_id);
       }
 
       {
@@ -3371,7 +3371,7 @@ void ScaTra::MeshtyingStrategyS2I::output_interface_flux() const
 
         // compute value of boundary integral
         scatratimint_->discretization()->evaluate_scalars(
-            condparams, boundaryint_vector, "S2IKinetics", condition_id);
+            condparams, *boundaryint_vector, "S2IKinetics", condition_id);
       }
 
       // extract value of boundary integral

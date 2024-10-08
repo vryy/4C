@@ -943,7 +943,7 @@ void PARTICLEENGINE::ParticleEngine::setup_binning_strategy()
   binweights_ = Teuchos::make_rcp<Epetra_MultiVector>(*binrowmap_, 1);
 
   // get all bin centers needed for repartitioning
-  binstrategy_->get_all_bin_centers(binrowmap_, bincenters_);
+  binstrategy_->get_all_bin_centers(*binrowmap_, *bincenters_);
 
   // initialize weights of all bins
   binweights_->PutScalar(1.0e-05);
@@ -952,7 +952,7 @@ void PARTICLEENGINE::ParticleEngine::setup_binning_strategy()
   binstrategy_->distribute_bins_recurs_coord_bisection(binrowmap_, bincenters_, binweights_);
 
   // create bins and fill bins into binning discretization
-  binstrategy_->fill_bins_into_bin_discretization(binrowmap_);
+  binstrategy_->fill_bins_into_bin_discretization(*binrowmap_);
 
   // setup ghosting of bins
   setup_bin_ghosting();

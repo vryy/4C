@@ -283,19 +283,19 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output(
   if (!gmsh_sol_out_) return;
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_vel =
-      Core::Rebalance::get_col_version_of_row_vector(discret_, state->velnp());
+      Core::Rebalance::get_col_version_of_row_vector(*discret_, state->velnp());
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_acc = Teuchos::null;
 
   if (state->accnp() != Teuchos::null)
   {
-    output_col_acc = Core::Rebalance::get_col_version_of_row_vector(discret_, state->accnp());
+    output_col_acc = Core::Rebalance::get_col_version_of_row_vector(*discret_, state->accnp());
   }
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(*discret_, state->dispnp_);
 
 
   // no counter for standard solution output : -1
@@ -314,19 +314,19 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_previous(
   if (!gmsh_ref_sol_out_) return;
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_vel =
-      Core::Rebalance::get_col_version_of_row_vector(discret_, state->veln());
+      Core::Rebalance::get_col_version_of_row_vector(*discret_, state->veln());
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_acc = Teuchos::null;
 
   if (state->accn() != Teuchos::null)
   {
-    output_col_acc = Core::Rebalance::get_col_version_of_row_vector(discret_, state->accn());
+    output_col_acc = Core::Rebalance::get_col_version_of_row_vector(*discret_, state->accn());
   }
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(*discret_, state->dispnp_);
 
 
   const std::string prefix("ref_SOL");
@@ -346,10 +346,10 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_debug(
   Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(*discret_, state->dispnp_);
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_vel =
-      Core::Rebalance::get_col_version_of_row_vector(discret_, state->velnp());
+      Core::Rebalance::get_col_version_of_row_vector(*discret_, state->velnp());
   const std::string prefix("SOL");
   gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_vel, Teuchos::null,
       dispnp_col);
@@ -367,11 +367,11 @@ void FLD::XFluidOutputServiceGmsh::gmsh_residual_output_debug(
   Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(*discret_, state->dispnp_);
 
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_residual =
-      Core::Rebalance::get_col_version_of_row_vector(discret_, state->residual());
+      Core::Rebalance::get_col_version_of_row_vector(*discret_, state->residual());
   const std::string prefix("RES");
   gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_residual,
       Teuchos::null, dispnp_col);
@@ -389,10 +389,10 @@ void FLD::XFluidOutputServiceGmsh::gmsh_increment_output_debug(
   Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_col = Teuchos::null;
 
   if (state->dispnp_ != Teuchos::null)
-    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(discret_, state->dispnp_);
+    dispnp_col = Core::Rebalance::get_col_version_of_row_vector(*discret_, state->dispnp_);
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_incvel =
-      Core::Rebalance::get_col_version_of_row_vector(discret_, state->inc_vel());
+      Core::Rebalance::get_col_version_of_row_vector(*discret_, state->inc_vel());
   const std::string prefix("INC");
   gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_incvel, Teuchos::null,
       dispnp_col);

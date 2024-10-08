@@ -62,9 +62,9 @@ namespace Core::Binstrategy::Utils
    * @param[in] initelements init elements, enters fill_complete call
    * @param[in] doboundaryconditions do boundary conditions, enters fill_complete call
    */
-  void extend_discretization_ghosting(Teuchos::RCP<Core::FE::Discretization> discret,
-      Teuchos::RCP<Epetra_Map> const& extendedelecolmap, bool assigndegreesoffreedom,
-      bool initelements, bool doboundaryconditions);
+  void extend_discretization_ghosting(Core::FE::Discretization& discret,
+      Epetra_Map& extendedelecolmap, bool assigndegreesoffreedom, bool initelements,
+      bool doboundaryconditions);
 
   /*!
    * \brief communicate elements that get a new owner
@@ -72,7 +72,7 @@ namespace Core::Binstrategy::Utils
    * @param[in] discret discretization
    * @param[in] toranktosendeles key: new owner std::vector: elements that are sended to new owner
    */
-  void communicate_elements(Teuchos::RCP<Core::FE::Discretization>& discret,
+  void communicate_elements(Core::FE::Discretization& discret,
       std::map<int, std::vector<Core::Elements::Element*>> const& toranktosendeles);
 
   /*!
@@ -82,8 +82,7 @@ namespace Core::Binstrategy::Utils
    * @param[in] toranktosendbinids sent bin ids (std::vector) to rank (key)
    * @param[out] bintorowelemap
    */
-  void communicate_distribution_of_transferred_elements_to_bins(
-      Teuchos::RCP<Core::FE::Discretization>& discret,
+  void communicate_distribution_of_transferred_elements_to_bins(Core::FE::Discretization& discret,
       std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosendbinids,
       std::map<int, std::set<int>>& bintorowelemap);
 

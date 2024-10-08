@@ -906,9 +906,9 @@ void Thermo::TimInt::set_initial_field(
       std::vector<int> localdofs;
       localdofs.push_back(0);
       discret_->evaluate_initial_field(
-          Global::Problem::instance()->function_manager(), "Temperature", (*temp_)(0), localdofs);
+          Global::Problem::instance()->function_manager(), "Temperature", *(*temp_)(0), localdofs);
       discret_->evaluate_initial_field(
-          Global::Problem::instance()->function_manager(), "Temperature", tempn_, localdofs);
+          Global::Problem::instance()->function_manager(), "Temperature", *tempn_, localdofs);
 
       break;
     }  // initfield_field_by_condition

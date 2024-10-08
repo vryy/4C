@@ -137,8 +137,7 @@ void Core::IO::DiscretizationReader::read_multi_vector(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationReader::read_serial_dense_matrix(
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> mapdata,
-    std::string name)
+    std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& mapdata, std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
   std::string id_path = map_read_string(result, "ids");
@@ -162,7 +161,7 @@ void Core::IO::DiscretizationReader::read_serial_dense_matrix(
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> matrix =
         Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
     extract_from_pack(buffer, *matrix);
-    (*mapdata)[elemap->GID(i)] = matrix;
+    (mapdata)[elemap->GID(i)] = matrix;
   }
 }
 
@@ -190,8 +189,8 @@ void Core::IO::DiscretizationReader::read_mesh(int step)
   // number of elements in dis_
   // the call to redistribute deletes the unnecessary elements,
   // so everything should be OK
-  dis_->unpack_my_nodes(nodedata);
-  dis_->unpack_my_elements(elementdata);
+  dis_->unpack_my_nodes(*nodedata);
+  dis_->unpack_my_elements(*elementdata);
 
   dis_->setup_ghosting(true, false, false);
 
@@ -211,7 +210,7 @@ void Core::IO::DiscretizationReader::read_nodes_only(int step)
       meshreader_->read_node_data(step, get_comm().NumProc(), get_comm().MyPID());
 
   // unpack nodes; fill_complete() has to be called manually
-  dis_->unpack_my_nodes(nodedata);
+  dis_->unpack_my_nodes(*nodedata);
   return;
 }
 
@@ -230,12 +229,12 @@ void Core::IO::DiscretizationReader::read_history_data(int step)
       meshreader_->read_element_data(step, get_comm().NumProc(), get_comm().MyPID());
 
   // before we unpack nodes/elements we store a copy of the nodal row/col map
-  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::make_rcp<Epetra_Map>(*dis_->node_row_map());
-  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::make_rcp<Epetra_Map>(*dis_->node_col_map());
+  Epetra_Map noderowmap(*dis_->node_row_map());
+  Epetra_Map nodecolmap(*dis_->node_col_map());
 
   // before we unpack nodes/elements we store a copy of the nodal row/col map
-  Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::make_rcp<Epetra_Map>(*dis_->element_row_map());
-  Teuchos::RCP<Epetra_Map> elecolmap = Teuchos::make_rcp<Epetra_Map>(*dis_->element_col_map());
+  Epetra_Map elerowmap(*dis_->element_row_map());
+  Epetra_Map elecolmap(*dis_->element_col_map());
 
   // unpack nodes and elements and redistributed to current layout
 
@@ -245,9 +244,9 @@ void Core::IO::DiscretizationReader::read_history_data(int step)
   // number of elements in dis_
   // the call to redistribute deletes the unnecessary elements,
   // so everything should be OK
-  dis_->unpack_my_nodes(nodedata);
-  dis_->unpack_my_elements(elementdata);
-  dis_->redistribute(*noderowmap, *nodecolmap, *elerowmap, *elecolmap);
+  dis_->unpack_my_nodes(*nodedata);
+  dis_->unpack_my_elements(*elementdata);
+  dis_->redistribute(noderowmap, nodecolmap, elerowmap, elecolmap);
   return;
 }
 

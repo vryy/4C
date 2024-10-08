@@ -99,8 +99,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
         masternodes.size(), coupling.size());
 
   // initialize final mapping
-  Teuchos::RCP<Core::LinAlg::Vector<int>> my_master_nodegids_row_layout =
-      Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_row_map());
+  Core::LinAlg::Vector<int> my_master_nodegids_row_layout(*dis.node_row_map());
 
   // loop over all coupled nodes
   for (unsigned i = 0; i < masternodes.size(); ++i)
@@ -119,7 +118,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
       if (slavelid == -1) FOUR_C_THROW("slave gid %d was not found on this proc", slavegid);
 
       // save master gid at col lid of corresponding slave node
-      (*my_master_nodegids_row_layout)[slavelid] = gid;
+      (my_master_nodegids_row_layout)[slavelid] = gid;
     }
   }
 
@@ -127,7 +126,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   master_nodegids_col_layout_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
 
   // export to column map
-  Core::LinAlg::export_to(*my_master_nodegids_row_layout, *master_nodegids_col_layout_);
+  Core::LinAlg::export_to(my_master_nodegids_row_layout, *master_nodegids_col_layout_);
 
 
   ////////////////////////////////////////////////////
@@ -157,8 +156,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
         masternodes.size(), coupling.size());
 
   // initialize final mapping
-  Teuchos::RCP<Core::LinAlg::Vector<int>> my_slave_nodegids_row_layout =
-      Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_row_map());
+  Core::LinAlg::Vector<int> my_slave_nodegids_row_layout(*dis.node_row_map());
 
   // loop over all coupled nodes
   for (unsigned i = 0; i < masternodes.size(); ++i)
@@ -177,7 +175,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
       if (slavelid == -1) FOUR_C_THROW("slave gid %d was not found on this proc", slavegid);
 
       // save master gid at col lid of corresponding slave node
-      (*my_slave_nodegids_row_layout)[slavelid] = gid;
+      (my_slave_nodegids_row_layout)[slavelid] = gid;
     }
   }
 
@@ -185,7 +183,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   slave_nodegids_col_layout_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
 
   // export to column map
-  Core::LinAlg::export_to(*my_slave_nodegids_row_layout, *slave_nodegids_col_layout_);
+  Core::LinAlg::export_to(my_slave_nodegids_row_layout, *slave_nodegids_col_layout_);
 
   // set filled flag true
   filled_ = true;

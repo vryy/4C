@@ -160,8 +160,7 @@ namespace
       // create arbitrary distributed map within each group
       Teuchos::RCP<Epetra_Map> rowmap = Teuchos::make_rcp<Epetra_Map>(
           numberOfElementsToDistribute_, 0, *communicators_->local_comm());
-      Teuchos::RCP<Epetra_Map> colmap = Teuchos::make_rcp<Epetra_Map>(
-          2 * numberOfElementsToDistribute_, 0, *communicators_->local_comm());
+      Epetra_Map colmap(2 * numberOfElementsToDistribute_, 0, *communicators_->local_comm());
       int approximateNumberOfNonZeroesPerRow = 6;
       epetraCrsMatrix_ = Teuchos::make_rcp<Epetra_CrsMatrix>(
           ::Copy, *rowmap, approximateNumberOfNonZeroesPerRow, false);
@@ -211,7 +210,7 @@ namespace
           epetraCrsMatrix_->InsertGlobalValues(rowgid, 6, values, columnIndices);
         }
       }
-      epetraCrsMatrix_->FillComplete(*colmap, *rowmap);
+      epetraCrsMatrix_->FillComplete(colmap, *rowmap);
     }
 
     void TearDown() override { Core::IO::cout.close(); }
@@ -225,7 +224,7 @@ namespace
   TEST_F(SetupCompareParallelVectorsTest, PositiveTestCompareVectors)
   {
     bool success = Core::Communication::are_distributed_vectors_identical(*communicators_,
-        epetraVector_->get_ptr_of_Epetra_MultiVector(),  //
+        *epetraVector_->get_ptr_of_Epetra_MultiVector(),  //
         "epetraVector");
     EXPECT_EQ(success, true);
   }
@@ -238,14 +237,14 @@ namespace
     epetraVector_->ReplaceMyValues(1, &disturbedValue, &lastLocalIndex);
 
     EXPECT_THROW(Core::Communication::are_distributed_vectors_identical(*communicators_,
-                     epetraVector_->get_ptr_of_Epetra_MultiVector(), "epetraVector"),
+                     *epetraVector_->get_ptr_of_Epetra_MultiVector(), "epetraVector"),
         Core::Exception);
   }
 
   TEST_F(SetupCompareParallelMatricesTest, PositiveTestCompareMatrices)
   {
     bool success = Core::Communication::are_distributed_sparse_matrices_identical(
-        *communicators_, epetraCrsMatrix_, "epetraCrsMatrix");
+        *communicators_, *epetraCrsMatrix_, "epetraCrsMatrix");
     EXPECT_EQ(success, true);
   }
 
@@ -259,14 +258,14 @@ namespace
     epetraCrsMatrix_->FillComplete(false);
 
     EXPECT_THROW(Core::Communication::are_distributed_sparse_matrices_identical(
-                     *communicators_, epetraCrsMatrix_, "epetraCrsMatrix"),
+                     *communicators_, *epetraCrsMatrix_, "epetraCrsMatrix"),
         Core::Exception);
   }
 
   TEST_F(SetupCompareParallelRectangularMatricesTest, PositiveTestCompareRectangularMatrices)
   {
     bool success = Core::Communication::are_distributed_sparse_matrices_identical(
-        *communicators_, epetraCrsMatrix_, "rectangularEpetraCrsMatrix");
+        *communicators_, *epetraCrsMatrix_, "rectangularEpetraCrsMatrix");
     EXPECT_EQ(success, true);
   }
 

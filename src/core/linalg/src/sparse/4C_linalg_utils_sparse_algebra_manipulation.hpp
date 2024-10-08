@@ -320,7 +320,7 @@ namespace Core::LinAlg
    *  \param(in) blockSize:         Block size of the Epetra_MultiVector.
    */
   void std_vector_to_epetra_multi_vector(const std::vector<double>& stdVector,
-      Teuchos::RCP<Epetra_MultiVector> epetraMultiVector, const int blockSize);
+      Epetra_MultiVector& epetraMultiVector, const int blockSize);
 
   /*! \brief Write values from a std::vector to a Epetra_MultiVector
    *
@@ -331,7 +331,7 @@ namespace Core::LinAlg
    *  \param(in) stdVector:         A std::vector<double> to read data to.
    *  \param(in) blockSize:         Block size of the Epetra_MultiVector.
    */
-  void epetra_multi_vector_to_std_vector(const Teuchos::RCP<Epetra_MultiVector> epetraMultiVector,
+  void epetra_multi_vector_to_std_vector(const Epetra_MultiVector& epetraMultiVector,
       std::vector<double>& stdVector, const int blockSize);
 
 

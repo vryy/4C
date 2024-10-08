@@ -237,15 +237,15 @@ void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseMatrix& A,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::MapExtractor> Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& dbctoggle)
+    const Core::LinAlg::Vector<double>& dbctoggle)
 {
-  const Epetra_BlockMap& fullblockmap = dbctoggle->Map();
+  const Epetra_BlockMap& fullblockmap = dbctoggle.Map();
   // this copy is needed because the constructor of Core::LinAlg::MapExtractor
   // accepts only Epetra_Map and not Epetra_BlockMap
   const Epetra_Map fullmap =
       Epetra_Map(fullblockmap.NumGlobalElements(), fullblockmap.NumMyElements(),
           fullblockmap.MyGlobalElements(), fullblockmap.IndexBase(), fullblockmap.Comm());
-  const int mylength = dbctoggle->MyLength();
+  const int mylength = dbctoggle.MyLength();
   const int* fullgids = fullmap.MyGlobalElements();
   // build sets containing the DBC or free global IDs, respectively
   std::vector<int> dbcgids;
@@ -253,13 +253,13 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> Core::LinAlg::convert_dirichlet_toggle_
   for (int i = 0; i < mylength; ++i)
   {
     const int gid = fullgids[i];
-    const int compo = (int)round((*dbctoggle)[i]);
+    const int compo = (int)round((dbctoggle)[i]);
     if (compo == 0)
       freegids.push_back(gid);
     else if (compo == 1)
       dbcgids.push_back(gid);
     else
-      FOUR_C_THROW("Unexpected component %f. It is neither 1.0 nor 0.0.", (*dbctoggle)[i]);
+      FOUR_C_THROW("Unexpected component %f. It is neither 1.0 nor 0.0.", (dbctoggle)[i]);
   }
   // build map of Dirichlet DOFs
   Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::null;

@@ -28,7 +28,7 @@ void XFEM::UTILS::extract_node_vectors(Teuchos::RCP<Core::FE::Discretization> di
     Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp)
 {
   Teuchos::RCP<const Core::LinAlg::Vector<double>> dispcol =
-      Core::Rebalance::get_col_version_of_row_vector(dis, idispnp);
+      Core::Rebalance::get_col_version_of_row_vector(*dis, idispnp);
   nodevecmap.clear();
 
   for (int lid = 0; lid < dis->num_my_col_nodes(); ++lid)

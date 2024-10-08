@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void Core::LinearSolver::AMGNxN::GenericSmoother::richardson(Teuchos::RCP<GenericSmoother> Ainv,
+void Core::LinearSolver::AMGNxN::GenericSmoother::richardson(GenericSmoother& Ainv,
     const BlockedMatrix& A, const BlockedVector& X, BlockedVector& Y, int iters, double omega,
     bool InitialGuessIsZero) const
 {
@@ -46,7 +46,7 @@ void Core::LinearSolver::AMGNxN::GenericSmoother::richardson(Teuchos::RCP<Generi
     }
 
     // DY.PutScalar(0.0);
-    Ainv->solve(DX, DY, true);
+    Ainv.solve(DX, DY, true);
 
     if (i != 0 or not InitialGuessIsZero)
       Y.update(omega, DY, 1.0);
@@ -85,7 +85,7 @@ void Core::LinearSolver::AMGNxN::BgsSmoother::solve(
       BlockedVector Yi = Y.get_blocked_vector(superblocks_[i]);
       BlockedVector DYi = Yi.deep_copy();  // TODO we only need a new vector
       BlockedMatrix Aii = a_->get_blocked_matrix(superblocks_[i], superblocks_[i]);
-      richardson(smoothers_[i], Aii, DXi, DYi, iters_[i], omegas_[i], true);
+      richardson(*smoothers_[i], Aii, DXi, DYi, iters_[i], omegas_[i], true);
 
       if (k != 0 or not InitialGuessIsZero)
         Yi.update(omega_, DYi, 1.0);
@@ -2216,23 +2216,22 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix>
 Core::LinearSolver::AMGNxN::SimpleSmootherFactory::approximate_inverse(
     const Core::LinAlg::SparseMatrixBase& A, const std::string& method)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> invAVector =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A.row_map());
+  Core::LinAlg::Vector<double> invAVector(A.row_map());
   if (method == "diagonal")
   {
-    A.extract_diagonal_copy(*invAVector);
-    int err = invAVector->Reciprocal(*invAVector);
+    A.extract_diagonal_copy(invAVector);
+    int err = invAVector.Reciprocal(invAVector);
     if (err) FOUR_C_THROW("Epetra_MultiVector::Reciprocal returned %d, are we dividing by 0?", err);
   }
   else if (method == "row sums" or method == "row sums diagonal blocks")
   {
-    int err = A.epetra_matrix()->InvRowSums(invAVector->get_ref_of_Epetra_Vector());
+    int err = A.epetra_matrix()->InvRowSums(invAVector.get_ref_of_Epetra_Vector());
     if (err) FOUR_C_THROW("Epetra_CrsMatrix::InvRowSums returned %d, are we dividing by 0?", err);
   }
   else
     FOUR_C_THROW("Invalid value for \"predictor inverse\". Fix your xml file.");
   Teuchos::RCP<Core::LinAlg::SparseMatrix> S =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*invAVector);
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(invAVector);
   S->complete(A.row_map(), A.row_map());
   return S;
 }

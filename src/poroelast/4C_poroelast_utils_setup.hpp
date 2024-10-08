@@ -64,7 +64,7 @@ namespace PoroElast
 
         // create fluid discretization
         Core::FE::clone_discretization<PoroCloneStrategy>(
-            structdis, fluiddis, Global::Problem::instance()->cloning_material_map());
+            *structdis, *fluiddis, Global::Problem::instance()->cloning_material_map());
         fluiddis->fill_complete();
 
         // set material pointers

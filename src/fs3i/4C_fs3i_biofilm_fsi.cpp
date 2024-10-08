@@ -85,7 +85,7 @@ void FS3I::BiofilmFSI::init()
   {
     Teuchos::RCP<Core::FE::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>> alecreator =
         Teuchos::make_rcp<Core::FE::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>>();
-    alecreator->create_matching_discretization(structdis, structaledis, 11);
+    alecreator->create_matching_discretization(*structdis, *structaledis, 11);
     structaledis->fill_complete();
   }
   if (comm_.MyPID() == 0)
@@ -777,14 +777,14 @@ void FS3I::BiofilmFSI::fluid_ale_solve()
   Teuchos::RCP<Core::LinAlg::Vector<double>> fluiddisp =
       ale_to_fluid_field(fsi_->ale_field()->write_access_dispnp());
   Teuchos::RCP<Core::FE::Discretization> fluiddis = fsi_->fluid_field()->discretization();
-  Core::Geo::update_reference_config_with_disp(fluiddis, fluiddisp);
+  Core::Geo::update_reference_config_with_disp(*fluiddis, *fluiddisp);
 
 
 
   // change nodes reference position also for the fluid ale field
   Teuchos::RCP<Core::LinAlg::Vector<double>> fluidaledisp =
       fsi_->ale_field()->write_access_dispnp();
-  Core::Geo::update_reference_config_with_disp(fluidaledis, fluidaledisp);
+  Core::Geo::update_reference_config_with_disp(*fluidaledis, *fluidaledisp);
 
   // change nodes reference position also for scatra fluid field
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[0];
@@ -827,11 +827,11 @@ void FS3I::BiofilmFSI::struct_ale_solve()
   Teuchos::RCP<Core::LinAlg::Vector<double>> structdisp =
       ale_to_struct_field(ale_->write_access_dispnp());
   Teuchos::RCP<Core::FE::Discretization> structdis = fsi_->structure_field()->discretization();
-  Core::Geo::update_reference_config_with_disp(structdis, structdisp);
+  Core::Geo::update_reference_config_with_disp(*structdis, *structdisp);
   structdis->fill_complete(false, true, true);
 
   // change nodes reference position also for the struct ale field
-  Core::Geo::update_reference_config_with_disp(structaledis, ale_->write_access_dispnp());
+  Core::Geo::update_reference_config_with_disp(*structaledis, *ale_->write_access_dispnp());
 
   // change nodes reference position also for scatra structure field
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
@@ -959,7 +959,7 @@ void FS3I::BiofilmFSI::struct_gmsh_output()
     gmshfilecontent << "View \" "
                     << "struct displacement \" {" << std::endl;
     // draw vector field 'struct displacement' for every element
-    Core::IO::Gmsh::vector_field_dof_based_to_gmsh(structdis, structdisp, gmshfilecontent);
+    Core::IO::Gmsh::vector_field_dof_based_to_gmsh(*structdis, structdisp, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -969,7 +969,7 @@ void FS3I::BiofilmFSI::struct_gmsh_output()
     gmshfilecontent << "View \" "
                     << "struct ale displacement \" {" << std::endl;
     // draw vector field 'struct ale displacement' for every element
-    Core::IO::Gmsh::vector_field_dof_based_to_gmsh(structaledis, structaledisp, gmshfilecontent);
+    Core::IO::Gmsh::vector_field_dof_based_to_gmsh(*structaledis, structaledisp, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -980,7 +980,7 @@ void FS3I::BiofilmFSI::struct_gmsh_output()
     gmshfilecontent << "View \" "
                     << "struct phi \" {" << std::endl;
     // draw vector field 'struct phi' for every element
-    Core::IO::Gmsh::scalar_field_to_gmsh(struscatradis, structphi, gmshfilecontent);
+    Core::IO::Gmsh::scalar_field_to_gmsh(*struscatradis, structphi, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -1010,7 +1010,7 @@ void FS3I::BiofilmFSI::fluid_gmsh_output()
     gmshfilecontent << "View \" "
                     << "fluid velocity \" {" << std::endl;
     // draw vector field 'fluid velocity' for every element
-    Core::IO::Gmsh::vector_field_dof_based_to_gmsh(fluiddis, fluidvel, gmshfilecontent);
+    Core::IO::Gmsh::vector_field_dof_based_to_gmsh(*fluiddis, fluidvel, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -1021,7 +1021,7 @@ void FS3I::BiofilmFSI::fluid_gmsh_output()
     gmshfilecontent << "View \" "
                     << "fluid ale displacement \" {" << std::endl;
     // draw vector field 'fluid ale displacement' for every element
-    Core::IO::Gmsh::vector_field_dof_based_to_gmsh(fluidaledis, fluidaledisp, gmshfilecontent);
+    Core::IO::Gmsh::vector_field_dof_based_to_gmsh(*fluidaledis, fluidaledisp, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -1031,7 +1031,7 @@ void FS3I::BiofilmFSI::fluid_gmsh_output()
     gmshfilecontent << "View \" "
                     << "fluid phi \" {" << std::endl;
     // draw vector field 'fluid phi' for every element
-    Core::IO::Gmsh::scalar_field_to_gmsh(fluidscatradis, fluidphi, gmshfilecontent);
+    Core::IO::Gmsh::scalar_field_to_gmsh(*fluidscatradis, fluidphi, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 

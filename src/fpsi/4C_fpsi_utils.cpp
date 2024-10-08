@@ -132,7 +132,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
   if (aledis->num_global_nodes() == 0)  // ALE discretization still empty
   {
     Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
-        fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
+        *fluiddis, *aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;

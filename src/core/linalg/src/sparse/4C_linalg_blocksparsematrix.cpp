@@ -462,8 +462,7 @@ Core::LinAlg::block_matrix2x2(Core::LinAlg::SparseMatrix& A00, Core::LinAlg::Spa
   range_maps.emplace_back(Teuchos::make_rcp<Epetra_Map>(A00.range_map()));
   range_maps.emplace_back(Teuchos::make_rcp<Epetra_Map>(A10.range_map()));
   Teuchos::RCP<const Epetra_Map> range_map = MultiMapExtractor::merge_maps(range_maps);
-  Teuchos::RCP<MultiMapExtractor> rangeMMex =
-      Teuchos::make_rcp<MultiMapExtractor>(*range_map, range_maps);
+  MultiMapExtractor rangeMMex(*range_map, range_maps);
 
   // generate domain map
   std::vector<Teuchos::RCP<const Epetra_Map>> domain_maps;
@@ -472,13 +471,12 @@ Core::LinAlg::block_matrix2x2(Core::LinAlg::SparseMatrix& A00, Core::LinAlg::Spa
   domain_maps.emplace_back(Teuchos::make_rcp<Epetra_Map>(A00.domain_map()));
   domain_maps.emplace_back(Teuchos::make_rcp<Epetra_Map>(A01.domain_map()));
   Teuchos::RCP<const Epetra_Map> domain_map = MultiMapExtractor::merge_maps(domain_maps);
-  Teuchos::RCP<MultiMapExtractor> domainMMex =
-      Teuchos::make_rcp<MultiMapExtractor>(*domain_map, domain_maps);
+  MultiMapExtractor domainMMex(*domain_map, domain_maps);
 
   // generate result matrix
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>> C =
       Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
-          *domainMMex, *rangeMMex);
+          domainMMex, rangeMMex);
   // Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Cb =
   // Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(C);
   // assign matrices

@@ -69,8 +69,7 @@ namespace Core::IO
      * used if not all nodal DOFs should be output, e.g., velocity or pressure in fluid.
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void append_dof_based_result_data_vector(
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> &result_data_dofbased,
+    void append_dof_based_result_data_vector(Core::LinAlg::Vector<double> &result_data_dofbased,
         unsigned int result_num_dofs_per_node, const std::string &resultname);
 
     /**
@@ -89,8 +88,7 @@ namespace Core::IO
      * @param result_num_components_per_node (in) Number of scalar values per node
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void append_node_based_result_data_vector(
-        const Teuchos::RCP<Epetra_MultiVector> &result_data_nodebased,
+    void append_node_based_result_data_vector(Epetra_MultiVector &result_data_nodebased,
         unsigned int result_num_components_per_node, const std::string &resultname);
 
     /**

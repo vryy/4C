@@ -142,7 +142,7 @@ namespace Core::Geo
    \param minDistCoords        Coords of the nearest point
    \return surface id of nearest object (node or line: a random adjacent surface is chosen)
    */
-  int nearest_3d_object_in_node(const Teuchos::RCP<Core::FE::Discretization> dis,
+  int nearest_3d_object_in_node(const Core::FE::Discretization& dis,
       std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList, const Core::LinAlg::Matrix<3, 1>& point,
@@ -153,7 +153,7 @@ namespace Core::Geo
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const Core::LinAlg::Matrix<3, 1>& point, Core::LinAlg::Matrix<3, 1>& minDistCoords);
 
-  void nearest_2d_object_in_node(const Teuchos::RCP<Core::FE::Discretization> dis,
+  void nearest_2d_object_in_node(const Core::FE::Discretization& dis,
       std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList, const Core::LinAlg::Matrix<3, 1>& point,
@@ -233,7 +233,7 @@ namespace Core::Geo
    \param xyze_element         nodal coordinates
    \param eleGeoType           geometry type
    */
-  void check_rough_geo_type(Teuchos::RCP<Core::Elements::Element> element,
+  void check_rough_geo_type(const Core::Elements::Element& element,
       Core::LinAlg::SerialDenseMatrix xyze_element, Core::Geo::EleGeoType& eleGeoType);
 
 }  // namespace Core::Geo

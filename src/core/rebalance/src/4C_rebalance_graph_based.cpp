@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> Core::Rebalance::rebalance_node_maps(
-    Teuchos::RCP<const Epetra_CrsGraph> initialGraph, const Teuchos::ParameterList& rebalanceParams,
+    const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& initialNodeWeights,
     const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights,
     const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates)
@@ -42,16 +42,16 @@ std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> Core::Rebalance::r
   TEUCHOS_FUNC_TIME_MONITOR("Rebalance::rebalance_node_maps");
 
   // Compute rebalanced graph
-  Teuchos::RCP<Epetra_CrsGraph> balanced_graph = Rebalance::rebalance_graph(*initialGraph,
+  Teuchos::RCP<Epetra_CrsGraph> balanced_graph = Rebalance::rebalance_graph(initialGraph,
       rebalanceParams, initialNodeWeights, initialEdgeWeights, initialNodeCoordinates);
 
   // extract repartitioned maps
   Teuchos::RCP<Epetra_Map> rownodes =
       Teuchos::make_rcp<Epetra_Map>(-1, balanced_graph->RowMap().NumMyElements(),
-          balanced_graph->RowMap().MyGlobalElements(), 0, initialGraph->Comm());
+          balanced_graph->RowMap().MyGlobalElements(), 0, initialGraph.Comm());
   Teuchos::RCP<Epetra_Map> colnodes =
       Teuchos::make_rcp<Epetra_Map>(-1, balanced_graph->ColMap().NumMyElements(),
-          balanced_graph->ColMap().MyGlobalElements(), 0, initialGraph->Comm());
+          balanced_graph->ColMap().MyGlobalElements(), 0, initialGraph.Comm());
 
   return {rownodes, colnodes};
 }
@@ -152,16 +152,16 @@ Core::Rebalance::build_weights(const Core::FE::Discretization& dis)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_graph(
-    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles)
+    Core::FE::Discretization& dis, const Epetra_Map& roweles)
 {
-  const int myrank = dis->get_comm().MyPID();
-  const int numproc = dis->get_comm().NumProc();
+  const int myrank = dis.get_comm().MyPID();
+  const int numproc = dis.get_comm().NumProc();
 
   // create a set of all nodes that I have
   std::set<int> mynodes;
-  for (int lid = 0; lid < roweles->NumMyElements(); ++lid)
+  for (int lid = 0; lid < roweles.NumMyElements(); ++lid)
   {
-    Core::Elements::Element* ele = dis->g_element(roweles->GID(lid));
+    Core::Elements::Element* ele = dis.g_element(roweles.GID(lid));
     const int numnode = ele->num_node();
     const int* nodeids = ele->node_ids();
     copy(nodeids, nodeids + numnode, inserter(mynodes, mynodes.begin()));
@@ -179,9 +179,9 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_graph(
       for (fool = mynodes.begin(); fool != mynodes.end(); ++fool) recvnodes.push_back(*fool);
       size = (int)recvnodes.size();
     }
-    dis->get_comm().Broadcast(&size, 1, proc);
+    dis.get_comm().Broadcast(&size, 1, proc);
     if (proc != myrank) recvnodes.resize(size);
-    dis->get_comm().Broadcast(&recvnodes[0], size, proc);
+    dis.get_comm().Broadcast(&recvnodes[0], size, proc);
     if (proc != myrank)
     {
       for (int i = 0; i < size; ++i)
@@ -193,7 +193,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_graph(
           mynodes.erase(fool);
       }
     }
-    dis->get_comm().Barrier();
+    dis.get_comm().Barrier();
   }
 
   Teuchos::RCP<Epetra_Map> rownodes = Teuchos::null;
@@ -204,15 +204,15 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_graph(
     for (fool = mynodes.begin(); fool != mynodes.end(); ++fool) nodes.push_back(*fool);
     mynodes.clear();
     // create a non-overlapping row map
-    rownodes = Teuchos::make_rcp<Epetra_Map>(-1, (int)nodes.size(), &nodes[0], 0, dis->get_comm());
+    rownodes = Teuchos::make_rcp<Epetra_Map>(-1, (int)nodes.size(), &nodes[0], 0, dis.get_comm());
   }
 
   // start building the graph object
   std::map<int, std::set<int>> locals;
   std::map<int, std::set<int>> remotes;
-  for (int lid = 0; lid < roweles->NumMyElements(); ++lid)
+  for (int lid = 0; lid < roweles.NumMyElements(); ++lid)
   {
-    Core::Elements::Element* ele = dis->g_element(roweles->GID(lid));
+    Core::Elements::Element* ele = dis.g_element(roweles.GID(lid));
     const int numnode = ele->num_node();
     const int* nodeids = ele->node_ids();
     for (int i = 0; i < numnode; ++i)
@@ -248,12 +248,12 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_graph(
       if (smaxband < (int)fool->second.size()) smaxband = (int)fool->second.size();
     for (fool = remotes.begin(); fool != remotes.end(); ++fool)
       if (smaxband < (int)fool->second.size()) smaxband = (int)fool->second.size();
-    dis->get_comm().MaxAll(&smaxband, &maxband, 1);
+    dis.get_comm().MaxAll(&smaxband, &maxband, 1);
   }
 
   Teuchos::RCP<Epetra_CrsGraph> graph =
       Teuchos::make_rcp<Epetra_CrsGraph>(Copy, *rownodes, maxband, false);
-  dis->get_comm().Barrier();
+  dis.get_comm().Barrier();
 
   // fill all local entries into the graph
   {
@@ -272,7 +272,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_graph(
     locals.clear();
   }
 
-  dis->get_comm().Barrier();
+  dis.get_comm().Barrier();
 
   // now we need to communicate and add the remote entries
   for (int proc = numproc - 1; proc >= 0; --proc)
@@ -293,9 +293,9 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_graph(
       }
       size = (int)recvnodes.size();
     }
-    dis->get_comm().Broadcast(&size, 1, proc);
+    dis.get_comm().Broadcast(&size, 1, proc);
     if (proc != myrank) recvnodes.resize(size);
-    dis->get_comm().Broadcast(&recvnodes[0], size, proc);
+    dis.get_comm().Broadcast(&recvnodes[0], size, proc);
     if (proc != myrank && size)
     {
       int* ptr = &recvnodes[0];
@@ -314,17 +314,17 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_graph(
           ptr += (num + 1);
       }
     }
-    dis->get_comm().Barrier();
+    dis.get_comm().Barrier();
   }
   remotes.clear();
 
-  dis->get_comm().Barrier();
+  dis.get_comm().Barrier();
 
   // finish graph
   graph->FillComplete();
   graph->OptimizeStorage();
 
-  dis->get_comm().Barrier();
+  dis.get_comm().Barrier();
 
   return graph;
 }

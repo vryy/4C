@@ -437,19 +437,19 @@ void Solid::TimIntImpl::predict()
   }
 
   // rotate to local coordinate systems
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(*fres_);
 
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
   dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
   // rotate reaction forces back to global coordinate system
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*freact_);
 
   // blank residual at DOFs on Dirichlet BC
   dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
   // rotate back to global coordinate system
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*fres_);
 
   // split norms
   if (pressure_ != Teuchos::null)
@@ -499,19 +499,19 @@ void Solid::TimIntImpl::prepare_partition_step()
   evaluate_force_stiff_residual(params);
 
   // rotate to local co-ordinate systems
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(*fres_);
 
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
   dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
   // rotate reaction forces back to global co-ordinate system
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*freact_);
 
   // blank residual at DOFs on Dirichlet BC
   dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
   // rotate back to global co-ordinate system
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*fres_);
 
   // split norms
   if (pressure_ != Teuchos::null)
@@ -628,24 +628,24 @@ void Solid::TimIntImpl::predict_tang_dis_consist_vel_acc()
   }
 
   // rotate to local co-ordinate systems
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(*fres_);
 
   // extract reaction forces
   freact_->Update(-1.0, *fres_, 0.0);  // reactions are negative
   dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
   // rotate reaction forces back to global co-ordinate system
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*freact_);
 
   // blank residual at DOFs on Dirichlet BC
   dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
   // rotate back to global co-ordinate system
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*fres_);
 
   // make negative residual
   fres_->Scale(-1.0);
 
   // transform to local co-ordinate systems
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(system_matrix(), fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(system_matrix(), *fres_);
 
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);
@@ -806,7 +806,7 @@ void Solid::TimIntImpl::update_krylov_space_projection()
 
   Teuchos::RCP<Epetra_Map> nullspaceMap = Teuchos::make_rcp<Epetra_Map>(*discret_->dof_row_map());
   Teuchos::RCP<Epetra_MultiVector> nullspace =
-      Core::FE::compute_null_space(*discret_, 3, 6, nullspaceMap);
+      Core::FE::compute_null_space(*discret_, 3, 6, *nullspaceMap);
   if (nullspace == Teuchos::null) FOUR_C_THROW("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_
@@ -855,7 +855,7 @@ void Solid::TimIntImpl::apply_force_stiff_external(const double time,  //!< eval
   else
   {
     discret_->set_state(0, "displacement new", disn);
-    discret_->evaluate_neumann(p, fext, fextlin);
+    discret_->evaluate_neumann(p, *fext, fextlin.get());
   }
 
   // go away
@@ -1497,7 +1497,7 @@ int Solid::TimIntImpl::newton_full()
     fres_->Scale(-1.0);
 
     // transform to local co-ordinate systems
-    if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(system_matrix(), fres_);
+    if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(system_matrix(), *fres_);
 
     // STC preconditioning
     stc_preconditioning();
@@ -1587,19 +1587,19 @@ int Solid::TimIntImpl::newton_full()
 
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
-    if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(fres_);
+    if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(*fres_);
 
     // extract reaction forces
     // reactions are negative to balance residual on DBC
     freact_->Update(-1.0, *fres_, 0.0);
     dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
     // rotate reaction forces back to global co-ordinate system
-    if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
+    if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*freact_);
 
     // blank residual at DOFs on Dirichlet BC
     dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
     // rotate back to global co-ordinate system
-    if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
+    if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*fres_);
 
     // cancel in residual those forces that would excite rigid body modes and
     // that thus vanish in the Krylov space projection
@@ -1972,19 +1972,19 @@ int Solid::TimIntImpl::newton_ls()
 
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
-    if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(fres_);
+    if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(*fres_);
 
     // extract reaction forces
     // reactions are negative to balance residual on DBC
     freact_->Update(-1.0, *fres_, 0.0);
     dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
     // rotate reaction forces back to global co-ordinate system
-    if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
+    if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*freact_);
 
     // blank residual at DOFs on Dirichlet BC
     dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
     // rotate back to global co-ordinate system
-    if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
+    if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*fres_);
 
     // cancel in residual those forces that would excite rigid body modes and
     // that thus vanish in the Krylov space projection
@@ -2095,7 +2095,7 @@ int Solid::TimIntImpl::ls_solve_newton_step()
   fres_->Scale(-1.0);
 
   // transform to local co-ordinate systems
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(system_matrix(), fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(system_matrix(), *fres_);
 
   // STC preconditioning
   stc_preconditioning();
@@ -2217,19 +2217,19 @@ void Solid::TimIntImpl::ls_update_structural_rh_sand_stiff(bool& isexcept, doubl
 #endif
   // blank residual at (locally oriented) Dirichlet DOFs
   // rotate to local co-ordinate systems
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(*fres_);
 
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
   dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
   // rotate reaction forces back to global co-ordinate system
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*freact_);
 
   // blank residual at DOFs on Dirichlet BC
   dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
   // rotate back to global co-ordinate system
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*fres_);
 
   // cancel in residual those forces that would excite rigid body modes and
   // that thus vanish in the Krylov space projection
@@ -2518,7 +2518,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       //    stiff_->UnComplete();
 
       // transform to local co-ordinate systems
-      if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(system_matrix(), fres_);
+      if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(system_matrix(), *fres_);
 
       // apply Dirichlet BCs to system of equations
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -2575,7 +2575,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       // *********** time measurement ***********
 
       // transform back to global co-ordinate system
-      if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(disi_);
+      if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*disi_);
 
       // update Lagrange multiplier
       conman_->update_lagr_mult(lagrincr);
@@ -2607,19 +2607,19 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
 
       // blank residual at (locally oriented) Dirichlet DOFs
       // rotate to local co-ordinate systems
-      if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(fres_);
+      if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(*fres_);
 
       // extract reaction forces
       // reactions are negative to balance residual on DBC
       freact_->Update(-1.0, *fres_, 0.0);
       dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
       // rotate reaction forces back to global co-ordinate system
-      if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
+      if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*freact_);
 
       // blank residual at DOFs on Dirichlet BC
       dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
       // rotate back to global co-ordinate system
-      if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
+      if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*fres_);
 
       // why was this here? part of else statement below!!! (mhv 01/2015)
       //      // build residual force norm
@@ -2711,7 +2711,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       // stiff_->UnComplete();
 
       // transform to local co-ordinate systems
-      if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(system_matrix(), fres_);
+      if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(system_matrix(), *fres_);
 
       // apply Dirichlet BCs to system of equations
       disi_->PutScalar(0.0);  // Useful? depends on solver and more
@@ -2756,7 +2756,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       // *********** time measurement ***********
 
       // transform back to global co-ordinate system
-      if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(disi_);
+      if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*disi_);
 
       // update end-point displacements, velocities, accelerations
       update_iter(iter_);
@@ -2785,19 +2785,19 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
 
       // blank residual at (locally oriented) Dirichlet DOFs
       // rotate to local co-ordinate systems
-      if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(fres_);
+      if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(*fres_);
 
       // extract reaction forces
       // reactions are negative to balance residual on DBC
       freact_->Update(-1.0, *fres_, 0.0);
       dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
       // rotate reaction forces back to global co-ordinate system
-      if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
+      if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*freact_);
 
       // blank residual at DOFs on Dirichlet BC
       dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
       // rotate back to global co-ordinate system
-      if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
+      if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*fres_);
 
       if (pressure_ != Teuchos::null)
       {
@@ -3323,7 +3323,7 @@ int Solid::TimIntImpl::ptc()
     fres_->Scale(-1.0);
 
     // transform to local co-ordinate systems
-    if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(system_matrix(), fres_);
+    if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(system_matrix(), *fres_);
 
     // modify stiffness matrix with dti
     {
@@ -3420,19 +3420,19 @@ int Solid::TimIntImpl::ptc()
 
     // blank residual at (locally oriented) Dirichlet DOFs
     // rotate to local co-ordinate systems
-    if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(fres_);
+    if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(*fres_);
 
     // extract reaction forces
     // reactions are negative to balance residual on DBC
     freact_->Update(-1.0, *fres_, 0.0);
     dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
     // rotate reaction forces back to global co-ordinate system
-    if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
+    if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*freact_);
 
     // blank residual at DOFs on Dirichlet BC
     dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
     // rotate back to global co-ordinate system
-    if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
+    if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*fres_);
 
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
@@ -4106,24 +4106,24 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::TimIntImpl::solve_relaxation_l
 void Solid::TimIntImpl::prepare_system_for_newton_solve(const bool preparejacobian)
 {
   // rotate residual to local coordinate systems
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(*fres_);
 
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
   dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
   // rotate reaction forces back to global coordinate system
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*freact_);
   // blank residual at DOFs on Dirichlet BCs
   dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
   // rotate reaction forces back to global coordinate system
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*fres_);
 
   // make the residual negative
   fres_->Scale(-1.0);
 
   // transform stiff_ and fres_ to local coordinate system
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(system_matrix(), fres_);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(system_matrix(), *fres_);
   // local matrix and rhs required for correctly applying Dirichlet boundary
   // conditions: rows with inclined Dirichlet boundary condition can be blanked
   // and a '1.0' is put at the diagonal term

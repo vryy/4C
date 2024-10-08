@@ -1204,7 +1204,7 @@ void SSTI::AssembleStrategyBlock::apply_structural_dbc_system_matrix(
           .apply_dirichlet_with_trafo(
               *locsysmanager_structure->trafo(), *dbcmap_structure, iblock == position_structure());
       locsysmanager_structure->rotate_local_to_global(
-          Teuchos::rcpFromRef(systemmatrix_block->matrix(position_structure(), iblock)));
+          *Teuchos::rcpFromRef(systemmatrix_block->matrix(position_structure(), iblock)));
     }
   }
 }
@@ -1240,7 +1240,7 @@ void SSTI::AssembleStrategySparse::apply_structural_dbc_system_matrix(
     locsysmanager_structure->rotate_global_to_local(systemmatrix_structure);
     systemmatrix_structure->apply_dirichlet_with_trafo(
         *locsysmanager_structure->trafo(), *dbcmap_structure);
-    locsysmanager_structure->rotate_local_to_global(systemmatrix_structure);
+    locsysmanager_structure->rotate_local_to_global(*systemmatrix_structure);
 
     // assemble structural rows of global system matrix back into global system matrix
     Core::LinAlg::matrix_put(
@@ -1301,11 +1301,11 @@ void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<
     auto zeros = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(residual_structure.Map());
 
     if (locsysmanager_structure != Teuchos::null)
-      locsysmanager_structure->rotate_global_to_local(rhs_structure_master);
+      locsysmanager_structure->rotate_global_to_local(*rhs_structure_master);
     Core::LinAlg::apply_dirichlet_to_system(*rhs_structure_master, *zeros,
         *ssti_mono_->structure_field()->get_dbc_map_extractor()->cond_map());
     if (locsysmanager_structure != Teuchos::null)
-      locsysmanager_structure->rotate_local_to_global(rhs_structure_master);
+      locsysmanager_structure->rotate_local_to_global(*rhs_structure_master);
 
     // assemble master-side part of structure right-hand side vector
     residual_structure.Update(1.0, *rhs_structure_master, 1.0);

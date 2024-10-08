@@ -109,7 +109,7 @@ void fluid_ale_drt()
   if (aledis->num_global_nodes() == 0)
   {
     Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
-        fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
+        *fluiddis, *aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
@@ -164,7 +164,7 @@ void fluid_xfem_drt()
     if (aledis->num_global_nodes() == 0)
     {
       Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
-          problem->get_dis("fluid"), aledis, Global::Problem::instance()->cloning_material_map());
+          *problem->get_dis("fluid"), *aledis, Global::Problem::instance()->cloning_material_map());
       aledis->fill_complete();
       // setup material in every ALE element
       Teuchos::ParameterList params;
@@ -316,8 +316,8 @@ void fsi_immersed_drt()
         binningstrategy
             ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
                 dis, stdelecolmap, stdnodecolmap);
-    binningstrategy->fill_bins_into_bin_discretization(rowbins);
-    binningstrategy->fill_bins_into_bin_discretization(rowbins);
+    binningstrategy->fill_bins_into_bin_discretization(*rowbins);
+    binningstrategy->fill_bins_into_bin_discretization(*rowbins);
   }
 
 
@@ -434,7 +434,7 @@ void fsi_ale_drt()
   if (aledis->num_global_nodes() == 0)  // empty ale discretization
   {
     Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
-        fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
+        *fluiddis, *aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
@@ -713,7 +713,7 @@ void xfsi_drt()
     if (aledis->num_global_nodes() == 0)  // ALE discretization still empty
     {
       Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
-          fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
+          *fluiddis, *aledis, Global::Problem::instance()->cloning_material_map());
       aledis->fill_complete();
       // setup material in every ALE element
       Teuchos::ParameterList params;
@@ -861,7 +861,7 @@ void xfpsi_drt()
     if (aledis->num_global_nodes() == 0)  // ALE discretization still empty
     {
       Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
-          fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
+          *fluiddis, *aledis, Global::Problem::instance()->cloning_material_map());
       aledis->fill_complete();
       // setup material in every ALE element
       Teuchos::ParameterList params;

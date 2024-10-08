@@ -1299,7 +1299,7 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet_with_trafo(const Core::LinAlg::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::SparseMatrix::extract_dirichlet_rows(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> dbctoggle)
+    const Core::LinAlg::Vector<double>& dbctoggle)
 {
   if (not filled()) FOUR_C_THROW("expect filled matrix to extract dirichlet lines");
 
@@ -1310,7 +1310,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::SparseMatrix::extract_dir
   const Epetra_Map& colmap = sysmat_->ColMap();
   const int nummyrows = sysmat_->NumMyRows();
 
-  const Core::LinAlg::Vector<double>& dbct = *dbctoggle;
+  const Core::LinAlg::Vector<double>& dbct = dbctoggle;
 
   std::vector<int> idx(max_num_entries());
 

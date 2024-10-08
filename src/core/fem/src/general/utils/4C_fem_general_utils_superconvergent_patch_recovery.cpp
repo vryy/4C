@@ -96,10 +96,8 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   dis.set_state(statename, Teuchos::rcpFromRef(state));
 
   const Epetra_Map* elementrowmap = dis.element_row_map();
-  Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered =
-      Teuchos::make_rcp<Epetra_MultiVector>(*elementrowmap, numvec, true);
-  Teuchos::RCP<Epetra_MultiVector> centercoords =
-      Teuchos::make_rcp<Epetra_MultiVector>(*elementrowmap, dim, true);
+  Epetra_MultiVector elevec_toberecovered(*elementrowmap, numvec, true);
+  Epetra_MultiVector centercoords(*elementrowmap, dim, true);
 
   std::vector<int> lm;
   std::vector<int> lmowner;
@@ -138,24 +136,22 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
     {
       double val = elevector1(j);
 
-      int err = elevec_toberecovered->ReplaceMyValue(i, j, val);
+      int err = elevec_toberecovered.ReplaceMyValue(i, j, val);
       if (err < 0) FOUR_C_THROW("multi vector insertion failed");
     }
 
     // store corresponding element centroid
     for (int d = 0; d < dim; ++d)
     {
-      int err = centercoords->ReplaceMyValue(i, d, elevector2(d));
+      int err = centercoords.ReplaceMyValue(i, d, elevector2(d));
       if (err < 0) FOUR_C_THROW("multi vector insertion failed");
     }
   }  // end element loop
 
-  Teuchos::RCP<Epetra_MultiVector> elevec_toberecovered_col =
-      Teuchos::make_rcp<Epetra_MultiVector>(*(dis.element_col_map()), numvec, true);
-  Core::LinAlg::export_to(*elevec_toberecovered, *elevec_toberecovered_col);
-  Teuchos::RCP<Epetra_MultiVector> centercoords_col =
-      Teuchos::make_rcp<Epetra_MultiVector>(*(dis.element_col_map()), dim, true);
-  Core::LinAlg::export_to(*centercoords, *centercoords_col);
+  Epetra_MultiVector elevec_toberecovered_col(*(dis.element_col_map()), numvec, true);
+  Core::LinAlg::export_to(elevec_toberecovered, elevec_toberecovered_col);
+  Epetra_MultiVector centercoords_col(*(dis.element_col_map()), dim, true);
+  Core::LinAlg::export_to(centercoords, centercoords_col);
 
   // step 2: use precalculated (velocity) gradient for patch-recovery of gradient
   // solution vector based on reduced node row map
@@ -210,14 +206,14 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           // loop over all surrounding elements
           for (int k = 0; k < numadjacent; ++k)
           {
-            const int elelid = elevec_toberecovered_col->Map().LID(adjacentele[k]->id());
+            const int elelid = elevec_toberecovered_col.Map().LID(adjacentele[k]->id());
             for (int d = 0; d < dim; ++d)
-              p(d + 1) = (*(*centercoords_col)(d))[elelid] - node->x()[d] /* + ALE_DISP*/;
+              p(d + 1) = (*(centercoords_col)(d))[elelid] - node->x()[d] /* + ALE_DISP*/;
 
             // compute outer product of p x p and add to A
             A.multiply_nt(1.0, p, p, 1.0);
 
-            b.update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
+            b.update((*(elevec_toberecovered_col)(j))[elelid], p, 1.0);
           }
 
           // solve for coefficients of interpolation
@@ -279,15 +275,15 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           {
             for (int k = 0; k < numadjacenteles[s]; ++k)
             {
-              const int elelid = elevec_toberecovered_col->Map().LID(adjacenteles[s][k]->id());
+              const int elelid = elevec_toberecovered_col.Map().LID(adjacenteles[s][k]->id());
               for (int d = 0; d < dim; ++d)
-                p(d + 1) = (*(*centercoords_col)(d))[elelid] + eleoffsets[s][d] -
+                p(d + 1) = (*(centercoords_col)(d))[elelid] + eleoffsets[s][d] -
                            node->x()[d] /* + ALE_DISP*/;
 
               // compute outer product of p x p and add to A
               A.multiply_nt(1.0, p, p, 1.0);
 
-              b.update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
+              b.update((*(elevec_toberecovered_col)(j))[elelid], p, 1.0);
             }
           }
 
@@ -370,14 +366,14 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           // loop over all surrounding elements
           for (int k = 0; k < numadjacent; ++k)
           {
-            const int elelid = elevec_toberecovered_col->Map().LID(closestnodeadjacentele[k]->id());
+            const int elelid = elevec_toberecovered_col.Map().LID(closestnodeadjacentele[k]->id());
             for (int d = 0; d < dim; ++d)
-              p(d + 1) = (*(*centercoords_col)(d))[elelid] - closestnode->x()[d]; /* + ALE_DISP*/
+              p(d + 1) = (*(centercoords_col)(d))[elelid] - closestnode->x()[d]; /* + ALE_DISP*/
 
             // compute outer product of p x p and add to A
             A.multiply_nt(1.0, p, p, 1.0);
 
-            b.update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
+            b.update((*(elevec_toberecovered_col)(j))[elelid], p, 1.0);
           }
 
           // solve for coefficients of interpolation
@@ -510,15 +506,15 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
             for (int k = 0; k < numadjacenteles[s]; ++k)
             {
               const int elelid =
-                  elevec_toberecovered_col->Map().LID(closestnodeadjacenteles[s][k]->id());
+                  elevec_toberecovered_col.Map().LID(closestnodeadjacenteles[s][k]->id());
               for (int d = 0; d < dim; ++d)
-                p(d + 1) = (*(*centercoords_col)(d))[elelid] + eleoffsets[s][d] -
+                p(d + 1) = (*(centercoords_col)(d))[elelid] + eleoffsets[s][d] -
                            closestnode->x()[d]; /* + ALE_DISP*/
 
               // compute outer product of p x p and add to A
               A.multiply_nt(1.0, p, p, 1.0);
 
-              b.update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
+              b.update((*(elevec_toberecovered_col)(j))[elelid], p, 1.0);
             }
           }
 

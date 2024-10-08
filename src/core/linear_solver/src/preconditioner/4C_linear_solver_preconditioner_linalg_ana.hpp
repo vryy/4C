@@ -726,9 +726,6 @@ namespace Core::LinAlg
         Update(1.0, rhs, 0.0);
       }
 
-      /// Teuchos::RCP version of the above method
-      inline void operator=(const Teuchos::RCP<Core::LinAlg::Ana::Vector>& rhs) { *this = *rhs; }
-
       /*!
       \brief Update this Vector with another Vector
 
@@ -743,9 +740,6 @@ namespace Core::LinAlg
         Update(1.0, rhs, 1.0);
       }
 
-      /// Teuchos::RCP version of the above method
-      inline void operator+=(const Teuchos::RCP<Core::LinAlg::Ana::Vector>& rhs) { *this += *rhs; }
-
       /*!
       \brief Update this Vector with negative of another Vector
 
@@ -759,9 +753,6 @@ namespace Core::LinAlg
 #endif
         Update(-1.0, rhs, 1.0);
       }
-
-      /// Teuchos::RCP version of the above method
-      inline void operator-=(const Teuchos::RCP<Core::LinAlg::Ana::Vector>& rhs) { *this -= *rhs; }
 
       /*!
       \brief Scale this Vector with a scalar
@@ -1889,79 +1880,6 @@ namespace Core::LinAlg
     {
       return (scalar * left);
     }
-    // Teuchos::RCP versions of the above operations
-    inline Core::LinAlg::Ana::LCSTimesVec operator*(
-        const double& scalar, const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
-    {
-      return (scalar * (*vec));
-    }
-    inline Core::LinAlg::Ana::LCSTimesVec operator*(
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec, const double& scalar)
-    {
-      return (scalar * (*vec));
-    }
-    inline Core::LinAlg::Ana::LCSTimesVec operator/(
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec, const double& scalar)
-    {
-      return ((*vec) / scalar);
-    }
-    inline Core::LinAlg::Ana::LcVecPlusLc operator+(
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec,
-        const Core::LinAlg::Ana::LCBase& right)
-    {
-      return ((*vec) + right);
-    }
-    inline Core::LinAlg::Ana::LcVecPlusLc operator+(const Core::LinAlg::Ana::LCBase& left,
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
-    {
-      return (left + (*vec));
-    }
-    inline Core::LinAlg::Ana::LcVecMinusLc operator-(
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec,
-        const Core::LinAlg::Ana::LCBase& right)
-    {
-      return (*vec - right);
-    }
-    inline Core::LinAlg::Ana::LcLcMinusVec operator-(const Core::LinAlg::Ana::LCBase& left,
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
-    {
-      return (left - (*vec));
-    }
-    inline Core::LinAlg::Ana::LcVecPlusLcsv operator+(
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec,
-        const Core::LinAlg::Ana::LCSTimesVec& right)
-    {
-      return (*vec + right);
-    }
-    inline Core::LinAlg::Ana::LcVecPlusLcsv operator+(const Core::LinAlg::Ana::LCSTimesVec& left,
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
-    {
-      return (left + (*vec));
-    }
-    inline Core::LinAlg::Ana::LcVecMinusLcsv operator-(
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec,
-        const Core::LinAlg::Ana::LCSTimesVec& right)
-    {
-      return (*vec - right);
-    }
-    inline Core::LinAlg::Ana::LcLcsvMinusVec operator-(const Core::LinAlg::Ana::LCSTimesVec& left,
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
-    {
-      return (left - (*vec));
-    }
-    inline Core::LinAlg::Ana::LcLcsvPlusLcsv operator+(
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> left,
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> right)
-    {
-      return ((*left) + (*right));
-    }
-    inline Core::LinAlg::Ana::LcLcsvMinusLcsv operator-(
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> left,
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> right)
-    {
-      return (*left - (*right));
-    }
-
 
     /*----------------------------------------------------------------------*
        LightWeightOperatorBase and  Epetra_Operator operations
@@ -2084,19 +2002,6 @@ namespace Core::LinAlg
     {
       return Core::LinAlg::Ana::OperatorSum(Core::LinAlg::Ana::lw(left), right, -1);
     }
-    // Teuchos::RCP versions of the above operations
-    inline Core::LinAlg::Ana::LcOperatorTimesLcsv operator*(
-        const Core::LinAlg::Ana::LightWeightOperatorBase& op,
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
-    {
-      return op * (*vec);
-    }
-    inline Core::LinAlg::Ana::LcOperatorTimesLcsv operator*(
-        const Epetra_Operator& op, const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
-    {
-      return op * (*vec);
-    }
-
 
     /*----------------------------------------------------------------------*
       dot products (result is scalar) (general and specialization versions)
@@ -2117,32 +2022,6 @@ namespace Core::LinAlg
         const Core::LinAlg::Ana::LCSTimesVec& left, const Core::LinAlg::Ana::Vector& vec1)
     {
       return vec1 * left;
-    }
-    // Teuchos::RCP versions of the above operations
-    inline double operator*(const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec1,
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec2)
-    {
-      return (*vec1) * (*vec2);
-    }
-    inline double operator*(const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec1,
-        const Core::LinAlg::Ana::LCBase& right)
-    {
-      return (*vec1) * right;
-    }
-    inline double operator*(const Core::LinAlg::Ana::LCBase& left,
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec1)
-    {
-      return (*vec1) * left;
-    }
-    inline double operator*(const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec1,
-        const Core::LinAlg::Ana::LCSTimesVec& right)
-    {
-      return (*vec1) * right;
-    }
-    inline double operator*(const Core::LinAlg::Ana::LCSTimesVec& left,
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec1)
-    {
-      return (*vec1) * left;
     }
 
     /*----------------------------------------------------------------------*
@@ -2183,35 +2062,7 @@ namespace Core::LinAlg
     {
       return Core::LinAlg::Ana::LcLcsvPointwiseLcsv(left, right);
     }
-    // Teuchos::RCP versions of the above operations
-    inline Core::LinAlg::Ana::LcVecPointwiseVec pw(
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec1,
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec2)
-    {
-      return Core::LinAlg::Ana::pw(*vec1, *vec2);
-    }
-    inline Core::LinAlg::Ana::LcVecPointwiseLc pw(
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec,
-        const Core::LinAlg::Ana::LCBase& right)
-    {
-      return Core::LinAlg::Ana::pw(*vec, right);
-    }
-    inline Core::LinAlg::Ana::LcVecPointwiseLc pw(const Core::LinAlg::Ana::LCBase& left,
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
-    {
-      return Core::LinAlg::Ana::pw(left, *vec);
-    }
-    inline Core::LinAlg::Ana::LcVecPointwiseLcsv pw(
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec,
-        const Core::LinAlg::Ana::LCSTimesVec& right)
-    {
-      return Core::LinAlg::Ana::pw(*vec, right);
-    }
-    inline Core::LinAlg::Ana::LcVecPointwiseLcsv pw(const Core::LinAlg::Ana::LCSTimesVec& left,
-        const Teuchos::RCP<const Core::LinAlg::Ana::Vector> vec)
-    {
-      return Core::LinAlg::Ana::pw(left, *vec);
-    }
+
     /*----------------------------------------------------------------------*
        implicit transpose of an Core::LinAlg::Ana::LightWeightOperatorBase / Epetra_Operator
      *----------------------------------------------------------------------*/
@@ -2265,18 +2116,6 @@ namespace Core::LinAlg
       double norm;
       vec.NormInf(&norm);
       return norm;
-    }
-    inline double norm2(const Teuchos::RCP<const Core::LinAlg::Ana::Vector>& vec)
-    {
-      return Core::LinAlg::Ana::norm2(*vec);
-    }
-    inline double norm1(const Teuchos::RCP<const Core::LinAlg::Ana::Vector>& vec)
-    {
-      return Core::LinAlg::Ana::norm1(*vec);
-    }
-    inline double norminf(const Teuchos::RCP<const Core::LinAlg::Ana::Vector>& vec)
-    {
-      return Core::LinAlg::Ana::norminf(*vec);
     }
     double norm2(const Core::LinAlg::Ana::LCBase& lc);
     double norm1(const Core::LinAlg::Ana::LCBase& lc);

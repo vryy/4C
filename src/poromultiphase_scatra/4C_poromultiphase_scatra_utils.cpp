@@ -163,7 +163,7 @@ std::map<int, std::set<int>> PoroMultiPhaseScaTra::UTILS::setup_discretizations_
 
   // fill scatra discretization by cloning structure discretization
   Core::FE::clone_discretization<PoroElastScaTra::UTILS::PoroScatraCloneStrategy>(
-      structdis, scatradis, Global::Problem::instance()->cloning_material_map());
+      *structdis, *scatradis, Global::Problem::instance()->cloning_material_map());
   scatradis->fill_complete();
 
   // the problem is two way coupled, thus each discretization must know the other discretization
@@ -200,7 +200,7 @@ std::map<int, std::set<int>> PoroMultiPhaseScaTra::UTILS::setup_discretizations_
 
     // fill artery scatra discretization by cloning artery discretization
     Core::FE::clone_discretization<Arteries::ArteryScatraCloneStrategy>(
-        artdis, artscatradis, Global::Problem::instance()->cloning_material_map());
+        *artdis, *artscatradis, Global::Problem::instance()->cloning_material_map());
     artscatradis->fill_complete();
 
     Teuchos::RCP<Core::DOFSets::DofSetInterface> arterydofset = artdis->get_dof_set_proxy();

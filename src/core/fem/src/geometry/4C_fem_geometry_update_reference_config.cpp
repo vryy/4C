@@ -21,14 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Geo::update_reference_config_with_disp(Teuchos::RCP<const Core::FE::Discretization> dis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
+void Core::Geo::update_reference_config_with_disp(
+    const Core::FE::Discretization& dis, const Core::LinAlg::Vector<double>& disp)
 {
   // Export row-displacments to col-displacements
-  auto coldisp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis->dof_col_map());
-  Core::LinAlg::export_to(*disp, *coldisp);
+  Core::LinAlg::Vector<double> coldisp(*dis.dof_col_map());
+  Core::LinAlg::export_to(disp, coldisp);
 
-  for (const auto& mynode : dis->my_col_node_range())
+  for (const auto& mynode : dis.my_col_node_range())
   {
     const unsigned int ndim = mynode->n_dim();
 
@@ -45,19 +45,19 @@ void Core::Geo::update_reference_config_with_disp(Teuchos::RCP<const Core::FE::D
     }
 #endif
 
-    const auto globaldofs = dis->dof(0, mynode);
+    const auto globaldofs = dis.dof(0, mynode);
 
     std::vector<double> nvector(ndim, 0.0);
 
     for (unsigned int i = 0; i < ndim; ++i)
     {
       const int gid = globaldofs[0] + static_cast<int>(i);
-      const int lid = coldisp->Map().LID(gid);
+      const int lid = coldisp.Map().LID(gid);
 
       FOUR_C_ASSERT(lid >= 0, "Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-          coldisp->Comm().MyPID(), globaldofs[i]);
+          coldisp.Comm().MyPID(), globaldofs[i]);
 
-      nvector[i] = (*coldisp)[lid];
+      nvector[i] = (coldisp)[lid];
     }
 
     mynode->change_pos(nvector);

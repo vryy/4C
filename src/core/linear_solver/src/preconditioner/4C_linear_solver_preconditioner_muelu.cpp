@@ -107,8 +107,7 @@ void Core::LinearSolver::MueLuPreconditioner::setup(
 
       for (int block = 0; block < A->rows(); block++)
       {
-        Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> crsA =
-            Teuchos::make_rcp<EpetraCrsMatrix>(A->matrix(block, block).epetra_matrix());
+        EpetraCrsMatrix crsA(A->matrix(block, block).epetra_matrix());
 
         std::string inverse = "Inverse" + std::to_string(block + 1);
         Teuchos::ParameterList& inverseList =
@@ -119,9 +118,9 @@ void Core::LinearSolver::MueLuPreconditioner::setup(
         striding.emplace_back(number_of_equations);
 
         Teuchos::RCP<const Xpetra::StridedMap<LO, GO, NO>> map =
-            Teuchos::make_rcp<Xpetra::StridedMap<LO, GO, NO>>(crsA->getRowMap()->lib(),
-                crsA->getRowMap()->getGlobalNumElements(), crsA->getRowMap()->getLocalElementList(),
-                crsA->getRowMap()->getIndexBase(), striding, crsA->getRowMap()->getComm(), -1);
+            Teuchos::make_rcp<Xpetra::StridedMap<LO, GO, NO>>(crsA.getRowMap()->lib(),
+                crsA.getRowMap()->getGlobalNumElements(), crsA.getRowMap()->getLocalElementList(),
+                crsA.getRowMap()->getIndexBase(), striding, crsA.getRowMap()->getComm(), -1);
 
         maps.emplace_back(map);
       }
@@ -294,18 +293,16 @@ void Core::LinearSolver::MueLuContactSpPreconditioner::setup(
   Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> stridedRangeMapPrimal =
       Teuchos::make_rcp<Xpetra::StridedMap<LO, GO, NO>>(
           xCrsA11->getRowMap(), stridingInfoPrimal, xCrsA11->getRowMap()->getIndexBase(), -1, 0);
-  Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> stridedDomainMapPrimal =
-      Teuchos::make_rcp<Xpetra::StridedMap<LO, GO, NO>>(xCrsA11->getDomainMap(), stridingInfoPrimal,
-          xCrsA11->getDomainMap()->getIndexBase(), -1, 0);
+  Xpetra::StridedMap<LO, GO, NO> stridedDomainMapPrimal(
+      xCrsA11->getDomainMap(), stridingInfoPrimal, xCrsA11->getDomainMap()->getIndexBase(), -1, 0);
 
   std::vector<size_t> stridingInfoDual;
   stridingInfoDual.push_back(numdf);
   Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> stridedRangeMapDual =
       Teuchos::make_rcp<Xpetra::StridedMap<LO, GO, NO>>(
           xCrsA22->getRowMap(), stridingInfoDual, xCrsA22->getRowMap()->getIndexBase(), -1, 0);
-  Teuchos::RCP<Xpetra::StridedMap<LO, GO, NO>> stridedDomainMapDual =
-      Teuchos::make_rcp<Xpetra::StridedMap<LO, GO, NO>>(xCrsA22->getDomainMap(), stridingInfoDual,
-          xCrsA22->getDomainMap()->getIndexBase(), -1, 0);
+  Xpetra::StridedMap<LO, GO, NO> stridedDomainMapDual(
+      xCrsA22->getDomainMap(), stridingInfoDual, xCrsA22->getDomainMap()->getIndexBase(), -1, 0);
 
   Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> xA11 =
       Teuchos::make_rcp<Xpetra::CrsMatrixWrap<SC, LO, GO, NO>>(xCrsA11);

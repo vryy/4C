@@ -195,7 +195,7 @@ void electromagnetics_drt()
 
           Core::FE::clone_discretization<
               EleMag::UTILS::ScatraCloneStrategy<Core::FE::ShapeFunctionType::hdg>>(
-              elemagdishdg, scatradis, Global::Problem::instance()->cloning_material_map());
+              *elemagdishdg, *scatradis, Global::Problem::instance()->cloning_material_map());
         }
         else
         {
@@ -205,7 +205,7 @@ void electromagnetics_drt()
 
           Core::FE::clone_discretization<
               EleMag::UTILS::ScatraCloneStrategy<Core::FE::ShapeFunctionType::polynomial>>(
-              elemagdishdg, scatradis, Global::Problem::instance()->cloning_material_map());
+              *elemagdishdg, *scatradis, Global::Problem::instance()->cloning_material_map());
         }
 
         // call fill complete on discretization

@@ -502,18 +502,18 @@ void Core::Binstrategy::BinningStrategy::get_bin_corners(
 }
 
 void Core::Binstrategy::BinningStrategy::get_all_bin_centers(
-    Teuchos::RCP<Epetra_Map>& binrowmap, Teuchos::RCP<Epetra_MultiVector>& bincenters) const
+    Epetra_Map& binrowmap, Epetra_MultiVector& bincenters) const
 {
   // loop over row bins and get center coordinates
-  for (int i = 0; i < binrowmap->NumMyElements(); ++i)
+  for (int i = 0; i < binrowmap.NumMyElements(); ++i)
   {
     // get global id of bin
-    const int gidofbin = binrowmap->GID(i);
+    const int gidofbin = binrowmap.GID(i);
 
     // get coordinates of bin center
     Core::LinAlg::Matrix<3, 1> center = get_bin_centroid(gidofbin);
 
-    for (int dim = 0; dim < 3; ++dim) bincenters->ReplaceMyValue(i, dim, center(dim));
+    for (int dim = 0; dim < 3; ++dim) bincenters.ReplaceMyValue(i, dim, center(dim));
   }
 }
 
@@ -838,13 +838,12 @@ void Core::Binstrategy::BinningStrategy::distribute_bins_recurs_coord_bisection(
       bincenters->Map().MyGlobalElements(), 0, bin_discret()->get_comm());
 }
 
-void Core::Binstrategy::BinningStrategy::fill_bins_into_bin_discretization(
-    Teuchos::RCP<Epetra_Map> const& rowbins)
+void Core::Binstrategy::BinningStrategy::fill_bins_into_bin_discretization(Epetra_Map& rowbins)
 {
   // fill bins into bindis_
-  for (int i = 0; i < rowbins->NumMyElements(); ++i)
+  for (int i = 0; i < rowbins.NumMyElements(); ++i)
   {
-    const int gid = rowbins->GID(i);
+    const int gid = rowbins.GID(i);
     Teuchos::RCP<Core::Elements::Element> bin =
         Core::Communication::factory("MESHFREEMULTIBIN", "dummy", gid, myrank_);
     bindis_->add_element(bin);
@@ -917,8 +916,7 @@ void Core::Binstrategy::BinningStrategy::distribute_single_element_to_bins_using
   gids_in_ijk_range(ijk_range, binIds, false);
 }
 
-void Core::Binstrategy::BinningStrategy::assign_eles_to_bins(
-    Teuchos::RCP<Core::FE::Discretization> discret,
+void Core::Binstrategy::BinningStrategy::assign_eles_to_bins(Core::FE::Discretization& discret,
     std::map<int, std::set<int>> const& extended_bin_to_row_ele_map,
     const std::function<Utils::BinContentType(const Core::Elements::Element* element)>&
         ele_to_bin_type) const
@@ -937,7 +935,7 @@ void Core::Binstrategy::BinningStrategy::assign_eles_to_bins(
     // loop over ele content of this bin
     for (const auto& ele_gid : ele_gids)
     {
-      auto* ele = discret->g_element(ele_gid);
+      auto* ele = discret.g_element(ele_gid);
       // add eleid and elepointer to current bin
       currbin->add_associated_ele(ele_to_bin_type(ele), ele);
     }
@@ -986,20 +984,19 @@ void Core::Binstrategy::BinningStrategy::remove_all_eles_from_bins()
 
 
 void Core::Binstrategy::BinningStrategy::distribute_row_nodes_to_bins(
-    Teuchos::RCP<Core::FE::Discretization> discret,
-    std::map<int, std::vector<int>>& bin_to_rownodes_map,
+    Core::FE::Discretization& discret, std::map<int, std::vector<int>>& bin_to_rownodes_map,
     Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp) const
 {
   // current position of nodes
   double currpos[3] = {0.0, 0.0, 0.0};
 
   // loop over row nodes
-  for (int lid = 0; lid < discret->num_my_row_nodes(); ++lid)
+  for (int lid = 0; lid < discret.num_my_row_nodes(); ++lid)
   {
-    Core::Nodes::Node* node = discret->l_row_node(lid);
+    Core::Nodes::Node* node = discret.l_row_node(lid);
     const auto& corrected_node = correct_node_(*node);
 
-    Utils::get_current_node_pos(*discret, &corrected_node, disnp, currpos);
+    Utils::get_current_node_pos(discret, &corrected_node, disnp, currpos);
 
     const double* coords = currpos;
     int ijk[3];
@@ -1056,7 +1053,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::
     // start with standard ghosting
     // ----------------------------------------------------------------------
     standard_discretization_ghosting(
-        discret[i], newrowbins, mutabledummy2[i], stdelecolmap[i], stdnodecolmap[i]);
+        discret[i], *newrowbins, mutabledummy2[i], stdelecolmap[i], stdnodecolmap[i]);
 
     // ----------------------------------------------------------------------
     // extended ghosting
@@ -1098,11 +1095,10 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::
     }
 
     std::vector<int> colnodes(nodes.begin(), nodes.end());
-    Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::make_rcp<Epetra_Map>(
-        -1, (int)colnodes.size(), colnodes.data(), 0, discret[i]->get_comm());
+    Epetra_Map nodecolmap(-1, (int)colnodes.size(), colnodes.data(), 0, discret[i]->get_comm());
 
     // now ghost the nodes
-    discret[i]->export_column_nodes(*nodecolmap);
+    discret[i]->export_column_nodes(nodecolmap);
 
     // fillcomplete discret with extended ghosting
     discret[i]->fill_complete();
@@ -1188,7 +1184,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::weighted_distributi
   for (int i = 0; i < static_cast<int>(discret.size()); ++i)
   {
     // distribute nodes, that are owned by a proc, to the bins of this proc
-    distribute_row_nodes_to_bins(discret[i], row_nodes_to_bin_map[i], disnp[i]);
+    distribute_row_nodes_to_bins(*discret[i], row_nodes_to_bin_map[i], disnp[i]);
 
     std::map<int, std::vector<int>> nodesinmybins;
     // gather information of bin content from other procs (bin is owned by this
@@ -1196,7 +1192,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::weighted_distributi
     // mynodesinbin then contains all node gids (vector) that reside in a owned bin (gid is map
     // key)
     collect_information_about_content_of_bins_from_other_procs_via_round_robin(
-        rowbins, row_nodes_to_bin_map[i], nodesinmybins);
+        *rowbins, row_nodes_to_bin_map[i], nodesinmybins);
 
     // weight each bin with 10 times the number of node it contains
     // empty bins remain with weight one
@@ -1345,22 +1341,22 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::extend_element_col_
 }
 
 void Core::Binstrategy::BinningStrategy::extend_ghosting_of_binning_discretization(
-    Teuchos::RCP<Epetra_Map> rowbins, std::set<int> const& colbins, bool assigndegreesoffreedom)
+    Epetra_Map& rowbins, std::set<int> const& colbins, bool assigndegreesoffreedom)
 {
   // gather set of bins that need to be ghosted by myrank
   std::set<int> bins(colbins.begin(), colbins.end());
 
   // insert row bins
-  for (int i = 0; i < rowbins->NumMyElements(); ++i) bins.insert(rowbins->GID(i));
+  for (int i = 0; i < rowbins.NumMyElements(); ++i) bins.insert(rowbins.GID(i));
 
   std::vector<int> bincolmapvec(bins.begin(), bins.end());
-  Teuchos::RCP<Epetra_Map> bincolmap = Teuchos::make_rcp<Epetra_Map>(
+  Epetra_Map bincolmap(
       -1, static_cast<int>(bincolmapvec.size()), bincolmapvec.data(), 0, bindis_->get_comm());
 
-  if (bincolmap->NumGlobalElements() == 1 && bindis_->get_comm().NumProc() > 1)
+  if (bincolmap.NumGlobalElements() == 1 && bindis_->get_comm().NumProc() > 1)
     FOUR_C_THROW("one bin cannot be run in parallel -> reduce BIN_SIZE_LOWER_BOUND");
 
-  Utils::extend_discretization_ghosting(bindis_, bincolmap, assigndegreesoffreedom, false, true);
+  Utils::extend_discretization_ghosting(*bindis_, bincolmap, assigndegreesoffreedom, false, true);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check whether each proc has only particles that are within bins on this proc
@@ -1385,7 +1381,7 @@ void Core::Binstrategy::BinningStrategy::extend_ghosting_of_binning_discretizati
 }
 
 void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
-    Teuchos::RCP<Core::FE::Discretization>& discret, Teuchos::RCP<Epetra_Map> const& rowbins,
+    Teuchos::RCP<Core::FE::Discretization>& discret, Epetra_Map& rowbins,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& disnp, Teuchos::RCP<Epetra_Map>& stdelecolmap,
     Teuchos::RCP<Epetra_Map>& stdnodecolmap) const
 {
@@ -1405,7 +1401,7 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
 
   // distribute nodes, that are owned by a proc, to the bins of this proc
   std::map<int, std::vector<int>> nodesinbin;
-  distribute_row_nodes_to_bins(discret, nodesinbin, disnp_col);
+  distribute_row_nodes_to_bins(*discret, nodesinbin, disnp_col);
 
   std::map<int, std::vector<int>> nodesinmybins;
   // gather information of bin content from other procs (bin is owned by
@@ -1476,12 +1472,12 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
 }
 
 void Core::Binstrategy::BinningStrategy::
-    collect_information_about_content_of_bins_from_other_procs_via_round_robin(
-        Teuchos::RCP<Epetra_Map> rowbins, std::map<int, std::vector<int>>& mynodesinbins,
+    collect_information_about_content_of_bins_from_other_procs_via_round_robin(Epetra_Map& rowbins,
+        std::map<int, std::vector<int>>& mynodesinbins,
         std::map<int, std::vector<int>>& allnodesinmybins) const
 {
   // do communication to gather all nodes
-  const int numproc = rowbins->Comm().NumProc();
+  const int numproc = rowbins.Comm().NumProc();
   for (int iproc = 0; iproc < numproc; ++iproc)
   {
     // vector with row bins on this proc
@@ -1489,17 +1485,17 @@ void Core::Binstrategy::BinningStrategy::
     int numbin;
     if (iproc == myrank_)
     {
-      int* myrowbinsdata = rowbins->MyGlobalElements();
-      numbin = rowbins->NumMyElements();
+      int* myrowbinsdata = rowbins.MyGlobalElements();
+      numbin = rowbins.NumMyElements();
       binids.insert(binids.begin(), myrowbinsdata, myrowbinsdata + numbin);
     }
 
     // first: proc i tells all procs how many bins it has
-    rowbins->Comm().Broadcast(&numbin, 1, iproc);
+    rowbins.Comm().Broadcast(&numbin, 1, iproc);
     binids.resize(numbin);
     // second: proc i tells all procs which bins it has, now each proc contains
     // rowbingids of iproc in vector binids
-    rowbins->Comm().Broadcast(binids.data(), numbin, iproc);
+    rowbins.Comm().Broadcast(binids.data(), numbin, iproc);
 
     // loop over all own bins and find requested ones, fill in master elements in these bins
     // (map key is bin gid owned by iproc, vector contains all node gids of all procs in this bin)
@@ -1518,7 +1514,7 @@ void Core::Binstrategy::BinningStrategy::
     }
 
     // iprocs gathers all this information from other procs
-    Core::LinAlg::gather<int>(sdata, rdata, 1, &iproc, rowbins->Comm());
+    Core::LinAlg::gather<int>(sdata, rdata, 1, &iproc, rowbins.Comm());
 
     // iproc has to store the received data
     if (iproc == myrank_)
@@ -1582,7 +1578,7 @@ void Core::Binstrategy::BinningStrategy::
   {
     Core::LinAlg::Matrix<3, 2> locXAABB;
     compute_min_binning_domain_containing_all_elements_of_single_discret(
-        discret[i], locXAABB, disnp[i], set_bin_size_lower_bound_);
+        *discret[i], locXAABB, disnp[i], set_bin_size_lower_bound_);
 
     // set XAABB_ considering all input discrets
     for (int dim = 0; dim < 3; ++dim)
@@ -1643,7 +1639,7 @@ void Core::Binstrategy::BinningStrategy::
   // create XAABB for discretization
   if (dis != Teuchos::null)
     compute_min_binning_domain_containing_all_elements_of_single_discret(
-        dis, domain_bounding_box_corner_positions_);
+        *dis, domain_bounding_box_corner_positions_);
 
   // divide global bounding box into bins
   for (int dim = 0; dim < 3; ++dim)
@@ -1688,7 +1684,7 @@ void Core::Binstrategy::BinningStrategy::
 
 void Core::Binstrategy::BinningStrategy::
     compute_min_binning_domain_containing_all_elements_of_single_discret(
-        Teuchos::RCP<Core::FE::Discretization> discret, Core::LinAlg::Matrix<3, 2>& XAABB,
+        Core::FE::Discretization& discret, Core::LinAlg::Matrix<3, 2>& XAABB,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp, bool set_bin_size_lower_bound_)
 {
   // set_bin_size_lower_bound_ as largest element in discret on each proc
@@ -1701,12 +1697,12 @@ void Core::Binstrategy::BinningStrategy::
   }
 
   // loop over row elements of each proc
-  for (int i = 0; i < discret->num_my_row_elements(); ++i)
+  for (int i = 0; i < discret.num_my_row_elements(); ++i)
   {
-    Core::Elements::Element* ele = discret->l_row_element(i);
+    Core::Elements::Element* ele = discret.l_row_element(i);
 
     const auto aabb = BinningStrategyImplementation::compute_aabb(
-        *discret, *ele, disnp, determine_relevant_points_);
+        discret, *ele, disnp, determine_relevant_points_);
     // compute lower bound for bin size as largest element in discret
     if (set_bin_size_lower_bound_)
     {
@@ -1730,8 +1726,8 @@ void Core::Binstrategy::BinningStrategy::
   double globmin[3];
   double globmax[3];
   // do the necessary communication
-  discret->get_comm().MinAll(locmin, globmin, 3);
-  discret->get_comm().MaxAll(locmax, globmax, 3);
+  discret.get_comm().MinAll(locmin, globmin, 3);
+  discret.get_comm().MaxAll(locmax, globmax, 3);
 
   // set global XAABB for discret
   for (int dim = 0; dim < 3; ++dim)
@@ -1744,7 +1740,7 @@ void Core::Binstrategy::BinningStrategy::
   if (set_bin_size_lower_bound_)
   {
     double globmax_set_bin_size_lower_bound = 0.0;
-    discret->get_comm().MaxAll(
+    discret.get_comm().MaxAll(
         &locmax_set_bin_size_lower_bound, &globmax_set_bin_size_lower_bound, 1);
     // this is necessary if more than one discret is relevant
     bin_size_lower_bound_ = std::max(globmax_set_bin_size_lower_bound, bin_size_lower_bound_);
@@ -1752,8 +1748,7 @@ void Core::Binstrategy::BinningStrategy::
 }
 
 void Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements(
-    Teuchos::RCP<Core::FE::Discretization>& discret,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp,
+    Core::FE::Discretization& discret, Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp,
     std::map<int, std::set<int>>& bintorowelemap)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements");
@@ -1766,12 +1761,12 @@ void Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements(
 
   double currpos[3] = {0.0, 0.0, 0.0};
   // loop over all column nodes and check ownership
-  for (int i = 0; i < discret->node_col_map()->NumMyElements(); ++i)
+  for (int i = 0; i < discret.node_col_map()->NumMyElements(); ++i)
   {
     // get current node and position
-    Core::Nodes::Node* currnode = discret->l_col_node(i);
+    Core::Nodes::Node* currnode = discret.l_col_node(i);
     const auto& corrected_node = correct_node_(*currnode);
-    Utils::get_current_node_pos(*discret, &corrected_node, disnp, currpos);
+    Utils::get_current_node_pos(discret, &corrected_node, disnp, currpos);
 
     int const gidofbin = convert_pos_to_gid(currpos);
 
@@ -1818,7 +1813,7 @@ void Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements(
       currele->set_owner(newowner);
       toranktosendeles[newowner].push_back(currele);
       std::vector<int> binids;
-      distribute_single_element_to_bins_using_ele_aabb(*discret, currele, binids, disnp);
+      distribute_single_element_to_bins_using_ele_aabb(discret, currele, binids, disnp);
       std::pair<int, std::vector<int>> dummy(currele->id(), binids);
       toranktosendbinids[newowner].push_back(dummy);
     }
@@ -1826,16 +1821,16 @@ void Core::Binstrategy::BinningStrategy::transfer_nodes_and_elements(
 
   // exploit bounding box idea for elements in underlying discretization and bins
   // loop over all row elements
-  for (int lid = 0; lid < discret->num_my_row_elements(); ++lid)
+  for (int lid = 0; lid < discret.num_my_row_elements(); ++lid)
   {
-    Core::Elements::Element* eleptr = discret->l_row_element(lid);
+    Core::Elements::Element* eleptr = discret.l_row_element(lid);
 
     // check if owner did change
     if (eleptr->owner() != myrank_) continue;
 
     // get corresponding bin ids in ijk range
     std::vector<int> binIds;
-    distribute_single_element_to_bins_using_ele_aabb(*discret, eleptr, binIds, disnp);
+    distribute_single_element_to_bins_using_ele_aabb(discret, eleptr, binIds, disnp);
 
     // assign element to bins
     std::vector<int>::const_iterator biniter;

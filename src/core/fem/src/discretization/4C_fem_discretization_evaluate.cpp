@@ -531,7 +531,7 @@ void Core::FE::Discretization::evaluate_scalars(
  *-----------------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate_scalars(
     Teuchos::ParameterList& params,  //! (in) parameter list
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector>
+    Core::LinAlg::SerialDenseVector&
         scalars,                    //! (out) result vector for scalar quantities to be computed
     const std::string& condstring,  //! (in) name of condition to be evaluated
     const int condid                //! (in) condition ID (optional)
@@ -543,7 +543,7 @@ void Core::FE::Discretization::evaluate_scalars(
     FOUR_C_THROW("assign_degrees_of_freedom() has not been called on discretization!");
 
   // determine number of scalar quantities to be computed
-  const int numscalars = scalars->length();
+  const int numscalars = scalars.length();
 
   // safety check
   if (numscalars <= 0)
@@ -607,7 +607,7 @@ void Core::FE::Discretization::evaluate_scalars(
   }          // loop over conditions
 
   // communicate results across all processors
-  get_comm().SumAll(cpuscalars.values(), scalars->values(), numscalars);
+  get_comm().SumAll(cpuscalars.values(), scalars.values(), numscalars);
 }  // Core::FE::Discretization::EvaluateScalars
 
 
@@ -672,7 +672,7 @@ void Core::FE::Discretization::evaluate_scalars(
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate_initial_field(
     const Core::UTILS::FunctionManager& function_manager, const std::string& fieldstring,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fieldvector, const std::vector<int>& locids) const
+    Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids) const
 {
   Core::FE::UTILS::evaluate_initial_field(
       function_manager, *this, fieldstring, fieldvector, locids);

@@ -82,9 +82,9 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::get_xaab_bof_eles(
   {
     Teuchos::RCP<Core::Elements::Element> currelement = elemiter->second;
     const Core::LinAlg::SerialDenseMatrix xyze_element(
-        Core::Geo::get_current_nodal_positions(currelement, currentpositions));
+        Core::Geo::get_current_nodal_positions(*currelement, currentpositions));
     Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
-    Core::Geo::check_rough_geo_type(currelement, xyze_element, eleGeoType);
+    Core::Geo::check_rough_geo_type(*currelement, xyze_element, eleGeoType);
     const Core::LinAlg::Matrix<3, 2> xaabbEle =
         Core::Geo::compute_fast_xaabb(currelement->shape(), xyze_element, eleGeoType);
     XAABB = merge_aabb(XAABB, xaabbEle);
@@ -297,7 +297,7 @@ void Core::Geo::search_collisions(const std::map<int, Core::LinAlg::Matrix<9, 2>
  | gives the coords of the nearest point on or in an object in  tk 01/10|
  | tree node; object is either a node or a line                         |
  *----------------------------------------------------------------------*/
-void Core::Geo::nearest_2d_object_in_node(const Teuchos::RCP<Core::FE::Discretization> dis,
+void Core::Geo::nearest_2d_object_in_node(const Core::FE::Discretization& dis,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const std::map<int, std::set<int>>& elementList, const Core::LinAlg::Matrix<3, 1>& point,
@@ -339,7 +339,7 @@ void Core::Geo::nearest_2d_object_in_node(const Teuchos::RCP<Core::FE::Discretiz
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
-      const Core::Nodes::Node* node = dis->g_node(*nodeIter);
+      const Core::Nodes::Node* node = dis.g_node(*nodeIter);
       Core::Geo::get_distance_to_point(node, currentpositions, point, distance);
       if (distance < min_distance)
       {
@@ -364,7 +364,7 @@ void Core::Geo::nearest_2d_object_in_node(const Teuchos::RCP<Core::FE::Discretiz
  | also surface id of nearest object is returned, in case of a          |
  | line or node, a random adjacent surface id is returned               |
  *----------------------------------------------------------------------*/
-int Core::Geo::nearest_3d_object_in_node(const Teuchos::RCP<Core::FE::Discretization> dis,
+int Core::Geo::nearest_3d_object_in_node(const Core::FE::Discretization& dis,
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const std::map<int, std::set<int>>& elementList, const Core::LinAlg::Matrix<3, 1>& point,
@@ -422,7 +422,7 @@ int Core::Geo::nearest_3d_object_in_node(const Teuchos::RCP<Core::FE::Discretiza
     for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
          nodeIter != (labelIter->second).end(); nodeIter++)
     {
-      const Core::Nodes::Node* node = dis->g_node(*nodeIter);
+      const Core::Nodes::Node* node = dis.g_node(*nodeIter);
       Core::Geo::get_distance_to_point(node, currentpositions, point, distance);
       if (distance < min_distance)
       {
@@ -720,10 +720,10 @@ void Core::Geo::check_rough_geo_type(const Core::Elements::Element* element,
  | determines the geometry type of an element                 u.may 09/09|
  |  -->needed for Teuchos::RCP on element                                |
  *----------------------------------------------------------------------*/
-void Core::Geo::check_rough_geo_type(const Teuchos::RCP<Core::Elements::Element> element,
+void Core::Geo::check_rough_geo_type(const Core::Elements::Element& element,
     const Core::LinAlg::SerialDenseMatrix xyze_element, Core::Geo::EleGeoType& eleGeoType)
 {
-  const int order = Core::FE::get_order(element->shape());
+  const int order = Core::FE::get_order(element.shape());
 
   if (order == 1)
     eleGeoType = Core::Geo::LINEAR;  // TODO check for bilinear elements in the tree they count

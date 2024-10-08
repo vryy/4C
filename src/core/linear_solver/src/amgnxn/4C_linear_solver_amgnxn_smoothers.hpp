@@ -43,9 +43,8 @@ namespace Core::LinearSolver::AMGNxN
     virtual void solve(
         const BlockedVector& X, BlockedVector& Y, bool InitialGuessIsZero = false) const = 0;
 
-    void richardson(Teuchos::RCP<GenericSmoother> Ainv, const BlockedMatrix& A,
-        const BlockedVector& X, BlockedVector& Y, int iters, double omega,
-        bool InitialGuessIsZero) const;
+    void richardson(GenericSmoother& Ainv, const BlockedMatrix& A, const BlockedVector& X,
+        BlockedVector& Y, int iters, double omega, bool InitialGuessIsZero) const;
     // if InitialGuessIsZero == true we can input any random initial guess and the smoother will
     // take care of making the final result be as if the initial guess would be zero. This
     // avoids to scale to zero the initial guess, and make a little more efficient the smoother

@@ -269,23 +269,6 @@ void Core::LinAlg::Ana::LcOperatorTimesLc::update(
 
 
 /*----------------------------------------------------------------------*
-   vec dot vec (result is scalar)
- *----------------------------------------------------------------------*/
-double Core::LinAlg::Ana::operator*(
-    const Core::LinAlg::Ana::Vector& vec1, const Core::LinAlg::Ana::Vector& vec2)
-{
-#if DEBUGGING_ANA
-  cout << "double operator* (const Core::LinAlg::Ana::Vector& vec1, const "
-          "Core::LinAlg::Ana::Vector& vec2)"
-       << endl;
-  fflush(stdout);
-#endif
-  double result;
-  vec1.Dot(vec2, &result);
-  return result;
-}
-
-/*----------------------------------------------------------------------*
    lc dot lc (result is scalar)
  *----------------------------------------------------------------------*/
 double Core::LinAlg::Ana::operator*(
@@ -306,43 +289,6 @@ double Core::LinAlg::Ana::operator*(
   return result;
 }
 
-/*----------------------------------------------------------------------*
-   vec dot lc (result is scalar)
- *----------------------------------------------------------------------*/
-double Core::LinAlg::Ana::operator*(
-    const Core::LinAlg::Ana::Vector& vec1, const Core::LinAlg::Ana::LCBase& right)
-{
-#if DEBUGGING_ANA
-  cout << "double operator* (const Core::LinAlg::Ana::Vector& vec1, const "
-          "Core::LinAlg::Ana::LCBase& right)"
-       << endl;
-  fflush(stdout);
-#endif
-  Core::LinAlg::Ana::Vector tmp(right.range_map(), false);
-  right.set(tmp, 1.0);
-  double result;
-  vec1.Dot(tmp, &result);
-  return result;
-}
-
-/*----------------------------------------------------------------------*
-   vec dot lcsv (result is scalar) (specialization)
- *----------------------------------------------------------------------*/
-double Core::LinAlg::Ana::operator*(
-    const Core::LinAlg::Ana::Vector& vec1, const Core::LinAlg::Ana::LCSTimesVec& right)
-{
-#if DEBUGGING_ANA
-  cout << "double operator* (const Core::LinAlg::Ana::Vector& vec1, const "
-          "Core::LinAlg::Ana::LCSTimesVec& "
-          "right)"
-       << endl;
-  fflush(stdout);
-#endif
-  double result;
-  vec1.Dot(right.vector(), &result);
-  result *= right.scalar();
-  return result;
-}
 
 /*----------------------------------------------------------------------*
    lcsv dot lcsv (result is scalar) (specialization)

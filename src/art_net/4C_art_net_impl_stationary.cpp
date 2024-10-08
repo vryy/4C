@@ -711,7 +711,7 @@ void Arteries::ArtNetImplStationary::set_initial_field(
       localdofs.push_back(0);
 
       discret_->evaluate_initial_field(
-          Global::Problem::instance()->function_manager(), field, pressurenp_, localdofs);
+          Global::Problem::instance()->function_manager(), field, *pressurenp_, localdofs);
 
       break;
     }

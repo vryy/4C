@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 void Core::FE::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
     const Core::FE::Discretization& discret, const std::string& fieldstring,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fieldvector, const std::vector<int>& locids)
+    Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids)
 {
   // get initial field conditions
   std::vector<Core::Conditions::Condition*> initfieldconditions;
@@ -54,7 +54,7 @@ void Core::FE::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager&
       if (initfieldcondition->type() != type) continue;
       const std::string condstring = initfieldcondition->parameters().get<std::string>("Field");
       if (condstring != fieldstring) continue;
-      do_initial_field(function_manager, discret, *initfieldcondition, *fieldvector, locids);
+      do_initial_field(function_manager, discret, *initfieldcondition, fieldvector, locids);
     }
   }
 }

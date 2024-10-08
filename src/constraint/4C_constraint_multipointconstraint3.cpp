@@ -54,7 +54,7 @@ CONSTRAINTS::MPConstraint3::MPConstraint3(Teuchos::RCP<Core::FE::Discretization>
     {
       // ReplaceNumDof(actdisc_,discriter->second);
       Teuchos::RCP<Epetra_Map> newcolnodemap =
-          Core::Rebalance::compute_node_col_map(actdisc_, discriter->second);
+          Core::Rebalance::compute_node_col_map(*actdisc_, *discriter->second);
       actdisc_->redistribute(*(actdisc_->node_row_map()), *newcolnodemap);
       Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
           Teuchos::make_rcp<Core::DOFSets::TransparentDofSet>(actdisc_);

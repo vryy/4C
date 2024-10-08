@@ -164,7 +164,7 @@ namespace Core::Geo
    * nodes
    */
   Core::LinAlg::SerialDenseMatrix get_current_nodal_positions(
-      const Teuchos::RCP<const Core::Elements::Element> ele,  ///< pointer on element
+      const Core::Elements::Element& ele,  ///< pointer on element
       const std::map<int, Core::LinAlg::Matrix<3, 1>>&
           currentpositions  ///< current positions of all cutter nodes
   );

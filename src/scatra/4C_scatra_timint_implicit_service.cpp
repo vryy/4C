@@ -421,7 +421,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
           Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(1);
 
       // compute value of boundary integral
-      discret_->evaluate_scalars(params, boundaryint_vector, "ScaTraFluxCalc", icond);
+      discret_->evaluate_scalars(params, *boundaryint_vector, "ScaTraFluxCalc", icond);
 
       // extract value of boundary integral
       boundaryint = (*boundaryint_vector)(0);
@@ -1170,7 +1170,7 @@ void ScaTra::ScaTraTimIntImpl::output_to_gmsh(const int step, const double time)
     gmshfilecontent << "View \" "
                     << "Phinp \" {" << std::endl;
     // draw scalar field 'Phinp' for every element
-    Core::IO::Gmsh::scalar_field_to_gmsh(discret_, phinp_, gmshfilecontent);
+    Core::IO::Gmsh::scalar_field_to_gmsh(*discret_, phinp_, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
   {
@@ -1185,7 +1185,7 @@ void ScaTra::ScaTraTimIntImpl::output_to_gmsh(const int step, const double time)
       FOUR_C_THROW("Cannot extract convective velocity field from discretization");
 
     // draw vector field 'Convective Velocity' for every element
-    Core::IO::Gmsh::vector_field_dof_based_to_gmsh(discret_, convel, gmshfilecontent, nds_vel());
+    Core::IO::Gmsh::vector_field_dof_based_to_gmsh(*discret_, convel, gmshfilecontent, nds_vel());
     gmshfilecontent << "};" << std::endl;
   }
   gmshfilecontent.close();
@@ -2202,7 +2202,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
         // get (squared) error values
         Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
             Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(4 * num_dof_per_node());
-        discret_->evaluate_scalars(eleparams, errors, "ScatraRelError", condid);
+        discret_->evaluate_scalars(eleparams, *errors, "ScatraRelError", condid);
 
         // compute index offset
         const int offset = condid * num_dof_per_node() * 2;
@@ -2837,7 +2837,7 @@ void ScaTra::OutputDomainIntegralStrategy::evaluate_integrals_and_print_results(
         Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(1);
 
     // compute value of current domain or boundary integral
-    discret->evaluate_scalars(condparams, integralvalue, condstring, condid);
+    discret->evaluate_scalars(condparams, *integralvalue, condstring, condid);
 
     // output results to screen and file
     if (myrank == 0)
@@ -2909,7 +2909,7 @@ void ScaTra::OutputScalarsStrategyCondition::evaluate_integrals(
         numdofpernode + 1 + num_active_scalars + num_micro_dis);
 
     // perform integration
-    scatratimint->discret_->evaluate_scalars(eleparams, scalars, "TotalAndMeanScalar", condid);
+    scatratimint->discret_->evaluate_scalars(eleparams, *scalars, "TotalAndMeanScalar", condid);
 
     // extract domain integral
     domainintegral_[condid] = (*scalars)[numdofpernode];

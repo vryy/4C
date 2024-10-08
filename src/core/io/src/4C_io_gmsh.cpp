@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------------------------------*
  | write scalar field to Gmsh postprocessing file                                     henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
-void Core::IO::Gmsh::scalar_field_to_gmsh(const Teuchos::RCP<Core::FE::Discretization> discret,
+void Core::IO::Gmsh::scalar_field_to_gmsh(Core::FE::Discretization& discret,
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarfield_row, std::ostream& s)
 {
   // tranform solution vector from dof_row_map to DofColMap
@@ -33,9 +33,9 @@ void Core::IO::Gmsh::scalar_field_to_gmsh(const Teuchos::RCP<Core::FE::Discretiz
       Core::Rebalance::get_col_version_of_row_vector(discret, scalarfield_row);
 
   // loop all row elements on this processor
-  for (int iele = 0; iele < discret->num_my_row_elements(); ++iele)
+  for (int iele = 0; iele < discret.num_my_row_elements(); ++iele)
   {
-    const Core::Elements::Element* ele = discret->l_row_element(iele);
+    const Core::Elements::Element* ele = discret.l_row_element(iele);
     const Core::FE::CellType distype = ele->shape();
     const int numnode = distype_to_gmsh_num_node(distype);
 
@@ -58,7 +58,7 @@ void Core::IO::Gmsh::scalar_field_to_gmsh(const Teuchos::RCP<Core::FE::Discretiz
     std::vector<int> lm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
-    ele->location_vector(*discret, lm, lmowner, lmstride);
+    ele->location_vector(discret, lm, lmowner, lmstride);
 
     // extract local values from the global vector
     Core::LinAlg::SerialDenseVector myscalarfield(lm.size());
@@ -75,8 +75,7 @@ void Core::IO::Gmsh::scalar_field_to_gmsh(const Teuchos::RCP<Core::FE::Discretiz
 /*------------------------------------------------------------------------------------------------*
  | write scalar field to Gmsh postprocessing file                                     henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
-void Core::IO::Gmsh::scalar_field_dof_based_to_gmsh(
-    const Teuchos::RCP<Core::FE::Discretization> discret,
+void Core::IO::Gmsh::scalar_field_dof_based_to_gmsh(Core::FE::Discretization& discret,
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarfield_row, const int nds,
     std::ostream& s)
 {
@@ -85,9 +84,9 @@ void Core::IO::Gmsh::scalar_field_dof_based_to_gmsh(
       Core::Rebalance::get_col_version_of_row_vector(discret, scalarfield_row, nds);
 
   // loop all row elements on this processor
-  for (int iele = 0; iele < discret->num_my_row_elements(); ++iele)
+  for (int iele = 0; iele < discret.num_my_row_elements(); ++iele)
   {
-    const Core::Elements::Element* ele = discret->l_row_element(iele);
+    const Core::Elements::Element* ele = discret.l_row_element(iele);
     const Core::FE::CellType distype = ele->shape();
     const int numnode = distype_to_gmsh_num_node(distype);
 
@@ -107,8 +106,8 @@ void Core::IO::Gmsh::scalar_field_dof_based_to_gmsh(
     // write node coordinates to Gmsh stream
     coordinates_to_stream(xyze, distype, s);
 
-    Core::Elements::LocationArray la(discret->num_dof_sets());
-    ele->location_vector(*discret, la, false);
+    Core::Elements::LocationArray la(discret.num_dof_sets());
+    ele->location_vector(discret, la, false);
 
     // extract local values from the global vector
     Core::LinAlg::SerialDenseVector myscalarfield(la[nds].lm_.size());
@@ -146,14 +145,12 @@ void Core::IO::Gmsh::scalar_field_dof_based_to_gmsh(
 /*------------------------------------------------------------------------------------------------*
  | write scalar element-based field to Gmsh postprocessing file                  winklmaier 12/09 |
  *------------------------------------------------------------------------------------------------*/
-void Core::IO::Gmsh::scalar_element_field_to_gmsh(
-    const Teuchos::RCP<Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarfield_ele_row, std::ostream& s)
+void Core::IO::Gmsh::scalar_element_field_to_gmsh(const Core::FE::Discretization& discret,
+    const Core::LinAlg::Vector<double>& scalarfield_ele_row, std::ostream& s)
 {
-  if (scalarfield_ele_row->Map().SameAs(*discret->element_row_map()) == false)
+  if (scalarfield_ele_row.Map().SameAs(*discret.element_row_map()) == false)
   {
-    std::cout << scalarfield_ele_row->Map() << std::endl
-              << *discret->element_row_map() << std::endl;
+    std::cout << scalarfield_ele_row.Map() << std::endl << *discret.element_row_map() << std::endl;
     FOUR_C_THROW("The written field should be based on the element row map");
   }
 
@@ -161,9 +158,9 @@ void Core::IO::Gmsh::scalar_element_field_to_gmsh(
   // we result in the correct solution - gmsh writes nodal values for every
   // element, so that the same node can get different values for different
   // elements (similar to discontinuous methods)
-  for (int iele = 0; iele < discret->num_my_row_elements(); ++iele)
+  for (int iele = 0; iele < discret.num_my_row_elements(); ++iele)
   {
-    const Core::Elements::Element* ele = discret->l_row_element(iele);
+    const Core::Elements::Element* ele = discret.l_row_element(iele);
     const Core::FE::CellType distype = ele->shape();
     const int numnode = distype_to_gmsh_num_node(distype);
 
@@ -183,7 +180,7 @@ void Core::IO::Gmsh::scalar_element_field_to_gmsh(
     // write node coordinates to Gmsh stream
     coordinates_to_stream(xyze, distype, s);
 
-    double eleval = (*scalarfield_ele_row)[iele];
+    double eleval = (scalarfield_ele_row)[iele];
 
     // constant value for all nodes
     Core::LinAlg::SerialDenseVector myscalarfield(ele->num_node());
@@ -199,8 +196,7 @@ void Core::IO::Gmsh::scalar_element_field_to_gmsh(
 /*------------------------------------------------------------------------------------------------*
  | write dof-based vector field to Gmsh postprocessing file                           henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
-void Core::IO::Gmsh::vector_field_dof_based_to_gmsh(
-    const Teuchos::RCP<Core::FE::Discretization> discret,
+void Core::IO::Gmsh::vector_field_dof_based_to_gmsh(Core::FE::Discretization& discret,
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> vectorfield_row, std::ostream& s,
     const int nds, bool displacenodes)
 {
@@ -209,9 +205,9 @@ void Core::IO::Gmsh::vector_field_dof_based_to_gmsh(
       Core::Rebalance::get_col_version_of_row_vector(discret, vectorfield_row, nds);
 
   // loop all row elements on this processor
-  for (int iele = 0; iele < discret->num_my_row_elements(); ++iele)
+  for (int iele = 0; iele < discret.num_my_row_elements(); ++iele)
   {
-    const Core::Elements::Element* ele = discret->l_row_element(iele);
+    const Core::Elements::Element* ele = discret.l_row_element(iele);
     const Core::FE::CellType distype = ele->shape();
     const int numnode = distype_to_gmsh_num_node(distype);
     const int nsd = Core::FE::get_dimension(distype);
@@ -224,8 +220,8 @@ void Core::IO::Gmsh::vector_field_dof_based_to_gmsh(
       for (int idim = 0; idim < nsd; ++idim) xyze(idim, inode) = nodes[inode]->x()[idim];
     }
 
-    Core::Elements::LocationArray la(discret->num_dof_sets());
-    ele->location_vector(*discret, la, false);
+    Core::Elements::LocationArray la(discret.num_dof_sets());
+    ele->location_vector(discret, la, false);
 
     // extract local values from the global vector
     Core::LinAlg::SerialDenseVector extractmyvectorfield(la[nds].lm_.size());
@@ -263,20 +259,19 @@ void Core::IO::Gmsh::vector_field_dof_based_to_gmsh(
  | write multivector field to Gmsh postprocessing file                               winter 04/17 |
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::vector_field_multi_vector_dof_based_to_gmsh(
-    const Teuchos::RCP<const Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Epetra_MultiVector> vectorfield_row, std::ostream& s, const int nds)
+    const Core::FE::Discretization& discret, const Epetra_MultiVector& vectorfield_row,
+    std::ostream& s, const int nds)
 {
   // TODO: Remove dependence on size of Epetra_Multivector!!!
 
   // tranform solution vector from dof_row_map to DofColMap
-  const Teuchos::RCP<Epetra_MultiVector> vectorfield =
-      Teuchos::make_rcp<Epetra_MultiVector>(*discret->dof_col_map(nds), 3, true);
-  Core::LinAlg::export_to(*vectorfield_row, *vectorfield);
+  Epetra_MultiVector vectorfield(*discret.dof_col_map(nds), 3, true);
+  Core::LinAlg::export_to(vectorfield_row, vectorfield);
 
   // loop all row elements on this processor
-  for (int iele = 0; iele < discret->num_my_row_elements(); ++iele)
+  for (int iele = 0; iele < discret.num_my_row_elements(); ++iele)
   {
-    const Core::Elements::Element* ele = discret->l_row_element(iele);
+    const Core::Elements::Element* ele = discret.l_row_element(iele);
     const Core::FE::CellType distype = ele->shape();
     const int numnode = distype_to_gmsh_num_node(distype);
     const int nsd = Core::FE::get_dimension(distype);
@@ -298,14 +293,14 @@ void Core::IO::Gmsh::vector_field_multi_vector_dof_based_to_gmsh(
     // write node coordinates to Gmsh stream
     coordinates_to_stream(xyze, distype, s);
 
-    Core::Elements::LocationArray la(discret->num_dof_sets());
-    ele->location_vector(*discret, la, false);
+    Core::Elements::LocationArray la(discret.num_dof_sets());
+    ele->location_vector(discret, la, false);
 
     // extract local values from the global vector
     // Core::LinAlg::SerialDenseVector extractmyvectorfield(la[nds].lm_.size());
     Core::LinAlg::SerialDenseMatrix myvectorfield(nsd, numnode);
     std::vector<double> local_vector;
-    Core::FE::extract_my_values(*vectorfield, local_vector, la[nds].lm_);
+    Core::FE::extract_my_values(vectorfield, local_vector, la[nds].lm_);
 
     for (int inode = 0; inode < numnode; ++inode)
     {
@@ -325,8 +320,7 @@ void Core::IO::Gmsh::vector_field_multi_vector_dof_based_to_gmsh(
 /*------------------------------------------------------------------------------------------------*
  | write dof-based vector field to Gmsh postprocessing file at current position      schott 12/09 |
  *------------------------------------------------------------------------------------------------*/
-void Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
-    const Teuchos::RCP<Core::FE::Discretization> discret,
+void Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(Core::FE::Discretization& discret,
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> vectorfield_row,
     std::map<int, Core::LinAlg::Matrix<3, 1>>& currpos, std::ostream& s, const int nsd,
     const int numdofpernode)
@@ -336,9 +330,9 @@ void Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
       Core::Rebalance::get_col_version_of_row_vector(discret, vectorfield_row);
 
   // loop all row elements on this processor
-  for (int iele = 0; iele < discret->num_my_row_elements(); ++iele)
+  for (int iele = 0; iele < discret.num_my_row_elements(); ++iele)
   {
-    const Core::Elements::Element* ele = discret->l_row_element(iele);
+    const Core::Elements::Element* ele = discret.l_row_element(iele);
     const Core::FE::CellType distype = ele->shape();
     const int numnode = distype_to_gmsh_num_node(distype);
 
@@ -361,7 +355,7 @@ void Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
     std::vector<int> lm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
-    ele->location_vector(*discret, lm, lmowner, lmstride);
+    ele->location_vector(discret, lm, lmowner, lmstride);
 
     // extract local values from the global vector
     Core::LinAlg::SerialDenseVector extractmyvectorfield(lm.size());
@@ -387,8 +381,7 @@ void Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
  | write scalar / vector from a dof-based vector field (e.g. velocity)                            |
  | to Gmsh postprocessing file                                                         ehrl 05/11 |
  *------------------------------------------------------------------------------------------------*/
-void Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(
-    const Teuchos::RCP<Core::FE::Discretization> discret,
+void Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(Core::FE::Discretization& discret,
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> vectorfield_row, const std::string field,
     std::ostream& s, const int nds)
 {
@@ -397,9 +390,9 @@ void Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(
       Core::Rebalance::get_col_version_of_row_vector(discret, vectorfield_row, nds);
 
   // loop all row elements on this processor
-  for (int iele = 0; iele < discret->num_my_row_elements(); ++iele)
+  for (int iele = 0; iele < discret.num_my_row_elements(); ++iele)
   {
-    const Core::Elements::Element* ele = discret->l_row_element(iele);
+    const Core::Elements::Element* ele = discret.l_row_element(iele);
     const Core::FE::CellType distype = ele->shape();
     const int numnode = distype_to_gmsh_num_node(distype);
     const int nsd = Core::FE::get_dimension(distype);
@@ -412,8 +405,8 @@ void Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(
       for (int idim = 0; idim < nsd; ++idim) xyze(idim, inode) = nodes[inode]->x()[idim];
     }
 
-    Core::Elements::LocationArray la(discret->num_dof_sets());
-    ele->location_vector(*discret, la, false);
+    Core::Elements::LocationArray la(discret.num_dof_sets());
+    ele->location_vector(discret, la, false);
 
     // extract local values from the global vector
     Core::LinAlg::SerialDenseVector extractmyvectorfield(la[nds].lm_.size());
@@ -478,21 +471,20 @@ void Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(
 /*------------------------------------------------------------------------------------------------*
  | write node-based vector field to Gmsh postprocessing file                          henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
-void Core::IO::Gmsh::vector_field_node_based_to_gmsh(
-    const Teuchos::RCP<const Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Epetra_MultiVector> vectorfield_row, std::ostream& s)
+void Core::IO::Gmsh::vector_field_node_based_to_gmsh(const Core::FE::Discretization& discret,
+    const Epetra_MultiVector& vectorfield_row, std::ostream& s)
 {
   // tranform solution vector from NodeRowMap to NodeColMap
   // remark: Core::Rebalance::get_col_version_of_row_vector() does only work for
   // Core::LinAlg::Vectors on dof_row_map
   const Teuchos::RCP<Epetra_MultiVector> vectorfield =
-      Teuchos::make_rcp<Epetra_MultiVector>(*discret->node_col_map(), 3, true);
-  Core::LinAlg::export_to(*vectorfield_row, *vectorfield);
+      Teuchos::make_rcp<Epetra_MultiVector>(*discret.node_col_map(), 3, true);
+  Core::LinAlg::export_to(vectorfield_row, *vectorfield);
 
   // loop all row elements on this processor
-  for (int iele = 0; iele < discret->num_my_row_elements(); ++iele)
+  for (int iele = 0; iele < discret.num_my_row_elements(); ++iele)
   {
-    const Core::Elements::Element* ele = discret->l_row_element(iele);
+    const Core::Elements::Element* ele = discret.l_row_element(iele);
     const Core::FE::CellType distype = ele->shape();
     const int numnode = ele->num_node();
     const int nsd = Core::FE::get_dimension(distype);
@@ -526,23 +518,21 @@ void Core::IO::Gmsh::vector_field_node_based_to_gmsh(
 /*------------------------------------------------------------------------------------------------*
  | write node-based scalar field to Gmsh postprocessing file                      rasthofer 09/13 |
  *------------------------------------------------------------------------------------------------*/
-void Core::IO::Gmsh::scalar_field_node_based_to_gmsh(
-    const Teuchos::RCP<const Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarfield_row, std::ostream& s)
+void Core::IO::Gmsh::scalar_field_node_based_to_gmsh(const Core::FE::Discretization& discret,
+    const Core::LinAlg::Vector<double>& scalarfield_row, std::ostream& s)
 {
   // tranform solution vector from NodeRowMap to NodeColMap
   // remark: Core::Rebalance::get_col_version_of_row_vector() does only work for
   // Core::LinAlg::Vectors on dof_row_map
   //         something similar is done in COMBUST::FlameFront::ProcessFlameFront, although not for
   //         Epetra_MultiVectors
-  const Teuchos::RCP<Core::LinAlg::Vector<double>> scalarfield =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret->node_col_map(), true);
-  Core::LinAlg::export_to(*scalarfield_row, *scalarfield);
+  Core::LinAlg::Vector<double> scalarfield(*discret.node_col_map(), true);
+  Core::LinAlg::export_to(scalarfield_row, scalarfield);
 
   // loop all row elements on this processor
-  for (int iele = 0; iele < discret->num_my_row_elements(); ++iele)
+  for (int iele = 0; iele < discret.num_my_row_elements(); ++iele)
   {
-    const Core::Elements::Element* ele = discret->l_row_element(iele);
+    const Core::Elements::Element* ele = discret.l_row_element(iele);
     const Core::FE::CellType distype = ele->shape();
     const int numnode = ele->num_node();
 
@@ -565,7 +555,7 @@ void Core::IO::Gmsh::scalar_field_node_based_to_gmsh(
     // extract local values from the global vector
     Core::LinAlg::SerialDenseVector myscalarfield(numnode);
     Core::FE::extract_my_node_based_values(
-        ele, myscalarfield, scalarfield->get_ptr_of_Epetra_MultiVector(), 1);
+        ele, myscalarfield, scalarfield.get_ptr_of_Epetra_MultiVector(), 1);
 
     // write vector field to Gmsh stream
     scalar_field_to_stream(myscalarfield, distype, s);
@@ -694,19 +684,19 @@ std::string Core::IO::Gmsh::text3d_to_string(
 }
 
 void Core::IO::Gmsh::dis_to_stream(const std::string& text, const double scalar,
-    const Teuchos::RCP<Core::FE::Discretization> dis, std::ostream& s)
+    const Core::FE::Discretization& dis, std::ostream& s)
 {
   s << "View \" " << text << " Elements \" {\n";
-  for (int i = 0; i < dis->num_my_row_elements(); ++i)
+  for (int i = 0; i < dis.num_my_row_elements(); ++i)
   {
-    const Core::Elements::Element* actele = dis->l_row_element(i);
+    const Core::Elements::Element* actele = dis.l_row_element(i);
     Core::IO::Gmsh::element_at_initial_position_to_stream(scalar, actele, s);
   }
   s << "};\n";
 }
 
 std::string Core::IO::Gmsh::dis_to_string(
-    const std::string& text, const double scalar, const Teuchos::RCP<Core::FE::Discretization> dis)
+    const std::string& text, const double scalar, Core::FE::Discretization& dis)
 {
   std::ostringstream s;
   dis_to_stream(text, scalar, dis, s);
@@ -714,14 +704,14 @@ std::string Core::IO::Gmsh::dis_to_string(
 }
 
 void Core::IO::Gmsh::dis_to_stream(const std::string& text, const double scalar,
-    const Teuchos::RCP<Core::FE::Discretization> dis,
+    const Core::FE::Discretization& dis,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions, std::ostream& s)
 {
   s << "View \" " << text << " Elements \" {\n";
 
-  for (int i = 0; i < dis->num_my_col_elements(); ++i)
+  for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
-    const Core::Elements::Element* actele = dis->l_col_element(i);
+    const Core::Elements::Element* actele = dis.l_col_element(i);
     Core::IO::Gmsh::cell_with_scalar_to_stream(actele->shape(), scalar,
         Core::Geo::get_current_nodal_positions(actele, currentpositions), s);
   }
@@ -729,7 +719,7 @@ void Core::IO::Gmsh::dis_to_stream(const std::string& text, const double scalar,
 }
 
 std::string Core::IO::Gmsh::dis_to_string(const std::string& text, const double scalar,
-    const Teuchos::RCP<Core::FE::Discretization> dis,
+    Core::FE::Discretization& dis,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions)
 {
   std::ostringstream s;

@@ -16,12 +16,12 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::FE
 {
   Teuchos::RCP<Epetra_MultiVector> compute_null_space(const Core::FE::Discretization& dis,
-      const int numdf, const int dimns, const Teuchos::RCP<Epetra_Map> dofmap)
+      const int numdf, const int dimns, const Epetra_Map& dofmap)
   {
     if (dimns > 10) FOUR_C_THROW("Nullspace size only up to 10 supported!");
 
     Teuchos::RCP<Epetra_MultiVector> nullspace =
-        Teuchos::make_rcp<Epetra_MultiVector>(*dofmap, dimns, true);
+        Teuchos::make_rcp<Epetra_MultiVector>(dofmap, dimns, true);
 
     if (dimns == 1 && numdf == 1)
     {
@@ -51,7 +51,7 @@ namespace Core::FE
         if (localLength == 0) continue;
 
         // check if dof is exisiting as index
-        if (dofmap->LID(dofs[0]) == -1) continue;
+        if (dofmap.LID(dofs[0]) == -1) continue;
 
         // check size of degrees of freedom
         if (localLength != numdf)
@@ -96,11 +96,11 @@ namespace Core::FE
           double** arrayOfPointers;
           nullspace->ExtractView(&arrayOfPointers);
           double* data = arrayOfPointers[dim];
-          Teuchos::ArrayRCP<double> dataVector(data, dofmap->LID(dofs[0]), localLength, false);
+          Teuchos::ArrayRCP<double> dataVector(data, dofmap.LID(dofs[0]), localLength, false);
 
           for (int j = 0; j < localLength; ++j)
           {
-            const int lid = dofmap->LID(dofs[j]);
+            const int lid = dofmap.LID(dofs[j]);
             dataVector[lid] = nodalNullspace(j, dim);
           }
         }

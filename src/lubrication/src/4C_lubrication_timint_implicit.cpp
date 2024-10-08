@@ -1154,7 +1154,7 @@ void LUBRICATION::TimIntImpl::output_to_gmsh(const int step, const double time) 
     gmshfilecontent << "View \" "
                     << "Prenp \" {" << std::endl;
     // draw pressure field 'Prenp' for every element
-    Core::IO::Gmsh::scalar_field_to_gmsh(discret_, prenp_, gmshfilecontent);
+    Core::IO::Gmsh::scalar_field_to_gmsh(*discret_, prenp_, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 

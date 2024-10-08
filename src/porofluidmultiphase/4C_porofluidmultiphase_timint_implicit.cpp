@@ -1367,7 +1367,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::reconstruct_flux()
     case Inpar::POROFLUIDMULTIPHASE::gradreco_l2:
     {
       const auto& solverparams = Global::Problem::instance()->solver_params(fluxreconsolvernum_);
-      flux_ = Core::FE::compute_nodal_l2_projection(discret_, "phinp_fluid", numvec, eleparams,
+      flux_ = Core::FE::compute_nodal_l2_projection(*discret_, "phinp_fluid", numvec, eleparams,
           solverparams, Global::Problem::instance()->solver_params_callback());
       break;
     }
@@ -2031,7 +2031,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::set_initial_field(
         localdofs[i] = i;
       }
       discret_->evaluate_initial_field(
-          Global::Problem::instance()->function_manager(), field, phin_, localdofs);
+          Global::Problem::instance()->function_manager(), field, *phin_, localdofs);
 
       // initialize also the solution vector. These values are a pretty good guess for the
       // solution after the first time step (much better than starting with a zero vector)

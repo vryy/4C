@@ -268,7 +268,7 @@ namespace Core::LinAlg
    \date 10/08
    */
   Teuchos::RCP<Core::LinAlg::MapExtractor> convert_dirichlet_toggle_vector_to_maps(
-      const Teuchos::RCP<const Core::LinAlg::Vector<double>>& dbctoggle);
+      const Core::LinAlg::Vector<double>& dbctoggle);
 
 }  // namespace Core::LinAlg
 

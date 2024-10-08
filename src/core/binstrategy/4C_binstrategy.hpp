@@ -383,8 +383,7 @@ namespace Core::Binstrategy
      * \param[in] binrowmap bin row map
      * \param[out] bincenters centers of all row bins
      */
-    void get_all_bin_centers(
-        Teuchos::RCP<Epetra_Map>& binrowmap, Teuchos::RCP<Epetra_MultiVector>& bincenters) const;
+    void get_all_bin_centers(Epetra_Map& binrowmap, Epetra_MultiVector& bincenters) const;
 
     /*!
      * \brief centroid position for given bin id
@@ -459,7 +458,7 @@ namespace Core::Binstrategy
      *
      * \param[in] rowbins row bins distribution
      */
-    void fill_bins_into_bin_discretization(Teuchos::RCP<Epetra_Map> const& rowbins);
+    void fill_bins_into_bin_discretization(Epetra_Map& rowbins);
 
     //! \}
 
@@ -508,7 +507,7 @@ namespace Core::Binstrategy
      * \param[in] extended_bin_to_row_ele_map map containing bins [key] and elements[std::set]
      * that belong to it
      */
-    void assign_eles_to_bins(Teuchos::RCP<Core::FE::Discretization> discret,
+    void assign_eles_to_bins(Core::FE::Discretization& discret,
         std::map<int, std::set<int>> const& extended_bin_to_row_ele_map,
         const std::function<Utils::BinContentType(const Core::Elements::Element* element)>&) const;
 
@@ -536,7 +535,7 @@ namespace Core::Binstrategy
      * \param[out] bin_to_rownodes_map bin to row nodes assignment map
      * \param[in] disnp current column displacement state
      */
-    void distribute_row_nodes_to_bins(Teuchos::RCP<Core::FE::Discretization> discret,
+    void distribute_row_nodes_to_bins(Core::FE::Discretization& discret,
         std::map<int, std::vector<int>>& bin_to_rownodes_map,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp = Teuchos::null) const;
 
@@ -625,8 +624,8 @@ namespace Core::Binstrategy
      * \param[in] assigndegreesoffreedom flag indicating if degrees of freedom should be assigned
      *
      */
-    void extend_ghosting_of_binning_discretization(Teuchos::RCP<Epetra_Map> rowbins,
-        std::set<int> const& colbins, bool assigndegreesoffreedom = true);
+    void extend_ghosting_of_binning_discretization(
+        Epetra_Map& rowbins, std::set<int> const& colbins, bool assigndegreesoffreedom = true);
 
     /*!
      * \brief do standard ghosting for input discretization
@@ -638,7 +637,7 @@ namespace Core::Binstrategy
      * \param[out] stdnodecolmap standard node column map
      */
     void standard_discretization_ghosting(Teuchos::RCP<Core::FE::Discretization>& discret,
-        Teuchos::RCP<Epetra_Map> const& rowbins, Teuchos::RCP<Core::LinAlg::Vector<double>>& disnp,
+        Epetra_Map& rowbins, Teuchos::RCP<Core::LinAlg::Vector<double>>& disnp,
         Teuchos::RCP<Epetra_Map>& stdelecolmap, Teuchos::RCP<Epetra_Map>& stdnodecolmap) const;
 
     /*!
@@ -649,7 +648,7 @@ namespace Core::Binstrategy
      * \param[out] allnodesinmybins all nodes in my row bins
      */
     void collect_information_about_content_of_bins_from_other_procs_via_round_robin(
-        Teuchos::RCP<Epetra_Map> rowbins, std::map<int, std::vector<int>>& mynodesinbins,
+        Epetra_Map& rowbins, std::map<int, std::vector<int>>& mynodesinbins,
         std::map<int, std::vector<int>>& allnodesinmybins) const;
 
     /*!
@@ -708,7 +707,7 @@ namespace Core::Binstrategy
      * \param[in] set_bin_size_lower_bound_ flag indicating to set bin size lower bound
      */
     void compute_min_binning_domain_containing_all_elements_of_single_discret(
-        Teuchos::RCP<Core::FE::Discretization> discret, Core::LinAlg::Matrix<3, 2>& XAABB,
+        Core::FE::Discretization& discret, Core::LinAlg::Matrix<3, 2>& XAABB,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp = Teuchos::null,
         bool set_bin_size_lower_bound_ = false);
 
@@ -720,7 +719,7 @@ namespace Core::Binstrategy
      * \param[in] disnp current column displacement state
      * \param[in] bintorowelemap bin to row element map
      */
-    void transfer_nodes_and_elements(Teuchos::RCP<Core::FE::Discretization>& discret,
+    void transfer_nodes_and_elements(Core::FE::Discretization& discret,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp,
         std::map<int, std::set<int>>& bintorowelemap);
 

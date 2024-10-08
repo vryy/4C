@@ -778,19 +778,19 @@ bool Core::LinAlg::split_vector(const Epetra_Map& xmap, const Core::LinAlg::Vect
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::std_vector_to_epetra_multi_vector(const std::vector<double>& stdVector,
-    Teuchos::RCP<Epetra_MultiVector> epetraMultiVector, int blockSize)
+void Core::LinAlg::std_vector_to_epetra_multi_vector(
+    const std::vector<double>& stdVector, Epetra_MultiVector& epetraMultiVector, int blockSize)
 {
   for (size_t dim = 0; dim < Teuchos::as<size_t>(blockSize); ++dim)
   {
     double** arrayOfPointers;
-    epetraMultiVector->ExtractView(&arrayOfPointers);
+    epetraMultiVector.ExtractView(&arrayOfPointers);
     double* data = arrayOfPointers[dim];
-    int localLength = epetraMultiVector->MyLength();
+    int localLength = epetraMultiVector.MyLength();
 
     Teuchos::ArrayRCP<double> dataVector(data, 0, localLength, false);
 
-    const double myLength = epetraMultiVector->MyLength();
+    const double myLength = epetraMultiVector.MyLength();
     for (double dofLID = 0; dofLID < myLength; ++dofLID)
     {
       dataVector[dofLID] = stdVector[dim * myLength + dofLID];
@@ -801,19 +801,18 @@ void Core::LinAlg::std_vector_to_epetra_multi_vector(const std::vector<double>& 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::LinAlg::epetra_multi_vector_to_std_vector(
-    const Teuchos::RCP<Epetra_MultiVector> epetraMultiVector, std::vector<double>& stdVector,
-    int blockSize)
+    const Epetra_MultiVector& epetraMultiVector, std::vector<double>& stdVector, int blockSize)
 {
   for (size_t dim = 0; dim < Teuchos::as<size_t>(blockSize); ++dim)
   {
     double** arrayOfPointers;
-    epetraMultiVector->ExtractView(&arrayOfPointers);
+    epetraMultiVector.ExtractView(&arrayOfPointers);
     double* data = arrayOfPointers[dim];
-    int localLength = epetraMultiVector->MyLength();
+    int localLength = epetraMultiVector.MyLength();
 
     Teuchos::ArrayRCP<double> dataVector(data, 0, localLength, false);
 
-    const double myLength = epetraMultiVector->MyLength();
+    const double myLength = epetraMultiVector.MyLength();
     for (double dofLID = 0; dofLID < myLength; ++dofLID)
       stdVector[dim * myLength + dofLID] = dataVector[dofLID];
   }

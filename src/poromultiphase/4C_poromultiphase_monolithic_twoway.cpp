@@ -970,7 +970,7 @@ POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::setup_structure_partof_rhs()
   Teuchos::RCP<Core::LinAlg::Vector<double>> str_rhs = struct_zeros_;
   if (solve_structure_)
     str_rhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*structure_field()->rhs());
-  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(str_rhs);
+  if (locsysman_ != Teuchos::null) locsysman_->rotate_global_to_local(*str_rhs);
 
   return str_rhs;
 }

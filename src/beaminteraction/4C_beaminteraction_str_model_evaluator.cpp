@@ -119,7 +119,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discloner =
       Teuchos::make_rcp<Core::FE::DiscretizationCreatorBase>();
   ia_discret_ = discloner->create_matching_discretization(
-      discret_ptr_, "ia_structure", true, true, false, true);
+      *discret_ptr_, "ia_structure", true, true, false, true);
   // create discretization writer
   ia_discret_->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(ia_discret_,
       Global::Problem::instance()->output_control_file(),
@@ -451,7 +451,7 @@ void Solid::ModelEvaluator::BeamInteraction::partition_problem()
   Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::make_rcp<Epetra_Map>(*bindis_->node_row_map());
   // delete old bins ( in case you partition during your simulation or after a restart)
   bindis_->delete_elements();
-  binstrategy_->fill_bins_into_bin_discretization(rowbins_);
+  binstrategy_->fill_bins_into_bin_discretization(*rowbins_);
 
   // now node (=crosslinker) to bin (=element) relation needs to be
   // established in binning discretization. Therefore some nodes need to
@@ -470,7 +470,7 @@ void Solid::ModelEvaluator::BeamInteraction::partition_problem()
   Teuchos::RCP<Epetra_Map> stdelecolmap;
   Teuchos::RCP<Epetra_Map> stdnodecolmapdummy;
   binstrategy_->standard_discretization_ghosting(
-      ia_discret_, rowbins_, ia_state_ptr_->get_dis_np(), stdelecolmap, stdnodecolmapdummy);
+      ia_discret_, *rowbins_, ia_state_ptr_->get_dis_np(), stdelecolmap, stdnodecolmapdummy);
 
   // distribute elements that can be cut by the periodic boundary to bins
   Teuchos::RCP<Core::LinAlg::Vector<double>> iadiscolnp =
@@ -488,7 +488,7 @@ void Solid::ModelEvaluator::BeamInteraction::partition_problem()
 
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
-  binstrategy_->assign_eles_to_bins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map(),
+  binstrategy_->assign_eles_to_bins(*ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map(),
       BEAMINTERACTION::UTILS::convert_element_to_bin_content_type);
 
   // update maps of state vectors and matrices
@@ -555,7 +555,7 @@ void Solid::ModelEvaluator::BeamInteraction::extend_ghosting()
   // 1) extend ghosting of bin discretization
   // todo: think about if you really need to assign degrees of freedom for crosslinker
   // (now only needed in case you want to write output)
-  binstrategy_->extend_ghosting_of_binning_discretization(rowbins_, colbins, true);
+  binstrategy_->extend_ghosting_of_binning_discretization(*rowbins_, colbins, true);
 
   // add submodel specific bins whose content should be ghosted in problem discret
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
@@ -572,7 +572,7 @@ void Solid::ModelEvaluator::BeamInteraction::extend_ghosting()
 
   // 2) extend ghosting of discretization
   Core::Binstrategy::Utils::extend_discretization_ghosting(
-      ia_discret_, ia_elecolmap, true, false, true);
+      *ia_discret_, *ia_elecolmap, true, false, true);
 }
 
 /*----------------------------------------------------------------------------*
@@ -885,7 +885,7 @@ void Solid::ModelEvaluator::BeamInteraction::update_step_element()
   if (beam_redist)
   {
     binstrategy_->transfer_nodes_and_elements(
-        ia_discret_, ia_state_ptr_->get_dis_col_np(), ia_state_ptr_->get_bin_to_row_ele_map());
+        *ia_discret_, ia_state_ptr_->get_dis_col_np(), ia_state_ptr_->get_bin_to_row_ele_map());
 
     build_row_ele_to_bin_map();
 
@@ -894,7 +894,8 @@ void Solid::ModelEvaluator::BeamInteraction::update_step_element()
 
     // assign Elements to bins
     binstrategy_->remove_all_eles_from_bins();
-    binstrategy_->assign_eles_to_bins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map(),
+    binstrategy_->assign_eles_to_bins(*ia_discret_,
+        ia_state_ptr_->get_extended_bin_to_row_ele_map(),
         BEAMINTERACTION::UTILS::convert_element_to_bin_content_type);
 
     // current displacement state gets new reference state
@@ -914,7 +915,8 @@ void Solid::ModelEvaluator::BeamInteraction::update_step_element()
   {
     extend_ghosting();
     binstrategy_->remove_all_eles_from_bins();
-    binstrategy_->assign_eles_to_bins(ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map(),
+    binstrategy_->assign_eles_to_bins(*ia_discret_,
+        ia_state_ptr_->get_extended_bin_to_row_ele_map(),
         BEAMINTERACTION::UTILS::convert_element_to_bin_content_type);
 
     if (global_state().get_my_rank() == 0)

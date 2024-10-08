@@ -147,8 +147,7 @@ namespace Core::IO
     }
 
     //! write scalar field to Gmsh postprocessing file
-    void scalar_field_to_gmsh(
-        const Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
+    void scalar_field_to_gmsh(Core::FE::Discretization& discret,  ///< discretization
         const Teuchos::RCP<const Core::LinAlg::Vector<double>>
             scalarfield,  ///< scalar field to output
         std::ostream& s   ///< output stream
@@ -156,8 +155,7 @@ namespace Core::IO
 
     //! write scalar field to Gmsh postprocessing file
     //  Can we replace the scalar_field_to_gmsh function with this (nds=0)?
-    void scalar_field_dof_based_to_gmsh(
-        const Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
+    void scalar_field_dof_based_to_gmsh(Core::FE::Discretization& discret,  ///< discretization
         const Teuchos::RCP<const Core::LinAlg::Vector<double>>
             scalarfield,  ///< scalar field to output
         const int nds,    ///< dofset
@@ -165,18 +163,15 @@ namespace Core::IO
     );
 
     //! write scalar field to Gmsh postprocessing file
-    void scalar_element_field_to_gmsh(
-        const Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>
-            scalarfield,  ///< scalar field to output
-        std::ostream& s   ///< output stream
+    void scalar_element_field_to_gmsh(const Core::FE::Discretization& discret,  ///< discretization
+        const Core::LinAlg::Vector<double>& scalarfield,  ///< scalar field to output
+        std::ostream& s                                   ///< output stream
     );
 
     //! write dof-based vector field to Gmsh postprocessing file
     //! when writing the given vectorfield is displacement, displacenodes can be set true
     //! then it writes the nodal coordinates at the present time step.
-    void vector_field_dof_based_to_gmsh(
-        const Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
+    void vector_field_dof_based_to_gmsh(Core::FE::Discretization& discret,  ///< discretization
         const Teuchos::RCP<const Core::LinAlg::Vector<double>>
             vectorfield,    ///< vector field to output
         std::ostream& s,    ///< output stream
@@ -185,22 +180,22 @@ namespace Core::IO
 
     //! write dof-based vector field to Gmsh postprocessing file
     void vector_field_multi_vector_dof_based_to_gmsh(
-        const Teuchos::RCP<const Core::FE::Discretization> discret,  ///< discretization
-        const Teuchos::RCP<const Epetra_MultiVector> vectorfield,    ///< vector field to output
-        std::ostream& s,                                             ///< output stream
-        const int nds = 0  //< which dof-set to use from vector
+        const Core::FE::Discretization& discret,  ///< discretization
+        const Epetra_MultiVector& vectorfield,    ///< vector field to output
+        std::ostream& s,                          ///< output stream
+        const int nds = 0                         //< which dof-set to use from vector
     );
 
     //! write node-based vector field to Gmsh postprocessing file
     void vector_field_node_based_to_gmsh(
-        const Teuchos::RCP<const Core::FE::Discretization> discret,  ///< discretization
-        const Teuchos::RCP<const Epetra_MultiVector> vectorfield,    ///< vector field to output
-        std::ostream& s                                              ///< output stream
+        const Core::FE::Discretization& discret,  ///< discretization
+        const Epetra_MultiVector& vectorfield,    ///< vector field to output
+        std::ostream& s                           ///< output stream
     );
 
     //! write dof-based vector field to Gmsh postprocessing file
     void surface_vector_field_dof_based_to_gmsh(
-        const Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
+        Core::FE::Discretization& discret,  ///< discretization
         const Teuchos::RCP<const Core::LinAlg::Vector<double>>
             vectorfield,  ///< vector field to output
         std::map<int, Core::LinAlg::Matrix<3, 1>>& currpos,
@@ -210,7 +205,7 @@ namespace Core::IO
     //! write dof-based velocity / pressure field to Gmsh postprocessing file
     //!
     void velocity_pressure_field_dof_based_to_gmsh(
-        const Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
+        Core::FE::Discretization& discret,  ///< discretization
         const Teuchos::RCP<const Core::LinAlg::Vector<double>>
             vectorfield,          ///< vector field to output
         const std::string field,  ///< "velocity" or "pressure"
@@ -220,10 +215,9 @@ namespace Core::IO
 
     //! write node-based scalar field to Gmsh postprocessing file
     void scalar_field_node_based_to_gmsh(
-        const Teuchos::RCP<const Core::FE::Discretization> discret,  ///< discretization
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>
-            scalarfield,  ///< scalar field to output
-        std::ostream& s   ///< output stream
+        const Core::FE::Discretization& discret,          ///< discretization
+        const Core::LinAlg::Vector<double>& scalarfield,  ///< scalar field to output
+        std::ostream& s                                   ///< output stream
     );
 
     //! take an array (3,numnode) and translate it to the coordinate section of a Gmsh element entry
@@ -589,20 +583,20 @@ namespace Core::IO
 
     //! print discretization in initial configuration (t = 0)
     void dis_to_stream(const std::string& text, const double scalar,
-        const Teuchos::RCP<Core::FE::Discretization> dis, std::ostream& s);
+        const Core::FE::Discretization& dis, std::ostream& s);
 
     //! print discretization in initial configuration (t = 0)
-    std::string dis_to_string(const std::string& text, const double scalar,
-        const Teuchos::RCP<Core::FE::Discretization> dis);
+    std::string dis_to_string(
+        const std::string& text, const double scalar, Core::FE::Discretization& dis);
 
     //! print discretization in current configuration (t > 0)
     void dis_to_stream(const std::string& text, const double scalar,
-        const Teuchos::RCP<Core::FE::Discretization> dis,
+        const Core::FE::Discretization& dis,
         const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions, std::ostream& s);
 
     //! print discretization in current configuration (t > 0)
     std::string dis_to_string(const std::string& text, const double scalar,
-        const Teuchos::RCP<Core::FE::Discretization> dis,
+        Core::FE::Discretization& dis,
         const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions);
 
     std::string get_new_file_name_and_delete_old_files(

@@ -73,14 +73,14 @@ Core::LinAlg::SerialDenseMatrix Core::Geo::get_current_nodal_positions(
 
 
 Core::LinAlg::SerialDenseMatrix Core::Geo::get_current_nodal_positions(
-    const Teuchos::RCP<const Core::Elements::Element> ele,  ///< pointer on element
+    const Core::Elements::Element& ele,  ///< pointer on element
     const std::map<int, Core::LinAlg::Matrix<3, 1>>&
         currentpositions  ///< current positions of all cutter nodes
 )
 {
-  const int numnode = ele->num_node();
+  const int numnode = ele.num_node();
   Core::LinAlg::SerialDenseMatrix xyze(3, numnode);
-  const int* nodeids = ele->node_ids();
+  const int* nodeids = ele.node_ids();
   for (int inode = 0; inode < numnode; ++inode)
   {
     const Core::LinAlg::Matrix<3, 1>& x = currentpositions.find(nodeids[inode])->second;

@@ -200,8 +200,7 @@ namespace Core::Conditions
      */
     void rotate_global_to_local(
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            rhs  ///< right-hand-side vector, will be transformed
+        Core::LinAlg::Vector<double>& rhs  ///< right-hand-side vector, will be transformed
     ) const;
 
     /*!
@@ -214,29 +213,26 @@ namespace Core::Conditions
      * \brief Apply forward transformation of a single vector
      *
      */
-    void rotate_global_to_local(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vec, bool offset = false) const;
+    void rotate_global_to_local(Core::LinAlg::Vector<double>& vec, bool offset = false) const;
 
     /*!
      * \brief Apply backward transformation of result and linear system of equations
      *
      */
-    void rotate_local_to_global(Teuchos::RCP<Core::LinAlg::Vector<double>> result,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs) const;
+    void rotate_local_to_global(Core::LinAlg::Vector<double>& result,
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat, Core::LinAlg::Vector<double>& rhs) const;
 
     /*!
      * \brief Apply backward transformation of a single vector
      *
      */
-    void rotate_local_to_global(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vec, bool offset = false) const;
+    void rotate_local_to_global(Core::LinAlg::Vector<double>& vec, bool offset = false) const;
 
     /*!
      * \brief Apply backward transformation of a matrix
      *
      */
-    void rotate_local_to_global(Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const;
+    void rotate_local_to_global(Core::LinAlg::SparseMatrix& sysmat) const;
 
     /*!
      * \brief Calculate rotation vector for (mass-consistent) normal system

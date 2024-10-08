@@ -129,8 +129,7 @@ namespace Core::IO
 
     /// read into given std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> >
     void read_serial_dense_matrix(
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> mapdata,
-        std::string name);
+        std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& mapdata, std::string name);
 
     /// check if an integer value exists in the control file
     int has_int(std::string name);

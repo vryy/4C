@@ -776,7 +776,7 @@ void MultiScale::MicroStatic::read_restart(int step, Teuchos::RCP<Core::LinAlg::
   step_ = rstep;
   stepn_ = step_ + 1;
 
-  reader.read_serial_dense_matrix(lastalpha, "alpha");
+  reader.read_serial_dense_matrix(*lastalpha, "alpha");
 }
 
 

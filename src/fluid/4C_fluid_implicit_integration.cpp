@@ -950,7 +950,7 @@ void FLD::FluidImplicitTimeInt::solve()
       // Transform newly built residual to local coordinate system
       // in order to later properly erase the lines containing
       // Dirichlet conditions in function convergence_check()
-      locsysman_->rotate_global_to_local(residual_, false);
+      locsysman_->rotate_global_to_local(*residual_, false);
     }
 
     // prepare meshtying system
@@ -2044,7 +2044,7 @@ void FLD::FluidImplicitTimeInt::apply_dirichlet_to_system()
   {
     TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
     // Transform system matrix and rhs to local co-ordinate systems
-    locsysman_->rotate_global_to_local(system_matrix(), residual_);
+    locsysman_->rotate_global_to_local(system_matrix(), *residual_);
 
     Core::LinAlg::apply_dirichlet_to_system(
         *Core::LinAlg::cast_to_sparse_matrix_and_check_success(sysmat_), *incvel_, *residual_,
@@ -2238,13 +2238,13 @@ void FLD::FluidImplicitTimeInt::update_krylov_space_projection()
       if (msht_ == Inpar::FLUID::condensed_bmat || msht_ == Inpar::FLUID::condensed_bmat_merged)
       {
         const Epetra_BlockMap* mergedmap = meshtying_->get_merged_map();
-        projector_->set_cw(c0_update->get_ptr_of_Epetra_Vector(),
-            w0_update->get_ptr_of_Epetra_Vector(), mergedmap);
+        projector_->set_cw(*c0_update->get_ptr_of_Epetra_Vector(),
+            *w0_update->get_ptr_of_Epetra_Vector(), mergedmap);
       }
       else
       {
         projector_->set_cw(
-            c0_update->get_ptr_of_Epetra_Vector(), w0_update->get_ptr_of_Epetra_Vector());
+            *c0_update->get_ptr_of_Epetra_Vector(), *w0_update->get_ptr_of_Epetra_Vector());
       }
     }
   }
@@ -3714,7 +3714,7 @@ void FLD::FluidImplicitTimeInt::output_to_gmsh(
     gmshfilecontent << "View \" "
                     << "velocity solution \" {" << std::endl;
     Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(
-        discret_, velnp_, "velocity", gmshfilecontent);
+        *discret_, velnp_, "velocity", gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
   {
@@ -3722,7 +3722,7 @@ void FLD::FluidImplicitTimeInt::output_to_gmsh(
     gmshfilecontent << "View \" "
                     << "pressure solution\" {" << std::endl;
     Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(
-        discret_, velnp_, "pressure", gmshfilecontent);
+        *discret_, velnp_, "pressure", gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -6518,9 +6518,9 @@ void FLD::FluidImplicitTimeInt::apply_dirichlet_bc(Teuchos::ParameterList& param
   // --------------------------------------------------------------------------------
   if (locsysman_ != Teuchos::null)
   {
-    if (systemvector != Teuchos::null) locsysman_->rotate_global_to_local(systemvector);
-    if (systemvectord != Teuchos::null) locsysman_->rotate_global_to_local(systemvectord);
-    if (systemvectordd != Teuchos::null) locsysman_->rotate_global_to_local(systemvectordd);
+    if (systemvector != Teuchos::null) locsysman_->rotate_global_to_local(*systemvector);
+    if (systemvectord != Teuchos::null) locsysman_->rotate_global_to_local(*systemvectord);
+    if (systemvectordd != Teuchos::null) locsysman_->rotate_global_to_local(*systemvectordd);
   }
 
   // Apply DBCs
@@ -6549,9 +6549,9 @@ void FLD::FluidImplicitTimeInt::apply_dirichlet_bc(Teuchos::ParameterList& param
   // --------------------------------------------------------------------------------
   if (locsysman_ != Teuchos::null)
   {
-    if (systemvector != Teuchos::null) locsysman_->rotate_local_to_global(systemvector);
-    if (systemvectord != Teuchos::null) locsysman_->rotate_local_to_global(systemvectord);
-    if (systemvectordd != Teuchos::null) locsysman_->rotate_local_to_global(systemvectordd);
+    if (systemvector != Teuchos::null) locsysman_->rotate_local_to_global(*systemvector);
+    if (systemvectord != Teuchos::null) locsysman_->rotate_local_to_global(*systemvectord);
+    if (systemvectordd != Teuchos::null) locsysman_->rotate_local_to_global(*systemvectordd);
   }
 }
 

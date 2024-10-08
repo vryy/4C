@@ -198,7 +198,7 @@ void scatra_dyn(int restart)
       {
         // fill scatra discretization by cloning fluid discretization
         Core::FE::clone_discretization<ScaTra::ScatraFluidCloneStrategy>(
-            fluiddis, scatradis, Global::Problem::instance()->cloning_material_map());
+            *fluiddis, *scatradis, Global::Problem::instance()->cloning_material_map());
 
         // set implementation type of cloned scatra elements
         for (int i = 0; i < scatradis->num_my_col_elements(); ++i)

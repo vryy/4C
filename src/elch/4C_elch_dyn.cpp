@@ -132,7 +132,7 @@ void elch_dyn(int restart)
       {
         // fill scatra discretization by cloning fluid discretization
         Core::FE::clone_discretization<ScaTra::ScatraFluidCloneStrategy>(
-            fluiddis, scatradis, Global::Problem::instance()->cloning_material_map());
+            *fluiddis, *scatradis, Global::Problem::instance()->cloning_material_map());
         scatradis->fill_complete();
         // determine implementation type of cloned scatra elements
         Inpar::ScaTra::ImplType impltype = Inpar::ScaTra::impltype_undefined;
@@ -171,7 +171,7 @@ void elch_dyn(int restart)
         {
           // clone ALE discretization from fluid discretization
           Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
-              fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
+              *fluiddis, *aledis, Global::Problem::instance()->cloning_material_map());
 
           aledis->fill_complete(true, true, false);
           // setup material in every ALE element

@@ -106,7 +106,7 @@ void Adapter::FBIConstraintenforcer::setup(Teuchos::RCP<Adapter::FSIStructureWra
 
   geometrycoupler_->setup(
       discretizations_, Core::Rebalance::get_col_version_of_row_vector(
-                            structure_->discretization(), structure_->dispnp()));
+                            *structure_->discretization(), structure_->dispnp()));
 }
 
 /*----------------------------------------------------------------------*/
@@ -117,10 +117,10 @@ void Adapter::FBIConstraintenforcer::evaluate()
   // but the element pairs are created using the elements needing all information on all their
   // DOFs
   column_structure_displacement_ = Core::Rebalance::get_col_version_of_row_vector(
-      structure_->discretization(), structure_->dispnp());
+      *structure_->discretization(), structure_->dispnp());
   column_structure_velocity_ = Core::Rebalance::get_col_version_of_row_vector(
-      structure_->discretization(), structure_->velnp());
-  column_fluid_velocity_ = Core::Rebalance::get_col_version_of_row_vector(fluid_->discretization(),
+      *structure_->discretization(), structure_->velnp());
+  column_fluid_velocity_ = Core::Rebalance::get_col_version_of_row_vector(*fluid_->discretization(),
       Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(fluid_, true)->velnp());
 
   geometrycoupler_->update_binning(discretizations_[0], column_structure_displacement_);
@@ -204,11 +204,11 @@ void Adapter::FBIConstraintenforcer::create_pairs(
     geometrycoupler_->prepare_pair_creation(discretizations_, pairids);
 
     column_structure_displacement_ = Core::Rebalance::get_col_version_of_row_vector(
-        structure_->discretization(), structure_->dispnp());
+        *structure_->discretization(), structure_->dispnp());
     column_structure_velocity_ = Core::Rebalance::get_col_version_of_row_vector(
-        structure_->discretization(), structure_->velnp());
+        *structure_->discretization(), structure_->velnp());
     column_fluid_velocity_ =
-        Core::Rebalance::get_col_version_of_row_vector(fluid_->discretization(),
+        Core::Rebalance::get_col_version_of_row_vector(*fluid_->discretization(),
             Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(fluid_, true)->velnp());
   }
 
@@ -255,10 +255,10 @@ void Adapter::FBIConstraintenforcer::reset_all_pair_states()
 {
   // Get current state
   column_structure_displacement_ = Core::Rebalance::get_col_version_of_row_vector(
-      structure_->discretization(), structure_->dispnp());
+      *structure_->discretization(), structure_->dispnp());
   column_structure_velocity_ = Core::Rebalance::get_col_version_of_row_vector(
-      structure_->discretization(), structure_->velnp());
-  column_fluid_velocity_ = Core::Rebalance::get_col_version_of_row_vector(fluid_->discretization(),
+      *structure_->discretization(), structure_->velnp());
+  column_fluid_velocity_ = Core::Rebalance::get_col_version_of_row_vector(*fluid_->discretization(),
       Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(fluid_, true)->velnp());
 
   std::vector<Core::Elements::Element const*> ele_ptrs(2);

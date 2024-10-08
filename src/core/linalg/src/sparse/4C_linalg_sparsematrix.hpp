@@ -304,7 +304,7 @@ namespace Core::LinAlg
 
     /// create matrix that contains all Dirichlet lines from my
     Teuchos::RCP<SparseMatrix> extract_dirichlet_rows(
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> dbctoggle);
+        const Core::LinAlg::Vector<double>& dbctoggle);
 
     /// create matrix that contains all Dirichlet lines from my
     Teuchos::RCP<SparseMatrix> extract_dirichlet_rows(const Epetra_Map& dbctoggle);
