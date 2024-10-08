@@ -798,7 +798,7 @@ void FS3I::PartFS3I::extract_wss(
   // ############ Structure Field ###############
 
   // extract FSI-Interface from fluid field
-  WallShearStress = fsi_->fluid_field()->interface()->extract_fsi_cond_vector(WallShearStress);
+  WallShearStress = fsi_->fluid_field()->interface()->extract_fsi_cond_vector(*WallShearStress);
 
   // replace global fluid interface dofs through structure interface dofs
   WallShearStress = fsi_->fluid_to_struct(WallShearStress);
@@ -809,7 +809,7 @@ void FS3I::PartFS3I::extract_wss(
 
   // Parameter int block of function InsertVector: (0: inner dofs of structure, 1: interface dofs of
   // structure, 2: inner dofs of porofluid, 3: interface dofs of porofluid )
-  fsi_->structure_field()->interface()->insert_vector(WallShearStress, 1, structure);
+  fsi_->structure_field()->interface()->insert_vector(*WallShearStress, 1, *structure);
   wss.push_back(structure);
 }
 

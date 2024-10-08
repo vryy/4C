@@ -140,7 +140,7 @@ void ScaTra::ScaTraTimIntElch::setup()
       Core::LinAlg::create_vector(*(dbcmaps_->cond_map()), false);
   dirichones->PutScalar(1.0);
   dctoggle_ = Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
-  dbcmaps_->insert_cond_vector(dirichones, dctoggle_);
+  dbcmaps_->insert_cond_vector(*dirichones, *dctoggle_);
 
   // screen output (has to come after SetInitialField)
   // a safety check for the solver type
@@ -1972,17 +1972,17 @@ void ScaTra::ScaTraTimIntElch::calc_initial_potential_field()
         *sysmat_, *increment_, *residual_, *zeros_, *(splitter_->other_map()));
 
     // compute L2 norm of electric potential state vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pot_vector = splitter_->extract_cond_vector(phinp_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> pot_vector = splitter_->extract_cond_vector(*phinp_);
     double pot_state_L2(0.0);
     pot_vector->Norm2(&pot_state_L2);
 
     // compute L2 norm of electric potential residual vector
-    splitter_->extract_cond_vector(residual_, pot_vector);
+    splitter_->extract_cond_vector(*residual_, *pot_vector);
     double pot_res_L2(0.);
     pot_vector->Norm2(&pot_res_L2);
 
     // compute L2 norm of electric potential increment vector
-    splitter_->extract_cond_vector(increment_, pot_vector);
+    splitter_->extract_cond_vector(*increment_, *pot_vector);
     double pot_inc_L2(0.);
     pot_vector->Norm2(&pot_inc_L2);
 
@@ -2092,7 +2092,7 @@ void ScaTra::ScaTraTimIntElch::calc_initial_potential_field()
     dtsolve_ = Teuchos::Time::wallTime() - time;
 
     // update electric potential degrees of freedom in initial state vector
-    splitter_->add_cond_vector(splitter_->extract_cond_vector(increment_), phinp_);
+    splitter_->add_cond_vector(*splitter_->extract_cond_vector(*increment_), *phinp_);
 
     // copy initial state vector
     phin_->Update(1., *phinp_, 0.);

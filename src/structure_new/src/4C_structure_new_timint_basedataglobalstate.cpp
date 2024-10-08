@@ -602,7 +602,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
             modeleval->evaluator(ci->first).get_last_time_step_solution_ptr();
         // if there is a partial solution, we insert it into the full vector
         if (not model_sol_ptr.is_null())
-          block_extractor().insert_vector(model_sol_ptr, ci->second, xvec_ptr);
+          block_extractor().insert_vector(*model_sol_ptr, ci->second, *xvec_ptr);
         model_sol_ptr = Teuchos::null;
       }
       break;
@@ -621,7 +621,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
             modeleval->evaluator(ci->first).get_current_solution_ptr();
         // if there is a partial solution, we insert it into the full vector
         if (not model_sol_ptr.is_null())
-          block_extractor().insert_vector(model_sol_ptr, ci->second, xvec_ptr);
+          block_extractor().insert_vector(*model_sol_ptr, ci->second, *xvec_ptr);
       }
       break;
     }

@@ -216,7 +216,7 @@ Core::LinAlg::Vector<double> SSI::MeshtyingStrategyBase::apply_meshtying_to_stru
     const auto rhs_structure_only_master_dofs =
         coupling_adapter->slave_to_master(rhs_structure_only_slave_dofs);
 
-    coupling_map_extractor->add_vector(rhs_structure_only_master_dofs, 2, rhs_structure_master);
+    coupling_map_extractor->add_vector(*rhs_structure_only_master_dofs, 2, *rhs_structure_master);
 
     // zero out slave-side part of structure right-hand side vector
     coupling_map_extractor->put_scalar(rhs_structure, 1, 0.0);

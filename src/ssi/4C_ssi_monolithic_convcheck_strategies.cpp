@@ -81,12 +81,12 @@ void SSI::SsiMono::ConvCheckStrategyBase::get_and_check_l2_norm_structure(
     const SSI::SsiMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
   ssi_mono.maps_sub_problems()
-      ->extract_vector(ssi_mono.ssi_vectors_->increment(),
+      ->extract_vector(*ssi_mono.ssi_vectors_->increment(),
           UTILS::SSIMaps::get_problem_position(Subproblem::structure))
       ->Norm2(&incnorm);
 
   ssi_mono.maps_sub_problems()
-      ->extract_vector(ssi_mono.ssi_vectors_->residual(),
+      ->extract_vector(*ssi_mono.ssi_vectors_->residual(),
           UTILS::SSIMaps::get_problem_position(Subproblem::structure))
       ->Norm2(&resnorm);
 
@@ -117,12 +117,12 @@ void SSI::SsiMono::ConvCheckStrategyStd::get_and_check_l2_norm_scatra(
     const SSI::SsiMono& ssi_mono, double& incnorm, double& resnorm, double& dofnorm) const
 {
   ssi_mono.maps_sub_problems()
-      ->extract_vector(ssi_mono.ssi_vectors_->increment(),
+      ->extract_vector(*ssi_mono.ssi_vectors_->increment(),
           UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport))
       ->Norm2(&incnorm);
 
   ssi_mono.maps_sub_problems()
-      ->extract_vector(ssi_mono.ssi_vectors_->residual(),
+      ->extract_vector(*ssi_mono.ssi_vectors_->residual(),
           UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport))
       ->Norm2(&resnorm);
 
@@ -240,20 +240,20 @@ void SSI::SsiMono::ConvCheckStrategyElch::get_and_check_l2_norm_conc(
   ssi_mono.scatra_field()
       ->splitter()
       ->extract_other_vector(
-          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->increment(),
+          *ssi_mono.maps_sub_problems()->extract_vector(*ssi_mono.ssi_vectors_->increment(),
               UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&incnorm);
 
   ssi_mono.scatra_field()
       ->splitter()
       ->extract_other_vector(
-          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->residual(),
+          *ssi_mono.maps_sub_problems()->extract_vector(*ssi_mono.ssi_vectors_->residual(),
               UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&resnorm);
 
   ssi_mono.scatra_field()
       ->splitter()
-      ->extract_other_vector(ssi_mono.scatra_field()->phinp())
+      ->extract_other_vector(*ssi_mono.scatra_field()->phinp())
       ->Norm2(&dofnorm);
 
   check_l2_norm(incnorm, resnorm, dofnorm);
@@ -267,20 +267,20 @@ void SSI::SsiMono::ConvCheckStrategyElch::get_and_check_l2_norm_pot(
   ssi_mono.scatra_field()
       ->splitter()
       ->extract_cond_vector(
-          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->increment(),
+          *ssi_mono.maps_sub_problems()->extract_vector(*ssi_mono.ssi_vectors_->increment(),
               UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&incnorm);
 
   ssi_mono.scatra_field()
       ->splitter()
       ->extract_cond_vector(
-          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->residual(),
+          *ssi_mono.maps_sub_problems()->extract_vector(*ssi_mono.ssi_vectors_->residual(),
               UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&resnorm);
 
   ssi_mono.scatra_field()
       ->splitter()
-      ->extract_cond_vector(ssi_mono.scatra_field()->phinp())
+      ->extract_cond_vector(*ssi_mono.scatra_field()->phinp())
       ->Norm2(&dofnorm);
 
   check_l2_norm(incnorm, resnorm, dofnorm);
@@ -475,20 +475,20 @@ void SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::get_and_check_l2_norm_sc
   ssi_mono.scatra_manifold()
       ->splitter()
       ->extract_other_vector(
-          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->increment(),
+          *ssi_mono.maps_sub_problems()->extract_vector(*ssi_mono.ssi_vectors_->increment(),
               UTILS::SSIMaps::get_problem_position(Subproblem::manifold)))
       ->Norm2(&incnorm);
 
   ssi_mono.scatra_manifold()
       ->splitter()
       ->extract_other_vector(
-          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->residual(),
+          *ssi_mono.maps_sub_problems()->extract_vector(*ssi_mono.ssi_vectors_->residual(),
               UTILS::SSIMaps::get_problem_position(Subproblem::manifold)))
       ->Norm2(&resnorm);
 
   ssi_mono.scatra_manifold()
       ->splitter()
-      ->extract_other_vector(ssi_mono.scatra_manifold()->phinp())
+      ->extract_other_vector(*ssi_mono.scatra_manifold()->phinp())
       ->Norm2(&dofnorm);
 
   check_l2_norm(incnorm, resnorm, dofnorm);
@@ -502,20 +502,20 @@ void SSI::SsiMono::ConvCheckStrategyElchScaTraManifold::get_and_check_l2_norm_sc
   ssi_mono.scatra_manifold()
       ->splitter()
       ->extract_cond_vector(
-          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->increment(),
+          *ssi_mono.maps_sub_problems()->extract_vector(*ssi_mono.ssi_vectors_->increment(),
               UTILS::SSIMaps::get_problem_position(Subproblem::manifold)))
       ->Norm2(&incnorm);
 
   ssi_mono.scatra_manifold()
       ->splitter()
       ->extract_cond_vector(
-          ssi_mono.maps_sub_problems()->extract_vector(ssi_mono.ssi_vectors_->residual(),
+          *ssi_mono.maps_sub_problems()->extract_vector(*ssi_mono.ssi_vectors_->residual(),
               UTILS::SSIMaps::get_problem_position(Subproblem::manifold)))
       ->Norm2(&resnorm);
 
   ssi_mono.scatra_manifold()
       ->splitter()
-      ->extract_cond_vector(ssi_mono.scatra_manifold()->phinp())
+      ->extract_cond_vector(*ssi_mono.scatra_manifold()->phinp())
       ->Norm2(&dofnorm);
 
   check_l2_norm(incnorm, resnorm, dofnorm);

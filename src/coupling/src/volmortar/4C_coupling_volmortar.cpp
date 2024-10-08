@@ -1411,8 +1411,8 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     Core::LinAlg::MapExtractor mapext(*mergedmap_,
         Teuchos::rcp(new Epetra_Map(*(discret1()->dof_row_map(dofseta)))),
         Teuchos::rcp(new Epetra_Map(*(discret2()->dof_row_map(dofsetb)))));
-    mapext.extract_cond_vector(mergedsol, sola);
-    mapext.extract_other_vector(mergedsol, solb);
+    mapext.extract_cond_vector(*mergedsol, *sola);
+    mapext.extract_other_vector(*mergedsol, *solb);
 
     //--------------------------------------------------------------
     // Post Processing... Node Relocation

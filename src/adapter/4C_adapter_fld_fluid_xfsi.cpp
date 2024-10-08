@@ -111,7 +111,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::XFluidFSI::extract_struct_in
 {
   // the trueresidual vector has to match the solid dis
   // it contains the forces acting on the structural surface
-  return structinterface_->extract_fsi_cond_vector(mesh_coupling_fsi_->i_true_residual());
+  return structinterface_->extract_fsi_cond_vector(*mesh_coupling_fsi_->i_true_residual());
 }
 
 
@@ -124,7 +124,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::XFluidFSI::extract_struct_in
   // meaning that it gets the velocity from the new time step
   // not clear? exactly! thats why the FSI time update should be more clear about it
   // needs discussion with the FSI people
-  return structinterface_->extract_fsi_cond_vector(mesh_coupling_fsi_->i_veln());
+  return structinterface_->extract_fsi_cond_vector(*mesh_coupling_fsi_->i_veln());
 }
 
 
@@ -134,7 +134,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::XFluidFSI::extract_struct_in
 void Adapter::XFluidFSI::apply_struct_interface_velocities(
     Teuchos::RCP<Core::LinAlg::Vector<double>> ivel)
 {
-  structinterface_->insert_fsi_cond_vector(ivel, mesh_coupling_fsi_->i_velnp());
+  structinterface_->insert_fsi_cond_vector(*ivel, *mesh_coupling_fsi_->i_velnp());
 }
 
 
@@ -148,7 +148,7 @@ void Adapter::XFluidFSI::apply_struct_mesh_displacement(
   mesh_coupling_fsi_->update_displacement_iteration_vectors();
 
   // set new idispnp
-  structinterface_->insert_fsi_cond_vector(interface_disp, mesh_coupling_fsi_->i_dispnp());
+  structinterface_->insert_fsi_cond_vector(*interface_disp, *mesh_coupling_fsi_->i_dispnp());
 }
 
 /*----------------------------------------------------------------------*
@@ -168,7 +168,7 @@ void Adapter::XFluidFSI::set_mesh_map(Teuchos::RCP<const Epetra_Map> mm, const i
 void Adapter::XFluidFSI::apply_mesh_displacement(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> fluiddisp)
 {
-  meshmap_->insert_cond_vector(fluiddisp, xfluid_->write_access_dispnp());
+  meshmap_->insert_cond_vector(*fluiddisp, *xfluid_->write_access_dispnp());
 
   // new grid velocity
   xfluid_->update_gridv();
@@ -187,7 +187,7 @@ void Adapter::XFluidFSI::displacement_to_velocity(
 {
   // get interface velocity at t(n)
   const Teuchos::RCP<const Core::LinAlg::Vector<double>> veln =
-      structinterface_->extract_fsi_cond_vector(mesh_coupling_fsi_->i_veln());
+      structinterface_->extract_fsi_cond_vector(*mesh_coupling_fsi_->i_veln());
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check, whether maps are the same

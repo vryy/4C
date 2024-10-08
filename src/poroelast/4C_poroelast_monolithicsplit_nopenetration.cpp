@@ -121,9 +121,9 @@ void PoroElast::MonolithicSplitNoPenetration::setup_vector(Core::LinAlg::Vector<
   extractor()->insert_vector(*sv, 0, f);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fov =
-      fluid_field()->interface()->extract_other_vector(fv);
+      fluid_field()->interface()->extract_other_vector(*fv);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcv =
-      fluid_field()->interface()->extract_fsi_cond_vector(fv);
+      fluid_field()->interface()->extract_fsi_cond_vector(*fv);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> Dlam = Teuchos::rcp(
       new Core::LinAlg::Vector<double>(*fluid_field()->interface()->fsi_cond_map(), true));
@@ -170,13 +170,13 @@ void PoroElast::MonolithicSplitNoPenetration::recover_lagrange_multiplier_after_
   extract_field_vectors(x, sx, fx);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> sox =
-      structure_field()->interface()->extract_other_vector(sx);
+      structure_field()->interface()->extract_other_vector(*sx);
   Teuchos::RCP<Core::LinAlg::Vector<double>> scx =
-      structure_field()->interface()->extract_fsi_cond_vector(sx);
+      structure_field()->interface()->extract_fsi_cond_vector(*sx);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fox =
-      fluid_field()->interface()->extract_other_vector(fx);
+      fluid_field()->interface()->extract_other_vector(*fx);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcx =
-      fluid_field()->interface()->extract_fsi_cond_vector(fx);
+      fluid_field()->interface()->extract_fsi_cond_vector(*fx);
 
   ddiinc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*sox));  // first iteration increment
 
@@ -403,7 +403,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
   }
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> disp_interface =
-      fluid_field()->interface()->extract_fsi_cond_vector(fluid_field()->dispnp());
+      fluid_field()->interface()->extract_fsi_cond_vector(*fluid_field()->dispnp());
   mortar_adapter_->integrate_lin_d(
       "displacement", disp_interface, structure_to_fluid_at_interface(lambdanp_));
   tmp_k_D = mortar_adapter_->get_mortar_matrix_d();
@@ -427,7 +427,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
 
     fluid_field()->discretization()->set_state(0, "lambda",
         fluid_field()->interface()->insert_fsi_cond_vector(
-            structure_to_fluid_at_interface(lambdanp_)));
+            *structure_to_fluid_at_interface(lambdanp_)));
 
     // build specific assemble strategy for the fluid-mechanical system matrix
     // from the point of view of fluid_field:
@@ -686,7 +686,7 @@ void PoroElast::MonolithicSplitNoPenetration::read_restart(const int step)
     reader.read_vector(fulllambda, "poronopencond_lambda");
 
     // extract lambda on fsi interface vector
-    lambda_ = structure_field()->interface()->extract_fsi_cond_vector(fulllambda);
+    lambda_ = structure_field()->interface()->extract_fsi_cond_vector(*fulllambda);
     lambdanp_->Update(1.0, *lambda_, 0.0);
 
     // call an additional evaluate to get the old D matrix

@@ -95,7 +95,7 @@ void PoroElast::MonolithicMeshtying::evaluate(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fs =
       Teuchos::rcpFromRef<Core::LinAlg::SparseMatrix>(systemmatrix_->matrix(1, 0));
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> frhs = extractor()->extract_vector(rhs_, 1);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> frhs = extractor()->extract_vector(*rhs_, 1);
 
   // modify system matrix and rhs for meshtying
   mortar_adapter_->evaluate_poro_mt(fvel, svel, modfpres, sdisp,
@@ -153,14 +153,14 @@ void PoroElast::MonolithicMeshtying::build_convergence_norms()
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fpres;
 
   // process structure unknowns of the first field (structure)
-  rhs_s = extractor()->extract_vector(rhs_, 0);
+  rhs_s = extractor()->extract_vector(*rhs_, 0);
 
   // process fluid unknowns of the second field
-  rhs_f = extractor()->extract_vector(rhs_, 1);
+  rhs_f = extractor()->extract_vector(*rhs_, 1);
   rhs_fvel = fluid_field()->extract_velocity_part(rhs_f);
   // now split it
-  rhs_fvel_activen = fluid_vel_active_dof_extractor()->extract_vector(rhs_fvel, 0);
-  rhs_fvel_other = fluid_vel_active_dof_extractor()->extract_vector(rhs_fvel, 1);
+  rhs_fvel_activen = fluid_vel_active_dof_extractor()->extract_vector(*rhs_fvel, 0);
+  rhs_fvel_other = fluid_vel_active_dof_extractor()->extract_vector(*rhs_fvel, 1);
   // pressure is treated separately anyway
   rhs_fpres = fluid_field()->extract_pressure_part(rhs_f);
 
@@ -193,9 +193,9 @@ void PoroElast::MonolithicMeshtying::build_convergence_norms()
   Teuchos::RCP<const Core::LinAlg::Vector<double>> interincfvel;
   Teuchos::RCP<const Core::LinAlg::Vector<double>> interincfpres;
   // process structure unknowns of the first field
-  interincs = extractor()->extract_vector(iterinc_, 0);
+  interincs = extractor()->extract_vector(*iterinc_, 0);
   // process fluid unknowns of the second field
-  interincf = extractor()->extract_vector(iterinc_, 1);
+  interincf = extractor()->extract_vector(*iterinc_, 1);
   interincfvel = fluid_field()->extract_velocity_part(interincf);
   interincfpres = fluid_field()->extract_pressure_part(interincf);
 

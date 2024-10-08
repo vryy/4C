@@ -803,8 +803,8 @@ void LowMach::Algorithm::iter_update()
 
   // extract incremental fluid and scatra solution vectors
   // from incremental low-Mach-number solution vector
-  incfluid = lomablockdofrowmap_.extract_vector(lomaincrement_, 0);
-  incscatra = lomablockdofrowmap_.extract_vector(lomaincrement_, 1);
+  incfluid = lomablockdofrowmap_.extract_vector(*lomaincrement_, 0);
+  incscatra = lomablockdofrowmap_.extract_vector(*lomaincrement_, 1);
 
   // add incremental fluid and scatra solution vectors to
   // respective solution vectors from last iteration step

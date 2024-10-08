@@ -314,9 +314,9 @@ void STI::Algorithm::transfer_scatra_to_thermo(
         const Teuchos::RCP<Core::LinAlg::Vector<double>> imasterphinp = Core::LinAlg::create_vector(
             *scatra_->scatra_field()->discretization()->dof_row_map(), true);
         strategyscatra_->interface_maps()->insert_vector(
-            strategyscatra_->coupling_adapter()->master_to_slave(
+            *strategyscatra_->coupling_adapter()->master_to_slave(
                 strategyscatra_->interface_maps()->extract_vector(*scatra, 2)),
-            1, imasterphinp);
+            1, *imasterphinp);
         thermo_->scatra_field()->discretization()->set_state(2, "imasterscatra", imasterphinp);
 
         break;

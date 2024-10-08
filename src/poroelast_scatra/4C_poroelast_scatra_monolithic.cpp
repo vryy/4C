@@ -295,11 +295,11 @@ void PoroElastScaTra::PoroScatraMono::evaluate(
   if (stepinc != Teuchos::null)
   {
     // process structure unknowns of the first field
-    porostructinc = extractor()->extract_vector(stepinc, 0);
-    porofluidinc = extractor()->extract_vector(stepinc, 1);
+    porostructinc = extractor()->extract_vector(*stepinc, 0);
+    porofluidinc = extractor()->extract_vector(*stepinc, 1);
 
     // process fluid unknowns of the second field
-    scatrainc = extractor()->extract_vector(stepinc, 2);
+    scatrainc = extractor()->extract_vector(*stepinc, 2);
   }
 
   // Newton update of the fluid field
@@ -421,8 +421,8 @@ void PoroElastScaTra::PoroScatraMono::setup_vector(Core::LinAlg::Vector<double>&
   //  Teuchos::RCP<const Core::LinAlg::Vector<double>> psx;
   //  Teuchos::RCP<const Core::LinAlg::Vector<double>> pfx;
 
-  extractor()->insert_vector(*(poro_field()->extractor()->extract_vector(pv, 0)), 0, f);
-  extractor()->insert_vector(*(poro_field()->extractor()->extract_vector(pv, 1)), 1, f);
+  extractor()->insert_vector(*(poro_field()->extractor()->extract_vector(*pv, 0)), 0, f);
+  extractor()->insert_vector(*(poro_field()->extractor()->extract_vector(*pv, 1)), 1, f);
   extractor()->insert_vector(*sv, 2, f);
 }
 
@@ -941,15 +941,15 @@ void PoroElastScaTra::PoroScatraMono::build_convergence_norms()
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_scalar;
 
   // process structure unknowns of the first field
-  rhs_s = extractor()->extract_vector(rhs_, 0);
+  rhs_s = extractor()->extract_vector(*rhs_, 0);
 
   // process fluid unknowns of the second field
-  rhs_f = extractor()->extract_vector(rhs_, 1);
+  rhs_f = extractor()->extract_vector(*rhs_, 1);
   rhs_fvel = poro_field()->fluid_field()->extract_velocity_part(rhs_f);
   rhs_fpres = poro_field()->fluid_field()->extract_pressure_part(rhs_f);
 
   // process scalar unknowns of the third field
-  rhs_scalar = extractor()->extract_vector(rhs_, 2);
+  rhs_scalar = extractor()->extract_vector(*rhs_, 2);
 
   //  if(porositydof_)
   //  {
@@ -981,15 +981,15 @@ void PoroElastScaTra::PoroScatraMono::build_convergence_norms()
   Teuchos::RCP<const Core::LinAlg::Vector<double>> interincscalar;
 
   // process structure unknowns of the first field
-  interincs = extractor()->extract_vector(iterinc_, 0);
+  interincs = extractor()->extract_vector(*iterinc_, 0);
 
   // process fluid unknowns of the second field
-  interincf = extractor()->extract_vector(iterinc_, 1);
+  interincf = extractor()->extract_vector(*iterinc_, 1);
   interincfvel = poro_field()->fluid_field()->extract_velocity_part(interincf);
   interincfpres = poro_field()->fluid_field()->extract_pressure_part(interincf);
 
   // process scalar unknowns of the third field
-  interincscalar = extractor()->extract_vector(iterinc_, 2);
+  interincscalar = extractor()->extract_vector(*iterinc_, 2);
 
   //  if(porositydof_)
   //  {

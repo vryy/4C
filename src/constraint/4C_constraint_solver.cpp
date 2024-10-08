@@ -137,7 +137,7 @@ void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<Core::LinAlg::Spars
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
       Teuchos::rcp(new Core::LinAlg::Vector<double>(rhsstand->Map(), true));
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dirichzeros = dbcmaps_->extract_cond_vector(zeros);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> dirichzeros = dbcmaps_->extract_cond_vector(*zeros);
 
   // Compute residual of the uzawa algorithm
   Teuchos::RCP<Core::LinAlg::Vector<double>> fresmcopy =
@@ -147,7 +147,7 @@ void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<Core::LinAlg::Spars
   uzawa_res.Update(1.0, *fresmcopy, -1.0);
 
   // blank residual DOFs which are on Dirichlet BC
-  dbcmaps_->insert_cond_vector(dirichzeros, Teuchos::rcp(&uzawa_res, false));
+  dbcmaps_->insert_cond_vector(*dirichzeros, uzawa_res);
 
   uzawa_res.Norm2(&norm_uzawa);
   Core::LinAlg::Vector<double> constr_res(lagrinc->Map());
@@ -190,7 +190,7 @@ void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<Core::LinAlg::Spars
     uzawa_res.Update(1.0, *fresmcopy, -1.0);
 
     // blank residual DOFs which are on Dirichlet BC
-    dbcmaps_->insert_cond_vector(dirichzeros, Teuchos::rcp(&uzawa_res, false));
+    dbcmaps_->insert_cond_vector(*dirichzeros, uzawa_res);
     norm_uzawa_old = norm_uzawa;
     uzawa_res.Norm2(&norm_uzawa);
     Core::LinAlg::Vector<double> constr_res(lagrinc->Map());
@@ -301,8 +301,8 @@ void CONSTRAINTS::ConstraintSolver::solve_direct(Teuchos::RCP<Core::LinAlg::Spar
   solver_->solve(mergedmatrix->epetra_operator(), mergedsol, mergedrhs, solver_params);
   solver_->reset_tolerance();
   // store results in smaller vectors
-  mapext.extract_cond_vector(mergedsol, dispinc);
-  mapext.extract_other_vector(mergedsol, lagrinc);
+  mapext.extract_cond_vector(*mergedsol, *dispinc);
+  mapext.extract_other_vector(*mergedsol, *lagrinc);
 
   counter_++;
   return;
@@ -341,7 +341,7 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<Core::LinAlg::Spar
   // stuff needed for Dirichlet BCs
   Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
       Teuchos::rcp(new Core::LinAlg::Vector<double>(rhsstand->Map(), true));
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dirichzeros = dbcmaps_->extract_cond_vector(zeros);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> dirichzeros = dbcmaps_->extract_cond_vector(*zeros);
   Teuchos::RCP<Core::LinAlg::Vector<double>> rhscopy =
       Teuchos::rcp(new Core::LinAlg::Vector<double>(*rhsstand));
 
@@ -401,8 +401,8 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<Core::LinAlg::Spar
   solver_->params() = sfparams;  // store back original parameter list
 
   // store results in smaller vectors
-  rowmapext.extract_cond_vector(mergedsol, lagrinc);
-  rowmapext.extract_other_vector(mergedsol, dispinc);
+  rowmapext.extract_cond_vector(*mergedsol, *lagrinc);
+  rowmapext.extract_other_vector(*mergedsol, *dispinc);
 
   counter_++;
   return;

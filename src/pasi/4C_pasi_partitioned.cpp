@@ -169,9 +169,9 @@ void PaSI::PartitionedAlgo::extract_interface_states()
 {
   TEUCHOS_FUNC_TIME_MONITOR("PaSI::PartitionedAlgo::extract_interface_states");
 
-  intfdispnp_ = interface_->extract_pasi_cond_vector(structurefield_->dispnp());
-  intfvelnp_ = interface_->extract_pasi_cond_vector(structurefield_->velnp());
-  intfaccnp_ = interface_->extract_pasi_cond_vector(structurefield_->accnp());
+  intfdispnp_ = interface_->extract_pasi_cond_vector(*structurefield_->dispnp());
+  intfvelnp_ = interface_->extract_pasi_cond_vector(*structurefield_->velnp());
+  intfaccnp_ = interface_->extract_pasi_cond_vector(*structurefield_->accnp());
 }
 
 void PaSI::PartitionedAlgo::set_interface_states(

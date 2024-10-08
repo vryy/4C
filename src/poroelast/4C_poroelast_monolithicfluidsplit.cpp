@@ -114,7 +114,7 @@ void PoroElast::MonolithicFluidSplit::setup_rhs(bool firstcall)
     rhs->Scale(timescale * dt());
 
 #ifdef FLUIDSPLITAMG
-    rhs = fluid_field()->interface()->insert_other_vector(rhs);
+    rhs = fluid_field()->interface()->insert_other_vector(*rhs);
 #endif
 
     extractor()->add_vector(*rhs, 1, *rhs_);  // add fluid contributions to 'f'
@@ -127,7 +127,7 @@ void PoroElast::MonolithicFluidSplit::setup_rhs(bool firstcall)
         (1.0 - stiparam) / (1.0 - ftiparam));  // scale 'rhs' due to consistent time integration
 
     rhs = fluid_to_structure_at_interface(rhs);
-    rhs = structure_field()->interface()->insert_fsi_cond_vector(rhs);
+    rhs = structure_field()->interface()->insert_fsi_cond_vector(*rhs);
 
     extractor()->add_vector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
 
@@ -136,7 +136,7 @@ void PoroElast::MonolithicFluidSplit::setup_rhs(bool firstcall)
     kig.Apply(*fveln, *rhs);
     rhs->Scale(timescale * dt());
 
-    rhs = structure_field()->interface()->insert_other_vector(rhs);
+    rhs = structure_field()->interface()->insert_other_vector(*rhs);
 
     extractor()->add_vector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
 
@@ -145,14 +145,14 @@ void PoroElast::MonolithicFluidSplit::setup_rhs(bool firstcall)
     kgg.Apply(*fveln, *rhs);
     rhs->Scale(timescale * dt());
 
-    rhs = structure_field()->interface()->insert_fsi_cond_vector(rhs);
+    rhs = structure_field()->interface()->insert_fsi_cond_vector(*rhs);
 
     extractor()->add_vector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
   }
 
   // store interface force onto the structure to know it in the next time step as previous force
   // in order to recover the Lagrange multiplier
-  fgcur_ = fluid_field()->interface()->extract_fsi_cond_vector(fluid_field()->rhs());
+  fgcur_ = fluid_field()->interface()->extract_fsi_cond_vector(*fluid_field()->rhs());
 }
 
 void PoroElast::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSparseMatrixBase& mat)
@@ -263,9 +263,9 @@ void PoroElast::MonolithicFluidSplit::setup_vector(Core::LinAlg::Vector<double>&
   // extract the inner and boundary dofs of all fields
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fov =
-      fluid_field()->interface()->extract_other_vector(fv);
+      fluid_field()->interface()->extract_other_vector(*fv);
 #ifdef FLUIDSPLITAMG
-  fov = fluid_field()->interface()->insert_other_vector(fov);
+  fov = fluid_field()->interface()->insert_other_vector(*fov);
 #endif
 
   extractor()->insert_vector(*sv, 0, f);
@@ -281,18 +281,18 @@ void PoroElast::MonolithicFluidSplit::extract_field_vectors(
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::MonolithicFluidSplit::extract_field_vectors");
 
   // process structure unknowns
-  sx = extractor()->extract_vector(x, 0);
+  sx = extractor()->extract_vector(*x, 0);
 
   // process fluid unknowns
   if (evaluateinterface_)
   {
     Teuchos::RCP<const Core::LinAlg::Vector<double>> scx =
-        structure_field()->interface()->extract_fsi_cond_vector(sx);
+        structure_field()->interface()->extract_fsi_cond_vector(*sx);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> fcx = structure_to_fluid_at_interface(scx);
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fox = extractor()->extract_vector(x, 1);
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> fox = extractor()->extract_vector(*x, 1);
 #ifdef FLUIDSPLITAMG
-    fox = fluid_field()->interface()->extract_other_vector(fox);
+    fox = fluid_field()->interface()->extract_other_vector(*fox);
 #endif
 
     {
@@ -301,8 +301,8 @@ void PoroElast::MonolithicFluidSplit::extract_field_vectors(
     }
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> f =
-        fluid_field()->interface()->insert_other_vector(fox);
-    fluid_field()->interface()->insert_fsi_cond_vector(fcx, f);
+        fluid_field()->interface()->insert_other_vector(*fox);
+    fluid_field()->interface()->insert_fsi_cond_vector(*fcx, *f);
 
     auto zeros = Teuchos::rcp(new const Core::LinAlg::Vector<double>(f->Map(), true));
     Core::LinAlg::apply_dirichlet_to_system(
@@ -312,7 +312,7 @@ void PoroElast::MonolithicFluidSplit::extract_field_vectors(
 
     // Store field vectors to know them later on as previous quantities
     Teuchos::RCP<Core::LinAlg::Vector<double>> sox =
-        structure_field()->interface()->extract_other_vector(sx);
+        structure_field()->interface()->extract_other_vector(*sx);
     if (solipre_ != Teuchos::null)
       ddiinc_->Update(1.0, *sox, -1.0, *solipre_, 0.0);  // compute current iteration increment
     else
@@ -335,7 +335,7 @@ void PoroElast::MonolithicFluidSplit::extract_field_vectors(
     solivelpre_ = fox;  // store current step increment
   }
   else
-    fx = extractor()->extract_vector(x, 1);
+    fx = extractor()->extract_vector(*x, 1);
 }
 
 void PoroElast::MonolithicFluidSplit::recover_lagrange_multiplier_after_time_step()

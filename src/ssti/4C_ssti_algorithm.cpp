@@ -303,10 +303,10 @@ void SSTI::SSTIAlgorithm::distribute_scatra_solution()
     const Teuchos::RCP<Core::LinAlg::Vector<double>> imasterphinp =
         Core::LinAlg::create_vector(*scatra_field()->discretization()->dof_row_map(), true);
     meshtying_strategy_scatra_->interface_maps()->insert_vector(
-        meshtying_strategy_scatra_->coupling_adapter()->master_to_slave(
+        *meshtying_strategy_scatra_->coupling_adapter()->master_to_slave(
             meshtying_strategy_scatra_->interface_maps()->extract_vector(
                 *scatra_field()->phinp(), 2)),
-        1, imasterphinp);
+        1, *imasterphinp);
     thermo_field()->discretization()->set_state(2, "imasterscatra", imasterphinp);
   }
 }
@@ -326,17 +326,17 @@ void SSTI::SSTIAlgorithm::distribute_thermo_solution()
     const Teuchos::RCP<Core::LinAlg::Vector<double>> imastertempnp =
         Core::LinAlg::create_vector(*thermo_field()->discretization()->dof_row_map(), true);
     meshtying_strategy_thermo_->interface_maps()->insert_vector(
-        meshtying_strategy_thermo_->coupling_adapter()->master_to_slave(
+        *meshtying_strategy_thermo_->coupling_adapter()->master_to_slave(
             meshtying_strategy_thermo_->interface_maps()->extract_vector(
                 *thermo_field()->phinp(), 2)),
-        1, imastertempnp);
+        1, *imastertempnp);
 
     // extract slave side temperatures
     const Teuchos::RCP<Core::LinAlg::Vector<double>> islavetempnp =
         Core::LinAlg::create_vector(*thermo_field()->discretization()->dof_row_map(), true);
     meshtying_strategy_thermo_->interface_maps()->insert_vector(
-        meshtying_strategy_thermo_->interface_maps()->extract_vector(*thermo_field()->phinp(), 1),
-        1, islavetempnp);
+        *meshtying_strategy_thermo_->interface_maps()->extract_vector(*thermo_field()->phinp(), 1),
+        1, *islavetempnp);
 
     // set master side temperature to thermo discretization
     thermo_field()->discretization()->set_state(3, "imastertemp", imastertempnp);

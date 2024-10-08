@@ -840,7 +840,7 @@ void FSI::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> 
     if (sdbg_ != Teuchos::null)
     {
       sdbg_->new_iteration();
-      sdbg_->write_vector("x", *structure_field()->interface()->extract_fsi_cond_vector(sx));
+      sdbg_->write_vector("x", *structure_field()->interface()->extract_fsi_cond_vector(*sx));
     }
   }
 

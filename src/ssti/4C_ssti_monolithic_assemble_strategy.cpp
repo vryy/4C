@@ -1260,9 +1260,9 @@ void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<
 
   // assemble scalar transport right-hand side vector into monolithic right-hand side vector
   all_maps()->maps_sub_problems()->insert_vector(
-      RHSscatra, ssti_mono_->get_problem_position(Subproblem::scalar_transport), RHS);
+      *RHSscatra, ssti_mono_->get_problem_position(Subproblem::scalar_transport), *RHS);
   all_maps()->maps_sub_problems()->insert_vector(
-      RHSthermo, ssti_mono_->get_problem_position(Subproblem::thermo), RHS);
+      *RHSthermo, ssti_mono_->get_problem_position(Subproblem::thermo), *RHS);
 
   if (interface_meshtying())
   {
@@ -1287,7 +1287,7 @@ void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<
       const auto rhs_structure_only_master_dofs =
           coupling_adapter->slave_to_master(rhs_structure_only_slave_dofs);
 
-      coupling_map_extractor->add_vector(rhs_structure_only_master_dofs, 2, rhs_structure_master);
+      coupling_map_extractor->add_vector(*rhs_structure_only_master_dofs, 2, *rhs_structure_master);
 
       // zero out slave-side part of structure right-hand side vector
       coupling_map_extractor->put_scalar(residual_structure, 1, 0.0);
@@ -1317,7 +1317,7 @@ void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<
   else
   {
     all_maps()->maps_sub_problems()->add_vector(
-        RHSstructure, ssti_mono_->get_problem_position(Subproblem::structure), RHS, -1.0);
+        *RHSstructure, ssti_mono_->get_problem_position(Subproblem::structure), *RHS, -1.0);
   }
 }
 

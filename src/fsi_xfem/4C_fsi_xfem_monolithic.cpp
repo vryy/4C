@@ -740,16 +740,16 @@ void FSI::MonolithicXFEM::extract_field_vectors(Teuchos::RCP<const Core::LinAlg:
   // Process structure unknowns
   /*----------------------------------------------------------------------*/
   // Extract whole structure field vector
-  sx = extractor_merged_poro().extract_vector(x, structp_block_);
+  sx = extractor_merged_poro().extract_vector(*x, structp_block_);
 
   /*----------------------------------------------------------------------*/
   // Process fluid unknowns
   /*----------------------------------------------------------------------*/
   // Extract vector of fluid unknowns from x
-  fx = extractor_merged_poro().extract_vector(x, fluid_block_);
+  fx = extractor_merged_poro().extract_vector(*x, fluid_block_);
 
   // Extract vector of ale unknowns from x
-  if (have_ale()) ax = extractor().extract_vector(x, ale_i_block_);
+  if (have_ale()) ax = extractor().extract_vector(*x, ale_i_block_);
 }
 
 
@@ -1076,8 +1076,8 @@ bool FSI::MonolithicXFEM::newton()
     {
       ax_sum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*(extractor().Map(ale_i_block_))));
       int errax = ax_sum_->Update(1.0,
-          *ale_field()->interface()->extract_other_vector(ale_field()->dispnp()), -1.0,
-          *ale_field()->interface()->extract_other_vector(ale_field()->dispn()), 0.0);
+          *ale_field()->interface()->extract_other_vector(*ale_field()->dispnp()), -1.0,
+          *ale_field()->interface()->extract_other_vector(*ale_field()->dispn()), 0.0);
 
       if (errax != 0) FOUR_C_THROW("update not successful");
     }
@@ -1091,8 +1091,8 @@ bool FSI::MonolithicXFEM::newton()
        Core::LinAlg::Vector<double>(*(Extractor().Map(structp_block_)))); if(x_sum_ !=
        Teuchos::null)
         {
-          int errsx = sx_sum_->Update(1.0, *Extractor().extract_vector(x_sum_,structp_block_), 0.0);
-          if(errsx != 0) FOUR_C_THROW("update not successful");
+          int errsx = sx_sum_->Update(1.0, *Extractor().extract_vector(*x_sum_,structp_block_),
+       0.0); if(errsx != 0) FOUR_C_THROW("update not successful");
         }
     */
     /*----------------------------------------------------------------------*/
@@ -1203,7 +1203,7 @@ bool FSI::MonolithicXFEM::newton()
 
       // if not a new time-step, take the step-increment which has been summed up so far
       if (sx_sum_ != Teuchos::null)
-        extractor_merged_poro().add_vector(sx_sum_, structp_block_, x_sum_);
+        extractor_merged_poro().add_vector(*sx_sum_, structp_block_, *x_sum_);
 
       //-------------------
       // initialize the fluid part of the global step-increment
@@ -1215,12 +1215,12 @@ bool FSI::MonolithicXFEM::newton()
       //       fluid-evaluate call are the same (then we can ensure the same dofset sorting). At the
       //       beginning of a new time step fx_sum_ and x_sum are created based on the same
       //       dof_row_map.
-      extractor().insert_vector(fx_sum_, fluid_block_, x_sum_);
+      extractor().insert_vector(*fx_sum_, fluid_block_, *x_sum_);
 
       // if not a new time-step, take the step-increment which has been summed up so far
       if (have_ale() && ax_sum_ != Teuchos::null)
       {
-        extractor().add_vector(ax_sum_, ale_i_block_, x_sum_);
+        extractor().add_vector(*ax_sum_, ale_i_block_, *x_sum_);
       }
     }
 
@@ -1345,26 +1345,26 @@ void FSI::MonolithicXFEM::build_covergence_norms()
   rhs_->Norm2(&normrhs_);
 
   // structural Dofs
-  extractor_merged_poro().extract_vector(rhs_, structp_block_)->Norm2(&normstrrhs_l2_);
-  extractor_merged_poro().extract_vector(rhs_, structp_block_)->NormInf(&normstrrhs_inf_);
+  extractor_merged_poro().extract_vector(*rhs_, structp_block_)->Norm2(&normstrrhs_l2_);
+  extractor_merged_poro().extract_vector(*rhs_, structp_block_)->NormInf(&normstrrhs_inf_);
 
   // fluid velocity Dofs
-  fluidvelpresextract.extract_vector(extractor().extract_vector(rhs_, fluid_block_), 0)
+  fluidvelpresextract.extract_vector(*extractor().extract_vector(*rhs_, fluid_block_), 0)
       ->Norm2(&normflvelrhs_l2_);
-  fluidvelpresextract.extract_vector(extractor().extract_vector(rhs_, fluid_block_), 0)
+  fluidvelpresextract.extract_vector(*extractor().extract_vector(*rhs_, fluid_block_), 0)
       ->NormInf(&normflvelrhs_inf_);
 
   // fluid pressure Dofs
-  fluidvelpresextract.extract_vector(extractor().extract_vector(rhs_, fluid_block_), 1)
+  fluidvelpresextract.extract_vector(*extractor().extract_vector(*rhs_, fluid_block_), 1)
       ->Norm2(&normflpresrhs_l2_);
-  fluidvelpresextract.extract_vector(extractor().extract_vector(rhs_, fluid_block_), 1)
+  fluidvelpresextract.extract_vector(*extractor().extract_vector(*rhs_, fluid_block_), 1)
       ->NormInf(&normflpresrhs_inf_);
 
   if (structure_poro()->is_poro())
   {
     // porofluid Dofs
-    extractor().extract_vector(rhs_, fluidp_block_)->Norm2(&normpflvelrhs_l2_);
-    extractor().extract_vector(rhs_, fluidp_block_)->NormInf(&normpflvelrhs_inf_);
+    extractor().extract_vector(*rhs_, fluidp_block_)->Norm2(&normpflvelrhs_l2_);
+    extractor().extract_vector(*rhs_, fluidp_block_)->NormInf(&normpflvelrhs_inf_);
   }
 
 
@@ -1376,40 +1376,42 @@ void FSI::MonolithicXFEM::build_covergence_norms()
   iterinc_->Norm2(&norminc_);
 
   // structural Dofs
-  extractor_merged_poro().extract_vector(iterinc_, structp_block_)->Norm2(&normstrinc_l2_);
-  extractor_merged_poro().extract_vector(iterinc_, structp_block_)->NormInf(&normstrinc_inf_);
-  extractor().extract_vector(iterinc_, structp_block_)->NormInf(&normstrincdisp_inf_);
+  extractor_merged_poro().extract_vector(*iterinc_, structp_block_)->Norm2(&normstrinc_l2_);
+  extractor_merged_poro().extract_vector(*iterinc_, structp_block_)->NormInf(&normstrinc_inf_);
+  extractor().extract_vector(*iterinc_, structp_block_)->NormInf(&normstrincdisp_inf_);
 
   // fluid velocity Dofs
-  fluidvelpresextract.extract_vector(extractor().extract_vector(iterinc_, fluid_block_), 0)
+  fluidvelpresextract.extract_vector(*extractor().extract_vector(*iterinc_, fluid_block_), 0)
       ->Norm2(&normflvelinc_l2_);
-  fluidvelpresextract.extract_vector(extractor().extract_vector(iterinc_, fluid_block_), 0)
+  fluidvelpresextract.extract_vector(*extractor().extract_vector(*iterinc_, fluid_block_), 0)
       ->NormInf(&normflvelinc_inf_);
 
   // fluid pressure Dofs
-  fluidvelpresextract.extract_vector(extractor().extract_vector(iterinc_, fluid_block_), 1)
+  fluidvelpresextract.extract_vector(*extractor().extract_vector(*iterinc_, fluid_block_), 1)
       ->Norm2(&normflpresinc_l2_);
-  fluidvelpresextract.extract_vector(extractor().extract_vector(iterinc_, fluid_block_), 1)
+  fluidvelpresextract.extract_vector(*extractor().extract_vector(*iterinc_, fluid_block_), 1)
       ->NormInf(&normflpresinc_inf_);
 
   if (structure_poro()->is_poro())
   {
     // porofluid Dofs
-    extractor().extract_vector(iterinc_, fluidp_block_)->Norm2(&normpflvelinc_l2_);
-    extractor().extract_vector(iterinc_, fluidp_block_)->NormInf(&normpflvelinc_inf_);
+    extractor().extract_vector(*iterinc_, fluidp_block_)->Norm2(&normpflvelinc_l2_);
+    extractor().extract_vector(*iterinc_, fluidp_block_)->NormInf(&normpflvelinc_inf_);
   }
 
 
   //-------------------------------
   // get length of the structural and fluid vector
   //-------------------------------
-  ns_ = (*(extractor_merged_poro().extract_vector(rhs_, structp_block_)))
-            .GlobalLength();                                                 // structure
-  nf_ = (*(extractor().extract_vector(rhs_, fluid_block_))).GlobalLength();  // fluid
-  nfv_ = (*(fluidvelpresextract.extract_vector(extractor().extract_vector(rhs_, fluid_block_), 0)))
-             .GlobalLength();  // fluid velocity
-  nfp_ = (*(fluidvelpresextract.extract_vector(extractor().extract_vector(rhs_, fluid_block_), 1)))
-             .GlobalLength();      // fluid pressure
+  ns_ = (*(extractor_merged_poro().extract_vector(*rhs_, structp_block_)))
+            .GlobalLength();                                                  // structure
+  nf_ = (*(extractor().extract_vector(*rhs_, fluid_block_))).GlobalLength();  // fluid
+  nfv_ =
+      (*(fluidvelpresextract.extract_vector(*extractor().extract_vector(*rhs_, fluid_block_), 0)))
+          .GlobalLength();  // fluid velocity
+  nfp_ =
+      (*(fluidvelpresextract.extract_vector(*extractor().extract_vector(*rhs_, fluid_block_), 1)))
+          .GlobalLength();         // fluid pressure
   nall_ = (*rhs_).GlobalLength();  // all
 }
 
@@ -1473,7 +1475,7 @@ bool FSI::MonolithicXFEM::evaluate()
   if (sdbg_ != Teuchos::null)
   {
     sdbg_->new_iteration();
-    sdbg_->write_vector("x", *structure_poro()->interface()->extract_fsi_cond_vector(sx));
+    sdbg_->write_vector("x", *structure_poro()->interface()->extract_fsi_cond_vector(*sx));
   }
 
 
@@ -1499,12 +1501,12 @@ bool FSI::MonolithicXFEM::evaluate()
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> DispnpAle =
           Teuchos::rcp(new Core::LinAlg::Vector<double>(*ale_field()->dof_row_map()), true);
-      DispnpAle->Update(1.0, *ale_field()->interface()->insert_other_vector(ax), 1.0,
+      DispnpAle->Update(1.0, *ale_field()->interface()->insert_other_vector(*ax), 1.0,
           *ale_field()->dispn(), 0.0);  // update ale disp here...
       ale_field()->get_dbc_map_extractor()->insert_other_vector(
-          ale_field()->get_dbc_map_extractor()->extract_other_vector(DispnpAle),
-          ale_field()
-              ->write_access_dispnp());  // just update displacements which are not on dbc condition
+          *ale_field()->get_dbc_map_extractor()->extract_other_vector(*DispnpAle),
+          *ale_field()->write_access_dispnp());  // just update displacements which are not on dbc
+                                                 // condition
     }
 
     // Set new state in StructurePoro
@@ -2419,12 +2421,12 @@ void FSI::MonolithicXFEM::linear_solve()
   // and rhs are defined
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> f_iterinc_permuted =
-      extractor().extract_vector(iterinc_, 1);
+      extractor().extract_vector(*iterinc_, 1);
   permute_fluid_dofs_backward(f_iterinc_permuted);
   extractor().insert_vector(*f_iterinc_permuted, 1, *iterinc_);
 
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> f_rhs_permuted = extractor().extract_vector(rhs_, 1);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> f_rhs_permuted = extractor().extract_vector(*rhs_, 1);
   permute_fluid_dofs_backward(f_rhs_permuted);
   extractor().insert_vector(*f_rhs_permuted, 1, *rhs_);
 
@@ -2766,7 +2768,7 @@ void FSI::MonolithicXFEM::apply_newton_damping()
     if (!structure_poro()->is_poro())
     {
       if (nd_max_incnorm_[0] > 0)
-        extractor().extract_vector(iterinc_, structp_block_)->NormInf(incnorm.data());
+        extractor().extract_vector(*iterinc_, structp_block_)->NormInf(incnorm.data());
     }
     else if (nd_max_incnorm_[0] > 0 || nd_max_incnorm_[3] > 0 || nd_max_incnorm_[4] > 0)
     {
@@ -2776,10 +2778,10 @@ void FSI::MonolithicXFEM::apply_newton_damping()
       fluidvelpres.push_back(structure_poro()->fluid_field()->pressure_row_map());
       Core::LinAlg::MultiMapExtractor fluidvelpresextract(
           *(structure_poro()->fluid_field()->dof_row_map()), fluidvelpres);
-      extractor().extract_vector(iterinc_, structp_block_)->NormInf(incnorm.data());
-      fluidvelpresextract.extract_vector(extractor().extract_vector(iterinc_, fluidp_block_), 0)
+      extractor().extract_vector(*iterinc_, structp_block_)->NormInf(incnorm.data());
+      fluidvelpresextract.extract_vector(*extractor().extract_vector(*iterinc_, fluidp_block_), 0)
           ->NormInf(&incnorm[3]);
-      fluidvelpresextract.extract_vector(extractor().extract_vector(iterinc_, fluidp_block_), 1)
+      fluidvelpresextract.extract_vector(*extractor().extract_vector(*iterinc_, fluidp_block_), 1)
           ->NormInf(&incnorm[4]);
     }
     if (nd_max_incnorm_[1] > 0 || nd_max_incnorm_[2] > 0)
@@ -2790,9 +2792,9 @@ void FSI::MonolithicXFEM::apply_newton_damping()
       fluidvelpres.push_back(fluid_field()->pressure_row_map());
       Core::LinAlg::MultiMapExtractor fluidvelpresextract(
           *(fluid_field()->dof_row_map()), fluidvelpres);
-      fluidvelpresextract.extract_vector(extractor().extract_vector(iterinc_, fluid_block_), 0)
+      fluidvelpresextract.extract_vector(*extractor().extract_vector(*iterinc_, fluid_block_), 0)
           ->NormInf(&incnorm[1]);  // fluid velocity Dofs
-      fluidvelpresextract.extract_vector(extractor().extract_vector(iterinc_, fluid_block_), 1)
+      fluidvelpresextract.extract_vector(*extractor().extract_vector(*iterinc_, fluid_block_), 1)
           ->NormInf(&incnorm[2]);  // fluid pressure Dofs
     }
     for (int field = 0; field < 5; ++field)

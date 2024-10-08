@@ -81,7 +81,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FSIStructureWrapper::relaxat
   fsi_model_evaluator()->set_is_relaxation_solve(false);
 
   // we are just interested in the incremental interface displacements
-  return interface_->extract_fsi_cond_vector(idisi);
+  return interface_->extract_fsi_cond_vector(*idisi);
 }
 
 /*----------------------------------------------------------------------*/
@@ -100,7 +100,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FSIStructureWrapper::predict
     }
     else
     {
-      idis = interface_->extract_fsi_cond_vector(dispn());
+      idis = interface_->extract_fsi_cond_vector(*dispn());
     }
   }
   else if (predictor_ == "d(n)+dt*(1.5*v(n)-0.5*v(n-1))")
@@ -114,8 +114,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FSIStructureWrapper::predict
 
     double current_dt = dt();
 
-    idis = interface_->extract_fsi_cond_vector(dispn());
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = interface_->extract_fsi_cond_vector(veln());
+    idis = interface_->extract_fsi_cond_vector(*dispn());
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = interface_->extract_fsi_cond_vector(*veln());
 
     idis->Update(current_dt, *ivel, 1.0);
   }
@@ -126,9 +126,9 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FSIStructureWrapper::predict
 
     double current_dt = dt();
 
-    idis = interface_->extract_fsi_cond_vector(dispn());
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = interface_->extract_fsi_cond_vector(veln());
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iacc = interface_->extract_fsi_cond_vector(accn());
+    idis = interface_->extract_fsi_cond_vector(*dispn());
+    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = interface_->extract_fsi_cond_vector(*veln());
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iacc = interface_->extract_fsi_cond_vector(*accn());
 
     idis->Update(current_dt, *ivel, 0.5 * current_dt * current_dt, *iacc, 1.0);
   }
@@ -159,7 +159,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FSIStructureWrapper::extract
   }
   else
   {
-    return interface_->extract_fsi_cond_vector(dispn());
+    return interface_->extract_fsi_cond_vector(*dispn());
   }
 }
 
@@ -181,7 +181,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FSIStructureWrapper::extract
   }
   else
   {
-    return interface_->extract_fsi_cond_vector(dispnp());
+    return interface_->extract_fsi_cond_vector(*dispnp());
   }
 }
 
@@ -193,7 +193,7 @@ void Adapter::FSIStructureWrapper::apply_interface_forces(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iforce)
 {
   fsi_model_evaluator()->get_interface_force_np_ptr()->PutScalar(0.0);
-  interface_->add_fsi_cond_vector(iforce, fsi_model_evaluator()->get_interface_force_np_ptr());
+  interface_->add_fsi_cond_vector(*iforce, *fsi_model_evaluator()->get_interface_force_np_ptr());
   return;
 }
 
@@ -207,7 +207,7 @@ void Adapter::FSIStructureWrapper::apply_interface_forces_temporary_deprecated(
   Teuchos::RCP<Core::LinAlg::Vector<double>> fifc =
       Core::LinAlg::create_vector(*dof_row_map(), true);
 
-  interface_->add_fsi_cond_vector(iforce, fifc);
+  interface_->add_fsi_cond_vector(*iforce, *fifc);
 
   set_force_interface(fifc->get_ptr_of_Epetra_MultiVector());
 

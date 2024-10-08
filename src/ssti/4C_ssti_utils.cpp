@@ -488,46 +488,46 @@ bool SSTI::ConvCheckMono::converged(const SSTI::SSTIMono& ssti_mono)
   double concdofnorm(0.0);
   ssti_mono.scatra_field()
       ->splitter()
-      ->extract_other_vector(ssti_mono.scatra_field()->phinp())
+      ->extract_other_vector(*ssti_mono.scatra_field()->phinp())
       ->Norm2(&concdofnorm);
 
   // compute L2 norm of concentration increment vector
   double concincnorm(0.0);
   ssti_mono.scatra_field()
       ->splitter()
-      ->extract_other_vector(ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
-          ssti_mono.increment(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
+      ->extract_other_vector(*ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
+          *ssti_mono.increment(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&concincnorm);
 
   // compute L2 norm of concentration residual vector
   double concresnorm(0.0);
   ssti_mono.scatra_field()
       ->splitter()
-      ->extract_other_vector(ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
-          ssti_mono.residual(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
+      ->extract_other_vector(*ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
+          *ssti_mono.residual(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&concresnorm);
 
   // compute L2 norm of potential state vector
   double potdofnorm(0.0);
   ssti_mono.scatra_field()
       ->splitter()
-      ->extract_cond_vector(ssti_mono.scatra_field()->phinp())
+      ->extract_cond_vector(*ssti_mono.scatra_field()->phinp())
       ->Norm2(&potdofnorm);
 
   // compute L2 norm of potential increment vector
   double potincnorm(0.0);
   ssti_mono.scatra_field()
       ->splitter()
-      ->extract_cond_vector(ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
-          ssti_mono.increment(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
+      ->extract_cond_vector(*ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
+          *ssti_mono.increment(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&potincnorm);
 
   // compute L2 norm of potential residual vector
   double potresnorm(0.0);
   ssti_mono.scatra_field()
       ->splitter()
-      ->extract_cond_vector(ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
-          ssti_mono.residual(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
+      ->extract_cond_vector(*ssti_mono.all_maps()->maps_sub_problems()->extract_vector(
+          *ssti_mono.residual(), ssti_mono.get_problem_position(Subproblem::scalar_transport)))
       ->Norm2(&potresnorm);
 
   // compute L2 norm of structural state vector
@@ -538,14 +538,15 @@ bool SSTI::ConvCheckMono::converged(const SSTI::SSTIMono& ssti_mono)
   double structureresnorm(0.0);
   ssti_mono.all_maps()
       ->maps_sub_problems()
-      ->extract_vector(ssti_mono.residual(), ssti_mono.get_problem_position(Subproblem::structure))
+      ->extract_vector(*ssti_mono.residual(), ssti_mono.get_problem_position(Subproblem::structure))
       ->Norm2(&structureresnorm);
 
   // compute L2 norm of structural increment vector
   double structureincnorm(0.0);
   ssti_mono.all_maps()
       ->maps_sub_problems()
-      ->extract_vector(ssti_mono.increment(), ssti_mono.get_problem_position(Subproblem::structure))
+      ->extract_vector(
+          *ssti_mono.increment(), ssti_mono.get_problem_position(Subproblem::structure))
       ->Norm2(&structureincnorm);
 
   // compute L2 norm of thermo state vector
@@ -556,14 +557,14 @@ bool SSTI::ConvCheckMono::converged(const SSTI::SSTIMono& ssti_mono)
   double thermoresnorm(0.0);
   ssti_mono.all_maps()
       ->maps_sub_problems()
-      ->extract_vector(ssti_mono.residual(), ssti_mono.get_problem_position(Subproblem::thermo))
+      ->extract_vector(*ssti_mono.residual(), ssti_mono.get_problem_position(Subproblem::thermo))
       ->Norm2(&thermoresnorm);
 
   // compute L2 norm of thermo increment vector
   double thermoincnorm(0.0);
   ssti_mono.all_maps()
       ->maps_sub_problems()
-      ->extract_vector(ssti_mono.increment(), ssti_mono.get_problem_position(Subproblem::thermo))
+      ->extract_vector(*ssti_mono.increment(), ssti_mono.get_problem_position(Subproblem::thermo))
       ->Norm2(&thermoincnorm);
 
   // compute L2 norm of total residual vector

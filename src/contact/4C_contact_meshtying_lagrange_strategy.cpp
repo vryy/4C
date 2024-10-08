@@ -884,8 +884,8 @@ void CONTACT::MtLagrangeStrategy::update_displacements_and_l_mincrements(
   Teuchos::RCP<Epetra_Map> mergedmap =
       Core::LinAlg::merge_map(problem_dofs(), glmdofrowmap_, false);
   Core::LinAlg::MapExtractor mapext(*mergedmap, problem_dofs(), glmdofrowmap_);
-  mapext.extract_cond_vector(blocksol, sold);
-  mapext.extract_other_vector(blocksol, sollm);
+  mapext.extract_cond_vector(*blocksol, *sold);
+  mapext.extract_other_vector(*blocksol, *sollm);
   sollm->ReplaceMap(*gsdofrowmap_);
 
   zincr_->Update(1.0, *sollm, 0.0);

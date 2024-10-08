@@ -55,10 +55,10 @@ void Adapter::FSIStructureWrapperImmersed::apply_immersed_interface_forces(
 
   if (iforce_fsi != Teuchos::null)
     interface_->add_fsi_cond_vector(
-        iforce_fsi, fsi_model_evaluator()->get_interface_force_np_ptr());
+        *iforce_fsi, *fsi_model_evaluator()->get_interface_force_np_ptr());
   if (iforce_immersed != Teuchos::null)
     interface_->add_immersed_cond_vector(
-        iforce_immersed, fsi_model_evaluator()->get_interface_force_np_ptr());
+        *iforce_immersed, *fsi_model_evaluator()->get_interface_force_np_ptr());
 
   return;
 }
@@ -71,7 +71,7 @@ Adapter::FSIStructureWrapperImmersed::extract_immersed_interface_dispnp()
   FOUR_C_ASSERT(interface_->full_map()->PointSameAs(dispnp()->Map()),
       "Full map of map extractor and Dispnp() do not match.");
 
-  return interface_->extract_immersed_cond_vector(dispnp());
+  return interface_->extract_immersed_cond_vector(*dispnp());
 }
 
 /*----------------------------------------------------------------------*/

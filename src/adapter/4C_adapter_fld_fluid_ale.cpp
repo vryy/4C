@@ -223,7 +223,7 @@ void Adapter::FluidAle::output()
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> lambda = fluid_field()->extract_interface_forces();
       Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
-          fluid_field()->interface()->insert_fsi_cond_vector(lambda);
+          fluid_field()->interface()->insert_fsi_cond_vector(*lambda);
       fluid_field()->disc_writer()->write_vector("fsilambda", lambdafull);
     }
   }
@@ -259,7 +259,7 @@ void Adapter::FluidAle::nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double
   {
     Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = fluid_field()->dispnp();
     Teuchos::RCP<Core::LinAlg::Vector<double>> audispnp =
-        fluid_field()->interface()->extract_au_cond_vector(dispnp);
+        fluid_field()->interface()->extract_au_cond_vector(*dispnp);
     ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(audispnp));
   }
 
@@ -284,7 +284,7 @@ void Adapter::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Core::LinAlg::Vec
   if (idisp != Teuchos::null)
   {
     ale_field()->apply_interface_displacements(
-        ale_field()->interface()->extract_fsi_cond_vector(idisp));
+        ale_field()->interface()->extract_fsi_cond_vector(*idisp));
     fluid_field()->apply_interface_velocities(ivel);
   }
 
@@ -293,7 +293,7 @@ void Adapter::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Core::LinAlg::Vec
   {
     Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = fluid_field()->dispnp();
     Teuchos::RCP<Core::LinAlg::Vector<double>> audispnp =
-        fluid_field()->interface()->extract_au_cond_vector(dispnp);
+        fluid_field()->interface()->extract_au_cond_vector(*dispnp);
     ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(audispnp));
   }
 

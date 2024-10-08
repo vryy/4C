@@ -414,7 +414,7 @@ void Solid::Dbc::insert_vector_in_non_dbc_dofs(
     Teuchos::RCP<Core::LinAlg::Vector<double>> target_ptr) const
 {
   check_init_setup();
-  dbcmap_ptr_->insert_other_vector(dbcmap_ptr_->extract_other_vector(source_ptr), target_ptr);
+  dbcmap_ptr_->insert_other_vector(*dbcmap_ptr_->extract_other_vector(*source_ptr), *target_ptr);
 }
 
 /*----------------------------------------------------------------------------*

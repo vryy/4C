@@ -277,7 +277,7 @@ void XFEM::XfpCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vecto
           stiparam * scaling_S);
     }
 
-    me.add_vector(prhs, idx_[0], rhs);
+    me.add_vector(*prhs, idx_[0], *rhs);
   }
   else if (idx_.size() == 3)
   {
@@ -327,8 +327,8 @@ void XFEM::XfpCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vecto
           stiparam * scaling_S);
     }
 
-    me.add_vector(srhs, idx_[0], rhs);
-    me.add_vector(pfrhs, idx_[2], rhs);
+    me.add_vector(*srhs, idx_[0], *rhs);
+    me.add_vector(*pfrhs, idx_[2], *rhs);
   }
   else
     FOUR_C_THROW("XFPCoupling_Manager::AddCouplingRHS: Not implemented for number of blocks = %d",

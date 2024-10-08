@@ -565,7 +565,7 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
     fluid_field()->discretization()->evaluate_condition(fparams, rhscontistrategy, "fpsi_coupling");
 
     // extract FPSI part of the fluid field
-    temprhs = fluidvelpres_extractor_->extract_cond_vector(temprhs);
+    temprhs = fluidvelpres_extractor_->extract_cond_vector(*temprhs);
 
     // replace global fluid interface dofs through porofluid interface dofs
     temprhs = i_fluid_to_porofluid(temprhs);
@@ -573,7 +573,7 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
     // insert porofluid interface entries into vector with full porofield length (0: inner dofs of
     // structure, 1: interface dofs of structure, 2: inner dofs of porofluid, 3: interface dofs of
     // porofluid )
-    porofluid_extractor_->insert_cond_vector(temprhs, c_rhs_pf_);
+    porofluid_extractor_->insert_cond_vector(*temprhs, *c_rhs_pf_);
 
     // add vector with full porofield length to global rhs
 
@@ -595,11 +595,11 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
         fparams, rhsstructurestrategy, "fpsi_coupling");
 
     // extract FPSI part of the fluid field
-    temprhs = fluidvel_extractor_->extract_cond_vector(temprhs);  //
+    temprhs = fluidvel_extractor_->extract_cond_vector(*temprhs);  //
     // replace global fluid interface dofs through porofluid interface dofs
     temprhs = i_fluid_to_porostruct(temprhs);  //
     // insert porofluid interface
-    porostruct_extractor_->add_cond_vector(temprhs, c_rhs_s_);
+    porostruct_extractor_->add_cond_vector(*temprhs, *c_rhs_s_);
 
     temprhs->PutScalar(0.0);
     temprhs2->PutScalar(0.0);
@@ -619,12 +619,12 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
     poro_field()->fluid_field()->discretization()->evaluate_condition(
         fparams, rhsfluidstrategy, "fpsi_coupling");
     // extract FPSI part of the poro fluid field
-    temprhs = porofluid_extractor_->extract_cond_vector(temprhs);  //
+    temprhs = porofluid_extractor_->extract_cond_vector(*temprhs);  //
 
     // replace global fluid interface dofs through porofluid interface dofs
     temprhs = i_porofluid_to_fluid(temprhs);
     // insert porofluid interface entries into vector with full fluidfield length
-    fluidvelpres_extractor_->insert_cond_vector(temprhs, temprhs2);
+    fluidvelpres_extractor_->insert_cond_vector(*temprhs, *temprhs2);
     // add vector with full porofield length to global rhs
     c_rhs_f_->Update(1.0, *temprhs2, 0.0);
 

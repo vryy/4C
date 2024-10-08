@@ -1141,27 +1141,27 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     // initialize and write vector with reduced displacement dofs
     Teuchos::RCP<Core::LinAlg::Vector<double>> disp_R =
         Teuchos::rcp(new Core::LinAlg::Vector<double>(*mapext_R.Map(0)));
-    mapext_R.extract_vector(mergedsol, 0, disp_R);
+    mapext_R.extract_vector(*mergedsol, 0, *disp_R);
 
     // initialize and write vector with pressure dofs, replace row map
     Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddof =
         Teuchos::rcp(new Core::LinAlg::Vector<double>(*mapext_R.Map(1)));
-    mapext_R.extract_vector(mergedsol, 1, cv0ddof);
+    mapext_R.extract_vector(*mergedsol, 1, *cv0ddof);
     cv0ddof->ReplaceMap(*cardvasc0drowmap);
 
     // extend reduced displacement dofs to high dimension
     Teuchos::RCP<Core::LinAlg::Vector<double>> disp_full = mor_->extend_solution(disp_R);
 
     // assemble displacement and pressure dofs
-    mergedsol_full = mapext.insert_vector(disp_full, 0);
-    mapext.add_vector(cv0ddof, 1, mergedsol_full, 1);
+    mergedsol_full = mapext.insert_vector(*disp_full, 0);
+    mapext.add_vector(*cv0ddof, 1, *mergedsol_full, 1);
   }
   else
     mergedsol_full = mergedsol;
 
   // store results in smaller vectors
-  mapext.extract_vector(mergedsol_full, 0, dispinc);
-  mapext.extract_vector(mergedsol_full, 1, cv0ddofincr);
+  mapext.extract_vector(*mergedsol_full, 0, *dispinc);
+  mapext.extract_vector(*mergedsol_full, 1, *cv0ddofincr);
 
   cv0ddofincrement_->Update(1., *cv0ddofincr, 0.);
 

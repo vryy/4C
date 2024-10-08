@@ -66,7 +66,7 @@ void SSI::DBCHandlerBase::apply_dbc_to_rhs(Teuchos::RCP<Core::LinAlg::Vector<dou
   // apply Dirichlet boundary conditions to the structure part of the right hand side
   const auto& locsysmanager_structure = structure_field()->locsys_manager();
   auto rhs_struct = ssi_maps()->maps_sub_problems()->extract_vector(
-      rhs, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::structure));
+      *rhs, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::structure));
   const auto zeros_struct = Teuchos::rcp(
       new Core::LinAlg::Vector<double>(*structure_field()->get_dbc_map_extractor()->cond_map()));
 
@@ -78,7 +78,7 @@ void SSI::DBCHandlerBase::apply_dbc_to_rhs(Teuchos::RCP<Core::LinAlg::Vector<dou
     locsysmanager_structure->rotate_local_to_global(rhs_struct);
 
   ssi_maps()->maps_sub_problems()->insert_vector(
-      rhs_struct, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::structure), rhs);
+      *rhs_struct, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::structure), *rhs);
 
   // apply Dirichlet boundary conditions to the scatra part of the right hand side
   const auto zeros_scatra =

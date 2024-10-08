@@ -57,7 +57,7 @@ int Adapter::AleFluidWrapper::solve()
 void Adapter::AleFluidWrapper::apply_free_surface_displacements(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> fsdisp)
 {
-  interface_->insert_fs_cond_vector(fsdisp, write_access_dispnp());
+  interface_->insert_fs_cond_vector(*fsdisp, *write_access_dispnp());
 }
 
 /*----------------------------------------------------------------------------*/
@@ -65,7 +65,7 @@ void Adapter::AleFluidWrapper::apply_free_surface_displacements(
 void Adapter::AleFluidWrapper::apply_ale_update_displacements(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> audisp)
 {
-  interface_->insert_au_cond_vector(audisp, write_access_dispnp());
+  interface_->insert_au_cond_vector(*audisp, *write_access_dispnp());
 }
 
 /*----------------------------------------------------------------------------*/
@@ -73,7 +73,7 @@ void Adapter::AleFluidWrapper::apply_ale_update_displacements(
 void Adapter::AleFluidWrapper::apply_interface_displacements(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp)
 {
-  interface_->insert_fsi_cond_vector(idisp, write_access_dispnp());
+  interface_->insert_fsi_cond_vector(*idisp, *write_access_dispnp());
 }
 
 FOUR_C_NAMESPACE_CLOSE

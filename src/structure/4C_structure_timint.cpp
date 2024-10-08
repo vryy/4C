@@ -1118,7 +1118,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
     rhs->Update(-1.0, *finert0, 1.0);
 
     // blank RHS and system matrix on DBC DOFs
-    dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), rhs);
+    dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *rhs);
 
     // Apply Dirichlet conditions also to mass matrix (which represents the system matrix of
     // the considered linear system of equations)
@@ -1126,12 +1126,12 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
 
     if (pressure_ != Teuchos::null)
     {
-      pressure_->insert_cond_vector(pressure_->extract_cond_vector(zeros_), rhs);
+      pressure_->insert_cond_vector(*pressure_->extract_cond_vector(*zeros_), *rhs);
       mass->apply_dirichlet(*(pressure_->cond_map()));
     }
     if (porositysplitter_ != Teuchos::null)
     {
-      porositysplitter_->insert_cond_vector(porositysplitter_->extract_cond_vector(zeros_), rhs);
+      porositysplitter_->insert_cond_vector(*porositysplitter_->extract_cond_vector(*zeros_), *rhs);
       mass->apply_dirichlet(*(porositysplitter_->cond_map()));
     }
 
@@ -2289,7 +2289,7 @@ void Solid::TimInt::output_state(bool& datawritten)
   if (porositysplitter_ != Teuchos::null)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> porosity =
-        porositysplitter_->extract_cond_vector((*dis_)(0));
+        porositysplitter_->extract_cond_vector(*(*dis_)(0));
     output_->write_vector("porosity_p1", porosity);
   }
 

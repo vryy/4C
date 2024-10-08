@@ -386,7 +386,7 @@ void FLD::TimIntRedModels::insert_volumetric_surface_flow_cond_vector(
   //    vol_surf_flow_bc_->insert_cond_vector( *temp_vec , *residual_);
   // -------------------------------------------------------------------
   vol_flow_rates_bc_extractor_->insert_volumetric_surface_flow_cond_vector(
-      vol_flow_rates_bc_extractor_->extract_volumetric_surface_flow_cond_vector(vel), res);
+      *vol_flow_rates_bc_extractor_->extract_volumetric_surface_flow_cond_vector(*vel), *res);
 }
 
 /*----------------------------------------------------------------------*

@@ -363,10 +363,10 @@ void EHL::Monolithic::extract_field_vectors(Teuchos::RCP<Core::LinAlg::Vector<do
   TEUCHOS_FUNC_TIME_MONITOR("EHL::Monolithic::extract_field_vectors");
 
   // process structure unknowns of the first field
-  sx = extractor()->extract_vector(x, 0);
+  sx = extractor()->extract_vector(*x, 0);
 
   // process lubrication unknowns of the second field
-  lx = extractor()->extract_vector(x, 1);
+  lx = extractor()->extract_vector(*x, 1);
 }  // extract_field_vectors()
 
 

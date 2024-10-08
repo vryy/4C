@@ -106,13 +106,13 @@ namespace Adapter
     /// extract interface displacements at \f$t_{n}\f$
     virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_fpsi_interface_dispn()
     {
-      return structure_->interface()->extract_fpsi_cond_vector(structure_->dispn());
+      return structure_->interface()->extract_fpsi_cond_vector(*structure_->dispn());
     }
 
     /// extract interface displacements at \f$t_{n+1}\f$
     virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_fpsi_interface_dispnp()
     {
-      return structure_->interface()->extract_fpsi_cond_vector(structure_->dispnp());
+      return structure_->interface()->extract_fpsi_cond_vector(*structure_->dispnp());
     }
 
     //! unique map of all dofs that should be constrained with DBC
