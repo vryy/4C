@@ -85,7 +85,7 @@ Cut::SideHandle* Cut::MeshHandle::create_side(
             "unsupported distype ( distype = %s )", Core::FE::cell_type_to_string(distype).c_str());
         exit(EXIT_FAILURE);
     }
-    quadraticsides_[sid] = Teuchos::rcp(qsh);
+    quadraticsides_[sid] = Teuchos::RCP(qsh);
     return qsh;
   }
   else
@@ -172,7 +172,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[1]);
@@ -198,7 +198,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[2]);
@@ -224,7 +224,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[2]);
@@ -246,7 +246,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Tri6SideHandle(mesh_, -1, nodeids);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[5]);
@@ -268,7 +268,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Tri6SideHandle(mesh_, -1, nodeids);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       break;
     }
@@ -298,7 +298,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[0]);
@@ -324,7 +324,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[1]);
@@ -350,7 +350,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[2]);
@@ -376,7 +376,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[0]);
@@ -402,7 +402,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[4]);
@@ -428,7 +428,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       break;
     }
@@ -460,7 +460,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad9SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[0]);
@@ -488,7 +488,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad9SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[1]);
@@ -516,7 +516,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad9SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[2]);
@@ -544,7 +544,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad9SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[0]);
@@ -572,7 +572,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad9SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[4]);
@@ -600,7 +600,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad9SideHandle(mesh_, -1, nodeids, false);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       break;
     }
@@ -626,7 +626,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Tri6SideHandle(mesh_, -1, nodeids);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[1]);
@@ -648,7 +648,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Tri6SideHandle(mesh_, -1, nodeids);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[0]);
@@ -670,7 +670,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Tri6SideHandle(mesh_, -1, nodeids);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       sidenodeids.clear();
       sidenodeids.insert(nids[0]);
@@ -692,7 +692,7 @@ void Cut::MeshHandle::create_element_sides(const std::vector<int>& nids, Core::F
       {
         QuadraticSideHandle* qsh = nullptr;
         qsh = new Tri6SideHandle(mesh_, -1, nodeids);
-        elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
+        elementquadraticsides_[sidenodeids] = Teuchos::RCP(qsh);
       }
       break;
     }
@@ -777,7 +777,7 @@ Cut::ElementHandle* Cut::MeshHandle::create_element(
               Core::FE::cell_type_to_string(distype).c_str());
           exit(EXIT_FAILURE);
       }
-      quadraticelements_[eid] = Teuchos::rcp(qeh);
+      quadraticelements_[eid] = Teuchos::RCP(qeh);
       create_element_sides(nids, distype);
       return qeh;
     }

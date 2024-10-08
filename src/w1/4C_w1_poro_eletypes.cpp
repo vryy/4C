@@ -41,7 +41,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroType::crea
   if (eletype == "WALLQ4PORO")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad4>(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -51,7 +51,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroType::crea
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad4>(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad4>(id, owner));
   return ele;
 }
 
@@ -111,7 +111,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroType::crea
   if (eletype == "WALLQ9PORO")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad9>(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad9>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -121,7 +121,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroType::crea
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad9>(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad9>(id, owner));
   return ele;
 }
 
@@ -180,7 +180,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroType::cre
   if (eletype == "WALLN4PORO")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs4>(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -190,7 +190,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroType::cre
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs4>(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs4>(id, owner));
   return ele;
 }
 
@@ -249,7 +249,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroType::cre
   if (eletype == "WALLN9PORO")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs9>(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs9>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -259,7 +259,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroType::cre
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs9>(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs9>(id, owner));
   return ele;
 }
 
@@ -318,7 +318,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroType::creat
   if (eletype == "WALLT3PORO")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::tri3>(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::tri3>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -328,7 +328,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroType::creat
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::tri3>(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::tri3>(id, owner));
   return ele;
 }
 

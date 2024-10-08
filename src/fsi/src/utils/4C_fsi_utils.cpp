@@ -56,9 +56,9 @@ bool FSI::UTILS::fluid_ale_nodes_disjoint(
   {
     // get node row maps
     Teuchos::RCP<const Epetra_Map> fluidmap =
-        Teuchos::rcp(new const Epetra_Map(*fluiddis->node_row_map()));
+        Teuchos::RCP(new const Epetra_Map(*fluiddis->node_row_map()));
     Teuchos::RCP<const Epetra_Map> alemap =
-        Teuchos::rcp(new const Epetra_Map(*aledis->node_row_map()));
+        Teuchos::RCP(new const Epetra_Map(*aledis->node_row_map()));
 
     // Create intersection of fluid and ALE map
     std::vector<Teuchos::RCP<const Epetra_Map>> intersectionmaps;
@@ -88,7 +88,7 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> 
 {
   structcoupmaster_ = structcoupmaster;
 
-  coupff_ = Teuchos::rcp(new Coupling::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
+  coupff_ = Teuchos::RCP(new Coupling::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
       Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
       Global::Problem::instance()->spatial_approximation_type()));
@@ -192,7 +192,7 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> 
       Core::LinAlg::merge_map(*structdofrowmap_, *fluiddofrowmap_, true);
   idispms_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
-  iprojhist_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluiddofrowmap_, true));
+  iprojhist_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*fluiddofrowmap_, true));
 
 
   centerdisptotal_.resize(Global::Problem::instance()->n_dim());
@@ -255,9 +255,9 @@ void FSI::UTILS::SlideAleUtils::remeshing(Adapter::FSIStructureWrapper& structur
   Teuchos::RCP<Epetra_Map> dofrowmap =
       Core::LinAlg::merge_map(*structdofrowmap_, *fluiddofrowmap_, true);
   Teuchos::RCP<Epetra_Import> msimpo =
-      Teuchos::rcp(new Epetra_Import(*dofrowmap, *structdofrowmap_));
+      Teuchos::RCP(new Epetra_Import(*dofrowmap, *structdofrowmap_));
   Teuchos::RCP<Epetra_Import> slimpo =
-      Teuchos::rcp(new Epetra_Import(*dofrowmap, *fluiddofrowmap_));
+      Teuchos::RCP(new Epetra_Import(*dofrowmap, *fluiddofrowmap_));
 
   idispms_->Import(*idisptotal, *msimpo, Add);
   idispms_->Import(*iprojdispale, *slimpo, Add);
@@ -280,9 +280,9 @@ void FSI::UTILS::SlideAleUtils::evaluate_mortar(
   Teuchos::RCP<Epetra_Map> dofrowmap =
       Core::LinAlg::merge_map(*structdofrowmap_, *fluiddofrowmap_, true);
   Teuchos::RCP<Epetra_Import> master_importer =
-      Teuchos::rcp(new Epetra_Import(*dofrowmap, *structdofrowmap_));
+      Teuchos::RCP(new Epetra_Import(*dofrowmap, *structdofrowmap_));
   Teuchos::RCP<Epetra_Import> slave_importer =
-      Teuchos::rcp(new Epetra_Import(*dofrowmap, *fluiddofrowmap_));
+      Teuchos::RCP(new Epetra_Import(*dofrowmap, *fluiddofrowmap_));
 
   if (idispms_->Import(*idispstruct, *master_importer, Add))
     FOUR_C_THROW("Import operation failed.");
@@ -460,7 +460,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
 
   // Redistribute displacement of structnodes on the interface to all processors.
   Teuchos::RCP<Epetra_Import> interimpo =
-      Teuchos::rcp(new Epetra_Import(*structfullnodemap_, *structdofrowmap_));
+      Teuchos::RCP(new Epetra_Import(*structfullnodemap_, *structdofrowmap_));
   Teuchos::RCP<Core::LinAlg::Vector<double>> reddisp =
       Core::LinAlg::create_vector(*structfullnodemap_, true);
   reddisp->Import(*idispnp, *interimpo, Add);
@@ -492,7 +492,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
     {
       // Project fluid nodes onto the struct interface
       // init of search tree
-      Teuchos::RCP<Core::Geo::SearchTree> searchTree = Teuchos::rcp(new Core::Geo::SearchTree(5));
+      Teuchos::RCP<Core::Geo::SearchTree> searchTree = Teuchos::RCP(new Core::Geo::SearchTree(5));
       const Core::LinAlg::Matrix<3, 2> rootBox =
           Core::Geo::get_xaab_bof_eles(structreduelements_[mnit->first], currentpositions);
 
@@ -566,7 +566,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
       Core::LinAlg::Matrix<3, 1> minDistCoords;
       if (dim == 2)
       {
-        Core::Geo::nearest_2d_object_in_node(Teuchos::rcp(&interfacedis, false),
+        Core::Geo::nearest_2d_object_in_node(Teuchos::RCP(&interfacedis, false),
             structreduelements_[mnit->first], currentpositions, closeeles, alenodecurr,
             minDistCoords);
         finaldxyz[0] = minDistCoords(0, 0) - node->x()[0];
@@ -574,7 +574,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
       }
       else
       {
-        Core::Geo::nearest_3d_object_in_node(Teuchos::rcp(&interfacedis, false),
+        Core::Geo::nearest_3d_object_in_node(Teuchos::RCP(&interfacedis, false),
             structreduelements_[mnit->first], currentpositions, closeeles, alenodecurr,
             minDistCoords);
         finaldxyz[0] = minDistCoords(0, 0) - node->x()[0];
@@ -652,13 +652,13 @@ void FSI::UTILS::SlideAleUtils::redundant_elements(
         if (dim == 3)
         {
           structreduelements_[i][tmpele->id()] =
-              Teuchos::rcp(new Discret::ELEMENTS::StructuralSurface(tmpele->id(), tmpele->owner(),
+              Teuchos::RCP(new Discret::ELEMENTS::StructuralSurface(tmpele->id(), tmpele->owner(),
                   tmpele->num_node(), tmpele->node_ids(), tmpele->nodes(), &(*tmpele), 0));
         }
         else if (dim == 2)
         {
           structreduelements_[i][tmpele->id()] =
-              Teuchos::rcp(new Discret::ELEMENTS::StructuralLine(tmpele->id(), tmpele->owner(),
+              Teuchos::RCP(new Discret::ELEMENTS::StructuralLine(tmpele->id(), tmpele->owner(),
                   tmpele->num_node(), tmpele->node_ids(), tmpele->nodes(), &(*tmpele), 0));
         }
       }
@@ -672,13 +672,13 @@ void FSI::UTILS::SlideAleUtils::redundant_elements(
         if (dim == 3)
         {
           ifluidslidstructeles_[i][tmpele->id()] =
-              Teuchos::rcp(new Discret::ELEMENTS::StructuralSurface(tmpele->id(), tmpele->owner(),
+              Teuchos::RCP(new Discret::ELEMENTS::StructuralSurface(tmpele->id(), tmpele->owner(),
                   tmpele->num_node(), tmpele->node_ids(), tmpele->nodes(), &(*tmpele), 0));
         }
         else if (dim == 2)
         {
           ifluidslidstructeles_[i][tmpele->id()] =
-              Teuchos::rcp(new Discret::ELEMENTS::StructuralLine(tmpele->id(), tmpele->owner(),
+              Teuchos::RCP(new Discret::ELEMENTS::StructuralLine(tmpele->id(), tmpele->owner(),
                   tmpele->num_node(), tmpele->node_ids(), tmpele->nodes(), &(*tmpele), 0));
         }
       }

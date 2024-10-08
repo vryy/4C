@@ -376,7 +376,7 @@ void XFEM::ConditionManager::create()
     // level-set coupling objects however only for one level-set side
 
     ele_lsc_coup_idx_col_ =
-        Teuchos::rcp(new Core::LinAlg::Vector<int>(*bg_dis_->element_col_map(), true));
+        Teuchos::RCP(new Core::LinAlg::Vector<int>(*bg_dis_->element_col_map(), true));
   }
 
   //--------------------------------------------------------
@@ -422,7 +422,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> XFEM::ConditionManager::get_lev
 
   // export nodal level-set values to node column map
   Teuchos::RCP<Core::LinAlg::Vector<double>> bg_phinp_col =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*bg_dis_->node_col_map()));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*bg_dis_->node_col_map()));
   Core::LinAlg::export_to(*get_level_set_field(), *bg_phinp_col);
 
   return bg_phinp_col;
@@ -452,11 +452,11 @@ void XFEM::ConditionManager::update_level_set_field()
   // an element for which the conditions are not unique
 
   Teuchos::RCP<Core::LinAlg::Vector<int>> node_lsc_coup_idx =
-      Teuchos::rcp(new Core::LinAlg::Vector<int>(*bg_dis_->node_row_map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<int>(*bg_dis_->node_row_map(), true));
   Teuchos::RCP<Core::LinAlg::Vector<int>> node_lsc_coup_idx_col =
-      Teuchos::rcp(new Core::LinAlg::Vector<int>(*bg_dis_->node_col_map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<int>(*bg_dis_->node_col_map(), true));
   Teuchos::RCP<Core::LinAlg::Vector<int>> ele_lsc_coup_idx =
-      Teuchos::rcp(new Core::LinAlg::Vector<int>(*bg_dis_->element_row_map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<int>(*bg_dis_->element_row_map(), true));
 
   // for each row node, the dominating levelset coupling index
   for (int lsc = 0; lsc < num_level_set_coupling(); ++lsc)

@@ -278,7 +278,7 @@ void Core::Conditions::LocsysManager::update(const double time,
   // GIDs of all DoFs subjected to local co-ordinate systems
   std::set<int> locsysdofset;
 
-  trafo_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 3));
+  trafo_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap, 3));
 
   for (int i = 0; i < noderowmap->NumMyElements(); ++i)
   {
@@ -407,7 +407,7 @@ void Core::Conditions::LocsysManager::update(const double time,
     nummyentries = static_cast<int>(locsysdofs.size());
     myglobalentries = locsysdofs.data();
   }
-  locsysdofmap_ = Teuchos::rcp(new Epetra_Map(
+  locsysdofmap_ = Teuchos::RCP(new Epetra_Map(
       -1, nummyentries, myglobalentries, discret_.dof_row_map()->IndexBase(), discret_.get_comm()));
   if (locsysdofmap_ == Teuchos::null) FOUR_C_THROW("Creation failed.");
 

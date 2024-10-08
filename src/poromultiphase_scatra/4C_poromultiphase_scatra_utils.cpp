@@ -44,14 +44,14 @@ PoroMultiPhaseScaTra::UTILS::create_poro_multi_phase_scatra_algorithm(
     case Inpar::PoroMultiPhaseScaTra::solscheme_twoway_partitioned_nested:
     {
       // call constructor
-      algo = Teuchos::rcp(
+      algo = Teuchos::RCP(
           new PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested(comm, timeparams));
       break;
     }
     case Inpar::PoroMultiPhaseScaTra::solscheme_twoway_partitioned_sequential:
     {
       // call constructor
-      algo = Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential(
+      algo = Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential(
           comm, timeparams));
       break;
     }
@@ -61,13 +61,13 @@ PoroMultiPhaseScaTra::UTILS::create_poro_multi_phase_scatra_algorithm(
       if (!artery_coupl)
       {
         // call constructor
-        algo = Teuchos::rcp(
+        algo = Teuchos::RCP(
             new PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay(comm, timeparams));
       }
       else
       {
         // call constructor
-        algo = Teuchos::rcp(
+        algo = Teuchos::RCP(
             new PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling(
                 comm, timeparams));
       }
@@ -103,22 +103,22 @@ PoroMultiPhaseScaTra::UTILS::create_and_init_artery_coupling_strategy(
     case Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::mp:
     {
       if (evaluate_on_lateral_surface)
-        strategy = Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased(
+        strategy = Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased(
             arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname));
       else
-        strategy = Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased(
+        strategy = Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased(
             arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname));
       break;
     }
     case Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::nodal:
     {
-      strategy = Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased(
+      strategy = Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased(
           arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname));
       break;
     }
     case Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::ntp:
     {
-      strategy = Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint(
+      strategy = Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint(
           arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname));
       break;
     }
@@ -213,7 +213,7 @@ std::map<int, std::set<int>> PoroMultiPhaseScaTra::UTILS::setup_discretizations_
     // curr_seg_lengths: defined as element-wise quantity
     Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
     dofsetaux =
-        Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, maxnumsegperele, 0, false));
+        Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(0, maxnumsegperele, 0, false));
     // add it to artery-scatra discretization
     artscatradis->add_dof_set(dofsetaux);
 

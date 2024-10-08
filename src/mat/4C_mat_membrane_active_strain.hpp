@@ -163,7 +163,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new MembraneActiveStrain(*this));
+      return Teuchos::RCP(new MembraneActiveStrain(*this));
     }
 
     /// material mass density

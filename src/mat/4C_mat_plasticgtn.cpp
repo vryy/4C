@@ -54,7 +54,7 @@ Mat::PAR::PlasticGTN::PlasticGTN(const Core::Mat::PAR::Parameter::Data& matdata)
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticGTN::create_material()
 {
-  return Teuchos::rcp(new Mat::PlasticGTN(this));
+  return Teuchos::RCP(new Mat::PlasticGTN(this));
 }
 Mat::PlasticGTNType Mat::PlasticGTNType::instance_;
 

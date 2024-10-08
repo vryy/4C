@@ -74,7 +74,7 @@ namespace ScaTra
     Teuchos::RCP<Teuchos::ParameterList> scatra_time_parameter_list() override
     {
       Teuchos::RCP<Teuchos::ParameterList> timeparams;
-      timeparams = Teuchos::rcp(new Teuchos::ParameterList());
+      timeparams = Teuchos::RCP(new Teuchos::ParameterList());
       timeparams->set("using stationary formulation", false);
       timeparams->set("using generalized-alpha time integration", true);
       timeparams->set("total time", time_ - (1 - alphaF_) * dta_);

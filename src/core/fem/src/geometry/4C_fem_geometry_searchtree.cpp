@@ -33,7 +33,7 @@ void Core::Geo::SearchTree::initialize_tree(const Core::LinAlg::Matrix<3, 2>& no
     const std::map<int, std::set<int>>& elementsByLabel, const TreeType treetype)
 {
   tree_root_ = Teuchos::null;
-  tree_root_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
+  tree_root_ = Teuchos::RCP(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 
   // insert element map into tree root node
   if (elementsByLabel.size() > 0) tree_root_->set_element_list(elementsByLabel);
@@ -49,7 +49,7 @@ void Core::Geo::SearchTree::initialize_tree(const Core::LinAlg::Matrix<3, 2>& no
     const Core::FE::Discretization& dis, const TreeType treetype)
 {
   tree_root_ = Teuchos::null;
-  tree_root_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
+  tree_root_ = Teuchos::RCP(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 
   // inserts all elements in a map with key -1 and global id
   for (int i = 0; i < dis.num_my_col_elements(); i++)
@@ -64,7 +64,7 @@ void Core::Geo::SearchTree::initialize_tree(
     const Core::LinAlg::Matrix<3, 2>& nodeBox, const TreeType treetype)
 {
   tree_root_ = Teuchos::null;
-  tree_root_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
+  tree_root_ = Teuchos::RCP(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 }
 
 void Core::Geo::SearchTree::insert_element(const int eid)
@@ -80,7 +80,7 @@ void Core::Geo::SearchTree::initialize_tree_slide_ale(const Core::LinAlg::Matrix
     std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements, const TreeType treetype)
 {
   tree_root_ = Teuchos::null;
-  tree_root_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
+  tree_root_ = Teuchos::RCP(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 
   std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
@@ -398,7 +398,7 @@ void Core::Geo::SearchTree::TreeNode::create_children(const Core::FE::Discretiza
   // create empty children
   for (int index = 0; index < get_num_children(); index++)
     children_[index] =
-        Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), get_child_node_box(index), tree_type_));
+        Teuchos::RCP(new TreeNode(this, (treedepth_ - 1), get_child_node_box(index), tree_type_));
 
   // insert elements into child node
   for (std::map<int, std::set<int>>::const_iterator labelIter = element_list_.begin();
@@ -427,7 +427,7 @@ void Core::Geo::SearchTree::TreeNode::create_children(
   for (int index = 0; index < get_num_children(); index++)
   {
     get_child_node_box(index, childNodeBox);
-    children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), childNodeBox, tree_type_));
+    children_[index] = Teuchos::RCP(new TreeNode(this, (treedepth_ - 1), childNodeBox, tree_type_));
   }
   std::vector<int> elementClassification;
   // insert elements into child node
@@ -458,7 +458,7 @@ void Core::Geo::SearchTree::TreeNode::create_children(
   for (int index = 0; index < get_num_children(); index++)
   {
     get_child_node_box(index, childNodeBox);
-    children_[index] = Teuchos::rcp(new TreeNode(this, (treedepth_ - 1), childNodeBox, tree_type_));
+    children_[index] = Teuchos::RCP(new TreeNode(this, (treedepth_ - 1), childNodeBox, tree_type_));
   }
 
   static std::vector<int> elementClassification;

@@ -42,7 +42,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::LubricationType::create
   if (eletype == "LUBRICATION")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Lubrication(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Lubrication(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -53,7 +53,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::LubricationType::create
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Lubrication(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::Lubrication(id, owner));
   return ele;
 }
 

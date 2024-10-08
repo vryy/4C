@@ -154,7 +154,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new Myocard(*this));
+      return Teuchos::RCP(new Myocard(*this));
     }
 
     /// material call from Discret::ELEMENTS::Transport::read_element function

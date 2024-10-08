@@ -38,7 +38,7 @@ namespace Core::IO
       VisualizationParameters parameters,
       std::function<bool(const Core::Elements::Element* element)> element_filter)
       : discretization_(discretization),
-        visualization_manager_(Teuchos::rcp(new VisualizationManager(
+        visualization_manager_(Teuchos::RCP(new VisualizationManager(
             std::move(parameters), discretization->get_comm(), discretization->name()))),
         element_filter_(std::move(element_filter))
   {
@@ -106,8 +106,8 @@ namespace Core::IO
         "Expected %i cell offset values, but got %i.", num_row_elements, cell_offsets.size());
 
     // store node row and col maps (needed to check for changed parallel distribution)
-    noderowmap_last_geometry_set_ = Teuchos::rcp(new Epetra_Map(*discretization_->node_row_map()));
-    nodecolmap_last_geometry_set_ = Teuchos::rcp(new Epetra_Map(*discretization_->node_col_map()));
+    noderowmap_last_geometry_set_ = Teuchos::RCP(new Epetra_Map(*discretization_->node_row_map()));
+    nodecolmap_last_geometry_set_ = Teuchos::RCP(new Epetra_Map(*discretization_->node_col_map()));
   }
 
   /*-----------------------------------------------------------------------------------------------*

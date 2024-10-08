@@ -64,7 +64,7 @@ void ScaTra::TimIntHDG::setup()
 
   // vector to store the dofs per element
   const Teuchos::RCP<Core::LinAlg::Vector<int>> eledofs =
-      Teuchos::rcp(new Core::LinAlg::Vector<int>(*discret_->element_col_map()));
+      Teuchos::RCP(new Core::LinAlg::Vector<int>(*discret_->element_col_map()));
 
   // loop over elements
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
@@ -75,7 +75,7 @@ void ScaTra::TimIntHDG::setup()
 
   // add proxy for interior degrees of freedom to scatra discretization
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
+      Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
   if (discret_->add_dof_set(dofsetaux) != 2)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
   discret_->fill_complete();
@@ -424,7 +424,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
       Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
           "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
           binning_params);
-      binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
+      binningstrategy = Teuchos::RCP(new Core::Binstrategy::BinningStrategy(binning_params,
           Global::Problem::instance()->output_control_file(), discret_->get_comm(),
           discret_->get_comm().MyPID(), nullptr, nullptr, dis));
       binningstrategy
@@ -435,7 +435,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
 
   // vector to store the dofs per element
   const Teuchos::RCP<Core::LinAlg::Vector<int>> eledofs =
-      Teuchos::rcp(new Core::LinAlg::Vector<int>(*discret_->element_col_map()));
+      Teuchos::RCP(new Core::LinAlg::Vector<int>(*discret_->element_col_map()));
 
   // build new maps for face dofs with adapted element order
   hdgdis_->build_faces();
@@ -460,7 +460,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
 
   // create new local dofset for the new interior element dofs with adapted element order
   Teuchos::RCP<Core::DOFSets::DofSetPredefinedDoFNumber> eledofs_new =
-      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
+      Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
   // replace old interior element dofs with the new created dofset
   discret_->replace_dof_set(nds_intvar_, eledofs_new, false);
 
@@ -475,7 +475,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   increment_.reset(new Core::LinAlg::Vector<double>(*(discret_->dof_row_map())));
   neumann_loads_.reset(new Core::LinAlg::Vector<double>(*(discret_->dof_row_map())));
   sysmat_ = Teuchos::null;
-  sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27));
+  sysmat_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27));
 
   // reset the state vectors
   intphinp_.reset(new Core::LinAlg::Vector<double>(*(discret_->dof_row_map(nds_intvar_)), true));
@@ -688,7 +688,7 @@ void ScaTra::TimIntHDG::fd_check()
 {
   // make a copy of state variables to undo perturbations later
   Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_original =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*phinp_));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*phinp_));
 
   discret_->clear_state(true);
 
@@ -699,7 +699,7 @@ void ScaTra::TimIntHDG::fd_check()
   Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1, systemvector2, systemvector3;
 
   // create matrix and vector for calculation of sysmat and assemble
-  systemmatrix1 = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27));
+  systemmatrix1 = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27));
   systemvector1 = Core::LinAlg::create_vector(*dofrowmap, true);
   Core::FE::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
@@ -755,7 +755,7 @@ void ScaTra::TimIntHDG::fd_check()
 
   // make a copy of system right-hand side vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> residualVec =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*systemvector1));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*systemvector1));
   Teuchos::RCP<Core::LinAlg::Vector<double>> fdvec = Core::LinAlg::create_vector(*dofrowmap, true);
 
   for (int k = 0; k < 16; ++k)
@@ -971,7 +971,7 @@ Teuchos::RCP<Core::LinAlg::SerialDenseVector> ScaTra::TimIntHDG::compute_error()
   // the L2 error is computed, feel free to extend the calculations to any error measure needed
   unsigned int NumErrorEntries = 4;
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(NumErrorEntries));
+      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(NumErrorEntries));
 
   discret_->evaluate_scalars(eleparams, errors);
   discret_->clear_state();
@@ -1016,7 +1016,7 @@ void ScaTra::TimIntHDG::calc_mat_initial()
   Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1, systemvector2, systemvector3;
 
   // create matrix and vector for calculation of sysmat and assemble
-  systemmatrix1 = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27));
+  systemmatrix1 = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27));
   Core::FE::AssembleStrategy strategy(
       0, 0, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
@@ -1081,15 +1081,15 @@ void ScaTra::TimIntHDG::adapt_degree()
 
   // vector to store the dofs per single element
   const Teuchos::RCP<Core::LinAlg::Vector<int>> eledofs =
-      Teuchos::rcp(new Core::LinAlg::Vector<int>(*discret_->element_col_map()));
+      Teuchos::RCP(new Core::LinAlg::Vector<int>(*discret_->element_col_map()));
 
   // vector to store the location array of the dofsets before the adaption with the new order
   std::vector<Core::Elements::LocationArray> la_old;
 
   // copy the old face dof map and the old interior element dof map
-  Teuchos::RCP<Epetra_Map> facedofs_old = Teuchos::rcp(new Epetra_Map(*discret_->dof_col_map(0)));
+  Teuchos::RCP<Epetra_Map> facedofs_old = Teuchos::RCP(new Epetra_Map(*discret_->dof_col_map(0)));
   Teuchos::RCP<Epetra_Map> eledofs_old =
-      Teuchos::rcp(new Epetra_Map(*discret_->dof_col_map(nds_intvar_)));
+      Teuchos::RCP(new Epetra_Map(*discret_->dof_col_map(nds_intvar_)));
 
   // set action
   Teuchos::ParameterList eleparams;
@@ -1199,7 +1199,7 @@ void ScaTra::TimIntHDG::adapt_degree()
 
   // create new local dofset for the new interior element dofs with adapted element order
   Teuchos::RCP<Core::DOFSets::DofSetPredefinedDoFNumber> eledofs_new =
-      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
+      Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
   // replace old interior element dofs with the new created dofset
   discret_->replace_dof_set(nds_intvar_, eledofs_new, false);
 
@@ -1224,7 +1224,7 @@ void ScaTra::TimIntHDG::adapt_degree()
   increment_.reset(new Core::LinAlg::Vector<double>(*(discret_->dof_row_map())));
   neumann_loads_.reset(new Core::LinAlg::Vector<double>(*(discret_->dof_row_map())));
   sysmat_ = Teuchos::null;
-  sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27));
+  sysmat_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27));
 
   // reset the state vectors
   intphinp_.reset(new Core::LinAlg::Vector<double>(*(discret_->dof_row_map(nds_intvar_)), true));
@@ -1449,7 +1449,7 @@ void ScaTra::TimIntHDG::assemble_rhs()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::TimIntHDG::create_scatra_field_test()
 {
-  return Teuchos::rcp(new ScaTra::HDGResultTest(Teuchos::rcp(this, false)));
+  return Teuchos::RCP(new ScaTra::HDGResultTest(Teuchos::RCP(this, false)));
 }
 
 FOUR_C_NAMESPACE_CLOSE

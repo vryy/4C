@@ -72,7 +72,7 @@ PoroElastScaTra::PoroScatraBase::PoroScatraBase(
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
   // 2. scatra problem
-  scatra_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
+  scatra_ = Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(
       timeparams, scatradyn, problem->solver_params(linsolvernumber), "scatra", true));
 
   // now we can call init() on the base algo.
@@ -226,11 +226,11 @@ void PoroElastScaTra::PoroScatraBase::replace_dof_sets(
 
     if (poro_field()->has_submeshes())
     {
-      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structsubdofset = Teuchos::rcp(
+      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structsubdofset = Teuchos::RCP(
           new Core::DOFSets::DofSetGIDBasedWrapper(structdis, structdis->get_dof_set_proxy()));
-      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> fluidsubdofset = Teuchos::rcp(
+      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> fluidsubdofset = Teuchos::RCP(
           new Core::DOFSets::DofSetGIDBasedWrapper(fluiddis, fluiddis->get_dof_set_proxy()));
-      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> scatrasubdofset = Teuchos::rcp(
+      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> scatrasubdofset = Teuchos::RCP(
           new Core::DOFSets::DofSetGIDBasedWrapper(scatradis, scatradis->get_dof_set_proxy()));
 
       scatradis->replace_dof_set(1, structsubdofset);
@@ -274,8 +274,8 @@ void PoroElastScaTra::PoroScatraBase::setup_coupling(
   if (not matchinggrid_)
   {
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_structurescatra_ = Teuchos::rcp(new Coupling::Adapter::MortarVolCoupl());
-    volcoupl_fluidscatra_ = Teuchos::rcp(new Coupling::Adapter::MortarVolCoupl());
+    volcoupl_structurescatra_ = Teuchos::RCP(new Coupling::Adapter::MortarVolCoupl());
+    volcoupl_fluidscatra_ = Teuchos::RCP(new Coupling::Adapter::MortarVolCoupl());
 
     std::pair<int, int> dofsets12_structurescatra = std::pair<int, int>(2, 0);
     std::pair<int, int> dofsets21_structurescatra = std::pair<int, int>(1, 0);

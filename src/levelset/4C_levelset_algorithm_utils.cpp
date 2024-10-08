@@ -243,7 +243,7 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
         // get initial field
         const Epetra_Map* dofrowmap = discret_->dof_row_map();
         Teuchos::RCP<Core::LinAlg::Vector<double>> phiref =
-            Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap, true));
+            Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap, true));
 
         // get function
         int startfuncno = params_->get<int>("INITFUNCNO");
@@ -278,14 +278,14 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
 
         // get error and volume
         Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-            Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
+            Teuchos::RCP(new Core::LinAlg::SerialDenseVector(2));
         discret_->evaluate_scalars(eleparams, errors);
         discret_->clear_state();
 
         double errL1 = (*errors)[0] / (*errors)[1];  // division by thickness of element layer for
                                                      // 2D problems with domain size 1
         Teuchos::RCP<Core::LinAlg::Vector<double>> phidiff =
-            Teuchos::rcp(new Core::LinAlg::Vector<double>(*phinp_));
+            Teuchos::RCP(new Core::LinAlg::Vector<double>(*phinp_));
         phidiff->Update(-1.0, *phiref, 1.0);
         double errLinf = 0.0;
         phidiff->NormInf(&errLinf);
@@ -335,7 +335,7 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
   if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> convel_new =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*convel));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*convel));
 
   // loop all conditions
   for (std::size_t icond = 0; icond < lscontactpoint.size(); icond++)
@@ -484,14 +484,14 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       discret_->get_state(nds_vel(), "convective velocity field");
   if (convel_col == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
   Teuchos::RCP<Core::LinAlg::Vector<double>> convel =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret_->dof_row_map(nds_vel()), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret_->dof_row_map(nds_vel()), true));
   Core::LinAlg::export_to(*convel_col, *convel);
 
   // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
   // remark: operations must not be performed on 'convel', because the vector is accessed by both
   //         master and slave nodes, if periodic bounday conditions are present
   Teuchos::RCP<Core::LinAlg::Vector<double>> conveltmp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret_->dof_row_map(nds_vel()), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret_->dof_row_map(nds_vel()), true));
 
   const int numproc = discret_->get_comm().NumProc();
   std::vector<int> allproc(numproc);
@@ -570,12 +570,12 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
 
 
   // these sets contain the element/node GIDs that have been collected
-  Teuchos::RCP<std::set<int>> allcollectednodes = Teuchos::rcp(new std::set<int>);
-  Teuchos::RCP<std::set<int>> allcollectedelements = Teuchos::rcp(new std::set<int>);
+  Teuchos::RCP<std::set<int>> allcollectednodes = Teuchos::RCP(new std::set<int>);
+  Teuchos::RCP<std::set<int>> allcollectedelements = Teuchos::RCP(new std::set<int>);
 
   // export phinp to column map
   const Teuchos::RCP<Core::LinAlg::Vector<double>> phinpcol =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret_->dof_col_map()));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret_->dof_col_map()));
   Core::LinAlg::export_to(*phinp_, *phinpcol);
 
   // this loop determines how many layers around the cut elements will be collected
@@ -698,7 +698,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     // with all nodes collected it is time to communicate them to all other procs
     // which then eliminate all but their row nodes
     {
-      Teuchos::RCP<std::set<int>> globalcollectednodes = Teuchos::rcp(new std::set<int>);
+      Teuchos::RCP<std::set<int>> globalcollectednodes = Teuchos::RCP(new std::set<int>);
       Core::LinAlg::gather<int>(
           *allcollectednodes, *globalcollectednodes, numproc, allproc.data(), discret_->get_comm());
 
@@ -720,7 +720,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   // mereley knows a node's position and velocities
   //-----------------------------------------------------------------------------------------------
   Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 2>>> surfacenodes =
-      Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 2>>);
+      Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 2>>);
 
   std::set<int>::const_iterator nodeit;
   for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
@@ -757,7 +757,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   // Now the surfacenodes must be gathered to all procs
   {
     Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 2>>> mysurfacenodes = surfacenodes;
-    surfacenodes = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 2>>);
+    surfacenodes = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 2>>);
 
     Core::LinAlg::gather<Core::LinAlg::Matrix<3, 2>>(
         *mysurfacenodes, *surfacenodes, numproc, allproc.data(), discret_->get_comm());
@@ -937,7 +937,7 @@ void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
 
   // get masscenter and volume, last entry of vector is total volume of minus domain.
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> masscenter_and_volume =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(nsd_ + 1));
+      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(nsd_ + 1));
   discret_->evaluate_scalars(eleparams, masscenter_and_volume);
   discret_->clear_state();
 
@@ -1020,9 +1020,9 @@ void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>
   if (fssgd_ != Inpar::ScaTra::fssugrdiff_no and not incremental_)
     // sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap,27));
     // cf constructor
-    sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 27, false, true));
+    sysmat_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap, 27, false, true));
   else
-    sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 27, false, true));
+    sysmat_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap, 27, false, true));
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables

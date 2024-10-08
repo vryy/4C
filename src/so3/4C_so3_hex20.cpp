@@ -48,7 +48,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex20Type::create(
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::SoHex20(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::SoHex20(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -59,7 +59,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex20Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::SoHex20(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::SoHex20(id, owner));
   return ele;
 }
 
@@ -120,7 +120,7 @@ Discret::ELEMENTS::SoHex20::SoHex20(int id, int owner)
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOH20, NUMGPT_SOH20));
+    prestress_ = Teuchos::RCP(new Discret::ELEMENTS::PreStress(NUMNOD_SOH20, NUMGPT_SOH20));
 
   return;
 }
@@ -141,7 +141,7 @@ Discret::ELEMENTS::SoHex20::SoHex20(const Discret::ELEMENTS::SoHex20& old)
   }
 
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(*(old.prestress_)));
+    prestress_ = Teuchos::RCP(new Discret::ELEMENTS::PreStress(*(old.prestress_)));
 
   return;
 }
@@ -223,7 +223,7 @@ void Discret::ELEMENTS::SoHex20::unpack(Core::Communication::UnpackBuffer& buffe
     std::vector<char> tmpprestress(0);
     extract_from_pack(buffer, tmpprestress);
     if (prestress_ == Teuchos::null)
-      prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOH20, NUMGPT_SOH20));
+      prestress_ = Teuchos::RCP(new Discret::ELEMENTS::PreStress(NUMNOD_SOH20, NUMGPT_SOH20));
     Core::Communication::UnpackBuffer tmpprestress_buffer(tmpprestress);
     prestress_->unpack(tmpprestress_buffer);
   }

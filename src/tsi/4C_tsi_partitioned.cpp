@@ -78,10 +78,10 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
                   Inpar::Solid::dyna_statics);
 
   // initialise internal variables with values
-  tempincnp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*(thermo_field()->tempnp())));
-  dispincnp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*(structure_field()->dispnp())));
-  disp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*(structure_field()->dispn())));
-  temp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*(thermo_field()->tempn())));
+  tempincnp_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*(thermo_field()->tempnp())));
+  dispincnp_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*(structure_field()->dispnp())));
+  disp_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*(structure_field()->dispn())));
+  temp_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*(thermo_field()->tempn())));
   // set internal variables to pointer of current velocities
   vel_ = structure_field()->write_access_velnp();
 

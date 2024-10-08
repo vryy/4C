@@ -42,7 +42,7 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::add_visualization_wri
   }
   else
   {
-    auto new_writer = Teuchos::rcp<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>(
+    auto new_writer = Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>(
         new BEAMINTERACTION::BeamToSolidOutputWriterVisualization(
             base_output_name_ + "-" + writer_name, visualization_params_));
     visualization_writers_[writer_name_key] = new_writer;

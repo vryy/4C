@@ -47,10 +47,10 @@ std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> Core::Rebalance::r
 
   // extract repartitioned maps
   Teuchos::RCP<Epetra_Map> rownodes =
-      Teuchos::rcp(new Epetra_Map(-1, balanced_graph->RowMap().NumMyElements(),
+      Teuchos::RCP(new Epetra_Map(-1, balanced_graph->RowMap().NumMyElements(),
           balanced_graph->RowMap().MyGlobalElements(), 0, initialGraph->Comm()));
   Teuchos::RCP<Epetra_Map> colnodes =
-      Teuchos::rcp(new Epetra_Map(-1, balanced_graph->ColMap().NumMyElements(),
+      Teuchos::RCP(new Epetra_Map(-1, balanced_graph->ColMap().NumMyElements(),
           balanced_graph->ColMap().MyGlobalElements(), 0, initialGraph->Comm()));
 
   return {rownodes, colnodes};
@@ -74,13 +74,13 @@ Teuchos::RCP<Epetra_CrsGraph> Core::Rebalance::rebalance_graph(const Epetra_CrsG
   Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner;
   if (initialNodeCoordinates != Teuchos::null)
   {
-    partitioner = Teuchos::rcp(new Isorropia::Epetra::Partitioner(
+    partitioner = Teuchos::RCP(new Isorropia::Epetra::Partitioner(
         &initialGraph, &costs, initialNodeCoordinates.get(), nullptr, rebalanceParams));
   }
   else
   {
     partitioner =
-        Teuchos::rcp(new Isorropia::Epetra::Partitioner(&initialGraph, &costs, rebalanceParams));
+        Teuchos::RCP(new Isorropia::Epetra::Partitioner(&initialGraph, &costs, rebalanceParams));
   }
 
   Isorropia::Epetra::Redistributor rd(partitioner);
@@ -100,7 +100,7 @@ Core::Rebalance::rebalance_coordinates(const Epetra_MultiVector& initialCoordina
 {
   TEUCHOS_FUNC_TIME_MONITOR("Rebalance::RebalanceCoordinates");
 
-  Teuchos::RCP<Isorropia::Epetra::Partitioner> part = Teuchos::rcp(
+  Teuchos::RCP<Isorropia::Epetra::Partitioner> part = Teuchos::RCP(
       new Isorropia::Epetra::Partitioner(&initialCoordinates, &initialWeights, rebalanceParams));
 
   Isorropia::Epetra::Redistributor rd(part);
@@ -116,7 +116,7 @@ Core::Rebalance::build_weights(const Core::FE::Discretization& dis)
   const Epetra_Map* noderowmap = dis.node_row_map();
 
   Teuchos::RCP<Epetra_CrsMatrix> crs_ge_weights =
-      Teuchos::rcp(new Epetra_CrsMatrix(Copy, *noderowmap, 15));
+      Teuchos::RCP(new Epetra_CrsMatrix(Copy, *noderowmap, 15));
   Teuchos::RCP<Core::LinAlg::Vector<double>> vweights =
       Core::LinAlg::create_vector(*noderowmap, true);
 
@@ -203,7 +203,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_graph(
     for (fool = mynodes.begin(); fool != mynodes.end(); ++fool) nodes.push_back(*fool);
     mynodes.clear();
     // create a non-overlapping row map
-    rownodes = Teuchos::rcp(new Epetra_Map(-1, (int)nodes.size(), &nodes[0], 0, dis->get_comm()));
+    rownodes = Teuchos::RCP(new Epetra_Map(-1, (int)nodes.size(), &nodes[0], 0, dis->get_comm()));
   }
 
   // start building the graph object
@@ -251,7 +251,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_graph(
   }
 
   Teuchos::RCP<Epetra_CrsGraph> graph =
-      Teuchos::rcp(new Epetra_CrsGraph(Copy, *rownodes, maxband, false));
+      Teuchos::RCP(new Epetra_CrsGraph(Copy, *rownodes, maxband, false));
   dis->get_comm().Barrier();
 
   // fill all local entries into the graph
@@ -381,7 +381,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_monolithic_node_graph
   Core::LinAlg::export_to(node_information, my_colliding_primitives_node_ids);
 
   // 4. Build and fill the graph with element internal connectivities
-  auto my_graph = Teuchos::rcp(new Epetra_FECrsGraph(Copy, *(dis.node_row_map()), 40, false));
+  auto my_graph = Teuchos::RCP(new Epetra_FECrsGraph(Copy, *(dis.node_row_map()), 40, false));
 
   for (const auto* element : dis.my_row_element_range())
   {

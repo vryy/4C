@@ -79,7 +79,7 @@ bool NOX::FSI::MinimalPolynomial::compute(
     const ::NOX::Epetra::Vector& f = dynamic_cast<const ::NOX::Epetra::Vector&>(group.getF());
 
     // We have to work on the scaled residual here.
-    Teuchos::RCP<::NOX::Epetra::Vector> y = Teuchos::rcp(new ::NOX::Epetra::Vector(f));
+    Teuchos::RCP<::NOX::Epetra::Vector> y = Teuchos::RCP(new ::NOX::Epetra::Vector(f));
     y->scale(omega_);
 
     // modified Gram-Schmidt

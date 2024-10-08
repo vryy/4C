@@ -39,7 +39,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroScatraType::c
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
         new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(
             id, owner));
     return ele;
@@ -50,7 +50,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroScatraType::c
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroScatraType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
       new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(
           id, owner));
   return ele;
@@ -96,7 +96,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroScatraType::c
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
         new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(
             id, owner));
     return ele;
@@ -107,7 +107,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroScatraType::c
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroScatraType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
       new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(
           id, owner));
   return ele;
@@ -153,7 +153,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27PoroScatraType::
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
         new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>(
             id, owner));
     return ele;
@@ -164,7 +164,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27PoroScatraType::
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27PoroScatraType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
       new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>(
           id, owner));
   return ele;
@@ -212,7 +212,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10PoroScatraType::
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
         new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>(
             id, owner));
     return ele;
@@ -223,7 +223,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10PoroScatraType::
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10PoroScatraType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
       new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>(
           id, owner));
   return ele;
@@ -272,7 +272,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoNurbs27PoroScatraType
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::Nurbs::SoNurbs27,
+        Teuchos::RCP(new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::Nurbs::SoNurbs27,
             Core::FE::CellType::nurbs27>(id, owner));
     return ele;
   }
@@ -283,7 +283,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoNurbs27PoroScatraType
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::Nurbs::SoNurbs27,
+      Teuchos::RCP(new Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::Nurbs::SoNurbs27,
           Core::FE::CellType::nurbs27>(id, owner));
   return ele;
 }

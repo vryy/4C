@@ -44,14 +44,14 @@ Cut::Mesh::Mesh(Options& options, double norm, Teuchos::RCP<PointPool> pp, bool 
     : options_(options),
       norm_(norm),
       pp_(pp),
-      bb_(Teuchos::rcp(BoundingBox::create())),
+      bb_(Teuchos::RCP(BoundingBox::create())),
       cutmesh_(cutmesh),
       myrank_(myrank)
 {
   if (pp_ == Teuchos::null)
   {
     // create a new octTree based pointpool that stores all points
-    pp_ = Teuchos::rcp(new PointPool(norm));
+    pp_ = Teuchos::RCP(new PointPool(norm));
   }
 }
 
@@ -285,7 +285,7 @@ Cut::Line* Cut::Mesh::new_line_internal(
   if (not line)
   {
     line = new Line(p1, p2, cut_side1, cut_side2, cut_element);
-    lines_.push_back(Teuchos::rcp(line));
+    lines_.push_back(Teuchos::RCP(line));
   }
   else  // line already exists. just add cut side details to the line
   {
@@ -354,7 +354,7 @@ Cut::Facet* Cut::Mesh::new_facet(const std::vector<Point*>& points, Side* side, 
   }
 
   Facet* f = new Facet(*this, points, side, cutsurface);
-  facets_.push_back(Teuchos::rcp(f));
+  facets_.push_back(Teuchos::RCP(f));
 
   return f;
 }
@@ -367,7 +367,7 @@ Cut::VolumeCell* Cut::Mesh::new_volume_cell(const plain_facet_set& facets,
     const std::map<std::pair<Point*, Point*>, plain_facet_set>& volume_lines, Element* element)
 {
   VolumeCell* c = new VolumeCell(facets, volume_lines, element);
-  cells_.push_back(Teuchos::rcp(c));  // store the pointer in mesh's cells_
+  cells_.push_back(Teuchos::RCP(c));  // store the pointer in mesh's cells_
   return c;
 }
 
@@ -384,7 +384,7 @@ Cut::Point1BoundaryCell* Cut::Mesh::new_point1_cell(
   points[0]->coordinates(&xyz(0, 0));
 
   Point1BoundaryCell* bc = new Point1BoundaryCell(xyz, facet, points);
-  boundarycells_.push_back(Teuchos::rcp(bc));
+  boundarycells_.push_back(Teuchos::RCP(bc));
 
   return bc;
 }
@@ -404,7 +404,7 @@ Cut::Line2BoundaryCell* Cut::Mesh::new_line2_cell(
   }
 
   Line2BoundaryCell* bc = new Line2BoundaryCell(xyze, facet, points);
-  boundarycells_.push_back(Teuchos::rcp(bc));
+  boundarycells_.push_back(Teuchos::RCP(bc));
 
   return bc;
 }
@@ -427,7 +427,7 @@ Cut::Tri3BoundaryCell* Cut::Mesh::new_tri3_cell(
 
   Tri3BoundaryCell* bc = new Tri3BoundaryCell(xyz, facet, points);
   bc->set_new_cubature_degree(options_.bc_cubaturedegree());
-  boundarycells_.push_back(Teuchos::rcp(bc));
+  boundarycells_.push_back(Teuchos::RCP(bc));
 
   return bc;
 }
@@ -451,7 +451,7 @@ Cut::Quad4BoundaryCell* Cut::Mesh::new_quad4_cell(
 
   Quad4BoundaryCell* bc = new Quad4BoundaryCell(xyz, facet, points);
   bc->set_new_cubature_degree(options_.bc_cubaturedegree());
-  boundarycells_.push_back(Teuchos::rcp(bc));
+  boundarycells_.push_back(Teuchos::RCP(bc));
 
   return bc;
 }
@@ -473,7 +473,7 @@ Cut::ArbitraryBoundaryCell* Cut::Mesh::new_arbitrary_cell(VolumeCell* volume, Fa
   }
 
   ArbitraryBoundaryCell* bc = new ArbitraryBoundaryCell(xyz, facet, points, gaussRule, normal);
-  boundarycells_.push_back(Teuchos::rcp(bc));
+  boundarycells_.push_back(Teuchos::RCP(bc));
 
   return bc;
 }
@@ -492,7 +492,7 @@ Cut::Line2IntegrationCell* Cut::Mesh::new_line2_cell(
     points[i]->coordinates(&xyze(0, i));
   }
   Line2IntegrationCell* c = new Line2IntegrationCell(position, xyze, points, cell);
-  integrationcells_.push_back(Teuchos::rcp(c));
+  integrationcells_.push_back(Teuchos::RCP(c));
 
   return c;
 }
@@ -511,7 +511,7 @@ Cut::Tri3IntegrationCell* Cut::Mesh::new_tri3_cell(
     points[i]->coordinates(&xyze(0, i));
   }
   Tri3IntegrationCell* c = new Tri3IntegrationCell(position, xyze, points, cell);
-  integrationcells_.push_back(Teuchos::rcp(c));
+  integrationcells_.push_back(Teuchos::RCP(c));
 
   return c;
 }
@@ -530,7 +530,7 @@ Cut::Quad4IntegrationCell* Cut::Mesh::new_quad4_cell(
     points[i]->coordinates(&xyze(0, i));
   }
   Quad4IntegrationCell* c = new Quad4IntegrationCell(position, xyze, points, cell);
-  integrationcells_.push_back(Teuchos::rcp(c));
+  integrationcells_.push_back(Teuchos::RCP(c));
 
   return c;
 }
@@ -548,7 +548,7 @@ Cut::Hex8IntegrationCell* Cut::Mesh::new_hex8_cell(
   }
 
   Hex8IntegrationCell* c = new Hex8IntegrationCell(position, xyz, points, cell);
-  integrationcells_.push_back(Teuchos::rcp(c));
+  integrationcells_.push_back(Teuchos::RCP(c));
 
   return c;
 }
@@ -568,7 +568,7 @@ Cut::Tet4IntegrationCell* Cut::Mesh::new_tet4_cell(
   }
 
   Tet4IntegrationCell* c = new Tet4IntegrationCell(position, xyz, points, cell);
-  integrationcells_.push_back(Teuchos::rcp(c));
+  integrationcells_.push_back(Teuchos::RCP(c));
 
   return c;
 }
@@ -582,7 +582,7 @@ Cut::Tet4IntegrationCell* Cut::Mesh::new_tet4_cell(
 {
   std::vector<Point*> points;  // empty list of points
   Tet4IntegrationCell* c = new Tet4IntegrationCell(position, xyz, points, cell);
-  integrationcells_.push_back(Teuchos::rcp(c));
+  integrationcells_.push_back(Teuchos::RCP(c));
   return c;
 }
 
@@ -600,7 +600,7 @@ Cut::Wedge6IntegrationCell* Cut::Mesh::new_wedge6_cell(
   }
 
   Wedge6IntegrationCell* c = new Wedge6IntegrationCell(position, xyz, points, cell);
-  integrationcells_.push_back(Teuchos::rcp(c));
+  integrationcells_.push_back(Teuchos::RCP(c));
 
   return c;
 }
@@ -619,7 +619,7 @@ Cut::Pyramid5IntegrationCell* Cut::Mesh::new_pyramid5_cell(
   }
 
   Pyramid5IntegrationCell* c = new Pyramid5IntegrationCell(position, xyz, points, cell);
-  integrationcells_.push_back(Teuchos::rcp(c));
+  integrationcells_.push_back(Teuchos::RCP(c));
 
   return c;
 }
@@ -631,7 +631,7 @@ void Cut::Mesh::build_self_cut_tree()
 {
   // constructor for the search tree of the background mesh
   selfcuttree_ =
-      Teuchos::rcp(new Core::Geo::SearchTree(5));  // tree_depth_ 4 is reasonable, 5 is possible
+      Teuchos::RCP(new Core::Geo::SearchTree(5));  // tree_depth_ 4 is reasonable, 5 is possible
 
   // extent the bounding volume of the root of the search tree to prevent symmetry issues
   Core::LinAlg::Matrix<3, 2> boundingvolume = bb_->get_bounding_volume();
@@ -667,7 +667,7 @@ void Cut::Mesh::build_static_search_tree()
 {
   // constructor for the search tree of the background mesh
   searchtree_ =
-      Teuchos::rcp(new Core::Geo::SearchTree(5));  // tree_depth_ 4 is reasonable, 5 is possible
+      Teuchos::RCP(new Core::Geo::SearchTree(5));  // tree_depth_ 4 is reasonable, 5 is possible
 
   // extent the bounding volume of the root of the search tree to prevent symmetry issues
   Core::LinAlg::Matrix<3, 2> boundingvolume = bb_->get_bounding_volume();
@@ -738,7 +738,7 @@ void Cut::Mesh::cut(Side& side, const plain_element_set& done, plain_element_set
 {
   // define a bounding box around the maybe twisted side to determine a
   // preselection of cutting sides and elements
-  Teuchos::RCP<BoundingBox> sidebox = Teuchos::rcp(BoundingBox::create(side));
+  Teuchos::RCP<BoundingBox> sidebox = Teuchos::RCP(BoundingBox::create(side));
   plain_element_set elements;
 
   // use a brute force preselection
@@ -760,7 +760,7 @@ void Cut::Mesh::cut(Side& side, const plain_element_set& done, plain_element_set
          i++)
     {
       Element* e = &*(i->second);
-      Teuchos::RCP<BoundingBox> elementbox = Teuchos::rcp(BoundingBox::create());
+      Teuchos::RCP<BoundingBox> elementbox = Teuchos::RCP(BoundingBox::create());
       elementbox->assign(*e);
       if (elementbox->within(1.0, *sidebox))
       {
@@ -776,7 +776,7 @@ void Cut::Mesh::cut(Side& side, const plain_element_set& done, plain_element_set
          i != shadow_elements_.end(); i++)
     {
       Element* e = &*(i->second);
-      Teuchos::RCP<BoundingBox> elementbox = Teuchos::rcp(BoundingBox::create());
+      Teuchos::RCP<BoundingBox> elementbox = Teuchos::RCP(BoundingBox::create());
       elementbox->assign(*e);
       if (elementbox->within(1.0, *sidebox))
       {
@@ -2381,7 +2381,7 @@ Cut::Node* Cut::Mesh::get_node(int nid, const double* xyz, double lsv, double to
   Point* p = new_point(xyz, nullptr, nullptr, tolerance);
   pp_->set_merge_strategy(PointpoolMergeStrategy::NormalCutLoad);
   Node* n = new Node(nid, p, lsv);
-  nodes_[nid] = Teuchos::rcp(n);
+  nodes_[nid] = Teuchos::RCP(n);
 #ifdef CUT_DUMPCREATION
   if (cutmesh_)
     std::cout << "GetCutNode( " << nid << ", ";
@@ -2468,12 +2468,12 @@ Cut::Edge* Cut::Mesh::get_edge(const plain_int_set& nids, const std::vector<Node
     Point* ep2 = e->end_node()->point();
     if (p1 == ep1 and p2 == ep2)
     {
-      edges_[nids] = Teuchos::rcp(e, false);
+      edges_[nids] = Teuchos::RCP(e, false);
       return e;
     }
     if (p1 == ep2 and p2 == ep1)
     {
-      edges_[nids] = Teuchos::rcp(e, false);
+      edges_[nids] = Teuchos::RCP(e, false);
       return e;
     }
   }
@@ -2576,7 +2576,7 @@ Cut::Side* Cut::Mesh::get_side(int sid, const plain_int_set& nids, const std::ve
   }
   // Facet * f = new Facet;
   // facets_.push_back( Teuchos::rcp( f ) );
-  sides_[nids] = Teuchos::rcp(Cut::Side::create(side_topology.key, sid, nodes, edges));
+  sides_[nids] = Teuchos::RCP(Cut::Side::create(side_topology.key, sid, nodes, edges));
 
   int seid = -shadow_sides_.size() - 1;
   /* Remark: the seid of a shadow node is not unique over processors, consequently

@@ -48,7 +48,7 @@ Mat::PAR::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(
  *---------------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ParticleMaterialSPHFluid::create_material()
 {
-  return Teuchos::rcp(new Mat::ParticleMaterialSPHFluid(this));
+  return Teuchos::RCP(new Mat::ParticleMaterialSPHFluid(this));
 }
 
 /*---------------------------------------------------------------------------*

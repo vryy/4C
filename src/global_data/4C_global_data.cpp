@@ -86,8 +86,8 @@ void Global::Problem::done()
 Global::Problem::Problem()
     : probtype_(Core::ProblemType::none), restartstep_(0), communicators_(Teuchos::null)
 {
-  materials_ = Teuchos::rcp(new Mat::PAR::Bundle());
-  contactconstitutivelaws_ = Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::Bundle());
+  materials_ = Teuchos::RCP(new Mat::PAR::Bundle());
+  contactconstitutivelaws_ = Teuchos::RCP(new CONTACT::CONSTITUTIVELAW::Bundle());
 }
 
 
@@ -165,7 +165,7 @@ void Global::Problem::open_control_file(const Epetra_Comm& comm, const std::stri
 {
   if (restart())
   {
-    inputcontrol_ = Teuchos::rcp(new Core::IO::InputControl(restartkenner, comm));
+    inputcontrol_ = Teuchos::RCP(new Core::IO::InputControl(restartkenner, comm));
 
     if (restartstep_ < 0)
     {
@@ -174,7 +174,7 @@ void Global::Problem::open_control_file(const Epetra_Comm& comm, const std::stri
     }
   }
 
-  outputcontrol_ = Teuchos::rcp(new Core::IO::OutputControl(comm, problem_name(),
+  outputcontrol_ = Teuchos::RCP(new Core::IO::OutputControl(comm, problem_name(),
       spatial_approximation_type(), inputfile, restartkenner, std::move(prefix), n_dim(), restart(),
       io_params().get<int>("FILESTEPS"), io_params().get<bool>("OUTPUT_BIN"), true));
 

@@ -49,7 +49,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::TransportType::create(
   if (eletype == "TRANSP" or eletype == "CONDIF2" or eletype == "CONDIF3")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Transport(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Transport(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -60,7 +60,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::TransportType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Transport(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::Transport(id, owner));
   return ele;
 }
 

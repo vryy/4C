@@ -198,7 +198,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new PlasticElastHyper(*this));
+      return Teuchos::RCP(new PlasticElastHyper(*this));
     }
 
     /// material mass density

@@ -114,9 +114,9 @@ Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> BEAMINTERACTION::BeamLinkPinJo
     Inpar::BEAMINTERACTION::JointType type)
 {
   if (type == Inpar::BEAMINTERACTION::beam3r_line2_pin)
-    return Teuchos::rcp(new BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed());
+    return Teuchos::RCP(new BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed());
   else if (type == Inpar::BEAMINTERACTION::truss)
-    return Teuchos::rcp(new BEAMINTERACTION::BeamLinkTruss());
+    return Teuchos::RCP(new BEAMINTERACTION::BeamLinkTruss());
   else
     FOUR_C_THROW(
         "instantiation of new BeamLinkPinJointed object failed due to "

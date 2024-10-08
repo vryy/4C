@@ -3777,9 +3777,9 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_quad(Mortar::Element
   // get them in the case of wear
   if (wear or imortar_.get<bool>("GP_SLIP_INCR"))
   {
-    scoordold = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, sele.num_node()));
-    mcoordold = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, mele.num_node()));
-    lagmult = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, sele.num_node()));
+    scoordold = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(3, sele.num_node()));
+    mcoordold = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(3, mele.num_node()));
+    lagmult = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(3, sele.num_node()));
     sele.get_nodal_coords_old(*scoordold);
     mele.get_nodal_coords_old(*mcoordold);
     sele.get_nodal_lag_mult(*lagmult);
@@ -5785,7 +5785,7 @@ void CONTACT::Integrator::integrate_gp_3d(Mortar::Element& sele, Mortar::Element
         Core::Gen::Pairedvector<int, double> dweargp(
             (mele.num_node() * n_dim()) + linsize);  // wear lin. without lm and jac.
         Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult =
-            Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, sele.num_node()));
+            Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(3, sele.num_node()));
         sele.get_nodal_lag_mult(*lagmult);
 
         gp_3d_wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, normal, jac,
@@ -5970,7 +5970,7 @@ void CONTACT::Integrator::integrate_gp_2d(Mortar::Element& sele, Mortar::Element
       {
         // nodal Lagrange mulitplier
         Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult =
-            Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(3, sele.num_node()));
+            Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(3, sele.num_node()));
         sele.get_nodal_lag_mult(*lagmult);
 
         int linsize = 0;

@@ -155,10 +155,10 @@ void ScaTra::ScaTraTimIntElchOST::read_restart(
 
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+    reader = Teuchos::RCP(new Core::IO::DiscretizationReader(
         discret_, Global::Problem::instance()->input_control_file(), step));
   else
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::RCP(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
   init_nernst_bc();
@@ -441,10 +441,10 @@ void ScaTra::ScaTraTimIntElchBDF2::read_restart(
 
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+    reader = Teuchos::RCP(new Core::IO::DiscretizationReader(
         discret_, Global::Problem::instance()->input_control_file(), step));
   else
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::RCP(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
   init_nernst_bc();
@@ -737,10 +737,10 @@ void ScaTra::ScaTraTimIntElchGenAlpha::read_restart(
 
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+    reader = Teuchos::RCP(new Core::IO::DiscretizationReader(
         discret_, Global::Problem::instance()->input_control_file(), step));
   else
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::RCP(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
   init_nernst_bc();
@@ -972,10 +972,10 @@ void ScaTra::ScaTraTimIntElchStationary::read_restart(
 
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+    reader = Teuchos::RCP(new Core::IO::DiscretizationReader(
         discret_, Global::Problem::instance()->input_control_file(), step));
   else
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::RCP(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // Initialize Nernst-BC
   init_nernst_bc();

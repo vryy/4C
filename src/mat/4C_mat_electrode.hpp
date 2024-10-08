@@ -160,7 +160,7 @@ namespace Mat
     //! clone electrode material
     [[nodiscard]] Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new Electrode(*this));
+      return Teuchos::RCP(new Electrode(*this));
     };
 
     //! return lithiation value corresponding to saturation value of intercalated Lithium

@@ -48,7 +48,7 @@ BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
       visualization_params_(std::move(visualization_params))
 {
   // Initialize the writer base object and add the desired visualizations.
-  output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
+  output_writer_base_ptr_ = Teuchos::RCP<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
       new BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase(
           "beam-to-solid-surface", visualization_params_));
 
@@ -259,7 +259,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
       {
         // This array will hold the global coupling moment around the origin.
         auto global_coupling_moment_origin =
-            Teuchos::rcp(new Core::LinAlg::Matrix<3, 1, double>(true));
+            Teuchos::RCP(new Core::LinAlg::Matrix<3, 1, double>(true));
         visualization_params.set("global_coupling_moment_origin", global_coupling_moment_origin);
       }
 
@@ -276,7 +276,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
       // This map is used to ensure, that each discrete Lagrange multiplier is only written once per
       // beam element.
       Teuchos::RCP<std::unordered_set<int>> beam_tracker =
-          Teuchos::rcp(new std::unordered_set<int>());
+          Teuchos::RCP(new std::unordered_set<int>());
       visualization_params.set<Teuchos::RCP<std::unordered_set<int>>>("beam_tracker", beam_tracker);
 
       // Add the pair specific output.

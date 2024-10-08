@@ -139,7 +139,7 @@ template <unsigned probdim, Core::FE::CellType eletype, unsigned num_nodes_eleme
 void Cut::PositionGeneric<probdim, eletype, num_nodes_element, dim,
     floattype>::construct_bounding_box()
 {
-  bbside_ = Teuchos::rcp(BoundingBox::create());
+  bbside_ = Teuchos::RCP(BoundingBox::create());
 
   for (unsigned i = 0; i < num_nodes_element; ++i)
   {

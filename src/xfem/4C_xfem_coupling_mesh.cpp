@@ -114,7 +114,7 @@ void XFEM::MeshCoupling::create_cutter_dis_from_condition(std::string suffix)
   //--------------------------------
   // create the new cutter discretization form the conditioned coupling discretization
   Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discreator =
-      Teuchos::rcp(new Core::FE::DiscretizationCreatorBase());
+      Teuchos::RCP(new Core::FE::DiscretizationCreatorBase());
   cutter_dis_ = discreator->create_matching_discretization_from_condition(
       *cond_dis_,      ///< discretization with condition
       cond_name_,      ///< name of the condition, by which the derived discretization is identified
@@ -134,7 +134,7 @@ void XFEM::MeshCoupling::create_cutter_dis_from_condition(std::string suffix)
   // for parallel jobs we have to call TransparentDofSet with additional flag true
   bool parallel = cond_dis_->get_comm().NumProc() > 1;
   Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
-      Teuchos::rcp(new Core::DOFSets::TransparentIndependentDofSet(cond_dis_, parallel));
+      Teuchos::RCP(new Core::DOFSets::TransparentIndependentDofSet(cond_dis_, parallel));
 
   cutter_dis_->replace_dof_set(newdofset);  // do not call this with true!!
 
@@ -166,7 +166,7 @@ void XFEM::MeshCoupling::prepare_cutter_output()
 
   if (!mark_geometry_)  // Do not write for marked geometry!
   {
-    cutter_dis_->set_writer(Teuchos::rcp(new Core::IO::DiscretizationWriter(cutter_dis_,
+    cutter_dis_->set_writer(Teuchos::RCP(new Core::IO::DiscretizationWriter(cutter_dis_,
         Global::Problem::instance()->output_control_file(),
         Global::Problem::instance()->spatial_approximation_type())));
     cutter_output_ = cutter_dis_->writer();
@@ -324,7 +324,7 @@ void XFEM::MeshVolCoupling::init()
     // Todo: create only for Nitsche+EVP & EOS on outer embedded elements
     create_auxiliary_discretization();
 
-    ele_to_max_eigenvalue_ = Teuchos::rcp(new std::map<int, double>());
+    ele_to_max_eigenvalue_ = Teuchos::RCP(new std::map<int, double>());
 
     trace_estimate_eigenvalue_update_ =
         Teuchos::getIntegralValue<Inpar::XFEM::TraceEstimateEigenvalueUpdate>(
@@ -423,9 +423,9 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
     std::vector<int> full_nodes(full_ele_nodes_col.begin(), full_ele_nodes_col.end());
     std::vector<int> full_eles(full_eles_col.begin(), full_eles_col.end());
 
-    Teuchos::RCP<const Epetra_Map> full_nodecolmap = Teuchos::rcp(
+    Teuchos::RCP<const Epetra_Map> full_nodecolmap = Teuchos::RCP(
         new Epetra_Map(-1, full_nodes.size(), full_nodes.data(), 0, cond_dis_->get_comm()));
-    Teuchos::RCP<const Epetra_Map> full_elecolmap = Teuchos::rcp(
+    Teuchos::RCP<const Epetra_Map> full_elecolmap = Teuchos::RCP(
         new Epetra_Map(-1, full_eles.size(), full_eles.data(), 0, cond_dis_->get_comm()));
 
     // redistribute nodes and elements to column (ghost) map
@@ -500,8 +500,8 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
 {
   std::string aux_coup_disname("auxiliary_coupling_");
   aux_coup_disname += cond_dis_->name();
-  aux_coup_dis_ = Teuchos::rcp(new Core::FE::Discretization(aux_coup_disname,
-      Teuchos::rcp(cond_dis_->get_comm().Clone()), Global::Problem::instance()->n_dim()));
+  aux_coup_dis_ = Teuchos::RCP(new Core::FE::Discretization(aux_coup_disname,
+      Teuchos::RCP(cond_dis_->get_comm().Clone()), Global::Problem::instance()->n_dim()));
 
   // make the condition known to the auxiliary discretization
   // we use the same nodal ids and therefore we can just copy the conditions
@@ -561,7 +561,7 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
     // add the element to the discretization
     if (cond_dis_->element_row_map()->MyGID(actele->id()))
     {
-      Teuchos::RCP<Core::Elements::Element> bndele = Teuchos::rcp(actele->clone());
+      Teuchos::RCP<Core::Elements::Element> bndele = Teuchos::RCP(actele->clone());
       aux_coup_dis_->add_element(bndele);
     }
   }  // end loop over column elements
@@ -570,7 +570,7 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
   for (std::set<int>::iterator id = adjacent_row.begin(); id != adjacent_row.end(); ++id)
   {
     Core::Nodes::Node* actnode = cond_dis_->g_node(*id);
-    Teuchos::RCP<Core::Nodes::Node> bndnode = Teuchos::rcp(actnode->clone());
+    Teuchos::RCP<Core::Nodes::Node> bndnode = Teuchos::RCP(actnode->clone());
     aux_coup_dis_->add_node(bndnode);
   }
 
@@ -583,20 +583,20 @@ void XFEM::MeshVolCoupling::create_auxiliary_discretization()
     // (expected by Epetra_Map ctor)
     std::vector<int> rownodes(adjacent_row.begin(), adjacent_row.end());
     // build noderowmap for new distribution of nodes
-    newnoderowmap = Teuchos::rcp(
+    newnoderowmap = Teuchos::RCP(
         new Epetra_Map(-1, rownodes.size(), rownodes.data(), 0, aux_coup_dis_->get_comm()));
 
     std::vector<int> colnodes(adjacent_col.begin(), adjacent_col.end());
 
     // build nodecolmap for new distribution of nodes
-    newnodecolmap = Teuchos::rcp(
+    newnodecolmap = Teuchos::RCP(
         new Epetra_Map(-1, colnodes.size(), colnodes.data(), 0, aux_coup_dis_->get_comm()));
 
     aux_coup_dis_->redistribute(*newnoderowmap, *newnodecolmap, false, false, false);
 
     // make auxiliary discretization have the same dofs as the coupling discretization
     Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
-        Teuchos::rcp(new Core::DOFSets::TransparentIndependentDofSet(cond_dis_, true));
+        Teuchos::RCP(new Core::DOFSets::TransparentIndependentDofSet(cond_dis_, true));
     aux_coup_dis_->replace_dof_set(newdofset,
         false);  // do not call this with true (no replacement in static dofsets intended)
     aux_coup_dis_->fill_complete(true, true, true);

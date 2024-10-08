@@ -96,7 +96,7 @@ namespace
 
     // Create summand vector
     std::vector<Teuchos::RCP<Mat::Elastic::Summand>> potsum(0);
-    potsum.emplace_back(Teuchos::rcp(new Mat::Elastic::IsoNeoHooke(
+    potsum.emplace_back(Teuchos::RCP(new Mat::Elastic::IsoNeoHooke(
         dynamic_cast<Mat::Elastic::PAR::IsoNeoHooke *>(iso_neo_hooke_params.get()))));
 
     // Read summand properties

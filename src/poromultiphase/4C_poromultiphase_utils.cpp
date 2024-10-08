@@ -68,7 +68,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::setup_discretizations_and_fi
     // curr_seg_lengths: defined as element-wise quantity
     Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
     dofsetaux =
-        Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(0, maxnumsegperele, 0, false));
+        Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(0, maxnumsegperele, 0, false));
     // add it to artery discretization
     arterydis->add_dof_set(dofsetaux);
 
@@ -125,7 +125,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::setup_discretizations_and_fi
 
   // build auxiliary dofset for postprocessing solid pressures
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(1, 0, 0, false));
+      Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(1, 0, 0, false));
   nds_solidpressure = fluiddis->add_dof_set(dofsetaux);
   // add it also to the solid field
   structdis->add_dof_set(fluiddis->get_dof_set_proxy(nds_solidpressure));
@@ -166,7 +166,7 @@ POROMULTIPHASE::UTILS::create_poro_multi_phase_algorithm(
     case Inpar::POROMULTIPHASE::solscheme_twoway_partitioned:
     {
       // call constructor
-      algo = Teuchos::rcp(new POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay(comm, timeparams));
+      algo = Teuchos::RCP(new POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay(comm, timeparams));
       break;
     }
     case Inpar::POROMULTIPHASE::solscheme_twoway_monolithic:
@@ -175,12 +175,12 @@ POROMULTIPHASE::UTILS::create_poro_multi_phase_algorithm(
       if (!artery_coupl)
       {
         // call constructor
-        algo = Teuchos::rcp(new POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay(comm, timeparams));
+        algo = Teuchos::RCP(new POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay(comm, timeparams));
       }
       else
       {
         // call constructor
-        algo = Teuchos::rcp(
+        algo = Teuchos::RCP(
             new POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling(comm, timeparams));
       }
       break;

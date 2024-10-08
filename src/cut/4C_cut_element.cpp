@@ -158,7 +158,7 @@ Cut::Element::Element(
   // shadow elements are initialized separately
   is_shadow_ = false;
 
-  boundingvolume_ = Teuchos::rcp(BoundingBox::create(*this));
+  boundingvolume_ = Teuchos::RCP(BoundingBox::create(*this));
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -1310,31 +1310,31 @@ Teuchos::RCP<Cut::Element> Cut::ElementFactory::create_element(Core::FE::CellTyp
   switch (elementtype)
   {
     case Core::FE::CellType::line2:
-      e = Teuchos::rcp<Element>(
+      e = Teuchos::RCP<Element>(
           create_concrete_element<Core::FE::CellType::line2>(eid, sides, nodes, active, probdim));
       break;
     case Core::FE::CellType::tri3:
-      e = Teuchos::rcp<Element>(
+      e = Teuchos::RCP<Element>(
           create_concrete_element<Core::FE::CellType::tri3>(eid, sides, nodes, active, probdim));
       break;
     case Core::FE::CellType::quad4:
-      e = Teuchos::rcp<Element>(
+      e = Teuchos::RCP<Element>(
           create_concrete_element<Core::FE::CellType::quad4>(eid, sides, nodes, active, probdim));
       break;
     case Core::FE::CellType::tet4:
-      e = Teuchos::rcp<Element>(
+      e = Teuchos::RCP<Element>(
           create_concrete_element<Core::FE::CellType::tet4>(eid, sides, nodes, active, probdim));
       break;
     case Core::FE::CellType::hex8:
-      e = Teuchos::rcp<Element>(
+      e = Teuchos::RCP<Element>(
           create_concrete_element<Core::FE::CellType::hex8>(eid, sides, nodes, active, probdim));
       break;
     case Core::FE::CellType::pyramid5:
-      e = Teuchos::rcp<Element>(create_concrete_element<Core::FE::CellType::pyramid5>(
+      e = Teuchos::RCP<Element>(create_concrete_element<Core::FE::CellType::pyramid5>(
           eid, sides, nodes, active, probdim));
       break;
     case Core::FE::CellType::wedge6:
-      e = Teuchos::rcp<Element>(
+      e = Teuchos::RCP<Element>(
           create_concrete_element<Core::FE::CellType::wedge6>(eid, sides, nodes, active, probdim));
       break;
     default:

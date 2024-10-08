@@ -194,7 +194,7 @@ namespace FLD
 
     // push coordinates in vector
     {
-      coordinates_ = Teuchos::rcp(new std::vector<double>);
+      coordinates_ = Teuchos::RCP(new std::vector<double>);
 
       for (std::set<double, LineSortCriterion>::iterator coord1 = coords.begin();
            coord1 != coords.end(); ++coord1)
@@ -209,27 +209,27 @@ namespace FLD
 
     // push wave numbers in vector
     {
-      wavenumbers_ = Teuchos::rcp(new std::vector<double>);
+      wavenumbers_ = Teuchos::RCP(new std::vector<double>);
 
       wavenumbers_->resize((std::size_t)nummodes_);
       for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++) (*wavenumbers_)[rr] = rr;
     }
 
     // set size of energy-spectrum vector
-    energyspectrum_ = Teuchos::rcp(new std::vector<double>);
+    energyspectrum_ = Teuchos::RCP(new std::vector<double>);
     energyspectrum_->resize(wavenumbers_->size());
     // and initialize with zeros, just to be sure
     for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++) (*energyspectrum_)[rr] = 0.0;
 
     // set size of dissipation-spectrum vector
-    dissipationspectrum_ = Teuchos::rcp(new std::vector<double>);
+    dissipationspectrum_ = Teuchos::RCP(new std::vector<double>);
     dissipationspectrum_->resize(wavenumbers_->size());
     // and initialize with zeros, just to be sure
     for (std::size_t rr = 0; rr < dissipationspectrum_->size(); rr++)
       (*dissipationspectrum_)[rr] = 0.0;
 
     // set size of scalar-variance-spectrum vector
-    scalarvariancespectrum_ = Teuchos::rcp(new std::vector<double>);
+    scalarvariancespectrum_ = Teuchos::RCP(new std::vector<double>);
     scalarvariancespectrum_->resize(wavenumbers_->size());
     // and initialize with zeros, just to be sure
     for (std::size_t rr = 0; rr < scalarvariancespectrum_->size(); rr++)
@@ -240,11 +240,11 @@ namespace FLD
     //-------------------------------------------------
 
     // sum over velocity vector
-    sumvel_ = Teuchos::rcp(new std::vector<double>);
+    sumvel_ = Teuchos::RCP(new std::vector<double>);
     sumvel_->resize(3);
 
     // sum over squares of velocity vector components
-    sumvelvel_ = Teuchos::rcp(new std::vector<double>);
+    sumvelvel_ = Teuchos::RCP(new std::vector<double>);
     sumvelvel_->resize(3);
 
     // allocate some (toggle) vectors
@@ -301,7 +301,7 @@ namespace FLD
       times_exp[1] /= 64.0;
 
       // set steps in vector
-      outsteps_ = Teuchos::rcp(new std::vector<int>);
+      outsteps_ = Teuchos::RCP(new std::vector<int>);
       if (num_forcing_steps != 0) outsteps_->push_back(num_forcing_steps);
       for (std::size_t rr = 0; rr < times_exp.size(); rr++)
       {
@@ -323,7 +323,7 @@ namespace FLD
       std::string s(statistics_outfilename_);
       s.append(".energy_spectra");
 
-      log_1 = Teuchos::rcp(new std::ofstream(s.c_str(), std::ios::out));
+      log_1 = Teuchos::RCP(new std::ofstream(s.c_str(), std::ios::out));
       (*log_1) << "# Energy and dissipation spectra for incompressible homogeneous isotropic "
                   "turbulence\n\n\n\n";
 
@@ -332,7 +332,7 @@ namespace FLD
       s = statistics_outfilename_;
       s.append(".kinetic_energy");
 
-      log_2 = Teuchos::rcp(new std::ofstream(s.c_str(), std::ios::out));
+      log_2 = Teuchos::RCP(new std::ofstream(s.c_str(), std::ios::out));
       (*log_2) << "# Evolution of kinetic energy for incompressible homogeneous isotropic "
                   "turbulence\n\n\n";
 
@@ -360,26 +360,26 @@ namespace FLD
     //-------------------------------------------------------------------------------------------------
 
     // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     Teuchos::RCP<Teuchos::Array<double>> local_u1 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> local_u2 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> local_u3 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
     Teuchos::RCP<Teuchos::Array<double>> global_u1 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> global_u2 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> global_u3 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
     //-----------------------------------
     // prepare Fourier transformation
@@ -717,33 +717,33 @@ namespace FLD
     //-------------------------------------------------------------------------------------------------
 
     // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     Teuchos::RCP<Teuchos::Array<double>> local_u1 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> local_u2 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> local_u3 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
     Teuchos::RCP<Teuchos::Array<double>> global_u1 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> global_u2 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> global_u3 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
     Teuchos::RCP<Teuchos::Array<double>> local_phi =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> global_phi =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
     //-----------------------------------
     // prepare Fourier transformation
@@ -1211,7 +1211,7 @@ namespace FLD
 
       if (step == 0 and type_ == decaying_homogeneous_isotropic_turbulence)
       {
-        log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(), std::ios::app));
+        log_k = Teuchos::RCP(new std::ofstream(s_k.c_str(), std::ios::app));
 
         (*log_k) << "# Energy spectrum of initial field (non-dimensionalized form)\n";
         (*log_k) << "#     k              E\n";
@@ -1234,12 +1234,12 @@ namespace FLD
         {
           if (not multiple_records)
           {
-            log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(), std::ios::out));
+            log_k = Teuchos::RCP(new std::ofstream(s_k.c_str(), std::ios::out));
             (*log_k) << "# Energy and dissipation spectra for incompressible homogeneous isotropic "
                         "turbulence\n\n\n";
           }
           else
-            log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(), std::ios::app));
+            log_k = Teuchos::RCP(new std::ofstream(s_k.c_str(), std::ios::app));
 
           (*log_k) << "# Statistics record ";
           (*log_k) << " (Steps " << step - numsamp_ + 1 << "--" << step << ")\n";
@@ -1260,7 +1260,7 @@ namespace FLD
         }
         else
         {
-          log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(), std::ios::app));
+          log_k = Teuchos::RCP(new std::ofstream(s_k.c_str(), std::ios::app));
 
           bool print = false;
           for (std::size_t rr = 0; rr < outsteps_->size(); rr++)
@@ -1300,7 +1300,7 @@ namespace FLD
         std::string s_t(statistics_outfilename_);
         s_t.append(".kinetic_energy");
 
-        log_t = Teuchos::rcp(new std::ofstream(s_t.c_str(), std::ios::app));
+        log_t = Teuchos::RCP(new std::ofstream(s_t.c_str(), std::ios::app));
 
         if (step == 0) (*log_t) << "#     t               q(E)          q(u'u')          MKE\n";
 
@@ -1374,12 +1374,12 @@ namespace FLD
       //      {
       if (not multiple_records)
       {
-        log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(), std::ios::out));
+        log_k = Teuchos::RCP(new std::ofstream(s_k.c_str(), std::ios::out));
         (*log_k) << "# Energy and dissipation spectra for incompressible homogeneous isotropic "
                     "turbulence\n\n\n";
       }
       else
-        log_k = Teuchos::rcp(new std::ofstream(s_k.c_str(), std::ios::app));
+        log_k = Teuchos::RCP(new std::ofstream(s_k.c_str(), std::ios::app));
 
       (*log_k) << "# Statistics record ";
       (*log_k) << " (Steps " << step - numsamp_ + 1 << "--" << step << ")\n";
@@ -1684,7 +1684,7 @@ namespace FLD
       std::string s = statistics_outfilename_;
       s.append(".kinetic_energy");
 
-      log = Teuchos::rcp(new std::ofstream(s.c_str(), std::ios::app));
+      log = Teuchos::RCP(new std::ofstream(s.c_str(), std::ios::app));
       (*log)
           << "# Turbulent kinetic energy from experimental spectrum (non-dimensionalized form)\n";
       (*log) << "#     t           q (total)      q (resolved)    q (subgrid)\n";
@@ -1740,7 +1740,7 @@ namespace FLD
 
     // push coordinates in vector
     {
-      Teuchos::RCP<std::vector<double>> copycoordinates = Teuchos::rcp(new std::vector<double>);
+      Teuchos::RCP<std::vector<double>> copycoordinates = Teuchos::RCP(new std::vector<double>);
 
       for (std::vector<double>::iterator coord1 = coordinates_->begin();
            coord1 != coordinates_->end(); ++coord1)
@@ -1768,27 +1768,27 @@ namespace FLD
 
     // push wave numbers in vector
     {
-      wavenumbers_ = Teuchos::rcp(new std::vector<double>);
+      wavenumbers_ = Teuchos::RCP(new std::vector<double>);
 
       wavenumbers_->resize((std::size_t)nummodes_);
       for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++) (*wavenumbers_)[rr] = rr;
     }
 
     // set size of energy-spectrum vector
-    energyspectrum_ = Teuchos::rcp(new std::vector<double>);
+    energyspectrum_ = Teuchos::RCP(new std::vector<double>);
     energyspectrum_->resize(wavenumbers_->size());
     // and initialize with zeros, just to be sure
     for (std::size_t rr = 0; rr < energyspectrum_->size(); rr++) (*energyspectrum_)[rr] = 0.0;
 
     // set size of dissipation-spectrum vector
-    dissipationspectrum_ = Teuchos::rcp(new std::vector<double>);
+    dissipationspectrum_ = Teuchos::RCP(new std::vector<double>);
     dissipationspectrum_->resize(wavenumbers_->size());
     // and initialize with zeros, just to be sure
     for (std::size_t rr = 0; rr < dissipationspectrum_->size(); rr++)
       (*dissipationspectrum_)[rr] = 0.0;
 
     // set size of scalar-variance-spectrum vector
-    scalarvariancespectrum_ = Teuchos::rcp(new std::vector<double>);
+    scalarvariancespectrum_ = Teuchos::RCP(new std::vector<double>);
     scalarvariancespectrum_->resize(wavenumbers_->size());
     // and initialize with zeros, just to be sure
     for (std::size_t rr = 0; rr < scalarvariancespectrum_->size(); rr++)
@@ -1807,7 +1807,7 @@ namespace FLD
       std::string s(statistics_outfilename_);
       s.append(".energy_spectra");
 
-      log_1 = Teuchos::rcp(new std::ofstream(s.c_str(), std::ios::app));
+      log_1 = Teuchos::RCP(new std::ofstream(s.c_str(), std::ios::app));
       (*log_1) << "# Using 5 points in every element for FFT \n\n\n\n";
 
       log_1->flush();
@@ -1815,7 +1815,7 @@ namespace FLD
       s = statistics_outfilename_;
       s.append(".kinetic_energy");
 
-      log_2 = Teuchos::rcp(new std::ofstream(s.c_str(), std::ios::app));
+      log_2 = Teuchos::RCP(new std::ofstream(s.c_str(), std::ios::app));
       (*log_2) << "# Use HDG-trace variables only \n\n\n";
 
       log_2->flush();
@@ -1835,26 +1835,26 @@ namespace FLD
     //-------------------------------------------------------------------------------------------------
 
     // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     Teuchos::RCP<Teuchos::Array<double>> local_u1 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> local_u2 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> local_u3 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
     Teuchos::RCP<Teuchos::Array<double>> global_u1 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> global_u2 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> global_u3 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
     //-----------------------------------
     // prepare Fourier transformation

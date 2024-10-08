@@ -314,7 +314,7 @@ namespace PoroElast
       if (nopencond_.size())
       {
         has_cond_ = true;
-        cond_ids_ = Teuchos::rcp(new std::set<int>());
+        cond_ids_ = Teuchos::RCP(new std::set<int>());
       }
     }
 

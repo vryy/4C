@@ -52,7 +52,7 @@ void ScaTra::MeshtyingStrategyArtery::init_meshtying()
 
   // construct artery scatra problem
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> art_scatra =
-      Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(globaltimeparams, myscatraparams,
+      Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(globaltimeparams, myscatraparams,
           Global::Problem::instance()->solver_params(myscatraparams.get<int>("LINEAR_SOLVER")),
           "artery_scatra", false));
 
@@ -120,15 +120,15 @@ void ScaTra::MeshtyingStrategyArtery::init_meshtying()
 void ScaTra::MeshtyingStrategyArtery::setup_meshtying()
 {
   // Initialize rhs vector
-  rhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*arttoscatracoupling_->full_map(), true));
+  rhs_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*arttoscatracoupling_->full_map(), true));
 
   // Initialize increment vector
   comb_increment_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*arttoscatracoupling_->full_map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*arttoscatracoupling_->full_map(), true));
 
   // initialize scatra-artery_scatra-systemmatrix_
   comb_systemmatrix_ =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+      Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *arttoscatracoupling_->global_extractor(), *arttoscatracoupling_->global_extractor(), 81,
           false, true));
 
@@ -219,7 +219,7 @@ const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyArtery::solver() const
  *------------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyArtery::init_conv_check_strategy()
 {
-  convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying(
+  convcheckstrategy_ = Teuchos::RCP(new ScaTra::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying(
       scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
 
   return;

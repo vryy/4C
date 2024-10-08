@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::AleFluidWrapper::AleFluidWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 {
   // create the FSI interface
-  interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
+  interface_ = Teuchos::RCP(new ALE::UTILS::MapExtractor);
   interface_->setup(*discretization());
   // extend dirichlet map by the dof
   if (interface_->fsi_cond_relevant())

@@ -48,12 +48,12 @@ Discret::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::ScaTraEleCalcElchScl(
       diffcondparams_(Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::instance(disname))
 {
   // replace diffusion manager for diffusion-conduciton formulation by diffusion manager for SCLs
-  my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElchScl(my::numscal_));
+  my::diffmanager_ = Teuchos::RCP(new ScaTraEleDiffManagerElchScl(my::numscal_));
 
   // replace internal variable manager for diffusion-conduction by internal variable manager for
   // SCL formulation
   my::scatravarmanager_ =
-      Teuchos::rcp(new ScaTraEleInternalVariableManagerElchScl<my::nsd_, my::nen_>(
+      Teuchos::RCP(new ScaTraEleInternalVariableManagerElchScl<my::nsd_, my::nen_>(
           my::numscal_, myelch::elchparams_, diffcondparams_));
 
   // replace utility class for diffusion-conduction formulation by utility class for SCLs

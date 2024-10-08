@@ -35,7 +35,7 @@ Mat::PAR::MurnaghanTaitFluid::MurnaghanTaitFluid(const Core::Mat::PAR::Parameter
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MurnaghanTaitFluid::create_material()
 {
-  return Teuchos::rcp(new Mat::MurnaghanTaitFluid(this));
+  return Teuchos::RCP(new Mat::MurnaghanTaitFluid(this));
 }
 
 

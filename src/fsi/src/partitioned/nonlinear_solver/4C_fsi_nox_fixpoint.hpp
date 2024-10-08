@@ -82,7 +82,7 @@ namespace NOX
       Teuchos::RCP<::NOX::Direction::Generic> buildDirection(
           const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
       {
-        return Teuchos::rcp(new FixPoint(gd->getUtils(), params));
+        return Teuchos::RCP(new FixPoint(gd->getUtils(), params));
       }
     };
 

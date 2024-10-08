@@ -180,12 +180,12 @@ double NOX::Nln::Aux::root_mean_square_norm(const double& atol, const double& rt
 
   // calculate the old iterate (k-1)
   Teuchos::RCP<Core::LinAlg::Vector<double>> v =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*xnew));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*xnew));
   v->Update(-1.0, *xincr, 1.0);
 
   // new auxiliary vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> u =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(xnew->Map(), false));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(xnew->Map(), false));
 
   // create the weighting factor u = RTOL |x^(k-1)| + ATOL
   u->PutScalar(1.0);
@@ -596,7 +596,7 @@ void NOX::Nln::Aux::add_to_pre_post_op_vector(
 
     if (user_ppo_vec.is_null())
     {
-      user_ppo_vec = Teuchos::rcp(new ::NOX::ObserverVector());
+      user_ppo_vec = Teuchos::RCP(new ::NOX::ObserverVector());
       user_ppo_vec->pushBack(user_ppo);
     }
 

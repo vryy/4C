@@ -38,7 +38,7 @@ namespace CONTACT
         const Teuchos::ParameterList& params,
         std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
         const Teuchos::RCP<Epetra_Comm>& comm, double alphaf, int maxdof)
-        : AbstractStrategy(Teuchos::rcp(new CONTACT::AbstractStratDataContainer()), dof_row_map,
+        : AbstractStrategy(Teuchos::RCP(new CONTACT::AbstractStratDataContainer()), dof_row_map,
               NodeRowMap, params, dim, comm, alphaf, maxdof),
           interface_(std::move(interface)),
           curr_state_eval_(false)

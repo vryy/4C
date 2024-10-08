@@ -41,7 +41,7 @@ void Solid::ModelEvaluator::PartitionedFSI::setup()
 {
   // fsi interface force at t_{n+1}
   interface_force_np_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*global_state().dof_row_map(), true));
 
   // set flag
   issetup_ = true;
@@ -151,7 +151,7 @@ Solid::ModelEvaluator::PartitionedFSI::solve_relaxation_linear(
   interface_force_np_ptr_->Scale(-(ti_impl->tim_int_param()));
   ti_impl->dbc_ptr()->apply_dirichlet_to_rhs(interface_force_np_ptr_);
   Teuchos::RCP<::NOX::Epetra::Vector> nox_force =
-      Teuchos::rcp(new ::NOX::Epetra::Vector(interface_force_np_ptr_->get_ptr_of_Epetra_Vector()));
+      Teuchos::RCP(new ::NOX::Epetra::Vector(interface_force_np_ptr_->get_ptr_of_Epetra_Vector()));
   grp_ptr->set_f(nox_force);
 
   // ---------------------------------------------------------------------------

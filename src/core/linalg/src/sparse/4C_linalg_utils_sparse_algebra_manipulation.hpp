@@ -196,7 +196,7 @@ namespace Core::LinAlg
     // initialize resulting BlockSparseMatrix. no need to provide estimates of nonzeros because
     // all entries will be inserted at once anyway
     Teuchos::RCP<BlockSparseMatrix<Strategy>> blockA =
-        Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Strategy>(
+        Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Strategy>(
             domainmaps, rangemaps, 0, ASparse.explicit_dirichlet(), ASparse.save_graph()));
 
     if (domainmaps.num_maps() == 2 && rangemaps.num_maps() == 2)

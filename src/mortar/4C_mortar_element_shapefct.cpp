@@ -980,7 +980,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
         Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
-        mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+        mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
       }
 
       // pre-computed dual shape functions
@@ -1059,7 +1059,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
         Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
-        mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+        mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1157,7 +1157,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
         Core::LinAlg::multiply(ae, de, invme);
 
         // store coefficient matrix
-        mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+        mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1236,7 +1236,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
         Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
-        mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+        mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1312,7 +1312,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
         Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
-        mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+        mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1387,7 +1387,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
         Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
         // store coefficient matrix
-        mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+        mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1478,7 +1478,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
         Core::LinAlg::multiply(ae, de, invme);
 
         // store coefficient matrix
-        mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+        mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1570,7 +1570,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
         Core::LinAlg::multiply(ae, de, invme);
 
         // store coefficient matrix
-        mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+        mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
       }
       else
       {
@@ -1661,7 +1661,7 @@ void Mortar::Element::shape_functions(Mortar::Element::ShapeType shape, const do
         Core::LinAlg::multiply(ae, de, invme);
 
         // store coefficient matrix
-        mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+        mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
       }
       else
       {
@@ -2210,7 +2210,7 @@ bool Mortar::Element::evaluate_shape_lag_mult(const Inpar::Mortar::ShapeFcn& lmt
           Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // store coefficient matrix
-          mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+          mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
         }
         else
           ae = *(mo_data().dual_shape());
@@ -2303,7 +2303,7 @@ bool Mortar::Element::evaluate_shape_lag_mult(const Inpar::Mortar::ShapeFcn& lmt
           Core::LinAlg::invert_and_multiply_by_cholesky<nnodes>(me, de, ae);
 
           // store coefficient matrix
-          mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+          mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
         }
         else
           ae = *(mo_data().dual_shape());
@@ -2459,7 +2459,7 @@ bool Mortar::Element::evaluate_shape_lag_mult(const Inpar::Mortar::ShapeFcn& lmt
     else
       FOUR_C_THROW("unknown element type!");
 
-    mo_data().trafo() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(trafo));
+    mo_data().trafo() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(trafo));
   }
   else
   {
@@ -2658,7 +2658,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
         Core::LinAlg::SerialDenseMatrix ae(nnodes, nnodes, true);
 
         Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>> derivae =
-            Teuchos::rcp(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
+            Teuchos::RCP(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
                 nnodes * 3, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes)));
 
         // prepare computation with Gauss quadrature
@@ -2720,7 +2720,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
             for (int k = 0; k < nnodes; ++k)
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
-          mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+          mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
         }
         else
           ae = *(mo_data().dual_shape());
@@ -2772,7 +2772,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
         Core::LinAlg::SerialDenseMatrix ae(nnodes, nnodes, true);
 
         Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>> derivae =
-            Teuchos::rcp(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
+            Teuchos::RCP(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
                 nnodes * 2, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes)));
 
         // prepare computation with Gauss quadrature
@@ -2835,7 +2835,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
             for (int k = 0; k < nnodes; ++k)
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
-          mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+          mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
         }
         else
           ae = *(mo_data().dual_shape());
@@ -2966,7 +2966,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
         Core::LinAlg::SerialDenseMatrix ae(nnodes, nnodes, true);
 
         Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>> derivae =
-            Teuchos::rcp(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
+            Teuchos::RCP(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
                 nnodes * 2, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes)));
 
         // prepare computation with Gauss quadrature
@@ -3046,7 +3046,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
           // store coefficient matrix
-          mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+          mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
         }
         // compute inverse of matrix M_e and get matrix A_e
         else
@@ -3103,7 +3103,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
 #endif
 
         Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>> derivae =
-            Teuchos::rcp(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
+            Teuchos::RCP(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
                 nnodes * 3, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes)));
 
         typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
@@ -3169,7 +3169,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
             for (int k = 0; k < nnodes; ++k)
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
-          mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+          mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
         }
         else
           ae = *(mo_data().dual_shape());
@@ -3302,7 +3302,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
 #endif
 
         Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>> derivae =
-            Teuchos::rcp(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
+            Teuchos::RCP(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
                 nnodes * 3, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes)));
 
         typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
@@ -3368,7 +3368,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
             for (int k = 0; k < nnodes; ++k)
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
-          mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+          mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
         }
         else
           ae = *(mo_data().dual_shape());
@@ -3498,7 +3498,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
 #endif
 
         Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>> derivae =
-            Teuchos::rcp(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
+            Teuchos::RCP(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
                 nnodes * 3, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes)));
 
         typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
@@ -3564,7 +3564,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
             for (int k = 0; k < nnodes; ++k)
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
-          mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+          mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
         }
         else
           ae = *(mo_data().dual_shape());
@@ -4066,7 +4066,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
 #endif
 
         Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>> derivae =
-            Teuchos::rcp(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
+            Teuchos::RCP(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
                 nnodes * 3, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes)));
 
         typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
@@ -4149,7 +4149,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
           // store coefficient matrix
-          mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+          mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
         }
         // compute inverse of matrix M_e and get matrix A_e
         else
@@ -4207,7 +4207,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
 #endif
 
         Teuchos::RCP<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>> derivae =
-            Teuchos::rcp(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
+            Teuchos::RCP(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
                 nnodes * 3, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes)));
 
         typedef Core::Gen::Pairedvector<int, double>::const_iterator CI;
@@ -4290,7 +4290,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
               for (int u = 0; u < nnodes; ++u) ae(j, k) += de(j, u) * me(u, k);
 
           // store coefficient matrix
-          mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+          mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
         }
         // compute inverse of matrix M_e and get matrix A_e
         else

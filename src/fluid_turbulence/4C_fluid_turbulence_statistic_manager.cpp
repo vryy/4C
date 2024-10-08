@@ -105,7 +105,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_channel_ = Teuchos::rcp(new TurbulenceStatisticsCha(discret_, alefluid_, mydispnp_,
+      statistics_channel_ = Teuchos::RCP(new TurbulenceStatisticsCha(discret_, alefluid_, mydispnp_,
           *params_, statistics_outfilename_, subgrid_dissipation_, myxwall_));
     }
     else if (fluid.special_flow_ == "loma_channel_flow_of_height_2")
@@ -117,7 +117,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_channel_ = Teuchos::rcp(new TurbulenceStatisticsCha(discret_, alefluid_, mydispnp_,
+      statistics_channel_ = Teuchos::RCP(new TurbulenceStatisticsCha(discret_, alefluid_, mydispnp_,
           *params_, statistics_outfilename_, subgrid_dissipation_, Teuchos::null));
     }
     else if (fluid.special_flow_ == "scatra_channel_flow_of_height_2")
@@ -129,7 +129,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_channel_ = Teuchos::rcp(new TurbulenceStatisticsCha(discret_, alefluid_, mydispnp_,
+      statistics_channel_ = Teuchos::RCP(new TurbulenceStatisticsCha(discret_, alefluid_, mydispnp_,
           *params_, statistics_outfilename_, subgrid_dissipation_, Teuchos::null));
     }
     else if (fluid.special_flow_ == "decaying_homogeneous_isotropic_turbulence" or
@@ -158,7 +158,7 @@ namespace FLD
         // the flow under consideration
         if (flow_ == forced_homogeneous_isotropic_turbulence or
             flow_ == scatra_forced_homogeneous_isotropic_turbulence)
-          statistics_hit_ = Teuchos::rcp(
+          statistics_hit_ = Teuchos::RCP(
               new TurbulenceStatisticsHitHDG(discret_, *params_, statistics_outfilename_, true));
         else
         {
@@ -172,10 +172,10 @@ namespace FLD
         // the flow under consideration
         if (flow_ == forced_homogeneous_isotropic_turbulence or
             flow_ == scatra_forced_homogeneous_isotropic_turbulence)
-          statistics_hit_ = Teuchos::rcp(
+          statistics_hit_ = Teuchos::RCP(
               new TurbulenceStatisticsHit(discret_, *params_, statistics_outfilename_, true));
         else
-          statistics_hit_ = Teuchos::rcp(
+          statistics_hit_ = Teuchos::RCP(
               new TurbulenceStatisticsHit(discret_, *params_, statistics_outfilename_, false));
       }
     }
@@ -189,7 +189,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_tgv_ =
-          Teuchos::rcp(new TurbulenceStatisticsTgv(discret_, *params_, statistics_outfilename_));
+          Teuchos::RCP(new TurbulenceStatisticsTgv(discret_, *params_, statistics_outfilename_));
     }
     else if (fluid.special_flow_ == "lid_driven_cavity")
     {
@@ -201,7 +201,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_ldc_ =
-          Teuchos::rcp(new TurbulenceStatisticsLdc(discret_, *params_, statistics_outfilename_));
+          Teuchos::RCP(new TurbulenceStatisticsLdc(discret_, *params_, statistics_outfilename_));
     }
     else if (fluid.special_flow_ == "loma_lid_driven_cavity")
     {
@@ -213,7 +213,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_ldc_ =
-          Teuchos::rcp(new TurbulenceStatisticsLdc(discret_, *params_, statistics_outfilename_));
+          Teuchos::RCP(new TurbulenceStatisticsLdc(discret_, *params_, statistics_outfilename_));
     }
     else if (fluid.special_flow_ == "backward_facing_step")
     {
@@ -224,7 +224,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = Teuchos::rcp(new TurbulenceStatisticsBfs(
+      statistics_bfs_ = Teuchos::RCP(new TurbulenceStatisticsBfs(
           discret_, *params_, statistics_outfilename_, "geometry_DNS_incomp_flow"));
 
       // statistics manager for turbulent boundary layer not available
@@ -243,7 +243,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_ph_ =
-          Teuchos::rcp(new TurbulenceStatisticsPh(discret_, *params_, statistics_outfilename_));
+          Teuchos::RCP(new TurbulenceStatisticsPh(discret_, *params_, statistics_outfilename_));
     }
     else if (fluid.special_flow_ == "loma_backward_facing_step")
     {
@@ -254,7 +254,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = Teuchos::rcp(new TurbulenceStatisticsBfs(
+      statistics_bfs_ = Teuchos::RCP(new TurbulenceStatisticsBfs(
           discret_, *params_, statistics_outfilename_, "geometry_LES_flow_with_heating"));
 
       // build statistics manager for inflow channel flow
@@ -270,7 +270,7 @@ namespace FLD
           // do not write any dissipation rates for inflow channels
           subgrid_dissipation_ = false;
           // allocate one instance of the averaging procedure for the flow under consideration
-          statistics_channel_ = Teuchos::rcp(new TurbulenceStatisticsCha(discret_, alefluid_,
+          statistics_channel_ = Teuchos::RCP(new TurbulenceStatisticsCha(discret_, alefluid_,
               mydispnp_, *params_, statistics_outfilename_, subgrid_dissipation_, myxwall_));
         }
       }
@@ -284,7 +284,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_bfs_ = Teuchos::rcp(new TurbulenceStatisticsBfs(
+      statistics_bfs_ = Teuchos::RCP(new TurbulenceStatisticsBfs(
           discret_, *params_, statistics_outfilename_, "geometry_EXP_vogel_eaton"));
 
       // build statistics manager for inflow channel flow
@@ -300,7 +300,7 @@ namespace FLD
           // do not write any dissipation rates for inflow channels
           subgrid_dissipation_ = false;
           // allocate one instance of the averaging procedure for the flow under consideration
-          statistics_channel_ = Teuchos::rcp(new TurbulenceStatisticsCha(discret_, alefluid_,
+          statistics_channel_ = Teuchos::RCP(new TurbulenceStatisticsCha(discret_, alefluid_,
               mydispnp_, *params_, statistics_outfilename_, subgrid_dissipation_, myxwall_));
         }
       }
@@ -315,7 +315,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_sqc_ =
-          Teuchos::rcp(new TurbulenceStatisticsSqc(discret_, *params_, statistics_outfilename_));
+          Teuchos::RCP(new TurbulenceStatisticsSqc(discret_, *params_, statistics_outfilename_));
     }
     else if (fluid.special_flow_ == "square_cylinder_nurbs")
     {
@@ -334,7 +334,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_ccy_ = Teuchos::rcp(new TurbulenceStatisticsCcy(
+      statistics_ccy_ = Teuchos::RCP(new TurbulenceStatisticsCcy(
           discret_, alefluid_, mydispnp_, *params_, statistics_outfilename_, withscatra));
     }
     else if (fluid.special_flow_ == "rotating_circular_cylinder_nurbs_scatra")
@@ -347,7 +347,7 @@ namespace FLD
 
       // allocate one instance of the averaging procedure for
       // the flow under consideration
-      statistics_ccy_ = Teuchos::rcp(new TurbulenceStatisticsCcy(
+      statistics_ccy_ = Teuchos::RCP(new TurbulenceStatisticsCcy(
           discret_, alefluid_, mydispnp_, *params_, statistics_outfilename_, withscatra));
     }
     else if (fluid.special_flow_ == "time_averaging")
@@ -367,7 +367,7 @@ namespace FLD
       // allocate one instance of the averaging procedure for
       // the flow under consideration
       statistics_bfda_ =
-          Teuchos::rcp(new TurbulenceStatisticsBfda(discret_, *params_, statistics_outfilename_));
+          Teuchos::RCP(new TurbulenceStatisticsBfda(discret_, *params_, statistics_outfilename_));
     }
     else
     {
@@ -388,12 +388,12 @@ namespace FLD
       if (flow_ == rotating_circular_cylinder_nurbs_scatra)
       {
         // additional averaging of scalar field
-        statistics_general_mean_ = Teuchos::rcp(new TurbulenceStatisticsGeneralMean(
+        statistics_general_mean_ = Teuchos::RCP(new TurbulenceStatisticsGeneralMean(
             discret_, homdir, *fluid.vel_pres_splitter(), true));
       }
       else
       {
-        statistics_general_mean_ = Teuchos::rcp(new TurbulenceStatisticsGeneralMean(
+        statistics_general_mean_ = Teuchos::RCP(new TurbulenceStatisticsGeneralMean(
             discret_, homdir, *fluid.vel_pres_splitter(), false));
       }
     }

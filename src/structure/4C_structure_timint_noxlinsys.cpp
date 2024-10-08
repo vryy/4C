@@ -52,7 +52,7 @@ NOX::Solid::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       timer_("", true),
       timeApplyJacbianInverse_(0.0)
 {
-  tmpVectorPtr_ = Teuchos::rcp(new ::NOX::Epetra::Vector(cloneVector));
+  tmpVectorPtr_ = Teuchos::RCP(new ::NOX::Epetra::Vector(cloneVector));
 
   // std::cout << "STRUCTURE SOLVER: " << *structureSolver_ << " " << structureSolver_ << std::endl;
 
@@ -144,7 +144,7 @@ bool NOX::Solid::LinearSystem::applyJacobianInverse(
   if (jacType_ == SparseMatrix)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> fres =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(input.getEpetraVector()));
+        Teuchos::RCP(new Core::LinAlg::Vector<double>(input.getEpetraVector()));
     Core::LinAlg::VectorView result_view(result.getEpetraVector());
     Core::LinAlg::SparseMatrix* J = dynamic_cast<Core::LinAlg::SparseMatrix*>(jacPtr_.get());
     Core::LinAlg::SolverParams solver_params;

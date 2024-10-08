@@ -126,7 +126,7 @@ namespace Mat
     //! clone material
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new ScatraMultiScale(*this));
+      return Teuchos::RCP(new ScatraMultiScale(*this));
     };
 
     //! return porosity

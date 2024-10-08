@@ -772,7 +772,7 @@ void Cut::TriangulateFacet::ear_clipping(std::vector<int> ptConcavity,  // list 
         }
       }
 
-      Teuchos::RCP<BoundingBox> bb = Teuchos::rcp(BoundingBox::create());
+      Teuchos::RCP<BoundingBox> bb = Teuchos::RCP(BoundingBox::create());
       std::cout << "The facet points are as follows\n";
       for (std::vector<Point*>::iterator it = ptlist_.begin(); it != ptlist_.end(); it++)
       {

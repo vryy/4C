@@ -77,7 +77,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
         "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
         "DYNAMIC to a valid number!");
 
-  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(
+  solver_ = Teuchos::RCP(new Core::LinAlg::Solver(
       Global::Problem::instance(microdisnum_)->solver_params(linsolvernumber), discret_->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -144,7 +144,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   // -------------------------------------------------------------------
   // create empty matrices
   // -------------------------------------------------------------------
-  stiff_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 81, true, true));
+  stiff_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap, 81, true, true));
 
   // -------------------------------------------------------------------
   // create empty vectors
@@ -184,11 +184,11 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   //
   // -------------------------------------------------------------------
   {
-    lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
-    oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
-    oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
-    oldKaainv_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
-    oldKda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+    lastalpha_ = Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+    oldalpha_ = Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+    oldfeas_ = Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+    oldKaainv_ = Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+    oldKda_ = Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
   }
 
   // -------------------------------------------------------------------
@@ -670,7 +670,7 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
     isdatawritten = true;
 
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> emptyalpha =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(1, 1));
+        Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(1, 1));
 
     Core::Communication::PackBuffer data;
 
@@ -758,7 +758,7 @@ void MultiScale::MicroStatic::read_restart(int step, Teuchos::RCP<Core::LinAlg::
     std::string name)
 {
   Teuchos::RCP<Core::IO::InputControl> inputcontrol =
-      Teuchos::rcp(new Core::IO::InputControl(name, true));
+      Teuchos::RCP(new Core::IO::InputControl(name, true));
   Core::IO::DiscretizationReader reader(discret_, inputcontrol, step);
   double time = reader.read_double("time");
   int rstep = reader.read_int("step");
@@ -999,7 +999,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
     Epetra_MultiVector cmatpf(D_->Map(), 9);
 
     // make a copy
-    stiff_dirich_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*stiff_));
+    stiff_dirich_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*stiff_));
 
     stiff_->apply_dirichlet(*dirichtoggle_);
 
@@ -1017,7 +1017,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
         Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
     // create solver
-    Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(new Core::LinAlg::Solver(solverparams,
+    Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::RCP(new Core::LinAlg::Solver(solverparams,
         discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
         Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
@@ -1025,7 +1025,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
     // prescribe rigid body modes
     discret_->compute_null_space_if_necessary(solver->params());
 
-    Teuchos::RCP<Epetra_MultiVector> iterinc = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap, 9));
+    Teuchos::RCP<Epetra_MultiVector> iterinc = Teuchos::RCP(new Epetra_MultiVector(*dofrowmap, 9));
     iterinc->PutScalar(0.0);
 
     switch (solvertype)
@@ -1049,7 +1049,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
           solver_params.refactor = true;
           solver_params.reset = true;
           solver->solve_with_multi_vector(stiff_->epetra_operator(),
-              Teuchos::rcp(((*iterinc)(i)), false), Teuchos::rcp(((*rhs_)(i)), false),
+              Teuchos::RCP(((*iterinc)(i)), false), Teuchos::RCP(((*rhs_)(i)), false),
               solver_params);
         }
         break;
@@ -1060,7 +1060,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
       }
     }
 
-    Teuchos::RCP<Epetra_MultiVector> temp = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap, 9));
+    Teuchos::RCP<Epetra_MultiVector> temp = Teuchos::RCP(new Epetra_MultiVector(*dofrowmap, 9));
     stiff_dirich_->multiply(false, *iterinc, *temp);
 
     Epetra_MultiVector fexp(*pdof_, 9);

@@ -39,7 +39,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::create_phase_manager
   Teuchos::RCP<PhaseManagerInterface> phasemanager = Teuchos::null;
 
   // build the standard phase manager
-  phasemanager = Teuchos::rcp(new PhaseManagerCore(totalnumdofpernode, numfluidphases));
+  phasemanager = Teuchos::RCP(new PhaseManagerCore(totalnumdofpernode, numfluidphases));
 
   return wrap_phase_manager(para, nsd, mattype, action, phasemanager);
 }
@@ -75,7 +75,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
           corephasemanager->num_fluid_phases() > 0)
       {
         // porosity (includes derivatves) needed
-        phasemanager = Teuchos::rcp(new PhaseManagerDerivAndPorosity(corephasemanager));
+        phasemanager = Teuchos::RCP(new PhaseManagerDerivAndPorosity(corephasemanager));
       }
       else
       {
@@ -88,20 +88,20 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
     {
       // derivatives needed
       if (corephasemanager->num_fluid_phases() > 0)
-        phasemanager = Teuchos::rcp(new PhaseManagerDerivAndPorosity(corephasemanager));
+        phasemanager = Teuchos::RCP(new PhaseManagerDerivAndPorosity(corephasemanager));
       else
         phasemanager = corephasemanager;
       // enhance by diffusion tensor
       switch (nsd)
       {
         case 1:
-          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<1>(phasemanager));
+          phasemanager = Teuchos::RCP(new PhaseManagerDiffusion<1>(phasemanager));
           break;
         case 2:
-          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<2>(phasemanager));
+          phasemanager = Teuchos::RCP(new PhaseManagerDiffusion<2>(phasemanager));
           break;
         case 3:
-          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<3>(phasemanager));
+          phasemanager = Teuchos::RCP(new PhaseManagerDiffusion<3>(phasemanager));
           break;
         default:
           FOUR_C_THROW("invalid dimension for creating phase manager!");
@@ -112,20 +112,20 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
     {
       // derivatives needed
       if (corephasemanager->num_fluid_phases() > 0)
-        phasemanager = Teuchos::rcp(new PhaseManagerDeriv(corephasemanager));
+        phasemanager = Teuchos::RCP(new PhaseManagerDeriv(corephasemanager));
       else
         phasemanager = corephasemanager;
       // enhance by diffusion tensor
       switch (nsd)
       {
         case 1:
-          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<1>(phasemanager));
+          phasemanager = Teuchos::RCP(new PhaseManagerDiffusion<1>(phasemanager));
           break;
         case 2:
-          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<2>(phasemanager));
+          phasemanager = Teuchos::RCP(new PhaseManagerDiffusion<2>(phasemanager));
           break;
         case 3:
-          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<3>(phasemanager));
+          phasemanager = Teuchos::RCP(new PhaseManagerDiffusion<3>(phasemanager));
           break;
         default:
           FOUR_C_THROW("invalid dimension for creating phase manager!");
@@ -140,19 +140,19 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
     case POROFLUIDMULTIPHASE::calc_domain_integrals:
     {
       // porosity (includes derivatves) needed
-      phasemanager = Teuchos::rcp(new PhaseManagerDerivAndPorosity(corephasemanager));
+      phasemanager = Teuchos::RCP(new PhaseManagerDerivAndPorosity(corephasemanager));
 
       // enhance by diffusion tensor
       switch (nsd)
       {
         case 1:
-          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<1>(phasemanager));
+          phasemanager = Teuchos::RCP(new PhaseManagerDiffusion<1>(phasemanager));
           break;
         case 2:
-          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<2>(phasemanager));
+          phasemanager = Teuchos::RCP(new PhaseManagerDiffusion<2>(phasemanager));
           break;
         case 3:
-          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<3>(phasemanager));
+          phasemanager = Teuchos::RCP(new PhaseManagerDiffusion<3>(phasemanager));
           break;
         default:
           FOUR_C_THROW("invalid dimension for creating phase manager!");
@@ -160,20 +160,20 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
 
       if (mattype == Core::Materials::m_fluidporo_multiphase_reactions)
         // enhance by scalar handling capability
-        phasemanager = Teuchos::rcp(new PhaseManagerReaction(phasemanager));
+        phasemanager = Teuchos::RCP(new PhaseManagerReaction(phasemanager));
 
       if (corephasemanager->total_num_dof() > corephasemanager->num_fluid_phases())
       {
         switch (nsd)
         {
           case 1:
-            phasemanager = Teuchos::rcp(new PhaseManagerVolFrac<1>(phasemanager));
+            phasemanager = Teuchos::RCP(new PhaseManagerVolFrac<1>(phasemanager));
             break;
           case 2:
-            phasemanager = Teuchos::rcp(new PhaseManagerVolFrac<2>(phasemanager));
+            phasemanager = Teuchos::RCP(new PhaseManagerVolFrac<2>(phasemanager));
             break;
           case 3:
-            phasemanager = Teuchos::rcp(new PhaseManagerVolFrac<3>(phasemanager));
+            phasemanager = Teuchos::RCP(new PhaseManagerVolFrac<3>(phasemanager));
             break;
           default:
             FOUR_C_THROW("invalid dimension for creating phase manager!");
@@ -185,19 +185,19 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
     case POROFLUIDMULTIPHASE::get_access_from_scatra:
     {
       // porosity (includes derivatives) needed
-      phasemanager = Teuchos::rcp(new PhaseManagerDerivAndPorosity(corephasemanager));
+      phasemanager = Teuchos::RCP(new PhaseManagerDerivAndPorosity(corephasemanager));
 
       // enhance by diffusion tensor
       switch (nsd)
       {
         case 1:
-          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<1>(phasemanager));
+          phasemanager = Teuchos::RCP(new PhaseManagerDiffusion<1>(phasemanager));
           break;
         case 2:
-          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<2>(phasemanager));
+          phasemanager = Teuchos::RCP(new PhaseManagerDiffusion<2>(phasemanager));
           break;
         case 3:
-          phasemanager = Teuchos::rcp(new PhaseManagerDiffusion<3>(phasemanager));
+          phasemanager = Teuchos::RCP(new PhaseManagerDiffusion<3>(phasemanager));
           break;
         default:
           FOUR_C_THROW("invalid dimension for creating phase manager!");
@@ -209,7 +209,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
     case POROFLUIDMULTIPHASE::get_access_from_artcoupling:
     {
       // porosity (includes derivatves) needed
-      phasemanager = Teuchos::rcp(new PhaseManagerDerivAndPorosity(corephasemanager));
+      phasemanager = Teuchos::RCP(new PhaseManagerDerivAndPorosity(corephasemanager));
       break;
     }
     default:
@@ -654,14 +654,14 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::PhaseManagerDeriv(
   const int numfluidphases = phasemanager_->num_fluid_phases();
   // initialize matrixes and vectors
   pressurederiv_ =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(numfluidphases, numfluidphases));
+      Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(numfluidphases, numfluidphases));
   saturationderiv_ =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(numfluidphases, numfluidphases));
-  saturationderivderiv_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseMatrix>(
+      Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(numfluidphases, numfluidphases));
+  saturationderivderiv_ = Teuchos::RCP(new std::vector<Core::LinAlg::SerialDenseMatrix>(
       numfluidphases, Core::LinAlg::SerialDenseMatrix(numfluidphases, numfluidphases)));
-  solidpressurederiv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(numfluidphases));
+  solidpressurederiv_ = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(numfluidphases));
   solidpressurederivderiv_ =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(numfluidphases, numfluidphases));
+      Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(numfluidphases, numfluidphases));
 
   return;
 }
@@ -733,7 +733,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::evaluate_gp_state(
   // TODO: this should work for pressure und diffpressure DOFs, however not for
   //       saturation DOFs
   Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> dummyderiv =
-      Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseMatrix>(
+      Teuchos::RCP(new std::vector<Core::LinAlg::SerialDenseMatrix>(
           numfluidphases, Core::LinAlg::SerialDenseMatrix(numfluidphases, numfluidphases)));
   multiphasemat.evaluate_second_deriv_of_saturation_wrt_pressure(*dummyderiv, pressure);
   for (int i = 0; i < numfluidphases; i++)
@@ -859,7 +859,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::PhaseManagerD
 {
   const int totalnumdof = phasemanager_->total_num_dof();
   // initialize matrixes and vectors
-  porosityderiv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(totalnumdof));
+  porosityderiv_ = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(totalnumdof));
 
   return;
 }

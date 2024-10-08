@@ -109,18 +109,18 @@ Core::Binstrategy::BinningStrategy::BinningStrategy(const Teuchos::ParameterList
                         : [](const Core::Nodes::Node& node) -> decltype(auto) { return node; })
 {
   // create binning discretization
-  bindis_ = Teuchos::rcp(new Core::FE::Discretization("binning", comm_, 3));
+  bindis_ = Teuchos::RCP(new Core::FE::Discretization("binning", comm_, 3));
 
   // create discretization writer
   auto spatial_approximation_type = Teuchos::getIntegralValue<Core::FE::ShapeFunctionType>(
       binning_params, "spatial_approximation_type");
-  bindis_->set_writer(Teuchos::rcp(
+  bindis_->set_writer(Teuchos::RCP(
       new Core::IO::DiscretizationWriter(bindis_, output_control, spatial_approximation_type)));
   bindis_->fill_complete(false, false, false);
 
-  visbindis_ = Teuchos::rcp(new Core::FE::Discretization("bins", comm_, 3));
+  visbindis_ = Teuchos::RCP(new Core::FE::Discretization("bins", comm_, 3));
   // create discretization writer
-  visbindis_->set_writer(Teuchos::rcp(
+  visbindis_->set_writer(Teuchos::RCP(
       new Core::IO::DiscretizationWriter(visbindis_, output_control, spatial_approximation_type)));
 
   // try to read valid input
@@ -672,7 +672,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::create_linear_map_f
     }
   }
 
-  return Teuchos::rcp(new Epetra_Map(numbin, linearmap.size(), linearmap.data(), 0, comm));
+  return Teuchos::RCP(new Epetra_Map(numbin, linearmap.size(), linearmap.data(), 0, comm));
 }
 
 void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double const time)
@@ -691,7 +691,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
   // -------------------------------------------------------------------------
   // create new discretization containing the bins as elements
   // -------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(bindis_->get_comm().Clone());
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(bindis_->get_comm().Clone());
 
   // store gids of ghosted elements
   std::map<int, std::vector<Core::LinAlg::Matrix<3, 1>>> ghostcorners;
@@ -723,7 +723,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
 
       nids[corner_i] = (bingid * numcorner) + corner_i;
       Teuchos::RCP<Core::Nodes::Node> newnode =
-          Teuchos::rcp(new Core::Nodes::Node(nids[corner_i], cornerpos, myrank_));
+          Teuchos::RCP(new Core::Nodes::Node(nids[corner_i], cornerpos, myrank_));
       visbindis_->add_node(newnode);
     }
 
@@ -771,7 +771,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
 
         nids[corner_i] = (newelegid * numcorner) + corner_i;
         Teuchos::RCP<Core::Nodes::Node> newnode =
-            Teuchos::rcp(new Core::Nodes::Node(nids[corner_i], cornerpos, myrank_));
+            Teuchos::RCP(new Core::Nodes::Node(nids[corner_i], cornerpos, myrank_));
         visbindis_->add_node(newnode);
       }
 
@@ -785,7 +785,7 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
 
   // complete new dis
   Teuchos::RCP<Core::DOFSets::IndependentDofSet> independentdofset =
-      Teuchos::rcp(new Core::DOFSets::IndependentDofSet(true));
+      Teuchos::RCP(new Core::DOFSets::IndependentDofSet(true));
   visbindis_->replace_dof_set(independentdofset);
   visbindis_->fill_complete(true, true, false);
 
@@ -834,7 +834,7 @@ void Core::Binstrategy::BinningStrategy::distribute_bins_recurs_coord_bisection(
       *bincenters.getConst(), params, *binweights.getConst());
 
   // create bin row map
-  binrowmap = Teuchos::rcp(new Epetra_Map(-1, bincenters->Map().NumMyElements(),
+  binrowmap = Teuchos::RCP(new Epetra_Map(-1, bincenters->Map().NumMyElements(),
       bincenters->Map().MyGlobalElements(), 0, bin_discret()->get_comm()));
 }
 
@@ -1098,7 +1098,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::
     }
 
     std::vector<int> colnodes(nodes.begin(), nodes.end());
-    Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(
+    Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::RCP(
         new Epetra_Map(-1, (int)colnodes.size(), colnodes.data(), 0, discret[i]->get_comm()));
 
     // now ghost the nodes
@@ -1145,11 +1145,11 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::weighted_distributi
   if (repartition)
   {
     // use old bin distribution
-    rowbins = Teuchos::rcp(const_cast<Epetra_Map*>(bindis_->element_row_map()));
+    rowbins = Teuchos::RCP(const_cast<Epetra_Map*>(bindis_->element_row_map()));
     const Epetra_Map* oldrowmap = bindis_->element_row_map();
 
     const int maxband = 26;
-    bingraph = Teuchos::rcp(new Epetra_CrsGraph(Copy, *oldrowmap, maxband, false));
+    bingraph = Teuchos::RCP(new Epetra_CrsGraph(Copy, *oldrowmap, maxband, false));
 
     // fill all local entries into the graph
     for (int lid = 0; lid < oldrowmap->NumMyElements(); ++lid)
@@ -1171,7 +1171,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::weighted_distributi
     // weighting done so far)
     rowbins = create_linear_map_for_numbin(discret[0]->get_comm());
     // create nodal graph
-    bingraph = Teuchos::rcp(new Epetra_CrsGraph(Copy, *rowbins, 108, false));
+    bingraph = Teuchos::RCP(new Epetra_CrsGraph(Copy, *rowbins, 108, false));
   }
 
   // Now we're going to create a Core::LinAlg::Vector<double> with vertex/node weights to be
@@ -1249,7 +1249,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::weighted_distributi
 
   // extract repartitioned bin row map
   const Epetra_BlockMap& rbinstmp = balanced_bingraph->RowMap();
-  Teuchos::RCP<Epetra_Map> newrowbins = Teuchos::rcp(new Epetra_Map(
+  Teuchos::RCP<Epetra_Map> newrowbins = Teuchos::RCP(new Epetra_Map(
       -1, rbinstmp.NumMyElements(), rbinstmp.MyGlobalElements(), 0, discret[0]->get_comm()));
 
   return newrowbins;
@@ -1341,7 +1341,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::extend_element_col_
   std::vector<int> colgids(coleleset.begin(), coleleset.end());
 
   // return extended elecolmap
-  return Teuchos::rcp(new Epetra_Map(-1, (int)colgids.size(), colgids.data(), 0, *comm_));
+  return Teuchos::RCP(new Epetra_Map(-1, (int)colgids.size(), colgids.data(), 0, *comm_));
 }
 
 void Core::Binstrategy::BinningStrategy::extend_ghosting_of_binning_discretization(
@@ -1354,7 +1354,7 @@ void Core::Binstrategy::BinningStrategy::extend_ghosting_of_binning_discretizati
   for (int i = 0; i < rowbins->NumMyElements(); ++i) bins.insert(rowbins->GID(i));
 
   std::vector<int> bincolmapvec(bins.begin(), bins.end());
-  Teuchos::RCP<Epetra_Map> bincolmap = Teuchos::rcp(new Epetra_Map(
+  Teuchos::RCP<Epetra_Map> bincolmap = Teuchos::RCP(new Epetra_Map(
       -1, static_cast<int>(bincolmapvec.size()), bincolmapvec.data(), 0, bindis_->get_comm()));
 
   if (bincolmap->NumGlobalElements() == 1 && bindis_->get_comm().NumProc() > 1)
@@ -1399,7 +1399,7 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
   Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_col = Teuchos::null;
   if (discret->have_dofs() and disnp != Teuchos::null)
   {
-    disnp_col = Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret->dof_col_map()));
+    disnp_col = Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret->dof_col_map()));
     Core::LinAlg::export_to(*disnp, *disnp_col);
   }
 
@@ -1427,13 +1427,13 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
   }
   nodesinmybins.clear();
 
-  Teuchos::RCP<Epetra_Map> newnoderowmap = Teuchos::rcp(
+  Teuchos::RCP<Epetra_Map> newnoderowmap = Teuchos::RCP(
       new Epetra_Map(-1, mynewrownodes.size(), mynewrownodes.data(), 0, discret->get_comm()));
 
   // create the new graph and export to it
   Teuchos::RCP<Epetra_CrsGraph> newnodegraph;
 
-  newnodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy, *newnoderowmap, 108, false));
+  newnodegraph = Teuchos::RCP(new Epetra_CrsGraph(Copy, *newnoderowmap, 108, false));
   Epetra_Export exporter(initgraph->RowMap(), *newnoderowmap);
   int err = newnodegraph->Export(*initgraph, exporter, Add);
   if (err < 0) FOUR_C_THROW("Graph export returned err=%d", err);
@@ -1442,7 +1442,7 @@ void Core::Binstrategy::BinningStrategy::standard_discretization_ghosting(
 
   // the column map will become the new ghosted distribution of nodes (standard ghosting)
   const Epetra_BlockMap cntmp = newnodegraph->ColMap();
-  stdnodecolmap = Teuchos::rcp(
+  stdnodecolmap = Teuchos::RCP(
       new Epetra_Map(-1, cntmp.NumMyElements(), cntmp.MyGlobalElements(), 0, discret->get_comm()));
 
   // rebuild of the discretizations with new maps for standard ghosting

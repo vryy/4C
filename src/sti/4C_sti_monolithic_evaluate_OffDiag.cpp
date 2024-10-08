@@ -209,11 +209,11 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_scat
   {
     case Core::LinAlg::MatrixType::block_condition:
     {
-      slavematrix = Teuchos::rcp(
+      slavematrix = Teuchos::RCP(
           new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
               *block_map_thermo_interface(), meshtying_strategy_scatra()->block_maps_slave(), 81,
               false, true));
-      mastermatrix = Teuchos::rcp(
+      mastermatrix = Teuchos::RCP(
           new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
               *block_map_thermo_interface(), meshtying_strategy_scatra()->block_maps_master(), 81,
               false, true));
@@ -221,9 +221,9 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_scat
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      slavematrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      slavematrix = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
           *meshtying_strategy_scatra()->coupling_adapter()->slave_dof_map(), 27, false, true));
-      mastermatrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      mastermatrix = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
           *meshtying_strategy_scatra()->coupling_adapter()->master_dof_map(), 27, false, true));
       break;
     }
@@ -438,7 +438,7 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
   {
     case Core::LinAlg::MatrixType::block_condition:
     {
-      slavematrix = Teuchos::rcp(
+      slavematrix = Teuchos::RCP(
           new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
               meshtying_strategy_scatra()->block_maps_slave(), *block_map_thermo_interface_slave(),
               81, false, true));
@@ -617,7 +617,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
   {
     case Core::LinAlg::MatrixType::block_condition:
     {
-      slavematrix = Teuchos::rcp(
+      slavematrix = Teuchos::RCP(
           new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
               *block_map_thermo_interface(), meshtying_strategy_scatra()->block_maps_slave(), 81,
               false, true));
@@ -764,7 +764,7 @@ void STI::ScatraThermoOffDiagCouplingMortarStandard::
   {
     case Core::LinAlg::MatrixType::block_condition:
     {
-      slavematrix = Teuchos::rcp(
+      slavematrix = Teuchos::RCP(
           new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
               *scatra_field()->block_maps(), *block_map_thermo_interface(), 81, false, true));
       break;
@@ -897,7 +897,7 @@ Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> STI::build_scatra_thermo_off_diag
   {
     case Inpar::S2I::coupling_matching_nodes:
     {
-      scatrathermooffdiagcoupling = Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMatchingNodes(
+      scatrathermooffdiagcoupling = Teuchos::RCP(new STI::ScatraThermoOffDiagCouplingMatchingNodes(
           block_map_thermo, block_map_thermo_interface, block_map_thermo_interface_slave,
           full_map_scatra, full_map_thermo, interface_map_scatra, interface_map_thermo, isale,
           meshtying_strategy_scatra, meshtying_strategy_thermo, scatra, thermo));
@@ -905,7 +905,7 @@ Teuchos::RCP<STI::ScatraThermoOffDiagCoupling> STI::build_scatra_thermo_off_diag
     }
     case Inpar::S2I::coupling_mortar_standard:
     {
-      scatrathermooffdiagcoupling = Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMortarStandard(
+      scatrathermooffdiagcoupling = Teuchos::RCP(new STI::ScatraThermoOffDiagCouplingMortarStandard(
           block_map_thermo, block_map_thermo_interface, full_map_scatra, full_map_thermo,
           interface_map_scatra, interface_map_thermo, isale, meshtying_strategy_scatra,
           meshtying_strategy_thermo, scatra, thermo));

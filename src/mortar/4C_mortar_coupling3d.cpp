@@ -2759,7 +2759,7 @@ bool Mortar::Coupling3d::delaunay_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, i) = clip()[i].coord()[k];
 
     // create IntCell object and push back
-    cells().push_back(Teuchos::rcp(new IntCell(0, 3, coords, auxn(), Core::FE::CellType::tri3,
+    cells().push_back(Teuchos::RCP(new IntCell(0, 3, coords, auxn(), Core::FE::CellType::tri3,
         linvertex[0], linvertex[1], linvertex[2], get_deriv_auxn())));
 
     // get out of here
@@ -3200,7 +3200,7 @@ bool Mortar::Coupling3d::delaunay_triangulation(
     }
 
     // create IntCell object and push back
-    cells().push_back(Teuchos::rcp(new IntCell(t, 3, coords, auxn(), Core::FE::CellType::tri3,
+    cells().push_back(Teuchos::RCP(new IntCell(t, 3, coords, auxn(), Core::FE::CellType::tri3,
         linvertex[idx0], linvertex[idx1], linvertex[idx2], get_deriv_auxn())));
   }
 
@@ -3246,7 +3246,7 @@ bool Mortar::Coupling3d::center_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, i) = clip()[i].coord()[k];
 
     // create IntCell object and push back
-    cells().push_back(Teuchos::rcp(new IntCell(0, 3, coords, auxn(), Core::FE::CellType::tri3,
+    cells().push_back(Teuchos::RCP(new IntCell(0, 3, coords, auxn(), Core::FE::CellType::tri3,
         linvertex[0], linvertex[1], linvertex[2], get_deriv_auxn())));
 
     // get out of here
@@ -3337,7 +3337,7 @@ bool Mortar::Coupling3d::center_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, 2) = clip()[num + 1].coord()[k];
 
     // create IntCell object and push back
-    cells().push_back(Teuchos::rcp(new IntCell(num, 3, coords, auxn(), Core::FE::CellType::tri3,
+    cells().push_back(Teuchos::RCP(new IntCell(num, 3, coords, auxn(), Core::FE::CellType::tri3,
         lincenter, linvertex[num], linvertex[numplus1], get_deriv_auxn())));
   }
 
@@ -3566,7 +3566,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[2] = ele.nodes()[8];
     nodes[3] = ele.nodes()[7];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(
+    auxele.push_back(Teuchos::RCP(new IntElement(
         0, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
 
     // second integration element
@@ -3581,7 +3581,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[2] = ele.nodes()[5];
     nodes[3] = ele.nodes()[8];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(
+    auxele.push_back(Teuchos::RCP(new IntElement(
         1, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
 
     // third integration element
@@ -3596,7 +3596,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[2] = ele.nodes()[2];
     nodes[3] = ele.nodes()[6];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(
+    auxele.push_back(Teuchos::RCP(new IntElement(
         2, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
 
     // fourth integration element
@@ -3611,7 +3611,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[2] = ele.nodes()[6];
     nodes[3] = ele.nodes()[3];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(
+    auxele.push_back(Teuchos::RCP(new IntElement(
         3, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
   }
 
@@ -3636,7 +3636,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[4];
     nodes[2] = ele.nodes()[7];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(
+    auxele.push_back(Teuchos::RCP(new IntElement(
         0, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false)));
 
     // second integration element
@@ -3649,7 +3649,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[5];
     nodes[2] = ele.nodes()[4];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(
+    auxele.push_back(Teuchos::RCP(new IntElement(
         1, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false)));
 
     // third integration element
@@ -3662,7 +3662,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[6];
     nodes[2] = ele.nodes()[5];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(
+    auxele.push_back(Teuchos::RCP(new IntElement(
         2, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false)));
 
     // fourth integration element
@@ -3675,7 +3675,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[7];
     nodes[2] = ele.nodes()[6];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(
+    auxele.push_back(Teuchos::RCP(new IntElement(
         3, ele.id(), ele.owner(), &ele, dttri, numnodetri, nodeids, nodes, ele.is_slave(), false)));
 
     // fifth integration element
@@ -3692,7 +3692,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodesquad[2] = ele.nodes()[6];
     nodesquad[3] = ele.nodes()[7];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(4, ele.id(), ele.owner(), &ele, dtquad,
+    auxele.push_back(Teuchos::RCP(new IntElement(4, ele.id(), ele.owner(), &ele, dtquad,
         numnodequad, nodeidsquad, nodesquad, ele.is_slave(), false)));
   }
 
@@ -3715,7 +3715,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[3];
     nodes[2] = ele.nodes()[5];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(
+    auxele.push_back(Teuchos::RCP(new IntElement(
         0, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
 
     // second integration element
@@ -3728,7 +3728,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[1];
     nodes[2] = ele.nodes()[4];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(
+    auxele.push_back(Teuchos::RCP(new IntElement(
         1, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
 
     // third integration element
@@ -3741,7 +3741,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[4];
     nodes[2] = ele.nodes()[2];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(
+    auxele.push_back(Teuchos::RCP(new IntElement(
         2, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
 
     // fourth integration element
@@ -3754,7 +3754,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[5];
     nodes[2] = ele.nodes()[3];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(
+    auxele.push_back(Teuchos::RCP(new IntElement(
         3, ele.id(), ele.owner(), &ele, dt, numnode, nodeids, nodes, ele.is_slave(), false)));
   }
 
@@ -3768,7 +3768,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[2] = ele.nodes()[2];
     nodes[3] = ele.nodes()[3];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(0, ele.id(), ele.owner(), &ele, ele.shape(),
+    auxele.push_back(Teuchos::RCP(new IntElement(0, ele.id(), ele.owner(), &ele, ele.shape(),
         ele.num_node(), ele.node_ids(), nodes, ele.is_slave(), false)));
   }
 
@@ -3781,7 +3781,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
     nodes[1] = ele.nodes()[1];
     nodes[2] = ele.nodes()[2];
 
-    auxele.push_back(Teuchos::rcp(new IntElement(0, ele.id(), ele.owner(), &ele, ele.shape(),
+    auxele.push_back(Teuchos::RCP(new IntElement(0, ele.id(), ele.owner(), &ele, ele.shape(),
         ele.num_node(), ele.node_ids(), nodes, ele.is_slave(), false)));
   }
 
@@ -3857,7 +3857,7 @@ bool Mortar::Coupling3dQuadManager::split_int_elements(
 
     for (int i = 0; i < 4; ++i) pseudo_nodes_ptr.push_back(&(pseudo_nodes[i]));
 
-    auxele.push_back(Teuchos::rcp(new IntElement(0, ele.id(), ele.owner(), &ele,
+    auxele.push_back(Teuchos::RCP(new IntElement(0, ele.id(), ele.owner(), &ele,
         Core::FE::CellType::quad4, 4, &(id[0]), pseudo_nodes_ptr, ele.is_slave(), rewind)));
   }
 
@@ -3970,7 +3970,7 @@ void Mortar::Coupling3dManager::integrate_coupling(
     for (int m = 0; m < (int)master_elements().size(); ++m)
     {
       // create Coupling3d object and push back
-      coupling().push_back(Teuchos::rcp(
+      coupling().push_back(Teuchos::RCP(
           new Coupling3d(idiscret_, dim_, false, imortar_, slave_element(), master_element(m))));
       // do coupling
       coupling()[m]->evaluate_coupling();
@@ -4011,7 +4011,7 @@ void Mortar::Coupling3dManager::integrate_coupling(
             for (int m = 0; m < (int)master_elements().size(); ++m)
             {
               // create Coupling3d object and push back
-              coupling().push_back(Teuchos::rcp(new Coupling3d(
+              coupling().push_back(Teuchos::RCP(new Coupling3d(
                   idiscret_, dim_, false, imortar_, slave_element(), master_element(m))));
               // do coupling
               coupling()[m]->evaluate_coupling();
@@ -4028,7 +4028,7 @@ void Mortar::Coupling3dManager::integrate_coupling(
             for (int m = 0; m < (int)master_elements().size(); ++m)
             {
               // create Coupling3d object and push back
-              coupling().push_back(Teuchos::rcp(new Coupling3d(
+              coupling().push_back(Teuchos::RCP(new Coupling3d(
                   idiscret_, dim_, false, imortar_, slave_element(), master_element(m))));
               // do coupling
               coupling()[m]->evaluate_coupling();
@@ -4107,7 +4107,7 @@ void Mortar::Coupling3dQuadManager::integrate_coupling(
         for (int j = 0; j < (int)mauxelements[m].size(); ++j)
         {
           // create instance of coupling class
-          coupling().push_back(Teuchos::rcp(new Coupling3dQuad(idiscret_, dim_, true, imortar_,
+          coupling().push_back(Teuchos::RCP(new Coupling3dQuad(idiscret_, dim_, true, imortar_,
               slave_element(), *master_elements()[m], *sauxelements[i], *mauxelements[m][j])));
 
           // do coupling
@@ -4412,7 +4412,7 @@ void Mortar::Coupling3dManager::consist_dual_shape()
     Core::LinAlg::invert_and_multiply_by_cholesky(me, de, ae);
 
   // store ae matrix in slave element data container
-  slave_element().mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+  slave_element().mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
 
   return;
 }

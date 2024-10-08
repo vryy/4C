@@ -418,17 +418,17 @@ namespace Immersed
 
     // vector to fill by sourcedis->Evaluate (needs to be resized in calc class)
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> vectofill =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(targetdata.size()));
+        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(targetdata.size()));
     (*vectofill)(0) = -1234.0;
 
     // save parameter space coordinate in serial dense vector
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> xi_dense =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(source_dim));
+        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(source_dim));
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> targetxi_dense =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(target_dim));
+        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(target_dim));
 
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> normal_at_targetpoint =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(3));
+        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(3));
     std::vector<double> normal_vec(3);
 
     Core::LinAlg::SerialDenseMatrix dummy1;
@@ -634,7 +634,7 @@ namespace Immersed
               Teuchos::RCP<Core::LinAlg::SerialDenseVector> vector;
 
               // get nodal coords of source ele
-              vector = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(3));
+              vector = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(3));
               std::vector<double> distances(sourceele->num_node());
 
               // loop over source element nodes and calc distance from targetpoint to those nodes
@@ -911,7 +911,7 @@ namespace Immersed
 
     // vector to be filled in sourcedis->Evaluate (needs to be resized in calc class)
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> vectofill =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(4));
+        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(4));
     (*vectofill)(0) = -1234.0;
     if (match)  // was already matched, add no contribution
     {
@@ -923,7 +923,7 @@ namespace Immersed
 
     // save parameter space coordinate in serial dense vector
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> xi_dense =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(source_dim));
+        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(source_dim));
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     //////
@@ -987,7 +987,7 @@ namespace Immersed
             Core::FE::extract_my_values(*dispnp, mysourcedispnp, la[0].lm_);
 
             // construct bounding box around current source element
-            Teuchos::RCP<Cut::BoundingBox> bbside = Teuchos::rcp(Cut::BoundingBox::create());
+            Teuchos::RCP<Cut::BoundingBox> bbside = Teuchos::RCP(Cut::BoundingBox::create());
             Core::LinAlg::Matrix<3, 1> nodalpos;
             for (int i = 0; i < (int)(sourceele->num_node()); ++i)
             {
@@ -1247,9 +1247,9 @@ namespace Immersed
 
     // initialize vectors to fill
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> velnp_at_struct_point =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(3));
+        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(3));
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> xi_pos_of_struct_point =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(3));
+        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(3));
     (*velnp_at_struct_point)(0) = -1234.0;
     (*xi_pos_of_struct_point)(0) = -1234.0;
 

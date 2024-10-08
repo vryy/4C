@@ -60,7 +60,7 @@ void tsi_dyn_drt()
     case Inpar::TSI::Monolithic:
     {
       // create an TSI::Monolithic instance
-      tsi = Teuchos::rcp(new TSI::Monolithic(comm, sdynparams));
+      tsi = Teuchos::RCP(new TSI::Monolithic(comm, sdynparams));
       break;
     }
     case Inpar::TSI::OneWay:
@@ -72,7 +72,7 @@ void tsi_dyn_drt()
     {
       // Any partitioned algorithm. Stable of working horses.
       // create an TSI::Algorithm instance
-      tsi = Teuchos::rcp(new TSI::Partitioned(comm));
+      tsi = Teuchos::RCP(new TSI::Partitioned(comm));
       break;
     }
     default:

@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 void Solid::TimIntImpl::nox_setup()
 {
   // create
-  noxparams_ = Teuchos::rcp(new Teuchos::ParameterList());
+  noxparams_ = Teuchos::RCP(new Teuchos::ParameterList());
 
   // solving
   Teuchos::ParameterList& newtonParams = (*noxparams_).sublist("Newton");
@@ -41,7 +41,7 @@ void Solid::TimIntImpl::nox_setup()
   printParams = *(nox_create_print_parameters(false));
 
   // Create printing utilities
-  noxutils_ = Teuchos::rcp(new ::NOX::Utils(printParams));
+  noxutils_ = Teuchos::RCP(new ::NOX::Utils(printParams));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -49,7 +49,7 @@ void Solid::TimIntImpl::nox_setup()
 void Solid::TimIntImpl::nox_setup(const Teuchos::ParameterList& noxparams)
 {
   // copy the input list
-  noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(noxparams));
+  noxparams_ = Teuchos::RCP(new Teuchos::ParameterList(noxparams));
   // make all Yes/No integral values to Boolean
   Input::boolify_valid_input_parameters(*noxparams_);
 
@@ -86,7 +86,7 @@ void Solid::TimIntImpl::nox_setup(const Teuchos::ParameterList& noxparams)
   if (printParams.get<bool>("Test Details")) outputinformationlevel += ::NOX::Utils::TestDetails;
   if (printParams.get<bool>("Debug")) outputinformationlevel += ::NOX::Utils::Debug;
   printParams.set("Output Information", outputinformationlevel);
-  noxutils_ = Teuchos::rcp(new ::NOX::Utils(printParams));
+  noxutils_ = Teuchos::RCP(new ::NOX::Utils(printParams));
 }
 
 
@@ -132,11 +132,11 @@ Teuchos::RCP<::NOX::StatusTest::Combo> Solid::TimIntImpl::nox_create_status_test
   Teuchos::RCP<::NOX::StatusTest::Combo> combo2 = Teuchos::null;
   if (combdisifres_ == Inpar::Solid::bop_and)
   {
-    combo2 = Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
+    combo2 = Teuchos::RCP(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
   }
   else if (combdisifres_ == Inpar::Solid::bop_or)
   {
-    combo2 = Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
+    combo2 = Teuchos::RCP(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
   }
   else
   {
@@ -149,29 +149,29 @@ Teuchos::RCP<::NOX::StatusTest::Combo> Solid::TimIntImpl::nox_create_status_test
   {
     // absolute test
     Teuchos::RCP<::NOX::StatusTest::NormF> statusTestNormFres =
-        Teuchos::rcp(new ::NOX::StatusTest::NormF(tolfres_, norm, scalefres));
+        Teuchos::RCP(new ::NOX::StatusTest::NormF(tolfres_, norm, scalefres));
     combo2->addStatusTest(statusTestNormFres);
   }
   else if (normtypefres_ == Inpar::Solid::convnorm_rel)
   {
     // relative
     Teuchos::RCP<::NOX::StatusTest::NormF> statusTestNormFres =
-        Teuchos::rcp(new ::NOX::StatusTest::NormF(*grp, tolfres_, norm, scalefres));
+        Teuchos::RCP(new ::NOX::StatusTest::NormF(*grp, tolfres_, norm, scalefres));
     combo2->addStatusTest(statusTestNormFres);
   }
   else if (normtypefres_ == Inpar::Solid::convnorm_mix)
   {
     // mixed
     Teuchos::RCP<::NOX::StatusTest::Combo> combo3 =
-        Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
+        Teuchos::RCP(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
     combo2->addStatusTest(combo3);
     // absolute test
     Teuchos::RCP<::NOX::StatusTest::NormF> statusTestNormFresAbs =
-        Teuchos::rcp(new ::NOX::StatusTest::NormF(tolfres_, norm, scalefres));
+        Teuchos::RCP(new ::NOX::StatusTest::NormF(tolfres_, norm, scalefres));
     combo3->addStatusTest(statusTestNormFresAbs);
     // AND relative
     Teuchos::RCP<::NOX::StatusTest::NormF> statusTestNormFresRel =
-        Teuchos::rcp(new ::NOX::StatusTest::NormF(*grp, tolfres_, norm, scalefres));
+        Teuchos::RCP(new ::NOX::StatusTest::NormF(*grp, tolfres_, norm, scalefres));
     combo3->addStatusTest(statusTestNormFresRel);
   }
   else
@@ -184,7 +184,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> Solid::TimIntImpl::nox_create_status_test
   {
     // absolute test
     Teuchos::RCP<::NOX::StatusTest::NormUpdate> statusTestNormDisi =
-        Teuchos::rcp(new ::NOX::StatusTest::NormUpdate(toldisi_, norm, scaledisi));
+        Teuchos::RCP(new ::NOX::StatusTest::NormUpdate(toldisi_, norm, scaledisi));
     combo2->addStatusTest(statusTestNormDisi);
   }
   else if (normtypedisi_ == Inpar::Solid::convnorm_rel)
@@ -198,7 +198,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> Solid::TimIntImpl::nox_create_status_test
     // mixed
     // absolute test
     Teuchos::RCP<::NOX::StatusTest::NormUpdate> statusTestNormDisi =
-        Teuchos::rcp(new ::NOX::StatusTest::NormUpdate(toldisi_, norm, scaledisi));
+        Teuchos::RCP(new ::NOX::StatusTest::NormUpdate(toldisi_, norm, scaledisi));
     combo2->addStatusTest(statusTestNormDisi);
     // relative test
     // NOT AVAILABLE
@@ -211,12 +211,12 @@ Teuchos::RCP<::NOX::StatusTest::Combo> Solid::TimIntImpl::nox_create_status_test
 
   // maximum iteration
   Teuchos::RCP<::NOX::StatusTest::MaxIters> statusTestMaxIters =
-      Teuchos::rcp(new ::NOX::StatusTest::MaxIters(itermax_));
+      Teuchos::RCP(new ::NOX::StatusTest::MaxIters(itermax_));
 
 
   // the combined test object
   Teuchos::RCP<::NOX::StatusTest::Combo> combo =
-      Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
+      Teuchos::RCP(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
   combo->addStatusTest(combo2);
   combo->addStatusTest(statusTestMaxIters);
 
@@ -231,7 +231,7 @@ Teuchos::RCP<Teuchos::ParameterList> Solid::TimIntImpl::nox_create_solver_parame
 {
   // Create the list of solver parameters
   Teuchos::RCP<Teuchos::ParameterList> solverParametersPtr =
-      Teuchos::rcp(new Teuchos::ParameterList);
+      Teuchos::RCP(new Teuchos::ParameterList);
 
   // Select the solver (this is the default)
   solverParametersPtr->set("Nonlinear Solver", "Line Search Based");
@@ -252,7 +252,7 @@ Teuchos::RCP<Teuchos::ParameterList> Solid::TimIntImpl::nox_create_print_paramet
     const bool verbose) const
 {
   // Set the printing parameters in the "Printing" sublist
-  Teuchos::RCP<Teuchos::ParameterList> printParams = Teuchos::rcp(new Teuchos::ParameterList());
+  Teuchos::RCP<Teuchos::ParameterList> printParams = Teuchos::RCP(new Teuchos::ParameterList());
   (*printParams).set("MyPID", myrank_);
   (*printParams).set("Output Precision", 6);
   (*printParams).set("Output Processor", 0);
@@ -349,8 +349,8 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> Solid::TimIntImpl::nox_create_linear_s
   ::NOX::Epetra::Interface::Jacobian* iJac = this;
   const Teuchos::RCP<Epetra_Operator> J = stiff_;
 
-  linSys = Teuchos::rcp(new NOX::Solid::LinearSystem(
-      printParams, lsParams, Teuchos::rcp(iJac, false), J, noxSoln, solver_));
+  linSys = Teuchos::RCP(new NOX::Solid::LinearSystem(
+      printParams, lsParams, Teuchos::RCP(iJac, false), J, noxSoln, solver_));
 
   return linSys;
 }
@@ -372,8 +372,8 @@ int Solid::TimIntImpl::nox_solve()
       nox_create_linear_system(nlParams, noxSoln, noxutils_);
 
   // Create group
-  Teuchos::RCP<NOX::Solid::Group> grp = Teuchos::rcp(
-      new NOX::Solid::Group(*this, printParams, Teuchos::rcp(this, false), noxSoln, linSys));
+  Teuchos::RCP<NOX::Solid::Group> grp = Teuchos::RCP(
+      new NOX::Solid::Group(*this, printParams, Teuchos::RCP(this, false), noxSoln, linSys));
 
   // Create status test
   noxstatustest_ = nox_create_status_test(grp);

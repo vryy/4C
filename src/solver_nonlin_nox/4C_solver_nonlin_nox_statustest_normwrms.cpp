@@ -58,7 +58,7 @@ NOX::Nln::StatusTest::NormWRMS::NormWRMS(
   {
     g_status_ = ::NOX::StatusTest::Unevaluated;
     status_.assign(n_checks_, g_status_);
-    norm_wrms_ = Teuchos::rcp(new std::vector<double>(n_checks_, 1.0e+12));
+    norm_wrms_ = Teuchos::RCP(new std::vector<double>(n_checks_, 1.0e+12));
     return g_status_;
   }
 
@@ -73,7 +73,7 @@ NOX::Nln::StatusTest::NormWRMS::NormWRMS(
   int niters = problem.getNumIterations();
   if (niters == 0)
   {
-    norm_wrms_ = Teuchos::rcp(new std::vector<double>(n_checks_, 1.0e+12));
+    norm_wrms_ = Teuchos::RCP(new std::vector<double>(n_checks_, 1.0e+12));
     return g_status_;
   }
 

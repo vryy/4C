@@ -54,8 +54,8 @@ void Solid::ModelEvaluator::Cardiovascular0D::setup()
 
   // contributions of 0D model to structural rhs and stiffness
   fstructcardio_np_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view()));
-  stiff_cardio_ptr_ = Teuchos::rcp(
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view()));
+  stiff_cardio_ptr_ = Teuchos::RCP(
       new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
 
   Teuchos::ParameterList solvparams;
@@ -68,7 +68,7 @@ void Solid::ModelEvaluator::Cardiovascular0D::setup()
   // to the manager in the future! -> get rid of it as soon as old
   // time-integration dies ...
   // initialize 0D cardiovascular manager
-  cardvasc0dman_ = Teuchos::rcp(new UTILS::Cardiovascular0DManager(dis, disnp_ptr_,
+  cardvasc0dman_ = Teuchos::RCP(new UTILS::Cardiovascular0DManager(dis, disnp_ptr_,
       Global::Problem::instance()->structural_dynamic_params(),
       Global::Problem::instance()->cardiovascular0_d_structural_params(), *dummysolver,
       Teuchos::null));

@@ -99,7 +99,7 @@ void Core::Conditions::ConditionDefinition::read(Core::IO::DatFileReader& reader
 
   for (auto i = section.begin() + 1; i != section.end(); ++i)
   {
-    Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(*i));
+    Teuchos::RCP<std::stringstream> condline = Teuchos::RCP(new std::stringstream(*i));
 
     // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
     // reading the last entry inside This is required since the material parameters can be
@@ -117,7 +117,7 @@ void Core::Conditions::ConditionDefinition::read(Core::IO::DatFileReader& reader
     parser_content.consume("-");
 
     Teuchos::RCP<Core::Conditions::Condition> condition =
-        Teuchos::rcp(new Core::Conditions::Condition(dobjid, condtype_, buildgeometry_, gtype_));
+        Teuchos::RCP(new Core::Conditions::Condition(dobjid, condtype_, buildgeometry_, gtype_));
 
     for (auto& j : inputline_)
     {

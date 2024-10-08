@@ -58,7 +58,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8Type::create(
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::SoHex8(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::SoHex8(id, owner));
     return ele;
   }
 
@@ -70,7 +70,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::SoHex8(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::SoHex8(id, owner));
   return ele;
 }
 
@@ -145,7 +145,7 @@ Discret::ELEMENTS::SoHex8::SoHex8(int id, int owner)
       analyticalmaterialtangent_ = false;
   }
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8));
+    prestress_ = Teuchos::RCP(new Discret::ELEMENTS::PreStress(NUMNOD_SOH8, NUMGPT_SOH8));
 
 
   return;
@@ -176,7 +176,7 @@ Discret::ELEMENTS::SoHex8::SoHex8(const Discret::ELEMENTS::SoHex8& old)
   }
 
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(*(old.prestress_)));
+    prestress_ = Teuchos::RCP(new Discret::ELEMENTS::PreStress(*(old.prestress_)));
 
   return;
 }
@@ -278,7 +278,7 @@ void Discret::ELEMENTS::SoHex8::unpack(Core::Communication::UnpackBuffer& buffer
       // see whether I am actually a So_hex8fbar element
       auto* me = dynamic_cast<Discret::ELEMENTS::SoHex8fbar*>(this);
       if (me) numgpt += 1;  // one more history entry for centroid data in hex8fbar
-      prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOH8, numgpt));
+      prestress_ = Teuchos::RCP(new Discret::ELEMENTS::PreStress(NUMNOD_SOH8, numgpt));
     }
     Core::Communication::UnpackBuffer tmpprestress_buffer(tmpprestress);
     prestress_->unpack(tmpprestress_buffer);

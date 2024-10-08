@@ -32,7 +32,7 @@ void CONTACT::NitscheStrategyTsi::set_state(
     double inf_delta = 0.;
     if (curr_state_temp_ == Teuchos::null)
     {
-      curr_state_temp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(vec));
+      curr_state_temp_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(vec));
       inf_delta = 1.e12;
     }
     else
@@ -65,7 +65,7 @@ void CONTACT::NitscheStrategyTsi::set_parent_state(const enum Mortar::StateType&
   if (statename == Mortar::state_temperature)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> global =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*dis.dof_col_map(), true));
+        Teuchos::RCP(new Core::LinAlg::Vector<double>(*dis.dof_col_map(), true));
     Core::LinAlg::export_to(vec, *global);
 
     // set state on interfaces
@@ -128,7 +128,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyTsi::setup_rhs_block_vec(
   switch (bt)
   {
     case CONTACT::VecBlockType::temp:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new Epetra_FEVector(*Global::Problem::instance()->get_dis("thermo")->dof_row_map()));
     default:
       return CONTACT::NitscheStrategy::setup_rhs_block_vec(bt);
@@ -147,7 +147,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::NitscheStrategyTsi::ge
   switch (bt)
   {
     case CONTACT::VecBlockType::temp:
-      return Teuchos::rcp(new Core::LinAlg::Vector<double>(*ft_));
+      return Teuchos::RCP(new Core::LinAlg::Vector<double>(*ft_));
     default:
       return CONTACT::NitscheStrategy::get_rhs_block_ptr(bt);
   }
@@ -159,13 +159,13 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategyTsi::setup_matr
   switch (bt)
   {
     case CONTACT::MatBlockType::displ_temp:
-      return Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      return Teuchos::RCP(new Core::LinAlg::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
               *Global::Problem::instance()->get_dis("structure")->dof_row_map()),
           100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
     case CONTACT::MatBlockType::temp_displ:
     case CONTACT::MatBlockType::temp_temp:
-      return Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      return Teuchos::RCP(new Core::LinAlg::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
               *Global::Problem::instance()->get_dis("thermo")->dof_row_map()),
           100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));

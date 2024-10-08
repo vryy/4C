@@ -127,50 +127,50 @@ namespace XFEM
       if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FSI_PART or
           cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FSI_MONO)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(
+        mesh_coupl_.push_back(Teuchos::RCP(
             new MeshCouplingFSI(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FPI_MONO)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFPI(
+        mesh_coupl_.push_back(Teuchos::RCP(new MeshCouplingFPI(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::ps_ps)));
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFPI(
+        mesh_coupl_.push_back(Teuchos::RCP(new MeshCouplingFPI(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::ps_pf)));
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFPI(
+        mesh_coupl_.push_back(Teuchos::RCP(new MeshCouplingFPI(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::pf_ps)));
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingFPI(
+        mesh_coupl_.push_back(Teuchos::RCP(new MeshCouplingFPI(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, MeshCouplingFPI::pf_pf)));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_WEAK_DIRICHLET)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingWeakDirichlet(
+        mesh_coupl_.push_back(Teuchos::RCP(new MeshCouplingWeakDirichlet(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis))));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_NEUMANN)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNeumann(
+        mesh_coupl_.push_back(Teuchos::RCP(new MeshCouplingNeumann(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis))));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNavierSlip(
+        mesh_coupl_.push_back(Teuchos::RCP(new MeshCouplingNavierSlip(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis))));
       }
       else if (cond_type_string_to_enum(cond_name) ==
                Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP_TWOPHASE)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCouplingNavierSlipTwoPhase(
+        mesh_coupl_.push_back(Teuchos::RCP(new MeshCouplingNavierSlipTwoPhase(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, (bg_dis_ == cond_dis))));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(
+        mesh_coupl_.push_back(Teuchos::RCP(
             new MeshCouplingFluidFluid(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
       }
       else if (cond_type_string_to_enum(cond_name) ==
                Inpar::XFEM::CouplingCond_EMBEDDEDMESH_SOLID_SURF)
       {
-        mesh_coupl_.push_back(Teuchos::rcp(
+        mesh_coupl_.push_back(Teuchos::RCP(
             new MeshCoupling(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, "", false)));
       }
       else if (cond_type_string_to_enum(cond_name) ==
@@ -180,7 +180,7 @@ namespace XFEM
       }
       else
       {
-        mesh_coupl_.push_back(Teuchos::rcp(new MeshCoupling(
+        mesh_coupl_.push_back(Teuchos::RCP(new MeshCoupling(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_, "", (bg_dis_ == cond_dis))));
       }
     }
@@ -193,23 +193,23 @@ namespace XFEM
     {
       if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_LEVELSET_WEAK_DIRICHLET)
       {
-        levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingWeakDirichlet(
+        levelset_coupl_.push_back(Teuchos::RCP(new LevelSetCouplingWeakDirichlet(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
       }
       else if (cond_type_string_to_enum(cond_name) == Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN)
       {
-        levelset_coupl_.push_back(Teuchos::rcp(
+        levelset_coupl_.push_back(Teuchos::RCP(
             new LevelSetCouplingNeumann(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
       }
       else if (cond_type_string_to_enum(cond_name) ==
                Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP)
       {
-        levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNavierSlip(
+        levelset_coupl_.push_back(Teuchos::RCP(new LevelSetCouplingNavierSlip(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
       }
       else
       {
-        levelset_coupl_.push_back(Teuchos::rcp(
+        levelset_coupl_.push_back(Teuchos::RCP(
             new LevelSetCoupling(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
       }
     }

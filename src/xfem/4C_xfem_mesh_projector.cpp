@@ -182,7 +182,7 @@ void XFEM::MeshProjector::find_search_radius()
 void XFEM::MeshProjector::setup_search_tree()
 {
   // init of 3D search tree
-  search_tree_ = Teuchos::rcp(new Core::Geo::SearchTree(5));
+  search_tree_ = Teuchos::RCP(new Core::Geo::SearchTree(5));
 
   // find the bounding box of all elements of source discretization
   const Core::LinAlg::Matrix<3, 2> sourceEleBox =

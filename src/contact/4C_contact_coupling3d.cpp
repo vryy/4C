@@ -1111,7 +1111,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
     for (int m = 0; m < (int)master_elements().size(); ++m)
     {
       // create Coupling3d object and push back
-      coupling().push_back(Teuchos::rcp(
+      coupling().push_back(Teuchos::RCP(
           new Coupling3d(idiscret_, dim_, false, imortar_, slave_element(), master_element(m))));
 
       // do coupling
@@ -1178,7 +1178,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
           for (int m = 0; m < (int)master_elements().size(); ++m)
           {
             // create Coupling3d object and push back
-            coupling().push_back(Teuchos::rcp(new Coupling3d(
+            coupling().push_back(Teuchos::RCP(new Coupling3d(
                 idiscret_, dim_, false, imortar_, slave_element(), master_element(m))));
 
             // do coupling
@@ -1310,7 +1310,7 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
       {
         for (int j = 0; j < (int)mauxelements[m].size(); ++j)
         {
-          coupling().push_back(Teuchos::rcp(new Coupling3dQuad(discret(), n_dim(), true, params(),
+          coupling().push_back(Teuchos::RCP(new Coupling3dQuad(discret(), n_dim(), true, params(),
               slave_element(), *master_elements()[m], *sauxelements[i], *mauxelements[m][j])));
 
           coupling()[coupling().size() - 1]->evaluate_coupling();
@@ -1391,7 +1391,7 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
           {
             for (int j = 0; j < (int)mauxelements[m].size(); ++j)
             {
-              coupling().push_back(Teuchos::rcp(
+              coupling().push_back(Teuchos::RCP(
                   new Coupling3dQuad(discret(), n_dim(), true, params(), slave_element(),
                       *master_elements()[m], *sauxelements[i], *mauxelements[m][j])));
 
@@ -1688,7 +1688,7 @@ void CONTACT::Coupling3dManager::consistent_dual_shape()
 
   // Dual shape functions coefficient matrix and linearization
   slave_element().mo_data().deriv_dual_shape() =
-      Teuchos::rcp(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
+      Teuchos::RCP(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
           (nnodes + mnodes) * ndof, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes)));
   Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& derivae =
       *(slave_element().mo_data().deriv_dual_shape());
@@ -1951,7 +1951,7 @@ void CONTACT::Coupling3dManager::consistent_dual_shape()
   }
 
   // store ae matrix in slave element data container
-  slave_element().mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+  slave_element().mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
 
   return;
 }
@@ -1966,7 +1966,7 @@ void CONTACT::Coupling3dManager::find_feasible_master_elements(
   for (std::size_t m = 0; m < master_elements().size(); ++m)
   {
     // Build a instance of the Mortar::Coupling3d object (no linearization needed).
-    Teuchos::RCP<Mortar::Coupling3d> coup = Teuchos::rcp(new Mortar::Coupling3d(
+    Teuchos::RCP<Mortar::Coupling3d> coup = Teuchos::RCP(new Mortar::Coupling3d(
         idiscret_, dim_, false, imortar_, slave_element(), master_element(m)));
 
     // Building the master element normals and check the angles.

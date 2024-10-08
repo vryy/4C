@@ -47,7 +47,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3ebType::create(
   if (eletype == "BEAM3EB")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Beam3eb(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Beam3eb(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -58,7 +58,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3ebType::create(
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3ebType::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Beam3eb(id, owner));
+  return Teuchos::RCP(new Beam3eb(id, owner));
 }
 
 /*----------------------------------------------------------------------*
@@ -242,7 +242,7 @@ int Discret::ELEMENTS::Beam3ebType::initialize(Core::FE::Discretization& dis)
     // the next section is needed in case of periodic boundary conditions and a shifted
     // configuration (i.e. elements cut by the periodic boundary) in the input file
     Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox =
-        Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
+        Teuchos::RCP(new Core::Geo::MeshFree::BoundingBox());
     periodic_boundingbox->init(
         Global::Problem::instance()->binning_strategy_params());  // no setup() call needed here
 

@@ -40,7 +40,7 @@ namespace
       Teuchos::ParameterList line_to_volume_params_list;
       Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(line_to_volume_params_list);
       evaluation_data_ =
-          Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
+          Teuchos::RCP(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
     }
 
     /**
@@ -91,7 +91,7 @@ namespace
         for (auto& volume : volume_elements_)
         {
           geometry_pairs.push_back(
-              Teuchos::rcp(new GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, El1, El2>(
+              Teuchos::RCP(new GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, El1, El2>(
                   line.get(), volume.get(), evaluation_data_)));
         }
       }
@@ -303,7 +303,7 @@ namespace
 
     // Add the relevant nurbs information to the discretization.
     Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> structdis =
-        Teuchos::rcp(new Core::FE::Nurbs::NurbsDiscretization("structure", Teuchos::null, 3));
+        Teuchos::RCP(new Core::FE::Nurbs::NurbsDiscretization("structure", Teuchos::null, 3));
     Global::Problem::instance()->add_dis("structure", structdis);
 
     // Get the geometry.
@@ -393,7 +393,7 @@ namespace
     line_to_volume_params_list.set(
         "GEOMETRY_PAIR_SEGMENTATION_NOT_ALL_GAUSS_POINTS_PROJECT_VALID_ACTION", "warning");
     evaluation_data_ =
-        Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
+        Teuchos::RCP(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
 
     // Vector with vector of segments for Evaluate.
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;
@@ -435,7 +435,7 @@ namespace
     Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(line_to_volume_params_list);
     line_to_volume_params_list.set("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 2);
     evaluation_data_ =
-        Teuchos::rcp(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
+        Teuchos::RCP(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
 
     // Vector with vector of segments for Evaluate.
     std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>> segments_vector;

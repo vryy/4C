@@ -59,18 +59,18 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::init(
   artery_coupling_active_ = algoparams.get<bool>("ARTERY_COUPLING");
 
   // initialize increment vectors
-  scaincnp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(
+  scaincnp_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(
       *(scatra_algo()->scatra_field()->discretization()->dof_row_map())));
   structincnp_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*(poro_field()->struct_dof_row_map())));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*(poro_field()->struct_dof_row_map())));
   fluidincnp_ =
-      (Teuchos::rcp(new Core::LinAlg::Vector<double>(*(poro_field()->fluid_dof_row_map()))));
+      (Teuchos::RCP(new Core::LinAlg::Vector<double>(*(poro_field()->fluid_dof_row_map()))));
   if (artery_coupling_active_)
   {
-    arterypressincnp_ = Teuchos::rcp(
+    arterypressincnp_ = Teuchos::RCP(
         new Core::LinAlg::Vector<double>(*(poro_field()->fluid_field()->artery_dof_row_map())));
     artscaincnp_ =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*(scatramsht_->art_scatra_dof_row_map())));
+        Teuchos::RCP(new Core::LinAlg::Vector<double>(*(scatramsht_->art_scatra_dof_row_map())));
   }
 }
 

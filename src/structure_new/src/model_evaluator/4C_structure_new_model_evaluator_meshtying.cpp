@@ -126,15 +126,15 @@ void Solid::ModelEvaluator::Meshtying::setup()
       if (Xslavemod != Teuchos::null)
       {
         mesh_relocation_ =
-            Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map()));
+            Teuchos::RCP(new Core::LinAlg::Vector<double>(*global_state().dof_row_map()));
         const auto gdiscret = global_state().get_discret();
         if (strategy_ptr_->par_redist())
         {
           Teuchos::RCP<Core::LinAlg::Vector<double>> original_vec =
-              Teuchos::rcp(new Core::LinAlg::Vector<double>(
+              Teuchos::RCP(new Core::LinAlg::Vector<double>(
                   *(strategy_ptr_->non_redist_slave_row_dofs()), true));
 
-          auto exporter = Teuchos::rcp(
+          auto exporter = Teuchos::RCP(
               new Epetra_Export(Xslavemod->Map(), *strategy_ptr_->non_redist_slave_row_dofs()));
 
           int err = original_vec->Export(*Xslavemod, *exporter, Insert);
@@ -490,7 +490,7 @@ void Solid::ModelEvaluator::Meshtying::write_restart(
   else
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret().dof_row_map(), true));
+        Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret().dof_row_map(), true));
     iowriter.write_vector("mesh_relocation", tmp);
   }
 }
@@ -499,7 +499,7 @@ void Solid::ModelEvaluator::Meshtying::write_restart(
  *----------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Meshtying::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
-  mesh_relocation_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*discret().dof_row_map(), true));
+  mesh_relocation_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret().dof_row_map(), true));
   ioreader.read_vector(mesh_relocation_, "mesh_relocation");
 
   strategy_ptr_->set_state(Mortar::state_new_displacement, *mesh_relocation_);

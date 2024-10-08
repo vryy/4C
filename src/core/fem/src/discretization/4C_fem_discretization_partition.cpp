@@ -183,7 +183,7 @@ void Core::FE::Discretization::proc_zero_distribute_elements_to_all(
       Core::Elements::Element* ele = dynamic_cast<Core::Elements::Element*>(object);
       if (!ele) FOUR_C_THROW("Received object is not an element");
       ele->set_owner(myrank);
-      Teuchos::RCP<Core::Elements::Element> rcpele = Teuchos::rcp(ele);
+      Teuchos::RCP<Core::Elements::Element> rcpele = Teuchos::RCP(ele);
       add_element(rcpele);
       // printf("proc %d index %d\n",myrank,index); fflush(stdout);
     }
@@ -289,7 +289,7 @@ void Core::FE::Discretization::proc_zero_distribute_nodes_to_all(Epetra_Map& tar
       Core::Nodes::Node* node = dynamic_cast<Core::Nodes::Node*>(object);
       if (!node) FOUR_C_THROW("Received object is not a node");
       node->set_owner(myrank);
-      Teuchos::RCP<Core::Nodes::Node> rcpnode = Teuchos::rcp(node);
+      Teuchos::RCP<Core::Nodes::Node> rcpnode = Teuchos::RCP(node);
       add_node(rcpnode);
     }
   }
@@ -386,7 +386,7 @@ Teuchos::RCP<Epetra_CrsGraph> Core::FE::Discretization::build_node_graph() const
 
   // allocate graph
   Teuchos::RCP<Epetra_CrsGraph> graph =
-      Teuchos::rcp(new Epetra_CrsGraph(Copy, *noderowmap, 108, false));
+      Teuchos::RCP(new Epetra_CrsGraph(Copy, *noderowmap, 108, false));
 
   // iterate all elements on this proc including ghosted ones
   // Note:
@@ -428,7 +428,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::Discretization::build_node_coordinate
     noderowmap = Teuchos::rcpFromRef<const Epetra_Map>(*node_row_map());
 
   Teuchos::RCP<Epetra_MultiVector> coordinates =
-      Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
+      Teuchos::RCP(new Epetra_MultiVector(*noderowmap, 3, true));
 
   for (int lid = 0; lid < noderowmap->NumMyElements(); ++lid)
   {
@@ -598,7 +598,7 @@ Core::FE::Discretization::build_element_row_column(
   // discretization, otherwise we lost some
   // build the rowmap of elements
   Teuchos::RCP<Epetra_Map> elerowmap =
-      Teuchos::rcp(new Epetra_Map(-1, nummyele, myele.data(), 0, get_comm()));
+      Teuchos::RCP(new Epetra_Map(-1, nummyele, myele.data(), 0, get_comm()));
   if (!elerowmap->UniqueGIDs()) FOUR_C_THROW("Element row map is not unique");
 
   // build elecolmap
@@ -606,7 +606,7 @@ Core::FE::Discretization::build_element_row_column(
   for (int i = 0; i < nummyele; ++i) elecol[i] = myele[i];
   for (int i = 0; i < nummyghostele; ++i) elecol[nummyele + i] = myghostele[i];
   Teuchos::RCP<Epetra_Map> elecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, nummyghostele + nummyele, elecol.data(), 0, get_comm()));
+      Teuchos::RCP(new Epetra_Map(-1, nummyghostele + nummyele, elecol.data(), 0, get_comm()));
 
   return {elerowmap, elecolmap};
 }
@@ -774,7 +774,7 @@ void Core::FE::Discretization::extended_ghosting(const Epetra_Map& elecolmap,
 
   // copy data from std::set<int> to std::vector<int>
   Teuchos::RCP<std::map<int, std::vector<int>>> pbcmapvec =
-      Teuchos::rcp(new std::map<int, std::vector<int>>);
+      Teuchos::RCP(new std::map<int, std::vector<int>>);
   for (std::map<int, std::set<int>>::const_iterator it = pbcmapnew.begin(); it != pbcmapnew.end();
        ++it)
     std::copy(it->second.begin(), it->second.end(), std::back_inserter((*pbcmapvec)[it->first]));
@@ -784,7 +784,7 @@ void Core::FE::Discretization::extended_ghosting(const Epetra_Map& elecolmap,
 
   std::vector<int> colnodes(nodes.begin(), nodes.end());
   Teuchos::RCP<Epetra_Map> nodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, (int)colnodes.size(), colnodes.data(), 0, get_comm()));
+      Teuchos::RCP(new Epetra_Map(-1, (int)colnodes.size(), colnodes.data(), 0, get_comm()));
 
   // now ghost the nodes
   export_column_nodes(*nodecolmap);
@@ -840,7 +840,7 @@ void Core::FE::Discretization::setup_ghosting(
   // as well. The communication issue is solved.
 
   Teuchos::RCP<Epetra_FECrsGraph> graph =
-      Teuchos::rcp(new Epetra_FECrsGraph(Copy, rownodes, entriesperrow.data(), false));
+      Teuchos::RCP(new Epetra_FECrsGraph(Copy, rownodes, entriesperrow.data(), false));
 
   gids.clear();
   entriesperrow.clear();
@@ -871,9 +871,9 @@ void Core::FE::Discretization::setup_ghosting(
   // do stupid conversion from Epetra_BlockMap to Epetra_Map
   const Epetra_BlockMap& brow = graph->RowMap();
   const Epetra_BlockMap& bcol = graph->ColMap();
-  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(
+  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::RCP(new Epetra_Map(
       brow.NumGlobalElements(), brow.NumMyElements(), brow.MyGlobalElements(), 0, *comm_));
-  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(
+  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::RCP(new Epetra_Map(
       bcol.NumGlobalElements(), bcol.NumMyElements(), bcol.MyGlobalElements(), 0, *comm_));
 
   graph = Teuchos::null;

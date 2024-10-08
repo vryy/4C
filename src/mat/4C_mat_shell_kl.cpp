@@ -42,7 +42,7 @@ Mat::PAR::KirchhoffLoveShell::KirchhoffLoveShell(const Core::Mat::PAR::Parameter
  */
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::KirchhoffLoveShell::create_material()
 {
-  return Teuchos::rcp(new Mat::KirchhoffLoveShell(this));
+  return Teuchos::RCP(new Mat::KirchhoffLoveShell(this));
 }
 
 /**

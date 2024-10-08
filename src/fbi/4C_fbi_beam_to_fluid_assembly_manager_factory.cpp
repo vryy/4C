@@ -36,12 +36,12 @@ BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
   switch (meshtying_discretization)
   {
     case Inpar::FBI::BeamToFluidDiscretization::mortar:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect(
               interaction_pairs, discretization1, discretization2, params_ptr));
       break;
     case Inpar::FBI::BeamToFluidDiscretization::gauss_point_to_segment:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect(
               interaction_pairs, assemblystrategy));
       break;

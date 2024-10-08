@@ -29,17 +29,17 @@ PoroElast::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
     Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
     : MonolithicSplit(comm, timeparams, porosity_splitter)
 {
-  fggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
-  fgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
-  figtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-  cfggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
-  csggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-  cfgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
-  csigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  fggtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixRowColTransform);
+  fgitransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixRowTransform);
+  figtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
+  cfggtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixRowTransform);
+  csggtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
+  cfgitransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixRowTransform);
+  csigtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
 
   // Recovering of Lagrange multiplier happens on structure field
   lambda_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluid_field()->interface()->fsi_cond_map()));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*fluid_field()->interface()->fsi_cond_map()));
 }
 
 void PoroElast::MonolithicFluidSplit::setup_system()
@@ -79,7 +79,7 @@ void PoroElast::MonolithicFluidSplit::setup_rhs(bool firstcall)
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::MonolithicFluidSplit::setup_rhs");
 
   // create full monolithic rhs vector
-  rhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
+  rhs_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
 
   setup_vector(
       *rhs_, structure_field()->rhs(), fluid_field()->rhs(), fluid_field()->residual_scaling());
@@ -108,7 +108,7 @@ void PoroElast::MonolithicFluidSplit::setup_rhs(bool firstcall)
     double scale = fluid_field()->residual_scaling();
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> rhs =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(fig.row_map()));
+        Teuchos::RCP(new Core::LinAlg::Vector<double>(fig.row_map()));
 
     fig.Apply(*fveln, *rhs);
     rhs->Scale(timescale * dt());
@@ -119,7 +119,7 @@ void PoroElast::MonolithicFluidSplit::setup_rhs(bool firstcall)
 
     extractor()->add_vector(*rhs, 1, *rhs_);  // add fluid contributions to 'f'
 
-    rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(fgg.row_map()));
+    rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(fgg.row_map()));
 
     fgg.Apply(*fveln, *rhs);
     rhs->Scale(scale * timescale * dt());
@@ -131,7 +131,7 @@ void PoroElast::MonolithicFluidSplit::setup_rhs(bool firstcall)
 
     extractor()->add_vector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
 
-    rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(kig.row_map()));
+    rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(kig.row_map()));
 
     kig.Apply(*fveln, *rhs);
     rhs->Scale(timescale * dt());
@@ -140,7 +140,7 @@ void PoroElast::MonolithicFluidSplit::setup_rhs(bool firstcall)
 
     extractor()->add_vector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
 
-    rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(kgg.row_map()));
+    rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(kgg.row_map()));
 
     kgg.Apply(*fveln, *rhs);
     rhs->Scale(timescale * dt());
@@ -250,10 +250,10 @@ void PoroElast::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
   // done. make sure all blocks are filled.
   mat.complete();
 
-  fgicur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(f->matrix(1, 0)));
-  fggcur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(f->matrix(1, 1)));
-  cgicur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(k_fs->matrix(1, 0)));
-  cggcur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(k_fs->matrix(1, 1)));
+  fgicur_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(f->matrix(1, 0)));
+  fggcur_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(f->matrix(1, 1)));
+  cgicur_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(k_fs->matrix(1, 0)));
+  cggcur_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(k_fs->matrix(1, 1)));
 }
 
 void PoroElast::MonolithicFluidSplit::setup_vector(Core::LinAlg::Vector<double>& f,
@@ -304,7 +304,7 @@ void PoroElast::MonolithicFluidSplit::extract_field_vectors(
         fluid_field()->interface()->insert_other_vector(*fox);
     fluid_field()->interface()->insert_fsi_cond_vector(*fcx, *f);
 
-    auto zeros = Teuchos::rcp(new const Core::LinAlg::Vector<double>(f->Map(), true));
+    auto zeros = Teuchos::RCP(new const Core::LinAlg::Vector<double>(f->Map(), true));
     Core::LinAlg::apply_dirichlet_to_system(
         *f, *zeros, *(fluid_field()->get_dbc_map_extractor()->cond_map()));
 
@@ -316,21 +316,21 @@ void PoroElast::MonolithicFluidSplit::extract_field_vectors(
     if (solipre_ != Teuchos::null)
       ddiinc_->Update(1.0, *sox, -1.0, *solipre_, 0.0);  // compute current iteration increment
     else
-      ddiinc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*sox));  // first iteration increment
+      ddiinc_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*sox));  // first iteration increment
 
     solipre_ = sox;  // store current step increment
 
     if (solgvelpre_ != Teuchos::null)
       duginc_->Update(1.0, *fcx, -1.0, *solgvelpre_, 0.0);  // compute current iteration increment
     else
-      duginc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fcx));  // first iteration increment
+      duginc_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*fcx));  // first iteration increment
 
     solgvelpre_ = fcx;  // store current step increment
 
     if (solivelpre_ != Teuchos::null)
       duiinc_->Update(1.0, *fox, -1.0, *solivelpre_, 0.0);  // compute current iteration increment
     else
-      duiinc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fox));  // first iteration increment
+      duiinc_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*fox));  // first iteration increment
 
     solivelpre_ = fox;  // store current step increment
   }

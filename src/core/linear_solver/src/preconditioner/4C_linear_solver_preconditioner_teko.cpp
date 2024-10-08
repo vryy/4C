@@ -45,17 +45,17 @@ void Core::LinearSolver::TekoPreconditioner::setup(
     std::string xmlFileName =
         tekolist_.sublist("Teko Parameters").get<std::string>("TEKO_XML_FILE");
 
-    Teuchos::RCP<Teuchos::ParameterList> tekoParams = Teuchos::rcp(new Teuchos::ParameterList());
+    Teuchos::RCP<Teuchos::ParameterList> tekoParams = Teuchos::RCP(new Teuchos::ParameterList());
     auto comm = Core::Communication::to_teuchos_comm<int>(matrix->Comm());
     Teuchos::updateParametersFromXmlFileAndBroadcast(xmlFileName, tekoParams.ptr(), *comm);
 
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
-        Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(Teuchos::rcp(matrix, false));
+        Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(Teuchos::RCP(matrix, false));
 
     // wrap linear operators
     if (A.is_null())
     {
-      auto A_crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcp(matrix, false));
+      auto A_crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::RCP(matrix, false));
       pmatrix_ = Thyra::epetraLinearOp(A_crs);
     }
     else
@@ -67,7 +67,7 @@ void Core::LinearSolver::TekoPreconditioner::setup(
       {
         for (int col = 0; col < A->cols(); col++)
         {
-          auto A_crs = Teuchos::rcp(new Epetra_CrsMatrix(*A->matrix(row, col).epetra_matrix()));
+          auto A_crs = Teuchos::RCP(new Epetra_CrsMatrix(*A->matrix(row, col).epetra_matrix()));
           Teko::toBlockedLinearOp(pmatrix_)->setBlock(row, col, Thyra::epetraLinearOp(A_crs));
         }
       }
@@ -91,10 +91,10 @@ void Core::LinearSolver::TekoPreconditioner::setup(
           {
             const int number_of_equations = inverseList.get<int>("PDE equations");
 
-            Teuchos::RCP<XpetraMultiVector> nullspace = Teuchos::rcp(new EpetraMultiVector(
+            Teuchos::RCP<XpetraMultiVector> nullspace = Teuchos::RCP(new EpetraMultiVector(
                 inverseList.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace")));
 
-            Teuchos::RCP<XpetraMultiVector> coordinates = Teuchos::rcp(new EpetraMultiVector(
+            Teuchos::RCP<XpetraMultiVector> coordinates = Teuchos::RCP(new EpetraMultiVector(
                 inverseList.get<Teuchos::RCP<Epetra_MultiVector>>("Coordinates")));
 
             tekoParams->sublist("Inverse Factory Library")
@@ -112,13 +112,13 @@ void Core::LinearSolver::TekoPreconditioner::setup(
 
     // setup preconditioner builder and enable relevant packages
     Teuchos::RCP<Stratimikos::LinearSolverBuilder<double>> builder =
-        Teuchos::rcp(new Stratimikos::DefaultLinearSolverBuilder);
+        Teuchos::RCP(new Stratimikos::DefaultLinearSolverBuilder);
 
     Stratimikos::enableMueLu<Scalar, LocalOrdinal, GlobalOrdinal, Node>(*builder);
     Teko::addTekoToStratimikosBuilder(*builder);
 
     Teuchos::RCP<Teuchos::ParameterList> stratimikos_params =
-        Teuchos::rcp(new Teuchos::ParameterList(*builder->getValidParameters()));
+        Teuchos::RCP(new Teuchos::ParameterList(*builder->getValidParameters()));
     Teuchos::ParameterList& tekoList =
         stratimikos_params->sublist("Preconditioner Types").sublist("Teko");
     tekoList.setParameters(*tekoParams);
@@ -130,7 +130,7 @@ void Core::LinearSolver::TekoPreconditioner::setup(
         Thyra::prec<double>(*precFactory, pmatrix_);
     Teko::LinearOp inverseOp = prec->getUnspecifiedPrecOp();
 
-    p_ = Teuchos::rcp(new Teko::Epetra::EpetraInverseOpWrapper(inverseOp));
+    p_ = Teuchos::RCP(new Teko::Epetra::EpetraInverseOpWrapper(inverseOp));
   }
 }
 

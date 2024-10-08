@@ -138,7 +138,7 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   // integration (call the constructor);
   // the only parameter from the list required here is the number of
   // velocity degrees of freedom
-  Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> airwayimplicit = Teuchos::rcp(
+  Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> airwayimplicit = Teuchos::RCP(
       new Airway::RedAirwayImplicitTimeInt(actdis, std::move(solver), airwaystimeparams, *output));
 
   // Initialize state save vectors
@@ -163,7 +163,7 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
 
     // Create resulttest
     Teuchos::RCP<Core::UTILS::ResultTest> resulttest =
-        Teuchos::rcp(new Airway::RedAirwayResultTest(*airwayimplicit));
+        Teuchos::RCP(new Airway::RedAirwayResultTest(*airwayimplicit));
 
     // Resulttest for 0D problem and testing
     Global::Problem::instance()->add_field_test(resulttest);
@@ -188,7 +188,7 @@ void redairway_tissue_dyn()
       Global::Problem::instance()->red_airway_tissue_dynamic_params();
   Teuchos::RCP<Core::FE::Discretization> actdis = Global::Problem::instance()->get_dis("structure");
   Teuchos::RCP<Airway::RedAirwayTissue> redairway_tissue =
-      Teuchos::rcp(new Airway::RedAirwayTissue(actdis->get_comm(), rawdyn));
+      Teuchos::RCP(new Airway::RedAirwayTissue(actdis->get_comm(), rawdyn));
 
   // Read the restart information, set vectors and variables
   const int restart = Global::Problem::instance()->restart();

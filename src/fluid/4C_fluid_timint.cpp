@@ -54,7 +54,7 @@ FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
 {
   // check for special fluid output which is to be handled by an own writer object
   Teuchos::RCP<const Teuchos::ParameterList> fluid_runtime_output_list =
-      Teuchos::rcp(new Teuchos::ParameterList(
+      Teuchos::RCP(new Teuchos::ParameterList(
           Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT").sublist("FLUID")));
 
   bool output_fluid = fluid_runtime_output_list->get<bool>("OUTPUT_FLUID");
@@ -69,7 +69,7 @@ FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
     // However, this is called before the restart is read and someone with knowledge on the module
     // has to refactor the code. The only implication is that in restarted simulations the .pvd file
     // does not contain the steps of the simulation that is restarted from
-    runtime_output_writer_ = Teuchos::rcp(new Core::IO::DiscretizationVisualizationWriterMesh(
+    runtime_output_writer_ = Teuchos::RCP(new Core::IO::DiscretizationVisualizationWriterMesh(
         discret_, Core::IO::visualization_parameters_factory(
                       Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
                       *Global::Problem::instance()->output_control_file(), time_)));
@@ -78,7 +78,7 @@ FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
 
 Teuchos::RCP<const Epetra_Map> FLD::TimInt::dof_row_map(unsigned nds)
 {
-  return Teuchos::rcp(discretization()->dof_row_map(nds), false);
+  return Teuchos::RCP(discretization()->dof_row_map(nds), false);
 }
 
 

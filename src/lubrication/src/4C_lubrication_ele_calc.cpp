@@ -48,8 +48,8 @@ Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::LubricationEleCalc(
       eheidotnp_(true),
       edispnp_(true),
       viscmanager_(
-          Teuchos::rcp(new LubricationEleViscManager())),  // viscosity manager for viscosity
-      lubricationvarmanager_(Teuchos::rcp(
+          Teuchos::RCP(new LubricationEleViscManager())),  // viscosity manager for viscosity
+      lubricationvarmanager_(Teuchos::RCP(
           new LubricationEleInternalVariableManager<nsd_, nen_>())),  // internal variable manager
       eid_(0),
       ele_(nullptr),

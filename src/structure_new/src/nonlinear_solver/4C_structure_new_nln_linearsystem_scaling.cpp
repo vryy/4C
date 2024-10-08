@@ -37,7 +37,7 @@ Solid::Nln::LinSystem::StcScaling::StcScaling(
 {
   // prepare matrix for scaled thickness business of thin shell structures
   stcmat_ =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*GState.dof_row_map_view(), 81, true, true));
+      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*GState.dof_row_map_view(), 81, true, true));
   stcmat_->zero();
 
   // create the parameters for the discretization
@@ -67,7 +67,7 @@ Solid::Nln::LinSystem::StcScaling::StcScaling(
     pe.set("stc_layer", lay);
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpstcmat =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*GState.dof_row_map_view(), 81, true, true));
+        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*GState.dof_row_map_view(), 81, true, true));
     tmpstcmat->zero();
 
     discret->evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -85,9 +85,9 @@ void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& 
 {
   // get stiffness matrix
   Epetra_CrsMatrix* stiffmat = dynamic_cast<Epetra_CrsMatrix*>(problem.GetMatrix());
-  Teuchos::RCP<Epetra_CrsMatrix> stiff_epetra = Teuchos::rcp(stiffmat, false);
+  Teuchos::RCP<Epetra_CrsMatrix> stiff_epetra = Teuchos::RCP(stiffmat, false);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_linalg =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(stiff_epetra, Core::LinAlg::View));
+      Teuchos::RCP(new Core::LinAlg::SparseMatrix(stiff_epetra, Core::LinAlg::View));
 
   // get rhs
   Core::LinAlg::VectorView rhs_view(*dynamic_cast<Epetra_Vector*>(problem.GetRHS()));

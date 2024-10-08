@@ -34,7 +34,7 @@ Mat::PAR::Ion::Ion(const Core::Mat::PAR::Parameter::Data& matdata)
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Ion::create_material()
 {
-  return Teuchos::rcp(new Mat::Ion(this));
+  return Teuchos::RCP(new Mat::Ion(this));
 }
 
 Mat::IonType Mat::IonType::instance_;

@@ -34,7 +34,7 @@ CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams::CubicConstitutiveLawParams
 Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
 CONTACT::CONSTITUTIVELAW::CubicConstitutiveLawParams::create_constitutive_law()
 {
-  return Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw(this));
+  return Teuchos::RCP(new CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw(this));
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

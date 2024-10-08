@@ -116,7 +116,7 @@ void Inpar::Immersed::set_valid_conditions(
   // IMMERSED FSI
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> immersedsearchbox =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN VOLUME IMMERSED SEARCHBOX",
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition("DESIGN VOLUME IMMERSED SEARCHBOX",
           "ImmersedSearchbox", "Immersed Searchbox", Core::Conditions::ImmersedSearchbox, true,
           Core::Conditions::geometry_type_volume));
 
@@ -126,16 +126,16 @@ void Inpar::Immersed::set_valid_conditions(
   // IMMERSED COUPLING
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> lineimmersed =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition(
           "DESIGN IMMERSED COUPLING LINE CONDITIONS", "IMMERSEDCoupling", "IMMERSED Coupling",
           Core::Conditions::IMMERSEDCoupling, true, Core::Conditions::geometry_type_line));
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfimmersed =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition(
           "DESIGN IMMERSED COUPLING SURF CONDITIONS", "IMMERSEDCoupling", "IMMERSED Coupling",
           Core::Conditions::IMMERSEDCoupling, true, Core::Conditions::geometry_type_surface));
 
-  lineimmersed->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
-  surfimmersed->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
+  lineimmersed->add_component(Teuchos::RCP(new Input::IntComponent("coupling id")));
+  surfimmersed->add_component(Teuchos::RCP(new Input::IntComponent("coupling id")));
 
   condlist.push_back(lineimmersed);
   condlist.push_back(surfimmersed);

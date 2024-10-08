@@ -77,40 +77,40 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::init()
   fill_function_and_scale_vectors();
 
   // initialize phinp for continuous dis
-  phinp_cont_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*contdis_->dof_row_map(), true));
+  phinp_cont_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*contdis_->dof_row_map(), true));
   // initialize phin for continuous dis
-  phin_cont_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*contdis_->dof_row_map(), true));
+  phin_cont_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*contdis_->dof_row_map(), true));
   // initialize phinp for artery dis
-  phinp_art_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*arterydis_->dof_row_map(), true));
+  phinp_art_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*arterydis_->dof_row_map(), true));
 
   // initialize phinp for continuous dis
-  zeros_cont_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*contdis_->dof_row_map(), true));
+  zeros_cont_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*contdis_->dof_row_map(), true));
   // initialize phinp for artery dis
-  zeros_art_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*arterydis_->dof_row_map(), true));
+  zeros_art_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*arterydis_->dof_row_map(), true));
 
   // -------------------------------------------------------------------
   // create empty D and M matrices (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
-  d_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  d_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *(arterydis_->dof_row_map()), 27, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  m_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  m_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *(arterydis_->dof_row_map()), 27, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  kappa_inv_ = Teuchos::rcp(new Epetra_FEVector(*arterydis_->dof_row_map(), true));
+  kappa_inv_ = Teuchos::RCP(new Epetra_FEVector(*arterydis_->dof_row_map(), true));
 
   // full map of continous and artery dofs
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;
-  maps.push_back(Teuchos::rcp(new Epetra_Map(*contdis_->dof_row_map())));
-  maps.push_back(Teuchos::rcp(new Epetra_Map(*arterydis_->dof_row_map())));
+  maps.push_back(Teuchos::RCP(new Epetra_Map(*contdis_->dof_row_map())));
+  maps.push_back(Teuchos::RCP(new Epetra_Map(*arterydis_->dof_row_map())));
 
   fullmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
   /// dof row map of coupled problem splitted in (field) blocks
-  globalex_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
+  globalex_ = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor());
   globalex_->setup(*fullmap_, maps);
 
-  FEmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  FEmat_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *fullmap_, 81, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
-  fe_rhs_ = Teuchos::rcp(new Epetra_FEVector(*fullmap_));
+  fe_rhs_ = Teuchos::RCP(new Epetra_FEVector(*fullmap_));
 
   // check global map extractor
   globalex_->check_for_valid_map_extractor();
@@ -595,7 +595,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
 
   // get kappa matrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kappaInvMat =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*new Core::LinAlg::Vector<double>(*kappa_inv_)));
+      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*new Core::LinAlg::Vector<double>(*kappa_inv_)));
   kappaInvMat->complete();
 
   // kappa^{-1}*M
@@ -623,9 +623,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
 
   // add vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> art_contribution =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*arterydis_->dof_row_map()));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*arterydis_->dof_row_map()));
   Teuchos::RCP<Core::LinAlg::Vector<double>> cont_contribution =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*contdis_->dof_row_map()));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*contdis_->dof_row_map()));
 
   // Note: all terms are negative since rhs
   // pp*D^T*kappa^{-1}*D*phi_np^art
@@ -684,13 +684,13 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::create_new_arte
           switch (Global::Problem::instance()->n_dim())
           {
             case 1:
-              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+              return Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::quad4, 1>());
             case 2:
-              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+              return Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::quad4, 2>());
             case 3:
-              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+              return Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::quad4, 3>());
             default:
               FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
@@ -701,13 +701,13 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::create_new_arte
           switch (Global::Problem::instance()->n_dim())
           {
             case 1:
-              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+              return Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::hex8, 1>());
             case 2:
-              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+              return Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::hex8, 2>());
             case 3:
-              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+              return Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::hex8, 3>());
             default:
               FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
@@ -718,13 +718,13 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::create_new_arte
           switch (Global::Problem::instance()->n_dim())
           {
             case 1:
-              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+              return Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::tet4, 1>());
             case 2:
-              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+              return Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::tet4, 2>());
             case 3:
-              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+              return Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::tet4, 3>());
             default:
               FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());
@@ -735,13 +735,13 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::create_new_arte
           switch (Global::Problem::instance()->n_dim())
           {
             case 1:
-              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+              return Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::tet10, 1>());
             case 2:
-              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+              return Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::tet10, 2>());
             case 3:
-              return Teuchos::rcp(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
+              return Teuchos::RCP(new PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<
                   Core::FE::CellType::line2, Core::FE::CellType::tet10, 3>());
             default:
               FOUR_C_THROW("Unsupported dimension %d.", Global::Problem::instance()->n_dim());

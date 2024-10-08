@@ -45,11 +45,11 @@ FLD::XFluidState::CouplingState::CouplingState(
   // no explicit Dirichlet, otherwise new matrices will be created in ApplyDirichlet
   // NOTE: setting explicit Dirichlet to false can cause problems with ML preconditioner (see remark
   // in Core::LinAlg::Sparsematrix) however, we prefer not to build new matrices in ApplyDirichlet
-  C_xs_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  C_xs_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *xfluiddofrowmap, 300, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  C_sx_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  C_sx_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *slavediscret_mat->dof_row_map(), 300, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  C_ss_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  C_ss_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *slavediscret_mat->dof_row_map(), 300, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
   rhC_s_ = Core::LinAlg::create_vector(*slavediscret_rhs->dof_row_map(), true);
@@ -169,7 +169,7 @@ void FLD::XFluidState::init_system_matrix()
   // elements around a node
   //   + edge-based couplings component-wise v_x->u_x, v_y->u_y, v_z->u_z, q->p
   //   number of non-zeros (for hex8 elements): 108+54 = 162
-  sysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  sysmat_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *xfluiddofrowmap_, 162, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
 }
 
@@ -241,7 +241,7 @@ void FLD::XFluidState::init_coupling_matrices_and_rhs()
             coupling->get_name()))  // coupling or one-sided non-coupling object
     {
       // create coupling state object with coupling matrices initialized with Teuchos::null
-      coup_state = Teuchos::rcp(new XFluidState::CouplingState());
+      coup_state = Teuchos::RCP(new XFluidState::CouplingState());
     }
     else
     {
@@ -257,7 +257,7 @@ void FLD::XFluidState::init_coupling_matrices_and_rhs()
         Teuchos::RCP<Core::LinAlg::Vector<double>> residual_col_weakRCP =
             residual_col_.create_weak();
 
-        coup_state = Teuchos::rcp(new XFluidState::CouplingState(sysmat_weakRCP, sysmat_weakRCP,
+        coup_state = Teuchos::RCP(new XFluidState::CouplingState(sysmat_weakRCP, sysmat_weakRCP,
             sysmat_weakRCP, residual_weakRCP, residual_col_weakRCP));
       }
       else if (condition_manager_->is_mesh_condition(coup_idx))
@@ -265,7 +265,7 @@ void FLD::XFluidState::init_coupling_matrices_and_rhs()
         // for matrix use the full condition dis to enable assign in blockmatrix (row map of matrix
         // is not changed by complete!) for rhs we need the additional ghosting of the boundary zone
         // on slave side, therefore the specifically modified coupling dis
-        coup_state = Teuchos::rcp(new XFluidState::CouplingState(
+        coup_state = Teuchos::RCP(new XFluidState::CouplingState(
             xfluiddofrowmap_, coupling->get_cond_dis(), coupling->get_coupling_dis()));
       }
       else
@@ -369,7 +369,7 @@ void FLD::XFluidState::setup_map_extractors(
   eleparams.set<const Core::UTILS::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
+  dbcmaps_ = Teuchos::RCP(new Core::LinAlg::MapExtractor());
   xfluiddiscret->evaluate_dirichlet(
       eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
 
@@ -377,7 +377,7 @@ void FLD::XFluidState::setup_map_extractors(
 
   // create vel-pres splitter
   const int numdim = Global::Problem::instance()->n_dim();
-  velpressplitter_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
+  velpressplitter_ = Teuchos::RCP(new Core::LinAlg::MapExtractor());
   Core::LinAlg::create_map_extractor_from_discretization(
       *xfluiddiscret, numdim, 1, *velpressplitter_);
 }

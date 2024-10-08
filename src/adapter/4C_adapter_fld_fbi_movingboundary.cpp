@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::FBIFluidMB::FBIFluidMB(const Teuchos::ParameterList& prbdyn, std::string condname)
 {
   fluidadapter_ =
-      Teuchos::rcp(new FluidBaseAlgorithm(
+      Teuchos::RCP(new FluidBaseAlgorithm(
                        prbdyn, Global::Problem::instance()->fluid_dynamic_params(), "fluid", false))
           ->fluid_field();
   // make sure

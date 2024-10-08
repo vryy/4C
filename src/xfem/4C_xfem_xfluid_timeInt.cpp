@@ -80,7 +80,7 @@ XFEM::XFluidTimeInt::XFluidTimeInt(
   myrank_ = dis->get_comm().MyPID();
   numproc_ = dis->get_comm().NumProc();
 
-  permutation_map_ = Teuchos::rcp(new std::map<int, int>);
+  permutation_map_ = Teuchos::RCP(new std::map<int, int>);
 
   return;
 }  // end constructor

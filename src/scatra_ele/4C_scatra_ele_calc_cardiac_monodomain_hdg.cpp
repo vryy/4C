@@ -108,7 +108,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
     actmat->reset_diffusion_tensor();
 
     Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes =
-        Teuchos::rcp(new Core::FE::ShapeValues<distype>(1, false, 2 * hdgele->degree()));
+        Teuchos::RCP(new Core::FE::ShapeValues<distype>(1, false, 2 * hdgele->degree()));
 
     shapes->evaluate(*ele);
 
@@ -524,7 +524,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
         for (int q = 0; q < nqpoints; ++q)
         {
           auto material_internal_state_component =
-              Teuchos::rcp((*material_internal_state)(k * nqpoints + q), false);
+              Teuchos::RCP((*material_internal_state)(k * nqpoints + q), false);
           material->set_internal_state(k, (*material_internal_state_component)[ele->id()], q);
         }
       }
@@ -576,10 +576,10 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
   else
     degold = 3 * hdgele->degree_old();
 
-  Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes = Teuchos::rcp(
+  Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes = Teuchos::RCP(
       new Core::FE::ShapeValues<distype>(hdgele->degree_old(), this->usescompletepoly_, deg));
 
-  Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes_old = Teuchos::rcp(
+  Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes_old = Teuchos::RCP(
       new Core::FE::ShapeValues<distype>(hdgele->degree_old(), this->usescompletepoly_, degold));
 
   shapes->evaluate(*ele);

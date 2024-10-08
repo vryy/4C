@@ -138,7 +138,7 @@ POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
 {
   // initialize multi vector
   Teuchos::RCP<Epetra_MultiVector> multi =
-      Teuchos::rcp(new Epetra_MultiVector(*dis.node_row_map(), numdofpernode, true));
+      Teuchos::RCP(new Epetra_MultiVector(*dis.node_row_map(), numdofpernode, true));
 
   // get maps
   const Epetra_BlockMap& vectormap = vector.Map();
@@ -178,7 +178,7 @@ Teuchos::RCP<Adapter::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::create_al
     case Inpar::POROFLUIDMULTIPHASE::timeint_one_step_theta:
     {
       // create algorithm
-      algo = Teuchos::rcp(new POROFLUIDMULTIPHASE::TimIntOneStepTheta(
+      algo = Teuchos::RCP(new POROFLUIDMULTIPHASE::TimIntOneStepTheta(
           dis, linsolvernumber, probparams, poroparams, output));
       break;
     }
@@ -258,14 +258,14 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::extended_ghosting_arter
   // extended ghosting for elements
   std::vector<int> coleles(elecolset.begin(), elecolset.end());
   Teuchos::RCP<const Epetra_Map> extendedelecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, coleles.size(), coleles.data(), 0, contdis->get_comm()));
+      Teuchos::RCP(new Epetra_Map(-1, coleles.size(), coleles.data(), 0, contdis->get_comm()));
 
   artdis->export_column_elements(*extendedelecolmap);
 
   // extended ghosting for nodes
   std::vector<int> colnodes(nodecolset.begin(), nodecolset.end());
   Teuchos::RCP<const Epetra_Map> extendednodecolmap =
-      Teuchos::rcp(new Epetra_Map(-1, colnodes.size(), colnodes.data(), 0, contdis->get_comm()));
+      Teuchos::RCP(new Epetra_Map(-1, colnodes.size(), colnodes.data(), 0, contdis->get_comm()));
 
   artdis->export_column_nodes(*extendednodecolmap);
 
@@ -294,7 +294,7 @@ POROFLUIDMULTIPHASE::UTILS::create_fully_overlapping_artery_discretization(
   // we clone a search discretization of the artery discretization on which the search will be
   // performed in a brute force way fully overlapping
   Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discloner =
-      Teuchos::rcp(new Core::FE::DiscretizationCreatorBase());
+      Teuchos::RCP(new Core::FE::DiscretizationCreatorBase());
   Teuchos::RCP<Core::FE::Discretization> artsearchdis =
       discloner->create_matching_discretization(artdis, disname, false, false, false, false);
 
@@ -316,7 +316,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::oct_tree_search(
   std::map<int, std::set<int>> nearbyelepairs;
 
   // search tree
-  Teuchos::RCP<Core::Geo::SearchTree> searchTree = Teuchos::rcp(new Core::Geo::SearchTree(5));
+  Teuchos::RCP<Core::Geo::SearchTree> searchTree = Teuchos::RCP(new Core::Geo::SearchTree(5));
 
   // nodal positions of 2D/3D-discretization
   std::map<int, Core::LinAlg::Matrix<3, 1>> my_positions_cont =

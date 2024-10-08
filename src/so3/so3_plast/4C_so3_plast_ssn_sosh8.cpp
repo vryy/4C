@@ -82,7 +82,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8PlastType::create(
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::SoSh8Plast(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::SoSh8Plast(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -96,7 +96,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8PlastType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::SoSh8Plast(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::SoSh8Plast(id, owner));
   return ele;
 }
 
@@ -937,15 +937,15 @@ void Discret::ELEMENTS::SoSh8Plast::re_init_eas(const Discret::ELEMENTS::So3Plas
 
   if (eastype_ != soh8p_easnone)
   {
-    KaaInv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, neas_, true));
-    Kad_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, numdofperelement_, true));
-    feas_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
-    alpha_eas_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
-    alpha_eas_last_timestep_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
+    KaaInv_ = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(neas_, neas_, true));
+    Kad_ = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(neas_, numdofperelement_, true));
+    feas_ = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(neas_, true));
+    alpha_eas_ = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(neas_, true));
+    alpha_eas_last_timestep_ = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(neas_, true));
     alpha_eas_delta_over_last_timestep_ =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
-    alpha_eas_inc_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
-    Kba_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseMatrix>(
+        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(neas_, true));
+    alpha_eas_inc_ = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(neas_, true));
+    Kba_ = Teuchos::RCP(new std::vector<Core::LinAlg::SerialDenseMatrix>(
         numgpt_, Core::LinAlg::SerialDenseMatrix(5, neas_, true)));
   }
 

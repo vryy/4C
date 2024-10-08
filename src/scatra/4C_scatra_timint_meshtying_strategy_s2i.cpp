@@ -460,11 +460,11 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
           if (not slaveonly_)
           {
             Teuchos::RCP<Core::LinAlg::SparseMatrix> ksm(
-                Teuchos::rcp(new Core::LinAlg::SparseMatrix(*icoup_->slave_dof_map(), 81, false)));
+                Teuchos::RCP(new Core::LinAlg::SparseMatrix(*icoup_->slave_dof_map(), 81, false)));
             Teuchos::RCP<Core::LinAlg::SparseMatrix> kms(
-                Teuchos::rcp(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false)));
+                Teuchos::RCP(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false)));
             Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm(
-                Teuchos::rcp(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false)));
+                Teuchos::RCP(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false)));
 
             // transform linearizations of slave fluxes w.r.t. master dofs
             (*islavetomastercoltransform_)(imastermatrix_->row_map(), imastermatrix_->col_map(),
@@ -536,7 +536,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
       {
         // initialize temporary vector for slave-side entries of residual vector
         Teuchos::RCP<Core::LinAlg::Vector<double>> residualslave =
-            Teuchos::rcp(new Core::LinAlg::Vector<double>(*icoup_->slave_dof_map()));
+            Teuchos::RCP(new Core::LinAlg::Vector<double>(*icoup_->slave_dof_map()));
 
         // loop over all slave-side entries of residual vector
         for (int slavedoflid = 0; slavedoflid < icoup_->slave_dof_map()->NumMyElements();
@@ -602,7 +602,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
 
         // export global state vector to mortar interface
         Teuchos::RCP<Core::LinAlg::Vector<double>> iphinp =
-            Teuchos::rcp(new Core::LinAlg::Vector<double>(*idiscret.dof_col_map(), false));
+            Teuchos::RCP(new Core::LinAlg::Vector<double>(*idiscret.dof_col_map(), false));
         Core::LinAlg::export_to(*scatratimint_->phiafnp(), *iphinp);
         idiscret.set_state("iphinp", iphinp);
 
@@ -958,7 +958,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
 
             // derive linearizations of master fluxes w.r.t. slave dofs
             Teuchos::RCP<Core::LinAlg::SparseMatrix> kms(
-                Teuchos::rcp(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false)));
+                Teuchos::RCP(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false)));
             Coupling::Adapter::MatrixRowTransform()(
                 *islavematrix_, -1., Coupling::Adapter::CouplingSlaveConverter(*icoup_), *kms);
             kms->complete(*icoup_->slave_dof_map(), *icoup_->master_dof_map());
@@ -969,7 +969,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
 
             // derive linearizations of master fluxes w.r.t. master dofs
             Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm(
-                Teuchos::rcp(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false)));
+                Teuchos::RCP(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false)));
             Coupling::Adapter::MatrixRowColTransform()(*imastermatrix_, -1.,
                 Coupling::Adapter::CouplingSlaveConverter(*icoup_),
                 Coupling::Adapter::CouplingSlaveConverter(*icoup_), *kmm);
@@ -1043,7 +1043,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 // initialize auxiliary matrix block for linearizations of slave fluxes w.r.t.
                 // scatra-scatra interface layer thicknesses
                 Teuchos::RCP<Core::LinAlg::SparseMatrix> islavematrix =
-                    Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(icoup_)->slave_dof_map(), 81));
+                    Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(icoup_)->slave_dof_map(), 81));
 
                 // initialize assembly strategy for auxiliary matrix block
                 Core::FE::AssembleStrategy strategy(
@@ -1133,9 +1133,9 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 // layer growth residuals w.r.t. slave-side and master-side scalar transport degrees
                 // of freedom
                 Teuchos::RCP<Core::LinAlg::SparseMatrix> islavematrix =
-                    Teuchos::rcp(new Core::LinAlg::SparseMatrix(dofrowmap_growth, 81));
+                    Teuchos::RCP(new Core::LinAlg::SparseMatrix(dofrowmap_growth, 81));
                 Teuchos::RCP<Core::LinAlg::SparseMatrix> imastermatrix =
-                    Teuchos::rcp(new Core::LinAlg::SparseMatrix(dofrowmap_growth, 81));
+                    Teuchos::RCP(new Core::LinAlg::SparseMatrix(dofrowmap_growth, 81));
 
                 // initialize assembly strategy for auxiliary matrix block
                 Core::FE::AssembleStrategy strategy(
@@ -1185,7 +1185,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 // initialize auxiliary matrix block for linearizations of slave fluxes w.r.t.
                 // scatra-scatra interface layer thicknesses
                 const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockslavematrix =
-                    Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<
+                    Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<
                         Core::LinAlg::DefaultBlockMatrixStrategy>(
                         *blockmapgrowth_, *blockmaps_slave_, 81, false, true));
 
@@ -1265,11 +1265,11 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 // layer growth residuals w.r.t. slave-side and master-side scalar transport degrees
                 // of freedom
                 const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> blockslavematrix =
-                    Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<
+                    Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<
                         Core::LinAlg::DefaultBlockMatrixStrategy>(
                         *blockmaps_slave_, *blockmapgrowth_, 81, false, true));
                 const Teuchos::RCP<Core::LinAlg::SparseMatrix> imastermatrix =
-                    Teuchos::rcp(new Core::LinAlg::SparseMatrix(dofrowmap_growth, 81));
+                    Teuchos::RCP(new Core::LinAlg::SparseMatrix(dofrowmap_growth, 81));
 
                 // initialize assembly strategy for auxiliary matrix blocks
                 Core::FE::AssembleStrategy strategy(2, 0, blockslavematrix, imastermatrix,
@@ -1394,7 +1394,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
   imasterslavematrix_->zero();
   islaveresidual_->PutScalar(0.0);
   auto imasterresidual_on_slave_side =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*interfacemaps_->Map(1)));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*interfacemaps_->Map(1)));
   imasterresidual_on_slave_side->PutScalar(0.0);
 
   // evaluate scatra-scatra interface coupling
@@ -1458,7 +1458,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
       blockkss->complete();
 
       // prepare linearizations of slave fluxes due to capacitance w.r.t. master dofs
-      auto ksm = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*icoup_->slave_dof_map(), 81, false));
+      auto ksm = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*icoup_->slave_dof_map(), 81, false));
       Coupling::Adapter::MatrixColTransform()(islavematrix_->row_map(), islavematrix_->col_map(),
           *islavematrix_, -1.0, Coupling::Adapter::CouplingSlaveConverter(*icoup_), *ksm);
       ksm->complete(*icoup_->master_dof_map(), *icoup_->slave_dof_map());
@@ -1467,7 +1467,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
       blockksm->complete();
 
       // prepare linearizations of master fluxes due to capacitance w.r.t. slave dofs
-      auto kms = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false));
+      auto kms = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false));
       Coupling::Adapter::MatrixRowTransform()(
           *imasterslavematrix_, 1.0, Coupling::Adapter::CouplingSlaveConverter(*icoup_), *kms);
       kms->complete(*icoup_->slave_dof_map(), *icoup_->master_dof_map());
@@ -1476,7 +1476,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
       blockkms->complete();
 
       // derive linearizations of master fluxes w.r.t. master dofs
-      auto kmm = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false));
+      auto kmm = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*icoup_->master_dof_map(), 81, false));
       Coupling::Adapter::MatrixRowColTransform()(*imasterslavematrix_, -1.0,
           Coupling::Adapter::CouplingSlaveConverter(*icoup_),
           Coupling::Adapter::CouplingSlaveConverter(*icoup_), *kmm);
@@ -1913,11 +1913,11 @@ void ScaTra::MeshtyingStrategyS2I::init_conv_check_strategy()
   if (couplingtype_ == Inpar::S2I::coupling_mortar_saddlepoint_petrov or
       couplingtype_ == Inpar::S2I::coupling_mortar_saddlepoint_bubnov)
   {
-    convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyS2ILM(
+    convcheckstrategy_ = Teuchos::RCP(new ScaTra::ConvCheckStrategyS2ILM(
         scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
   }
   else
-    convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStd(
+    convcheckstrategy_ = Teuchos::RCP(new ScaTra::ConvCheckStrategyStd(
         scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
 }  // ScaTra::meshtying_strategy_s2_i::init_conv_check_strategy
 
@@ -2040,7 +2040,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
         FOUR_C_THROW("Number of transported scalars not correctly set!");
 
       // construct new (empty coupling adapter)
-      icoup_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+      icoup_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
 
       int num_dof_per_condition = -1;
 
@@ -2136,7 +2136,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
       imaps.emplace_back(icoup_->master_dof_map());
 
       // initialize global map extractor
-      interfacemaps_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(
+      interfacemaps_ = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor(
           *(scatratimint_->discretization()->dof_row_map()), imaps));
       interfacemaps_->check_for_valid_map_extractor();
 
@@ -2152,19 +2152,19 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
           Core::LinAlg::create_vector(*(scatratimint_->discretization()->dof_row_map()), false);
 
       // initialize auxiliary system matrices and associated transformation operators
-      islavematrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(icoup_->slave_dof_map()), 81));
-      imastermatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(icoup_->slave_dof_map()), 81));
+      islavematrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(icoup_->slave_dof_map()), 81));
+      imastermatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(icoup_->slave_dof_map()), 81));
       imasterslavematrix_ =
-          Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(icoup_->slave_dof_map()), 81));
-      islavetomasterrowtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(icoup_->slave_dof_map()), 81));
+      islavetomasterrowtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixRowTransform);
       if (not slaveonly_)
       {
-        islavetomastercoltransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-        islavetomasterrowcoltransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
+        islavetomastercoltransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
+        islavetomasterrowcoltransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixRowColTransform);
       }
 
       // initialize auxiliary residual vector
-      islaveresidual_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*(icoup_->slave_dof_map())));
+      islaveresidual_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*(icoup_->slave_dof_map())));
 
       break;
     }
@@ -2193,17 +2193,17 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
 
       // initialize empty interface maps
       Teuchos::RCP<Epetra_Map> imastermap =
-          Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->discretization()->get_comm()));
+          Teuchos::RCP(new Epetra_Map(0, 0, scatratimint_->discretization()->get_comm()));
       Teuchos::RCP<Epetra_Map> islavemap =
-          Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->discretization()->get_comm()));
+          Teuchos::RCP(new Epetra_Map(0, 0, scatratimint_->discretization()->get_comm()));
       Teuchos::RCP<Epetra_Map> ifullmap =
-          Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->discretization()->get_comm()));
+          Teuchos::RCP(new Epetra_Map(0, 0, scatratimint_->discretization()->get_comm()));
       if (imortarredistribution_)
       {
         imastermap_ =
-            Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->discretization()->get_comm()));
+            Teuchos::RCP(new Epetra_Map(0, 0, scatratimint_->discretization()->get_comm()));
         islavemap_ =
-            Teuchos::rcp(new Epetra_Map(0, 0, scatratimint_->discretization()->get_comm()));
+            Teuchos::RCP(new Epetra_Map(0, 0, scatratimint_->discretization()->get_comm()));
       }
 
       // loop over all slave-side scatra-scatra interface coupling conditions
@@ -2237,7 +2237,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
 
         // initialize mortar coupling adapter
         icoupmortar_[condid] =
-            Teuchos::rcp(new Coupling::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
+            Teuchos::RCP(new Coupling::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
                 Global::Problem::instance()->mortar_coupling_params(),
                 Global::Problem::instance()->contact_dynamic_params(),
                 Global::Problem::instance()->spatial_approximation_type()));
@@ -2359,14 +2359,14 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
           Teuchos::RCP<Core::LinAlg::Vector<int>>& islavenodestomasterelements =
               islavenodestomasterelements_[condid];
           islavenodestomasterelements =
-              Teuchos::rcp(new Core::LinAlg::Vector<int>(noderowmap_slave, false));
+              Teuchos::RCP(new Core::LinAlg::Vector<int>(noderowmap_slave, false));
           islavenodestomasterelements->PutValue(-1);
 
           // initialize vector for physical implementation types of slave-side nodes
           Teuchos::RCP<Core::LinAlg::Vector<int>>& islavenodesimpltypes =
               islavenodesimpltypes_[condid];
           islavenodesimpltypes =
-              Teuchos::rcp(new Core::LinAlg::Vector<int>(noderowmap_slave, false));
+              Teuchos::RCP(new Core::LinAlg::Vector<int>(noderowmap_slave, false));
           islavenodesimpltypes->PutValue(Inpar::ScaTra::impltype_undefined);
 
           // loop over all slave-side nodes
@@ -2505,7 +2505,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
       imaps.emplace_back(imastermap);
 
       // initialize global map extractor
-      interfacemaps_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(
+      interfacemaps_ = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor(
           *(scatratimint_->discretization()->dof_row_map()), imaps));
       interfacemaps_->check_for_valid_map_extractor();
 
@@ -2513,21 +2513,21 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
           lmside_ == Inpar::S2I::side_slave or couplingtype_ == Inpar::S2I::coupling_nts_standard)
       {
         // initialize auxiliary system matrix for slave side
-        islavematrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*interfacemaps_->Map(1), 81));
+        islavematrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*interfacemaps_->Map(1), 81));
 
         // initialize auxiliary residual vector for slave side
-        islaveresidual_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*interfacemaps_->Map(1)));
+        islaveresidual_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*interfacemaps_->Map(1)));
       }
 
       if (couplingtype_ == Inpar::S2I::coupling_mortar_standard or
           lmside_ == Inpar::S2I::side_master or couplingtype_ == Inpar::S2I::coupling_nts_standard)
       {
         // initialize auxiliary system matrix for master side
-        imastermatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+        imastermatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
             *interfacemaps_->Map(2), 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
         // initialize auxiliary residual vector for master side
-        imasterresidual_ = Teuchos::rcp(new Epetra_FEVector(*interfacemaps_->Map(2)));
+        imasterresidual_ = Teuchos::RCP(new Epetra_FEVector(*interfacemaps_->Map(2)));
       }
 
       switch (couplingtype_)
@@ -2539,21 +2539,21 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
         {
           if (lmside_ == Inpar::S2I::side_slave)
           {
-            D_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*interfacemaps_->Map(1), 81));
-            M_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*interfacemaps_->Map(1), 81));
+            D_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*interfacemaps_->Map(1), 81));
+            M_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*interfacemaps_->Map(1), 81));
             if (couplingtype_ == Inpar::S2I::coupling_mortar_saddlepoint_bubnov or
                 couplingtype_ == Inpar::S2I::coupling_mortar_condensed_bubnov)
-              E_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*interfacemaps_->Map(1), 81));
+              E_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*interfacemaps_->Map(1), 81));
           }
           else
           {
-            D_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+            D_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
                 *interfacemaps_->Map(2), 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
-            M_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+            M_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
                 *interfacemaps_->Map(2), 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
             if (couplingtype_ == Inpar::S2I::coupling_mortar_saddlepoint_bubnov or
                 couplingtype_ == Inpar::S2I::coupling_mortar_condensed_bubnov)
-              E_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+              E_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
                   *interfacemaps_->Map(2), 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
           }
 
@@ -2618,7 +2618,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               if (D_diag->Reciprocal(*D_diag))
                 FOUR_C_THROW("Couldn't invert main diagonal entries of mortar matrix D!");
 
-              P_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*M_));
+              P_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*M_));
               if (P_->left_scale(*D_diag)) FOUR_C_THROW("Setup of mortar projector P failed!");
 
               // free memory
@@ -2631,7 +2631,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               if (couplingtype_ == Inpar::S2I::coupling_mortar_condensed_bubnov)
               {
                 // set up mortar projector Q
-                Q_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*E_));
+                Q_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*E_));
                 if (Q_->left_scale(*D_diag)) FOUR_C_THROW("Setup of mortar projector Q failed!");
 
                 // free memory
@@ -2669,18 +2669,18 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
                     scatratimint_->dof_row_map()->MaxAllGID() + 1 + offset + lmdoflid;
 
               // build Lagrange multiplier dofrowmap
-              const Teuchos::RCP<Epetra_Map> lmdofrowmap = Teuchos::rcp(
+              const Teuchos::RCP<Epetra_Map> lmdofrowmap = Teuchos::RCP(
                   new Epetra_Map(-1, (int)lmdofgids.size(), lmdofgids.data(), 0, comm));
 
               // initialize vectors associated with Lagrange multiplier dofs
-              lm_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*lmdofrowmap));
-              lmresidual_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*lmdofrowmap));
-              lmincrement_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*lmdofrowmap));
+              lm_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*lmdofrowmap));
+              lmresidual_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*lmdofrowmap));
+              lmincrement_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*lmdofrowmap));
 
               // initialize extended map extractor
               Teuchos::RCP<Epetra_Map> extendedmap = Core::LinAlg::merge_map(
                   *(scatratimint_->discretization()->dof_row_map()), *lmdofrowmap, false);
-              extendedmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
+              extendedmaps_ = Teuchos::RCP(new Core::LinAlg::MapExtractor(
                   *extendedmap, lmdofrowmap, scatratimint_->discretization()->dof_row_map()));
               extendedmaps_->check_for_valid_map_extractor();
 
@@ -2780,29 +2780,29 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
         const Teuchos::RCP<const Epetra_Map>& dofrowmap_growth = scatratimint_->dof_row_map(2);
 
         // initialize state vector of discrete scatra-scatra interface layer thicknesses at time n
-        growthn_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_growth, true));
+        growthn_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_growth, true));
 
         // additional initializations for monolithic solution approach
         if (intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_monolithic)
         {
           // initialize extended map extractor
           const Epetra_Map* const dofrowmap_scatra = scatratimint_->discretization()->dof_row_map();
-          extendedmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
+          extendedmaps_ = Teuchos::RCP(new Core::LinAlg::MapExtractor(
               *Core::LinAlg::merge_map(*dofrowmap_scatra, *dofrowmap_growth, false),
               scatratimint_->dof_row_map(2), dofrowmap_scatra));
           extendedmaps_->check_for_valid_map_extractor();
 
           // initialize additional state vectors
-          growthnp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_growth, true));
-          growthdtn_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_growth, true));
-          growthdtnp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_growth, true));
-          growthhist_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_growth, true));
-          growthresidual_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_growth, true));
+          growthnp_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_growth, true));
+          growthdtn_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_growth, true));
+          growthdtnp_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_growth, true));
+          growthhist_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_growth, true));
+          growthresidual_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_growth, true));
           growthincrement_ =
-              Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_growth, true));
+              Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_growth, true));
 
           // initialize map extractors and global matrix blocks
-          growthgrowthblock_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap_growth, 81));
+          growthgrowthblock_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap_growth, 81));
           switch (matrixtype_)
           {
             case Core::LinAlg::MatrixType::sparse:
@@ -2810,14 +2810,14 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               // initialize extended map extractor associated with blocks of global system matrix
               extendedblockmaps_ = extendedmaps_;
 
-              scatragrowthblock_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap_scatra,
+              scatragrowthblock_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap_scatra,
                   81));  // We actually don't really need the entire scalar transport dofrowmap
                          // here, but only a submap associated with all (slave-side and master-side)
                          // interfacial degrees of freedom. However, this will later cause an error
                          // in debug mode when assigning the scatra-growth matrix block to the
                          // global system matrix in the Solve() routine.
               growthscatrablock_ =
-                  Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap_growth, 81));
+                  Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap_growth, 81));
 
               break;
             }
@@ -2827,7 +2827,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
             {
               // initialize map extractor associated with all degrees of freedom for scatra-scatra
               // interface layer growth
-              blockmapgrowth_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*dofrowmap_growth,
+              blockmapgrowth_ = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor(*dofrowmap_growth,
                   std::vector<Teuchos::RCP<const Epetra_Map>>(1, dofrowmap_growth)));
               blockmapgrowth_->check_for_valid_map_extractor();
 
@@ -2838,14 +2838,14 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               for (int iblockmap = 0; iblockmap < static_cast<int>(nblockmaps); ++iblockmap)
                 extendedblockmaps[iblockmap] = scatratimint_->block_maps()->Map(iblockmap);
               extendedblockmaps[nblockmaps] = dofrowmap_growth;
-              extendedblockmaps_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(
+              extendedblockmaps_ = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor(
                   *extendedmaps_->full_map(), extendedblockmaps));
               extendedblockmaps_->check_for_valid_map_extractor();
 
-              scatragrowthblock_ = Teuchos::rcp(
+              scatragrowthblock_ = Teuchos::RCP(
                   new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
                       *blockmapgrowth_, *scatratimint_->block_maps(), 81, false, true));
-              growthscatrablock_ = Teuchos::rcp(
+              growthscatrablock_ = Teuchos::RCP(
                   new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
                       *scatratimint_->block_maps(), *blockmapgrowth_, 81, false, true));
 
@@ -2863,7 +2863,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
 
           // initialize extended system matrix including rows and columns associated with
           // scatra-scatra interface layer thickness variables
-          extendedsystemmatrix_ = Teuchos::rcp(
+          extendedsystemmatrix_ = Teuchos::RCP(
               new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
                   *extendedblockmaps_, *extendedblockmaps_));
         }
@@ -2939,7 +2939,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
   equilibration_ = Core::LinAlg::build_equilibration(matrixtype_, equilibration_method,
       (intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_monolithic
               ? extendedmaps_->full_map()
-              : Teuchos::rcp(
+              : Teuchos::RCP(
                     new const Epetra_Map(*scatratimint_->discretization()->dof_row_map()))));
 }  // ScaTra::meshtying_strategy_s2_i::setup_meshtying
 
@@ -3218,10 +3218,10 @@ void ScaTra::MeshtyingStrategyS2I::read_restart(
     // initialize reader
     Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
     if (input == Teuchos::null)
-      reader = Teuchos::rcp(new Core::IO::DiscretizationReader(scatratimint_->discretization(),
+      reader = Teuchos::RCP(new Core::IO::DiscretizationReader(scatratimint_->discretization(),
           Global::Problem::instance()->input_control_file(), step));
     else
-      reader = Teuchos::rcp(
+      reader = Teuchos::RCP(
           new Core::IO::DiscretizationReader(scatratimint_->discretization(), input, step));
 
     // read state vector of discrete scatra-scatra interface layer thicknesses
@@ -3337,8 +3337,8 @@ void ScaTra::MeshtyingStrategyS2I::output_interface_flux() const
     {
       const int condition_id = s2ikinetics_cond->parameters().get<int>("ConditionID");
       auto s2i_flux =
-          Teuchos::rcp(new Core::LinAlg::SerialDenseVector(scatratimint_->num_dof_per_node()));
-      auto boundaryint_vector = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(1));
+          Teuchos::RCP(new Core::LinAlg::SerialDenseVector(scatratimint_->num_dof_per_node()));
+      auto boundaryint_vector = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(1));
       {
         Teuchos::ParameterList condparams;
 
@@ -3527,7 +3527,7 @@ void ScaTra::MeshtyingStrategyS2I::init_meshtying()
 
     // provide scalar transport discretization with additional dofset for scatra-scatra interface
     // layer thickness
-    const Teuchos::RCP<Core::LinAlg::Vector<int>> numdofpernode = Teuchos::rcp(
+    const Teuchos::RCP<Core::LinAlg::Vector<int>> numdofpernode = Teuchos::RCP(
         new Core::LinAlg::Vector<int>(*scatratimint_->discretization()->node_col_map()));
     for (int inode = 0; inode < scatratimint_->discretization()->num_my_col_nodes(); ++inode)
     {
@@ -3539,7 +3539,7 @@ void ScaTra::MeshtyingStrategyS2I::init_meshtying()
 
     int number_dofsets = scatratimint_->get_max_dof_set_number();
     Teuchos::RCP<Core::DOFSets::DofSetInterface> dofset =
-        Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+        Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
             numdofpernode, Teuchos::null, Teuchos::null, true));
     if (scatratimint_->discretization()->add_dof_set(dofset) != ++number_dofsets)
       FOUR_C_THROW("Scalar transport discretization exhibits invalid number of dofsets!");
@@ -3559,7 +3559,7 @@ void ScaTra::MeshtyingStrategyS2I::init_meshtying()
             "Invalid ID of linear solver for monolithic scatra-scatra interface coupling involving "
             "interface layer growth!");
       }
-      extendedsolver_ = Teuchos::rcp(
+      extendedsolver_ = Teuchos::RCP(
           new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(extendedsolver),
               scatratimint_->discretization()->get_comm(),
               Global::Problem::instance()->solver_params_callback(),
@@ -3625,9 +3625,9 @@ void ScaTra::MeshtyingStrategyS2I::build_block_map_extractors()
       blockmaps_master[iblock] = Core::LinAlg::MultiMapExtractor::intersect_maps(maps);
     }
     blockmaps_slave_ =
-        Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*interfacemaps_->Map(1), blockmaps_slave));
+        Teuchos::RCP(new Core::LinAlg::MultiMapExtractor(*interfacemaps_->Map(1), blockmaps_slave));
     blockmaps_slave_->check_for_valid_map_extractor();
-    blockmaps_master_ = Teuchos::rcp(
+    blockmaps_master_ = Teuchos::RCP(
         new Core::LinAlg::MultiMapExtractor(*interfacemaps_->Map(2), blockmaps_master));
     blockmaps_master_->check_for_valid_map_extractor();
   }
@@ -3665,7 +3665,7 @@ void ScaTra::MeshtyingStrategyS2I::equip_extended_solver_with_null_space_info() 
     mllist.set("null space: add default vectors", false);
 
     const Teuchos::RCP<Epetra_MultiVector> nullspace =
-        Teuchos::rcp(new Epetra_MultiVector(*(scatratimint_->dof_row_map(2)), 1, true));
+        Teuchos::RCP(new Epetra_MultiVector(*(scatratimint_->dof_row_map(2)), 1, true));
     nullspace->PutScalar(1.0);
 
     mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
@@ -3858,7 +3858,7 @@ void ScaTra::MeshtyingStrategyS2I::solve(const Teuchos::RCP<Core::LinAlg::Solver
 
           // assemble extended residual vector
           Teuchos::RCP<Core::LinAlg::Vector<double>> extendedresidual =
-              Teuchos::rcp(new Core::LinAlg::Vector<double>(*extendedmaps_->full_map(), true));
+              Teuchos::RCP(new Core::LinAlg::Vector<double>(*extendedmaps_->full_map(), true));
           extendedmaps_->insert_vector(*scatratimint_->residual(), 0, *extendedresidual);
           extendedmaps_->insert_vector(*growthresidual_, 1, *extendedresidual);
 
@@ -3868,7 +3868,7 @@ void ScaTra::MeshtyingStrategyS2I::solve(const Teuchos::RCP<Core::LinAlg::Solver
 
           // assemble extended increment vector
           Teuchos::RCP<Core::LinAlg::Vector<double>> extendedincrement =
-              Teuchos::rcp(new Core::LinAlg::Vector<double>(*extendedmaps_->full_map(), true));
+              Teuchos::RCP(new Core::LinAlg::Vector<double>(*extendedmaps_->full_map(), true));
           extendedmaps_->insert_vector(*scatratimint_->increment(), 0, *extendedincrement);
           extendedmaps_->insert_vector(*growthincrement_, 1, *extendedincrement);
 

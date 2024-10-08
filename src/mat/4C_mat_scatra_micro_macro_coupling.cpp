@@ -43,7 +43,7 @@ void Mat::ScatraMicroMacroCoupling::initialize(const int ele_id, const int gp_id
   {
     // instantiate and initialize multi-scale scalar transport submaterial at macro-scale Gauss
     // point
-    matgp_[gp_id] = Teuchos::rcp(new ScatraMultiScaleGP(ele_id, gp_id, micro_dis_num(), is_ale));
+    matgp_[gp_id] = Teuchos::RCP(new ScatraMultiScaleGP(ele_id, gp_id, micro_dis_num(), is_ale));
     matgp_[gp_id]->init();
   }
 }

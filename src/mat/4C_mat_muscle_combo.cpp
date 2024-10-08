@@ -135,7 +135,7 @@ Mat::PAR::MuscleCombo::MuscleCombo(const Core::Mat::PAR::Parameter::Data& matdat
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MuscleCombo::create_material()
 {
-  return Teuchos::rcp(new Mat::MuscleCombo(this));
+  return Teuchos::RCP(new Mat::MuscleCombo(this));
 }
 
 Mat::MuscleComboType Mat::MuscleComboType::instance_;
@@ -152,7 +152,7 @@ Mat::MuscleCombo::MuscleCombo()
     : params_(nullptr),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::rcp<Mat::Elastic::StructuralTensorStrategyBase>(
+          Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
               new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0}),
       activation_evaluator_(std::monostate{})
@@ -163,7 +163,7 @@ Mat::MuscleCombo::MuscleCombo(Mat::PAR::MuscleCombo* params)
     : params_(params),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::rcp<Mat::Elastic::StructuralTensorStrategyBase>(
+          Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
               new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0}),
       activation_evaluator_(std::monostate{})

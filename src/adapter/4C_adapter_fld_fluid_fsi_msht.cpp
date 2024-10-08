@@ -21,7 +21,7 @@ Adapter::FluidFSIMsht::FluidFSIMsht(Teuchos::RCP<Fluid> fluid,
     Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond),
-      fsiinterface_(Teuchos::rcp(new FLD::UTILS::FsiMapExtractor()))
+      fsiinterface_(Teuchos::RCP(new FLD::UTILS::FsiMapExtractor()))
 {
   return;
 }

@@ -44,7 +44,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAirBloodScatraLine3T
   if (eletype == "RED_AIR_BLOOD_SCATRA_LINE3")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::RedAirBloodScatraLine3(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::RedAirBloodScatraLine3(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -55,7 +55,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAirBloodScatraLine3T
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::RedAirBloodScatraLine3(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::RedAirBloodScatraLine3(id, owner));
   return ele;
 }
 

@@ -120,18 +120,18 @@ Teuchos::RCP<::NOX::Abstract::Group> NOX::Nln::Problem::create_group(
   {
     const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iconstr =
         noxNlnGlobalData_->get_constraint_interfaces();
-    noxgrp = Teuchos::rcp(new NOX::Nln::CONSTRAINT::Group(params.sublist("Printing"),
+    noxgrp = Teuchos::RCP(new NOX::Nln::CONSTRAINT::Group(params.sublist("Printing"),
         params.sublist("Group Options"), iReq, **xVector_, linSys, iconstr));
   }
   else if (nlnSolver.compare("Single Step") == 0)
   {
     std::cout << "Single Step Group is selected" << std::endl;
-    noxgrp = Teuchos::rcp(new NOX::Nln::SINGLESTEP::Group(
+    noxgrp = Teuchos::RCP(new NOX::Nln::SINGLESTEP::Group(
         params.sublist("Printing"), params.sublist("Group Options"), iReq, **xVector_, linSys));
   }
   else
   {
-    noxgrp = Teuchos::rcp(new NOX::Nln::Group(
+    noxgrp = Teuchos::RCP(new NOX::Nln::Group(
         params.sublist("Printing"), params.sublist("Group Options"), iReq, **xVector_, linSys));
   }
 

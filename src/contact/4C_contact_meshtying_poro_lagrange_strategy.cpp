@@ -42,7 +42,7 @@ void CONTACT::PoroMtLagrangeStrategy::initialize_poro_mt(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffmatrix =
       Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(kteffoffdiag);
 
-  fvelrow_ = Teuchos::rcp(new Epetra_Map(kteffmatrix->OperatorDomainMap()));
+  fvelrow_ = Teuchos::RCP(new Epetra_Map(kteffmatrix->OperatorDomainMap()));
 }
 
 
@@ -129,7 +129,7 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
 
     // cm: add T(mbar)*cs
     Teuchos::RCP<Core::LinAlg::SparseMatrix> cmmod =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     cmmod->add(*cm, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> cmadd =
         Core::LinAlg::matrix_multiply(*get_m_hat(), true, *cs, false, false, false, true);
@@ -142,7 +142,7 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
     /* Global setup of kteffoffdiagnew,  (including meshtying)            */
     /**********************************************************************/
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffoffdiagnew =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+        Teuchos::RCP(new Core::LinAlg::SparseMatrix(
             *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype()));
 
     // add n matrix row
@@ -171,15 +171,15 @@ void CONTACT::PoroMtLagrangeStrategy::recover_coupling_matrix_partof_lmp(
     Teuchos::RCP<Core::LinAlg::Vector<double>> veli)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> zfluid =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(z_->Map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(z_->Map(), true));
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> mod =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
 
   cs_->multiply(false, *veli, *mod);
   zfluid->Update(-1.0, *mod, 1.0);
   Teuchos::RCP<Core::LinAlg::Vector<double>> zcopy =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*zfluid));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*zfluid));
   get_d_inverse()->multiply(true, *zcopy, *zfluid);
   zfluid->Scale(1 / (1 - alphaf_));
 

@@ -44,7 +44,7 @@ namespace Cut
       cut_mesh_.reserve(numcutmesh);
       for (int i = 0; i < numcutmesh; ++i)
       {
-        cut_mesh_.push_back(Teuchos::rcp(new MeshHandle(options_, 1, pp_, true, myrank)));
+        cut_mesh_.push_back(Teuchos::RCP(new MeshHandle(options_, 1, pp_, true, myrank)));
       }
     }
 

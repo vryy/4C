@@ -901,7 +901,7 @@ Teuchos::RCP<Cut::Edge> Cut::EdgeFactory::create_edge(
   {
     case Core::FE::CellType::line2:
     {
-      cedge_ptr = Teuchos::rcp(create_concrete_edge<Core::FE::CellType::line2>(nodes, probdim));
+      cedge_ptr = Teuchos::RCP(create_concrete_edge<Core::FE::CellType::line2>(nodes, probdim));
       break;
     }
     default:

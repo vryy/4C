@@ -92,11 +92,11 @@ void Mortar::MatrixRowColTransformer::setup()
 
     Teuchos::RCP<Epetra_Export>& slave_to_master = slave_to_master_[bt];
     slave_to_master = Teuchos::null;
-    slave_to_master = Teuchos::rcp(new Epetra_Export(**master_row_[bt], **slave_row_[bt]));
+    slave_to_master = Teuchos::RCP(new Epetra_Export(**master_row_[bt], **slave_row_[bt]));
 
     Teuchos::RCP<Epetra_Export>& master_to_slave = master_to_slave_[bt];
     master_to_slave = Teuchos::null;
-    master_to_slave = Teuchos::rcp(new Epetra_Export(**slave_row_[bt], **master_row_[bt]));
+    master_to_slave = Teuchos::RCP(new Epetra_Export(**slave_row_[bt], **master_row_[bt]));
   }
 
   issetup_ = true;
@@ -110,7 +110,7 @@ Mortar::MatrixRowColTransformer::redistributed_to_unredistributed(
 {
   throw_if_not_init_and_setup();
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> dst_mat = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dst_mat = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       **master_row_[bt], src_mat.epetra_matrix()->MaxNumEntries(), false, true));
 
   redistributed_to_unredistributed(bt, src_mat, *dst_mat);
@@ -144,7 +144,7 @@ Mortar::MatrixRowColTransformer::unredistributed_to_redistributed(
 {
   throw_if_not_init_and_setup();
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> dst_mat = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dst_mat = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       **slave_row_[bt], src_mat.epetra_matrix()->MaxNumEntries(), false, true));
 
   redistributed_to_unredistributed(bt, src_mat, *dst_mat);
@@ -174,7 +174,7 @@ void Mortar::MatrixRowColTransformer::unredistributed_to_redistributed(
  *----------------------------------------------------------------------------*/
 void Mortar::MatrixRowColTransformer::reset_exporter(Teuchos::RCP<Epetra_Export>& exporter) const
 {
-  exporter = Teuchos::rcp(new Epetra_Export(*exporter));
+  exporter = Teuchos::RCP(new Epetra_Export(*exporter));
 }
 
 FOUR_C_NAMESPACE_CLOSE

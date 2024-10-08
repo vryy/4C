@@ -128,7 +128,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::setup()
   check_init();
 
   // init and setup beam to beam contact data container
-  beam_potential_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamPotentialParams());
+  beam_potential_params_ptr_ = Teuchos::RCP(new BEAMINTERACTION::BeamPotentialParams());
   beam_potential_params().init(g_state().get_time_n());
   beam_potential_params().setup();
 
@@ -1010,7 +1010,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::init_output_runtime_beam
 {
   check_init();
 
-  visualization_manager_ = Teuchos::rcp(
+  visualization_manager_ = Teuchos::RCP(
       new Core::IO::VisualizationManager(beam_potential_params()
                                              .get_beam_potential_visualization_output_params()
                                              ->get_visualization_parameters(),

@@ -111,12 +111,12 @@ int Core::LinAlg::Ana::OperatorInverse::apply(
 {
   // wrap column 0 of in and output vectors to Core::LinAlg::Vector<double>
   const Epetra_Vector* invec = X(0);
-  Teuchos::RCP<Epetra_Vector> in = Teuchos::rcp(const_cast<Epetra_Vector*>(invec), false);
+  Teuchos::RCP<Epetra_Vector> in = Teuchos::RCP(const_cast<Epetra_Vector*>(invec), false);
   Epetra_Vector* outvec = Y(0);
-  Teuchos::RCP<Epetra_Vector> out = Teuchos::rcp(outvec, false);
+  Teuchos::RCP<Epetra_Vector> out = Teuchos::RCP(outvec, false);
 
   // wrap underlying operator
-  Teuchos::RCP<Epetra_Operator> rcpop = Teuchos::rcp(const_cast<Epetra_Operator*>(&op_), false);
+  Teuchos::RCP<Epetra_Operator> rcpop = Teuchos::RCP(const_cast<Epetra_Operator*>(&op_), false);
 
   out->PutScalar(0.0);
   Core::LinAlg::SolverParams solver_params;

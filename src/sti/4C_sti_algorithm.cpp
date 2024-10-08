@@ -33,12 +33,12 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
       thermo_(Teuchos::null),
       strategyscatra_(Teuchos::null),
       strategythermo_(Teuchos::null),
-      fieldparameters_(Teuchos::rcp(new Teuchos::ParameterList(scatradyn))),
+      fieldparameters_(Teuchos::RCP(new Teuchos::ParameterList(scatradyn))),
       iter_(0),
       itermax_(0),
       itertol_(0.),
-      stiparameters_(Teuchos::rcp(new Teuchos::ParameterList(stidyn))),
-      timer_(Teuchos::rcp(new Teuchos::Time("STI::ALG", true)))
+      stiparameters_(Teuchos::RCP(new Teuchos::ParameterList(stidyn))),
+      timer_(Teuchos::RCP(new Teuchos::Time("STI::ALG", true)))
 {
   // check input parameters for scatra and thermo fields
   if (Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(*fieldparameters_, "VELOCITYFIELD") !=
@@ -46,7 +46,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
     FOUR_C_THROW("Scatra-thermo interaction with convection not yet implemented!");
 
   // initialize scatra time integrator
-  scatra_ = Teuchos::rcp(
+  scatra_ = Teuchos::RCP(
       new Adapter::ScaTraBaseAlgorithm(*fieldparameters_, *fieldparameters_, solverparams_scatra));
   scatra_->init();
   scatra_->scatra_field()->set_number_of_dof_set_velocity(1);
@@ -57,7 +57,7 @@ STI::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterList&
   modify_field_parameters_for_thermo_field();
 
   // initialize thermo time integrator
-  thermo_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
+  thermo_ = Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(
       *fieldparameters_, *fieldparameters_, solverparams_thermo, "thermo"));
   thermo_->init();
   thermo_->scatra_field()->set_number_of_dof_set_velocity(1);
@@ -343,7 +343,7 @@ void STI::Algorithm::transfer_scatra_to_thermo(
 
             // pass interfacial scatra degrees of freedom to thermo discretization
             const Teuchos::RCP<Core::LinAlg::Vector<double>> iscatra =
-                Teuchos::rcp(new Core::LinAlg::Vector<double>(*thermodis.dof_row_map(1)));
+                Teuchos::RCP(new Core::LinAlg::Vector<double>(*thermodis.dof_row_map(1)));
             Core::LinAlg::export_to(*scatra, *iscatra);
             thermodis.set_state(1, "scatra", iscatra);
           }
@@ -391,7 +391,7 @@ void STI::Algorithm::transfer_thermo_to_scatra(
 
         // pass interfacial thermo degrees of freedom to scatra discretization
         const Teuchos::RCP<Core::LinAlg::Vector<double>> ithermo =
-            Teuchos::rcp(new Core::LinAlg::Vector<double>(*scatradis.dof_row_map(1)));
+            Teuchos::RCP(new Core::LinAlg::Vector<double>(*scatradis.dof_row_map(1)));
         Core::LinAlg::export_to(*thermo, *ithermo);
         scatradis.set_state(1, "thermo", ithermo);
       }

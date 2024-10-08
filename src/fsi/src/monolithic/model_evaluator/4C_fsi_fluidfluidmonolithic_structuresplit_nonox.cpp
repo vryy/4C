@@ -106,23 +106,23 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
         "Could not remove structural interface Dirichlet conditions from structure DBC map.");
 #endif
 
-  sggtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform);
-  sgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
-  sigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-  aigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-  fsaigtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-  fsmgitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  sggtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixRowColTransform);
+  sgitransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixRowTransform);
+  sigtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
+  aigtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
+  fmiitransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
+  fmgitransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
+  fsaigtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
+  fsmgitransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
 
   // Recovering of Lagrange multiplier happens on structure field
-  lambda_ = Teuchos::rcp(
+  lambda_ = Teuchos::RCP(
       new Core::LinAlg::Vector<double>(*structure_field()->interface()->fsi_cond_map()));
   ddiinc_ = Teuchos::null;
   solipre_ = Teuchos::null;
   ddginc_ = Teuchos::null;
   solgpre_ = Teuchos::null;
-  ddgpred_ = Teuchos::rcp(
+  ddgpred_ = Teuchos::RCP(
       new Core::LinAlg::Vector<double>(*structure_field()->interface()->fsi_cond_map(), true));
 
   return;
@@ -150,7 +150,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_system()
   /*----------------------------------------------------------------------*/
   // initialize systemmatrix_
   systemmatrix_ =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+      Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           extractor(), extractor(), 81, false, true));
 }
 
@@ -211,13 +211,13 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(
      */
 
     // ----------addressing term 1
-    rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(sig.row_map(), true));
+    rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(sig.row_map(), true));
     sig.Apply(*ddgpred_, *rhs);
 
     extractor().add_vector(*rhs, 0, f);
 
     // ----------addressing term 2
-    rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(sig.row_map(), true));
+    rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(sig.row_map(), true));
     Teuchos::RCP<Core::LinAlg::Vector<double>> fveln = fluid_field()->extract_interface_veln();
     sig.Apply(*fluid_to_struct(fveln), *rhs);
     rhs->Scale(-dt);
@@ -244,7 +244,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(
     if (mmm != Teuchos::null)
     {
       Core::LinAlg::SparseMatrix& fmig = mmm->matrix(0, 1);
-      rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(fmig.row_map(), true));
+      rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(fmig.row_map(), true));
       fmig.Apply(*fveln, *rhs);
       rhs->Scale(-dt);
 
@@ -275,7 +275,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(
     if (mmm != Teuchos::null)
     {
       Core::LinAlg::SparseMatrix& fmgg = mmm->matrix(1, 1);
-      rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(fmgg.row_map(), true));
+      rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(fmgg.row_map(), true));
       fmgg.Apply(*fveln, *rhs);
       rhs->Scale(-dt);
       rhs = fluid_field()->interface()->insert_fsi_cond_vector(*rhs);
@@ -283,7 +283,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(
     }
 
     // ----------addressing term 2
-    rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(sgg.row_map(), true));
+    rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(sgg.row_map(), true));
     sgg.Apply(*fluid_to_struct(fveln), *rhs);
     rhs->Scale(-dt * (1. - ftiparam) / ((1 - stiparam) * scale));
 
@@ -292,7 +292,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(
     extractor().add_vector(*rhs, 1, f);
 
     // ----------addressing term 3
-    rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(sgg.row_map(), true));
+    rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(sgg.row_map(), true));
     sgg.Apply(*ddgpred_, *rhs);
     rhs->Scale((1. - ftiparam) / ((1 - stiparam) * scale));
 
@@ -301,7 +301,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(
     extractor().add_vector(*rhs, 1, f);
 
     // ----------addressing term 1
-    rhs = Teuchos::rcp(new Core::LinAlg::Vector<double>(aig.row_map(), true));
+    rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(aig.row_map(), true));
 
     aig.Apply(*fluid_to_ale_interface(fveln), *rhs);
     rhs->Scale(-dt);
@@ -352,8 +352,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_system_matrix()
 
   // store parts of structural matrix to know them in the next iteration as previous iteration
   // matricesu
-  sgicur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(s->matrix(1, 0)));
-  sggcur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(s->matrix(1, 1)));
+  sgicur_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(s->matrix(1, 0)));
+  sggcur_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(s->matrix(1, 1)));
 
   /*----------------------------------------------------------------------*/
   // build block matrix
@@ -374,7 +374,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_system_matrix()
       Coupling::Adapter::CouplingMasterConverter(coupsf), *f, true, true);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lsgi =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(f->row_map(), 81, false));
+      Teuchos::RCP(new Core::LinAlg::SparseMatrix(f->row_map(), 81, false));
   (*sgitransform_)(s->matrix(1, 0), ((1.0 - ftiparam) / (1.0 - stiparam)) * (1. / scale),
       Coupling::Adapter::CouplingMasterConverter(coupsf), *lsgi);
 
@@ -403,7 +403,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_system_matrix()
     systemmatrix_->matrix(1, 1).add(fmig, false, 1. / timescale, 1.0);
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> lfmgi =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(f->row_map(), 81, false));
+        Teuchos::RCP(new Core::LinAlg::SparseMatrix(f->row_map(), 81, false));
     (*fmgitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmgi, 1.,
         Coupling::Adapter::CouplingMasterConverter(coupfa),
         // systemmatrix_->Matrix(1,2),
@@ -453,8 +453,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::scale_system(
     // The matrices are modified here. Do we have to change them back later on?
 
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
-    srowsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
-    scolsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    srowsum_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    scolsum_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(A->RowMap(), false));
     A->InvRowSums(*srowsum_->get_ptr_of_Epetra_Vector());
     A->InvColSums(*scolsum_->get_ptr_of_Epetra_Vector());
     if (A->LeftScale(*srowsum_) or A->RightScale(*scolsum_) or
@@ -465,8 +465,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::scale_system(
       FOUR_C_THROW("structure scaling failed");
 
     A = mat.matrix(2, 2).epetra_matrix();
-    arowsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
-    acolsum_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    arowsum_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    acolsum_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(A->RowMap(), false));
     A->InvRowSums(*arowsum_->get_ptr_of_Epetra_Vector());
     A->InvColSums(*acolsum_->get_ptr_of_Epetra_Vector());
     if (A->LeftScale(*arowsum_) or A->RightScale(*acolsum_) or
@@ -648,7 +648,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::extract_field_vectors(
   // ----------------------
   // process ale unknowns
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcxforale =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*fcx));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*fcx));
   fluid_field()->velocity_to_displacement(fcxforale);
   Teuchos::RCP<Core::LinAlg::Vector<double>> acx = fluid_to_struct(fcxforale);
   acx = struct_to_ale(acx);
@@ -685,14 +685,14 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::extract_field_vectors(
   if (solipre_ != Teuchos::null)
     ddiinc_->Update(1.0, *sox, -1.0, *solipre_, 0.0);  // compute current iteration increment
   else
-    ddiinc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*sox));  // first iteration increment
+    ddiinc_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*sox));  // first iteration increment
 
   solipre_ = sox;  // store current step increment
 
   if (solgpre_ != Teuchos::null)
     ddginc_->Update(1.0, *scx, -1.0, *solgpre_, 0.0);  // compute current iteration increment
   else
-    ddginc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*scx));  // first iteration increment
+    ddginc_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*scx));  // first iteration increment
 
   solgpre_ = scx;
 }
@@ -735,7 +735,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::read_restart(int step)
   // read Lagrange multiplier
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*structure_field()->dof_row_map(), true));
+        Teuchos::RCP(new Core::LinAlg::Vector<double>(*structure_field()->dof_row_map(), true));
     Core::IO::DiscretizationReader reader =
         Core::IO::DiscretizationReader(structure_field()->discretization(),
             Global::Problem::instance()->input_control_file(), step);
@@ -915,7 +915,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::recover_lagrange_multiplier()
   Teuchos::RCP<Core::LinAlg::Vector<double>> structureresidual =
       structure_field()->interface()->extract_fsi_cond_vector(*structure_field()->rhs());
   structureresidual->Scale(-1.0);  // invert sign to obtain residual, not rhs
-  tmpvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(*structureresidual));
+  tmpvec = Teuchos::RCP(new Core::LinAlg::Vector<double>(*structureresidual));
   // ---------End of term (3)
 
   /* You might want to comment out terms (4) to (6) since they tend to
@@ -975,7 +975,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::handle_fluid_dof_map_change_i
   create_combined_dof_row_map();
   // re-initialize systemmatrix_
   systemmatrix_ =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+      Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           extractor(), extractor(), 81, false, true));
 
   rhs_ = Core::LinAlg::create_vector(*dof_row_map(), true);

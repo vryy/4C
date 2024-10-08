@@ -47,7 +47,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGWeakCompType::c
 {
   if (eletype == "FLUIDHDGWEAKCOMP")
   {
-    return Teuchos::rcp(new Discret::ELEMENTS::FluidHDGWeakComp(id, owner));
+    return Teuchos::RCP(new Discret::ELEMENTS::FluidHDGWeakComp(id, owner));
   }
   return Teuchos::null;
 }
@@ -59,7 +59,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGWeakCompType::c
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGWeakCompType::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Discret::ELEMENTS::FluidHDGWeakComp(id, owner));
+  return Teuchos::RCP(new Discret::ELEMENTS::FluidHDGWeakComp(id, owner));
 }
 
 

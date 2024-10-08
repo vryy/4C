@@ -31,11 +31,11 @@ void Solid::ModelEvaluator::Constraints::setup()
 {
   check_init();
 
-  constraint_stiff_ptr_ = Teuchos::rcp(
+  constraint_stiff_ptr_ = Teuchos::RCP(
       new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
 
   constraint_force_ptr_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
 
   set_sub_model_types();
   create_sub_model_evaluators();
@@ -93,7 +93,7 @@ void Solid::ModelEvaluator::Constraints::create_sub_model_evaluators()
       case Inpar::CONSTRAINTS::SubModelType::submodel_pbc_rve:
       {
         sub_model_vec_ptr_.emplace_back(
-            Teuchos::rcp(new CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager(
+            Teuchos::RCP(new CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager(
                 discret_ptr(), constraint_stiff_ptr_.get())));
 
         break;
@@ -101,7 +101,7 @@ void Solid::ModelEvaluator::Constraints::create_sub_model_evaluators()
       case Inpar::CONSTRAINTS::SubModelType::submodel_embeddedmesh:
       {
         sub_model_vec_ptr_.emplace_back(
-            Teuchos::rcp(new CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager(
+            Teuchos::RCP(new CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager(
                 discret_ptr(), *global_state().get_dis_np().get())));
 
         break;

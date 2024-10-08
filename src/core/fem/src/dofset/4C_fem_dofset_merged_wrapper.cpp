@@ -100,7 +100,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
 
   // initialize final mapping
   Teuchos::RCP<Core::LinAlg::Vector<int>> my_master_nodegids_row_layout =
-      Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.node_row_map()));
+      Teuchos::RCP(new Core::LinAlg::Vector<int>(*dis.node_row_map()));
 
   // loop over all coupled nodes
   for (unsigned i = 0; i < masternodes.size(); ++i)
@@ -124,7 +124,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   }
 
   // initialize final mapping
-  master_nodegids_col_layout_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.node_col_map()));
+  master_nodegids_col_layout_ = Teuchos::RCP(new Core::LinAlg::Vector<int>(*dis.node_col_map()));
 
   // export to column map
   Core::LinAlg::export_to(*my_master_nodegids_row_layout, *master_nodegids_col_layout_);
@@ -158,7 +158,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
 
   // initialize final mapping
   Teuchos::RCP<Core::LinAlg::Vector<int>> my_slave_nodegids_row_layout =
-      Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.node_row_map()));
+      Teuchos::RCP(new Core::LinAlg::Vector<int>(*dis.node_row_map()));
 
   // loop over all coupled nodes
   for (unsigned i = 0; i < masternodes.size(); ++i)
@@ -182,7 +182,7 @@ int Core::DOFSets::DofSetMergedWrapper::assign_degrees_of_freedom(
   }
 
   // initialize final mapping
-  slave_nodegids_col_layout_ = Teuchos::rcp(new Core::LinAlg::Vector<int>(*dis.node_col_map()));
+  slave_nodegids_col_layout_ = Teuchos::RCP(new Core::LinAlg::Vector<int>(*dis.node_col_map()));
 
   // export to column map
   Core::LinAlg::export_to(*my_slave_nodegids_row_layout, *slave_nodegids_col_layout_);

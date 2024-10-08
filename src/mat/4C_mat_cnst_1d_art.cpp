@@ -63,7 +63,7 @@ Mat::PAR::Cnst1dArt::Cnst1dArt(const Core::Mat::PAR::Parameter::Data& matdata)
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Cnst1dArt::create_material()
 {
-  return Teuchos::rcp(new Mat::Cnst1dArt(this));
+  return Teuchos::RCP(new Mat::Cnst1dArt(this));
 }
 
 

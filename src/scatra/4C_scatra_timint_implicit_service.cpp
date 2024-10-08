@@ -105,9 +105,9 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_in_domain()
   const Epetra_Map& dofrowmap = *discret_->dof_row_map();
 
   // initialize global flux vectors
-  Teuchos::RCP<Epetra_MultiVector> flux = Teuchos::rcp(new Epetra_MultiVector(dofrowmap, 3));
+  Teuchos::RCP<Epetra_MultiVector> flux = Teuchos::RCP(new Epetra_MultiVector(dofrowmap, 3));
   Teuchos::RCP<Epetra_MultiVector> flux_projected =
-      Teuchos::rcp(new Epetra_MultiVector(dofrowmap, 3));
+      Teuchos::RCP(new Epetra_MultiVector(dofrowmap, 3));
 
   // parameter list for element evaluation
   Teuchos::ParameterList params;
@@ -143,7 +143,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_in_domain()
 
     // integrate shape functions
     Teuchos::RCP<Core::LinAlg::IntSerialDenseVector> dofids =
-        Teuchos::rcp(new Core::LinAlg::IntSerialDenseVector(num_dof_per_node()));
+        Teuchos::RCP(new Core::LinAlg::IntSerialDenseVector(num_dof_per_node()));
     dofids->putScalar(1);  // integrate shape functions for all dofs
     params.set("dofids", dofids);
     discret_->evaluate(
@@ -166,7 +166,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_in_domain()
 
     // initialize global mass matrix
     Teuchos::RCP<Core::LinAlg::SparseMatrix> massmatrix =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(dofrowmap, 27, false));
+        Teuchos::RCP(new Core::LinAlg::SparseMatrix(dofrowmap, 27, false));
 
     // call loop over elements
     discret_->evaluate(params, massmatrix, Teuchos::null);
@@ -203,7 +203,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
 
   // empty vector for (normal) mass or heat flux vectors (always 3D)
   Teuchos::RCP<Epetra_MultiVector> flux =
-      Teuchos::rcp(new Epetra_MultiVector(*discret_->dof_row_map(), 3, true));
+      Teuchos::RCP(new Epetra_MultiVector(*discret_->dof_row_map(), 3, true));
 
   // determine the averaged normal vector field for indicated boundaries
   // used for the output of the normal flux as a vector field
@@ -393,7 +393,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
 
       // initialize boundary mass matrix
       Teuchos::RCP<Core::LinAlg::SparseMatrix> massmatrix_boundary =
-          Teuchos::rcp(new Core::LinAlg::SparseMatrix(dofrowmap, 27, false));
+          Teuchos::RCP(new Core::LinAlg::SparseMatrix(dofrowmap, 27, false));
 
       // call loop over elements
       discret_->evaluate_condition(params, massmatrix_boundary, Teuchos::null, Teuchos::null,
@@ -418,7 +418,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
 
       // initialize one-component result vector for value of boundary integral
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> boundaryint_vector =
-          Teuchos::rcp(new Core::LinAlg::SerialDenseVector(1));
+          Teuchos::RCP(new Core::LinAlg::SerialDenseVector(1));
 
       // compute value of boundary integral
       discret_->evaluate_scalars(params, boundaryint_vector, "ScaTraFluxCalc", icond);
@@ -905,7 +905,7 @@ void ScaTra::ScaTraTimIntImpl::add_flux_approx_to_parameter_list(Teuchos::Parame
   // get the noderowmap
   const Epetra_Map* noderowmap = discret_->node_row_map();
   Teuchos::RCP<Epetra_MultiVector> fluxk =
-      Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
+      Teuchos::RCP(new Epetra_MultiVector(*noderowmap, 3, true));
   for (int k = 0; k < num_scal(); ++k)
   {
     std::ostringstream temp;
@@ -934,7 +934,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::compute_normal_vector
   // get noderowmap of discretization
   const Epetra_Map* noderowmap = discret_->node_row_map();
   Teuchos::RCP<Epetra_MultiVector> normal =
-      Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
+      Teuchos::RCP(new Epetra_MultiVector(*noderowmap, 3, true));
 
   // set action for elements
   Teuchos::ParameterList eleparams;
@@ -994,7 +994,7 @@ void ScaTra::ScaTraTimIntImpl::compute_null_space_if_necessary() const
       mllist.set("null space: add default vectors", false);
 
       Teuchos::RCP<Epetra_MultiVector> nullspace =
-          Teuchos::rcp(new Epetra_MultiVector(*(discret_->dof_row_map()), 1, true));
+          Teuchos::RCP(new Epetra_MultiVector(*(discret_->dof_row_map()), 1, true));
       nullspace->PutScalar(1.0);
 
       mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
@@ -1290,7 +1290,7 @@ void ScaTra::ScaTraTimIntImpl::output_integr_reac(const int num)
     Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::calc_integr_reaction, eleparams);
     Teuchos::RCP<std::vector<double>> myreacnp =
-        Teuchos::rcp(new std::vector<double>(num_scal(), 0.0));
+        Teuchos::RCP(new std::vector<double>(num_scal(), 0.0));
     eleparams.set<Teuchos::RCP<std::vector<double>>>("local reaction integral", myreacnp);
 
     discret_->evaluate(eleparams);
@@ -1462,7 +1462,7 @@ void ScaTra::ScaTraTimIntImpl::avm3_scaling(Teuchos::ParameterList& eleparams)
   }
 
   // get unscaled S^T*M*S from Sep
-  sysmat_sd_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*Mnsv_));
+  sysmat_sd_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*Mnsv_));
 
   // left and right scaling of normalized fine-scale subgrid-viscosity matrix
   ierr = sysmat_sd_->left_scale(*subgrdiff_);
@@ -1505,7 +1505,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> ScaTra::ScaTraTimIntImpl::diric
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::access_dyn_smag_filter(Teuchos::RCP<FLD::DynSmagFilter> dynSmag)
 {
-  DynSmag_ = Teuchos::rcp(dynSmag.get(), false);
+  DynSmag_ = Teuchos::RCP(dynSmag.get(), false);
 
   // access to the dynamic Smagorinsky class is provided
   // by the fluid scatra coupling algorithm
@@ -1527,7 +1527,7 @@ void ScaTra::ScaTraTimIntImpl::access_dyn_smag_filter(Teuchos::RCP<FLD::DynSmagF
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::access_vreman(Teuchos::RCP<FLD::Vreman> vrem)
 {
-  Vrem_ = Teuchos::rcp(vrem.get(), false);
+  Vrem_ = Teuchos::RCP(vrem.get(), false);
 
   // access to the dynamic Vreman class is provided
   // by the fluid scatra coupling algorithm
@@ -1910,7 +1910,7 @@ void ScaTra::ScaTraTimIntImpl::fd_check()
 
   // make a copy of state variables to undo perturbations later
   Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_original =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*phinp_));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*phinp_));
 
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
@@ -1933,7 +1933,7 @@ void ScaTra::ScaTraTimIntImpl::fd_check()
 
   // make a copy of system right-hand side vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_original =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*residual_));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*residual_));
 
   // initialize counter for system matrix entries with failing finite difference check
   int counter(0);
@@ -2129,7 +2129,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
 
       // get (squared) error values
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-          Teuchos::rcp(new Core::LinAlg::SerialDenseVector(4 * num_dof_per_node()));
+          Teuchos::RCP(new Core::LinAlg::SerialDenseVector(4 * num_dof_per_node()));
       discret_->evaluate_scalars(eleparams, errors);
 
       for (int k = 0; k < num_dof_per_node(); ++k)
@@ -2201,7 +2201,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
 
         // get (squared) error values
         Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-            Teuchos::rcp(new Core::LinAlg::SerialDenseVector(4 * num_dof_per_node()));
+            Teuchos::RCP(new Core::LinAlg::SerialDenseVector(4 * num_dof_per_node()));
         discret_->evaluate_scalars(eleparams, errors, "ScatraRelError", condid);
 
         // compute index offset
@@ -2586,7 +2586,7 @@ void ScaTra::OutputScalarsStrategyDomain::evaluate_integrals(
   // first components = scalar integrals, last component = domain integral
   const int num_active_scalars = output_mean_grad_ ? numscal_ : 0;
   auto scalars =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(numdofpernode_ + 1 + num_active_scalars));
+      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(numdofpernode_ + 1 + num_active_scalars));
 
   // perform integration
   scatratimint->discret_->evaluate_scalars(eleparams, scalars);
@@ -2834,7 +2834,7 @@ void ScaTra::OutputDomainIntegralStrategy::evaluate_integrals_and_print_results(
   {
     // initialize one-component result vector for value of current domain or boundary integral
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> integralvalue =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(1));
+        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(1));
 
     // compute value of current domain or boundary integral
     discret->evaluate_scalars(condparams, integralvalue, condstring, condid);
@@ -2905,7 +2905,7 @@ void ScaTra::OutputScalarsStrategyCondition::evaluate_integrals(
     // first components = scalar integrals, last component = domain integral
     const int num_active_scalars = output_mean_grad_ ? numscalpernode : 0;
     const int num_micro_dis = output_micro_dis_ ? 1 : 0;
-    auto scalars = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(
+    auto scalars = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(
         numdofpernode + 1 + num_active_scalars + num_micro_dis));
 
     // perform integration

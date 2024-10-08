@@ -40,22 +40,22 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::imp
         {
           case 2:
           {
-            return Teuchos::rcp(new CONTACT::Beam3contactnew<2, 1>(
+            return Teuchos::RCP(new CONTACT::Beam3contactnew<2, 1>(
                 pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
           }
           case 3:
           {
-            return Teuchos::rcp(new CONTACT::Beam3contactnew<3, 1>(
+            return Teuchos::RCP(new CONTACT::Beam3contactnew<3, 1>(
                 pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
           }
           case 4:
           {
-            return Teuchos::rcp(new CONTACT::Beam3contactnew<4, 1>(
+            return Teuchos::RCP(new CONTACT::Beam3contactnew<4, 1>(
                 pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
           }
           case 5:
           {
-            return Teuchos::rcp(new CONTACT::Beam3contactnew<5, 1>(
+            return Teuchos::RCP(new CONTACT::Beam3contactnew<5, 1>(
                 pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
           }
           default:
@@ -72,7 +72,7 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::imp
         {
           case 2:
           {
-            return Teuchos::rcp(new CONTACT::Beam3contactnew<2, 2>(
+            return Teuchos::RCP(new CONTACT::Beam3contactnew<2, 2>(
                 pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
           }
           default:
@@ -104,22 +104,22 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::imp
         {
           case 2:
           {
-            return Teuchos::rcp(new CONTACT::Beam3contact<2, 1>(
+            return Teuchos::RCP(new CONTACT::Beam3contact<2, 1>(
                 pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
           }
           case 3:
           {
-            return Teuchos::rcp(new CONTACT::Beam3contact<3, 1>(
+            return Teuchos::RCP(new CONTACT::Beam3contact<3, 1>(
                 pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
           }
           case 4:
           {
-            return Teuchos::rcp(new CONTACT::Beam3contact<4, 1>(
+            return Teuchos::RCP(new CONTACT::Beam3contact<4, 1>(
                 pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
           }
           case 5:
           {
-            return Teuchos::rcp(new CONTACT::Beam3contact<5, 1>(
+            return Teuchos::RCP(new CONTACT::Beam3contact<5, 1>(
                 pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
           }
           default:
@@ -136,7 +136,7 @@ Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::imp
         {
           case 2:
           {
-            return Teuchos::rcp(new CONTACT::Beam3contact<2, 2>(
+            return Teuchos::RCP(new CONTACT::Beam3contact<2, 2>(
                 pdiscret, cdiscret, dofoffsetmap, element1, element2, beamcontactparams));
           }
           default:

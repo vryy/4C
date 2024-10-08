@@ -33,7 +33,7 @@ Mat::PAR::LinElast1D::LinElast1D(const Core::Mat::PAR::Parameter::Data& matdata)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::LinElast1D::create_material()
 {
-  return Teuchos::rcp(new Mat::LinElast1D(this));
+  return Teuchos::RCP(new Mat::LinElast1D(this));
 }
 
 Mat::LinElast1DType Mat::LinElast1DType::instance_;
@@ -113,7 +113,7 @@ Mat::PAR::LinElast1DGrowth::LinElast1DGrowth(const Core::Mat::PAR::Parameter::Da
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::LinElast1DGrowth::create_material()
 {
-  return Teuchos::rcp(new Mat::LinElast1DGrowth(this));
+  return Teuchos::RCP(new Mat::LinElast1DGrowth(this));
 }
 
 /*----------------------------------------------------------------------*

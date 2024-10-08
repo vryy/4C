@@ -25,7 +25,7 @@ Adapter::FBIConstraintBridge::FBIConstraintBridge()
     : beam_interaction_params_(Teuchos::null),
       assemblystrategy_(Teuchos::null),
       meshtying_pairs_(
-          Teuchos::rcp(new std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>)),
+          Teuchos::RCP(new std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>)),
       geometry_evaluation_data_(Teuchos::null){};
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -33,7 +33,7 @@ void Adapter::FBIConstraintBridge::setup(const Epetra_Map* beam_map, const Epetr
     Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix, bool fluidmeshtying)
 {
   // Create the beaminteraction data container and set the parameters
-  beam_interaction_params_ = Teuchos::rcp(new FBI::BeamToFluidMeshtyingParams());
+  beam_interaction_params_ = Teuchos::RCP(new FBI::BeamToFluidMeshtyingParams());
   beam_interaction_params_->init();
   beam_interaction_params_->setup();
 
@@ -41,7 +41,7 @@ void Adapter::FBIConstraintBridge::setup(const Epetra_Map* beam_map, const Epetr
       Global::Problem::instance()->fbi_params().sublist("BEAM TO FLUID MESHTYING");
 
   // Create the beaminteraction data container and set the parameters
-  geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(
+  geometry_evaluation_data_ = Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>(
       new GEOMETRYPAIR::LineTo3DEvaluationData(geometry_parameter_list));
 
   if (fluidmeshtying)
@@ -52,12 +52,12 @@ void Adapter::FBIConstraintBridge::setup(const Epetra_Map* beam_map, const Epetr
         Inpar::FBI::BeamToFluidDiscretization::mortar)
       FOUR_C_THROW("Fluid Meshtying is not supported when using a mortar discretization!");
 
-    assemblystrategy_ = Teuchos::rcp<FBI::UTILS::FBIBlockAssemblyStrategy>(
+    assemblystrategy_ = Teuchos::RCP<FBI::UTILS::FBIBlockAssemblyStrategy>(
         new FBI::UTILS::FBIBlockAssemblyStrategy());
   }
   else
     assemblystrategy_ =
-        Teuchos::rcp<FBI::UTILS::FBIAssemblyStrategy>(new FBI::UTILS::FBIAssemblyStrategy());
+        Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy>(new FBI::UTILS::FBIAssemblyStrategy());
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

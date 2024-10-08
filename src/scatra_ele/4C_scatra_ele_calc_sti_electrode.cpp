@@ -637,7 +637,7 @@ Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::ScaTraEleCalcSTIElectrode
 
       // diffusion manager for electrodes
       diffmanagerstielectrode_(
-          Teuchos::rcp(new ScaTraEleDiffManagerSTIElchElectrode(my::numscal_))),
+          Teuchos::RCP(new ScaTraEleDiffManagerSTIElchElectrode(my::numscal_))),
 
       // utility class supporting element evaluation for electrodes
       utils_(Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::instance(
@@ -648,12 +648,12 @@ Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::ScaTraEleCalcSTIElectrode
     FOUR_C_THROW("Invalid number of transported scalars or degrees of freedom per node!");
 
   // replace diffusion manager for standard scalar transport by thermo diffusion manager
-  my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerSTIThermo(my::numscal_));
+  my::diffmanager_ = Teuchos::RCP(new ScaTraEleDiffManagerSTIThermo(my::numscal_));
 
   // replace internal variable manager for standard scalar transport by internal variable manager
   // for heat transport within electrochemical substances
   my::scatravarmanager_ =
-      Teuchos::rcp(new ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>(my::numscal_));
+      Teuchos::RCP(new ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>(my::numscal_));
 }
 
 

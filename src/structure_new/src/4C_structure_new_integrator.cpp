@@ -73,22 +73,22 @@ void Solid::Integrator::setup()
   // ---------------------------------------------------------------------------
   // build model evaluator data container
   // ---------------------------------------------------------------------------
-  eval_data_ptr_ = Teuchos::rcp(new Solid::ModelEvaluator::Data());
+  eval_data_ptr_ = Teuchos::RCP(new Solid::ModelEvaluator::Data());
   eval_data_ptr_->init(timint_ptr_);
   eval_data_ptr_->setup();
 
   // ---------------------------------------------------------------------------
   // build model evaluator
   // ---------------------------------------------------------------------------
-  modelevaluator_ptr_ = Teuchos::rcp(new Solid::ModelEvaluatorManager());
+  modelevaluator_ptr_ = Teuchos::RCP(new Solid::ModelEvaluatorManager());
   modelevaluator_ptr_->init(
-      eval_data_ptr_, sdyn_ptr_, gstate_ptr_, io_ptr_, Teuchos::rcp(this, false), timint_ptr_);
+      eval_data_ptr_, sdyn_ptr_, gstate_ptr_, io_ptr_, Teuchos::RCP(this, false), timint_ptr_);
   modelevaluator_ptr_->setup();
 
   // ---------------------------------------------------------------------------
   // build monitor for a tensile test
   // ---------------------------------------------------------------------------
-  monitor_dbc_ptr_ = Teuchos::rcp(new Solid::MonitorDbc);
+  monitor_dbc_ptr_ = Teuchos::RCP(new Solid::MonitorDbc);
   monitor_dbc_ptr_->init(io_ptr_, *gstate_ptr_->get_discret(), *gstate_ptr_, *dbc_ptr_);
   monitor_dbc_ptr_->setup();
 
@@ -178,10 +178,10 @@ void Solid::Integrator::equilibrate_initial_state()
 
   // temporary right-hand-side
   Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_ptr =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
 
   // initialize a temporal structural stiffness matrix
-  Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_ptr = Teuchos::rcp(
+  Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_ptr = Teuchos::RCP(
       new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
 
 
@@ -252,9 +252,9 @@ void Solid::Integrator::equilibrate_initial_state()
 
   // create a copy of the initial displacement vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> soln_ptr =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
   // wrap the soln_ptr in a nox_epetra_Vector
-  Teuchos::RCP<::NOX::Epetra::Vector> nox_soln_ptr = Teuchos::rcp(new ::NOX::Epetra::Vector(
+  Teuchos::RCP<::NOX::Epetra::Vector> nox_soln_ptr = Teuchos::RCP(new ::NOX::Epetra::Vector(
       soln_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
 
   // Check if we are using a Newton direction
@@ -273,7 +273,7 @@ void Solid::Integrator::equilibrate_initial_state()
   Teuchos::ParameterList& p_ls =
       p_nox.sublist("Direction", true).sublist("Newton", true).sublist("Linear Solver", true);
 
-  Teuchos::RCP<NOX::Nln::LinearSystem> linsys_ptr = Teuchos::rcp(new NOX::Nln::Solid::LinearSystem(
+  Teuchos::RCP<NOX::Nln::LinearSystem> linsys_ptr = Teuchos::RCP(new NOX::Nln::Solid::LinearSystem(
       p_print, p_ls, str_linsolver, Teuchos::null, Teuchos::null, stiff_ptr, *nox_soln_ptr));
 
   // (re)set the linear solver parameters
@@ -316,7 +316,7 @@ bool Solid::Integrator::current_state_is_equilibrium(const double& tol)
 
   // temporary right-hand-side
   Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_ptr =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view(), true));
 
   // overwrite initial state vectors with Dirichlet BCs
   const double& timen = (*global_state().get_multi_time())[0];
@@ -768,7 +768,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Solid::Integrator::MidTimeEnerg
   const double fac_np = 1.0 - fac_n;
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> state_avg =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(state_np));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(state_np));
   switch (avg_type_)
   {
     case Inpar::Solid::midavg_vague:

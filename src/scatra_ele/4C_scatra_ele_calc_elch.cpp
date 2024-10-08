@@ -29,7 +29,7 @@ Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::ScaTraEleCalcElch(
           Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::instance(numdofpernode, numscal, disname))
 {
   // replace standard scatra diffusion manager by elch diffusion manager
-  my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerElch(my::numscal_));
+  my::diffmanager_ = Teuchos::RCP(new ScaTraEleDiffManagerElch(my::numscal_));
 
   // safety check
   if (not my::scatraparatimint_->is_incremental())

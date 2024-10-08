@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 Core::LinAlg::Solver::Solver(const Teuchos::ParameterList &inparams, const Epetra_Comm &comm,
     const std::function<const Teuchos::ParameterList &(int)> &get_solver_params,
     Core::IO::Verbositylevel verbosity, const bool translate_params_to_belos)
-    : comm_(comm), params_(Teuchos::rcp(new Teuchos::ParameterList()))
+    : comm_(comm), params_(Teuchos::RCP(new Teuchos::ParameterList()))
 {
   if (translate_params_to_belos)
     *params_ = translate_solver_parameters(inparams, get_solver_params, verbosity);
@@ -181,12 +181,12 @@ void Core::LinAlg::Solver::setup(Teuchos::RCP<Epetra_Operator> matrix,
     if ("belos" == solvertype)
     {
       solver_ =
-          Teuchos::rcp(new Core::LinearSolver::IterativeSolver<Epetra_Operator, Epetra_MultiVector>(
+          Teuchos::RCP(new Core::LinearSolver::IterativeSolver<Epetra_Operator, Epetra_MultiVector>(
               comm_, Solver::params()));
     }
     else if ("umfpack" == solvertype or "superlu" == solvertype)
     {
-      solver_ = Teuchos::rcp(
+      solver_ = Teuchos::RCP(
           new Core::LinearSolver::DirectSolver<Epetra_Operator, Epetra_MultiVector>(solvertype));
     }
     else

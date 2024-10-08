@@ -94,12 +94,12 @@ void MultiScale::MicroStatic::set_up_homogenization()
   }
 
   // create map based on the determined dofs of prescribed and free nodes
-  pdof_ = Teuchos::rcp(new Epetra_Map(-1, np_, pdof.data(), 0, discret_->get_comm()));
-  fdof_ = Teuchos::rcp(new Epetra_Map(-1, ndof_ - np_, fdof.data(), 0, discret_->get_comm()));
+  pdof_ = Teuchos::RCP(new Epetra_Map(-1, np_, pdof.data(), 0, discret_->get_comm()));
+  fdof_ = Teuchos::RCP(new Epetra_Map(-1, ndof_ - np_, fdof.data(), 0, discret_->get_comm()));
 
   // create importer
-  importp_ = Teuchos::rcp(new Epetra_Import(*pdof_, *(discret_->dof_row_map())));
-  importf_ = Teuchos::rcp(new Epetra_Import(*fdof_, *(discret_->dof_row_map())));
+  importp_ = Teuchos::RCP(new Epetra_Import(*pdof_, *(discret_->dof_row_map())));
+  importf_ = Teuchos::RCP(new Epetra_Import(*fdof_, *(discret_->dof_row_map())));
 
   // create vector containing material coordinates of prescribed nodes
   Core::LinAlg::Vector<double> Xp_temp(*pdof_);
@@ -143,7 +143,7 @@ void MultiScale::MicroStatic::set_up_homogenization()
   // now create D and its transpose DT (following Miehe et al., 2002)
   // NOTE: D_ has the same row GIDs (0-8), but different col IDs on different procs (corresponding
   // to pdof_).
-  D_ = Teuchos::rcp(new Epetra_MultiVector(*pdof_, 9));
+  D_ = Teuchos::RCP(new Epetra_MultiVector(*pdof_, 9));
 
   for (int n = 0; n < np_ / 3; ++n)
   {
@@ -175,7 +175,7 @@ void MultiScale::MicroStatic::set_up_homogenization()
     (*(DT(8)))[3 * n + 2] = (*Xp_)[3 * n + 1];
   }
 
-  rhs_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->dof_row_map()), 9));
+  rhs_ = Teuchos::RCP(new Epetra_MultiVector(*(discret_->dof_row_map()), 9));
 
   for (int i = 0; i < 9; ++i)
   {

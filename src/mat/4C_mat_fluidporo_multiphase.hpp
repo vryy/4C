@@ -147,7 +147,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new FluidPoroMultiPhase(*this));
+      return Teuchos::RCP(new FluidPoroMultiPhase(*this));
     }
 
     /// return permeability

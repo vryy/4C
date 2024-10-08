@@ -288,7 +288,7 @@ Teuchos::RCP<Cut::FacetGraph> Cut::FacetGraph::create(
   switch (dim)
   {
     case 3:
-      fg = Teuchos::rcp(new FacetGraph(sides, facets));
+      fg = Teuchos::RCP(new FacetGraph(sides, facets));
       break;
     default:
       FOUR_C_THROW("Unsupported element dimension!");

@@ -30,11 +30,11 @@ Teuchos::RCP<FBI::FBIGeometryCoupler> FBI::GeometryCouplerFactory::create_geomet
 
   if (presort_strategy == Inpar::FBI::BeamToFluidPreSortStrategy::bruteforce)
   {
-    coupler = Teuchos::rcp(new FBI::FBIGeometryCoupler());
+    coupler = Teuchos::RCP(new FBI::FBIGeometryCoupler());
   }
   else if (presort_strategy == Inpar::FBI::BeamToFluidPreSortStrategy::binning)
   {
-    coupler = Teuchos::rcp(new FBI::FBIBinningGeometryCoupler());
+    coupler = Teuchos::RCP(new FBI::FBIBinningGeometryCoupler());
   }
   else
     FOUR_C_THROW("Unknown Beam to Fluid PreSort Strategy");

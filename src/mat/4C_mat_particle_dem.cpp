@@ -38,7 +38,7 @@ Mat::PAR::ParticleMaterialDEM::ParticleMaterialDEM(const Core::Mat::PAR::Paramet
  *---------------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ParticleMaterialDEM::create_material()
 {
-  return Teuchos::rcp(new Mat::ParticleMaterialDEM(this));
+  return Teuchos::RCP(new Mat::ParticleMaterialDEM(this));
 }
 
 /*---------------------------------------------------------------------------*

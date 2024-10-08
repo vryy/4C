@@ -172,7 +172,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::init(bool isale, int nds_disp, int nds_vel
   // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
   sysmat_ =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27, false, true));
+      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27, false, true));
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
@@ -230,9 +230,9 @@ void POROFLUIDMULTIPHASE::TimIntImpl::init(bool isale, int nds_disp, int nds_vel
   while (stream_dbc_funct >> stream) starting_dbc_funct_.push_back(static_cast<int>(stream));
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
-  dbcmaps_with_volfracpress_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
-  dbcmaps_starting_condition_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
+  dbcmaps_ = Teuchos::RCP(new Core::LinAlg::MapExtractor());
+  dbcmaps_with_volfracpress_ = Teuchos::RCP(new Core::LinAlg::MapExtractor());
+  dbcmaps_starting_condition_ = Teuchos::RCP(new Core::LinAlg::MapExtractor());
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
@@ -282,7 +282,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::init(bool isale, int nds_disp, int nds_vel
   num_domainint_funct_ = domainint_funct_.size();
 
   // the values of the integrals
-  domain_integrals_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(num_domainint_funct_));
+  domain_integrals_ = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(num_domainint_funct_));
 
   // -------------------------------------------------------------------
   // set element parameters
@@ -294,10 +294,10 @@ void POROFLUIDMULTIPHASE::TimIntImpl::init(bool isale, int nds_disp, int nds_vel
   // -------------------------------------------------------------------
   if (artery_coupling_active_)
     strategy_ =
-        Teuchos::rcp(new POROFLUIDMULTIPHASE::MeshtyingStrategyArtery(this, params_, poroparams_));
+        Teuchos::RCP(new POROFLUIDMULTIPHASE::MeshtyingStrategyArtery(this, params_, poroparams_));
   else
     strategy_ =
-        Teuchos::rcp(new POROFLUIDMULTIPHASE::MeshtyingStrategyStd(this, params_, poroparams_));
+        Teuchos::RCP(new POROFLUIDMULTIPHASE::MeshtyingStrategyStd(this, params_, poroparams_));
   // check if initial fields match
   strategy_->check_initial_fields(phinp_);
   // set the nearby ele pairs
@@ -308,7 +308,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::init(bool isale, int nds_disp, int nds_vel
   // -------------------------------------------------------------------
   // create a solver
   // -------------------------------------------------------------------
-  solver_ = Teuchos::rcp(
+  solver_ = Teuchos::RCP(
       new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber_),
           discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -624,7 +624,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> POROFLUIDMULTIPHASE::TimIntImpl::dof_row_map(unsigned nds) const
 {
-  return Teuchos::rcp(discret_->dof_row_map(nds), false);
+  return Teuchos::RCP(discret_->dof_row_map(nds), false);
 }
 
 /*----------------------------------------------------------------------*
@@ -883,7 +883,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_additional_dbc_for_vol_frac_press()
 
   // build map
   int nummydirichvals = mydirichdofs.size();
-  Teuchos::RCP<Epetra_Map> dirichmap = Teuchos::rcp(
+  Teuchos::RCP<Epetra_Map> dirichmap = Teuchos::RCP(
       new Epetra_Map(-1, nummydirichvals, mydirichdofs.data(), 0, discret_->get_comm()));
 
   // build vector of maps
@@ -942,7 +942,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_starting_dbc()
   }
 
   // build combined DBC map
-  Teuchos::RCP<Epetra_Map> additional_map = Teuchos::rcp(
+  Teuchos::RCP<Epetra_Map> additional_map = Teuchos::RCP(
       new Epetra_Map(-1, dirichlet_dofs.size(), dirichlet_dofs.data(), 0, discret_->get_comm()));
 
   std::vector<Teuchos::RCP<const Epetra_Map>> condition_maps;
@@ -1682,7 +1682,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
     for (int k = 0; k < numdof; k++)
     {
       Teuchos::RCP<Epetra_MultiVector> flux_k =
-          Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
+          Teuchos::RCP(new Epetra_MultiVector(*noderowmap, 3, true));
 
       std::ostringstream temp;
       temp << k + 1;
@@ -1711,7 +1711,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
     for (int k = 0; k < num_poro_dof; k++)
     {
       Teuchos::RCP<Epetra_MultiVector> velocity_k =
-          Teuchos::rcp(new Epetra_MultiVector(*element_row_map, num_dim, true));
+          Teuchos::RCP(new Epetra_MultiVector(*element_row_map, num_dim, true));
 
       for (int i = 0; i < velocity_k->MyLength(); ++i)
       {
@@ -1789,14 +1789,14 @@ void POROFLUIDMULTIPHASE::TimIntImpl::evaluate_error_compared_to_analytical_sol(
 
   // get (squared) error values
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(4));
+      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(4));
   discret_->evaluate_scalars(eleparams, errors);
   discret_->clear_state();
 
   // std::vector containing
   // [0]: relative L2 pressure error
   // [1]: relative H1 pressure error
-  Teuchos::RCP<std::vector<double>> relerror = Teuchos::rcp(new std::vector<double>(2));
+  Teuchos::RCP<std::vector<double>> relerror = Teuchos::RCP(new std::vector<double>(2));
 
   if (std::abs((*errors)[2]) > 1e-14)
     (*relerror)[0] = sqrt((*errors)[0]) / sqrt((*errors)[2]);
@@ -2053,7 +2053,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::set_initial_field(
 Teuchos::RCP<Core::UTILS::ResultTest> POROFLUIDMULTIPHASE::TimIntImpl::create_field_test()
 {
   strategy_->create_field_test();
-  return Teuchos::rcp(new POROFLUIDMULTIPHASE::ResultTest(*this));
+  return Teuchos::RCP(new POROFLUIDMULTIPHASE::ResultTest(*this));
 }
 
 /*----------------------------------------------------------------------*
@@ -2162,7 +2162,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::fd_check()
 
   // make a copy of state variables to undo perturbations later
   Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_original =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*phinp_));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*phinp_));
 
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
@@ -2181,7 +2181,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::fd_check()
 
   // make a copy of system right-hand side vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_original =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*residual_));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*residual_));
 
   // initialize counter for system matrix entries with failing finite difference check
   int counter(0);

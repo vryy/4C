@@ -176,7 +176,7 @@ Discret::ELEMENTS::ScaTraEleSTIThermo<distype>::ScaTraEleSTIThermo(
     : etempnp_(true),
 
       // initialize thermo diffusion manager
-      diffmanagerstithermo_(Teuchos::rcp(new ScaTraEleDiffManagerSTIThermo(numscal)))
+      diffmanagerstithermo_(Teuchos::RCP(new ScaTraEleDiffManagerSTIThermo(numscal)))
 {
   // safety check
   if (numscal != 1)

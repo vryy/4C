@@ -43,8 +43,8 @@ namespace
     {
       create_material_in_global_problem();
 
-      comm_ = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_WORLD));
-      test_discretization_ = Teuchos::rcp(new Core::FE::Discretization("dummy", comm_, 3));
+      comm_ = Teuchos::RCP(new Epetra_MpiComm(MPI_COMM_WORLD));
+      test_discretization_ = Teuchos::RCP(new Core::FE::Discretization("dummy", comm_, 3));
 
       Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
 
@@ -140,7 +140,7 @@ namespace
     {
       std::array<int, 4> nodeList{0, 2, 4, 10};  // GID list of first 4 elements
       Teuchos::RCP<Epetra_Map> node_row_map =
-          Teuchos::rcp(new Epetra_Map(-1, nodeList.size(), nodeList.data(), 0, *comm_));
+          Teuchos::RCP(new Epetra_Map(-1, nodeList.size(), nodeList.data(), 0, *comm_));
       Teuchos::RCP<Epetra_MultiVector> nodal_test_coordinates =
           test_discretization_->build_node_coordinates(node_row_map);
 
@@ -171,19 +171,19 @@ namespace
       {
         std::array<int, 2> nodeList{50, 62};
         node_row_map =
-            Teuchos::rcp(new Epetra_Map(-1, nodeList.size(), nodeList.data(), 0, *comm_));
+            Teuchos::RCP(new Epetra_Map(-1, nodeList.size(), nodeList.data(), 0, *comm_));
       }
       else if (comm_->MyPID() == 1)
       {
         std::array<int, 1> nodeList{114};
         node_row_map =
-            Teuchos::rcp(new Epetra_Map(-1, nodeList.size(), nodeList.data(), 0, *comm_));
+            Teuchos::RCP(new Epetra_Map(-1, nodeList.size(), nodeList.data(), 0, *comm_));
       }
       else if (comm_->MyPID() == 2)
       {
         std::array<int, 1> nodeList{212};
         node_row_map =
-            Teuchos::rcp(new Epetra_Map(-1, nodeList.size(), nodeList.data(), 0, *comm_));
+            Teuchos::RCP(new Epetra_Map(-1, nodeList.size(), nodeList.data(), 0, *comm_));
       }
 
       Teuchos::RCP<Epetra_MultiVector> nodal_test_coordinates =

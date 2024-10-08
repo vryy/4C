@@ -161,7 +161,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new ElchMat(*this));
+      return Teuchos::RCP(new ElchMat(*this));
     }
 
     // return number of Dof used for this problem type

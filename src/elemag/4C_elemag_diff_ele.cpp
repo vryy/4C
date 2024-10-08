@@ -60,7 +60,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiffType::create(
 {
   if (eletype == "ELECTROMAGNETICDIFF")
   {
-    return Teuchos::rcp(new Discret::ELEMENTS::ElemagDiff(id, owner));
+    return Teuchos::RCP(new Discret::ELEMENTS::ElemagDiff(id, owner));
   }
   return Teuchos::null;
 }
@@ -71,7 +71,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiffType::create(
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagDiffType::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Discret::ELEMENTS::ElemagDiff(id, owner));
+  return Teuchos::RCP(new Discret::ELEMENTS::ElemagDiff(id, owner));
 }
 
 void Discret::ELEMENTS::ElemagDiffType::nodal_block_information(

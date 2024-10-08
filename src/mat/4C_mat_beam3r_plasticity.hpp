@@ -204,7 +204,7 @@ namespace Mat
      */
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new BeamPlasticMaterial(*this));
+      return Teuchos::RCP(new BeamPlasticMaterial(*this));
     }
 
     //@}

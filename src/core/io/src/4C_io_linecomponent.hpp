@@ -472,13 +472,13 @@ namespace Input
       const bool none_allowed = false, const bool fortran_style = false)
   {
     definition->add_component(
-        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
+        Teuchos::RCP(new Input::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
     data.none_allowed = none_allowed;
     data.fortran_style = fortran_style;
-    definition->add_component(Teuchos::rcp(new Input::IntComponent(name, data)));
+    definition->add_component(Teuchos::RCP(new Input::IntComponent(name, data)));
   }
 
   /// add a separator followed by a number integer values
@@ -491,12 +491,12 @@ namespace Input
       const int defaultvalue = 0, const bool optional = false, const bool none_allowed = false)
   {
     definition->add_component(
-        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
+        Teuchos::RCP(new Input::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
     data.none_allowed = none_allowed;
-    definition->add_component(Teuchos::rcp(new Input::IntVectorComponent(name, size, data)));
+    definition->add_component(Teuchos::RCP(new Input::IntVectorComponent(name, size, data)));
   }
 
   /// add a separator followed by a number integer values
@@ -509,13 +509,13 @@ namespace Input
       const int defaultvalue = 0, const bool optional = false, const bool none_allowed = false)
   {
     definition->add_component(
-        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
+        Teuchos::RCP(new Input::SeparatorComponent(name, description, optional)));
     IntComponentData data{};
     data.default_value = defaultvalue;
     data.optional = optional;
     data.none_allowed = none_allowed;
     definition->add_component(
-        Teuchos::rcp(new Input::IntVectorComponent(name, LengthFromInt(sizename), data)));
+        Teuchos::RCP(new Input::IntVectorComponent(name, LengthFromInt(sizename), data)));
   }
 
   /// add a separator followed by a single real value
@@ -527,9 +527,9 @@ namespace Input
       const bool optional = false)
   {
     definition->add_component(
-        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
+        Teuchos::RCP(new Input::SeparatorComponent(name, description, optional)));
     definition->add_component(
-        Teuchos::rcp(new Input::RealComponent(name, {defaultvalue, optional})));
+        Teuchos::RCP(new Input::RealComponent(name, {defaultvalue, optional})));
   }
 
   /// add a separator followed by a number of real values
@@ -541,9 +541,9 @@ namespace Input
       const double defaultvalue = 0.0, const bool optional = false)
   {
     definition->add_component(
-        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
+        Teuchos::RCP(new Input::SeparatorComponent(name, description, optional)));
     definition->add_component(
-        Teuchos::rcp(new Input::RealVectorComponent(name, size, {defaultvalue, optional})));
+        Teuchos::RCP(new Input::RealVectorComponent(name, size, {defaultvalue, optional})));
   }
 
   /// add a separator followed by a number of real values
@@ -555,8 +555,8 @@ namespace Input
       const double defaultvalue = 0.0, const bool optional = false)
   {
     definition->add_component(
-        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
-    definition->add_component(Teuchos::rcp(
+        Teuchos::RCP(new Input::SeparatorComponent(name, description, optional)));
+    definition->add_component(Teuchos::RCP(
         new Input::RealVectorComponent(name, LengthFromInt(sizename), {defaultvalue, optional})));
   }
 
@@ -569,9 +569,9 @@ namespace Input
       const bool optional = false)
   {
     definition->add_component(
-        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
+        Teuchos::RCP(new Input::SeparatorComponent(name, description, optional)));
     definition->add_component(
-        Teuchos::rcp(new Input::StringComponent(name, defaultvalue, optional)));
+        Teuchos::RCP(new Input::StringComponent(name, defaultvalue, optional)));
   }
 
   /// add a separator followed by a single Boolean value
@@ -584,8 +584,8 @@ namespace Input
       const bool optional = false)
   {
     definition->add_component(
-        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
-    definition->add_component(Teuchos::rcp(new Input::BoolComponent(name, defaultvalue, optional)));
+        Teuchos::RCP(new Input::SeparatorComponent(name, description, optional)));
+    definition->add_component(Teuchos::RCP(new Input::BoolComponent(name, defaultvalue, optional)));
   }
 
   /*!
@@ -625,8 +625,8 @@ namespace Input
       const std::string& print_string, const bool optional = false)
   {
     definition->add_component(
-        Teuchos::rcp(new Input::SeparatorComponent(name, separator_description, optional)));
-    definition->add_component(Teuchos::rcp(
+        Teuchos::RCP(new Input::SeparatorComponent(name, separator_description, optional)));
+    definition->add_component(Teuchos::RCP(
         new Input::ProcessedComponent(name, process_operation, print_string, optional)));
   }
 
@@ -646,8 +646,8 @@ namespace Input
       const Teuchos::Array<std::string>& condvalues, bool optional = false)
   {
     definition->add_component(
-        Teuchos::rcp(new Input::SeparatorComponent(name, separator_description, optional)));
-    definition->add_component(Teuchos::rcp(
+        Teuchos::RCP(new Input::SeparatorComponent(name, separator_description, optional)));
+    definition->add_component(Teuchos::RCP(
         new Input::SelectionComponent(name, defaultvalue, datfilevalues, condvalues, optional)));
   }
 
@@ -666,8 +666,8 @@ namespace Input
       const Teuchos::Array<int>& condvalues, bool optional = false)
   {
     definition->add_component(
-        Teuchos::rcp(new Input::SeparatorComponent(name, separator_description, optional)));
-    definition->add_component(Teuchos::rcp(
+        Teuchos::RCP(new Input::SeparatorComponent(name, separator_description, optional)));
+    definition->add_component(Teuchos::RCP(
         new Input::SelectionComponent(name, defaultvalue, datfilevalues, condvalues, optional)));
   }
 

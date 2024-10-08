@@ -47,7 +47,7 @@ BEAMINTERACTION::BeamToBeamPointCouplingCondition::create_contact_pair(
     if (!ids_in_condition(ele_ptrs[0]->id(), ele_ptrs[1]->id())) return Teuchos::null;
 
     // Create the beam contact pair.
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair = Teuchos::rcp(
+    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair = Teuchos::RCP(
         new BeamToBeamPointCouplingPair<GEOMETRYPAIR::t_hermite>(rotational_penalty_parameter_,
             positional_penalty_parameter_, local_parameter_coordinates_));
     // Return the newly created pair.

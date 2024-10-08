@@ -709,7 +709,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::initial(RedAirway* ele, Teuchos::Pa
   const auto airway_params = ele->get_airway_params();
 
   std::vector<int> lmstride;
-  Teuchos::RCP<std::vector<int>> lmowner = Teuchos::rcp(new std::vector<int>);
+  Teuchos::RCP<std::vector<int>> lmowner = Teuchos::RCP(new std::vector<int>);
   ele->location_vector(discretization, lm, *lmowner, lmstride);
 
   // Calculate the length of airway element

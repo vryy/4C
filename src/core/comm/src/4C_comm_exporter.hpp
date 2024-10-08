@@ -561,7 +561,7 @@ namespace Core::Communication
         T* ptr = dynamic_cast<T*>(o);
         if (!ptr)
           FOUR_C_THROW("typename T in template does not implement ParObject (dynamic_cast failed)");
-        Teuchos::RCP<T> refptr = Teuchos::rcp(ptr);
+        Teuchos::RCP<T> refptr = Teuchos::RCP(ptr);
         // add object to my map
         parobjects_[gid] = refptr;
       }
@@ -613,7 +613,7 @@ namespace Core::Communication
 
       void unpack_object(int gid, UnpackBuffer& buffer) override
       {
-        Teuchos::RCP<T> obj = Teuchos::rcp(new T);
+        Teuchos::RCP<T> obj = Teuchos::RCP(new T);
         extract_from_pack(buffer, *obj);
 
         // add object to my map

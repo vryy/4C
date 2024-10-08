@@ -120,7 +120,7 @@ void SSI::SSIBase::setup()
   ssicoupling_->setup();
 
   // in case of an ssi  multi scale formulation we need to set the displacement here
-  auto dummy_vec = Teuchos::rcp(new Core::LinAlg::Vector<double>(
+  auto dummy_vec = Teuchos::RCP(new Core::LinAlg::Vector<double>(
       *Global::Problem::instance()->get_dis("structure")->dof_row_map(), true));
   ssicoupling_->set_mesh_disp(scatra_base_algorithm(), dummy_vec);
 
@@ -153,7 +153,7 @@ void SSI::SSIBase::setup()
     //   temperature is non primary variable. Only set, if function for temperature is given
     if (temperature_funct_num_ != -1)
     {
-      temperature_vector_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(
+      temperature_vector_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(
           *Global::Problem::instance()->get_dis("structure")->dof_row_map(2), true));
 
       temperature_vector_->PutScalar(
@@ -188,7 +188,7 @@ void SSI::SSIBase::setup()
 
   if (is_s2_i_kinetics_with_pseudo_contact())
   {
-    auto dummy_stress_state = Teuchos::rcp(new Core::LinAlg::Vector<double>(
+    auto dummy_stress_state = Teuchos::RCP(new Core::LinAlg::Vector<double>(
         *structure_field()->discretization()->dof_row_map(2), true));
     ssicoupling_->set_mechanical_stress_state(*scatra_field()->discretization(), dummy_stress_state,
         scatra_field()->nds_two_tensor_quantity());
@@ -207,7 +207,7 @@ void SSI::SSIBase::setup()
   // set up scatra-scatra interface coupling
   if (ssi_interface_meshtying())
   {
-    ssi_structure_meshtying_ = Teuchos::rcp(new SSI::UTILS::SSIMeshTying(
+    ssi_structure_meshtying_ = Teuchos::RCP(new SSI::UTILS::SSIMeshTying(
         "ssi_interface_meshtying", structure_->discretization(), true, true));
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
@@ -329,7 +329,7 @@ void SSI::SSIBase::init_discretizations(const Epetra_Comm& comm, const std::stri
         // create new condition
         const int num_conditions =
             static_cast<int>(scatra_manifold_dis->get_all_conditions().size());
-        auto cond = Teuchos::rcp(new Core::Conditions::Condition(num_conditions + 1,
+        auto cond = Teuchos::RCP(new Core::Conditions::Condition(num_conditions + 1,
             Core::Conditions::ScatraPartitioning, true, Core::Conditions::geometry_type_surface));
         cond->parameters().add("ConditionID", 0);
         cond->set_nodes(glob_node_ids);
@@ -432,18 +432,18 @@ SSI::RedistributionType SSI::SSIBase::init_field_coupling(const std::string& str
   switch (fieldcoupling_)
   {
     case Inpar::SSI::FieldCoupling::volume_match:
-      ssicoupling_ = Teuchos::rcp(new SSICouplingMatchingVolume());
+      ssicoupling_ = Teuchos::RCP(new SSICouplingMatchingVolume());
       break;
     case Inpar::SSI::FieldCoupling::volume_nonmatch:
-      ssicoupling_ = Teuchos::rcp(new SSICouplingNonMatchingVolume());
+      ssicoupling_ = Teuchos::RCP(new SSICouplingNonMatchingVolume());
       // redistribution is still performed inside
       redistribution_required = SSI::RedistributionType::binning;
       break;
     case Inpar::SSI::FieldCoupling::boundary_nonmatch:
-      ssicoupling_ = Teuchos::rcp(new SSICouplingNonMatchingBoundary());
+      ssicoupling_ = Teuchos::RCP(new SSICouplingNonMatchingBoundary());
       break;
     case Inpar::SSI::FieldCoupling::volumeboundary_match:
-      ssicoupling_ = Teuchos::rcp(new SSICouplingMatchingVolumeAndBoundary());
+      ssicoupling_ = Teuchos::RCP(new SSICouplingMatchingVolumeAndBoundary());
       redistribution_required = SSI::RedistributionType::match;
       break;
     default:
@@ -452,7 +452,7 @@ SSI::RedistributionType SSI::SSIBase::init_field_coupling(const std::string& str
 
   // initialize coupling objects including dof sets
   Global::Problem* problem = Global::Problem::instance();
-  ssicoupling_->init(problem->n_dim(), problem->get_dis(struct_disname), Teuchos::rcp(this, false));
+  ssicoupling_->init(problem->n_dim(), problem->get_dis(struct_disname), Teuchos::RCP(this, false));
 
   return redistribution_required;
 }
@@ -501,7 +501,7 @@ void SSI::SSIBase::test_results(const Epetra_Comm& comm) const
   problem->add_field_test(scatra_base_algorithm()->create_scatra_field_test());
   if (is_scatra_manifold())
     problem->add_field_test(scatra_manifold_base_algorithm()->create_scatra_field_test());
-  problem->add_field_test(Teuchos::rcp(new SSI::SSIResultTest(Teuchos::rcp(this, false))));
+  problem->add_field_test(Teuchos::RCP(new SSI::SSIResultTest(Teuchos::RCP(this, false))));
   problem->test_all(comm);
 }
 
@@ -763,7 +763,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
     else if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
                  structparams, "INT_STRATEGY") == Inpar::Solid::IntegrationStrategy::int_old)
     {
-      auto structure = Teuchos::rcp(new Adapter::StructureBaseAlgorithm(
+      auto structure = Teuchos::RCP(new Adapter::StructureBaseAlgorithm(
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
       structure_ = Teuchos::rcp_dynamic_cast<Adapter::SSIStructureWrapper>(
           structure->structure_field(), true);
@@ -783,7 +783,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
   // create and initialize scatra base algorithm.
   // scatra time integrator constructed and initialized inside.
   // mesh is written inside. cloning must happen before!
-  scatra_base_algorithm_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(*scatratimeparams,
+  scatra_base_algorithm_ = Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(*scatratimeparams,
       SSI::UTILS::modify_sca_tra_params(scatraparams),
       problem->solver_params(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle));
 
@@ -793,7 +793,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
   if (is_scatra_manifold())
   {
     scatra_manifold_base_algorithm_ =
-        Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(*scatratimeparams,
+        Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(*scatratimeparams,
             SSI::UTILS::clone_sca_tra_manifold_params(
                 scatraparams, globaltimeparams.sublist("MANIFOLD")),
             problem->solver_params(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
@@ -948,7 +948,7 @@ void SSI::SSIBase::setup_model_evaluator()
   // register the model evaluator if s2i condition with pseudo contact is available
   if (is_s2_i_kinetics_with_pseudo_contact())
   {
-    modelevaluator_ssi_base_ = Teuchos::rcp(new Solid::ModelEvaluator::BaseSSI());
+    modelevaluator_ssi_base_ = Teuchos::RCP(new Solid::ModelEvaluator::BaseSSI());
     structure_base_algorithm()->register_model_evaluator(
         "Basic Coupling Model", modelevaluator_ssi_base_);
   }

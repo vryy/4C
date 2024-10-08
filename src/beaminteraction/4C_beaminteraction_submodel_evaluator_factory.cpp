@@ -37,7 +37,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Factory::build_model_evaluators(
 {
   // create a new standard map
   Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> model_map =
-      Teuchos::rcp(new Solid::ModelEvaluator::BeamInteraction::Map());
+      Teuchos::RCP(new Solid::ModelEvaluator::BeamInteraction::Map());
 
   std::set<enum Inpar::BEAMINTERACTION::SubModelType>::const_iterator mt_iter;
   for (mt_iter = submodeltypes.begin(); mt_iter != submodeltypes.end(); ++mt_iter)
@@ -46,19 +46,19 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Factory::build_model_evaluators(
     {
       case Inpar::BEAMINTERACTION::submodel_beamcontact:
         (*model_map)[*mt_iter] =
-            Teuchos::rcp(new BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact());
+            Teuchos::RCP(new BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact());
         break;
       case Inpar::BEAMINTERACTION::submodel_crosslinking:
         (*model_map)[*mt_iter] =
-            Teuchos::rcp(new BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking());
+            Teuchos::RCP(new BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking());
         break;
       case Inpar::BEAMINTERACTION::submodel_spherebeamlink:
         (*model_map)[*mt_iter] =
-            Teuchos::rcp(new BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking());
+            Teuchos::RCP(new BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking());
         break;
       case Inpar::BEAMINTERACTION::submodel_potential:
         (*model_map)[*mt_iter] =
-            Teuchos::rcp(new BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential());
+            Teuchos::RCP(new BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential());
         break;
       default:
         FOUR_C_THROW("Not yet implemented!");

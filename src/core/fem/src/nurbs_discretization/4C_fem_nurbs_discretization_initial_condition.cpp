@@ -110,7 +110,7 @@ namespace
     // create empty mass matrix
     // -------------------------------------------------------------------
     Teuchos::RCP<Core::LinAlg::SparseMatrix> massmatrix =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 108, false, true));
+        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap, 108, false, true));
 
     // -------------------------------------------------------------------
     // create empty right hand side vector

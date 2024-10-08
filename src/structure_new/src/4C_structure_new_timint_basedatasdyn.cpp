@@ -128,7 +128,7 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
     timemax_ = sdynparams.get<double>("MAXTIME");
     stepmax_ = sdynparams.get<int>("NUMSTEP");
 
-    timer_ = Teuchos::rcp(new Teuchos::Time("", true));
+    timer_ = Teuchos::RCP(new Teuchos::Time("", true));
 
     dyntype_ = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
 
@@ -199,7 +199,7 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
     mid_time_energy_type_ =
         Teuchos::getIntegralValue<Inpar::Solid::MidAverageEnum>(sdynparams, "MIDTIME_ENERGY_TYPE");
     maxdivconrefinementlevel_ = sdynparams.get<int>("MAXDIVCONREFINEMENTLEVEL");
-    noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(xparams.sublist("NOX")));
+    noxparams_ = Teuchos::RCP(new Teuchos::ParameterList(xparams.sublist("NOX")));
     ptc_delta_init_ = sdynparams.get<double>("PTCDT");
   }
   // ---------------------------------------------------------------------------
@@ -326,7 +326,7 @@ void Solid::TimeInt::BaseDataSDyn::setup()
       case Inpar::Solid::model_beam_interaction_old:
       case Inpar::Solid::model_browniandyn:
       {
-        periodic_boundingbox_ = Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
+        periodic_boundingbox_ = Teuchos::RCP(new Core::Geo::MeshFree::BoundingBox());
         periodic_boundingbox_->init(Global::Problem::instance()->binning_strategy_params());
         Teuchos::RCP<Core::FE::Discretization> boundingbox_dis =
             Global::Problem::instance()->does_exist_dis("boundingbox")

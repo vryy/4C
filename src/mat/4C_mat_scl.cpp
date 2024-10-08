@@ -52,7 +52,7 @@ Mat::PAR::Scl::Scl(const Core::Mat::PAR::Parameter::Data& matdata)
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Scl::create_material()
 {
-  return Teuchos::rcp(new Mat::Scl(this));
+  return Teuchos::RCP(new Mat::Scl(this));
 }
 
 Mat::SclType Mat::SclType::instance_;

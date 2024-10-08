@@ -1199,12 +1199,12 @@ void SSTI::AssembleStrategyBlock::apply_structural_dbc_system_matrix(
     for (int iblock = 0; iblock < systemmatrix_block->cols(); ++iblock)
     {
       locsysmanager_structure->rotate_global_to_local(
-          Teuchos::rcp(&systemmatrix_block->matrix(position_structure(), iblock), false));
+          Teuchos::RCP(&systemmatrix_block->matrix(position_structure(), iblock), false));
       systemmatrix_block->matrix(position_structure(), iblock)
           .apply_dirichlet_with_trafo(
               *locsysmanager_structure->trafo(), *dbcmap_structure, iblock == position_structure());
       locsysmanager_structure->rotate_local_to_global(
-          Teuchos::rcp(&systemmatrix_block->matrix(position_structure(), iblock), false));
+          Teuchos::RCP(&systemmatrix_block->matrix(position_structure(), iblock), false));
     }
   }
 }
@@ -1231,7 +1231,7 @@ void SSTI::AssembleStrategySparse::apply_structural_dbc_system_matrix(
 
     // extract structural rows of global system matrix
     auto systemmatrix_structure =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap_structure, 27, false, true));
+        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap_structure, 27, false, true));
     Coupling::Adapter::MatrixLogicalSplitAndTransform()(*systemmatrix_sparse, *dofrowmap_structure,
         systemmatrix->domain_map(), 1.0, nullptr, nullptr, *systemmatrix_structure);
     systemmatrix_structure->complete(systemmatrix->domain_map(), *dofrowmap_structure);
@@ -1298,7 +1298,7 @@ void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<
 
     // apply pseudo Dirichlet conditions to transformed slave-side part of structural right-hand
     // side vector
-    auto zeros = Teuchos::rcp(new Core::LinAlg::Vector<double>(residual_structure.Map()));
+    auto zeros = Teuchos::RCP(new Core::LinAlg::Vector<double>(residual_structure.Map()));
 
     if (locsysmanager_structure != Teuchos::null)
       locsysmanager_structure->rotate_global_to_local(rhs_structure_master);
@@ -1337,12 +1337,12 @@ Teuchos::RCP<SSTI::AssembleStrategyBase> SSTI::build_assemble_strategy(
       {
         case Core::LinAlg::MatrixType::block_condition:
         {
-          assemblestrategy = Teuchos::rcp(new SSTI::AssembleStrategyBlockBlock(ssti_mono));
+          assemblestrategy = Teuchos::RCP(new SSTI::AssembleStrategyBlockBlock(ssti_mono));
           break;
         }
         case Core::LinAlg::MatrixType::sparse:
         {
-          assemblestrategy = Teuchos::rcp(new SSTI::AssembleStrategyBlockSparse(ssti_mono));
+          assemblestrategy = Teuchos::RCP(new SSTI::AssembleStrategyBlockSparse(ssti_mono));
           break;
         }
         default:
@@ -1355,7 +1355,7 @@ Teuchos::RCP<SSTI::AssembleStrategyBase> SSTI::build_assemble_strategy(
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      assemblestrategy = Teuchos::rcp(new SSTI::AssembleStrategySparse(ssti_mono));
+      assemblestrategy = Teuchos::RCP(new SSTI::AssembleStrategySparse(ssti_mono));
       break;
     }
     default:

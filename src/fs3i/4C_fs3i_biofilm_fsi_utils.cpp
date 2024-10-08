@@ -26,7 +26,7 @@ void FS3I::BioFilm::UTILS::scatra_change_config(Teuchos::RCP<Core::FE::Discretiz
 
   // Create Vector which holds all col-displacments of processor
   Teuchos::RCP<Core::LinAlg::Vector<double>> coldisp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*(dis->dof_col_map())));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*(dis->dof_col_map())));
 
   // Export row-displacments to col-displacements
   Core::LinAlg::export_to(*disp, *coldisp);

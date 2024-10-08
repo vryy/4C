@@ -190,7 +190,7 @@ namespace
 
     // the value of a Teuchos::ParameterList needs to be printable. Until we get rid of the
     // parameter list here, we wrap it into a Teuchos::RCP<> :(
-    auto gp_quantities = Teuchos::rcp<std::vector<double>>(new std::vector<double>());
+    auto gp_quantities = Teuchos::RCP<std::vector<double>>(new std::vector<double>());
     *gp_quantities = interpolate_quantity_to_point(shape_functions, *nodal_quantities);
 
     params.set(name, gp_quantities);

@@ -113,13 +113,13 @@ void Inpar::S2I::set_valid_conditions(
   // scatra-scatra interface mesh tying condition
   {
     // definition of scatra-scatra interface mesh tying line condition
-    auto s2imeshtyingline = Teuchos::rcp(
+    auto s2imeshtyingline = Teuchos::RCP(
         new Core::Conditions::ConditionDefinition("DESIGN S2I MESHTYING LINE CONDITIONS",
             "S2IMeshtying", "Scatra-scatra line interface mesh tying",
             Core::Conditions::S2IMeshtying, true, Core::Conditions::geometry_type_line));
 
     // definition of scatra-scatra interface mesh tying surface condition
-    auto s2imeshtyingsurf = Teuchos::rcp(
+    auto s2imeshtyingsurf = Teuchos::RCP(
         new Core::Conditions::ConditionDefinition("DESIGN S2I MESHTYING SURF CONDITIONS",
             "S2IMeshtying", "Scatra-scatra surface interface mesh tying",
             Core::Conditions::S2IMeshtying, true, Core::Conditions::geometry_type_surface));
@@ -127,8 +127,8 @@ void Inpar::S2I::set_valid_conditions(
     // insert input file line components into condition definitions
     for (const auto& cond : {s2imeshtyingline, s2imeshtyingsurf})
     {
-      cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
-      cond->add_component(Teuchos::rcp(new Input::SelectionComponent("interface side", "Undefined",
+      cond->add_component(Teuchos::RCP(new Input::IntComponent("ConditionID")));
+      cond->add_component(Teuchos::RCP(new Input::SelectionComponent("interface side", "Undefined",
           Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
           Teuchos::tuple<int>(
               Inpar::S2I::side_undefined, Inpar::S2I::side_slave, Inpar::S2I::side_master))));
@@ -141,7 +141,7 @@ void Inpar::S2I::set_valid_conditions(
   // scatra-scatra interface no evaluation condition
   {
     // definition of scatra-scatra interface no evaluation line condition
-    auto s2inoevaluationline = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+    auto s2inoevaluationline = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
         "DESIGN S2I NO EVALUATION LINE CONDITIONS", "S2INoEvaluation",
         "Scatra-scatra interface no evaluation line condition. This condition can be used to "
         "deactivate the evaluation of the corresponding `S2IKinetics` condition. Another usage "
@@ -151,7 +151,7 @@ void Inpar::S2I::set_valid_conditions(
         Core::Conditions::S2INoEvaluation, true, Core::Conditions::geometry_type_line));
 
     // definition of scatra-scatra interface no evaluation surface condition
-    auto s2inoevaluationsurf = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+    auto s2inoevaluationsurf = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
         "DESIGN S2I NO EVALUATION SURF CONDITIONS", "S2INoEvaluation",
         "Scatra-scatra interface no evaluation surface condition. This condition can be used to "
         "deactivate the evaluation of the corresponding `S2IKinetics` condition. Another usage "
@@ -163,8 +163,8 @@ void Inpar::S2I::set_valid_conditions(
     // insert input file line components into condition definitions
     for (const auto& cond : {s2inoevaluationline, s2inoevaluationsurf})
     {
-      cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
-      cond->add_component(Teuchos::rcp(new Input::SelectionComponent("interface side", "Undefined",
+      cond->add_component(Teuchos::RCP(new Input::IntComponent("ConditionID")));
+      cond->add_component(Teuchos::RCP(new Input::SelectionComponent("interface side", "Undefined",
           Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
           Teuchos::tuple<int>(
               Inpar::S2I::side_undefined, Inpar::S2I::side_slave, Inpar::S2I::side_master))));
@@ -177,25 +177,25 @@ void Inpar::S2I::set_valid_conditions(
   // scatra-scatra interface kinetics condition
   {
     // definition of scatra-scatra interface kinetics point condition
-    auto s2ikineticspoint = Teuchos::rcp(
+    auto s2ikineticspoint = Teuchos::RCP(
         new Core::Conditions::ConditionDefinition("DESIGN S2I KINETICS POINT CONDITIONS",
             "S2IKinetics", "Scatra-scatra line interface kinetics", Core::Conditions::S2IKinetics,
             true, Core::Conditions::geometry_type_point));
 
     // definition of scatra-scatra interface kinetics line condition
-    auto s2ikineticsline = Teuchos::rcp(
+    auto s2ikineticsline = Teuchos::RCP(
         new Core::Conditions::ConditionDefinition("DESIGN S2I KINETICS LINE CONDITIONS",
             "S2IKinetics", "Scatra-scatra line interface kinetics", Core::Conditions::S2IKinetics,
             true, Core::Conditions::geometry_type_line));
 
     // definition of scatra-scatra interface kinetics surface condition
-    auto s2ikineticssurf = Teuchos::rcp(
+    auto s2ikineticssurf = Teuchos::RCP(
         new Core::Conditions::ConditionDefinition("DESIGN S2I KINETICS SURF CONDITIONS",
             "S2IKinetics", "Scatra-scatra surface interface kinetics",
             Core::Conditions::S2IKinetics, true, Core::Conditions::geometry_type_surface));
 
     // Macro-micro coupling condition for micro scale in multi-scale scalar transport problems
-    auto multiscalecouplingpoint = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+    auto multiscalecouplingpoint = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
         "DESIGN SCATRA MULTI-SCALE COUPLING POINT CONDITIONS", "ScatraMultiScaleCoupling",
         "Scalar transport multi-scale coupling condition",
         Core::Conditions::ScatraMultiScaleCoupling, false, Core::Conditions::geometry_type_point));
@@ -222,16 +222,16 @@ void Inpar::S2I::set_valid_conditions(
             // constant and linear permeability
             std::vector<Teuchos::RCP<Input::LineComponent>> constlinperm;
 
-            constlinperm.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
-            constlinperm.emplace_back(Teuchos::rcp(new Input::IntComponent("NUMSCAL")));
+            constlinperm.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("NUMSCAL")));
+            constlinperm.emplace_back(Teuchos::RCP(new Input::IntComponent("NUMSCAL")));
             constlinperm.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("PERMEABILITIES")));
-            constlinperm.emplace_back(Teuchos::rcp(
+                Teuchos::RCP(new Input::SeparatorComponent("PERMEABILITIES")));
+            constlinperm.emplace_back(Teuchos::RCP(
                 new Input::RealVectorComponent("PERMEABILITIES", Input::LengthFromInt("NUMSCAL"))));
 
             constlinperm.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
-            constlinperm.emplace_back(Teuchos::rcp(new Input::IntComponent("IS_PSEUDO_CONTACT")));
+                Teuchos::RCP(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
+            constlinperm.emplace_back(Teuchos::RCP(new Input::IntComponent("IS_PSEUDO_CONTACT")));
 
             kinetic_model_choices.emplace(Inpar::S2I::kinetics_constperm,
                 std::make_pair("ConstantPermeability", constlinperm));
@@ -243,23 +243,23 @@ void Inpar::S2I::set_valid_conditions(
             // Butler-Volmer
             std::vector<Teuchos::RCP<Input::LineComponent>> butlervolmer;
             // total number of existing scalars
-            butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
-            butlervolmer.emplace_back(Teuchos::rcp(new Input::IntComponent("NUMSCAL")));
+            butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("NUMSCAL")));
+            butlervolmer.emplace_back(Teuchos::RCP(new Input::IntComponent("NUMSCAL")));
             butlervolmer.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("STOICHIOMETRIES")));
-            butlervolmer.emplace_back(Teuchos::rcp(
+                Teuchos::RCP(new Input::SeparatorComponent("STOICHIOMETRIES")));
+            butlervolmer.emplace_back(Teuchos::RCP(
                 new Input::IntVectorComponent("STOICHIOMETRIES", Input::LengthFromInt("NUMSCAL"))));
-            butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("E-")));
-            butlervolmer.emplace_back(Teuchos::rcp(new Input::IntComponent("E-")));
-            butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("K_R")));
-            butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("K_R")));
-            butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA_A")));
-            butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_A")));
-            butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA_C")));
-            butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_C")));
+            butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("E-")));
+            butlervolmer.emplace_back(Teuchos::RCP(new Input::IntComponent("E-")));
+            butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("K_R")));
+            butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("K_R")));
+            butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("ALPHA_A")));
+            butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_A")));
+            butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("ALPHA_C")));
+            butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_C")));
             butlervolmer.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
-            butlervolmer.emplace_back(Teuchos::rcp(new Input::IntComponent("IS_PSEUDO_CONTACT")));
+                Teuchos::RCP(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
+            butlervolmer.emplace_back(Teuchos::RCP(new Input::IntComponent("IS_PSEUDO_CONTACT")));
 
             // same components can be reused for multiple models
             kinetic_model_choices.emplace(
@@ -277,29 +277,29 @@ void Inpar::S2I::set_valid_conditions(
             std::vector<Teuchos::RCP<Input::LineComponent>> butlervolmerpeltier;
 
             butlervolmerpeltier.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
-            butlervolmerpeltier.emplace_back(Teuchos::rcp(new Input::IntComponent("NUMSCAL")));
+                Teuchos::RCP(new Input::SeparatorComponent("NUMSCAL")));
+            butlervolmerpeltier.emplace_back(Teuchos::RCP(new Input::IntComponent("NUMSCAL")));
             butlervolmerpeltier.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("STOICHIOMETRIES")));
-            butlervolmerpeltier.emplace_back(Teuchos::rcp(
+                Teuchos::RCP(new Input::SeparatorComponent("STOICHIOMETRIES")));
+            butlervolmerpeltier.emplace_back(Teuchos::RCP(
                 new Input::IntVectorComponent("STOICHIOMETRIES", Input::LengthFromInt("NUMSCAL"))));
-            butlervolmerpeltier.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("E-")));
-            butlervolmerpeltier.emplace_back(Teuchos::rcp(new Input::IntComponent("E-")));
-            butlervolmerpeltier.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("K_R")));
-            butlervolmerpeltier.emplace_back(Teuchos::rcp(new Input::RealComponent("K_R")));
+            butlervolmerpeltier.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("E-")));
+            butlervolmerpeltier.emplace_back(Teuchos::RCP(new Input::IntComponent("E-")));
+            butlervolmerpeltier.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("K_R")));
+            butlervolmerpeltier.emplace_back(Teuchos::RCP(new Input::RealComponent("K_R")));
             butlervolmerpeltier.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("ALPHA_A")));
-            butlervolmerpeltier.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_A")));
+                Teuchos::RCP(new Input::SeparatorComponent("ALPHA_A")));
+            butlervolmerpeltier.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_A")));
             butlervolmerpeltier.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("ALPHA_C")));
-            butlervolmerpeltier.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_C")));
+                Teuchos::RCP(new Input::SeparatorComponent("ALPHA_C")));
+            butlervolmerpeltier.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_C")));
             butlervolmerpeltier.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
+                Teuchos::RCP(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
             butlervolmerpeltier.emplace_back(
-                Teuchos::rcp(new Input::IntComponent("IS_PSEUDO_CONTACT")));
+                Teuchos::RCP(new Input::IntComponent("IS_PSEUDO_CONTACT")));
             butlervolmerpeltier.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("PELTIER")));
-            butlervolmerpeltier.emplace_back(Teuchos::rcp(new Input::RealComponent("PELTIER")));
+                Teuchos::RCP(new Input::SeparatorComponent("PELTIER")));
+            butlervolmerpeltier.emplace_back(Teuchos::RCP(new Input::RealComponent("PELTIER")));
 
             kinetic_model_choices.emplace(kinetics_butlervolmerpeltier,
                 std::make_pair("Butler-Volmer-Peltier", std::move(butlervolmerpeltier)));
@@ -310,38 +310,38 @@ void Inpar::S2I::set_valid_conditions(
             std::vector<Teuchos::RCP<Input::LineComponent>> butlervolmerreducedcapacitance;
             // total number of existing scalars
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
+                Teuchos::RCP(new Input::SeparatorComponent("NUMSCAL")));
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::IntComponent("NUMSCAL")));
+                Teuchos::RCP(new Input::IntComponent("NUMSCAL")));
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("STOICHIOMETRIES")));
-            butlervolmerreducedcapacitance.emplace_back(Teuchos::rcp(
+                Teuchos::RCP(new Input::SeparatorComponent("STOICHIOMETRIES")));
+            butlervolmerreducedcapacitance.emplace_back(Teuchos::RCP(
                 new Input::IntVectorComponent("STOICHIOMETRIES", Input::LengthFromInt("NUMSCAL"))));
 
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("E-")));
+                Teuchos::RCP(new Input::SeparatorComponent("E-")));
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::IntComponent("E-")));
+                Teuchos::RCP(new Input::IntComponent("E-")));
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("K_R")));
+                Teuchos::RCP(new Input::SeparatorComponent("K_R")));
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("K_R")));
+                Teuchos::RCP(new Input::RealComponent("K_R")));
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("CAPACITANCE")));
+                Teuchos::RCP(new Input::SeparatorComponent("CAPACITANCE")));
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("CAPACITANCE")));
+                Teuchos::RCP(new Input::RealComponent("CAPACITANCE")));
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("ALPHA_A")));
+                Teuchos::RCP(new Input::SeparatorComponent("ALPHA_A")));
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("ALPHA_A")));
+                Teuchos::RCP(new Input::RealComponent("ALPHA_A")));
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("ALPHA_C")));
+                Teuchos::RCP(new Input::SeparatorComponent("ALPHA_C")));
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("ALPHA_C")));
+                Teuchos::RCP(new Input::RealComponent("ALPHA_C")));
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
+                Teuchos::RCP(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
             butlervolmerreducedcapacitance.emplace_back(
-                Teuchos::rcp(new Input::IntComponent("IS_PSEUDO_CONTACT")));
+                Teuchos::RCP(new Input::IntComponent("IS_PSEUDO_CONTACT")));
 
             kinetic_model_choices.emplace(kinetics_butlervolmerreducedcapacitance,
                 std::make_pair(
@@ -353,39 +353,39 @@ void Inpar::S2I::set_valid_conditions(
             std::vector<Teuchos::RCP<Input::LineComponent>> butlervolmerresistance;
 
             butlervolmerresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
-            butlervolmerresistance.emplace_back(Teuchos::rcp(new Input::IntComponent("NUMSCAL")));
+                Teuchos::RCP(new Input::SeparatorComponent("NUMSCAL")));
+            butlervolmerresistance.emplace_back(Teuchos::RCP(new Input::IntComponent("NUMSCAL")));
             butlervolmerresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("STOICHIOMETRIES")));
-            butlervolmerresistance.emplace_back(Teuchos::rcp(
+                Teuchos::RCP(new Input::SeparatorComponent("STOICHIOMETRIES")));
+            butlervolmerresistance.emplace_back(Teuchos::RCP(
                 new Input::IntVectorComponent("STOICHIOMETRIES", Input::LengthFromInt("NUMSCAL"))));
 
-            butlervolmerresistance.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("E-")));
-            butlervolmerresistance.emplace_back(Teuchos::rcp(new Input::IntComponent("E-")));
-            butlervolmerresistance.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("K_R")));
-            butlervolmerresistance.emplace_back(Teuchos::rcp(new Input::RealComponent("K_R")));
+            butlervolmerresistance.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("E-")));
+            butlervolmerresistance.emplace_back(Teuchos::RCP(new Input::IntComponent("E-")));
+            butlervolmerresistance.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("K_R")));
+            butlervolmerresistance.emplace_back(Teuchos::RCP(new Input::RealComponent("K_R")));
             butlervolmerresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("ALPHA_A")));
-            butlervolmerresistance.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_A")));
+                Teuchos::RCP(new Input::SeparatorComponent("ALPHA_A")));
+            butlervolmerresistance.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_A")));
             butlervolmerresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("ALPHA_C")));
-            butlervolmerresistance.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_C")));
+                Teuchos::RCP(new Input::SeparatorComponent("ALPHA_C")));
+            butlervolmerresistance.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_C")));
             butlervolmerresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
+                Teuchos::RCP(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
             butlervolmerresistance.emplace_back(
-                Teuchos::rcp(new Input::IntComponent("IS_PSEUDO_CONTACT")));
+                Teuchos::RCP(new Input::IntComponent("IS_PSEUDO_CONTACT")));
             butlervolmerresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("RESISTANCE")));
+                Teuchos::RCP(new Input::SeparatorComponent("RESISTANCE")));
             butlervolmerresistance.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("RESISTANCE")));
+                Teuchos::RCP(new Input::RealComponent("RESISTANCE")));
             butlervolmerresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("CONVTOL_IMPLBUTLERVOLMER")));
+                Teuchos::RCP(new Input::SeparatorComponent("CONVTOL_IMPLBUTLERVOLMER")));
             butlervolmerresistance.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("CONVTOL_IMPLBUTLERVOLMER")));
+                Teuchos::RCP(new Input::RealComponent("CONVTOL_IMPLBUTLERVOLMER")));
             butlervolmerresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("ITEMAX_IMPLBUTLERVOLMER")));
+                Teuchos::RCP(new Input::SeparatorComponent("ITEMAX_IMPLBUTLERVOLMER")));
             butlervolmerresistance.emplace_back(
-                Teuchos::rcp(new Input::IntComponent("ITEMAX_IMPLBUTLERVOLMER")));
+                Teuchos::RCP(new Input::IntComponent("ITEMAX_IMPLBUTLERVOLMER")));
 
             kinetic_model_choices.emplace(kinetics_butlervolmerresistance,
                 std::make_pair("Butler-Volmer_Resistance", std::move(butlervolmerresistance)));
@@ -396,46 +396,46 @@ void Inpar::S2I::set_valid_conditions(
             std::vector<Teuchos::RCP<Input::LineComponent>> butlervolmerreducedwithresistance;
 
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
+                Teuchos::RCP(new Input::SeparatorComponent("NUMSCAL")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::IntComponent("NUMSCAL")));
+                Teuchos::RCP(new Input::IntComponent("NUMSCAL")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("STOICHIOMETRIES")));
-            butlervolmerreducedwithresistance.emplace_back(Teuchos::rcp(
+                Teuchos::RCP(new Input::SeparatorComponent("STOICHIOMETRIES")));
+            butlervolmerreducedwithresistance.emplace_back(Teuchos::RCP(
                 new Input::IntVectorComponent("STOICHIOMETRIES", Input::LengthFromInt("NUMSCAL"))));
 
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("E-")));
+                Teuchos::RCP(new Input::SeparatorComponent("E-")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::IntComponent("E-")));
+                Teuchos::RCP(new Input::IntComponent("E-")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("K_R")));
+                Teuchos::RCP(new Input::SeparatorComponent("K_R")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("K_R")));
+                Teuchos::RCP(new Input::RealComponent("K_R")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("ALPHA_A")));
+                Teuchos::RCP(new Input::SeparatorComponent("ALPHA_A")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("ALPHA_A")));
+                Teuchos::RCP(new Input::RealComponent("ALPHA_A")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("ALPHA_C")));
+                Teuchos::RCP(new Input::SeparatorComponent("ALPHA_C")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("ALPHA_C")));
+                Teuchos::RCP(new Input::RealComponent("ALPHA_C")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
+                Teuchos::RCP(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::IntComponent("IS_PSEUDO_CONTACT")));
+                Teuchos::RCP(new Input::IntComponent("IS_PSEUDO_CONTACT")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("RESISTANCE")));
+                Teuchos::RCP(new Input::SeparatorComponent("RESISTANCE")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("RESISTANCE")));
+                Teuchos::RCP(new Input::RealComponent("RESISTANCE")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("CONVTOL_IMPLBUTLERVOLMER")));
+                Teuchos::RCP(new Input::SeparatorComponent("CONVTOL_IMPLBUTLERVOLMER")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("CONVTOL_IMPLBUTLERVOLMER")));
+                Teuchos::RCP(new Input::RealComponent("CONVTOL_IMPLBUTLERVOLMER")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("ITEMAX_IMPLBUTLERVOLMER")));
+                Teuchos::RCP(new Input::SeparatorComponent("ITEMAX_IMPLBUTLERVOLMER")));
             butlervolmerreducedwithresistance.emplace_back(
-                Teuchos::rcp(new Input::IntComponent("ITEMAX_IMPLBUTLERVOLMER")));
+                Teuchos::RCP(new Input::IntComponent("ITEMAX_IMPLBUTLERVOLMER")));
 
             kinetic_model_choices.emplace(kinetics_butlervolmerreducedresistance,
                 std::make_pair("Butler-VolmerReduced_Resistance",
@@ -446,40 +446,40 @@ void Inpar::S2I::set_valid_conditions(
             // Butler-Volmer-reduced-thermoresistance
             std::vector<Teuchos::RCP<Input::LineComponent>> butlervolmerreducedthermo;
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
+                Teuchos::RCP(new Input::SeparatorComponent("NUMSCAL")));
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::IntComponent("NUMSCAL")));
+                Teuchos::RCP(new Input::IntComponent("NUMSCAL")));
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("STOICHIOMETRIES")));
-            butlervolmerreducedthermo.emplace_back(Teuchos::rcp(
+                Teuchos::RCP(new Input::SeparatorComponent("STOICHIOMETRIES")));
+            butlervolmerreducedthermo.emplace_back(Teuchos::RCP(
                 new Input::IntVectorComponent("STOICHIOMETRIES", Input::LengthFromInt("NUMSCAL"))));
 
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("E-")));
-            butlervolmerreducedthermo.emplace_back(Teuchos::rcp(new Input::IntComponent("E-")));
+                Teuchos::RCP(new Input::SeparatorComponent("E-")));
+            butlervolmerreducedthermo.emplace_back(Teuchos::RCP(new Input::IntComponent("E-")));
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("K_R")));
-            butlervolmerreducedthermo.emplace_back(Teuchos::rcp(new Input::RealComponent("K_R")));
+                Teuchos::RCP(new Input::SeparatorComponent("K_R")));
+            butlervolmerreducedthermo.emplace_back(Teuchos::RCP(new Input::RealComponent("K_R")));
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("ALPHA_A")));
+                Teuchos::RCP(new Input::SeparatorComponent("ALPHA_A")));
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("ALPHA_A")));
+                Teuchos::RCP(new Input::RealComponent("ALPHA_A")));
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("ALPHA_C")));
+                Teuchos::RCP(new Input::SeparatorComponent("ALPHA_C")));
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("ALPHA_C")));
+                Teuchos::RCP(new Input::RealComponent("ALPHA_C")));
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
+                Teuchos::RCP(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::IntComponent("IS_PSEUDO_CONTACT")));
+                Teuchos::RCP(new Input::IntComponent("IS_PSEUDO_CONTACT")));
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("THERMOPERM")));
+                Teuchos::RCP(new Input::SeparatorComponent("THERMOPERM")));
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("THERMOPERM")));
+                Teuchos::RCP(new Input::RealComponent("THERMOPERM")));
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("MOLAR_HEAT_CAPACITY")));
+                Teuchos::RCP(new Input::SeparatorComponent("MOLAR_HEAT_CAPACITY")));
             butlervolmerreducedthermo.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("MOLAR_HEAT_CAPACITY")));
+                Teuchos::RCP(new Input::RealComponent("MOLAR_HEAT_CAPACITY")));
 
             kinetic_model_choices.emplace(kinetics_butlervolmerreducedthermoresistance,
                 std::make_pair("Butler-VolmerReduced_ThermoResistance", butlervolmerreducedthermo));
@@ -490,19 +490,19 @@ void Inpar::S2I::set_valid_conditions(
             std::vector<Teuchos::RCP<Input::LineComponent>> constantinterfaceresistance;
 
             constantinterfaceresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
+                Teuchos::RCP(new Input::SeparatorComponent("ONOFF")));
             constantinterfaceresistance.emplace_back(
-                Teuchos::rcp(new Input::IntVectorComponent("ONOFF", 2)));
+                Teuchos::RCP(new Input::IntVectorComponent("ONOFF", 2)));
             constantinterfaceresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("RESISTANCE")));
+                Teuchos::RCP(new Input::SeparatorComponent("RESISTANCE")));
             constantinterfaceresistance.emplace_back(
-                Teuchos::rcp(new Input::RealComponent("RESISTANCE")));
+                Teuchos::RCP(new Input::RealComponent("RESISTANCE")));
             constantinterfaceresistance.emplace_back(new Input::SeparatorComponent("E-"));
             constantinterfaceresistance.emplace_back(new Input::IntComponent("E-"));
             constantinterfaceresistance.emplace_back(
-                Teuchos::rcp(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
+                Teuchos::RCP(new Input::SeparatorComponent("IS_PSEUDO_CONTACT")));
             constantinterfaceresistance.emplace_back(
-                Teuchos::rcp(new Input::IntComponent("IS_PSEUDO_CONTACT")));
+                Teuchos::RCP(new Input::IntComponent("IS_PSEUDO_CONTACT")));
 
             kinetic_model_choices.emplace(
                 kinetics_constantinterfaceresistance, std::make_pair("ConstantInterfaceResistance",
@@ -518,8 +518,8 @@ void Inpar::S2I::set_valid_conditions(
         }  // kinetic models for scatra-scatra interface kinetics
 
         // insert kinetic models into vector with slave-side condition components
-        slaveside.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("KINETIC_MODEL")));
-        slaveside.emplace_back(Teuchos::rcp(new Input::SwitchComponent(
+        slaveside.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("KINETIC_MODEL")));
+        slaveside.emplace_back(Teuchos::RCP(new Input::SwitchComponent(
             "KINETIC_MODEL", kinetics_butlervolmer, kinetic_model_choices)));
 
         // add all components from slave side to multi-scale condition
@@ -540,10 +540,10 @@ void Inpar::S2I::set_valid_conditions(
     for (const auto& cond : {s2ikineticspoint, s2ikineticsline, s2ikineticssurf})
     {
       // interface ID
-      cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+      cond->add_component(Teuchos::RCP(new Input::IntComponent("ConditionID")));
 
       // insert interface sides as line components
-      cond->add_component(Teuchos::rcp(
+      cond->add_component(Teuchos::RCP(
           new Input::SwitchComponent("interface side", side_undefined, interface_choices)));
 
       // insert condition definitions into global list of valid condition definitions
@@ -560,60 +560,60 @@ void Inpar::S2I::set_valid_conditions(
   {
     // definition of scatra-scatra interface coupling line condition involving interface layer
     // growth
-    auto s2igrowthline = Teuchos::rcp(
+    auto s2igrowthline = Teuchos::RCP(
         new Core::Conditions::ConditionDefinition("DESIGN S2I KINETICS GROWTH LINE CONDITIONS",
             "S2IKineticsGrowth", "Scatra-scatra line interface layer growth kinetics",
             Core::Conditions::S2IKineticsGrowth, true, Core::Conditions::geometry_type_line));
 
     // definition of scatra-scatra interface coupling surface condition involving interface layer
     // growth
-    auto s2igrowthsurf = Teuchos::rcp(
+    auto s2igrowthsurf = Teuchos::RCP(
         new Core::Conditions::ConditionDefinition("DESIGN S2I KINETICS GROWTH SURF CONDITIONS",
             "S2IKineticsGrowth", "Scatra-scatra surface interface layer growth kinetics",
             Core::Conditions::S2IKineticsGrowth, true, Core::Conditions::geometry_type_surface));
 
     // Prepare components of Butler-Volmer condition
     std::vector<Teuchos::RCP<Input::LineComponent>> butlervolmer;
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::IntComponent("NUMSCAL")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("STOICHIOMETRIES")));
-    butlervolmer.emplace_back(Teuchos::rcp(
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("NUMSCAL")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::IntComponent("NUMSCAL")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("STOICHIOMETRIES")));
+    butlervolmer.emplace_back(Teuchos::RCP(
         new Input::IntVectorComponent("STOICHIOMETRIES", Input::LengthFromInt("NUMSCAL"))));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("E-")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::IntComponent("E-")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("K_R")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("K_R")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA_A")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_A")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA_C")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_C")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("MOLMASS")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("MOLMASS")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("DENSITY")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("density")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("CONDUCTIVITY")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("CONDUCTIVITY")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("REGTYPE")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SelectionComponent("REGTYPE",
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("E-")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::IntComponent("E-")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("K_R")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("K_R")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("ALPHA_A")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_A")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("ALPHA_C")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_C")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("MOLMASS")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("MOLMASS")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("DENSITY")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("density")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("CONDUCTIVITY")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("CONDUCTIVITY")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("REGTYPE")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SelectionComponent("REGTYPE",
         "trigonometrical",
         Teuchos::tuple<std::string>("none", "polynomial", "Hein", "trigonometrical"),
         Teuchos::tuple<int>(Inpar::S2I::regularization_none, Inpar::S2I::regularization_polynomial,
             Inpar::S2I::regularization_hein, Inpar::S2I::regularization_trigonometrical))));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("REGPAR")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("REGPAR")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("INITTHICKNESS")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("INITTHICKNESS")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("REGPAR")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("REGPAR")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("INITTHICKNESS")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("INITTHICKNESS")));
 
 
     for (const auto& cond : {s2igrowthline, s2igrowthsurf})
     {
       // interface ID
-      cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+      cond->add_component(Teuchos::RCP(new Input::IntComponent("ConditionID")));
 
       // add kinetic models as input file line components
-      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("KINETIC_MODEL")));
+      cond->add_component(Teuchos::RCP(new Input::SeparatorComponent("KINETIC_MODEL")));
       cond->add_component(
-          Teuchos::rcp(new Input::SwitchComponent("KINETIC_MODEL", growth_kinetics_butlervolmer,
+          Teuchos::RCP(new Input::SwitchComponent("KINETIC_MODEL", growth_kinetics_butlervolmer,
               {{growth_kinetics_butlervolmer, std::make_pair("Butler-Volmer", butlervolmer)}})));
 
       // insert condition definitions into global list of valid condition definitions
@@ -624,12 +624,12 @@ void Inpar::S2I::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // scatra-scatra interface with micro-macro coupling for space-charge layers
   {
-    auto s2isclcond = Teuchos::rcp(
+    auto s2isclcond = Teuchos::RCP(
         new Core::Conditions::ConditionDefinition("DESIGN S2I SCL COUPLING SURF CONDITIONS",
             "S2ISCLCoupling", "Scatra-scatra surface with SCL micro-macro coupling between",
             Core::Conditions::S2ISCLCoupling, true, Core::Conditions::geometry_type_surface));
 
-    s2isclcond->add_component(Teuchos::rcp(new Input::SelectionComponent("interface side",
+    s2isclcond->add_component(Teuchos::RCP(new Input::SelectionComponent("interface side",
         "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
         Teuchos::tuple<int>(
             Inpar::S2I::side_undefined, Inpar::S2I::side_slave, Inpar::S2I::side_master))));

@@ -82,10 +82,10 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
 
   if (numcondlines > 0)  // if there is at least one coupling bc
   {
-    map3_dnp_ = Teuchos::rcp(new std::map<std::string, double>);
-    map3_dn_ = Teuchos::rcp(new std::map<std::string, double>);
-    map_red_dnp_ = Teuchos::rcp(new std::map<std::string, double>);
-    map_red_dn_ = Teuchos::rcp(new std::map<std::string, double>);
+    map3_dnp_ = Teuchos::RCP(new std::map<std::string, double>);
+    map3_dn_ = Teuchos::RCP(new std::map<std::string, double>);
+    map_red_dnp_ = Teuchos::RCP(new std::map<std::string, double>);
+    map_red_dn_ = Teuchos::RCP(new std::map<std::string, double>);
     // -------------------------------------------------------------------
     // get the maximum allowable number of iterations at the boundary
     // which should be the same!
@@ -146,7 +146,7 @@ FLD::UTILS::FluidCouplingWrapperBase::FluidCouplingWrapperBase(
       // ------------------------------------------------------------------
       // allocate the coupling bc class members for every case
       // ------------------------------------------------------------------
-      Teuchos::RCP<FluidCouplingBc> couplingbc = Teuchos::rcp(
+      Teuchos::RCP<FluidCouplingBc> couplingbc = Teuchos::RCP(
           new FluidCouplingBc(discret_3d_, discret_red_d_, output_, dt_f3_, dt_rm_, condid, i, j));
 
       // -----------------------------------------------------------------
@@ -423,7 +423,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::apply_boundary_conditions(
     // reduced-D time subscale
     // -----------------------------------------------------------------
     Teuchos::RCP<std::map<std::string, double>> map3D_inter_to_Red =
-        Teuchos::rcp(new std::map<std::string, double>);
+        Teuchos::RCP(new std::map<std::string, double>);
     double dstep = 1.0 / double(NumOfSteps);
 
     // -----------------------------------------------------------------
@@ -468,7 +468,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::apply_boundary_conditions(
       (*map3D_inter_to_Red)[var_str] = var;
     }
 
-    Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::rcp(new Teuchos::ParameterList);
+    Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::RCP(new Teuchos::ParameterList);
     //    params->set("3D map of values", map3_Dnp_);
     params->set("3D map of values", map3D_inter_to_Red);
     params->set("reducedD map of values", map_red_dnp_);
@@ -1003,7 +1003,7 @@ double FLD::UTILS::FluidCouplingBc::pressure_calculation(double time, double dta
 
   // get elemental flowrates ...
   Teuchos::RCP<Core::LinAlg::Vector<double>> myStoredPressures =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap, 100));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap, 100));
   const std::string condstring("Art_3D_redD_CouplingCond");
   discret_3d_->evaluate_condition(eleparams, myStoredPressures, condstring, condid);
 

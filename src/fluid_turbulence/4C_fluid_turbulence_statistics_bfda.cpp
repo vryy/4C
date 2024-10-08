@@ -182,7 +182,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   // push coordinates in vectors (copy zavcoords to a new vector zcoordinates)
   //----------------------------------------------------------------------
   //  {
-  zcoordinates_ = Teuchos::rcp(new std::vector<double>);
+  zcoordinates_ = Teuchos::RCP(new std::vector<double>);
 
   for (std::set<double, LineSortCriterion>::iterator coord1 = zavcoords.begin();
        coord1 != zavcoords.end(); ++coord1)
@@ -381,16 +381,16 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
   //----------------------------------------------------------------------
   // allocate arrays for sums of mean values
   //----------------------------------------------------------------------
-  zsumw_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  zsumw_ = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix);
   zsumw_->reshape(1, numzcoor_);
 
-  zsump_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  zsump_ = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix);
   zsump_->reshape(1, numzcoor_);
 
-  rsumw_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  rsumw_ = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix);
   rsumw_->reshape(numrstatlocations_, numPosEvaluation);
 
-  rsump_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+  rsump_ = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix);
   rsump_->reshape(numrstatlocations_, numPosEvaluation);
 
 
@@ -412,11 +412,11 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
     s.append(".flow_statistics_along_z");
     s2.append(".flow_statistics_evaluation_planes");
 
-    log = Teuchos::rcp(new std::ofstream(s.c_str(), std::ios::out));
+    log = Teuchos::RCP(new std::ofstream(s.c_str(), std::ios::out));
     (*log)
         << "# Statistics for turbulent incompressible flow of blood flowing through a channel\n\n";
 
-    log_2 = Teuchos::rcp(new std::ofstream(s2.c_str(), std::ios::out));
+    log_2 = Teuchos::RCP(new std::ofstream(s2.c_str(), std::ios::out));
     (*log_2)
         << "# Statistics for turbulent incompressible flow of blood flowing through a channel\n\n";
 
@@ -617,7 +617,7 @@ void FLD::TurbulenceStatisticsBfda::dump_statistics(int step)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics_along_z");  // s.append(".flow_statistics");
-    log = Teuchos::rcp(new std::ofstream(s.c_str(), std::ios::out));
+    log = Teuchos::RCP(new std::ofstream(s.c_str(), std::ios::out));
 
     // Output of mean velocity and pressure along z-axis
     (*log) << "Output file of FDA blood flow benchmark - evaluation of z-axis                \n";
@@ -642,7 +642,7 @@ void FLD::TurbulenceStatisticsBfda::dump_statistics(int step)
     //----------------------------------------------------------------------------------------------
     std::string s2(statistics_outfilename_);
     s2.append(".flow_statistics_evaluation_planes");
-    log_2 = Teuchos::rcp(new std::ofstream(s2.c_str(), std::ios::out));
+    log_2 = Teuchos::RCP(new std::ofstream(s2.c_str(), std::ios::out));
 
     // Output of mean velocity and pressure of evaluation planes
     (*log_2) << "Output file of FDA blood flow benchmark - evaluation of evaluation planes     \n";

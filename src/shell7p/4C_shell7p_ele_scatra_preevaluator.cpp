@@ -76,7 +76,7 @@ void Discret::ELEMENTS::Shell::pre_evaluate_scatra(Core::Elements::Element& ele,
 
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double>> myscalar =
-          Teuchos::rcp(new std::vector<double>(dof_index_array[1].lm_.size(), 0.0));
+          Teuchos::RCP(new std::vector<double>(dof_index_array[1].lm_.size(), 0.0));
 
       Core::FE::extract_my_values(*scalarnp, *myscalar, dof_index_array[1].lm_);
 
@@ -92,7 +92,7 @@ void Discret::ELEMENTS::Shell::pre_evaluate_scatra(Core::Elements::Element& ele,
 
       // create vector of gauss point values to be set in params list
       Teuchos::RCP<std::vector<std::vector<double>>> gpscalar =
-          Teuchos::rcp(new std::vector<std::vector<double>>(
+          Teuchos::RCP(new std::vector<std::vector<double>>(
               intpoints_midsurface_.num_points(), std::vector<double>(numscal, 0.0)));
 
       // allocate vector for shape functions and matrix for derivatives at gp

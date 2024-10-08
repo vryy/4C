@@ -25,7 +25,7 @@ EleMag::ElemagResultTest::ElemagResultTest(ElemagTimeInt& elemagalgo)
     : Core::UTILS::ResultTest("ELECTROMAGNETIC")
 {
   dis_ = elemagalgo.discretization();
-  error_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(4));
+  error_ = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(4));
   error_ = elemagalgo.compute_error();
 }
 

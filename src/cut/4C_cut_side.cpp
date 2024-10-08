@@ -40,7 +40,7 @@ Cut::Side::Side(int sid, const std::vector<Node*>& nodes, const std::vector<Edge
 
   if (sid > -1)
   {
-    boundingvolume_ = Teuchos::rcp(BoundingBox::create(*this));
+    boundingvolume_ = Teuchos::RCP(BoundingBox::create(*this));
   }
 }
 
@@ -984,7 +984,7 @@ void Cut::Side::make_owned_side_facets(Mesh& mesh, Element* element, plain_facet
   }
 
   // create the pointgraph for the element_side
-  Teuchos::RCP<Impl::PointGraph> pg = Teuchos::rcp(Impl::PointGraph::create(
+  Teuchos::RCP<Impl::PointGraph> pg = Teuchos::RCP(Impl::PointGraph::create(
       mesh, element, this, Impl::PointGraph::element_side, Impl::PointGraph::all_lines));
 
   for (Impl::PointGraph::facet_iterator i = pg->fbegin(); i != pg->fend(); ++i)
@@ -1037,7 +1037,7 @@ void Cut::Side::make_owned_side_facets(Mesh& mesh, Element* element, plain_facet
 void Cut::Side::make_internal_facets(Mesh& mesh, Element* element, plain_facet_set& facets)
 {
   // create the pointgraph for the cut_side
-  Teuchos::RCP<Impl::PointGraph> pg = Teuchos::rcp(Impl::PointGraph::create(
+  Teuchos::RCP<Impl::PointGraph> pg = Teuchos::RCP(Impl::PointGraph::create(
       mesh, element, this, Impl::PointGraph::cut_side, Impl::PointGraph::all_lines));
 
   for (Impl::PointGraph::facet_iterator i = pg->fbegin(); i != pg->fend(); ++i)

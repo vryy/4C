@@ -379,7 +379,7 @@ namespace BEAMINTERACTION
       std::vector<int> colgids(coleleset.begin(), coleleset.end());
 
       // create new ele col map
-      Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(
+      Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::RCP(new Epetra_Map(
           -1, static_cast<int>(colgids.size()), colgids.data(), 0, discret->get_comm()));
 
       // temporarily extend ghosting
@@ -1262,7 +1262,7 @@ namespace BEAMINTERACTION
         std::vector<int> mapvec(eletypeset[i].begin(), eletypeset[i].end());
         eletypeset[i].clear();
         maps[i] =
-            Teuchos::rcp(new Epetra_Map(-1, mapvec.size(), mapvec.data(), 0, discret->get_comm()));
+            Teuchos::RCP(new Epetra_Map(-1, mapvec.size(), mapvec.data(), 0, discret->get_comm()));
       }
 
       eletypeextractor->setup(*discret()->element_row_map(), maps);

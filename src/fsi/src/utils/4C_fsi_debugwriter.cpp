@@ -27,13 +27,13 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<Core::FE::Discretization> dis)
 {
   std::vector<std::string> conditions_to_copy = {"FSICoupling"};
   Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discreator =
-      Teuchos::rcp(new Core::FE::DiscretizationCreatorBase());
+      Teuchos::RCP(new Core::FE::DiscretizationCreatorBase());
   dis_ = discreator->create_matching_discretization_from_condition(
       *dis, "FSICoupling", "boundary", "BELE3_3", conditions_to_copy);
 
   dis_->fill_complete(true, true, true);
 
-  coup_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  coup_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
   const int ndim = Global::Problem::instance()->n_dim();
   coup_->setup_coupling(*dis, *dis_, *Core::Conditions::condition_node_row_map(*dis, "FSICoupling"),
       *dis_->node_row_map(), ndim);
@@ -49,7 +49,7 @@ void FSI::UTILS::DebugWriter::new_time_step(int step, std::string name)
   if (name != "") s << "-" << name;
   s << "-step" << step;
 
-  control_ = Teuchos::rcp(new Core::IO::OutputControl(dis_->get_comm(),
+  control_ = Teuchos::RCP(new Core::IO::OutputControl(dis_->get_comm(),
       "none",                                   // we do not have a problem type
       Core::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
       "debug-output",                           // no input file either
@@ -80,7 +80,7 @@ void FSI::UTILS::DebugWriter::new_iteration()
 void FSI::UTILS::DebugWriter::write_vector(
     const std::string& name, const Core::LinAlg::Vector<double>& v)
 {
-  writer_->write_vector(name, coup_->master_to_slave(Teuchos::rcp(&v, false)));
+  writer_->write_vector(name, coup_->master_to_slave(Teuchos::RCP(&v, false)));
 }
 
 
@@ -102,7 +102,7 @@ void FSI::UTILS::SimpleDebugWriter::new_linear_system(int step, std::string name
   if (name != "") s << "-" << name;
   s << "-step" << step;
 
-  control_ = Teuchos::rcp(new Core::IO::OutputControl(dis_->get_comm(),
+  control_ = Teuchos::RCP(new Core::IO::OutputControl(dis_->get_comm(),
       "none",                                   // we do not have a problem type
       Core::FE::ShapeFunctionType::polynomial,  // this is a FE code ... no nurbs
       "debug-output",                           // no input file either
@@ -133,7 +133,7 @@ void FSI::UTILS::SimpleDebugWriter::new_iteration()
 void FSI::UTILS::SimpleDebugWriter::write_vector(
     const std::string& name, Core::LinAlg::Vector<double>& v)
 {
-  writer_->write_vector(name, Teuchos::rcp(&v, false));
+  writer_->write_vector(name, Teuchos::RCP(&v, false));
 }
 
 
@@ -142,11 +142,11 @@ void FSI::UTILS::SimpleDebugWriter::write_vector(
 FSI::UTILS::MonolithicDebugWriter::MonolithicDebugWriter(Monolithic& algorithm)
     : algorithm_(algorithm), counter_(0)
 {
-  struct_writer_ = Teuchos::rcp(
+  struct_writer_ = Teuchos::RCP(
       new SimpleDebugWriter(algorithm_.structure_field()->discretization(), "structure"));
   fluid_writer_ =
-      Teuchos::rcp(new SimpleDebugWriter(algorithm_.fluid_field()->discretization(), "fluid"));
-  ale_writer_ = Teuchos::rcp(
+      Teuchos::RCP(new SimpleDebugWriter(algorithm_.fluid_field()->discretization(), "fluid"));
+  ale_writer_ = Teuchos::RCP(
       new SimpleDebugWriter(algorithm_.ale_field()->write_access_discretization(), "ale"));
 }
 

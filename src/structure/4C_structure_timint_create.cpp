@@ -69,7 +69,7 @@ Teuchos::RCP<Solid::TimIntImpl> Solid::tim_int_impl_create(const Teuchos::Parame
           Global::Problem::instance()->structural_dynamic_params(), "PRESTRESS") !=
       Inpar::Solid::PreStress::none)
   {
-    sti = Teuchos::rcp(new Solid::TimIntPrestress(
+    sti = Teuchos::RCP(new Solid::TimIntPrestress(
         timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output));
     return sti;
   }
@@ -80,7 +80,7 @@ Teuchos::RCP<Solid::TimIntImpl> Solid::tim_int_impl_create(const Teuchos::Parame
     // Static analysis
     case Inpar::Solid::dyna_statics:
     {
-      sti = Teuchos::rcp(new Solid::TimIntStatics(
+      sti = Teuchos::RCP(new Solid::TimIntStatics(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output));
       break;
     }
@@ -88,7 +88,7 @@ Teuchos::RCP<Solid::TimIntImpl> Solid::tim_int_impl_create(const Teuchos::Parame
     // Generalised-alpha time integration
     case Inpar::Solid::dyna_genalpha:
     {
-      sti = Teuchos::rcp(new Solid::TimIntGenAlpha(
+      sti = Teuchos::RCP(new Solid::TimIntGenAlpha(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output));
       break;
     }
@@ -96,7 +96,7 @@ Teuchos::RCP<Solid::TimIntImpl> Solid::tim_int_impl_create(const Teuchos::Parame
     // One-step-theta (OST) time integration
     case Inpar::Solid::dyna_onesteptheta:
     {
-      sti = Teuchos::rcp(new Solid::TimIntOneStepTheta(
+      sti = Teuchos::RCP(new Solid::TimIntOneStepTheta(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output));
       break;
     }
@@ -139,21 +139,21 @@ Teuchos::RCP<Solid::TimIntExpl> Solid::tim_int_expl_create(const Teuchos::Parame
     // forward Euler time integration
     case Inpar::Solid::dyna_expleuler:
     {
-      sti = Teuchos::rcp(new Solid::TimIntExplEuler(
+      sti = Teuchos::RCP(new Solid::TimIntExplEuler(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output));
       break;
     }
     // central differences time integration
     case Inpar::Solid::dyna_centrdiff:
     {
-      sti = Teuchos::rcp(new Solid::TimIntCentrDiff(
+      sti = Teuchos::RCP(new Solid::TimIntCentrDiff(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output));
       break;
     }
     // Adams-Bashforth 2nd order (AB2) time integration
     case Inpar::Solid::dyna_ab2:
     {
-      sti = Teuchos::rcp(new Solid::TimIntAB2(
+      sti = Teuchos::RCP(new Solid::TimIntAB2(
           timeparams, ioflags, sdyn, xparams, actdis, solver, contactsolver, output));
       break;
     }

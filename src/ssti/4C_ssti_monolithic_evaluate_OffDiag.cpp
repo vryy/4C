@@ -94,11 +94,11 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
   {
     case Core::LinAlg::MatrixType::block_condition:
     {
-      slavematrix = Teuchos::rcp(
+      slavematrix = Teuchos::RCP(
           new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
               *blockmapstructure_, meshtying_strategy_thermo_->block_maps_slave(), 81, false,
               true));
-      mastermatrix = Teuchos::rcp(
+      mastermatrix = Teuchos::RCP(
           new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
               *blockmapstructure_, meshtying_strategy_thermo_->block_maps_master(), 81, false,
               true));
@@ -106,9 +106,9 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      slavematrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      slavematrix = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
           *meshtying_strategy_thermo_->coupling_adapter()->slave_dof_map(), 27, false, true));
-      mastermatrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      mastermatrix = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
           *meshtying_strategy_thermo_->coupling_adapter()->master_dof_map(), 27, false, true));
       break;
     }
@@ -297,13 +297,13 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
   Teuchos::RCP<Core::LinAlg::SparseOperator> evaluate_matrix;
   if (thermo_->scatra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
   {
-    evaluate_matrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+    evaluate_matrix = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
         *meshtying_strategy_thermo_->coupling_adapter()->slave_dof_map(), 27, false, true));
   }
   else
   {
     evaluate_matrix =
-        Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+        Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
             *blockmapstructure_, meshtying_strategy_thermo_->block_maps_slave(), 81, false, true));
   }
 

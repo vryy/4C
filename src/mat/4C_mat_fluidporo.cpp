@@ -629,14 +629,14 @@ namespace Mat::FLUIDPORO
     {
       case Mat::PAR::constant:
       case Mat::PAR::kozeny_carman:
-        return Teuchos::rcp(new Mat::FLUIDPORO::PoroIsotropyStrategy(params));
+        return Teuchos::RCP(new Mat::FLUIDPORO::PoroIsotropyStrategy(params));
       case Mat::PAR::const_material_transverse:
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             new Mat::FLUIDPORO::PoroConstantMaterialTransverseIsotropyStrategy(params));
       case Mat::PAR::const_material_orthotropic:
-        return Teuchos::rcp(new Mat::FLUIDPORO::PoroConstantMaterialOrthotropyStrategy(params));
+        return Teuchos::RCP(new Mat::FLUIDPORO::PoroConstantMaterialOrthotropyStrategy(params));
       case Mat::PAR::const_material_nodal_orthotropic:
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             new Mat::FLUIDPORO::PoroConstantMaterialNodalOrthotropyStrategy(params));
       default:
         return Teuchos::null;
@@ -690,7 +690,7 @@ Mat::PAR::FluidPoro::FluidPoro(const Core::Mat::PAR::Parameter::Data& matdata)
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoro::create_material()
 {
-  return Teuchos::rcp(new Mat::FluidPoro(this));
+  return Teuchos::RCP(new Mat::FluidPoro(this));
 }
 
 void Mat::PAR::FluidPoro::set_initial_porosity(double initial_porosity)

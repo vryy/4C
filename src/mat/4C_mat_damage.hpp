@@ -164,7 +164,7 @@ namespace Mat
     //! return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new Damage(*this));
+      return Teuchos::RCP(new Damage(*this));
     }
 
     //! check if element kinematics and material kinematics are compatible

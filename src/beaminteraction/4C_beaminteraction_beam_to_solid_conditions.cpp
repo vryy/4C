@@ -126,12 +126,12 @@ BEAMINTERACTION::BeamToSolidCondition::create_indirect_assembly_manager(
     if (Teuchos::rcp_dynamic_cast<const BeamToSolidSurfaceContactParams>(beam_to_solid_params_) ==
         Teuchos::null)
     {
-      mortar_manager = Teuchos::rcp(new BEAMINTERACTION::BeamToSolidMortarManager(
+      mortar_manager = Teuchos::RCP(new BEAMINTERACTION::BeamToSolidMortarManager(
           discret, beam_to_solid_params_, start_gid_lambda));
     }
     else
     {
-      mortar_manager = Teuchos::rcp(new BEAMINTERACTION::BeamToSolidMortarManagerContact(
+      mortar_manager = Teuchos::RCP(new BEAMINTERACTION::BeamToSolidMortarManagerContact(
           discret, beam_to_solid_params_, start_gid_lambda));
     }
 
@@ -140,7 +140,7 @@ BEAMINTERACTION::BeamToSolidCondition::create_indirect_assembly_manager(
     mortar_manager->set_local_maps(condition_contact_pairs_);
 
     // Create the indirect assembly manager with the mortar manager
-    return Teuchos::rcp(new SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect(mortar_manager));
+    return Teuchos::RCP(new SUBMODELEVALUATOR::BeamContactAssemblyManagerInDirect(mortar_manager));
   }
   return Teuchos::null;
 }
@@ -161,7 +161,7 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BeamToSolidConditionVolume
           "BEAM TO SOLID VOLUME MESHTYING");
 
   // Create the geometry evaluation data for this condition.
-  geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(
+  geometry_evaluation_data_ = Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>(
       new GEOMETRYPAIR::LineTo3DEvaluationData(input_parameter_list));
 }
 
@@ -190,22 +190,22 @@ BEAMINTERACTION::create_beam_to_solid_volume_pair_shape(const Core::FE::CellType
   switch (shape)
   {
     case Core::FE::CellType::hex8:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8, BtsTemplateArguments...>());
     case Core::FE::CellType::hex20:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20, BtsTemplateArguments...>());
     case Core::FE::CellType::hex27:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27, BtsTemplateArguments...>());
     case Core::FE::CellType::tet4:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4, BtsTemplateArguments...>());
     case Core::FE::CellType::tet10:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10, BtsTemplateArguments...>());
     case Core::FE::CellType::nurbs27:
-      return Teuchos::rcp(new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27,
+      return Teuchos::RCP(new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27,
           BtsTemplateArguments...>());
     default:
       FOUR_C_THROW("Wrong element type for solid element.");
@@ -223,19 +223,19 @@ BEAMINTERACTION::create_beam_to_solid_volume_pair_shape_no_nurbs(const Core::FE:
   switch (shape)
   {
     case Core::FE::CellType::hex8:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8, BtsTemplateArguments...>());
     case Core::FE::CellType::hex20:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20, BtsTemplateArguments...>());
     case Core::FE::CellType::hex27:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27, BtsTemplateArguments...>());
     case Core::FE::CellType::tet4:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4, BtsTemplateArguments...>());
     case Core::FE::CellType::tet10:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10, BtsTemplateArguments...>());
     default:
       FOUR_C_THROW("Wrong element type for solid element.");
@@ -363,7 +363,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::BeamToSolidConditionSurface(
       Global::Problem::instance()->beam_interaction_params().sublist(condition_name);
 
   // Create the geometry evaluation data for this condition.
-  geometry_evaluation_data_ = Teuchos::rcp<GEOMETRYPAIR::LineToSurfaceEvaluationData>(
+  geometry_evaluation_data_ = Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>(
       new GEOMETRYPAIR::LineToSurfaceEvaluationData(input_parameter_list));
 }
 
@@ -600,22 +600,22 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
             switch (shape)
             {
               case Core::FE::CellType::tri3:
-                return Teuchos::rcp(
+                return Teuchos::RCP(
                     new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_tri3>());
               case Core::FE::CellType::tri6:
-                return Teuchos::rcp(
+                return Teuchos::RCP(
                     new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_tri6>());
               case Core::FE::CellType::quad4:
-                return Teuchos::rcp(
+                return Teuchos::RCP(
                     new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_quad4>());
               case Core::FE::CellType::quad8:
-                return Teuchos::rcp(
+                return Teuchos::RCP(
                     new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_quad8>());
               case Core::FE::CellType::quad9:
-                return Teuchos::rcp(
+                return Teuchos::RCP(
                     new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_quad9>());
               case Core::FE::CellType::nurbs9:
-                return Teuchos::rcp(
+                return Teuchos::RCP(
                     new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_nurbs9>());
               default:
                 FOUR_C_THROW("Wrong element type for surface element.");
@@ -633,22 +633,22 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
               switch (shape)
               {
                 case Core::FE::CellType::tri3:
-                  return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  return Teuchos::RCP(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type, t_hermite, t_tri3>());
                 case Core::FE::CellType::tri6:
-                  return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  return Teuchos::RCP(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type, t_hermite, t_tri6>());
                 case Core::FE::CellType::quad4:
-                  return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  return Teuchos::RCP(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type, t_hermite, t_quad4>());
                 case Core::FE::CellType::quad8:
-                  return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  return Teuchos::RCP(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type, t_hermite, t_quad8>());
                 case Core::FE::CellType::quad9:
-                  return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  return Teuchos::RCP(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type, t_hermite, t_quad9>());
                 case Core::FE::CellType::nurbs9:
-                  return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  return Teuchos::RCP(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite,
                       t_nurbs9>());
                 default:
@@ -661,15 +661,15 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
               switch (shape)
               {
                 case Core::FE::CellType::quad4:
-                  return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  return Teuchos::RCP(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hermite,
                       t_quad4>());
                 case Core::FE::CellType::quad8:
-                  return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  return Teuchos::RCP(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite,
                       t_quad8>());
                 case Core::FE::CellType::quad9:
-                  return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
+                  return Teuchos::RCP(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite,
                       t_quad9>());
                 default:
@@ -735,22 +735,22 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
               switch (shape)
               {
                 case Core::FE::CellType::tri3:
-                  return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
+                  return Teuchos::RCP(new BeamToSolidSurfaceContactPairGapVariation<
                       line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri3>());
                 case Core::FE::CellType::tri6:
-                  return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
+                  return Teuchos::RCP(new BeamToSolidSurfaceContactPairGapVariation<
                       line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri6>());
                 case Core::FE::CellType::quad4:
-                  return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
+                  return Teuchos::RCP(new BeamToSolidSurfaceContactPairGapVariation<
                       line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad4>());
                 case Core::FE::CellType::quad8:
-                  return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
+                  return Teuchos::RCP(new BeamToSolidSurfaceContactPairGapVariation<
                       line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad8>());
                 case Core::FE::CellType::quad9:
-                  return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
+                  return Teuchos::RCP(new BeamToSolidSurfaceContactPairGapVariation<
                       line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad9>());
                 case Core::FE::CellType::nurbs9:
-                  return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
+                  return Teuchos::RCP(new BeamToSolidSurfaceContactPairGapVariation<
                       line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>,
                       t_hermite, t_nurbs9>());
                 default:
@@ -761,27 +761,27 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
               switch (shape)
               {
                 case Core::FE::CellType::tri3:
-                  return Teuchos::rcp(
+                  return Teuchos::RCP(
                       new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
                           t_hermite, t_tri3>());
                 case Core::FE::CellType::tri6:
-                  return Teuchos::rcp(
+                  return Teuchos::RCP(
                       new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
                           t_hermite, t_tri6>());
                 case Core::FE::CellType::quad4:
-                  return Teuchos::rcp(
+                  return Teuchos::RCP(
                       new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
                           t_hermite, t_quad4>());
                 case Core::FE::CellType::quad8:
-                  return Teuchos::rcp(
+                  return Teuchos::RCP(
                       new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
                           t_hermite, t_quad8>());
                 case Core::FE::CellType::quad9:
-                  return Teuchos::rcp(
+                  return Teuchos::RCP(
                       new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
                           t_hermite, t_quad9>());
                 case Core::FE::CellType::nurbs9:
-                  return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
+                  return Teuchos::RCP(new BeamToSolidSurfaceContactPairPotential<
                       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite,
                       t_nurbs9>());
                 default:
@@ -816,22 +816,22 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
               switch (shape)
               {
                 case Core::FE::CellType::tri3:
-                  return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
+                  return Teuchos::RCP(new BeamToSolidSurfaceContactPairGapVariation<
                       line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri3>());
                 case Core::FE::CellType::tri6:
-                  return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
+                  return Teuchos::RCP(new BeamToSolidSurfaceContactPairGapVariation<
                       line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri6>());
                 case Core::FE::CellType::quad4:
-                  return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
+                  return Teuchos::RCP(new BeamToSolidSurfaceContactPairGapVariation<
                       line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad4>());
                 case Core::FE::CellType::quad8:
-                  return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
+                  return Teuchos::RCP(new BeamToSolidSurfaceContactPairGapVariation<
                       line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad8>());
                 case Core::FE::CellType::quad9:
-                  return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
+                  return Teuchos::RCP(new BeamToSolidSurfaceContactPairGapVariation<
                       line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad9>());
                 case Core::FE::CellType::nurbs9:
-                  return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
+                  return Teuchos::RCP(new BeamToSolidSurfaceContactPairGapVariation<
                       line_to_surface_patch_scalar_type_fixed_size_1st_order<t_line2, t_nurbs9>,
                       t_line2, t_nurbs9>());
                 default:
@@ -842,27 +842,27 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
               switch (shape)
               {
                 case Core::FE::CellType::tri3:
-                  return Teuchos::rcp(
+                  return Teuchos::RCP(
                       new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
                           t_line2, t_tri3>());
                 case Core::FE::CellType::tri6:
-                  return Teuchos::rcp(
+                  return Teuchos::RCP(
                       new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
                           t_line2, t_tri6>());
                 case Core::FE::CellType::quad4:
-                  return Teuchos::rcp(
+                  return Teuchos::RCP(
                       new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
                           t_line2, t_quad4>());
                 case Core::FE::CellType::quad8:
-                  return Teuchos::rcp(
+                  return Teuchos::RCP(
                       new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
                           t_line2, t_quad8>());
                 case Core::FE::CellType::quad9:
-                  return Teuchos::rcp(
+                  return Teuchos::RCP(
                       new BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type,
                           t_line2, t_quad9>());
                 case Core::FE::CellType::nurbs9:
-                  return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
+                  return Teuchos::RCP(new BeamToSolidSurfaceContactPairPotential<
                       line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>, t_line2,
                       t_nurbs9>());
                 default:

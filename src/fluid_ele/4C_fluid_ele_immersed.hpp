@@ -183,12 +183,12 @@ namespace Discret
       void construct_element_rcp(int size) override
       {
         if (intpoint_has_projected_divergence_ == Teuchos::null)
-          intpoint_has_projected_divergence_ = Teuchos::rcp(new std::vector<int>(size, 0));
+          intpoint_has_projected_divergence_ = Teuchos::RCP(new std::vector<int>(size, 0));
         else
           intpoint_has_projected_divergence_->resize(size, 0);
 
         if (stored_projected_intpoint_divergence_ == Teuchos::null)
-          stored_projected_intpoint_divergence_ = Teuchos::rcp(new std::vector<double>(size, 0.0));
+          stored_projected_intpoint_divergence_ = Teuchos::RCP(new std::vector<double>(size, 0.0));
         else
           stored_projected_intpoint_divergence_->resize(size, 0.0);
       };

@@ -136,7 +136,7 @@ namespace Core::FE
                                                             ///< copied to the new discretization
     )
     {
-      Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(sourcedis.get_comm().Clone());
+      Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(sourcedis.get_comm().Clone());
       const int myrank = com->MyPID();
       const Epetra_Map* sourcenoderowmap = sourcedis.node_row_map();
 
@@ -147,11 +147,11 @@ namespace Core::FE
           dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&sourcedis);
 
       if (nurbsdis != nullptr)
-        targetdis = Teuchos::rcp(
+        targetdis = Teuchos::RCP(
             new Core::FE::Nurbs::NurbsDiscretization(discret_name, com, sourcedis.n_dim()));
       else
         targetdis =
-            Teuchos::rcp(new Core::FE::Discretization(discret_name, com, sourcedis.n_dim()));
+            Teuchos::RCP(new Core::FE::Discretization(discret_name, com, sourcedis.n_dim()));
 
       // construct new elements
       for (std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator sourceele_iter =
@@ -191,7 +191,7 @@ namespace Core::FE
           if (element_name == "")
           {
             // copy the source ele (created in fill complete of the discretization)
-            condele = Teuchos::rcp(sourceele->clone(), true);
+            condele = Teuchos::RCP(sourceele->clone(), true);
           }
           else
           {
@@ -222,9 +222,9 @@ namespace Core::FE
 
           // if the node cannot be dynamic casted to a control point, add the point as a node
           if (!control_point)
-            targetdis->add_node(Teuchos::rcp(new Core::Nodes::Node(gid, sourcenode->x(), myrank)));
+            targetdis->add_node(Teuchos::RCP(new Core::Nodes::Node(gid, sourcenode->x(), myrank)));
           else
-            targetdis->add_node(Teuchos::rcp(new Core::FE::Nurbs::ControlPoint(
+            targetdis->add_node(Teuchos::RCP(new Core::FE::Nurbs::ControlPoint(
                 gid, control_point->x(), control_point->w(), myrank)));
         }
       }
@@ -857,7 +857,7 @@ namespace Core::FE
     // create target discretization using a given clone strategy
     {
       Teuchos::RCP<Core::FE::DiscretizationCreator<CloneStrategy>> clonewizard =
-          Teuchos::rcp(new Core::FE::DiscretizationCreator<CloneStrategy>());
+          Teuchos::RCP(new Core::FE::DiscretizationCreator<CloneStrategy>());
 
       std::map<int, int> matmap;
       clonewizard->create_clone_field_mat_map(matmap, *sourcedis, *targetdis, clonefieldmatmap);
@@ -894,7 +894,7 @@ namespace Core::FE
     // create target discretization using a given clone strategy
     {
       Teuchos::RCP<Core::FE::DiscretizationCreator<CloneStrategy>> clonewizard =
-          Teuchos::rcp(new Core::FE::DiscretizationCreator<CloneStrategy>());
+          Teuchos::RCP(new Core::FE::DiscretizationCreator<CloneStrategy>());
 
       std::map<int, int> matmap;
       clonewizard->create_clone_field_mat_map(
@@ -929,7 +929,7 @@ namespace Core::FE
     // create target discretization using a given clone strategy
     {
       Teuchos::RCP<Core::FE::DiscretizationCreator<CloneStrategy>> clonewizard =
-          Teuchos::rcp(new Core::FE::DiscretizationCreator<CloneStrategy>());
+          Teuchos::RCP(new Core::FE::DiscretizationCreator<CloneStrategy>());
 
       std::map<int, int> matmap;
       clonewizard->create_clone_field_mat_map(matmap, sourcedis, targetdis, clonefieldmatmap);

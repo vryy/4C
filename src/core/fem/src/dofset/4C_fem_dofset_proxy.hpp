@@ -49,7 +49,7 @@ namespace Core::DOFSets
     ~DofSetProxy() override;
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSetProxy> clone() { return Teuchos::rcp(new DofSetProxy(*this)); }
+    virtual Teuchos::RCP<DofSetProxy> clone() { return Teuchos::RCP(new DofSetProxy(*this)); }
 
     /// Add Dof Set to list #static_dofsets_
     void add_dof_setto_list() override;

@@ -141,7 +141,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
     if (!pdiscret_.get_comm().MyPID())
       std::cout << "BTS-CO penalty         = " << btspp_ << std::endl;
 
-    tree_ = Teuchos::rcp(new Beam3ContactOctTree(sbeamcontact_, pdiscret_, *btsoldiscret_));
+    tree_ = Teuchos::RCP(new Beam3ContactOctTree(sbeamcontact_, pdiscret_, *btsoldiscret_));
   }
   else
   {
@@ -272,8 +272,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
       FOUR_C_THROW("potential-based beam interactions not implemented in parallel yet!");
 
     // initialize parameters of applied potential law
-    ki_ = Teuchos::rcp(new std::vector<double>);
-    mi_ = Teuchos::rcp(new std::vector<double>);
+    ki_ = Teuchos::RCP(new std::vector<double>);
+    mi_ = Teuchos::RCP(new std::vector<double>);
     ki_->clear();
     mi_->clear();
     // read potential law parameters from input and check
@@ -355,7 +355,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
             "no/invalid value for cutoff radius for Octree search for potential-based interaction "
             "pairs. Check your input file!");
 
-      pottree_ = Teuchos::rcp(new Beam3ContactOctTree(sbeampotential_, pdiscret_, *btsoldiscret_));
+      pottree_ = Teuchos::RCP(new Beam3ContactOctTree(sbeampotential_, pdiscret_, *btsoldiscret_));
     }
     else
     {
@@ -531,7 +531,7 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
   fc_->PutScalar(0.0);
 
   // initialize contact stiffness and uncomplete global stiffness
-  stiffc_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(stiffmatrix.range_map(), 100));
+  stiffc_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(stiffmatrix.range_map(), 100));
   stiffmatrix.un_complete();
 
 
@@ -636,8 +636,8 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   // the copied beam contact discretization.
 
   {
-    Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(pdiscret_.get_comm().Clone());
-    btsoldiscret_ = Teuchos::rcp(new Core::FE::Discretization(
+    Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(pdiscret_.get_comm().Clone());
+    btsoldiscret_ = Teuchos::RCP(new Core::FE::Discretization(
         (std::string) "beam to solid contact", comm, Global::Problem::instance()->n_dim()));
   }
   dofoffsetmap_.clear();
@@ -649,7 +649,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   {
     Core::Nodes::Node* node = problem_discret().l_col_node(i);
     if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
-    Teuchos::RCP<Core::Nodes::Node> newnode = Teuchos::rcp(node->clone());
+    Teuchos::RCP<Core::Nodes::Node> newnode = Teuchos::RCP(node->clone());
     if (BEAMINTERACTION::UTILS::is_beam_node(*newnode))
     {
       bt_sol_discret().add_node(newnode);
@@ -675,7 +675,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   {
     Core::Elements::Element* ele = problem_discret().l_col_element(i);
     if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
-    Teuchos::RCP<Core::Elements::Element> newele = Teuchos::rcp(ele->clone());
+    Teuchos::RCP<Core::Elements::Element> newele = Teuchos::RCP(ele->clone());
     if (BEAMINTERACTION::UTILS::is_beam_element(*newele) or
         BEAMINTERACTION::UTILS::is_rigid_sphere_element(*newele))
     {
@@ -726,7 +726,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
 
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
-      Teuchos::RCP<CONTACT::Node> cnode = Teuchos::rcp(
+      Teuchos::RCP<CONTACT::Node> cnode = Teuchos::RCP(
           new CONTACT::Node(node->id(), node->x(), node->owner(), problem_discret().dof(0, node),
               false,    // all solid elements are master elements
               false));  // no "initially active" decision necessary for beam to solid contact
@@ -774,7 +774,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       // ID in the problem discretization.
       Teuchos::RCP<Core::Elements::Element> ele = fool->second;
       Teuchos::RCP<CONTACT::Element> cele =
-          Teuchos::rcp(new CONTACT::Element(ele->id() + ggsize + maxproblemid + 1, ele->owner(),
+          Teuchos::RCP(new CONTACT::Element(ele->id() + ggsize + maxproblemid + 1, ele->owner(),
               ele->shape(), ele->num_node(), ele->node_ids(),
               false,    // all solid elements are master elements
               false));  // no nurbs allowed up to now
@@ -805,7 +805,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
 
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
-      Teuchos::RCP<Mortar::Node> mtnode = Teuchos::rcp(
+      Teuchos::RCP<Mortar::Node> mtnode = Teuchos::RCP(
           new Mortar::Node(node->id(), node->x(), node->owner(), problem_discret().dof(0, node),
               false));  // all solid elements are master elements
 
@@ -852,7 +852,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       // ID in the problem discretization.
       Teuchos::RCP<Core::Elements::Element> ele = fool->second;
       Teuchos::RCP<Mortar::Element> mtele =
-          Teuchos::rcp(new Mortar::Element(ele->id() + ggsize + maxproblemid + 1, ele->owner(),
+          Teuchos::RCP(new Mortar::Element(ele->id() + ggsize + maxproblemid + 1, ele->owner(),
               ele->shape(), ele->num_node(), ele->node_ids(),
               false,    // all solid elements are master elements
               false));  // no nurbs allowed up to now
@@ -869,10 +869,10 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   bt_sol_discret().fill_complete(false, false, false);
 
   // store the node and element row and column maps into this manager
-  noderowmap_ = Teuchos::rcp(new Epetra_Map(*(bt_sol_discret().node_row_map())));
-  elerowmap_ = Teuchos::rcp(new Epetra_Map(*(bt_sol_discret().element_row_map())));
-  nodecolmap_ = Teuchos::rcp(new Epetra_Map(*(bt_sol_discret().node_col_map())));
-  elecolmap_ = Teuchos::rcp(new Epetra_Map(*(bt_sol_discret().element_col_map())));
+  noderowmap_ = Teuchos::RCP(new Epetra_Map(*(bt_sol_discret().node_row_map())));
+  elerowmap_ = Teuchos::RCP(new Epetra_Map(*(bt_sol_discret().element_row_map())));
+  nodecolmap_ = Teuchos::RCP(new Epetra_Map(*(bt_sol_discret().node_col_map())));
+  elecolmap_ = Teuchos::RCP(new Epetra_Map(*(bt_sol_discret().element_col_map())));
 
   // build fully overlapping node and element maps
   // fill my own row node ids into vector (e)sdata
@@ -915,7 +915,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       esdata, erdata, (int)ertproc.size(), ertproc.data(), bt_sol_discret().get_comm());
 
   // build completely overlapping node map (on participating processors)
-  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(
+  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::RCP(
       new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, bt_sol_discret().get_comm()));
   sdata.clear();
   stproc.clear();
@@ -923,15 +923,15 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   allproc.clear();
 
   // build completely overlapping element map (on participating processors)
-  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
+  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::RCP(
       new Epetra_Map(-1, (int)erdata.size(), erdata.data(), 0, bt_sol_discret().get_comm()));
   esdata.clear();
   estproc.clear();
   erdata.clear();
 
   // store the fully overlapping node and element maps
-  nodefullmap_ = Teuchos::rcp(new Epetra_Map(*newnodecolmap));
-  elefullmap_ = Teuchos::rcp(new Epetra_Map(*newelecolmap));
+  nodefullmap_ = Teuchos::RCP(new Epetra_Map(*newnodecolmap));
+  elefullmap_ = Teuchos::RCP(new Epetra_Map(*newelecolmap));
 
   // pass new fully overlapping node and element maps to beam contact discretization
   bt_sol_discret().export_column_nodes(*newnodecolmap);

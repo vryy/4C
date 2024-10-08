@@ -559,7 +559,7 @@ Teuchos::RCP<Core::FE::ShapeValuesFace<distype>> Core::FE::ShapeValuesFaceCache<
 
   // this is expensive and should not be done too often
   Teuchos::RCP<ShapeValuesFace<distype>> svf;
-  svf = Teuchos::rcp(new ShapeValuesFace<distype>(params));
+  svf = Teuchos::RCP(new ShapeValuesFace<distype>(params));
 
   svf_cache_[params.to_int()] = svf;
 
@@ -604,7 +604,7 @@ Core::FE::ShapeValuesInteriorOnFaceCache<distype>::create(ShapeValuesFaceParams 
   Teuchos::RCP<Core::FE::GaussPoints> quadrature = Core::FE::GaussPointCache::instance().create(
       Core::FE::get_ele_face_shape_type(distype, params.face_), params.quadraturedegree_);
 
-  Teuchos::RCP<ShapeValuesInteriorOnFace> container = Teuchos::rcp(new ShapeValuesInteriorOnFace());
+  Teuchos::RCP<ShapeValuesInteriorOnFace> container = Teuchos::RCP(new ShapeValuesInteriorOnFace());
   container->shape(polySpace->size(), quadrature->num_points());
 
   Core::LinAlg::Matrix<nsd, nsd> trafo;

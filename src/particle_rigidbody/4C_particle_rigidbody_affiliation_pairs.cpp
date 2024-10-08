@@ -46,7 +46,7 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::write_restart() const
       particleengineinterface_->get_bin_discretization_writer();
 
   // prepare buffer
-  Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
+  Teuchos::RCP<std::vector<char>> buffer = Teuchos::RCP(new std::vector<char>);
 
   // pack all affiliation pairs
   if (not affiliationdata_.empty()) pack_all_affiliation_pairs(*buffer);
@@ -58,7 +58,7 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::read_restart(
     const std::shared_ptr<Core::IO::DiscretizationReader> reader)
 {
   // prepare buffer
-  Teuchos::RCP<std::vector<char>> buffer = Teuchos::rcp(new std::vector<char>);
+  Teuchos::RCP<std::vector<char>> buffer = Teuchos::RCP(new std::vector<char>);
 
   reader->read_char_vector(buffer, "RigidBodyAffiliationData");
 

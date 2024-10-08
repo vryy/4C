@@ -181,16 +181,16 @@ void Inpar::ElCh::set_valid_conditions(
   // electrode state of charge
 
   // definition of electrode state of charge surface and volume conditions
-  auto electrodesocline = Teuchos::rcp(
+  auto electrodesocline = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE LINE CONDITIONS",
           "ElectrodeSOC", "electrode state of charge line condition",
           Core::Conditions::ElectrodeSOC, true, Core::Conditions::geometry_type_line));
 
-  auto electrodesocsurf = Teuchos::rcp(
+  auto electrodesocsurf = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE SURF CONDITIONS",
           "ElectrodeSOC", "electrode state of charge surface condition",
           Core::Conditions::ElectrodeSOC, true, Core::Conditions::geometry_type_surface));
-  auto electrodesocvol = Teuchos::rcp(
+  auto electrodesocvol = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN ELECTRODE STATE OF CHARGE VOL CONDITIONS",
           "ElectrodeSOC", "electrode state of charge volume condition",
           Core::Conditions::ElectrodeSOC, true, Core::Conditions::geometry_type_volume));
@@ -198,8 +198,8 @@ void Inpar::ElCh::set_valid_conditions(
   for (const auto& cond : {electrodesocline, electrodesocsurf, electrodesocvol})
   {
     // insert input file line components into condition definitions
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ID")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+    cond->add_component(Teuchos::RCP(new Input::SeparatorComponent("ID")));
+    cond->add_component(Teuchos::RCP(new Input::IntComponent("ConditionID")));
     add_named_real(cond, "C_0%");
     add_named_real(cond, "C_100%");
     add_named_real(cond, "ONE_HOUR");
@@ -213,23 +213,23 @@ void Inpar::ElCh::set_valid_conditions(
   // cell voltage
 
   // definition of cell voltage point, line, and surface conditions
-  auto cellvoltagepoint = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto cellvoltagepoint = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN CELL VOLTAGE POINT CONDITIONS", "CellVoltagePoint", "cell voltage point condition",
       Core::Conditions::CellVoltage, false, Core::Conditions::geometry_type_point));
 
-  auto cellvoltageline = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto cellvoltageline = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN CELL VOLTAGE LINE CONDITIONS", "CellVoltage", "cell voltage line condition",
       Core::Conditions::CellVoltage, true, Core::Conditions::geometry_type_line));
 
-  auto cellvoltagesurf = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto cellvoltagesurf = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN CELL VOLTAGE SURF CONDITIONS", "CellVoltage", "cell voltage surface condition",
       Core::Conditions::CellVoltage, true, Core::Conditions::geometry_type_surface));
 
   for (const auto& cond : {cellvoltagepoint, cellvoltageline, cellvoltagesurf})
   {
     // insert input file line components into condition definitions
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ID")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+    cond->add_component(Teuchos::RCP(new Input::SeparatorComponent("ID")));
+    cond->add_component(Teuchos::RCP(new Input::IntComponent("ConditionID")));
 
     // insert condition definitions into global list of valid condition definitions
     condlist.emplace_back(cond);
@@ -244,120 +244,120 @@ void Inpar::ElCh::set_valid_conditions(
 
     // Butler-Volmer
     std::vector<Teuchos::RCP<Input::LineComponent>> butlervolmer;
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA_A")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_A")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA_C")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_C")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("I0")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("I0")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("GAMMA")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("GAMMA")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("REFCON")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("REFCON")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("DL_SPEC_CAP")));
-    butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("DL_SPEC_CAP")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("ALPHA_A")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_A")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("ALPHA_C")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_C")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("I0")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("I0")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("GAMMA")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("GAMMA")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("REFCON")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("REFCON")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("DL_SPEC_CAP")));
+    butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("DL_SPEC_CAP")));
     reaction_model_choices.emplace(
         butler_volmer, std::make_pair("Butler-Volmer", std::move(butlervolmer)));
 
     // Butler-Volmer Yang
     // parameter are identical to Butler-Volmer
     std::vector<Teuchos::RCP<Input::LineComponent>> butlervolmeryang;
-    butlervolmeryang.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA_A")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_A")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA_C")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_C")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("I0")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new Input::RealComponent("I0")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("GAMMA")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new Input::RealComponent("GAMMA")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("REFCON")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new Input::RealComponent("REFCON")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("DL_SPEC_CAP")));
-    butlervolmeryang.emplace_back(Teuchos::rcp(new Input::RealComponent("DL_SPEC_CAP")));
+    butlervolmeryang.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("ALPHA_A")));
+    butlervolmeryang.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_A")));
+    butlervolmeryang.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("ALPHA_C")));
+    butlervolmeryang.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_C")));
+    butlervolmeryang.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("I0")));
+    butlervolmeryang.emplace_back(Teuchos::RCP(new Input::RealComponent("I0")));
+    butlervolmeryang.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("GAMMA")));
+    butlervolmeryang.emplace_back(Teuchos::RCP(new Input::RealComponent("GAMMA")));
+    butlervolmeryang.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("REFCON")));
+    butlervolmeryang.emplace_back(Teuchos::RCP(new Input::RealComponent("REFCON")));
+    butlervolmeryang.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("DL_SPEC_CAP")));
+    butlervolmeryang.emplace_back(Teuchos::RCP(new Input::RealComponent("DL_SPEC_CAP")));
     reaction_model_choices.emplace(Inpar::ElCh::butler_volmer_yang1997,
         std::make_pair("Butler-Volmer-Yang1997", butlervolmeryang));
 
     // Tafel kinetics
     std::vector<Teuchos::RCP<Input::LineComponent>> tafel;
-    tafel.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA")));
-    tafel.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA")));
-    tafel.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("I0")));
-    tafel.emplace_back(Teuchos::rcp(new Input::RealComponent("I0")));
-    tafel.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("GAMMA")));
-    tafel.emplace_back(Teuchos::rcp(new Input::RealComponent("GAMMA")));
-    tafel.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("REFCON")));
-    tafel.emplace_back(Teuchos::rcp(new Input::RealComponent("REFCON")));
-    tafel.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("DL_SPEC_CAP")));
-    tafel.emplace_back(Teuchos::rcp(new Input::RealComponent("DL_SPEC_CAP")));
+    tafel.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("ALPHA")));
+    tafel.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA")));
+    tafel.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("I0")));
+    tafel.emplace_back(Teuchos::RCP(new Input::RealComponent("I0")));
+    tafel.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("GAMMA")));
+    tafel.emplace_back(Teuchos::RCP(new Input::RealComponent("GAMMA")));
+    tafel.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("REFCON")));
+    tafel.emplace_back(Teuchos::RCP(new Input::RealComponent("REFCON")));
+    tafel.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("DL_SPEC_CAP")));
+    tafel.emplace_back(Teuchos::RCP(new Input::RealComponent("DL_SPEC_CAP")));
     reaction_model_choices.emplace(Inpar::ElCh::tafel, std::make_pair("Tafel", tafel));
 
     // linear kinetics
     std::vector<Teuchos::RCP<Input::LineComponent>> linear;
-    linear.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA")));
-    linear.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA")));
-    linear.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("I0")));
-    linear.emplace_back(Teuchos::rcp(new Input::RealComponent("I0")));
-    linear.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("GAMMA")));
-    linear.emplace_back(Teuchos::rcp(new Input::RealComponent("GAMMA")));
-    linear.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("REFCON")));
-    linear.emplace_back(Teuchos::rcp(new Input::RealComponent("REFCON")));
-    linear.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("DL_SPEC_CAP")));
-    linear.emplace_back(Teuchos::rcp(new Input::RealComponent("DL_SPEC_CAP")));
+    linear.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("ALPHA")));
+    linear.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA")));
+    linear.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("I0")));
+    linear.emplace_back(Teuchos::RCP(new Input::RealComponent("I0")));
+    linear.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("GAMMA")));
+    linear.emplace_back(Teuchos::RCP(new Input::RealComponent("GAMMA")));
+    linear.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("REFCON")));
+    linear.emplace_back(Teuchos::RCP(new Input::RealComponent("REFCON")));
+    linear.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("DL_SPEC_CAP")));
+    linear.emplace_back(Teuchos::RCP(new Input::RealComponent("DL_SPEC_CAP")));
     reaction_model_choices.emplace(Inpar::ElCh::linear, std::make_pair("linear", linear));
 
     // Butler-Volmer-Newman: "Newman (book), 2004, p. 213, eq. 8.26"
     //                       "Wittmann (Bachelor thesis), 2011, p. 15, eq. 2.30"
     std::vector<Teuchos::RCP<Input::LineComponent>> bvnewman;
-    bvnewman.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("K_A")));
-    bvnewman.emplace_back(Teuchos::rcp(new Input::RealComponent("k_a")));
-    bvnewman.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("K_C")));
-    bvnewman.emplace_back(Teuchos::rcp(new Input::RealComponent("k_c")));
-    bvnewman.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("BETA")));
-    bvnewman.emplace_back(Teuchos::rcp(new Input::RealComponent("BETA")));
-    bvnewman.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("DL_SPEC_CAP")));
-    bvnewman.emplace_back(Teuchos::rcp(new Input::RealComponent("DL_SPEC_CAP")));
+    bvnewman.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("K_A")));
+    bvnewman.emplace_back(Teuchos::RCP(new Input::RealComponent("k_a")));
+    bvnewman.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("K_C")));
+    bvnewman.emplace_back(Teuchos::RCP(new Input::RealComponent("k_c")));
+    bvnewman.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("BETA")));
+    bvnewman.emplace_back(Teuchos::RCP(new Input::RealComponent("BETA")));
+    bvnewman.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("DL_SPEC_CAP")));
+    bvnewman.emplace_back(Teuchos::RCP(new Input::RealComponent("DL_SPEC_CAP")));
     reaction_model_choices.emplace(
         Inpar::ElCh::butler_volmer_newman, std::make_pair("Butler-Volmer-Newman", bvnewman));
 
     // Butler-Volmer-Newman: "Bard (book), 2001, p. 99, eq. 3.4.10"
     //                       "Wittmann (Bachelor thesis), 2011, p. 16, eq. 2.32"
     std::vector<Teuchos::RCP<Input::LineComponent>> bvbard;
-    bvbard.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("E0")));
-    bvbard.emplace_back(Teuchos::rcp(new Input::RealComponent("e0")));
-    bvbard.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("K0")));
-    bvbard.emplace_back(Teuchos::rcp(new Input::RealComponent("k0")));
-    bvbard.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("BETA")));
-    bvbard.emplace_back(Teuchos::rcp(new Input::RealComponent("BETA")));
-    bvbard.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("C_C0")));
-    bvbard.emplace_back(Teuchos::rcp(new Input::RealComponent("C_C0")));
-    bvbard.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("C_A0")));
-    bvbard.emplace_back(Teuchos::rcp(new Input::RealComponent("C_A0")));
-    bvbard.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("DL_SPEC_CAP")));
-    bvbard.emplace_back(Teuchos::rcp(new Input::RealComponent("DL_SPEC_CAP")));
+    bvbard.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("E0")));
+    bvbard.emplace_back(Teuchos::RCP(new Input::RealComponent("e0")));
+    bvbard.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("K0")));
+    bvbard.emplace_back(Teuchos::RCP(new Input::RealComponent("k0")));
+    bvbard.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("BETA")));
+    bvbard.emplace_back(Teuchos::RCP(new Input::RealComponent("BETA")));
+    bvbard.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("C_C0")));
+    bvbard.emplace_back(Teuchos::RCP(new Input::RealComponent("C_C0")));
+    bvbard.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("C_A0")));
+    bvbard.emplace_back(Teuchos::RCP(new Input::RealComponent("C_A0")));
+    bvbard.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("DL_SPEC_CAP")));
+    bvbard.emplace_back(Teuchos::RCP(new Input::RealComponent("DL_SPEC_CAP")));
     reaction_model_choices.emplace(
         Inpar::ElCh::butler_volmer_bard, std::make_pair("Butler-Volmer-Bard", bvbard));
 
     // Nernst equation:
     std::vector<Teuchos::RCP<Input::LineComponent>> nernst;
-    nernst.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("E0")));
-    nernst.emplace_back(Teuchos::rcp(new Input::RealComponent("e0")));
-    nernst.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("C0")));
-    nernst.emplace_back(Teuchos::rcp(new Input::RealComponent("c0")));
-    nernst.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("DL_SPEC_CAP")));
-    nernst.emplace_back(Teuchos::rcp(new Input::RealComponent("DL_SPEC_CAP")));
+    nernst.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("E0")));
+    nernst.emplace_back(Teuchos::RCP(new Input::RealComponent("e0")));
+    nernst.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("C0")));
+    nernst.emplace_back(Teuchos::RCP(new Input::RealComponent("c0")));
+    nernst.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("DL_SPEC_CAP")));
+    nernst.emplace_back(Teuchos::RCP(new Input::RealComponent("DL_SPEC_CAP")));
     reaction_model_choices.emplace(Inpar::ElCh::nernst, std::make_pair("Nernst", nernst));
 
-    auto electrodeboundarykineticspoint = Teuchos::rcp(
+    auto electrodeboundarykineticspoint = Teuchos::RCP(
         new Core::Conditions::ConditionDefinition("ELECTRODE BOUNDARY KINETICS POINT CONDITIONS",
             "ElchBoundaryKineticsPoint", "point electrode boundary kinetics",
             Core::Conditions::ElchBoundaryKinetics, false, Core::Conditions::geometry_type_point));
 
-    auto electrodeboundarykineticsline = Teuchos::rcp(
+    auto electrodeboundarykineticsline = Teuchos::RCP(
         new Core::Conditions::ConditionDefinition("ELECTRODE BOUNDARY KINETICS LINE CONDITIONS",
             "ElchBoundaryKinetics", "line electrode boundary kinetics",
             Core::Conditions::ElchBoundaryKinetics, true, Core::Conditions::geometry_type_line));
 
-    auto electrodeboundarykineticssurf = Teuchos::rcp(
+    auto electrodeboundarykineticssurf = Teuchos::RCP(
         new Core::Conditions::ConditionDefinition("ELECTRODE BOUNDARY KINETICS SURF CONDITIONS",
             "ElchBoundaryKinetics", "surface electrode boundary kinetics",
             Core::Conditions::ElchBoundaryKinetics, true, Core::Conditions::geometry_type_surface));
@@ -365,8 +365,8 @@ void Inpar::ElCh::set_valid_conditions(
     for (const auto& cond : {electrodeboundarykineticspoint, electrodeboundarykineticsline,
              electrodeboundarykineticssurf})
     {
-      cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ID")));
-      cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+      cond->add_component(Teuchos::RCP(new Input::SeparatorComponent("ID")));
+      cond->add_component(Teuchos::RCP(new Input::IntComponent("ConditionID")));
       add_named_real(cond, "POT");
       add_named_int(cond, "FUNCT", "", 0, false, true, true);
       add_named_int(cond, "NUMSCAL");
@@ -375,7 +375,7 @@ void Inpar::ElCh::set_valid_conditions(
       add_named_real(cond, "EPSILON",
           "porosity of electrode boundary, set to -1 if equal to porosity of electrolyte domain");
       add_named_int(cond, "ZERO_CUR");
-      cond->add_component(Teuchos::rcp(
+      cond->add_component(Teuchos::RCP(
           new Input::SwitchComponent("KINETIC_MODEL", butler_volmer, reaction_model_choices)));
       condlist.emplace_back(cond);
     }
@@ -385,17 +385,17 @@ void Inpar::ElCh::set_valid_conditions(
   // electrode kinetics as domain condition within electrolyte
   {
     // definition of line, surface, and volume conditions for electrode domain kinetics
-    auto electrodedomainkineticsline = Teuchos::rcp(
+    auto electrodedomainkineticsline = Teuchos::RCP(
         new Core::Conditions::ConditionDefinition("ELECTRODE DOMAIN KINETICS LINE CONDITIONS",
             "ElchDomainKinetics", "line electrode domain kinetics",
             Core::Conditions::ElchDomainKinetics, true, Core::Conditions::geometry_type_line));
 
-    auto electrodedomainkineticssurf = Teuchos::rcp(
+    auto electrodedomainkineticssurf = Teuchos::RCP(
         new Core::Conditions::ConditionDefinition("ELECTRODE DOMAIN KINETICS SURF CONDITIONS",
             "ElchDomainKinetics", "surface electrode domain kinetics",
             Core::Conditions::ElchDomainKinetics, true, Core::Conditions::geometry_type_surface));
 
-    auto electrodedomainkineticsvol = Teuchos::rcp(
+    auto electrodedomainkineticsvol = Teuchos::RCP(
         new Core::Conditions::ConditionDefinition("ELECTRODE DOMAIN KINETICS VOL CONDITIONS",
             "ElchDomainKinetics", "volume electrode domain kinetics",
             Core::Conditions::ElchDomainKinetics, true, Core::Conditions::geometry_type_volume));
@@ -405,57 +405,57 @@ void Inpar::ElCh::set_valid_conditions(
 
     {
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("ID")));
+          Teuchos::RCP(new Input::SeparatorComponent("ID")));
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new Input::IntComponent("ConditionID")));
+          Teuchos::RCP(new Input::IntComponent("ConditionID")));
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("POT")));
-      electrodedomainkineticscomponents.emplace_back(Teuchos::rcp(new Input::RealComponent("POT")));
+          Teuchos::RCP(new Input::SeparatorComponent("POT")));
+      electrodedomainkineticscomponents.emplace_back(Teuchos::RCP(new Input::RealComponent("POT")));
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("FUNCT")));
+          Teuchos::RCP(new Input::SeparatorComponent("FUNCT")));
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new Input::IntComponent("FUNCT", {0, true, true, false})));
+          Teuchos::RCP(new Input::IntComponent("FUNCT", {0, true, true, false})));
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
+          Teuchos::RCP(new Input::SeparatorComponent("NUMSCAL")));
 
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new Input::IntComponent("NUMSCAL")));
+          Teuchos::RCP(new Input::IntComponent("NUMSCAL")));
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("STOICH")));
+          Teuchos::RCP(new Input::SeparatorComponent("STOICH")));
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new Input::IntVectorComponent("STOICH", Input::LengthFromInt("NUMSCAL"))));
+          Teuchos::RCP(new Input::IntVectorComponent("STOICH", Input::LengthFromInt("NUMSCAL"))));
 
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("E-")));
-      electrodedomainkineticscomponents.emplace_back(Teuchos::rcp(new Input::IntComponent("E-")));
+          Teuchos::RCP(new Input::SeparatorComponent("E-")));
+      electrodedomainkineticscomponents.emplace_back(Teuchos::RCP(new Input::IntComponent("E-")));
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new Input::SeparatorComponent("ZERO_CUR")));
+          Teuchos::RCP(new Input::SeparatorComponent("ZERO_CUR")));
       electrodedomainkineticscomponents.emplace_back(
-          Teuchos::rcp(new Input::IntComponent("ZERO_CUR")));
+          Teuchos::RCP(new Input::IntComponent("ZERO_CUR")));
 
 
       {
         // Butler-Volmer
         std::vector<Teuchos::RCP<Input::LineComponent>> butlervolmer;
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent(
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent(
             "A_S")));  // ratio of electrode-electrolyte interface area to total two-phase volume
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("A_S")));
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA_A")));
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_A")));
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA_C")));
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_C")));
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("I0")));
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("I0")));
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("GAMMA")));
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("GAMMA")));
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("REFCON")));
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("REFCON")));
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("DL_SPEC_CAP")));
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::RealComponent("DL_SPEC_CAP")));
-        butlervolmer.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("END")));
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("A_S")));
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("ALPHA_A")));
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_A")));
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("ALPHA_C")));
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_C")));
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("I0")));
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("I0")));
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("GAMMA")));
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("GAMMA")));
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("REFCON")));
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("REFCON")));
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("DL_SPEC_CAP")));
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::RealComponent("DL_SPEC_CAP")));
+        butlervolmer.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("END")));
 
         electrodedomainkineticscomponents.emplace_back(
-            Teuchos::rcp(new Input::SwitchComponent("KINETIC_MODEL", butler_volmer,
+            Teuchos::RCP(new Input::SwitchComponent("KINETIC_MODEL", butler_volmer,
                 {{butler_volmer, std::make_pair("Butler-Volmer", std::move(butlervolmer))}})));
       }
     }
@@ -478,17 +478,17 @@ void Inpar::ElCh::set_valid_conditions(
   // boundary condition for constant-current constant-voltage (CCCV) cell cycling
 
   // definition of point, line and surface conditions for CCCV cell cycling
-  auto cccvcyclingpoint = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto cccvcyclingpoint = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN CCCV CELL CYCLING POINT CONDITIONS", "CCCVCycling",
       "line boundary condition for constant-current constant-voltage (CCCV) cell cycling",
       Core::Conditions::CCCVCycling, true, Core::Conditions::geometry_type_point));
 
-  auto cccvcyclingline = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto cccvcyclingline = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN CCCV CELL CYCLING LINE CONDITIONS", "CCCVCycling",
       "line boundary condition for constant-current constant-voltage (CCCV) cell cycling",
       Core::Conditions::CCCVCycling, true, Core::Conditions::geometry_type_line));
 
-  auto cccvcyclingsurf = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto cccvcyclingsurf = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN CCCV CELL CYCLING SURF CONDITIONS", "CCCVCycling",
       "surface boundary condition for constant-current constant-voltage (CCCV) cell cycling",
       Core::Conditions::CCCVCycling, true, Core::Conditions::geometry_type_surface));
@@ -516,17 +516,17 @@ void Inpar::ElCh::set_valid_conditions(
   // boundary condition for constant-current constant-voltage (CCCV) half-cycle
 
   // definition of point, line and surface conditions for CCCV half-cycle
-  auto cccvhalfcyclepoint = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto cccvhalfcyclepoint = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN CCCV HALF-CYCLE POINT CONDITIONS", "CCCVHalfCycle",
       "line boundary condition for constant-current constant-voltage (CCCV) half-cycle",
       Core::Conditions::CCCVHalfCycle, true, Core::Conditions::geometry_type_point));
 
-  auto cccvhalfcycleline = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto cccvhalfcycleline = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN CCCV HALF-CYCLE LINE CONDITIONS", "CCCVHalfCycle",
       "line boundary condition for constant-current constant-voltage (CCCV) half-cycle",
       Core::Conditions::CCCVHalfCycle, true, Core::Conditions::geometry_type_line));
 
-  auto cccvhalfcyclesurf = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto cccvhalfcyclesurf = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN CCCV HALF-CYCLE SURF CONDITIONS", "CCCVHalfCycle",
       "surface boundary condition for constant-current constant-voltage (CCCV) half-cycle",
       Core::Conditions::CCCVHalfCycle, true, Core::Conditions::geometry_type_surface));
@@ -534,8 +534,8 @@ void Inpar::ElCh::set_valid_conditions(
   for (const auto& cond : {cccvhalfcyclepoint, cccvhalfcycleline, cccvhalfcyclesurf})
   {
     // insert input file line components into condition definitions
-    cond->add_component(Teuchos::rcp(new Input::SeparatorComponent("ID")));
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+    cond->add_component(Teuchos::RCP(new Input::SeparatorComponent("ID")));
+    cond->add_component(Teuchos::RCP(new Input::IntComponent("ConditionID")));
     add_named_real(cond, "CURRENT");
     add_named_real(cond, "CUT_OFF_VOLTAGE");
     add_named_real(cond, "CUT_OFF_C_RATE");

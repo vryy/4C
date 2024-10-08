@@ -511,7 +511,7 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SSI::UTILS::SSIMatrices::setup
   const bool explicitdirichlet = false;
   const bool savegraph = true;
 
-  return Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+  return Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
       *col_map, *row_map, expected_entries_per_row, explicitdirichlet, savegraph));
 }
 
@@ -524,7 +524,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> SSI::UTILS::SSIMatrices::setup_sparse_m
   const bool explicitdirichlet = false;
   const bool savegraph = true;
 
-  return Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  return Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *row_map, expected_entries_per_row, explicitdirichlet, savegraph));
 }
 
@@ -543,20 +543,20 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
   Teuchos::RCP<const Epetra_Map> merged_map;
 
   partial_maps[get_problem_position(Subproblem::scalar_transport)] =
-      Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.scatra_field()->dof_row_map()));
+      Teuchos::RCP(new Epetra_Map(*ssi_mono_algorithm.scatra_field()->dof_row_map()));
   partial_maps[get_problem_position(Subproblem::structure)] =
-      Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.structure_field()->dof_row_map()));
+      Teuchos::RCP(new Epetra_Map(*ssi_mono_algorithm.structure_field()->dof_row_map()));
   if (ssi_mono_algorithm.is_scatra_manifold())
   {
     partial_maps[get_problem_position(Subproblem::manifold)] =
-        Teuchos::rcp(new Epetra_Map(*ssi_mono_algorithm.scatra_manifold()->dof_row_map()));
+        Teuchos::RCP(new Epetra_Map(*ssi_mono_algorithm.scatra_manifold()->dof_row_map()));
     auto temp_map = Core::LinAlg::merge_map(partial_maps[0], partial_maps[1], false);
     merged_map = Core::LinAlg::merge_map(temp_map, partial_maps[2], false);
   }
   else
     merged_map = Core::LinAlg::merge_map(partial_maps[0], partial_maps[1], false);
 
-  maps_sub_problems_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*merged_map, partial_maps));
+  maps_sub_problems_ = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor(*merged_map, partial_maps));
   // check global map extractor
   maps_sub_problems_->check_for_valid_map_extractor();
 
@@ -564,7 +564,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
   {
     case Core::LinAlg::MatrixType::block_field:
     {
-      auto block_map_structure = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(
+      auto block_map_structure = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor(
           *ssi_mono_algorithm.structure_field()->discretization()->dof_row_map(),
           std::vector<Teuchos::RCP<const Epetra_Map>>(
               1, ssi_mono_algorithm.structure_field()->dof_row_map())));
@@ -577,7 +577,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
       {
         case Core::LinAlg::MatrixType::sparse:
         {
-          auto block_map_scatra = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(
+          auto block_map_scatra = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor(
               *ssi_mono_algorithm.scatra_field()->discretization()->dof_row_map(),
               std::vector<Teuchos::RCP<const Epetra_Map>>(
                   1, ssi_mono_algorithm.scatra_field()->dof_row_map())));
@@ -589,7 +589,7 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SsiMono& ssi_mono_algorithm)
 
           if (ssi_mono_algorithm.is_scatra_manifold())
           {
-            auto block_map_scatra_manifold = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(
+            auto block_map_scatra_manifold = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor(
                 *ssi_mono_algorithm.scatra_manifold()->discretization()->dof_row_map(),
                 std::vector<Teuchos::RCP<const Epetra_Map>>(
                     1, ssi_mono_algorithm.scatra_manifold()->dof_row_map())));
@@ -766,7 +766,7 @@ void SSI::UTILS::SSIMaps::create_and_check_block_maps_sub_problems(
     }
   }
 
-  block_map_system_matrix_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(
+  block_map_system_matrix_ = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor(
       *maps_sub_problems_->full_map(), partial_maps_system_matrix));
 
   block_map_system_matrix_->check_for_valid_map_extractor();
@@ -940,7 +940,7 @@ void SSI::UTILS::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<Core::FE::
     const std::string& name_meshtying_condition, const bool build_slave_slave_transformation,
     const bool check_over_constrained)
 {
-  auto timer = Teuchos::rcp(new Teuchos::Time("MeshtypingHandlers", true));
+  auto timer = Teuchos::RCP(new Teuchos::Time("MeshtypingHandlers", true));
   const double t0 = timer->wallTime();
 
   if (do_print_)
@@ -1008,7 +1008,7 @@ void SSI::UTILS::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<Core::FE::
     }
 
     // setup coupling adapter
-    auto coupling_adapter = Teuchos::rcp(new Coupling::Adapter::Coupling());
+    auto coupling_adapter = Teuchos::RCP(new Coupling::Adapter::Coupling());
     const int num_dofs =
         static_cast<int>(static_cast<double>(dis->dof_row_map()->NumGlobalElements()) /
                          static_cast<double>(dis->node_row_map()->NumGlobalElements()));
@@ -1027,10 +1027,10 @@ void SSI::UTILS::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<Core::FE::
     maps.emplace_back(master_map);
 
     auto coupling_map_extractor =
-        Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*dis->dof_row_map(), maps));
+        Teuchos::RCP(new Core::LinAlg::MultiMapExtractor(*dis->dof_row_map(), maps));
     coupling_map_extractor->check_for_valid_map_extractor();
 
-    auto slave_slave_transformation = Teuchos::rcp(new Coupling::Adapter::Coupling());
+    auto slave_slave_transformation = Teuchos::RCP(new Coupling::Adapter::Coupling());
     if (build_slave_slave_transformation)
     {
       // coupling adapter between new slave nodes (master) and old slave nodes from input file
@@ -1048,7 +1048,7 @@ void SSI::UTILS::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<Core::FE::
     }
 
     // combine coupling adapters and multimap extractor to mesh tying object
-    meshtying_handlers_.emplace_back(Teuchos::rcp(new SSIMeshTyingHandler(
+    meshtying_handlers_.emplace_back(Teuchos::RCP(new SSIMeshTyingHandler(
         coupling_adapter, coupling_map_extractor, slave_slave_transformation)));
   }
 
@@ -1404,7 +1404,7 @@ SSI::UTILS::SSIMeshTyingHandler::SSIMeshTyingHandler(
       slave_slave_transformation_(std::move(slave_slave_transformation))
 {
   slave_side_converter_ =
-      Teuchos::rcp(new Coupling::Adapter::CouplingSlaveConverter(*slave_master_coupling_));
+      Teuchos::RCP(new Coupling::Adapter::CouplingSlaveConverter(*slave_master_coupling_));
 }
 
 FOUR_C_NAMESPACE_CLOSE

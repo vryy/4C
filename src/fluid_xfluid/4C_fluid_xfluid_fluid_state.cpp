@@ -34,8 +34,8 @@ FLD::XFluidFluidState::XFluidFluidState(
     const Teuchos::RCP<const Epetra_Map>& embfluiddofrowmap)
     : XFluidState(condition_manager, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap),
       xffluiddofrowmap_(Core::LinAlg::merge_map(xfluiddofrowmap, embfluiddofrowmap, false)),
-      xffluidsplitter_(Teuchos::rcp(new FLD::UTILS::XFluidFluidMapExtractor())),
-      xffluidvelpressplitter_(Teuchos::rcp(new Core::LinAlg::MapExtractor())),
+      xffluidsplitter_(Teuchos::RCP(new FLD::UTILS::XFluidFluidMapExtractor())),
+      xffluidvelpressplitter_(Teuchos::RCP(new Core::LinAlg::MapExtractor())),
       embfluiddofrowmap_(embfluiddofrowmap)
 {
   xffluidsplitter_->setup(*xffluiddofrowmap_, xfluiddofrowmap, embfluiddofrowmap);
@@ -52,7 +52,7 @@ void FLD::XFluidFluidState::init_system_matrix()
   // the combined fluid system matrix is not of FECrs-type - it is solely composed out of
   // fully assembled submatrices
   xffluidsysmat_ =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*xffluiddofrowmap_, 108, false, true));
+      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*xffluiddofrowmap_, 108, false, true));
 }
 
 /*----------------------------------------------------------------------*
@@ -117,7 +117,7 @@ void FLD::XFluidFluidState::create_merged_dbc_map_extractor(
   Teuchos::RCP<const Epetra_Map> xffluidothermap =
       Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
 
-  xffluiddbcmaps_ = Teuchos::rcp(
+  xffluiddbcmaps_ = Teuchos::RCP(
       new Core::LinAlg::MapExtractor(*xffluiddofrowmap_, xffluiddbcmap, xffluidothermap));
 }
 

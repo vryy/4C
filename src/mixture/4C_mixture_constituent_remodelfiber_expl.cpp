@@ -74,7 +74,7 @@ MIXTURE::MixtureConstituentRemodelFiberExpl::MixtureConstituentRemodelFiberExpl(
       params_(params),
       remodel_fiber_(),
       anisotropy_extension_(params_->init_, params_->gamma_, false,
-          Teuchos::rcp(new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
+          Teuchos::RCP(new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {params_->fiber_id_})
 {
   anisotropy_extension_.register_needed_tensors(

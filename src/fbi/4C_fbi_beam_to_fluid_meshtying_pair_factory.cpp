@@ -40,23 +40,23 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
     switch (shape)
     {
       case Core::FE::CellType::hex8:
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex8>());
       case Core::FE::CellType::hex20:
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex20>());
       case Core::FE::CellType::hex27:
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex27>());
       case Core::FE::CellType::tet4:
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_tet4>());
       case Core::FE::CellType::tet10:
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_tet10>());
       default:
@@ -75,23 +75,23 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
         switch (shape)
         {
           case Core::FE::CellType::hex8:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2>());
           case Core::FE::CellType::hex20:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line2>());
           case Core::FE::CellType::hex27:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line2>());
           case Core::FE::CellType::tet4:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line2>());
           case Core::FE::CellType::tet10:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line2>());
           default:
@@ -104,23 +104,23 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
         switch (shape)
         {
           case Core::FE::CellType::hex8:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line3>());
           case Core::FE::CellType::hex20:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line3>());
           case Core::FE::CellType::hex27:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line3>());
           case Core::FE::CellType::tet4:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line3>());
           case Core::FE::CellType::tet10:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line3>());
           default:
@@ -133,23 +133,23 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
         switch (shape)
         {
           case Core::FE::CellType::hex8:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line4>());
           case Core::FE::CellType::hex20:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line4>());
           case Core::FE::CellType::hex27:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line4>());
           case Core::FE::CellType::tet4:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line4>());
           case Core::FE::CellType::tet10:
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line4>());
           default:

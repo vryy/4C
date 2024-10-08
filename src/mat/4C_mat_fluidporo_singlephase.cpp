@@ -79,7 +79,7 @@ Mat::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(const Core::Mat::PAR::Param
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroSinglePhase::create_material()
 {
-  return Teuchos::rcp(new Mat::FluidPoroSinglePhase(this));
+  return Teuchos::RCP(new Mat::FluidPoroSinglePhase(this));
 }
 
 /*----------------------------------------------------------------------*
@@ -307,7 +307,7 @@ Mat::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroSingleVolFrac::create_material()
 {
-  return Teuchos::rcp(new Mat::FluidPoroSingleVolFrac(this));
+  return Teuchos::RCP(new Mat::FluidPoroSingleVolFrac(this));
 }
 
 /*----------------------------------------------------------------------*
@@ -432,7 +432,7 @@ Mat::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroVolFracPressure::create_material()
 {
-  return Teuchos::rcp(new Mat::FluidPoroVolFracPressure(this));
+  return Teuchos::RCP(new Mat::FluidPoroVolFracPressure(this));
 }
 
 /*----------------------------------------------------------------------*

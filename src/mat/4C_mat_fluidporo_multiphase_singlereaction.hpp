@@ -183,7 +183,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new FluidPoroSingleReaction(*this));
+      return Teuchos::RCP(new FluidPoroSingleReaction(*this));
     }
 
     //! @name Packing and Unpacking

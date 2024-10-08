@@ -52,7 +52,7 @@ namespace Cut
   {
    public:
     /// empty constructor
-    OctTreeNode(double norm) : bb_(Teuchos::rcp(BoundingBox::create())), norm_(norm) {}
+    OctTreeNode(double norm) : bb_(Teuchos::RCP(BoundingBox::create())), norm_(norm) {}
 
     /*========================================================================*/
     //! @name create and get points

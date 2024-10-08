@@ -300,7 +300,7 @@ bool Core::FE::Discretization::build_linesin_condition(
 
               if (linemap.find(nodes) == linemap.end())
               {
-                Teuchos::RCP<Core::Elements::Element> line = Teuchos::rcp(actline->clone());
+                Teuchos::RCP<Core::Elements::Element> line = Teuchos::RCP(actline->clone());
                 // Set owning process of line to node with smallest gid.
                 line->set_owner(elements[i]->owner());
                 linemap[nodes] = line;
@@ -315,7 +315,7 @@ bool Core::FE::Discretization::build_linesin_condition(
 
 
   // Lines be added to the condition: (line_id) -> (line).
-  auto finallines = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::Elements::Element>>());
+  auto finallines = Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::Elements::Element>>());
 
   assign_global_i_ds(get_comm(), linemap, *finallines);
 
@@ -514,7 +514,7 @@ bool Core::FE::Discretization::build_surfacesin_condition(
                     // now we can add the surface
                     if (surfmap.find(nodes) == surfmap.end())
                     {
-                      Teuchos::RCP<Core::Elements::Element> surf = Teuchos::rcp(actsurf->clone());
+                      Teuchos::RCP<Core::Elements::Element> surf = Teuchos::RCP(actsurf->clone());
                       // Set owning processor of surface owner of underlying volume element.
                       surf->set_owner(voleleowner);
                       surfmap[nodes] = surf;
@@ -530,7 +530,7 @@ bool Core::FE::Discretization::build_surfacesin_condition(
                 // now we can add the surface
                 if (surfmap.find(nodes) == surfmap.end())
                 {
-                  Teuchos::RCP<Core::Elements::Element> surf = Teuchos::rcp(actsurf->clone());
+                  Teuchos::RCP<Core::Elements::Element> surf = Teuchos::RCP(actsurf->clone());
                   // Set owning processor of surface owner of underlying volume element.
                   surf->set_owner(elements[i]->owner());
                   surfmap[nodes] = surf;
@@ -545,7 +545,7 @@ bool Core::FE::Discretization::build_surfacesin_condition(
 
   // surfaces be added to the condition: (surf_id) -> (surface).
   Teuchos::RCP<std::map<int, Teuchos::RCP<Core::Elements::Element>>> final_geometry =
-      Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::Elements::Element>>());
+      Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::Elements::Element>>());
 
   assign_global_i_ds(get_comm(), surfmap, *final_geometry);
   cond->add_geometry(final_geometry);
@@ -578,7 +578,7 @@ bool Core::FE::Discretization::build_volumesin_condition(
       std::not_fn(Core::Conditions::MyGID(colmap)));
 
   // this is the map we want to construct
-  auto geom = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::Elements::Element>>());
+  auto geom = Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::Elements::Element>>());
 
   for (const auto& [ele_id, actele] : element_)
   {

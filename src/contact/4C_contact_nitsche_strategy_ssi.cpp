@@ -66,7 +66,7 @@ void CONTACT::NitscheStrategySsi::set_state(
       double inf_delta = 0.0;
       if (curr_state_scalar_ == Teuchos::null)
       {
-        curr_state_scalar_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(vec));
+        curr_state_scalar_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(vec));
         inf_delta = 1.0e12;
       }
       else
@@ -106,7 +106,7 @@ void CONTACT::NitscheStrategySsi::set_parent_state(const enum Mortar::StateType&
     case Mortar::state_scalar:
     {
       auto scatra_dofcolmap =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(*dis.dof_col_map(), true));
+          Teuchos::RCP(new Core::LinAlg::Vector<double>(*dis.dof_col_map(), true));
       Core::LinAlg::export_to(vec, *scatra_dofcolmap);
 
       // set state on interfaces
@@ -161,7 +161,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategySsi::setup_rhs_block_vec(
   {
     case CONTACT::VecBlockType::elch:
     case CONTACT::VecBlockType::scatra:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new Epetra_FEVector(*Global::Problem::instance()->get_dis("scatra")->dof_row_map()));
     default:
       return CONTACT::NitscheStrategy::setup_rhs_block_vec(bt);
@@ -183,7 +183,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::NitscheStrategySsi::ge
   {
     case CONTACT::VecBlockType::elch:
     case CONTACT::VecBlockType::scatra:
-      return Teuchos::rcp(new Core::LinAlg::Vector<double>(*(*fs_)(0)));
+      return Teuchos::RCP(new Core::LinAlg::Vector<double>(*(*fs_)(0)));
     default:
       return CONTACT::NitscheStrategy::get_rhs_block_ptr(bp);
   }
@@ -198,7 +198,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategySsi::setup_matr
   {
     case CONTACT::MatBlockType::displ_elch:
     case CONTACT::MatBlockType::displ_scatra:
-      return Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      return Teuchos::RCP(new Core::LinAlg::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
               *Global::Problem::instance()->get_dis("structure")->dof_row_map()),
           100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
@@ -206,7 +206,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategySsi::setup_matr
     case CONTACT::MatBlockType::elch_elch:
     case CONTACT::MatBlockType::scatra_displ:
     case CONTACT::MatBlockType::scatra_scatra:
-      return Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      return Teuchos::RCP(new Core::LinAlg::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
               *Global::Problem::instance()->get_dis("scatra")->dof_row_map()),
           100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));

@@ -62,26 +62,26 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
 
   // create instance of poroelast subproblem
   poroelast_subproblem_ =
-      Teuchos::rcp(new PoroElast::Monolithic(comm, fpsidynparams, Teuchos::null));
+      Teuchos::RCP(new PoroElast::Monolithic(comm, fpsidynparams, Teuchos::null));
   // ask base algorithm for the fluid time integrator
   Global::Problem* problem = Global::Problem::instance();
   const Teuchos::ParameterList& fluiddynparams = problem->fluid_dynamic_params();
   Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluid =
-      Teuchos::rcp(new Adapter::FluidBaseAlgorithm(fpsidynparams, fluiddynparams, "fluid", true));
+      Teuchos::RCP(new Adapter::FluidBaseAlgorithm(fpsidynparams, fluiddynparams, "fluid", true));
   fluid_subproblem_ = Teuchos::rcp_dynamic_cast<Adapter::FluidFPSI>(fluid->fluid_field());
   // ask base algorithm for the ale time integrator
-  Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::rcp(
+  Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::RCP(
       new Adapter::AleBaseAlgorithm(fpsidynparams, Global::Problem::instance()->get_dis("ale")));
   ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleFpsiWrapper>(ale->ale_field());
   if (ale_ == Teuchos::null)
     FOUR_C_THROW("cast from Adapter::Ale to Adapter::AleFpsiWrapper failed");
 
-  coupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  coupfa_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
 
-  coupsf_fsi_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
-  coupsa_fsi_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
-  coupfa_fsi_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
-  icoupfa_fsi_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  coupsf_fsi_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
+  coupsa_fsi_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
+  coupfa_fsi_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
+  icoupfa_fsi_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
 
   Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::instance();
 
@@ -273,7 +273,7 @@ void FPSI::Monolithic::setup_system()
   if (FSI_Interface_exists_) setup_system_fsi();
 
   // Setup the FPSI Coupling Adapter
-  fpsi_coupl() = Teuchos::rcp(new FPSI::FpsiCoupling(poroelast_subproblem_, fluid_subproblem_, ale_,
+  fpsi_coupl() = Teuchos::RCP(new FPSI::FpsiCoupling(poroelast_subproblem_, fluid_subproblem_, ale_,
       Fluid_PoroFluid_InterfaceMap, PoroFluid_Fluid_InterfaceMap));
   fpsi_coupl()->set_conductivity(conductivity_);
   return;
@@ -523,7 +523,7 @@ void FPSI::Monolithic::setup_solver()
                   solvertype == Core::LinearSolver::SolverType::superlu);
 
   if (directsolve_)
-    solver_ = Teuchos::rcp(new Core::LinAlg::Solver(solverparams, get_comm(),
+    solver_ = Teuchos::RCP(new Core::LinAlg::Solver(solverparams, get_comm(),
         Global::Problem::instance()->solver_params_callback(),
         Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY")));
@@ -658,7 +658,7 @@ void FPSI::Monolithic::create_linear_solver()
       break;
   }
 
-  solver_ = Teuchos::rcp(new Core::LinAlg::Solver(fpsisolverparams, get_comm(),
+  solver_ = Teuchos::RCP(new Core::LinAlg::Solver(fpsisolverparams, get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));
@@ -843,11 +843,11 @@ void FPSI::Monolithic::line_search(Teuchos::RCP<Core::LinAlg::SparseMatrix>& spa
       Teuchos::RCP<const Core::LinAlg::Vector<double>> constfx;
       Teuchos::RCP<const Core::LinAlg::Vector<double>> ax;
 
-      sx = Teuchos::rcp(
+      sx = Teuchos::RCP(
           new Core::LinAlg::Vector<double>(*poro_field()->structure_field()->dof_row_map(), true));
-      pfx = Teuchos::rcp(
+      pfx = Teuchos::RCP(
           new Core::LinAlg::Vector<double>(*poro_field()->fluid_field()->dof_row_map(), true));
-      fx = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map(), true));
+      fx = Teuchos::RCP(new Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map(), true));
 
       extract_field_vectors(iterinc_, constsx, constfpx, constfx, ax, iter_ == 1);
       iterinc_->Norm2(&normofiterinc_);
@@ -1559,16 +1559,16 @@ void FPSI::Monolithic::fpsifd_check()
 
   // store old rhs
   Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_old =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
   rhs_old->Update(1.0, *rhs_, 0.0);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_copy =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_copy =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*sparse, Core::LinAlg::Copy));
+      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*sparse, Core::LinAlg::Copy));
 
 
   std::cout << "\n****************** FPSI finite difference check ******************" << std::endl;
@@ -1648,7 +1648,7 @@ void FPSI::Monolithic::fpsifd_check()
   if (err) FOUR_C_THROW("FD_Check: FillComplete failed with err-code: %d", err);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(stiff_approx, Core::LinAlg::Copy));
+      Teuchos::RCP(new Core::LinAlg::SparseMatrix(stiff_approx, Core::LinAlg::Copy));
 
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx_sparse = temp->epetra_matrix();
 

@@ -39,20 +39,20 @@ PoroElast::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epet
     : MonolithicSplit(comm, timeparams, porosity_splitter), normrhs_nopenetration_(-1.0)
 {
   // Initialize Transformation Objects
-  k_d_transform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
-  k_inv_d_transform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform);
+  k_d_transform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
+  k_inv_d_transform_ = Teuchos::RCP(new Coupling::Adapter::MatrixRowTransform);
 
-  k_d_lin_transform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform);
+  k_d_lin_transform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
 
   // Recovering of Lagrange multiplier happens on fluid field
-  lambda_ = Teuchos::rcp(
+  lambda_ = Teuchos::RCP(
       new Core::LinAlg::Vector<double>(*structure_field()->interface()->fsi_cond_map()));
-  lambdanp_ = Teuchos::rcp(
+  lambdanp_ = Teuchos::RCP(
       new Core::LinAlg::Vector<double>(*structure_field()->interface()->fsi_cond_map()));
 
   k_dn_ = Teuchos::null;
 
-  mortar_adapter_ = Teuchos::rcp(new Adapter::CouplingNonLinMortar(
+  mortar_adapter_ = Teuchos::RCP(new Adapter::CouplingNonLinMortar(
       Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
       Global::Problem::instance()->spatial_approximation_type()));
@@ -105,7 +105,7 @@ void PoroElast::MonolithicSplitNoPenetration::setup_rhs(bool firstcall)
 
   // create full monolithic rhs vector
   if (rhs_ == Teuchos::null)
-    rhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
+    rhs_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
 
   setup_vector(*rhs_, structure_field()->rhs(), fluid_field()->rhs());
 }
@@ -125,9 +125,9 @@ void PoroElast::MonolithicSplitNoPenetration::setup_vector(Core::LinAlg::Vector<
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcv =
       fluid_field()->interface()->extract_fsi_cond_vector(*fv);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Dlam = Teuchos::rcp(
+  Teuchos::RCP<Core::LinAlg::Vector<double>> Dlam = Teuchos::RCP(
       new Core::LinAlg::Vector<double>(*fluid_field()->interface()->fsi_cond_map(), true));
-  Teuchos::RCP<Core::LinAlg::Vector<double>> couprhs = Teuchos::rcp(
+  Teuchos::RCP<Core::LinAlg::Vector<double>> couprhs = Teuchos::RCP(
       new Core::LinAlg::Vector<double>(*fluid_field()->interface()->fsi_cond_map(), true));
   if (k_dn_ != Teuchos::null)
   {
@@ -145,12 +145,12 @@ void PoroElast::MonolithicSplitNoPenetration::setup_vector(Core::LinAlg::Vector<
   // std::cout << "nopenetration_rhs_: " << *nopenetration_rhs_ << std::endl;
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fullcouprhs =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map(), true));
   Core::LinAlg::export_to(*couprhs, *fullcouprhs);
   extractor()->insert_vector(*fullcouprhs, 1, f);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fullfov =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map(), true));
   Core::LinAlg::export_to(*fov, *fullfov);
   extractor()->add_vector(*fullfov, 1, f, 1.0);
 
@@ -178,13 +178,13 @@ void PoroElast::MonolithicSplitNoPenetration::recover_lagrange_multiplier_after_
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcx =
       fluid_field()->interface()->extract_fsi_cond_vector(*fx);
 
-  ddiinc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*sox));  // first iteration increment
+  ddiinc_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*sox));  // first iteration increment
 
-  ddginc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*scx));  // first iteration increment
+  ddginc_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*scx));  // first iteration increment
 
-  duiinc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fox));  // first iteration increment
+  duiinc_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*fox));  // first iteration increment
 
-  duginc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fcx));  // first iteration increment
+  duginc_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*fcx));  // first iteration increment
 
   double stiparam = structure_field()->tim_int_param();
 
@@ -222,7 +222,7 @@ void PoroElast::MonolithicSplitNoPenetration::recover_lagrange_multiplier_after_
    *                          - (1-b)/b * invD^{n+1} * D^n * \lambda^n
    */
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tmplambda = Teuchos::rcp(
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tmplambda = Teuchos::RCP(
       new Core::LinAlg::Vector<double>(*fluid_field()->interface()->fsi_cond_map(), true));
 
   tmplambda->Update(1.0, *cfsgiddi, 0.0);
@@ -233,7 +233,7 @@ void PoroElast::MonolithicSplitNoPenetration::recover_lagrange_multiplier_after_
 
   if (k_dn_ != Teuchos::null)  // for first timestep lambda = 0 !
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> Dlam = Teuchos::rcp(
+    Teuchos::RCP<Core::LinAlg::Vector<double>> Dlam = Teuchos::RCP(
         new Core::LinAlg::Vector<double>(*fluid_field()->interface()->fsi_cond_map(), true));
     k_dn_->Apply(*lambda_, *Dlam);  // D(n)*lambda(n)
     Dlam->Scale(stiparam);          //*(1-b)
@@ -321,10 +321,10 @@ void PoroElast::MonolithicSplitNoPenetration::setup_system_matrix(
   /*----------------------------------------------------------------------*/
   /*Add lines for poro nopenetration condition*/
 
-  fgicur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(f->matrix(fidx_nopen, fidx_other)));
-  fggcur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(f->matrix(fidx_nopen, fidx_nopen)));
-  cfsgicur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(k_fs->matrix(fidx_nopen, sidx_other)));
-  cfsggcur_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(k_fs->matrix(fidx_nopen, sidx_nopen)));
+  fgicur_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(f->matrix(fidx_nopen, fidx_other)));
+  fggcur_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(f->matrix(fidx_nopen, fidx_nopen)));
+  cfsgicur_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(k_fs->matrix(fidx_nopen, sidx_other)));
+  cfsggcur_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(k_fs->matrix(fidx_nopen, sidx_nopen)));
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tanginvDkfsgi = Core::LinAlg::matrix_multiply(
       *k_lambdainv_d_, false, *cfsgicur_, false, true);  // T*D^-1*K^FS_gi;
@@ -367,7 +367,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
   k_porofluid_->zero();
   nopenetration_rhs_->PutScalar(0.0);
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> tmp_k_D = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> tmp_k_D = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *(fluid_field()->interface()->fsi_cond_map()), 81, false, false));
 
   // fill diagonal blocks
@@ -508,7 +508,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
   //------------------------------invert D Matrix!-----------------------------------------------
   tmp_k_D->complete();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> invd =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*tmp_k_D, Core::LinAlg::Copy));
+      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*tmp_k_D, Core::LinAlg::Copy));
   // invd->Complete();
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> diag =
@@ -594,7 +594,7 @@ void PoroElast::MonolithicSplitNoPenetration::update()
   lambda_->Update(1.0, *lambdanp_, 0.0);
 
   // copy D matrix from current time step to old D matrix
-  k_dn_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  k_dn_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *k_d_, Core::LinAlg::Copy));  // store D-Matrix from last timestep
 }
 
@@ -605,7 +605,7 @@ void PoroElast::MonolithicSplitNoPenetration::output(bool forced_writerestart)
 
   // for now, we always write the lagrange multiplier
   Teuchos::RCP<Core::LinAlg::Vector<double>> fulllambda =
-      Teuchos::rcp<Core::LinAlg::Vector<double>>(
+      Teuchos::RCP<Core::LinAlg::Vector<double>>(
           new Core::LinAlg::Vector<double>(*structure_field()->dof_row_map()));
   Core::LinAlg::export_to(*lambdanp_, *fulllambda);
   structure_field()->disc_writer()->write_vector("poronopencond_lambda", fulllambda);
@@ -622,42 +622,42 @@ void PoroElast::MonolithicSplitNoPenetration::setup_coupling_and_matrices()
 
   // initialize Poroelasticity-systemmatrix_
   systemmatrix_ =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+      Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *extractor(), *extractor(), 81, false, true));
 
   // initialize coupling matrices
   k_fs_ =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+      Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *(structure_field()->interface()), *(fluid_field()->interface()), 81, false, true));
 
   k_sf_ =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+      Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *(fluid_field()->interface()), *(structure_field()->interface()), 81, false, true));
 
   // initialize no penetration coupling matrices
-  k_struct_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  k_struct_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *(fluid_field()->interface()->fsi_cond_map()), 81, true, true));
 
-  k_fluid_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  k_fluid_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *(fluid_field()->interface()->fsi_cond_map()), 81, false, false));
 
-  k_lambda_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  k_lambda_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *(fluid_field()->interface()->fsi_cond_map()), 81, true, true));
 
-  k_d_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  k_d_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *(fluid_field()->interface()->fsi_cond_map()), 81, true, true));
 
-  k_inv_d_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  k_inv_d_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       *(structure_field()->interface()->fsi_cond_map()), 81, true, true));
 
   k_porodisp_ =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+      Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *(structure_field()->interface()), *(fluid_field()->interface()), 81, true, true));
 
   k_porofluid_ =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(fluid_field()->dof_row_map()), 81, true, true));
+      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(fluid_field()->dof_row_map()), 81, true, true));
 
-  nopenetration_rhs_ = Teuchos::rcp(
+  nopenetration_rhs_ = Teuchos::RCP(
       new Core::LinAlg::Vector<double>(*fluid_field()->interface()->fsi_cond_map(), true));
 }
 
@@ -679,7 +679,7 @@ void PoroElast::MonolithicSplitNoPenetration::read_restart(const int step)
     Core::IO::DiscretizationReader reader(structure_field()->discretization(),
         Global::Problem::instance()->input_control_file(), structure_field()->step());
     Teuchos::RCP<Core::LinAlg::Vector<double>> fulllambda =
-        Teuchos::rcp<Core::LinAlg::Vector<double>>(
+        Teuchos::RCP<Core::LinAlg::Vector<double>>(
             new Core::LinAlg::Vector<double>(*structure_field()->dof_row_map()));
 
     // this is the lagrange multiplier on the whole structure field
@@ -695,7 +695,7 @@ void PoroElast::MonolithicSplitNoPenetration::read_restart(const int step)
     evaluate(zeros_, false);
 
     // copy D matrix from current time step to old D matrix
-    k_dn_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+    k_dn_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
         *k_d_, Core::LinAlg::Copy));  // store D-Matrix from last timestep
   }
 }

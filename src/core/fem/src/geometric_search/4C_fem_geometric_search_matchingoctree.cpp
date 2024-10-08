@@ -266,7 +266,7 @@ void Core::GeometricSearch::MatchingOctree::create_global_entity_matching(
       // extracted node data
       Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<Core::Communication::ParObject> o =
-          Teuchos::rcp(Core::Communication::factory(data_buffer));
+          Teuchos::RCP(Core::Communication::factory(data_buffer));
 
       // check type of ParObject, and return gid
       const int id = check_valid_entity_type(o);
@@ -503,7 +503,7 @@ void Core::GeometricSearch::MatchingOctree::find_match(const Core::FE::Discretiz
       // extracted node data
       Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<Core::Communication::ParObject> o =
-          Teuchos::rcp(Core::Communication::factory(data_buffer));
+          Teuchos::RCP(Core::Communication::factory(data_buffer));
 
       // cast ParObject to specific type and return id
       const int id = check_valid_entity_type(o);
@@ -657,7 +657,7 @@ void Core::GeometricSearch::MatchingOctree::fill_slave_to_master_gid_mapping(
       // extracted node data
       Communication::UnpackBuffer data_buffer(data);
       Teuchos::RCP<Core::Communication::ParObject> o =
-          Teuchos::rcp(Core::Communication::factory(data_buffer));
+          Teuchos::RCP(Core::Communication::factory(data_buffer));
 
       const int id = check_valid_entity_type(o);
 
@@ -807,7 +807,7 @@ Core::GeometricSearch::NodeMatchingOctree::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
   Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
-      Teuchos::rcp(new OctreeNodalElement());
+      Teuchos::RCP(new OctreeNodalElement());
 
   newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
@@ -904,7 +904,7 @@ void Core::GeometricSearch::ElementMatchingOctree::unpack_entity(
     extract_from_pack(buffer, nodedata);
     Communication::UnpackBuffer nodedatabuffer(nodedata);
     Teuchos::RCP<Core::Communication::ParObject> o =
-        Teuchos::rcp(Core::Communication::factory(nodedatabuffer));
+        Teuchos::RCP(Core::Communication::factory(nodedatabuffer));
     Teuchos::RCP<Core::Nodes::Node> actnode = Teuchos::rcp_dynamic_cast<Core::Nodes::Node>(o);
     if (actnode == Teuchos::null) FOUR_C_THROW("cast from ParObject to Node failed");
     nodes_.insert(std::pair<int, Teuchos::RCP<Core::Nodes::Node>>(actnode->id(), actnode));
@@ -934,7 +934,7 @@ Core::GeometricSearch::ElementMatchingOctree::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
   Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
-      Teuchos::rcp(new OctreeElementElement());
+      Teuchos::RCP(new OctreeElementElement());
 
   newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
@@ -969,7 +969,7 @@ Core::GeometricSearch::OctreeNodalElement::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
   Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
-      Teuchos::rcp(new OctreeNodalElement());
+      Teuchos::RCP(new OctreeNodalElement());
 
   newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
@@ -1008,7 +1008,7 @@ Core::GeometricSearch::OctreeElementElement::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
   Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
-      Teuchos::rcp(new OctreeElementElement());
+      Teuchos::RCP(new OctreeElementElement());
 
   newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);

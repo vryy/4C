@@ -138,7 +138,7 @@ namespace NOX
       Teuchos::RCP<::NOX::LineSearch::Generic> buildLineSearch(
           const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
       {
-        return Teuchos::rcp(new SDRelaxation(gd->getUtils(), params));
+        return Teuchos::RCP(new SDRelaxation(gd->getUtils(), params));
       }
     };
 

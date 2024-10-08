@@ -30,7 +30,7 @@ Core::LinearSolver::DirectSolver<MatrixType, VectorType>::DirectSolver(std::stri
       reindexer_(Teuchos::null),
       projector_(Teuchos::null)
 {
-  linear_problem_ = Teuchos::rcp(new Epetra_LinearProblem());
+  linear_problem_ = Teuchos::RCP(new Epetra_LinearProblem());
 }
 
 //----------------------------------------------------------------------------------
@@ -80,19 +80,19 @@ void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
 
   if (reset or refactor or not is_factored())
   {
-    reindexer_ = Teuchos::rcp(new EpetraExt::LinearProblem_Reindex2(nullptr));
+    reindexer_ = Teuchos::RCP(new EpetraExt::LinearProblem_Reindex2(nullptr));
 
     if (solvertype_ == "umfpack")
     {
-      solver_ = Teuchos::rcp(new Amesos_Umfpack((*reindexer_)(*linear_problem_)));
+      solver_ = Teuchos::RCP(new Amesos_Umfpack((*reindexer_)(*linear_problem_)));
     }
     else if (solvertype_ == "superlu")
     {
-      solver_ = Teuchos::rcp(new Amesos_Superludist((*reindexer_)(*linear_problem_)));
+      solver_ = Teuchos::RCP(new Amesos_Superludist((*reindexer_)(*linear_problem_)));
     }
     else
     {
-      solver_ = Teuchos::rcp(new Amesos_Klu((*reindexer_)(*linear_problem_)));
+      solver_ = Teuchos::RCP(new Amesos_Klu((*reindexer_)(*linear_problem_)));
     }
 
     factored_ = false;

@@ -149,7 +149,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new StructPoroReaction(*this));
+      return Teuchos::RCP(new StructPoroReaction(*this));
     }
 
     /// Initialize internal variables

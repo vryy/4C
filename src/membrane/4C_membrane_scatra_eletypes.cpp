@@ -40,7 +40,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraTri3Type:
   if (eletype == "MEMBRANESCATRA3" && eledistype == "TRI3")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri3>(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri3>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -50,7 +50,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraTri3Type:
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri3>(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri3>(id, owner));
   return ele;
 }
 
@@ -93,7 +93,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraTri6Type:
   if (eletype == "MEMBRANESCATRA6" && eledistype == "TRI6")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri6>(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri6>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -103,7 +103,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraTri6Type:
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri6>(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri6>(id, owner));
   return ele;
 }
 
@@ -146,7 +146,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraQuad4Type
   if (eletype == "MEMBRANESCATRA4" && eledistype == "QUAD4")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad4>(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -156,7 +156,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraQuad4Type
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad4>(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad4>(id, owner));
   return ele;
 }
 
@@ -199,7 +199,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraQuad9Type
   if (eletype == "MEMBRANESCATRA9" && eledistype == "QUAD9")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad9>(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad9>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -209,7 +209,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::MembraneScatraQuad9Type
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad9>(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad9>(id, owner));
   return ele;
 }
 

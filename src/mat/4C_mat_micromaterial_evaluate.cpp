@@ -103,7 +103,7 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // container is filled with data for supporting procs
   std::map<int, Teuchos::RCP<MultiScale::MicroStaticParObject>> condnamemap;
-  condnamemap[0] = Teuchos::rcp(new MultiScale::MicroStaticParObject());
+  condnamemap[0] = Teuchos::RCP(new MultiScale::MicroStaticParObject());
 
   const auto convert_to_serial_dense_matrix = [](const auto& matrix)
   {
@@ -128,15 +128,15 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // maps are created and data is broadcast to the supporting procs
   int tag = 0;
-  Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
-  Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
+  Teuchos::RCP<Epetra_Map> oldmap = Teuchos::RCP(new Epetra_Map(1, 1, &tag, 0, *subcomm));
+  Teuchos::RCP<Epetra_Map> newmap = Teuchos::RCP(new Epetra_Map(1, 1, &tag, 0, *subcomm));
   Core::Communication::Exporter exporter(*oldmap, *newmap, *subcomm);
   exporter.do_export<MultiScale::MicroStaticParObject>(condnamemap);
 
   // standard evaluation of the micro material
   if (matgp_.find(gp) == matgp_.end())
   {
-    matgp_[gp] = Teuchos::rcp(new MicroMaterialGP(gp, eleGID, eleowner, microdisnum, V0));
+    matgp_[gp] = Teuchos::RCP(new MicroMaterialGP(gp, eleGID, eleowner, microdisnum, V0));
 
     /// save density of this micromaterial
     /// -> since we can assign only one material per element, all Gauss points have
@@ -170,7 +170,7 @@ void Mat::MicroMaterial::evaluate(Core::LinAlg::Matrix<3, 3>* defgrd,
 
   if (matgp_.find(gp) == matgp_.end())
   {
-    matgp_[gp] = Teuchos::rcp(new MicroMaterialGP(gp, ele_ID, eleowner, microdisnum, V0));
+    matgp_[gp] = Teuchos::RCP(new MicroMaterialGP(gp, ele_ID, eleowner, microdisnum, V0));
   }
 
   Teuchos::RCP<MicroMaterialGP> actmicromatgp = matgp_[gp];
@@ -266,7 +266,7 @@ void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool 
 
   // container is filled with data for supporting procs
   std::map<int, Teuchos::RCP<MultiScale::MicroStaticParObject>> condnamemap;
-  condnamemap[0] = Teuchos::rcp(new MultiScale::MicroStaticParObject());
+  condnamemap[0] = Teuchos::RCP(new MultiScale::MicroStaticParObject());
 
   MultiScale::MicroStaticParObject::MicroStaticData microdata{};
   microdata.gp_ = gp;
@@ -277,14 +277,14 @@ void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool 
 
   // maps are created and data is broadcast to the supporting procs
   int tag = 0;
-  Teuchos::RCP<Epetra_Map> oldmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
-  Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1, 1, &tag, 0, *subcomm));
+  Teuchos::RCP<Epetra_Map> oldmap = Teuchos::RCP(new Epetra_Map(1, 1, &tag, 0, *subcomm));
+  Teuchos::RCP<Epetra_Map> newmap = Teuchos::RCP(new Epetra_Map(1, 1, &tag, 0, *subcomm));
   Core::Communication::Exporter exporter(*oldmap, *newmap, *subcomm);
   exporter.do_export<MultiScale::MicroStaticParObject>(condnamemap);
 
   if (matgp_.find(gp) == matgp_.end())
   {
-    matgp_[gp] = Teuchos::rcp(new MicroMaterialGP(gp, eleID, eleowner, microdisnum, V0));
+    matgp_[gp] = Teuchos::RCP(new MicroMaterialGP(gp, eleID, eleowner, microdisnum, V0));
   }
 
   Teuchos::RCP<MicroMaterialGP> actmicromatgp = matgp_[gp];
@@ -298,7 +298,7 @@ void Mat::MicroMaterial::read_restart(
 {
   if (matgp_.find(gp) == matgp_.end())
   {
-    matgp_[gp] = Teuchos::rcp(new MicroMaterialGP(gp, eleID, eleowner, microdisnum, V0));
+    matgp_[gp] = Teuchos::RCP(new MicroMaterialGP(gp, eleID, eleowner, microdisnum, V0));
   }
 
   Teuchos::RCP<MicroMaterialGP> actmicromatgp = matgp_[gp];

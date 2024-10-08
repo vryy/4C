@@ -91,7 +91,7 @@ namespace Solid
         : TimAda(timeparams, adaparams, sti), ada_(ada_vague), sta_(Teuchos::null)
     {
       // allocate auxiliary integrator
-      sta_ = Teuchos::rcp(
+      sta_ = Teuchos::RCP(
           new T(timeparams, ioparams, sdyn, xparams, sti->discretization(), sti->solver(),
               Teuchos::null,  // no contact solver
               sti->disc_writer()));

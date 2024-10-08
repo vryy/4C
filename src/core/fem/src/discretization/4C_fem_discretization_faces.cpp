@@ -896,7 +896,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
       // create a clone (the internally created element does not exist anymore when all
       // Teuchos::RCP's finished)
       Teuchos::RCP<Core::Elements::FaceElement> surf_clone =
-          Teuchos::rcp(dynamic_cast<Core::Elements::FaceElement*>(surf->clone()));
+          Teuchos::RCP(dynamic_cast<Core::Elements::FaceElement*>(surf->clone()));
       if (surf_clone.get() == nullptr)
         FOUR_C_THROW("Invalid element detected. Expected face element");
 
@@ -962,7 +962,7 @@ void Core::FE::DiscretizationFaces::build_face_row_map()
       ++count;
     }
   if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of internal faces");
-  facerowmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, eleids.data(), 0, get_comm()));
+  facerowmap_ = Teuchos::RCP(new Epetra_Map(-1, nummyeles, eleids.data(), 0, get_comm()));
   return;
 }
 
@@ -985,7 +985,7 @@ void Core::FE::DiscretizationFaces::build_face_col_map()
     ++count;
   }
   if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
-  facecolmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyeles, eleids.data(), 0, get_comm()));
+  facecolmap_ = Teuchos::RCP(new Epetra_Map(-1, nummyeles, eleids.data(), 0, get_comm()));
   return;
 }
 

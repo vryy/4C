@@ -250,7 +250,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new ScatraMatMultiPoroFluid(*this));
+      return Teuchos::RCP(new ScatraMatMultiPoroFluid(*this));
     }
 
     /// Return quick accessible material parameter data
@@ -337,7 +337,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new ScatraMatMultiPoroVolFrac(*this));
+      return Teuchos::RCP(new ScatraMatMultiPoroVolFrac(*this));
     }
 
     /// Return quick accessible material parameter data
@@ -421,7 +421,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new ScatraMatMultiPoroSolid(*this));
+      return Teuchos::RCP(new ScatraMatMultiPoroSolid(*this));
     }
 
     /// Return quick accessible material parameter data
@@ -496,7 +496,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new ScatraMatMultiPoroTemperature(*this));
+      return Teuchos::RCP(new ScatraMatMultiPoroTemperature(*this));
     }
 
     /// Return quick accessible material parameter data

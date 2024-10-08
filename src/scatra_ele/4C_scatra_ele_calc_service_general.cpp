@@ -388,7 +388,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
           // diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific
           // heat) in case of loma
 
-          diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManager(numscal_));
+          diffmanager_ = Teuchos::RCP(new ScaTraEleDiffManager(numscal_));
 
           // fluid viscosity
           double visc(0.0);

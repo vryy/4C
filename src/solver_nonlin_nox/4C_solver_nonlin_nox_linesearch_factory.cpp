@@ -45,11 +45,11 @@ Teuchos::RCP<::NOX::LineSearch::Generic> NOX::Nln::LineSearch::Factory::build_li
   if (method != "Full Step") inner_status_test_is_required(innerTests);
 
   if (method == "Full Step")
-    line_search = Teuchos::rcp(new ::NOX::LineSearch::FullStep(gd, params));
+    line_search = Teuchos::RCP(new ::NOX::LineSearch::FullStep(gd, params));
   else if (method == "Backtrack")
   {
     line_search =
-        Teuchos::rcp(new NOX::Nln::LineSearch::Backtrack(gd, outerTests, innerTests, params));
+        Teuchos::RCP(new NOX::Nln::LineSearch::Backtrack(gd, outerTests, innerTests, params));
   }
   else
   {

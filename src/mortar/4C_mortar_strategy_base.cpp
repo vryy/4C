@@ -58,8 +58,8 @@ Mortar::StrategyBase::StrategyBase(const Teuchos::RCP<Mortar::StratDataContainer
       data_ptr_(data_ptr)
 {
   // *** set data container variables
-  data().prob_dofs_ptr() = Teuchos::rcp(new Epetra_Map(*(dof_row_map)));
-  data().prob_nodes_ptr() = Teuchos::rcp(new Epetra_Map(*(NodeRowMap)));
+  data().prob_dofs_ptr() = Teuchos::RCP(new Epetra_Map(*(dof_row_map)));
+  data().prob_nodes_ptr() = Teuchos::RCP(new Epetra_Map(*(NodeRowMap)));
   data().comm_ptr() = comm;
   data().s_contact() = params;
   data().n_dim() = spatialDim;

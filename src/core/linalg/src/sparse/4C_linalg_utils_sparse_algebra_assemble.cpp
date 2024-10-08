@@ -271,7 +271,7 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> Core::LinAlg::convert_dirichlet_toggle_
       nummyelements = dbcgids.size();
       myglobalelements = dbcgids.data();
     }
-    dbcmap = Teuchos::rcp(
+    dbcmap = Teuchos::RCP(
         new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm()));
   }
   // build map of free DOFs
@@ -284,12 +284,12 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> Core::LinAlg::convert_dirichlet_toggle_
       nummyelements = freegids.size();
       myglobalelements = freegids.data();
     }
-    freemap = Teuchos::rcp(
+    freemap = Teuchos::RCP(
         new Epetra_Map(-1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm()));
   }
 
   // build and return the map extractor of Dirichlet-conditioned and free DOFs
-  return Teuchos::rcp(new Core::LinAlg::MapExtractor(fullmap, dbcmap, freemap));
+  return Teuchos::RCP(new Core::LinAlg::MapExtractor(fullmap, dbcmap, freemap));
 }
 
 FOUR_C_NAMESPACE_CLOSE

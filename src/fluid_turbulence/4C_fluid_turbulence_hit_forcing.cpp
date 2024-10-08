@@ -198,7 +198,7 @@ namespace FLD
     }
     // push coordinates in vectors
     {
-      coordinates_ = Teuchos::rcp(new std::vector<double>);
+      coordinates_ = Teuchos::RCP(new std::vector<double>);
 
       for (std::set<double, LineSortCriterion>::iterator coord1 = coords.begin();
            coord1 != coords.end(); ++coord1)
@@ -213,16 +213,16 @@ namespace FLD
 
     // push wave numbers in vector
     {
-      wavenumbers_ = Teuchos::rcp(new std::vector<double>);
+      wavenumbers_ = Teuchos::RCP(new std::vector<double>);
 
       wavenumbers_->resize((std::size_t)nummodes_);
       for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++) (*wavenumbers_)[rr] = rr;
     }
 
     // set size of energy-spectrum vector
-    energyspectrum_n_ = Teuchos::rcp(new std::vector<double>);
+    energyspectrum_n_ = Teuchos::RCP(new std::vector<double>);
     energyspectrum_n_->resize(wavenumbers_->size());
-    energyspectrum_np_ = Teuchos::rcp(new std::vector<double>);
+    energyspectrum_np_ = Teuchos::RCP(new std::vector<double>);
     energyspectrum_np_->resize(wavenumbers_->size());
     // and initialize with zeros, just to be sure
     for (std::size_t rr = 0; rr < energyspectrum_n_->size(); rr++)
@@ -232,7 +232,7 @@ namespace FLD
     }
 
     // forcing factor: factor to multiply Fourier coefficients of velocity
-    force_fac_ = Teuchos::rcp(
+    force_fac_ = Teuchos::RCP(
         new Core::LinAlg::SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     return;
@@ -423,26 +423,26 @@ namespace FLD
       //-------------------------------------------------------------------------------
 
       // set and initialize working arrays
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
       Teuchos::RCP<Teuchos::Array<double>> local_u1 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> local_u2 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> local_u3 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
       Teuchos::RCP<Teuchos::Array<double>> global_u1 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> global_u2 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> global_u3 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
       //-----------------------------------
       // prepare Fourier transformation
@@ -858,26 +858,26 @@ namespace FLD
       //-------------------------------------------------------------------------------
 
       // set and initialize working arrays
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
       Teuchos::RCP<Teuchos::Array<double>> local_u1 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> local_u2 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> local_u3 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
       Teuchos::RCP<Teuchos::Array<double>> global_u1 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> global_u2 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> global_u3 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
       //-----------------------------------
       // prepare Fourier transformation
@@ -998,11 +998,11 @@ namespace FLD
       //----------------------------------------
 
       // Fourier coefficients of forcing
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> f1_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> f1_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> f2_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> f2_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> f3_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> f3_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
       // where f_hat = -C(k) * u_hat according to Hickel 2007
       // C denotes a linear compensation factor
@@ -1010,11 +1010,11 @@ namespace FLD
       // Bazilevs et al.
 
       Teuchos::RCP<Teuchos::Array<double>> f1 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> f2 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> f3 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
       for (int rr = 0; rr < (nummodes_ * nummodes_ * (nummodes_ / 2 + 1)); rr++)
       {
@@ -1173,7 +1173,7 @@ namespace FLD
 
     // push coordinates in vector
     {
-      Teuchos::RCP<std::vector<double>> copycoordinates = Teuchos::rcp(new std::vector<double>);
+      Teuchos::RCP<std::vector<double>> copycoordinates = Teuchos::RCP(new std::vector<double>);
 
       for (std::vector<double>::iterator coord1 = coordinates_->begin();
            coord1 != coordinates_->end(); ++coord1)
@@ -1201,7 +1201,7 @@ namespace FLD
 
     // push wave numbers in vector
     {
-      wavenumbers_ = Teuchos::rcp(new std::vector<double>);
+      wavenumbers_ = Teuchos::RCP(new std::vector<double>);
 
       wavenumbers_->resize((std::size_t)nummodes_);
       for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++) (*wavenumbers_)[rr] = rr;
@@ -1218,7 +1218,7 @@ namespace FLD
     }
 
     // forcing factor: factor to multiply Fourier coefficients of velocity
-    force_fac_ = Teuchos::rcp(
+    force_fac_ = Teuchos::RCP(
         new Core::LinAlg::SerialDenseVector(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     return;
@@ -1252,26 +1252,26 @@ namespace FLD
       //-------------------------------------------------------------------------------------------------
 
       // set and initialize working arrays
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
       Teuchos::RCP<Teuchos::Array<double>> local_u1 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> local_u2 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> local_u3 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
       Teuchos::RCP<Teuchos::Array<double>> global_u1 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> global_u2 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> global_u3 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
       //-----------------------------------
       // prepare Fourier transformation
@@ -1701,26 +1701,26 @@ namespace FLD
       //-------------------------------------------------------------------------------------------------
 
       // set and initialize working arrays
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
       Teuchos::RCP<Teuchos::Array<double>> local_u1 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> local_u2 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> local_u3 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
       Teuchos::RCP<Teuchos::Array<double>> global_u1 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> global_u2 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> global_u3 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
       //-----------------------------------
       // prepare Fourier transformation
@@ -1850,11 +1850,11 @@ namespace FLD
       //----------------------------------------
 
       // Fourier coefficients of forcing
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> f1_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> f1_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> f2_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> f2_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> f3_hat = Teuchos::rcp(
+      Teuchos::RCP<Teuchos::Array<std::complex<double>>> f3_hat = Teuchos::RCP(
           new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
       // where f_hat = -C(k) * u_hat according to Hickel 2007
       // C denotes a linear compensation factor
@@ -1862,11 +1862,11 @@ namespace FLD
       // Bazilevs et al.
 
       Teuchos::RCP<Teuchos::Array<double>> f1 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> f2 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
       Teuchos::RCP<Teuchos::Array<double>> f3 =
-          Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+          Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
       for (int rr = 0; rr < (nummodes_ * nummodes_ * (nummodes_ / 2 + 1)); rr++)
       {
@@ -2064,7 +2064,7 @@ namespace FLD
 
     const Epetra_Map* elementrowmap = discret_->element_row_map();
     Teuchos::RCP<Epetra_MultiVector> massflvec =
-        Teuchos::rcp(new Epetra_MultiVector(*elementrowmap, 1, true));
+        Teuchos::RCP(new Epetra_MultiVector(*elementrowmap, 1, true));
 
     // optional: elementwise defined div u may be written to standard output file (not implemented
     // yet)
@@ -2073,7 +2073,7 @@ namespace FLD
     discret_->clear_state();
 
     Teuchos::RCP<Epetra_MultiVector> massflvecneg =
-        Teuchos::rcp(new Epetra_MultiVector(*elementrowmap, 1, true));
+        Teuchos::RCP(new Epetra_MultiVector(*elementrowmap, 1, true));
 
     // take into account negative mass flux at the inflow
     for (int i = 0; i < discret_->element_row_map()->NumMyElements(); ++i)

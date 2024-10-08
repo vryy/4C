@@ -79,18 +79,18 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::init()
 
   // -----------------------------------------------------------------------------------------------------------------
   // create map extractors needed for artery condition coupling --> continuous field part
-  contfieldex_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
+  contfieldex_ = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor());
   setup_map_extractor(contfieldex_, contdis_, coupleddofs_cont_);
   check_dbc_on_coupled_dofs(contdis_, contfieldex_->Map(1));
 
   // -----------------------------------------------------------------------------------------------------------------
   // create map extractors needed for artery condition coupling --> artery part
-  artex_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
+  artex_ = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor());
   setup_map_extractor(artex_, arterydis_, coupleddofs_art_);
   check_dbc_on_coupled_dofs(arterydis_, artex_->Map(1));
 
   // setup coupling adapter
-  artcontfieldcoup_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  artcontfieldcoup_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
   artcontfieldcoup_->setup_condition_coupling(*contdis_, contfieldex_->Map(1), *arterydis_,
       artex_->Map(1), condname_, coupleddofs_cont_, coupleddofs_art_);
 
@@ -101,16 +101,16 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::init()
 
   fullmap_ = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
   /// dof row map of coupled problem splitted in (field) blocks
-  globalex_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
+  globalex_ = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor());
   globalex_->setup(*fullmap_, maps);
 
   // check global map extractor
   globalex_->check_for_valid_map_extractor();
 
   // needed for matrix transformations
-  sbbtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform());
-  sbitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform());
-  sibtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform());
+  sbbtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixRowColTransform());
+  sbitransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixRowTransform());
+  sibtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform());
 }
 
 /*----------------------------------------------------------------------*
@@ -133,9 +133,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_map_extr
   {
     Core::Conditions::MultiConditionSelector mcs;
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> dummy =
-        Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
+        Teuchos::RCP(new Core::LinAlg::MultiMapExtractor());
     // selector for coupleddofs[idof]
-    mcs.add_selector(Teuchos::rcp(new Core::Conditions::NDimConditionSelector(
+    mcs.add_selector(Teuchos::RCP(new Core::Conditions::NDimConditionSelector(
         *dis, condname_, coupleddofs[idof], coupleddofs[idof] + 1)));
     mcs.setup_extractor(*dis, *dis->dof_row_map(), *dummy);
 
@@ -147,8 +147,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::setup_map_extr
 
   // fullmap uncoupled -> all uncoupled dofs
   Teuchos::RCP<Core::LinAlg::MapExtractor> temp =
-      Teuchos::rcp(new Core::LinAlg::MapExtractor(*dis->dof_row_map(), fullmap_coupled, false));
-  Teuchos::RCP<Epetra_Map> fullmap_uncoupled = Teuchos::rcp(new Epetra_Map(*temp->cond_map()));
+      Teuchos::RCP(new Core::LinAlg::MapExtractor(*dis->dof_row_map(), fullmap_coupled, false));
+  Teuchos::RCP<Epetra_Map> fullmap_uncoupled = Teuchos::RCP(new Epetra_Map(*temp->cond_map()));
 
   // vector for setup of extractor
   std::vector<Teuchos::RCP<const Epetra_Map>> fullmap_vector;
@@ -283,7 +283,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased::check_dbc_on_c
     Teuchos::RCP<Core::FE::Discretization> dis, const Teuchos::RCP<const Epetra_Map>& coupleddofmap)
 {
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps = Teuchos::rcp(new Core::LinAlg::MapExtractor());
+  Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps = Teuchos::RCP(new Core::LinAlg::MapExtractor());
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
         Core::LinAlg::create_vector(*dis->dof_row_map(), true);

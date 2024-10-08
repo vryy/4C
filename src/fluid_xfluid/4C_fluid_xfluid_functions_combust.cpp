@@ -23,11 +23,11 @@ namespace
 
     if (function_line_defs.front().container().get_or("ZALESAKSDISK", false))
     {
-      return Teuchos::rcp(new Discret::UTILS::ZalesaksDiskFunction());
+      return Teuchos::RCP(new Discret::UTILS::ZalesaksDiskFunction());
     }
     else if (function_line_defs.front().container().get_or("COLLAPSINGWATERCOLUMN", false))
     {
-      return Teuchos::rcp(new Discret::UTILS::CollapsingWaterColumnFunction());
+      return Teuchos::RCP(new Discret::UTILS::CollapsingWaterColumnFunction());
     }
     else
     {

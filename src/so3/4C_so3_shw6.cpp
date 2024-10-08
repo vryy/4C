@@ -37,7 +37,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoShw6Type::create(
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::SoShw6(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::SoShw6(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -48,7 +48,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoShw6Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::SoShw6(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::SoShw6(id, owner));
   return ele;
 }
 

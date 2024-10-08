@@ -450,11 +450,11 @@ void PARTICLEWALL::WallHandlerBase::create_wall_discretization_runtime_vtu_write
 void PARTICLEWALL::WallHandlerBase::create_wall_discretization()
 {
   // create wall discretization
-  walldiscretization_ = Teuchos::rcp(new Core::FE::Discretization(
-      "particlewalls", Teuchos::rcp(comm_.Clone()), Global::Problem::instance()->n_dim()));
+  walldiscretization_ = Teuchos::RCP(new Core::FE::Discretization(
+      "particlewalls", Teuchos::RCP(comm_.Clone()), Global::Problem::instance()->n_dim()));
 
   // create wall discretization writer
-  walldiscretization_->set_writer(Teuchos::rcp(new Core::IO::DiscretizationWriter(
+  walldiscretization_->set_writer(Teuchos::RCP(new Core::IO::DiscretizationWriter(
       walldiscretization_, Global::Problem::instance()->output_control_file(),
       Global::Problem::instance()->spatial_approximation_type())));
 }
@@ -485,7 +485,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::distribute_wall_elements_and_nod
   Teuchos::RCP<Core::LinAlg::Vector<double>> disn_col = Teuchos::null;
   if (walldatastate_->get_disp_row() != Teuchos::null)
   {
-    disn_col = Teuchos::rcp(new Core::LinAlg::Vector<double>(*walldiscretization_->dof_col_map()));
+    disn_col = Teuchos::RCP(new Core::LinAlg::Vector<double>(*walldiscretization_->dof_col_map()));
     Core::LinAlg::export_to(*walldatastate_->get_disp_row(), *disn_col);
   }
 
@@ -579,7 +579,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
 
       // add current node to wall discretization
       walldiscretization_->add_node(
-          Teuchos::rcp(new Core::Nodes::Node(currnode->id(), currnode->x(), currnode->owner())));
+          Teuchos::RCP(new Core::Nodes::Node(currnode->id(), currnode->x(), currnode->owner())));
     }
 
     // iterate over column wall elements
@@ -606,7 +606,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
   // reuse dofs of structural discretization for wall discretization
   bool parallel = (comm_.NumProc() == 1) ? false : true;
   Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
-      Teuchos::rcp(new Core::DOFSets::TransparentDofSet(structurediscretization, parallel));
+      Teuchos::RCP(new Core::DOFSets::TransparentDofSet(structurediscretization, parallel));
   walldiscretization_->replace_dof_set(newdofset);
 
   // finalize wall discretization construction
@@ -686,7 +686,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::init_wall_discretization()
     for (auto& nodepos : nodepositions)
     {
       // add corner node to wall discretization
-      walldiscretization_->add_node(Teuchos::rcp(new Core::Nodes::Node(nodeid, nodepos, myrank_)));
+      walldiscretization_->add_node(Teuchos::RCP(new Core::Nodes::Node(nodeid, nodepos, myrank_)));
 
       // add node id
       nodeids.push_back(nodeid++);

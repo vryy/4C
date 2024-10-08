@@ -45,7 +45,7 @@ void CONSTRAINTS::EMBEDDEDMESH::prepare_and_perform_cut(Teuchos::RCP<Cut::CutWiz
   const int step = 1;
 
   // create a condition manager and set options of the cutwizard
-  auto condition_manager = Teuchos::rcp(new XFEM::ConditionManager(
+  auto condition_manager = Teuchos::RCP(new XFEM::ConditionManager(
       dofset_coupling_map, discret, meshcoupl_dis, levelsetcoupl_dis, time, step));
 
   condition_manager->init();
@@ -120,7 +120,7 @@ Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair> coupling_pair_mort
       {
         case Core::FE::CellType::hex8:
         {
-          return Teuchos::rcp(new CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<
+          return Teuchos::RCP(new CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<
               GEOMETRYPAIR::t_quad4, GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_quad4>(
               interfaceele_real, background_ele, params_ptr, cutwizard_ptr, boundary_cells));
           break;
@@ -139,7 +139,7 @@ Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair> coupling_pair_mort
       {
         case Core::FE::CellType::hex8:
         {
-          return Teuchos::rcp(new CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<
+          return Teuchos::RCP(new CONSTRAINTS::EMBEDDEDMESH::SurfaceToBackgroundCouplingPairMortar<
               GEOMETRYPAIR::t_nurbs9, GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_nurbs9>(
               interfaceele_real, background_ele, params_ptr, cutwizard_ptr, boundary_cells));
           break;
@@ -422,7 +422,7 @@ Core::FE::GaussIntegration CONSTRAINTS::EMBEDDEDMESH::create_gauss_integration_f
 {
   // format as Core::FE::GaussIntegration
   Teuchos::RCP<Core::FE::CollectedGaussPoints> gp =
-      Teuchos::rcp(new Core::FE::CollectedGaussPoints);
+      Teuchos::RCP(new Core::FE::CollectedGaussPoints);
 
   for (auto& i_intpoints : intpoints_vector)
   {

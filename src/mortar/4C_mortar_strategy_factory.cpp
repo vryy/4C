@@ -50,7 +50,7 @@ void Mortar::STRATEGY::Factory::setup(const int dim)
   check_init();
 
   // get a copy of the underlying structural communicator
-  comm_ptr_ = Teuchos::rcp(discret_ptr_->get_comm().Clone());
+  comm_ptr_ = Teuchos::RCP(discret_ptr_->get_comm().Clone());
 
   // get the problem dimension
   dim_ = dim;

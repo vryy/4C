@@ -40,14 +40,14 @@ Teuchos::RCP<Adapter::ArtNet> Arteries::UTILS::create_algorithm(
     case Inpar::ArtDyn::TimeIntegrationScheme::tay_gal:
     {
       // create algorithm
-      algo = Teuchos::rcp(new Arteries::ArtNetExplicitTimeInt(
+      algo = Teuchos::RCP(new Arteries::ArtNetExplicitTimeInt(
           dis, linsolvernumber, probparams, artparams, *output));
       break;
     }
     case Inpar::ArtDyn::TimeIntegrationScheme::stationary:
     {
       // create algorithm
-      algo = Teuchos::rcp(
+      algo = Teuchos::RCP(
           new Arteries::ArtNetImplStationary(dis, linsolvernumber, probparams, artparams, *output));
       break;
     }

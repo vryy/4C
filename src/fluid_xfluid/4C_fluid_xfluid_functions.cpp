@@ -31,7 +31,7 @@ namespace
 
     if (function_lin_def.container().get_or<bool>("FORWARDFACINGSTEP", false))
     {
-      return Teuchos::rcp(new GerstenbergerForwardfacingStep());
+      return Teuchos::RCP(new GerstenbergerForwardfacingStep());
     }
     else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETCYLINDER", false))
     {
@@ -45,7 +45,7 @@ namespace
 
       auto maxspeed = function_lin_def.container().get<double>("MAXSPEED");
 
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new MovingLevelSetCylinder(&origin, radius, &direction, distance, maxspeed));
     }
     else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUS", false) or
@@ -76,15 +76,15 @@ namespace
           function_lin_def.container().get<double>("ROTATION_RAMPTIME");  // revolutions per second
 
       if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUS", false))
-        return Teuchos::rcp(new MovingLevelSetTorus(&origin, &orient_vec_torus, radius, radius_tube,
+        return Teuchos::RCP(new MovingLevelSetTorus(&origin, &orient_vec_torus, radius, radius_tube,
             &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime));
       else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUSVELOCITY", false))
-        return Teuchos::rcp(new MovingLevelSetTorusVelocity(&origin, &orient_vec_torus, radius,
+        return Teuchos::RCP(new MovingLevelSetTorusVelocity(&origin, &orient_vec_torus, radius,
             radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime));
       else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUSSLIPLENGTH", false))
       {
         auto slipfunct = function_lin_def.container().get<int>("SLIP_FUNCT");
-        return Teuchos::rcp(
+        return Teuchos::RCP(
             new MovingLevelSetTorusSliplength(&origin, &orient_vec_torus, radius, radius_tube,
                 &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime, slipfunct));
       }
@@ -110,7 +110,7 @@ namespace
 
       auto viscosity = function_lin_def.container().get<double>("VISCOSITY");
 
-      return Teuchos::rcp(new TaylorCouetteFlow(radius_i, radius_o, vel_theta_i, vel_theta_o,
+      return Teuchos::RCP(new TaylorCouetteFlow(radius_i, radius_o, vel_theta_i, vel_theta_o,
           sliplength_i, sliplength_o, traction_theta_i, traction_theta_o, viscosity));
     }
     else if (function_lin_def.container().get_or<bool>("URQUIZABOXFLOW", false))
@@ -134,7 +134,7 @@ namespace
             "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
             "DEFINE: COMBINATION C1 C2");
 
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new UrquizaBoxFlow(lengthx, lengthy, rotation, viscosity, density, functno, lin_comb));
     }
     else if (function_lin_def.container().get_or<bool>("URQUIZABOXFLOW_FORCE", false))
@@ -158,7 +158,7 @@ namespace
             "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
             "DEFINE: COMBINATION C1 C2");
 
-      return Teuchos::rcp(new UrquizaBoxFlowForce(
+      return Teuchos::RCP(new UrquizaBoxFlowForce(
           lengthx, lengthy, rotation, viscosity, density, functno, lin_comb));
     }
     else if (function_lin_def.container().get_or<bool>("URQUIZABOXFLOW_TRACTION", false))
@@ -182,7 +182,7 @@ namespace
             "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
             "DEFINE: COMBINATION C1 C2");
 
-      return Teuchos::rcp(new UrquizaBoxFlowTraction(
+      return Teuchos::RCP(new UrquizaBoxFlowTraction(
           lengthx, lengthy, rotation, viscosity, density, functno, lin_comb));
     }
     else

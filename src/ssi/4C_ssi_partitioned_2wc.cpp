@@ -440,7 +440,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> SSI::SSIPart2WC::calc_velocity(
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> vel = Teuchos::null;
   // copy D_n onto V_n+1
-  vel = Teuchos::rcp(new Core::LinAlg::Vector<double>(*(structure_field()->dispn())));
+  vel = Teuchos::RCP(new Core::LinAlg::Vector<double>(*(structure_field()->dispn())));
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
   vel->Update(1. / dt(), *dispnp, -1. / dt());

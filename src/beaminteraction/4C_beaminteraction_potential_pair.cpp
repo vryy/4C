@@ -86,53 +86,53 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
         case 2:
         {
           if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
-            return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<2, 1>());
+            return Teuchos::RCP(new BEAMINTERACTION::BeamToSpherePotentialPair<2, 1>());
           else
           {
             if (beam_potential_params.use_fad())
-              return Teuchos::rcp(
+              return Teuchos::RCP(
                   new BEAMINTERACTION::BeamToBeamPotentialPair<2, 1, Sacado::Fad::DFad<double>>());
             else
-              return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialPair<2, 1, double>());
+              return Teuchos::RCP(new BEAMINTERACTION::BeamToBeamPotentialPair<2, 1, double>());
           }
         }
         case 3:
         {
           if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
-            return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<3, 1>());
+            return Teuchos::RCP(new BEAMINTERACTION::BeamToSpherePotentialPair<3, 1>());
           else
           {
             if (beam_potential_params.use_fad())
-              return Teuchos::rcp(
+              return Teuchos::RCP(
                   new BEAMINTERACTION::BeamToBeamPotentialPair<3, 1, Sacado::Fad::DFad<double>>());
             else
-              return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialPair<3, 1, double>());
+              return Teuchos::RCP(new BEAMINTERACTION::BeamToBeamPotentialPair<3, 1, double>());
           }
         }
         case 4:
         {
           if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
-            return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<4, 1>());
+            return Teuchos::RCP(new BEAMINTERACTION::BeamToSpherePotentialPair<4, 1>());
           else
           {
             if (beam_potential_params.use_fad())
-              return Teuchos::rcp(
+              return Teuchos::RCP(
                   new BEAMINTERACTION::BeamToBeamPotentialPair<4, 1, Sacado::Fad::DFad<double>>());
             else
-              return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialPair<4, 1, double>());
+              return Teuchos::RCP(new BEAMINTERACTION::BeamToBeamPotentialPair<4, 1, double>());
           }
         }
         case 5:
         {
           if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
-            return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<5, 1>());
+            return Teuchos::RCP(new BEAMINTERACTION::BeamToSpherePotentialPair<5, 1>());
           else
           {
             if (beam_potential_params.use_fad())
-              return Teuchos::rcp(
+              return Teuchos::RCP(
                   new BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, Sacado::Fad::DFad<double>>());
             else
-              return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, double>());
+              return Teuchos::RCP(new BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, double>());
           }
         }
         default:
@@ -154,14 +154,14 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
         case 2:
         {
           if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
-            return Teuchos::rcp(new BEAMINTERACTION::BeamToSpherePotentialPair<2, 2>());
+            return Teuchos::RCP(new BEAMINTERACTION::BeamToSpherePotentialPair<2, 2>());
           else
           {
             if (beam_potential_params.use_fad())
-              return Teuchos::rcp(
+              return Teuchos::RCP(
                   new BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, Sacado::Fad::DFad<double>>());
             else
-              return Teuchos::rcp(new BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, double>());
+              return Teuchos::RCP(new BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, double>());
           }
         }
         default:

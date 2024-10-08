@@ -21,7 +21,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidTypeImmersedBase::
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDIMMERSED")
-    return Teuchos::rcp(new Discret::ELEMENTS::FluidImmersed(id, owner));
+    return Teuchos::RCP(new Discret::ELEMENTS::FluidImmersed(id, owner));
 
   return Teuchos::null;
 }

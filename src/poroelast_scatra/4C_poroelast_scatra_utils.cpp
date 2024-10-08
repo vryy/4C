@@ -82,22 +82,22 @@ Teuchos::RCP<PoroElastScaTra::PoroScatraBase> PoroElastScaTra::UTILS::create_por
   {
     case Inpar::PoroScaTra::Monolithic:
     {
-      algo = Teuchos::rcp(new PoroElastScaTra::PoroScatraMono(comm, timeparams));
+      algo = Teuchos::RCP(new PoroElastScaTra::PoroScatraMono(comm, timeparams));
       break;
     }
     case Inpar::PoroScaTra::Part_ScatraToPoro:
     {
-      algo = Teuchos::rcp(new PoroElastScaTra::PoroScatraPart1WCScatraToPoro(comm, timeparams));
+      algo = Teuchos::RCP(new PoroElastScaTra::PoroScatraPart1WCScatraToPoro(comm, timeparams));
       break;
     }
     case Inpar::PoroScaTra::Part_PoroToScatra:
     {
-      algo = Teuchos::rcp(new PoroElastScaTra::PoroScatraPart1WCPoroToScatra(comm, timeparams));
+      algo = Teuchos::RCP(new PoroElastScaTra::PoroScatraPart1WCPoroToScatra(comm, timeparams));
       break;
     }
     case Inpar::PoroScaTra::Part_TwoWay:
     {
-      algo = Teuchos::rcp(new PoroElastScaTra::PoroScatraPart2WC(comm, timeparams));
+      algo = Teuchos::RCP(new PoroElastScaTra::PoroScatraPart2WC(comm, timeparams));
       break;
     }
     default:
@@ -130,7 +130,7 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElastScaTra::UTILS::build_poro_scat
   // Yes, it was. Go ahead for all processors (even if they do not carry any PoroP1 elements)
   if (glonumporop1 > 0)
   {
-    porositysplitter = Teuchos::rcp(new Core::LinAlg::MapExtractor());
+    porositysplitter = Teuchos::RCP(new Core::LinAlg::MapExtractor());
     const int ndim = Global::Problem::instance()->n_dim();
     Core::LinAlg::create_map_extractor_from_discretization(*dis, ndim, *porositysplitter);
   }
@@ -192,7 +192,7 @@ void PoroElastScaTra::UTILS::create_volume_ghosting(Core::FE::Discretization& id
     }
 
     // re-build element column map
-    Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
+    Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::RCP(
         new Epetra_Map(-1, static_cast<int>(rdata.size()), rdata.data(), 0, voldi->get_comm()));
     rdata.clear();
 

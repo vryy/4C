@@ -30,10 +30,10 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string condname)
     : timeparams_(prbdyn)
 {
-  Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluid = Teuchos::rcp(new Adapter::FluidBaseAlgorithm(
+  Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluid = Teuchos::RCP(new Adapter::FluidBaseAlgorithm(
       prbdyn, Global::Problem::instance()->fluid_dynamic_params(), "fluid", true, false));
   fluid_ = fluid->fluid_field();
-  Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::rcp(
+  Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::RCP(
       new Adapter::AleBaseAlgorithm(prbdyn, Global::Problem::instance()->get_dis("ale")));
   ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleFluidWrapper>(ale->ale_field(), true);
 
@@ -67,7 +67,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
      * octree search.
      */
     Teuchos::RCP<Coupling::Adapter::Coupling> coupfa_matching =
-        Teuchos::rcp(new Coupling::Adapter::Coupling());
+        Teuchos::RCP(new Coupling::Adapter::Coupling());
     coupfa_matching->setup_coupling(*fluid_field()->discretization(),
         *ale_field()->discretization(), *fluidnodemap, *alenodemap, ndim,
         Global::Problem::instance()->fsi_dynamic_params().get<bool>("MATCHALL"), tolerance,
@@ -78,7 +78,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   {
     // non matching volume meshes of fluid and ale
     Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> coupfa_volmortar =
-        Teuchos::rcp(new Coupling::Adapter::MortarVolCoupl());
+        Teuchos::RCP(new Coupling::Adapter::MortarVolCoupl());
 
     // couple displacement dofs of ale and velocity dofs of fluid
 
@@ -128,7 +128,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   if (Global::Problem::instance()->fsi_dynamic_params().get<bool>("MATCHGRID_STRUCTALE"))
   {
     Teuchos::RCP<Coupling::Adapter::Coupling> icoupfa =
-        Teuchos::rcp(new Coupling::Adapter::Coupling());
+        Teuchos::RCP(new Coupling::Adapter::Coupling());
     icoupfa->setup_condition_coupling(*fluid_field()->discretization(),
         fluid_field()->interface()->fsi_cond_map(), *ale_field()->discretization(),
         ale_field()->interface()->fsi_cond_map(), condname, ndim, true, nds_master, nds_slave);
@@ -137,7 +137,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   else
   {
     Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> icoupfa =
-        Teuchos::rcp(new Coupling::Adapter::MortarVolCoupl());
+        Teuchos::RCP(new Coupling::Adapter::MortarVolCoupl());
 
     // couple displacement dofs of ale and velocity dofs of fluid
 
@@ -163,7 +163,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
     icoupfa_ = icoupfa;
   }
 
-  aucoupfa_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
+  aucoupfa_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
   aucoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
       fluid_field()->interface()->au_cond_map(), *ale_field()->discretization(),
       ale_field()->interface()->au_cond_map(), "ALEUPDATECoupling", ndim, true, nds_master,

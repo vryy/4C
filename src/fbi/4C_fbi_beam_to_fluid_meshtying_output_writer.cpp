@@ -39,7 +39,7 @@ BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOut
       visualization_params_(visualization_params)
 {
   // Initialize the writer base object and add the desired visualizations.
-  output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
+  output_writer_base_ptr_ = Teuchos::RCP<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>(
       new BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase(
           "beam-to-fluid", visualization_params));
 
@@ -135,7 +135,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
 
     // Extract the forces and add them to the discretization.
     Teuchos::RCP<Core::LinAlg::Vector<double>> force_beam =
-        Teuchos::rcp<Core::LinAlg::Vector<double>>(
+        Teuchos::RCP<Core::LinAlg::Vector<double>>(
             new Core::LinAlg::Vector<double>(beam_dof_map, true));
     Core::LinAlg::export_to(*couplingenforcer->assemble_structure_coupling_residual(), *force_beam);
 

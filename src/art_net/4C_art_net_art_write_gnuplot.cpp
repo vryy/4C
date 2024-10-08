@@ -149,7 +149,7 @@ Arteries::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
       // ---------------------------------------------------------------
       // Allocate the gnuplot export condition
       // ---------------------------------------------------------------
-      Teuchos::RCP<ArtWriteGnuplot> artgnu_c = Teuchos::rcp(new ArtWriteGnuplot(Artery_Number));
+      Teuchos::RCP<ArtWriteGnuplot> artgnu_c = Teuchos::RCP(new ArtWriteGnuplot(Artery_Number));
 
 
       // ---------------------------------------------------------------
@@ -237,7 +237,7 @@ Arteries::UTILS::ArtWriteGnuplot::ArtWriteGnuplot(int ArteryNum) : artery_num_(A
   str += ".art";
   cstr = new char[str.size() + 1];
   strcpy(cstr, str.c_str());
-  fout_ = Teuchos::rcp(new std::ofstream(cstr));
+  fout_ = Teuchos::RCP(new std::ofstream(cstr));
   delete[] cstr;
 
   // Avoid warning on unused variable
@@ -290,7 +290,7 @@ void Arteries::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<Core::FE::Discretizati
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
     std::vector<int> lmstride;
-    Teuchos::RCP<std::vector<int>> lmowner = Teuchos::rcp(new std::vector<int>);
+    Teuchos::RCP<std::vector<int>> lmowner = Teuchos::RCP(new std::vector<int>);
     const int* ele_nodes = ele[0][0].node_ids();
 
     if (ele_nodes[0] == (*nodes)[i])

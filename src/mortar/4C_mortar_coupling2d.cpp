@@ -926,7 +926,7 @@ void Mortar::Coupling2dManager::integrate_coupling(
     for (int m = 0; m < (int)master_elements().size(); ++m)
     {
       // create Coupling2d object and push back
-      coupling().push_back(Teuchos::rcp(
+      coupling().push_back(Teuchos::RCP(
           new Coupling2d(idiscret_, dim_, quad_, imortar_, slave_element(), master_element(m))));
 
       // project the element pair
@@ -992,7 +992,7 @@ void Mortar::Coupling2dManager::integrate_coupling(
             for (int m = 0; m < (int)master_elements().size(); ++m)
             {
               // create Coupling2d object and push back
-              coupling().push_back(Teuchos::rcp(new Coupling2d(
+              coupling().push_back(Teuchos::RCP(new Coupling2d(
                   idiscret_, dim_, quad_, imortar_, slave_element(), master_element(m))));
 
               // project the element pair
@@ -1015,7 +1015,7 @@ void Mortar::Coupling2dManager::integrate_coupling(
             for (int m = 0; m < (int)master_elements().size(); ++m)
             {
               // create Coupling2d object and push back
-              coupling().push_back(Teuchos::rcp(new Coupling2d(
+              coupling().push_back(Teuchos::RCP(new Coupling2d(
                   idiscret_, dim_, quad_, imortar_, slave_element(), master_element(m))));
 
               // project the element pair
@@ -1217,7 +1217,7 @@ void Mortar::Coupling2dManager::consistent_dual_shape()
     Core::LinAlg::invert_and_multiply_by_cholesky(me, de, ae);
 
   // store ae matrix in slave element data container
-  slave_element().mo_data().dual_shape() = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(ae));
+  slave_element().mo_data().dual_shape() = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(ae));
 }
 
 FOUR_C_NAMESPACE_CLOSE

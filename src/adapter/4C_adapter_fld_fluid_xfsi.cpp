@@ -36,7 +36,7 @@ Adapter::XFluidFSI::XFluidFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
     : FluidWrapper(fluid),  // the XFluid object is set as fluid_ in the FluidWrapper
-      fpsiinterface_(Teuchos::rcp(new FLD::UTILS::MapExtractor())),
+      fpsiinterface_(Teuchos::RCP(new FLD::UTILS::MapExtractor())),
       coupling_name_(coupling_name),
       solver_(solver),
       params_(params)
@@ -67,14 +67,14 @@ void Adapter::XFluidFSI::init()
     // get the mesh coupling object
     mesh_coupling_fsi_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(mc, true);
 
-    structinterface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
+    structinterface_ = Teuchos::RCP(new FLD::UTILS::MapExtractor());
 
     // the solid mesh has to match the interface mesh
     // so we have to compute a interface true residual vector itrueresidual_
     structinterface_->setup(*mesh_coupling_fsi_->get_cutter_dis());
   }
 
-  interface_ = Teuchos::rcp(new FLD::UTILS::MapExtractor());
+  interface_ = Teuchos::RCP(new FLD::UTILS::MapExtractor());
 
   interface_->setup(
       *xfluid_->discretization(), false, true);  // Always Create overlapping FSI/FPSI Interface
@@ -82,7 +82,7 @@ void Adapter::XFluidFSI::init()
   fpsiinterface_->setup(
       *xfluid_->discretization(), true, true);  // Always Create overlapping FSI/FPSI Interface
 
-  meshmap_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
+  meshmap_ = Teuchos::RCP(new Core::LinAlg::MapExtractor());
 }
 
 

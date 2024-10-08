@@ -565,7 +565,7 @@ void Inpar::PARTICLE::set_valid_conditions(
    | particle wall condition                                                 |
    *-------------------------------------------------------------------------*/
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfpartwall =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN SURFACE PARTICLE WALL",
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition("DESIGN SURFACE PARTICLE WALL",
           "ParticleWall", "Wall for particle interaction with (optional) material definition",
           Core::Conditions::ParticleWall, true, Core::Conditions::geometry_type_surface));
 

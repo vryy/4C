@@ -284,7 +284,7 @@ namespace Airway
     /// Hand over restartreader to redairway_tissue
     Teuchos::RCP<Core::IO::DiscretizationReader> get_restart_reader(int step)
     {
-      return Teuchos::rcp(new Core::IO::DiscretizationReader(
+      return Teuchos::RCP(new Core::IO::DiscretizationReader(
           discret_, Global::Problem::instance()->input_control_file(), step));
     }
 

@@ -53,11 +53,11 @@ void Core::LinearSolver::MLPreconditioner::setup(
 
     // create a copy of the scaled matrix
     // so we can reuse the preconditioner
-    pmatrix_ = Teuchos::rcp(new Epetra_CrsMatrix(*A));
+    pmatrix_ = Teuchos::RCP(new Epetra_CrsMatrix(*A));
 
     mllist_.remove("init smoother", false);
 
-    p_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*pmatrix_, mllist_, true));
+    p_ = Teuchos::RCP(new ML_Epetra::MultiLevelPreconditioner(*pmatrix_, mllist_, true));
   }
 }
 

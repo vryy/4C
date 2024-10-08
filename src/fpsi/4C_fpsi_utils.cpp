@@ -39,7 +39,7 @@ Teuchos::RCP<FPSI::Utils> FPSI::Utils::instance_;
 /----------------------------------------------------------------------*/
 Teuchos::RCP<FPSI::Utils> FPSI::Utils::instance()
 {
-  if (instance_ == Teuchos::null) instance_ = Teuchos::rcp(new Utils());
+  if (instance_ == Teuchos::null) instance_ = Teuchos::RCP(new Utils());
 
   return instance_;
 }
@@ -52,8 +52,8 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
 {
   Global::Problem* problem = Global::Problem::instance();
 
-  fluid_poro_fluid_interface_map_ = Teuchos::rcp(new std::map<int, int>);
-  poro_fluid_fluid_interface_map_ = Teuchos::rcp(new std::map<int, int>);
+  fluid_poro_fluid_interface_map_ = Teuchos::RCP(new std::map<int, int>);
+  poro_fluid_fluid_interface_map_ = Teuchos::RCP(new std::map<int, int>);
 
   // 1.-Initialization.
   Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
@@ -157,7 +157,7 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
   {
     case fpsi_monolithic_plain:
     {
-      fpsi_algo = Teuchos::rcp(new FPSI::MonolithicPlain(comm, fpsidynparams, poroelastdynparams));
+      fpsi_algo = Teuchos::RCP(new FPSI::MonolithicPlain(comm, fpsidynparams, poroelastdynparams));
       break;
     }  // case monolithic
     case partitioned:
@@ -466,7 +466,7 @@ void FPSI::Utils::redistribute_interface(Teuchos::RCP<Core::FE::Discretization> 
 
   Global::Problem* problem = Global::Problem::instance();
   const Epetra_Comm& comm = problem->get_dis(masterdis->name())->get_comm();
-  Teuchos::RCP<Epetra_Comm> rcpcomm = Teuchos::rcp(comm.Clone());
+  Teuchos::RCP<Epetra_Comm> rcpcomm = Teuchos::RCP(comm.Clone());
 
   int mymapsize = interfacefacingelementmap.size();
   int globalmapsize;
@@ -550,7 +550,7 @@ void FPSI::Utils::redistribute_interface(Teuchos::RCP<Core::FE::Discretization> 
 
       int globalsize;
       comm.SumAll(&myglobalelementsize, &globalsize, 1);
-      Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
+      Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::RCP(
           new Epetra_Map(globalsize, myglobalelementsize, myglobalelements.data(), 0, comm));
 
       if (mastereleid == printid)
@@ -610,8 +610,8 @@ void FPSI::Utils::setup_interface_map(const Epetra_Comm& comm,
     Teuchos::RCP<Core::FE::Discretization> porofluiddis,
     Teuchos::RCP<Core::FE::Discretization> fluiddis, Teuchos::RCP<Core::FE::Discretization> aledis)
 {
-  poro_fluid_fluid_interface_map_ = Teuchos::rcp(new std::map<int, int>);
-  fluid_poro_fluid_interface_map_ = Teuchos::rcp(new std::map<int, int>);
+  poro_fluid_fluid_interface_map_ = Teuchos::RCP(new std::map<int, int>);
+  fluid_poro_fluid_interface_map_ = Teuchos::RCP(new std::map<int, int>);
 
   setup_local_interface_facing_element_map(
       *fluiddis, *porofluiddis, "fpsi_coupling", *poro_fluid_fluid_interface_map_);
@@ -629,9 +629,9 @@ void FPSI::UTILS::MapExtractor::setup(
   const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
   mcs.set_overlapping(overlapping);  // defines if maps can overlap
-  mcs.add_selector(Teuchos::rcp(
+  mcs.add_selector(Teuchos::RCP(
       new Core::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim + withpressure)));
-  mcs.add_selector(Teuchos::rcp(
+  mcs.add_selector(Teuchos::RCP(
       new Core::Conditions::NDimConditionSelector(dis, "fpsi_coupling", 0, ndim + withpressure)));
   mcs.setup_extractor(dis, *dis.dof_row_map(), *this);
 }

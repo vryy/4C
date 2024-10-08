@@ -43,7 +43,7 @@ void Inpar::RveMpc::set_valid_conditions(
   using namespace Input;
 
   // ================================================================================================
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> rve_lineperiodic_condition = Teuchos::rcp(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> rve_lineperiodic_condition = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN LINE PERIODIC RVE 2D BOUNDARY CONDITIONS",
           "LinePeriodicRve", "definition of edges forming 2D periodic boundary conditions",
           Core::Conditions::LineRvePeriodic, false, Core::Conditions::geometry_type_line));
@@ -55,7 +55,7 @@ void Inpar::RveMpc::set_valid_conditions(
   condlist.push_back(rve_lineperiodic_condition);
 
   // ================================================================================================
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> rve_surfperiodic_condition = Teuchos::rcp(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> rve_surfperiodic_condition = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN SURF PERIODIC RVE 3D BOUNDARY CONDITIONS",
           "SurfacePeriodicRve", "definition of surfaces forming 3D periodic boundary conditions",
           Core::Conditions::SurfaceRvePeriodic, false, Core::Conditions::geometry_type_surface));
@@ -68,7 +68,7 @@ void Inpar::RveMpc::set_valid_conditions(
 
   // ================================================================================================
   Teuchos::RCP<Core::Conditions::ConditionDefinition> rve_cornerpoint_condition =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition(
           "DESIGN POINT PERIODIC RVE 2D BOUNDARY REFERENCE CONDITIONS",
           "PointPeriodicRveReferenceNode",
           "definition of reference points defining the reference vector of the periodic boundary"
@@ -84,7 +84,7 @@ void Inpar::RveMpc::set_valid_conditions(
 
   // ================================================================================================
   Teuchos::RCP<Core::Conditions::ConditionDefinition> linear_ce =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition(
           "DESIGN POINT COUPLED DOF EQUATION CONDITIONS", "PointLinearCoupledEquation",
           "definition of the term of a linear couple equation coupling different degrees of "
           "freedom in "

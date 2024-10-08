@@ -63,7 +63,7 @@ void ScaTra::TimIntCardiacMonodomain::setup()
       "WRITEMAXINTSTATE");  // number of maximal internal state variables to be postprocessed
   if (nb_max_mat_int_state_vars_)
   {
-    material_internal_state_np_ = Teuchos::rcp(
+    material_internal_state_np_ = Teuchos::RCP(
         new Epetra_MultiVector(*(discret_->element_row_map()), nb_max_mat_int_state_vars_, true));
     material_internal_state_np_component_ =
         Core::LinAlg::create_vector(*(discret_->element_row_map()), true);
@@ -73,7 +73,7 @@ void ScaTra::TimIntCardiacMonodomain::setup()
       "WRITEMAXIONICCURRENTS");  // number of maximal internal state variables to be postprocessed
   if (nb_max_mat_ionic_currents_)
   {
-    material_ionic_currents_np_ = Teuchos::rcp(
+    material_ionic_currents_np_ = Teuchos::RCP(
         new Epetra_MultiVector(*(discret_->element_row_map()), nb_max_mat_ionic_currents_, true));
     material_ionic_currents_np_component_ =
         Core::LinAlg::create_vector(*(discret_->element_row_map()), true);
@@ -118,7 +118,7 @@ void ScaTra::TimIntCardiacMonodomain::collect_runtime_output_data()
       std::ostringstream temp;
       temp << k + 1;
       material_internal_state_np_component_ =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(*(*material_internal_state_np_)(k)));
+          Teuchos::RCP(new Core::LinAlg::Vector<double>(*(*material_internal_state_np_)(k)));
 
       visualization_writer().append_result_data_vector_with_context(
           *material_internal_state_np_component_, Core::IO::OutputEntity::element,
@@ -143,7 +143,7 @@ void ScaTra::TimIntCardiacMonodomain::collect_runtime_output_data()
       std::ostringstream temp;
       temp << k + 1;
       material_ionic_currents_np_component_ =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(*(*material_ionic_currents_np_)(k)));
+          Teuchos::RCP(new Core::LinAlg::Vector<double>(*(*material_ionic_currents_np_)(k)));
 
       visualization_writer().append_result_data_vector_with_context(
           *material_ionic_currents_np_component_, Core::IO::OutputEntity::element,

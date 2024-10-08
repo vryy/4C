@@ -86,7 +86,7 @@ void SSI::SSIPart1WC::do_scatra_step()
     if (scatra_field()->step() % diffsteps == 0)
     {
       Teuchos::RCP<Core::IO::DiscretizationReader> reader =
-          Teuchos::rcp(new Core::IO::DiscretizationReader(scatra_field()->discretization(),
+          Teuchos::RCP(new Core::IO::DiscretizationReader(scatra_field()->discretization(),
               Global::Problem::instance()->input_control_file(), scatra_field()->step()));
 
       // check if this is a cardiac monodomain problem

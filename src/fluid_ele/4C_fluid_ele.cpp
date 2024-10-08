@@ -39,7 +39,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidType::create(
 {
   if (eletype == "FLUID")
   {
-    return Teuchos::rcp(new Discret::ELEMENTS::Fluid(id, owner));
+    return Teuchos::RCP(new Discret::ELEMENTS::Fluid(id, owner));
   }
   else if (eletype == "FLUID2" || eletype == "FLUID3")
   {
@@ -52,7 +52,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidType::create(
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidType::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Discret::ELEMENTS::Fluid(id, owner));
+  return Teuchos::RCP(new Discret::ELEMENTS::Fluid(id, owner));
 }
 
 
@@ -274,7 +274,7 @@ void Discret::ELEMENTS::Fluid::unpack(Core::Communication::UnpackBuffer& buffer)
   bool is_tds = extract_int(buffer);
   if (is_tds)
   {
-    tds_ = Teuchos::rcp(new FLD::TDSEleData());
+    tds_ = Teuchos::RCP(new FLD::TDSEleData());
     std::vector<char> pbtest;
     extract_from_pack(buffer, pbtest);
     if (pbtest.size() == 0) FOUR_C_THROW("Seems no TDS data available");
@@ -359,7 +359,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Fluid::create_face_elem
 void Discret::ELEMENTS::Fluid::activate_tds(
     int nquad, int nsd, double** saccn, double** sveln, double** svelnp)
 {
-  if (tds_ == Teuchos::null) tds_ = Teuchos::rcp(new FLD::TDSEleData());
+  if (tds_ == Teuchos::null) tds_ = Teuchos::RCP(new FLD::TDSEleData());
 
   tds_->activate_tds(nquad, nsd, saccn, sveln, svelnp);
 }

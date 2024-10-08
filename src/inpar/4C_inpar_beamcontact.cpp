@@ -190,7 +190,7 @@ void Inpar::BEAMCONTACT::set_valid_conditions(
     std::string condition_name = "BeamToBeamContact";
 
     Teuchos::RCP<Core::Conditions::ConditionDefinition> beam_to_beam_contact_condition =
-        Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+        Teuchos::RCP(new Core::Conditions::ConditionDefinition(
             "BEAM INTERACTION/BEAM TO BEAM CONTACT CONDITIONS", condition_name,
             "Beam-to-beam contact conditions", Core::Conditions::BeamToBeamContact, true,
             Core::Conditions::geometry_type_line));

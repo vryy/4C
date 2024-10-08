@@ -55,7 +55,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
       // adapt ML null space for contact/meshtying/constraint problems
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
-              Teuchos::rcp(matrix, false));
+              Teuchos::RCP(matrix, false));
       if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
       Teuchos::ParameterList& inv2 = params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2");
@@ -66,7 +66,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
         inv2.sublist("ML Parameters").set("null space: dimension", 1);
         const int plength = (*A)(1, 1).row_map().NumMyElements();
         Teuchos::RCP<std::vector<double>> pnewns =
-            Teuchos::rcp(new std::vector<double>(plength, 1.0));
+            Teuchos::RCP(new std::vector<double>(plength, 1.0));
         // TODO: std::vector<double> has zero length for particular cases (e.g. no Lagrange
         // multiplier on this processor)
         //      -> Teuchos::RCP for the null space is set to nullptr in Fedora 12 -> FOUR_C_THROW
@@ -83,7 +83,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
             .set<Teuchos::RCP<std::vector<double>>>("pressure nullspace", pnewns);
       }
 
-      p_ = Teuchos::rcp(new Core::LinearSolver::CheapSimpleBlockPreconditioner(A,
+      p_ = Teuchos::RCP(new Core::LinearSolver::CheapSimpleBlockPreconditioner(A,
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"),
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2")));
     }
@@ -100,7 +100,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
 
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
-              Teuchos::rcp(matrix, false));
+              Teuchos::RCP(matrix, false));
       if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
       // this is a fix for the old SIMPLER sublist
@@ -140,7 +140,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
 
         const int vlength = A->matrix(0, 0).row_map().NumMyElements();
         Teuchos::RCP<std::vector<double>> vnewns =
-            Teuchos::rcp(new std::vector<double>(nv * vlength, 0.0));
+            Teuchos::RCP(new std::vector<double>(nv * vlength, 0.0));
 
         for (int i = 0; i < nlnode; ++i)
         {
@@ -150,7 +150,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
         }
 
         Teuchos::RCP<Epetra_MultiVector> nullspace =
-            Teuchos::rcp(new Epetra_MultiVector(A->matrix(0, 0).row_map(), nv, true));
+            Teuchos::RCP(new Epetra_MultiVector(A->matrix(0, 0).row_map(), nv, true));
         Core::LinAlg::std_vector_to_epetra_multi_vector(*vnewns, nullspace, nv);
 
         inv1.sublist("ML Parameters").set("null space: vectors", nullspace->Values());
@@ -167,7 +167,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
         inv2.sublist("ML Parameters").set("null space: dimension", 1);
 
         Teuchos::RCP<Epetra_MultiVector> nullspace =
-            Teuchos::rcp(new Epetra_MultiVector(A->matrix(1, 1).row_map(), 1, true));
+            Teuchos::RCP(new Epetra_MultiVector(A->matrix(1, 1).row_map(), 1, true));
         nullspace->PutScalar(1.0);
 
         inv2.sublist("ML Parameters").set("null space: vectors", nullspace->Values());
@@ -176,7 +176,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
             .set<Teuchos::RCP<Epetra_MultiVector>>("pressure nullspace", nullspace);
       }
 
-      p_ = Teuchos::rcp(new Core::LinearSolver::CheapSimpleBlockPreconditioner(A,
+      p_ = Teuchos::RCP(new Core::LinearSolver::CheapSimpleBlockPreconditioner(A,
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse1"),
           params_.sublist("CheapSIMPLE Parameters").sublist("Inverse2")));
     }
@@ -191,7 +191,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
 
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
-              Teuchos::rcp(matrix, false));
+              Teuchos::RCP(matrix, false));
       if (A == Teuchos::null) FOUR_C_THROW("matrix is not a BlockSparseMatrix");
 
 
@@ -229,7 +229,7 @@ void Core::LinearSolver::SimplePreconditioner::setup(
           FOUR_C_THROW("xml file not provided for block 2 of 2");
       }
 
-      p_ = Teuchos::rcp(
+      p_ = Teuchos::RCP(
           new Core::LinearSolver::CheapSimpleBlockPreconditioner(A, sublist1, sublist2));
     }
     else

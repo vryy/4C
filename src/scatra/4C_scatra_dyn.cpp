@@ -116,11 +116,11 @@ void scatra_dyn(int restart)
       }
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      auto scatraonly = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
+      auto scatraonly = Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(
           scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      auto dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+      auto dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
           Global::Problem::instance()->n_dim() + 1, 0, 0, true));
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
@@ -224,7 +224,7 @@ void scatra_dyn(int restart)
       }
 
       // create a scalar transport algorithm instance
-      auto algo = Teuchos::rcp(new ScaTra::ScaTraAlgorithm(comm, scatradyn, fdyn, "scatra",
+      auto algo = Teuchos::RCP(new ScaTra::ScaTraAlgorithm(comm, scatradyn, fdyn, "scatra",
           Global::Problem::instance()->solver_params(linsolvernumber)));
 
       // create scatra elements by cloning from fluid dis in matching case
@@ -258,11 +258,11 @@ void scatra_dyn(int restart)
 
         // add proxy of velocity related degrees of freedom to scatra discretization
         Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-        dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+        dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_scatra, ndofperelement_scatra, 0, true));
         if (fluiddis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in fluid field");
-        dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+        dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_fluid, ndofperelement_fluid, 0, true));
         if (scatradis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in scatra field");

@@ -30,27 +30,27 @@ Mat::PAR::REACTIONCOUPLING::ReactionInterface::create_reaction(
   {
     case Mat::PAR::reac_coup_simple_multiplicative:  // reaction of type A*B*C:
     {
-      tmpreaction = Teuchos::rcp(new Mat::PAR::REACTIONCOUPLING::SimpleMultiplicative());
+      tmpreaction = Teuchos::RCP(new Mat::PAR::REACTIONCOUPLING::SimpleMultiplicative());
       break;
     }
     case Mat::PAR::reac_coup_power_multiplicative:  // reaction of type A^2*B^-1.5*C:
     {
-      tmpreaction = Teuchos::rcp(new Mat::PAR::REACTIONCOUPLING::PowerMultiplicative());
+      tmpreaction = Teuchos::RCP(new Mat::PAR::REACTIONCOUPLING::PowerMultiplicative());
       break;
     }
     case Mat::PAR::reac_coup_constant:  // constant source term:
     {
-      tmpreaction = Teuchos::rcp(new Mat::PAR::REACTIONCOUPLING::Constant());
+      tmpreaction = Teuchos::RCP(new Mat::PAR::REACTIONCOUPLING::Constant());
       break;
     }
     case Mat::PAR::reac_coup_michaelis_menten:  // reaction of type A*B/(B+4)
     {
-      tmpreaction = Teuchos::rcp(new Mat::PAR::REACTIONCOUPLING::MichaelisMenten());
+      tmpreaction = Teuchos::RCP(new Mat::PAR::REACTIONCOUPLING::MichaelisMenten());
       break;
     }
     case Mat::PAR::reac_coup_byfunction:  // reaction by function
     {
-      tmpreaction = Teuchos::rcp(new Mat::PAR::REACTIONCOUPLING::ByFunction());
+      tmpreaction = Teuchos::RCP(new Mat::PAR::REACTIONCOUPLING::ByFunction());
       break;
     }
     case Mat::PAR::reac_coup_none:
@@ -63,12 +63,12 @@ Mat::PAR::REACTIONCOUPLING::ReactionInterface::create_reaction(
 
   // we always use potentially scaled phis for the reactions (for reference concentrations)
   Teuchos::RCP<Mat::PAR::REACTIONCOUPLING::ReactionInterface> scaledreaction =
-      Teuchos::rcp(new Mat::PAR::REACTIONCOUPLING::ReactionWithPhiScaling(tmpreaction));
+      Teuchos::RCP(new Mat::PAR::REACTIONCOUPLING::ReactionWithPhiScaling(tmpreaction));
 
   Teuchos::RCP<Mat::PAR::REACTIONCOUPLING::ReactionInterface> reaction = Teuchos::null;
   // in case of reac start feature, wrap it one more time
   if (isreacstart)
-    reaction = Teuchos::rcp(new Mat::PAR::REACTIONCOUPLING::ReacStart(scaledreaction, reacstart));
+    reaction = Teuchos::RCP(new Mat::PAR::REACTIONCOUPLING::ReacStart(scaledreaction, reacstart));
   else
     reaction = scaledreaction;
 

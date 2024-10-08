@@ -52,7 +52,7 @@ void SSI::SSICouplingMatchingVolume::init(const int ndim,
     const int numDofsPerNodeTemp = 1;  // defined by temperature field
 
     Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsettemp =
-        Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(numDofsPerNodeTemp, 0, 0, true));
+        Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(numDofsPerNodeTemp, 0, 0, true));
     if (structdis->add_dof_set(dofsettemp) != ++structure_dofset_counter)
       FOUR_C_THROW("unexpected dof sets in structure field");
   }
@@ -62,7 +62,7 @@ void SSI::SSICouplingMatchingVolume::init(const int ndim,
       Global::Problem::instance()->materials()->first_id_by_type(
           Core::Materials::m_newman_multiscale) != -1)
   {
-    auto dofsetmicro = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(1, 0, 0, true));
+    auto dofsetmicro = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(1, 0, 0, true));
     if (scatradis->add_dof_set(dofsetmicro) != ++scatra_dofset_counter)
       FOUR_C_THROW("unexpected dof sets in scatra field");
     scatra_integrator->set_number_of_dof_set_micro_scale(scatra_dofset_counter);
@@ -73,7 +73,7 @@ void SSI::SSICouplingMatchingVolume::init(const int ndim,
   if (ssi_base->is_s2_i_kinetics_with_pseudo_contact())
   {
     const int numDofsPerNodeStresses = 6;
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetstresses = Teuchos::rcp(
+    Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetstresses = Teuchos::RCP(
         new Core::DOFSets::DofSetPredefinedDoFNumber(numDofsPerNodeStresses, 0, 0, true));
     if (structdis->add_dof_set(dofsetstresses) != ++structure_dofset_counter)
       FOUR_C_THROW("unexpected dof sets in structure field");
@@ -212,11 +212,11 @@ void SSI::SSICouplingNonMatchingBoundary::init(const int ndim,
   const int ndofpernode_struct = structdis->num_dof(0, structdis->l_row_node(0));
   const int ndofperelement_struct = 0;
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-  dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+  dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
       ndofpernode_scatra, ndofperelement_scatra, 0, true));
   if (structdis->add_dof_set(dofsetaux) != ++structure_dofset_counter)
     FOUR_C_THROW("unexpected dof sets in structure field");
-  dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+  dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
       ndofpernode_struct, ndofperelement_struct, 0, true));
   if (scatradis_->add_dof_set(dofsetaux) != ++scatra_dofset_counter)
     FOUR_C_THROW("unexpected dof sets in scatra field");
@@ -233,7 +233,7 @@ void SSI::SSICouplingNonMatchingBoundary::init(const int ndim,
   scatradis_->fill_complete(true, false, false);
 
   // setup mortar adapter for surface volume coupling
-  adaptermeshtying_ = Teuchos::rcp(new Coupling::Adapter::CouplingMortar(
+  adaptermeshtying_ = Teuchos::RCP(new Coupling::Adapter::CouplingMortar(
       Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
       Global::Problem::instance()->spatial_approximation_type()));
@@ -259,7 +259,7 @@ void SSI::SSICouplingNonMatchingBoundary::setup()
 
 
   // extractor for coupled surface of structure discretization with surface scatra
-  extractor_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(
+  extractor_ = Teuchos::RCP(new Core::LinAlg::MapExtractor(
       *structdis_->dof_row_map(0), adaptermeshtying_->master_dof_map(), true));
 
   set_is_setup(true);
@@ -343,11 +343,11 @@ void SSI::SSICouplingNonMatchingVolume::init(const int ndim,
   const int ndofpernode_struct = structdis->num_dof(0, structdis->l_row_node(0));
   const int ndofperelement_struct = 0;
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-  dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+  dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
       ndofpernode_scatra, ndofperelement_scatra, 0, true));
   if (structdis->add_dof_set(dofsetaux) != ++structure_dofset_counter)
     FOUR_C_THROW("unexpected dof sets in structure field");
-  dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+  dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
       ndofpernode_struct, ndofperelement_struct, 0, true));
   if (scatradis->add_dof_set(dofsetaux) != ++scatra_dofset_counter)
     FOUR_C_THROW("unexpected dof sets in scatra field");
@@ -364,7 +364,7 @@ void SSI::SSICouplingNonMatchingVolume::init(const int ndim,
   scatradis->fill_complete(true, false, false);
 
   // Scheme: non matching meshes --> volumetric mortar coupling...
-  volcoupl_structurescatra_ = Teuchos::rcp(new Coupling::Adapter::MortarVolCoupl());
+  volcoupl_structurescatra_ = Teuchos::RCP(new Coupling::Adapter::MortarVolCoupl());
 
   // init projection matrices (use default material strategy)
   volcoupl_structurescatra_->init(ndim, structdis, scatradis);
@@ -479,11 +479,11 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
       for (auto& cond_struct : conds_struct)
         couplingids.insert(cond_struct->parameters().get<int>("coupling id"));
 
-      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structgidmatchingdofset = Teuchos::rcp(
+      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structgidmatchingdofset = Teuchos::RCP(
           new Core::DOFSets::DofSetGIDBasedWrapper(structdis, structdis->get_dof_set_proxy()));
 
       Teuchos::RCP<Core::DOFSets::DofSetDefinedMappingWrapper> newdofset_scatra =
-          Teuchos::rcp(new Core::DOFSets::DofSetDefinedMappingWrapper(
+          Teuchos::RCP(new Core::DOFSets::DofSetDefinedMappingWrapper(
               structgidmatchingdofset, structdis, "SSICouplingSolidToScatra", couplingids));
 
       // add dofset and check if scatra field has 2 dofsets, so that coupling is possible
@@ -511,7 +511,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
       for (auto& cond_struct : conds_struct)
         couplingids.insert(cond_struct->parameters().get<int>("coupling id"));
 
-      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> scatragidmatchingdofset = Teuchos::rcp(
+      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> scatragidmatchingdofset = Teuchos::RCP(
           new Core::DOFSets::DofSetGIDBasedWrapper(scatradis, scatradis->get_dof_set_proxy()));
 
       for (int couplingid : couplingids)
@@ -520,7 +520,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
         tempset.insert(couplingid);
 
         Teuchos::RCP<Core::DOFSets::DofSetDefinedMappingWrapper> newdofset_struct =
-            Teuchos::rcp(new Core::DOFSets::DofSetDefinedMappingWrapper(
+            Teuchos::RCP(new Core::DOFSets::DofSetDefinedMappingWrapper(
                 scatragidmatchingdofset, scatradis, "SSICouplingScatraToSolid", tempset));
 
         structdis->add_dof_set(newdofset_struct);
@@ -553,11 +553,11 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
     std::set<int> couplingids;
     couplingids.insert(0);
 
-    auto structgidmatchingdofset = Teuchos::rcp(
+    auto structgidmatchingdofset = Teuchos::RCP(
         new Core::DOFSets::DofSetGIDBasedWrapper(structdis, structdis->get_dof_set_proxy()));
 
     auto proxy_structure_scatramanifold =
-        Teuchos::rcp(new Core::DOFSets::DofSetDefinedMappingWrapper(
+        Teuchos::RCP(new Core::DOFSets::DofSetDefinedMappingWrapper(
             structgidmatchingdofset, scatra_manifold_dis, "SSISurfaceManifold", couplingids));
 
     if (scatra_manifold_dis->add_dof_set(proxy_structure_scatramanifold) !=
@@ -572,7 +572,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
     const int numDofsPerNodeTemp = 1;  // defined by temperature field
 
     Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsettemp =
-        Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(numDofsPerNodeTemp, 0, 0, true));
+        Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(numDofsPerNodeTemp, 0, 0, true));
     if (structdis->add_dof_set(dofsettemp) != ++structure_dofset_counter)
       FOUR_C_THROW("unexpected dof sets in structure field");
   }

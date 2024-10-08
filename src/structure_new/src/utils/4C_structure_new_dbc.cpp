@@ -66,10 +66,10 @@ void Solid::Dbc::setup()
   // ---------------------------------------------------------------------------
   // Create Dirichlet Boundary Condition map
   // ---------------------------------------------------------------------------
-  zeros_ptr_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*g_state().dof_row_map_view(), true));
+  zeros_ptr_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*g_state().dof_row_map_view(), true));
   Teuchos::ParameterList p;
   p.set<double>("total time", timint_ptr_->get_data_global_state().get_time_np());
-  dbcmap_ptr_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
+  dbcmap_ptr_ = Teuchos::RCP(new Core::LinAlg::MapExtractor());
   p.set<const Core::UTILS::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
   discret_ptr_->evaluate_dirichlet(
@@ -84,7 +84,7 @@ void Solid::Dbc::setup()
   discret_ptr_->get_condition("Locsys", locsysconditions);
   if (locsysconditions.size())
   {
-    locsysman_ptr_ = Teuchos::rcp(
+    locsysman_ptr_ = Teuchos::RCP(
         new Core::Conditions::LocsysManager(*discret_ptr_, Global::Problem::instance()->n_dim()));
     // in case we have no time dependent locsys conditions in our problem,
     // this is the only time where the whole setup routine is conducted.
@@ -108,7 +108,7 @@ void Solid::Dbc::setup()
           NOX::Nln::LinSystem::PrePostOp::get_map(p_linsolver);
       // create the new pre/post operator for the nox nln linear system
       Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> prepostdbc_ptr =
-          Teuchos::rcp(new NOX::Nln::LinSystem::PrePostOp::Dbc(Teuchos::rcp(this, false)));
+          Teuchos::RCP(new NOX::Nln::LinSystem::PrePostOp::Dbc(Teuchos::RCP(this, false)));
       // insert/replace the old pointer in the map
       prepostlinsystem_map[NOX::Nln::LinSystem::prepost_dbc] = prepostdbc_ptr;
     }
@@ -169,7 +169,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::Dbc::get_dirichlet_increment()
   Teuchos::RCP<const Core::LinAlg::Vector<double>> disn =
       timint_ptr_->get_data_global_state().get_dis_n();
   Teuchos::RCP<Core::LinAlg::Vector<double>> dbcincr =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*disn));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*disn));
   const double& timenp = g_state().get_time_np();
 
   // get the new value for the Dirichlet DOFs
@@ -503,7 +503,7 @@ void NOX::Nln::LinSystem::PrePostOp::Dbc::run_pre_apply_jacobian_inverse(
 {
   ::NOX::Epetra::Vector& rhs_epetra = dynamic_cast<::NOX::Epetra::Vector&>(rhs);
   Core::LinAlg::VectorView rhs_view(rhs_epetra.getEpetraVector());
-  Teuchos::RCP<Core::LinAlg::SparseOperator> jac_ptr = Teuchos::rcp(&jac, false);
+  Teuchos::RCP<Core::LinAlg::SparseOperator> jac_ptr = Teuchos::RCP(&jac, false);
   // apply the dirichlet condition and rotate the system if desired
   dbc_ptr_->apply_dirichlet_to_local_system(jac_ptr, rhs_view.get_non_owning_rcp_ref());
 }

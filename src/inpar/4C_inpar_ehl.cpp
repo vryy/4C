@@ -146,21 +146,21 @@ void Inpar::EHL::set_valid_conditions(
   // ehl mortar coupling
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> lineehl =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition(
           "DESIGN LINE EHL MORTAR COUPLING CONDITIONS 2D", "EHLCoupling", "Line EHL Coupling",
           Core::Conditions::EHLCoupling, true, Core::Conditions::geometry_type_line));
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfehl =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition(
           "DESIGN SURF EHL MORTAR COUPLING CONDITIONS 3D", "EHLCoupling", "Surface EHL Coupling",
           Core::Conditions::EHLCoupling, true, Core::Conditions::geometry_type_surface));
 
   for (const auto& cond : {lineehl, surfehl})
   {
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("Interface ID")));
-    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("Side", "Master",
+    cond->add_component(Teuchos::RCP(new Input::IntComponent("Interface ID")));
+    cond->add_component(Teuchos::RCP(new Input::SelectionComponent("Side", "Master",
         Teuchos::tuple<std::string>("Master", "Slave"),
         Teuchos::tuple<std::string>("Master", "Slave"))));
-    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("Initialization", "Active",
+    cond->add_component(Teuchos::RCP(new Input::SelectionComponent("Initialization", "Active",
         Teuchos::tuple<std::string>("Inactive", "Active"),
         Teuchos::tuple<std::string>("Inactive", "Active"), true)));
     add_named_real(cond, "FrCoeffOrBound", "", 0.0, true);

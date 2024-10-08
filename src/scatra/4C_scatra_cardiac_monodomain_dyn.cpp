@@ -99,12 +99,12 @@ void scatra_cardiac_monodomain_dyn(int restart)
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
       Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatraonly =
-          Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
+          Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(
               scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber)));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
       Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-          Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+          Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
               Global::Problem::instance()->n_dim() + 1, 0, 0, true));
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
@@ -153,7 +153,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
           Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
               "spatial_approximation_type",
               Global::Problem::instance()->spatial_approximation_type(), binning_params);
-          binningstrategy = Teuchos::rcp(new Core::Binstrategy::BinningStrategy(binning_params,
+          binningstrategy = Teuchos::RCP(new Core::Binstrategy::BinningStrategy(binning_params,
               Global::Problem::instance()->output_control_file(), scatradis->get_comm(),
               scatradis->get_comm().MyPID(), nullptr, nullptr, dis));
           binningstrategy

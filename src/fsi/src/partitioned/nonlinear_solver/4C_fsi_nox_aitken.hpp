@@ -84,7 +84,7 @@ namespace NOX
           const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
       {
         if (aitken_ == Teuchos::null)
-          aitken_ = Teuchos::rcp(new AitkenRelaxation(gd->getUtils(), params));
+          aitken_ = Teuchos::RCP(new AitkenRelaxation(gd->getUtils(), params));
         else
           aitken_->reset(gd, params);
         return aitken_;

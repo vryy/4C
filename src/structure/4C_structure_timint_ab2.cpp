@@ -161,7 +161,7 @@ int Solid::TimIntAB2::integrate_step()
     Core::LinAlg::Vector<double> disinc = Core::LinAlg::Vector<double>(*disn_);
     disinc.Update(-1.0, *(*dis_)(0), 1.0);
     // internal force
-    apply_force_internal(timen_, dt, disn_, Teuchos::rcp(&disinc, false), veln_, fintn_);
+    apply_force_internal(timen_, dt, disn_, Teuchos::RCP(&disinc, false), veln_, fintn_);
   }
 
   // *********** time measurement ***********

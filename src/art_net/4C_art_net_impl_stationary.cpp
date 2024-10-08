@@ -88,7 +88,7 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
   // create empty system matrix (6 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
   sysmat_ =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 3, false, true));
+      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 3, false, true));
 
   // right hand side vector
   rhs_ = Core::LinAlg::create_vector(*dofrowmap, true);
@@ -100,7 +100,7 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
   zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor());
+  dbcmaps_ = Teuchos::RCP(new Core::LinAlg::MapExtractor());
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
@@ -144,7 +144,7 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
         Inpar::ScaTra::velocity_zero)
       FOUR_C_THROW("set your velocity field to zero!");
     // construct the scatra problem
-    scatra_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(globaltimeparams, myscatraparams,
+    scatra_ = Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(globaltimeparams, myscatraparams,
         Global::Problem::instance()->solver_params(linsolvernumber_), scatra_disname, false));
 
     // initialize the base algo.
@@ -606,7 +606,7 @@ void Arteries::ArtNetImplStationary::test_results()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::UTILS::ResultTest> Arteries::ArtNetImplStationary::create_field_test()
 {
-  return Teuchos::rcp(new Arteries::ArteryResultTest(*(this)));
+  return Teuchos::RCP(new Arteries::ArteryResultTest(*(this)));
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

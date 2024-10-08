@@ -51,7 +51,7 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       solver_(solver),
       solveradapttol_(tdynparams.get<bool>("ADAPTCONV")),
       solveradaptolbetter_(tdynparams.get<double>("ADAPTCONV_BETTER")),
-      dbcmaps_(Teuchos::rcp(new Core::LinAlg::MapExtractor())),
+      dbcmaps_(Teuchos::RCP(new Core::LinAlg::MapExtractor())),
       output_(output),
       printlogo_(true),  // DON'T EVEN DARE TO SET THIS TO FALSE
       printscreen_(ioparams.get<int>("STDOUTEVRY")),
@@ -97,10 +97,10 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   }
 
   // time state
-  time_ = Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, 0.0));
+  time_ = Teuchos::RCP(new TimeStepping::TimIntMStep<double>(0, 0, 0.0));
   // HERE SHOULD BE SOMETHING LIKE (tdynparams.get<double>("TIMEINIT"))
   dt_ =
-      Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, tdynparams.get<double>("TIMESTEP")));
+      Teuchos::RCP(new TimeStepping::TimIntMStep<double>(0, 0, tdynparams.get<double>("TIMESTEP")));
   step_ = 0;
   timen_ = (*time_)[0] + (*dt_)[0];  // set target time to initial time plus step size
   stepn_ = step_ + 1;
@@ -122,10 +122,10 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   }
 
   // temperatures T_{n}
-  temp_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(
+  temp_ = Teuchos::RCP(new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(
       0, 0, discret_->dof_row_map(), true));
   // temperature rates R_{n}
-  rate_ = Teuchos::rcp(new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(
+  rate_ = Teuchos::RCP(new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(
       0, 0, discret_->dof_row_map(), true));
 
   // temperatures T_{n+1} at t_{n+1}
@@ -137,7 +137,7 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   fifc_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
   // create empty matrix
-  tang_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*discret_->dof_row_map(), 81, true, true));
+  tang_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*discret_->dof_row_map(), 81, true, true));
   // we condensed the capacity matrix out of the system
 
   // -------------------------------------------------------------------
@@ -324,7 +324,7 @@ void Thermo::TimInt::read_restart(const int step)
 
   step_ = step;
   stepn_ = step_ + 1;
-  time_ = Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, reader.read_double("time")));
+  time_ = Teuchos::RCP(new TimeStepping::TimIntMStep<double>(0, 0, reader.read_double("time")));
   timen_ = (*time_)[0] + (*dt_)[0];
 
   read_restart_state();
@@ -502,11 +502,11 @@ void Thermo::TimInt::output_heatflux_tempgrad(bool& datawritten)
   p.set("total time", (*time_)[0]);
   p.set("delta time", (*dt_)[0]);
 
-  Teuchos::RCP<std::vector<char>> heatfluxdata = Teuchos::rcp(new std::vector<char>());
+  Teuchos::RCP<std::vector<char>> heatfluxdata = Teuchos::RCP(new std::vector<char>());
   p.set("heatflux", heatfluxdata);
   p.set<Inpar::Thermo::HeatFluxType>("ioheatflux", writeheatflux_);
 
-  Teuchos::RCP<std::vector<char>> tempgraddata = Teuchos::rcp(new std::vector<char>());
+  Teuchos::RCP<std::vector<char>> tempgraddata = Teuchos::RCP(new std::vector<char>());
   p.set("tempgrad", tempgraddata);
   p.set<Inpar::Thermo::TempGradType>("iotempgrad", writetempgrad_);
 
@@ -588,7 +588,7 @@ void Thermo::TimInt::output_energy()
     discret_->set_state(0, "temperature", (*temp_)(0));
     // get energies
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> energies =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(1));
+        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(1));
     discret_->evaluate_scalars(p, energies);
     discret_->clear_state();
     intergy = (*energies)(0);
@@ -612,7 +612,7 @@ void Thermo::TimInt::output_energy()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::UTILS::ResultTest> Thermo::TimInt::create_field_test()
 {
-  return Teuchos::rcp(new Thermo::ResultTest(*this));
+  return Teuchos::RCP(new Thermo::ResultTest(*this));
 
 }  // CreateFieldTest()
 
@@ -950,7 +950,7 @@ Teuchos::RCP<std::vector<double>> Thermo::TimInt::evaluate_error_compared_to_ana
       // std::vector containing
       // [0]: relative L2 temperature error
       // [1]: relative H1 temperature error
-      Teuchos::RCP<std::vector<double>> relerror = Teuchos::rcp(new std::vector<double>(2));
+      Teuchos::RCP<std::vector<double>> relerror = Teuchos::RCP(new std::vector<double>(2));
 
       // create the parameters for the discretization
       Teuchos::ParameterList eleparams;
@@ -969,11 +969,11 @@ Teuchos::RCP<std::vector<double>> Thermo::TimInt::evaluate_error_compared_to_ana
       // 2: analytical temperature for L2 norm
       // 3: analytical temperature for H1 norm
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-          Teuchos::rcp(new Core::LinAlg::SerialDenseVector(4));
+          Teuchos::RCP(new Core::LinAlg::SerialDenseVector(4));
 
       // vector for output
       Teuchos::RCP<Epetra_MultiVector> normvec =
-          Teuchos::rcp(new Epetra_MultiVector(*discret_->element_row_map(), 7));
+          Teuchos::RCP(new Epetra_MultiVector(*discret_->element_row_map(), 7));
 
       // call loop over elements (assemble nothing)
       discret_->evaluate_scalars(eleparams, errors);

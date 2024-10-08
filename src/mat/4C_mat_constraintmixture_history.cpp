@@ -82,20 +82,20 @@ void Mat::ConstraintMixtureHistory::unpack(Core::Communication::UnpackBuffer& bu
   extract_from_pack(buffer, b);
   expvar_ = b;
 
-  collagenstretch1_ = Teuchos::rcp(new std::vector<double>(numgp_));
-  collagenstretch2_ = Teuchos::rcp(new std::vector<double>(numgp_));
-  collagenstretch3_ = Teuchos::rcp(new std::vector<double>(numgp_));
-  collagenstretch4_ = Teuchos::rcp(new std::vector<double>(numgp_));
-  massprod1_ = Teuchos::rcp(new std::vector<double>(numgp_));
-  massprod2_ = Teuchos::rcp(new std::vector<double>(numgp_));
-  massprod3_ = Teuchos::rcp(new std::vector<double>(numgp_));
-  massprod4_ = Teuchos::rcp(new std::vector<double>(numgp_));
+  collagenstretch1_ = Teuchos::RCP(new std::vector<double>(numgp_));
+  collagenstretch2_ = Teuchos::RCP(new std::vector<double>(numgp_));
+  collagenstretch3_ = Teuchos::RCP(new std::vector<double>(numgp_));
+  collagenstretch4_ = Teuchos::RCP(new std::vector<double>(numgp_));
+  massprod1_ = Teuchos::RCP(new std::vector<double>(numgp_));
+  massprod2_ = Teuchos::RCP(new std::vector<double>(numgp_));
+  massprod3_ = Teuchos::RCP(new std::vector<double>(numgp_));
+  massprod4_ = Teuchos::RCP(new std::vector<double>(numgp_));
   if (expvar_)
   {
-    vardegrad1_ = Teuchos::rcp(new std::vector<double>(numgp_));
-    vardegrad2_ = Teuchos::rcp(new std::vector<double>(numgp_));
-    vardegrad3_ = Teuchos::rcp(new std::vector<double>(numgp_));
-    vardegrad4_ = Teuchos::rcp(new std::vector<double>(numgp_));
+    vardegrad1_ = Teuchos::RCP(new std::vector<double>(numgp_));
+    vardegrad2_ = Teuchos::RCP(new std::vector<double>(numgp_));
+    vardegrad3_ = Teuchos::RCP(new std::vector<double>(numgp_));
+    vardegrad4_ = Teuchos::RCP(new std::vector<double>(numgp_));
   }
 
   for (int gp = 0; gp < numgp_; ++gp)
@@ -145,20 +145,20 @@ void Mat::ConstraintMixtureHistory::setup(const int ngp, const double massprodba
   numgp_ = ngp;
   expvar_ = expvar;
   // history variables
-  collagenstretch1_ = Teuchos::rcp(new std::vector<double>(numgp_));
-  collagenstretch2_ = Teuchos::rcp(new std::vector<double>(numgp_));
-  collagenstretch3_ = Teuchos::rcp(new std::vector<double>(numgp_));
-  collagenstretch4_ = Teuchos::rcp(new std::vector<double>(numgp_));
-  massprod1_ = Teuchos::rcp(new std::vector<double>(numgp_));
-  massprod2_ = Teuchos::rcp(new std::vector<double>(numgp_));
-  massprod3_ = Teuchos::rcp(new std::vector<double>(numgp_));
-  massprod4_ = Teuchos::rcp(new std::vector<double>(numgp_));
+  collagenstretch1_ = Teuchos::RCP(new std::vector<double>(numgp_));
+  collagenstretch2_ = Teuchos::RCP(new std::vector<double>(numgp_));
+  collagenstretch3_ = Teuchos::RCP(new std::vector<double>(numgp_));
+  collagenstretch4_ = Teuchos::RCP(new std::vector<double>(numgp_));
+  massprod1_ = Teuchos::RCP(new std::vector<double>(numgp_));
+  massprod2_ = Teuchos::RCP(new std::vector<double>(numgp_));
+  massprod3_ = Teuchos::RCP(new std::vector<double>(numgp_));
+  massprod4_ = Teuchos::RCP(new std::vector<double>(numgp_));
   if (expvar_)
   {
-    vardegrad1_ = Teuchos::rcp(new std::vector<double>(numgp_));
-    vardegrad2_ = Teuchos::rcp(new std::vector<double>(numgp_));
-    vardegrad3_ = Teuchos::rcp(new std::vector<double>(numgp_));
-    vardegrad4_ = Teuchos::rcp(new std::vector<double>(numgp_));
+    vardegrad1_ = Teuchos::RCP(new std::vector<double>(numgp_));
+    vardegrad2_ = Teuchos::RCP(new std::vector<double>(numgp_));
+    vardegrad3_ = Teuchos::RCP(new std::vector<double>(numgp_));
+    vardegrad4_ = Teuchos::RCP(new std::vector<double>(numgp_));
   }
 
   for (int gp = 0; gp < numgp_; gp++)

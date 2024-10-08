@@ -75,7 +75,7 @@ void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector<
   {
     // iteration increments
     Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*stepinc));
+        Teuchos::RCP(new Core::LinAlg::Vector<double>(*stepinc));
     if (stepinc_ != Teuchos::null)
     {
       iterinc->Update(-1.0, *stepinc_, 1.0);
@@ -86,10 +86,10 @@ void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector<
     }
     else
     {
-      stepinc_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*stepinc));
+      stepinc_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*stepinc));
     }
     // output is iterinc!
-    stepinc = Teuchos::rcp(new const Core::LinAlg::Vector<double>(*iterinc));
+    stepinc = Teuchos::RCP(new const Core::LinAlg::Vector<double>(*iterinc));
   }
 }
 

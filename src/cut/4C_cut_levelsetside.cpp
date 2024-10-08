@@ -39,7 +39,7 @@ template <int probdim>
 void Cut::LevelSetSide<probdim>::make_internal_facets(
     Mesh& mesh, Element* element, plain_facet_set& facets)
 {
-  Teuchos::RCP<Impl::PointGraph> pg = Teuchos::rcp(Impl::PointGraph::create(
+  Teuchos::RCP<Impl::PointGraph> pg = Teuchos::RCP(Impl::PointGraph::create(
       mesh, element, this, Impl::PointGraph::cut_side, Impl::PointGraph::own_lines));
 
   for (Impl::PointGraph::facet_iterator i = pg->fbegin(); i != pg->fend(); ++i)

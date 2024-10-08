@@ -117,10 +117,10 @@ int Discret::ELEMENTS::Bele3::evaluate(Teuchos::ParameterList& params,
       double volumeele;
       // first partial derivatives
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> Vdiff1 =
-          Teuchos::rcp(new Core::LinAlg::SerialDenseVector);
+          Teuchos::RCP(new Core::LinAlg::SerialDenseVector);
       // second partial derivatives
       Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Vdiff2 =
-          Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix);
+          Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix);
 
       // get projection method
       Teuchos::RCP<Core::Conditions::Condition> condition =

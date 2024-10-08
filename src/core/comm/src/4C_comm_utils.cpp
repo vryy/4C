@@ -239,7 +239,7 @@ namespace Core::Communication
     MPI_Comm mpi_local_comm;
     MPI_Comm_split(MPI_COMM_WORLD, color, myrank, &mpi_local_comm);
 
-    Teuchos::RCP<Epetra_Comm> lcomm = Teuchos::rcp(new Epetra_MpiComm(mpi_local_comm));
+    Teuchos::RCP<Epetra_Comm> lcomm = Teuchos::RCP(new Epetra_MpiComm(mpi_local_comm));
 
     // the global communicator is created
     Teuchos::RCP<Epetra_Comm> gcomm;
@@ -259,7 +259,7 @@ namespace Core::Communication
       MPI_Comm_create(MPI_COMM_WORLD, world_group, &mpi_global_comm);
       MPI_Group_free(&world_group);
 
-      gcomm = Teuchos::rcp(new Epetra_MpiComm(mpi_global_comm));
+      gcomm = Teuchos::RCP(new Epetra_MpiComm(mpi_global_comm));
     }
 
     // mapping of local proc ids to global proc ids
@@ -272,7 +272,7 @@ namespace Core::Communication
 
     // nested parallelism group is created
     Teuchos::RCP<Communicators> communicators =
-        Teuchos::rcp(new Communicators(color, ngroup, lpidgpid, lcomm, gcomm, npType));
+        Teuchos::RCP(new Communicators(color, ngroup, lpidgpid, lcomm, gcomm, npType));
 
     // info for the nested parallelism user
     if (lcomm->MyPID() == 0 && ngroup > 1)
@@ -353,7 +353,7 @@ namespace Core::Communication
 
     // do stupid conversion from Epetra_BlockMap to Epetra_Map
     const Epetra_BlockMap& vecblockmap = vec->Map();
-    Teuchos::RCP<Epetra_Map> vecmap = Teuchos::rcp(new Epetra_Map(vecblockmap.NumGlobalElements(),
+    Teuchos::RCP<Epetra_Map> vecmap = Teuchos::RCP(new Epetra_Map(vecblockmap.NumGlobalElements(),
         vecblockmap.NumMyElements(), vecblockmap.MyGlobalElements(), 0, vec->Comm()));
 
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
@@ -365,7 +365,7 @@ namespace Core::Communication
 
     // export full vectors to the two desired processors
     Teuchos::RCP<Epetra_MultiVector> fullvec =
-        Teuchos::rcp(new Epetra_MultiVector(*proc0map, vec->NumVectors(), true));
+        Teuchos::RCP(new Epetra_MultiVector(*proc0map, vec->NumVectors(), true));
     Core::LinAlg::export_to(*vec, *fullvec);
 
     const int myglobalrank = gcomm->MyPID();
@@ -512,9 +512,9 @@ namespace Core::Communication
 
     // export full matrices to the two desired processors
     Teuchos::RCP<Epetra_Import> serialimporter =
-        Teuchos::rcp(new Epetra_Import(*serialrowmap, rowmap));
+        Teuchos::RCP(new Epetra_Import(*serialrowmap, rowmap));
     Teuchos::RCP<Epetra_CrsMatrix> serialCrsMatrix =
-        Teuchos::rcp(new Epetra_CrsMatrix(Copy, *serialrowmap, 0));
+        Teuchos::RCP(new Epetra_CrsMatrix(Copy, *serialrowmap, 0));
     serialCrsMatrix->Import(*matrix, *serialimporter, Insert);
     serialCrsMatrix->FillComplete(*serialdomainmap, *serialrowmap);
 

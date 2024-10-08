@@ -56,12 +56,12 @@ Core::Conditions::PeriodicBoundaryConditions::PeriodicBoundaryConditions(
   // create map that will be connecting master to slave nodes owned by
   // this proc
   //       master node -> list of his slave node(s)
-  allcoupledrownodes_ = Teuchos::rcp(new std::map<int, std::vector<int>>);
+  allcoupledrownodes_ = Teuchos::RCP(new std::map<int, std::vector<int>>);
 
   // create map that will be connecting master to slave nodes owned or
   // ghosted by this proc
   //       master node -> list of his slave node(s)
-  allcoupledcolnodes_ = Teuchos::rcp(new std::map<int, std::vector<int>>);
+  allcoupledcolnodes_ = Teuchos::RCP(new std::map<int, std::vector<int>>);
 
 
   if (numpbcpairs_ > 0)
@@ -103,7 +103,7 @@ void Core::Conditions::PeriodicBoundaryConditions::update_dofs_for_periodic_boun
   if (numpbcpairs_ > 0)
   {
     // time measurement --- start TimeMonitor tm0
-    tm0_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbctot_));
+    tm0_ref_ = Teuchos::RCP(new Teuchos::TimeMonitor(*timepbctot_));
 
     if (discret_->get_comm().MyPID() == 0 && verbose_)
     {
@@ -243,8 +243,8 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
   if (numpbcpairs_ > 0)
   {
     // clear old data
-    allcoupledrownodes_ = Teuchos::rcp(new std::map<int, std::vector<int>>);
-    allcoupledcolnodes_ = Teuchos::rcp(new std::map<int, std::vector<int>>);
+    allcoupledrownodes_ = Teuchos::RCP(new std::map<int, std::vector<int>>);
+    allcoupledcolnodes_ = Teuchos::RCP(new std::map<int, std::vector<int>>);
 
     // map from global masternodeids (on this proc) to global slavenodeids
     // for a single condition
@@ -494,7 +494,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
           //----------------------------------------------------------------------
 
           // time measurement --- start TimeMonitor tm1
-          tm1_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcmidtosid_));
+          tm1_ref_ = Teuchos::RCP(new Teuchos::TimeMonitor(*timepbcmidtosid_));
 
           // clear map from global masternodeids (on this proc) to global
           // slavenodeids --- it belongs to this master slave pair!!!
@@ -551,7 +551,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
           }
 
           // time measurement --- start TimeMonitor tm4
-          tm4_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcaddcon_));
+          tm4_ref_ = Teuchos::RCP(new Teuchos::TimeMonitor(*timepbcaddcon_));
 
           //----------------------------------------------------------------------
           //      ADD CONNECTIVITY TO CONNECTIVITY OF ALL PREVIOUS PBCS
@@ -580,7 +580,7 @@ void Core::Conditions::PeriodicBoundaryConditions::put_all_slaves_to_masters_pro
     //----------------------------------------------------------------------
 
     // time measurement --- start TimeMonitor tm5
-    tm5_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcreddis_));
+    tm5_ref_ = Teuchos::RCP(new Teuchos::TimeMonitor(*timepbcreddis_));
 
 
     if (discret_->get_comm().MyPID() == 0 && verbose_)
@@ -626,7 +626,7 @@ void Core::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_sing
   //                   BUILD PROCESSOR LOCAL OCTREE
   //----------------------------------------------------------------------
   // time measurement --- start TimeMonitor tm2
-  tm2_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcmidoct_));
+  tm2_ref_ = Teuchos::RCP(new Teuchos::TimeMonitor(*timepbcmidoct_));
 
   // build processor local octree
   auto nodematchingoctree = Core::GeometricSearch::NodeMatchingOctree();
@@ -641,7 +641,7 @@ void Core::Conditions::PeriodicBoundaryConditions::create_node_coupling_for_sing
   //----------------------------------------------------------------------
 
   // time measurement --- start TimeMonitor tm3
-  tm3_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcmidmatch_));
+  tm3_ref_ = Teuchos::RCP(new Teuchos::TimeMonitor(*timepbcmidmatch_));
   // create connectivity for this condition in this direction
   {
     // create map from gid masternode -> gid corresponding slavenode
@@ -674,7 +674,7 @@ void Core::Conditions::PeriodicBoundaryConditions::add_connectivity(
   // the "inverse" mapping of allcoupled(row/col)nodes
   //       slave node -> his master node (list of size 1)
   Teuchos::RCP<std::map<int, std::vector<int>>> inversenodecoupling;
-  inversenodecoupling = Teuchos::rcp(new std::map<int, std::vector<int>>);
+  inversenodecoupling = Teuchos::RCP(new std::map<int, std::vector<int>>);
 
   // Teuchos::rcp to the constructed rowmap
   Teuchos::RCP<Epetra_Map> newrownodemap;
@@ -926,14 +926,14 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
   // the "inverse" mapping of allcoupled(row/col)nodes
   //       slave node -> his master node (list of size 1)
   Teuchos::RCP<std::map<int, std::vector<int>>> inversenodecoupling;
-  inversenodecoupling = Teuchos::rcp(new std::map<int, std::vector<int>>);
+  inversenodecoupling = Teuchos::RCP(new std::map<int, std::vector<int>>);
 
   // Teuchos::rcp to the constructed rowmap
   Teuchos::RCP<Epetra_Map> newrownodemap;
 
   {
     // time measurement --- start TimeMonitor tm6
-    tm6_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcmakeghostmap_));
+    tm6_ref_ = Teuchos::RCP(new Teuchos::TimeMonitor(*timepbcmakeghostmap_));
 
     // make sure we have a filled discretisation at this place
     // dofs are not required yet, they are assigned after redistribution
@@ -1129,7 +1129,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 
     //--------------------------------------------------
     // build noderowmap for new distribution of nodes
-    newrownodemap = Teuchos::rcp(new Epetra_Map(discret_->num_global_nodes(),
+    newrownodemap = Teuchos::RCP(new Epetra_Map(discret_->num_global_nodes(),
         nodesonthisproc.size(), nodesonthisproc.data(), 0, discret_->get_comm()));
 
     // create nodal graph of problem, according to old RowNodeMap
@@ -1151,7 +1151,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 
     Teuchos::RCP<Epetra_Map> newcolnodemap;
 
-    newcolnodemap = Teuchos::rcp(new Epetra_Map(
+    newcolnodemap = Teuchos::RCP(new Epetra_Map(
         -1, cntmp.NumMyElements(), cntmp.MyGlobalElements(), 0, discret_->get_comm()));
 
     // time measurement --- this causes the TimeMonitor tm6 to stop here
@@ -1159,7 +1159,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 
 
     // time measurement --- start TimeMonitor tm7
-    tm7_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcghost_));
+    tm7_ref_ = Teuchos::RCP(new Teuchos::TimeMonitor(*timepbcghost_));
 
     //----------------------------------------------------------------------
     //       GHOSTED NODES NEED INFORMATION ON THEIR COUPLED NODES
@@ -1227,7 +1227,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       // that might have been added in the previous loop over the inversenodecoupling
       {
         // now reconstruct the extended colmap
-        newcolnodemap = Teuchos::rcp(
+        newcolnodemap = Teuchos::RCP(
             new Epetra_Map(-1, mycolnodes.size(), mycolnodes.data(), 0, discret_->get_comm()));
 
         *allcoupledcolnodes_ = (*allcoupledrownodes_);
@@ -1268,7 +1268,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       }
 
       // now reconstruct the extended colmap
-      newcolnodemap = Teuchos::rcp(
+      newcolnodemap = Teuchos::RCP(
           new Epetra_Map(-1, mycolnodes.size(), mycolnodes.data(), 0, discret_->get_comm()));
 
       *allcoupledcolnodes_ = (*allcoupledrownodes_);
@@ -1290,7 +1290,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
 
 
     // time measurement --- start TimeMonitor tm8
-    tm8_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timepbcrenumdofs_));
+    tm8_ref_ = Teuchos::RCP(new Teuchos::TimeMonitor(*timepbcrenumdofs_));
 
     // check whether we have already passed a PBCDofSet to the discretization
     // If we did not the regular DofSet is replaced with a PBCDofSet. This will
@@ -1303,7 +1303,7 @@ void Core::Conditions::PeriodicBoundaryConditions::redistribute_and_create_dof_c
       // create a new dofset specialisation for periodic boundary conditions
       // the 'true' flag makes sure that the pbc dofset replaces the old
       // dofset also in the static_dofsets_.
-      pbcdofset_ = Teuchos::rcp(new Core::DOFSets::PBCDofSet(allcoupledcolnodes_));
+      pbcdofset_ = Teuchos::RCP(new Core::DOFSets::PBCDofSet(allcoupledcolnodes_));
       discret_->replace_dof_set(0, pbcdofset_, true);
     }
     else
@@ -1405,7 +1405,7 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
     }
 
     // allocate graph
-    auto nodegraph = Teuchos::rcp(new Epetra_CrsGraph(Copy, *noderowmap, 108, false));
+    auto nodegraph = Teuchos::RCP(new Epetra_CrsGraph(Copy, *noderowmap, 108, false));
 
     // -------------------------------------------------------------
     // iterate all elements on this proc including ghosted ones
@@ -1515,7 +1515,7 @@ void Core::Conditions::PeriodicBoundaryConditions::balance_load()
           graph_row_map.NumMyElements(), graph_row_map.MyGlobalElements(), 0, nodegraph->Comm());
 
       // set standard value of edge weight to 1.0
-      auto edge_weights = Teuchos::rcp(new Epetra_CrsMatrix(Copy, graph_rowmap, 15));
+      auto edge_weights = Teuchos::RCP(new Epetra_CrsMatrix(Copy, graph_rowmap, 15));
       for (int i = 0; i < nodegraph->NumMyRows(); ++i)
       {
         const int grow = nodegraph->RowMap().GID(i);

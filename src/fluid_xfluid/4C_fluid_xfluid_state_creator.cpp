@@ -57,12 +57,12 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidStateCreator::create(
   // Create the XFluidState object
 
   Teuchos::RCP<const Epetra_Map> xfluiddofrowmap =
-      Teuchos::rcp(new Epetra_Map(*xdiscret->dof_row_map()));
+      Teuchos::RCP(new Epetra_Map(*xdiscret->dof_row_map()));
 
   Teuchos::RCP<const Epetra_Map> xfluiddofcolmap =
-      Teuchos::rcp(new Epetra_Map(*xdiscret->dof_col_map()));
+      Teuchos::RCP(new Epetra_Map(*xdiscret->dof_col_map()));
 
-  Teuchos::RCP<XFluidState> state = Teuchos::rcp(
+  Teuchos::RCP<XFluidState> state = Teuchos::RCP(
       new FLD::XFluidState(condition_manager_, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap));
 
   //--------------------------------------------------------------------------------------
@@ -101,15 +101,15 @@ Teuchos::RCP<FLD::XFluidFluidState> FLD::XFluidStateCreator::create(
   // Create the XFluidFluidState object
 
   Teuchos::RCP<const Epetra_Map> xfluiddofrowmap =
-      Teuchos::rcp(new Epetra_Map(*xdiscret->dof_row_map()));
+      Teuchos::RCP(new Epetra_Map(*xdiscret->dof_row_map()));
 
   Teuchos::RCP<const Epetra_Map> xfluiddofcolmap =
-      Teuchos::rcp(new Epetra_Map(*xdiscret->dof_col_map()));
+      Teuchos::RCP(new Epetra_Map(*xdiscret->dof_col_map()));
 
   Teuchos::RCP<const Epetra_Map> embfluiddofrowmap =
-      Teuchos::rcp(new Epetra_Map(*embfluiddiscret->dof_row_map()));
+      Teuchos::RCP(new Epetra_Map(*embfluiddiscret->dof_row_map()));
 
-  Teuchos::RCP<FLD::XFluidFluidState> state = Teuchos::rcp(new FLD::XFluidFluidState(
+  Teuchos::RCP<FLD::XFluidFluidState> state = Teuchos::RCP(new FLD::XFluidFluidState(
       condition_manager_, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap, embfluiddofrowmap));
 
   //--------------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ void FLD::XFluidStateCreator::create_new_cut_state(
 )
 {
   // new wizard using information about cutting sides from the condition_manager
-  wizard = Teuchos::rcp(
+  wizard = Teuchos::RCP(
       new Cut::CutWizard(xdiscret, [xdiscret](const Core::Nodes::Node& node, std::vector<int>& lm)
           { xdiscret->initial_dof(&node, lm); }));
 
@@ -200,7 +200,7 @@ void FLD::XFluidStateCreator::create_new_cut_state(
   int maxNumMyReservedDofsperNode = (maxnumdofsets_)*4;
 
   // create a new XFEM-dofset
-  dofset = Teuchos::rcp(new XFEM::XFEMDofSet(*wizard, maxNumMyReservedDofsperNode, *xdiscret));
+  dofset = Teuchos::RCP(new XFEM::XFEMDofSet(*wizard, maxNumMyReservedDofsperNode, *xdiscret));
 
   const int restart = Global::Problem::instance()->restart();
   if ((step < 1) or restart) minnumdofsets_ = xdiscret->dof_row_map()->MinAllGID();

@@ -52,7 +52,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::distribute_linker_to_bins(
   {
     Core::Nodes::Node* node = binstrategy_->bin_discret()->g_node(linkerrowmap->GID(lid));
     const double* currpos = node->x().data();
-    place_node_correctly(Teuchos::rcp(node, false), currpos, homelesslinker);
+    place_node_correctly(Teuchos::RCP(node, false), currpos, homelesslinker);
   }
 
   // start round robin loop to fill linker into their correct bins
@@ -134,7 +134,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_round_robin(
         // this Teuchos::rcp holds the memory of the node
         Core::Communication::UnpackBuffer data_buffer(data);
         Teuchos::RCP<Core::Communication::ParObject> object =
-            Teuchos::rcp(Core::Communication::factory(data_buffer), true);
+            Teuchos::RCP(Core::Communication::factory(data_buffer), true);
         Teuchos::RCP<Core::Nodes::Node> node = Teuchos::rcp_dynamic_cast<Core::Nodes::Node>(object);
         if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
 
@@ -171,7 +171,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
   TEUCHOS_FUNC_TIME_MONITOR(
       "BEAMINTERACTION::beam_crosslinker_handler::fill_linker_into_bins_remote_id_list");
   const int numproc = binstrategy_->bin_discret()->get_comm().NumProc();
-  Teuchos::RCP<std::list<int>> removedlinker = Teuchos::rcp(new std::list<int>(0));
+  Teuchos::RCP<std::list<int>> removedlinker = Teuchos::RCP(new std::list<int>(0));
 
   // parallel case
   // ---- find new host procs for linker -----
@@ -281,7 +281,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
       "BEAMINTERACTION::beam_crosslinker_handler::fill_linker_into_bins_using_ghosting");
 
   const int numproc = binstrategy_->bin_discret()->get_comm().NumProc();
-  Teuchos::RCP<std::list<int>> removedlinker = Teuchos::rcp(new std::list<int>(0));
+  Teuchos::RCP<std::list<int>> removedlinker = Teuchos::RCP(new std::list<int>(0));
 
   // parallel case
   // ---- find new host procs for linker -----
@@ -411,7 +411,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::receive_linker_and_fill_them_in_bi
         // this Teuchos::rcp holds the memory of the node
         Core::Communication::UnpackBuffer data_buffer(data);
         Teuchos::RCP<Core::Communication::ParObject> object =
-            Teuchos::rcp(Core::Communication::factory(data_buffer), true);
+            Teuchos::RCP(Core::Communication::factory(data_buffer), true);
         Teuchos::RCP<Core::Nodes::Node> node = Teuchos::rcp_dynamic_cast<Core::Nodes::Node>(object);
         if (node == Teuchos::null) FOUR_C_THROW("Received object is not a node");
 
@@ -571,7 +571,7 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::transfer_l
         // (looping over nodes and deleting at the same time is detrimental)
         tobemoved.push_back(currnode->id());
         // find new bin for linker
-        place_node_correctly(Teuchos::rcp(currnode, false), pos.data(), homelesslinker);
+        place_node_correctly(Teuchos::RCP(currnode, false), pos.data(), homelesslinker);
       }
     }
 
@@ -586,7 +586,7 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::transfer_l
 #endif
 
   // store linker that have left the computational domain
-  Teuchos::RCP<std::list<int>> deletedlinker = Teuchos::rcp(new std::list<int>(0));
+  Teuchos::RCP<std::list<int>> deletedlinker = Teuchos::RCP(new std::list<int>(0));
 
   //---------------------------------------------------------------------------
   // numproc == 1

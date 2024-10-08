@@ -67,7 +67,7 @@ Mat::PAR::LubricationMat::LubricationMat(const Core::Mat::PAR::Parameter::Data& 
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::LubricationMat::create_material()
 {
-  return Teuchos::rcp(new Mat::LubricationMat(this));
+  return Teuchos::RCP(new Mat::LubricationMat(this));
 }
 
 Mat::LubricationMatType Mat::LubricationMatType::instance_;

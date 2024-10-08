@@ -44,11 +44,11 @@ Mat::MicroMaterialGP::MicroMaterialGP(
   Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
   dis_ = Core::LinAlg::create_vector(*microdis->dof_row_map(), true);
   disn_ = Core::LinAlg::create_vector(*microdis->dof_row_map(), true);
-  lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
-  oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
-  oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
-  old_kaainv_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
-  old_kda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+  lastalpha_ = Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+  oldalpha_ = Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+  oldfeas_ = Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+  old_kaainv_ = Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+  old_kda_ = Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
 
   // data must be consistent between micro and macro input file
   const Teuchos::ParameterList& sdyn_macro =
@@ -69,7 +69,7 @@ Mat::MicroMaterialGP::MicroMaterialGP(
       microstaticmap_[microdisnum_] == Teuchos::null)
   {
     // create "time integration" class for this microstructure
-    microstaticmap_[microdisnum_] = Teuchos::rcp(new MultiScale::MicroStatic(microdisnum_, V0));
+    microstaticmap_[microdisnum_] = Teuchos::RCP(new MultiScale::MicroStatic(microdisnum_, V0));
     // create a counter of macroscale GP associated with this "time integration" class
     // note that the counter is immediately updated afterwards!
     microstaticcounter_[microdisnum_] = 0;
@@ -182,12 +182,12 @@ void Mat::MicroMaterialGP::new_result_file(bool eleowner, std::string& newfilena
     if (restart) adaptname = false;
 
     Teuchos::RCP<Core::IO::OutputControl> microcontrol =
-        Teuchos::rcp(new Core::IO::OutputControl(microdis->get_comm(), "Structure",
+        Teuchos::RCP(new Core::IO::OutputControl(microdis->get_comm(), "Structure",
             microproblem->spatial_approximation_type(), "micro-input-file-not-known", restartname_,
             newfilename, ndim, restart, macrocontrol->file_steps(),
             Global::Problem::instance()->io_params().get<bool>("OUTPUT_BIN"), adaptname));
 
-    micro_output_ = Teuchos::rcp(new Core::IO::DiscretizationWriter(
+    micro_output_ = Teuchos::RCP(new Core::IO::DiscretizationWriter(
         microdis, microcontrol, microproblem->spatial_approximation_type()));
     micro_output_->set_output(microcontrol);
 
@@ -333,9 +333,9 @@ void Mat::MicroMaterialGP::prepare_output()
   // select corresponding "time integration class" for this microstructure
   Teuchos::RCP<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
-  stress_ = Teuchos::rcp(new std::vector<char>());
-  strain_ = Teuchos::rcp(new std::vector<char>());
-  plstrain_ = Teuchos::rcp(new std::vector<char>());
+  stress_ = Teuchos::RCP(new std::vector<char>());
+  strain_ = Teuchos::RCP(new std::vector<char>());
+  plstrain_ = Teuchos::RCP(new std::vector<char>());
 
   microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
       old_kaainv_, old_kda_);

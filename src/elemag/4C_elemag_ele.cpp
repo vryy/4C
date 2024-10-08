@@ -57,7 +57,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagType::create(
 {
   if (eletype == "ELECTROMAGNETIC")
   {
-    return Teuchos::rcp(new Discret::ELEMENTS::Elemag(id, owner));
+    return Teuchos::RCP(new Discret::ELEMENTS::Elemag(id, owner));
   }
   return Teuchos::null;
 }
@@ -66,7 +66,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagType::create(
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ElemagType::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Discret::ELEMENTS::Elemag(id, owner));
+  return Teuchos::RCP(new Discret::ELEMENTS::Elemag(id, owner));
 }
 
 

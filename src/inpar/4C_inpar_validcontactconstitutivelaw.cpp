@@ -46,7 +46,7 @@ Input::valid_contact_constitutive_laws()
 {
   // a list containing all valid contact constitutivelaw definitions
   Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> vm =
-      Teuchos::rcp(new std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>());
+      Teuchos::RCP(new std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>());
 
   // convenience
   std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist = *vm;
@@ -55,7 +55,7 @@ Input::valid_contact_constitutive_laws()
   // broken rational function
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
-        Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_brokenrational",
+        Teuchos::RCP(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_brokenrational",
             "Broken rational law", Inpar::CONTACT::ConstitutiveLawType::colaw_brokenrational));
 
     add_named_real(m, "A", "scaling factor");
@@ -68,7 +68,7 @@ Input::valid_contact_constitutive_laws()
   // power law function
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
-        Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition(
+        Teuchos::RCP(new CONTACT::CONSTITUTIVELAW::LawDefinition(
             "CoConstLaw_power", "Power law", Inpar::CONTACT::ConstitutiveLawType::colaw_power));
 
     add_named_real(m, "A", "scaling factor");
@@ -81,7 +81,7 @@ Input::valid_contact_constitutive_laws()
   // cubic function
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
-        Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_cubic",
+        Teuchos::RCP(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_cubic",
             "Cubic function", Inpar::CONTACT::ConstitutiveLawType::colaw_cubic));
 
     add_named_real(m, "A", "A");
@@ -96,7 +96,7 @@ Input::valid_contact_constitutive_laws()
   // linear function
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
-        Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_linear",
+        Teuchos::RCP(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_linear",
             "Linear function", Inpar::CONTACT::ConstitutiveLawType::colaw_linear));
 
     add_named_real(m, "A", "slope");
@@ -109,7 +109,7 @@ Input::valid_contact_constitutive_laws()
   // mirco function
   {
     Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
-        Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_mirco",
+        Teuchos::RCP(new CONTACT::CONSTITUTIVELAW::LawDefinition("CoConstLaw_mirco",
             "Mirco function", Inpar::CONTACT::ConstitutiveLawType::colaw_mirco));
 
     add_named_int(m, "FirstMatID", "First material ID");

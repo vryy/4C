@@ -43,7 +43,7 @@ namespace Mortar
     /// create a copy of this object
     Teuchos::RCP<Core::DOFSets::DofSet> clone() override
     {
-      return Teuchos::rcp(new Mortar::DofSet(*this));
+      return Teuchos::RCP(new Mortar::DofSet(*this));
     }
 
     //! @}

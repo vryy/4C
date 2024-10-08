@@ -81,7 +81,7 @@ Mat::CylinderCoordinateSystemAnisotropyExtension::get_cylinder_coordinate_system
 Teuchos::RCP<Mat::CoordinateSystemProvider>
 Mat::CylinderCoordinateSystemAnisotropyExtension::get_coordinate_system_provider(int gp) const
 {
-  auto cosy = Teuchos::rcp(new CoordinateSystemHolder());
+  auto cosy = Teuchos::RCP(new CoordinateSystemHolder());
 
   if (cosy_location_ != CosyLocation::None)
     cosy->set_cylinder_coordinate_system_provider(

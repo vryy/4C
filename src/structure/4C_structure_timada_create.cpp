@@ -44,24 +44,24 @@ Teuchos::RCP<Solid::TimAda> Solid::tim_ada_create(
 
     case Inpar::Solid::timada_kind_zienxie:
       // Zienkiewicz-Xie error indicator for generalised-alpha
-      sta = Teuchos::rcp(new Solid::TimAdaZienXie(timeparams, tap, tis));
+      sta = Teuchos::RCP(new Solid::TimAdaZienXie(timeparams, tap, tis));
       break;
 
     case Inpar::Solid::timada_kind_ab2:
       // Adams-Bashforth 2nd order
-      sta = Teuchos::rcp(
+      sta = Teuchos::RCP(
           new Solid::TimAdaJoint<Solid::TimIntAB2>(ioflags, timeparams, sdyn, xparams, tap, tis));
       break;
 
     case Inpar::Solid::timada_kind_expleuler:
       // Adams-Bashforth 2nd order
-      sta = Teuchos::rcp(new Solid::TimAdaJoint<Solid::TimIntExplEuler>(
+      sta = Teuchos::RCP(new Solid::TimAdaJoint<Solid::TimIntExplEuler>(
           ioflags, timeparams, sdyn, xparams, tap, tis));
       break;
 
     case Inpar::Solid::timada_kind_centraldiff:
       // Adams-Bashforth 2nd order
-      sta = Teuchos::rcp(new Solid::TimAdaJoint<Solid::TimIntCentrDiff>(
+      sta = Teuchos::RCP(new Solid::TimAdaJoint<Solid::TimIntCentrDiff>(
           ioflags, timeparams, sdyn, xparams, tap, tis));
       break;
 

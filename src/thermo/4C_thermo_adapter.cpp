@@ -87,14 +87,14 @@ void Thermo::BaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& prbdyn,
 
   //  // get input parameter lists and copy them, because a few parameters are overwritten
   const Teuchos::RCP<Teuchos::ParameterList> ioflags =
-      Teuchos::rcp(new Teuchos::ParameterList(Global::Problem::instance()->io_params()));
-  const Teuchos::RCP<Teuchos::ParameterList> tdyn = Teuchos::rcp(
+      Teuchos::RCP(new Teuchos::ParameterList(Global::Problem::instance()->io_params()));
+  const Teuchos::RCP<Teuchos::ParameterList> tdyn = Teuchos::RCP(
       new Teuchos::ParameterList(Global::Problem::instance()->thermal_dynamic_params()));
   //  //const Teuchos::ParameterList& size
   //  //  = Global::Problem::instance()->ProblemSizeParams();
 
   // add extra parameters (a kind of work-around)
-  Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::rcp(new Teuchos::ParameterList());
+  Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::RCP(new Teuchos::ParameterList());
 
   // -------------------------------------------------------------------
   // overrule certain parameters for coupled problems
@@ -120,8 +120,8 @@ void Thermo::BaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& prbdyn,
         "to a valid number!");
 
   // create a linear solver
-  Teuchos::RCP<Teuchos::ParameterList> solveparams = Teuchos::rcp(new Teuchos::ParameterList());
-  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::rcp(
+  Teuchos::RCP<Teuchos::ParameterList> solveparams = Teuchos::RCP(new Teuchos::ParameterList());
+  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::RCP(
       new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
           actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -134,25 +134,25 @@ void Thermo::BaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& prbdyn,
   {
     case Inpar::Thermo::dyna_statics:
     {
-      tmpthr = Teuchos::rcp(
+      tmpthr = Teuchos::RCP(
           new Thermo::TimIntStatics(*ioflags, *tdyn, *xparams, actdis, solver, output));
       break;
     }
     case Inpar::Thermo::dyna_onesteptheta:
     {
-      tmpthr = Teuchos::rcp(
+      tmpthr = Teuchos::RCP(
           new Thermo::TimIntOneStepTheta(*ioflags, *tdyn, *xparams, actdis, solver, output));
       break;
     }
     case Inpar::Thermo::dyna_genalpha:
     {
-      tmpthr = Teuchos::rcp(
+      tmpthr = Teuchos::RCP(
           new Thermo::TimIntGenAlpha(*ioflags, *tdyn, *xparams, actdis, solver, output));
       break;
     }
     case Inpar::Thermo::dyna_expleuler:
     {
-      tmpthr = Teuchos::rcp(
+      tmpthr = Teuchos::RCP(
           new Thermo::TimIntExplEuler(*ioflags, *tdyn, *xparams, actdis, solver, output));
       break;
     }

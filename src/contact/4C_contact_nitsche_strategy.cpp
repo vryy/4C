@@ -36,8 +36,8 @@ void CONTACT::NitscheStrategy::apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::
   set_state(Mortar::state_new_displacement, *dis);
 
   // just a Nitsche-version
-  Teuchos::RCP<Epetra_FEVector> fc = Teuchos::rcp(new Epetra_FEVector(f->Map()));
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kc = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+  Teuchos::RCP<Epetra_FEVector> fc = Teuchos::RCP(new Epetra_FEVector(f->Map()));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kc = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
       (dynamic_cast<Epetra_CrsMatrix*>(&(*kt->epetra_operator())))->RowMap(), 100, true, false,
       Core::LinAlg::SparseMatrix::FE_MATRIX));
 
@@ -111,7 +111,7 @@ void CONTACT::NitscheStrategy::set_state(
     double inf_delta = 0.;
     if (curr_state_ == Teuchos::null)
     {
-      curr_state_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(vec));
+      curr_state_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(vec));
       inf_delta = 1.e12;
     }
     else
@@ -149,7 +149,7 @@ void CONTACT::NitscheStrategy::set_parent_state(const enum Mortar::StateType& st
   if (statename == Mortar::state_new_displacement || statename == Mortar::state_svelocity)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> global =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*dis.dof_col_map(), true));
+        Teuchos::RCP(new Core::LinAlg::Vector<double>(*dis.dof_col_map(), true));
     Core::LinAlg::export_to(vec, *global);
 
     // set state on interfaces
@@ -253,7 +253,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::setup_rhs_block_vec(
   switch (bt)
   {
     case CONTACT::VecBlockType::displ:
-      return Teuchos::rcp(
+      return Teuchos::RCP(
           new Epetra_FEVector(*Global::Problem::instance()->get_dis("structure")->dof_row_map()));
     default:
       FOUR_C_THROW("you should not be here");
@@ -294,7 +294,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::NitscheStrategy::get_r
   switch (bt)
   {
     case CONTACT::VecBlockType::displ:
-      return Teuchos::rcp(new Core::LinAlg::Vector<double>(*fc_));
+      return Teuchos::RCP(new Core::LinAlg::Vector<double>(*fc_));
     case CONTACT::VecBlockType::constraint:
       return Teuchos::null;
     default:
@@ -311,7 +311,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::setup_matrix_
   switch (bt)
   {
     case CONTACT::MatBlockType::displ_displ:
-      return Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+      return Teuchos::RCP(new Core::LinAlg::SparseMatrix(
           *Teuchos::rcpFromRef<const Epetra_Map>(
               *Global::Problem::instance()->get_dis("structure")->dof_row_map()),
           100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));

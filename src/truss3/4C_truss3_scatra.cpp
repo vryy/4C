@@ -47,7 +47,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3ScatraType::creat
   if (eletype == "TRUSS3SCATRA")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Truss3Scatra(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Truss3Scatra(id, owner));
     return ele;
   }
   // return base class
@@ -61,7 +61,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3ScatraType::creat
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Truss3Scatra(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::Truss3Scatra(id, owner));
   return ele;
 }
 

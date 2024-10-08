@@ -66,7 +66,7 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
     // allocate the impedance bc class members for every case
     // -------------------------------------------------------------------
     Teuchos::RCP<FluidImpedanceBc> impedancebc =
-        Teuchos::rcp(new FluidImpedanceBc(actdis, condid, impedancecond[i]));
+        Teuchos::RCP(new FluidImpedanceBc(actdis, condid, impedancecond[i]));
 
     // -----------------------------------------------------------------
     // sort impedance bc's in map and test, if one condition ID appears
@@ -234,7 +234,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<Core::FE::Disc
   // ---------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
   impedancetbc_ = Core::LinAlg::create_vector(*dofrowmap, true);
-  impedancetbcsysmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofrowmap, 108, false, true));
+  impedancetbcsysmat_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap, 108, false, true));
   // NOTE: do not call impedancetbcsysmat_->Complete() before it is filled, since
   // this is our check if it has already been initialized
 
@@ -264,7 +264,7 @@ void FLD::UTILS::FluidImpedanceBc::use_block_matrix(Teuchos::RCP<std::set<int>> 
   if (splitmatrix)
   {
     // (re)allocate system matrix
-    mat = Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
+    mat = Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
         domainmaps, rangemaps, 108, false, true));
     mat->set_cond_elements(condelements);
     impedancetbcsysmat_ = mat;
@@ -416,7 +416,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
     // now move dQdu to one proc
     Teuchos::RCP<Epetra_Map> dofrowmapred = Core::LinAlg::allreduce_e_map(*dofrowmap);
     Teuchos::RCP<Core::LinAlg::Vector<double>> dQdu_full =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmapred, true));
+        Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmapred, true));
 
     Core::LinAlg::export_to(*dQdu, *dQdu_full);  //!!! add off proc components
 

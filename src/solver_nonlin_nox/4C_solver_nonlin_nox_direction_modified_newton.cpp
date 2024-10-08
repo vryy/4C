@@ -82,7 +82,7 @@ void NOX::Nln::Direction::ModifiedNewton::fill_default_step_tests(
     }
     case NOX::Nln::Direction::DefaultStepTest::volume_change_control:
     {
-      Teuchos::RCP<Test::Generic> dstest = Teuchos::rcp(new Test::VolumeChange(utils_));
+      Teuchos::RCP<Test::Generic> dstest = Teuchos::RCP(new Test::VolumeChange(utils_));
       dstests_.push_back(dstest);
       break;
     }
@@ -361,7 +361,7 @@ bool NOX::Nln::Direction::ModifiedNewton::modify_system(::NOX::Abstract::Group& 
   else
   {
     const Epetra_BlockMap& map = original_diag_ptr_->Map();
-    mod_diag_ptr = Teuchos::rcp(new Core::LinAlg::Vector<double>(map, false));
+    mod_diag_ptr = Teuchos::RCP(new Core::LinAlg::Vector<double>(map, false));
     mod_diag_ptr->PutScalar(1.0);
   }
 

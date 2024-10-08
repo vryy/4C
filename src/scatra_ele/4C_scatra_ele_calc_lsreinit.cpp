@@ -55,10 +55,10 @@ Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::ScaTraEleCalcLsRein
           Discret::ELEMENTS::ScaTraEleParameterLsReinit::instance(disname))  // parameter class
 {
   // set appropriate diffusion manager
-  my::diffmanager_ = Teuchos::rcp(new ScaTraEleDiffManagerLsReinit<nsd_>(my::numscal_));
+  my::diffmanager_ = Teuchos::RCP(new ScaTraEleDiffManagerLsReinit<nsd_>(my::numscal_));
   // set appropriate internal variable manager
   my::scatravarmanager_ =
-      Teuchos::rcp(new ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>(my::numscal_));
+      Teuchos::RCP(new ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>(my::numscal_));
 
   // safety checks
   if (my::scatrapara_->rb_sub_gr_vel())
@@ -397,7 +397,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
         Core::Geo::BoundaryIntCells::iterator cit_vec;
         for (cit_vec = cit_map->second.begin(); cit_vec != cit_map->second.end(); ++cit_vec)
         {
-          boundaryIntCells.push_back(Teuchos::rcp(&(*cit_vec), false));
+          boundaryIntCells.push_back(Teuchos::RCP(&(*cit_vec), false));
         }
       }
 

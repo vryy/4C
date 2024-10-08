@@ -151,7 +151,7 @@ void PostVtkWriter::write_special_field(SpecialFieldInterface &special,
   // Vtk writes everything into the same file, so create to each output the
   // pointer to the same output writer
   std::vector<Teuchos::RCP<std::ofstream>> files(fieldnames.size());
-  for (unsigned int i = 0; i < fieldnames.size(); ++i) files[i] = Teuchos::rcp(&currentout_, false);
+  for (unsigned int i = 0; i < fieldnames.size(); ++i) files[i] = Teuchos::RCP(&currentout_, false);
 
   bool foundit = false;
   PostResult activeresult(result.field());
@@ -231,7 +231,7 @@ void PostVtkWriter::write_result(const std::string groupname, const std::string 
 {
   using namespace FourC;
 
-  Teuchos::RCP<PostResult> result = Teuchos::rcp(new PostResult(field_));
+  Teuchos::RCP<PostResult> result = Teuchos::RCP(new PostResult(field_));
   // only write results which exist in the first result step
   bool foundit = false;
   if (result->next_result())
@@ -256,7 +256,7 @@ void PostVtkWriter::write_result(const std::string groupname, const std::string 
   if (once)
   {
     // recreate PostResult, go one step and throw away the old one
-    result = Teuchos::rcp(new PostResult(field_));
+    result = Teuchos::RCP(new PostResult(field_));
     result->next_result(groupname);
   }
   if (not(field_->problem()->spatial_approximation_type() ==

@@ -42,7 +42,7 @@ Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
     case POROFLUIDMULTIPHASE::calc_pres_and_sat:
     {
       // only phi values are needed
-      varmanager = Teuchos::rcp(new VariableManagerPhi<nsd, nen>(numdofpernode));
+      varmanager = Teuchos::RCP(new VariableManagerPhi<nsd, nen>(numdofpernode));
 
       break;
     }
@@ -51,11 +51,11 @@ Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
     case POROFLUIDMULTIPHASE::calc_porosity:
     {
       // only phi values are needed
-      varmanager = Teuchos::rcp(new VariableManagerPhi<nsd, nen>(numdofpernode));
+      varmanager = Teuchos::RCP(new VariableManagerPhi<nsd, nen>(numdofpernode));
 
       // add manager for displacements and solid velocities in case of ALE
       if (para.is_ale())
-        varmanager = Teuchos::rcp(
+        varmanager = Teuchos::RCP(
             new VariableManagerStruct<nsd, nen>(para.nds_vel(), para.nds_disp(), varmanager));
 
       break;
@@ -64,10 +64,10 @@ Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
     case POROFLUIDMULTIPHASE::calc_valid_dofs:
     {
       // only phi values are needed
-      varmanager = Teuchos::rcp(new VariableManagerPhi<nsd, nen>(numdofpernode));
+      varmanager = Teuchos::RCP(new VariableManagerPhi<nsd, nen>(numdofpernode));
 
       if (numvolfrac > 0)
-        varmanager = Teuchos::rcp(
+        varmanager = Teuchos::RCP(
             new VariableManagerMaximumNodalVolFracValue<nsd, nen>(numvolfrac, varmanager, mat));
 
       break;
@@ -76,11 +76,11 @@ Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
     case POROFLUIDMULTIPHASE::calc_phase_velocities:
     {
       // state vector and gradients are needed
-      varmanager = Teuchos::rcp(new VariableManagerPhiGradPhi<nsd, nen>(numdofpernode));
+      varmanager = Teuchos::RCP(new VariableManagerPhiGradPhi<nsd, nen>(numdofpernode));
 
       // add manager for displacements and solid velocities in case of ALE
       if (para.is_ale())
-        varmanager = Teuchos::rcp(
+        varmanager = Teuchos::RCP(
             new VariableManagerStruct<nsd, nen>(para.nds_vel(), para.nds_disp(), varmanager));
       break;
     }
@@ -93,10 +93,10 @@ Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
       //       otherwise also update the current configuration vector xyze_ with which it is called
       //       and scatra only needs phi and gradphi Also, the scatra discretization already has all
       //       necessary data for moving meshes such as displacements
-      varmanager = Teuchos::rcp(new VariableManagerPhiGradPhi<nsd, nen>(numdofpernode));
+      varmanager = Teuchos::RCP(new VariableManagerPhiGradPhi<nsd, nen>(numdofpernode));
 
       if (numvolfrac > 0)
-        varmanager = Teuchos::rcp(
+        varmanager = Teuchos::RCP(
             new VariableManagerMaximumNodalVolFracValue<nsd, nen>(numvolfrac, varmanager, mat));
 
       break;
@@ -104,17 +104,17 @@ Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
     default:
     {
       // default: potentially read everything
-      varmanager = Teuchos::rcp(new VariableManagerPhiGradPhi<nsd, nen>(numdofpernode));
+      varmanager = Teuchos::RCP(new VariableManagerPhiGradPhi<nsd, nen>(numdofpernode));
 
       if (not para.is_stationary())
-        varmanager = Teuchos::rcp(new VariableManagerInstat<nsd, nen>(varmanager));
+        varmanager = Teuchos::RCP(new VariableManagerInstat<nsd, nen>(varmanager));
 
       if (para.is_ale())
-        varmanager = Teuchos::rcp(
+        varmanager = Teuchos::RCP(
             new VariableManagerStruct<nsd, nen>(para.nds_vel(), para.nds_disp(), varmanager));
 
       if (numvolfrac > 0)
-        varmanager = Teuchos::rcp(
+        varmanager = Teuchos::RCP(
             new VariableManagerMaximumNodalVolFracValue<nsd, nen>(numvolfrac, varmanager, mat));
 
       break;
@@ -123,7 +123,7 @@ Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
 
   // if there are other scalar values (from ScaTra coupling) add another manager
   if (para.has_scalar())
-    varmanager = Teuchos::rcp(new VariableManagerScalar<nsd, nen>(para.nds_scalar(), varmanager));
+    varmanager = Teuchos::RCP(new VariableManagerScalar<nsd, nen>(para.nds_scalar(), varmanager));
 
   // done
   return varmanager;

@@ -203,7 +203,7 @@ void Mat::PAR::ScatraReactionMat::initialize() { reaction_->initialize(numscal_,
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraReactionMat::create_material()
 {
-  return Teuchos::rcp(new Mat::ScatraReactionMat(this));
+  return Teuchos::RCP(new Mat::ScatraReactionMat(this));
 }
 
 /*----------------------------------------------------------------------*

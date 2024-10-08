@@ -474,7 +474,7 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // create Node object
-        Teuchos::RCP<Mortar::Node> mtnode = Teuchos::rcp(new Mortar::Node(
+        Teuchos::RCP<Mortar::Node> mtnode = Teuchos::RCP(new Mortar::Node(
             node->id(), node->x(), node->owner(), discret().dof(0, node), isslave[j]));
         //-------------------
         // get nurbs weight!
@@ -546,7 +546,7 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
         Teuchos::RCP<Core::Elements::Element> ele = fool->second;
-        Teuchos::RCP<Mortar::Element> mtele = Teuchos::rcp(new Mortar::Element(ele->id() + ggsize,
+        Teuchos::RCP<Mortar::Element> mtele = Teuchos::RCP(new Mortar::Element(ele->id() + ggsize,
             ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), isslave[j], nurbs));
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
@@ -611,11 +611,11 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_str
 
   if (stype == Inpar::CONTACT::solution_lagmult)
   {
-    strategy_ptr = Teuchos::rcp(new CONTACT::MtLagrangeStrategy(
+    strategy_ptr = Teuchos::RCP(new CONTACT::MtLagrangeStrategy(
         dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset));
   }
   else if (stype == Inpar::CONTACT::solution_penalty or stype == Inpar::CONTACT::solution_uzawa)
-    strategy_ptr = Teuchos::rcp(new CONTACT::MtPenaltyStrategy(
+    strategy_ptr = Teuchos::RCP(new CONTACT::MtPenaltyStrategy(
         dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset));
   else
     FOUR_C_THROW("Unrecognized strategy");

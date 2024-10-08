@@ -303,7 +303,7 @@ void Core::Elements::Element::unpack(Core::Communication::UnpackBuffer& buffer)
     auto* mat = dynamic_cast<Core::Mat::Material*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack material");
     // unpack only first material
-    mat_[0] = Teuchos::rcp(mat);
+    mat_[0] = Teuchos::RCP(mat);
   }
   else
   {

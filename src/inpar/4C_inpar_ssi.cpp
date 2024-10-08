@@ -247,34 +247,34 @@ void Inpar::SSI::set_valid_conditions(
 
 
   /*--------------------------------------------------------------------*/
-  auto linessiplain = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto linessiplain = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN SSI COUPLING LINE CONDITIONS", "SSICoupling", "SSI Coupling",
       Core::Conditions::SSICoupling, true, Core::Conditions::geometry_type_line));
-  auto surfssiplain = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto surfssiplain = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN SSI COUPLING SURF CONDITIONS", "SSICoupling", "SSI Coupling",
       Core::Conditions::SSICoupling, true, Core::Conditions::geometry_type_surface));
-  auto volssiplain = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto volssiplain = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN SSI COUPLING VOL CONDITIONS", "SSICoupling", "SSI Coupling",
       Core::Conditions::SSICoupling, true, Core::Conditions::geometry_type_volume));
 
   // insert input file line components into condition definitions
   for (const auto& cond : {linessiplain, surfssiplain, volssiplain})
   {
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
+    cond->add_component(Teuchos::RCP(new Input::IntComponent("coupling id")));
     condlist.push_back(cond);
   }
 
   /*--------------------------------------------------------------------*/
   //! set solid dofset on scatra discretization
-  auto linessi = Teuchos::rcp(
+  auto linessi = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN SSI COUPLING SOLIDTOSCATRA LINE CONDITIONS",
           "SSICouplingSolidToScatra", "SSI Coupling SolidToScatra",
           Core::Conditions::SSICouplingSolidToScatra, true, Core::Conditions::geometry_type_line));
-  auto surfssi = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto surfssi = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN SSI COUPLING SOLIDTOSCATRA SURF CONDITIONS", "SSICouplingSolidToScatra",
       "SSI Coupling SolidToScatra", Core::Conditions::SSICouplingSolidToScatra, true,
       Core::Conditions::geometry_type_surface));
-  auto volssi = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto volssi = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN SSI COUPLING SOLIDTOSCATRA VOL CONDITIONS", "SSICouplingSolidToScatra",
       "SSI Coupling SolidToScatra", Core::Conditions::SSICouplingSolidToScatra, true,
       Core::Conditions::geometry_type_volume));
@@ -282,21 +282,21 @@ void Inpar::SSI::set_valid_conditions(
   // insert input file line components into condition definitions
   for (const auto& cond : {linessi, surfssi, volssi})
   {
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
+    cond->add_component(Teuchos::RCP(new Input::IntComponent("coupling id")));
     condlist.push_back(cond);
   }
 
   /*--------------------------------------------------------------------*/
   //! set scatra dofset on solid discretization
-  auto linessi2 = Teuchos::rcp(
+  auto linessi2 = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN SSI COUPLING SCATRATOSOLID LINE CONDITIONS",
           "SSICouplingScatraToSolid", "SSI Coupling ScatraToSolid",
           Core::Conditions::SSICouplingScatraToSolid, true, Core::Conditions::geometry_type_line));
-  auto surfssi2 = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto surfssi2 = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN SSI COUPLING SCATRATOSOLID SURF CONDITIONS", "SSICouplingScatraToSolid",
       "SSI Coupling ScatraToSolid", Core::Conditions::SSICouplingScatraToSolid, true,
       Core::Conditions::geometry_type_surface));
-  auto volssi2 = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto volssi2 = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN SSI COUPLING SCATRATOSOLID VOL CONDITIONS", "SSICouplingScatraToSolid",
       "SSI Coupling ScatraToSolid", Core::Conditions::SSICouplingScatraToSolid, true,
       Core::Conditions::geometry_type_volume));
@@ -304,21 +304,21 @@ void Inpar::SSI::set_valid_conditions(
   // insert input file line components into condition definitions
   for (const auto& cond : {linessi2, surfssi2, volssi2})
   {
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
+    cond->add_component(Teuchos::RCP(new Input::IntComponent("coupling id")));
     condlist.push_back(cond);
   }
 
   /*--------------------------------------------------------------------*/
   // set ScaTra-Structure interaction interface meshtying condition
-  auto pointssiinterfacemeshtying = Teuchos::rcp(
+  auto pointssiinterfacemeshtying = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN SSI INTERFACE MESHTYING POINT CONDITIONS",
           "ssi_interface_meshtying", "SSI Interface Meshtying",
           Core::Conditions::ssi_interface_meshtying, true, Core::Conditions::geometry_type_point));
-  auto linessiinterfacemeshtying = Teuchos::rcp(
+  auto linessiinterfacemeshtying = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN SSI INTERFACE MESHTYING LINE CONDITIONS",
           "ssi_interface_meshtying", "SSI Interface Meshtying",
           Core::Conditions::ssi_interface_meshtying, true, Core::Conditions::geometry_type_line));
-  auto surfssiinterfacemeshtying = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto surfssiinterfacemeshtying = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN SSI INTERFACE MESHTYING SURF CONDITIONS", "ssi_interface_meshtying",
       "SSI Interface Meshtying", Core::Conditions::ssi_interface_meshtying, true,
       Core::Conditions::geometry_type_surface));
@@ -335,8 +335,8 @@ void Inpar::SSI::set_valid_conditions(
   for (const auto& cond :
       {pointssiinterfacemeshtying, linessiinterfacemeshtying, surfssiinterfacemeshtying})
   {
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
-    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("interface side", "Undefined",
+    cond->add_component(Teuchos::RCP(new Input::IntComponent("ConditionID")));
+    cond->add_component(Teuchos::RCP(new Input::SelectionComponent("interface side", "Undefined",
         Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
         Teuchos::tuple<int>(
             Inpar::S2I::side_undefined, Inpar::S2I::side_slave, Inpar::S2I::side_master))));
@@ -347,11 +347,11 @@ void Inpar::SSI::set_valid_conditions(
 
   /*--------------------------------------------------------------------*/
   // condition, where additional scatra field on manifold is created
-  auto ssisurfacemanifold = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto ssisurfacemanifold = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN SSI MANIFOLD SURF CONDITIONS", "SSISurfaceManifold", "scalar transport on manifold",
       Core::Conditions::SSISurfaceManifold, true, Core::Conditions::geometry_type_surface));
 
-  ssisurfacemanifold->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+  ssisurfacemanifold->add_component(Teuchos::RCP(new Input::IntComponent("ConditionID")));
   add_named_selection_component(ssisurfacemanifold, "ImplType", "implementation type", "Undefined",
       Teuchos::tuple<std::string>("Undefined", "Standard", "ElchElectrode", "ElchDiffCond"),
       Teuchos::tuple<int>(Inpar::ScaTra::impltype_undefined, Inpar::ScaTra::impltype_std,
@@ -362,27 +362,27 @@ void Inpar::SSI::set_valid_conditions(
 
   /*--------------------------------------------------------------------*/
   // initial field by condition for scatra on manifold
-  auto surfmanifoldinitfields = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto surfmanifoldinitfields = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN SURF SCATRA MANIFOLD INITIAL FIELD CONDITIONS", "ScaTraManifoldInitfield",
       "Surface ScaTra Manifold Initfield", Core::Conditions::SurfaceInitfield, false,
       Core::Conditions::geometry_type_surface));
 
-  surfmanifoldinitfields->add_component(Teuchos::rcp(new Input::SelectionComponent("Field",
+  surfmanifoldinitfields->add_component(Teuchos::RCP(new Input::SelectionComponent("Field",
       "ScaTra", Teuchos::tuple<std::string>("ScaTra"), Teuchos::tuple<std::string>("ScaTra"))));
 
-  surfmanifoldinitfields->add_component(Teuchos::rcp(new Input::IntComponent("funct")));
+  surfmanifoldinitfields->add_component(Teuchos::RCP(new Input::IntComponent("funct")));
 
   condlist.emplace_back(surfmanifoldinitfields);
 
   /*--------------------------------------------------------------------*/
   // kinetics condition for flux scatra <-> scatra on manifold
-  auto surfmanifoldkinetics = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto surfmanifoldkinetics = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN SSI MANIFOLD KINETICS SURF CONDITIONS", "SSISurfaceManifoldKinetics",
       "kinetics model for coupling scatra <-> scatra on manifold",
       Core::Conditions::SSISurfaceManifoldKinetics, true, Core::Conditions::geometry_type_surface));
 
   {
-    surfmanifoldkinetics->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
+    surfmanifoldkinetics->add_component(Teuchos::RCP(new Input::IntComponent("ConditionID")));
     add_named_int(surfmanifoldkinetics, "ManifoldConditionID");
 
     std::map<int, std::pair<std::string, std::vector<Teuchos::RCP<Input::LineComponent>>>>
@@ -391,14 +391,14 @@ void Inpar::SSI::set_valid_conditions(
       {
         std::vector<Teuchos::RCP<Input::LineComponent>> constantinterfaceresistance;
         constantinterfaceresistance.emplace_back(
-            Teuchos::rcp(new Input::SeparatorComponent("ONOFF")));
+            Teuchos::RCP(new Input::SeparatorComponent("ONOFF")));
         constantinterfaceresistance.emplace_back(
-            Teuchos::rcp(new Input::IntVectorComponent("ONOFF", 2)));
+            Teuchos::RCP(new Input::IntVectorComponent("ONOFF", 2)));
 
         constantinterfaceresistance.emplace_back(
-            Teuchos::rcp(new Input::SeparatorComponent("RESISTANCE")));
+            Teuchos::RCP(new Input::SeparatorComponent("RESISTANCE")));
         constantinterfaceresistance.emplace_back(
-            Teuchos::rcp(new Input::RealComponent("RESISTANCE")));
+            Teuchos::RCP(new Input::RealComponent("RESISTANCE")));
         constantinterfaceresistance.emplace_back(new Input::SeparatorComponent("E-"));
         constantinterfaceresistance.emplace_back(new Input::IntComponent("E-"));
 
@@ -410,21 +410,21 @@ void Inpar::SSI::set_valid_conditions(
         // Butler-Volmer-reduced
         std::vector<Teuchos::RCP<Input::LineComponent>> butlervolmerreduced;
         // total number of existing scalars
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("NUMSCAL")));
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::IntComponent("NUMSCAL")));
+        butlervolmerreduced.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("NUMSCAL")));
+        butlervolmerreduced.emplace_back(Teuchos::RCP(new Input::IntComponent("NUMSCAL")));
         butlervolmerreduced.emplace_back(
-            Teuchos::rcp(new Input::SeparatorComponent("STOICHIOMETRIES")));
-        butlervolmerreduced.emplace_back(Teuchos::rcp(
+            Teuchos::RCP(new Input::SeparatorComponent("STOICHIOMETRIES")));
+        butlervolmerreduced.emplace_back(Teuchos::RCP(
             new Input::IntVectorComponent("STOICHIOMETRIES", Input::LengthFromInt("NUMSCAL"))));
 
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("E-")));
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::IntComponent("E-")));
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("K_R")));
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::RealComponent("K_R")));
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA_A")));
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_A")));
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::SeparatorComponent("ALPHA_C")));
-        butlervolmerreduced.emplace_back(Teuchos::rcp(new Input::RealComponent("ALPHA_C")));
+        butlervolmerreduced.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("E-")));
+        butlervolmerreduced.emplace_back(Teuchos::RCP(new Input::IntComponent("E-")));
+        butlervolmerreduced.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("K_R")));
+        butlervolmerreduced.emplace_back(Teuchos::RCP(new Input::RealComponent("K_R")));
+        butlervolmerreduced.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("ALPHA_A")));
+        butlervolmerreduced.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_A")));
+        butlervolmerreduced.emplace_back(Teuchos::RCP(new Input::SeparatorComponent("ALPHA_C")));
+        butlervolmerreduced.emplace_back(Teuchos::RCP(new Input::RealComponent("ALPHA_C")));
 
         kinetic_model_choices.emplace(Inpar::S2I::kinetics_butlervolmerreduced,
             std::make_pair("Butler-VolmerReduced", butlervolmerreduced));
@@ -439,8 +439,8 @@ void Inpar::SSI::set_valid_conditions(
     }
 
     surfmanifoldkinetics->add_component(
-        Teuchos::rcp(new Input::SeparatorComponent("KINETIC_MODEL")));
-    surfmanifoldkinetics->add_component(Teuchos::rcp(new Input::SwitchComponent(
+        Teuchos::RCP(new Input::SeparatorComponent("KINETIC_MODEL")));
+    surfmanifoldkinetics->add_component(Teuchos::RCP(new Input::SwitchComponent(
         "KINETIC_MODEL", Inpar::S2I::kinetics_constantinterfaceresistance, kinetic_model_choices)));
   }
 
@@ -448,13 +448,13 @@ void Inpar::SSI::set_valid_conditions(
 
   /*--------------------------------------------------------------------*/
   // Dirichlet conditions for scatra on manifold
-  auto pointmanifolddirichlet = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto pointmanifolddirichlet = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN POINT MANIFOLD DIRICH CONDITIONS", "ManifoldDirichlet", "Point Dirichlet",
       Core::Conditions::PointDirichlet, false, Core::Conditions::geometry_type_point));
-  auto linemanifolddirichlet = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto linemanifolddirichlet = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN LINE MANIFOLD DIRICH CONDITIONS", "ManifoldDirichlet", "Line Dirichlet",
       Core::Conditions::LineDirichlet, false, Core::Conditions::geometry_type_line));
-  auto surfmanifolddirichlet = Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+  auto surfmanifolddirichlet = Teuchos::RCP(new Core::Conditions::ConditionDefinition(
       "DESIGN SURF MANIFOLD DIRICH CONDITIONS", "ManifoldDirichlet", "Surface Dirichlet",
       Core::Conditions::SurfaceDirichlet, false, Core::Conditions::geometry_type_surface));
 
@@ -479,11 +479,11 @@ void Inpar::SSI::set_valid_conditions(
 
   /*--------------------------------------------------------------------*/
   // set ScaTra-Structure Interaction interface contact condition
-  auto linessiinterfacecontact = Teuchos::rcp(
+  auto linessiinterfacecontact = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN SSI INTERFACE CONTACT LINE CONDITIONS",
           "SSIInterfaceContact", "SSI Interface Contact", Core::Conditions::SSIInterfaceContact,
           true, Core::Conditions::geometry_type_line));
-  auto surfssiinterfacecontact = Teuchos::rcp(
+  auto surfssiinterfacecontact = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN SSI INTERFACE CONTACT SURF CONDITIONS",
           "SSIInterfaceContact", "SSI Interface Contact", Core::Conditions::SSIInterfaceContact,
           true, Core::Conditions::geometry_type_surface));
@@ -491,8 +491,8 @@ void Inpar::SSI::set_valid_conditions(
   // insert input file line components into condition definitions
   for (const auto& cond : {linessiinterfacecontact, surfssiinterfacecontact})
   {
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("ConditionID")));
-    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("interface side", "Undefined",
+    cond->add_component(Teuchos::RCP(new Input::IntComponent("ConditionID")));
+    cond->add_component(Teuchos::RCP(new Input::SelectionComponent("interface side", "Undefined",
         Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
         Teuchos::tuple<int>(
             Inpar::S2I::side_undefined, Inpar::S2I::side_slave, Inpar::S2I::side_master))));

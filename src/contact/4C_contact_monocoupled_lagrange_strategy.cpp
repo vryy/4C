@@ -98,7 +98,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
   // (this is a prerequisite for the Split2x2 methods to be called later)
   kteff->complete();
 
-  Teuchos::RCP<Epetra_Map> domainmap = Teuchos::rcp(new Epetra_Map(kteff->domain_map()));
+  Teuchos::RCP<Epetra_Map> domainmap = Teuchos::RCP(new Epetra_Map(kteff->domain_map()));
 
   // system type
   auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
@@ -191,7 +191,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     //---------------------------------------------------------- SECOND LINE
     // km: add T(mhataam)*kan
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmod =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
     kmmod->add(*km, false, 1.0, 1.0);
     if (aset)
     {
@@ -209,7 +209,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
 
     // kin: subtract T(dhat)*kan --
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kimod =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
     kimod->add(*ki, false, 1.0, 1.0);
     if (aset)
     {
@@ -249,7 +249,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     /* (10) Global setup of kteffnew (including contact)                  */
     /**********************************************************************/
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
         *gdisprowmap_, 81, true, false, kteffmatrix->get_matrixtype()));
 
     //----------------------------------------------------------- FIRST LINE
@@ -330,7 +330,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
     Core::LinAlg::split_matrix2x2(
         invd_, gactivedofs_, tempmap, gactivedofs_, tempmap, invda, tempmtx1, tempmtx2, tempmtx3);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invdmod =
-        Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 10));
+        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 10));
     invdmod->add(*invda, false, 1.0, 1.0);
     invdmod->complete();
 
@@ -385,14 +385,14 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
       else
       {
         Teuchos::RCP<Core::LinAlg::Vector<double>> zfluid =
-            Teuchos::rcp(new Core::LinAlg::Vector<double>(z_->Map(), true));
+            Teuchos::RCP(new Core::LinAlg::Vector<double>(z_->Map(), true));
 
         Teuchos::RCP<Core::LinAlg::Vector<double>> mod =
-            Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+            Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
         matiter->second->multiply(false, *inciter->second, *mod);
         zfluid->Update(-1.0, *mod, 0.0);
         Teuchos::RCP<Core::LinAlg::Vector<double>> zcopy =
-            Teuchos::rcp(new Core::LinAlg::Vector<double>(*zfluid));
+            Teuchos::RCP(new Core::LinAlg::Vector<double>(*zfluid));
         invdmod->multiply(true, *zcopy, *zfluid);
         zfluid->Scale(1 / (1 - alphaf_));
 
@@ -440,9 +440,9 @@ void CONTACT::MonoCoupledLagrangeStrategy::save_coupling_matrices(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat, Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invda)
 {
-  dhat_ = Teuchos::rcp<Core::LinAlg::SparseMatrix>(new Core::LinAlg::SparseMatrix(*dhat));
-  mhataam_ = Teuchos::rcp<Core::LinAlg::SparseMatrix>(new Core::LinAlg::SparseMatrix(*mhataam));
-  invda_ = Teuchos::rcp<Core::LinAlg::SparseMatrix>(new Core::LinAlg::SparseMatrix(*invda));
+  dhat_ = Teuchos::RCP<Core::LinAlg::SparseMatrix>(new Core::LinAlg::SparseMatrix(*dhat));
+  mhataam_ = Teuchos::RCP<Core::LinAlg::SparseMatrix>(new Core::LinAlg::SparseMatrix(*mhataam));
+  invda_ = Teuchos::RCP<Core::LinAlg::SparseMatrix>(new Core::LinAlg::SparseMatrix(*invda));
 }
 
 FOUR_C_NAMESPACE_CLOSE

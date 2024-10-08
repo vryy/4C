@@ -53,12 +53,12 @@ void FS3I::FS3IBase::init()
 {
   set_is_setup(false);
 
-  scatracoup_ = Teuchos::rcp(new Coupling::Adapter::Coupling());
-  scatraglobalex_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
-  sbbtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowColTransform());
-  sbitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform());
-  sibtransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixColTransform());
-  fbitransform_ = Teuchos::rcp(new Coupling::Adapter::MatrixRowTransform());
+  scatracoup_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
+  scatraglobalex_ = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor());
+  sbbtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixRowColTransform());
+  sbitransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixRowTransform());
+  sibtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform());
+  fbitransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixRowTransform());
 
   set_is_init(true);
   return;
@@ -94,7 +94,7 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
 
   // filter out master dirichlet dofs associated with the interface
   Teuchos::RCP<Core::LinAlg::Vector<double>> masterifdirich =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*mastermap, true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*mastermap, true));
   for (int i = 0; i < mastermap->NumMyElements(); ++i)
   {
     int gid = mastermap->GID(i);
@@ -112,7 +112,7 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
 
   // filter out slave dirichlet dofs associated with the interface
   Teuchos::RCP<Core::LinAlg::Vector<double>> slaveifdirich =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*slavemap, true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*slavemap, true));
   for (int i = 0; i < slavemap->NumMyElements(); ++i)
   {
     int gid = slavemap->GID(i);

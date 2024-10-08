@@ -732,7 +732,7 @@ void Cut::FacetIntegration::temporary_tri3(
   Core::LinAlg::SerialDenseMatrix xyz(3, 3);
   for (int i = 0; i < 3; ++i) corners[i]->coordinates(&xyz(0, i));
   Tri3BoundaryCell *bc = new Tri3BoundaryCell(xyz, face1_, corners);
-  divCells.push_back(Teuchos::rcp(bc));
+  divCells.push_back(Teuchos::RCP(bc));
 }
 
 /*-------------------------------------------------------------------------------------------*
@@ -745,7 +745,7 @@ void Cut::FacetIntegration::temporary_quad4(
   Core::LinAlg::SerialDenseMatrix xyz(3, 4);
   for (int i = 0; i < 4; ++i) corners[i]->coordinates(&xyz(0, i));
   Quad4BoundaryCell *bc = new Quad4BoundaryCell(xyz, face1_, corners);
-  divCells.push_back(Teuchos::rcp(bc));
+  divCells.push_back(Teuchos::RCP(bc));
 }
 
 /*-------------------------------------------------------------------------------------------------*

@@ -172,7 +172,7 @@ SlaveElementInterface<distype>::create_slave_element_representation(
     }
   }
 
-  return Teuchos::rcp(sla);
+  return Teuchos::RCP(sla);
 }
 
 /*----------------------------------------------------------------------*
@@ -187,7 +187,7 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(
   typedef NitscheCoupling<distype, Core::FE::CellType::dis_none, 3> NitscheCouplType;
   nit = new NitscheCouplType(C_umum, rhC_um, fldparaxfem);
 
-  return Teuchos::rcp(nit);
+  return Teuchos::RCP(nit);
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -282,7 +282,7 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(Core::Elements::
   else
     FOUR_C_THROW("Unsupported number of %d nodes for coupling slave element.", numdofpernode);
 
-  return Teuchos::rcp(nit);
+  return Teuchos::RCP(nit);
 }
 
 /*----------------------------------------------------------------------*
@@ -394,7 +394,7 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_sided(Core::Elements:
   else
     FOUR_C_THROW("Unsupported number of %d nodes for coupling slave element.", numdofpernode);
 
-  return Teuchos::rcp(nit);
+  return Teuchos::RCP(nit);
 }
 
 /*----------------------------------------------------------------------*
@@ -475,7 +475,7 @@ NitscheInterface<distype>::create_nitsche_coupling_two_sided(Core::Elements::Ele
     }
   }
 
-  return Teuchos::rcp(nit);
+  return Teuchos::RCP(nit);
 }
 
 
@@ -492,7 +492,7 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_wdbc(
   typedef HybridLMCoupling<distype, Core::FE::CellType::dis_none, 3> HybridLMCouplType;
   hybridlm = new HybridLMCouplType(is_viscAdjointSymmetric);
 
-  return Teuchos::rcp(hybridlm);
+  return Teuchos::RCP(hybridlm);
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -530,19 +530,19 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_wdbc(
     case Core::FE::CellType::quad4:
     {
       typedef HybridLMCoupling<distype, Core::FE::CellType::quad4, 3> HybridLMCouplType;
-      return Teuchos::rcp(new HybridLMCouplType(bele_xyz, is_viscAdjointSymmetric));
+      return Teuchos::RCP(new HybridLMCouplType(bele_xyz, is_viscAdjointSymmetric));
       break;
     }
     case Core::FE::CellType::quad8:
     {
       typedef HybridLMCoupling<distype, Core::FE::CellType::quad8, 3> HybridLMCouplType;
-      return Teuchos::rcp(new HybridLMCouplType(bele_xyz, is_viscAdjointSymmetric));
+      return Teuchos::RCP(new HybridLMCouplType(bele_xyz, is_viscAdjointSymmetric));
       break;
     }
     case Core::FE::CellType::quad9:
     {
       typedef HybridLMCoupling<distype, Core::FE::CellType::quad9, 3> HybridLMCouplType;
-      return Teuchos::rcp(new HybridLMCouplType(bele_xyz, is_viscAdjointSymmetric));
+      return Teuchos::RCP(new HybridLMCouplType(bele_xyz, is_viscAdjointSymmetric));
       break;
     }
     default:
@@ -667,7 +667,7 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_sided(
   else
     FOUR_C_THROW("Unsupported number of %d nodes for coupling slave element.", numdofpernode);
 
-  return Teuchos::rcp(hlm);
+  return Teuchos::RCP(hlm);
 }
 
 template class Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::hex8>;

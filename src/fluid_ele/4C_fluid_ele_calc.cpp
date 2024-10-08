@@ -192,7 +192,7 @@ Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc()
       evelngrad_(true)
 {
   rotsymmpbc_ =
-      Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, enrtype>());
+      Teuchos::RCP(new FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, enrtype>());
 
   // pointer to class FluidEleParameter (access to the general parameter)
   fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::instance();

@@ -56,22 +56,22 @@ void pasi_dyn()
   {
     case Inpar::PaSI::partitioned_onewaycoup:
     {
-      algo = Teuchos::rcp(new PaSI::PasiPartOneWayCoup(comm, params));
+      algo = Teuchos::RCP(new PaSI::PasiPartOneWayCoup(comm, params));
       break;
     }
     case Inpar::PaSI::partitioned_twowaycoup:
     {
-      algo = Teuchos::rcp(new PaSI::PasiPartTwoWayCoup(comm, params));
+      algo = Teuchos::RCP(new PaSI::PasiPartTwoWayCoup(comm, params));
       break;
     }
     case Inpar::PaSI::partitioned_twowaycoup_disprelax:
     {
-      algo = Teuchos::rcp(new PaSI::PasiPartTwoWayCoupDispRelax(comm, params));
+      algo = Teuchos::RCP(new PaSI::PasiPartTwoWayCoupDispRelax(comm, params));
       break;
     }
     case Inpar::PaSI::partitioned_twowaycoup_disprelaxaitken:
     {
-      algo = Teuchos::rcp(new PaSI::PasiPartTwoWayCoupDispRelaxAitken(comm, params));
+      algo = Teuchos::RCP(new PaSI::PasiPartTwoWayCoupDispRelaxAitken(comm, params));
       break;
     }
     default:

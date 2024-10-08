@@ -39,16 +39,16 @@ Mat::PAR::ParameterAniso::ParameterAniso(const Core::Mat::PAR::Parameter::Data& 
   if (strategy == "Standard")
   {
     structural_tensor_strategy_ =
-        Teuchos::rcp(new Mat::Elastic::StructuralTensorStrategyStandard(params));
+        Teuchos::RCP(new Mat::Elastic::StructuralTensorStrategyStandard(params));
   }
   else if (strategy == "ByDistributionFunction")
   {
     structural_tensor_strategy_ =
-        Teuchos::rcp(new Mat::Elastic::StructuralTensorStrategyByDistributionFunction(params));
+        Teuchos::RCP(new Mat::Elastic::StructuralTensorStrategyByDistributionFunction(params));
   }
   else if (strategy == "DispersedTransverselyIsotropic")
   {
-    structural_tensor_strategy_ = Teuchos::rcp(
+    structural_tensor_strategy_ = Teuchos::RCP(
         new Mat::Elastic::StructuralTensorStrategyDispersedTransverselyIsotropic(params));
   }
   else

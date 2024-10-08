@@ -46,7 +46,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
 
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double>> myscalar =
-          Teuchos::rcp(new std::vector<double>(la[1].lm_.size(), 0.0));
+          Teuchos::RCP(new std::vector<double>(la[1].lm_.size(), 0.0));
 
       Core::FE::extract_my_values(*scalarnp, *myscalar, la[1].lm_);
 
@@ -64,7 +64,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
       const int numgp = (Membrane<distype>::intpoints_).nquad;
 
       // create vector of gauss point values to be set in params list
-      Teuchos::RCP<std::vector<std::vector<double>>> gpscalar = Teuchos::rcp(
+      Teuchos::RCP<std::vector<std::vector<double>>> gpscalar = Teuchos::RCP(
           new std::vector<std::vector<double>>(numgp, std::vector<double>(numscal, 0.0)));
 
       // allocate vector for shape functions and matrix for derivatives at gp

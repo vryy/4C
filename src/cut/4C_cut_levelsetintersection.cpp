@@ -38,7 +38,7 @@ void Cut::LevelSetIntersection::add_cut_side(int levelset_sid)
   if (!side_.is_null()) FOUR_C_THROW("currently only one levelset-side is supported");
 
   // create the levelset-side
-  side_ = Teuchos::rcp(Side::create_level_set_side(levelset_sid));
+  side_ = Teuchos::RCP(Side::create_level_set_side(levelset_sid));
 }
 
 /*----------------------------------------------------------------------------*

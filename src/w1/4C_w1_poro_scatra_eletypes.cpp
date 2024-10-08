@@ -44,7 +44,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroScatraType
   if (eletype == "WALLQ4POROSCATRA")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad4>(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -57,7 +57,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad4PoroScatraType
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad4>(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad4>(id, owner));
   return ele;
 }
 
@@ -107,7 +107,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroScatraType
   if (eletype == "WALLQ9POROSCATRA")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad9>(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad9>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -120,7 +120,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallQuad9PoroScatraType
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad9>(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad9>(id, owner));
   return ele;
 }
 
@@ -170,7 +170,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroScatraTyp
   if (eletype == "WALLN4POROSCATRA")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs4>(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -183,7 +183,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs4PoroScatraTyp
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs4>(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs4>(id, owner));
   return ele;
 }
 
@@ -233,7 +233,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroScatraTyp
   if (eletype == "WALLN9POROSCATRA")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs9>(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs9>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -246,7 +246,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallNurbs9PoroScatraTyp
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs9>(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs9>(id, owner));
   return ele;
 }
 
@@ -296,7 +296,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroScatraType:
   if (eletype == "WALLT3POROSCATRA")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::tri3>(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::tri3>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -309,7 +309,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::WallTri3PoroScatraType:
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::tri3>(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::tri3>(id, owner));
   return ele;
 }
 

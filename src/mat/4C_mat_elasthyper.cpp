@@ -50,7 +50,7 @@ Mat::PAR::ElastHyper::ElastHyper(const Core::Mat::PAR::Parameter::Data& matdata)
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ElastHyper::create_material()
 {
-  return Teuchos::rcp(new Mat::ElastHyper(this));
+  return Teuchos::RCP(new Mat::ElastHyper(this));
 }
 
 /*----------------------------------------------------------------------*/

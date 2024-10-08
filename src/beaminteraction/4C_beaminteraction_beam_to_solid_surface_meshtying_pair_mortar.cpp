@@ -224,22 +224,22 @@ BEAMINTERACTION::beam_to_solid_surface_meshtying_pair_mortar_factory(
       switch (surface_shape)
       {
         case Core::FE::CellType::tri3:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line2>());
         case Core::FE::CellType::tri6:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line2>());
         case Core::FE::CellType::quad4:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line2>());
         case Core::FE::CellType::quad8:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line2>());
         case Core::FE::CellType::quad9:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line2>());
         case Core::FE::CellType::nurbs9:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line2>());
         default:
           FOUR_C_THROW("Wrong element type for surface element.");
@@ -251,22 +251,22 @@ BEAMINTERACTION::beam_to_solid_surface_meshtying_pair_mortar_factory(
       switch (surface_shape)
       {
         case Core::FE::CellType::tri3:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line3>());
         case Core::FE::CellType::tri6:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line3>());
         case Core::FE::CellType::quad4:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line3>());
         case Core::FE::CellType::quad8:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line3>());
         case Core::FE::CellType::quad9:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line3>());
         case Core::FE::CellType::nurbs9:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line3>());
         default:
           FOUR_C_THROW("Wrong element type for surface element.");
@@ -278,22 +278,22 @@ BEAMINTERACTION::beam_to_solid_surface_meshtying_pair_mortar_factory(
       switch (surface_shape)
       {
         case Core::FE::CellType::tri3:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line4>());
         case Core::FE::CellType::tri6:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line4>());
         case Core::FE::CellType::quad4:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line4>());
         case Core::FE::CellType::quad8:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line4>());
         case Core::FE::CellType::quad9:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line4>());
         case Core::FE::CellType::nurbs9:
-          return Teuchos::rcp(
+          return Teuchos::RCP(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line4>());
         default:
           FOUR_C_THROW("Wrong element type for surface element.");

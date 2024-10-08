@@ -286,7 +286,7 @@ Mat::PAR::MuscleGiantesio::MuscleGiantesio(const Core::Mat::PAR::Parameter::Data
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MuscleGiantesio::create_material()
 {
-  return Teuchos::rcp(new Mat::MuscleGiantesio(this));
+  return Teuchos::RCP(new Mat::MuscleGiantesio(this));
 }
 
 Mat::MuscleGiantesioType Mat::MuscleGiantesioType::instance_;
@@ -305,7 +305,7 @@ Mat::MuscleGiantesio::MuscleGiantesio()
       omegaa_old_(-1.0),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::rcp<Mat::Elastic::StructuralTensorStrategyBase>(
+          Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
               new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0})
 {
@@ -317,7 +317,7 @@ Mat::MuscleGiantesio::MuscleGiantesio(Mat::PAR::MuscleGiantesio* params)
       omegaa_old_(-1.0),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::rcp<Mat::Elastic::StructuralTensorStrategyBase>(
+          Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
               new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0})
 {

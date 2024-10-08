@@ -334,7 +334,7 @@ void Mat::PAR::FluidPoroSingleReaction::check_sizes(std::vector<double>& reacval
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroSingleReaction::create_material()
 {
-  return Teuchos::rcp(new Mat::FluidPoroSingleReaction(this));
+  return Teuchos::RCP(new Mat::FluidPoroSingleReaction(this));
 }
 
 /*----------------------------------------------------------------------*

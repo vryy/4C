@@ -53,7 +53,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::ElementHandle::create_projected(
 
   Core::FE::GaussIntegration intpoints(gp_ic);
   Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-      Teuchos::rcp(new Core::FE::CollectedGaussPoints(gp_ic->num_points()));
+      Teuchos::RCP(new Core::FE::CollectedGaussPoints(gp_ic->num_points()));
 
   // Perform actual mapping to correct local coordinates
   Core::FE::GaussIntegration::project_gauss_points_local_to_global<distype>(xie, intpoints, cgp);
@@ -76,7 +76,7 @@ void Cut::ElementHandle::volume_cell_gauss_points(
     Cut::VolumeCell* vc = *i;
 
     Teuchos::RCP<Core::FE::GaussPointsComposite> gpc =
-        Teuchos::rcp(new Core::FE::GaussPointsComposite(0));
+        Teuchos::RCP(new Core::FE::GaussPointsComposite(0));
 
     switch (vc->parent_element()->get_element_integration_type())
     {
@@ -274,7 +274,7 @@ Teuchos::RCP<Core::FE::GaussPointsComposite> Cut::ElementHandle::gauss_points_co
     plain_volumecell_set& cells, VCellGaussPts gausstype)
 {
   Teuchos::RCP<Core::FE::GaussPointsComposite> gpc =
-      Teuchos::rcp(new Core::FE::GaussPointsComposite(0));
+      Teuchos::RCP(new Core::FE::GaussPointsComposite(0));
 
   for (plain_volumecell_set::iterator i = cells.begin(); i != cells.end(); ++i)
   {

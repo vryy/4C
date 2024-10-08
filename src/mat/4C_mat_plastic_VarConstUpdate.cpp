@@ -47,7 +47,7 @@ Mat::PAR::PlasticElastHyperVCU::PlasticElastHyperVCU(const Core::Mat::PAR::Param
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticElastHyperVCU::create_material()
 {
-  return Teuchos::rcp(new Mat::PlasticElastHyperVCU(this));
+  return Teuchos::RCP(new Mat::PlasticElastHyperVCU(this));
 }
 
 

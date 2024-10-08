@@ -46,8 +46,8 @@ NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec,
     const NOX::Nln::CONSTRAINT::PrecInterfaceMap& iConstrPrec,
     const Teuchos::RCP<::NOX::Epetra::Scaling>& iScale)
-    : comm_(Teuchos::rcp(&comm, false)),
-      nlnparams_(Teuchos::rcp(&noxParams, false)),
+    : comm_(Teuchos::RCP(&comm, false)),
+      nlnparams_(Teuchos::RCP(&noxParams, false)),
       opt_type_(type),
       lin_solvers_(linSolvers),
       i_req_ptr_(iReq),
@@ -72,8 +72,8 @@ NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const OptimizationProblemType& type, const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iConstr)
-    : comm_(Teuchos::rcp(&comm, false)),
-      nlnparams_(Teuchos::rcp(&noxParams, false)),
+    : comm_(Teuchos::RCP(&comm, false)),
+      nlnparams_(Teuchos::RCP(&noxParams, false)),
       opt_type_(type),
       lin_solvers_(linSolvers),
       i_req_ptr_(iReq),
@@ -96,8 +96,8 @@ NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec)
-    : comm_(Teuchos::rcp(&comm, false)),
-      nlnparams_(Teuchos::rcp(&noxParams, false)),
+    : comm_(Teuchos::RCP(&comm, false)),
+      nlnparams_(Teuchos::RCP(&noxParams, false)),
       opt_type_(opt_unconstrained),
       lin_solvers_(linSolvers),
       i_req_ptr_(iReq),
@@ -118,8 +118,8 @@ NOX::Nln::GlobalData::GlobalData(const Epetra_Comm& comm, Teuchos::ParameterList
     const NOX::Nln::LinearSystem::SolverMap& linSolvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac)
-    : comm_(Teuchos::rcp(&comm, false)),
-      nlnparams_(Teuchos::rcp(&noxParams, false)),
+    : comm_(Teuchos::RCP(&comm, false)),
+      nlnparams_(Teuchos::RCP(&noxParams, false)),
       opt_type_(opt_unconstrained),
       lin_solvers_(linSolvers),
       i_req_ptr_(iReq),
@@ -169,7 +169,7 @@ void NOX::Nln::GlobalData::setup()
   set_printing_parameters();
 
   // construct the nox utils class
-  nox_utils_ = Teuchos::rcp(new ::NOX::Utils(nlnparams_->sublist("Printing")));
+  nox_utils_ = Teuchos::RCP(new ::NOX::Utils(nlnparams_->sublist("Printing")));
 
   // set (non-linear) solver option parameters
   set_solver_option_parameters();
@@ -249,7 +249,7 @@ void NOX::Nln::GlobalData::set_solver_option_parameters()
     // Set the associated factory
     if (pdir.get<std::string>("Method") == "User Defined")
     {
-      direction_factory_ = Teuchos::rcp(new NOX::Nln::Direction::Factory);
+      direction_factory_ = Teuchos::RCP(new NOX::Nln::Direction::Factory);
       pdir.set<Teuchos::RCP<::NOX::Direction::UserDefinedFactory>>(
           "User Defined Direction Factory", direction_factory_);
     }
@@ -257,7 +257,7 @@ void NOX::Nln::GlobalData::set_solver_option_parameters()
 
   /* We use the parameter list to define a PrePostOperator class for the
    * non-linear iteration process. */
-  pre_post_op_ptr_ = Teuchos::rcp(new NOX::Nln::Solver::PrePostOp::Generic());
+  pre_post_op_ptr_ = Teuchos::RCP(new NOX::Nln::Solver::PrePostOp::Generic());
   NOX::Nln::Aux::add_to_pre_post_op_vector(solverOptionsList, pre_post_op_ptr_);
 
   return;

@@ -140,7 +140,7 @@ namespace Mat
      */
     [[nodiscard]] Teuchos::RCP<Material> clone() const override
     {
-      return Teuchos::rcp(new KirchhoffLoveShell(*this));
+      return Teuchos::RCP(new KirchhoffLoveShell(*this));
     }
 
     /**

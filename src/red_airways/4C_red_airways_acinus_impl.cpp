@@ -237,7 +237,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::initial(RedAcinus* ele, Teuchos::Pa
   const auto acinus_params = ele->get_acinus_params();
 
   std::vector<int> lmstride;
-  Teuchos::RCP<std::vector<int>> lmowner = Teuchos::rcp(new std::vector<int>);
+  Teuchos::RCP<std::vector<int>> lmowner = Teuchos::RCP(new std::vector<int>);
   ele->location_vector(discretization, lm, *lmowner, lmstride);
 
   // Initialize the pressure vectors

@@ -24,7 +24,7 @@ Core::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
   {
     {
       auto symbolicexpression =
-          Teuchos::rcp(new Core::UTILS::SymbolicExpression<double>(expression));
+          Teuchos::RCP(new Core::UTILS::SymbolicExpression<double>(expression));
       expr_.push_back(symbolicexpression);
     }
   }
@@ -189,7 +189,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::try_create_function_of_ti
                   description_vec.size());
             }
 
-            return Teuchos::rcp(new ParsedFunctionVariable(varname, description_vec.front()));
+            return Teuchos::RCP(new ParsedFunctionVariable(varname, description_vec.front()));
           }
           else if (vartype == "linearinterpolation")
           {
@@ -199,7 +199,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::try_create_function_of_ti
             // read values
             auto values = line.container().get<std::vector<double>>("VALUES");
 
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new LinearInterpolationVariable(varname, times, values, periodicdata));
           }
           else if (vartype == "multifunction")
@@ -216,7 +216,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::try_create_function_of_ti
             if (numtimes != numdescriptions + 1)
               FOUR_C_THROW("the number of TIMES and the number of DESCRIPTIONs must be consistent");
 
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new MultiFunctionVariable(varname, times, description_vec, periodicdata));
           }
           else if (vartype == "fourierinterpolation")
@@ -227,7 +227,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::try_create_function_of_ti
             // read values
             auto values = line.container().get<std::vector<double>>("VALUES");
 
-            return Teuchos::rcp(
+            return Teuchos::RCP(
                 new FourierInterpolationVariable(varname, times, values, periodicdata));
           }
           else
@@ -256,11 +256,11 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::try_create_function_of_ti
       if (not names_of_all_pieces_equal)
         FOUR_C_THROW("Variable %d has a piece-wise definition with inconsistent names.", id);
 
-      functvarvector.emplace_back(Teuchos::rcp(new PiecewiseVariable(name, pieces)));
+      functvarvector.emplace_back(Teuchos::RCP(new PiecewiseVariable(name, pieces)));
     }
   }
 
-  return Teuchos::rcp(new SymbolicFunctionOfTime(functstring, functvarvector));
+  return Teuchos::RCP(new SymbolicFunctionOfTime(functstring, functvarvector));
 }
 
 FOUR_C_NAMESPACE_CLOSE

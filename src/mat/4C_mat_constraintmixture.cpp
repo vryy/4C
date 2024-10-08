@@ -86,7 +86,7 @@ Mat::PAR::ConstraintMixture::ConstraintMixture(const Core::Mat::PAR::Parameter::
   Epetra_Map dummy_map(1, 1, 0, *(Global::Problem::instance()->get_communicators()->local_comm()));
   for (int i = first; i <= last; i++)
   {
-    matparams_.push_back(Teuchos::rcp(new Core::LinAlg::Vector<double>(dummy_map, true)));
+    matparams_.push_back(Teuchos::RCP(new Core::LinAlg::Vector<double>(dummy_map, true)));
   }
   matparams_.at(growthfactor)->PutScalar(matdata.parameters.get<double>("GROWTHFAC"));
   matparams_.at(elastin_survival)->PutScalar(matdata.parameters.get<double>("ELASTINFAC"));
@@ -95,7 +95,7 @@ Mat::PAR::ConstraintMixture::ConstraintMixture(const Core::Mat::PAR::Parameter::
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ConstraintMixture::create_material()
 {
-  return Teuchos::rcp(new Mat::ConstraintMixture(this));
+  return Teuchos::RCP(new Mat::ConstraintMixture(this));
 }
 
 Mat::ConstraintMixtureType Mat::ConstraintMixtureType::instance_;
@@ -216,15 +216,15 @@ void Mat::ConstraintMixture::unpack(Core::Communication::UnpackBuffer& buffer)
   }
 
   // unpack fiber internal variables
-  a1_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
-  a2_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
-  a3_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
-  a4_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
-  vismassstress_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
-  refmassdens_ = Teuchos::rcp(new std::vector<double>(numgp));
-  visrefmassdens_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
-  localprestretch_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<4, 1>>(numgp));
-  localhomstress_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<4, 1>>(numgp));
+  a1_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
+  a2_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
+  a3_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
+  a4_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
+  vismassstress_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
+  refmassdens_ = Teuchos::RCP(new std::vector<double>(numgp));
+  visrefmassdens_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
+  localprestretch_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<4, 1>>(numgp));
+  localhomstress_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<4, 1>>(numgp));
 
   for (int gp = 0; gp < numgp; gp++)
   {
@@ -258,7 +258,7 @@ void Mat::ConstraintMixture::unpack(Core::Communication::UnpackBuffer& buffer)
 
   int delsize = 0;
   extract_from_pack(buffer, delsize);
-  deletemass_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(delsize));
+  deletemass_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 1>>(delsize));
   for (int iddel = 0; iddel < delsize; iddel++)
   {
     Core::LinAlg::Matrix<3, 1> deldata;
@@ -271,7 +271,7 @@ void Mat::ConstraintMixture::unpack(Core::Communication::UnpackBuffer& buffer)
   minindex_ = delsize;
   int sizehistory;
   extract_from_pack(buffer, sizehistory);
-  history_ = Teuchos::rcp(new std::vector<ConstraintMixtureHistory>(sizehistory));
+  history_ = Teuchos::RCP(new std::vector<ConstraintMixtureHistory>(sizehistory));
   for (int idpast = 0; idpast < sizehistory; idpast++)
   {
     std::vector<char> datahistory;
@@ -353,12 +353,12 @@ void Mat::ConstraintMixture::setup(int numgp, const Core::IO::InputParameterCont
     FOUR_C_THROW("unknown option for mass production function");
 
   // visualization
-  vismassstress_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
-  refmassdens_ = Teuchos::rcp(new std::vector<double>(numgp));
-  visrefmassdens_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
+  vismassstress_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
+  refmassdens_ = Teuchos::RCP(new std::vector<double>(numgp));
+  visrefmassdens_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
   // homeostatic prestretch of collagen fibers
-  localprestretch_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<4, 1>>(numgp));
-  localhomstress_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<4, 1>>(numgp));
+  localprestretch_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<4, 1>>(numgp));
+  localhomstress_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<4, 1>>(numgp));
 
   for (int gp = 0; gp < numgp; gp++)
   {
@@ -378,16 +378,16 @@ void Mat::ConstraintMixture::setup(int numgp, const Core::IO::InputParameterCont
     //    params_->density_*(1.0 - params_->phielastin_ - params_->phimuscle_)/5.0*2.0;
   }
 
-  deletemass_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(0));
+  deletemass_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 1>>(0));
 
   // history
   reset_all(numgp);
 
   // fiber vectors
-  a1_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
-  a2_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
-  a3_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
-  a4_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
+  a1_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
+  a2_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
+  a3_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
+  a4_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 1>>(numgp));
 
   // read local (cylindrical) cosy-directions at current element
   auto rad = container.get<std::vector<double>>("RAD");
@@ -514,7 +514,7 @@ void Mat::ConstraintMixture::reset_all(const int numgp)
   //  / intdegr;
 
   // history
-  history_ = Teuchos::rcp(new std::vector<ConstraintMixtureHistory>(numpast));
+  history_ = Teuchos::RCP(new std::vector<ConstraintMixtureHistory>(numpast));
   bool expvar = false;
   if (params_->degoption_ == "ExpVar") expvar = true;
   for (int idpast = 0; idpast < numpast; idpast++)

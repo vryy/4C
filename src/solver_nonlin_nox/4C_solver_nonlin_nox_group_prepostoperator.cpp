@@ -74,7 +74,7 @@ NOX::Nln::GROUP::PrePostOperator::Map& NOX::Nln::GROUP::PrePostOp::get_map(
   Teuchos::RCP<NOX::Nln::GROUP::PrePostOperator::Map>& mapptr =
       p_grp_opt.get<Teuchos::RCP<NOX::Nln::GROUP::PrePostOperator::Map>>(
           "User Defined Pre/Post Operator",
-          Teuchos::rcp(new NOX::Nln::GROUP::PrePostOperator::Map()));
+          Teuchos::RCP(new NOX::Nln::GROUP::PrePostOperator::Map()));
 
   return *mapptr;
 }

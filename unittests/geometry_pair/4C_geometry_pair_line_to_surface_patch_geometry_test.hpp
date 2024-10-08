@@ -96,7 +96,7 @@ namespace
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           coordinates[i_dim] = points[i_node + n_nodes_problem * i_dim];
 
-        new_node = Teuchos::rcp(new Core::Nodes::Node(i_node, coordinates, 0));
+        new_node = Teuchos::RCP(new Core::Nodes::Node(i_node, coordinates, 0));
         discret->add_node(new_node);
       }
     }
@@ -109,7 +109,7 @@ namespace
       {
         for (unsigned int i_node = 0; i_node < n_nodes_volume; i_node++)
           node_ids[i_node] = connectivity_volumes[i_node + n_nodes_volume * i_el] - 1;
-        new_element = Teuchos::rcp<Core::Elements::Element>(new Discret::ELEMENTS::SoHex8(i_el, 0));
+        new_element = Teuchos::RCP<Core::Elements::Element>(new Discret::ELEMENTS::SoHex8(i_el, 0));
         new_element->set_node_ids(n_nodes_volume, node_ids.data());
         discret->add_element(new_element);
       }
@@ -149,11 +149,11 @@ namespace
         }
 
         // Create the Core::Elements::FaceElement.
-        auto face_element = Teuchos::rcp(new Discret::ELEMENTS::StructuralSurface(i_el, 0,
+        auto face_element = Teuchos::RCP(new Discret::ELEMENTS::StructuralSurface(i_el, 0,
             n_nodes_face, node_ids.data(), element_nodes.data(), discret->g_element(parent_id), 0));
 
         // Create the geometry pair face element.
-        face_elements_map[parent_id] = Teuchos::rcp(new FaceElementType(face_element, true));
+        face_elements_map[parent_id] = Teuchos::RCP(new FaceElementType(face_element, true));
       }
     }
   }

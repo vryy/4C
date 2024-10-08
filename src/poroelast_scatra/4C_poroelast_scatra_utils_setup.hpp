@@ -127,19 +127,19 @@ namespace PoroElastScaTra
         const int ndofperelement_scatra = 0;
 
         Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-        dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+        dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_scatra, ndofperelement_scatra, 0, true));
         if (structdis->add_dof_set(dofsetaux) != 2)
           FOUR_C_THROW("unexpected dof sets in structure field");
-        dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+        dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_scatra, ndofperelement_scatra, 0, true));
         if (fluiddis->add_dof_set(dofsetaux) != 2)
           FOUR_C_THROW("unexpected dof sets in fluid field");
-        dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+        dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_struct, ndofperelement_struct, 0, true));
         if (scatradis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in scatra field");
-        dofsetaux = Teuchos::rcp(new Core::DOFSets::DofSetPredefinedDoFNumber(
+        dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
             ndofpernode_fluid, ndofperelement_fluid, 0, true));
         if (scatradis->add_dof_set(dofsetaux) != 2)
           FOUR_C_THROW("unexpected dof sets in scatra field");

@@ -388,8 +388,8 @@ namespace Discret
 
           // evaluate velocity and pressure
           // evaluate the velocity gradient
-          function = Teuchos::rcp(new FLD::BeltramiUP(*fparams));
-          function_grad = Teuchos::rcp(new FLD::BeltramiGradU(*fparams));
+          function = Teuchos::RCP(new FLD::BeltramiUP(*fparams));
+          function_grad = Teuchos::RCP(new FLD::BeltramiGradU(*fparams));
 
           if (nsd_ == 3)
           {
@@ -527,8 +527,8 @@ namespace Discret
           auto* fparams = dynamic_cast<Mat::PAR::NewtonianFluid*>(params);
           if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
 
-          function = Teuchos::rcp(new FLD::KimMoinUP(*fparams, is_stationary));
-          function_grad = Teuchos::rcp(new FLD::KimMoinGradU(*fparams, is_stationary));
+          function = Teuchos::RCP(new FLD::KimMoinUP(*fparams, is_stationary));
+          function_grad = Teuchos::RCP(new FLD::KimMoinGradU(*fparams, is_stationary));
 
           if (nsd_ == 3)
           {

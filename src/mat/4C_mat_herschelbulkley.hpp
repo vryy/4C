@@ -126,7 +126,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new HerschelBulkley(*this));
+      return Teuchos::RCP(new HerschelBulkley(*this));
     }
 
     /// return material parameters for element calculation

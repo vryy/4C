@@ -33,9 +33,9 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projectio
     const Epetra_Map &fullnoderowmap, const std::map<int, int> &slavetomastercolnodesmap)
 {
   // create empty matrix
-  auto massmatrix = Teuchos::rcp(new Core::LinAlg::SparseMatrix(noderowmap, 108, false, true));
+  auto massmatrix = Teuchos::RCP(new Core::LinAlg::SparseMatrix(noderowmap, 108, false, true));
   // create empty right hand side
-  auto rhs = Teuchos::rcp(new Epetra_MultiVector(noderowmap, numvec));
+  auto rhs = Teuchos::RCP(new Epetra_MultiVector(noderowmap, numvec));
 
   std::vector<int> lm;
   std::vector<int> lmowner;
@@ -177,7 +177,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_nodal_l2_projection(
 
   // solution vector based on full row map in which the solution of the master node is inserted into
   // slave nodes
-  auto fullnodevec = Teuchos::rcp(new Epetra_MultiVector(*fullnoderowmap, numvec));
+  auto fullnodevec = Teuchos::RCP(new Epetra_MultiVector(*fullnoderowmap, numvec));
 
   for (int i = 0; i < fullnoderowmap->NumMyElements(); ++i)
   {
@@ -214,7 +214,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
   const auto solvertype =
       Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
-  auto solver = Teuchos::rcp(new Core::LinAlg::Solver(
+  auto solver = Teuchos::RCP(new Core::LinAlg::Solver(
       solverparams, comm, get_solver_params, Core::IO::Verbositylevel::standard));
 
   // skip setup of preconditioner in case of a direct solver
@@ -246,7 +246,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
         preclist.set("null space: add default vectors", false);
 
         Teuchos::RCP<Epetra_MultiVector> nullspace =
-            Teuchos::rcp(new Epetra_MultiVector(noderowmap, 1, true));
+            Teuchos::RCP(new Epetra_MultiVector(noderowmap, 1, true));
         nullspace->PutScalar(1.0);
 
         preclist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
@@ -264,7 +264,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
   }
 
   // solution vector based on reduced node row map
-  auto nodevec = Teuchos::rcp(new Epetra_MultiVector(noderowmap, numvec));
+  auto nodevec = Teuchos::RCP(new Epetra_MultiVector(noderowmap, numvec));
 
   switch (solvertype)
   {
@@ -293,7 +293,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
         solver_params.refactor = true;
         solver_params.reset = true;
         solver->solve_with_multi_vector(massmatrix.epetra_operator(),
-            Teuchos::rcp(((*nodevec)(i)), false), Teuchos::rcp((rhs(i)), false), solver_params);
+            Teuchos::RCP(((*nodevec)(i)), false), Teuchos::RCP((rhs(i)), false), solver_params);
       }
       break;
     }

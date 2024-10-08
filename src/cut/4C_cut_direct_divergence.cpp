@@ -36,7 +36,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::DirectDivergence::vc_integration_rule(
   is_ref_ = false;                                   // whether ref plane is falling on facet?
 
   // get integration facets and reference plane
-  Teuchos::RCP<BoundingBox> fbox = Teuchos::rcp(BoundingBox::create());
+  Teuchos::RCP<BoundingBox> fbox = Teuchos::RCP(BoundingBox::create());
   const plain_facet_set& facete = volcell_->facets();
   // create bounding box around all facets
   for (plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)
@@ -91,7 +91,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::DirectDivergence::vc_integration_rule(
   }
 
   Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-      Teuchos::rcp(new Core::FE::CollectedGaussPoints(0));
+      Teuchos::RCP(new Core::FE::CollectedGaussPoints(0));
 
 #ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
   std::cout << "Number of facets: " << volcell_->Facets().size() << std::endl;

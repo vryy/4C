@@ -94,14 +94,14 @@ double LAGPENCONSTRAINT::NoxInterface::get_constraint_rhs_norms(
   if (chQ != NOX::Nln::StatusTest::quantity_lag_pen_constraint) return -1.0;
 
 
-  auto F_copy = Teuchos::rcp(new Core::LinAlg::Vector<double>(F));
+  auto F_copy = Teuchos::RCP(new Core::LinAlg::Vector<double>(F));
   Teuchos::RCP<Core::LinAlg::Vector<double>> constrRhs =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, *F_copy);
 
   // no constraint contributions present
   if (constrRhs.is_null()) return 0.0;
 
-  Teuchos::RCP<const ::NOX::Epetra::Vector> constrRhs_nox = Teuchos::rcp(new ::NOX::Epetra::Vector(
+  Teuchos::RCP<const ::NOX::Epetra::Vector> constrRhs_nox = Teuchos::RCP(new ::NOX::Epetra::Vector(
       constrRhs->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
 
 
@@ -123,8 +123,8 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_rms(
 
   double rms = -1.0;
 
-  auto xOld_copy = Teuchos::rcp(new Core::LinAlg::Vector<double>(xOld));
-  auto xNew_copy = Teuchos::rcp(new Core::LinAlg::Vector<double>(xNew));
+  auto xOld_copy = Teuchos::RCP(new Core::LinAlg::Vector<double>(xOld));
+  auto xNew_copy = Teuchos::RCP(new Core::LinAlg::Vector<double>(xNew));
   // export the constraint solution
   Teuchos::RCP<Core::LinAlg::Vector<double>> lagincr_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, *xOld_copy);
@@ -133,7 +133,7 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_rms(
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagincr_nox_ptr =
-      Teuchos::rcp(new ::NOX::Epetra::Vector(
+      Teuchos::RCP(new ::NOX::Epetra::Vector(
           lagincr_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
 
   rms = NOX::Nln::Aux::root_mean_square_norm(
@@ -151,8 +151,8 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_norms(
 {
   if (checkQuantity != NOX::Nln::StatusTest::quantity_lag_pen_constraint) return -1.0;
 
-  auto xOld_copy = Teuchos::rcp(new Core::LinAlg::Vector<double>(xOld));
-  auto xNew_copy = Teuchos::rcp(new Core::LinAlg::Vector<double>(xNew));
+  auto xOld_copy = Teuchos::RCP(new Core::LinAlg::Vector<double>(xOld));
+  auto xNew_copy = Teuchos::RCP(new Core::LinAlg::Vector<double>(xNew));
 
   // export the constraint solution
   Teuchos::RCP<Core::LinAlg::Vector<double>> lagincr_ptr =
@@ -162,7 +162,7 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_norms(
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagincr_nox_ptr =
-      Teuchos::rcp(new ::NOX::Epetra::Vector(
+      Teuchos::RCP(new ::NOX::Epetra::Vector(
           lagincr_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
 
   double updatenorm = -1.0;
@@ -182,13 +182,13 @@ double LAGPENCONSTRAINT::NoxInterface::get_previous_lagrange_multiplier_norms(
 {
   if (checkQuantity != NOX::Nln::StatusTest::quantity_lag_pen_constraint) return -1.0;
 
-  auto xOld_copy = Teuchos::rcp(new Core::LinAlg::Vector<double>(xOld));
+  auto xOld_copy = Teuchos::RCP(new Core::LinAlg::Vector<double>(xOld));
 
   // export the constraint solution
   Teuchos::RCP<Core::LinAlg::Vector<double>> lagold_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, *xOld_copy);
 
-  Teuchos::RCP<const ::NOX::Epetra::Vector> lagold_nox_ptr = Teuchos::rcp(new ::NOX::Epetra::Vector(
+  Teuchos::RCP<const ::NOX::Epetra::Vector> lagold_nox_ptr = Teuchos::RCP(new ::NOX::Epetra::Vector(
       lagold_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
 
   double lagoldnorm = -1.0;

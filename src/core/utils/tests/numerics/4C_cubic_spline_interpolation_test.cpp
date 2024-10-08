@@ -25,7 +25,7 @@ namespace
       const std::vector<double> x = {0.30, 0.35, 0.40, 0.45};
       const std::vector<double> y = {4.40, 4.30, 4.25, 4.10};
 
-      cubic_spline_ = Teuchos::rcp(new Core::UTILS::CubicSplineInterpolation(x, y));
+      cubic_spline_ = Teuchos::RCP(new Core::UTILS::CubicSplineInterpolation(x, y));
     }
 
     Teuchos::RCP<Core::UTILS::CubicSplineInterpolation> cubic_spline_;

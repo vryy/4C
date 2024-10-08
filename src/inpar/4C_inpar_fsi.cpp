@@ -424,16 +424,16 @@ void Inpar::FSI::set_valid_conditions(
   using namespace Input;
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> linefsi =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FSI COUPLING LINE CONDITIONS",
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition("DESIGN FSI COUPLING LINE CONDITIONS",
           "FSICoupling", "FSI Coupling", Core::Conditions::FSICoupling, true,
           Core::Conditions::geometry_type_line));
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surffsi =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN FSI COUPLING SURF CONDITIONS",
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition("DESIGN FSI COUPLING SURF CONDITIONS",
           "FSICoupling", "FSI Coupling", Core::Conditions::FSICoupling, true,
           Core::Conditions::geometry_type_surface));
 
-  linefsi->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
-  surffsi->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
+  linefsi->add_component(Teuchos::RCP(new Input::IntComponent("coupling id")));
+  surffsi->add_component(Teuchos::RCP(new Input::IntComponent("coupling id")));
 
   condlist.push_back(linefsi);
   condlist.push_back(surffsi);
@@ -441,11 +441,11 @@ void Inpar::FSI::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // FSI without sliding
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linefsins = Teuchos::rcp(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linefsins = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN FSI COUPLING NO SLIDE LINE CONDITIONS",
           "FSICouplingNoSlide", "FSI Coupling No Slide", Core::Conditions::FSICouplingNoSlide, true,
           Core::Conditions::geometry_type_line));
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surffsins = Teuchos::rcp(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surffsins = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN FSI COUPLING NO SLIDE SURF CONDITIONS",
           "FSICouplingNoSlide", "FSI Coupling No Slide", Core::Conditions::FSICouplingNoSlide, true,
           Core::Conditions::geometry_type_surface));
@@ -456,11 +456,11 @@ void Inpar::FSI::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // FSI define centerdisp for sliding interfaces
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linefsicd = Teuchos::rcp(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linefsicd = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN FSI COUPLING CENTER DISP LINE CONDITIONS",
           "FSICouplingCenterDisp", "FSI Coupling Center Disp",
           Core::Conditions::FSICouplingCenterDisp, true, Core::Conditions::geometry_type_line));
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surffsicd = Teuchos::rcp(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surffsicd = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN FSI COUPLING CENTER DISP SURF CONDITIONS",
           "FSICouplingCenterDisp", "FSI Coupling Center Disp",
           Core::Conditions::FSICouplingCenterDisp, true, Core::Conditions::geometry_type_surface));
@@ -472,12 +472,12 @@ void Inpar::FSI::set_valid_conditions(
   // Additional coupling of structure and ale fields (for lung fsi)
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfsac =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition(
           "DESIGN STRUCTURE ALE COUPLING SURF CONDITIONS", "StructAleCoupling", "StructAleCoupling",
           Core::Conditions::StructAleCoupling, true, Core::Conditions::geometry_type_surface));
 
-  surfsac->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
-  surfsac->add_component(Teuchos::rcp(new Input::SelectionComponent("field", "structure",
+  surfsac->add_component(Teuchos::RCP(new Input::IntComponent("coupling id")));
+  surfsac->add_component(Teuchos::RCP(new Input::SelectionComponent("field", "structure",
       Teuchos::tuple<std::string>("structure", "fluid"),
       Teuchos::tuple<std::string>("structure", "fluid"))));
 
@@ -487,20 +487,20 @@ void Inpar::FSI::set_valid_conditions(
   // Additional coupling of structure and fluid volumes (for lung fsi)
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfsfv =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition(
           "DESIGN STRUCTURE FLUID VOLUME COUPLING SURF CONDITIONS", "StructFluidSurfCoupling",
           "StructFluidSurfCoupling", Core::Conditions::StructFluidSurfCoupling, true,
           Core::Conditions::geometry_type_surface));
   Teuchos::RCP<Core::Conditions::ConditionDefinition> volsfv =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition(
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition(
           "DESIGN STRUCTURE FLUID VOLUME COUPLING VOL CONDITIONS", "StructFluidVolCoupling",
           "StructFluidVolCoupling", Core::Conditions::StructFluidVolCoupling, false,
           Core::Conditions::geometry_type_volume));
 
   for (const auto& cond : {surfsfv, volsfv})
   {
-    cond->add_component(Teuchos::rcp(new Input::IntComponent("coupling id")));
-    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("field", "structure",
+    cond->add_component(Teuchos::RCP(new Input::IntComponent("coupling id")));
+    cond->add_component(Teuchos::RCP(new Input::SelectionComponent("field", "structure",
         Teuchos::tuple<std::string>("structure", "fluid"),
         Teuchos::tuple<std::string>("structure", "fluid"))));
 

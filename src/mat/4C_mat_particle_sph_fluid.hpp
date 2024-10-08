@@ -146,7 +146,7 @@ namespace Mat
     //! return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new ParticleMaterialSPHFluid(*this));
+      return Teuchos::RCP(new ParticleMaterialSPHFluid(*this));
     }
 
     //! return quick accessible material parameter data

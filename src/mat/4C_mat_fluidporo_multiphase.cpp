@@ -41,7 +41,7 @@ Mat::PAR::FluidPoroMultiPhase::FluidPoroMultiPhase(const Core::Mat::PAR::Paramet
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroMultiPhase::create_material()
 {
-  return Teuchos::rcp(new Mat::FluidPoroMultiPhase(this));
+  return Teuchos::RCP(new Mat::FluidPoroMultiPhase(this));
 }
 
 /*----------------------------------------------------------------------*
@@ -50,7 +50,7 @@ Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroMultiPhase::create_material
 void Mat::PAR::FluidPoroMultiPhase::initialize()
 {
   //  matrix holding the conversion from pressures and dofs
-  dof2pres_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(numfluidphases_, numfluidphases_));
+  dof2pres_ = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(numfluidphases_, numfluidphases_));
 
   //  matrix holding the conversion from pressures and dofs
   // reset

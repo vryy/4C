@@ -242,7 +242,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new ConstraintMixture(*this));
+      return Teuchos::RCP(new ConstraintMixture(*this));
     }
 
     /// Setup

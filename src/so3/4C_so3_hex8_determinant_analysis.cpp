@@ -48,7 +48,7 @@ Discret::ELEMENTS::SoHex8DeterminantAnalysis::create()
     issetup_ = true;
   }
 
-  return Teuchos::rcp(new SoHex8DeterminantAnalysis);
+  return Teuchos::RCP(new SoHex8DeterminantAnalysis);
 }
 
 /*----------------------------------------------------------------------------*

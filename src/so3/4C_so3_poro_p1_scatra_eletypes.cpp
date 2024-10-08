@@ -40,7 +40,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroP1ScatraType:
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
         new Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(
             id, owner));
     return ele;
@@ -51,7 +51,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroP1ScatraType:
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroP1ScatraType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
       new Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(
           id, owner));
   return ele;
@@ -95,7 +95,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroP1ScatraType:
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
         new Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(
             id, owner));
     return ele;
@@ -106,7 +106,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroP1ScatraType:
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroP1ScatraType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
       new Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(
           id, owner));
   return ele;

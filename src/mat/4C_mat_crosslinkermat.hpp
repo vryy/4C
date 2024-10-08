@@ -154,7 +154,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new CrosslinkerMat(*this));
+      return Teuchos::RCP(new CrosslinkerMat(*this));
     }
 
     /// number of beam elasthyper material

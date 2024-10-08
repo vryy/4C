@@ -27,7 +27,7 @@ Mat::PAR::StructPoroReaction::StructPoroReaction(const Core::Mat::PAR::Parameter
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::StructPoroReaction::create_material()
 {
-  return Teuchos::rcp(new Mat::StructPoroReaction(this));
+  return Teuchos::RCP(new Mat::StructPoroReaction(this));
 }
 
 /*----------------------------------------------------------------------*/

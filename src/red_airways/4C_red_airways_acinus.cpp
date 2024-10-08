@@ -39,7 +39,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAcinusType::create(
   if (eletype == "RED_ACINUS")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::RedAcinus(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::RedAcinus(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -50,7 +50,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAcinusType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::RedAcinus(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::RedAcinus(id, owner));
   return ele;
 }
 

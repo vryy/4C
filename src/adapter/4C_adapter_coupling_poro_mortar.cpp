@@ -123,7 +123,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
     Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
-    Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
+    Teuchos::RCP<CONTACT::Element> cele = Teuchos::RCP(new CONTACT::Element(
         ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), false, isnurbs));
 
     Teuchos::RCP<Core::Elements::FaceElement> faceele =
@@ -191,7 +191,7 @@ void Adapter::CouplingPoroMortar::add_mortar_elements(
   {
     Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
 
-    Teuchos::RCP<CONTACT::Element> cele = Teuchos::rcp(new CONTACT::Element(
+    Teuchos::RCP<CONTACT::Element> cele = Teuchos::RCP(new CONTACT::Element(
         ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), true, isnurbs));
 
     Teuchos::RCP<Core::Elements::FaceElement> faceele =
@@ -353,9 +353,9 @@ void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Core::FE::Discret
 
   // build the correct data container
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr =
-      Teuchos::rcp(new CONTACT::AbstractStratDataContainer());
+      Teuchos::RCP(new CONTACT::AbstractStratDataContainer());
   // create contact poro lagrange strategy for mesh tying
-  porolagstrategy_ = Teuchos::rcp(new CONTACT::LagrangeStrategyPoro(data_ptr,
+  porolagstrategy_ = Teuchos::RCP(new CONTACT::LagrangeStrategyPoro(data_ptr,
       masterdis->dof_row_map(), masterdis->node_row_map(), input, interfaces, dim, comm_, alphaf,
       numcoupleddof, poroslave, poromaster));
 
@@ -381,9 +381,9 @@ void Adapter::CouplingPoroMortar::complete_interface(
   // interface->create_volume_ghosting(*masterdis);
 
   // store old row maps (before parallel redistribution)
-  slavedofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->slave_row_dofs()));
-  masterdofrowmap_ = Teuchos::rcp(new Epetra_Map(*interface->master_row_dofs()));
-  slavenoderowmap_ = Teuchos::rcp(new Epetra_Map(*interface->slave_row_nodes()));
+  slavedofrowmap_ = Teuchos::RCP(new Epetra_Map(*interface->slave_row_dofs()));
+  masterdofrowmap_ = Teuchos::RCP(new Epetra_Map(*interface->master_row_dofs()));
+  slavenoderowmap_ = Teuchos::RCP(new Epetra_Map(*interface->slave_row_nodes()));
 
   // print parallel distribution
   interface->print_parallel_distribution();

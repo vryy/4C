@@ -105,7 +105,7 @@ void FSI::FluidFluidMonolithicFluidSplit::setup_dbc_map_extractor()
   Teuchos::RCP<const Epetra_Map> dbcmap = Core::LinAlg::MultiMapExtractor::merge_maps(dbcmaps);
 
   // finally, create the global FSI Dirichlet map extractor
-  dbcmaps_ = Teuchos::rcp(new Core::LinAlg::MapExtractor(*dof_row_map(), dbcmap, true));
+  dbcmaps_ = Teuchos::RCP(new Core::LinAlg::MapExtractor(*dof_row_map(), dbcmap, true));
   if (dbcmaps_ == Teuchos::null)
   {
     FOUR_C_THROW("Creation of Dirichlet map extractor failed.");
@@ -156,7 +156,7 @@ void FSI::FluidFluidMonolithicFluidSplit::read_restart(int step)
   // Read Lagrange Multiplier (associated with embedded fluid)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdaemb =
-        Teuchos::rcp(new Core::LinAlg::Vector<double>(
+        Teuchos::RCP(new Core::LinAlg::Vector<double>(
             *(fluid_field()->x_fluid_fluid_map_extractor()->fluid_map()), true));
     Core::IO::DiscretizationReader reader = Core::IO::DiscretizationReader(
         fluid_field()->discretization(), Global::Problem::instance()->input_control_file(), step);

@@ -39,7 +39,7 @@ CONSTRAINTS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<Core::FE::D
 
     // new instance of spring dashpot BC with current condition for every spring dashpot condition
     for (int i = 0; i < n_conds_; ++i)
-      springs_.push_back(Teuchos::rcp(new SpringDashpot(actdisc_, springdashpots[i])));
+      springs_.push_back(Teuchos::RCP(new SpringDashpot(actdisc_, springdashpots[i])));
   }
 
   return;
@@ -89,11 +89,11 @@ void CONSTRAINTS::SpringDashpotManager::output(Teuchos::RCP<Core::IO::Discretiza
 {
   // row maps for export
   Teuchos::RCP<Core::LinAlg::Vector<double>> gap =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*(actdisc_->node_row_map()), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*(actdisc_->node_row_map()), true));
   Teuchos::RCP<Epetra_MultiVector> normals =
-      Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->node_row_map()), 3, true));
+      Teuchos::RCP(new Epetra_MultiVector(*(actdisc_->node_row_map()), 3, true));
   Teuchos::RCP<Epetra_MultiVector> springstress =
-      Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->node_row_map()), 3, true));
+      Teuchos::RCP(new Epetra_MultiVector(*(actdisc_->node_row_map()), 3, true));
 
   // collect outputs from all spring dashpot conditions
   bool found_cursurfnormal = false;
@@ -126,9 +126,9 @@ void CONSTRAINTS::SpringDashpotManager::output_restart(
 {
   // row maps for export
   Teuchos::RCP<Core::LinAlg::Vector<double>> springoffsetprestr =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*actdisc_->dof_row_map()));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*actdisc_->dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> springoffsetprestr_old =
-      Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->node_row_map()), 3, true));
+      Teuchos::RCP(new Epetra_MultiVector(*(actdisc_->node_row_map()), 3, true));
 
   // collect outputs from all spring dashpot conditions
   for (int i = 0; i < n_conds_; ++i)
@@ -163,9 +163,9 @@ void CONSTRAINTS::SpringDashpotManager::read_restart(
     Core::IO::DiscretizationReader& reader, const double& time)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*actdisc_->dof_row_map()));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*actdisc_->dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> tempvecold =
-      Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->node_row_map()), 3, true));
+      Teuchos::RCP(new Epetra_MultiVector(*(actdisc_->node_row_map()), 3, true));
 
   reader.read_vector(tempvec, "springoffsetprestr");
   reader.read_multi_vector(tempvecold, "springoffsetprestr_old");

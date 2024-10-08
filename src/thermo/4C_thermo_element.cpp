@@ -48,7 +48,7 @@ Teuchos::RCP<Core::Elements::Element> Thermo::ElementType::create(
 {
   if (eletype == "THERMO")
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(new Thermo::Element(id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(new Thermo::Element(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -61,7 +61,7 @@ Teuchos::RCP<Core::Elements::Element> Thermo::ElementType::create(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Elements::Element> Thermo::ElementType::create(const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::rcp(new Thermo::Element(id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(new Thermo::Element(id, owner));
   return ele;
 }  // Create()
 

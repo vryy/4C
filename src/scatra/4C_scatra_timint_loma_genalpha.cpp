@@ -145,7 +145,7 @@ void ScaTra::TimIntLomaGenAlpha::compute_therm_pressure()
 
   // variables for integrals of domain and bodyforce
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
-      Teuchos::rcp(new Core::LinAlg::SerialDenseVector(2));
+      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(2));
 
   // evaluate domain and bodyforce integral
   discret_->evaluate_scalars(eleparams, scalars);
@@ -298,10 +298,10 @@ void ScaTra::TimIntLomaGenAlpha::read_restart(
 
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(
+    reader = Teuchos::RCP(new Core::IO::DiscretizationReader(
         discret_, Global::Problem::instance()->input_control_file(), step));
   else
-    reader = Teuchos::rcp(new Core::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::RCP(new Core::IO::DiscretizationReader(discret_, input, step));
 
   // thermodynamic pressure at time n+1
   thermpressnp_ = reader->read_double("thermpressnp");

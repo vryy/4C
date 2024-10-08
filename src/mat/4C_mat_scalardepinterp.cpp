@@ -40,7 +40,7 @@ Mat::PAR::ScalarDepInterp::ScalarDepInterp(const Core::Mat::PAR::Parameter::Data
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScalarDepInterp::create_material()
 {
-  return Teuchos::rcp(new Mat::ScalarDepInterp(this));
+  return Teuchos::RCP(new Mat::ScalarDepInterp(this));
 }
 
 
@@ -279,7 +279,7 @@ void Mat::ScalarDepInterp::unpack(Core::Communication::UnpackBuffer& buffer)
         Core::Communication::factory(buffer_dataelastic);  // Unpack is done here
     Mat::So3Material* matel = dynamic_cast<Mat::So3Material*>(o);
     if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
-    lambda_zero_mat_ = Teuchos::rcp(matel);
+    lambda_zero_mat_ = Teuchos::RCP(matel);
   }
   else
     lambda_zero_mat_ = Teuchos::null;
@@ -294,7 +294,7 @@ void Mat::ScalarDepInterp::unpack(Core::Communication::UnpackBuffer& buffer)
         Core::Communication::factory(buffer_dataelastic);  // Unpack is done here
     Mat::So3Material* matel = dynamic_cast<Mat::So3Material*>(o);
     if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
-    lambda_unit_mat_ = Teuchos::rcp(matel);
+    lambda_unit_mat_ = Teuchos::RCP(matel);
   }
   else
     lambda_unit_mat_ = Teuchos::null;

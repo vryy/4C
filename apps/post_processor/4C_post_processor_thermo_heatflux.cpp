@@ -138,7 +138,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     // nodebased date
     const Epetra_Map* nodemap = dis->node_row_map();
     Teuchos::RCP<Epetra_MultiVector> nodal_heatfluxes =
-        Teuchos::rcp(new Epetra_MultiVector(*nodemap, numdf));
+        Teuchos::RCP(new Epetra_MultiVector(*nodemap, numdf));
 
     const int numnodes = dis->num_my_row_nodes();
     const unsigned numdofpernode = 1;
@@ -253,7 +253,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     p.set("gpheatfluxmap", data);
     p.set("total time", -1.0);
     Teuchos::RCP<Epetra_MultiVector> eleheatflux =
-        Teuchos::rcp(new Epetra_MultiVector(*(dis->element_row_map()), numdf));
+        Teuchos::RCP(new Epetra_MultiVector(*(dis->element_row_map()), numdf));
     p.set("eleheatflux", eleheatflux);
     dis->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     if (eleheatflux == Teuchos::null)

@@ -368,7 +368,7 @@ void Solid::Nln::create_scaling(Teuchos::RCP<::NOX::Epetra::Scaling>& iscale,
     const Solid::TimeInt::BaseDataSDyn& DataSDyn, Solid::TimeInt::BaseDataGlobalState& GState)
 {
   if (DataSDyn.get_stc_algo_type() != Inpar::Solid::stc_none)
-    iscale = Teuchos::rcp(new Solid::Nln::LinSystem::StcScaling(DataSDyn, GState));
+    iscale = Teuchos::RCP(new Solid::Nln::LinSystem::StcScaling(DataSDyn, GState));
 }
 
 void Solid::compute_generalized_alpha_parameters(Solid::IMPLICIT::GenAlpha::Coefficients& coeffs)

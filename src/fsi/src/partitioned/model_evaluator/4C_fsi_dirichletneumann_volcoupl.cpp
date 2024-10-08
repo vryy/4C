@@ -71,7 +71,7 @@ void FSI::DirichletNeumannVolCoupl::setup_coupling_struct_ale(
 {
   const int ndim = Global::Problem::instance()->n_dim();
 
-  coupsa_ = Teuchos::rcp(new Coupling::Adapter::MortarVolCoupl());
+  coupsa_ = Teuchos::RCP(new Coupling::Adapter::MortarVolCoupl());
 
   // do a dynamic cast here
   Teuchos::RCP<Adapter::FluidAle> fluidale = Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(fluid_);
@@ -99,7 +99,7 @@ void FSI::DirichletNeumannVolCoupl::setup_coupling_struct_ale(
 void FSI::DirichletNeumannVolCoupl::setup_interface_corrector(
     const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm)
 {
-  icorrector_ = Teuchos::rcp(new InterfaceCorrector());
+  icorrector_ = Teuchos::RCP(new InterfaceCorrector());
 
   icorrector_->setup(Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(fluid_));
 }
@@ -114,7 +114,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVolCoupl::fluid_
 
   // TODO cant this be done better?
   Teuchos::RCP<Core::LinAlg::Vector<double>> vdisp =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*structure_field()->dispnp()));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*structure_field()->dispnp()));
 
   if (fillFlag == User)
   {
@@ -180,7 +180,7 @@ void FSI::InterfaceCorrector::setup(Teuchos::RCP<Adapter::FluidAle> fluidale)
 {
   fluidale_ = fluidale;
 
-  volcorrector_ = Teuchos::rcp(new VolCorrector);
+  volcorrector_ = Teuchos::RCP(new VolCorrector);
   volcorrector_->setup(Global::Problem::instance()->n_dim(), fluidale);
 
   return;
@@ -271,9 +271,9 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> correction =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(disp_fluid->Map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(disp_fluid->Map(), true));
   Teuchos::RCP<Core::LinAlg::Vector<double>> DofColMapDummy =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(
           *fluidale->fluid_field()->discretization()->dof_col_map(), true));
   Core::LinAlg::export_to(*deltadisp, *DofColMapDummy);
 
@@ -402,9 +402,9 @@ void FSI::VolCorrector::correct_vol_displacements_phys_space(
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> correction =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(disp_fluid->Map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(disp_fluid->Map(), true));
   Teuchos::RCP<Core::LinAlg::Vector<double>> DofColMapDummy =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(
           *fluidale->fluid_field()->discretization()->dof_col_map(), true));
   Core::LinAlg::export_to(*deltadisp, *DofColMapDummy);
 
@@ -472,7 +472,7 @@ void FSI::VolCorrector::setup(const int dim, Teuchos::RCP<Adapter::FluidAle> flu
   }
 
   // init of 3D search tree
-  search_tree_ = Teuchos::rcp(new Core::Geo::SearchTree(5));
+  search_tree_ = Teuchos::RCP(new Core::Geo::SearchTree(5));
 
   // find the bounding box of the elements and initialize the search tree
   const Core::LinAlg::Matrix<3, 2> rootBox =

@@ -50,7 +50,7 @@ Mat::PAR::Newman::Newman(const Core::Mat::PAR::Parameter::Data& matdata)
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Newman::create_material()
 {
-  return Teuchos::rcp(new Mat::Newman(this));
+  return Teuchos::RCP(new Mat::Newman(this));
 }
 
 Mat::NewmanType Mat::NewmanType::instance_;

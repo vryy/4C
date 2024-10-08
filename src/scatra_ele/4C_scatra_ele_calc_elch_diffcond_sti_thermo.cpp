@@ -336,7 +336,7 @@ Discret::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::ScaTraEleCalcElc
   // replace internal variable manager for isothermal diffusion-conduction formulation by internal
   // variable manager for thermodynamic diffusion-conduction formulation
   my::scatravarmanager_ =
-      Teuchos::rcp(new ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<nsd_, nen_>(
+      Teuchos::RCP(new ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<nsd_, nen_>(
           my::numscal_, myelch::elchparams_, mydiffcond::diffcondparams_));
 }
 

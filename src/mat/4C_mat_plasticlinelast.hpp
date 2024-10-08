@@ -157,7 +157,7 @@ namespace Mat
     //! return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new PlasticLinElast(*this));
+      return Teuchos::RCP(new PlasticLinElast(*this));
     }
 
     //! initialise internal stress variables

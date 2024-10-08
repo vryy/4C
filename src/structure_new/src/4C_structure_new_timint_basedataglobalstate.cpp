@@ -132,9 +132,9 @@ void Solid::TimeInt::BaseDataGlobalState::init(const Teuchos::RCP<Core::FE::Disc
   // control parameters
   // --------------------------------------
   {
-    timen_ = Teuchos::rcp(
+    timen_ = Teuchos::RCP(
         new TimeStepping::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMEINIT")));
-    dt_ = Teuchos::rcp(
+    dt_ = Teuchos::RCP(
         new TimeStepping::TimIntMStep<double>(0, 0, sdynparams.get<double>("TIMESTEP")));
 
     // initialize target time to initial time plus step size
@@ -161,19 +161,19 @@ void Solid::TimeInt::BaseDataGlobalState::setup()
   // --------------------------------------
   // control parameters
   // --------------------------------------
-  timer_ = Teuchos::rcp(new Teuchos::Time("", true));
+  timer_ = Teuchos::RCP(new Teuchos::Time("", true));
 
   // --------------------------------------
   // vectors
   // --------------------------------------
   // displacements D_{n}
-  dis_ = Teuchos::rcp(
+  dis_ = Teuchos::RCP(
       new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true));
   // velocities V_{n}
-  vel_ = Teuchos::rcp(
+  vel_ = Teuchos::RCP(
       new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true));
   // accelerations A_{n}
-  acc_ = Teuchos::rcp(
+  acc_ = Teuchos::RCP(
       new TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>(0, 0, dof_row_map_view(), true));
 
   // displacements D_{n+1} at t_{n+1}
@@ -203,12 +203,12 @@ void Solid::TimeInt::BaseDataGlobalState::setup()
   // --------------------------------------
   // sparse operators
   // --------------------------------------
-  mass_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
+  mass_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
   if (datasdyn_->get_damping_type() != Inpar::Solid::damp_none)
   {
     if (datasdyn_->get_mass_lin_type() == Inpar::Solid::ml_none)
     {
-      damp_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
+      damp_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
     }
     else
     {
@@ -547,7 +547,7 @@ void Solid::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
   additdofmapvec.reserve(additdofset.size());
   additdofmapvec.assign(additdofset.begin(), additdofset.end());
   additdofset.clear();
-  Teuchos::RCP<Epetra_Map> additdofmap = Teuchos::rcp(
+  Teuchos::RCP<Epetra_Map> additdofmap = Teuchos::RCP(
       new Epetra_Map(-1, additdofmapvec.size(), additdofmapvec.data(), 0, discret_->get_comm()));
   additdofmapvec.clear();
 
@@ -555,7 +555,7 @@ void Solid::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
   rotvecdofmapvec.reserve(rotvecdofset.size());
   rotvecdofmapvec.assign(rotvecdofset.begin(), rotvecdofset.end());
   rotvecdofset.clear();
-  Teuchos::RCP<Epetra_Map> rotvecdofmap = Teuchos::rcp(
+  Teuchos::RCP<Epetra_Map> rotvecdofmap = Teuchos::RCP(
       new Epetra_Map(-1, rotvecdofmapvec.size(), rotvecdofmapvec.data(), 0, discret_->get_comm()));
   rotvecdofmapvec.clear();
 
@@ -583,7 +583,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
 {
   check_init();
   Teuchos::RCP<Core::LinAlg::Vector<double>> xvec_ptr =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(global_problem_map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(global_problem_map(), true));
 
   // switch between the different vector initialization options
   switch (vecinittype)
@@ -635,7 +635,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
   }  // end of the switch-case statement
 
   // wrap and return
-  return Teuchos::rcp(new ::NOX::Epetra::Vector(
+  return Teuchos::RCP(new ::NOX::Epetra::Vector(
       xvec_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
 }
 
@@ -644,7 +644,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
 Core::LinAlg::SparseOperator*
 Solid::TimeInt::BaseDataGlobalState::create_structural_stiffness_matrix_block()
 {
-  stiff_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
+  stiff_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
 
   return stiff_.get();
 }
@@ -659,13 +659,13 @@ Teuchos::RCP<Core::LinAlg::SparseOperator>& Solid::TimeInt::BaseDataGlobalState:
   if (max_block_num_ > 1)
   {
     jac_ =
-        Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+        Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
             block_extractor(), block_extractor(), 81, true, true));
   }
   else
   {
     // pure structural case
-    jac_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
+    jac_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
   }
 
   return jac_;
@@ -682,13 +682,13 @@ Solid::TimeInt::BaseDataGlobalState::create_aux_jacobian() const
   if (max_block_num_ > 1)
   {
     jac =
-        Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+        Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
             block_extractor(), block_extractor(), 81, true, true));
   }
   else
   {
     // pure structural case
-    jac = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
+    jac = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
   }
 
   return jac;
@@ -701,7 +701,7 @@ Teuchos::RCP<const Epetra_Map> Solid::TimeInt::BaseDataGlobalState::dof_row_map(
   check_init();
   const Epetra_Map* dofrowmap_ptr = discret_->dof_row_map();
   // since it's const, we do not need to copy the map
-  return Teuchos::rcp(dofrowmap_ptr, false);
+  return Teuchos::RCP(dofrowmap_ptr, false);
 }
 
 
@@ -712,7 +712,7 @@ Teuchos::RCP<const Epetra_Map> Solid::TimeInt::BaseDataGlobalState::dof_row_map(
   check_init();
   const Epetra_Map* dofrowmap_ptr = discret_->dof_row_map(nds);
   // since it's const, we do not need to copy the map
-  return Teuchos::rcp(dofrowmap_ptr, false);
+  return Teuchos::RCP(dofrowmap_ptr, false);
 }
 
 
@@ -764,12 +764,12 @@ Solid::TimeInt::BaseDataGlobalState::extract_model_entries(
   // copy the vector
   else if (source.Map().NumGlobalElements() == model_maps_.at(mt)->NumGlobalElements())
   {
-    model_ptr = Teuchos::rcp(new Core::LinAlg::Vector<double>(source));
+    model_ptr = Teuchos::RCP(new Core::LinAlg::Vector<double>(source));
   }
   // otherwise do a standard export
   else
   {
-    model_ptr = Teuchos::rcp(new Core::LinAlg::Vector<double>(*model_maps_.at(mt)));
+    model_ptr = Teuchos::RCP(new Core::LinAlg::Vector<double>(*model_maps_.at(mt)));
     Core::LinAlg::export_to(source, *model_ptr);
   }
 
@@ -951,7 +951,7 @@ Solid::TimeInt::BaseDataGlobalState::extract_row_of_blocks(
     const int& b_id = model_block_id_.at(mt);
 
     const int num_cols = blockmat_ptr->cols();
-    rowofblocks = Teuchos::rcp(new std::vector<Core::LinAlg::SparseMatrix*>(num_cols, nullptr));
+    rowofblocks = Teuchos::RCP(new std::vector<Core::LinAlg::SparseMatrix*>(num_cols, nullptr));
 
     for (int i = 0; i < num_cols; ++i) (*rowofblocks)[i] = &(blockmat_ptr->matrix(b_id, i));
 
@@ -967,7 +967,7 @@ Solid::TimeInt::BaseDataGlobalState::extract_row_of_blocks(
   Core::LinAlg::SparseMatrix* stiff_ptr = dynamic_cast<Core::LinAlg::SparseMatrix*>(&jac);
   if (stiff_ptr != nullptr)
   {
-    rowofblocks = Teuchos::rcp(new std::vector<Core::LinAlg::SparseMatrix*>(1, nullptr));
+    rowofblocks = Teuchos::RCP(new std::vector<Core::LinAlg::SparseMatrix*>(1, nullptr));
     (*rowofblocks)[0] = stiff_ptr;
     return rowofblocks;
   }
@@ -1115,7 +1115,7 @@ void NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::run_pre_compute_x(
   NOX::Nln::Group& curr_grp_mutable = const_cast<NOX::Nln::Group&>(curr_grp);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> xnew =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(xold.Map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(xold.Map(), true));
 
   /* we do the multiplicative update only for those entries which belong to
    * rotation (pseudo-)vectors */

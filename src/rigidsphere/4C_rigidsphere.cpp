@@ -56,7 +56,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RigidsphereType::create
   if (eletype == "RIGIDSPHERE")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Rigidsphere(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Rigidsphere(id, owner));
     return (ele);
   }
   return (Teuchos::null);
@@ -67,7 +67,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RigidsphereType::create
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RigidsphereType::create(
     const int id, const int owner)
 {
-  return (Teuchos::rcp(new Rigidsphere(id, owner)));
+  return (Teuchos::RCP(new Rigidsphere(id, owner)));
 }
 
 /*----------------------------------------------------------------------*
@@ -210,7 +210,7 @@ void Discret::ELEMENTS::Rigidsphere::unpack(Core::Communication::UnpackBuffer& b
     extract_from_pack(buffer, tmp);
     Core::Communication::UnpackBuffer tmp_buffer(tmp);
     Teuchos::RCP<Core::Communication::ParObject> object =
-        Teuchos::rcp(Core::Communication::factory(tmp_buffer), true);
+        Teuchos::RCP(Core::Communication::factory(tmp_buffer), true);
     Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> link =
         Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLinkPinJointed>(object);
     if (link == Teuchos::null) FOUR_C_THROW("Received object is not a beam to beam linkage");

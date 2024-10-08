@@ -35,7 +35,7 @@ Mat::PAR::Sutherland::Sutherland(const Core::Mat::PAR::Parameter::Data& matdata)
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Sutherland::create_material()
 {
-  return Teuchos::rcp(new Mat::Sutherland(this));
+  return Teuchos::RCP(new Mat::Sutherland(this));
 }
 
 

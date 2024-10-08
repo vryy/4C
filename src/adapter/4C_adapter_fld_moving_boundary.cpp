@@ -37,7 +37,7 @@ Adapter::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     case Core::ProblemType::fsi_redmodels:
     {
       // std::cout << "using FluidAle as FluidMovingBoundary" << std::endl;
-      fluid_ = Teuchos::rcp(new FluidAle(prbdyn, condname));
+      fluid_ = Teuchos::RCP(new FluidAle(prbdyn, condname));
       break;
     }
     case Core::ProblemType::fluid_xfem:
@@ -48,22 +48,22 @@ Adapter::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
       if (!alefluid)  // xfluid
       {
         // std::cout << "using FluidXFEM as FluidMovingBoundary" << endl;
-        fluid_ = Teuchos::rcp(new FluidXFEM(prbdyn, condname));
+        fluid_ = Teuchos::RCP(new FluidXFEM(prbdyn, condname));
       }
       else  // xafluid
       {
-        fluid_ = Teuchos::rcp(new FluidAleXFEM(prbdyn, condname));
+        fluid_ = Teuchos::RCP(new FluidAleXFEM(prbdyn, condname));
       }
       break;
     }
     case Core::ProblemType::immersed_fsi:
     {
-      fluid_ = Teuchos::rcp(new FluidImmersed(prbdyn, condname));
+      fluid_ = Teuchos::RCP(new FluidImmersed(prbdyn, condname));
       break;
     }
     case Core::ProblemType::fbi:
     {
-      fluid_ = Teuchos::rcp(new FBIFluidMB(prbdyn, condname));
+      fluid_ = Teuchos::RCP(new FBIFluidMB(prbdyn, condname));
       break;
     }
     default:

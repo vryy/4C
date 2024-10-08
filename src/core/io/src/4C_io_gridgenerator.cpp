@@ -75,7 +75,7 @@ namespace Core::IO::GridGenerator
       {
         scale = 2;
       }
-      elementRowMap = Teuchos::rcp(new Epetra_Map(scale * numnewele, 0, comm));
+      elementRowMap = Teuchos::RCP(new Epetra_Map(scale * numnewele, 0, comm));
     }
     else  // fancy final box map
     {
@@ -151,7 +151,7 @@ namespace Core::IO::GridGenerator
           for (size_t ix = xranges[mysection[0]]; ix < xranges[mysection[0] + 1]; ++ix)
             mynewele[idx++] = (iz * inputData.interval_[1] + iy) * inputData.interval_[0] + ix;
 
-      elementRowMap = Teuchos::rcp(new Epetra_Map(-1, nummynewele, mynewele.data(), 0, comm));
+      elementRowMap = Teuchos::RCP(new Epetra_Map(-1, nummynewele, mynewele.data(), 0, comm));
     }
 
     // Build an input line that matches what is expected from a dat file.
@@ -231,7 +231,7 @@ namespace Core::IO::GridGenerator
     if (inputData.autopartition_)
     {
       Teuchos::RCP<const Epetra_CrsGraph> nodeGraph =
-          Core::Rebalance::build_graph(Teuchos::rcp(&dis, false), elementRowMap);
+          Core::Rebalance::build_graph(Teuchos::RCP(&dis, false), elementRowMap);
 
       Teuchos::ParameterList rebalanceParams;
       rebalanceParams.set<std::string>("num parts", std::to_string(comm.NumProc()));
@@ -242,10 +242,10 @@ namespace Core::IO::GridGenerator
     else  // do not destroy our manual partitioning
     {
       Teuchos::RCP<const Epetra_CrsGraph> graph =
-          Core::Rebalance::build_graph(Teuchos::rcp(&dis, false), elementRowMap);
-      nodeRowMap = Teuchos::rcp(new Epetra_Map(
+          Core::Rebalance::build_graph(Teuchos::RCP(&dis, false), elementRowMap);
+      nodeRowMap = Teuchos::RCP(new Epetra_Map(
           -1, graph->RowMap().NumMyElements(), graph->RowMap().MyGlobalElements(), 0, comm));
-      nodeColMap = Teuchos::rcp(new Epetra_Map(
+      nodeColMap = Teuchos::RCP(new Epetra_Map(
           -1, graph->ColMap().NumMyElements(), graph->ColMap().MyGlobalElements(), 0, comm));
     }
 
@@ -330,7 +330,7 @@ namespace Core::IO::GridGenerator
       }
 
       Teuchos::RCP<Core::Nodes::Node> node =
-          Teuchos::rcp(new Core::Nodes::Node(gid, coords, myrank));
+          Teuchos::RCP(new Core::Nodes::Node(gid, coords, myrank));
       dis.add_node(node);
     }
     dis.export_column_nodes(*nodeColMap);

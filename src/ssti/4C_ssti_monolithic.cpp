@@ -36,7 +36,7 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
     : SSTIAlgorithm(comm, globaltimeparams),
       increment_(Teuchos::null),
       residual_(Teuchos::null),
-      solver_(Teuchos::rcp(new Core::LinAlg::Solver(
+      solver_(Teuchos::RCP(new Core::LinAlg::Solver(
           Global::Problem::instance()->solver_params(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
           comm, Global::Problem::instance()->solver_params_callback(),
@@ -49,7 +49,7 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
       dtevaluate_(0.0),
       dtnewton_(0.0),
       dtsolve_(0.0),
-      timer_(Teuchos::rcp(new Teuchos::Time("SSTI_Monolithic", true))),
+      timer_(Teuchos::RCP(new Teuchos::Time("SSTI_Monolithic", true))),
       equilibration_method_{Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(
                                 globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION"),
           Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(
@@ -60,7 +60,7 @@ SSTI::SSTIMono::SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& 
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_THERMO")},
       matrixtype_(Teuchos::getIntegralValue<Core::LinAlg::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
-      convcheck_(Teuchos::rcp(new SSTI::ConvCheckMono(globaltimeparams))),
+      convcheck_(Teuchos::RCP(new SSTI::ConvCheckMono(globaltimeparams))),
       ssti_maps_mono_(Teuchos::null),
       ssti_matrices_(Teuchos::null),
       strategy_assemble_(Teuchos::null),
@@ -335,7 +335,7 @@ void SSTI::SSTIMono::setup_system()
         structure_field()->get_dbc_map_extractor()->cond_map());
 
   // Setup all kind of maps
-  ssti_maps_mono_ = Teuchos::rcp(new SSTI::SSTIMapsMono(*this));
+  ssti_maps_mono_ = Teuchos::RCP(new SSTI::SSTIMapsMono(*this));
 
   // initialize global increment vector for Newton-Raphson iteration
   increment_ = Core::LinAlg::create_vector(*ssti_maps_mono_->maps_sub_problems()->full_map(), true);
@@ -355,21 +355,21 @@ void SSTI::SSTIMono::setup_system()
   }
 
   // initialize submatrices and system matrix
-  ssti_matrices_ = Teuchos::rcp(new SSTI::SSTIMatrices(
+  ssti_matrices_ = Teuchos::RCP(new SSTI::SSTIMatrices(
       ssti_maps_mono_, matrixtype_, scatra_field()->matrix_type(), interface_meshtying()));
 
   // initialize strategy for assembly
   strategy_assemble_ = SSTI::build_assemble_strategy(
-      Teuchos::rcp(this, false), matrixtype_, scatra_field()->matrix_type());
+      Teuchos::RCP(this, false), matrixtype_, scatra_field()->matrix_type());
 
   // initialize evaluation objects for coupling between subproblems
-  scatrastructureoffdiagcoupling_ = Teuchos::rcp(new SSI::ScatraStructureOffDiagCouplingSSTI(
+  scatrastructureoffdiagcoupling_ = Teuchos::RCP(new SSI::ScatraStructureOffDiagCouplingSSTI(
       ssti_maps_mono_->block_map_structure(),
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::scalar_transport)),
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::structure)),
       ssti_structure_mesh_tying(), meshtying_scatra(), scatra_field(), structure_field()));
 
-  thermostructureoffdiagcoupling_ = Teuchos::rcp(new SSTI::ThermoStructureOffDiagCoupling(
+  thermostructureoffdiagcoupling_ = Teuchos::RCP(new SSTI::ThermoStructureOffDiagCoupling(
       ssti_maps_mono_->block_map_structure(), ssti_maps_mono_->block_map_thermo(),
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::structure)),
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::thermo)),
@@ -378,7 +378,7 @@ void SSTI::SSTIMono::setup_system()
   // Note: STI evaluation of off diagonal coupling is designed to use interface maps for the
   // interface coupling matrices. In SSTI we always use the full maps and thus hand in the same map
   // multiple times for both domain and interface contributions.
-  scatrathermooffdiagcoupling_ = Teuchos::rcp(new STI::ScatraThermoOffDiagCouplingMatchingNodes(
+  scatrathermooffdiagcoupling_ = Teuchos::RCP(new STI::ScatraThermoOffDiagCouplingMatchingNodes(
       ssti_maps_mono_->block_map_thermo(), ssti_maps_mono_->block_map_thermo(),
       ssti_maps_mono_->block_map_thermo(),
       ssti_maps_mono_->maps_sub_problems()->Map(get_problem_position(Subproblem::scalar_transport)),

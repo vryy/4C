@@ -102,7 +102,7 @@ void ScaTra::MeshtyingStrategyFluid::init_meshtying()
         "do it!");
 
   // setup meshtying
-  meshtying_ = Teuchos::rcp(new FLD::Meshtying(scatratimint_->discretization(),
+  meshtying_ = Teuchos::RCP(new FLD::Meshtying(scatratimint_->discretization(),
       *(scatratimint_->solver()), type_, Global::Problem::instance()->n_dim()));
 
   return;
@@ -153,7 +153,7 @@ const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyFluid::solver() const
  *------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyFluid::init_conv_check_strategy()
 {
-  convcheckstrategy_ = Teuchos::rcp(new ScaTra::ConvCheckStrategyStd(
+  convcheckstrategy_ = Teuchos::RCP(new ScaTra::ConvCheckStrategyStd(
       scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
 
   return;

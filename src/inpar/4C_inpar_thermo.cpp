@@ -162,11 +162,11 @@ void Inpar::Thermo::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // Convective heat transfer (Newton's law of heat transfer)
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linethermoconvect = Teuchos::rcp(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> linethermoconvect = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN THERMO CONVECTION LINE CONDITIONS",
           "ThermoConvections", "Line Thermo Convections", Core::Conditions::ThermoConvections, true,
           Core::Conditions::geometry_type_line));
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfthermoconvect = Teuchos::rcp(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfthermoconvect = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN THERMO CONVECTION SURF CONDITIONS",
           "ThermoConvections", "Surface Thermo Convections", Core::Conditions::ThermoConvections,
           true, Core::Conditions::geometry_type_surface));
@@ -177,7 +177,7 @@ void Inpar::Thermo::set_valid_conditions(
     // --> Tempn (old temperature T_n)
     // or if the exact solution is needed
     // --> Tempnp (current temperature solution T_n+1) with linearisation
-    cond->add_component(Teuchos::rcp(new Input::SelectionComponent("temperature state", "Tempnp",
+    cond->add_component(Teuchos::RCP(new Input::SelectionComponent("temperature state", "Tempnp",
         Teuchos::tuple<std::string>("Tempnp", "Tempn"),
         Teuchos::tuple<std::string>("Tempnp", "Tempn"))));
     add_named_real(cond, "coeff", "heat transfer coefficient h");
@@ -196,11 +196,11 @@ void Inpar::Thermo::set_valid_conditions(
   // Robin boundary conditions for heat transfer
   // NOTE: this condition must be
   Teuchos::RCP<Core::Conditions::ConditionDefinition> thermorobinline =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN THERMO ROBIN LINE CONDITIONS",
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition("DESIGN THERMO ROBIN LINE CONDITIONS",
           "ThermoRobin", "Thermo Robin boundary condition", Core::Conditions::ThermoRobin, true,
           Core::Conditions::geometry_type_line));
   Teuchos::RCP<Core::Conditions::ConditionDefinition> thermorobinsurf =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN THERMO ROBIN SURF CONDITIONS",
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition("DESIGN THERMO ROBIN SURF CONDITIONS",
           "ThermoRobin", "Thermo Robin boundary condition", Core::Conditions::ThermoRobin, true,
           Core::Conditions::geometry_type_surface));
 

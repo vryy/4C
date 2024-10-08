@@ -39,7 +39,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1Type::create(
   {
     if (eledistype != "NURBS4" and eledistype != "NURBS9")
     {
-      return Teuchos::rcp(new Discret::ELEMENTS::Wall1(id, owner));
+      return Teuchos::RCP(new Discret::ELEMENTS::Wall1(id, owner));
     }
   }
   return Teuchos::null;
@@ -49,7 +49,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1Type::create(
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1Type::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Discret::ELEMENTS::Wall1(id, owner));
+  return Teuchos::RCP(new Discret::ELEMENTS::Wall1(id, owner));
 }
 
 

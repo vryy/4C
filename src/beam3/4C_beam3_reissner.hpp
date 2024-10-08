@@ -760,7 +760,7 @@ namespace Discret
       {
         // create object of triad interpolation scheme
         Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
-            triad_interpolation_scheme_ptr = Teuchos::rcp(
+            triad_interpolation_scheme_ptr = Teuchos::RCP(
                 new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>());
 
         // reset scheme with nodal quaternions

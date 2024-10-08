@@ -51,7 +51,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::read(const Global::Problem& proble
   {
     for (auto& i : section)
     {
-      Teuchos::RCP<std::stringstream> condline = Teuchos::rcp(new std::stringstream(i));
+      Teuchos::RCP<std::stringstream> condline = Teuchos::RCP(new std::stringstream(i));
 
       // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
       // reading the last entry inside This is required since the material parameters can be
@@ -79,7 +79,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::read(const Global::Problem& proble
           FOUR_C_THROW("More than one contact constitutivelaw with 'Law %d'", id);
 
         // the read-in contact constitutive law line
-        Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container = Teuchos::rcp(
+        Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container = Teuchos::RCP(
             new CONTACT::CONSTITUTIVELAW::Container(id, coconstlawtype_, coconstlawname_));
         // fill the latter
 

@@ -35,7 +35,7 @@ Mat::PAR::NewtonianFluid::NewtonianFluid(const Core::Mat::PAR::Parameter::Data& 
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::NewtonianFluid::create_material()
 {
-  return Teuchos::rcp(new Mat::NewtonianFluid(this));
+  return Teuchos::RCP(new Mat::NewtonianFluid(this));
 }
 
 

@@ -90,7 +90,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidPoroPressureBasedT
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidPoroPressureBasedType::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Discret::ELEMENTS::SolidPoroPressureBased(id, owner));
+  return Teuchos::RCP(new Discret::ELEMENTS::SolidPoroPressureBased(id, owner));
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SolidPoroPressureBasedType::create(

@@ -104,11 +104,11 @@ void Discret::ELEMENTS::SoHex8::soh8_eas_init_multi(Teuchos::ParameterList& para
         params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
             "oldKda", Teuchos::null);
 
-    (*lastalpha)[id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, 1));
-    (*oldalpha)[id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, 1));
-    (*oldfeas)[id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, 1));
-    (*oldKaainv)[id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, neas_));
-    (*oldKda)[id()] = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, NUMDOF_SOH8));
+    (*lastalpha)[id()] = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(neas_, 1));
+    (*oldalpha)[id()] = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(neas_, 1));
+    (*oldfeas)[id()] = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(neas_, 1));
+    (*oldKaainv)[id()] = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(neas_, neas_));
+    (*oldKda)[id()] = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(neas_, NUMDOF_SOH8));
   }
   return;
 }

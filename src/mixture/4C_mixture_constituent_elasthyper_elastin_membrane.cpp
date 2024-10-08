@@ -123,7 +123,7 @@ MIXTURE::MixtureConstituentElastHyperElastinMembrane::MixtureConstituentElastHyp
     MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane* params, int id)
     : MixtureConstituentElastHyperBase(params, id),
       params_(params),
-      anisotropy_extension_(Teuchos::rcp<Mat::Elastic::StructuralTensorStrategyBase>(
+      anisotropy_extension_(Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
           new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)))
 {
   // Create summands

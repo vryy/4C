@@ -92,7 +92,7 @@ NOX::Nln::MeritFunction::Factory::build_constrained_merit_function(
   }
   else if (mftype == mrtfct_lagrangian || mftype == mrtfct_lagrangian_active)
   {
-    mrtFctPtr = Teuchos::rcp(new Lagrangian(mftype, noxNlnGlobalData.get_nox_utils_ptr()));
+    mrtFctPtr = Teuchos::RCP(new Lagrangian(mftype, noxNlnGlobalData.get_nox_utils_ptr()));
   }
   else
   {

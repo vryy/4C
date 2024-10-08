@@ -40,7 +40,7 @@ Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ScaTraEleCalcMultiPoroRe
 {
   // replace internal variable manager by internal variable manager for muliporo
   my::scatravarmanager_ =
-      Teuchos::rcp(new ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>(my::numscal_));
+      Teuchos::RCP(new ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>(my::numscal_));
 
   return;
 }

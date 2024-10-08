@@ -161,7 +161,7 @@ NOX::Nln::Direction::Test::VolumeChange::get_empty_diagonal(const NOX::Nln::Grou
 {
   const Epetra_Map& jac_rmap = grp.get_jacobian_range_map(0, 0);
   Teuchos::RCP<Core::LinAlg::Vector<double>> diagonal =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(jac_rmap, true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(jac_rmap, true));
 
   return diagonal;
 }

@@ -179,7 +179,7 @@ void CrossLinking::CrosslinkerNode::unpack(Core::Communication::UnpackBuffer& bu
     Mat::CrosslinkerMat* mat = dynamic_cast<Mat::CrosslinkerMat*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack material");
     // unpack material
-    mat_ = Teuchos::rcp(mat);
+    mat_ = Teuchos::RCP(mat);
   }
   else
   {

@@ -174,7 +174,7 @@ namespace FLD
     }
     // push coordinates in vectors
     {
-      coordinates_ = Teuchos::rcp(new std::vector<double>);
+      coordinates_ = Teuchos::RCP(new std::vector<double>);
 
       for (std::set<double, LineSortCriterion>::iterator coord1 = coords.begin();
            coord1 != coords.end(); ++coord1)
@@ -204,19 +204,19 @@ namespace FLD
 #ifdef FOUR_C_WITH_FFTW
 
     // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     Teuchos::RCP<Teuchos::Array<double>> u1 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> u2 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> u3 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
     //-------------------------------------------------
     // construction of initial field in spectral space
@@ -379,11 +379,11 @@ namespace FLD
     // k_3: [0,nummodes_/2]
     // using peridocity and conjugate symmetry allows for setting
     // the Fourier coefficients in the required interval
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat_fftw = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat_fftw = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat_fftw = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat_fftw = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat_fftw = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat_fftw = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_ - 1); fftw_k_1++)
@@ -858,7 +858,7 @@ namespace FLD
 
     // push coordinates in vector
     {
-      Teuchos::RCP<std::vector<double>> copycoordinates = Teuchos::rcp(new std::vector<double>);
+      Teuchos::RCP<std::vector<double>> copycoordinates = Teuchos::RCP(new std::vector<double>);
 
       for (std::vector<double>::iterator coord1 = coordinates_->begin();
            coord1 != coordinates_->end(); ++coord1)
@@ -891,19 +891,19 @@ namespace FLD
 #ifdef FOUR_C_WITH_FFTW
 
     // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     Teuchos::RCP<Teuchos::Array<double>> u1 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> u2 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
     Teuchos::RCP<Teuchos::Array<double>> u3 =
-        Teuchos::rcp(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
 
     //-------------------------------------------------
     // construction of initial field in spectral space
@@ -1066,11 +1066,11 @@ namespace FLD
     // k_3: [0,nummodes_/2]
     // using peridocity and conjugate symmetry allows for setting
     // the Fourier coefficients in the required interval
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat_fftw = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat_fftw = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat_fftw = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat_fftw = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat_fftw = Teuchos::rcp(
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat_fftw = Teuchos::RCP(
         new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
 
     for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_ - 1); fftw_k_1++)

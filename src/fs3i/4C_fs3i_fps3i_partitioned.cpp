@@ -215,7 +215,7 @@ void FS3I::PartFPS3I::init()
     FOUR_C_THROW(
         "no linear solver defined for structural ScalarTransport solver. Please set LINEAR_SOLVER2 "
         "in FS3I DYNAMIC to a valid number!");
-  fluidscatra_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
+  fluidscatra_ = Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(
       fs3idyn, scatradyn, problem->solver_params(linsolver1number), "scatra1", true));
 
   // now we can call init() on the scatra time integrator
@@ -225,7 +225,7 @@ void FS3I::PartFPS3I::init()
   fluidscatra_->scatra_field()->set_number_of_dof_set_wall_shear_stress(1);
   fluidscatra_->scatra_field()->set_number_of_dof_set_pressure(1);
 
-  structscatra_ = Teuchos::rcp(new Adapter::ScaTraBaseAlgorithm(
+  structscatra_ = Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(
       fs3idyn, scatradyn, problem->solver_params(linsolver2number), "scatra2", true));
 
   // only now we must call init() on the scatra time integrator.
@@ -425,9 +425,9 @@ void FS3I::PartFPS3I::setup_system()
     const int numscal = currscatra->scatra_field()->num_scal();
     Teuchos::RCP<Core::FE::Discretization> currdis = currscatra->scatra_field()->discretization();
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mapex =
-        Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
+        Teuchos::RCP(new Core::LinAlg::MultiMapExtractor());
     Core::Conditions::MultiConditionSelector mcs;
-    mcs.add_selector(Teuchos::rcp(
+    mcs.add_selector(Teuchos::RCP(
         new Core::Conditions::NDimConditionSelector(*currdis, "ScaTraCoupling", 0, numscal)));
     mcs.setup_extractor(*currdis, *currdis->dof_row_map(), *mapex);
     scatrafieldexvec_.push_back(mapex);
@@ -470,11 +470,11 @@ void FS3I::PartFPS3I::setup_system()
     for (unsigned i = 0; i < scatravec_.size(); ++i)
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> scatracoupforce =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(*(scatraglobalex_->Map(i)), true));
+          Teuchos::RCP(new Core::LinAlg::Vector<double>(*(scatraglobalex_->Map(i)), true));
       scatracoupforce_.push_back(scatracoupforce);
 
       Teuchos::RCP<Core::LinAlg::SparseMatrix> scatracoupmat =
-          Teuchos::rcp(new Core::LinAlg::SparseMatrix(*(scatraglobalex_->Map(i)), 27, false, true));
+          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(scatraglobalex_->Map(i)), 27, false, true));
       scatracoupmat_.push_back(scatracoupmat);
 
       const Epetra_Map* dofrowmap = scatravec_[i]->scatra_field()->discretization()->dof_row_map();
@@ -485,13 +485,13 @@ void FS3I::PartFPS3I::setup_system()
   }
   // create scatra block matrix
   scatrasystemmatrix_ =
-      Teuchos::rcp(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
+      Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *scatraglobalex_, *scatraglobalex_, 27, false, true));
   // create scatra rhs vector
-  scatrarhs_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*scatraglobalex_->full_map(), true));
+  scatrarhs_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*scatraglobalex_->full_map(), true));
   // create scatra increment vector
   scatraincrement_ =
-      Teuchos::rcp(new Core::LinAlg::Vector<double>(*scatraglobalex_->full_map(), true));
+      Teuchos::RCP(new Core::LinAlg::Vector<double>(*scatraglobalex_->full_map(), true));
   // check whether potential Dirichlet conditions at scatra interface are
   // defined for both discretizations
   check_interface_dirichlet_bc();
@@ -523,7 +523,7 @@ void FS3I::PartFPS3I::setup_system()
     FOUR_C_THROW("Block Gauss-Seidel preconditioner expected");
 
   // use coupled scatra solver object
-  scatrasolver_ = Teuchos::rcp(new Core::LinAlg::Solver(coupledscatrasolvparams,
+  scatrasolver_ = Teuchos::RCP(new Core::LinAlg::Solver(coupledscatrasolvparams,
       firstscatradis->get_comm(), Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY")));

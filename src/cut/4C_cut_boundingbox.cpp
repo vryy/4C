@@ -221,7 +221,7 @@ bool Cut::BoundingBox::within(double norm, const double* x) const
  *----------------------------------------------------------------------------*/
 bool Cut::BoundingBox::within(double norm, const Core::LinAlg::SerialDenseMatrix& xyz) const
 {
-  Teuchos::RCP<BoundingBox> bb = Teuchos::rcp(create());
+  Teuchos::RCP<BoundingBox> bb = Teuchos::RCP(create());
   int numnode = xyz.numCols();
   for (int i = 0; i < numnode; ++i)
   {
@@ -234,7 +234,7 @@ bool Cut::BoundingBox::within(double norm, const Core::LinAlg::SerialDenseMatrix
  *----------------------------------------------------------------------------*/
 bool Cut::BoundingBox::within(double norm, Element& element) const
 {
-  Teuchos::RCP<BoundingBox> bb = Teuchos::rcp(create(element));
+  Teuchos::RCP<BoundingBox> bb = Teuchos::RCP(create(element));
   return within(norm, *bb);
 }
 

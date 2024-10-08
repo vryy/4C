@@ -360,10 +360,10 @@ void Discret::ELEMENTS::So3Plast<distype>::unpack(Core::Communication::UnpackBuf
   tsi_ = (bool)extract_int(buffer);
   if (tsi_)
   {
-    dFintdT_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<numdofperelement_, 1>>(numgpt_));
-    KbT_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseVector>(
+    dFintdT_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<numdofperelement_, 1>>(numgpt_));
+    KbT_ = Teuchos::RCP(new std::vector<Core::LinAlg::SerialDenseVector>(
         numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true)));
-    temp_last_ = Teuchos::rcp(new std::vector<double>(numgpt_));
+    temp_last_ = Teuchos::RCP(new std::vector<double>(numgpt_));
     int size = extract_int(buffer);
     for (int i = 0; i < size; i++)
     {
@@ -393,21 +393,21 @@ void Discret::ELEMENTS::So3Plast<distype>::unpack(Core::Communication::UnpackBuf
   }
   else
   {
-    KaaInv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, neas_, true));
-    Kad_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, numdofperelement_, true));
+    KaaInv_ = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(neas_, neas_, true));
+    Kad_ = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(neas_, numdofperelement_, true));
     if (tsi_)
     {
-      KaT_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, nen_, true));
-      KdT_eas_ = Teuchos::rcp(new Core::LinAlg::Matrix<numdofperelement_, nen_>);
+      KaT_ = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(neas_, nen_, true));
+      KdT_eas_ = Teuchos::RCP(new Core::LinAlg::Matrix<numdofperelement_, nen_>);
     }
-    feas_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
-    Kba_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseMatrix>(
+    feas_ = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(neas_, true));
+    Kba_ = Teuchos::RCP(new std::vector<Core::LinAlg::SerialDenseMatrix>(
         numgpt_, Core::LinAlg::SerialDenseMatrix(plspintype_, neas_, true)));
-    alpha_eas_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
-    alpha_eas_last_timestep_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
+    alpha_eas_ = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(neas_, true));
+    alpha_eas_last_timestep_ = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(neas_, true));
     alpha_eas_delta_over_last_timestep_ =
-        Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
-    alpha_eas_inc_ = Teuchos::rcp(new Core::LinAlg::SerialDenseVector(neas_, true));
+        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(neas_, true));
+    alpha_eas_inc_ = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(neas_, true));
   }
 
   KbbInv_.resize(numgpt_, Core::LinAlg::SerialDenseMatrix(plspintype_, plspintype_, true));
@@ -752,15 +752,15 @@ void Discret::ELEMENTS::So3Plast<distype>::read_parameter_list(
     plmat->setup_tsi(numgpt_, numdofperelement_, (eastype_ != soh8p_easnone), mode);
 
     // setup element data
-    dFintdT_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<numdofperelement_, 1>>(numgpt_));
-    temp_last_ = Teuchos::rcp(new std::vector<double>(numgpt_, plmat->init_temp()));
-    KbT_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseVector>(
+    dFintdT_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<numdofperelement_, 1>>(numgpt_));
+    temp_last_ = Teuchos::RCP(new std::vector<double>(numgpt_, plmat->init_temp()));
+    KbT_ = Teuchos::RCP(new std::vector<Core::LinAlg::SerialDenseVector>(
         numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true)));
 
     if (eastype_ != soh8p_easnone)
     {
-      KaT_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(neas_, nen_, true));
-      KdT_eas_ = Teuchos::rcp(new Core::LinAlg::Matrix<numdofperelement_, nen_>);
+      KaT_ = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(neas_, nen_, true));
+      KdT_eas_ = Teuchos::RCP(new Core::LinAlg::Matrix<numdofperelement_, nen_>);
     }
     else
     {

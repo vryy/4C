@@ -57,7 +57,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3kType::create(
   if (eletype == "BEAM3K")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::Beam3k(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::Beam3k(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -69,7 +69,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Beam3kType::create(
     const int id, const int owner)
 
 {
-  return Teuchos::rcp(new Beam3k(id, owner));
+  return Teuchos::RCP(new Beam3k(id, owner));
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -153,7 +153,7 @@ int Discret::ELEMENTS::Beam3kType::initialize(Core::FE::Discretization& dis)
     // the next section is needed in case of periodic boundary conditions and a shifted
     // configuration (i.e. elements cut by the periodic boundary) in the input file
     Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox =
-        Teuchos::rcp(new Core::Geo::MeshFree::BoundingBox());
+        Teuchos::RCP(new Core::Geo::MeshFree::BoundingBox());
     periodic_boundingbox->init(
         Global::Problem::instance()->binning_strategy_params());  // no setup() call needed here
 
@@ -1049,7 +1049,7 @@ void Discret::ELEMENTS::Beam3k::get_triad_at_xi(
   // create object of triad interpolation scheme
   Teuchos::RCP<
       LargeRotations::TriadInterpolationLocalRotationVectors<BEAM3K_COLLOCATION_POINTS, double>>
-      triad_interpolation_scheme_ptr = Teuchos::rcp(
+      triad_interpolation_scheme_ptr = Teuchos::RCP(
           new LargeRotations::TriadInterpolationLocalRotationVectors<BEAM3K_COLLOCATION_POINTS,
               double>());
 
@@ -1547,7 +1547,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_increments_
   // create object of triad interpolation scheme
   Teuchos::RCP<
       LargeRotations::TriadInterpolationLocalRotationVectors<BEAM3K_COLLOCATION_POINTS, double>>
-      triad_interpolation_scheme_ptr = Teuchos::rcp(
+      triad_interpolation_scheme_ptr = Teuchos::RCP(
           new LargeRotations::TriadInterpolationLocalRotationVectors<BEAM3K_COLLOCATION_POINTS,
               double>());
 

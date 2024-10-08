@@ -95,7 +95,7 @@ void FSI::Monolithic::init_tim_int_ada(const Teuchos::ParameterList& fsidyn)
     }
   }
 
-  dt_ = Teuchos::rcp(new TimeStepping::TimIntMStep<double>(-avgweights_.size(), 1, 0.0));
+  dt_ = Teuchos::RCP(new TimeStepping::TimIntMStep<double>(-avgweights_.size(), 1, 0.0));
   dt_->set_step(1, dt());
 
   //----------------------------------------------------------------------------
@@ -103,7 +103,7 @@ void FSI::Monolithic::init_tim_int_ada(const Teuchos::ParameterList& fsidyn)
   //----------------------------------------------------------------------------
   std::string fileada = Global::Problem::instance()->output_control_file()->file_name();
   fileada.append(".adaptivity");
-  logada_ = Teuchos::rcp(new std::ofstream(fileada.c_str()));
+  logada_ = Teuchos::RCP(new std::ofstream(fileada.c_str()));
 
   //----------------------------------------------------------------------------
   // set algorithmic parameters

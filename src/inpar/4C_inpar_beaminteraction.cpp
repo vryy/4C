@@ -182,7 +182,7 @@ void Inpar::BEAMINTERACTION::set_valid_conditions(
   /*-------------------------------------------------------------------*/
   // beam potential interaction: atom/charge density per unit length on LINE
   Teuchos::RCP<Core::Conditions::ConditionDefinition> beam_filament_condition =
-      Teuchos::rcp(new Core::Conditions::ConditionDefinition("DESIGN LINE BEAM FILAMENT CONDITIONS",
+      Teuchos::RCP(new Core::Conditions::ConditionDefinition("DESIGN LINE BEAM FILAMENT CONDITIONS",
           "BeamLineFilamentCondition", "Beam_Line_Filament_Condition",
           Core::Conditions::FilamentBeamLineCondition, false,
           Core::Conditions::geometry_type_line));
@@ -198,7 +198,7 @@ void Inpar::BEAMINTERACTION::set_valid_conditions(
   condlist.push_back(beam_filament_condition);
 
   /*-------------------------------------------------------------------*/
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> penalty_coupling_condition = Teuchos::rcp(
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> penalty_coupling_condition = Teuchos::RCP(
       new Core::Conditions::ConditionDefinition("DESIGN POINT PENALTY COUPLING CONDITIONS",
           "PenaltyPointCouplingCondition", "Couples beam nodes that lie on the same position",
           Core::Conditions::PenaltyPointCouplingCondition, false,

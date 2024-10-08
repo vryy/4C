@@ -46,7 +46,7 @@ Mat::PAR::Maxwell0dAcinusOgden::Maxwell0dAcinusOgden(const Core::Mat::PAR::Param
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Maxwell0dAcinusOgden::create_material()
 {
-  return Teuchos::rcp(new Mat::Maxwell0dAcinusOgden(this));
+  return Teuchos::RCP(new Mat::Maxwell0dAcinusOgden(this));
 }
 
 /*----------------------------------------------------------------------*/

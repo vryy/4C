@@ -47,7 +47,7 @@ Mat::PAR::ViscoElastHyper::ViscoElastHyper(const Core::Mat::PAR::Parameter::Data
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ViscoElastHyper::create_material()
 {
-  return Teuchos::rcp(new Mat::ViscoElastHyper(this));
+  return Teuchos::RCP(new Mat::ViscoElastHyper(this));
 }
 
 
@@ -258,22 +258,22 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
     if (histsize == 0) isinitvis_ = false;
 
     // initialize current variables
-    histscgcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
+    histscgcurr_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
     histmodrcgcurr_ =
-        Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
+        Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
     histstresscurr_ =
-        Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
+        Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
     histartstresscurr_ =
-        Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
+        Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
 
     // initialize last variables
-    histscglast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
+    histscglast_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
     histmodrcglast_ =
-        Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
+        Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
     histstresslast_ =
-        Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
+        Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
     histartstresslast_ =
-        Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
+        Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
 
 
     for (int gp = 0; gp < histsize; ++gp)
@@ -286,13 +286,13 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
 
     if (viscogeneralizedgenmax_)
     {
-      histbranchstresscurr_ = Teuchos::rcp(
+      histbranchstresscurr_ = Teuchos::RCP(
           new std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize));
-      histbranchelaststresscurr_ = Teuchos::rcp(
+      histbranchelaststresscurr_ = Teuchos::RCP(
           new std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize));
-      histbranchstresslast_ = Teuchos::rcp(
+      histbranchstresslast_ = Teuchos::RCP(
           new std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize));
-      histbranchelaststresslast_ = Teuchos::rcp(
+      histbranchelaststresslast_ = Teuchos::RCP(
           new std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(histsize));
 
       for (int gp = 0; gp < histsize; ++gp)
@@ -310,11 +310,11 @@ void Mat::ViscoElastHyper::unpack(Core::Communication::UnpackBuffer& buffer)
       if (!have_historyalldata) FOUR_C_THROW("Something got wrong with your history data.");
 
       histfractartstresscurr_ =
-          Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
+          Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(histsize));
 
       int histfractartstressall_stepsize = extract_int(buffer);
       histfractartstresslastall_ =
-          Teuchos::rcp(new std::vector<std::vector<Core::LinAlg::Matrix<6, 1>>>(
+          Teuchos::RCP(new std::vector<std::vector<Core::LinAlg::Matrix<6, 1>>>(
               histsize, std::vector<Core::LinAlg::Matrix<6, 1>>(histfractartstressall_stepsize)));
       for (int gp = 0; gp < histsize; ++gp)
         for (int step = 0; step < histfractartstressall_stepsize; ++step)
@@ -361,29 +361,29 @@ void Mat::ViscoElastHyper::setup(int numgp, const Core::IO::InputParameterContai
   Core::LinAlg::Matrix<6, 1> idvec(true);
   for (int i = 0; i < 3; ++i) idvec(i) = 1.;
 
-  histscgcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<6, 1>>(numgp, idvec));
-  histscglast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<6, 1>>(numgp, idvec));
-  histmodrcgcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<6, 1>>(numgp, idvec));
-  histmodrcglast_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<6, 1>>(numgp, idvec));
+  histscgcurr_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<6, 1>>(numgp, idvec));
+  histscglast_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<6, 1>>(numgp, idvec));
+  histmodrcgcurr_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<6, 1>>(numgp, idvec));
+  histmodrcglast_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<6, 1>>(numgp, idvec));
   histstresscurr_ =
-      Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
+      Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
   histstresslast_ =
-      Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
+      Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
   histartstresscurr_ =
-      Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
+      Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
   histartstresslast_ =
-      Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
+      Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
 
   if (viscogeneralizedgenmax_)
   {
     const std::vector<Core::LinAlg::Matrix<6, 1>> emptybigvec(true);
-    histbranchstresscurr_ = Teuchos::rcp(
+    histbranchstresscurr_ = Teuchos::RCP(
         new std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptybigvec));
-    histbranchstresslast_ = Teuchos::rcp(
+    histbranchstresslast_ = Teuchos::RCP(
         new std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptybigvec));
-    histbranchelaststresscurr_ = Teuchos::rcp(
+    histbranchelaststresscurr_ = Teuchos::RCP(
         new std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptybigvec));
-    histbranchelaststresslast_ = Teuchos::rcp(
+    histbranchelaststresslast_ = Teuchos::RCP(
         new std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptybigvec));
   }
 
@@ -391,10 +391,10 @@ void Mat::ViscoElastHyper::setup(int numgp, const Core::IO::InputParameterContai
   if (viscofract_)
   {
     histfractartstresscurr_ =
-        Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
+        Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
     // set true that history size is known
     histfractartstresslastall_ =
-        Teuchos::rcp(new std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(
+        Teuchos::RCP(new std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(
             numgp, std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(true)));
   }
 
@@ -458,14 +458,14 @@ void Mat::ViscoElastHyper::update()
   for (int i = 0; i < 3; ++i) idvec(i) = 1.;
   const int numgp = histscglast_->size();
 
-  histscgcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<6, 1>>(numgp, idvec));
-  histmodrcgcurr_ = Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<6, 1>>(numgp, idvec));
+  histscgcurr_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<6, 1>>(numgp, idvec));
+  histmodrcgcurr_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<6, 1>>(numgp, idvec));
   histstresscurr_ =
-      Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
+      Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
   histartstresscurr_ =
-      Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
+      Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
   histfractartstresscurr_ =
-      Teuchos::rcp(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
+      Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
 
   if (viscogeneralizedgenmax_)
   {
@@ -473,9 +473,9 @@ void Mat::ViscoElastHyper::update()
     histbranchelaststresslast_ = histbranchelaststresscurr_;
 
     const std::vector<Core::LinAlg::Matrix<6, 1>> emptybigvec(true);
-    histbranchstresscurr_ = Teuchos::rcp(
+    histbranchstresscurr_ = Teuchos::RCP(
         new std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptybigvec));
-    histbranchelaststresscurr_ = Teuchos::rcp(
+    histbranchelaststresscurr_ = Teuchos::RCP(
         new std::vector<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptybigvec));
   }
 

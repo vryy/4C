@@ -137,7 +137,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new LinearDensityViscosity(*this));
+      return Teuchos::RCP(new LinearDensityViscosity(*this));
     }
 
     /// compute density

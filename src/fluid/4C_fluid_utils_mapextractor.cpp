@@ -27,15 +27,15 @@ void FLD::UTILS::MapExtractor::setup(
   const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
   mcs.set_overlapping(overlapping);  // defines if maps can overlap
-  mcs.add_selector(Teuchos::rcp(
+  mcs.add_selector(Teuchos::RCP(
       new Core::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim + withpressure)));
-  mcs.add_selector(Teuchos::rcp(new Core::Conditions::NDimConditionSelector(
+  mcs.add_selector(Teuchos::RCP(new Core::Conditions::NDimConditionSelector(
       dis, "FREESURFCoupling", 0, ndim + withpressure)));
-  mcs.add_selector(Teuchos::rcp(new Core::Conditions::NDimConditionSelector(
+  mcs.add_selector(Teuchos::RCP(new Core::Conditions::NDimConditionSelector(
       dis, "StructAleCoupling", 0, ndim + withpressure)));
-  mcs.add_selector(Teuchos::rcp(
+  mcs.add_selector(Teuchos::RCP(
       new Core::Conditions::NDimConditionSelector(dis, "Mortar", 0, ndim + withpressure)));
-  mcs.add_selector(Teuchos::rcp(new Core::Conditions::NDimConditionSelector(
+  mcs.add_selector(Teuchos::RCP(new Core::Conditions::NDimConditionSelector(
       dis, "ALEUPDATECoupling", 0, ndim + withpressure)));
   mcs.setup_extractor(dis, *dis.dof_row_map(nds_master), *this);
 }
@@ -102,7 +102,7 @@ void FLD::UTILS::VolumetricFlowMapExtractor::setup(const Core::FE::Discretizatio
   const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
   mcs.set_overlapping(true);  // defines if maps can overlap
-  mcs.add_selector(Teuchos::rcp(
+  mcs.add_selector(Teuchos::RCP(
       new Core::Conditions::NDimConditionSelector(dis, "VolumetricSurfaceFlowCond", 0, ndim)));
   mcs.setup_extractor(dis, *dis.dof_row_map(), *this);
 }
@@ -113,7 +113,7 @@ void FLD::UTILS::KSPMapExtractor::setup(const Core::FE::Discretization& dis)
 {
   Core::Conditions::MultiConditionSelector mcs;
   mcs.add_selector(
-      Teuchos::rcp(new Core::Conditions::ConditionSelector(dis, "KrylovSpaceProjection")));
+      Teuchos::RCP(new Core::Conditions::ConditionSelector(dis, "KrylovSpaceProjection")));
   mcs.setup_extractor(dis, *dis.dof_row_map(), *this);
 }
 
@@ -144,7 +144,7 @@ void FLD::UTILS::FsiMapExtractor::setup(const Core::FE::Discretization& dis)
   const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
   mcs.add_selector(
-      Teuchos::rcp(new Core::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
+      Teuchos::RCP(new Core::Conditions::NDimConditionSelector(dis, "FSICoupling", 0, ndim)));
   mcs.setup_extractor(dis, *dis.dof_row_map(), *this);
 }
 

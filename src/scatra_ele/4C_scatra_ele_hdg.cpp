@@ -71,7 +71,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ScaTraHDGType::create(
 {
   if (eletype == "TRANSPHDG")
   {
-    return Teuchos::rcp(new Discret::ELEMENTS::ScaTraHDG(id, owner));
+    return Teuchos::RCP(new Discret::ELEMENTS::ScaTraHDG(id, owner));
   }
   return Teuchos::null;
 }
@@ -83,7 +83,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ScaTraHDGType::create(
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ScaTraHDGType::create(
     const int id, const int owner)
 {
-  return Teuchos::rcp(new Discret::ELEMENTS::ScaTraHDG(id, owner));
+  return Teuchos::RCP(new Discret::ELEMENTS::ScaTraHDG(id, owner));
 }
 
 

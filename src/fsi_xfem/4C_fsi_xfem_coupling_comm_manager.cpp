@@ -79,7 +79,7 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
     {
       Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mmeb = get_map_extractor(idxB);
       Teuchos::RCP<Core::LinAlg::Vector<double>> tmpvec =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(*mmeb->Map(1), true));
+          Teuchos::RCP(new Core::LinAlg::Vector<double>(*mmeb->Map(1), true));
       insert_vector(idxA, vecA, idxB, tmpvec, CouplingCommManager::full_to_partial, false, scale);
       if (!add)
         mmeb->insert_vector(*tmpvec, 1, *vecB);
@@ -97,7 +97,7 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
     {
       Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mmeb = get_map_extractor(idxB);
       Teuchos::RCP<Core::LinAlg::Vector<double>> tmpvec =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(*mmeb->Map(1), true));
+          Teuchos::RCP(new Core::LinAlg::Vector<double>(*mmeb->Map(1), true));
       insert_vector(
           idxA, vecA, idxB, tmpvec, CouplingCommManager::partial_to_partial, false, scale);
       if (!add)
@@ -141,7 +141,7 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
     {
       Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mme = get_full_map_extractor();
       Teuchos::RCP<Core::LinAlg::Vector<double>> fullvec =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(*mme->Map(idxB), true));
+          Teuchos::RCP(new Core::LinAlg::Vector<double>(*mme->Map(idxB), true));
       insert_vector(idxA, vecA, idxB, fullvec, CouplingCommManager::partial_to_full, false, scale);
       if (!add)
         mme->insert_vector(*fullvec, idxB, *vecB);
@@ -153,7 +153,7 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
     {
       Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mme = get_full_map_extractor();
       Teuchos::RCP<Core::LinAlg::Vector<double>> fullvec =
-          Teuchos::rcp(new Core::LinAlg::Vector<double>(*mme->Map(idxB), true));
+          Teuchos::RCP(new Core::LinAlg::Vector<double>(*mme->Map(idxB), true));
       insert_vector(idxA, vecA, idxB, fullvec, CouplingCommManager::full_to_full, false, scale);
       if (!add)
         mme->insert_vector(*fullvec, idxB, *vecB);
@@ -239,9 +239,9 @@ void XFEM::CouplingCommManager::setup_multi_map_extractors(
        dit != dis.end(); ++dit)
   {
     Teuchos::RCP<Core::Conditions::MultiConditionSelector> mcs =
-        Teuchos::rcp(new Core::Conditions::MultiConditionSelector());
-    mme_[dit->first] = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor());
-    mcs->add_selector(Teuchos::rcp(
+        Teuchos::RCP(new Core::Conditions::MultiConditionSelector());
+    mme_[dit->first] = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor());
+    mcs->add_selector(Teuchos::RCP(
         new Core::Conditions::NDimConditionSelector(*dit->second, cond_name_, startdim_, enddim_)));
     mcs->setup_extractor(*dit->second, *dit->second->dof_row_map(), *mme_[dit->first]);
   }
@@ -262,7 +262,7 @@ void XFEM::CouplingCommManager::setup_full_map_extractors(
   for (std::map<int, Teuchos::RCP<const Core::FE::Discretization>>::iterator dit = dis.begin();
        dit != dis.end(); ++dit)
   {
-    Teuchos::RCP<Core::LinAlg::MapExtractor> me = Teuchos::rcp(new Core::LinAlg::MapExtractor());
+    Teuchos::RCP<Core::LinAlg::MapExtractor> me = Teuchos::RCP(new Core::LinAlg::MapExtractor());
     if (static_cast<std::size_t>(dit->first) < dis.size() - 1)
     {
       Teuchos::RCP<Coupling::Adapter::Coupling> coup = get_coupling(dit->first, dit->first + 1);
@@ -301,7 +301,7 @@ void XFEM::CouplingCommManager::setup_couplings(
 
       std::pair<int, int> key = std::pair<int, int>((*mmealpha).first, (*mmebeta).first);
 
-      coup_[key] = Teuchos::rcp(new Coupling::Adapter::Coupling());
+      coup_[key] = Teuchos::RCP(new Coupling::Adapter::Coupling());
 
       std::map<int, Teuchos::RCP<const Core::FE::Discretization>>::iterator alphadis =
           dis.find((*mmealpha).first);
@@ -335,7 +335,7 @@ void XFEM::CouplingCommManager::setup_full_couplings(
 
       std::pair<int, int> key = std::pair<int, int>(idx_a, idx_b);
 
-      coup_[key] = Teuchos::rcp(new Coupling::Adapter::Coupling());
+      coup_[key] = Teuchos::RCP(new Coupling::Adapter::Coupling());
 
       std::map<int, Teuchos::RCP<const Core::FE::Discretization>>::iterator alphadis =
           dis.find(idx_a);
@@ -364,11 +364,11 @@ void XFEM::CouplingCommManager::setup_full_extractor(
   for (std::map<int, Teuchos::RCP<const Core::FE::Discretization>>::iterator dit = dis.begin();
        dit != dis.end(); ++dit)
   {
-    maps.push_back(Teuchos::rcp(new Epetra_Map(*(*dit).second->dof_row_map())));
+    maps.push_back(Teuchos::RCP(new Epetra_Map(*(*dit).second->dof_row_map())));
   }
 
   Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
-  fullextractor_ = Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*fullmap, maps));
+  fullextractor_ = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor(*fullmap, maps));
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -379,11 +379,11 @@ XFEM::CouplingCommManager::get_coupling_converter(int idxA, int idxB)
 {
   if (idxA < idxB)
   {
-    return Teuchos::rcp(new Coupling::Adapter::CouplingMasterConverter(*get_coupling(idxA, idxB)));
+    return Teuchos::RCP(new Coupling::Adapter::CouplingMasterConverter(*get_coupling(idxA, idxB)));
   }
   else if (idxA > idxB)
   {
-    return Teuchos::rcp(new Coupling::Adapter::CouplingSlaveConverter(*get_coupling(idxB, idxA)));
+    return Teuchos::RCP(new Coupling::Adapter::CouplingSlaveConverter(*get_coupling(idxB, idxA)));
   }
   else
   {
@@ -439,7 +439,7 @@ XFEM::CouplingCommManager::get_transform(int transform_id)
   else
   {
     transform_[transform_id] =
-        Teuchos::rcp(new Coupling::Adapter::MatrixLogicalSplitAndTransform());
+        Teuchos::RCP(new Coupling::Adapter::MatrixLogicalSplitAndTransform());
     return transform_[transform_id];
   }
   return Teuchos::null;

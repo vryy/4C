@@ -40,11 +40,11 @@ Teuchos::RCP<Solid::Predict::Generic> Solid::Predict::Factory::build_predictor(
     case Inpar::Solid::pred_constdisvelacc:
     case Inpar::Solid::pred_constdispres:
     case Inpar::Solid::pred_constdisvelaccpres:
-      predictor = Teuchos::rcp(new Solid::Predict::ConstDisVelAccPress());
+      predictor = Teuchos::RCP(new Solid::Predict::ConstDisVelAccPress());
       break;
     case Inpar::Solid::pred_tangdis:
     case Inpar::Solid::pred_tangdis_constfext:
-      predictor = Teuchos::rcp(new Solid::Predict::TangDis());
+      predictor = Teuchos::RCP(new Solid::Predict::TangDis());
       break;
     case Inpar::Solid::pred_vague:
     default:

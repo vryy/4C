@@ -202,7 +202,7 @@ int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate(Discret::ELEMENTS::
             params.set<int>("face", i);
 
             const int* nodeidsface = faces[face]->node_ids();
-            Teuchos::RCP<std::vector<int>> indices = Teuchos::rcp(new std::vector<int>(elenode));
+            Teuchos::RCP<std::vector<int>> indices = Teuchos::RCP(new std::vector<int>(elenode));
             for (int j = 0; j < faces[face]->num_node(); ++j)
             {
               for (int n = 0; n < elenode; ++n)

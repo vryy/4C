@@ -58,12 +58,12 @@ void FLD::TimIntRedModels::init()
     discret_->set_state("dispnp", dispn_);
   }
 
-  vol_surf_flow_bc_ = Teuchos::rcp(new UTILS::FluidVolumetricSurfaceFlowWrapper(discret_, dta_));
+  vol_surf_flow_bc_ = Teuchos::RCP(new UTILS::FluidVolumetricSurfaceFlowWrapper(discret_, dta_));
 
   // evaluate the map of the womersley bcs
-  vol_flow_rates_bc_extractor_ = Teuchos::rcp(new FLD::UTILS::VolumetricFlowMapExtractor());
+  vol_flow_rates_bc_extractor_ = Teuchos::RCP(new FLD::UTILS::VolumetricFlowMapExtractor());
   vol_flow_rates_bc_extractor_->setup(*discret_);
-  vol_surf_flow_bc_maps_ = Teuchos::rcp(
+  vol_surf_flow_bc_maps_ = Teuchos::RCP(
       new Epetra_Map(*(vol_flow_rates_bc_extractor_->volumetric_surface_flow_cond_map())));
 
   // -------------------------------------------------------------------
@@ -89,7 +89,7 @@ void FLD::TimIntRedModels::init()
         discret_->set_state("dispnp", dispnp_);
       }
       coupled3D_redDbc_art_ =
-          Teuchos::rcp(new UTILS::FluidCouplingWrapper<Adapter::ArtNet>(discret_,
+          Teuchos::RCP(new UTILS::FluidCouplingWrapper<Adapter::ArtNet>(discret_,
               ART_timeInt_->discretization(), ART_timeInt_, output_redD, dta_, ART_timeInt_->dt()));
     }
 
@@ -108,7 +108,7 @@ void FLD::TimIntRedModels::init()
         discret_->set_state("dispnp", dispnp_);
       }
       coupled3D_redDbc_airways_ =
-          Teuchos::rcp(new UTILS::FluidCouplingWrapper<Airway::RedAirwayImplicitTimeInt>(discret_,
+          Teuchos::RCP(new UTILS::FluidCouplingWrapper<Airway::RedAirwayImplicitTimeInt>(discret_,
               airway_imp_timeInt_->discretization(), airway_imp_timeInt_, output_redD, dta_,
               airway_imp_timeInt_->dt()));
     }
@@ -117,7 +117,7 @@ void FLD::TimIntRedModels::init()
     zeros_->PutScalar(0.0);  // just in case of change
   }
 
-  traction_vel_comp_adder_bc_ = Teuchos::rcp(new UTILS::TotalTractionCorrector(discret_, dta_));
+  traction_vel_comp_adder_bc_ = Teuchos::RCP(new UTILS::TotalTractionCorrector(discret_, dta_));
 
 
   // ------------------------------------------------------------------------------
@@ -236,7 +236,7 @@ void FLD::TimIntRedModels::output_reduced_d()
     if (ART_timeInt_ != Teuchos::null)
     {
       Teuchos::RCP<Teuchos::ParameterList> redD_export_params;
-      redD_export_params = Teuchos::rcp(new Teuchos::ParameterList());
+      redD_export_params = Teuchos::RCP(new Teuchos::ParameterList());
 
       redD_export_params->set<int>("step", step_);
       redD_export_params->set<int>("upres", upres_);
@@ -250,7 +250,7 @@ void FLD::TimIntRedModels::output_reduced_d()
     if (airway_imp_timeInt_ != Teuchos::null)
     {
       Teuchos::RCP<Teuchos::ParameterList> redD_export_params;
-      redD_export_params = Teuchos::rcp(new Teuchos::ParameterList());
+      redD_export_params = Teuchos::RCP(new Teuchos::ParameterList());
 
       redD_export_params->set<int>("step", step_);
       redD_export_params->set<int>("upres", upres_);

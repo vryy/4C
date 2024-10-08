@@ -51,7 +51,7 @@ CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::MircoConstitutiveLawParams
 Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
 CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::create_constitutive_law()
 {
-  return Teuchos::rcp(new CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw(this));
+  return Teuchos::RCP(new CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw(this));
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

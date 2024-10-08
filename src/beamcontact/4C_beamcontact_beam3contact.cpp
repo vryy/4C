@@ -410,7 +410,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_large_angle_pai
     {
       std::pair<int, int> integration_ids = std::make_pair(-2, -2);
       cpvariables_.push_back(
-          Teuchos::rcp(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
+          Teuchos::RCP(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
               closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
     }
   }
@@ -856,7 +856,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_small_angle_pai
                 // number of the Gauss point [numgp] and the number of the integration interval
                 // [interval] are stored in the pair segids_ of the class beamcontactvaribles!)
                 gpvariables_.push_back(
-                    Teuchos::rcp(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
+                    Teuchos::RCP(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
                         closestpoint, leftpoint_ids, integration_ids, parallel_pp, jacobi)));
               }
               // We can leave the k-loop as soon as we have found a valid projection for the given
@@ -1103,7 +1103,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::rcp(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
+            Teuchos::RCP(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
       }
     }
@@ -1135,7 +1135,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::rcp(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
+            Teuchos::RCP(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
       }
     }
@@ -1167,7 +1167,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::rcp(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
+            Teuchos::RCP(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
       }
     }
@@ -1199,7 +1199,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::rcp(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
+            Teuchos::RCP(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
       }
     }
@@ -1228,7 +1228,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::rcp(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
+            Teuchos::RCP(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
       }
     }
@@ -1258,7 +1258,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::rcp(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
+            Teuchos::RCP(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
       }
     }
@@ -1287,7 +1287,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::rcp(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
+            Teuchos::RCP(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
       }
     }
@@ -1316,7 +1316,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::get_active_end_point_pairs
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::rcp(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
+            Teuchos::RCP(new CONTACT::Beam3contactvariables<numnodes, numnodalvalues>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
       }
     }

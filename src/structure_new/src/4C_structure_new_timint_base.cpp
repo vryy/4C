@@ -95,7 +95,7 @@ void Solid::TimeInt::Base::setup()
    * discretization routines. Therefore many methods need a slight modification
    * (most times adding a "const" should fix the problem).          hiermeier */
   Teuchos::RCP<Core::FE::Discretization> discret_ptr = data_global_state().get_discret();
-  dbc_ptr_->init(discret_ptr, data_global_state().get_freact_np(), Teuchos::rcp(this, false));
+  dbc_ptr_->init(discret_ptr, data_global_state().get_freact_np(), Teuchos::RCP(this, false));
   dbc_ptr_->setup();
 
   // ---------------------------------------------------------------------------
@@ -103,7 +103,7 @@ void Solid::TimeInt::Base::setup()
   // ---------------------------------------------------------------------------
   int_ptr_ = Solid::build_integrator(data_sdyn());
   int_ptr_->init(data_s_dyn_ptr(), data_global_state_ptr(), data_io_ptr(), dbc_ptr_,
-      Teuchos::rcp(this, false));
+      Teuchos::RCP(this, false));
   int_ptr_->setup();
   int_ptr_->post_setup();
   // Initialize and Setup the input/output writer for every Newton iteration
@@ -389,7 +389,7 @@ void Solid::TimeInt::Base::initialize_energy_file_stream_and_write_headers()
 Teuchos::RCP<Core::UTILS::ResultTest> Solid::TimeInt::Base::create_field_test()
 {
   check_init_setup();
-  Teuchos::RCP<Solid::ResultTest> resulttest = Teuchos::rcp(new Solid::ResultTest());
+  Teuchos::RCP<Solid::ResultTest> resulttest = Teuchos::RCP(new Solid::ResultTest());
   resulttest->init(get_data_global_state(), integrator().eval_data());
   resulttest->setup();
 
@@ -910,7 +910,7 @@ void Solid::TimeInt::Base::read_restart(const int stepn)
   dataglobalstate_->get_step_n() = stepn;
   dataglobalstate_->get_step_np() = stepn + 1;
   dataglobalstate_->get_multi_time() =
-      Teuchos::rcp(new TimeStepping::TimIntMStep<double>(0, 0, ioreader.read_double("time")));
+      Teuchos::RCP(new TimeStepping::TimIntMStep<double>(0, 0, ioreader.read_double("time")));
   const double& timen = dataglobalstate_->get_time_n();
   const double& dt = (*dataglobalstate_->get_delta_time())[0];
   dataglobalstate_->get_time_np() = timen + dt;

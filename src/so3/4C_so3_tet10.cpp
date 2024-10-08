@@ -53,7 +53,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10Type::create(
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::rcp(new Discret::ELEMENTS::SoTet10(id, owner));
+        Teuchos::RCP(new Discret::ELEMENTS::SoTet10(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -64,7 +64,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::rcp(new Discret::ELEMENTS::SoTet10(id, owner));
+      Teuchos::RCP(new Discret::ELEMENTS::SoTet10(id, owner));
   return ele;
 }
 
@@ -128,7 +128,7 @@ Discret::ELEMENTS::SoTet10::SoTet10(int id, int owner)
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOTET10, NUMGPT_SOTET10));
+    prestress_ = Teuchos::RCP(new Discret::ELEMENTS::PreStress(NUMNOD_SOTET10, NUMGPT_SOTET10));
 
   return;
 }
@@ -159,7 +159,7 @@ Discret::ELEMENTS::SoTet10::SoTet10(const Discret::ELEMENTS::SoTet10& old)
   }
 
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(*(old.prestress_)));
+    prestress_ = Teuchos::RCP(new Discret::ELEMENTS::PreStress(*(old.prestress_)));
 
   return;
 }
@@ -256,7 +256,7 @@ void Discret::ELEMENTS::SoTet10::unpack(Core::Communication::UnpackBuffer& buffe
     std::vector<char> tmpprestress(0);
     extract_from_pack(buffer, tmpprestress);
     if (prestress_ == Teuchos::null)
-      prestress_ = Teuchos::rcp(new Discret::ELEMENTS::PreStress(NUMNOD_SOTET10, NUMGPT_SOTET10));
+      prestress_ = Teuchos::RCP(new Discret::ELEMENTS::PreStress(NUMNOD_SOTET10, NUMGPT_SOTET10));
     Core::Communication::UnpackBuffer tmpprestress_buffer(tmpprestress);
     prestress_->unpack(tmpprestress_buffer);
   }

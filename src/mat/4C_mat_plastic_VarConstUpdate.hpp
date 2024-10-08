@@ -132,7 +132,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new PlasticElastHyperVCU(*this));
+      return Teuchos::RCP(new PlasticElastHyperVCU(*this));
     }
 
 

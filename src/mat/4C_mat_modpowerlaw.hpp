@@ -123,7 +123,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::rcp(new ModPowerLaw(*this));
+      return Teuchos::RCP(new ModPowerLaw(*this));
     }
 
     /// return material parameters for element calculation

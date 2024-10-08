@@ -53,7 +53,7 @@ Mat::PAR::ViscoPlasticNoYieldSurface::ViscoPlasticNoYieldSurface(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ViscoPlasticNoYieldSurface::create_material()
 {
-  return Teuchos::rcp(new Mat::ViscoPlasticNoYieldSurface(this));
+  return Teuchos::RCP(new Mat::ViscoPlasticNoYieldSurface(this));
 }
 
 /*----------------------------------------------------------------------*
