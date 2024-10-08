@@ -65,7 +65,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
   if (this->line_to_3D_segments_.size() == 0)
     return;
   else if (this->line_to_3D_segments_.size() > 1)
-    FOUR_C_THROW("There can be a maximum of one segment!");
+    FOUR_C_THROW(
+        "There can be a maximum of one segment for coupling pairs that couple on the beam "
+        "surface!");
 
   // Check that the beam element is a Simo--Reissner beam.
   auto beam_ele = dynamic_cast<const Discret::ELEMENTS::Beam3r*>(this->element1());

@@ -56,7 +56,7 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
   // Get the number of Lagrange multiplier DOF on a beam node and on a beam element.
   const auto& [n_lambda_node_pos, n_lambda_element_pos] =
       mortar_shape_functions_to_number_of_lagrange_values(
-          beam_to_solid_params_->get_mortar_shape_function_type(), n_dim);
+          beam_to_solid_params_, beam_to_solid_params_->get_mortar_shape_function_type(), n_dim);
   n_lambda_node_ = n_lambda_node_pos;
   n_lambda_node_translational_ = n_lambda_node_pos;
   n_lambda_element_ = n_lambda_element_pos;
@@ -90,7 +90,8 @@ BEAMINTERACTION::BeamToSolidMortarManager::BeamToSolidMortarManager(
     // Get the number of Lagrange multiplier DOF for rotational coupling on a beam node and on a
     // beam element.
     const auto& [n_lambda_node_rot, n_lambda_element_rot] =
-        mortar_shape_functions_to_number_of_lagrange_values(mortar_shape_function_rotation, n_dim);
+        mortar_shape_functions_to_number_of_lagrange_values(
+            beam_to_solid_params_, mortar_shape_function_rotation, n_dim);
     n_lambda_node_ += n_lambda_node_rot;
     n_lambda_node_rotational_ = n_lambda_node_rot;
     n_lambda_element_ += n_lambda_element_rot;

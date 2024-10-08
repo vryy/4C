@@ -15,6 +15,7 @@
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
 #include "4C_beaminteraction_beam_to_solid_mortar_manager.hpp"
 #include "4C_beaminteraction_beam_to_solid_surface_contact_params.hpp"
+#include "4C_beaminteraction_beam_to_solid_volume_meshtying_params.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_contact_pair.hpp"
 #include "4C_fem_general_largerotations.hpp"
@@ -130,9 +131,29 @@ ScalarType BEAMINTERACTION::penalty_potential(
  */
 std::pair<unsigned int, unsigned int>
 BEAMINTERACTION::mortar_shape_functions_to_number_of_lagrange_values(
+    const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions shape_function,
     const unsigned int n_dim)
 {
+  auto get_number_of_values_per_entry = [&]()
+  {
+    if (Inpar::BeamToSolid::BeamToSolidContactDiscretization::mortar_cross_section ==
+        beam_to_solid_params->get_contact_discretization())
+    {
+      const auto beam_to_volume_parameters =
+          Teuchos::rcp_dynamic_cast<const BeamToSolidVolumeMeshtyingParams>(
+              beam_to_solid_params, true);
+      const int n_fourier_modes = beam_to_volume_parameters->get_number_of_fourier_modes();
+      return (n_fourier_modes * 2 + 1);
+    }
+    else
+    {
+      return 1;
+    }
+  };
+
+  const int number_of_values_per_entry = get_number_of_values_per_entry();
+
   switch (shape_function)
   {
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::none:
@@ -143,20 +164,20 @@ BEAMINTERACTION::mortar_shape_functions_to_number_of_lagrange_values(
     }
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line2:
     {
-      const unsigned int n_lambda_node = 1 * n_dim;
+      const unsigned int n_lambda_node = 1 * n_dim * number_of_values_per_entry;
       const unsigned int n_lambda_element = 0;
       return {n_lambda_node, n_lambda_element};
     }
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line3:
     {
-      const unsigned int n_lambda_node = 1 * n_dim;
-      const unsigned int n_lambda_element = 1 * n_dim;
+      const unsigned int n_lambda_node = 1 * n_dim * number_of_values_per_entry;
+      const unsigned int n_lambda_element = 1 * n_dim * number_of_values_per_entry;
       return {n_lambda_node, n_lambda_element};
     }
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line4:
     {
-      const unsigned int n_lambda_node = 1 * n_dim;
-      const unsigned int n_lambda_element = 2 * n_dim;
+      const unsigned int n_lambda_node = 1 * n_dim * number_of_values_per_entry;
+      const unsigned int n_lambda_element = 2 * n_dim * number_of_values_per_entry;
       return {n_lambda_node, n_lambda_element};
     }
     default:

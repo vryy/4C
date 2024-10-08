@@ -56,6 +56,11 @@ namespace BEAMINTERACTION
     }
 
     /**
+     * \brief Returns the number of Fourier modes for cross-section mortar coupling.
+     */
+    inline int get_number_of_fourier_modes() const { return n_fourier_modes_; }
+
+    /**
      * \brief Returns the type of rotational coupling to be used.
      */
     inline Inpar::BeamToSolid::BeamToSolidRotationCoupling get_rotational_coupling_type() const
@@ -97,6 +102,9 @@ namespace BEAMINTERACTION
     //! Number of integration points along the circumferencial direction in the cross section
     //! projection.
     unsigned int integration_points_circumference_;
+
+    //! Number of Fourier modes for cross-section coupling
+    int n_fourier_modes_;
 
     //! Type of rotational coupling.
     Inpar::BeamToSolid::BeamToSolidRotationCoupling rotational_coupling_triad_construction_;
