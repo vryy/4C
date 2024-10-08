@@ -8,6 +8,7 @@ This script compares two files with a tolerance.
 import os
 import sys
 import numpy as np
+import argparse
 
 
 def convert_line_to_array(line):
@@ -63,52 +64,26 @@ if __name__ == "__main__":
     Execution part of script.
     """
 
-    # Read arguments.
-    if not len(sys.argv) == 6:
-        raise ValueError(
-            ("Wrong number of input arguments. Got {} instead " + "of 6!").format(
-                len(sys.argv)
-            )
-        )
-    eps = float(sys.argv[1])
-    file_ref = sys.argv[2]
-    file_comp = sys.argv[3]
-    tolerance_type = sys.argv[4]
-    min_value = float(sys.argv[5])
+    parser = argparse.ArgumentParser(
+        description="Compare csv files with absolute and relative tolerances"
+    )
+    parser.add_argument("file_a", type=str)
+    parser.add_argument("file_b", type=str)
+    parser.add_argument("r_tol", type=float, help="Relative tolerance")
+    parser.add_argument("a_tol", type=float, help="Absolute tolerance")
+    args = parser.parse_args()
 
-    if tolerance_type == "abs_tol":
-        print(
-            "\n\nCompare files with absolute tolerance {}:\n{}\n{}".format(
-                eps, file_ref, file_comp
-            )
-        )
-    elif tolerance_type == "rel_tol":
-        print(
-            "\n\nCompare files with relative tolerance {}:\n{}\n{}".format(
-                eps, file_ref, file_comp
-            )
-        )
-    else:
-        raise ValueError(
-            'received illegal tolerance type. Must either be "rel_tol" or "abs_tol"'
-        )
+    file_a = args.file_a
+    file_b = args.file_b
+    r_tol = args.r_tol
+    a_tol = args.a_tol
 
     # Load each file as a real array.
-    data_ref = read_csv(file_ref)
-    data_comp = read_csv(file_comp)
+    data_a = read_csv(file_a)
+    data_b = read_csv(file_b)
 
-    # Calculate the error in the data entries.
-    diff = 0.0
-    if tolerance_type == "abs_tol":
-        diff = np.abs(data_comp - data_ref)
-    else:
-        diff = np.abs(
-            (data_comp - data_ref)
-            / np.where(np.abs(data_ref) < min_value, min_value, data_ref)
-        )
-
-    if eps > np.max(diff):
+    # Compare the data values.
+    if np.allclose(data_a, data_b, rtol=r_tol, atol=a_tol):
         print("CSV comparison successful!")
     else:
-        print("Largest error is {}".format(np.max(diff)))
         raise ValueError("CSV comparison failed!")
