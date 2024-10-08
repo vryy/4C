@@ -97,7 +97,7 @@ void XFEM::XfaCouplingManager::set_coupling_states()
       Teuchos::rcp(new Core::LinAlg::Vector<double>(*get_map_extractor(0)->Map(1), true));
   insert_vector(1, ale_->dispnp(), 0, aledisplacements, CouplingCommManager::partial_to_partial);
   // 3 Set Fluid Dispnp
-  get_map_extractor(0)->insert_vector(aledisplacements, 1, xfluid_->write_access_dispnp());
+  get_map_extractor(0)->insert_vector(*aledisplacements, 1, *xfluid_->write_access_dispnp());
 
   // 4 new grid velocity
   xfluid_->update_gridv();
@@ -150,7 +150,7 @@ void XFEM::XfaCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vecto
     const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
   Teuchos::RCP<const Core::LinAlg::Vector<double>> av = ale_->rhs();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> aov = ale_->interface()->extract_other_vector(av);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> aov = ale_->interface()->extract_other_vector(*av);
   me.insert_vector(*aov, idx_[1], *rhs);  // add ALE contributions to 'rhs'
   return;
 }

@@ -1080,7 +1080,7 @@ void FLD::TurbulenceStatisticsGeneralMean::write_old_average_vec(
 
   // output real pressure
   Teuchos::RCP<Core::LinAlg::Vector<double>> pressure =
-      velpressplitter_.extract_cond_vector(prev_avg_);
+      velpressplitter_.extract_cond_vector(*prev_avg_);
   output.write_vector("averaged_pressure", pressure);
 }  // FLD::TurbulenceStatisticsGeneralMean::WriteOldAverageVec
 

@@ -1066,10 +1066,10 @@ void TSI::Monolithic::extract_field_vectors(Teuchos::RCP<Core::LinAlg::Vector<do
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::extract_field_vectors");
 
   // process structure unknowns of the first field
-  sx = extractor()->extract_vector(x, 0);
+  sx = extractor()->extract_vector(*x, 0);
 
   // process thermo unknowns of the second field
-  tx = extractor()->extract_vector(x, 1);
+  tx = extractor()->extract_vector(*x, 1);
 }  // extract_field_vectors()
 
 

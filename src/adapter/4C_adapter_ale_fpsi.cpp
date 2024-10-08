@@ -32,9 +32,7 @@ Adapter::AleFpsiWrapper::AleFpsiWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 void Adapter::AleFpsiWrapper::apply_interface_displacements(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp)
 {
-  interface_->insert_fpsi_cond_vector(idisp, write_access_dispnp());
-
-  return;
+  interface_->insert_fpsi_cond_vector(*idisp, *write_access_dispnp());
 }
 
 /*----------------------------------------------------------------------------*/
@@ -42,9 +40,7 @@ void Adapter::AleFpsiWrapper::apply_interface_displacements(
 void Adapter::AleFpsiWrapper::apply_fsi_interface_displacements(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp)
 {
-  interface_->insert_fsi_cond_vector(idisp, write_access_dispnp());
-
-  return;
+  interface_->insert_fsi_cond_vector(*idisp, *write_access_dispnp());
 }
 
 

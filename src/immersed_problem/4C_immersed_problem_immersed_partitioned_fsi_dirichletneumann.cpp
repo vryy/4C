@@ -287,7 +287,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::fsi_op(
     ////////////////////
     calc_fluid_tractions_on_structure();  //!< calculate new fluid tractions interpolated to
                                           //!< structural surface
-    struct_op(immersedstructure_->interface()->extract_immersed_cond_vector(struct_bdry_traction_),
+    struct_op(immersedstructure_->interface()->extract_immersed_cond_vector(*struct_bdry_traction_),
         fillFlag);                 //!< solve the structure
     reset_immersed_information();  //!< structure moved; immersed info are invalid -> reset
     const Teuchos::RCP<Core::LinAlg::Vector<double>> artificial_velocity_np =
@@ -453,7 +453,7 @@ Immersed::ImmersedPartitionedFSIDirichletNeumann::initial_guess()
   if (displacementcoupling_)
     return calc_artificial_velocity();
   else
-    return immersedstructure_->interface()->extract_immersed_cond_vector(struct_bdry_traction_);
+    return immersedstructure_->interface()->extract_immersed_cond_vector(*struct_bdry_traction_);
 
   return Teuchos::null;
 }
@@ -818,7 +818,7 @@ int Immersed::ImmersedPartitionedFSIDirichletNeumann::calc_residual(Core::LinAlg
   int err = -1234;
 
   if (!displacementcoupling_)
-    err = F.Update(1.0, *(immersedstructure_->interface()->extract_immersed_cond_vector(newstate)),
+    err = F.Update(1.0, *(immersedstructure_->interface()->extract_immersed_cond_vector(*newstate)),
         -1.0, *oldstate, 0.0);
   else
     err = F.Update(1.0, *newstate, -1.0, *oldstate, 0.0);

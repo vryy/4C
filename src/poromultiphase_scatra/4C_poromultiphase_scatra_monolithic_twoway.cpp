@@ -734,9 +734,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::setup_vector(
   //  Teuchos::RCP<const Core::LinAlg::Vector<double>> pfx;
 
   if (solve_structure_)
-    extractor()->insert_vector(*(poro_field()->extractor()->extract_vector(pv, 0)), 0, f);
+    extractor()->insert_vector(*(poro_field()->extractor()->extract_vector(*pv, 0)), 0, f);
   extractor()->insert_vector(
-      *(poro_field()->extractor()->extract_vector(pv, 1)), struct_offset_, f);
+      *(poro_field()->extractor()->extract_vector(*pv, 1)), struct_offset_, f);
   extractor()->insert_vector(*sv, struct_offset_ + 1, f);
 }
 
@@ -753,15 +753,15 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::extract_field_v
 
   // process structure unknowns of the first field
   if (solve_structure_)
-    stx = extractor()->extract_vector(x, 0);
+    stx = extractor()->extract_vector(*x, 0);
   else
     stx = Teuchos::rcp(new Core::LinAlg::Vector<double>(*poro_field()->struct_dof_row_map(), true));
 
   // process fluid unknowns of the second field
-  flx = extractor()->extract_vector(x, struct_offset_);
+  flx = extractor()->extract_vector(*x, struct_offset_);
 
   // process scatra unknowns of the third field
-  scx = extractor()->extract_vector(x, struct_offset_ + 1);
+  scx = extractor()->extract_vector(*x, struct_offset_ + 1);
 }
 
 /*----------------------------------------------------------------------*
@@ -1423,7 +1423,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::u
     Teuchos::RCP<const Core::LinAlg::Vector<double>> scatrainc)
 {
   scatra_algo()->scatra_field()->update_iter(
-      blockrowdofmap_artscatra_->extract_vector(scatrainc, 0));
+      blockrowdofmap_artscatra_->extract_vector(*scatrainc, 0));
   scatramsht_->update_art_scatra_iter(scatrainc);
 }
 
@@ -1440,37 +1440,37 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
 
   // process structure unknowns of the first field
   if (solve_structure_)
-    stx = extractor()->extract_vector(x, 0);
+    stx = extractor()->extract_vector(*x, 0);
   else
     stx = Teuchos::rcp(new Core::LinAlg::Vector<double>(*poro_field()->struct_dof_row_map(), true));
 
   // process artery and porofluid unknowns
   Teuchos::RCP<const Core::LinAlg::Vector<double>> porofluid =
-      extractor()->extract_vector(x, struct_offset_);
+      extractor()->extract_vector(*x, struct_offset_);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> artery =
-      extractor()->extract_vector(x, struct_offset_ + 2);
+      extractor()->extract_vector(*x, struct_offset_ + 2);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> dummy1 =
       Teuchos::rcp(new Core::LinAlg::Vector<double>(*fullmap_artporo_));
 
   // build the combined increment of porofluid and artery
-  blockrowdofmap_artporo_->insert_vector(porofluid, 0, dummy1);
-  blockrowdofmap_artporo_->insert_vector(artery, 1, dummy1);
+  blockrowdofmap_artporo_->insert_vector(*porofluid, 0, *dummy1);
+  blockrowdofmap_artporo_->insert_vector(*artery, 1, *dummy1);
 
   flx = dummy1;
 
   // process scatra and artery scatra unknowns of the third field
   Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra =
-      extractor()->extract_vector(x, struct_offset_ + 1);
+      extractor()->extract_vector(*x, struct_offset_ + 1);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> artscatra =
-      extractor()->extract_vector(x, struct_offset_ + 3);
+      extractor()->extract_vector(*x, struct_offset_ + 3);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> dummy2 =
       Teuchos::rcp(new Core::LinAlg::Vector<double>(*fullmap_artscatra_));
 
   // build the combined increment of artery and artery-scatra
-  blockrowdofmap_artscatra_->insert_vector(scatra, 0, dummy2);
-  blockrowdofmap_artscatra_->insert_vector(artscatra, 1, dummy2);
+  blockrowdofmap_artscatra_->insert_vector(*scatra, 0, *dummy2);
+  blockrowdofmap_artscatra_->insert_vector(*artscatra, 1, *dummy2);
 
   scx = dummy2;
 }
@@ -1535,21 +1535,21 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::s
   // structure
   if (solve_structure_)
     extractor()->insert_vector(
-        *(poro_field()->extractor()->extract_vector(poro_field()->rhs(), 0)), 0, *rhs_);
+        *(poro_field()->extractor()->extract_vector(*poro_field()->rhs(), 0)), 0, *rhs_);
   // porofluid
   extractor()->insert_vector(
-      *(poro_field()->extractor()->extract_vector(poro_field()->rhs(), 1)), struct_offset_, *rhs_);
+      *(poro_field()->extractor()->extract_vector(*poro_field()->rhs(), 1)), struct_offset_, *rhs_);
   // scatra
   extractor()->insert_vector(
-      *(blockrowdofmap_artscatra_->extract_vector(scatramsht_->combined_rhs(), 0)),
+      *(blockrowdofmap_artscatra_->extract_vector(*scatramsht_->combined_rhs(), 0)),
       struct_offset_ + 1, *rhs_);
 
   // artery
-  extractor()->insert_vector(*(poro_field()->extractor()->extract_vector(poro_field()->rhs(), 2)),
+  extractor()->insert_vector(*(poro_field()->extractor()->extract_vector(*poro_field()->rhs(), 2)),
       struct_offset_ + 2, *rhs_);
   // arteryscatra
   extractor()->insert_vector(
-      *(blockrowdofmap_artscatra_->extract_vector(scatramsht_->combined_rhs(), 1)),
+      *(blockrowdofmap_artscatra_->extract_vector(*scatramsht_->combined_rhs(), 1)),
       struct_offset_ + 3, *rhs_);
 }
 
@@ -1559,9 +1559,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
     build_convergence_norms()
 {
   Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryrhs =
-      extractor()->extract_vector(rhs_, struct_offset_ + 2);
+      extractor()->extract_vector(*rhs_, struct_offset_ + 2);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryinc =
-      extractor()->extract_vector(iterinc_, struct_offset_ + 2);
+      extractor()->extract_vector(*iterinc_, struct_offset_ + 2);
 
   // build also norms for artery
   normrhsart_ = UTILS::calculate_vector_norm(vectornormfres_, arteryrhs);
@@ -1570,9 +1570,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
       vectornorminc_, (poro_field()->fluid_field()->art_net_tim_int()->pressurenp()));
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryscarhs =
-      extractor()->extract_vector(rhs_, struct_offset_ + 3);
+      extractor()->extract_vector(*rhs_, struct_offset_ + 3);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryscainc =
-      extractor()->extract_vector(iterinc_, struct_offset_ + 3);
+      extractor()->extract_vector(*iterinc_, struct_offset_ + 3);
 
   // build also norms for artery
   normrhsartsca_ = UTILS::calculate_vector_norm(vectornormfres_, arteryscarhs);

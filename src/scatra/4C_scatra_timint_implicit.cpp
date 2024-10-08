@@ -2570,7 +2570,7 @@ void ScaTra::ScaTraTimIntImpl::apply_dirichlet_to_system()
     // are not used anyway.
     // We could avoid this though, if the dofrowmap would not include
     // the Dirichlet values as well. But it is expensive to avoid that.
-    dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), residual_);
+    dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *residual_);
 
     //--------- Apply Dirichlet boundary conditions to system of equations
     // residual values are supposed to be zero at Dirichlet boundaries
@@ -2957,9 +2957,9 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_solve()
   if (explpredictor)
   {
     // explicit predictor + recovery of DBC values
-    auto phinp_dirich = dbcmaps_->extract_cond_vector(phinp_);
+    auto phinp_dirich = dbcmaps_->extract_cond_vector(*phinp_);
     explicit_predictor();
-    dbcmaps_->insert_cond_vector(phinp_dirich, phinp_);
+    dbcmaps_->insert_cond_vector(*phinp_dirich, *phinp_);
   }
 
   // start Newton-Raphson iteration

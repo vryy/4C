@@ -151,66 +151,11 @@ namespace Core::LinAlg
     /*!
       \param full vector on the full map
       \param block number of vector to extract
-     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_vector(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> full, int block) const
-    {
-      return extract_vector(*full, block);
-    }
-
-    /// extract a partial vector from a full vector
-    /*!
-      \param full vector on the full map
-      \param block number of vector to extract
-     */
-    Teuchos::RCP<Epetra_MultiVector> extract_vector(
-        Teuchos::RCP<Epetra_MultiVector> full, int block) const
-    {
-      return extract_vector(*full, block);
-    }
-
-    /// extract a partial vector from a full vector
-    /*!
-      \param full vector on the full map
-      \param block number of vector to extract
-     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_vector(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> full, int block) const
-    {
-      return extract_vector(*full, block);
-    }
-
-    /// extract a partial vector from a full vector
-    /*!
-      \param full vector on the full map
-      \param block number of vector to extract
-     */
-    Teuchos::RCP<Epetra_MultiVector> extract_vector(
-        Teuchos::RCP<const Epetra_MultiVector> full, int block) const
-    {
-      return extract_vector(*full, block);
-    }
-
-    /// extract a partial vector from a full vector
-    /*!
-      \param full vector on the full map
-      \param block number of vector to extract
       \param partial vector to fill
      */
     virtual void extract_vector(
         const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial) const;
 
-    /// extract a partial vector from a full vector
-    /*!
-      \param full vector on the full map
-      \param block number of vector to extract
-      \param partial vector to fill
-     */
-    void extract_vector(Teuchos::RCP<const Core::LinAlg::Vector<double>> full, int block,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> partial) const
-    {
-      extract_vector(*full, block, *partial);
-    }
 
     //@}
 
@@ -237,66 +182,10 @@ namespace Core::LinAlg
     /*!
       \param partial vector to copy into full vector
       \param block number of partial vector
-     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> insert_vector(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> partial, int block) const
-    {
-      return insert_vector(*partial, block);
-    }
-
-    /// Put a partial vector into a full vector
-    /*!
-      \param partial vector to copy into full vector
-      \param block number of partial vector
-     */
-    Teuchos::RCP<Epetra_MultiVector> insert_vector(
-        Teuchos::RCP<const Epetra_MultiVector> partial, int block) const
-    {
-      return insert_vector(*partial, block);
-    }
-
-    /// Put a partial vector into a full vector
-    /*!
-      \param partial vector to copy into full vector
-      \param block number of partial vector
-     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> insert_vector(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> partial, int block) const
-    {
-      return insert_vector(*partial, block);
-    }
-
-    /// Put a partial vector into a full vector
-    /*!
-      \param partial vector to copy into full vector
-      \param block number of partial vector
-     */
-    Teuchos::RCP<Epetra_MultiVector> insert_vector(
-        Teuchos::RCP<Epetra_MultiVector> partial, int block) const
-    {
-      return insert_vector(*partial, block);
-    }
-
-    /// Put a partial vector into a full vector
-    /*!
-      \param partial vector to copy into full vector
-      \param block number of partial vector
       \param full vector to copy into
      */
     virtual void insert_vector(
         const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full) const;
-
-    /// Put a partial vector into a full vector
-    /*!
-      \param partial vector to copy into full vector
-      \param block number of partial vector
-      \param full vector to copy into
-     */
-    void insert_vector(Teuchos::RCP<const Core::LinAlg::Vector<double>> partial, int block,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> full) const
-    {
-      insert_vector(*partial, block, *full);
-    }
 
     //@}
 
@@ -312,19 +201,6 @@ namespace Core::LinAlg
      */
     virtual void add_vector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full,
         double scale = 1.0) const;
-
-    /// Put a partial vector into a full vector
-    /*!
-      \param partial vector to copy into full vector
-      \param block number of partial vector
-      \param full vector to copy into
-      \param scale scaling factor for partial vector
-     */
-    void add_vector(Teuchos::RCP<const Core::LinAlg::Vector<double>> partial, int block,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> full, double scale = 1.0) const
-    {
-      add_vector(*partial, block, *full, scale);
-    }
 
     //@}
 
@@ -353,58 +229,52 @@ namespace Core::LinAlg
 
 
 /// Add all kinds of support methods to derived classes of MultiMapExtractor.
-#define MAP_EXTRACTOR_VECTOR_METHODS(name, pos)                                                 \
-  Teuchos::RCP<Core::LinAlg::Vector<double>> extract_##name##_vector(                           \
-      const Core::LinAlg::Vector<double>& full) const                                           \
-  {                                                                                             \
-    return MultiMapExtractor::extract_vector(full, pos);                                        \
-  }                                                                                             \
-                                                                                                \
-  Teuchos::RCP<Core::LinAlg::Vector<double>> extract_##name##_vector(                           \
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> full) const                              \
-  {                                                                                             \
-    return MultiMapExtractor::extract_vector(full, pos);                                        \
-  }                                                                                             \
-                                                                                                \
-  void extract_##name##_vector(Teuchos::RCP<const Core::LinAlg::Vector<double>> full,           \
-      Teuchos::RCP<Core::LinAlg::Vector<double>> cond) const                                    \
-  {                                                                                             \
-    extract_vector(full, pos, cond);                                                            \
-  }                                                                                             \
-                                                                                                \
-  Teuchos::RCP<Core::LinAlg::Vector<double>> insert_##name##_vector(                            \
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> cond) const                              \
-  {                                                                                             \
-    return insert_vector(cond, pos);                                                            \
-  }                                                                                             \
-                                                                                                \
-  void insert_##name##_vector(Teuchos::RCP<const Core::LinAlg::Vector<double>> cond,            \
-      Teuchos::RCP<Core::LinAlg::Vector<double>> full) const                                    \
-  {                                                                                             \
-    insert_vector(cond, pos, full);                                                             \
-  }                                                                                             \
-                                                                                                \
-  void add_##name##_vector(Teuchos::RCP<const Core::LinAlg::Vector<double>> cond,               \
-      Teuchos::RCP<Core::LinAlg::Vector<double>> full) const                                    \
-  {                                                                                             \
-    add_vector(cond, pos, full);                                                                \
-  }                                                                                             \
-                                                                                                \
-  void add_##name##_vector(double scale, Teuchos::RCP<const Core::LinAlg::Vector<double>> cond, \
-      Teuchos::RCP<Core::LinAlg::Vector<double>> full) const                                    \
-  {                                                                                             \
-    add_vector(cond, pos, full, scale);                                                         \
-  }                                                                                             \
-                                                                                                \
-  const Teuchos::RCP<const Epetra_Map>& name##_map() const { return Map(pos); }                 \
-                                                                                                \
-  bool name##_relevant() const { return name##_map()->NumGlobalElements() != 0; }               \
-                                                                                                \
-  void name##_put_scalar(Core::LinAlg::Vector<double>& full, double scalar) const               \
-  {                                                                                             \
-    put_scalar(full, pos, scalar);                                                              \
-  }                                                                                             \
-                                                                                                \
+#define MAP_EXTRACTOR_VECTOR_METHODS(name, pos)                                           \
+  Teuchos::RCP<Core::LinAlg::Vector<double>> extract_##name##_vector(                     \
+      const Core::LinAlg::Vector<double>& full) const                                     \
+  {                                                                                       \
+    return MultiMapExtractor::extract_vector(full, pos);                                  \
+  }                                                                                       \
+                                                                                          \
+  void extract_##name##_vector(                                                           \
+      const Core::LinAlg::Vector<double>& full, Core::LinAlg::Vector<double>& cond) const \
+  {                                                                                       \
+    extract_vector(full, pos, cond);                                                      \
+  }                                                                                       \
+                                                                                          \
+  Teuchos::RCP<Core::LinAlg::Vector<double>> insert_##name##_vector(                      \
+      const Core::LinAlg::Vector<double>& cond) const                                     \
+  {                                                                                       \
+    return insert_vector(cond, pos);                                                      \
+  }                                                                                       \
+                                                                                          \
+  void insert_##name##_vector(                                                            \
+      const Core::LinAlg::Vector<double>& cond, Core::LinAlg::Vector<double>& full) const \
+  {                                                                                       \
+    insert_vector(cond, pos, full);                                                       \
+  }                                                                                       \
+                                                                                          \
+  void add_##name##_vector(                                                               \
+      const Core::LinAlg::Vector<double>& cond, Core::LinAlg::Vector<double>& full) const \
+  {                                                                                       \
+    add_vector(cond, pos, full);                                                          \
+  }                                                                                       \
+                                                                                          \
+  void add_##name##_vector(double scale, const Core::LinAlg::Vector<double>& cond,        \
+      Core::LinAlg::Vector<double>& full) const                                           \
+  {                                                                                       \
+    add_vector(cond, pos, full, scale);                                                   \
+  }                                                                                       \
+                                                                                          \
+  const Teuchos::RCP<const Epetra_Map>& name##_map() const { return Map(pos); }           \
+                                                                                          \
+  bool name##_relevant() const { return name##_map()->NumGlobalElements() != 0; }         \
+                                                                                          \
+  void name##_put_scalar(Core::LinAlg::Vector<double>& full, double scalar) const         \
+  {                                                                                       \
+    put_scalar(full, pos, scalar);                                                        \
+  }                                                                                       \
+                                                                                          \
   double name##_norm2(const Core::LinAlg::Vector<double>& full) const { return norm2(full, pos); }
 
 

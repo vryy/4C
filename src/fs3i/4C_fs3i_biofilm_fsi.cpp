@@ -461,7 +461,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
       lambda_ = fsi_->get_lambda();
     }
 
-    lambdafull = fsi_->structure_field()->interface()->insert_fsi_cond_vector(lambda_);
+    lambdafull = fsi_->structure_field()->interface()->insert_fsi_cond_vector(*lambda_);
 
     // calculate interface normals in deformed configuration
     Teuchos::RCP<Core::LinAlg::Vector<double>> nodalnormals =

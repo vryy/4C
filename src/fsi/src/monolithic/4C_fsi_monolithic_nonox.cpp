@@ -328,7 +328,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<doub
 
   // Save the inner fluid map that includes the background fluid DOF in order to
   // determine a change.
-  const Epetra_BlockMap fluidincrementmap = extractor().extract_vector(step_increment, 1)->Map();
+  const Epetra_BlockMap fluidincrementmap = extractor().extract_vector(*step_increment, 1)->Map();
 
   if (not firstcall_)
   {
@@ -349,7 +349,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<doub
     if (sdbg_ != Teuchos::null)
     {
       sdbg_->new_iteration();
-      sdbg_->write_vector("x", *structure_field()->interface()->extract_fsi_cond_vector(sx));
+      sdbg_->write_vector("x", *structure_field()->interface()->extract_fsi_cond_vector(*sx));
     }
   }
 

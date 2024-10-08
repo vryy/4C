@@ -1490,7 +1490,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> ScaTra::ScaTraTimIntImpl::diric
   dirichones->PutScalar(1.0);
   Teuchos::RCP<Core::LinAlg::Vector<double>> dirichtoggle =
       Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
-  dbcmaps_->insert_cond_vector(dirichones, dirichtoggle);
+  dbcmaps_->insert_cond_vector(*dirichones, *dirichtoggle);
   return dirichtoggle;
 }  // ScaTraTimIntImpl::dirichlet_toggle
 
@@ -1790,18 +1790,18 @@ bool ScaTra::ScaTraTimIntImpl::convergence_check(int itnum, int itmax, const dou
   // distinguish whether one or two scalars are considered
   if (num_scal() == 2)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vec1 = splitter_->extract_other_vector(residual_);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vec2 = splitter_->extract_cond_vector(residual_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vec1 = splitter_->extract_other_vector(*residual_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> vec2 = splitter_->extract_cond_vector(*residual_);
     vec1->Norm2(&res1norm_L2);
     vec2->Norm2(&res2norm_L2);
 
-    vec1 = splitter_->extract_other_vector(increment_);
-    vec2 = splitter_->extract_cond_vector(increment_);
+    vec1 = splitter_->extract_other_vector(*increment_);
+    vec2 = splitter_->extract_cond_vector(*increment_);
     vec1->Norm2(&phi1incnorm_L2);
     vec2->Norm2(&phi2incnorm_L2);
 
-    vec1 = splitter_->extract_other_vector(phinp_);
-    vec2 = splitter_->extract_cond_vector(phinp_);
+    vec1 = splitter_->extract_other_vector(*phinp_);
+    vec2 = splitter_->extract_cond_vector(*phinp_);
     vec1->Norm2(&phi1norm_L2);
     vec2->Norm2(&phi2norm_L2);
 

@@ -207,8 +207,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup_syst
     Teuchos::RCP<const Epetra_Map> dbcmap_art_with_collapsed)
 {
   // add normal part to rhs
-  rhs->Update(1.0, *globalex_->insert_vector(rhs_cont, 0), 1.0);
-  rhs->Update(1.0, *globalex_->insert_vector(rhs_art, 1), 1.0);
+  rhs->Update(1.0, *globalex_->insert_vector(*rhs_cont, 0), 1.0);
+  rhs->Update(1.0, *globalex_->insert_vector(*rhs_art, 1), 1.0);
 
   // apply DBCs
   // 1) on vector
@@ -630,19 +630,19 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
   // Note: all terms are negative since rhs
   // pp*D^T*kappa^{-1}*D*phi_np^art
   dtkd->multiply(false, *phinp_art_, *art_contribution);
-  rhs->Update(-pp_ * timefacrhs_art_, *globalex_->insert_vector(art_contribution, 1), 1.0);
+  rhs->Update(-pp_ * timefacrhs_art_, *globalex_->insert_vector(*art_contribution, 1), 1.0);
 
   // -pp*D^T*kappa^{-1}*M*phi_np^cont
   dtkm->multiply(false, *phinp_cont_, *art_contribution);
-  rhs->Update(pp_ * timefacrhs_art_, *globalex_->insert_vector(art_contribution, 1), 1.0);
+  rhs->Update(pp_ * timefacrhs_art_, *globalex_->insert_vector(*art_contribution, 1), 1.0);
 
   // pp*M^T*kappa^{-1}*M*phi_np^cont
   mtkm->multiply(false, *phinp_cont_, *cont_contribution);
-  rhs->Update(-pp_ * timefacrhs_cont_, *globalex_->insert_vector(cont_contribution, 0), 1.0);
+  rhs->Update(-pp_ * timefacrhs_cont_, *globalex_->insert_vector(*cont_contribution, 0), 1.0);
 
   // -pp*M^T*kappa^{-1}*D*phi_np^art = -pp*(D^T*kappa^{-1}*M)^T*phi_np^art
   dtkm->multiply(true, *phinp_art_, *cont_contribution);
-  rhs->Update(pp_ * timefacrhs_cont_, *globalex_->insert_vector(cont_contribution, 0), 1.0);
+  rhs->Update(pp_ * timefacrhs_cont_, *globalex_->insert_vector(*cont_contribution, 0), 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -781,9 +781,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::extract_si
     Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_art)
 {
   // process first field (continuous)
-  vec_cont = globalex_->extract_vector(globalvec, 0);
+  vec_cont = globalex_->extract_vector(*globalvec, 0);
   // process second field (artery)
-  vec_art = globalex_->extract_vector(globalvec, 1);
+  vec_art = globalex_->extract_vector(*globalvec, 1);
 }
 
 /*----------------------------------------------------------------------*

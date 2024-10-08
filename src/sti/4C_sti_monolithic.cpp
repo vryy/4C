@@ -331,8 +331,8 @@ void STI::Monolithic::fd_check()
   // create global state vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> statenp(
       Core::LinAlg::create_vector(*dof_row_map(), true));
-  maps_->insert_vector(scatra_field()->phinp(), 0, statenp);
-  maps_->insert_vector(thermo_field()->phinp(), 1, statenp);
+  maps_->insert_vector(*scatra_field()->phinp(), 0, *statenp);
+  maps_->insert_vector(*thermo_field()->phinp(), 1, *statenp);
 
   // make a copy of global state vector to undo perturbations later
   auto statenp_original = Teuchos::rcp(new Core::LinAlg::Vector<double>(*statenp));
@@ -378,8 +378,8 @@ void STI::Monolithic::fd_check()
       if (statenp->SumIntoGlobalValue(colgid, 0, scatra_field()->fd_check_eps()))
         FOUR_C_THROW(
             "Perturbation could not be imposed on state vector for finite difference check!");
-    scatra_field()->phinp()->Update(1., *maps_->extract_vector(statenp, 0), 0.);
-    thermo_field()->phinp()->Update(1., *maps_->extract_vector(statenp, 1), 0.);
+    scatra_field()->phinp()->Update(1., *maps_->extract_vector(*statenp, 0), 0.);
+    thermo_field()->phinp()->Update(1., *maps_->extract_vector(*statenp, 1), 0.);
 
     // carry perturbation over to state vectors at intermediate time stages if necessary
     scatra_field()->compute_intermediate_values();
@@ -515,9 +515,9 @@ void STI::Monolithic::fd_check()
   }
 
   // undo perturbations of state variables
-  scatra_field()->phinp()->Update(1., *maps_->extract_vector(statenp_original, 0), 0.);
+  scatra_field()->phinp()->Update(1., *maps_->extract_vector(*statenp_original, 0), 0.);
   scatra_field()->compute_intermediate_values();
-  thermo_field()->phinp()->Update(1., *maps_->extract_vector(statenp_original, 1), 0.);
+  thermo_field()->phinp()->Update(1., *maps_->extract_vector(*statenp_original, 1), 0.);
   thermo_field()->compute_intermediate_values();
 
   // recompute system matrix and right-hand side vector based on original state variables
@@ -1155,7 +1155,7 @@ void STI::Monolithic::assemble_mat_and_rhs()
   systemmatrix_->complete();
 
   // create full monolithic right-hand side vector
-  maps_->insert_vector(scatra_field()->residual(), 0, residual_);
+  maps_->insert_vector(*scatra_field()->residual(), 0, *residual_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> thermoresidual(Teuchos::null);
   if (condensationthermo_)
   {
@@ -1166,7 +1166,7 @@ void STI::Monolithic::assemble_mat_and_rhs()
   {
     thermoresidual = thermo_field()->residual();
   }
-  maps_->insert_vector(thermoresidual, 1, residual_);
+  maps_->insert_vector(*thermoresidual, 1, *residual_);
 }  // STI::Monolithic::assemble_mat_and_rhs()
 
 
@@ -1340,14 +1340,14 @@ bool STI::Monolithic::exit_newton_raphson()
       double concresnorm(0.);
       scatra_field()
           ->splitter()
-          ->extract_other_vector(*maps_->extract_vector(residual_, 0))
+          ->extract_other_vector(*maps_->extract_vector(*residual_, 0))
           ->Norm2(&concresnorm);
 
       // compute L2 norm of concentration increment vector
       double concincnorm(0.);
       scatra_field()
           ->splitter()
-          ->extract_other_vector(*maps_->extract_vector(increment_, 0))
+          ->extract_other_vector(*maps_->extract_vector(*increment_, 0))
           ->Norm2(&concincnorm);
 
       // compute L2 norm of potential state vector
@@ -1358,14 +1358,14 @@ bool STI::Monolithic::exit_newton_raphson()
       double potresnorm(0.);
       scatra_field()
           ->splitter()
-          ->extract_cond_vector(*maps_->extract_vector(residual_, 0))
+          ->extract_cond_vector(*maps_->extract_vector(*residual_, 0))
           ->Norm2(&potresnorm);
 
       // compute L2 norm of potential increment vector
       double potincnorm(0.);
       scatra_field()
           ->splitter()
-          ->extract_cond_vector(*maps_->extract_vector(increment_, 0))
+          ->extract_cond_vector(*maps_->extract_vector(*increment_, 0))
           ->Norm2(&potincnorm);
 
       // compute L2 norm of thermo state vector
@@ -1374,11 +1374,11 @@ bool STI::Monolithic::exit_newton_raphson()
 
       // compute L2 norm of thermo residual vector
       double thermoresnorm(0.);
-      maps_->extract_vector(residual_, 1)->Norm2(&thermoresnorm);
+      maps_->extract_vector(*residual_, 1)->Norm2(&thermoresnorm);
 
       // compute L2 norm of thermo increment vector
       double thermoincnorm(0.);
-      maps_->extract_vector(increment_, 1)->Norm2(&thermoincnorm);
+      maps_->extract_vector(*increment_, 1)->Norm2(&thermoincnorm);
 
       // safety checks
       if (std::isnan(concdofnorm) or std::isnan(concresnorm) or std::isnan(concincnorm) or
@@ -1570,7 +1570,7 @@ void STI::Monolithic::solve()
           residual_->Map().NumGlobalElements());
 
     // update scatra field
-    scatra_field()->update_iter(maps_->extract_vector(increment_, 0));
+    scatra_field()->update_iter(maps_->extract_vector(*increment_, 0));
     scatra_field()->compute_intermediate_values();
 
     // update thermo field
@@ -1579,7 +1579,7 @@ void STI::Monolithic::solve()
     {
       thermoincrement = Teuchos::rcp(
           new Core::LinAlg::Vector<double>(*thermo_field()->discretization()->dof_row_map()));
-      Core::LinAlg::export_to(*maps_->extract_vector(increment_, 1), *thermoincrement);
+      Core::LinAlg::export_to(*maps_->extract_vector(*increment_, 1), *thermoincrement);
       const Teuchos::RCP<const Core::LinAlg::Vector<double>> masterincrement =
           strategythermo_->interface_maps()->extract_vector(*thermoincrement, 2);
       const Teuchos::RCP<Core::LinAlg::Vector<double>> slaveincrement =
@@ -1603,11 +1603,11 @@ void STI::Monolithic::solve()
           break;
         }
       }
-      strategythermo_->interface_maps()->insert_vector(slaveincrement, 1, thermoincrement);
+      strategythermo_->interface_maps()->insert_vector(*slaveincrement, 1, *thermoincrement);
     }
     else
     {
-      thermoincrement = maps_->extract_vector(increment_, 1);
+      thermoincrement = maps_->extract_vector(*increment_, 1);
     }
     thermo_field()->update_iter(thermoincrement);
     thermo_field()->compute_intermediate_values();

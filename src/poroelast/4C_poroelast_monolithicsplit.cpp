@@ -66,11 +66,11 @@ void PoroElast::MonolithicSplit::prepare_time_step()
     double timescale = fluid_field()->time_scaling();
 
     Teuchos::RCP<const Core::LinAlg::Vector<double>> idispnp =
-        structure_field()->interface()->extract_fsi_cond_vector(structure_field()->dispnp());
+        structure_field()->interface()->extract_fsi_cond_vector(*structure_field()->dispnp());
     Teuchos::RCP<const Core::LinAlg::Vector<double>> idispn =
-        structure_field()->interface()->extract_fsi_cond_vector(structure_field()->dispn());
+        structure_field()->interface()->extract_fsi_cond_vector(*structure_field()->dispn());
     Teuchos::RCP<const Core::LinAlg::Vector<double>> ivelnp =
-        structure_field()->interface()->extract_fsi_cond_vector(structure_field()->velnp());
+        structure_field()->interface()->extract_fsi_cond_vector(*structure_field()->velnp());
     Teuchos::RCP<Core::LinAlg::Vector<double>> ifvelnp = fluid_field()->extract_interface_velnp();
     Teuchos::RCP<Core::LinAlg::Vector<double>> ifveln = fluid_field()->extract_interface_veln();
 
@@ -82,14 +82,14 @@ void PoroElast::MonolithicSplit::prepare_time_step()
       // if there are DBCs on FSI conditioned nodes, they have to be treated seperately
 
       Teuchos::RCP<Core::LinAlg::Vector<double>> ibcveln =
-          fsibcextractor_->extract_cond_vector(structure_to_fluid_at_interface(ivelnp));
+          fsibcextractor_->extract_cond_vector(*structure_to_fluid_at_interface(ivelnp));
       Teuchos::RCP<Core::LinAlg::Vector<double>> inobcveln =
-          fsibcextractor_->extract_other_vector(structure_to_fluid_at_interface(ddi_));
+          fsibcextractor_->extract_other_vector(*structure_to_fluid_at_interface(ddi_));
 
       // DBCs at FSI-Interface
-      fsibcextractor_->insert_cond_vector(ibcveln, ifvelnp);
+      fsibcextractor_->insert_cond_vector(*ibcveln, *ifvelnp);
       // any preconditioned values at the FSI-Interface
-      fsibcextractor_->insert_other_vector(inobcveln, ifvelnp);
+      fsibcextractor_->insert_other_vector(*inobcveln, *ifvelnp);
     }
     else
       // no DBCs on FSI interface -> just make preconditioners consistent (structure decides)
@@ -199,7 +199,7 @@ void PoroElast::MonolithicSplit::setup_coupling_and_matrices()
     }
 
     Teuchos::RCP<const Core::LinAlg::Vector<double>> idispnp =
-        structure_field()->interface()->extract_fsi_cond_vector(structure_field()->dispnp());
+        structure_field()->interface()->extract_fsi_cond_vector(*structure_field()->dispnp());
     ddi_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(idispnp->Map(), true));
   }
 

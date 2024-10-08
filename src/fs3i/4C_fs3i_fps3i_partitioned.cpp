@@ -774,7 +774,7 @@ void FS3I::PartFPS3I::extract_wss(
 
   // extract FPSI-Interface from fluid field
   WallShearStress =
-      fpsi_->fpsi_coupl()->fluid_fpsi_vel_pres_extractor()->extract_cond_vector(WallShearStress);
+      fpsi_->fpsi_coupl()->fluid_fpsi_vel_pres_extractor()->extract_cond_vector(*WallShearStress);
 
   // replace global fluid interface dofs through porofluid interface dofs
   WallShearStress = fpsi_->fpsi_coupl()->i_fluid_to_porofluid(WallShearStress);
@@ -785,7 +785,7 @@ void FS3I::PartFPS3I::extract_wss(
 
   // Parameter int block of function InsertVector:
   fpsi_->fpsi_coupl()->poro_fluid_fpsi_vel_pres_extractor()->insert_vector(
-      WallShearStress, 1, porofluid);
+      *WallShearStress, 1, *porofluid);
 
   wss.push_back(porofluid);
 }

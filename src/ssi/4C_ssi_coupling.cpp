@@ -10,7 +10,6 @@
 #include "4C_ssi_coupling.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
-#include "4C_adapter_str_wrapper.hpp"
 #include "4C_coupling_adapter_mortar.hpp"
 #include "4C_coupling_adapter_volmortar.hpp"
 #include "4C_coupling_volmortar_utils.hpp"
@@ -284,7 +283,7 @@ void SSI::SSICouplingNonMatchingBoundary::set_mesh_disp(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
 {
   scatra->scatra_field()->apply_mesh_movement(
-      adaptermeshtying_->master_to_slave(extractor_->extract_cond_vector(disp)));
+      adaptermeshtying_->master_to_slave(extractor_->extract_cond_vector(*disp)));
 }
 
 /*----------------------------------------------------------------------*/
@@ -296,10 +295,10 @@ void SSI::SSICouplingNonMatchingBoundary::set_velocity_fields(
 {
   scatra->scatra_field()->set_velocity_field(
       adaptermeshtying_->master_to_slave(
-          extractor_->extract_cond_vector(convvel)),                             // convective vel.
-      Teuchos::null,                                                             // acceleration
-      adaptermeshtying_->master_to_slave(extractor_->extract_cond_vector(vel)),  // velocity
-      Teuchos::null                                                              // fsvel
+          extractor_->extract_cond_vector(*convvel)),                             // convective vel.
+      Teuchos::null,                                                              // acceleration
+      adaptermeshtying_->master_to_slave(extractor_->extract_cond_vector(*vel)),  // velocity
+      Teuchos::null                                                               // fsvel
   );
 }
 

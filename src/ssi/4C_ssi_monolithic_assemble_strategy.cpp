@@ -485,16 +485,16 @@ void SSI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<d
     Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_manifold)
 {
   ssi_maps()->maps_sub_problems()->insert_vector(
-      rhs_scatra, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::scalar_transport), rhs);
+      *rhs_scatra, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::scalar_transport), *rhs);
 
   if (is_scatra_manifold())
   {
     ssi_maps()->maps_sub_problems()->insert_vector(
-        rhs_manifold, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::manifold), rhs);
+        *rhs_manifold, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::manifold), *rhs);
   }
 
   ssi_maps()->maps_sub_problems()->add_vector(
-      rhs_structure, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::structure), rhs, -1.0);
+      *rhs_structure, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::structure), *rhs, -1.0);
 }
 
 /*-------------------------------------------------------------------------*

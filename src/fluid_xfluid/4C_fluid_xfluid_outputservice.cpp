@@ -166,7 +166,7 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
   // output (hydrodynamic) pressure for visualization
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> pressure =
-      velpressplitter_out_->extract_cond_vector(outvec_fluid_);
+      velpressplitter_out_->extract_cond_vector(*outvec_fluid_);
 
   discret_->writer()->write_vector("velnp", outvec_fluid_);
   discret_->writer()->write_vector("pressure", pressure);

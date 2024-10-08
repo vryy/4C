@@ -57,7 +57,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FPSIStructureWrapper::extrac
     }
     else
     {
-      return interface_->extract_fpsi_cond_vector(dispn());
+      return interface_->extract_fpsi_cond_vector(*dispn());
     }
   }
 }
@@ -81,7 +81,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FPSIStructureWrapper::extrac
     }
     else
     {
-      return interface_->extract_fpsi_cond_vector(dispnp());
+      return interface_->extract_fpsi_cond_vector(*dispnp());
     }
   }
 }

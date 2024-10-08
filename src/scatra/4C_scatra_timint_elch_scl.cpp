@@ -357,9 +357,9 @@ void ScaTra::ScaTraTimIntElchSCL::copy_solution_to_micro_field()
 {
   // extract coupled values from macro, copy to micro, and insert into full micro vector
   auto macro_to_micro_coupled_nodes = macro_micro_coupling_adapter_->master_to_slave(
-      macro_coupling_dofs_->extract_cond_vector(phinp()));
+      macro_coupling_dofs_->extract_cond_vector(*phinp()));
   micro_coupling_dofs_->insert_cond_vector(
-      macro_to_micro_coupled_nodes, micro_scatra_field()->phinp());
+      *macro_to_micro_coupled_nodes, *micro_scatra_field()->phinp());
 }
 
 /*----------------------------------------------------------------------------------------*
@@ -489,10 +489,10 @@ bool ScaTra::ScaTraTimIntElchSCL::break_newton_loop_and_print_convergence()
   const int itermax = params.get<int>("ITEMAX");
   const double itertol = params.get<double>("CONVTOL");
 
-  auto micro_residual = macro_micro_dofs_->extract_cond_vector(residual_elch_scl_);
-  auto macro_residual = macro_micro_dofs_->extract_other_vector(residual_elch_scl_);
-  auto micro_increment = macro_micro_dofs_->extract_cond_vector(increment_elch_scl_);
-  auto macro_increment = macro_micro_dofs_->extract_other_vector(increment_elch_scl_);
+  auto micro_residual = macro_micro_dofs_->extract_cond_vector(*residual_elch_scl_);
+  auto macro_residual = macro_micro_dofs_->extract_other_vector(*residual_elch_scl_);
+  auto micro_increment = macro_micro_dofs_->extract_cond_vector(*increment_elch_scl_);
+  auto macro_increment = macro_micro_dofs_->extract_other_vector(*increment_elch_scl_);
 
   double residual_L2, micro_residual_L2, macro_residual_L2, increment_L2, micro_increment_L2,
       macro_increment_L2, micro_state_L2, macro_state_L2;
@@ -882,7 +882,7 @@ void ScaTra::ScaTraTimIntElchSCL::scale_micro_problem()
 
   // transform to micro discretization
   auto nodal_size_micro = macro_micro_coupling_adapter_->master_to_slave(
-      macro_coupling_dofs_->extract_cond_vector(nodal_size_macro));
+      macro_coupling_dofs_->extract_cond_vector(*nodal_size_macro));
 
   // communicate nodal size to all procs to be able to scale all rows in micro discretization
   // attached to a macro node
@@ -915,25 +915,26 @@ void ScaTra::ScaTraTimIntElchSCL::scale_micro_problem()
 void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
 {
   // Meshtying + Assembly RHS
-  auto micro_residual = micro_coupling_dofs_->extract_cond_vector(micro_scatra_field()->residual());
+  auto micro_residual =
+      micro_coupling_dofs_->extract_cond_vector(*micro_scatra_field()->residual());
   auto micro_residual_on_macro_side =
       macro_micro_coupling_adapter_->slave_to_master(micro_residual);
 
   auto full_macro_vector = Core::LinAlg::create_vector(*dof_row_map(), true);
-  macro_coupling_dofs_->insert_cond_vector(micro_residual_on_macro_side, full_macro_vector);
+  macro_coupling_dofs_->insert_cond_vector(*micro_residual_on_macro_side, *full_macro_vector);
 
   residual_elch_scl_->PutScalar(0.0);
   system_matrix_elch_scl_->zero();
 
-  macro_micro_dofs_->add_other_vector(full_macro_vector, residual_elch_scl_);
+  macro_micro_dofs_->add_other_vector(*full_macro_vector, *residual_elch_scl_);
 
-  macro_micro_dofs_->add_other_vector(residual(), residual_elch_scl_);
+  macro_micro_dofs_->add_other_vector(*residual(), *residual_elch_scl_);
 
   // apply pseudo DBC on slave side
   micro_coupling_dofs_->cond_put_scalar(*micro_scatra_field()->residual(), 0.0);
 
   macro_micro_dofs_->add_cond_vector(
-      micro_scatra_field()->residual(), residual_elch_scl_);  // add slave side to total residual
+      *micro_scatra_field()->residual(), *residual_elch_scl_);  // add slave side to total residual
 
   switch (matrixtype_elch_scl_)
   {
@@ -1042,13 +1043,13 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
  *----------------------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElchSCL::update_iter_micro_macro()
 {
-  auto increment_macro = macro_micro_dofs_->extract_other_vector(increment_elch_scl_);
-  auto increment_micro = macro_micro_dofs_->extract_cond_vector(increment_elch_scl_);
+  auto increment_macro = macro_micro_dofs_->extract_other_vector(*increment_elch_scl_);
+  auto increment_micro = macro_micro_dofs_->extract_cond_vector(*increment_elch_scl_);
 
   // reconstruct slave result from master side
-  auto macro_extract = macro_coupling_dofs_->extract_cond_vector(increment_macro);
+  auto macro_extract = macro_coupling_dofs_->extract_cond_vector(*increment_macro);
   auto macro_extract_to_micro = macro_micro_coupling_adapter_->master_to_slave(macro_extract);
-  micro_coupling_dofs_->insert_cond_vector(macro_extract_to_micro, increment_micro);
+  micro_coupling_dofs_->insert_cond_vector(*macro_extract_to_micro, *increment_micro);
 
   update_iter(increment_macro);
   micro_scatra_field()->update_iter(increment_micro);

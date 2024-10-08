@@ -269,7 +269,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::setup_rhs(
 
     // Insert into structural side of the interface
     rhs = fluid_to_struct(rhs);
-    rhs = structure_field()->interface()->insert_fsi_cond_vector(rhs);
+    rhs = structure_field()->interface()->insert_fsi_cond_vector(*rhs);
 
     // Add to the structure block (index 0) of the final RHS vector f
     extractor().add_vector(*rhs, 0, f);
@@ -296,7 +296,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::setup_rhs(
 
       // Insert into structure side of the interface
       rhs = fluid_to_struct(rhs);
-      rhs = structure_field()->interface()->insert_fsi_cond_vector(rhs);
+      rhs = structure_field()->interface()->insert_fsi_cond_vector(*rhs);
 
       extractor().add_vector(*rhs, 0, f);
     }
@@ -318,7 +318,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::setup_rhs(
 
     // Insert into structure side of the interface
     rhs = fluid_to_struct(rhs);
-    rhs = structure_field()->interface()->insert_fsi_cond_vector(rhs);
+    rhs = structure_field()->interface()->insert_fsi_cond_vector(*rhs);
 
     extractor().add_vector(*rhs, 0, f);
 
@@ -633,15 +633,15 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::setup_vector(Core::LinAlg::Vector
 
   // Extract inner DOFs for ALE-field
   Teuchos::RCP<Core::LinAlg::Vector<double>> aov =
-      ale_field()->interface()->extract_other_vector(av);
+      ale_field()->interface()->extract_other_vector(*av);
 
   // Get the FSI-interface RHS-vector for the fluid side!
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcv =
-      fluid_field()->interface()->extract_fsi_cond_vector(fv);
+      fluid_field()->interface()->extract_fsi_cond_vector(*fv);
 
   // Convert previously extracted vector to structure !
   Teuchos::RCP<Core::LinAlg::Vector<double>> modsv =
-      structure_field()->interface()->insert_fsi_cond_vector(fluid_to_struct(fcv));
+      structure_field()->interface()->insert_fsi_cond_vector(*fluid_to_struct(fcv));
 
   // Add the converted interface RHS-contributions (scaled) to the global structural RHS!
   int err = modsv->Update(1.0, *sv, (1.0 - stimintparam) / (1.0 - ftimintparam) * fluidscale);
@@ -651,7 +651,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::setup_vector(Core::LinAlg::Vector
   if (lambda_ != Teuchos::null)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdaglob =
-        structure_field()->interface()->insert_fsi_cond_vector(fluid_to_struct(lambda_));
+        structure_field()->interface()->insert_fsi_cond_vector(*fluid_to_struct(lambda_));
     err = modsv->Update(stimintparam - ftimintparam * (1.0 - stimintparam) / (1.0 - ftimintparam),
         *lambdaglob, 1.0);
     if (err) FOUR_C_THROW("Update of structural residual vector failed! Error code %i", err);
@@ -665,7 +665,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::setup_vector(Core::LinAlg::Vector
   }
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fglobalv =
-      fluid_field()->interface()->extract_other_vector(fv);
+      fluid_field()->interface()->extract_other_vector(*fv);
 
   // Insert fluid contribution
   extractor().insert_vector(*fglobalv, 1, f);
@@ -688,23 +688,24 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::extract_field_vectors(
   // Process structure unknowns
   /*----------------------------------------------------------------------*/
   // Extract whole structure field vector
-  sx = extractor().extract_vector(x, 0);
+  sx = extractor().extract_vector(*x, 0);
 
   // Structural part of FSI interface
   Teuchos::RCP<Core::LinAlg::Vector<double>> scx =
-      structure_field()->interface()->extract_fsi_cond_vector(sx);
+      structure_field()->interface()->extract_fsi_cond_vector(*sx);
 
   /*----------------------------------------------------------------------*/
   // Process ALE unknowns
   /*----------------------------------------------------------------------*/
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> aox = extractor().extract_vector(x, 2);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> aox = extractor().extract_vector(*x, 2);
   // Update interface part of structure vector with predictor increment
   scx->Update(1.0, *ddgpred_, 1.0);
   Teuchos::RCP<Core::LinAlg::Vector<double>> acx = struct_to_ale(scx);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> a = ale_field()->interface()->insert_other_vector(aox);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> a =
+      ale_field()->interface()->insert_other_vector(*aox);
   // Insert the FSI-DOF vector into full vector a
-  ale_field()->interface()->insert_fsi_cond_vector(acx, a);
+  ale_field()->interface()->insert_fsi_cond_vector(*acx, *a);
   // Write a into passed argument ax
   ax = a;
 
@@ -712,7 +713,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::extract_field_vectors(
   // Process fluid unknowns
   /*----------------------------------------------------------------------*/
   // Extract vector of fluid unknowns from x
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> fox = extractor().extract_vector(x, 1);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fox = extractor().extract_vector(*x, 1);
 
   // Conversion ALE displacement to fluid field:
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcx = ale_to_fluid_interface(acx);
@@ -721,8 +722,8 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::extract_field_vectors(
 
   // The previously computed fluid interface values have to be inserted into the fluid field vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> f =
-      fluid_field()->interface()->insert_other_vector(fox);
-  fluid_field()->interface()->insert_fsi_cond_vector(fcx, f);
+      fluid_field()->interface()->insert_other_vector(*fox);
+  fluid_field()->interface()->insert_fsi_cond_vector(*fcx, *f);
 
   fx = f;
 }
@@ -741,8 +742,8 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::read_restart(int step)
     reader.read_vector(lambdaemb, "fsilambda");
     // Insert into vector containing the whole merged fluid DOF
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
-        fluid_field()->x_fluid_fluid_map_extractor()->insert_fluid_vector(lambdaemb);
-    lambda_ = fluid_field()->interface()->extract_fsi_cond_vector(lambdafull);
+        fluid_field()->x_fluid_fluid_map_extractor()->insert_fluid_vector(*lambdaemb);
+    lambda_ = fluid_field()->interface()->extract_fsi_cond_vector(*lambdafull);
   }
 
   structure_field()->read_restart(step);
@@ -765,11 +766,11 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::output()
     // for output, we want to insert lambda into a full vector, defined on the embedded fluid field
     // 1. insert into vector containing all fluid DOF
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
-        fluid_field()->interface()->insert_fsi_cond_vector(lambda_);
+        fluid_field()->interface()->insert_fsi_cond_vector(*lambda_);
 
     // 2. extract the embedded fluid part
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdaemb =
-        fluid_field()->x_fluid_fluid_map_extractor()->extract_fluid_vector(lambdafull);
+        fluid_field()->x_fluid_fluid_map_extractor()->extract_fluid_vector(*lambdafull);
 
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
@@ -846,12 +847,12 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::newton()
   // We need the last increment for the recovery of lambda.
   /*----------------------------------------------------------------------*/
   // Fluid
-  duiinc_->Update(1.0, *extractor().extract_vector(iterinc_, 1), 0.0);
+  duiinc_->Update(1.0, *extractor().extract_vector(*iterinc_, 1), 0.0);
   // Structure
-  Teuchos::RCP<Core::LinAlg::Vector<double>> ddinc = extractor().extract_vector(iterinc_, 0);
-  ddginc_->Update(1.0, *structure_field()->interface()->extract_fsi_cond_vector(ddinc), 0.0);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> ddinc = extractor().extract_vector(*iterinc_, 0);
+  ddginc_->Update(1.0, *structure_field()->interface()->extract_fsi_cond_vector(*ddinc), 0.0);
   // ALE
-  ddialeinc_->Update(1.0, *extractor().extract_vector(iterinc_, 2), 0.0);
+  ddialeinc_->Update(1.0, *extractor().extract_vector(*iterinc_, 2), 0.0);
 }
 
 /*----------------------------------------------------------------------
@@ -879,14 +880,14 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::build_convergence_norms()
 
   // RHS-vector from fluid_field() without FSI-DOFs
   Teuchos::RCP<const Core::LinAlg::Vector<double>> innerfluidfluidrhs =
-      extractor().extract_vector(rhs_, 1);
+      extractor().extract_vector(*rhs_, 1);
   // (Inner) ALE RHS
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> alerhs = extractor().extract_vector(rhs_, 2);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> alerhs = extractor().extract_vector(*rhs_, 2);
 
   // Norm of inner structural residual forces
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> structrhs = extractor().extract_vector(rhs_, 0);
-  structure_field()->interface()->extract_other_vector(structrhs)->Norm2(&normstrrhsL2_);
-  structure_field()->interface()->extract_other_vector(structrhs)->NormInf(&normstrrhsInf_);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> structrhs = extractor().extract_vector(*rhs_, 0);
+  structure_field()->interface()->extract_other_vector(*structrhs)->Norm2(&normstrrhsL2_);
+  structure_field()->interface()->extract_other_vector(*structrhs)->NormInf(&normstrrhsInf_);
 
   // Norm of ALE residual forces
   alerhs->Norm2(&normalerhsL2_);
@@ -902,16 +903,16 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::build_convergence_norms()
       Teuchos::rcp(new Core::LinAlg::MapExtractor(*fluidmaps, innerfluidvel, true));
 
   // Finally, compute the fluid velocity RHS-norm
-  fluidvelextract->extract_cond_vector(innerfluidfluidrhs)->Norm2(&normflvelrhsL2_);
-  fluidvelextract->extract_cond_vector(innerfluidfluidrhs)->NormInf(&normflvelrhsInf_);
+  fluidvelextract->extract_cond_vector(*innerfluidfluidrhs)->Norm2(&normflvelrhsL2_);
+  fluidvelextract->extract_cond_vector(*innerfluidfluidrhs)->NormInf(&normflvelrhsInf_);
 
   // Norm of fluid pressure residual
   // This requires an Epetra_Map of the fluid pressure DOFs
   if (fluid_field()->pressure_row_map() == Teuchos::null) FOUR_C_THROW("Empty pressure row map!");
 
   // Finally, compute the fluid pressure RHS-norm
-  fluidvelextract->extract_other_vector(innerfluidfluidrhs)->Norm2(&normflpresrhsL2_);
-  fluidvelextract->extract_other_vector(innerfluidfluidrhs)->NormInf(&normflpresrhsInf_);
+  fluidvelextract->extract_other_vector(*innerfluidfluidrhs)->Norm2(&normflpresrhsL2_);
+  fluidvelextract->extract_other_vector(*innerfluidfluidrhs)->NormInf(&normflpresrhsInf_);
 
   // The true RHS for the FSI interface equation block consists of
   // more than just the structure residual, namely the scaled fluid interface residual and the
@@ -934,36 +935,38 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::build_convergence_norms()
   iterinc_->Norm2(&norminc_);
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> structinc =
-      extractor().extract_vector(iterinc_, 0);
+      extractor().extract_vector(*iterinc_, 0);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidinc =
-      extractor().extract_vector(iterinc_, 1);
+      extractor().extract_vector(*iterinc_, 1);
 
   // Norm of inner structural increment vector
-  structure_field()->interface()->extract_other_vector(structinc)->Norm2(&normstrincL2_);
-  structure_field()->interface()->extract_other_vector(structinc)->NormInf(&normstrincInf_);
+  structure_field()->interface()->extract_other_vector(*structinc)->Norm2(&normstrincL2_);
+  structure_field()->interface()->extract_other_vector(*structinc)->NormInf(&normstrincInf_);
 
   // Norm of interface increment vector
-  structure_field()->interface()->extract_fsi_cond_vector(structinc)->Norm2(&norminterfaceincL2_);
-  structure_field()->interface()->extract_fsi_cond_vector(structinc)->NormInf(
-      &norminterfaceincInf_);
+  structure_field()->interface()->extract_fsi_cond_vector(*structinc)->Norm2(&norminterfaceincL2_);
+  structure_field()
+      ->interface()
+      ->extract_fsi_cond_vector(*structinc)
+      ->NormInf(&norminterfaceincInf_);
 
   // Norm of fluid velocity increment
-  fluidvelextract->extract_cond_vector(fluidinc)->Norm2(&normflvelincL2_);
-  fluidvelextract->extract_cond_vector(fluidinc)->NormInf(&normflvelincInf_);
+  fluidvelextract->extract_cond_vector(*fluidinc)->Norm2(&normflvelincL2_);
+  fluidvelextract->extract_cond_vector(*fluidinc)->NormInf(&normflvelincInf_);
 
   // Norm of fluid pressure increment
-  fluidvelextract->extract_other_vector(fluidinc)->Norm2(&normflpresincL2_);
-  fluidvelextract->extract_other_vector(fluidinc)->NormInf(&normflpresincInf_);
+  fluidvelextract->extract_other_vector(*fluidinc)->Norm2(&normflpresincL2_);
+  fluidvelextract->extract_other_vector(*fluidinc)->NormInf(&normflpresincInf_);
 
   // Norm of ALE increment vector
-  extractor().extract_vector(iterinc_, 2)->Norm2(&normaleincL2_);
+  extractor().extract_vector(*iterinc_, 2)->Norm2(&normaleincL2_);
 
   // get length of the structural, fluid and ale vector
   ni_ = (structure_field()->interface()->extract_fsi_cond_vector(*structrhs))->GlobalLength();
-  ns_ = (structure_field()->interface()->extract_other_vector(structrhs))->GlobalLength();
+  ns_ = (structure_field()->interface()->extract_other_vector(*structrhs))->GlobalLength();
   nf_ = innerfluidfluidrhs->GlobalLength();
-  nfv_ = fluidvelextract->extract_cond_vector(fluidinc)->GlobalLength();
-  nfp_ = fluidvelextract->extract_other_vector(fluidinc)->GlobalLength();
+  nfv_ = fluidvelextract->extract_cond_vector(*fluidinc)->GlobalLength();
+  nfp_ = fluidvelextract->extract_other_vector(*fluidinc)->GlobalLength();
   na_ = alerhs->GlobalLength();
   nall_ = rhs_->GlobalLength();
 }
@@ -1032,7 +1035,7 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::recover_lagrange_multiplier()
   // ---------Addressing term (2)
   // store f^F_{\Gamma}! As Recover-LM is called after the Newton loop, the RHS will have changed!
   Teuchos::RCP<Core::LinAlg::Vector<double>> fluidresidual =
-      fluid_field()->interface()->extract_fsi_cond_vector(fluid_field()->rhs());
+      fluid_field()->interface()->extract_fsi_cond_vector(*fluid_field()->rhs());
 
   // ---------Addressing term (1)
   lambda_->Update(ftimintparam, *lambda_, 0.0);
@@ -1095,13 +1098,13 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::recover_lagrange_multiplier()
 
     // Get the ALE-displacements, convert to inner fluid DOF. Still mapped to the embedded fluid.
     Teuchos::RCP<Core::LinAlg::Vector<double>> aux =
-        ale_to_fluid(ale_field()->interface()->insert_other_vector(ddialeinc_));
+        ale_to_fluid(ale_field()->interface()->insert_other_vector(*ddialeinc_));
     // Add the pressure DOF as zeros
-    aux = innerfluidvelextractor->insert_cond_vector(aux);
-    aux = fluid_field()->x_fluid_fluid_map_extractor()->insert_fluid_vector(aux);
+    aux = innerfluidvelextractor->insert_cond_vector(*aux);
+    aux = fluid_field()->x_fluid_fluid_map_extractor()->insert_fluid_vector(*aux);
     // Remove FSI DOF
     Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
-        fluid_field()->interface()->extract_other_vector(aux);
+        fluid_field()->interface()->extract_other_vector(*aux);
     fmgiprev_->Apply(*tmp, *fmgiddia);
     tmpvec->Update(1.0, *fmgiddia, 1.0);
   }
@@ -1141,10 +1144,10 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::handle_fluid_dof_map_change_in_ne
   *x_sum_n = *x_sum_;
   //  Extract structural increment sum
   Teuchos::RCP<const Core::LinAlg::Vector<double>> sx_n;
-  sx_n = extractor().extract_vector(x_sum_n, 0);
+  sx_n = extractor().extract_vector(*x_sum_n, 0);
   //  Extract ALE increment sum
   Teuchos::RCP<const Core::LinAlg::Vector<double>> ax_n;
-  ax_n = extractor().extract_vector(x_sum_n, 2);
+  ax_n = extractor().extract_vector(*x_sum_n, 2);
 
   create_combined_dof_row_map();
 
@@ -1160,13 +1163,13 @@ void FSI::FluidFluidMonolithicFluidSplitNoNOX::handle_fluid_dof_map_change_in_ne
 
   //  Set the new increment sum x_sum_ together
 
-  extractor().insert_vector(sx_n, 0, x_sum_);
+  extractor().insert_vector(*sx_n, 0, *x_sum_);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> ff_stepinc =
-      fluid_field()->interface()->extract_other_vector(fluid_field()->stepinc());
-  extractor().insert_vector(ff_stepinc, 1, x_sum_);
+      fluid_field()->interface()->extract_other_vector(*fluid_field()->stepinc());
+  extractor().insert_vector(*ff_stepinc, 1, *x_sum_);
 
-  extractor().insert_vector(ax_n, 2, x_sum_);
+  extractor().insert_vector(*ax_n, 2, *x_sum_);
 
   //  The fluid length may have changed
   nf_ = fluid_field()->rhs()->GlobalLength();

@@ -195,10 +195,10 @@ void Thermo::TimIntImpl::predict()
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
-  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
 
   // blank residual at DOFs on Dirichlet BC
-  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
 
   // build residual force norm
   normfres_ = Thermo::Aux::calculate_vector_norm(iternorm_, fres_);
@@ -236,10 +236,10 @@ void Thermo::TimIntImpl::prepare_partition_step()
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
-  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
 
   // blank residual at DOFs on Dirichlet BC
-  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
 
   // split norms
   // build residual force norm
@@ -318,10 +318,10 @@ void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
 
   // extract reaction forces
   freact_->Update(-1.0, *fres_, 0.0);  // reactions are negative
-  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
 
   // blank residual at DOFs on Dirichlet BC
-  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
 
   // make negative residual
   // K . DT = -fres = -(fint - fext)
@@ -566,11 +566,11 @@ void Thermo::TimIntImpl::blank_dirichlet_and_calc_norms()
   freact_->Update(-1.0, *fres_, 0.0);
   // copie the dbc onto freact_,
   // everything that is not DBC node ("OtherVector") is blanked
-  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
 
   // blank residual at DOFs on Dirichlet BC
   // DBC node do not enter the residual, because values are known at the nodes
-  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
 
   // do mortar condensation
   if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_condensation(tang_, fres_);
@@ -696,12 +696,12 @@ void Thermo::TimIntImpl::prepare_system_for_newton_solve()
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
-  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
 
   // make the residual negative
   fres_->Scale(-1.0);
   // blank residual at DOFs on Dirichlet BCs, fres_=0 at nodes with DBC
-  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
 
   // apply Dirichlet BCs to system of equations
   tempi_->PutScalar(0.0);  // Useful? depends on solver and more

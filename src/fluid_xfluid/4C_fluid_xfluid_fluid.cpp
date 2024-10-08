@@ -194,9 +194,9 @@ void FLD::XFluidFluid::prepare_time_step()
 Teuchos::RCP<const Core::LinAlg::Vector<double>> FLD::XFluidFluid::initial_guess()
 {
   xff_state_->xffluidsplitter_->insert_fluid_vector(
-      embedded_fluid_->initial_guess(), xff_state_->xffluidincvel_);
+      *embedded_fluid_->initial_guess(), *xff_state_->xffluidincvel_);
   xff_state_->xffluidsplitter_->insert_x_fluid_vector(
-      XFluid::initial_guess(), xff_state_->xffluidincvel_);
+      *XFluid::initial_guess(), *xff_state_->xffluidincvel_);
   return xff_state_->xffluidincvel_;
 }
 
@@ -206,13 +206,14 @@ void FLD::XFluidFluid::prepare_xfem_solve()
 
   // merge the velnp each into one large Core::LinAlg::Vector<double> for the composed system
   xff_state_->xffluidsplitter_->insert_x_fluid_vector(
-      xff_state_->velnp_, xff_state_->xffluidvelnp_);
+      *xff_state_->velnp_, *xff_state_->xffluidvelnp_);
   xff_state_->xffluidsplitter_->insert_fluid_vector(
-      embedded_fluid_->velnp(), xff_state_->xffluidvelnp_);
+      *embedded_fluid_->velnp(), *xff_state_->xffluidvelnp_);
 
-  xff_state_->xffluidsplitter_->insert_x_fluid_vector(xff_state_->veln_, xff_state_->xffluidveln_);
+  xff_state_->xffluidsplitter_->insert_x_fluid_vector(
+      *xff_state_->veln_, *xff_state_->xffluidveln_);
   xff_state_->xffluidsplitter_->insert_fluid_vector(
-      embedded_fluid_->veln(), xff_state_->xffluidveln_);
+      *embedded_fluid_->veln(), *xff_state_->xffluidveln_);
 }
 
 void FLD::XFluidFluid::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
@@ -225,19 +226,19 @@ void FLD::XFluidFluid::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
 
   if (stepinc != Teuchos::null)
   {
-    stepinc_xfluid = xff_state_->xffluidsplitter_->extract_x_fluid_vector(stepinc);
-    stepinc_emb = xff_state_->xffluidsplitter_->extract_fluid_vector(stepinc);
+    stepinc_xfluid = xff_state_->xffluidsplitter_->extract_x_fluid_vector(*stepinc);
+    stepinc_emb = xff_state_->xffluidsplitter_->extract_fluid_vector(*stepinc);
 
     // compute increment
     xff_state_->xffluidincvel_->Update(1.0, *stepinc, -1.0, *stepinc_, 0.0);
 
     xff_state_->xffluiddbcmaps_->insert_cond_vector(
-        xff_state_->xffluiddbcmaps_->extract_cond_vector(xff_state_->xffluidzeros_),
-        xff_state_->xffluidincvel_);
+        *xff_state_->xffluiddbcmaps_->extract_cond_vector(*xff_state_->xffluidzeros_),
+        *xff_state_->xffluidincvel_);
 
     // update embedded fluid solution by increment
     embedded_fluid_->update_iter_incrementally(
-        xff_state_->xffluidsplitter_->extract_fluid_vector(xff_state_->xffluidincvel_));
+        xff_state_->xffluidsplitter_->extract_fluid_vector(*xff_state_->xffluidincvel_));
   }
 
   if (mc_xff_->get_averaging_strategy() == Inpar::XFEM::Embedded_Sided and nitsche_evp_)
@@ -393,7 +394,7 @@ void FLD::XFluidFluid::assemble_mat_and_rhs(int itnum  ///< iteration number
 
   // insert XFluid residual to merged
   xff_state_->xffluidsplitter_->insert_x_fluid_vector(
-      xff_state_->residual_, xff_state_->xffluidresidual_);
+      *xff_state_->residual_, *xff_state_->xffluidresidual_);
 
   // add coupling contribution to embedded residual
   const int mc_idx = condition_manager_->get_mesh_coupling_index(cond_name_);
@@ -423,7 +424,7 @@ void FLD::XFluidFluid::assemble_mat_and_rhs(int itnum  ///< iteration number
 
   // add embedded part of merged residual
   xff_state_->xffluidsplitter_->insert_fluid_vector(
-      embedded_fluid_->residual(), xff_state_->xffluidresidual_);
+      *embedded_fluid_->residual(), *xff_state_->xffluidresidual_);
 
   // assemble XFluid and embedded fluid system matrices into one
 
@@ -482,11 +483,11 @@ void FLD::XFluidFluid::update_by_increment()
   XFluid::update_by_increment();
   // update xfluid
   xff_state_->velnp_->Update(
-      1.0, *xff_state_->xffluidsplitter_->extract_x_fluid_vector(xff_state_->xffluidvelnp_), 0.0);
+      1.0, *xff_state_->xffluidsplitter_->extract_x_fluid_vector(*xff_state_->xffluidvelnp_), 0.0);
   // update embedded fluid
   // embedded_fluid_->IterUpdate(xff_state_->xffluidsplitter_->extract_fluid_vector(xff_state_->xffluidincvel_));
   embedded_fluid_->write_access_velnp()->Update(
-      1.0, *xff_state_->xffluidsplitter_->extract_fluid_vector(xff_state_->xffluidvelnp_), 0.0);
+      1.0, *xff_state_->xffluidsplitter_->extract_fluid_vector(*xff_state_->xffluidvelnp_), 0.0);
 }
 
 /*----------------------------------------------------------------------*

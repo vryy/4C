@@ -125,10 +125,11 @@ void FSI::FluidFluidMonolithicFluidSplit::output()
     // for output, we want to insert lambda into a full vector, defined on the embedded fluid field
     // 1. insert into vector containing all fluid DOF
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
-        fluid_field()->interface()->insert_fsi_cond_vector(FSI::MonolithicFluidSplit::get_lambda());
+        fluid_field()->interface()->insert_fsi_cond_vector(
+            *FSI::MonolithicFluidSplit::get_lambda());
     // 2. extract the embedded fluid part
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdaemb =
-        fluid_field()->x_fluid_fluid_map_extractor()->extract_fluid_vector(lambdafull);
+        fluid_field()->x_fluid_fluid_map_extractor()->extract_fluid_vector(*lambdafull);
 
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
@@ -162,9 +163,9 @@ void FSI::FluidFluidMonolithicFluidSplit::read_restart(int step)
     reader.read_vector(lambdaemb, "fsilambda");
     // Insert into vector containing the whole merged fluid DOF
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
-        fluid_field()->x_fluid_fluid_map_extractor()->insert_fluid_vector(lambdaemb);
+        fluid_field()->x_fluid_fluid_map_extractor()->insert_fluid_vector(*lambdaemb);
     FSI::MonolithicFluidSplit::set_lambda(
-        fluid_field()->interface()->extract_fsi_cond_vector(lambdafull));
+        fluid_field()->interface()->extract_fsi_cond_vector(*lambdafull));
   }
 
   structure_field()->read_restart(step);

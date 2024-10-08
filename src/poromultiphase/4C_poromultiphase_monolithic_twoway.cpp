@@ -1000,10 +1000,10 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::extract_field_vectors(
       "POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::extract_field_vectors");
 
   // process structure unknowns of the first field
-  sx = extractor()->extract_vector(x, 0);
+  sx = extractor()->extract_vector(*x, 0);
 
   // process fluid unknowns of the second field
-  fx = extractor()->extract_vector(x, 1);
+  fx = extractor()->extract_vector(*x, 1);
 }
 /*----------------------------------------------------------------------*
  | extract 3D field vecotrs (structure and fluid)    kremheller 10/20   |
@@ -1343,9 +1343,10 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::setup_maps()
  *----------------------------------------------------------------------*/
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::build_convergence_norms()
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryrhs = extractor()->extract_vector(rhs_, 2);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryrhs =
+      extractor()->extract_vector(*rhs_, 2);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryinc =
-      extractor()->extract_vector(iterinc_, 2);
+      extractor()->extract_vector(*iterinc_, 2);
 
   // build also norms for artery
   normrhsart_ = UTILS::calculate_vector_norm(vectornormfres_, arteryrhs);
@@ -1371,17 +1372,17 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::extract_field
       "POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::extract_field_vectors");
 
   // process structure unknowns of the first field
-  sx = extractor()->extract_vector(x, 0);
+  sx = extractor()->extract_vector(*x, 0);
 
   // process artery and porofluid unknowns
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> porofluid = extractor()->extract_vector(x, 1);
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> artery = extractor()->extract_vector(x, 2);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> porofluid = extractor()->extract_vector(*x, 1);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> artery = extractor()->extract_vector(*x, 2);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> dummy =
       Teuchos::rcp(new Core::LinAlg::Vector<double>(*fullmap_artporo_));
 
-  blockrowdofmap_artporo_->insert_vector(porofluid, 0, dummy);
-  blockrowdofmap_artporo_->insert_vector(artery, 1, dummy);
+  blockrowdofmap_artporo_->insert_vector(*porofluid, 0, *dummy);
+  blockrowdofmap_artporo_->insert_vector(*artery, 1, *dummy);
 
   fx = dummy;
 
@@ -1422,10 +1423,10 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::setup_rhs()
 
   // insert artery part and porofluid part
   extractor()->insert_vector(
-      *(blockrowdofmap_artporo_->extract_vector(fluid_field()->artery_porofluid_rhs(), 0)), 1,
+      *(blockrowdofmap_artporo_->extract_vector(*fluid_field()->artery_porofluid_rhs(), 0)), 1,
       *rhs_);
   extractor()->insert_vector(
-      *(blockrowdofmap_artporo_->extract_vector(fluid_field()->artery_porofluid_rhs(), 1)), 2,
+      *(blockrowdofmap_artporo_->extract_vector(*fluid_field()->artery_porofluid_rhs(), 1)), 2,
       *rhs_);
 
   return;

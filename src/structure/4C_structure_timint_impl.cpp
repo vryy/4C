@@ -401,10 +401,10 @@ void Solid::TimIntImpl::predict()
     if ((pred_ != Inpar::Solid::pred_constdispres) and
         (pred_ != Inpar::Solid::pred_constdisvelaccpres))
     {
-      pressure_->insert_cond_vector(pressure_->extract_cond_vector(zeros_), disn_);
+      pressure_->insert_cond_vector(*pressure_->extract_cond_vector(*zeros_), *disn_);
     }
-    pressure_->insert_cond_vector(pressure_->extract_cond_vector(zeros_), veln_);
-    pressure_->insert_cond_vector(pressure_->extract_cond_vector(zeros_), accn_);
+    pressure_->insert_cond_vector(*pressure_->extract_cond_vector(*zeros_), *veln_);
+    pressure_->insert_cond_vector(*pressure_->extract_cond_vector(*zeros_), *accn_);
   }
 
   // apply Dirichlet BCs
@@ -442,21 +442,21 @@ void Solid::TimIntImpl::predict()
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
-  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
   // rotate reaction forces back to global coordinate system
   if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
 
   // blank residual at DOFs on Dirichlet BC
-  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
   // rotate back to global coordinate system
   if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
 
   // split norms
   if (pressure_ != Teuchos::null)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fres = pressure_->extract_other_vector(fres_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fres = pressure_->extract_other_vector(*fres_);
     normfres_ = Solid::calculate_vector_norm(iternorm_, *fres);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fpres = pressure_->extract_cond_vector(fres_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fpres = pressure_->extract_cond_vector(*fres_);
     normpfres_ = Solid::calculate_vector_norm(iternorm_, *fpres);
   }
   else
@@ -504,21 +504,21 @@ void Solid::TimIntImpl::prepare_partition_step()
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
-  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
   // rotate reaction forces back to global co-ordinate system
   if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
 
   // blank residual at DOFs on Dirichlet BC
-  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
   // rotate back to global co-ordinate system
   if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
 
   // split norms
   if (pressure_ != Teuchos::null)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fres = pressure_->extract_other_vector(fres_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fres = pressure_->extract_other_vector(*fres_);
     normfres_ = Solid::calculate_vector_norm(iternorm_, *fres);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fpres = pressure_->extract_cond_vector(fres_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fpres = pressure_->extract_cond_vector(*fres_);
     normpfres_ = Solid::calculate_vector_norm(iternorm_, *fpres);
   }
   else
@@ -632,12 +632,12 @@ void Solid::TimIntImpl::predict_tang_dis_consist_vel_acc()
 
   // extract reaction forces
   freact_->Update(-1.0, *fres_, 0.0);  // reactions are negative
-  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
   // rotate reaction forces back to global co-ordinate system
   if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
 
   // blank residual at DOFs on Dirichlet BC
-  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
   // rotate back to global co-ordinate system
   if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
 
@@ -701,8 +701,8 @@ void Solid::TimIntImpl::predict_tang_dis_consist_vel_acc()
   }
   if (bPressure)
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> pres = pressure_->extract_cond_vector(disi_);
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = pressure_->extract_other_vector(disi_);
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> pres = pressure_->extract_cond_vector(*disi_);
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = pressure_->extract_other_vector(*disi_);
     normpres_ = Solid::calculate_vector_norm(iternorm_, *pres);
     normdisi_ = Solid::calculate_vector_norm(iternorm_, *disp);
   }
@@ -1159,7 +1159,7 @@ double Solid::TimIntImpl::calc_ref_norm_displacement()
   double charnormdis = 0.0;
   if (pressure_ != Teuchos::null)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disp = pressure_->extract_other_vector((*dis_)(0));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> disp = pressure_->extract_other_vector(*(*dis_)(0));
     charnormdis = Solid::calculate_vector_norm(iternorm_, *disp);
   }
   else
@@ -1592,12 +1592,12 @@ int Solid::TimIntImpl::newton_full()
     // extract reaction forces
     // reactions are negative to balance residual on DBC
     freact_->Update(-1.0, *fres_, 0.0);
-    dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+    dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
     // rotate reaction forces back to global co-ordinate system
     if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
 
     // blank residual at DOFs on Dirichlet BC
-    dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+    dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
     // rotate back to global co-ordinate system
     if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
 
@@ -1631,14 +1631,15 @@ int Solid::TimIntImpl::newton_full()
     }
     if (bPressure)
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> pres = pressure_->extract_cond_vector(fres_);
+      Teuchos::RCP<const Core::LinAlg::Vector<double>> pres =
+          pressure_->extract_cond_vector(*fres_);
       Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
-          pressure_->extract_other_vector(fres_);
+          pressure_->extract_other_vector(*fres_);
       normpfres_ = Solid::calculate_vector_norm(iternorm_, *pres);
       normfres_ = Solid::calculate_vector_norm(iternorm_, *disp);
 
-      pres = pressure_->extract_cond_vector(disi_);
-      disp = pressure_->extract_other_vector(disi_);
+      pres = pressure_->extract_cond_vector(*disi_);
+      disp = pressure_->extract_other_vector(*disi_);
       normpres_ = Solid::calculate_vector_norm(iternorm_, *pres);
       normdisi_ = Solid::calculate_vector_norm(iternorm_, *disp);
     }
@@ -1976,12 +1977,12 @@ int Solid::TimIntImpl::newton_ls()
     // extract reaction forces
     // reactions are negative to balance residual on DBC
     freact_->Update(-1.0, *fres_, 0.0);
-    dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+    dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
     // rotate reaction forces back to global co-ordinate system
     if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
 
     // blank residual at DOFs on Dirichlet BC
-    dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+    dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
     // rotate back to global co-ordinate system
     if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
 
@@ -2221,12 +2222,12 @@ void Solid::TimIntImpl::ls_update_structural_rh_sand_stiff(bool& isexcept, doubl
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
-  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
   // rotate reaction forces back to global co-ordinate system
   if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
 
   // blank residual at DOFs on Dirichlet BC
-  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
   // rotate back to global co-ordinate system
   if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
 
@@ -2611,12 +2612,12 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       // extract reaction forces
       // reactions are negative to balance residual on DBC
       freact_->Update(-1.0, *fres_, 0.0);
-      dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+      dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
       // rotate reaction forces back to global co-ordinate system
       if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
 
       // blank residual at DOFs on Dirichlet BC
-      dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+      dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
       // rotate back to global co-ordinate system
       if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
 
@@ -2631,14 +2632,14 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       if (pressure_ != Teuchos::null)
       {
         Teuchos::RCP<const Core::LinAlg::Vector<double>> pres =
-            pressure_->extract_cond_vector(fres_);
+            pressure_->extract_cond_vector(*fres_);
         Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
-            pressure_->extract_other_vector(fres_);
+            pressure_->extract_other_vector(*fres_);
         normpfres_ = Solid::calculate_vector_norm(iternorm_, *pres);
         normfres_ = Solid::calculate_vector_norm(iternorm_, *disp);
 
-        pres = pressure_->extract_cond_vector(disi_);
-        disp = pressure_->extract_other_vector(disi_);
+        pres = pressure_->extract_cond_vector(*disi_);
+        disp = pressure_->extract_other_vector(*disi_);
         normpres_ = Solid::calculate_vector_norm(iternorm_, *pres);
         normdisi_ = Solid::calculate_vector_norm(iternorm_, *disp);
       }
@@ -2789,26 +2790,26 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       // extract reaction forces
       // reactions are negative to balance residual on DBC
       freact_->Update(-1.0, *fres_, 0.0);
-      dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+      dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
       // rotate reaction forces back to global co-ordinate system
       if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
 
       // blank residual at DOFs on Dirichlet BC
-      dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+      dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
       // rotate back to global co-ordinate system
       if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
 
       if (pressure_ != Teuchos::null)
       {
         Teuchos::RCP<const Core::LinAlg::Vector<double>> pres =
-            pressure_->extract_cond_vector(fres_);
+            pressure_->extract_cond_vector(*fres_);
         Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
-            pressure_->extract_other_vector(fres_);
+            pressure_->extract_other_vector(*fres_);
         normpfres_ = Solid::calculate_vector_norm(iternorm_, *pres);
         normfres_ = Solid::calculate_vector_norm(iternorm_, *disp);
 
-        pres = pressure_->extract_cond_vector(disi_);
-        disp = pressure_->extract_other_vector(disi_);
+        pres = pressure_->extract_cond_vector(*disi_);
+        disp = pressure_->extract_other_vector(*disi_);
         normpres_ = Solid::calculate_vector_norm(iternorm_, *pres);
         normdisi_ = Solid::calculate_vector_norm(iternorm_, *disp);
       }
@@ -3424,12 +3425,12 @@ int Solid::TimIntImpl::ptc()
     // extract reaction forces
     // reactions are negative to balance residual on DBC
     freact_->Update(-1.0, *fres_, 0.0);
-    dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+    dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
     // rotate reaction forces back to global co-ordinate system
     if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
 
     // blank residual at DOFs on Dirichlet BC
-    dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+    dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
     // rotate back to global co-ordinate system
     if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
 
@@ -3459,13 +3460,13 @@ int Solid::TimIntImpl::ptc()
     }
     if (bPressure)
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> pres = pressure_->extract_cond_vector(fres_);
-      Teuchos::RCP<Core::LinAlg::Vector<double>> disp = pressure_->extract_other_vector(fres_);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> pres = pressure_->extract_cond_vector(*fres_);
+      Teuchos::RCP<Core::LinAlg::Vector<double>> disp = pressure_->extract_other_vector(*fres_);
       normpfres_ = Solid::calculate_vector_norm(iternorm_, *pres);
       normfres_ = Solid::calculate_vector_norm(iternorm_, *disp);
 
-      pres = pressure_->extract_cond_vector(disi_);
-      disp = pressure_->extract_other_vector(disi_);
+      pres = pressure_->extract_cond_vector(*disi_);
+      disp = pressure_->extract_other_vector(*disi_);
       normpres_ = Solid::calculate_vector_norm(iternorm_, *pres);
       normdisi_ = Solid::calculate_vector_norm(iternorm_, *disp);
     }
@@ -4110,11 +4111,11 @@ void Solid::TimIntImpl::prepare_system_for_newton_solve(const bool preparejacobi
   // extract reaction forces
   // reactions are negative to balance residual on DBC
   freact_->Update(-1.0, *fres_, 0.0);
-  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact_);
+  dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact_);
   // rotate reaction forces back to global coordinate system
   if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(freact_);
   // blank residual at DOFs on Dirichlet BCs
-  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), fres_);
+  dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
   // rotate reaction forces back to global coordinate system
   if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(fres_);
 

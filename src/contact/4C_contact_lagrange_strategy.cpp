@@ -3314,8 +3314,8 @@ void CONTACT::LagrangeStrategy::update_displacements_and_l_mincrements(
     Teuchos::RCP<Epetra_Map> mergedmapOrig =
         Core::LinAlg::merge_map(problem_dofs(), non_redist_glmdofrowmap_, false);
     Core::LinAlg::MapExtractor mapext(*mergedmapOrig, problem_dofs(), non_redist_glmdofrowmap_);
-    mapext.extract_cond_vector(blocksol, sold);
-    mapext.extract_other_vector(blocksol, sollmOrig);
+    mapext.extract_cond_vector(*blocksol, *sold);
+    mapext.extract_other_vector(*blocksol, *sollmOrig);
 
     sollm = Teuchos::rcp(new Core::LinAlg::Vector<double>(*glmdofrowmap_));
     Core::LinAlg::export_to(*sollmOrig, *sollm);
@@ -3327,8 +3327,8 @@ void CONTACT::LagrangeStrategy::update_displacements_and_l_mincrements(
     Teuchos::RCP<Epetra_Map> mergedmap =
         Core::LinAlg::merge_map(problem_dofs(), glmdofrowmap_, false);
     Core::LinAlg::MapExtractor mapext(*mergedmap, problem_dofs(), glmdofrowmap_);
-    mapext.extract_cond_vector(blocksol, sold);
-    mapext.extract_other_vector(blocksol, sollm);
+    mapext.extract_cond_vector(*blocksol, *sold);
+    mapext.extract_other_vector(*blocksol, *sollm);
     sollm->ReplaceMap(*gsdofrowmap_);
   }
 

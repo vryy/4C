@@ -78,8 +78,8 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged:
   // merge stuff together
   Teuchos::RCP<Core::LinAlg::Vector<double>> mergedGuess =
       Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
-  conmerger_->add_cond_vector(strucGuess, mergedGuess);
-  conmerger_->add_other_vector(lagrGuess, mergedGuess);
+  conmerger_->add_cond_vector(*strucGuess, *mergedGuess);
+  conmerger_->add_other_vector(*lagrGuess, *mergedGuess);
 
   return mergedGuess;
 }
@@ -96,8 +96,8 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged:
   // merge stuff together
   Teuchos::RCP<Core::LinAlg::Vector<double>> mergedRHS =
       Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
-  conmerger_->add_cond_vector(struRHS, mergedRHS);
-  conmerger_->add_other_vector(-1.0, lagrRHS, mergedRHS);
+  conmerger_->add_cond_vector(*struRHS, *mergedRHS);
+  conmerger_->add_other_vector(-1.0, *lagrRHS, *mergedRHS);
 
   return mergedRHS;
 }
@@ -115,8 +115,8 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged:
   // merge stuff together
   Teuchos::RCP<Core::LinAlg::Vector<double>> mergedstat =
       Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
-  conmerger_->add_cond_vector(strudis, mergedstat);
-  conmerger_->add_other_vector(lagrmult, mergedstat);
+  conmerger_->add_cond_vector(*strudis, *mergedstat);
+  conmerger_->add_other_vector(*lagrmult, *mergedstat);
 
   return mergedstat;
 }
@@ -134,8 +134,8 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged:
   // merge stuff together
   Teuchos::RCP<Core::LinAlg::Vector<double>> mergedstat =
       Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
-  conmerger_->add_cond_vector(strudis, mergedstat);
-  conmerger_->add_other_vector(lagrmult, mergedstat);
+  conmerger_->add_cond_vector(*strudis, *mergedstat);
+  conmerger_->add_other_vector(*lagrmult, *mergedstat);
 
   return mergedstat;
 }
@@ -153,8 +153,8 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged:
   // merge stuff together
   Teuchos::RCP<Core::LinAlg::Vector<double>> mergedstat =
       Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
-  conmerger_->add_cond_vector(strudis, mergedstat);
-  conmerger_->add_other_vector(lagrmult, mergedstat);
+  conmerger_->add_cond_vector(*strudis, *mergedstat);
+  conmerger_->add_other_vector(*lagrmult, *mergedstat);
 
   return mergedstat;
 }
@@ -172,8 +172,8 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged:
   // merge stuff together
   Teuchos::RCP<Core::LinAlg::Vector<double>> mergedstat =
       Teuchos::rcp(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
-  conmerger_->add_cond_vector(strudis, mergedstat);
-  conmerger_->add_other_vector(lagrmult, mergedstat);
+  conmerger_->add_cond_vector(*strudis, *mergedstat);
+  conmerger_->add_other_vector(*lagrmult, *mergedstat);
 
   return mergedstat;
 }
@@ -234,9 +234,9 @@ void Adapter::StructureConstrMerged::evaluate(
   {
     // Extract increments for lagr multipliers and do update
     Teuchos::RCP<Core::LinAlg::Vector<double>> lagrincr =
-        conmerger_->extract_other_vector(dispstepinc);
+        conmerger_->extract_other_vector(*dispstepinc);
     structure_->update_iter_incr_constr(lagrincr);
-    dispstructstepinc = conmerger_->extract_cond_vector(dispstepinc);
+    dispstructstepinc = conmerger_->extract_cond_vector(*dispstepinc);
   }
   // Hand down incremental displacements,
   // structure_ will compute the residual increments on its own
@@ -262,12 +262,12 @@ void Adapter::StructureConstrMerged::apply_interface_forces_temporary_deprecated
       Core::LinAlg::create_vector(*dof_row_map(), true);
 
   // insert interface forces
-  interface_->add_fsi_cond_vector(iforce, fifc);
+  interface_->add_fsi_cond_vector(*iforce, *fifc);
 
   // extract the force values from the displacement DOFs only
   Teuchos::RCP<Core::LinAlg::Vector<double>> fifcdisp =
       Core::LinAlg::create_vector(*conmerger_->cond_map(), true);
-  conmerger_->extract_cond_vector(fifc, fifcdisp);
+  conmerger_->extract_cond_vector(*fifc, *fifcdisp);
 
   // set interface forces within the structural time integrator
   set_force_interface(fifcdisp->get_ptr_of_Epetra_MultiVector());

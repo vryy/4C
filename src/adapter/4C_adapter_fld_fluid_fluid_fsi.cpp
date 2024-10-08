@@ -145,8 +145,8 @@ void Adapter::FluidFluidFSI::apply_mesh_displacement(
 {
   // store old state
   Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
-      meshmap_->extract_cond_vector(fluidimpl_->dispnp());
-  meshmap_->insert_cond_vector(disp, xfluidfluid_->write_access_disp_old_state());
+      meshmap_->extract_cond_vector(*fluidimpl_->dispnp());
+  meshmap_->insert_cond_vector(*disp, *xfluidfluid_->write_access_disp_old_state());
   // apply mesh displacement and update grid velocity
   FluidFSI::apply_mesh_displacement(fluiddisp);
 

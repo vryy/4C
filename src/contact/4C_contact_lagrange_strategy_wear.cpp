@@ -4124,20 +4124,20 @@ void Wear::LagrangeStrategyWear::update_displacements_and_l_mincrements(
 
   Core::LinAlg::MapExtractor mapextd(*mergedmap, problem_dofs(), glmdofrowmap_);
   Core::LinAlg::MapExtractor mapextlm(*mergedmap, glmdofrowmap_, glmdofrowmap_);
-  mapextd.extract_cond_vector(blocksol, sold);
-  mapextlm.extract_cond_vector(blocksol, sollm);
+  mapextd.extract_cond_vector(*blocksol, *sold);
+  mapextlm.extract_cond_vector(*blocksol, *sollm);
   sollm->ReplaceMap(*gsdofrowmap_);
 
   if (wearprimvar_)
   {
     Core::LinAlg::MapExtractor mapextw(*mergedmap, gwdofrowmap_, glmdofrowmap_);
-    mapextw.extract_cond_vector(blocksol, solw);
+    mapextw.extract_cond_vector(*blocksol, *solw);
     solw->ReplaceMap(*gsdofnrowmap_);
   }
   if (wearbothpv_)
   {
     Core::LinAlg::MapExtractor mapextwm(*mergedmap, gwmdofrowmap_, glmdofrowmap_);
-    mapextwm.extract_cond_vector(blocksol, solwm);
+    mapextwm.extract_cond_vector(*blocksol, *solwm);
     solwm->ReplaceMap(*gmdofnrowmap_);
   }
 

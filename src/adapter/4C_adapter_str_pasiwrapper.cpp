@@ -38,7 +38,7 @@ void Adapter::PASIStructureWrapper::apply_interface_force(
 
   if (intfforce != Teuchos::null)
     interface_->add_pasi_cond_vector(
-        intfforce, pasi_model_evaluator()->get_interface_force_np_ptr());
+        *intfforce, *pasi_model_evaluator()->get_interface_force_np_ptr());
 }
 
 FOUR_C_NAMESPACE_CLOSE

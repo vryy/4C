@@ -126,7 +126,7 @@ void XFEM::XffCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vecto
   Teuchos::RCP<Core::LinAlg::Vector<double>> coup_rhs =
       Teuchos::rcp(new Core::LinAlg::Vector<double>(*me.Map(idx_[0]), true));
   Core::LinAlg::export_to(*coup_rhs_sum, *coup_rhs);
-  me.add_vector(coup_rhs, idx_[0], rhs);
+  me.add_vector(*coup_rhs, idx_[0], *rhs);
 
   return;
 }

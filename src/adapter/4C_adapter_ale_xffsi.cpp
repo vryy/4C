@@ -45,7 +45,7 @@ void Adapter::AleXFFsiWrapper::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<
 
   // set dispnp_ of xfem dofs to dispn_
   xff_interface_->insert_xfluid_fluid_cond_vector(
-      xff_interface_->extract_xfluid_fluid_cond_vector(dispn()), write_access_dispnp());
+      *xff_interface_->extract_xfluid_fluid_cond_vector(*dispn()), *write_access_dispnp());
 }
 
 /*----------------------------------------------------------------------------*/

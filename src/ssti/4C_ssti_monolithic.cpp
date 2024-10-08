@@ -473,7 +473,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> SSTI::SSTIMono::extract_sub_increment
     {
       // First, extract increment from domain and master side
       subincrement = ssti_maps_mono_->maps_sub_problems()->extract_vector(
-          increment_, get_problem_position(Subproblem::structure));
+          *increment_, get_problem_position(Subproblem::structure));
 
       // Second, copy master side displacements and increments to slave side for meshtying
       if (interface_meshtying())
@@ -485,15 +485,15 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> SSTI::SSTIMono::extract_sub_increment
 
           // displacements
           coupling_map_extractor->insert_vector(
-              coupling_adapter->master_to_slave(
-                  coupling_map_extractor->extract_vector(structure_field()->dispnp(), 2)),
-              1, structure_field()->write_access_dispnp());
+              *coupling_adapter->master_to_slave(
+                  coupling_map_extractor->extract_vector(*structure_field()->dispnp(), 2)),
+              1, *structure_field()->write_access_dispnp());
           structure_field()->set_state(structure_field()->write_access_dispnp());
           // increments
           coupling_map_extractor->insert_vector(
-              coupling_adapter->master_to_slave(
-                  coupling_map_extractor->extract_vector(subincrement, 2)),
-              1, subincrement);
+              *coupling_adapter->master_to_slave(
+                  coupling_map_extractor->extract_vector(*subincrement, 2)),
+              1, *subincrement);
         }
       }
       break;
@@ -501,13 +501,13 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> SSTI::SSTIMono::extract_sub_increment
     case Subproblem::scalar_transport:
     {
       subincrement = ssti_maps_mono_->maps_sub_problems()->extract_vector(
-          increment_, get_problem_position(Subproblem::scalar_transport));
+          *increment_, get_problem_position(Subproblem::scalar_transport));
       break;
     }
     case Subproblem::thermo:
     {
       subincrement = ssti_maps_mono_->maps_sub_problems()->extract_vector(
-          increment_, get_problem_position(Subproblem::thermo));
+          *increment_, get_problem_position(Subproblem::thermo));
       break;
     }
     default:

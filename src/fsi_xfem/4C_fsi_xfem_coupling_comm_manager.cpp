@@ -82,14 +82,14 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
           Teuchos::rcp(new Core::LinAlg::Vector<double>(*mmeb->Map(1), true));
       insert_vector(idxA, vecA, idxB, tmpvec, CouplingCommManager::full_to_partial, false, scale);
       if (!add)
-        mmeb->insert_vector(tmpvec, 1, vecB);
+        mmeb->insert_vector(*tmpvec, 1, *vecB);
       else
-        mmeb->add_vector(tmpvec, 1, vecB);
+        mmeb->add_vector(*tmpvec, 1, *vecB);
       break;
     }
     case CouplingCommManager::full_to_partial:
     {
-      insert_vector(idxA, get_map_extractor(idxA)->extract_vector(vecA, 1), idxB, vecB,
+      insert_vector(idxA, get_map_extractor(idxA)->extract_vector(*vecA, 1), idxB, vecB,
           CouplingCommManager::partial_to_partial, add, scale);
       break;
     }
@@ -101,9 +101,9 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
       insert_vector(
           idxA, vecA, idxB, tmpvec, CouplingCommManager::partial_to_partial, false, scale);
       if (!add)
-        mmeb->insert_vector(tmpvec, 1, vecB);
+        mmeb->insert_vector(*tmpvec, 1, *vecB);
       else
-        mmeb->add_vector(tmpvec, 1, vecB);
+        mmeb->add_vector(*tmpvec, 1, *vecB);
       break;
     }
     case CouplingCommManager::partial_to_partial:
@@ -144,9 +144,9 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
           Teuchos::rcp(new Core::LinAlg::Vector<double>(*mme->Map(idxB), true));
       insert_vector(idxA, vecA, idxB, fullvec, CouplingCommManager::partial_to_full, false, scale);
       if (!add)
-        mme->insert_vector(fullvec, idxB, vecB);
+        mme->insert_vector(*fullvec, idxB, *vecB);
       else
-        mme->add_vector(fullvec, idxB, vecB);
+        mme->add_vector(*fullvec, idxB, *vecB);
       break;
     }
     case CouplingCommManager::full_to_global:
@@ -156,9 +156,9 @@ void XFEM::CouplingCommManager::insert_vector(const int idxA,
           Teuchos::rcp(new Core::LinAlg::Vector<double>(*mme->Map(idxB), true));
       insert_vector(idxA, vecA, idxB, fullvec, CouplingCommManager::full_to_full, false, scale);
       if (!add)
-        mme->insert_vector(fullvec, idxB, vecB);
+        mme->insert_vector(*fullvec, idxB, *vecB);
       else
-        mme->add_vector(fullvec, idxB, vecB);
+        mme->add_vector(*fullvec, idxB, *vecB);
       break;
     }
     default:

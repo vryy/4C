@@ -62,7 +62,7 @@ namespace Adapter
     //! apply interface displacements
     void apply_interface_displacements(Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp)
     {
-      interface_->insert_fsi_cond_vector(idisp, write_access_dispnp());
+      interface_->insert_fsi_cond_vector(*idisp, *write_access_dispnp());
     }
 
     //! get Dirichlet map extractor

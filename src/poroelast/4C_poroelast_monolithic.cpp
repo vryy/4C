@@ -388,10 +388,10 @@ void PoroElast::Monolithic::extract_field_vectors(
   TEUCHOS_FUNC_TIME_MONITOR("PoroElast::Monolithic::extract_field_vectors");
 
   // process structure unknowns of the first field
-  sx = extractor()->extract_vector(x, 0);
+  sx = extractor()->extract_vector(*x, 0);
 
   // process fluid unknowns of the second field
-  fx = extractor()->extract_vector(x, 1);
+  fx = extractor()->extract_vector(*x, 1);
 }
 
 void PoroElast::Monolithic::setup_system()
@@ -1522,18 +1522,18 @@ void PoroElast::Monolithic::build_convergence_norms()
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fpres;
 
   // process structure unknowns of the first field
-  rhs_s = extractor()->extract_vector(rhs_, 0);
+  rhs_s = extractor()->extract_vector(*rhs_, 0);
   // process fluid unknowns of the second field
-  rhs_f = extractor()->extract_vector(rhs_, 1);
+  rhs_f = extractor()->extract_vector(*rhs_, 1);
   rhs_fvel = fluid_field()->extract_velocity_part(rhs_f);
   rhs_fpres = fluid_field()->extract_pressure_part(rhs_f);
 
   if (porosity_dof_)
   {
     Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_poro =
-        porosity_splitter_->extract_cond_vector(rhs_s);
+        porosity_splitter_->extract_cond_vector(*rhs_s);
     Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_sdisp =
-        porosity_splitter_->extract_other_vector(rhs_s);
+        porosity_splitter_->extract_other_vector(*rhs_s);
 
     normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_sdisp);
     normrhsporo_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_poro);
@@ -1555,18 +1555,18 @@ void PoroElast::Monolithic::build_convergence_norms()
   Teuchos::RCP<const Core::LinAlg::Vector<double>> interincfvel;
   Teuchos::RCP<const Core::LinAlg::Vector<double>> interincfpres;
   // process structure unknowns of the first field
-  interincs = extractor()->extract_vector(iterinc_, 0);
+  interincs = extractor()->extract_vector(*iterinc_, 0);
   // process fluid unknowns of the second field
-  interincf = extractor()->extract_vector(iterinc_, 1);
+  interincf = extractor()->extract_vector(*iterinc_, 1);
   interincfvel = fluid_field()->extract_velocity_part(interincf);
   interincfpres = fluid_field()->extract_pressure_part(interincf);
 
   if (porosity_dof_)
   {
     Teuchos::RCP<const Core::LinAlg::Vector<double>> interincporo =
-        porosity_splitter_->extract_cond_vector(interincs);
+        porosity_splitter_->extract_cond_vector(*interincs);
     Teuchos::RCP<const Core::LinAlg::Vector<double>> interincsdisp =
-        porosity_splitter_->extract_other_vector(interincs);
+        porosity_splitter_->extract_other_vector(*interincs);
 
     normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, interincsdisp);
     normincporo_ = UTILS::calculate_vector_norm(vectornorminc_, interincporo);
@@ -1873,7 +1873,7 @@ void PoroElast::Monolithic::eval_poro_mortar()
           Teuchos::RCP<Core::LinAlg::SparseOperator> k_sf =
               Teuchos::rcp<Core::LinAlg::SparseMatrix>(
                   new Core::LinAlg::SparseMatrix(systemmatrix_->matrix(0, 1)));
-          Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_s = extractor()->extract_vector(rhs_, 0);
+          Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_s = extractor()->extract_vector(*rhs_, 0);
 
           // Evaluate Poro Contact Condensation for K_ss, K_sf
           costrategy.apply_force_stiff_cmt_coupled(
@@ -1884,7 +1884,7 @@ void PoroElast::Monolithic::eval_poro_mortar()
               *Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(k_ss));
           systemmatrix_->assign(0, 1, Core::LinAlg::Copy,
               *Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(k_sf));
-          extractor()->insert_vector(rhs_s, 0, rhs_);
+          extractor()->insert_vector(*rhs_s, 0, *rhs_);
 
           //---Modify fluid matrix, coupling matrix k_fs and rhs of fluid
           if (no_penetration_)
@@ -1899,7 +1899,7 @@ void PoroElast::Monolithic::eval_poro_mortar()
                 Teuchos::rcp<Core::LinAlg::SparseMatrix>(
                     new Core::LinAlg::SparseMatrix(systemmatrix_->matrix(1, 0)));
 
-            Teuchos::RCP<Core::LinAlg::Vector<double>> frhs = extractor()->extract_vector(rhs_, 1);
+            Teuchos::RCP<Core::LinAlg::Vector<double>> frhs = extractor()->extract_vector(*rhs_, 1);
 
             // Evaluate Poro No Penetration Contact Condensation
             costrategy.evaluate_poro_no_pen_contact(k_fs, f, frhs);

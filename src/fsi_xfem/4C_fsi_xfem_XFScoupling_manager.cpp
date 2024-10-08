@@ -212,7 +212,7 @@ void XFEM::XfsCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vecto
       *coup_rhs_sum, *coup_rhs);  // use this command as long as poro ist not split
                                   // into two bocks in the monolithic algorithm!
   // insert_vector(0,coup_rhs_sum,0,coup_rhs,Coupling_Comm_Manager::partial_to_full);
-  me.add_vector(coup_rhs, idx_[0], rhs);
+  me.add_vector(*coup_rhs, idx_[0], *rhs);
 }
 
 /*----------------------------------------------------------------------*/

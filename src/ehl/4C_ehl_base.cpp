@@ -270,8 +270,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> EHL::Base::evaluate_fluid_force(
       Teuchos::rcp(new Core::LinAlg::Vector<double>(*(structure_->dof_row_map())));
 
   // Insert both interface forces into the global force vector
-  slaverowmapextr_->insert_vector(slaveiforce, 0, strforce);
-  masterrowmapextr_->insert_vector(masteriforce, 0, strforce);
+  slaverowmapextr_->insert_vector(*slaveiforce, 0, *strforce);
+  masterrowmapextr_->insert_vector(*masteriforce, 0, *strforce);
 
   return strforce;
 }
@@ -498,7 +498,7 @@ void EHL::Base::set_mesh_disp(Teuchos::RCP<const Core::LinAlg::Vector<double>> d
   // Extract the structure displacement at the slave-side interface
   Teuchos::RCP<Core::LinAlg::Vector<double>> slaveidisp = Core::LinAlg::create_vector(
       *(slaverowmapextr_->Map(0)), true);  // Structure displacement at the lubricated interface
-  slaverowmapextr_->extract_vector(disp, 0, slaveidisp);
+  slaverowmapextr_->extract_vector(*disp, 0, *slaveidisp);
 
   // Transfer the displacement vector onto the lubrication field
   Teuchos::RCP<Core::LinAlg::Vector<double>> lubridisp =

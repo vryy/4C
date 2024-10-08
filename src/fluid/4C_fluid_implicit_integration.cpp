@@ -2340,7 +2340,7 @@ bool FLD::FluidImplicitTimeInt::convergence_check(int itnum, int itmax, const do
   // not include the dirichlet values as well. But it is expensive
   // to avoid that.)
   // -------------------------------------------------------------------
-  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), residual_);
+  dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *residual_);
 
   // -------------------------------------------------------------------
   // take surface volumetric flow rate into account
@@ -2365,26 +2365,26 @@ bool FLD::FluidImplicitTimeInt::convergence_check(int itnum, int itmax, const do
 
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> onlyvel =
-      velpressplitter_->extract_other_vector(residual_);
+      velpressplitter_->extract_other_vector(*residual_);
 
   onlyvel->Norm2(&vresnorm_);
 
-  velpressplitter_->extract_other_vector(incvel_, onlyvel);
+  velpressplitter_->extract_other_vector(*incvel_, *onlyvel);
 
   onlyvel->Norm2(&incvelnorm_L2_);
 
-  velpressplitter_->extract_other_vector(velnp_, onlyvel);
+  velpressplitter_->extract_other_vector(*velnp_, *onlyvel);
 
   onlyvel->Norm2(&velnorm_L2_);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> onlypre =
-      velpressplitter_->extract_cond_vector(residual_);
+      velpressplitter_->extract_cond_vector(*residual_);
   onlypre->Norm2(&presnorm_);
 
-  velpressplitter_->extract_cond_vector(incvel_, onlypre);
+  velpressplitter_->extract_cond_vector(*incvel_, *onlypre);
   onlypre->Norm2(&incprenorm_L2_);
 
-  velpressplitter_->extract_cond_vector(velnp_, onlypre);
+  velpressplitter_->extract_cond_vector(*velnp_, *onlypre);
   onlypre->Norm2(&prenorm_L2_);
 
   // check for any INF's and NaN's
@@ -2554,10 +2554,10 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
     // Set variables depending on condition
     if (condName == "ALEUPDATECoupling")
     {
-      velnp = surfacesplitter_->extract_au_cond_vector(velnp_);
-      gridv = surfacesplitter_->extract_au_cond_vector(gridv_);
-      disp = surfacesplitter_->extract_au_cond_vector(dispn_);
-      dispnp = surfacesplitter_->extract_au_cond_vector(dispnp_);
+      velnp = surfacesplitter_->extract_au_cond_vector(*velnp_);
+      gridv = surfacesplitter_->extract_au_cond_vector(*gridv_);
+      disp = surfacesplitter_->extract_au_cond_vector(*dispn_);
+      dispnp = surfacesplitter_->extract_au_cond_vector(*dispnp_);
     }
 
     // Do the local lagrangian coupling
@@ -2607,7 +2607,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
         // (vector only contain the nodes in the condition).
         if (condName == "ALEUPDATECoupling")
         {
-          nodeNormals = surfacesplitter_->extract_au_cond_vector(globalNodeNormals);
+          nodeNormals = surfacesplitter_->extract_au_cond_vector(*globalNodeNormals);
           nodeTangents =
               Teuchos::rcp(new Core::LinAlg::Vector<double>(*surfacesplitter_->au_cond_map()));
         }
@@ -2952,8 +2952,8 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
     // Insert calculated displacements and velocities at n+1 into global Ale variables
     if (condName == "ALEUPDATECoupling")
     {
-      surfacesplitter_->insert_au_cond_vector(dispnp, dispnp_);
-      surfacesplitter_->insert_au_cond_vector(gridv, gridv_);
+      surfacesplitter_->insert_au_cond_vector(*dispnp, *dispnp_);
+      surfacesplitter_->insert_au_cond_vector(*gridv, *gridv_);
     }
   }
 }
@@ -3007,7 +3007,7 @@ void FLD::FluidImplicitTimeInt::evaluate(Teuchos::RCP<const Core::LinAlg::Vector
     aux->Update(1.0, *veln_, 1.0, *stepinc, 0.0);
 
     // Set Dirichlet values
-    dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(velnp_), aux);
+    dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*velnp_), *aux);
 
     insert_volumetric_surface_flow_cond_vector(velnp_, aux);
 
@@ -3243,11 +3243,11 @@ void FLD::FluidImplicitTimeInt::tim_int_calculate_acceleration()
   }
   else  // standard case
   {
-    onlyaccn = velpressplitter_->extract_other_vector(accn_);
-    onlyaccnp = velpressplitter_->extract_other_vector(accnp_);
-    onlyvelnm = velpressplitter_->extract_other_vector(velnm_);
-    onlyveln = velpressplitter_->extract_other_vector(veln_);
-    onlyvelnp = velpressplitter_->extract_other_vector(velnp_);
+    onlyaccn = velpressplitter_->extract_other_vector(*accn_);
+    onlyaccnp = velpressplitter_->extract_other_vector(*accnp_);
+    onlyvelnm = velpressplitter_->extract_other_vector(*velnm_);
+    onlyveln = velpressplitter_->extract_other_vector(*veln_);
+    onlyvelnp = velpressplitter_->extract_other_vector(*velnp_);
   }
 
   calculate_acceleration(onlyvelnp, onlyveln, onlyvelnm, onlyaccn, onlyaccnp);
@@ -3484,7 +3484,7 @@ void FLD::FluidImplicitTimeInt::output()
 
     // (hydrodynamic) pressure
     Teuchos::RCP<Core::LinAlg::Vector<double>> pressure =
-        velpressplitter_->extract_cond_vector(velnp_);
+        velpressplitter_->extract_cond_vector(*velnp_);
     output_->write_vector("pressure", pressure);
 
     if (xwall_ != Teuchos::null)
@@ -3501,7 +3501,7 @@ void FLD::FluidImplicitTimeInt::output()
         physicaltype_ == Inpar::FLUID::boussinesq or physicaltype_ == Inpar::FLUID::tempdepwater)
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> scalar_field =
-          velpressplitter_->extract_cond_vector(scaaf_);
+          velpressplitter_->extract_cond_vector(*scaaf_);
       output_->write_vector("scalar_field", scalar_field);
     }
 
@@ -3941,8 +3941,8 @@ void FLD::FluidImplicitTimeInt::update_gridv()
 
   // Set proper grid velocities at the free-surface and for the ale update conditions
   Teuchos::RCP<Core::LinAlg::Vector<double>> auveln =
-      surfacesplitter_->extract_au_cond_vector(veln_);
-  surfacesplitter_->insert_au_cond_vector(auveln, gridv_);
+      surfacesplitter_->extract_au_cond_vector(*veln_);
+  surfacesplitter_->insert_au_cond_vector(*auveln, *gridv_);
 }
 
 
@@ -4727,7 +4727,7 @@ void FLD::FluidImplicitTimeInt::set_scalar_fields(
 Teuchos::RCP<const Core::LinAlg::Vector<double>> FLD::FluidImplicitTimeInt::extract_velocity_part(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> velpres)
 {
-  return vel_pres_splitter()->extract_other_vector(velpres);
+  return vel_pres_splitter()->extract_other_vector(*velpres);
 }
 
 /*----------------------------------------------------------------------*/
@@ -4735,7 +4735,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> FLD::FluidImplicitTimeInt::extr
 Teuchos::RCP<const Core::LinAlg::Vector<double>> FLD::FluidImplicitTimeInt::extract_pressure_part(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> velpres)
 {
-  return vel_pres_splitter()->extract_cond_vector(velpres);
+  return vel_pres_splitter()->extract_cond_vector(*velpres);
 }
 
 /*----------------------------------------------------------------------*
@@ -5430,7 +5430,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> FLD::FluidImplicitTimeInt::diri
   dirichones->PutScalar(1.0);
   Teuchos::RCP<Core::LinAlg::Vector<double>> dirichtoggle =
       Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
-  dbcmaps_->insert_cond_vector(dirichones, dirichtoggle);
+  dbcmaps_->insert_cond_vector(*dirichones, *dirichtoggle);
   return dirichtoggle;
 }
 
@@ -5444,7 +5444,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> FLD::FluidImplicitTimeInt::inv_
   Teuchos::RCP<Core::LinAlg::Vector<double>> invtoggle =
       Core::LinAlg::create_vector(*(discret_->dof_row_map()), false);
   invtoggle->PutScalar(1.0);
-  dbcmaps_->insert_cond_vector(dirichzeros, invtoggle);
+  dbcmaps_->insert_cond_vector(*dirichzeros, *invtoggle);
   return invtoggle;
 }
 
@@ -5719,8 +5719,8 @@ void FLD::FluidImplicitTimeInt::update_iter_incrementally(
     Teuchos::RCP<Core::LinAlg::Vector<double>> aux =
         Core::LinAlg::create_vector(*(discret_->dof_row_map(0)), true);
     aux->Update(1.0, *velnp_, 1.0, *vel, 0.0);
-    //    dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(aux), velnp_);
-    dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(velnp_), aux);
+    //    dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(*aux), velnp_);
+    dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*velnp_), *aux);
 
     *velnp_ = *aux;
   }
@@ -6202,7 +6202,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::FluidImplicitTimeInt::calc_div_o
   discret_->clear_state();
 
   //  // blank DOFs which are on Dirichlet BC, since they may not be modified
-  //  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), divop);
+  //  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(*zeros_), divop);
 
   return divop;
 }
@@ -6338,10 +6338,10 @@ void FLD::FluidImplicitTimeInt::predict_tang_vel_consist_acc()
 
   // extract reaction forces
   freact->Update(1.0, *residual_, 0.0);
-  dbcmaps_->insert_other_vector(dbcmaps_->extract_other_vector(zeros_), freact);
+  dbcmaps_->insert_other_vector(*dbcmaps_->extract_other_vector(*zeros_), *freact);
 
   // blank residual at DOFs on Dirichlet BC
-  dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), residual_);
+  dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *residual_);
 
   // apply Dirichlet BCs to system of equations
   incvel_->PutScalar(0.0);
@@ -6362,7 +6362,7 @@ void FLD::FluidImplicitTimeInt::predict_tang_vel_consist_acc()
   update_iter_incrementally(incvel_);
 
   // keep pressure values from previous time step
-  velpressplitter_->insert_cond_vector(velpressplitter_->extract_cond_vector(veln_), velnp_);
+  velpressplitter_->insert_cond_vector(*velpressplitter_->extract_cond_vector(*veln_), *velnp_);
 
   // Note: accelerations on Dirichlet DOFs are not set.
 
@@ -6597,10 +6597,10 @@ void FLD::FluidImplicitTimeInt::explicit_predictor()
     velnp_->Update(1.0, *veln_, 0.0);
 
     // split between acceleration and pressure
-    Teuchos::RCP<Core::LinAlg::Vector<double>> inc = velpressplitter_->extract_other_vector(accn_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> inc = velpressplitter_->extract_other_vector(*accn_);
     inc->Scale((1.0 - theta_) * dta_);
 
-    velpressplitter_->add_other_vector(inc, velnp_);
+    velpressplitter_->add_other_vector(*inc, *velnp_);
   }
   else if (predictor_ == "constant_acceleration")
   {
@@ -6618,10 +6618,10 @@ void FLD::FluidImplicitTimeInt::explicit_predictor()
     //
     velnp_->Update(1.0, *veln_, 0.0);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> inc = velpressplitter_->extract_other_vector(accn_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> inc = velpressplitter_->extract_other_vector(*accn_);
     inc->Scale(dta_);
 
-    velpressplitter_->add_other_vector(inc, velnp_);
+    velpressplitter_->add_other_vector(*inc, *velnp_);
   }
   else if (predictor_ == "constant_increment")
   {
@@ -6639,12 +6639,13 @@ void FLD::FluidImplicitTimeInt::explicit_predictor()
     //
     velnp_->Update(1.0, *veln_, 0.0);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> un = velpressplitter_->extract_other_vector(veln_);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> unm = velpressplitter_->extract_other_vector(velnm_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> un = velpressplitter_->extract_other_vector(*veln_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> unm =
+        velpressplitter_->extract_other_vector(*velnm_);
     unm->Scale(-1.0);
 
-    velpressplitter_->add_other_vector(un, velnp_);
-    velpressplitter_->add_other_vector(unm, velnp_);
+    velpressplitter_->add_other_vector(*un, *velnp_);
+    velpressplitter_->add_other_vector(*unm, *velnp_);
   }
   else if (predictor_ == "explicit_second_order_midpoint")
   {
@@ -6671,12 +6672,13 @@ void FLD::FluidImplicitTimeInt::explicit_predictor()
     velnp_->Update(1.0, *veln_, 0.0);
 
     // split between acceleration and pressure
-    Teuchos::RCP<Core::LinAlg::Vector<double>> unm = velpressplitter_->extract_other_vector(velnm_);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> an = velpressplitter_->extract_other_vector(accn_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> unm =
+        velpressplitter_->extract_other_vector(*velnm_);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> an = velpressplitter_->extract_other_vector(*accn_);
 
     unm->Update(2.0 * dta_, *an, 1.0);
 
-    velpressplitter_->insert_other_vector(unm, velnp_);
+    velpressplitter_->insert_other_vector(*unm, *velnp_);
   }
   else
     FOUR_C_THROW("Unknown fluid predictor %s", predictor_.c_str());

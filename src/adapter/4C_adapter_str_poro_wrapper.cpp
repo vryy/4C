@@ -120,11 +120,11 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::StructurePoroWrapper::insert
   switch (type_)
   {
     case FieldWrapper::type_StructureField:
-      return interface()->insert_fsi_cond_vector(cond);
+      return interface()->insert_fsi_cond_vector(*cond);
       break;
     case FieldWrapper::type_PoroField:
-      tmpcond = interface()->insert_fsi_cond_vector(cond);
-      return poro_->extractor()->insert_vector(tmpcond, 0);  // into structural part = 0
+      tmpcond = interface()->insert_fsi_cond_vector(*cond);
+      return poro_->extractor()->insert_vector(*tmpcond, 0);  // into structural part = 0
       break;
     default:
       FOUR_C_THROW("StructurePoroWrapper: type for this wrapper not considered!");

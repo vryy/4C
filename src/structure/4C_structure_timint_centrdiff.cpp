@@ -199,7 +199,7 @@ int Solid::TimIntCentrDiff::integrate_step()
   {
     FOUR_C_ASSERT(mass_->filled(), "Mass matrix has to be completed");
     // blank linear momentum zero on DOFs subjected to DBCs
-    dbcmaps_->insert_cond_vector(dbcmaps_->extract_cond_vector(zeros_), frimpn_);
+    dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *frimpn_);
     // get accelerations
     accn_->PutScalar(0.0);
 

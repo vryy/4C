@@ -1063,14 +1063,14 @@ void FPSI::Monolithic::build_convergence_norms()
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_ale;
 
 
-  rhs_porostruct = extractor().extract_vector(rhs_, structure_block_);
-  rhs_porofluid = extractor().extract_vector(rhs_, porofluid_block_);
+  rhs_porostruct = extractor().extract_vector(*rhs_, structure_block_);
+  rhs_porofluid = extractor().extract_vector(*rhs_, porofluid_block_);
   rhs_porofluidvelocity = poro_field()->fluid_field()->extract_velocity_part(rhs_porofluid);
   rhs_porofluidpressure = poro_field()->fluid_field()->extract_pressure_part(rhs_porofluid);
   rhs_porointerface =
-      fpsi_coupl()->poro_fluid_fpsi_vel_pres_extractor()->extract_cond_vector(rhs_porofluid);
+      fpsi_coupl()->poro_fluid_fpsi_vel_pres_extractor()->extract_cond_vector(*rhs_porofluid);
 
-  rhs_fluid = extractor().extract_vector(rhs_, fluid_block_);
+  rhs_fluid = extractor().extract_vector(*rhs_, fluid_block_);
   //  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fullfluid = Teuchos::rcp(new
   //  Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map())); Teuchos::RCP<const
   //  Core::LinAlg::Vector<double>> rhs_fsi = Teuchos::rcp(new
@@ -1080,9 +1080,10 @@ void FPSI::Monolithic::build_convergence_norms()
   rhs_fluidvelocity = fluid_field()->extract_velocity_part(rhs_fluid);
   rhs_fluidpressure = fluid_field()->extract_pressure_part(rhs_fluid);
   rhs_fluidinterface =
-      fpsi_coupl()->fluid_fpsi_vel_pres_extractor()->extract_cond_vector(rhs_fluid);
+      fpsi_coupl()->fluid_fpsi_vel_pres_extractor()->extract_cond_vector(*rhs_fluid);
 
-  rhs_ale = extractor().extract_vector(rhs_, ale_i_block_);  // Extractor().extract_vector(rhs_, 2);
+  rhs_ale =
+      extractor().extract_vector(*rhs_, ale_i_block_);  // Extractor().extract_vector(*rhs_, 2);
 
   rhs_porostruct->Norm2(&normrhsporostruct_);
   rhs_fluid->Norm2(&normrhsfluid_);
@@ -1124,14 +1125,14 @@ void FPSI::Monolithic::build_convergence_norms()
   Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincporointerface;
   Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincfluidinterface;
 
-  iterincporostruct = extractor().extract_vector(iterinc_, structure_block_);
-  iterincporofluid = extractor().extract_vector(iterinc_, porofluid_block_);
+  iterincporostruct = extractor().extract_vector(*iterinc_, structure_block_);
+  iterincporofluid = extractor().extract_vector(*iterinc_, porofluid_block_);
   iterincporofluidvelocity = poro_field()->fluid_field()->extract_velocity_part(iterincporofluid);
   iterincporofluidpressure = poro_field()->fluid_field()->extract_pressure_part(iterincporofluid);
   iterincporointerface =
-      fpsi_coupl()->poro_fluid_fpsi_vel_pres_extractor()->extract_cond_vector(iterincporofluid);
+      fpsi_coupl()->poro_fluid_fpsi_vel_pres_extractor()->extract_cond_vector(*iterincporofluid);
 
-  iterincfluid = extractor().extract_vector(iterinc_, fluid_block_);
+  iterincfluid = extractor().extract_vector(*iterinc_, fluid_block_);
 
   //  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincfullfluid = Teuchos::rcp(new
   //  Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map())); Teuchos::RCP<const
@@ -1142,9 +1143,9 @@ void FPSI::Monolithic::build_convergence_norms()
   iterincfluidvelocity = fluid_field()->extract_velocity_part(iterincfluid);
   iterincfluidpressure = fluid_field()->extract_pressure_part(iterincfluid);
   iterincfluidinterface =
-      fpsi_coupl()->fluid_fpsi_vel_pres_extractor()->extract_cond_vector(iterincfluid);
+      fpsi_coupl()->fluid_fpsi_vel_pres_extractor()->extract_cond_vector(*iterincfluid);
 
-  iterincale = extractor().extract_vector(iterinc_, ale_i_block_);
+  iterincale = extractor().extract_vector(*iterinc_, ale_i_block_);
 
   iterincporostruct->Norm2(&normofiterincporostruct_);
   iterincporofluid->Norm2(&normofiterincporofluid_);

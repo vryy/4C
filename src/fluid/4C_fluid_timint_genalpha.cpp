@@ -199,11 +199,11 @@ void FLD::TimIntGenAlpha::gen_alpha_update_acceleration()
   else
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccn =
-        velpressplitter_->extract_other_vector(accn_);
+        velpressplitter_->extract_other_vector(*accn_);
     Teuchos::RCP<Core::LinAlg::Vector<double>> onlyveln =
-        velpressplitter_->extract_other_vector(veln_);
+        velpressplitter_->extract_other_vector(*veln_);
     Teuchos::RCP<Core::LinAlg::Vector<double>> onlyvelnp =
-        velpressplitter_->extract_other_vector(velnp_);
+        velpressplitter_->extract_other_vector(*velnp_);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccnp =
         Teuchos::rcp(new Core::LinAlg::Vector<double>(onlyaccn->Map()));
@@ -244,9 +244,9 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values()
   else
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccn =
-        velpressplitter_->extract_other_vector(accn_);
+        velpressplitter_->extract_other_vector(*accn_);
     Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccnp =
-        velpressplitter_->extract_other_vector(accnp_);
+        velpressplitter_->extract_other_vector(*accnp_);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccam =
         Teuchos::rcp(new Core::LinAlg::Vector<double>(onlyaccnp->Map()));

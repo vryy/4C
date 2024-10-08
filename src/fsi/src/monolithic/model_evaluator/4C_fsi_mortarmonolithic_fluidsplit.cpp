@@ -407,21 +407,21 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_residual(Core::LinAlg::Vector<do
 
   // extract only inner DOFs from fluid (=slave) and ALE field
   Teuchos::RCP<Core::LinAlg::Vector<double>> fov =
-      fluid_field()->interface()->extract_other_vector(fv);
-  fov = fluid_field()->interface()->insert_other_vector(fov);
+      fluid_field()->interface()->extract_other_vector(*fv);
+  fov = fluid_field()->interface()->insert_other_vector(*fov);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> aov =
-      ale_field()->interface()->extract_other_vector(av);
+      ale_field()->interface()->extract_other_vector(*av);
 
   /* add fluid interface residual to structure interface residual considering
    * temporal scaling
    */
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcv =
-      fluid_field()->interface()->extract_fsi_cond_vector(fv);
+      fluid_field()->interface()->extract_fsi_cond_vector(*fv);
   Teuchos::RCP<Core::LinAlg::Vector<double>> scv =
       Core::LinAlg::create_vector(*structure_field()->interface()->fsi_cond_map(), true);
   mortarp->multiply(true, *fcv, *scv);
   Teuchos::RCP<Core::LinAlg::Vector<double>> modsv =
-      structure_field()->interface()->insert_fsi_cond_vector(scv);
+      structure_field()->interface()->insert_fsi_cond_vector(*scv);
   modsv->Update(1.0, *sv, (1.0 - stiparam) / (1.0 - ftiparam) * fluidscale);
 
   if (structure_field()->get_stc_algo() == Inpar::Solid::stc_currsym)
@@ -459,7 +459,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_lambda(Core::LinAlg::Vector<doub
         Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarm->domain_map(), true));
     mortarm->multiply(true, *lambdaold_, *lambda);
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
-        structure_field()->interface()->insert_fsi_cond_vector(lambda);
+        structure_field()->interface()->insert_fsi_cond_vector(*lambda);
     lambdafull->Scale(stiparam - (ftiparam * (1.0 - stiparam)) / (1.0 - ftiparam));
 
     // add Lagrange multiplier
@@ -550,7 +550,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector<d
   }
 
   rhs->Scale(scale * (1. - stiparam) / (1. - ftiparam) * dt() * timescale);
-  rhs = structure_field()->interface()->insert_fsi_cond_vector(rhs);
+  rhs = structure_field()->interface()->insert_fsi_cond_vector(*rhs);
 
   extractor().add_vector(*rhs, 0, f);
   // ----------end of term 1
@@ -565,7 +565,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector<d
   mortarp->multiply(true, *auxvec, *rhs);
 
   rhs->Scale(-scale * (1. - stiparam) / (1. - ftiparam) * timescale);
-  rhs = structure_field()->interface()->insert_fsi_cond_vector(rhs);
+  rhs = structure_field()->interface()->insert_fsi_cond_vector(*rhs);
 
   extractor().add_vector(*rhs, 0, f);
   // ----------end of term 2
@@ -585,7 +585,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector<d
     mortarp->multiply(true, *auxvec, *rhs);
 
     rhs->Scale(-(1. - stiparam) / (1. - ftiparam));
-    rhs = structure_field()->interface()->insert_fsi_cond_vector(rhs);
+    rhs = structure_field()->interface()->insert_fsi_cond_vector(*rhs);
 
     extractor().add_vector(*rhs, 0, f);
   }
@@ -615,7 +615,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector<d
 
   rhs->Scale(dt() * timescale);
 
-  rhs = fluid_field()->interface()->insert_other_vector(rhs);
+  rhs = fluid_field()->interface()->insert_other_vector(*rhs);
 
   extractor().add_vector(*rhs, 1, f);
   // ----------end of term 1
@@ -629,7 +629,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector<d
 
   rhs->Scale(-timescale);
 
-  rhs = fluid_field()->interface()->insert_other_vector(rhs);
+  rhs = fluid_field()->interface()->insert_other_vector(*rhs);
 
   extractor().add_vector(*rhs, 1, f);
   // ----------end of term 2
@@ -648,7 +648,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector<d
 
     rhs->Scale(-1.);
 
-    rhs = fluid_field()->interface()->insert_other_vector(rhs);
+    rhs = fluid_field()->interface()->insert_other_vector(*rhs);
 
     extractor().add_vector(*rhs, 1, f);
   }
@@ -708,7 +708,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector<d
           Teuchos::rcp(new Core::LinAlg::Vector<double>(mortarp->domain_map()));
       mortarp->multiply(true, *rhs, *tmprhs);
 
-      rhs = structure_field()->interface()->insert_fsi_cond_vector(tmprhs);
+      rhs = structure_field()->interface()->insert_fsi_cond_vector(*tmprhs);
 
       auto zeros = Teuchos::rcp(new const Core::LinAlg::Vector<double>(rhs->Map(), true));
       Core::LinAlg::apply_dirichlet_to_system(
@@ -727,7 +727,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector<d
 
       fmig.Apply(*iprojdispinc_, *rhs);
 
-      rhs = fluid_field()->interface()->insert_other_vector(rhs);
+      rhs = fluid_field()->interface()->insert_other_vector(*rhs);
 
       zeros = Teuchos::rcp(new const Core::LinAlg::Vector<double>(rhs->Map(), true));
       Core::LinAlg::apply_dirichlet_to_system(
@@ -1366,17 +1366,17 @@ void FSI::MortarMonolithicFluidSplit::extract_field_vectors(
   // process structure unknowns
   // ---------------------------------------------------------------------------
   // extract structure solution increment from NOX increment
-  sx = extractor().extract_vector(x, 0);
+  sx = extractor().extract_vector(*x, 0);
 
   // ---------------------------------------------------------------------------
   // process ale unknowns
   // ---------------------------------------------------------------------------
   // extract inner ALE solution increment from NOX increment
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> aox = extractor().extract_vector(x, 2);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> aox = extractor().extract_vector(*x, 2);
 
   // convert structure solution increment to ALE solution increment at the interface
   Teuchos::RCP<Core::LinAlg::Vector<double>> scx =
-      structure_field()->interface()->extract_fsi_cond_vector(sx);
+      structure_field()->interface()->extract_fsi_cond_vector(*sx);
   scx->Update(1.0, *ddgpred_, 1.0);
   Teuchos::RCP<Core::LinAlg::Vector<double>> acx =
       Core::LinAlg::create_vector(*fluid_field()->interface()->fsi_cond_map());
@@ -1384,16 +1384,17 @@ void FSI::MortarMonolithicFluidSplit::extract_field_vectors(
   acx = fluid_to_ale_interface(acx);
 
   // put inner and interface ALE solution increments together
-  Teuchos::RCP<Core::LinAlg::Vector<double>> a = ale_field()->interface()->insert_other_vector(aox);
-  ale_field()->interface()->insert_fsi_cond_vector(acx, a);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> a =
+      ale_field()->interface()->insert_other_vector(*aox);
+  ale_field()->interface()->insert_fsi_cond_vector(*acx, *a);
   ax = a;
 
   // ---------------------------------------------------------------------------
   // process fluid unknowns
   // ---------------------------------------------------------------------------
   // extract inner fluid solution increment from NOX increment
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> fox = extractor().extract_vector(x, 1);
-  fox = fluid_field()->interface()->extract_other_vector(fox);
+  Teuchos::RCP<const Core::LinAlg::Vector<double>> fox = extractor().extract_vector(*x, 1);
+  fox = fluid_field()->interface()->extract_other_vector(*fox);
 
   // convert ALE solution increment to fluid solution increment at the interface
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcx = ale_to_fluid_interface(acx);
@@ -1401,8 +1402,8 @@ void FSI::MortarMonolithicFluidSplit::extract_field_vectors(
 
   // put inner and interface fluid solution increments together
   Teuchos::RCP<Core::LinAlg::Vector<double>> f =
-      fluid_field()->interface()->insert_other_vector(fox);
-  fluid_field()->interface()->insert_fsi_cond_vector(fcx, f);
+      fluid_field()->interface()->insert_other_vector(*fox);
+  fluid_field()->interface()->insert_fsi_cond_vector(*fcx, *f);
   fx = f;
 
   // ---------------------------------------------------------------------------
@@ -1449,7 +1450,7 @@ void FSI::MortarMonolithicFluidSplit::update()
   {
     iprojdisp_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*coupsfm_->slave_dof_map(), true));
     Teuchos::RCP<Core::LinAlg::Vector<double>> idispale = ale_to_fluid_interface(
-        ale_field()->interface()->extract_fsi_cond_vector(ale_field()->dispnp()));
+        ale_field()->interface()->extract_fsi_cond_vector(*ale_field()->dispnp()));
 
     slideale_->remeshing(*structure_field(), fluid_field()->discretization(), idispale, iprojdisp_,
         *coupsfm_, get_comm());
@@ -1516,7 +1517,7 @@ void FSI::MortarMonolithicFluidSplit::output_lambda()
    * output or restart data.
    */
   Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
-      fluid_field()->interface()->insert_fsi_cond_vector(lambda_);
+      fluid_field()->interface()->insert_fsi_cond_vector(*lambda_);
   const int uprestart = timeparams_.get<int>("RESTARTEVRY");
   const int upres = timeparams_.get<int>("RESULTSEVRY");
   if ((uprestart != 0 and fluid_field()->step() % uprestart == 0) or
@@ -1542,10 +1543,10 @@ void FSI::MortarMonolithicFluidSplit::read_restart(int step)
     Core::IO::DiscretizationReader reader =
         Core::IO::DiscretizationReader(fluid_field()->discretization(), input_control_file, step);
     reader.read_vector(lambdafull, "fsilambda");
-    lambdaold_ = fluid_field()->interface()->extract_fsi_cond_vector(lambdafull);
+    lambdaold_ = fluid_field()->interface()->extract_fsi_cond_vector(*lambdafull);
     // Note: the above is normally enough. However, we can use the restart in order to periodically
     // repeat the fsi simulation (see AC-FS3I)
-    lambda_ = fluid_field()->interface()->extract_fsi_cond_vector(lambdafull);
+    lambda_ = fluid_field()->interface()->extract_fsi_cond_vector(*lambdafull);
   }
 
   setup_system();
@@ -1670,7 +1671,7 @@ void FSI::MortarMonolithicFluidSplit::recover_lagrange_multiplier()
 
   // ---------Addressing term (3)
   Teuchos::RCP<Core::LinAlg::Vector<double>> fluidresidual =
-      fluid_field()->interface()->extract_fsi_cond_vector(fluid_field()->rhs());
+      fluid_field()->interface()->extract_fsi_cond_vector(*fluid_field()->rhs());
   fluidresidual->Scale(-1.0);
   tmpvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(*fluidresidual));
   // ---------End of term (3)
@@ -1726,13 +1727,13 @@ void FSI::MortarMonolithicFluidSplit::recover_lagrange_multiplier()
         Core::LinAlg::MapExtractor(*fluid_field()->velocity_row_map(), velothermap, false);
     auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(*velothermap, true));
     velothermapext.extract_other_vector(
-        ale_to_fluid(ale_field()->interface()->insert_other_vector(ddialeinc_)), auxvec);
+        *ale_to_fluid(ale_field()->interface()->insert_other_vector(*ddialeinc_)), *auxvec);
 
     // add pressure DOFs
     Core::LinAlg::MapExtractor velotherpressuremapext =
         Core::LinAlg::MapExtractor(fmgiprev_->domain_map(), velothermap);
     auxauxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fmgiprev_->domain_map(), true));
-    velotherpressuremapext.insert_cond_vector(auxvec, auxauxvec);
+    velotherpressuremapext.insert_cond_vector(*auxvec, *auxauxvec);
 
     // prepare vector to store result of matrix-vector-product
     auxvec = Teuchos::rcp(new Core::LinAlg::Vector<double>(fmgiprev_->range_map(), true));
@@ -1798,7 +1799,8 @@ void FSI::MortarMonolithicFluidSplit::calculate_interface_energy_increment()
 
   // calculate the energy increment
   double energy = 0.0;
-  tractionstructure->Dot(*structure_field()->interface()->extract_fsi_cond_vector(deltad), &energy);
+  tractionstructure->Dot(
+      *structure_field()->interface()->extract_fsi_cond_vector(*deltad), &energy);
 
   energysum_ += energy;
 
@@ -1934,10 +1936,10 @@ void FSI::MortarMonolithicFluidSplit::combine_field_vectors(Core::LinAlg::Vector
   {
     // extract inner DOFs from slave vectors
     Teuchos::RCP<Core::LinAlg::Vector<double>> fov =
-        fluid_field()->interface()->extract_other_vector(fv);
-    fov = fluid_field()->interface()->insert_other_vector(fov);
+        fluid_field()->interface()->extract_other_vector(*fv);
+    fov = fluid_field()->interface()->insert_other_vector(*fov);
     Teuchos::RCP<Core::LinAlg::Vector<double>> aov =
-        ale_field()->interface()->extract_other_vector(av);
+        ale_field()->interface()->extract_other_vector(*av);
 
     // put them together
     FSI::Monolithic::combine_field_vectors(v, sv, fov, aov);
