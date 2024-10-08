@@ -27,8 +27,8 @@ namespace
     void SetUp() override
     {
       // create a discretization, that creates node to element pointers and keeps the nodes alive
-      testdis_ = Teuchos::RCP(
-          new Core::FE::Discretization("dummy", Teuchos::RCP(new Epetra_SerialComm), 3));
+      testdis_ = Teuchos::make_rcp<Core::FE::Discretization>(
+          "dummy", Teuchos::make_rcp<Epetra_SerialComm>(), 3);
 
       // create 8 nodes
       const std::array<int, 8> nodeids = {0, 1, 2, 3, 4, 5, 6, 7};
@@ -36,15 +36,15 @@ namespace
           {1.20, 0.99, 0.5}, {-0.11, 1.20, 0.66}, {-0.10, -0.2, 1.9}, {1.00, 0.00, 1.90},
           {1.20, 0.99, 1.50}, {-0.11, -0.20, 1.66}};
       for (int lid = 0; lid < 8; ++lid)
-        testdis_->add_node(Teuchos::RCP(new Core::Nodes::Node(lid, coords[lid], 0)));
+        testdis_->add_node(Teuchos::make_rcp<Core::Nodes::Node>(lid, coords[lid], 0));
 
       // create 1 element
-      testele_ = Teuchos::RCP(new Discret::ELEMENTS::SoHex8(0, 0));
+      testele_ = Teuchos::make_rcp<Discret::ELEMENTS::SoHex8>(0, 0);
       testele_->set_node_ids(8, nodeids.data());
       testdis_->add_element(testele_);
       testdis_->fill_complete(false, false, false);
 
-      copytestele_ = Teuchos::RCP(new Discret::ELEMENTS::SoHex8(*testele_));
+      copytestele_ = Teuchos::make_rcp<Discret::ELEMENTS::SoHex8>(*testele_);
     }
 
     // Delete pointers.

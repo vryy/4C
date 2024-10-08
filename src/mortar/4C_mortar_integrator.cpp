@@ -1277,7 +1277,7 @@ Mortar::IntegratorCalc<distype_s, distype_m>::integrate_mmod_2d(Mortar::Element&
   int ncol = mele.num_node();
   int ncoldof = ndim_;
   Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> mmodseg =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(nrow * nrowdof, ncol * ncoldof));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(nrow * nrowdof, ncol * ncoldof);
 
   // create empty vectors for shape fct. evaluation
   Core::LinAlg::SerialDenseVector sval(nrow);

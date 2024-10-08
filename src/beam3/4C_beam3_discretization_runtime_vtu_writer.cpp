@@ -34,8 +34,8 @@ FOUR_C_NAMESPACE_OPEN
  *-----------------------------------------------------------------------------------------------*/
 BeamDiscretizationRuntimeOutputWriter::BeamDiscretizationRuntimeOutputWriter(
     Core::IO::VisualizationParameters parameters, const Epetra_Comm& comm)
-    : visualization_manager_(Teuchos::RCP(
-          new Core::IO::VisualizationManager(std::move(parameters), comm, "structure-beams"))),
+    : visualization_manager_(Teuchos::make_rcp<Core::IO::VisualizationManager>(
+          std::move(parameters), comm, "structure-beams")),
       use_absolute_positions_(true)
 {
   // empty constructor

@@ -26,7 +26,7 @@ Core::UTILS::FunctionVariable::FunctionVariable(std::string name) : name_(std::m
 Core::UTILS::ParsedFunctionVariable::ParsedFunctionVariable(
     std::string name, const std::string& buf)
     : FunctionVariable(std::move(name)),
-      timefunction_(Teuchos::RCP(new Core::UTILS::SymbolicExpression<double>(buf)))
+      timefunction_(Teuchos::make_rcp<Core::UTILS::SymbolicExpression<double>>(buf))
 
 {
 }
@@ -218,7 +218,7 @@ Core::UTILS::MultiFunctionVariable::MultiFunctionVariable(std::string name,
   for (unsigned int n = 0; n < times_.size() - 1; ++n)
   {
     timefunction_[n] =
-        Teuchos::RCP(new Core::UTILS::SymbolicExpression<double>(description_vec[n]));
+        Teuchos::make_rcp<Core::UTILS::SymbolicExpression<double>>(description_vec[n]);
   }
 }
 

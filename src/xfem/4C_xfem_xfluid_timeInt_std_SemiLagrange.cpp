@@ -946,7 +946,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
     const Epetra_Map* newdofcolmap = discret_->dof_col_map();
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> tmpColVector =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*newdofcolmap, true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*newdofcolmap, true);
     newColVectors.push_back(tmpColVector);
     Core::LinAlg::export_to(*newRowVectors[index], *newColVectors[index]);
   }

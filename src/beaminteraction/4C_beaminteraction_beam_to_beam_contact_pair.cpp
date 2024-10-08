@@ -427,8 +427,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
     if (validpairfound and !allready_found)
     {
       std::pair<int, int> integration_ids = std::make_pair(-2, -2);
-      cpvariables_.push_back(Teuchos::RCP(new BeamToBeamContactVariables<numnodes, numnodalvalues>(
-          closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
+      cpvariables_.push_back(
+          Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+              closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
     }
   }
 }
@@ -883,8 +884,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
                 // number of the Gauss point [numgp] and the number of the integration interval
                 // [interval] are stored in the pair segids_ of the class beamcontactvaribles!)
                 gpvariables_.push_back(
-                    Teuchos::RCP(new BeamToBeamContactVariables<numnodes, numnodalvalues>(
-                        closestpoint, leftpoint_ids, integration_ids, parallel_pp, jacobi)));
+                    Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+                        closestpoint, leftpoint_ids, integration_ids, parallel_pp, jacobi));
               }
               // We can leave the k-loop as soon as we have found a valid projection for the given
               // Gauss point eta1_slave
@@ -1137,8 +1138,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::RCP(new BeamToBeamContactVariables<numnodes, numnodalvalues>(
-                closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
+            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+                closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
 
@@ -1169,8 +1170,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::RCP(new BeamToBeamContactVariables<numnodes, numnodalvalues>(
-                closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
+            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+                closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
 #endif
@@ -1201,8 +1202,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::RCP(new BeamToBeamContactVariables<numnodes, numnodalvalues>(
-                closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
+            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+                closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
 
@@ -1233,8 +1234,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::RCP(new BeamToBeamContactVariables<numnodes, numnodalvalues>(
-                closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
+            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+                closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
 #endif
@@ -1262,8 +1263,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::RCP(new BeamToBeamContactVariables<numnodes, numnodalvalues>(
-                closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
+            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+                closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
 
@@ -1292,8 +1293,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::RCP(new BeamToBeamContactVariables<numnodes, numnodalvalues>(
-                closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
+            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+                closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
 
@@ -1321,8 +1322,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::RCP(new BeamToBeamContactVariables<numnodes, numnodalvalues>(
-                closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
+            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+                closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
 
@@ -1350,8 +1351,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::RCP(new BeamToBeamContactVariables<numnodes, numnodalvalues>(
-                closestpoint, leftpoint_ids, integration_ids, pp, 1.0)));
+            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+                closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
 #endif

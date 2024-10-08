@@ -120,16 +120,18 @@ void Inpar::EleMag::set_valid_conditions(
   //*--------------------------------------------------------------------* /
   // absorbing boundary condition for electromagnetic problems
   // line
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> silvermueller_line = Teuchos::RCP(
-      new Core::Conditions::ConditionDefinition("DESIGN LINE SILVER-MUELLER CONDITIONS",
-          "Silver-Mueller", "Absorbing-emitting line for electromagnetics",
-          Core::Conditions::SilverMueller, true, Core::Conditions::geometry_type_line));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> silvermueller_line =
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN LINE SILVER-MUELLER CONDITIONS", "Silver-Mueller",
+          "Absorbing-emitting line for electromagnetics", Core::Conditions::SilverMueller, true,
+          Core::Conditions::geometry_type_line);
 
   // surface
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> silvermueller_surface = Teuchos::RCP(
-      new Core::Conditions::ConditionDefinition("DESIGN SURF SILVER-MUELLER CONDITIONS",
-          "Silver-Mueller", "Absorbing-emitting surface for electromagnetics",
-          Core::Conditions::SilverMueller, true, Core::Conditions::geometry_type_surface));
+  Teuchos::RCP<Core::Conditions::ConditionDefinition> silvermueller_surface =
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+          "DESIGN SURF SILVER-MUELLER CONDITIONS", "Silver-Mueller",
+          "Absorbing-emitting surface for electromagnetics", Core::Conditions::SilverMueller, true,
+          Core::Conditions::geometry_type_surface);
 
   for (const auto& cond : {silvermueller_line, silvermueller_surface})
   {

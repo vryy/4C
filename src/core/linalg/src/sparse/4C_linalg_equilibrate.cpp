@@ -251,8 +251,8 @@ void Core::LinAlg::EquilibrationBlock::equilibrate_matrix(
     for (int i = 0; i < blocksparsematrix->rows(); ++i)
     {
       // initialize vector for inverse row sums
-      auto invrowsums =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(blocksparsematrix->matrix(i, i).row_map()));
+      auto invrowsums = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+          blocksparsematrix->matrix(i, i).row_map());
 
       // compute inverse row sums of current main diagonal matrix block
       if (method() == EquilibrationMethod::rows_maindiag or
@@ -321,8 +321,9 @@ void Core::LinAlg::EquilibrationBlock::equilibrate_matrix(
     for (int j = 0; j < blocksparsematrix->cols(); ++j)
     {
       // initialize vector for inverse column sums
-      Teuchos::RCP<Core::LinAlg::Vector<double>> invcolsums(Teuchos::RCP(
-          new Core::LinAlg::Vector<double>(blocksparsematrix->matrix(j, j).domain_map())));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> invcolsums(
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+              blocksparsematrix->matrix(j, j).domain_map()));
 
       // compute inverse column sums of current main diagonal matrix block
       if (method() == EquilibrationMethod::columns_maindiag or
@@ -407,8 +408,8 @@ void Core::LinAlg::EquilibrationBlockSpecific::equilibrate_matrix(
     if (method == EquilibrationMethod::rows_maindiag or
         method == EquilibrationMethod::rowsandcolumns_maindiag)
     {
-      auto invrowsums =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(blocksparsematrix->matrix(i, i).row_map()));
+      auto invrowsums = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+          blocksparsematrix->matrix(i, i).row_map());
       compute_inv_row_sums(blocksparsematrix->matrix(i, i), invrowsums, method);
 
       // perform row equilibration of matrix blocks in current row block of global system
@@ -422,8 +423,8 @@ void Core::LinAlg::EquilibrationBlockSpecific::equilibrate_matrix(
     if (method == EquilibrationMethod::columns_maindiag or
         method == EquilibrationMethod::rowsandcolumns_maindiag)
     {
-      auto invcolsums = Teuchos::RCP(
-          new Core::LinAlg::Vector<double>(blocksparsematrix->matrix(i, i).domain_map()));
+      auto invcolsums = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+          blocksparsematrix->matrix(i, i).domain_map());
       compute_inv_col_sums(blocksparsematrix->matrix(i, i), invcolsums, method);
 
       // perform column equilibration of matrix blocks in current column block of global
@@ -466,7 +467,7 @@ Teuchos::RCP<Core::LinAlg::Equilibration> Core::LinAlg::build_equilibration(Matr
     EquilibrationMethod method_global = method.at(0);
 
     if (method_global == Core::LinAlg::EquilibrationMethod::none)
-      equilibration = Teuchos::RCP(new Core::LinAlg::EquilibrationNone(dofrowmap));
+      equilibration = Teuchos::make_rcp<Core::LinAlg::EquilibrationNone>(dofrowmap);
     else
     {
       switch (type)
@@ -474,7 +475,7 @@ Teuchos::RCP<Core::LinAlg::Equilibration> Core::LinAlg::build_equilibration(Matr
         case Core::LinAlg::MatrixType::sparse:
         {
           equilibration =
-              Teuchos::RCP(new Core::LinAlg::EquilibrationSparse(method_global, dofrowmap));
+              Teuchos::make_rcp<Core::LinAlg::EquilibrationSparse>(method_global, dofrowmap);
           break;
         }
         case Core::LinAlg::MatrixType::block_field:
@@ -482,7 +483,7 @@ Teuchos::RCP<Core::LinAlg::Equilibration> Core::LinAlg::build_equilibration(Matr
         case Core::LinAlg::MatrixType::block_condition_dof:
         {
           equilibration =
-              Teuchos::RCP(new Core::LinAlg::EquilibrationBlock(method_global, dofrowmap));
+              Teuchos::make_rcp<Core::LinAlg::EquilibrationBlock>(method_global, dofrowmap);
           break;
         }
         default:
@@ -494,7 +495,7 @@ Teuchos::RCP<Core::LinAlg::Equilibration> Core::LinAlg::build_equilibration(Matr
     }
   }
   else
-    equilibration = Teuchos::RCP(new Core::LinAlg::EquilibrationBlockSpecific(method, dofrowmap));
+    equilibration = Teuchos::make_rcp<Core::LinAlg::EquilibrationBlockSpecific>(method, dofrowmap);
 
   return equilibration;
 }

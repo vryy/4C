@@ -177,7 +177,7 @@ namespace Mat
 
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new MultiplicativeSplitDefgradElastHyper(*this));
+      return Teuchos::make_rcp<MultiplicativeSplitDefgradElastHyper>(*this);
     }
 
     double density() const override { return params_->density_; }

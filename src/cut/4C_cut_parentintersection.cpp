@@ -352,7 +352,7 @@ void Cut::ParentIntersection::create_parallel_dof_set_data_vc(
 
     // create dofset data for this volumecell for Communication
     parallel_dofSetData.push_back(
-        Teuchos::RCP(new DofSetData(set_index, inside, cut_points_coords, eid, node_dofset_map)));
+        Teuchos::make_rcp<DofSetData>(set_index, inside, cut_points_coords, eid, node_dofset_map));
   }
   else
     FOUR_C_THROW("communication for empty node-dofset map not necessary!");

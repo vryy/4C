@@ -46,7 +46,7 @@ NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
   testMap = dynamic_cast<const Epetra_Map*>(&currentX.getEpetraVector().Map());
   if (testMap != nullptr)
   {
-    epetraMap = Teuchos::RCP(new Epetra_Map(*testMap));
+    epetraMap = Teuchos::make_rcp<Epetra_Map>(*testMap);
   }
   else
   {
@@ -54,7 +54,7 @@ NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
     int mySize = currentX.getEpetraVector().Map().NumMyPoints();
     int indexBase = currentX.getEpetraVector().Map().IndexBase();
     const Epetra_Comm& comm = currentX.getEpetraVector().Map().Comm();
-    epetraMap = Teuchos::RCP(new Epetra_Map(size, mySize, indexBase, comm));
+    epetraMap = Teuchos::make_rcp<Epetra_Map>(size, mySize, indexBase, comm);
   }
 }
 
@@ -88,8 +88,8 @@ int NOX::FSI::FSIMatrixFree::Apply(const Epetra_MultiVector& X, Epetra_MultiVect
   // Convert X and Y from an Epetra_MultiVector to a Core::LinAlg::Vectors
   // and NOX::epetra::Vectors.  This is done so we use a consistent
   // vector space for norms and inner products.
-  Teuchos::RCP<Epetra_Vector> wrappedX = Teuchos::RCP(new Epetra_Vector(View, X, 0));
-  Teuchos::RCP<Epetra_Vector> wrappedY = Teuchos::RCP(new Epetra_Vector(View, Y, 0));
+  Teuchos::RCP<Epetra_Vector> wrappedX = Teuchos::make_rcp<Epetra_Vector>(View, X, 0);
+  Teuchos::RCP<Epetra_Vector> wrappedY = Teuchos::make_rcp<Epetra_Vector>(View, Y, 0);
   ::NOX::Epetra::Vector nevX(wrappedX, ::NOX::Epetra::Vector::CreateView);
   ::NOX::Epetra::Vector nevY(wrappedY, ::NOX::Epetra::Vector::CreateView);
 

@@ -189,7 +189,7 @@ namespace LUBRICATION
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds = 0)
     {
       const Epetra_Map* dofrowmap = discret_->dof_row_map(nds);
-      return Teuchos::RCP(new Epetra_Map(*dofrowmap));
+      return Teuchos::make_rcp<Epetra_Map>(*dofrowmap);
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions

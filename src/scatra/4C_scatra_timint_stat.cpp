@@ -183,11 +183,11 @@ void ScaTra::TimIntStationary::read_restart(
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
   {
-    reader = Teuchos::RCP(new Core::IO::DiscretizationReader(
-        discret_, Global::Problem::instance()->input_control_file(), step));
+    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+        discret_, Global::Problem::instance()->input_control_file(), step);
   }
   else
-    reader = Teuchos::RCP(new Core::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(discret_, input, step);
 
   time_ = reader->read_double("time");
   step_ = reader->read_int("step");

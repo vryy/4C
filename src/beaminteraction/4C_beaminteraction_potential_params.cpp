@@ -57,8 +57,8 @@ void BEAMINTERACTION::BeamPotentialParams::init(const double restart_time)
   // get and check required parameters
   /****************************************************************************/
 
-  pot_law_prefactors_ = Teuchos::RCP(new std::vector<double>);
-  pot_law_exponents_ = Teuchos::RCP(new std::vector<double>);
+  pot_law_prefactors_ = Teuchos::make_rcp<std::vector<double>>();
+  pot_law_exponents_ = Teuchos::make_rcp<std::vector<double>>();
   pot_law_prefactors_->clear();
   pot_law_exponents_->clear();
   // read potential law parameters from input and check
@@ -183,7 +183,7 @@ void BEAMINTERACTION::BeamPotentialParams::init(const double restart_time)
   if (visualization_output_)
   {
     params_runtime_visualization_output_btb_potential_ =
-        Teuchos::RCP(new BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams(restart_time));
+        Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>(restart_time);
 
     params_runtime_visualization_output_btb_potential_->init(
         beam_potential_params_list.sublist("RUNTIME VTK OUTPUT"));

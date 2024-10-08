@@ -43,8 +43,8 @@ FLD::XFluidFluid::XFluidFluid(const Teuchos::RCP<FLD::FluidImplicitTimeInt>& emb
     : XFluid(xfluiddis, embedded_fluid->discretization(), Teuchos::null, solver, params,
           xfluiddis->writer(), ale_xfluid),
       embedded_fluid_(embedded_fluid),
-      projector_(Teuchos::RCP(
-          new XFEM::MeshProjector(embedded_fluid_->discretization(), discret_, *params_))),
+      projector_(Teuchos::make_rcp<XFEM::MeshProjector>(
+          embedded_fluid_->discretization(), discret_, *params_)),
       ale_embfluid_(ale_fluid),
       cond_name_("XFEMSurfFluidFluid")
 {
@@ -133,7 +133,7 @@ void FLD::XFluidFluid::create_initial_state()
   }
 
   if (ale_embfluid_)
-    dispnpoldstate_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*embedded_fluid_->dispnp()));
+    dispnpoldstate_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*embedded_fluid_->dispnp());
 
   return;
 }
@@ -146,9 +146,9 @@ void FLD::XFluidFluid::use_block_matrix(bool splitmatrix)
   // should we shift this creation to xfluidfluidstate-class?
 
   if (splitmatrix)
-    xff_state_->xffluidsysmat_ =
-        Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-            *x_fluid_fluid_map_extractor(), *x_fluid_fluid_map_extractor(), 108, false, true));
+    xff_state_->xffluidsysmat_ = Teuchos::make_rcp<
+        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+        *x_fluid_fluid_map_extractor(), *x_fluid_fluid_map_extractor(), 108, false, true);
 }
 
 void FLD::XFluidFluid::set_x_fluid_fluid_params()
@@ -263,7 +263,7 @@ void FLD::XFluidFluid::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
   xff_state_->xffluidincvel_->PutScalar(0.0);
 
   xff_state_->trueresidual_ =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*xff_state_->xffluidresidual_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xff_state_->xffluidresidual_);
   xff_state_->trueresidual_->PutScalar(residual_scaling());
 }
 
@@ -309,7 +309,7 @@ Teuchos::RCP<const Epetra_Map> FLD::XFluidFluid::velocity_row_map()
 
 Teuchos::RCP<Core::UTILS::ResultTest> FLD::XFluidFluid::create_field_test()
 {
-  return Teuchos::RCP(new FLD::XFluidResultTest(*this));
+  return Teuchos::make_rcp<FLD::XFluidResultTest>(*this);
 }
 
 Teuchos::RCP<FLD::XFluidState> FLD::XFluidFluid::get_new_state()
@@ -469,8 +469,8 @@ void FLD::XFluidFluid::prepare_shape_derivatives(
   // and therefore solely knows ALE-dof - here we use "extended shapederivatives" including
   // background fluid entries, that are set to zero
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat =
-      Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
-          *fsiextractor, *fsiextractor, 108, false, true));
+      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>(
+          *fsiextractor, *fsiextractor, 108, false, true);
   mat->set_cond_elements(condelements);
   extended_shapederivatives_ = mat;
 }
@@ -518,12 +518,13 @@ void FLD::XFluidFluid::add_eos_pres_stab_to_emb_layer()
   Teuchos::RCP<Epetra_FECrsMatrix> sysmat_FE;
 
   rmap = &(embedded_fluid_->system_matrix()->OperatorRangeMap());
-  sysmat_FE = Teuchos::RCP(new Epetra_FECrsMatrix(::Copy, *rmap, 256, false));
+  sysmat_FE = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, *rmap, 256, false);
 
   // TODO: think about the dirichlet and savegraph flags when ApplyDirichlet or Zero is called
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_linalg = Teuchos::RCP(
-      new Core::LinAlg::SparseMatrix(Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),
-          Core::LinAlg::View, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_linalg =
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+          Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE), Core::LinAlg::View, true, true,
+          Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   //------------------------------------------------------------
   // loop over row faces
@@ -638,7 +639,7 @@ void FLD::XFluidFluid::update_monolithic_fluid_solution(
   Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
 
   Teuchos::RCP<Core::LinAlg::MapExtractor> fsidbcmapex =
-      Teuchos::RCP(new Core::LinAlg::MapExtractor(*(embedded_fluid_->dof_row_map()), condmerged));
+      Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*(embedded_fluid_->dof_row_map()), condmerged);
 
   // DBC map-extractor containing FSI-dof
   xff_state_->create_merged_dbc_map_extractor(fsidbcmapex);
@@ -801,13 +802,13 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
   Core::LinAlg::SerialDenseVector cpu_stab_norms(num_stab_norms);
 
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_dom_norms_bg =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(num_dom_norms));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_dom_norms);
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_dom_norms_emb =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(num_dom_norms));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_dom_norms);
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_interf_norms =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(num_interf_norms));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_interf_norms);
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_stab_norms =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(num_stab_norms));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_stab_norms);
 
   // set vector values needed by elements
   discret_->clear_state();

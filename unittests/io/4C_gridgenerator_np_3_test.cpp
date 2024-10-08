@@ -50,9 +50,9 @@ namespace
     void SetUp() override
     {
       create_material_in_global_problem();
-      comm_ = Teuchos::RCP(new Epetra_MpiComm(MPI_COMM_WORLD));
+      comm_ = Teuchos::make_rcp<Epetra_MpiComm>(MPI_COMM_WORLD);
       Core::IO::cout.setup(false, false, false, Core::IO::standard, comm_, 0, 0, "dummyFilePrefix");
-      testdis_ = Teuchos::RCP(new Core::FE::Discretization("dummy", comm_, 3));
+      testdis_ = Teuchos::make_rcp<Core::FE::Discretization>("dummy", comm_, 3);
     }
 
     void TearDown() override { Core::IO::cout.close(); }

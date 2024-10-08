@@ -74,7 +74,7 @@ Mat::PAR::BeamReissnerElastPlasticMaterialParams::create_material()
         "differentiation!");
   }
   else
-    matobject = Teuchos::RCP(new Mat::BeamPlasticMaterial<double>(this));
+    matobject = Teuchos::make_rcp<Mat::BeamPlasticMaterial<double>>(this);
   return matobject;
 }
 

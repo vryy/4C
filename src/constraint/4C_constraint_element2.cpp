@@ -37,7 +37,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ConstraintElement2Type:
   if (eletype == "CONSTRELE2")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::RCP(new Discret::ELEMENTS::ConstraintElement2(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::ConstraintElement2>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -48,7 +48,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ConstraintElement2Type:
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::RCP(new Discret::ELEMENTS::ConstraintElement2(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::ConstraintElement2>(id, owner);
   return ele;
 }
 

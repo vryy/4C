@@ -39,7 +39,7 @@ CONTACT::PenaltyStrategy::PenaltyStrategy(const Epetra_Map* dof_row_map,
     const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
     std::vector<Teuchos::RCP<CONTACT::Interface>> interface, const int spatialDim,
     const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof)
-    : AbstractStrategy(Teuchos::RCP(new CONTACT::AbstractStratDataContainer()), dof_row_map,
+    : AbstractStrategy(Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>(), dof_row_map,
           NodeRowMap, params, spatialDim, comm, alphaf, maxdof),
       interface_(interface),
       constrnorm_(0.0),
@@ -142,16 +142,16 @@ void CONTACT::PenaltyStrategy::initialize()
 {
   // (re)setup global matrices containing fc derivatives
   // must use FE_MATRIX type here, as we will do non-local assembly!
-  lindmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *gsdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  linmmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  lindmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *gsdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  linmmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   // (re)setup global vector containing lagrange multipliers
   z_ = Core::LinAlg::create_vector(*gsdofrowmap_, true);
 
   // (re)setup global matrix containing lagrange multiplier derivatives
-  linzmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100));
+  linzmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100);
 
   return;
 }
@@ -348,10 +348,10 @@ void CONTACT::PenaltyStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spars
     // (this way, possible self contact is automatically included)
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> fcmdold =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(dold_->row_map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dold_->row_map());
     dold_->multiply(true, *zold_, *fcmdold);
     Teuchos::RCP<Core::LinAlg::Vector<double>> fcmdoldtemp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fcmdold, *fcmdoldtemp);
     feff->Update(-alphaf_, *fcmdoldtemp, 1.0);
   }
@@ -361,20 +361,20 @@ void CONTACT::PenaltyStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spars
     // (this way, possible self contact is automatically included)
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> fcmmold =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(mold_->domain_map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mold_->domain_map());
     mold_->multiply(true, *zold_, *fcmmold);
     Teuchos::RCP<Core::LinAlg::Vector<double>> fcmmoldtemp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fcmmold, *fcmmoldtemp);
     feff->Update(alphaf_, *fcmmoldtemp, 1.0);
   }
 
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> fcmd =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
     dmatrix_->multiply(true, *z_, *fcmd);
     Teuchos::RCP<Core::LinAlg::Vector<double>> fcmdtemp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fcmd, *fcmdtemp);
     feff->Update(-(1 - alphaf_), *fcmdtemp, 1.0);
   }
@@ -384,7 +384,7 @@ void CONTACT::PenaltyStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spars
         Core::LinAlg::create_vector(*gmdofrowmap_, true);
     mmatrix_->multiply(true, *z_, *fcmm);
     Teuchos::RCP<Core::LinAlg::Vector<double>> fcmmtemp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fcmm, *fcmmtemp);
     feff->Update(1 - alphaf_, *fcmmtemp, 1.0);
   }
@@ -511,26 +511,26 @@ void CONTACT::PenaltyStrategy::initialize_uzawa(Teuchos::RCP<Core::LinAlg::Spars
   // (FIXME: redundant code to evaluate_contact(), expect for minus sign)
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcmdold =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(dold_->row_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dold_->row_map());
   dold_->multiply(true, *zold_, *fcmdold);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcmdoldtemp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fcmdold, *fcmdoldtemp);
   feff->Update(alphaf_, *fcmdoldtemp, 1.0);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcmmold =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(mold_->domain_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mold_->domain_map());
   mold_->multiply(true, *zold_, *fcmmold);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcmmoldtemp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fcmmold, *fcmmoldtemp);
   feff->Update(-alphaf_, *fcmmoldtemp, 1.0);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcmd =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   dmatrix_->multiply(true, *z_, *fcmd);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcmdtemp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fcmd, *fcmdtemp);
   feff->Update(1 - alphaf_, *fcmdtemp, 1.0);
 
@@ -538,16 +538,16 @@ void CONTACT::PenaltyStrategy::initialize_uzawa(Teuchos::RCP<Core::LinAlg::Spars
       Core::LinAlg::create_vector(*gmdofrowmap_, true);
   mmatrix_->multiply(true, *z_, *fcmm);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcmmtemp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fcmm, *fcmmtemp);
   feff->Update(-(1 - alphaf_), *fcmmtemp, 1.0);
 
   // reset some matrices
   // must use FE_MATRIX type here, as we will do non-local assembly!
-  lindmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *gsdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  linmmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  lindmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *gsdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  linmmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   // reset nodal derivZ values
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -711,7 +711,7 @@ void CONTACT::PenaltyStrategy::update_uzawa_augmented_lagrange()
   // (note that this is also done after the last Uzawa step of one
   // time step and thus also gives the guess for the initial
   // Lagrange multiplier lambda_0 of the next time step)
-  zuzawa_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*z_));
+  zuzawa_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*z_);
   store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
 
   return;
@@ -763,8 +763,8 @@ void CONTACT::PenaltyStrategy::evaluate_force(CONTACT::ParamsInterface& cparams)
  *----------------------------------------------------------------------*/
 void CONTACT::PenaltyStrategy::assemble()
 {
-  fc_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
-  kc_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, true, true));
+  fc_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
+  kc_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*problem_dofs(), 100, true, true);
 
   // in the beginning of this function, the regularized contact forces
   // in normal and tangential direction are evaluated from geometric
@@ -919,10 +919,10 @@ void CONTACT::PenaltyStrategy::assemble()
   // feff += -alphaf * fc,n - (1-alphaf) * fc,n+1,k
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> fcmd =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
     dmatrix_->multiply(true, *z_, *fcmd);
     Teuchos::RCP<Core::LinAlg::Vector<double>> fcmdtemp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fcmd, *fcmdtemp);
     fc_->Update(-(1.), *fcmdtemp, 1.0);
   }
@@ -932,7 +932,7 @@ void CONTACT::PenaltyStrategy::assemble()
         Core::LinAlg::create_vector(*gmdofrowmap_, true);
     mmatrix_->multiply(true, *z_, *fcmm);
     Teuchos::RCP<Core::LinAlg::Vector<double>> fcmmtemp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fcmm, *fcmmtemp);
     fc_->Update(1, *fcmmtemp, 1.0);
   }

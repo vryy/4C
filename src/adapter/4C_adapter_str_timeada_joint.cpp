@@ -57,26 +57,26 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   Global::Problem* problem = Global::Problem::instance();
   //
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
-      Teuchos::RCP(new Teuchos::ParameterList(problem->io_params()));
+      Teuchos::make_rcp<Teuchos::ParameterList>(problem->io_params());
   ioflags->set("STDOUTEVRY", 0);
   //
-  Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::RCP(new Teuchos::ParameterList());
+  Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::make_rcp<Teuchos::ParameterList>();
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
   nox = problem->structural_nox_params();
   //
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = stm_->discretization()->writer();
   //
-  Teuchos::RCP<Solid::TimeInt::BaseDataIO> dataio = Teuchos::RCP(new Solid::TimeInt::BaseDataIO());
+  Teuchos::RCP<Solid::TimeInt::BaseDataIO> dataio = Teuchos::make_rcp<Solid::TimeInt::BaseDataIO>();
   dataio->init(*ioflags, adyn, *xparams, output);
   dataio->setup();
 
   ///// setup datasdyn
   Teuchos::RCP<std::set<enum Inpar::Solid::ModelType>> modeltypes =
-      Teuchos::RCP(new std::set<enum Inpar::Solid::ModelType>());
+      Teuchos::make_rcp<std::set<enum Inpar::Solid::ModelType>>();
   modeltypes->insert(Inpar::Solid::model_structure);
   //
   Teuchos::RCP<std::set<enum Inpar::Solid::EleTech>> eletechs =
-      Teuchos::RCP(new std::set<enum Inpar::Solid::EleTech>());
+      Teuchos::make_rcp<std::set<enum Inpar::Solid::EleTech>>();
   //
   Teuchos::RCP<std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
       linsolvers = Solid::SOLVER::build_lin_solvers(*modeltypes, adyn, *stm_->discretization());
@@ -96,7 +96,7 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   sta_->setup();
 
   // setup wrapper
-  sta_wrapper_ = Teuchos::RCP(new Adapter::StructureTimeLoop(sta_));
+  sta_wrapper_ = Teuchos::make_rcp<Adapter::StructureTimeLoop>(sta_);
 
   const int restart = Global::Problem::instance()->restart();
   if (restart)

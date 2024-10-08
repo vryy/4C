@@ -108,7 +108,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
     actmat->reset_diffusion_tensor();
 
     Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes =
-        Teuchos::RCP(new Core::FE::ShapeValues<distype>(1, false, 2 * hdgele->degree()));
+        Teuchos::make_rcp<Core::FE::ShapeValues<distype>>(1, false, 2 * hdgele->degree());
 
     shapes->evaluate(*ele);
 

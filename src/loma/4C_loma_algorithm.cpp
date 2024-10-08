@@ -198,10 +198,10 @@ void LowMach::Algorithm::setup()
           linsolvernumber);
 
     // use loma solver object
-    lomasolver_ = Teuchos::RCP(
-        new Core::LinAlg::Solver(lomasolverparams, fluid_field()->discretization()->get_comm(),
-            Global::Problem::instance()->solver_params_callback(),
-            Global::Problem::instance()->io_params().get<Core::IO::Verbositylevel>("VERBOSITY")));
+    lomasolver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(lomasolverparams,
+        fluid_field()->discretization()->get_comm(),
+        Global::Problem::instance()->solver_params_callback(),
+        Global::Problem::instance()->io_params().get<Core::IO::Verbositylevel>("VERBOSITY"));
 
     // todo extract ScalarTransportFluidSolver
     const int fluidsolver = fluiddyn.get<int>("LINEAR_SOLVER");
@@ -238,20 +238,20 @@ void LowMach::Algorithm::setup()
         *scatra_field()->discretization(), lomasolver_->params().sublist("Inverse2"));
 
     // create loma block matrix
-    lomasystemmatrix_ =
-        Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-            lomablockdofrowmap_, lomablockdofrowmap_, 135, false, true));
+    lomasystemmatrix_ = Teuchos::make_rcp<
+        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+        lomablockdofrowmap_, lomablockdofrowmap_, 135, false, true);
 
     // create loma rhs vector
     lomarhs_ =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*lomablockdofrowmap_.full_map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lomablockdofrowmap_.full_map(), true);
 
     // create loma increment vector
     lomaincrement_ =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*lomablockdofrowmap_.full_map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lomablockdofrowmap_.full_map(), true);
 
     // create vector of zeros for enforcing zero Dirichlet boundary conditions
-    zeros_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*lomablockdofrowmap_.full_map(), true));
+    zeros_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lomablockdofrowmap_.full_map(), true);
 
     // create combined Dirichlet boundary condition map
     const Teuchos::RCP<const Epetra_Map> fdbcmap =
@@ -657,8 +657,8 @@ void LowMach::Algorithm::setup_mono_loma_matrix()
   //----------------------------------------------------------------------
   // create matrix block
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_fs = Teuchos::null;
-  mat_fs = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *(fluid_field()->discretization()->dof_row_map(0)), 27, true, true));
+  mat_fs = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *(fluid_field()->discretization()->dof_row_map(0)), 27, true, true);
 
   // evaluate loma off-diagonal matrix block in fluid
   evaluate_loma_od_block_mat_fluid(mat_fs);
@@ -674,8 +674,8 @@ void LowMach::Algorithm::setup_mono_loma_matrix()
   //----------------------------------------------------------------------
   // create matrix block
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_sf = Teuchos::null;
-  mat_sf = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *(scatra_field()->discretization()->dof_row_map(0)), 108, true, true));
+  mat_sf = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *(scatra_field()->discretization()->dof_row_map(0)), 108, true, true);
 
   // evaluate loma off-diagonal matrix block in scatra
   // (for present fixed-point-like iteration: no entries)

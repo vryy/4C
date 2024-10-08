@@ -256,7 +256,7 @@ void Solid::TimAda::evaluate_local_error_dis()
 
   // blank Dirichlet DOFs since they always carry the exact solution
   Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(locerrdisn_->Map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(locerrdisn_->Map(), true);
   Core::LinAlg::apply_dirichlet_to_system(
       *locerrdisn_, *zeros, *(sti_->get_dbc_map_extractor()->cond_map()));
 }
@@ -513,7 +513,7 @@ void Solid::TimAda::attach_file_step_size()
   {
     std::string filename =
         Global::Problem::instance()->output_control_file()->file_name() + ".stepsize";
-    outsizefile_ = Teuchos::RCP(new std::ofstream(filename.c_str()));
+    outsizefile_ = Teuchos::make_rcp<std::ofstream>(filename.c_str());
     (*outsizefile_) << "# timestep time step-size adaptations" << std::endl;
   }
 

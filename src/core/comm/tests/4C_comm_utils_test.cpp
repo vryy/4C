@@ -49,9 +49,9 @@ namespace
           false, false, false, Core::IO::standard, communicators_->local_comm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
-      Teuchos::RCP<Epetra_Map> map = Teuchos::RCP(
-          new Epetra_Map(numberOfElementsToDistribute_, 0, *communicators_->local_comm()));
-      epetraVector_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*map, false));
+      Teuchos::RCP<Epetra_Map> map = Teuchos::make_rcp<Epetra_Map>(
+          numberOfElementsToDistribute_, 0, *communicators_->local_comm());
+      epetraVector_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*map, false);
 
       // fill test Core::LinAlg::Vector<double> with entry equals gid
       int numMyEles = map->NumMyElements();
@@ -90,11 +90,11 @@ namespace
           false, false, false, Core::IO::standard, communicators_->local_comm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
-      Teuchos::RCP<Epetra_Map> rowmap = Teuchos::RCP(
-          new Epetra_Map(numberOfElementsToDistribute_, 0, *communicators_->local_comm()));
+      Teuchos::RCP<Epetra_Map> rowmap = Teuchos::make_rcp<Epetra_Map>(
+          numberOfElementsToDistribute_, 0, *communicators_->local_comm());
       int approximateNumberOfNonZeroesPerRow = 3;
-      epetraCrsMatrix_ = Teuchos::RCP(
-          new Epetra_CrsMatrix(::Copy, *rowmap, approximateNumberOfNonZeroesPerRow, false));
+      epetraCrsMatrix_ = Teuchos::make_rcp<Epetra_CrsMatrix>(
+          ::Copy, *rowmap, approximateNumberOfNonZeroesPerRow, false);
 
       // fill tri-diagonal Epetra_CrsMatrix
       double* values = new double[3];
@@ -158,13 +158,13 @@ namespace
           false, false, false, Core::IO::standard, communicators_->local_comm(), 0, 0, "dummy");
 
       // create arbitrary distributed map within each group
-      Teuchos::RCP<Epetra_Map> rowmap = Teuchos::RCP(
-          new Epetra_Map(numberOfElementsToDistribute_, 0, *communicators_->local_comm()));
-      Teuchos::RCP<Epetra_Map> colmap = Teuchos::RCP(
-          new Epetra_Map(2 * numberOfElementsToDistribute_, 0, *communicators_->local_comm()));
+      Teuchos::RCP<Epetra_Map> rowmap = Teuchos::make_rcp<Epetra_Map>(
+          numberOfElementsToDistribute_, 0, *communicators_->local_comm());
+      Teuchos::RCP<Epetra_Map> colmap = Teuchos::make_rcp<Epetra_Map>(
+          2 * numberOfElementsToDistribute_, 0, *communicators_->local_comm());
       int approximateNumberOfNonZeroesPerRow = 6;
-      epetraCrsMatrix_ = Teuchos::RCP(
-          new Epetra_CrsMatrix(::Copy, *rowmap, approximateNumberOfNonZeroesPerRow, false));
+      epetraCrsMatrix_ = Teuchos::make_rcp<Epetra_CrsMatrix>(
+          ::Copy, *rowmap, approximateNumberOfNonZeroesPerRow, false);
 
       // fill rectangular Epetra_CrsMatrix
       double* values = new double[6];

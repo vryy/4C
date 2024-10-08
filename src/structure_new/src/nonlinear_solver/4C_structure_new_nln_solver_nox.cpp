@@ -87,16 +87,16 @@ void Solid::Nln::SOLVER::Nox::setup()
   Solid::Nln::create_scaling(iscale, data_sdyn(), data_global_state());
 
   // build the global data container for the nox_nln_solver
-  nlnglobaldata_ = Teuchos::RCP(
-      new NOX::Nln::GlobalData(data_global_state().get_comm(), data_sdyn().get_nox_params(),
-          linsolvers, ireq, ijac, opttype, iconstr, iprec, iconstr_prec, iscale));
+  nlnglobaldata_ = Teuchos::make_rcp<NOX::Nln::GlobalData>(data_global_state().get_comm(),
+      data_sdyn().get_nox_params(), linsolvers, ireq, ijac, opttype, iconstr, iprec, iconstr_prec,
+      iscale);
 
   // -------------------------------------------------------------------------
   // Create NOX control class: NoxProblem()
   // -------------------------------------------------------------------------
   Teuchos::RCP<::NOX::Epetra::Vector> soln = data_global_state().create_global_vector();
   Teuchos::RCP<Core::LinAlg::SparseOperator>& jac = data_global_state().create_jacobian();
-  problem_ = Teuchos::RCP(new NOX::Nln::Problem(nlnglobaldata_, soln, jac));
+  problem_ = Teuchos::make_rcp<NOX::Nln::Problem>(nlnglobaldata_, soln, jac);
 
   // -------------------------------------------------------------------------
   // Create NOX linear system to provide access to Jacobian etc.

@@ -59,7 +59,7 @@ void FSI::Algorithm::setup()
 
   // build and register fsi model evaluator
   Teuchos::RCP<Solid::ModelEvaluator::Generic> fsi_model_ptr =
-      Teuchos::RCP(new Solid::ModelEvaluator::PartitionedFSI());
+      Teuchos::make_rcp<Solid::ModelEvaluator::PartitionedFSI>();
 
   // todo FIX THIS !!!!
   // Decide whether to use old structural time integration or new structural time integration.
@@ -98,9 +98,10 @@ void FSI::Algorithm::setup()
                    "\n"
                 << std::endl;
 
-    Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure = Teuchos::RCP(
-        new Adapter::StructureBaseAlgorithm(Global::Problem::instance()->fsi_dynamic_params(),
-            const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+    Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure =
+        Teuchos::make_rcp<Adapter::StructureBaseAlgorithm>(
+            Global::Problem::instance()->fsi_dynamic_params(),
+            const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     structure_ =
         Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(structure->structure_field());
     structure_->setup();
@@ -118,11 +119,11 @@ void FSI::Algorithm::setup()
         "set INT_STRATEGY to Old in ---STRUCUTRAL DYNAMIC section!");
 
   Teuchos::RCP<Adapter::FluidMovingBoundaryBaseAlgorithm> MBFluidbase =
-      Teuchos::RCP(new Adapter::FluidMovingBoundaryBaseAlgorithm(
-          Global::Problem::instance()->fsi_dynamic_params(), "FSICoupling"));
+      Teuchos::make_rcp<Adapter::FluidMovingBoundaryBaseAlgorithm>(
+          Global::Problem::instance()->fsi_dynamic_params(), "FSICoupling");
   fluid_ = MBFluidbase->mb_fluid_field();
 
-  coupsf_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
+  coupsf_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
 }
 
 

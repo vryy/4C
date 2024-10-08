@@ -46,7 +46,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale2Type::create(
   {
     if (eledistype != "NURBS4" and eledistype != "NURBS9")
     {
-      ele = Teuchos::RCP(new Discret::ELEMENTS::Ale2(id, owner));
+      ele = Teuchos::make_rcp<Discret::ELEMENTS::Ale2>(id, owner);
     }
   }
 
@@ -58,7 +58,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale2Type::create(
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale2Type::create(
     const int id, const int owner)
 {
-  return Teuchos::RCP(new Discret::ELEMENTS::Ale2(id, owner));
+  return Teuchos::make_rcp<Discret::ELEMENTS::Ale2>(id, owner);
 }
 
 /*----------------------------------------------------------------------------*/

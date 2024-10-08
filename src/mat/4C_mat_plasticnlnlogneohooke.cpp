@@ -193,7 +193,7 @@ Mat::PAR::PlasticNlnLogNeoHooke::PlasticNlnLogNeoHooke(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticNlnLogNeoHooke::create_material()
 {
-  return Teuchos::RCP(new Mat::PlasticNlnLogNeoHooke(this));
+  return Teuchos::make_rcp<Mat::PlasticNlnLogNeoHooke>(this);
 }
 
 

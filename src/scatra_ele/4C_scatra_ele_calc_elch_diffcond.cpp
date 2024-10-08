@@ -52,12 +52,13 @@ Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::ScaTraEleCalcElc
 {
   // replace diffusion manager for electrodes by diffusion manager for diffusion-conduction
   // formulation
-  my::diffmanager_ = Teuchos::RCP(new ScaTraEleDiffManagerElchDiffCond(my::numscal_));
+  my::diffmanager_ = Teuchos::make_rcp<ScaTraEleDiffManagerElchDiffCond>(my::numscal_);
 
   // replace internal variable manager for electrodes by internal variable manager for
   // diffusion-conduction formulation
-  my::scatravarmanager_ = Teuchos::RCP(new ScaTraEleInternalVariableManagerElchDiffCond<nsd_, nen_>(
-      my::numscal_, myelch::elchparams_, diffcondparams_));
+  my::scatravarmanager_ =
+      Teuchos::make_rcp<ScaTraEleInternalVariableManagerElchDiffCond<nsd_, nen_>>(
+          my::numscal_, myelch::elchparams_, diffcondparams_);
 
   // replace utility class for electrodes by utility class for diffusion-conduction formulation
   myelch::utils_ = Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::instance(

@@ -70,15 +70,15 @@ namespace
     {
       double c1 = function_lin_def.container().get<double>("c1");
 
-      return Teuchos::RCP(new FLD::BeltramiFunction(c1));
+      return Teuchos::make_rcp<FLD::BeltramiFunction>(c1);
     }
     else if (function_lin_def.container().get_or("CHANNELWEAKLYCOMPRESSIBLE", false))
     {
-      return Teuchos::RCP(new FLD::ChannelWeaklyCompressibleFunction());
+      return Teuchos::make_rcp<FLD::ChannelWeaklyCompressibleFunction>();
     }
     else if (function_lin_def.container().get_or("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE", false))
     {
-      return Teuchos::RCP(new FLD::CorrectionTermChannelWeaklyCompressibleFunction());
+      return Teuchos::make_rcp<FLD::CorrectionTermChannelWeaklyCompressibleFunction>();
     }
     else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_POISEUILLE", false))
     {
@@ -97,7 +97,7 @@ namespace
       // get materials
       auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
-      return Teuchos::RCP(new FLD::WeaklyCompressiblePoiseuilleFunction(fparams, L, R, U));
+      return Teuchos::make_rcp<FLD::WeaklyCompressiblePoiseuilleFunction>(fparams, L, R, U);
     }
     else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE", false))
     {
@@ -119,7 +119,7 @@ namespace
       // get materials
       auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
-      return Teuchos::RCP(new FLD::WeaklyCompressiblePoiseuilleForceFunction(fparams, L, R, U));
+      return Teuchos::make_rcp<FLD::WeaklyCompressiblePoiseuilleForceFunction>(fparams, L, R, U);
     }
     else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW", false))
     {
@@ -132,7 +132,7 @@ namespace
       // get materials
       auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
-      return Teuchos::RCP(new FLD::WeaklyCompressibleManufacturedFlowFunction(fparams));
+      return Teuchos::make_rcp<FLD::WeaklyCompressibleManufacturedFlowFunction>(fparams);
     }
     else if (function_lin_def.container().get_or(
                  "WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE", false))
@@ -147,7 +147,7 @@ namespace
       // get materials
       auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
-      return Teuchos::RCP(new FLD::WeaklyCompressibleManufacturedFlowForceFunction(fparams));
+      return Teuchos::make_rcp<FLD::WeaklyCompressibleManufacturedFlowForceFunction>(fparams);
     }
     else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD", false))
     {
@@ -160,7 +160,7 @@ namespace
       // get materials
       auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
-      return Teuchos::RCP(new FLD::WeaklyCompressibleEtienneCFDFunction(fparams));
+      return Teuchos::make_rcp<FLD::WeaklyCompressibleEtienneCFDFunction>(fparams);
     }
     else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE", false))
     {
@@ -173,7 +173,7 @@ namespace
       // get materials
       auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
-      return Teuchos::RCP(new FLD::WeaklyCompressibleEtienneCFDForceFunction(fparams));
+      return Teuchos::make_rcp<FLD::WeaklyCompressibleEtienneCFDForceFunction>(fparams);
     }
     else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY", false))
     {
@@ -187,7 +187,7 @@ namespace
       // get materials
       auto fparams = get_weakly_compressible_fluid_mat_pars(mat_id);
 
-      return Teuchos::RCP(new FLD::WeaklyCompressibleEtienneCFDViscosityFunction(fparams));
+      return Teuchos::make_rcp<FLD::WeaklyCompressibleEtienneCFDViscosityFunction>(fparams);
     }
     else if (function_lin_def.container().get_or("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID", false))
     {
@@ -206,8 +206,8 @@ namespace
       auto fparams_fluid = get_weakly_compressible_fluid_mat_pars(mat_id_fluid);
       auto fparams_struc = get_svk_mat_pars(mat_id_struc);
 
-      return Teuchos::RCP(
-          new FLD::WeaklyCompressibleEtienneFSIFluidFunction(fparams_fluid, fparams_struc));
+      return Teuchos::make_rcp<FLD::WeaklyCompressibleEtienneFSIFluidFunction>(
+          fparams_fluid, fparams_struc);
     }
     else if (function_lin_def.container().get_or(
                  "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE", false))
@@ -233,8 +233,8 @@ namespace
       auto fparams_fluid = get_weakly_compressible_fluid_mat_pars(mat_id_fluid);
       auto fparams_struc = get_svk_mat_pars(mat_id_struc);
 
-      return Teuchos::RCP(
-          new FLD::WeaklyCompressibleEtienneFSIFluidForceFunction(fparams_fluid, fparams_struc));
+      return Teuchos::make_rcp<FLD::WeaklyCompressibleEtienneFSIFluidForceFunction>(
+          fparams_fluid, fparams_struc);
     }
     else if (function_lin_def.container().get_or(
                  "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY", false))
@@ -260,8 +260,8 @@ namespace
       auto fparams_fluid = get_weakly_compressible_fluid_mat_pars(mat_id_fluid);
       auto fparams_struc = get_svk_mat_pars(mat_id_struc);
 
-      return Teuchos::RCP(new FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction(
-          fparams_fluid, fparams_struc));
+      return Teuchos::make_rcp<FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction>(
+          fparams_fluid, fparams_struc);
     }
     else if (function_lin_def.container().get_or("BELTRAMI-UP", false))
     {
@@ -273,7 +273,7 @@ namespace
       // get material
       auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
-      return Teuchos::RCP(new FLD::BeltramiUP(fparams));
+      return Teuchos::make_rcp<FLD::BeltramiUP>(fparams);
     }
     else if (function_lin_def.container().get_or("BELTRAMI-RHS", false))
     {
@@ -286,7 +286,7 @@ namespace
       // get material
       auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
-      return Teuchos::RCP(new FLD::BeltramiRHS(fparams, (bool)is_stokes));
+      return Teuchos::make_rcp<FLD::BeltramiRHS>(fparams, (bool)is_stokes);
     }
     else if (function_lin_def.container().get_or("KIMMOIN-UP", false))
     {
@@ -299,7 +299,7 @@ namespace
       // get material
       auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
-      return Teuchos::RCP(new FLD::KimMoinUP(fparams, (bool)is_stationary));
+      return Teuchos::make_rcp<FLD::KimMoinUP>(fparams, (bool)is_stationary);
     }
     else if (function_lin_def.container().get_or("KIMMOIN-RHS", false))
     {
@@ -313,7 +313,7 @@ namespace
       // get material
       auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
-      return Teuchos::RCP(new FLD::KimMoinRHS(fparams, (bool)is_stationary, (bool)is_stokes));
+      return Teuchos::make_rcp<FLD::KimMoinRHS>(fparams, (bool)is_stationary, (bool)is_stokes);
     }
     else if (function_lin_def.container().get_or("KIMMOIN-STRESS", false))
     {
@@ -327,7 +327,7 @@ namespace
       // get material
       auto fparams = get_newtonian_fluid_mat_pars(mat_id);
 
-      return Teuchos::RCP(new FLD::KimMoinStress(fparams, (bool)is_stationary, amplitude));
+      return Teuchos::make_rcp<FLD::KimMoinStress>(fparams, (bool)is_stationary, amplitude);
     }
     else
     {

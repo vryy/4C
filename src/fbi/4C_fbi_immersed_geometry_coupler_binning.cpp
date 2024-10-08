@@ -38,7 +38,7 @@ void FBI::FBIBinningGeometryCoupler::setup_binning(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_displacement)
 {
   Teuchos::RCP<const Core::LinAlg::Vector<double>> disp2 =
-      Teuchos::RCP(new const Core::LinAlg::Vector<double>(*(discretizations[1]->dof_col_map())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discretizations[1]->dof_col_map()));
 
   std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> disp_vec = {
       structure_displacement, disp2};
@@ -51,7 +51,7 @@ void FBI::FBIBinningGeometryCoupler::partition_geometry(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_displacement)
 {
   Teuchos::RCP<const Core::LinAlg::Vector<double>> disp2 =
-      Teuchos::RCP(new const Core::LinAlg::Vector<double>(*(discretizations[1]->dof_col_map())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discretizations[1]->dof_col_map()));
 
   std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> disp_vec = {
       structure_displacement, disp2};
@@ -131,7 +131,7 @@ Teuchos::RCP<std::map<int, std::vector<int>>> FBI::FBIBinningGeometryCoupler::se
   update_binning(discretizations[0], column_structure_displacement);
   // Vector to hand elements pointers to the bridge object
   Teuchos::RCP<std::map<int, std::vector<int>>> pairids =
-      Teuchos::RCP(new std::map<int, std::vector<int>>);
+      Teuchos::make_rcp<std::map<int, std::vector<int>>>();
 
   pairids = FBI::FBIGeometryCoupler::search(discretizations, column_structure_displacement);
 
@@ -192,7 +192,7 @@ void FBI::FBIBinningGeometryCoupler::set_binning(
 {
   binstrategy_ = binning;
   binstrategy_->bin_discret()->fill_complete(false, false, false);
-  binrowmap_ = Teuchos::RCP(new Epetra_Map(*(binstrategy_->bin_discret()->element_row_map())));
+  binrowmap_ = Teuchos::make_rcp<Epetra_Map>(*(binstrategy_->bin_discret()->element_row_map()));
 };
 
 FOUR_C_NAMESPACE_CLOSE

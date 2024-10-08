@@ -104,13 +104,13 @@ void Coupling::Adapter::MortarVolCoupl::setup(
   // create material strategy
   if (materialstrategy_.is_null())
     materialstrategy_ =
-        Teuchos::RCP(new FourC::Coupling::VolMortar::UTILS::DefaultMaterialStrategy());
+        Teuchos::make_rcp<FourC::Coupling::VolMortar::UTILS::DefaultMaterialStrategy>();
 
   // create coupling instance
   Teuchos::RCP<FourC::Coupling::VolMortar::VolMortarCoupl> coupdis =
-      Teuchos::RCP(new FourC::Coupling::VolMortar::VolMortarCoupl(spatial_dimension_, masterdis_,
+      Teuchos::make_rcp<FourC::Coupling::VolMortar::VolMortarCoupl>(spatial_dimension_, masterdis_,
           slavedis_, params, cut_params, coupleddof12_, coupleddof21_, dofsets12_, dofsets21_,
-          materialstrategy_));
+          materialstrategy_);
 
   //-----------------------
   // Evaluate volmortar coupling:
@@ -179,10 +179,10 @@ void Coupling::Adapter::MortarVolCoupl::create_aux_dofsets(
   // add proxy of velocity related degrees of freedom to scatra discretization
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
   dofsetaux =
-      Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(coupleddof21->size(), 0, 0, true));
+      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(coupleddof21->size(), 0, 0, true);
   if (dis2->add_dof_set(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
   dofsetaux =
-      Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(coupleddof12->size(), 0, 0, true));
+      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(coupleddof12->size(), 0, 0, true);
   if (dis1->add_dof_set(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in structure field");
 
   // call assign_degrees_of_freedom also for auxiliary dofsets
@@ -205,11 +205,11 @@ void Coupling::Adapter::MortarVolCoupl::assign_materials(
 {
   if (materialstrategy == Teuchos::null)
     materialstrategy =
-        Teuchos::RCP(new FourC::Coupling::VolMortar::UTILS::DefaultMaterialStrategy());
+        Teuchos::make_rcp<FourC::Coupling::VolMortar::UTILS::DefaultMaterialStrategy>();
   // create coupling instance
   Teuchos::RCP<FourC::Coupling::VolMortar::VolMortarCoupl> coupdis =
-      Teuchos::RCP(new FourC::Coupling::VolMortar::VolMortarCoupl(spatial_dimension_, dis1, dis2,
-          volmortar_params, cut_params, nullptr, nullptr, nullptr, nullptr, materialstrategy));
+      Teuchos::make_rcp<FourC::Coupling::VolMortar::VolMortarCoupl>(spatial_dimension_, dis1, dis2,
+          volmortar_params, cut_params, nullptr, nullptr, nullptr, nullptr, materialstrategy);
 
   // assign materials from one discretization to the other
   coupdis->assign_materials();
@@ -341,7 +341,7 @@ Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::MortarVolCoupl::master_to_sl
 
   // create vector
   Teuchos::RCP<Epetra_MultiVector> sv =
-      Teuchos::RCP(new Epetra_MultiVector(p21_->row_map(), mv->NumVectors()));
+      Teuchos::make_rcp<Epetra_MultiVector>(p21_->row_map(), mv->NumVectors());
   // project
   master_to_slave(mv, sv);
 
@@ -378,7 +378,7 @@ Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::MortarVolCoupl::slave_to_mas
 
   // create vector
   Teuchos::RCP<Epetra_MultiVector> mv =
-      Teuchos::RCP(new Epetra_MultiVector(p12_->row_map(), sv->NumVectors()));
+      Teuchos::make_rcp<Epetra_MultiVector>(p12_->row_map(), sv->NumVectors());
   // project
   slave_to_master(sv, mv);
 

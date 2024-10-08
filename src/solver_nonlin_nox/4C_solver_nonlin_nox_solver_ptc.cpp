@@ -148,8 +148,8 @@ void NOX::Nln::Solver::PseudoTransient::create_scaling_operator()
       Teuchos::RCP<const ::NOX::Epetra::Vector> epetraXPtr =
           Teuchos::rcp_dynamic_cast<const ::NOX::Epetra::Vector>(solnPtr->getXPtr());
       if (epetraXPtr.is_null()) FOUR_C_THROW("Cast to ::NOX::Epetra::Vector failed!");
-      scalingDiagOpPtr_ = Teuchos::RCP(
-          new Core::LinAlg::Vector<double>(epetraXPtr->getEpetraVector().Map(), false));
+      scalingDiagOpPtr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+          epetraXPtr->getEpetraVector().Map(), false);
 
       scalingDiagOpPtr_->PutScalar(1.0);
 
@@ -160,8 +160,8 @@ void NOX::Nln::Solver::PseudoTransient::create_scaling_operator()
     case NOX::Nln::Solver::PseudoTransient::scale_op_lumped_mass:
     {
       // get the lumped mass matrix
-      scalingDiagOpPtr_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(
-          *(Teuchos::rcp_dynamic_cast<NOX::Nln::Group>(solnPtr)->get_lumped_mass_matrix_ptr())));
+      scalingDiagOpPtr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+          *(Teuchos::rcp_dynamic_cast<NOX::Nln::Group>(solnPtr)->get_lumped_mass_matrix_ptr()));
       break;
     }
     // get element based scaling operator
@@ -195,8 +195,8 @@ void NOX::Nln::Solver::PseudoTransient::create_scaling_operator()
  *----------------------------------------------------------------------------*/
 void NOX::Nln::Solver::PseudoTransient::create_lin_system_pre_post_operator()
 {
-  prePostLinSysPtr_ = Teuchos::RCP(new NOX::Nln::LinSystem::PrePostOp::PseudoTransient(
-      scalingDiagOpPtr_, scalingMatrixOpPtr_, *this));
+  prePostLinSysPtr_ = Teuchos::make_rcp<NOX::Nln::LinSystem::PrePostOp::PseudoTransient>(
+      scalingDiagOpPtr_, scalingMatrixOpPtr_, *this);
 
   // The name of the direction method and the corresponding sublist has to match!
   const std::string dir_str(NOX::Nln::Aux::get_direction_method_list_name(*paramsPtr));
@@ -243,8 +243,8 @@ void NOX::Nln::Solver::PseudoTransient::create_group_pre_post_operator()
   NOX::Nln::GROUP::PrePostOperator::Map& prePostGroupMap =
       NOX::Nln::GROUP::PrePostOp::get_map(p_grpOpt);
   // insert or replace the old pointer in the map
-  prePostGroupPtr_ = Teuchos::RCP(new NOX::Nln::GROUP::PrePostOp::PseudoTransient(
-      scalingDiagOpPtr_, scalingMatrixOpPtr_, *this));
+  prePostGroupPtr_ = Teuchos::make_rcp<NOX::Nln::GROUP::PrePostOp::PseudoTransient>(
+      scalingDiagOpPtr_, scalingMatrixOpPtr_, *this);
 
   // set the modified map
   prePostGroupMap[NOX::Nln::GROUP::prepost_ptc] = prePostGroupPtr_;
@@ -857,7 +857,7 @@ void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
        *
        *        (\delta^{-1} \boldsymbol{I} + \boldsymbol{J}) */
       Teuchos::RCP<Core::LinAlg::Vector<double>> v =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*scaling_diag_op_ptr_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*scaling_diag_op_ptr_);
       // Scale v with scaling factor
       v->Scale(deltaInv * scaleFactor);
       // get the diagonal terms of the jacobian

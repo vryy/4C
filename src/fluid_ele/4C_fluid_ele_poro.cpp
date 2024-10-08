@@ -39,7 +39,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroEleType::creat
 {
   if (eletype == "FLUIDPORO")
   {
-    return Teuchos::RCP(new Discret::ELEMENTS::FluidPoro(id, owner));
+    return Teuchos::make_rcp<Discret::ELEMENTS::FluidPoro>(id, owner);
   }
   return Teuchos::null;
 }
@@ -47,7 +47,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroEleType::creat
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroEleType::create(
     const int id, const int owner)
 {
-  return Teuchos::RCP(new Discret::ELEMENTS::FluidPoro(id, owner));
+  return Teuchos::make_rcp<Discret::ELEMENTS::FluidPoro>(id, owner);
 }
 
 void Discret::ELEMENTS::FluidPoroEleType::setup_element_definition(

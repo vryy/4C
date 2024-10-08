@@ -69,8 +69,8 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
       {
         // Since the condition is ok then create the corresponding the condition
         Teuchos::RCP<FluidVolumetricSurfaceFlowBc> fvsf_bc =
-            Teuchos::RCP(new FluidVolumetricSurfaceFlowBc(discret_, dta,
-                "VolumetricSurfaceFlowCond", "VolumetricFlowBorderNodesCond", surfID, i, j));
+            Teuchos::make_rcp<FluidVolumetricSurfaceFlowBc>(discret_, dta,
+                "VolumetricSurfaceFlowCond", "VolumetricFlowBorderNodesCond", surfID, i, j);
         bool inserted = fvsf_map_.insert(std::make_pair(surfID, fvsf_bc)).second;
         if (!inserted)
         {
@@ -213,12 +213,12 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   // calculate the center of mass and varage normal of the surface
   // condition
   // -------------------------------------------------------------------
-  Teuchos::RCP<std::vector<double>> cmass = Teuchos::RCP(new std::vector<double>);
-  Teuchos::RCP<std::vector<double>> normal = Teuchos::RCP(new std::vector<double>);
+  Teuchos::RCP<std::vector<double>> cmass = Teuchos::make_rcp<std::vector<double>>();
+  Teuchos::RCP<std::vector<double>> normal = Teuchos::make_rcp<std::vector<double>>();
   this->center_of_mass_calculation(cmass, normal, ds_condname);
 
   // get the normal
-  normal_ = Teuchos::RCP(new std::vector<double>(*normal));
+  normal_ = Teuchos::make_rcp<std::vector<double>>(*normal);
   std::string normal_info = (conditions[surf_numcond])->parameters().get<std::string>("NORMAL");
   if (normal_info == "SelfEvaluateNormal")
   {
@@ -226,7 +226,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
     {
       std::cout << "Normal is automatically evaluated" << std::endl;
     }
-    vnormal_ = Teuchos::RCP(new std::vector<double>(*normal));
+    vnormal_ = Teuchos::make_rcp<std::vector<double>>(*normal);
   }
   else if (normal_info == "UsePrescribedNormal")
   {
@@ -234,7 +234,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
     {
       std::cout << "Normal is manually setup" << std::endl;
     }
-    vnormal_ = Teuchos::RCP(new std::vector<double>);
+    vnormal_ = Teuchos::make_rcp<std::vector<double>>();
     (*vnormal_)[0] = conditions[surf_numcond]->parameters().get<double>("n1");
     (*vnormal_)[1] = conditions[surf_numcond]->parameters().get<double>("n2");
     (*vnormal_)[2] = conditions[surf_numcond]->parameters().get<double>("n3");
@@ -254,7 +254,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
     {
       std::cout << "Center of mass is automatically evaluated" << std::endl;
     }
-    cmass_ = Teuchos::RCP(new std::vector<double>(*cmass));
+    cmass_ = Teuchos::make_rcp<std::vector<double>>(*cmass);
   }
   else if (c_mass_info == "UsePrescribedCenterOfMass")
   {
@@ -262,7 +262,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
     {
       std::cout << "Center of mass is manually setup" << std::endl;
     }
-    normal_ = Teuchos::RCP(new std::vector<double>);
+    normal_ = Teuchos::make_rcp<std::vector<double>>();
     (*cmass_)[0] = conditions[surf_numcond]->parameters().get<double>("c1");
     (*cmass_)[1] = conditions[surf_numcond]->parameters().get<double>("c2");
     (*cmass_)[2] = conditions[surf_numcond]->parameters().get<double>("c3");
@@ -300,7 +300,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
   // -------------------------------------------------------------------
   int num_steps = int(period_ / dta) + 1;
 
-  flowrates_ = Teuchos::RCP(new std::vector<double>(num_steps, 0.0));
+  flowrates_ = Teuchos::make_rcp<std::vector<double>>(num_steps, 0.0);
 
   if (prebiasing_flag_ == "PREBIASED" || prebiasing_flag_ == "FORCED")
   {
@@ -728,7 +728,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_node_row_map(
   // create the node row map of the nodes on the current proc
   //--------------------------------------------------------------------
   cond_noderowmap =
-      Teuchos::RCP(new Epetra_Map(-1, nodeids.size(), nodeids.data(), 0, dis->get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, nodeids.size(), nodeids.data(), 0, dis->get_comm());
 
 }  // build_condition_node_row_map
 
@@ -782,7 +782,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
   // create the node row map of the nodes on the current proc
   //--------------------------------------------------------------------
   cond_dofrowmap =
-      Teuchos::RCP(new Epetra_Map(-1, dofids.size(), dofids.data(), 0, dis->get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, dofids.size(), dofids.data(), 0, dis->get_comm());
 
 }  // FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map
 
@@ -862,7 +862,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::read_restart(
 
     // evaluate the new flowrates vector
     int nq_pos = 0;
-    Teuchos::RCP<std::vector<double>> nq = Teuchos::RCP(new std::vector<double>(nQSize, 0.0));
+    Teuchos::RCP<std::vector<double>> nq = Teuchos::make_rcp<std::vector<double>>(nQSize, 0.0);
     this->interpolate(flowrates_, nq, flowratespos_, nq_pos, period_);
 
     // store new values in class
@@ -890,7 +890,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_velocities(
     (*flowrates_)[flowrates_->size() - 1] = flowrate;
   }
 
-  Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::RCP(new Teuchos::ParameterList);
+  Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::make_rcp<Teuchos::ParameterList>();
 
   params->set<int>("Number of Harmonics", n_harmonics_);
   // condition id
@@ -1017,7 +1017,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::velocities(
   // history of avarage velocities at the outlet
   Teuchos::RCP<std::vector<double>> flowrates =
       params->get<Teuchos::RCP<std::vector<double>>>("Flowrates");
-  Teuchos::RCP<std::vector<double>> velocities = Teuchos::RCP(new std::vector<double>(*flowrates));
+  Teuchos::RCP<std::vector<double>> velocities = Teuchos::make_rcp<std::vector<double>>(*flowrates);
 
   // the velocity position
   int velocityposition = params->get<int>("Velocity Position");
@@ -1204,7 +1204,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
 
   double actflowrate = this->flow_rate_calculation(eleparams, time, ds_condname, action, condid_);
 
-  Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::RCP(new Teuchos::ParameterList);
+  Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::make_rcp<Teuchos::ParameterList>();
 
   // -------------------------------------------------------------------
   // evaluate the wanted flow rate
@@ -1236,7 +1236,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
   // condition id
   params->set<int>("Condition ID", condid_);
   // history of avarage velocities at the outlet
-  Teuchos::RCP<std::vector<double>> flowrates = Teuchos::RCP(new std::vector<double>);
+  Teuchos::RCP<std::vector<double>> flowrates = Teuchos::make_rcp<std::vector<double>>();
   flowrates->push_back(1.0 * area_);
   params->set<Teuchos::RCP<std::vector<double>>>("Flowrates", flowrates);
   // the velocity position
@@ -1633,7 +1633,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::dft(Teuchos::RCP<std::vector<doub
   //--------------------------------------------------------------------
   // Initialise the Fourier values
   //--------------------------------------------------------------------
-  F = Teuchos::RCP(new std::vector<std::complex<double>>(f->size(), 0.0));
+  F = Teuchos::make_rcp<std::vector<std::complex<double>>>(f->size(), 0.0);
 
   const double N = double(f->size());
   const int fsize = f->size();
@@ -1822,9 +1822,10 @@ FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(
       if (lineID == surfID)
       {
         // Since the condition is ok then create the corresponding the condition
-        Teuchos::RCP<FluidVolumetricSurfaceFlowBc> fvsf_bc = Teuchos::RCP(
-            new FluidVolumetricSurfaceFlowBc(discret_, dta, "TotalTractionCorrectionCond",
-                "TotalTractionCorrectionBorderNodesCond", surfID, i, j));
+        Teuchos::RCP<FluidVolumetricSurfaceFlowBc> fvsf_bc =
+            Teuchos::make_rcp<FluidVolumetricSurfaceFlowBc>(discret_, dta,
+                "TotalTractionCorrectionCond", "TotalTractionCorrectionBorderNodesCond", surfID, i,
+                j);
         bool inserted = fvsf_map_.insert(std::make_pair(surfID, fvsf_bc)).second;
         if (!inserted)
         {

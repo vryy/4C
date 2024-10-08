@@ -70,7 +70,7 @@ void CONTACT::NitscheStrategyPoro::set_parent_state(const enum Mortar::StateType
   if (statename == Mortar::state_fvelocity || statename == Mortar::state_fpressure)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> global =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*dis.dof_col_map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis.dof_col_map(), true);
     Core::LinAlg::export_to(vec, *global);
 
     // set state on interfaces
@@ -125,8 +125,8 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyPoro::setup_rhs_block_vec(
   switch (bt)
   {
     case CONTACT::VecBlockType::porofluid:
-      return Teuchos::RCP(
-          new Epetra_FEVector(*Global::Problem::instance()->get_dis("porofluid")->dof_row_map()));
+      return Teuchos::make_rcp<Epetra_FEVector>(
+          *Global::Problem::instance()->get_dis("porofluid")->dof_row_map());
     default:
       return CONTACT::NitscheStrategy::setup_rhs_block_vec(bt);
   }
@@ -141,7 +141,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::NitscheStrategyPoro::g
   {
     case CONTACT::VecBlockType::porofluid:
 
-      return Teuchos::RCP(new Core::LinAlg::Vector<double>(*fp_));
+      return Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fp_);
     default:
       return CONTACT::NitscheStrategy::get_rhs_block_ptr(bp);
   }
@@ -153,16 +153,16 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategyPoro::setup_mat
   switch (bt)
   {
     case CONTACT::MatBlockType::displ_porofluid:
-      return Teuchos::RCP(new Core::LinAlg::SparseMatrix(
+      return Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
           *Teuchos::rcpFromRef<const Epetra_Map>(
               *Global::Problem::instance()->get_dis("structure")->dof_row_map()),
-          100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+          100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
     case CONTACT::MatBlockType::porofluid_displ:
     case CONTACT::MatBlockType::porofluid_porofluid:
-      return Teuchos::RCP(new Core::LinAlg::SparseMatrix(
+      return Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
           *Teuchos::rcpFromRef<const Epetra_Map>(
               *Global::Problem::instance()->get_dis("porofluid")->dof_row_map()),
-          100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+          100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
     default:
       return CONTACT::NitscheStrategy::setup_matrix_block_ptr(bt);
   }

@@ -116,7 +116,7 @@ void LUBRICATION::TimIntImpl::init()
   // create empty system matrix (27 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
   sysmat_ =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27, false, true));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 27, false, true);
 
   // -------------------------------------------------------------------
   // create vectors containing problem variables
@@ -131,7 +131,7 @@ void LUBRICATION::TimIntImpl::init()
   zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::RCP(new Core::LinAlg::MapExtractor());
+  dbcmaps_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
@@ -1016,7 +1016,7 @@ void LUBRICATION::TimIntImpl::output_state()
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     Teuchos::RCP<Epetra_MultiVector> dispnp_multi =
-        Teuchos::RCP(new Epetra_MultiVector(*discret_->node_row_map(), nsd_, true));
+        Teuchos::make_rcp<Epetra_MultiVector>(*discret_->node_row_map(), nsd_, true);
     for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
     {
       Core::Nodes::Node* node = discret_->l_row_node(inode);
@@ -1084,14 +1084,14 @@ void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
 
   // get (squared) error values
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(4));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(4);
   discret_->evaluate_scalars(eleparams, errors);
   discret_->clear_state();
 
   // std::vector containing
   // [0]: relative L2 pressure error
   // [1]: relative H1 pressure error
-  Teuchos::RCP<std::vector<double>> relerror = Teuchos::RCP(new std::vector<double>(2));
+  Teuchos::RCP<std::vector<double>> relerror = Teuchos::make_rcp<std::vector<double>>(2);
 
   if (std::abs((*errors)[2]) > 1e-14)
     (*relerror)[0] = sqrt((*errors)[0]) / sqrt((*errors)[2]);
@@ -1183,7 +1183,7 @@ void LUBRICATION::TimIntImpl::output_mean_pressures(const int num)
 
     // evaluate integrals of pressure(s) and domain
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> pressures =
-        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(2));
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(2);
     discret_->evaluate_scalars(eleparams, pressures);
     discret_->clear_state();  // clean up
 

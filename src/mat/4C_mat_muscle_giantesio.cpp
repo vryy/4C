@@ -286,7 +286,7 @@ Mat::PAR::MuscleGiantesio::MuscleGiantesio(const Core::Mat::PAR::Parameter::Data
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MuscleGiantesio::create_material()
 {
-  return Teuchos::RCP(new Mat::MuscleGiantesio(this));
+  return Teuchos::make_rcp<Mat::MuscleGiantesio>(this);
 }
 
 Mat::MuscleGiantesioType Mat::MuscleGiantesioType::instance_;

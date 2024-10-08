@@ -46,7 +46,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
 
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double>> myscalar =
-          Teuchos::RCP(new std::vector<double>(la[1].lm_.size(), 0.0));
+          Teuchos::make_rcp<std::vector<double>>(la[1].lm_.size(), 0.0);
 
       Core::FE::extract_my_values(*scalarnp, *myscalar, la[1].lm_);
 

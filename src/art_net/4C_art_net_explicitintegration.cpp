@@ -118,7 +118,7 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
   // a 'good' estimate
 
   // initialize standard (stabilized) system matrix
-  sysmat_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap, 6, false, true));
+  sysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 6, false, true);
 
   // Vectors passed to the element
   // -----------------------------
@@ -158,16 +158,16 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
   Teuchos::ParameterList junparams;
 
   junc_nodal_vals_ =
-      Teuchos::RCP(new std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>);
+      Teuchos::make_rcp<std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>();
 
   junparams
       .set<Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>>(
           "Junctions Parameters", junc_nodal_vals_);
 
-  artjun_ = Teuchos::RCP(new UTILS::ArtJunctionWrapper(discret_, output_, junparams, dta_));
+  artjun_ = Teuchos::make_rcp<UTILS::ArtJunctionWrapper>(discret_, output_, junparams, dta_);
 
   // create the gnuplot export conditions
-  artgnu_ = Teuchos::RCP(new Arteries::UTILS::ArtWriteGnuplotWrapper(discret_, junparams));
+  artgnu_ = Teuchos::make_rcp<Arteries::UTILS::ArtWriteGnuplotWrapper>(discret_, junparams);
 
   // ---------------------------------------------------------------------------------------
   // Initialize all the arteries' cross-sectional areas to the initial crossectional area Ao
@@ -212,7 +212,7 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
     std::vector<int> lm;
     std::vector<int> lmstride;
     // vector<int> lmowner;
-    Teuchos::RCP<std::vector<int>> lmowner = Teuchos::RCP(new std::vector<int>);
+    Teuchos::RCP<std::vector<int>> lmowner = Teuchos::make_rcp<std::vector<int>>();
     ele->location_vector(*discret_, lm, *lmowner, lmstride);
 
     // loop all nodes of this element, add values to the global vectors
@@ -238,7 +238,7 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
   if (solvescatra_)
   {
     // initialize scatra system matrix
-    scatra_sysmat_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap, 6, false, true));
+    scatra_sysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 6, false, true);
     // right hand side vector and right hand side corrector
     scatra_rhs_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
@@ -865,7 +865,7 @@ void Arteries::ArtNetExplicitTimeInt::test_results()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::UTILS::ResultTest> Arteries::ArtNetExplicitTimeInt::create_field_test()
 {
-  return Teuchos::RCP(new Arteries::ArteryResultTest(*(this)));
+  return Teuchos::make_rcp<Arteries::ArteryResultTest>(*(this));
 }
 
 FOUR_C_NAMESPACE_CLOSE

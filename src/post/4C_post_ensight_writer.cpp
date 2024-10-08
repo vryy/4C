@@ -48,7 +48,7 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
       proc0map_->MyGlobalElements(), proc0map_->MyGlobalElements() + proc0map_->NumMyElements());
   std::sort(sortmap.begin(), sortmap.end());
   proc0map_ =
-      Teuchos::RCP(new Epetra_Map(-1, sortmap.size(), sortmap.data(), 0, proc0map_->Comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, sortmap.size(), sortmap.data(), 0, proc0map_->Comm());
 
   // get the number of elements for each distype (global numbers)
   numElePerDisType_ = get_num_ele_per_dis_type(dis);
@@ -1333,7 +1333,7 @@ void EnsightWriter::write_special_field(SpecialFieldInterface& special, PostResu
   for (int i = 0; i < numfiles; ++i) startfilepos[i] = 0;
   for (int i = 0; i < numfiles; ++i)
   {
-    files[i] = Teuchos::RCP(new std::ofstream);
+    files[i] = Teuchos::make_rcp<std::ofstream>();
 
     if (myrank_ == 0)
     {
@@ -1513,8 +1513,8 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
 
   // do stupid conversion into Epetra map
   Teuchos::RCP<Epetra_Map> epetradatamap;
-  epetradatamap = Teuchos::RCP(new Epetra_Map(datamap.NumGlobalElements(), datamap.NumMyElements(),
-      datamap.MyGlobalElements(), 0, datamap.Comm()));
+  epetradatamap = Teuchos::make_rcp<Epetra_Map>(datamap.NumGlobalElements(),
+      datamap.NumMyElements(), datamap.MyGlobalElements(), 0, datamap.Comm());
 
   // determine offset of dofs in case of multiple discretizations in
   // separate files (e.g. multi-scale problems). during calculation,
@@ -1566,7 +1566,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
     // contract result values on proc0 (proc0 gets everything, other procs empty)
     Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
     Teuchos::RCP<Core::LinAlg::Vector<double>> proc0data =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*proc0datamap));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*proc0datamap);
     int err = proc0data->Import(*data, proc0dataimporter, Insert);
     if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
@@ -1578,7 +1578,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
 
     // would be nice to have an Epetra_IntMultiVector, instead of casting to doubles
     Teuchos::RCP<Epetra_MultiVector> dofgidpernodelid =
-        Teuchos::RCP(new Epetra_MultiVector(*nodemap, numdf));
+        Teuchos::make_rcp<Epetra_MultiVector>(*nodemap, numdf);
     dofgidpernodelid->PutScalar(-1.0);
 
     const int mynumnp = nodemap->NumMyElements();
@@ -1602,7 +1602,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
 
     // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
     Teuchos::RCP<Epetra_MultiVector> dofgidpernodelid_proc0 =
-        Teuchos::RCP(new Epetra_MultiVector(*proc0map_, numdf));
+        Teuchos::make_rcp<Epetra_MultiVector>(*proc0map_, numdf);
     Epetra_Import proc0dofimporter(*proc0map_, *nodemap);
     err = dofgidpernodelid_proc0->Import(*dofgidpernodelid, proc0dofimporter, Insert);
     if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
@@ -1737,7 +1737,7 @@ void EnsightWriter::write_nodal_result_step(std::ofstream& file,
   {
     // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
     Teuchos::RCP<Epetra_MultiVector> data_proc0 =
-        Teuchos::RCP(new Epetra_MultiVector(*proc0map_, numdf));
+        Teuchos::make_rcp<Epetra_MultiVector>(*proc0map_, numdf);
     Epetra_Import proc0dofimporter(*proc0map_, datamap);
     int err = data_proc0->Import(*data, proc0dofimporter, Insert);
     if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
@@ -1764,7 +1764,7 @@ void EnsightWriter::write_nodal_result_step(std::ofstream& file,
       for (int idf = 0; idf < numdf; ++idf)
       {
         Teuchos::RCP<Core::LinAlg::Vector<double>> column =
-            Teuchos::RCP(new Core::LinAlg::Vector<double>(*(*data_proc0)(mycols[idf])));
+            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*data_proc0)(mycols[idf]));
 
         for (int inode = 0; inode < finalnumnode;
              inode++)  // inode == lid of node because we use proc0map_
@@ -1823,8 +1823,8 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
 
   // do stupid conversion into Epetra map
   Teuchos::RCP<Epetra_Map> epetradatamap;
-  epetradatamap = Teuchos::RCP(new Epetra_Map(datamap.NumGlobalElements(), datamap.NumMyElements(),
-      datamap.MyGlobalElements(), 0, datamap.Comm()));
+  epetradatamap = Teuchos::make_rcp<Epetra_Map>(datamap.NumGlobalElements(),
+      datamap.NumMyElements(), datamap.MyGlobalElements(), 0, datamap.Comm());
 
   //------------------------------------------------------
   // each processor provides its result values for proc 0
@@ -1836,7 +1836,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
   // contract result values on proc0 (proc0 gets everything, other procs empty)
   Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
   Teuchos::RCP<Core::LinAlg::Vector<double>> proc0data =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*proc0datamap));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*proc0datamap);
   int err = proc0data->Import(*data, proc0dataimporter, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
@@ -1847,7 +1847,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
   //------------------------------------------------------------------
 
   Teuchos::RCP<Epetra_MultiVector> dofgidperelementlid =
-      Teuchos::RCP(new Epetra_MultiVector(*elementmap, numdof));
+      Teuchos::make_rcp<Epetra_MultiVector>(*elementmap, numdof);
   dofgidperelementlid->PutScalar(-1.0);
 
   const int nummyelem = elementmap->NumMyElements();
@@ -1870,7 +1870,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
   Teuchos::RCP<Epetra_MultiVector> dofgidperelementlid_proc0 =
-      Teuchos::RCP(new Epetra_MultiVector(*proc0map_, numdof));
+      Teuchos::make_rcp<Epetra_MultiVector>(*proc0map_, numdof);
   Epetra_Import proc0dofimporter(*proc0map_, *elementmap);
   err = dofgidperelementlid_proc0->Import(*dofgidperelementlid, proc0dofimporter, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
@@ -1993,8 +1993,8 @@ void EnsightWriter::write_element_result_step(std::ofstream& file,
 
   // do stupid conversion into Epetra map
   Teuchos::RCP<Epetra_Map> epetradatamap;
-  epetradatamap = Teuchos::RCP(new Epetra_Map(datamap.NumGlobalElements(), datamap.NumMyElements(),
-      datamap.MyGlobalElements(), 0, datamap.Comm()));
+  epetradatamap = Teuchos::make_rcp<Epetra_Map>(datamap.NumGlobalElements(),
+      datamap.NumMyElements(), datamap.MyGlobalElements(), 0, datamap.Comm());
 
   //------------------------------------------------------
   // each processor provides its result values for proc 0
@@ -2006,7 +2006,7 @@ void EnsightWriter::write_element_result_step(std::ofstream& file,
   // contract result values on proc0 (proc0 gets everything, other procs empty)
   Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
   Teuchos::RCP<Epetra_MultiVector> proc0data =
-      Teuchos::RCP(new Epetra_MultiVector(*proc0datamap, numcol));
+      Teuchos::make_rcp<Epetra_MultiVector>(*proc0datamap, numcol);
   int err = proc0data->Import(*data, proc0dataimporter, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
@@ -2055,7 +2055,7 @@ void EnsightWriter::write_element_result_step(std::ofstream& file,
       {
         // extract actual column
         Teuchos::RCP<Core::LinAlg::Vector<double>> datacolumn =
-            Teuchos::RCP(new Core::LinAlg::Vector<double>(*(*proc0data)(mycols[col] + from)));
+            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*proc0data)(mycols[col] + from));
         for (int iele = 0; iele < numelepertype; iele++)
         {
           // extract element global id
@@ -2352,7 +2352,7 @@ void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstrea
 
   const Epetra_Map* nodemap = dis->node_row_map();
   const int numnp = nodemap->NumMyElements();
-  nodecoords = Teuchos::RCP(new Epetra_MultiVector(*nodemap, 3));
+  nodecoords = Teuchos::make_rcp<Epetra_MultiVector>(*nodemap, 3);
 
   // loop over the nodes on this proc and store the coordinate information
   for (int inode = 0; inode < numnp; inode++)
@@ -2372,7 +2372,7 @@ void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstrea
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map, *nodemap);
   Teuchos::RCP<Epetra_MultiVector> allnodecoords =
-      Teuchos::RCP(new Epetra_MultiVector(*proc0map, 3));
+      Teuchos::make_rcp<Epetra_MultiVector>(*proc0map, 3);
   int err = allnodecoords->Import(*nodecoords, proc0importer, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 

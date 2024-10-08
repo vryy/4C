@@ -374,8 +374,9 @@ void CONTACT::Element::prepare_dderiv(const std::vector<Mortar::Element*>& meles
   int numderiv = 0;
   numderiv += num_node() * 3 * 12;
   for (unsigned m = 0; m < meles.size(); ++m) numderiv += (meles.at(m))->num_node() * 3;
-  d_matrix_deriv_ = Teuchos::RCP(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
-      numderiv, 0, Core::LinAlg::SerialDenseMatrix(num_node(), num_node())));
+  d_matrix_deriv_ =
+      Teuchos::make_rcp<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>(
+          numderiv, 0, Core::LinAlg::SerialDenseMatrix(num_node(), num_node()));
 }
 
 void CONTACT::Element::prepare_mderiv(const std::vector<Mortar::Element*>& meles, const int m)
@@ -384,8 +385,9 @@ void CONTACT::Element::prepare_mderiv(const std::vector<Mortar::Element*>& meles
   int numderiv = 0;
   numderiv += num_node() * 3 * 12;
   for (unsigned i = 0; i < meles.size(); ++i) numderiv += meles[i]->num_node() * 3;
-  m_matrix_deriv_ = Teuchos::RCP(new Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>(
-      numderiv, 0, Core::LinAlg::SerialDenseMatrix(num_node(), meles.at(m)->num_node())));
+  m_matrix_deriv_ =
+      Teuchos::make_rcp<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>(
+          numderiv, 0, Core::LinAlg::SerialDenseMatrix(num_node(), meles.at(m)->num_node()));
 }
 
 

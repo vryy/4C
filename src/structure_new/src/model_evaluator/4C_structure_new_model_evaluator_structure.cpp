@@ -74,8 +74,8 @@ void Solid::ModelEvaluator::Structure::setup()
       global_state().create_structural_stiffness_matrix_block());
 
   // modified stiffness pointer for storing element based scaling operator (PTC)
-  stiff_ptc_ptr_ = Teuchos::RCP(
-      new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
+  stiff_ptc_ptr_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *global_state().dof_row_map_view(), 81, true, true);
 
   FOUR_C_ASSERT(stiff_ptr_ != nullptr, "Dynamic cast to Core::LinAlg::SparseMatrix failed!");
 
@@ -86,7 +86,7 @@ void Solid::ModelEvaluator::Structure::setup()
   }
   // setup new variables
   {
-    dis_incr_ptr_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(dis_np().Map(), true));
+    dis_incr_ptr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dis_np().Map(), true);
   }
 
   // setup output writers
@@ -605,14 +605,14 @@ void Solid::ModelEvaluator::Structure::init_output_runtime_structure()
   check_init();
   const auto discretization = Teuchos::rcp_dynamic_cast<const Core::FE::Discretization>(
       const_cast<Solid::ModelEvaluator::Structure*>(this)->discret_ptr(), true);
-  vtu_writer_ptr_ = Teuchos::RCP(
-      new Core::IO::DiscretizationVisualizationWriterMesh(discretization, visualization_params_,
-          [](const Core::Elements::Element* element)
-          {
-            // Skip beam elements which live in the same discretization but use a different output
-            // mechanism
-            return !dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
-          }));
+  vtu_writer_ptr_ = Teuchos::make_rcp<Core::IO::DiscretizationVisualizationWriterMesh>(
+      discretization, visualization_params_,
+      [](const Core::Elements::Element* element)
+      {
+        // Skip beam elements which live in the same discretization but use a different output
+        // mechanism
+        return !dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
+      });
 
   if (global_in_output()
           .get_runtime_output_params()
@@ -628,10 +628,10 @@ void Solid::ModelEvaluator::Structure::init_output_runtime_structure_gauss_point
   // Set all parameters in the evaluation data container.
   eval_data().set_action_type(Core::Elements::struct_init_gauss_point_data_output);
   eval_data().set_gauss_point_data_output_manager_ptr(
-      Teuchos::RCP(new GaussPointDataOutputManager(global_in_output()
-                                                       .get_runtime_output_params()
-                                                       ->get_structure_params()
-                                                       ->gauss_point_data_output())));
+      Teuchos::make_rcp<GaussPointDataOutputManager>(global_in_output()
+                                                         .get_runtime_output_params()
+                                                         ->get_structure_params()
+                                                         ->gauss_point_data_output()));
   eval_data().set_total_time(global_state().get_time_np());
   eval_data().set_delta_time((*global_state().get_delta_time())[0]);
 
@@ -659,10 +659,10 @@ void Solid::ModelEvaluator::Structure::write_time_step_output_runtime_structure(
   // export displacement state to column format
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Core::LinAlg::Vector<double>> disn_col =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret.dof_col_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
   Core::LinAlg::export_to(*global_state().get_dis_n(), *disn_col);
   Teuchos::RCP<Core::LinAlg::Vector<double>> veln_col =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret.dof_col_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
   Core::LinAlg::export_to(*global_state().get_vel_n(), *veln_col);
 
   auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
@@ -679,10 +679,10 @@ void Solid::ModelEvaluator::Structure::write_iteration_output_runtime_structure(
   // export displacement state to column format
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_col =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret.dof_col_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
   Core::LinAlg::export_to(*global_state().get_dis_np(), *disnp_col);
   Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_col =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret.dof_col_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
   Core::LinAlg::export_to(*global_state().get_vel_np(), *velnp_col);
 
   auto [output_time, output_step] =
@@ -877,10 +877,10 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
     eval_data().set_action_type(Core::Elements::struct_calc_stress);
     eval_data().set_total_time(global_state().get_time_np());
     eval_data().set_delta_time((*global_state().get_delta_time())[0]);
-    eval_data().set_stress_data(Teuchos::RCP(new std::vector<char>()));
-    eval_data().set_coupling_stress_data(Teuchos::RCP(new std::vector<char>()));
-    eval_data().set_strain_data(Teuchos::RCP(new std::vector<char>()));
-    eval_data().set_plastic_strain_data(Teuchos::RCP(new std::vector<char>()));
+    eval_data().set_stress_data(Teuchos::make_rcp<std::vector<char>>());
+    eval_data().set_coupling_stress_data(Teuchos::make_rcp<std::vector<char>>());
+    eval_data().set_strain_data(Teuchos::make_rcp<std::vector<char>>());
+    eval_data().set_plastic_strain_data(Teuchos::make_rcp<std::vector<char>>());
 
     // Set vector values needed by elements.
     discret().clear_state();
@@ -915,7 +915,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
         if (DoPostprocessingOnElement(*discret().l_row_element(i)))
         {
           Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstress =
-              Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix);
+              Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
           extract_from_pack(buffer, *gpstress);
           mapdata[discret_ptr()->element_row_map()->GID(i)] = gpstress;
         }
@@ -959,9 +959,9 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
       ex.do_export(gp_stress_data);
 
       eval_data().get_stress_data_node_postprocessed() =
-          Teuchos::RCP(new Epetra_MultiVector(*discret().node_col_map(), 6, true));
+          Teuchos::make_rcp<Epetra_MultiVector>(*discret().node_col_map(), 6, true);
       eval_data().get_stress_data_element_postprocessed() =
-          Teuchos::RCP(new Epetra_MultiVector(*discret().element_row_map(), 6, true));
+          Teuchos::make_rcp<Epetra_MultiVector>(*discret().element_row_map(), 6, true);
 
 
       Epetra_MultiVector row_nodal_data(*discret().node_row_map(), 6, true);
@@ -981,9 +981,9 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
       ex.do_export(gp_strain_data);
 
       eval_data().get_strain_data_node_postprocessed() =
-          Teuchos::RCP(new Epetra_MultiVector(*discret().node_col_map(), 6, true));
+          Teuchos::make_rcp<Epetra_MultiVector>(*discret().node_col_map(), 6, true);
       eval_data().get_strain_data_element_postprocessed() =
-          Teuchos::RCP(new Epetra_MultiVector(*discret().element_row_map(), 6, true));
+          Teuchos::make_rcp<Epetra_MultiVector>(*discret().element_row_map(), 6, true);
 
       Epetra_MultiVector row_nodal_data(*discret().node_row_map(), 6, true);
       PostprocessGaussPointDataToNodes(gp_strain_data, row_nodal_data);
@@ -1030,8 +1030,8 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_gauss_point_data
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::init_output_runtime_beams()
 {
-  beam_vtu_writer_ptr_ = Teuchos::RCP(
-      new BeamDiscretizationRuntimeOutputWriter(visualization_params_, dis_np().Comm()));
+  beam_vtu_writer_ptr_ = Teuchos::make_rcp<BeamDiscretizationRuntimeOutputWriter>(
+      visualization_params_, dis_np().Comm());
 
   // get the parameter container object
   const Discret::ELEMENTS::BeamRuntimeOutputParams& beam_output_params =
@@ -1039,7 +1039,7 @@ void Solid::ModelEvaluator::Structure::init_output_runtime_beams()
 
   // export displacement state to column format
   Teuchos::RCP<Core::LinAlg::Vector<double>> disn_col =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret().dof_col_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret().dof_col_map(), true);
   Core::LinAlg::export_to(*global_state().get_dis_n(), *disn_col);
 
   // get bounding box object only if periodic boundaries are active
@@ -1062,7 +1062,7 @@ void Solid::ModelEvaluator::Structure::write_time_step_output_runtime_beams() co
   // export displacement state to column format
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Core::LinAlg::Vector<double>> disn_col =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret.dof_col_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
   Core::LinAlg::export_to(*global_state().get_dis_n(), *disn_col);
 
   auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
@@ -1079,7 +1079,7 @@ void Solid::ModelEvaluator::Structure::write_iteration_output_runtime_beams() co
   // export displacement state to column format
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
   Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_col =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret.dof_col_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
   Core::LinAlg::export_to(*global_state().get_dis_np(), *disnp_col);
 
   auto [output_time, output_step] =
@@ -1511,10 +1511,10 @@ void Solid::ModelEvaluator::Structure::determine_stress_strain()
   eval_data().set_action_type(Core::Elements::struct_calc_stress);
   eval_data().set_total_time(global_state().get_time_np());
   eval_data().set_delta_time((*global_state().get_delta_time())[0]);
-  eval_data().set_stress_data(Teuchos::RCP(new std::vector<char>()));
-  eval_data().set_coupling_stress_data(Teuchos::RCP(new std::vector<char>()));
-  eval_data().set_strain_data(Teuchos::RCP(new std::vector<char>()));
-  eval_data().set_plastic_strain_data(Teuchos::RCP(new std::vector<char>()));
+  eval_data().set_stress_data(Teuchos::make_rcp<std::vector<char>>());
+  eval_data().set_coupling_stress_data(Teuchos::make_rcp<std::vector<char>>());
+  eval_data().set_strain_data(Teuchos::make_rcp<std::vector<char>>());
+  eval_data().set_plastic_strain_data(Teuchos::make_rcp<std::vector<char>>());
 
   // set vector values needed by elements
   discret().clear_state();
@@ -1634,7 +1634,7 @@ void Solid::ModelEvaluator::Structure::determine_optional_quantity()
   // set all parameters in the evaluation data container
   eval_data().set_total_time(global_state().get_time_np());
   eval_data().set_delta_time((*global_state().get_delta_time())[0]);
-  eval_data().set_opt_quantity_data(Teuchos::RCP(new std::vector<char>()));
+  eval_data().set_opt_quantity_data(Teuchos::make_rcp<std::vector<char>>());
 
   // set vector values needed by elements
   discret().clear_state();
@@ -1668,7 +1668,7 @@ bool Solid::ModelEvaluator::Structure::determine_element_volumes(
 
   // start evaluation
   const Epetra_Map* relemap = discret().element_row_map();
-  ele_vols = Teuchos::RCP(new Core::LinAlg::Vector<double>(*relemap, true));
+  ele_vols = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*relemap, true);
   const unsigned my_num_reles = relemap->NumMyElements();
 
   Core::Elements::LocationArray la(discret().num_dof_sets());

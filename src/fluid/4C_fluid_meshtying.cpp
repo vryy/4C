@@ -50,10 +50,10 @@ FLD::Meshtying::Meshtying(Teuchos::RCP<Core::FE::Discretization> dis, Core::LinA
       mergedmap_(Teuchos::null),
       valuesdc_(Teuchos::null),
       adaptermeshtying_(
-          Teuchos::RCP(new Coupling::Adapter::CouplingMortar(Global::Problem::instance()->n_dim(),
+          Teuchos::make_rcp<Coupling::Adapter::CouplingMortar>(Global::Problem::instance()->n_dim(),
               Global::Problem::instance()->mortar_coupling_params(),
               Global::Problem::instance()->contact_dynamic_params(),
-              Global::Problem::instance()->spatial_approximation_type()))),
+              Global::Problem::instance()->spatial_approximation_type())),
       pcoupled_(true),
       dconmaster_(false),
       firstnonliniter_(false),
@@ -181,9 +181,10 @@ void FLD::Meshtying::setup_meshtying(const std::vector<int>& coupleddof, const b
 
       Core::LinAlg::MapExtractor mapext(*mergedmap_, gmdofrowmap_, gndofrowmap_);
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
-          matsolve = Teuchos::RCP(
-              new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-                  mapext, mapext, 1, false, true));
+          matsolve = Teuchos::make_rcp<
+              Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+
+              mapext, mapext, 1, false, true);
       sysmatsolve_ = matsolve;
 
       // fixing length of nullspace for block matrix (solver/preconditioner ML)
@@ -293,8 +294,8 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> FLD::Meshtying::init_system_matrix() 
       // -------------------
 
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat;
-      mat = Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
-          extractor, extractor, 108, false, true));
+      mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>(
+          extractor, extractor, 108, false, true);
       // nodes on the interface
       Teuchos::RCP<std::set<int>> condelements =
           surfacesplitter_->conditioned_element_map(*discret_);
@@ -304,7 +305,7 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> FLD::Meshtying::init_system_matrix() 
     }
     case Inpar::FLUID::condensed_smat:
     {
-      return Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap_, 108, false, true));
+      return Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap_, 108, false, true);
     }
     default:
     {
@@ -551,7 +552,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::Meshtying::adapt_krylov_projecto
   {
     // Remove slave nodes from vec
     Teuchos::RCP<Core::LinAlg::Vector<double>> fm_slave =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
     // add fm subvector to feffnew
     Core::LinAlg::export_to(*fm_slave, *vec);
 
@@ -651,7 +652,7 @@ void FLD::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
       res = Core::LinAlg::create_vector(*mergedmap_, true);
       inc = Core::LinAlg::create_vector(*mergedmap_, true);
 
-      mergedmatrix = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*mergedmap_, 108, false, true));
+      mergedmatrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*mergedmap_, 108, false, true);
 
       {
         TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.1)   - Preparation");
@@ -818,8 +819,8 @@ void FLD::Meshtying::split_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> vec
   Core::LinAlg::split_vector(*dofrowmap_, *vector, gsmdofrowmap_, fsm, gndofrowmap_, fn);
 
   // we want to split fsm into 2 groups s,m
-  fs = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
-  fm = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+  fs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  fm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
 
   // do the vector splitting sm -> s+m
   Core::LinAlg::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
@@ -919,8 +920,8 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
 
   if (dconmaster_ and firstnonliniter_)
   {
-    dcnm = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gndofrowmap_, true));
-    dcmm = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_, true));
+    dcnm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gndofrowmap_, true);
+    dcmm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_, true);
 
     split_vector(valuesdc_, splitdcmaster);
   }
@@ -948,7 +949,7 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   /*--------------------------------------------------------------------*/
   // knm: add kns*P
   Teuchos::RCP<Core::LinAlg::SparseMatrix> knm_mod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gndofrowmap_, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gndofrowmap_, 100);
   knm_mod->add(splitmatrix->matrix(0, 1), false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> knm_add =
       matrix_multiply(splitmatrix->matrix(0, 2), false, *P, false, false, false, true);
@@ -964,7 +965,7 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   /*--------------------------------------------------------------------*/
   // kmn: add P^T*ksn
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmn_mod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
   kmn_mod->add(splitmatrix->matrix(1, 0), false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmn_add =
       matrix_multiply(*P, true, splitmatrix->matrix(2, 0), false, false, false, true);
@@ -978,7 +979,7 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   /*--------------------------------------------------------------------*/
   // kms: add P^T*kss, kmm: add kms*P + kmm
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm_mod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
   kmm_mod->add(splitmatrix->matrix(1, 1), false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kms =
       matrix_multiply(*P, true, splitmatrix->matrix(2, 2), false, false, false, true);
@@ -992,10 +993,10 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   if (dconmaster_ and firstnonliniter_) kmm_mod->multiply(false, *(splitdcmaster[1]), *dcmm);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> ones =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag;
   ones->PutScalar(1.0);
-  onesdiag = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*ones));
+  onesdiag = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*ones);
   onesdiag->complete();
 
   sysmat->add(*onesdiag, false, 1.0, 1.0);
@@ -1031,7 +1032,7 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   /*--------------------------------------------------------------------*/
   // kms: add P^T*kss, kmm: add kms*P + kmm
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm_mod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kms =
       matrix_multiply(*P, true, splitmatrix->Matrix(2, 2), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm_add =
@@ -1052,13 +1053,13 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   sysmat->Add(splitmatrix->Matrix(2, 2), false, -1.0, 1.0);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> ones =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag;
   // build identity matrix for slave dofs
   ones->PutScalar(1.0);
   // Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag = Teuchos::rcp(new
   // Core::LinAlg::SparseMatrix(*ones));
-  onesdiag = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*ones));
+  onesdiag = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*ones);
   onesdiag->Complete();
 
   sysmat->Add(*onesdiag, false, 1.0, 1.0);
@@ -1081,7 +1082,7 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   /*--------------------------------------------------------------------*/
   // knm: add kns*P
   Teuchos::RCP<Core::LinAlg::SparseMatrix> knm_mod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gndofrowmap_, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gndofrowmap_, 100);
   knm_mod->Add(splitmatrix->Matrix(0, 1), false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> knm_add =
       matrix_multiply(splitmatrix->Matrix(0, 2), false, *P, false, false, false, true);
@@ -1098,7 +1099,7 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   /*--------------------------------------------------------------------*/
   // kmn: add P^T*ksn
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmn_mod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
   kmn_mod->Add(splitmatrix->Matrix(1, 0), false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmn_add =
       matrix_multiply(*P, true, splitmatrix->Matrix(2, 0), false, false, false, true);
@@ -1112,7 +1113,7 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
   /*--------------------------------------------------------------------*/
   // kms: add P^T*kss, kmm: add kms*P + kmm
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm_mod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
   kmm_mod->Add(splitmatrix->Matrix(1, 1), false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kms =
       matrix_multiply(*P, true, splitmatrix->Matrix(2, 2), false, false, false, true);
@@ -1127,10 +1128,10 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
     kmm_mod->Multiply(false, *(splitdcmaster[1]), *dcmm);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> ones =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag;
   ones->PutScalar(1.0);
-  onesdiag = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*ones));
+  onesdiag = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*ones);
   onesdiag->Complete();
 
   sysmatnew->Add(*onesdiag, false, 1.0, 1.0);
@@ -1154,18 +1155,18 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
 
   // r_m: add P^T*r_s
   Teuchos::RCP<Core::LinAlg::Vector<double>> fm_mod =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_, true);
   P->multiply(true, *(splitres[2]), *fm_mod);
 
   // r_m: add P^T*K_ss*vp_i^s
   Teuchos::RCP<Core::LinAlg::Vector<double>> fm_mod_ss =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_, true);
   kms->multiply(false, *(splitvel[2]), *fm_mod_ss);
   fm_mod->Update(1.0, *fm_mod_ss, 1.0);
 
   // r_m: subtract P^T*K_ss*P*vp_i^m
   Teuchos::RCP<Core::LinAlg::Vector<double>> fm_mod_mm =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_, true);
   kmm_add->multiply(false, *(splitvel[1]), *fm_mod_mm);
   fm_mod->Update(-1.0, *fm_mod_mm, 1.0);
 
@@ -1174,47 +1175,47 @@ void FLD::Meshtying::condensation_operation_sparse_matrix(
 
   // export additions to r_m subvector to r_new
   Teuchos::RCP<Core::LinAlg::Vector<double>> fm_modexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
   Core::LinAlg::export_to(*fm_mod, *fm_modexp);
   resnew->Update(1.0, *fm_modexp, 1.0);
 
   // export r_m subvector to r_new
   Teuchos::RCP<Core::LinAlg::Vector<double>> fmexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
   Core::LinAlg::export_to(*(splitres[1]), *fmexp);
   resnew->Update(1.0, *fmexp, 1.0);
 
 
   // r_n: add K_ns*vp_i^s
   Teuchos::RCP<Core::LinAlg::SparseMatrix> knm =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(splitmatrix->matrix(0, 2)));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(splitmatrix->matrix(0, 2));
   // Core::LinAlg::SparseMatrix& knm = splitmatrix->Matrix(0,2);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fn_mod =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gndofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gndofrowmap_, true);
   knm->multiply(false, *(splitvel[2]), *fn_mod);
 
   // r_n: subtrac K_ns*P*vp_i^m
   Teuchos::RCP<Core::LinAlg::Vector<double>> fn_mod_nm =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gndofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gndofrowmap_, true);
   knm_add->multiply(false, *(splitvel[1]), *fn_mod_nm);
   fn_mod->Update(-1.0, *fn_mod_nm, 1.0);
 
   // export additions to r_n subvector to r_new
   Teuchos::RCP<Core::LinAlg::Vector<double>> fn_modexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
   Core::LinAlg::export_to(*fn_mod, *fn_modexp);
   resnew->Update(1.0, *fn_modexp, 1.0);
 
   // export r_n subvector to r_new
   Teuchos::RCP<Core::LinAlg::Vector<double>> fnexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
   Core::LinAlg::export_to(*(splitres[0]), *fnexp);
   resnew->Update(1.0, *fnexp, 1.0);
 
   if (dconmaster_ and firstnonliniter_)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> fn_exp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_, true);
     Core::LinAlg::export_to(*dcnm, *fn_exp);
     resnew->Update(-1.0, *fn_exp, 1.0);
   }
@@ -1270,8 +1271,8 @@ void FLD::Meshtying::condensation_operation_block_matrix(
 
   if (dconmaster_ and firstnonliniter_)
   {
-    dcnm = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gndofrowmap_, true));
-    dcmm = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_, true));
+    dcnm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gndofrowmap_, true);
+    dcmm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_, true);
 
     split_vector(valuesdc_, splitdcmaster);
   }
@@ -1326,18 +1327,18 @@ void FLD::Meshtying::condensation_operation_block_matrix(
   //*************************************************
   // r_m: add P^T*r_s
   Teuchos::RCP<Core::LinAlg::Vector<double>> fm_mod =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_, true);
   P->multiply(true, *(splitres[2]), *fm_mod);
 
   // r_m: add P^T*K_ss*vp_i^s
   Teuchos::RCP<Core::LinAlg::Vector<double>> fm_mod_ss =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_, true);
   kss_mod->multiply(false, *(splitvel[2]), *fm_mod_ss);
   fm_mod->Update(1.0, *fm_mod_ss, 1.0);
 
   // r_m: subtract P^T*K_ss*P*vp_i^m
   Teuchos::RCP<Core::LinAlg::Vector<double>> fm_mod_mm =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_, true);
   kmm_mod->multiply(false, *(splitvel[1]), *fm_mod_mm);
   fm_mod->Update(-1.0, *fm_mod_mm, 1.0);
 
@@ -1346,42 +1347,42 @@ void FLD::Meshtying::condensation_operation_block_matrix(
 
   // export and add r_m subvector to residual
   Teuchos::RCP<Core::LinAlg::Vector<double>> fm_modexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
   Core::LinAlg::export_to(*fm_mod, *fm_modexp);
   residual->Update(1.0, *fm_modexp, 1.0);
 
 
   // r_n: add K_ns*vp_i^s
   Teuchos::RCP<Core::LinAlg::SparseMatrix> knm =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(sysmatnew->matrix(0, 2)));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmatnew->matrix(0, 2));
   // Core::LinAlg::SparseMatrix& knm = sysmatnew->Matrix(0,2);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fn_mod =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gndofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gndofrowmap_, true);
   knm->multiply(false, *(splitvel[2]), *fn_mod);
 
   // r_n: subtract K_ns*P*vp_i^m
   Teuchos::RCP<Core::LinAlg::Vector<double>> fn_mod_nm =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gndofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gndofrowmap_, true);
   knm_mod->multiply(false, *(splitvel[1]), *fn_mod_nm);
   fn_mod->Update(-1.0, *fn_mod_nm, 1.0);
 
   // export and add r_n subvector to residual
   Teuchos::RCP<Core::LinAlg::Vector<double>> fn_modexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
   Core::LinAlg::export_to(*fn_mod, *fn_modexp);
   residual->Update(1.0, *fn_modexp, 1.0);
 
   if (dconmaster_ and firstnonliniter_)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> fn_exp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap_, true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_, true);
     Core::LinAlg::export_to(*dcnm, *fn_exp);
     residual->Update(-1.0, *fn_exp, 1.0);
   }
 
   // export r_s = zero to residual
   Teuchos::RCP<Core::LinAlg::Vector<double>> fs_mod =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
   Core::LinAlg::export_to(*fs_mod, *residual);
 }
 
@@ -1422,7 +1423,7 @@ void FLD::Meshtying::update_slave_dof(const Teuchos::RCP<Core::LinAlg::Vector<do
 
   // delta_vp^s: add P*delta_vp^m
   Teuchos::RCP<Core::LinAlg::Vector<double>> fs_mod =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
   P->multiply(false, *(splitinc[1]), *fs_mod);
 
   // delta_vp^s: subtract vp_i^s
@@ -1430,7 +1431,7 @@ void FLD::Meshtying::update_slave_dof(const Teuchos::RCP<Core::LinAlg::Vector<do
 
   // delta_vp^s: add P*vp_i^m
   Teuchos::RCP<Core::LinAlg::Vector<double>> fs_mod_m =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
   P->multiply(false, *(splitvel[1]), *fs_mod_m);
   fs_mod->Update(1.0, *fs_mod_m, 1.0);
 
@@ -1438,26 +1439,26 @@ void FLD::Meshtying::update_slave_dof(const Teuchos::RCP<Core::LinAlg::Vector<do
   if (dconmaster_ and firstnonliniter_)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> fsdc_mod =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
     P->multiply(false, *(splitdcmaster[1]), *fsdc_mod);
     fs_mod->Update(1.0, *fsdc_mod, 1.0);
   }
 
   // export interior degrees of freedom
   Teuchos::RCP<Core::LinAlg::Vector<double>> fnexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap);
   Core::LinAlg::export_to(*(splitinc[0]), *fnexp);
   incnew->Update(1.0, *fnexp, 1.0);
 
   // export master degrees of freedom
   Teuchos::RCP<Core::LinAlg::Vector<double>> fmexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap);
   Core::LinAlg::export_to(*(splitinc[1]), *fmexp);
   incnew->Update(1.0, *fmexp, 1.0);
 
   // export slave degrees of freedom
   Teuchos::RCP<Core::LinAlg::Vector<double>> fs_modexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap);
   Core::LinAlg::export_to(*fs_mod, *fs_modexp);
   incnew->Update(1.0, *fs_modexp, 1.0);
 
@@ -1624,8 +1625,8 @@ void FLD::Meshtying::msht_split(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysm
     // -------------------
 
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat;
-    mat = Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
-        extractor, extractor, 108, false, true));
+    mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>(
+        extractor, extractor, 108, false, true);
     // nodes on the interface
     Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
     mat->set_cond_elements(condelements);
@@ -1666,8 +1667,8 @@ void FLD::Meshtying::msht_split_shape(
   // -------------------
 
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat;
-  mat = Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>(
-      extractor, extractor, 108, false, true));
+  mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>(
+      extractor, extractor, 108, false, true);
   // nodes on the interface
   Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
   mat->set_cond_elements(condelements);
@@ -1687,10 +1688,10 @@ void FLD::Meshtying::multifield_split(Teuchos::RCP<Core::LinAlg::SparseOperator>
         Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> ones =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(sysmatnew->matrix(2, 2).row_map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(sysmatnew->matrix(2, 2).row_map());
     ones->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*ones));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*ones);
     onesdiag->complete();
 
     sysmatnew->matrix(0, 2).un_complete();
@@ -1716,8 +1717,8 @@ void FLD::Meshtying::multifield_split(Teuchos::RCP<Core::LinAlg::SparseOperator>
     if (multifield_splitmatrix_)
     {
       Teuchos::RCP<Core::LinAlg::MapExtractor> extractor =
-          Teuchos::RCP(new Core::LinAlg::MapExtractor(
-              *multifield_domainmaps_.full_map(), multifield_domainmaps_.Map(1)));
+          Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+              *multifield_domainmaps_.full_map(), multifield_domainmaps_.Map(1));
       Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat =
           Core::LinAlg::split_matrix<FLD::UTILS::InterfaceSplitStrategy>(
               *mergedmatrix, *extractor, *extractor);
@@ -1743,10 +1744,10 @@ void FLD::Meshtying::multifield_split_shape(
   if (is_multifield_)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> ones =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(shapederivatives->matrix(2, 2).row_map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(shapederivatives->matrix(2, 2).row_map());
     ones->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*ones));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*ones);
     onesdiag->complete();
 
     shapederivatives->matrix(0, 2).un_complete();
@@ -1770,8 +1771,8 @@ void FLD::Meshtying::multifield_split_shape(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mergedshapederivatives = shapederivatives->merge();
 
     Teuchos::RCP<Core::LinAlg::MapExtractor> extractor =
-        Teuchos::RCP(new Core::LinAlg::MapExtractor(
-            *multifield_domainmaps_shape_.full_map(), multifield_domainmaps_shape_.Map(1)));
+        Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+            *multifield_domainmaps_shape_.full_map(), multifield_domainmaps_shape_.Map(1));
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>
         matshapederivatives = Core::LinAlg::split_matrix<FLD::UTILS::InterfaceSplitStrategy>(
             *mergedshapederivatives, *extractor, *extractor);
@@ -1821,8 +1822,8 @@ void FLD::Meshtying::condensation_operation_block_matrix_shape(
 
   if (dconmaster_ and firstnonliniter_)
   {
-    dcnm = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gndofrowmap_, true));
-    dcmm = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_, true));
+    dcnm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gndofrowmap_, true);
+    dcmm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_, true);
 
     split_vector(valuesdc_, splitdcmaster);
   }

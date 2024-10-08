@@ -60,9 +60,9 @@ Cardiovascular0D::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
 
   // build an importer
   Teuchos::RCP<Epetra_Import> dofrowimporter =
-      Teuchos::RCP(new Epetra_Import(*full_model_dof_row_map_, (reduced_basis->Map())));
-  projmatrix_ = Teuchos::RCP(
-      new Epetra_MultiVector(*full_model_dof_row_map_, reduced_basis->NumVectors(), true));
+      Teuchos::make_rcp<Epetra_Import>(*full_model_dof_row_map_, (reduced_basis->Map()));
+  projmatrix_ = Teuchos::make_rcp<Epetra_MultiVector>(
+      *full_model_dof_row_map_, reduced_basis->NumVectors(), true);
   int err = projmatrix_->Import(*reduced_basis, *dofrowimporter, Insert, nullptr);
   if (err != 0) FOUR_C_THROW("POD projection matrix could not be mapped onto the dof map");
 
@@ -76,15 +76,15 @@ Cardiovascular0D::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
 
   // maps for reduced system
   structmapr_ =
-      Teuchos::RCP(new Epetra_Map(projmatrix_->NumVectors(), 0, full_model_dof_row_map_->Comm()));
-  redstructmapr_ = Teuchos::RCP(new Epetra_Map(
-      projmatrix_->NumVectors(), projmatrix_->NumVectors(), 0, full_model_dof_row_map_->Comm()));
+      Teuchos::make_rcp<Epetra_Map>(projmatrix_->NumVectors(), 0, full_model_dof_row_map_->Comm());
+  redstructmapr_ = Teuchos::make_rcp<Epetra_Map>(
+      projmatrix_->NumVectors(), projmatrix_->NumVectors(), 0, full_model_dof_row_map_->Comm());
   // Core::LinAlg::allreduce_e_map cant't be used here, because NumGlobalElements will be choosen
   // wrong
 
   // importers for reduced system
-  structrimpo_ = Teuchos::RCP(new Epetra_Import(*structmapr_, *redstructmapr_));
-  structrinvimpo_ = Teuchos::RCP(new Epetra_Import(*redstructmapr_, *structmapr_));
+  structrimpo_ = Teuchos::make_rcp<Epetra_Import>(*structmapr_, *redstructmapr_);
+  structrinvimpo_ = Teuchos::make_rcp<Epetra_Import>(*redstructmapr_, *structmapr_);
 
   return;
 }
@@ -97,19 +97,19 @@ Cardiovascular0D::ProperOrthogonalDecomposition::reduce_diagnoal(
 {
   // right multiply M * V
   Teuchos::RCP<Epetra_MultiVector> M_tmp =
-      Teuchos::RCP(new Epetra_MultiVector(M->row_map(), projmatrix_->NumVectors(), true));
+      Teuchos::make_rcp<Epetra_MultiVector>(M->row_map(), projmatrix_->NumVectors(), true);
   int err = M->multiply(false, *projmatrix_, *M_tmp);
   if (err) FOUR_C_THROW("Multiplication M * V failed.");
 
   // left multiply V^T * (M * V)
   Teuchos::RCP<Epetra_MultiVector> M_red_mvec =
-      Teuchos::RCP(new Epetra_MultiVector(*structmapr_, M_tmp->NumVectors(), true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*structmapr_, M_tmp->NumVectors(), true);
   multiply_epetra_multi_vectors(
       projmatrix_, 'T', M_tmp, 'N', redstructmapr_, structrimpo_, M_red_mvec);
 
   // convert Epetra_MultiVector to Core::LinAlg::SparseMatrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> M_red =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*structmapr_, 0, false, true));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*structmapr_, 0, false, true);
   epetra_multi_vector_to_linalg_sparse_matrix(M_red_mvec, structmapr_, Teuchos::null, M_red);
 
   return M_red;
@@ -123,14 +123,14 @@ Cardiovascular0D::ProperOrthogonalDecomposition::reduce_off_diagonal(
 {
   // right multiply M * V
   Teuchos::RCP<Epetra_MultiVector> M_tmp =
-      Teuchos::RCP(new Epetra_MultiVector(M->domain_map(), projmatrix_->NumVectors(), true));
+      Teuchos::make_rcp<Epetra_MultiVector>(M->domain_map(), projmatrix_->NumVectors(), true);
   int err = M->multiply(true, *projmatrix_, *M_tmp);
   if (err) FOUR_C_THROW("Multiplication V^T * M failed.");
 
   // convert Epetra_MultiVector to Core::LinAlg::SparseMatrix
-  Teuchos::RCP<Epetra_Map> rangemap = Teuchos::RCP(new Epetra_Map(M->domain_map()));
+  Teuchos::RCP<Epetra_Map> rangemap = Teuchos::make_rcp<Epetra_Map>(M->domain_map());
   Teuchos::RCP<Core::LinAlg::SparseMatrix> M_red =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*rangemap, 0, false, true));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*rangemap, 0, false, true);
   epetra_multi_vector_to_linalg_sparse_matrix(M_tmp, rangemap, structmapr_, M_red);
 
   return M_red;
@@ -141,7 +141,7 @@ Cardiovascular0D::ProperOrthogonalDecomposition::reduce_off_diagonal(
 Teuchos::RCP<Epetra_MultiVector> Cardiovascular0D::ProperOrthogonalDecomposition::reduce_rhs(
     Teuchos::RCP<Epetra_MultiVector> v)
 {
-  Teuchos::RCP<Epetra_MultiVector> v_red = Teuchos::RCP(new Epetra_Vector(*structmapr_, true));
+  Teuchos::RCP<Epetra_MultiVector> v_red = Teuchos::make_rcp<Epetra_Vector>(*structmapr_, true);
   multiply_epetra_multi_vectors(projmatrix_, 'T', v, 'N', redstructmapr_, structrimpo_, v_red);
 
   return v_red;
@@ -154,12 +154,12 @@ Cardiovascular0D::ProperOrthogonalDecomposition::reduce_residual(
     Teuchos::RCP<Core::LinAlg::Vector<double>> v)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> v_tmp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*redstructmapr_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redstructmapr_);
   int err = v_tmp->Multiply('T', 'N', 1.0, *projmatrix_, *v, 0.0);
   if (err) FOUR_C_THROW("Multiplication V^T * v failed.");
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> v_red =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*structmapr_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*structmapr_);
   v_red->Import(*v_tmp, *structrimpo_, Insert, nullptr);
 
   return v_red;
@@ -172,10 +172,10 @@ Cardiovascular0D::ProperOrthogonalDecomposition::extend_solution(
     Teuchos::RCP<Core::LinAlg::Vector<double>> v_red)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> v_tmp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*redstructmapr_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redstructmapr_, true);
   v_tmp->Import(*v_red, *structrinvimpo_, Insert, nullptr);
   Teuchos::RCP<Core::LinAlg::Vector<double>> v =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*full_model_dof_row_map_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*full_model_dof_row_map_);
   int err = v->Multiply('N', 'N', 1.0, *projmatrix_, *v_tmp, 0.0);
   if (err) FOUR_C_THROW("Multiplication V * v_red failed.");
 
@@ -192,7 +192,7 @@ void Cardiovascular0D::ProperOrthogonalDecomposition::multiply_epetra_multi_vect
 {
   // initialize temporary Epetra_MultiVector (redmap: all procs hold all elements/rows)
   Teuchos::RCP<Epetra_MultiVector> multivect_temp =
-      Teuchos::RCP(new Epetra_MultiVector(*redmap, multivect2->NumVectors(), true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*redmap, multivect2->NumVectors(), true);
 
   // do the multiplication: (all procs hold the full result)
   int err = multivect_temp->Multiply(
@@ -290,8 +290,8 @@ void Cardiovascular0D::ProperOrthogonalDecomposition::read_pod_basis_vectors_fro
 
   // allocate multivector according to matrix size:
   Teuchos::RCP<Epetra_Map> mymap =
-      Teuchos::RCP(new Epetra_Map(NumRows.ValueAsInt, 0, full_model_dof_row_map_->Comm()));
-  projmatrix = Teuchos::RCP(new Epetra_MultiVector(*mymap, NumCols.ValueAsInt));
+      Teuchos::make_rcp<Epetra_Map>(NumRows.ValueAsInt, 0, full_model_dof_row_map_->Comm());
+  projmatrix = Teuchos::make_rcp<Epetra_MultiVector>(*mymap, NumCols.ValueAsInt);
 
 
   // ***************************

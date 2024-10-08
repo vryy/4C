@@ -62,7 +62,7 @@ Teuchos::RCP<Solid::Integrator> Solid::Factory::build_implicit_integrator(
   const bool is_prestress = prestresstype != Inpar::Solid::PreStress::none;
   if (is_prestress)
   {
-    impl_int_ptr = Teuchos::RCP(new Solid::IMPLICIT::PreStress());
+    impl_int_ptr = Teuchos::make_rcp<Solid::IMPLICIT::PreStress>();
     return impl_int_ptr;
   }
 
@@ -71,28 +71,28 @@ Teuchos::RCP<Solid::Integrator> Solid::Factory::build_implicit_integrator(
     // Static analysis
     case Inpar::Solid::dyna_statics:
     {
-      impl_int_ptr = Teuchos::RCP(new Solid::IMPLICIT::Statics());
+      impl_int_ptr = Teuchos::make_rcp<Solid::IMPLICIT::Statics>();
       break;
     }
 
     // Generalised-alpha time integration
     case Inpar::Solid::dyna_genalpha:
     {
-      impl_int_ptr = Teuchos::RCP(new Solid::IMPLICIT::GenAlpha());
+      impl_int_ptr = Teuchos::make_rcp<Solid::IMPLICIT::GenAlpha>();
       break;
     }
 
     // Generalised-alpha time integration for Lie groups (e.g. SO3 group of rotation matrices)
     case Inpar::Solid::dyna_genalpha_liegroup:
     {
-      impl_int_ptr = Teuchos::RCP(new Solid::IMPLICIT::GenAlphaLieGroup());
+      impl_int_ptr = Teuchos::make_rcp<Solid::IMPLICIT::GenAlphaLieGroup>();
       break;
     }
 
     // One-step-theta (OST) time integration
     case Inpar::Solid::dyna_onesteptheta:
     {
-      impl_int_ptr = Teuchos::RCP(new Solid::IMPLICIT::OneStepTheta());
+      impl_int_ptr = Teuchos::make_rcp<Solid::IMPLICIT::OneStepTheta>();
       break;
     }
 
@@ -119,28 +119,28 @@ Teuchos::RCP<Solid::Integrator> Solid::Factory::build_explicit_integrator(
     // Forward Euler Scheme
     case Inpar::Solid::dyna_expleuler:
     {
-      expl_int_ptr = Teuchos::RCP(new Solid::EXPLICIT::ForwardEuler());
+      expl_int_ptr = Teuchos::make_rcp<Solid::EXPLICIT::ForwardEuler>();
       break;
     }
 
     // Central Difference Scheme
     case Inpar::Solid::dyna_centrdiff:
     {
-      expl_int_ptr = Teuchos::RCP(new Solid::EXPLICIT::CentrDiff());
+      expl_int_ptr = Teuchos::make_rcp<Solid::EXPLICIT::CentrDiff>();
       break;
     }
 
     // Adams-Bashforth-2 Scheme
     case Inpar::Solid::dyna_ab2:
     {
-      expl_int_ptr = Teuchos::RCP(new Solid::EXPLICIT::AdamsBashforth2());
+      expl_int_ptr = Teuchos::make_rcp<Solid::EXPLICIT::AdamsBashforth2>();
       break;
     }
 
     // Adams-Bashforth-4 Scheme
     case Inpar::Solid::dyna_ab4:
     {
-      expl_int_ptr = Teuchos::RCP(new Solid::EXPLICIT::AdamsBashforthX<4>());
+      expl_int_ptr = Teuchos::make_rcp<Solid::EXPLICIT::AdamsBashforthX<4>>();
       break;
     }
 
@@ -173,7 +173,7 @@ Teuchos::RCP<Solid::Dbc> Solid::Factory::build_dbc(
   // if you want your model specific dbc object, check here if your model type is
   // active ( datasdyn.get_model_types() )and build your own dbc object
   Teuchos::RCP<Solid::Dbc> dbc = Teuchos::null;
-  dbc = Teuchos::RCP(new Solid::Dbc());
+  dbc = Teuchos::make_rcp<Solid::Dbc>();
 
   return dbc;
 }

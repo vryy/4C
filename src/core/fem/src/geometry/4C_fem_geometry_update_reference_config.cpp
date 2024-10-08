@@ -25,7 +25,7 @@ void Core::Geo::update_reference_config_with_disp(Teuchos::RCP<const Core::FE::D
     Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
 {
   // Export row-displacments to col-displacements
-  auto coldisp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*dis->dof_col_map()));
+  auto coldisp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis->dof_col_map());
   Core::LinAlg::export_to(*disp, *coldisp);
 
   for (const auto& mynode : dis->my_col_node_range())

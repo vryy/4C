@@ -48,7 +48,7 @@ Mat::PAR::Mixture::Mixture(const Core::Mat::PAR::Parameter::Data& matdata)
 // Create a material instance from parameters
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Mixture::create_material()
 {
-  return Teuchos::RCP(new Mat::Mixture(this));
+  return Teuchos::make_rcp<Mat::Mixture>(this);
 }
 
 Mat::MixtureType Mat::MixtureType::instance_;

@@ -58,7 +58,7 @@ std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefi
   {
     for (std::vector<const char*>::const_iterator i = section.begin(); i != section.end(); ++i)
     {
-      Teuchos::RCP<std::stringstream> condline = Teuchos::RCP(new std::stringstream(*i));
+      Teuchos::RCP<std::stringstream> condline = Teuchos::make_rcp<std::stringstream>(*i);
 
       // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
       // reading the last entry inside This is required since the material parameters can be

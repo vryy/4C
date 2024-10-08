@@ -175,7 +175,7 @@ void FLD::TimIntBDF2::outputof_filtered_vel(Teuchos::RCP<Core::LinAlg::Vector<do
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
   Teuchos::RCP<Core::LinAlg::Vector<double>> row_finescaleveltmp;
-  row_finescaleveltmp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*dofrowmap, true));
+  row_finescaleveltmp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap, true);
 
   // get fine scale velocity
   if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)

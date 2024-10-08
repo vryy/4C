@@ -515,13 +515,13 @@ Teuchos::RCP<SSI::AssembleStrategyBase> SSI::build_assemble_strategy(
         case Core::LinAlg::MatrixType::block_condition_dof:
         {
           assemblestrategy =
-              Teuchos::RCP(new SSI::AssembleStrategyBlockBlock(ssi_maps, is_scatra_manifold));
+              Teuchos::make_rcp<SSI::AssembleStrategyBlockBlock>(ssi_maps, is_scatra_manifold);
           break;
         }
         case Core::LinAlg::MatrixType::sparse:
         {
           assemblestrategy =
-              Teuchos::RCP(new SSI::AssembleStrategyBlockSparse(ssi_maps, is_scatra_manifold));
+              Teuchos::make_rcp<SSI::AssembleStrategyBlockSparse>(ssi_maps, is_scatra_manifold);
           break;
         }
 
@@ -536,7 +536,7 @@ Teuchos::RCP<SSI::AssembleStrategyBase> SSI::build_assemble_strategy(
     case Core::LinAlg::MatrixType::sparse:
     {
       assemblestrategy =
-          Teuchos::RCP(new SSI::AssembleStrategySparse(ssi_maps, is_scatra_manifold));
+          Teuchos::make_rcp<SSI::AssembleStrategySparse>(ssi_maps, is_scatra_manifold);
       break;
     }
     default:

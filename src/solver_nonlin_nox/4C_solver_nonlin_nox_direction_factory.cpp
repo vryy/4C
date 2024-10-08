@@ -30,9 +30,9 @@ Teuchos::RCP<::NOX::Direction::Generic> NOX::Nln::Direction::Factory::buildDirec
   const std::string method = params.get<std::string>("User Defined Method");
 
   if (method == "Newton")
-    direction = Teuchos::RCP(new Newton(gd, params));
+    direction = Teuchos::make_rcp<Newton>(gd, params);
   else if (method == "Modified Newton")
-    direction = Teuchos::RCP(new ModifiedNewton(gd, params));
+    direction = Teuchos::make_rcp<ModifiedNewton>(gd, params);
   else
   {
     std::ostringstream msg;

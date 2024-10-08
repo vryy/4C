@@ -102,7 +102,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_e_map(const Epetra_Map& emap, c
 
   if (emap.Comm().MyPID() == pid)
   {
-    rmap = Teuchos::RCP(new Epetra_Map(-1, rv.size(), rv.data(), 0, emap.Comm()));
+    rmap = Teuchos::make_rcp<Epetra_Map>(-1, rv.size(), rv.data(), 0, emap.Comm());
     // check the map
     FOUR_C_ASSERT(rmap->NumMyElements() == rmap->NumGlobalElements(),
         "Processor with pid does not get all map elements");
@@ -110,7 +110,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_e_map(const Epetra_Map& emap, c
   else
   {
     rv.clear();
-    rmap = Teuchos::RCP(new Epetra_Map(-1, 0, nullptr, 0, emap.Comm()));
+    rmap = Teuchos::make_rcp<Epetra_Map>(-1, 0, nullptr, 0, emap.Comm());
     // check the map
     FOUR_C_ASSERT(rmap->NumMyElements() == 0, "At least one proc will keep a map element");
   }
@@ -129,7 +129,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_e_map(const Epetra_Map& emap)
   allreduce_e_map(rv, emap);
   Teuchos::RCP<Epetra_Map> rmap;
 
-  rmap = Teuchos::RCP(new Epetra_Map(-1, rv.size(), rv.data(), 0, emap.Comm()));
+  rmap = Teuchos::make_rcp<Epetra_Map>(-1, rv.size(), rv.data(), 0, emap.Comm());
 
   return rmap;
 }
@@ -146,7 +146,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(const Epetra_
   std::set<int> rs(rv.begin(), rv.end());
   rv.assign(rs.begin(), rs.end());
 
-  return Teuchos::RCP(new Epetra_Map(-1, rv.size(), rv.data(), 0, emap.Comm()));
+  return Teuchos::make_rcp<Epetra_Map>(-1, rv.size(), rv.data(), 0, emap.Comm());
 }
 
 /*----------------------------------------------------------------------*
@@ -165,7 +165,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(
     std::set<int> rs(rv.begin(), rv.end());
     rv.assign(rs.begin(), rs.end());
 
-    rmap = Teuchos::RCP(new Epetra_Map(-1, rv.size(), rv.data(), 0, emap.Comm()));
+    rmap = Teuchos::make_rcp<Epetra_Map>(-1, rv.size(), rv.data(), 0, emap.Comm());
     // check the map
     FOUR_C_ASSERT(rmap->NumMyElements() == rmap->NumGlobalElements(),
         "Processor with pid does not get all map elements");
@@ -173,7 +173,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(
   else
   {
     rv.clear();
-    rmap = Teuchos::RCP(new Epetra_Map(-1, 0, nullptr, 0, emap.Comm()));
+    rmap = Teuchos::make_rcp<Epetra_Map>(-1, 0, nullptr, 0, emap.Comm());
     // check the map
     FOUR_C_ASSERT(rmap->NumMyElements() == 0, "At least one proc will keep a map element");
   }

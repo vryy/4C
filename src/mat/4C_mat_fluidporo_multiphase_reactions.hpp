@@ -128,7 +128,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new FluidPoroMultiPhaseReactions(*this));
+      return Teuchos::make_rcp<FluidPoroMultiPhaseReactions>(*this);
     }
 
     /// number of reactions

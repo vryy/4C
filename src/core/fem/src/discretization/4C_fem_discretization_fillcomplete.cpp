@@ -182,7 +182,7 @@ void Core::FE::Discretization::build_node_row_map()
       ++count;
     }
   if (count != nummynodes) FOUR_C_THROW("Mismatch in no. of nodes");
-  noderowmap_ = Teuchos::RCP(new Epetra_Map(-1, nummynodes, nodeids.data(), 0, get_comm()));
+  noderowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, nummynodes, nodeids.data(), 0, get_comm());
   return;
 }
 
@@ -205,7 +205,7 @@ void Core::FE::Discretization::build_node_col_map()
     ++count;
   }
   if (count != nummynodes) FOUR_C_THROW("Mismatch in no. of nodes");
-  nodecolmap_ = Teuchos::RCP(new Epetra_Map(-1, nummynodes, nodeids.data(), 0, get_comm()));
+  nodecolmap_ = Teuchos::make_rcp<Epetra_Map>(-1, nummynodes, nodeids.data(), 0, get_comm());
   return;
 }
 
@@ -231,7 +231,7 @@ void Core::FE::Discretization::build_element_row_map()
       ++count;
     }
   if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
-  elerowmap_ = Teuchos::RCP(new Epetra_Map(-1, nummyeles, eleids.data(), 0, get_comm()));
+  elerowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, nummyeles, eleids.data(), 0, get_comm());
   return;
 }
 
@@ -253,7 +253,7 @@ void Core::FE::Discretization::build_element_col_map()
     ++count;
   }
   if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
-  elecolmap_ = Teuchos::RCP(new Epetra_Map(-1, nummyeles, eleids.data(), 0, get_comm()));
+  elecolmap_ = Teuchos::make_rcp<Epetra_Map>(-1, nummyeles, eleids.data(), 0, get_comm());
   return;
 }
 

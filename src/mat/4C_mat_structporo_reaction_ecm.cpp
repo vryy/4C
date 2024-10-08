@@ -32,7 +32,7 @@ Mat::PAR::StructPoroReactionECM::StructPoroReactionECM(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::StructPoroReactionECM::create_material()
 {
-  return Teuchos::RCP(new Mat::StructPoroReactionECM(this));
+  return Teuchos::make_rcp<Mat::StructPoroReactionECM>(this);
 }
 
 /*----------------------------------------------------------------------*/

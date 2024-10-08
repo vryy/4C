@@ -807,7 +807,7 @@ Core::GeometricSearch::NodeMatchingOctree::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
   Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
-      Teuchos::RCP(new OctreeNodalElement());
+      Teuchos::make_rcp<OctreeNodalElement>();
 
   newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
@@ -934,7 +934,7 @@ Core::GeometricSearch::ElementMatchingOctree::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
   Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
-      Teuchos::RCP(new OctreeElementElement());
+      Teuchos::make_rcp<OctreeElementElement>();
 
   newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
@@ -969,7 +969,7 @@ Core::GeometricSearch::OctreeNodalElement::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
   Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
-      Teuchos::RCP(new OctreeNodalElement());
+      Teuchos::make_rcp<OctreeNodalElement>();
 
   newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
@@ -1008,7 +1008,7 @@ Core::GeometricSearch::OctreeElementElement::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
   Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
-      Teuchos::RCP(new OctreeElementElement());
+      Teuchos::make_rcp<OctreeElementElement>();
 
   newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);

@@ -135,7 +135,7 @@ Mat::PAR::MuscleCombo::MuscleCombo(const Core::Mat::PAR::Parameter::Data& matdat
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MuscleCombo::create_material()
 {
-  return Teuchos::RCP(new Mat::MuscleCombo(this));
+  return Teuchos::make_rcp<Mat::MuscleCombo>(this);
 }
 
 Mat::MuscleComboType Mat::MuscleComboType::instance_;

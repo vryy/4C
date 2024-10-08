@@ -203,9 +203,9 @@ void XFEM::LevelSetCoupling::prepare_cutter_output()
 
   if (cutter_output_ == Teuchos::null)
   {
-    cutter_dis_->set_writer(Teuchos::RCP(new Core::IO::DiscretizationWriter(cutter_dis_,
+    cutter_dis_->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(cutter_dis_,
         Global::Problem::instance()->output_control_file(),
-        Global::Problem::instance()->spatial_approximation_type())));
+        Global::Problem::instance()->spatial_approximation_type()));
   }
 
   bg_output_ = bg_dis_->writer();
@@ -455,7 +455,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
       const Epetra_Map* modphinp_dofrowmap =
           Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(cutter_dis_)->initial_dof_row_map();
       Teuchos::RCP<Core::LinAlg::Vector<double>> modphinp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*modphinp_dofrowmap, true));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*modphinp_dofrowmap, true);
 
       double* val = cutter_phinp_->Values();
 

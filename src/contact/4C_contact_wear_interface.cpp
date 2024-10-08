@@ -965,7 +965,7 @@ void Wear::WearInterface::export_nodal_normals() const
 
       // fill nodal matrix
       Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc =
-          Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(3, 3));
+          Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, 3);
       (*loc)(0, 0) = cnode->mo_data().n()[0];
       (*loc)(1, 0) = cnode->mo_data().n()[1];
       (*loc)(2, 0) = cnode->mo_data().n()[2];
@@ -3119,9 +3119,9 @@ bool Wear::WearInterface::build_active_set_master()
     if (frinode->fri_data().slip()) sl.push_back(frinode->id());
   }
   Teuchos::RCP<Epetra_Map> auxa =
-      Teuchos::RCP(new Epetra_Map(-1, (int)a.size(), a.data(), 0, get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, (int)a.size(), a.data(), 0, get_comm());
   Teuchos::RCP<Epetra_Map> auxsl =
-      Teuchos::RCP(new Epetra_Map(-1, (int)sl.size(), sl.data(), 0, get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, (int)sl.size(), sl.data(), 0, get_comm());
 
   const Teuchos::RCP<Epetra_Map> ara = Core::LinAlg::allreduce_e_map(*(auxa));
   const Teuchos::RCP<Epetra_Map> arsl = Core::LinAlg::allreduce_e_map(*(auxsl));
@@ -3170,7 +3170,7 @@ bool Wear::WearInterface::build_active_set_master()
   }
 
   Teuchos::RCP<Epetra_Map> auxe =
-      Teuchos::RCP(new Epetra_Map(-1, (int)eleatt.size(), eleatt.data(), 0, get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, (int)eleatt.size(), eleatt.data(), 0, get_comm());
   const Teuchos::RCP<Epetra_Map> att = Core::LinAlg::allreduce_e_map(*(auxe));
 
   for (int j = 0; j < att->NumMyElements(); ++j)
@@ -3270,11 +3270,11 @@ bool Wear::WearInterface::build_active_set_master()
   }
 
   Teuchos::RCP<Epetra_Map> actmn =
-      Teuchos::RCP(new Epetra_Map(-1, (int)wa.size(), wa.data(), 0, get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, (int)wa.size(), wa.data(), 0, get_comm());
   Teuchos::RCP<Epetra_Map> slimn =
-      Teuchos::RCP(new Epetra_Map(-1, (int)wsl.size(), wsl.data(), 0, get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, (int)wsl.size(), wsl.data(), 0, get_comm());
   Teuchos::RCP<Epetra_Map> slimd =
-      Teuchos::RCP(new Epetra_Map(-1, (int)wsln.size(), wsln.data(), 0, get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, (int)wsln.size(), wsln.data(), 0, get_comm());
 
   const Teuchos::RCP<Epetra_Map> ARactmn = Core::LinAlg::allreduce_overlapping_e_map(*(actmn));
   const Teuchos::RCP<Epetra_Map> ARslimn = Core::LinAlg::allreduce_overlapping_e_map(*(slimn));
@@ -3324,9 +3324,9 @@ bool Wear::WearInterface::build_active_set_master()
     }
   }
 
-  activmasternodes_ = Teuchos::RCP(new Epetra_Map(-1, (int)ga.size(), ga.data(), 0, get_comm()));
-  slipmasternodes_ = Teuchos::RCP(new Epetra_Map(-1, (int)gs.size(), gs.data(), 0, get_comm()));
-  slipmn_ = Teuchos::RCP(new Epetra_Map(-1, (int)gsd.size(), gsd.data(), 0, get_comm()));
+  activmasternodes_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)ga.size(), ga.data(), 0, get_comm());
+  slipmasternodes_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)gs.size(), gs.data(), 0, get_comm());
+  slipmn_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)gsd.size(), gsd.data(), 0, get_comm());
 
   for (int j = 0; j < slave_col_nodes()->NumMyElements(); ++j)
   {
@@ -3416,10 +3416,10 @@ bool Wear::WearInterface::build_active_set(bool init)
     }
 
     // create map for all involved master nodes -- both-sided wear specific
-    involvednodes_ = Teuchos::RCP(
-        new Epetra_Map(-1, (int)mymnodegids.size(), mymnodegids.data(), 0, get_comm()));
+    involvednodes_ = Teuchos::make_rcp<Epetra_Map>(
+        -1, (int)mymnodegids.size(), mymnodegids.data(), 0, get_comm());
     involveddofs_ =
-        Teuchos::RCP(new Epetra_Map(-1, (int)mymdofgids.size(), mymdofgids.data(), 0, get_comm()));
+        Teuchos::make_rcp<Epetra_Map>(-1, (int)mymdofgids.size(), mymdofgids.data(), 0, get_comm());
   }
 
   return true;
@@ -3592,7 +3592,7 @@ void Wear::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& ina
     }
   }
 
-  Teuchos::RCP<Epetra_Export> exp = Teuchos::RCP(new Epetra_Export(*allredi, *inactivedofs));
+  Teuchos::RCP<Epetra_Export> exp = Teuchos::make_rcp<Epetra_Export>(*allredi, *inactivedofs);
   inactiverhs.Export(*rhs, *exp, Add);
 
 
@@ -3792,7 +3792,7 @@ void Wear::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
     }
   }
 
-  Teuchos::RCP<Epetra_Export> exp = Teuchos::RCP(new Epetra_Export(*slmastern, *slipmn_));
+  Teuchos::RCP<Epetra_Export> exp = Teuchos::make_rcp<Epetra_Export>(*slmastern, *slipmn_);
   RHS.Export(*rhs, *exp, Add);
 
   return;
@@ -4035,13 +4035,13 @@ void Wear::WearInterface::split_slave_dofs()
   // get out of here if active set is empty
   if (snoderowmap_ == Teuchos::null)
   {
-    sndofmap_ = Teuchos::RCP(new Epetra_Map(0, 0, get_comm()));
+    sndofmap_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
     return;
   }
 
   else if (snoderowmap_->NumGlobalElements() == 0)
   {
-    sndofmap_ = Teuchos::RCP(new Epetra_Map(0, 0, get_comm()));
+    sndofmap_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
     return;
   }
 
@@ -4078,7 +4078,7 @@ void Wear::WearInterface::split_slave_dofs()
     FOUR_C_THROW("SplitSlaveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  sndofmap_ = Teuchos::RCP(new Epetra_Map(gcountN, countN, myNgids.data(), 0, get_comm()));
+  sndofmap_ = Teuchos::make_rcp<Epetra_Map>(gcountN, countN, myNgids.data(), 0, get_comm());
 
   return;
 }
@@ -4092,13 +4092,13 @@ void Wear::WearInterface::split_master_dofs()
   // get out of here if active set is empty
   if (mnoderowmap_ == Teuchos::null)
   {
-    mndofmap_ = Teuchos::RCP(new Epetra_Map(0, 0, get_comm()));
+    mndofmap_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
     return;
   }
 
   else if (mnoderowmap_->NumGlobalElements() == 0)
   {
-    mndofmap_ = Teuchos::RCP(new Epetra_Map(0, 0, get_comm()));
+    mndofmap_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
     return;
   }
 
@@ -4135,7 +4135,7 @@ void Wear::WearInterface::split_master_dofs()
     FOUR_C_THROW("SplitSlaveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  mndofmap_ = Teuchos::RCP(new Epetra_Map(gcountN, countN, myNgids.data(), 0, get_comm()));
+  mndofmap_ = Teuchos::make_rcp<Epetra_Map>(gcountN, countN, myNgids.data(), 0, get_comm());
 
   return;
 }
@@ -4205,7 +4205,7 @@ void Wear::WearInterface::update_w_sets(int offset_if, int maxdofwear, bool both
   // create interface w map
   // (if maxdofglobal_ == 0, we do not want / need this)
   if (maxdofwear > 0)
-    wdofmap_ = Teuchos::RCP(new Epetra_Map(-1, (int)wdof.size(), wdof.data(), 0, get_comm()));
+    wdofmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)wdof.size(), wdof.data(), 0, get_comm());
 
   //********************************************************************
   // For discrete both-sided wear
@@ -4234,7 +4234,7 @@ void Wear::WearInterface::update_w_sets(int offset_if, int maxdofwear, bool both
     // create interface w map
     // (if maxdofglobal_ == 0, we do not want / need this)
     if (maxdofwear > 0)
-      wmdofmap_ = Teuchos::RCP(new Epetra_Map(-1, (int)wmdof.size(), wmdof.data(), 0, get_comm()));
+      wmdofmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)wmdof.size(), wmdof.data(), 0, get_comm());
   }
 
   return;

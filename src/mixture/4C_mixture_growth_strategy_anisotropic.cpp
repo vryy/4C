@@ -35,7 +35,7 @@ MIXTURE::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
     MIXTURE::PAR::AnisotropicGrowthStrategy* params)
     : params_(params),
       anisotropy_extension_(params_->init_mode_, 0.0, false,
-          Teuchos::RCP(new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
+          Teuchos::make_rcp<Mat::Elastic::StructuralTensorStrategyStandard>(nullptr),
           {params->fiber_id_ - 1})
 {
   anisotropy_extension_.register_needed_tensors(

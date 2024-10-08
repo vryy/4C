@@ -231,7 +231,7 @@ void PostVtkWriter::write_result(const std::string groupname, const std::string 
 {
   using namespace FourC;
 
-  Teuchos::RCP<PostResult> result = Teuchos::RCP(new PostResult(field_));
+  Teuchos::RCP<PostResult> result = Teuchos::make_rcp<PostResult>(field_);
   // only write results which exist in the first result step
   bool foundit = false;
   if (result->next_result())
@@ -256,7 +256,7 @@ void PostVtkWriter::write_result(const std::string groupname, const std::string 
   if (once)
   {
     // recreate PostResult, go one step and throw away the old one
-    result = Teuchos::RCP(new PostResult(field_));
+    result = Teuchos::make_rcp<PostResult>(field_);
     result->next_result(groupname);
   }
   if (not(field_->problem()->spatial_approximation_type() ==

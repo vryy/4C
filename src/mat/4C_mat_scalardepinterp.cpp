@@ -40,7 +40,7 @@ Mat::PAR::ScalarDepInterp::ScalarDepInterp(const Core::Mat::PAR::Parameter::Data
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScalarDepInterp::create_material()
 {
-  return Teuchos::RCP(new Mat::ScalarDepInterp(this));
+  return Teuchos::make_rcp<Mat::ScalarDepInterp>(this);
 }
 
 

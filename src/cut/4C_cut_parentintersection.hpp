@@ -102,7 +102,9 @@ namespace Cut
 
     /// constructur for ParentIntersecton class
     ParentIntersection(int myrank = -1)
-        : pp_(Teuchos::RCP(new PointPool)), mesh_(options_, 1, pp_, false, myrank), myrank_(myrank)
+        : pp_(Teuchos::make_rcp<PointPool>()),
+          mesh_(options_, 1, pp_, false, myrank),
+          myrank_(myrank)
     {
     }
 

@@ -44,8 +44,8 @@ Adapter::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Di
       params_(params),
       output_(output),
       dirichletcond_(dirichletcond),
-      interface_(Teuchos::RCP(new FLD::UTILS::MapExtractor())),
-      meshmap_(Teuchos::RCP(new Core::LinAlg::MapExtractor())),
+      interface_(Teuchos::make_rcp<FLD::UTILS::MapExtractor>()),
+      meshmap_(Teuchos::make_rcp<Core::LinAlg::MapExtractor>()),
       locerrvelnp_(Teuchos::null),
       auxintegrator_(Inpar::FSI::timada_fld_none),
       numfsidbcdofs_(0),
@@ -95,7 +95,8 @@ void Adapter::FluidFSI::init()
     fluidimpl_->add_dirich_cond(interface()->fsi_cond_map());
   }
 
-  interfaceforcen_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*(interface()->fsi_cond_map())));
+  interfaceforcen_ =
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(interface()->fsi_cond_map()));
 
   // time step size adaptivity in monolithic FSI
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
@@ -389,7 +390,7 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
   const int mapoffset =
       dbcfsimap->MaxAllGID() + discretization()->element_row_map()->MinAllGID() + 1;
   Teuchos::RCP<Epetra_Map> elemap =
-      Teuchos::RCP(new Epetra_Map(numallele, mapoffset, discretization()->get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(numallele, mapoffset, discretization()->get_comm());
 
   // create the combination of dbcfsimap and elemap
   std::vector<Teuchos::RCP<const Epetra_Map>> domainmaps;
@@ -399,11 +400,11 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
 
   // build the corresponding map extractor
   Teuchos::RCP<Core::LinAlg::MapExtractor> domainmapex =
-      Teuchos::RCP(new Core::LinAlg::MapExtractor(*domainmap, dbcfsimap));
+      Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*domainmap, dbcfsimap);
 
   const int numofrowentries = 82;
   Teuchos::RCP<Core::LinAlg::SparseMatrix> B =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dof_row_map(), numofrowentries, false));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dof_row_map(), numofrowentries, false);
 
   // define element matrices and vectors
   Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -464,15 +465,15 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
       Core::LinAlg::matrix_multiply(*B, true, *B, false, true);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> BTvR =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*domainmap));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*domainmap);
   B->multiply(true, *velnp(), *BTvR);
   Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*dbcfsimap, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dbcfsimap, true);
 
   domainmapex->insert_cond_vector(*zeros, *BTvR);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> x =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*domainmap));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*domainmap);
 
   const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
   const int simplersolvernumber = fdyn.get<int>("LINEAR_SOLVER");
@@ -481,16 +482,16 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
         "no simpler solver, that is used to solve this system, defined for fluid pressure problem. "
         "\nPlease set LINEAR_SOLVER in FLUID DYNAMIC to a valid number!");
 
-  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::RCP(
-      new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(simplersolvernumber),
-          discretization()->get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY")));
+  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+      Global::Problem::instance()->solver_params(simplersolvernumber), discretization()->get_comm(),
+      Global::Problem::instance()->solver_params_callback(),
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   if (solver->params().isSublist("ML Parameters"))
   {
     Teuchos::RCP<Epetra_MultiVector> pressure_nullspace =
-        Teuchos::RCP(new Epetra_MultiVector(*(dis_->dof_row_map()), 1));
+        Teuchos::make_rcp<Epetra_MultiVector>(*(dis_->dof_row_map()), 1);
     pressure_nullspace->PutScalar(1.0);
 
     solver->params().sublist("ML Parameters").set("PDE equations", 1);
@@ -510,7 +511,7 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
   solver->solve(BTB->epetra_operator(), x, BTvR, solver_params);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> vmod =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(velnp()->Map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(velnp()->Map(), true);
   B->Apply(*x, *vmod);
   write_access_velnp()->Update(-1.0, *vmod, 1.0);
 }
@@ -539,12 +540,12 @@ void Adapter::FluidFSI::time_step_auxiliar()
 {
   // current state
   Teuchos::RCP<const Core::LinAlg::Vector<double>> veln_vector =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*veln()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*veln());
   Teuchos::RCP<const Core::LinAlg::Vector<double>> accn_vector =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*accn()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*accn());
 
   // prepare vector for solution of auxiliary time step
-  locerrvelnp_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*fluid_->dof_row_map(), true));
+  locerrvelnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluid_->dof_row_map(), true);
 
   // ---------------------------------------------------------------------------
 
@@ -567,7 +568,7 @@ void Adapter::FluidFSI::time_step_auxiliar()
       {
         // Acceleration from previous time step
         Teuchos::RCP<Core::LinAlg::Vector<double>> accnm_vector =
-            Teuchos::RCP(new Core::LinAlg::Vector<double>(*extract_velocity_part(accnm())));
+            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*extract_velocity_part(accnm()));
 
         adams_bashforth2(*veln_vector, *accn_vector, *accnm_vector, *locerrvelnp_);
       }
@@ -637,24 +638,26 @@ void Adapter::FluidFSI::indicate_error_norms(double& err, double& errcond, doubl
   }
 
   // set '0' on all pressure DOFs
-  auto zeros = Teuchos::RCP(new Core::LinAlg::Vector<double>(locerrvelnp_->Map(), true));
+  auto zeros = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(locerrvelnp_->Map(), true);
   Core::LinAlg::apply_dirichlet_to_system(*locerrvelnp_, *zeros, *pressure_row_map());
   // TODO: Do not misuse apply_dirichlet_to_system()...works for this purpose here: writes zeros
   // into all pressure DoFs
 
   // set '0' on Dirichlet DOFs
-  zeros = Teuchos::RCP(new Core::LinAlg::Vector<double>(locerrvelnp_->Map(), true));
+  zeros = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(locerrvelnp_->Map(), true);
   Core::LinAlg::apply_dirichlet_to_system(
       *locerrvelnp_, *zeros, *(get_dbc_map_extractor()->cond_map()));
 
   // extract the condition part of the full error vector (i.e. only interface velocity DOFs)
-  Teuchos::RCP<Core::LinAlg::Vector<double>> errorcond = Teuchos::RCP(
-      new Core::LinAlg::Vector<double>(*interface()->extract_fsi_cond_vector(*locerrvelnp_)));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> errorcond =
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+          *interface()->extract_fsi_cond_vector(*locerrvelnp_));
 
   /* in case of structure split: extract the other part of the full error vector
    * (i.e. interior velocity and all pressure DOFs) */
-  Teuchos::RCP<Core::LinAlg::Vector<double>> errorother = Teuchos::RCP(
-      new Core::LinAlg::Vector<double>(*interface()->extract_other_vector(*locerrvelnp_)));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> errorother =
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+          *interface()->extract_other_vector(*locerrvelnp_));
 
   // calculate L2-norms of different subsets of temporal discretization error vector
   // (neglect Dirichlet and pressure DOFs for length scaling)

@@ -39,7 +39,7 @@ Mat::PAR::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
  *---------------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ParticleMaterialSPHBoundary::create_material()
 {
-  return Teuchos::RCP(new Mat::ParticleMaterialSPHBoundary(this));
+  return Teuchos::make_rcp<Mat::ParticleMaterialSPHBoundary>(this);
 }
 
 /*---------------------------------------------------------------------------*

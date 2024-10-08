@@ -81,8 +81,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::init()
 
   // Setup the output parameter object.
   {
-    output_params_ptr_ = Teuchos::RCP<BeamToSolidSurfaceVisualizationOutputParams>(
-        new BeamToSolidSurfaceVisualizationOutputParams());
+    output_params_ptr_ = Teuchos::make_rcp<BeamToSolidSurfaceVisualizationOutputParams>();
     output_params_ptr_->init();
     output_params_ptr_->setup();
   }

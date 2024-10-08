@@ -150,7 +150,7 @@ void Core::LinAlg::add(const Epetra_CrsMatrix& A, const bool transposeA, const d
   Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
   if (transposeA)
   {
-    Atrans = Teuchos::RCP(new EpetraExt::RowMatrix_Transpose());
+    Atrans = Teuchos::make_rcp<EpetraExt::RowMatrix_Transpose>();
     Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
   }
   else
@@ -237,7 +237,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(
 
   // now create resultmatrix C with correct rowmap
   auto map = transA ? A.domain_map() : A.range_map();
-  auto C = Teuchos::RCP(new SparseMatrix(map, nnz, A.explicit_dirichlet(), A.save_graph()));
+  auto C = Teuchos::make_rcp<SparseMatrix>(map, nnz, A.explicit_dirichlet(), A.save_graph());
 
   EpetraExt::RowMatrix_Transpose transposer;
   Epetra_CrsMatrix* Atrans = nullptr;
@@ -285,7 +285,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(const Spa
 
   // now create resultmatrix C with correct rowmap
   auto map = transA ? A.domain_map() : A.range_map();
-  auto C = Teuchos::RCP(new SparseMatrix(map, nnz, explicitdirichlet, savegraph));
+  auto C = Teuchos::make_rcp<SparseMatrix>(map, nnz, explicitdirichlet, savegraph);
 
   EpetraExt::RowMatrix_Transpose transposer;
   Epetra_CrsMatrix* Atrans = nullptr;
@@ -328,8 +328,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_transpose(const Sp
   Teuchos::RCP<Core::LinAlg::SparseMatrix> matrix = Teuchos::null;
 
   Epetra_CrsMatrix* a_prime = &(dynamic_cast<Epetra_CrsMatrix&>(transposer(*A.epetra_matrix())));
-  matrix = Teuchos::RCP(new SparseMatrix(
-      Teuchos::RCP(a_prime, false), Core::LinAlg::Copy, A.explicit_dirichlet(), A.save_graph()));
+  matrix = Teuchos::make_rcp<SparseMatrix>(
+      Teuchos::RCP(a_prime, false), Core::LinAlg::Copy, A.explicit_dirichlet(), A.save_graph());
 
   return matrix;
 }

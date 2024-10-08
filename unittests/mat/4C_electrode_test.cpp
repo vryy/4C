@@ -25,7 +25,7 @@ namespace
       Core::IO::InputParameterContainer container;
 
       // create dummy elch parameter list and add dummy value for gas constant
-      auto parameter_list = Teuchos::RCP(new Teuchos::ParameterList());
+      auto parameter_list = Teuchos::make_rcp<Teuchos::ParameterList>();
       auto elch_params = parameter_list->sublist("ELCH CONTROL", false);
       elch_params.set<double>("GAS_CONSTANT", -1.0);
 
@@ -63,11 +63,11 @@ namespace
       container.add("X_MAX", -1.0);
 
       // initialize parameter class for cathode material
-      parameters_cathode_csv_ = Teuchos::RCP(
-          new Mat::PAR::Electrode(Core::Mat::PAR::Parameter::Data{.parameters = container}));
+      parameters_cathode_csv_ = Teuchos::make_rcp<Mat::PAR::Electrode>(
+          Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize cathode material
-      cathode_csv_ = Teuchos::RCP(new Mat::Electrode(parameters_cathode_csv_.get()));
+      cathode_csv_ = Teuchos::make_rcp<Mat::Electrode>(parameters_cathode_csv_.get());
 
       // define sample concentration values for cathode material
       // cf. master thesis by Alexander Rupp (2017)
@@ -108,12 +108,12 @@ namespace
       container.add("X_MAX", -1.0);
 
       // initialize parameter class for anode material
-      parameters_anode_redlichkister_ = Teuchos::RCP(
-          new Mat::PAR::Electrode(Core::Mat::PAR::Parameter::Data{.parameters = container}));
+      parameters_anode_redlichkister_ = Teuchos::make_rcp<Mat::PAR::Electrode>(
+          Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize anode material
       anode_redlichkister_ =
-          Teuchos::RCP(new Mat::Electrode(parameters_anode_redlichkister_.get()));
+          Teuchos::make_rcp<Mat::Electrode>(parameters_anode_redlichkister_.get());
 
       // define sample concentration values for anode material
       // cf. Goldin et al., Electrochimica Acta 64 (2012) 118-129
@@ -157,12 +157,12 @@ namespace
       container.add("X_MAX", -1.0);
 
       // initialize parameter class for cathode material
-      parameters_cathode_redlichkister_ = Teuchos::RCP(
-          new Mat::PAR::Electrode(Core::Mat::PAR::Parameter::Data{.parameters = container}));
+      parameters_cathode_redlichkister_ = Teuchos::make_rcp<Mat::PAR::Electrode>(
+          Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize cathode material
       cathode_redlichkister_ =
-          Teuchos::RCP(new Mat::Electrode(parameters_cathode_redlichkister_.get()));
+          Teuchos::make_rcp<Mat::Electrode>(parameters_cathode_redlichkister_.get());
 
       // define sample concentration values for cathode material
       // cf. Goldin et al., Electrochimica Acta 64 (2012) 118-129
@@ -194,11 +194,11 @@ namespace
       container.add("X_MAX", -1.0);
 
       // initialize parameter class for anode material
-      parameters_anode_taralov_ = Teuchos::RCP(
-          new Mat::PAR::Electrode(Core::Mat::PAR::Parameter::Data{.parameters = container}));
+      parameters_anode_taralov_ = Teuchos::make_rcp<Mat::PAR::Electrode>(
+          Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize anode material
-      anode_taralov_ = Teuchos::RCP(new Mat::Electrode(parameters_anode_taralov_.get()));
+      anode_taralov_ = Teuchos::make_rcp<Mat::Electrode>(parameters_anode_taralov_.get());
 
       // define sample concentration values for anode material
       // cf. Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
@@ -229,11 +229,11 @@ namespace
       container.add("X_MAX", -1.0);
 
       // initialize parameter class for cathode material
-      parameters_cathode_taralov_ = Teuchos::RCP(
-          new Mat::PAR::Electrode(Core::Mat::PAR::Parameter::Data{.parameters = container}));
+      parameters_cathode_taralov_ = Teuchos::make_rcp<Mat::PAR::Electrode>(
+          Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize cathode material
-      cathode_taralov_ = Teuchos::RCP(new Mat::Electrode(parameters_cathode_taralov_.get()));
+      cathode_taralov_ = Teuchos::make_rcp<Mat::Electrode>(parameters_cathode_taralov_.get());
 
       // define sample concentration values for cathode material
       // cf. Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
@@ -256,11 +256,11 @@ namespace
       container.add("X_MAX", -1.0);
 
       // initialize parameter class for anode material
-      parameters_anode_polynomial_ = Teuchos::RCP(
-          new Mat::PAR::Electrode(Core::Mat::PAR::Parameter::Data{.parameters = container}));
+      parameters_anode_polynomial_ = Teuchos::make_rcp<Mat::PAR::Electrode>(
+          Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize anode material
-      anode_polynomial_ = Teuchos::RCP(new Mat::Electrode(parameters_anode_polynomial_.get()));
+      anode_polynomial_ = Teuchos::make_rcp<Mat::Electrode>(parameters_anode_polynomial_.get());
 
       // define fictitious sample concentration values for anode material
       concentrations_anode_polynomial_.resize(3, 0.0);
@@ -284,11 +284,11 @@ namespace
       container.add("X_MAX", 1.0);
 
       // initialize parameter class for cathode material
-      parameters_cathode_polynomial_ = Teuchos::RCP(
-          new Mat::PAR::Electrode(Core::Mat::PAR::Parameter::Data{.parameters = container}));
+      parameters_cathode_polynomial_ = Teuchos::make_rcp<Mat::PAR::Electrode>(
+          Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize cathode material
-      cathode_polynomial_ = Teuchos::RCP(new Mat::Electrode(parameters_cathode_polynomial_.get()));
+      cathode_polynomial_ = Teuchos::make_rcp<Mat::Electrode>(parameters_cathode_polynomial_.get());
 
       // define sample concentration values for cathode material
       // cf. Ji et al., Journal of The Electrochemical Society 160 (4) (2013) A636-A649

@@ -34,7 +34,7 @@ Mat::PAR::WeaklyCompressibleFluid::WeaklyCompressibleFluid(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::WeaklyCompressibleFluid::create_material()
 {
-  return Teuchos::RCP(new Mat::WeaklyCompressibleFluid(this));
+  return Teuchos::make_rcp<Mat::WeaklyCompressibleFluid>(this);
 }
 
 

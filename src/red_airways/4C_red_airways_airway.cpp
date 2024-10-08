@@ -41,7 +41,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAirwayType::create(
   if (eletype == "RED_AIRWAY")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::RCP(new Discret::ELEMENTS::RedAirway(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::RedAirway>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -52,7 +52,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAirwayType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::RCP(new Discret::ELEMENTS::RedAirway(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::RedAirway>(id, owner);
   return ele;
 }
 

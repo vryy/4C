@@ -44,15 +44,15 @@ Core::LinAlg::KrylovProjector::KrylovProjector(
       pt_(Teuchos::null)
 {
   nsdim_ = modeids_.size();
-  c_ = Teuchos::RCP(new Epetra_MultiVector(*map, nsdim_, false));
+  c_ = Teuchos::make_rcp<Epetra_MultiVector>(*map, nsdim_, false);
   if (*weighttype_ == "integration")
-    w_ = Teuchos::RCP(new Epetra_MultiVector(*map, nsdim_, false));
+    w_ = Teuchos::make_rcp<Epetra_MultiVector>(*map, nsdim_, false);
   else if (*weighttype_ == "pointvalues")
     w_ = c_;
   else
     FOUR_C_THROW("No permissible weight type.");
 
-  invw_tc_ = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(nsdim_, nsdim_));
+  invw_tc_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(nsdim_, nsdim_);
 }  // Core::LinAlg::KrylovProjector::KrylovProjector
 
 
@@ -97,8 +97,8 @@ void Core::LinAlg::KrylovProjector::set_cw(Teuchos::RCP<Epetra_MultiVector> c0,
   c_ = Teuchos::null;
   w_ = Teuchos::null;
 
-  c_ = Teuchos::RCP(new Epetra_MultiVector(*newmap, nsdim_, false));
-  w_ = Teuchos::RCP(new Epetra_MultiVector(*newmap, nsdim_, false));
+  c_ = Teuchos::make_rcp<Epetra_MultiVector>(*newmap, nsdim_, false);
+  w_ = Teuchos::make_rcp<Epetra_MultiVector>(*newmap, nsdim_, false);
   *c_ = *c0;
   *w_ = *w0;
   return;
@@ -237,7 +237,7 @@ Core::LinAlg::SparseMatrix Core::LinAlg::KrylovProjector::get_pt()
     else
     {
       Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> invwTcT =
-          Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(*invw_tc_, Teuchos::TRANS));
+          Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(*invw_tc_, Teuchos::TRANS);
       create_projector(pt_, c_, w_, invwTcT);
     }
   }
@@ -280,7 +280,7 @@ int Core::LinAlg::KrylovProjector::apply_pt(Epetra_MultiVector& Y) const
         "Krylov space projector is not complete. Call fill_complete() after changing c_ or w_.");
 
   Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> invwTcT =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(*invw_tc_, Teuchos::TRANS));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(*invw_tc_, Teuchos::TRANS);
   return apply_projector(Y, c_, w_, invwTcT);
 }
 
@@ -310,12 +310,12 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::KrylovProjector::project(
 
   // here: matvec = A c_;
   Teuchos::RCP<Epetra_MultiVector> matvec =
-      Teuchos::RCP(new Epetra_MultiVector(c_->Map(), nsdim_, false));
+      Teuchos::make_rcp<Epetra_MultiVector>(c_->Map(), nsdim_, false);
   A.epetra_matrix()->Multiply(false, *c_, *matvec);
 
   // compute serial dense matrix c^T A c
   Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> cTAc =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(nsdim_, nsdim_, false));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(nsdim_, nsdim_, false);
   for (int i = 0; i < nsdim_; ++i)
     for (int j = 0; j < nsdim_; ++j) (*c_)(i)->Dot(*((*matvec)(j)), &((*cTAc)(i, j)));
   // std::cout << *matvec << std::endl;
@@ -468,7 +468,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::KrylovProjector::multiply_multi_v
     FOUR_C_THROW("Either the multivector or the densematrix point to Teuchos::null");
 
   // create empty multivector mvout
-  Teuchos::RCP<Epetra_MultiVector> mvout = Teuchos::RCP(new Epetra_MultiVector(mv->Map(), nsdim_));
+  Teuchos::RCP<Epetra_MultiVector> mvout = Teuchos::make_rcp<Epetra_MultiVector>(mv->Map(), nsdim_);
 
   // loop over all vectors of mvout
   for (int rr = 0; rr < nsdim_; ++rr)
@@ -517,11 +517,11 @@ Core::LinAlg::KrylovProjector::multiply_multi_vecter_multi_vector(
   prod.Comm().SumAll(&numnonzero, &glob_numnonzero, 1);
 
   // do stupid conversion into Epetra map
-  Teuchos::RCP<Epetra_Map> mv1map = Teuchos::RCP(new Epetra_Map(mv1->Map().NumGlobalElements(),
-      mv1->Map().NumMyElements(), mv1->Map().MyGlobalElements(), 0, mv1->Map().Comm()));
+  Teuchos::RCP<Epetra_Map> mv1map = Teuchos::make_rcp<Epetra_Map>(mv1->Map().NumGlobalElements(),
+      mv1->Map().NumMyElements(), mv1->Map().MyGlobalElements(), 0, mv1->Map().Comm());
   // initialization of mat with map of mv1
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mat =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*mv1map, glob_numnonzero, false));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*mv1map, glob_numnonzero, false);
 
   //-------------------------------
   // make mv2 redundant on all procs:
@@ -531,8 +531,8 @@ Core::LinAlg::KrylovProjector::multiply_multi_vecter_multi_vector(
   const int numvals = mv2->GlobalLength();
 
   // do stupid conversion into Epetra map
-  Teuchos::RCP<Epetra_Map> mv2map = Teuchos::RCP(new Epetra_Map(mv2->Map().NumGlobalElements(),
-      mv2->Map().NumMyElements(), mv2->Map().MyGlobalElements(), 0, mv2->Map().Comm()));
+  Teuchos::RCP<Epetra_Map> mv2map = Teuchos::make_rcp<Epetra_Map>(mv2->Map().NumGlobalElements(),
+      mv2->Map().NumMyElements(), mv2->Map().MyGlobalElements(), 0, mv2->Map().Comm());
 
   // fully redundant/overlapping map
   Teuchos::RCP<Epetra_Map> redundant_map = Core::LinAlg::allreduce_e_map(*mv2map);

@@ -163,7 +163,7 @@ void Core::Conditions::find_conditioned_nodes(const Core::FE::Discretization& di
 
   for (const auto& [id, gids] : nodeset)
   {
-    nodes[id] = Teuchos::RCP(new std::vector<int>(gids.size()));
+    nodes[id] = Teuchos::make_rcp<std::vector<int>>(gids.size());
     nodes[id]->assign(gids.begin(), gids.end());
   }
 }
@@ -457,7 +457,7 @@ Teuchos::RCP<std::set<int>> Core::Conditions::conditioned_element_map(
 {
   ConditionSelector conds(dis, condname);
 
-  Teuchos::RCP<std::set<int>> condelementmap = Teuchos::RCP(new std::set<int>());
+  Teuchos::RCP<std::set<int>> condelementmap = Teuchos::make_rcp<std::set<int>>();
   const int nummyelements = dis.num_my_col_elements();
   for (int i = 0; i < nummyelements; ++i)
   {

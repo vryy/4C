@@ -28,8 +28,8 @@ void Adapter::FBIConstraintBridgePenalty::setup(const Epetra_Map* beam_map,
 {
   // Initialize all necessary vectors and matrices
   FBIConstraintBridge::setup(beam_map, fluid_map, fluidmatrix, fluidmeshtying);
-  fs_ = Teuchos::RCP(new Epetra_FEVector(*beam_map));
-  ff_ = Teuchos::RCP(new Epetra_FEVector(*fluid_map));
+  fs_ = Teuchos::make_rcp<Epetra_FEVector>(*beam_map);
+  ff_ = Teuchos::make_rcp<Epetra_FEVector>(*fluid_map);
   cff_ = fluidmatrix;
 }
 /*----------------------------------------------------------------------*/

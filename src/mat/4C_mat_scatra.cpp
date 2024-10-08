@@ -32,7 +32,7 @@ Mat::PAR::ScatraMat::ScatraMat(const Core::Mat::PAR::Parameter::Data& matdata) :
   Epetra_Map dummy_map(1, 1, 0, comm);
   for (int i = first; i <= last; i++)
   {
-    matparams_.push_back(Teuchos::RCP(new Core::LinAlg::Vector<double>(dummy_map, true)));
+    matparams_.push_back(Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dummy_map, true));
   }
   matparams_.at(diff)->PutScalar(matdata.parameters.get<double>("DIFFUSIVITY"));
   matparams_.at(reac)->PutScalar(matdata.parameters.get<double>("REACOEFF"));
@@ -44,7 +44,7 @@ Mat::PAR::ScatraMat::ScatraMat(const Core::Mat::PAR::Parameter::Data& matdata) :
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMat::create_material()
 {
-  return Teuchos::RCP(new Mat::ScatraMat(this));
+  return Teuchos::make_rcp<Mat::ScatraMat>(this);
 }
 
 

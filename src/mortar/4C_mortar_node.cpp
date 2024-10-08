@@ -267,7 +267,7 @@ void Mortar::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   bool hasdata = extract_int(buffer);
   if (hasdata)
   {
-    modata_ = Teuchos::RCP(new Mortar::NodeDataContainer());
+    modata_ = Teuchos::make_rcp<Mortar::NodeDataContainer>();
     modata_->unpack(buffer);
   }
   else
@@ -411,7 +411,7 @@ void Mortar::Node::initialize_data_container()
   }
 
   // only initialize if not yet done
-  if (modata_ == Teuchos::null) modata_ = Teuchos::RCP(new Mortar::NodeDataContainer());
+  if (modata_ == Teuchos::null) modata_ = Teuchos::make_rcp<Mortar::NodeDataContainer>();
 }
 
 

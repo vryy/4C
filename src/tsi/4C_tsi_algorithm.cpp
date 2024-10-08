@@ -72,10 +72,10 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   if (!matchinggrid_)
   {
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_ = Teuchos::RCP(new Coupling::Adapter::MortarVolCoupl());
+    volcoupl_ = Teuchos::make_rcp<Coupling::Adapter::MortarVolCoupl>();
 
     Teuchos::RCP<Coupling::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy =
-        Teuchos::RCP(new TSI::UTILS::TSIMaterialStrategy());
+        Teuchos::make_rcp<TSI::UTILS::TSIMaterialStrategy>();
     // init coupling adapter projection matrices
     volcoupl_->init(Global::Problem::instance()->n_dim(), structdis, thermodis, nullptr, nullptr,
         nullptr, nullptr, materialstrategy);
@@ -96,8 +96,8 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     FOUR_C_THROW("old structural time integration no longer supported in tsi");
   else
   {
-    Teuchos::RCP<Thermo::BaseAlgorithm> thermo = Teuchos::RCP(
-        new Thermo::BaseAlgorithm(Global::Problem::instance()->tsi_dynamic_params(), thermodis));
+    Teuchos::RCP<Thermo::BaseAlgorithm> thermo = Teuchos::make_rcp<Thermo::BaseAlgorithm>(
+        Global::Problem::instance()->tsi_dynamic_params(), thermodis);
     thermo_ = thermo->thermo_fieldrcp();
 
     //  // access structural dynamic params list which will be possibly modified while creating the
@@ -136,15 +136,15 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   // initialise displacement field needed for output()
   // (get noderowmap of discretisation for creating this multivector)
   // TODO: why nds 0 and not 1????
-  dispnp_ = Teuchos::RCP(
-      new Epetra_MultiVector(*(thermo_field()->discretization()->node_row_map()), 3, true));
-  tempnp_ = Teuchos::RCP(
-      new Epetra_MultiVector(*(structure_field()->discretization()->node_row_map()), 1, true));
+  dispnp_ = Teuchos::make_rcp<Epetra_MultiVector>(
+      *(thermo_field()->discretization()->node_row_map()), 3, true);
+  tempnp_ = Teuchos::make_rcp<Epetra_MultiVector>(
+      *(structure_field()->discretization()->node_row_map()), 1, true);
 
   // setup coupling object for matching discretization
   if (matchinggrid_)
   {
-    coupST_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
+    coupST_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
     coupST_->setup_coupling(*structure_field()->discretization(), *thermo_field()->discretization(),
         *structure_field()->discretization()->node_row_map(),
         *thermo_field()->discretization()->node_row_map(), 1, true);
@@ -157,7 +157,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
         structure_field()->discretization()->get_condition("MortarMulti");
     if (mrtrcond != nullptr)
     {
-      mortar_coupling_ = Teuchos::RCP(new Mortar::MultiFieldCoupling());
+      mortar_coupling_ = Teuchos::make_rcp<Mortar::MultiFieldCoupling>();
       mortar_coupling_->push_back_coupling(structure_field()->discretization(), 0,
           std::vector<int>(3, 1), Global::Problem::instance()->mortar_coupling_params(),
           Global::Problem::instance()->contact_dynamic_params(),
@@ -403,7 +403,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> TSI::Algorithm::calc_velocity(
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> vel = Teuchos::null;
   // copy D_n onto V_n+1
-  vel = Teuchos::RCP(new Core::LinAlg::Vector<double>(*(structure_field()->dispn())));
+  vel = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(structure_field()->dispn()));
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
   vel->Update(1. / dt(), *dispnp, -1. / dt());
@@ -549,7 +549,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     contact_strategy_lagrange_->store_dirichlet_status(structure_field()->get_dbc_map_extractor());
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> zero_disp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*structure_field()->dof_row_map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*structure_field()->dof_row_map(), true);
     contact_strategy_lagrange_->set_state(Mortar::state_new_displacement, *zero_disp);
     contact_strategy_lagrange_->save_reference_state(zero_disp);
     contact_strategy_lagrange_->evaluate_reference_state();

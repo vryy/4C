@@ -49,7 +49,7 @@ void Solid::TimeInt::Implicit::setup()
   // build NOX interface
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Solid::TimeInt::NoxInterface> noxinterface_ptr =
-      Teuchos::RCP(new Solid::TimeInt::NoxInterface);
+      Teuchos::make_rcp<Solid::TimeInt::NoxInterface>();
   noxinterface_ptr->init(
       data_global_state_ptr(), implint_ptr_, dbc_ptr(), Teuchos::RCP(this, false));
   noxinterface_ptr->setup();
@@ -172,8 +172,8 @@ void Solid::TimeInt::Implicit::update_state_incrementally(
 
   // wrap the displacement vector in a nox_epetra_Vector
   Teuchos::RCP<const ::NOX::Epetra::Vector> nox_disiterinc_ptr =
-      Teuchos::RCP(new ::NOX::Epetra::Vector(
-          mutable_disiterinc->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
+      Teuchos::make_rcp<::NOX::Epetra::Vector>(
+          mutable_disiterinc->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
   // updated the state vector in the nox group
   grp_ptr->computeX(*grp_ptr, *nox_disiterinc_ptr, 1.0);

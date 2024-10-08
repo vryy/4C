@@ -41,7 +41,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale3NurbsType::c
   {
     if (eledistype == "NURBS8" || eledistype == "NURBS27")
     {
-      return Teuchos::RCP(new Discret::ELEMENTS::Nurbs::Ale3Nurbs(id, owner));
+      return Teuchos::make_rcp<Discret::ELEMENTS::Nurbs::Ale3Nurbs>(id, owner);
     }
   }
   return Teuchos::null;
@@ -52,7 +52,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale3NurbsType::c
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale3NurbsType::create(
     const int id, const int owner)
 {
-  return Teuchos::RCP(new Discret::ELEMENTS::Nurbs::Ale3Nurbs(id, owner));
+  return Teuchos::make_rcp<Discret::ELEMENTS::Nurbs::Ale3Nurbs>(id, owner);
 }
 
 /*----------------------------------------------------------------------------*/

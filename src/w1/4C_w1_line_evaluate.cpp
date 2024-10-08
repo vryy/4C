@@ -719,7 +719,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
 
       const int ngp = intpoints.ip().nquad;
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> poro =
-          Teuchos::RCP(new Core::LinAlg::SerialDenseVector(ngp));
+          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(ngp);
       const int numdim = 2;
       const int numnode = num_node();
       const int noddof = num_dof_per_node(*(nodes()[0]));

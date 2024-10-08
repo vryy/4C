@@ -560,15 +560,15 @@ void Cut::Node::collect_nodal_dof_sets(bool connect_ghost_with_standard_nds)
 
     if (is_std_dofset)  // do not combine standard dofsets as they are unique for each phase
     {
-      cnds = Teuchos::RCP(new Cut::CompositeNodalDofSet(is_std_dofset, pos));
+      cnds = Teuchos::make_rcp<Cut::CompositeNodalDofSet>(is_std_dofset, pos);
       collected_nodaldofsets.push_back(cnds);
     }
     else  // ghost set -> create new collected set or append to an already existing one
     {
       if (collected_nodaldofsets.size() == 0)  // no composite added yet
       {
-        cnds = Teuchos::RCP(new Cut::CompositeNodalDofSet(
-            is_std_dofset, pos));  // if first, then create a new composite
+        cnds = Teuchos::make_rcp<Cut::CompositeNodalDofSet>(
+            is_std_dofset, pos);  // if first, then create a new composite
         collected_nodaldofsets.push_back(cnds);
       }
       else
@@ -588,8 +588,8 @@ void Cut::Node::collect_nodal_dof_sets(bool connect_ghost_with_standard_nds)
             cnds = cnds_last;
           else  // different position, then create a new one!
           {
-            cnds = Teuchos::RCP(new Cut::CompositeNodalDofSet(
-                is_std_dofset, pos));  // if first, then create a new composite
+            cnds = Teuchos::make_rcp<Cut::CompositeNodalDofSet>(
+                is_std_dofset, pos);  // if first, then create a new composite
             collected_nodaldofsets.push_back(cnds);
           }
         }
@@ -602,8 +602,8 @@ void Cut::Node::collect_nodal_dof_sets(bool connect_ghost_with_standard_nds)
             cnds = cnds_last;
           else
           {
-            cnds = Teuchos::RCP(new Cut::CompositeNodalDofSet(
-                is_std_dofset, pos));  // if first, then create a new composite
+            cnds = Teuchos::make_rcp<Cut::CompositeNodalDofSet>(
+                is_std_dofset, pos);  // if first, then create a new composite
             collected_nodaldofsets.push_back(cnds);
           }
         }
@@ -671,7 +671,7 @@ void Cut::Node::build_dof_cell_sets(Point* p, const std::vector<plain_volumecell
           }
 
           // set if this set is a std set
-          nodaldofsets_.push_back(Teuchos::RCP(new NodalDofSet(connected_sets, isnodalcellset)));
+          nodaldofsets_.push_back(Teuchos::make_rcp<NodalDofSet>(connected_sets, isnodalcellset));
 
           std::copy(connected.begin(), connected.end(), std::inserter(done, done.end()));
         }  // connected.size() > 0

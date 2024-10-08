@@ -51,7 +51,7 @@ Cut::Mesh::Mesh(Options& options, double norm, Teuchos::RCP<PointPool> pp, bool 
   if (pp_ == Teuchos::null)
   {
     // create a new octTree based pointpool that stores all points
-    pp_ = Teuchos::RCP(new PointPool(norm));
+    pp_ = Teuchos::make_rcp<PointPool>(norm);
   }
 }
 
@@ -631,7 +631,7 @@ void Cut::Mesh::build_self_cut_tree()
 {
   // constructor for the search tree of the background mesh
   selfcuttree_ =
-      Teuchos::RCP(new Core::Geo::SearchTree(5));  // tree_depth_ 4 is reasonable, 5 is possible
+      Teuchos::make_rcp<Core::Geo::SearchTree>(5);  // tree_depth_ 4 is reasonable, 5 is possible
 
   // extent the bounding volume of the root of the search tree to prevent symmetry issues
   Core::LinAlg::Matrix<3, 2> boundingvolume = bb_->get_bounding_volume();
@@ -667,7 +667,7 @@ void Cut::Mesh::build_static_search_tree()
 {
   // constructor for the search tree of the background mesh
   searchtree_ =
-      Teuchos::RCP(new Core::Geo::SearchTree(5));  // tree_depth_ 4 is reasonable, 5 is possible
+      Teuchos::make_rcp<Core::Geo::SearchTree>(5);  // tree_depth_ 4 is reasonable, 5 is possible
 
   // extent the bounding volume of the root of the search tree to prevent symmetry issues
   Core::LinAlg::Matrix<3, 2> boundingvolume = bb_->get_bounding_volume();

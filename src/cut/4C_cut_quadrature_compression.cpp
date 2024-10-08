@@ -41,11 +41,11 @@ bool Cut::QuadratureCompression::perform_compression_of_quadrature(
   const double t_start = Teuchos::Time::wallTime();
 
   Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> vander =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix);
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> x =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector);
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> rhs =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector);
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
 
   form_matrix_system(gin, vander, rhs);
 
@@ -228,7 +228,7 @@ bool Cut::QuadratureCompression::compress_leja_points(Core::FE::GaussPointsCompo
   int na = mat->numCols();
 
   Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> matTemp =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix);
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   matTemp->shape(ma, na);
 
   // copy this matrix to another
@@ -250,7 +250,7 @@ bool Cut::QuadratureCompression::compress_leja_points(Core::FE::GaussPointsCompo
 
 
   Teuchos::RCP<Core::LinAlg::IntSerialDenseVector> work_temp =
-      Teuchos::RCP(new Core::LinAlg::IntSerialDenseVector);
+      Teuchos::make_rcp<Core::LinAlg::IntSerialDenseVector>();
   work_temp->shape(na, 1);
 
   Teuchos::LAPACK<int, double> ll;
@@ -281,7 +281,7 @@ bool Cut::QuadratureCompression::compress_leja_points(Core::FE::GaussPointsCompo
   std::cout<<"\n";*/
 
   Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> sqrmat =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix);
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
   sqrmat->shape(na, na);
 
   for (int ptno = 0; ptno < na; ptno++)
@@ -321,7 +321,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::QuadratureCompression::form_new_quadrat
     std::vector<int>& work, int& na)
 {
   Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-      Teuchos::RCP(new Core::FE::CollectedGaussPoints(0));
+      Teuchos::make_rcp<Core::FE::CollectedGaussPoints>(0);
 
   for (int pt = 0; pt < na; pt++)
   {
@@ -564,7 +564,7 @@ void Cut::QuadratureCompression::teuchos_gels(Teuchos::RCP<Core::LinAlg::SerialD
   int lwork = 2 * na + (na + 1) * 64;
 
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> work =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector);
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
   work->shape(na, 1);
 
   Teuchos::LAPACK<int, double> ll;
@@ -650,13 +650,13 @@ void Cut::QuadratureCompression::qr_decomposition_lapack(
   (*sol)(3) = 0.0;
 
   Teuchos::RCP<Core::LinAlg::IntSerialDenseVector> jpvt =
-      Teuchos::RCP(new Core::LinAlg::IntSerialDenseVector);
+      Teuchos::make_rcp<Core::LinAlg::IntSerialDenseVector>();
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> tau =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector);
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> work =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector);
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> rwork =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector);
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
   jpvt->shape(na, 1);
   tau->shape(na, 1);
   work->shape(na, 1);

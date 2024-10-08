@@ -168,13 +168,13 @@ Teuchos::RCP<SSI::ContactStrategyBase> SSI::build_contact_strategy(
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
       contact_strategy =
-          Teuchos::RCP(new SSI::ContactStrategyBlock(contact_nitsche_strategy, ssi_maps));
+          Teuchos::make_rcp<SSI::ContactStrategyBlock>(contact_nitsche_strategy, ssi_maps);
       break;
     }
     case Core::LinAlg::MatrixType::sparse:
     {
       contact_strategy =
-          Teuchos::RCP(new SSI::ContactStrategySparse(contact_nitsche_strategy, ssi_maps));
+          Teuchos::make_rcp<SSI::ContactStrategySparse>(contact_nitsche_strategy, ssi_maps);
       break;
     }
 

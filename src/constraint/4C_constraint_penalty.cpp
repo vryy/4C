@@ -55,14 +55,14 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
       nummyele = numele;
     }
     // initialize maps and importer
-    errormap_ = Teuchos::RCP(new Epetra_Map(numele, nummyele, 0, actdisc_->get_comm()));
+    errormap_ = Teuchos::make_rcp<Epetra_Map>(numele, nummyele, 0, actdisc_->get_comm());
     rederrormap_ = Core::LinAlg::allreduce_e_map(*errormap_);
-    errorexport_ = Teuchos::RCP(new Epetra_Export(*rederrormap_, *errormap_));
-    errorimport_ = Teuchos::RCP(new Epetra_Import(*rederrormap_, *errormap_));
-    acterror_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*rederrormap_));
-    initerror_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*rederrormap_));
-    lagrvalues_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*rederrormap_));
-    lagrvalues_force_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*rederrormap_));
+    errorexport_ = Teuchos::make_rcp<Epetra_Export>(*rederrormap_, *errormap_);
+    errorimport_ = Teuchos::make_rcp<Epetra_Import>(*rederrormap_, *errormap_);
+    acterror_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*rederrormap_);
+    initerror_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*rederrormap_);
+    lagrvalues_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*rederrormap_);
+    lagrvalues_force_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*rederrormap_);
   }
   else
   {
@@ -379,7 +379,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_error(
     }
   }
   Teuchos::RCP<Core::LinAlg::Vector<double>> acterrdist =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*errormap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*errormap_);
   acterrdist->Export(*systemvector, *errorexport_, Add);
   systemvector->Import(*acterrdist, *errorimport_, Insert);
 }  // end of evaluate_error

@@ -91,7 +91,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::DirectDivergence::vc_integration_rule(
   }
 
   Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-      Teuchos::RCP(new Core::FE::CollectedGaussPoints(0));
+      Teuchos::make_rcp<Core::FE::CollectedGaussPoints>(0);
 
 #ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
   std::cout << "Number of facets: " << volcell_->Facets().size() << std::endl;

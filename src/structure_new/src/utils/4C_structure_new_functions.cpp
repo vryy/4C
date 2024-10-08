@@ -52,7 +52,7 @@ namespace
       // get materials
       auto fparams = get_svk_mat_pars(mat_id_struc);
 
-      return Teuchos::RCP(new Solid::WeaklyCompressibleEtienneFSIStructureFunction(fparams));
+      return Teuchos::make_rcp<Solid::WeaklyCompressibleEtienneFSIStructureFunction>(fparams);
     }
     else if (function_lin_def.container().get_or(
                  "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE", false))
@@ -70,7 +70,7 @@ namespace
       // get materials
       auto fparams = get_svk_mat_pars(mat_id_struc);
 
-      return Teuchos::RCP(new Solid::WeaklyCompressibleEtienneFSIStructureForceFunction(fparams));
+      return Teuchos::make_rcp<Solid::WeaklyCompressibleEtienneFSIStructureForceFunction>(fparams);
     }
     else
     {

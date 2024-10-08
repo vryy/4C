@@ -82,7 +82,7 @@ void Thermo::TimIntExplEuler::integrate_step()
   {
     // temperature increment in step
     Teuchos::RCP<Core::LinAlg::Vector<double>> tempinc =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*tempn_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*tempn_);
     tempinc->Update(-1.0, *(*temp_)(0), 1.0);
     // create an empty parameter list for the discretisation
     Teuchos::ParameterList p;

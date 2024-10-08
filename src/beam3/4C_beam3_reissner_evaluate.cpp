@@ -900,8 +900,8 @@ void Discret::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
 
   // create object of triad interpolation scheme
   Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
-      triad_interpolation_scheme_ptr =
-          Teuchos::RCP(new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>());
+      triad_interpolation_scheme_ptr = Teuchos::make_rcp<
+          LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>();
 
   // reset triad interpolation scheme based on nodal quaternions
   triad_interpolation_scheme_ptr->reset(Qnode);

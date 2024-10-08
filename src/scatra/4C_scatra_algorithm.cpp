@@ -45,9 +45,9 @@ void ScaTra::ScaTraAlgorithm::setup()
   Adapter::ScaTraFluidCouplingAlgorithm::setup();
 
   // create vectors
-  velincnp_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(
-      *(fluid_field()->extract_velocity_part(fluid_field()->velnp()))));
-  phiincnp_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*(scatra_field()->phinp())));
+  velincnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+      *(fluid_field()->extract_velocity_part(fluid_field()->velnp())));
+  phiincnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(scatra_field()->phinp()));
 
   if (velincnp_ == Teuchos::null) FOUR_C_THROW("velincnp_ == Teuchos::null");
   if (phiincnp_ == Teuchos::null) FOUR_C_THROW("phiincnp_ == Teuchos::null");

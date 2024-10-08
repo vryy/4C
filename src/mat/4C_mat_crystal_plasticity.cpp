@@ -167,7 +167,7 @@ Mat::PAR::CrystalPlasticity::CrystalPlasticity(const Core::Mat::PAR::Parameter::
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::CrystalPlasticity::create_material()
 {
-  return Teuchos::RCP(new Mat::CrystalPlasticity(this));
+  return Teuchos::make_rcp<Mat::CrystalPlasticity>(this);
 }
 
 /*----------------------------------------------------------------------*
@@ -272,10 +272,10 @@ void Mat::CrystalPlasticity::unpack(Core::Communication::UnpackBuffer& buffer)
 
   if (params_ != nullptr)
   {
-    deform_grad_last_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 3>>);
-    plastic_deform_grad_last_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 3>>);
-    gamma_last_ = Teuchos::RCP(new std::vector<std::vector<double>>);
-    defect_densities_last_ = Teuchos::RCP(new std::vector<std::vector<double>>);
+    deform_grad_last_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+    plastic_deform_grad_last_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+    gamma_last_ = Teuchos::make_rcp<std::vector<std::vector<double>>>();
+    defect_densities_last_ = Teuchos::make_rcp<std::vector<std::vector<double>>>();
 
     for (int var = 0; var < histsize; ++var)
     {
@@ -417,17 +417,17 @@ void Mat::CrystalPlasticity::setup(int numgp, const Core::IO::InputParameterCont
   const Core::LinAlg::Matrix<3, 3> identity3 = Core::LinAlg::identity_matrix<3>();
 
   // initialize history variables
-  deform_grad_last_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 3>>);
-  deform_grad_current_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 3>>);
+  deform_grad_last_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  deform_grad_current_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
 
-  plastic_deform_grad_last_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 3>>);
-  plastic_deform_grad_current_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 3>>);
+  plastic_deform_grad_last_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  plastic_deform_grad_current_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
 
-  gamma_last_ = Teuchos::RCP(new std::vector<std::vector<double>>);
-  gamma_current_ = Teuchos::RCP(new std::vector<std::vector<double>>);
+  gamma_last_ = Teuchos::make_rcp<std::vector<std::vector<double>>>();
+  gamma_current_ = Teuchos::make_rcp<std::vector<std::vector<double>>>();
 
-  defect_densities_last_ = Teuchos::RCP(new std::vector<std::vector<double>>);
-  defect_densities_current_ = Teuchos::RCP(new std::vector<std::vector<double>>);
+  defect_densities_last_ = Teuchos::make_rcp<std::vector<std::vector<double>>>();
+  defect_densities_current_ = Teuchos::make_rcp<std::vector<std::vector<double>>>();
 
   // set size to number of  Gauss points so each Gauss Point has its own set of history data
   deform_grad_last_->resize(numgp);
@@ -503,10 +503,10 @@ void Mat::CrystalPlasticity::update()
   defect_densities_last_ = defect_densities_current_;
 
   // empty vectors of current data
-  deform_grad_current_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 3>>);
-  plastic_deform_grad_current_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<3, 3>>);
-  gamma_current_ = Teuchos::RCP(new std::vector<std::vector<double>>);
-  defect_densities_current_ = Teuchos::RCP(new std::vector<std::vector<double>>);
+  deform_grad_current_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  plastic_deform_grad_current_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 3>>>();
+  gamma_current_ = Teuchos::make_rcp<std::vector<std::vector<double>>>();
+  defect_densities_current_ = Teuchos::make_rcp<std::vector<std::vector<double>>>();
 
   // get the size of the vector (use the last vector, because it includes latest results,
   // current is already empty)

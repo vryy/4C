@@ -270,7 +270,7 @@ void Core::IO::Gmsh::vector_field_multi_vector_dof_based_to_gmsh(
 
   // tranform solution vector from dof_row_map to DofColMap
   const Teuchos::RCP<Epetra_MultiVector> vectorfield =
-      Teuchos::RCP(new Epetra_MultiVector(*discret->dof_col_map(nds), 3, true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*discret->dof_col_map(nds), 3, true);
   Core::LinAlg::export_to(*vectorfield_row, *vectorfield);
 
   // loop all row elements on this processor
@@ -486,7 +486,7 @@ void Core::IO::Gmsh::vector_field_node_based_to_gmsh(
   // remark: Core::Rebalance::get_col_version_of_row_vector() does only work for
   // Core::LinAlg::Vectors on dof_row_map
   const Teuchos::RCP<Epetra_MultiVector> vectorfield =
-      Teuchos::RCP(new Epetra_MultiVector(*discret->node_col_map(), 3, true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*discret->node_col_map(), 3, true);
   Core::LinAlg::export_to(*vectorfield_row, *vectorfield);
 
   // loop all row elements on this processor
@@ -536,7 +536,7 @@ void Core::IO::Gmsh::scalar_field_node_based_to_gmsh(
   //         something similar is done in COMBUST::FlameFront::ProcessFlameFront, although not for
   //         Epetra_MultiVectors
   const Teuchos::RCP<Core::LinAlg::Vector<double>> scalarfield =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret->node_col_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret->node_col_map(), true);
   Core::LinAlg::export_to(*scalarfield_row, *scalarfield);
 
   // loop all row elements on this processor

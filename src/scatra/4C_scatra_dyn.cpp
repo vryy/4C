@@ -116,12 +116,12 @@ void scatra_dyn(int restart)
       }
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      auto scatraonly = Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(
-          scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber)));
+      auto scatraonly = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(
+          scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      auto dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
-          Global::Problem::instance()->n_dim() + 1, 0, 0, true));
+      auto dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+          Global::Problem::instance()->n_dim() + 1, 0, 0, true);
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       scatraonly->scatra_field()->set_number_of_dof_set_velocity(1);
@@ -224,8 +224,8 @@ void scatra_dyn(int restart)
       }
 
       // create a scalar transport algorithm instance
-      auto algo = Teuchos::RCP(new ScaTra::ScaTraAlgorithm(comm, scatradyn, fdyn, "scatra",
-          Global::Problem::instance()->solver_params(linsolvernumber)));
+      auto algo = Teuchos::make_rcp<ScaTra::ScaTraAlgorithm>(comm, scatradyn, fdyn, "scatra",
+          Global::Problem::instance()->solver_params(linsolvernumber));
 
       // create scatra elements by cloning from fluid dis in matching case
       if (fieldcoupling == Inpar::ScaTra::coupling_match)
@@ -258,12 +258,12 @@ void scatra_dyn(int restart)
 
         // add proxy of velocity related degrees of freedom to scatra discretization
         Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-        dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
-            ndofpernode_scatra, ndofperelement_scatra, 0, true));
+        dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+            ndofpernode_scatra, ndofperelement_scatra, 0, true);
         if (fluiddis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in fluid field");
-        dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
-            ndofpernode_fluid, ndofperelement_fluid, 0, true));
+        dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+            ndofpernode_fluid, ndofperelement_fluid, 0, true);
         if (scatradis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in scatra field");
         algo->scatra_field()->set_number_of_dof_set_velocity(1);

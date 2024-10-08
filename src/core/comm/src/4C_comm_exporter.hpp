@@ -613,7 +613,7 @@ namespace Core::Communication
 
       void unpack_object(int gid, UnpackBuffer& buffer) override
       {
-        Teuchos::RCP<T> obj = Teuchos::RCP(new T);
+        Teuchos::RCP<T> obj = Teuchos::make_rcp<T>();
         extract_from_pack(buffer, *obj);
 
         // add object to my map

@@ -396,7 +396,7 @@ void Cut::OctTreeNode::split(int level)
 
     for (int i = 0; i < 8; ++i)
     {
-      nodes_[i] = Teuchos::RCP(new OctTreeNode(norm_));
+      nodes_[i] = Teuchos::make_rcp<OctTreeNode>(norm_);
     }
 
     // avoid empty room (room not covered by boundary boxes)

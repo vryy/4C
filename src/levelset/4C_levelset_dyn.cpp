@@ -66,13 +66,13 @@ void levelset_dyn(int restart)
 
   // create instance of scalar transport basis algorithm (empty fluid discretization)
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatrabase =
-      Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(
-          levelsetcontrol, scatradyn, problem->solver_params(linsolvernumber)));
+      Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(
+          levelsetcontrol, scatradyn, problem->solver_params(linsolvernumber));
 
   // add proxy of velocity related degrees of freedom to scatra discretization
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
-          Global::Problem::instance()->n_dim() + 1, 0, 0, true));
+      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+          Global::Problem::instance()->n_dim() + 1, 0, 0, true);
   if (scatradis->add_dof_set(dofsetaux) != 1)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
   scatrabase->scatra_field()->set_number_of_dof_set_velocity(1);

@@ -47,7 +47,7 @@ Mat::PAR::MembraneActiveStrain::MembraneActiveStrain(const Core::Mat::PAR::Param
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MembraneActiveStrain::create_material()
 {
-  return Teuchos::RCP(new Mat::MembraneActiveStrain(this));
+  return Teuchos::make_rcp<Mat::MembraneActiveStrain>(this);
 }  // Mat::PAR::MembraneActiveStrain::create_material
 
 Mat::MembraneActiveStrainType Mat::MembraneActiveStrainType::instance_;
@@ -193,8 +193,8 @@ void Mat::MembraneActiveStrain::unpack(Core::Communication::UnpackBuffer& buffer
   }
 
   // unpack internal variables
-  voltage_ = Teuchos::RCP(new std::vector<double>(numgp));
-  activation_ = Teuchos::RCP(new std::vector<double>(numgp));
+  voltage_ = Teuchos::make_rcp<std::vector<double>>(numgp);
+  activation_ = Teuchos::make_rcp<std::vector<double>>(numgp);
   double voltage_gp;
   double activation_gp;
   for (int gp = 0; gp < numgp; ++gp)
@@ -220,10 +220,10 @@ void Mat::MembraneActiveStrain::setup(int numgp, const Core::IO::InputParameterC
   matpassive_->setup(numgp, container);
 
   // setup internal variables
-  voltage_ = Teuchos::RCP(new std::vector<double>);
+  voltage_ = Teuchos::make_rcp<std::vector<double>>();
   voltage_->resize(numgp);
 
-  activation_ = Teuchos::RCP(new std::vector<double>);
+  activation_ = Teuchos::make_rcp<std::vector<double>>();
   activation_->resize(numgp);
 
   for (int gp = 0; gp < numgp; ++gp)
@@ -251,7 +251,7 @@ void Mat::MembraneActiveStrain::evaluate_membrane(const Core::LinAlg::Matrix<3, 
   // get pointer to vector containing the scalar states at the gauss points
   Teuchos::RCP<std::vector<std::vector<double>>> gpscalar =
       params.get<Teuchos::RCP<std::vector<std::vector<double>>>>("gp_scalar",
-          Teuchos::RCP(new std::vector<std::vector<double>>(4, std::vector<double>(4, 0.0))));
+          Teuchos::make_rcp<std::vector<std::vector<double>>>(4, std::vector<double>(4, 0.0)));
 
   const unsigned int scalarid_voltage = params_->scalid_voltage_;
 

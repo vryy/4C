@@ -126,7 +126,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new CarreauYasuda(*this));
+      return Teuchos::make_rcp<CarreauYasuda>(*this);
     }
 
     /// return material parameters for element calculation

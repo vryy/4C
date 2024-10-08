@@ -163,7 +163,7 @@ namespace Mat
 
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new ViscoPlasticNoYieldSurface(*this));
+      return Teuchos::make_rcp<ViscoPlasticNoYieldSurface>(*this);
     }
 
     //! @name Evaluation methods

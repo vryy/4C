@@ -453,8 +453,8 @@ bool XFEM::XfluidTimeintBase::call_side_edge_intersection_t(Cut::SideHandle* sh,
   Teuchos::RCP<Cut::IntersectionBase> intersect =
       Cut::IntersectionBase::create(Core::FE::CellType::line2, sidetype);
   Teuchos::RCP<Cut::Options> options =
-      Teuchos::RCP(new Cut::Options());  // Create cut options for intersection
-                                         // (specify to use double prec.)
+      Teuchos::make_rcp<Cut::Options>();  // Create cut options for intersection
+                                          // (specify to use double prec.)
   intersect->init(xyze_lineElement, xyze_surfaceElement, false, false, false, options.getRawPtr());
 
   // check also limits during the newton scheme and when converged
@@ -884,9 +884,9 @@ XFEM::XfluidStd::XfluidStd(
 {
   if (initialize)
   {
-    const int nsd = 3;  // dimension
-    timeIntData_ = Teuchos::RCP(
-        new std::vector<TimeIntData>);  // vector containing all data used for computation
+    const int nsd = 3;                                             // dimension
+    timeIntData_ = Teuchos::make_rcp<std::vector<TimeIntData>>();  // vector containing all data
+                                                                   // used for computation
 
     Core::LinAlg::Matrix<nsd, 1> dummyStartpoint;  // dummy startpoint for comparison
     for (int i = 0; i < nsd; i++) dummyStartpoint(i) = 777.777;

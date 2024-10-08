@@ -25,13 +25,13 @@ FOUR_C_NAMESPACE_OPEN
 PostFilterBase::PostFilterBase(PostField* field, const std::string& name)
 {
   if (field->problem()->filter() == "ensight")
-    writer_ = Teuchos::RCP(new EnsightWriter(field, name));
+    writer_ = Teuchos::make_rcp<EnsightWriter>(field, name);
   else if (field->problem()->filter() == "vtu")
-    writer_ = Teuchos::RCP(new PostVtuWriter(field, name));
+    writer_ = Teuchos::make_rcp<PostVtuWriter>(field, name);
   else if (field->problem()->filter() == "vti")
-    writer_ = Teuchos::RCP(new PostVtiWriter(field, name));
+    writer_ = Teuchos::make_rcp<PostVtiWriter>(field, name);
   else if (field->problem()->filter() == "vtu_node_based")
-    writer_ = Teuchos::RCP(new PostVtuWriterNode(field, name));
+    writer_ = Teuchos::make_rcp<PostVtuWriterNode>(field, name);
   else
     FOUR_C_THROW("Unsupported filter");
 }

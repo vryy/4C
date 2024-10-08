@@ -201,8 +201,8 @@ Arteries::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(
         // -------------------------------------------------------------------
         // sort junction BCs in map
         // -------------------------------------------------------------------
-        Teuchos::RCP<ArtJunctionBc> junbc = Teuchos::RCP(
-            new ArtJunctionBc(discret_, output_, SortedConds[i], SortedIOarts[i], dta, condid, i));
+        Teuchos::RCP<ArtJunctionBc> junbc = Teuchos::make_rcp<ArtJunctionBc>(
+            discret_, output_, SortedConds[i], SortedIOarts[i], dta, condid, i);
         ajunmap_.insert(std::make_pair(condid, junbc));
 
         // -------------------------------------------------------------------
@@ -219,7 +219,7 @@ Arteries::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(
         for (unsigned int j = 0; j < SortedConds[i].size(); j++)
         {
           const std::vector<int> *nodes = SortedConds[i][j]->get_nodes();
-          Teuchos::RCP<JunctionNodeParams> nodeparams = Teuchos::RCP(new JunctionNodeParams);
+          Teuchos::RCP<JunctionNodeParams> nodeparams = Teuchos::make_rcp<JunctionNodeParams>();
 
           int local_id = discret_->node_row_map()->LID((*nodes)[0]);
           inserted = nodalParams->insert(std::make_pair(local_id, nodeparams)).second;

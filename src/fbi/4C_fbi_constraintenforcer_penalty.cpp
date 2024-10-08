@@ -75,8 +75,8 @@ Adapter::FBIPenaltyConstraintenforcer::assemble_fluid_coupling_residual() const
       ->scale_penalty_fluid_contributions();
   // Get the force acting on the fluid field, scale it with -1 to get the
   // correct direction
-  Teuchos::RCP<Core::LinAlg::Vector<double>> f = Teuchos::RCP(
-      new Core::LinAlg::Vector<double>((bridge()->get_fluid_coupling_residual())->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> f = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+      (bridge()->get_fluid_coupling_residual())->Map());
   f->Update(-1.0, *(bridge()->get_fluid_coupling_residual()), 0.0);
   return f;
 }
@@ -89,8 +89,8 @@ Adapter::FBIPenaltyConstraintenforcer::assemble_structure_coupling_residual() co
       ->scale_penalty_structure_contributions();
   // Get the force acting on the structure field, scale it with the penalty factor and -1 to get the
   // correct direction
-  Teuchos::RCP<Core::LinAlg::Vector<double>> f = Teuchos::RCP(
-      new Core::LinAlg::Vector<double>(bridge()->get_structure_coupling_residual()->Map()));
+  Teuchos::RCP<Core::LinAlg::Vector<double>> f = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+      bridge()->get_structure_coupling_residual()->Map());
   f->Update(-1.0, *(bridge()->get_structure_coupling_residual()), 0.0);
 
   return f;

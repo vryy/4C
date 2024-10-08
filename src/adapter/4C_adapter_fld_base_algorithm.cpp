@@ -146,11 +146,11 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
           Global::Problem::instance()->solver_params(mshsolver), "SOLVER");
 
       // create solver objects
-      solver = Teuchos::RCP(
-          new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(mshsolver),
-              actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY")));
+      solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+          Global::Problem::instance()->solver_params(mshsolver), actdis->get_comm(),
+          Global::Problem::instance()->solver_params_callback(),
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
 
       if (solvertype == Core::LinearSolver::SolverType::belos)
       {
@@ -205,11 +205,11 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
             "no linear solver defined for fluid meshtying problem. Please set LINEAR_SOLVER in "
             "CONTACT DYNAMIC to a valid number!");
 
-      solver = Teuchos::RCP(
-          new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(mshsolver),
-              actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY")));
+      solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+          Global::Problem::instance()->solver_params(mshsolver), actdis->get_comm(),
+          Global::Problem::instance()->solver_params_callback(),
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
     }
     break;
     case Inpar::FLUID::no_meshtying:  // no meshtying -> use FLUID SOLVER
@@ -223,11 +223,11 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         FOUR_C_THROW(
             "no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC "
             "to a valid number!");
-      solver = Teuchos::RCP(
-          new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
-              actdis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY")));
+      solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+          Global::Problem::instance()->solver_params(linsolvernumber), actdis->get_comm(),
+          Global::Problem::instance()->solver_params_callback(),
+          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
 
       break;
     }
@@ -284,7 +284,8 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
   // -------------------------------------------------------------------
   // set parameters in list
   // -------------------------------------------------------------------
-  Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams = Teuchos::RCP(new Teuchos::ParameterList());
+  Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams =
+      Teuchos::make_rcp<Teuchos::ParameterList>();
 
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma,
   // temperature-dependent water, poro)
@@ -583,33 +584,34 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
                 Inpar::FLUID::weakly_compressible_dens_mom &&
             Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") !=
                 Inpar::FLUID::weakly_compressible_stokes_dens_mom)
-          fluid_ = Teuchos::RCP(new FLD::TimIntHDG(actdis, solver, fluidtimeparams, output, isale));
+          fluid_ =
+              Teuchos::make_rcp<FLD::TimIntHDG>(actdis, solver, fluidtimeparams, output, isale);
         else if (Global::Problem::instance()->spatial_approximation_type() ==
                      Core::FE::ShapeFunctionType::hdg &&
                  (Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                          Inpar::FLUID::weakly_compressible_dens_mom ||
                      Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                          Inpar::FLUID::weakly_compressible_stokes_dens_mom))
-          fluid_ = Teuchos::RCP(
-              new FLD::TimIntHDGWeakComp(actdis, solver, fluidtimeparams, output, isale));
+          fluid_ = Teuchos::make_rcp<FLD::TimIntHDGWeakComp>(
+              actdis, solver, fluidtimeparams, output, isale);
         else if (Global::Problem::instance()->spatial_approximation_type() ==
                      Core::FE::ShapeFunctionType::hdg &&
                  timeint == Inpar::FLUID::timeint_stationary)
-          fluid_ = Teuchos::RCP(
-              new FLD::TimIntStationaryHDG(actdis, solver, fluidtimeparams, output, isale));
+          fluid_ = Teuchos::make_rcp<FLD::TimIntStationaryHDG>(
+              actdis, solver, fluidtimeparams, output, isale);
         else if (timeint == Inpar::FLUID::timeint_stationary)
-          fluid_ = Teuchos::RCP(
-              new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
+          fluid_ = Teuchos::make_rcp<FLD::TimIntStationary>(
+              actdis, solver, fluidtimeparams, output, isale);
         else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-          fluid_ = Teuchos::RCP(
-              new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
+          fluid_ = Teuchos::make_rcp<FLD::TimIntOneStepTheta>(
+              actdis, solver, fluidtimeparams, output, isale);
         else if (timeint == Inpar::FLUID::timeint_bdf2)
           fluid_ =
-              Teuchos::RCP(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
+              Teuchos::make_rcp<FLD::TimIntBDF2>(actdis, solver, fluidtimeparams, output, isale);
         else if (timeint == Inpar::FLUID::timeint_afgenalpha or
                  timeint == Inpar::FLUID::timeint_npgenalpha)
-          fluid_ =
-              Teuchos::RCP(new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+          fluid_ = Teuchos::make_rcp<FLD::TimIntGenAlpha>(
+              actdis, solver, fluidtimeparams, output, isale);
         else
           FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
       }
@@ -617,18 +619,18 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
       case Core::ProblemType::fluid_redmodels:
       {
         if (timeint == Inpar::FLUID::timeint_stationary)
-          fluid_ = Teuchos::RCP(
-              new FLD::TimIntRedModelsStat(actdis, solver, fluidtimeparams, output, isale));
+          fluid_ = Teuchos::make_rcp<FLD::TimIntRedModelsStat>(
+              actdis, solver, fluidtimeparams, output, isale);
         else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-          fluid_ = Teuchos::RCP(
-              new FLD::TimIntRedModelsOst(actdis, solver, fluidtimeparams, output, isale));
+          fluid_ = Teuchos::make_rcp<FLD::TimIntRedModelsOst>(
+              actdis, solver, fluidtimeparams, output, isale);
         else if (timeint == Inpar::FLUID::timeint_afgenalpha or
                  timeint == Inpar::FLUID::timeint_npgenalpha)
-          fluid_ = Teuchos::RCP(
-              new FLD::TimIntRedModelsGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+          fluid_ = Teuchos::make_rcp<FLD::TimIntRedModelsGenAlpha>(
+              actdis, solver, fluidtimeparams, output, isale);
         else if (timeint == Inpar::FLUID::timeint_bdf2)
-          fluid_ = Teuchos::RCP(
-              new FLD::TimIntRedModelsBDF2(actdis, solver, fluidtimeparams, output, isale));
+          fluid_ = Teuchos::make_rcp<FLD::TimIntRedModelsBDF2>(
+              actdis, solver, fluidtimeparams, output, isale);
         else
           FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
       }
@@ -640,14 +642,14 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         {
           if (timeint == Inpar::FLUID::timeint_afgenalpha or
               timeint == Inpar::FLUID::timeint_npgenalpha)
-            fluid_ = Teuchos::RCP(
-                new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+            fluid_ = Teuchos::make_rcp<FLD::TimIntGenAlpha>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-            fluid_ = Teuchos::RCP(
-                new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
+            fluid_ = Teuchos::make_rcp<FLD::TimIntOneStepTheta>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_bdf2)
             fluid_ =
-                Teuchos::RCP(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
+                Teuchos::make_rcp<FLD::TimIntBDF2>(actdis, solver, fluidtimeparams, output, isale);
           else
             FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
         }
@@ -655,14 +657,14 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         {
           if (timeint == Inpar::FLUID::timeint_afgenalpha or
               timeint == Inpar::FLUID::timeint_npgenalpha)
-            fluid_ = Teuchos::RCP(
-                new FLD::TimIntLomaGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+            fluid_ = Teuchos::make_rcp<FLD::TimIntLomaGenAlpha>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-            fluid_ = Teuchos::RCP(
-                new FLD::TimIntLomaOst(actdis, solver, fluidtimeparams, output, isale));
+            fluid_ = Teuchos::make_rcp<FLD::TimIntLomaOst>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_bdf2)
-            fluid_ = Teuchos::RCP(
-                new FLD::TimIntLomaBDF2(actdis, solver, fluidtimeparams, output, isale));
+            fluid_ = Teuchos::make_rcp<FLD::TimIntLomaBDF2>(
+                actdis, solver, fluidtimeparams, output, isale);
           else
             FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
         }
@@ -679,23 +681,23 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
 
           Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
           if (timeint == Inpar::FLUID::timeint_stationary)
-            tmpfluid = Teuchos::RCP(
-                new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid = Teuchos::make_rcp<FLD::TimIntStationary>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-            tmpfluid = Teuchos::RCP(
-                new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid = Teuchos::make_rcp<FLD::TimIntOneStepTheta>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_bdf2)
             tmpfluid =
-                Teuchos::RCP(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
+                Teuchos::make_rcp<FLD::TimIntBDF2>(actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_afgenalpha or
                    timeint == Inpar::FLUID::timeint_npgenalpha)
-            tmpfluid = Teuchos::RCP(
-                new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid = Teuchos::make_rcp<FLD::TimIntGenAlpha>(
+                actdis, solver, fluidtimeparams, output, isale);
           else
             FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
 
-          fluid_ = Teuchos::RCP(
-              new FLD::XFluidFluid(tmpfluid, xfluiddis, solver, fluidtimeparams, isale));
+          fluid_ = Teuchos::make_rcp<FLD::XFluidFluid>(
+              tmpfluid, xfluiddis, solver, fluidtimeparams, isale);
           break;
         }
 
@@ -706,8 +708,8 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         if (Global::Problem::instance()->does_exist_dis("scatra"))
           scatradis = Global::Problem::instance()->get_dis("scatra");
 
-        Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::RCP(
-            new FLD::XFluid(actdis, soliddis, scatradis, solver, fluidtimeparams, output, isale));
+        Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::make_rcp<FLD::XFluid>(
+            actdis, soliddis, scatradis, solver, fluidtimeparams, output, isale);
 
         std::string condition_name = "";
 
@@ -717,8 +719,8 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         // however, the xfluid-class itself does not support the full ALE-functionality without the
         // FSI itself ALE-fluid with level-set/without mesh discretization not supported yet
         if (isale)  // in ale case
-          fluid_ = Teuchos::RCP(
-              new XFluidFSI(tmpfluid, condition_name, solver, fluidtimeparams, output));
+          fluid_ = Teuchos::make_rcp<XFluidFSI>(
+              tmpfluid, condition_name, solver, fluidtimeparams, output);
         else
           fluid_ = tmpfluid;
       }
@@ -764,23 +766,23 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
 
           Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid_emb;
           if (timeint == Inpar::FLUID::timeint_stationary)
-            tmpfluid_emb = Teuchos::RCP(
-                new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid_emb = Teuchos::make_rcp<FLD::TimIntStationary>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-            tmpfluid_emb = Teuchos::RCP(
-                new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid_emb = Teuchos::make_rcp<FLD::TimIntOneStepTheta>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_bdf2)
             tmpfluid_emb =
-                Teuchos::RCP(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
+                Teuchos::make_rcp<FLD::TimIntBDF2>(actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_afgenalpha or
                    timeint == Inpar::FLUID::timeint_npgenalpha)
-            tmpfluid_emb = Teuchos::RCP(
-                new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid_emb = Teuchos::make_rcp<FLD::TimIntGenAlpha>(
+                actdis, solver, fluidtimeparams, output, isale);
           else
             FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
 
-          tmpfluid = Teuchos::RCP(new FLD::XFluidFluid(
-              tmpfluid_emb, xfluiddis, soliddis, solver, fluidtimeparams, isale));
+          tmpfluid = Teuchos::make_rcp<FLD::XFluidFluid>(
+              tmpfluid_emb, xfluiddis, soliddis, solver, fluidtimeparams, isale);
         }
         else
         {
@@ -789,15 +791,15 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
           if (Global::Problem::instance()->does_exist_dis("scatra"))
             scatradis = Global::Problem::instance()->get_dis("scatra");
 
-          tmpfluid = Teuchos::RCP(
-              new FLD::XFluid(actdis, soliddis, scatradis, solver, fluidtimeparams, output, isale));
+          tmpfluid = Teuchos::make_rcp<FLD::XFluid>(
+              actdis, soliddis, scatradis, solver, fluidtimeparams, output, isale);
         }
 
         if (coupling == fsi_iter_xfem_monolithic)
           fluid_ = tmpfluid;
         else
-          fluid_ = Teuchos::RCP(
-              new XFluidFSI(tmpfluid, condition_name, solver, fluidtimeparams, output));
+          fluid_ = Teuchos::make_rcp<XFluidFSI>(
+              tmpfluid, condition_name, solver, fluidtimeparams, output);
       }
       break;
       case Core::ProblemType::fluid_xfem_ls:
@@ -809,8 +811,8 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         if (Global::Problem::instance()->does_exist_dis("scatra"))
           scatradis = Global::Problem::instance()->get_dis("scatra");
 
-        fluid_ = Teuchos::RCP(
-            new FLD::XFluid(actdis, soliddis, scatradis, solver, fluidtimeparams, output));
+        fluid_ = Teuchos::make_rcp<FLD::XFluid>(
+            actdis, soliddis, scatradis, solver, fluidtimeparams, output);
       }
       break;
       case Core::ProblemType::fsi:
@@ -827,21 +829,21 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
                     Inpar::FLUID::weakly_compressible_dens_mom ||
                 Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(fdyn, "PHYSICAL_TYPE") ==
                     Inpar::FLUID::weakly_compressible_stokes_dens_mom))
-          tmpfluid = Teuchos::RCP(
-              new FLD::TimIntHDGWeakComp(actdis, solver, fluidtimeparams, output, isale));
+          tmpfluid = Teuchos::make_rcp<FLD::TimIntHDGWeakComp>(
+              actdis, solver, fluidtimeparams, output, isale);
         else if (timeint == Inpar::FLUID::timeint_stationary)
-          tmpfluid = Teuchos::RCP(
-              new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
+          tmpfluid = Teuchos::make_rcp<FLD::TimIntStationary>(
+              actdis, solver, fluidtimeparams, output, isale);
         else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-          tmpfluid = Teuchos::RCP(
-              new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
+          tmpfluid = Teuchos::make_rcp<FLD::TimIntOneStepTheta>(
+              actdis, solver, fluidtimeparams, output, isale);
         else if (timeint == Inpar::FLUID::timeint_bdf2)
           tmpfluid =
-              Teuchos::RCP(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
+              Teuchos::make_rcp<FLD::TimIntBDF2>(actdis, solver, fluidtimeparams, output, isale);
         else if (timeint == Inpar::FLUID::timeint_afgenalpha or
                  timeint == Inpar::FLUID::timeint_npgenalpha)
-          tmpfluid =
-              Teuchos::RCP(new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+          tmpfluid = Teuchos::make_rcp<FLD::TimIntGenAlpha>(
+              actdis, solver, fluidtimeparams, output, isale);
         else
           FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
 
@@ -855,21 +857,21 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
           // actdis is the embedded fluid discretization
           Teuchos::RCP<Core::FE::Discretization> xfluiddis =
               Global::Problem::instance()->get_dis("xfluid");
-          Teuchos::RCP<FLD::XFluidFluid> xffluid = Teuchos::RCP(
-              new FLD::XFluidFluid(tmpfluid, xfluiddis, solver, fluidtimeparams, false, isale));
-          fluid_ = Teuchos::RCP(
-              new FluidFluidFSI(xffluid, tmpfluid, solver, fluidtimeparams, isale, dirichletcond));
+          Teuchos::RCP<FLD::XFluidFluid> xffluid = Teuchos::make_rcp<FLD::XFluidFluid>(
+              tmpfluid, xfluiddis, solver, fluidtimeparams, false, isale);
+          fluid_ = Teuchos::make_rcp<FluidFluidFSI>(
+              xffluid, tmpfluid, solver, fluidtimeparams, isale, dirichletcond);
         }
         else if (coupling == fsi_iter_sliding_monolithicfluidsplit or
                  coupling == fsi_iter_sliding_monolithicstructuresplit)
-          fluid_ = Teuchos::RCP(new FluidFSIMsht(
-              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+          fluid_ = Teuchos::make_rcp<FluidFSIMsht>(
+              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond);
         else if (probtype == Core::ProblemType::fbi)
-          fluid_ = Teuchos::RCP(new FluidFBI(
-              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+          fluid_ = Teuchos::make_rcp<FluidFBI>(
+              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond);
         else
-          fluid_ = Teuchos::RCP(new FluidFSI(
-              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+          fluid_ = Teuchos::make_rcp<FluidFSI>(
+              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond);
       }
       break;
       case Core::ProblemType::thermo_fsi:
@@ -880,14 +882,14 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         {
           if (timeint == Inpar::FLUID::timeint_afgenalpha or
               timeint == Inpar::FLUID::timeint_npgenalpha)
-            tmpfluid = Teuchos::RCP(
-                new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid = Teuchos::make_rcp<FLD::TimIntGenAlpha>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-            tmpfluid = Teuchos::RCP(
-                new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid = Teuchos::make_rcp<FLD::TimIntOneStepTheta>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_bdf2)
             tmpfluid =
-                Teuchos::RCP(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
+                Teuchos::make_rcp<FLD::TimIntBDF2>(actdis, solver, fluidtimeparams, output, isale);
           else
             FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
         }
@@ -895,14 +897,14 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         {
           if (timeint == Inpar::FLUID::timeint_afgenalpha or
               timeint == Inpar::FLUID::timeint_npgenalpha)
-            tmpfluid = Teuchos::RCP(
-                new FLD::TimIntLomaGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid = Teuchos::make_rcp<FLD::TimIntLomaGenAlpha>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-            tmpfluid = Teuchos::RCP(
-                new FLD::TimIntLomaOst(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid = Teuchos::make_rcp<FLD::TimIntLomaOst>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_bdf2)
-            tmpfluid = Teuchos::RCP(
-                new FLD::TimIntLomaBDF2(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid = Teuchos::make_rcp<FLD::TimIntLomaBDF2>(
+                actdis, solver, fluidtimeparams, output, isale);
           else
             FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
         }
@@ -912,11 +914,11 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
 
         if (coupling == fsi_iter_sliding_monolithicfluidsplit or
             coupling == fsi_iter_sliding_monolithicstructuresplit)
-          fluid_ = Teuchos::RCP(new FluidFSIMsht(
-              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+          fluid_ = Teuchos::make_rcp<FluidFSIMsht>(
+              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond);
         else
-          fluid_ = Teuchos::RCP(new FluidFSI(
-              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+          fluid_ = Teuchos::make_rcp<FluidFSI>(
+              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond);
       }
       break;
       case Core::ProblemType::fsi_redmodels:
@@ -927,22 +929,22 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         // create the fluid time integration object
         Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
         if (timeint == Inpar::FLUID::timeint_stationary)
-          tmpfluid = Teuchos::RCP(
-              new FLD::TimIntRedModelsStat(actdis, solver, fluidtimeparams, output, isale));
+          tmpfluid = Teuchos::make_rcp<FLD::TimIntRedModelsStat>(
+              actdis, solver, fluidtimeparams, output, isale);
         else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-          tmpfluid = Teuchos::RCP(
-              new FLD::TimIntRedModelsOst(actdis, solver, fluidtimeparams, output, isale));
+          tmpfluid = Teuchos::make_rcp<FLD::TimIntRedModelsOst>(
+              actdis, solver, fluidtimeparams, output, isale);
         else if (timeint == Inpar::FLUID::timeint_afgenalpha or
                  timeint == Inpar::FLUID::timeint_npgenalpha)
-          tmpfluid = Teuchos::RCP(
-              new FLD::TimIntRedModelsGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+          tmpfluid = Teuchos::make_rcp<FLD::TimIntRedModelsGenAlpha>(
+              actdis, solver, fluidtimeparams, output, isale);
         else if (timeint == Inpar::FLUID::timeint_bdf2)
-          tmpfluid = Teuchos::RCP(
-              new FLD::TimIntRedModelsBDF2(actdis, solver, fluidtimeparams, output, isale));
+          tmpfluid = Teuchos::make_rcp<FLD::TimIntRedModelsBDF2>(
+              actdis, solver, fluidtimeparams, output, isale);
         else
           FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
-        fluid_ = Teuchos::RCP(
-            new FluidFSI(tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+        fluid_ = Teuchos::make_rcp<FluidFSI>(
+            tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond);
       }
       break;
       case Core::ProblemType::poroelast:
@@ -955,34 +957,34 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         if (disname == "porofluid")
         {
           if (timeint == Inpar::FLUID::timeint_stationary)
-            tmpfluid = Teuchos::RCP(
-                new FLD::TimIntPoroStat(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid = Teuchos::make_rcp<FLD::TimIntPoroStat>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-            tmpfluid = Teuchos::RCP(
-                new FLD::TimIntPoroOst(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid = Teuchos::make_rcp<FLD::TimIntPoroOst>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_afgenalpha or
                    timeint == Inpar::FLUID::timeint_npgenalpha)
-            tmpfluid = Teuchos::RCP(
-                new FLD::TimIntPoroGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid = Teuchos::make_rcp<FLD::TimIntPoroGenAlpha>(
+                actdis, solver, fluidtimeparams, output, isale);
           else
             FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
-          fluid_ = Teuchos::RCP(new FluidPoro(
-              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+          fluid_ = Teuchos::make_rcp<FluidPoro>(
+              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond);
         }
         else if (disname == "fluid")
         {
           if (probtype == Core::ProblemType::fpsi or probtype == Core::ProblemType::fps3i)
           {
             if (timeint == Inpar::FLUID::timeint_stationary)
-              tmpfluid = Teuchos::RCP(
-                  new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
+              tmpfluid = Teuchos::make_rcp<FLD::TimIntStationary>(
+                  actdis, solver, fluidtimeparams, output, isale);
             else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-              tmpfluid = Teuchos::RCP(
-                  new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
+              tmpfluid = Teuchos::make_rcp<FLD::TimIntOneStepTheta>(
+                  actdis, solver, fluidtimeparams, output, isale);
             else
               FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
-            fluid_ = Teuchos::RCP(new FluidFPSI(
-                tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+            fluid_ = Teuchos::make_rcp<FluidFPSI>(
+                tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond);
           }
           else if (probtype == Core::ProblemType::fpsi_xfem)
           {
@@ -993,8 +995,8 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
             if (Global::Problem::instance()->does_exist_dis("scatra"))
               scatradis = Global::Problem::instance()->get_dis("scatra");
 
-            fluid_ = Teuchos::RCP(new FLD::XFluid(
-                actdis, soliddis, scatradis, solver, fluidtimeparams, output, isale));
+            fluid_ = Teuchos::make_rcp<FLD::XFluid>(
+                actdis, soliddis, scatradis, solver, fluidtimeparams, output, isale);
           }
         }
       }
@@ -1012,38 +1014,38 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
         {
           Teuchos::RCP<FLD::FluidImplicitTimeInt> tmpfluid;
           if (timeint == Inpar::FLUID::timeint_stationary)
-            tmpfluid = Teuchos::RCP(
-                new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid = Teuchos::make_rcp<FLD::TimIntStationary>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-            tmpfluid = Teuchos::RCP(
-                new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid = Teuchos::make_rcp<FLD::TimIntOneStepTheta>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_bdf2)
             tmpfluid =
-                Teuchos::RCP(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
+                Teuchos::make_rcp<FLD::TimIntBDF2>(actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_afgenalpha or
                    timeint == Inpar::FLUID::timeint_npgenalpha)
-            tmpfluid = Teuchos::RCP(
-                new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+            tmpfluid = Teuchos::make_rcp<FLD::TimIntGenAlpha>(
+                actdis, solver, fluidtimeparams, output, isale);
           else
             FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
-          fluid_ = Teuchos::RCP(new FluidFSI(
-              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond));
+          fluid_ = Teuchos::make_rcp<FluidFSI>(
+              tmpfluid, actdis, solver, fluidtimeparams, output, isale, dirichletcond);
         }
         else
         {
           if (timeint == Inpar::FLUID::timeint_stationary)
-            fluid_ = Teuchos::RCP(
-                new FLD::TimIntStationary(actdis, solver, fluidtimeparams, output, isale));
+            fluid_ = Teuchos::make_rcp<FLD::TimIntStationary>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-            fluid_ = Teuchos::RCP(
-                new FLD::TimIntOneStepTheta(actdis, solver, fluidtimeparams, output, isale));
+            fluid_ = Teuchos::make_rcp<FLD::TimIntOneStepTheta>(
+                actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_bdf2)
             fluid_ =
-                Teuchos::RCP(new FLD::TimIntBDF2(actdis, solver, fluidtimeparams, output, isale));
+                Teuchos::make_rcp<FLD::TimIntBDF2>(actdis, solver, fluidtimeparams, output, isale);
           else if (timeint == Inpar::FLUID::timeint_afgenalpha or
                    timeint == Inpar::FLUID::timeint_npgenalpha)
-            fluid_ = Teuchos::RCP(
-                new FLD::TimIntGenAlpha(actdis, solver, fluidtimeparams, output, isale));
+            fluid_ = Teuchos::make_rcp<FLD::TimIntGenAlpha>(
+                actdis, solver, fluidtimeparams, output, isale);
           else
             FOUR_C_THROW("Unknown time integration for this fluid problem type\n");
         }
@@ -1161,11 +1163,11 @@ void Adapter::FluidBaseAlgorithm::setup_inflow_fluid(
     FOUR_C_THROW(
         "no linear solver defined for fluid problem. Please set LINEAR_SOLVER in FLUID DYNAMIC to "
         "a valid number!");
-  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::RCP(
-      new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(linsolvernumber),
-          discret->get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY")));
+  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+      Global::Problem::instance()->solver_params(linsolvernumber), discret->get_comm(),
+      Global::Problem::instance()->solver_params_callback(),
+      Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+          Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   discret->compute_null_space_if_necessary(solver->params(), true);
 
@@ -1175,7 +1177,8 @@ void Adapter::FluidBaseAlgorithm::setup_inflow_fluid(
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
-  Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams = Teuchos::RCP(new Teuchos::ParameterList());
+  Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams =
+      Teuchos::make_rcp<Teuchos::ParameterList>();
 
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma,
   // temperature-dependent water)
@@ -1270,16 +1273,16 @@ void Adapter::FluidBaseAlgorithm::setup_inflow_fluid(
     //    output, false));
     if (timeint == Inpar::FLUID::timeint_stationary)
       fluid_ =
-          Teuchos::RCP(new FLD::TimIntStationary(discret, solver, fluidtimeparams, output, false));
+          Teuchos::make_rcp<FLD::TimIntStationary>(discret, solver, fluidtimeparams, output, false);
     else if (timeint == Inpar::FLUID::timeint_one_step_theta)
-      fluid_ = Teuchos::RCP(
-          new FLD::TimIntOneStepTheta(discret, solver, fluidtimeparams, output, false));
+      fluid_ = Teuchos::make_rcp<FLD::TimIntOneStepTheta>(
+          discret, solver, fluidtimeparams, output, false);
     else if (timeint == Inpar::FLUID::timeint_bdf2)
-      fluid_ = Teuchos::RCP(new FLD::TimIntBDF2(discret, solver, fluidtimeparams, output, false));
+      fluid_ = Teuchos::make_rcp<FLD::TimIntBDF2>(discret, solver, fluidtimeparams, output, false);
     else if (timeint == Inpar::FLUID::timeint_afgenalpha or
              timeint == Inpar::FLUID::timeint_npgenalpha)
       fluid_ =
-          Teuchos::RCP(new FLD::TimIntGenAlpha(discret, solver, fluidtimeparams, output, false));
+          Teuchos::make_rcp<FLD::TimIntGenAlpha>(discret, solver, fluidtimeparams, output, false);
   }
   else
   {

@@ -117,13 +117,13 @@ namespace Core::LinAlg
     /// create vector to map i
     Teuchos::RCP<Core::LinAlg::Vector<double>> vector(int i) const
     {
-      return Teuchos::RCP(new Core::LinAlg::Vector<double>(*Map(i)));
+      return Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*Map(i));
     }
 
     /// create multi vector to map i
     Teuchos::RCP<Epetra_MultiVector> vector(int i, int numvec) const
     {
-      return Teuchos::RCP(new Epetra_MultiVector(*Map(i), numvec));
+      return Teuchos::make_rcp<Epetra_MultiVector>(*Map(i), numvec);
     }
 
     //@

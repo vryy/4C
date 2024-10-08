@@ -39,7 +39,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Wall1NurbsType::
   {
     if (eledistype == "NURBS4" || eledistype == "NURBS9")
     {
-      return Teuchos::RCP(new Discret::ELEMENTS::Nurbs::Wall1Nurbs(id, owner));
+      return Teuchos::make_rcp<Discret::ELEMENTS::Nurbs::Wall1Nurbs>(id, owner);
     }
   }
   return Teuchos::null;
@@ -49,7 +49,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Wall1NurbsType::
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Wall1NurbsType::create(
     const int id, const int owner)
 {
-  return Teuchos::RCP(new Discret::ELEMENTS::Nurbs::Wall1Nurbs(id, owner));
+  return Teuchos::make_rcp<Discret::ELEMENTS::Nurbs::Wall1Nurbs>(id, owner);
 }
 
 void Discret::ELEMENTS::Nurbs::Wall1NurbsType::nodal_block_information(

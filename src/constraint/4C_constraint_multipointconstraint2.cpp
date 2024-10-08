@@ -41,7 +41,7 @@ CONSTRAINTS::MPConstraint2::MPConstraint2(Teuchos::RCP<Core::FE::Discretization>
         Core::Rebalance::compute_node_col_map(actdisc_, constraintdis_.find(0)->second);
     actdisc_->redistribute(*(actdisc_->node_row_map()), *newcolnodemap);
     Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
-        Teuchos::RCP(new Core::DOFSets::TransparentDofSet(actdisc_));
+        Teuchos::make_rcp<Core::DOFSets::TransparentDofSet>(actdisc_);
     (constraintdis_.find(0)->second)->replace_dof_set(newdofset);
     newdofset = Teuchos::null;
     (constraintdis_.find(0)->second)->fill_complete();
@@ -153,7 +153,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
   Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(actdisc->get_comm().Clone());
 
   Teuchos::RCP<Core::FE::Discretization> newdis =
-      Teuchos::RCP(new Core::FE::Discretization(discret_name, com, actdisc->n_dim()));
+      Teuchos::make_rcp<Core::FE::Discretization>(discret_name, com, actdisc->n_dim());
 
   if (!actdisc->filled())
   {
@@ -191,7 +191,7 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
       if (rownodeset.find(gid) != rownodeset.end())
       {
         const Core::Nodes::Node* standardnode = actdisc->l_row_node(i);
-        newdis->add_node(Teuchos::RCP(new Core::Nodes::Node(gid, standardnode->x(), myrank)));
+        newdis->add_node(Teuchos::make_rcp<Core::Nodes::Node>(gid, standardnode->x(), myrank));
       }
     }
 
@@ -212,15 +212,15 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
   // build unique node row map
   std::vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
-  Teuchos::RCP<Epetra_Map> constraintnoderowmap = Teuchos::RCP(new Epetra_Map(
-      -1, boundarynoderowvec.size(), boundarynoderowvec.data(), 0, newdis->get_comm()));
+  Teuchos::RCP<Epetra_Map> constraintnoderowmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, boundarynoderowvec.size(), boundarynoderowvec.data(), 0, newdis->get_comm());
   boundarynoderowvec.clear();
 
   // build overlapping node column map
   std::vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  Teuchos::RCP<Epetra_Map> constraintnodecolmap = Teuchos::RCP(new Epetra_Map(
-      -1, constraintnodecolvec.size(), constraintnodecolvec.data(), 0, newdis->get_comm()));
+  Teuchos::RCP<Epetra_Map> constraintnodecolmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, constraintnodecolvec.size(), constraintnodecolvec.data(), 0, newdis->get_comm());
 
   constraintnodecolvec.clear();
 

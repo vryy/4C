@@ -64,7 +64,8 @@ namespace Core::UTILS
       std::string const& docString, Teuchos::ParameterList* paramList,
       std::vector<std::string> const& validParams)
   {
-    Teuchos::RCP<Teuchos::StringValidator> validator = Teuchos::RCP(new Teuchos::StringValidator());
+    Teuchos::RCP<Teuchos::StringValidator> validator =
+        Teuchos::make_rcp<Teuchos::StringValidator>();
     // Set valid strings only if validParams is not empty
     if (!validParams.empty())
     {

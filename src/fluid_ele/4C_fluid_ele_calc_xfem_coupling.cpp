@@ -530,19 +530,19 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_wdbc(
     case Core::FE::CellType::quad4:
     {
       typedef HybridLMCoupling<distype, Core::FE::CellType::quad4, 3> HybridLMCouplType;
-      return Teuchos::RCP(new HybridLMCouplType(bele_xyz, is_viscAdjointSymmetric));
+      return Teuchos::make_rcp<HybridLMCouplType>(bele_xyz, is_viscAdjointSymmetric);
       break;
     }
     case Core::FE::CellType::quad8:
     {
       typedef HybridLMCoupling<distype, Core::FE::CellType::quad8, 3> HybridLMCouplType;
-      return Teuchos::RCP(new HybridLMCouplType(bele_xyz, is_viscAdjointSymmetric));
+      return Teuchos::make_rcp<HybridLMCouplType>(bele_xyz, is_viscAdjointSymmetric);
       break;
     }
     case Core::FE::CellType::quad9:
     {
       typedef HybridLMCoupling<distype, Core::FE::CellType::quad9, 3> HybridLMCouplType;
-      return Teuchos::RCP(new HybridLMCouplType(bele_xyz, is_viscAdjointSymmetric));
+      return Teuchos::make_rcp<HybridLMCouplType>(bele_xyz, is_viscAdjointSymmetric);
       break;
     }
     default:

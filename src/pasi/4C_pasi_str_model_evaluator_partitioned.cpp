@@ -34,7 +34,7 @@ void Solid::ModelEvaluator::PartitionedPASI::setup()
 {
   // pasi interface force at t_{n+1}
   interface_force_np_ptr_ =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*global_state().dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
 
   // set flag
   issetup_ = true;

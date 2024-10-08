@@ -170,7 +170,7 @@ void Coupling::VolMortar::VolMortarCoupl::build_maps(Teuchos::RCP<Core::FE::Disc
     }
   }
   // dof map is the original, unpermuted distribution of dofs
-  dofmap = Teuchos::RCP(new Epetra_Map(-1, dofmapvec.size(), dofmapvec.data(), 0, *comm_));
+  dofmap = Teuchos::make_rcp<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, *comm_);
 
   return;
 }
@@ -329,7 +329,7 @@ Teuchos::RCP<Core::Geo::SearchTree> Coupling::VolMortar::VolMortarCoupl::init_se
   }
 
   // init of 3D search tree
-  Teuchos::RCP<Core::Geo::SearchTree> searchTree = Teuchos::RCP(new Core::Geo::SearchTree(5));
+  Teuchos::RCP<Core::Geo::SearchTree> searchTree = Teuchos::make_rcp<Core::Geo::SearchTree>(5);
 
   // find the bounding box of the elements and initialize the search tree
   const Core::LinAlg::Matrix<3, 2> rootBox =
@@ -726,8 +726,8 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_consistent_interpolation()
   /***********************************************************
    * Init P-matrices                                         *
    ***********************************************************/
-  p12_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*p12_dofrowmap_, 10));
-  p21_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*p21_dofrowmap_, 100));
+  p12_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p12_dofrowmap_, 10);
+  p21_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p21_dofrowmap_, 100);
 
   /***********************************************************
    * create search tree and current dops                     *
@@ -1144,9 +1144,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
 {
   // create merged map:
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-  dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(dim_, 0, 0, true));
+  dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(dim_, 0, 0, true);
   int dofseta = dis1_->add_dof_set(dofsetaux);
-  dofsetaux = Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(dim_, 0, 0, true));
+  dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(dim_, 0, 0, true);
   int dofsetb = dis2_->add_dof_set(dofsetaux);
   dis1_->fill_complete(true, false, false);
   dis2_->fill_complete(true, false, false);
@@ -1172,14 +1172,14 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
   {
     // init
     dmatrix_xa_ =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*discret1()->dof_row_map(dofseta), 10));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*discret1()->dof_row_map(dofseta), 10);
     mmatrix_xa_ =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*discret1()->dof_row_map(dofseta), 100));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*discret1()->dof_row_map(dofseta), 100);
 
     dmatrix_xb_ =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*discret2()->dof_row_map(dofsetb), 10));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*discret2()->dof_row_map(dofsetb), 10);
     mmatrix_xb_ =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*discret2()->dof_row_map(dofsetb), 100));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*discret2()->dof_row_map(dofsetb), 100);
 
     // output
     if (myrank_ == 0) std::cout << "*****       step " << mi << std::endl;
@@ -1377,17 +1377,17 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     omega = 1.0;
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> k =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*mergedmap_, 100, false, true));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*mergedmap_, 100, false, true);
     k->add(*dmatrix_xa_, false, -1.0 * omega, 1.0);
     k->add(*mmatrix_xa_, false, 1.0 * omega, 1.0);
     k->add(*dmatrix_xb_, false, -1.0 * omega, 1.0);
     k->add(*mmatrix_xb_, false, 1.0 * omega, 1.0);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> ones =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*mergedmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mergedmap_);
     ones->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*ones));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*ones);
     onesdiag->complete();
     k->add(*onesdiag, false, 1.0, 1.0);
     k->complete();
@@ -1409,8 +1409,8 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     Core::LinAlg::MapExtractor mapext(*mergedmap_,
-        Teuchos::RCP(new Epetra_Map(*(discret1()->dof_row_map(dofseta)))),
-        Teuchos::RCP(new Epetra_Map(*(discret2()->dof_row_map(dofsetb)))));
+        Teuchos::make_rcp<Epetra_Map>(*(discret1()->dof_row_map(dofseta))),
+        Teuchos::make_rcp<Epetra_Map>(*(discret2()->dof_row_map(dofsetb))));
     mapext.extract_cond_vector(*mergedsol, *sola);
     mapext.extract_other_vector(*mergedsol, *solb);
 
@@ -1602,9 +1602,9 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
   // and dofs of the original elements are kept untouched.
 
   Teuchos::RCP<Core::FE::Discretization> sauxdis =
-      Teuchos::RCP(new Core::FE::Discretization((std::string) "slaveauxdis", comm_, dim_));
+      Teuchos::make_rcp<Core::FE::Discretization>((std::string) "slaveauxdis", comm_, dim_);
   Teuchos::RCP<Core::FE::Discretization> mauxdis =
-      Teuchos::RCP(new Core::FE::Discretization((std::string) "masterauxdis", comm_, dim_));
+      Teuchos::make_rcp<Core::FE::Discretization>((std::string) "masterauxdis", comm_, dim_);
 
   // build surface elements for all surfaces of slave element
   std::vector<Teuchos::RCP<Core::Elements::Element>> sele_surfs = sele->surfaces();
@@ -1634,7 +1634,7 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
   // Initialize the cut wizard
 
   // create new cut wizard
-  Teuchos::RCP<Cut::CutWizard> wizard = Teuchos::RCP(new Cut::CutWizard(mauxdis));
+  Teuchos::RCP<Cut::CutWizard> wizard = Teuchos::make_rcp<Cut::CutWizard>(mauxdis);
 
   // *************************************
   // TESSELATION *************************
@@ -1679,8 +1679,8 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
         {
           Cut::IntegrationCell* ic = *z;
 
-          IntCells.push_back(Teuchos::RCP(
-              new Coupling::VolMortar::Cell(count, 4, ic->coordinates(), ic->shape())));
+          IntCells.push_back(Teuchos::make_rcp<Coupling::VolMortar::Cell>(
+              count, 4, ic->coordinates(), ic->shape()));
           volume_ += IntCells[count]->vol();
 
           count++;
@@ -3634,17 +3634,17 @@ void Coupling::VolMortar::VolMortarCoupl::initialize()
    * slave side!                                                      *
    * ******************************************************************/
 
-  d1_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*p12_dofrowmap_, 10));
-  m12_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*p12_dofrowmap_, 100));
+  d1_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p12_dofrowmap_, 10);
+  m12_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p12_dofrowmap_, 100);
 
-  d2_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*p21_dofrowmap_, 10));
-  m21_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*p21_dofrowmap_, 100));
+  d2_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p21_dofrowmap_, 10);
+  m21_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p21_dofrowmap_, 100);
 
   // initialize trafo operator for quadr. modification
   if (dualquad_ != dualquad_no_mod)
   {
-    t1_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*p12_dofrowmap_, 10));
-    t2_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*p21_dofrowmap_, 10));
+    t1_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p12_dofrowmap_, 10);
+    t2_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p21_dofrowmap_, 10);
   }
 
   return;
@@ -3681,7 +3681,7 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
   /********************************************************************/
   Teuchos::RCP<Core::LinAlg::SparseMatrix> invd1 =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*d1_));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*d1_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> diag1 =
       Core::LinAlg::create_vector(*p12_dofrowmap_, true);
   int err = 0;
@@ -3708,7 +3708,7 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
   /* Multiply Mortar matrices: P = inv(D) * M         B               */
   /********************************************************************/
   Teuchos::RCP<Core::LinAlg::SparseMatrix> invd2 =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*d2_));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*d2_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> diag2 =
       Core::LinAlg::create_vector(*p21_dofrowmap_, true);
 
@@ -4565,8 +4565,8 @@ bool Coupling::VolMortar::VolMortarCoupl::center_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, i) = clip[i].coord()[k];
 
     // create IntCell object and push back
-    cells.push_back(Teuchos::RCP(new Mortar::IntCell(0, 3, coords, auxn(), Core::FE::CellType::tri3,
-        linvertex[0], linvertex[1], linvertex[2], derivauxn)));
+    cells.push_back(Teuchos::make_rcp<Mortar::IntCell>(0, 3, coords, auxn(),
+        Core::FE::CellType::tri3, linvertex[0], linvertex[1], linvertex[2], derivauxn));
 
     // get out of here
     return true;
@@ -4688,8 +4688,8 @@ bool Coupling::VolMortar::VolMortarCoupl::center_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, 2) = clip[num + 1].coord()[k];
 
     // create IntCell object and push back
-    cells.push_back(Teuchos::RCP(new Mortar::IntCell(num, 3, coords, auxn(),
-        Core::FE::CellType::tri3, lincenter, linvertex[num], linvertex[numplus1], derivauxn)));
+    cells.push_back(Teuchos::make_rcp<Mortar::IntCell>(num, 3, coords, auxn(),
+        Core::FE::CellType::tri3, lincenter, linvertex[num], linvertex[numplus1], derivauxn));
   }
 
   // triangulation successful
@@ -4724,8 +4724,8 @@ bool Coupling::VolMortar::VolMortarCoupl::delaunay_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, i) = clip[i].coord()[k];
 
     // create IntCell object and push back
-    cells.push_back(Teuchos::RCP(new Mortar::IntCell(0, 3, coords, auxn(), Core::FE::CellType::tri3,
-        linvertex[0], linvertex[1], linvertex[2], derivauxn)));
+    cells.push_back(Teuchos::make_rcp<Mortar::IntCell>(0, 3, coords, auxn(),
+        Core::FE::CellType::tri3, linvertex[0], linvertex[1], linvertex[2], derivauxn));
 
     // get out of here
     return true;
@@ -5121,8 +5121,8 @@ bool Coupling::VolMortar::VolMortarCoupl::delaunay_triangulation(
     }
 
     // create IntCell object and push back
-    cells.push_back(Teuchos::RCP(new Mortar::IntCell(t, 3, coords, auxn(), Core::FE::CellType::tri3,
-        linvertex[idx0], linvertex[idx1], linvertex[idx2], derivauxn)));
+    cells.push_back(Teuchos::make_rcp<Mortar::IntCell>(t, 3, coords, auxn(),
+        Core::FE::CellType::tri3, linvertex[idx0], linvertex[idx1], linvertex[idx2], derivauxn));
   }
 
   // double check number of triangles

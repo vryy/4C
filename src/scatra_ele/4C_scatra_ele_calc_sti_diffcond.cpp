@@ -748,7 +748,7 @@ Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::ScaTraEleCalcSTIDiffCond(
       ScaTraEleSTIElch<distype>::ScaTraEleSTIElch(numdofpernode, numscal, disname),
 
       // diffusion manager for diffusion-conduction formulation
-      diffmanagerdiffcond_(Teuchos::RCP(new ScaTraEleDiffManagerElchDiffCond(my::numscal_))),
+      diffmanagerdiffcond_(Teuchos::make_rcp<ScaTraEleDiffManagerElchDiffCond>(my::numscal_)),
 
       // utility class supporting element evaluation for diffusion-conduction formulation
       utils_(Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::instance(
@@ -759,12 +759,12 @@ Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::ScaTraEleCalcSTIDiffCond(
     FOUR_C_THROW("Invalid number of transported scalars or degrees of freedom per node!");
 
   // replace diffusion manager for standard scalar transport by thermo diffusion manager
-  my::diffmanager_ = Teuchos::RCP(new ScaTraEleDiffManagerSTIThermo(my::numscal_));
+  my::diffmanager_ = Teuchos::make_rcp<ScaTraEleDiffManagerSTIThermo>(my::numscal_);
 
   // replace internal variable manager for standard scalar transport by internal variable manager
   // for heat transport within electrochemical substances
   my::scatravarmanager_ =
-      Teuchos::RCP(new ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>(my::numscal_));
+      Teuchos::make_rcp<ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>>(my::numscal_);
 }
 
 

@@ -42,7 +42,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
 
   // add dofset for velocity-related quantities to scatra discretization
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(problem->n_dim() + 1, 0, 0, true));
+      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(problem->n_dim() + 1, 0, 0, true);
   if (scatradis->add_dof_set(dofsetaux) != 1)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
 
@@ -60,7 +60,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
 
   // add dofset for velocity-related quantities to thermo discretization
   dofsetaux =
-      Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(problem->n_dim() + 1, 0, 0, true));
+      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(problem->n_dim() + 1, 0, 0, true);
   if (thermodis->add_dof_set(dofsetaux) != 1)
     FOUR_C_THROW("Thermo discretization has illegal number of dofsets!");
 
@@ -131,10 +131,10 @@ void sti_dyn(const int& restartstep  //! time step for restart
             "No global linear solver was specified in input file section 'STI "
             "DYNAMIC/MONOLITHIC'!");
 
-      sti_algorithm = Teuchos::RCP(new STI::Monolithic(comm, stidyn, scatradyn,
+      sti_algorithm = Teuchos::make_rcp<STI::Monolithic>(comm, stidyn, scatradyn,
           Global::Problem::instance()->solver_params(solver_id),
           Global::Problem::instance()->solver_params(solver_id_scatra),
-          Global::Problem::instance()->solver_params(solver_id_thermo)));
+          Global::Problem::instance()->solver_params(solver_id_thermo));
 
       break;
     }
@@ -148,9 +148,9 @@ void sti_dyn(const int& restartstep  //! time step for restart
     case Inpar::STI::CouplingType::twoway_thermotoscatra:
     case Inpar::STI::CouplingType::twoway_thermotoscatra_aitken:
     {
-      sti_algorithm = Teuchos::RCP(new STI::Partitioned(comm, stidyn, scatradyn,
+      sti_algorithm = Teuchos::make_rcp<STI::Partitioned>(comm, stidyn, scatradyn,
           Global::Problem::instance()->solver_params(solver_id_scatra),
-          Global::Problem::instance()->solver_params(solver_id_thermo)));
+          Global::Problem::instance()->solver_params(solver_id_thermo));
 
       break;
     }

@@ -58,8 +58,8 @@ FLD::UTILS::StressManager::StressManager(Teuchos::RCP<Core::FE::Discretization> 
       break;
     case Inpar::FLUID::wss_mean:
       sum_stresses_ =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*(discret_->dof_row_map()), true)),
-      sum_wss_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*(discret_->dof_row_map()), true)),
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true),
+      sum_wss_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true),
       isinit_ = true;
       break;
     default:
@@ -122,7 +122,7 @@ FLD::UTILS::StressManager::get_pre_calc_wall_shear_stresses(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> wss =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*(discret_->dof_row_map()), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
 
   switch (wss_type_)
   {
@@ -208,7 +208,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_pre_ca
     Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> stresses =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*(discret_->dof_row_map()), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
 
   switch (wss_type_)
   {
@@ -386,7 +386,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::aggreagte_
   if (sep_enr_ == Teuchos::null) FOUR_C_THROW("no scale separation matrix");
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> mean_wss =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*(discret_->dof_row_map()), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
 
   // Do the actual aggregation
   sep_enr_->multiply(false, *wss, *mean_wss);
@@ -404,7 +404,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::time_avera
   sum_dt_stresses_ += dt;
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> mean_stresses =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*(discret_->dof_row_map()), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
   mean_stresses->Update(1.0 / sum_dt_stresses_, *sum_stresses_, 0.0);
 
   return mean_stresses;
@@ -420,7 +420,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::time_avera
   sum_dt_wss_ += dt;
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> mean_wss =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*(discret_->dof_row_map()), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
   mean_wss->Update(1.0 / sum_dt_wss_, *sum_wss_, 0.0);
 
   return mean_wss;
@@ -456,11 +456,11 @@ void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOp
       FOUR_C_THROW(
           "If you want to aggregate your stresses you need to specify a WSS_ML_AGR_SOLVER!");
 
-    Teuchos::RCP<Core::LinAlg::Solver> solver =
-        Teuchos::RCP(new Core::LinAlg::Solver(Global::Problem::instance()->solver_params(ML_solver),
-            discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
-            Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                Global::Problem::instance()->io_params(), "VERBOSITY")));
+    Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+        Global::Problem::instance()->solver_params(ML_solver), discret_->get_comm(),
+        Global::Problem::instance()->solver_params_callback(),
+        Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+            Global::Problem::instance()->io_params(), "VERBOSITY"));
 
     if (solver == Teuchos::null)
       FOUR_C_THROW(
@@ -590,16 +590,16 @@ void FLD::UTILS::setup_fluid_fluid_vel_pres_split(const Core::FE::Discretization
   veldofmapvec.reserve(veldofset.size());
   veldofmapvec.assign(veldofset.begin(), veldofset.end());
   veldofset.clear();
-  Teuchos::RCP<Epetra_Map> velrowmap = Teuchos::RCP(
-      new Epetra_Map(-1, veldofmapvec.size(), veldofmapvec.data(), 0, fluiddis.get_comm()));
+  Teuchos::RCP<Epetra_Map> velrowmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, veldofmapvec.size(), veldofmapvec.data(), 0, fluiddis.get_comm());
   veldofmapvec.clear();
 
   std::vector<int> presdofmapvec;
   presdofmapvec.reserve(presdofset.size());
   presdofmapvec.assign(presdofset.begin(), presdofset.end());
   presdofset.clear();
-  Teuchos::RCP<Epetra_Map> presrowmap = Teuchos::RCP(
-      new Epetra_Map(-1, presdofmapvec.size(), presdofmapvec.data(), 0, alefluiddis.get_comm()));
+  Teuchos::RCP<Epetra_Map> presrowmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, presdofmapvec.size(), presdofmapvec.data(), 0, alefluiddis.get_comm());
   extractor.setup(*fullmap, presrowmap, velrowmap);
 }
 
@@ -628,7 +628,7 @@ void FLD::UTILS::lift_drag(const Teuchos::RCP<const Core::FE::Discretization> di
   if (ldconds.size())
   {
     // vector with lift&drag forces after communication
-    liftdragvals = Teuchos::RCP(new std::map<int, std::vector<double>>);
+    liftdragvals = Teuchos::make_rcp<std::map<int, std::vector<double>>>();
 
     for (unsigned i = 0; i < ldconds.size(); ++i)  // loop L&D conditions (i.e. lines in .dat file)
     {
@@ -962,7 +962,7 @@ std::map<int, double> FLD::UTILS::compute_volume(Core::FE::Discretization& dis,
   if (gridv != Teuchos::null) dis.set_state("gridv", gridv);
 
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> volumes =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(1));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(1);
 
   // call loop over elements (assemble nothing)
   dis.evaluate_scalars(eleparams, volumes);

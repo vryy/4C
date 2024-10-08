@@ -88,7 +88,7 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
   // create empty system matrix (6 adjacent nodes as 'good' guess)
   // -------------------------------------------------------------------
   sysmat_ =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 3, false, true));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 3, false, true);
 
   // right hand side vector
   rhs_ = Core::LinAlg::create_vector(*dofrowmap, true);
@@ -100,7 +100,7 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
   zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::RCP(new Core::LinAlg::MapExtractor());
+  dbcmaps_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
@@ -144,8 +144,8 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
         Inpar::ScaTra::velocity_zero)
       FOUR_C_THROW("set your velocity field to zero!");
     // construct the scatra problem
-    scatra_ = Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(globaltimeparams, myscatraparams,
-        Global::Problem::instance()->solver_params(linsolvernumber_), scatra_disname, false));
+    scatra_ = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(globaltimeparams, myscatraparams,
+        Global::Problem::instance()->solver_params(linsolvernumber_), scatra_disname, false);
 
     // initialize the base algo.
     // scatra time integrator is initialized inside.
@@ -606,7 +606,7 @@ void Arteries::ArtNetImplStationary::test_results()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::UTILS::ResultTest> Arteries::ArtNetImplStationary::create_field_test()
 {
-  return Teuchos::RCP(new Arteries::ArteryResultTest(*(this)));
+  return Teuchos::make_rcp<Arteries::ArteryResultTest>(*(this));
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

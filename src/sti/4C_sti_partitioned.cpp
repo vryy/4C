@@ -260,7 +260,7 @@ void STI::Partitioned::solve_two_way()
     {
       // initialize relaxed scatra state vector
       const Teuchos::RCP<Core::LinAlg::Vector<double>> scatra_relaxed =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*scatra_field()->phiafnp()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*scatra_field()->phiafnp());
 
       // begin outer iteration loop
       while (true)
@@ -397,7 +397,7 @@ void STI::Partitioned::solve_two_way()
     {
       // initialize relaxed thermo state vector
       const Teuchos::RCP<Core::LinAlg::Vector<double>> thermo_relaxed =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*thermo_field()->phiafnp()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*thermo_field()->phiafnp());
 
       // begin outer iteration loop
       while (true)

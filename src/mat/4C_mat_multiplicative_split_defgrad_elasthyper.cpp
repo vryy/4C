@@ -123,7 +123,7 @@ Mat::PAR::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastH
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MultiplicativeSplitDefgradElastHyper::create_material()
 {
-  return Teuchos::RCP(new Mat::MultiplicativeSplitDefgradElastHyper(this));
+  return Teuchos::make_rcp<Mat::MultiplicativeSplitDefgradElastHyper>(this);
 }
 
 Mat::MultiplicativeSplitDefgradElastHyperType
@@ -141,8 +141,8 @@ Core::Communication::ParObject* Mat::MultiplicativeSplitDefgradElastHyperType::c
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper()
-    : anisotropy_(Teuchos::RCP(new Mat::Anisotropy())),
-      inelastic_(Teuchos::RCP(new Mat::InelasticFactorsHandler())),
+    : anisotropy_(Teuchos::make_rcp<Mat::Anisotropy>()),
+      inelastic_(Teuchos::make_rcp<Mat::InelasticFactorsHandler>()),
       params_(nullptr),
       potsumel_(0)
 {
@@ -152,8 +152,8 @@ Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
  *--------------------------------------------------------------------*/
 Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
     Mat::PAR::MultiplicativeSplitDefgradElastHyper* params)
-    : anisotropy_(Teuchos::RCP(new Mat::Anisotropy())),
-      inelastic_(Teuchos::RCP(new Mat::InelasticFactorsHandler())),
+    : anisotropy_(Teuchos::make_rcp<Mat::Anisotropy>()),
+      inelastic_(Teuchos::make_rcp<Mat::InelasticFactorsHandler>()),
       params_(params),
       potsumel_(0)
 {

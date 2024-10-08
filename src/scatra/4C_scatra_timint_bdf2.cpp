@@ -85,7 +85,7 @@ void ScaTra::TimIntBDF2::setup()
   {
     if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING") == "isotropic")
     {
-      homisoturb_forcing_ = Teuchos::RCP(new ScaTra::HomIsoTurbScalarForcing(this));
+      homisoturb_forcing_ = Teuchos::make_rcp<ScaTra::HomIsoTurbScalarForcing>(this);
       // initialize forcing algorithm
       homisoturb_forcing_->set_initial_spectrum(
           Teuchos::getIntegralValue<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
@@ -310,11 +310,11 @@ void ScaTra::TimIntBDF2::read_restart(const int step, Teuchos::RCP<Core::IO::Inp
   Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
   if (input == Teuchos::null)
   {
-    reader = Teuchos::RCP(new Core::IO::DiscretizationReader(
-        discret_, Global::Problem::instance()->input_control_file(), step));
+    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+        discret_, Global::Problem::instance()->input_control_file(), step);
   }
   else
-    reader = Teuchos::RCP(new Core::IO::DiscretizationReader(discret_, input, step));
+    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(discret_, input, step);
   time_ = reader->read_double("time");
   step_ = reader->read_int("step");
 

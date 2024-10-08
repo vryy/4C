@@ -58,10 +58,11 @@ void Core::FE::DiscretizationCreatorBase::create_nodes(const Core::FE::Discretiz
       {
         Core::Nodes::Node* node_to_create = sourcedis.l_row_node(i);
         if (!buildimmersednode)
-          targetdis.add_node(Teuchos::RCP(new Core::Nodes::Node(gid, node_to_create->x(), myrank)));
+          targetdis.add_node(
+              Teuchos::make_rcp<Core::Nodes::Node>(gid, node_to_create->x(), myrank));
         else
           targetdis.add_node(
-              Teuchos::RCP(new Core::Nodes::ImmersedNode(gid, node_to_create->x(), myrank)));
+              Teuchos::make_rcp<Core::Nodes::ImmersedNode>(gid, node_to_create->x(), myrank));
       }
     }
   }
@@ -74,8 +75,8 @@ void Core::FE::DiscretizationCreatorBase::create_nodes(const Core::FE::Discretiz
       {
         Core::FE::Nurbs::ControlPoint* node_to_create =
             dynamic_cast<Core::FE::Nurbs::ControlPoint*>(sourcedis.l_row_node(i));
-        targetdis.add_node(Teuchos::RCP(new Core::FE::Nurbs::ControlPoint(
-            gid, node_to_create->x(), node_to_create->w(), myrank)));
+        targetdis.add_node(Teuchos::make_rcp<Core::FE::Nurbs::ControlPoint>(
+            gid, node_to_create->x(), node_to_create->w(), myrank));
       }
     }
   }
@@ -95,8 +96,8 @@ Teuchos::RCP<Epetra_Map> Core::FE::DiscretizationCreatorBase::create_map(
   std::vector<int> targetgidvec(gidset.begin(), gidset.end());
   gidset.clear();
 
-  Teuchos::RCP<Epetra_Map> map = Teuchos::RCP(
-      new Epetra_Map(-1, targetgidvec.size(), targetgidvec.data(), 0, targetdis.get_comm()));
+  Teuchos::RCP<Epetra_Map> map = Teuchos::make_rcp<Epetra_Map>(
+      -1, targetgidvec.size(), targetgidvec.data(), 0, targetdis.get_comm());
   targetgidvec.clear();
 
   return map;
@@ -134,7 +135,7 @@ Core::FE::DiscretizationCreatorBase::create_matching_discretization(
   // initialize identical clone discretization
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(sourcedis->get_comm().Clone());
   Teuchos::RCP<Core::FE::Discretization> targetdis =
-      Teuchos::RCP(new Core::FE::Discretization(targetdisname, comm, sourcedis->n_dim()));
+      Teuchos::make_rcp<Core::FE::Discretization>(targetdisname, comm, sourcedis->n_dim());
 
   // clone nodes
   for (int i = 0; i < sourcedis->node_col_map()->NumMyElements(); ++i)
@@ -171,7 +172,7 @@ Core::FE::DiscretizationCreatorBase::create_matching_discretization(
 
   // make auxiliary discretization have the same dofs as the coupling discretization
   if (clonedofs)
-    targetdis->replace_dof_set(Teuchos::RCP(new Core::DOFSets::IndependentDofSet()), false);
+    targetdis->replace_dof_set(Teuchos::make_rcp<Core::DOFSets::IndependentDofSet>(), false);
   targetdis->fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
   // at the end, we do several checks to ensure that we really have generated
@@ -226,7 +227,7 @@ void Core::FE::DiscretizationCreatorBase::finalize(
     }
 
     Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots =
-        Teuchos::RCP(new Core::FE::Nurbs::Knotvector(*(nurbsdis_ptr->get_knot_vector())));
+        Teuchos::make_rcp<Core::FE::Nurbs::Knotvector>(*(nurbsdis_ptr->get_knot_vector()));
 
     // reset offsets
     int smallest_gid_in_dis = targetnurbsdis_ptr->element_row_map()->MinAllGID();

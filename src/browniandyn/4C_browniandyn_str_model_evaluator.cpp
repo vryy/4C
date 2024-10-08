@@ -79,14 +79,14 @@ void Solid::ModelEvaluator::BrownianDyn::setup()
   // setup the brownian forces and the external force pointers
   // -------------------------------------------------------------------------
   f_brown_np_ptr_ =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*global_state().dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
   f_ext_np_ptr_ =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*global_state().dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
   // -------------------------------------------------------------------------
   // setup the brownian forces and the external force pointers
   // -------------------------------------------------------------------------
-  stiff_brownian_ptr_ = Teuchos::RCP(
-      new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
+  stiff_brownian_ptr_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *global_state().dof_row_map_view(), 81, true, true);
 
   // -------------------------------------------------------------------------
   // get maximal number of random numbers required by any element in the

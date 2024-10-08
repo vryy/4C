@@ -252,7 +252,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
     ghostedData = data;
   else
   {
-    ghostedData = Teuchos::RCP(new Epetra_MultiVector(*colmap, data->NumVectors(), false));
+    ghostedData = Teuchos::make_rcp<Epetra_MultiVector>(*colmap, data->NumVectors(), false);
     Core::LinAlg::export_to(*data, *ghostedData);
   }
 
@@ -274,7 +274,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
       for (int idf = 0; idf < numdf; ++idf)
       {
         Teuchos::RCP<Core::LinAlg::Vector<double>> column =
-            Teuchos::RCP(new Core::LinAlg::Vector<double>(*(*ghostedData)(idf)));
+            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*ghostedData)(idf));
 
         const int lid = ghostedData->Map().LID(gid);
 
@@ -342,7 +342,7 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
   else
   {
     importedData =
-        Teuchos::RCP(new Epetra_MultiVector(*dis->element_col_map(), data->NumVectors(), false));
+        Teuchos::make_rcp<Epetra_MultiVector>(*dis->element_col_map(), data->NumVectors(), false);
     Core::LinAlg::export_to(*data, *importedData);
   }
 
@@ -354,7 +354,7 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
     for (int d = 0; d < numdf; ++d)
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> column =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*(*importedData)(d + from)));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*importedData)(d + from));
       solution[inpos + d] = (*column)[e];
     }
   }

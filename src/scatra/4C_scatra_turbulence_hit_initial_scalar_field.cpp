@@ -167,7 +167,7 @@ namespace ScaTra
     }
     // push coordinates in vectors
     {
-      coordinates_ = Teuchos::RCP(new std::vector<double>);
+      coordinates_ = Teuchos::make_rcp<std::vector<double>>();
 
       for (std::set<double, LineSortCriterion>::iterator coord1 = coords.begin();
            coord1 != coords.end(); ++coord1)
@@ -187,11 +187,12 @@ namespace ScaTra
   {
 #ifdef FOUR_C_WITH_FFTW
     // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat = Teuchos::RCP(
-        new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat =
+        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
+            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
     Teuchos::RCP<Teuchos::Array<double>> phi =
-        Teuchos::RCP(new Teuchos::Array<double>(nummodes_ * nummodes_ * nummodes_));
+        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
 
     //-------------------------------------------------
     // construction of initial field in spectral space
@@ -304,8 +305,9 @@ namespace ScaTra
     // k_3: [0,nummodes_/2]
     // using peridocity and conjugate symmetry allows for setting
     // the Fourier coefficients in the required interval
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat_fftw = Teuchos::RCP(
-        new Teuchos::Array<std::complex<double>>(nummodes_ * nummodes_ * (nummodes_ / 2 + 1)));
+    Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat_fftw =
+        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
+            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
     for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_ - 1); fftw_k_1++)
     {

@@ -100,7 +100,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::init(const Teuchos::ParameterList& glob
           timintscheme, fluiddis, linsolvernumber, globaltimeparams, fluidparams, output);
 
   // wrap it
-  fluid_ = Teuchos::RCP(new Adapter::PoroFluidMultiphaseWrapper(porofluid));
+  fluid_ = Teuchos::make_rcp<Adapter::PoroFluidMultiphaseWrapper>(porofluid);
   // initialize it
   fluid_->init(isale, nds_disp, nds_vel, nds_solidpressure, ndsporofluid_scatra, nearbyelepairs);
 

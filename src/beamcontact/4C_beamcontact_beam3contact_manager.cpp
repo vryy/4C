@@ -141,7 +141,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
     if (!pdiscret_.get_comm().MyPID())
       std::cout << "BTS-CO penalty         = " << btspp_ << std::endl;
 
-    tree_ = Teuchos::RCP(new Beam3ContactOctTree(sbeamcontact_, pdiscret_, *btsoldiscret_));
+    tree_ = Teuchos::make_rcp<Beam3ContactOctTree>(sbeamcontact_, pdiscret_, *btsoldiscret_);
   }
   else
   {
@@ -272,8 +272,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
       FOUR_C_THROW("potential-based beam interactions not implemented in parallel yet!");
 
     // initialize parameters of applied potential law
-    ki_ = Teuchos::RCP(new std::vector<double>);
-    mi_ = Teuchos::RCP(new std::vector<double>);
+    ki_ = Teuchos::make_rcp<std::vector<double>>();
+    mi_ = Teuchos::make_rcp<std::vector<double>>();
     ki_->clear();
     mi_->clear();
     // read potential law parameters from input and check
@@ -355,7 +355,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
             "no/invalid value for cutoff radius for Octree search for potential-based interaction "
             "pairs. Check your input file!");
 
-      pottree_ = Teuchos::RCP(new Beam3ContactOctTree(sbeampotential_, pdiscret_, *btsoldiscret_));
+      pottree_ = Teuchos::make_rcp<Beam3ContactOctTree>(sbeampotential_, pdiscret_, *btsoldiscret_);
     }
     else
     {
@@ -531,7 +531,7 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
   fc_->PutScalar(0.0);
 
   // initialize contact stiffness and uncomplete global stiffness
-  stiffc_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(stiffmatrix.range_map(), 100));
+  stiffc_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(stiffmatrix.range_map(), 100);
   stiffmatrix.un_complete();
 
 
@@ -637,8 +637,8 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
 
   {
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(pdiscret_.get_comm().Clone());
-    btsoldiscret_ = Teuchos::RCP(new Core::FE::Discretization(
-        (std::string) "beam to solid contact", comm, Global::Problem::instance()->n_dim()));
+    btsoldiscret_ = Teuchos::make_rcp<Core::FE::Discretization>(
+        (std::string) "beam to solid contact", comm, Global::Problem::instance()->n_dim());
   }
   dofoffsetmap_.clear();
   std::map<int, std::vector<int>> nodedofs;
@@ -726,10 +726,10 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
 
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
-      Teuchos::RCP<CONTACT::Node> cnode = Teuchos::RCP(
-          new CONTACT::Node(node->id(), node->x(), node->owner(), problem_discret().dof(0, node),
-              false,    // all solid elements are master elements
-              false));  // no "initially active" decision necessary for beam to solid contact
+      Teuchos::RCP<CONTACT::Node> cnode = Teuchos::make_rcp<CONTACT::Node>(node->id(), node->x(),
+          node->owner(), problem_discret().dof(0, node),
+          false,   // all solid elements are master elements
+          false);  // no "initially active" decision necessary for beam to solid contact
 
       // note that we do not have to worry about double entries
       // as the add_node function can deal with this case!
@@ -774,10 +774,10 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       // ID in the problem discretization.
       Teuchos::RCP<Core::Elements::Element> ele = fool->second;
       Teuchos::RCP<CONTACT::Element> cele =
-          Teuchos::RCP(new CONTACT::Element(ele->id() + ggsize + maxproblemid + 1, ele->owner(),
+          Teuchos::make_rcp<CONTACT::Element>(ele->id() + ggsize + maxproblemid + 1, ele->owner(),
               ele->shape(), ele->num_node(), ele->node_ids(),
-              false,    // all solid elements are master elements
-              false));  // no nurbs allowed up to now
+              false,   // all solid elements are master elements
+              false);  // no nurbs allowed up to now
 
       solcontacteles_.push_back(cele);
       bt_sol_discret().add_element(cele);
@@ -805,9 +805,9 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
 
       if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
-      Teuchos::RCP<Mortar::Node> mtnode = Teuchos::RCP(
-          new Mortar::Node(node->id(), node->x(), node->owner(), problem_discret().dof(0, node),
-              false));  // all solid elements are master elements
+      Teuchos::RCP<Mortar::Node> mtnode = Teuchos::make_rcp<Mortar::Node>(node->id(), node->x(),
+          node->owner(), problem_discret().dof(0, node),
+          false);  // all solid elements are master elements
 
       // note that we do not have to worry about double entries
       // as the add_node function can deal with this case!
@@ -852,10 +852,10 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       // ID in the problem discretization.
       Teuchos::RCP<Core::Elements::Element> ele = fool->second;
       Teuchos::RCP<Mortar::Element> mtele =
-          Teuchos::RCP(new Mortar::Element(ele->id() + ggsize + maxproblemid + 1, ele->owner(),
+          Teuchos::make_rcp<Mortar::Element>(ele->id() + ggsize + maxproblemid + 1, ele->owner(),
               ele->shape(), ele->num_node(), ele->node_ids(),
-              false,    // all solid elements are master elements
-              false));  // no nurbs allowed up to now
+              false,   // all solid elements are master elements
+              false);  // no nurbs allowed up to now
 
       solmeshtyingeles_.push_back(mtele);
       bt_sol_discret().add_element(mtele);
@@ -869,10 +869,10 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
   bt_sol_discret().fill_complete(false, false, false);
 
   // store the node and element row and column maps into this manager
-  noderowmap_ = Teuchos::RCP(new Epetra_Map(*(bt_sol_discret().node_row_map())));
-  elerowmap_ = Teuchos::RCP(new Epetra_Map(*(bt_sol_discret().element_row_map())));
-  nodecolmap_ = Teuchos::RCP(new Epetra_Map(*(bt_sol_discret().node_col_map())));
-  elecolmap_ = Teuchos::RCP(new Epetra_Map(*(bt_sol_discret().element_col_map())));
+  noderowmap_ = Teuchos::make_rcp<Epetra_Map>(*(bt_sol_discret().node_row_map()));
+  elerowmap_ = Teuchos::make_rcp<Epetra_Map>(*(bt_sol_discret().element_row_map()));
+  nodecolmap_ = Teuchos::make_rcp<Epetra_Map>(*(bt_sol_discret().node_col_map()));
+  elecolmap_ = Teuchos::make_rcp<Epetra_Map>(*(bt_sol_discret().element_col_map()));
 
   // build fully overlapping node and element maps
   // fill my own row node ids into vector (e)sdata
@@ -915,23 +915,23 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
       esdata, erdata, (int)ertproc.size(), ertproc.data(), bt_sol_discret().get_comm());
 
   // build completely overlapping node map (on participating processors)
-  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::RCP(
-      new Epetra_Map(-1, (int)rdata.size(), rdata.data(), 0, bt_sol_discret().get_comm()));
+  Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, (int)rdata.size(), rdata.data(), 0, bt_sol_discret().get_comm());
   sdata.clear();
   stproc.clear();
   rdata.clear();
   allproc.clear();
 
   // build completely overlapping element map (on participating processors)
-  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::RCP(
-      new Epetra_Map(-1, (int)erdata.size(), erdata.data(), 0, bt_sol_discret().get_comm()));
+  Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, (int)erdata.size(), erdata.data(), 0, bt_sol_discret().get_comm());
   esdata.clear();
   estproc.clear();
   erdata.clear();
 
   // store the fully overlapping node and element maps
-  nodefullmap_ = Teuchos::RCP(new Epetra_Map(*newnodecolmap));
-  elefullmap_ = Teuchos::RCP(new Epetra_Map(*newelecolmap));
+  nodefullmap_ = Teuchos::make_rcp<Epetra_Map>(*newnodecolmap);
+  elefullmap_ = Teuchos::make_rcp<Epetra_Map>(*newelecolmap);
 
   // pass new fully overlapping node and element maps to beam contact discretization
   bt_sol_discret().export_column_nodes(*newnodecolmap);

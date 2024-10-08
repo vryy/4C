@@ -74,7 +74,7 @@ Mat::PAR::Damage::Damage(const Core::Mat::PAR::Parameter::Data& matdata)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Damage::create_material()
 {
-  return Teuchos::RCP(new Mat::Damage(this));
+  return Teuchos::make_rcp<Mat::Damage>(this);
 }
 
 

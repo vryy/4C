@@ -315,7 +315,7 @@ bool Core::FE::Discretization::build_linesin_condition(
 
 
   // Lines be added to the condition: (line_id) -> (line).
-  auto finallines = Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::Elements::Element>>());
+  auto finallines = Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::Elements::Element>>>();
 
   assign_global_i_ds(get_comm(), linemap, *finallines);
 
@@ -545,7 +545,7 @@ bool Core::FE::Discretization::build_surfacesin_condition(
 
   // surfaces be added to the condition: (surf_id) -> (surface).
   Teuchos::RCP<std::map<int, Teuchos::RCP<Core::Elements::Element>>> final_geometry =
-      Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::Elements::Element>>());
+      Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::Elements::Element>>>();
 
   assign_global_i_ds(get_comm(), surfmap, *final_geometry);
   cond->add_geometry(final_geometry);
@@ -578,7 +578,7 @@ bool Core::FE::Discretization::build_volumesin_condition(
       std::not_fn(Core::Conditions::MyGID(colmap)));
 
   // this is the map we want to construct
-  auto geom = Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::Elements::Element>>());
+  auto geom = Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::Elements::Element>>>();
 
   for (const auto& [ele_id, actele] : element_)
   {

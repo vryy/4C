@@ -162,7 +162,7 @@ namespace Mat
     //! return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new FluidPoro(*this));
+      return Teuchos::make_rcp<FluidPoro>(*this);
     }
 
     //! compute reaction tensor - 2D

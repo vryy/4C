@@ -38,7 +38,7 @@ Adapter::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
     : StructureWrapper(structure)
 {
   // set-up FSI interface
-  interface_ = Teuchos::RCP(new Solid::MapExtractor);
+  interface_ = Teuchos::make_rcp<Solid::MapExtractor>();
 
   if (Global::Problem::instance()->get_problem_type() != Core::ProblemType::fpsi)
     interface_->setup(*discretization(), *discretization()->dof_row_map());
@@ -57,7 +57,7 @@ Adapter::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
  *------------------------------------------------------------------------------------*/
 void Adapter::FSIStructureWrapper::rebuild_interface()
 {
-  interface_ = Teuchos::RCP(new Solid::MapExtractor);
+  interface_ = Teuchos::make_rcp<Solid::MapExtractor>();
   interface_->setup(*discretization(), *discretization()->dof_row_map());
 }
 
@@ -96,7 +96,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FSIStructureWrapper::predict
     // respect Dirichlet conditions at the interface (required for pseudo-rigid body)
     if (prestress_is_active(time()))
     {
-      idis = Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->fsi_cond_map(), true));
+      idis = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->fsi_cond_map(), true);
     }
     else
     {
@@ -155,7 +155,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FSIStructureWrapper::extract
   // prestressing business
   if (prestress_is_active(time()))
   {
-    return Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->fsi_cond_map(), true));
+    return Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->fsi_cond_map(), true);
   }
   else
   {
@@ -177,7 +177,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FSIStructureWrapper::extract
     if (discretization()->get_comm().MyPID() == 0)
       std::cout << "Applying no displacements to the fluid since we do prestressing" << std::endl;
 
-    return Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->fsi_cond_map(), true));
+    return Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->fsi_cond_map(), true);
   }
   else
   {

@@ -246,8 +246,8 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
         {
           myA = this_level->Get<Teuchos::RCP<Matrix>>("A");
           myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
-          myAspa = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-              myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph));
+          myAspa = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+              myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph);
           A_level[level] = myAspa;
         }
         else
@@ -256,7 +256,7 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
         if (this_level->IsAvailable("PreSmoother"))
         {
           myS = this_level->Get<Teuchos::RCP<SmootherBase>>("PreSmoother");
-          mySWrap = Teuchos::RCP(new Core::LinearSolver::AMGNxN::MueluSmootherWrapper(myS));
+          mySWrap = Teuchos::make_rcp<Core::LinearSolver::AMGNxN::MueluSmootherWrapper>(myS);
           SPre_level[level] = mySWrap;
         }
         else
@@ -267,7 +267,7 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
           if (this_level->IsAvailable("PostSmoother"))
           {
             myS = this_level->Get<Teuchos::RCP<SmootherBase>>("PostSmoother");
-            mySWrap = Teuchos::RCP(new Core::LinearSolver::AMGNxN::MueluSmootherWrapper(myS));
+            mySWrap = Teuchos::make_rcp<Core::LinearSolver::AMGNxN::MueluSmootherWrapper>(myS);
             SPos_level[level] = mySWrap;
           }
           else
@@ -280,8 +280,8 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
           {
             myA = this_level->Get<Teuchos::RCP<Matrix>>("P");
             myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
-            myAspa = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-                myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph));
+            myAspa = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+                myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph);
             P_level[level - 1] = myAspa;
           }
           else
@@ -291,8 +291,8 @@ void Core::LinearSolver::AMGNxN::Hierarchies::setup()
           {
             myA = this_level->Get<Teuchos::RCP<Matrix>>("R");
             myAcrs = MueLuUtils::Op2NonConstEpetraCrs(myA);
-            myAspa = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-                myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph));
+            myAspa = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+                myAcrs, Core::LinAlg::Copy, explicitdirichlet, savegraph);
             R_level[level - 1] = myAspa;
           }
           else
@@ -352,10 +352,10 @@ Core::LinearSolver::AMGNxN::Hierarchies::build_mue_lu_hierarchy(
     if (A_crs == Teuchos::null)
       FOUR_C_THROW("Make sure that the input matrix is a Epetra_CrsMatrix (or derived)");
     Teuchos::RCP<Xpetra::CrsMatrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluA =
-        Teuchos::RCP(new Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>(A_crs));
+        Teuchos::make_rcp<Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>>(A_crs);
 
     Teuchos::RCP<Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluA_wrap =
-        Teuchos::RCP(new Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node>(mueluA));
+        Teuchos::make_rcp<Xpetra::CrsMatrixWrap<Scalar, LocalOrdinal, GlobalOrdinal, Node>>(mueluA);
     Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> mueluOp =
         Teuchos::rcp_dynamic_cast<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>>(
             mueluA_wrap);
@@ -655,8 +655,8 @@ void Core::LinearSolver::AMGNxN::MonolithicHierarchy::setup()
   r_.assign(num_levels_ - 1, Teuchos::null);
   for (int level = 0; level < num_levels_ - 1; level++)
   {
-    p_[level] = Teuchos::RCP(new AMGNxN::DiagonalBlockedMatrix(num_blocks_));
-    r_[level] = Teuchos::RCP(new AMGNxN::DiagonalBlockedMatrix(num_blocks_));
+    p_[level] = Teuchos::make_rcp<AMGNxN::DiagonalBlockedMatrix>(num_blocks_);
+    r_[level] = Teuchos::make_rcp<AMGNxN::DiagonalBlockedMatrix>(num_blocks_);
     for (int block = 0; block < num_blocks_; block++)
     {
       p_[level]->set_matrix(h_->get_p(block, level), block, block);
@@ -676,7 +676,7 @@ void Core::LinearSolver::AMGNxN::MonolithicHierarchy::setup()
       a_[level] = h_->get_block_matrix();
     else
     {
-      a_[level] = Teuchos::RCP(new AMGNxN::BlockedMatrix(num_blocks_, num_blocks_));
+      a_[level] = Teuchos::make_rcp<AMGNxN::BlockedMatrix>(num_blocks_, num_blocks_);
 
       for (int block = 0; block < num_blocks_; block++)
         a_[level]->set_matrix(h_->get_a(block, level), block, block);
@@ -819,7 +819,7 @@ Core::LinearSolver::AMGNxN::MonolithicHierarchy::build_v_cycle()
 {
   int NumSweeps = 1;  // Hard coded
   int FirstLevel = 0;
-  Teuchos::RCP<Vcycle> V = Teuchos::RCP(new Vcycle(num_levels_, NumSweeps, FirstLevel));
+  Teuchos::RCP<Vcycle> V = Teuchos::make_rcp<Vcycle>(num_levels_, NumSweeps, FirstLevel);
 
   V->set_operators(a_);
   V->set_projectors(p_);

@@ -138,7 +138,7 @@ void Core::IO::MeshReader::rebalance()
         parameters_.mesh_paritioning_parameters.get<double>("IMBALANCE_TOL");
 
     Teuchos::RCP<Teuchos::ParameterList> rebalanceParams =
-        Teuchos::RCP(new Teuchos::ParameterList());
+        Teuchos::make_rcp<Teuchos::ParameterList>();
     rebalanceParams->set<std::string>("imbalance tol", std::to_string(imbalance_tol));
 
     const auto rebalanceMethod = Teuchos::getIntegralValue<Core::Rebalance::RebalanceType>(
@@ -167,10 +167,10 @@ void Core::IO::MeshReader::rebalance()
           // here we can reuse the graph, which was calculated before, this saves us some time and
           // in addition calculate geometric information based on the coordinates of the
           // discretization
-          rowmap = Teuchos::RCP(new Epetra_Map(-1, graph_[i]->RowMap().NumMyElements(),
-              graph_[i]->RowMap().MyGlobalElements(), 0, *comm_));
-          colmap = Teuchos::RCP(new Epetra_Map(-1, graph_[i]->ColMap().NumMyElements(),
-              graph_[i]->ColMap().MyGlobalElements(), 0, *comm_));
+          rowmap = Teuchos::make_rcp<Epetra_Map>(-1, graph_[i]->RowMap().NumMyElements(),
+              graph_[i]->RowMap().MyGlobalElements(), 0, *comm_);
+          colmap = Teuchos::make_rcp<Epetra_Map>(-1, graph_[i]->ColMap().NumMyElements(),
+              graph_[i]->ColMap().MyGlobalElements(), 0, *comm_);
 
           discret->redistribute(*rowmap, *colmap, false, false, false);
 
@@ -185,10 +185,10 @@ void Core::IO::MeshReader::rebalance()
         {
           rebalanceParams->set("partitioning method", "HYPERGRAPH");
 
-          rowmap = Teuchos::RCP(new Epetra_Map(-1, graph_[i]->RowMap().NumMyElements(),
-              graph_[i]->RowMap().MyGlobalElements(), 0, *comm_));
-          colmap = Teuchos::RCP(new Epetra_Map(-1, graph_[i]->ColMap().NumMyElements(),
-              graph_[i]->ColMap().MyGlobalElements(), 0, *comm_));
+          rowmap = Teuchos::make_rcp<Epetra_Map>(-1, graph_[i]->RowMap().NumMyElements(),
+              graph_[i]->RowMap().MyGlobalElements(), 0, *comm_);
+          colmap = Teuchos::make_rcp<Epetra_Map>(-1, graph_[i]->ColMap().NumMyElements(),
+              graph_[i]->ColMap().MyGlobalElements(), 0, *comm_);
 
           discret->redistribute(*rowmap, *colmap, true, true, false);
 
@@ -208,7 +208,7 @@ void Core::IO::MeshReader::rebalance()
     }
     else
     {
-      rowmap = colmap = Teuchos::RCP(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
+      rowmap = colmap = Teuchos::make_rcp<Epetra_Map>(-1, 0, nullptr, 0, *comm_);
     }
 
     discret->redistribute(*rowmap, *colmap, false, false, false);

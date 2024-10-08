@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::Nln::StatusTest::Factory::Factory()
-    : noxfactory_(Teuchos::RCP(new const ::NOX::StatusTest::Factory()))
+    : noxfactory_(Teuchos::make_rcp<::NOX::StatusTest::Factory>())
 {
   // empty constructor
 }
@@ -185,8 +185,8 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::Nln::StatusTest::Factory::build_no
 
   // build the normF status test
   Teuchos::RCP<NOX::Nln::StatusTest::NormF> status_test =
-      Teuchos::RCP(new NOX::Nln::StatusTest::NormF(
-          quantitytypes, toltypes, tolerances, normtypes, scaletypes, &u));
+      Teuchos::make_rcp<NOX::Nln::StatusTest::NormF>(
+          quantitytypes, toltypes, tolerances, normtypes, scaletypes, &u);
 
   return status_test;
 }
@@ -305,11 +305,11 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::Nln::StatusTest::Factory::build_no
 
   // build the normUpdate status test
   if (Teuchos::get<std::string>(p, "Test Type") == "NormUpdateSkipFirstIter")
-    return Teuchos::RCP(new NOX::Nln::StatusTest::NormUpdateSkipFirstIter(
-        quantitytypes, toltypes, tolerances, normtypes, scaletypes, alpha, beta, &u));
+    return Teuchos::make_rcp<NOX::Nln::StatusTest::NormUpdateSkipFirstIter>(
+        quantitytypes, toltypes, tolerances, normtypes, scaletypes, alpha, beta, &u);
   else
-    return Teuchos::RCP(new NOX::Nln::StatusTest::NormUpdate(
-        quantitytypes, toltypes, tolerances, normtypes, scaletypes, alpha, beta, &u));
+    return Teuchos::make_rcp<NOX::Nln::StatusTest::NormUpdate>(
+        quantitytypes, toltypes, tolerances, normtypes, scaletypes, alpha, beta, &u);
 }
 
 /*----------------------------------------------------------------------------*
@@ -415,8 +415,8 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::Nln::StatusTest::Factory::build_no
   }  // loop over all quantity types
 
   Teuchos::RCP<NOX::Nln::StatusTest::NormWRMS> status_test =
-      Teuchos::RCP(new NOX::Nln::StatusTest::NormWRMS(
-          quantitytypes, rtol, atol, BDFMultiplier, tol, alpha, beta, disable_implicit_weighting));
+      Teuchos::make_rcp<NOX::Nln::StatusTest::NormWRMS>(
+          quantitytypes, rtol, atol, BDFMultiplier, tol, alpha, beta, disable_implicit_weighting);
 
   return status_test;
 }
@@ -447,7 +447,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::Nln::StatusTest::Factory::build_ac
 
 
   Teuchos::RCP<NOX::Nln::StatusTest::ActiveSet> status_test =
-      Teuchos::RCP(new NOX::Nln::StatusTest::ActiveSet(qtype, max_cycle_size));
+      Teuchos::make_rcp<NOX::Nln::StatusTest::ActiveSet>(qtype, max_cycle_size);
 
   return status_test;
 }
@@ -470,7 +470,7 @@ Teuchos::RCP<::NOX::StatusTest::Generic> NOX::Nln::StatusTest::Factory::build_co
   }
 
   Teuchos::RCP<NOX::Nln::StatusTest::Combo> combo_test =
-      Teuchos::RCP(new NOX::Nln::StatusTest::Combo(combo_type, &u));
+      Teuchos::make_rcp<NOX::Nln::StatusTest::Combo>(combo_type, &u);
 
   int i = 0;
   std::ostringstream subtest_name;

@@ -106,7 +106,7 @@ namespace Mat
     }
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new PlasticDruckerPrager(*this));
+      return Teuchos::make_rcp<PlasticDruckerPrager>(*this);
     }
     void setup(int numgp, const Core::IO::InputParameterContainer& container) override;
     void update() override;

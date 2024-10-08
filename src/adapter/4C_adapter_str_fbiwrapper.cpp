@@ -32,7 +32,7 @@ Adapter::FBIStructureWrapper::FBIStructureWrapper(Teuchos::RCP<Structure> struct
   {
     FOUR_C_THROW("Prestressing for fluid-beam interaction not tested yet.");
   }
-  eletypeextractor_ = Teuchos::RCP(new BEAMINTERACTION::UTILS::MapExtractor);
+  eletypeextractor_ = Teuchos::make_rcp<BEAMINTERACTION::UTILS::MapExtractor>();
   BEAMINTERACTION::UTILS::setup_ele_type_map_extractor(
       structure_->discretization(), eletypeextractor_);
 }
@@ -41,7 +41,7 @@ Adapter::FBIStructureWrapper::FBIStructureWrapper(Teuchos::RCP<Structure> struct
 Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FBIStructureWrapper::extract_interface_veln()
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> veli =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(veln()->Map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(veln()->Map());
   veli->Update(1.0, *veln(), 0.0);
   return veli;
 }
@@ -52,7 +52,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FBIStructureWrapper::extract
 Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FBIStructureWrapper::extract_interface_velnp()
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> veli =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(velnp()->Map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(velnp()->Map());
   veli->Update(1.0, *velnp(), 0.0);
   return veli;
 }
@@ -61,7 +61,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FBIStructureWrapper::extract
 Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FBIStructureWrapper::predict_interface_velnp()
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> veli =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(veln()->Map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(veln()->Map());
   veli->Update(1.0, *veln(), 0.0);
   return veli;
 }
@@ -82,7 +82,7 @@ void Adapter::FBIStructureWrapper::rebuild_interface() { FOUR_C_THROW("Not imple
 Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FBIStructureWrapper::predict_interface_dispnp()
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> disi =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(dispn()->Map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dispn()->Map());
   disi->Update(1.0, *dispnp(), 0.0);
   return disi;
 }
@@ -92,7 +92,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FBIStructureWrapper::predict
 Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FBIStructureWrapper::extract_interface_dispnp()
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> disi =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(dispnp()->Map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dispnp()->Map());
   disi->Update(1.0, *dispnp(), 0.0);
   return disi;
 }
@@ -101,7 +101,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FBIStructureWrapper::extract
 Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FBIStructureWrapper::extract_interface_dispn()
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> disi =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(dispn()->Map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dispn()->Map());
   disi->Update(1.0, *dispn(), 0.0);
   return disi;
 }

@@ -103,7 +103,7 @@ Mat::PAR::GrowthRemodelElastHyper::GrowthRemodelElastHyper(
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::GrowthRemodelElastHyper::create_material()
 {
-  return Teuchos::RCP(new Mat::GrowthRemodelElastHyper(this));
+  return Teuchos::make_rcp<Mat::GrowthRemodelElastHyper>(this);
 }
 
 

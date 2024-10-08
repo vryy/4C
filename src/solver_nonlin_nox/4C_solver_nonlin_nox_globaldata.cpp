@@ -169,7 +169,7 @@ void NOX::Nln::GlobalData::setup()
   set_printing_parameters();
 
   // construct the nox utils class
-  nox_utils_ = Teuchos::RCP(new ::NOX::Utils(nlnparams_->sublist("Printing")));
+  nox_utils_ = Teuchos::make_rcp<::NOX::Utils>(nlnparams_->sublist("Printing"));
 
   // set (non-linear) solver option parameters
   set_solver_option_parameters();
@@ -249,7 +249,7 @@ void NOX::Nln::GlobalData::set_solver_option_parameters()
     // Set the associated factory
     if (pdir.get<std::string>("Method") == "User Defined")
     {
-      direction_factory_ = Teuchos::RCP(new NOX::Nln::Direction::Factory);
+      direction_factory_ = Teuchos::make_rcp<NOX::Nln::Direction::Factory>();
       pdir.set<Teuchos::RCP<::NOX::Direction::UserDefinedFactory>>(
           "User Defined Direction Factory", direction_factory_);
     }
@@ -257,7 +257,7 @@ void NOX::Nln::GlobalData::set_solver_option_parameters()
 
   /* We use the parameter list to define a PrePostOperator class for the
    * non-linear iteration process. */
-  pre_post_op_ptr_ = Teuchos::RCP(new NOX::Nln::Solver::PrePostOp::Generic());
+  pre_post_op_ptr_ = Teuchos::make_rcp<NOX::Nln::Solver::PrePostOp::Generic>();
   NOX::Nln::Aux::add_to_pre_post_op_vector(solverOptionsList, pre_post_op_ptr_);
 
   return;

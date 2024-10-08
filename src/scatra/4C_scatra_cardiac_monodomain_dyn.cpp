@@ -99,13 +99,13 @@ void scatra_cardiac_monodomain_dyn(int restart)
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
       Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatraonly =
-          Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(
-              scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber)));
+          Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(
+              scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
       Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-          Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
-              Global::Problem::instance()->n_dim() + 1, 0, 0, true));
+          Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+              Global::Problem::instance()->n_dim() + 1, 0, 0, true);
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       scatraonly->scatra_field()->set_number_of_dof_set_velocity(1);
@@ -153,9 +153,9 @@ void scatra_cardiac_monodomain_dyn(int restart)
           Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
               "spatial_approximation_type",
               Global::Problem::instance()->spatial_approximation_type(), binning_params);
-          binningstrategy = Teuchos::RCP(new Core::Binstrategy::BinningStrategy(binning_params,
+          binningstrategy = Teuchos::make_rcp<Core::Binstrategy::BinningStrategy>(binning_params,
               Global::Problem::instance()->output_control_file(), scatradis->get_comm(),
-              scatradis->get_comm().MyPID(), nullptr, nullptr, dis));
+              scatradis->get_comm().MyPID(), nullptr, nullptr, dis);
           binningstrategy
               ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
                   dis, stdelecolmap, stdnodecolmap);

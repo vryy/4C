@@ -171,7 +171,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_remote_id_list(
   TEUCHOS_FUNC_TIME_MONITOR(
       "BEAMINTERACTION::beam_crosslinker_handler::fill_linker_into_bins_remote_id_list");
   const int numproc = binstrategy_->bin_discret()->get_comm().NumProc();
-  Teuchos::RCP<std::list<int>> removedlinker = Teuchos::RCP(new std::list<int>(0));
+  Teuchos::RCP<std::list<int>> removedlinker = Teuchos::make_rcp<std::list<int>>(0);
 
   // parallel case
   // ---- find new host procs for linker -----
@@ -281,7 +281,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::fill_linker_into_bins_using_ghosting(
       "BEAMINTERACTION::beam_crosslinker_handler::fill_linker_into_bins_using_ghosting");
 
   const int numproc = binstrategy_->bin_discret()->get_comm().NumProc();
-  Teuchos::RCP<std::list<int>> removedlinker = Teuchos::RCP(new std::list<int>(0));
+  Teuchos::RCP<std::list<int>> removedlinker = Teuchos::make_rcp<std::list<int>>(0);
 
   // parallel case
   // ---- find new host procs for linker -----
@@ -586,7 +586,7 @@ Teuchos::RCP<std::list<int>> BEAMINTERACTION::BeamCrosslinkerHandler::transfer_l
 #endif
 
   // store linker that have left the computational domain
-  Teuchos::RCP<std::list<int>> deletedlinker = Teuchos::RCP(new std::list<int>(0));
+  Teuchos::RCP<std::list<int>> deletedlinker = Teuchos::make_rcp<std::list<int>>(0);
 
   //---------------------------------------------------------------------------
   // numproc == 1

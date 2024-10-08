@@ -140,7 +140,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new ViscoAnisotropic(*this));
+      return Teuchos::make_rcp<ViscoAnisotropic>(*this);
     }
 
     /// Setup and Initialize internal stress variables

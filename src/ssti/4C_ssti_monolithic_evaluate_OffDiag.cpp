@@ -94,22 +94,22 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
   {
     case Core::LinAlg::MatrixType::block_condition:
     {
-      slavematrix = Teuchos::RCP(
-          new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *blockmapstructure_, meshtying_strategy_thermo_->block_maps_slave(), 81, false,
-              true));
-      mastermatrix = Teuchos::RCP(
-          new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *blockmapstructure_, meshtying_strategy_thermo_->block_maps_master(), 81, false,
-              true));
+      slavematrix = Teuchos::make_rcp<
+          Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+
+          *blockmapstructure_, meshtying_strategy_thermo_->block_maps_slave(), 81, false, true);
+      mastermatrix = Teuchos::make_rcp<
+          Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+
+          *blockmapstructure_, meshtying_strategy_thermo_->block_maps_master(), 81, false, true);
       break;
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      slavematrix = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-          *meshtying_strategy_thermo_->coupling_adapter()->slave_dof_map(), 27, false, true));
-      mastermatrix = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-          *meshtying_strategy_thermo_->coupling_adapter()->master_dof_map(), 27, false, true));
+      slavematrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+          *meshtying_strategy_thermo_->coupling_adapter()->slave_dof_map(), 27, false, true);
+      mastermatrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+          *meshtying_strategy_thermo_->coupling_adapter()->master_dof_map(), 27, false, true);
       break;
     }
     default:
@@ -297,14 +297,14 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
   Teuchos::RCP<Core::LinAlg::SparseOperator> evaluate_matrix;
   if (thermo_->scatra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
   {
-    evaluate_matrix = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-        *meshtying_strategy_thermo_->coupling_adapter()->slave_dof_map(), 27, false, true));
+    evaluate_matrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+        *meshtying_strategy_thermo_->coupling_adapter()->slave_dof_map(), 27, false, true);
   }
   else
   {
-    evaluate_matrix =
-        Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-            *blockmapstructure_, meshtying_strategy_thermo_->block_maps_slave(), 81, false, true));
+    evaluate_matrix = Teuchos::make_rcp<
+        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+        *blockmapstructure_, meshtying_strategy_thermo_->block_maps_slave(), 81, false, true);
   }
 
   // create strategy for assembly of auxiliary system matrix

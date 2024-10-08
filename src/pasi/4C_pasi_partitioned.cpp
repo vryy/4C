@@ -285,7 +285,7 @@ void PaSI::PartitionedAlgo::init_particle_algorithm()
   std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& initialparticles = problem->particles();
 
   // create and init particle algorithm
-  particlealgorithm_ = Teuchos::RCP(new PARTICLEALGORITHM::ParticleAlgorithm(get_comm(), params));
+  particlealgorithm_ = Teuchos::make_rcp<PARTICLEALGORITHM::ParticleAlgorithm>(get_comm(), params);
   particlealgorithm_->init(initialparticles);
 }
 
@@ -296,7 +296,7 @@ void PaSI::PartitionedAlgo::build_structure_model_evaluator()
   {
     // build and register pasi model evaluator
     Teuchos::RCP<Solid::ModelEvaluator::Generic> pasi_model_ptr =
-        Teuchos::RCP(new Solid::ModelEvaluator::PartitionedPASI());
+        Teuchos::make_rcp<Solid::ModelEvaluator::PartitionedPASI>();
 
     struct_adapterbase_ptr_->register_model_evaluator("Partitioned Coupling Model", pasi_model_ptr);
 

@@ -176,7 +176,7 @@ namespace XFEM
     Teuchos::RCP<Core::DOFSets::DofSetInterface> get_initial_dof_set_proxy(int nds)
     {
       FOUR_C_ASSERT(nds < (int)initialdofsets_.size(), "undefined dof set");
-      return Teuchos::RCP(new Core::DOFSets::DofSetProxy(&*initialdofsets_[nds]));
+      return Teuchos::make_rcp<Core::DOFSets::DofSetProxy>(&*initialdofsets_[nds]);
     }
 
     /*!

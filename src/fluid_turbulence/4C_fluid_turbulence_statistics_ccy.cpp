@@ -85,11 +85,11 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
   // compute all planes for sampling
 
   // available shells of element corners (Nurbs) of elements
-  nodeshells_ = Teuchos::RCP(new std::vector<double>);
+  nodeshells_ = Teuchos::make_rcp<std::vector<double>>();
 
   // available homogeneous (sampling) shells --- there are
   // numsubdivisions layers per element layer
-  shellcoordinates_ = Teuchos::RCP(new std::vector<double>);
+  shellcoordinates_ = Teuchos::make_rcp<std::vector<double>>();
 
   const int numsubdivisions = 5;
 
@@ -398,46 +398,46 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
   // --------------------------------
 
   // first order moments
-  pointsumu_ = Teuchos::RCP(new std::vector<double>);
+  pointsumu_ = Teuchos::make_rcp<std::vector<double>>();
   pointsumu_->resize(size, 0.0);
 
-  pointsumv_ = Teuchos::RCP(new std::vector<double>);
+  pointsumv_ = Teuchos::make_rcp<std::vector<double>>();
   pointsumv_->resize(size, 0.0);
 
-  pointsumw_ = Teuchos::RCP(new std::vector<double>);
+  pointsumw_ = Teuchos::make_rcp<std::vector<double>>();
   pointsumw_->resize(size, 0.0);
 
-  pointsump_ = Teuchos::RCP(new std::vector<double>);
+  pointsump_ = Teuchos::make_rcp<std::vector<double>>();
   pointsump_->resize(size, 0.0);
 
   // now the second order moments
-  pointsumuu_ = Teuchos::RCP(new std::vector<double>);
+  pointsumuu_ = Teuchos::make_rcp<std::vector<double>>();
   pointsumuu_->resize(size, 0.0);
 
-  pointsumvv_ = Teuchos::RCP(new std::vector<double>);
+  pointsumvv_ = Teuchos::make_rcp<std::vector<double>>();
   pointsumvv_->resize(size, 0.0);
 
-  pointsumww_ = Teuchos::RCP(new std::vector<double>);
+  pointsumww_ = Teuchos::make_rcp<std::vector<double>>();
   pointsumww_->resize(size, 0.0);
 
-  pointsumpp_ = Teuchos::RCP(new std::vector<double>);
+  pointsumpp_ = Teuchos::make_rcp<std::vector<double>>();
   pointsumpp_->resize(size, 0.0);
 
-  pointsumuv_ = Teuchos::RCP(new std::vector<double>);
+  pointsumuv_ = Teuchos::make_rcp<std::vector<double>>();
   pointsumuv_->resize(size, 0.0);
 
-  pointsumuw_ = Teuchos::RCP(new std::vector<double>);
+  pointsumuw_ = Teuchos::make_rcp<std::vector<double>>();
   pointsumuw_->resize(size, 0.0);
 
-  pointsumvw_ = Teuchos::RCP(new std::vector<double>);
+  pointsumvw_ = Teuchos::make_rcp<std::vector<double>>();
   pointsumvw_->resize(size, 0.0);
 
   if (withscatra_)
   {
-    pointsumc_ = Teuchos::RCP(new std::vector<double>);
+    pointsumc_ = Teuchos::make_rcp<std::vector<double>>();
     pointsumc_->resize(size, 0.0);
 
-    pointsumcc_ = Teuchos::RCP(new std::vector<double>);
+    pointsumcc_ = Teuchos::make_rcp<std::vector<double>>();
     pointsumcc_->resize(size, 0.0);
 
     // pointsumphi_/pointsumphiphi_ are allocated in ApplyScatraResults()
@@ -453,7 +453,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
-    log = Teuchos::RCP(new std::ofstream(s.c_str(), std::ios::out));
+    log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::out);
     (*log) << "# Statistics for turbulent incompressible flow in a rotating cylinder (first- and "
               "second-order moments)\n\n";
 
@@ -1351,7 +1351,7 @@ void FLD::TurbulenceStatisticsCcy::time_average_means_and_output_of_statistics(i
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
-    log = Teuchos::RCP(new std::ofstream(s.c_str(), std::ios::app));
+    log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::app);
     (*log) << "\n\n\n";
     (*log) << "# Statistics record " << countrecord_;
     (*log) << " (Steps " << step - numsamp_ + 1 << "--" << step << ")\n";
@@ -1512,8 +1512,9 @@ void FLD::TurbulenceStatisticsCcy::add_scatra_results(
 
     // now we know about the number of scatra dofs and can allocate:
     int size = shellcoordinates_->size();
-    pointsumphi_ = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(size, numscatradofpernode_));
-    pointsumphiphi_ = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(size, numscatradofpernode_));
+    pointsumphi_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(size, numscatradofpernode_);
+    pointsumphiphi_ =
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(size, numscatradofpernode_);
 
     if (discret_->get_comm().MyPID() == 0)
     {

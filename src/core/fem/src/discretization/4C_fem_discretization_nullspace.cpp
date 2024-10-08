@@ -21,7 +21,7 @@ namespace Core::FE
     if (dimns > 10) FOUR_C_THROW("Nullspace size only up to 10 supported!");
 
     Teuchos::RCP<Epetra_MultiVector> nullspace =
-        Teuchos::RCP(new Epetra_MultiVector(*dofmap, dimns, true));
+        Teuchos::make_rcp<Epetra_MultiVector>(*dofmap, dimns, true);
 
     if (dimns == 1 && numdf == 1)
     {

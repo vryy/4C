@@ -844,7 +844,7 @@ Solid::ModelEvaluatorManager::transform_to_vector(
     const Solid::ModelEvaluatorManager::Map& model_map) const
 {
   Teuchos::RCP<Solid::ModelEvaluatorManager::Vector> me_vec_ptr =
-      Teuchos::RCP(new Solid::ModelEvaluatorManager::Vector(0));
+      Teuchos::make_rcp<Solid::ModelEvaluatorManager::Vector>(0);
   me_vec_ptr->reserve(model_map.size());
 
   // --------------------------------------------------------------------------

@@ -46,7 +46,7 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::pre_evaluate(Teuchos::Pa
       }
 
       Teuchos::RCP<std::vector<double>> scalar =
-          Teuchos::RCP(new std::vector<double>(numscal, 0.0));
+          Teuchos::make_rcp<std::vector<double>>(numscal, 0.0);
       if ((int)myscalar.size() != numscal * numnod_) FOUR_C_THROW("sizes do not match!");
 
       for (int i = 0; i < numnod_; i++)

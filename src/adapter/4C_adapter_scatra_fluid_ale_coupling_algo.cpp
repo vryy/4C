@@ -58,7 +58,7 @@ void Adapter::ScaTraFluidAleCouplingAlgorithm::setup()
   const int ndim = Global::Problem::instance()->n_dim();
 
   // set up couplings
-  icoupfa_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
+  icoupfa_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
   icoupfa_->setup_condition_coupling(*fluid_field()->discretization(),
       fluid_field()->interface()->fsi_cond_map(), *ale_field()->discretization(),
       ale_field()->interface()->fsi_cond_map(), condname_, ndim);
@@ -67,7 +67,7 @@ void Adapter::ScaTraFluidAleCouplingAlgorithm::setup()
   const Epetra_Map* fluidnodemap = fluid_field()->discretization()->node_row_map();
   const Epetra_Map* alenodemap = ale_field()->discretization()->node_row_map();
 
-  coupfa_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
+  coupfa_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
   coupfa_->setup_coupling(*fluid_field()->discretization(), *ale_field()->discretization(),
       *fluidnodemap, *alenodemap, ndim);
 

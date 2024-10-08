@@ -29,7 +29,7 @@ Mat::PAR::Soret::Soret(const Core::Mat::PAR::Parameter::Data& matdata)
  *------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Soret::create_material()
 {
-  return Teuchos::RCP(new Mat::Soret(this));
+  return Teuchos::make_rcp<Mat::Soret>(this);
 }
 
 Mat::SoretType Mat::SoretType::instance_;

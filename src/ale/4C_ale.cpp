@@ -100,13 +100,13 @@ ALE::Ale::Ale(Teuchos::RCP<Core::FE::Discretization> actdis,
 
   if (msht_ == Inpar::ALE::meshsliding)
   {
-    meshtying_ = Teuchos::RCP(
-        new Meshsliding(discret_, *solver_, msht_, Global::Problem::instance()->n_dim(), nullptr));
+    meshtying_ = Teuchos::make_rcp<Meshsliding>(
+        discret_, *solver_, msht_, Global::Problem::instance()->n_dim(), nullptr);
   }
   else if (msht_ == Inpar::ALE::meshtying)
   {
-    meshtying_ = Teuchos::RCP(
-        new Meshtying(discret_, *solver_, msht_, Global::Problem::instance()->n_dim(), nullptr));
+    meshtying_ = Teuchos::make_rcp<Meshtying>(
+        discret_, *solver_, msht_, Global::Problem::instance()->n_dim(), nullptr);
   }
 
   // ---------------------------------------------------------------------
@@ -118,8 +118,8 @@ ALE::Ale::Ale(Teuchos::RCP<Core::FE::Discretization> actdis,
     if (locsysconditions.size())
     {
       // Initialize locsys manager
-      locsysman_ = Teuchos::RCP(
-          new Core::Conditions::LocsysManager(*discret_, Global::Problem::instance()->n_dim()));
+      locsysman_ = Teuchos::make_rcp<Core::Conditions::LocsysManager>(
+          *discret_, Global::Problem::instance()->n_dim());
     }
   }
 
@@ -199,13 +199,13 @@ void ALE::Ale::create_system_matrix(Teuchos::RCP<const ALE::UTILS::MapExtractor>
   else if (interface == Teuchos::null)
   {
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    sysmat_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap, 81, false, true));
+    sysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 81, false, true);
   }
   else
   {
-    sysmat_ =
-        Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-            *interface, *interface, 81, false, true));
+    sysmat_ = Teuchos::make_rcp<
+        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+        *interface, *interface, 81, false, true);
   }
 }
 
@@ -253,7 +253,7 @@ void ALE::Ale::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc
     // When using local systems, a rotated dispnp_ vector needs to be used as dbcval for
     // apply_dirichlet_to_system
     Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_local =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*(zeros_)));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(zeros_));
     locsys_manager()->rotate_global_to_local(dispnp_local);
 
     if (get_loc_sys_trafo() != Teuchos::null)
@@ -288,7 +288,7 @@ int ALE::Ale::solve()
 {
   // We need the negative residual here as right hand side of the linear problem
   Teuchos::RCP<Core::LinAlg::Vector<double>> rhs =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*residual_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*residual_);
   rhs->Scale(-1.0);
 
   // ToDo (mayr) Why can't we use rhs_ instead of local variable rhs???
@@ -632,7 +632,7 @@ void ALE::Ale::setup_dbc_map_ex(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type
   {
     case ALE::UTILS::MapExtractor::dbc_set_std:
       dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std] =
-          Teuchos::RCP(new Core::LinAlg::MapExtractor());
+          Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
       apply_dirichlet_bc(eleparams, dispnp_, Teuchos::null, Teuchos::null, true);
       break;
     case ALE::UTILS::MapExtractor::dbc_set_x_ff:
@@ -643,7 +643,7 @@ void ALE::Ale::setup_dbc_map_ex(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type
       Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
 
       dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_x_ff] =
-          Teuchos::RCP(new Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), condmerged));
+          Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*(discret_->dof_row_map()), condmerged);
       break;
     }
     case ALE::UTILS::MapExtractor::dbc_set_x_fsi:
@@ -656,7 +656,7 @@ void ALE::Ale::setup_dbc_map_ex(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type
       Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
 
       dbcmaps_[dbc_type] =
-          Teuchos::RCP(new Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), condmerged));
+          Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*(discret_->dof_row_map()), condmerged);
       break;
     }
     case ALE::UTILS::MapExtractor::dbc_set_wear:
@@ -667,7 +667,7 @@ void ALE::Ale::setup_dbc_map_ex(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type
 
       Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
       dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_wear] =
-          Teuchos::RCP(new Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), condmerged));
+          Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*(discret_->dof_row_map()), condmerged);
       break;
     }
     default:
@@ -682,7 +682,7 @@ void ALE::Ale::setup_dbc_map_ex(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::UTILS::ResultTest> ALE::Ale::create_field_test()
 {
-  return Teuchos::RCP(new ALE::AleResultTest(*this));
+  return Teuchos::make_rcp<ALE::AleResultTest>(*this);
 }
 
 /*----------------------------------------------------------------------------*/

@@ -74,8 +74,8 @@ void Adapter::CouplingEhlMortar::setup(Teuchos::RCP<Core::FE::Discretization> ma
     const std::string& couplingcond)
 {
   Adapter::CouplingNonLinMortar::setup(masterdis, slavedis, coupleddof, couplingcond);
-  z_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->slave_row_dofs(), true));
-  fscn_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->slave_row_dofs(), true));
+  z_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->slave_row_dofs(), true);
+  fscn_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->slave_row_dofs(), true);
 
   auto ftype = Teuchos::getIntegralValue<Inpar::CONTACT::FrictionType>(
       Global::Problem::instance()->contact_dynamic_params(), "FRICTION");
@@ -133,8 +133,8 @@ void Adapter::CouplingEhlMortar::integrate(
   interface_->evaluate();
 
   // some first assemblies, that don't require any additional states
-  D_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));
-  M_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));
+  D_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
+  M_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
   interface_->assemble_dm(*D_, *M_);
   D_->complete();
   M_->complete(*masterdofrowmap_, *slavedofrowmap_);
@@ -147,7 +147,7 @@ void Adapter::CouplingEhlMortar::integrate(
   assemble_interface_velocities(dt);
 
   // save that state as the last evaluated one
-  evaluated_state_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*disp));
+  evaluated_state_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*disp);
 
   // all done
   return;
@@ -177,10 +177,10 @@ void Adapter::CouplingEhlMortar::condense_contact(
   interface_->build_active_set();
 
   // assemble the constraint lines for the active contact nodes
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> dcsdd = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *interface_->active_dofs(), 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> dcsdLMc = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *interface_->active_dofs(), 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dcsdd = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *interface_->active_dofs(), 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dcsdLMc = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *interface_->active_dofs(), 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcsa =
       Core::LinAlg::create_vector(*interface_->active_dofs(), true);
   Teuchos::RCP<Core::LinAlg::Vector<double>> g_all;
@@ -190,9 +190,9 @@ void Adapter::CouplingEhlMortar::condense_contact(
     g_all = Core::LinAlg::create_vector(*interface_->slave_row_nodes(), true);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrix =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*interface_->slave_row_dofs(), 10));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*interface_->slave_row_dofs(), 10);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*interface_->slave_row_dofs(), 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*interface_->slave_row_dofs(), 100);
   interface_->assemble_dm(*dmatrix, *mmatrix);
   dmatrix->complete();
   mmatrix->complete(*masterdofrowmap_, *slavedofrowmap_);
@@ -205,8 +205,8 @@ void Adapter::CouplingEhlMortar::condense_contact(
   interface_->assemble_lin_dm(linDcontactLM, linMcontactLM);
 
   // D and M matrix for the active nodes
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> dInv =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*interface_->slave_row_dofs(), 100, true, false));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> dInv = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *interface_->slave_row_dofs(), 100, true, false);
 
   // linearized normal contact
   interface_->assemble_s(*dcsdd);
@@ -273,25 +273,25 @@ void Adapter::CouplingEhlMortar::condense_contact(
   // get the seperate blocks of the 2x2 TSI block system
   // View mode!!! Since we actually want to add things there
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kss =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(sysmat->matrix(0, 0), Core::LinAlg::Copy));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmat->matrix(0, 0), Core::LinAlg::Copy);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kst =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(sysmat->matrix(0, 1), Core::LinAlg::Copy));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmat->matrix(0, 1), Core::LinAlg::Copy);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kts =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(sysmat->matrix(1, 0), Core::LinAlg::Copy));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmat->matrix(1, 0), Core::LinAlg::Copy);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> ktt =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(sysmat->matrix(1, 1), Core::LinAlg::Copy));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmat->matrix(1, 1), Core::LinAlg::Copy);
 
   // get some maps
-  Teuchos::RCP<Epetra_Map> gdisp_DofRowMap = Teuchos::RCP(new Epetra_Map(kss->row_map()));
-  Teuchos::RCP<Epetra_Map> gpres_DofRowMap = Teuchos::RCP(new Epetra_Map(ktt->row_map()));
-  Teuchos::RCP<Epetra_Map> gmdof = Teuchos::RCP(new Epetra_Map(*interface_->master_row_dofs()));
-  Teuchos::RCP<Epetra_Map> active_dofs = Teuchos::RCP(new Epetra_Map(*interface_->active_dofs()));
+  Teuchos::RCP<Epetra_Map> gdisp_DofRowMap = Teuchos::make_rcp<Epetra_Map>(kss->row_map());
+  Teuchos::RCP<Epetra_Map> gpres_DofRowMap = Teuchos::make_rcp<Epetra_Map>(ktt->row_map());
+  Teuchos::RCP<Epetra_Map> gmdof = Teuchos::make_rcp<Epetra_Map>(*interface_->master_row_dofs());
+  Teuchos::RCP<Epetra_Map> active_dofs = Teuchos::make_rcp<Epetra_Map>(*interface_->active_dofs());
 
   // split rhs
   Teuchos::RCP<Core::LinAlg::Vector<double>> rs =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(kss->row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(kss->row_map(), true);
   Teuchos::RCP<Core::LinAlg::Vector<double>> rt =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(ktt->row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(ktt->row_map(), true);
   Core::LinAlg::export_to(*combined_RHS, *rs);
   Core::LinAlg::export_to(*combined_RHS, *rt);
 
@@ -430,7 +430,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   Core::LinAlg::Vector<double> rsm(*interface_->master_row_dofs());
   Core::LinAlg::export_to(*rs, rsm);
   Teuchos::RCP<Core::LinAlg::Vector<double>> rsa =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->active_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->active_dofs());
   Core::LinAlg::export_to(*rs, *rsa);
   // ****************************************************
   // split rhs vectors***********************************
@@ -438,9 +438,9 @@ void Adapter::CouplingEhlMortar::condense_contact(
 
   // D and M matrix for the active nodes
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dInvA =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*interface_->active_dofs(), 100, true, false));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*interface_->active_dofs(), 100, true, false);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mA =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*interface_->active_dofs(), 100, true, false));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*interface_->active_dofs(), 100, true, false);
 
   dummy_map1 = dummy_map2 = Teuchos::null;
   dummy1 = dummy2 = dummy3 = Teuchos::null;
@@ -466,9 +466,9 @@ void Adapter::CouplingEhlMortar::condense_contact(
   // we need to add another term, since AssembleLinStick/Slip assumes that we solve
   // for the Lagrange multiplier increments. However, we solve for the LM directly.
   // We can do that, since the system is linear in the LMs.
-  tmpv = Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->active_dofs()));
+  tmpv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->active_dofs());
   Teuchos::RCP<Core::LinAlg::Vector<double>> tmpv2 =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->active_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->active_dofs());
   Core::LinAlg::export_to(*z_, *tmpv2);
   dcsdLMc->multiply(false, *tmpv2, *tmpv);
   tmpv->Scale(-1.);
@@ -553,7 +553,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
       false, 1., 1.);
   kst_new.add(*Core::LinAlg::matrix_multiply(*dInvMa, true, *kst_a, false, false, false, true),
       false, 1., 1.);
-  tmpv = Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->master_row_dofs()));
+  tmpv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->master_row_dofs());
   if (dInvMa->multiply(true, *rsa, *tmpv)) FOUR_C_THROW("multiply failed");
   CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
   tmpv = Teuchos::null;
@@ -565,7 +565,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
       false, -1. / (1. - alphaf_), 1.);
   kst_new.add(*Core::LinAlg::matrix_multiply(*wDinv, false, *kst_a, false, false, false, true),
       false, -1. / (1. - alphaf_), 1.);
-  tmpv = Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->active_dofs()));
+  tmpv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->active_dofs());
   wDinv->multiply(false, *rsa, *tmpv);
   tmpv->Scale(-1. / (1. - alphaf_));
   CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
@@ -609,7 +609,7 @@ void Adapter::CouplingEhlMortar::recover_coupled(Teuchos::RCP<Core::LinAlg::Vect
   const double alphaf_ = 0.;  // statics!
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> z_old = Teuchos::null;
-  if (z_ != Teuchos::null) z_old = Teuchos::RCP(new Core::LinAlg::Vector<double>(*z_));
+  if (z_ != Teuchos::null) z_old = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*z_);
 
   // recover contact LM
   if (interface_->active_nodes()->NumGlobalElements() > 0)
@@ -628,13 +628,13 @@ void Adapter::CouplingEhlMortar::recover_coupled(Teuchos::RCP<Core::LinAlg::Vect
     lmc_a_new.Update(1., tmp, 1.);
     dinvA_->multiply(false, lmc_a_new, tmp);
     tmp.Scale(-1. / (1. - alphaf_));
-    z_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->slave_row_dofs()));
+    z_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->slave_row_dofs());
 
     Core::LinAlg::export_to(tmp, *z_);
   }
 
   else
-    z_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->slave_row_dofs()));
+    z_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->slave_row_dofs());
 
   if (z_old != Teuchos::null)
   {
@@ -692,9 +692,9 @@ void Adapter::CouplingEhlMortar::store_dirichlet_status(
   }
   // create old style dirichtoggle vector (supposed to go away)
   sdirichtoggle_ =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->slave_row_dofs(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->slave_row_dofs(), true);
   Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*(dbcmaps->cond_map())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dbcmaps->cond_map()));
   temp->PutScalar(1.0);
   Core::LinAlg::export_to(*temp, *sdirichtoggle_);
 
@@ -708,7 +708,7 @@ bool Adapter::CouplingEhlMortar::already_evaluated(
 {
   if (evaluated_state_.is_null()) return false;
   Teuchos::RCP<Core::LinAlg::Vector<double>> diff =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*disp));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*disp);
   if (diff->Update(-1., *evaluated_state_, 1.)) FOUR_C_THROW("update failed");
   double inf_diff = -1.;
   if (diff->NormInf(&inf_diff)) FOUR_C_THROW("NormInf failed");
@@ -721,8 +721,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::CouplingEhlMortar::assemble_eh
     const Teuchos::RCP<Core::LinAlg::Vector<double>> x  // slave dof vector
 )
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> DLinEHL = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *slavedofrowmap_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> DLinEHL = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *slavedofrowmap_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
   DLinEHL->zero();
   DLinEHL->un_complete();
 
@@ -737,8 +737,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::CouplingEhlMortar::assemble_eh
     const Teuchos::RCP<Core::LinAlg::Vector<double>> x  // slave dof vector
 )
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> MLinEHL = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *masterdofrowmap_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> MLinEHL = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *masterdofrowmap_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
   MLinEHL->zero();
   MLinEHL->un_complete();
 
@@ -751,7 +751,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::CouplingEhlMortar::assemble_eh
 
 void Adapter::CouplingEhlMortar::assemble_normals()
 {
-  normals_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*slave_dof_map(), true));
+  normals_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slave_dof_map(), true);
 
   for (int i = 0; i < interface_->slave_row_nodes()->NumMyElements(); ++i)
   {
@@ -768,7 +768,7 @@ void Adapter::CouplingEhlMortar::assemble_normals()
 
 void Adapter::CouplingEhlMortar::assemble_normals_deriv()
 {
-  Nderiv_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));
+  Nderiv_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
   for (int i = 0; i < interface_->slave_row_nodes()->NumMyElements(); ++i)
   {
     Core::Nodes::Node* node = interface()->discret().g_node(interface_->slave_row_nodes()->GID(i));
@@ -786,7 +786,7 @@ void Adapter::CouplingEhlMortar::assemble_normals_deriv()
 
 void Adapter::CouplingEhlMortar::assemble_real_gap()
 {
-  nodal_gap_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*slavenoderowmap_, true));
+  nodal_gap_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavenoderowmap_, true);
 
   for (int i = 0; i < interface_->slave_row_nodes()->NumMyElements(); ++i)
   {
@@ -820,7 +820,7 @@ void Adapter::CouplingEhlMortar::assemble_real_gap()
 void Adapter::CouplingEhlMortar::assemble_real_gap_deriv()
 {
   deriv_nodal_gap_ =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
 
   for (int i = 0; i < interface_->slave_row_nodes()->NumMyElements(); ++i)
   {
@@ -874,12 +874,12 @@ void Adapter::CouplingEhlMortar::assemble_real_gap_deriv()
 
 void Adapter::CouplingEhlMortar::assemble_interface_velocities(const double dt)
 {
-  relTangVel_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*slavedofrowmap_));
-  avTangVel_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*slavedofrowmap_));
+  relTangVel_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavedofrowmap_);
+  avTangVel_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavedofrowmap_);
   relTangVel_deriv_ =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
   avTangVel_deriv_ =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
 
   for (int i = 0; i < interface_->slave_row_nodes()->NumMyElements(); ++i)
   {
@@ -964,8 +964,8 @@ void Adapter::CouplingEhlMortar::assemble_interface_velocities(const double dt)
 
 void Adapter::CouplingEhlMortar::assemble_surf_grad()
 {
-  SurfGrad_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *slavedofrowmap_, 81, false, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  SurfGrad_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *slavedofrowmap_, 81, false, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   for (int i = 0; i < interface_->slave_row_nodes()->NumMyElements(); ++i)
   {
@@ -1004,8 +1004,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::CouplingEhlMortar::assemble_su
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> x)
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> SurfGradDeriv =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-          *slavedofrowmap_, 81, false, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+          *slavedofrowmap_, 81, false, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   for (int i = 0; i < interface_->slave_row_nodes()->NumMyElements(); ++i)
   {
@@ -1076,8 +1076,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::CouplingEhlMortar::assemble_su
 void Adapter::CouplingEhlMortar::create_force_vec(
     Teuchos::RCP<Core::LinAlg::Vector<double>>& n, Teuchos::RCP<Core::LinAlg::Vector<double>>& t)
 {
-  n = Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->slave_row_dofs()));
-  t = Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->slave_row_dofs()));
+  n = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->slave_row_dofs());
+  t = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->slave_row_dofs());
   for (int i = 0; i < interface_->slave_row_nodes()->NumMyElements(); ++i)
   {
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(interface_->discret().l_row_node(i));
@@ -1103,10 +1103,10 @@ void Adapter::CouplingEhlMortar::create_active_slip_toggle(
     Teuchos::RCP<Core::LinAlg::Vector<double>>* slip,
     Teuchos::RCP<Core::LinAlg::Vector<double>>* active_old)
 {
-  *active = Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->slave_row_nodes()));
-  *slip = Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->slave_row_nodes()));
+  *active = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->slave_row_nodes());
+  *slip = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->slave_row_nodes());
   if (active_old != nullptr)
-    *active_old = Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->slave_row_nodes()));
+    *active_old = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->slave_row_nodes());
   for (int i = 0; i < interface_->slave_row_nodes()->NumMyElements(); ++i)
   {
     CONTACT::FriNode* cnode = dynamic_cast<CONTACT::FriNode*>(interface_->discret().l_row_node(i));
@@ -1153,11 +1153,11 @@ void Adapter::CouplingEhlMortar::read_restart(Core::IO::DiscretizationReader& re
   reader.read_vector(z_, "contact_lm");
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> active_toggle =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->slave_row_nodes()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->slave_row_nodes());
   Teuchos::RCP<Core::LinAlg::Vector<double>> active_old_toggle =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->slave_row_nodes()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->slave_row_nodes());
   Teuchos::RCP<Core::LinAlg::Vector<double>> slip_toggle =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->slave_row_nodes()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->slave_row_nodes());
   reader.read_vector(active_toggle, "active_toggle");
   reader.read_vector(active_old_toggle, "active_old_toggle");
   reader.read_vector(slip_toggle, "slip_toggle");

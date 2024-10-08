@@ -1345,11 +1345,11 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
     numvispoints += numvisp;
   }
 
-  vispointmap_ = Teuchos::RCP(new Epetra_Map(numvispoints, local_vis_point_ids.size(),
-      local_vis_point_ids.data(), 0, nurbsdis->get_comm()));
+  vispointmap_ = Teuchos::make_rcp<Epetra_Map>(numvispoints, local_vis_point_ids.size(),
+      local_vis_point_ids.data(), 0, nurbsdis->get_comm());
 
   // allocate the coordinates of the vizualisation points
-  nodecoords = Teuchos::RCP(new Epetra_MultiVector(*vispointmap_, 3));
+  nodecoords = Teuchos::make_rcp<Epetra_MultiVector>(*vispointmap_, 3);
 
   // loop over the nodes on this proc and store the coordinate information
   for (int inode = 0; inode < (int)local_vis_point_x.size(); inode++)
@@ -1367,7 +1367,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map, *vispointmap_);
   Teuchos::RCP<Epetra_MultiVector> allnodecoords =
-      Teuchos::RCP(new Epetra_MultiVector(*proc0map, 3));
+      Teuchos::make_rcp<Epetra_MultiVector>(*proc0map, 3);
   int err = allnodecoords->Import(*nodecoords, proc0importer, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
@@ -1724,7 +1724,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
 
   // a multivector for the interpolated data
   Teuchos::RCP<Epetra_MultiVector> idata;
-  idata = Teuchos::RCP(new Epetra_MultiVector(*vispointmap_, numdf));
+  idata = Teuchos::make_rcp<Epetra_MultiVector>(*vispointmap_, numdf);
 
   Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
       dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*field_->discretization()));
@@ -1908,13 +1908,13 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   coldofmapvec.reserve(coldofset.size());
   coldofmapvec.assign(coldofset.begin(), coldofset.end());
   coldofset.clear();
-  Teuchos::RCP<Epetra_Map> coldofmap = Teuchos::RCP(
-      new Epetra_Map(-1, coldofmapvec.size(), coldofmapvec.data(), 0, nurbsdis->get_comm()));
+  Teuchos::RCP<Epetra_Map> coldofmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, coldofmapvec.size(), coldofmapvec.data(), 0, nurbsdis->get_comm());
   coldofmapvec.clear();
 
   const Epetra_Map* fulldofmap = &(*coldofmap);
   const Teuchos::RCP<Core::LinAlg::Vector<double>> coldata =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*fulldofmap, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fulldofmap, true);
 
   // create an importer and import the data
   Epetra_Import importer((*coldata).Map(), (*data).Map());
@@ -2123,7 +2123,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map_, *vispointmap_);
   Teuchos::RCP<Epetra_MultiVector> allsols =
-      Teuchos::RCP(new Epetra_MultiVector(*proc0map_, numdf));
+      Teuchos::make_rcp<Epetra_MultiVector>(*proc0map_, numdf);
   int err = allsols->Import(*idata, proc0importer, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
@@ -3349,7 +3349,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
 
   // a multivector for the interpolated data
   Teuchos::RCP<Epetra_MultiVector> idata;
-  idata = Teuchos::RCP(new Epetra_MultiVector(*vispointmap_, numdf));
+  idata = Teuchos::make_rcp<Epetra_MultiVector>(*vispointmap_, numdf);
 
   Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
       dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*field_->discretization()));
@@ -3431,13 +3431,13 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   colnodemapvec.reserve(colnodeset.size());
   colnodemapvec.assign(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  Teuchos::RCP<Epetra_Map> colnodemap = Teuchos::RCP(
-      new Epetra_Map(-1, colnodemapvec.size(), colnodemapvec.data(), 0, nurbsdis->get_comm()));
+  Teuchos::RCP<Epetra_Map> colnodemap = Teuchos::make_rcp<Epetra_Map>(
+      -1, colnodemapvec.size(), colnodemapvec.data(), 0, nurbsdis->get_comm());
   colnodemapvec.clear();
 
   const Epetra_Map* fullnodemap = &(*colnodemap);
   const Teuchos::RCP<Epetra_MultiVector> coldata =
-      Teuchos::RCP(new Epetra_MultiVector(*fullnodemap, numdf, true));  // numdf important!!!
+      Teuchos::make_rcp<Epetra_MultiVector>(*fullnodemap, numdf, true);  // numdf important!!!
 
   // create an importer and import the data
   Epetra_Import importer((*coldata).Map(), (*data).Map());
@@ -3524,7 +3524,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map_, *vispointmap_);
   Teuchos::RCP<Epetra_MultiVector> allsols =
-      Teuchos::RCP(new Epetra_MultiVector(*proc0map_, numdf));
+      Teuchos::make_rcp<Epetra_MultiVector>(*proc0map_, numdf);
   int err = allsols->Import(*idata, proc0importer, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
@@ -3539,7 +3539,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
     for (int idf = 0; idf < numdf; ++idf)
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> column =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*(*allsols)(idf)));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*allsols)(idf));
       for (int inode = 0; inode < finalnumnode;
            inode++)  // inode == lid of node because we use proc0map_
       {

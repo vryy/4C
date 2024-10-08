@@ -182,7 +182,7 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_char_data(
 {
   if (end == -1) end = num_output_proc_;
   hsize_t offset = 0;
-  Teuchos::RCP<std::vector<char>> data = Teuchos::RCP(new std::vector<char>);
+  Teuchos::RCP<std::vector<char>> data = Teuchos::make_rcp<std::vector<char>>();
   for (int i = start; i < end; ++i)
   {
     const char* cpath = path.c_str();
@@ -241,7 +241,7 @@ Teuchos::RCP<std::vector<int>> Core::IO::HDFReader::read_int_data(
 {
   if (end == -1) end = num_output_proc_;
   int offset = 0;
-  Teuchos::RCP<std::vector<int>> data = Teuchos::RCP(new std::vector<int>);
+  Teuchos::RCP<std::vector<int>> data = Teuchos::make_rcp<std::vector<int>>();
   for (int i = start; i < end; ++i)
   {
     hid_t dataset = H5Dopen(files_[i], path.c_str());
@@ -297,7 +297,7 @@ Teuchos::RCP<std::vector<double>> Core::IO::HDFReader::read_double_data(
 {
   if (end == -1) end = num_output_proc_;
   int offset = 0;
-  Teuchos::RCP<std::vector<double>> data = Teuchos::RCP(new std::vector<double>);
+  Teuchos::RCP<std::vector<double>> data = Teuchos::make_rcp<std::vector<double>>();
   for (int i = start; i < end; ++i)
   {
     hid_t dataset = H5Dopen(files_[i], path.c_str());
@@ -363,9 +363,9 @@ Teuchos::RCP<Epetra_MultiVector> Core::IO::HDFReader::read_result_data(
 
   Teuchos::RCP<Epetra_MultiVector> res;
   if (columns == 1)
-    res = Teuchos::RCP(new Epetra_Vector(map, false));
+    res = Teuchos::make_rcp<Epetra_Vector>(map, false);
   else
-    res = Teuchos::RCP(new Epetra_MultiVector(map, columns, false));
+    res = Teuchos::make_rcp<Epetra_MultiVector>(map, columns, false);
 
   std::vector<int> lengths;
   Teuchos::RCP<std::vector<double>> values = read_double_data(value_path, start, end, lengths);
@@ -410,7 +410,7 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_result_data_vec_char(s
   Teuchos::RCP<std::vector<int>> ids = read_int_data(id_path, start, end);
   // cout << "size of ids:" << (*ids).size() << endl;
   Epetra_Map map(-1, static_cast<int>(ids->size()), ids->data(), 0, Comm);
-  elemap = Teuchos::RCP(new Epetra_Map(map));
+  elemap = Teuchos::make_rcp<Epetra_Map>(map);
 
   Teuchos::RCP<std::vector<char>> res = read_char_data(value_path, start, end);
   return res;

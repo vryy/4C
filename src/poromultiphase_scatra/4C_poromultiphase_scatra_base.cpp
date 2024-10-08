@@ -123,8 +123,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::init(
   const int linsolvernumber = scatraparams.get<int>("LINEAR_SOLVER");
 
   // scatra problem
-  scatra_ = Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(globaltimeparams, scatraparams,
-      problem->solver_params(linsolvernumber), scatra_disname, true));
+  scatra_ = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(globaltimeparams, scatraparams,
+      problem->solver_params(linsolvernumber), scatra_disname, true);
 
   // initialize the base algo.
   // scatra time integrator is constructed and initialized inside.
@@ -159,8 +159,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::init(
   }
 
   std::vector<int> mydirichdofs(0);
-  add_dirichmaps_volfrac_spec_ = Teuchos::RCP(new Epetra_Map(
-      -1, 0, mydirichdofs.data(), 0, scatra_algo()->scatra_field()->discretization()->get_comm()));
+  add_dirichmaps_volfrac_spec_ = Teuchos::make_rcp<Epetra_Map>(
+      -1, 0, mydirichdofs.data(), 0, scatra_algo()->scatra_field()->discretization()->get_comm());
 
   // done.
 }
@@ -408,8 +408,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
 
   // build map
   int nummydirichvals = mydirichdofs.size();
-  add_dirichmaps_volfrac_spec_ = Teuchos::RCP(new Epetra_Map(-1, nummydirichvals,
-      mydirichdofs.data(), 0, scatra_algo()->scatra_field()->discretization()->get_comm()));
+  add_dirichmaps_volfrac_spec_ = Teuchos::make_rcp<Epetra_Map>(-1, nummydirichvals,
+      mydirichdofs.data(), 0, scatra_algo()->scatra_field()->discretization()->get_comm());
 
   // add the condition
   scatra_algo()->scatra_field()->add_dirich_cond(add_dirichmaps_volfrac_spec_);

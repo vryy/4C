@@ -57,7 +57,7 @@ void Discret::ELEMENTS::So3Thermo<So3Ele, distype>::pre_evaluate(Teuchos::Parame
 
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double>> nodaltempnp =
-          Teuchos::RCP(new std::vector<double>(la[1].lm_.size()));
+          Teuchos::make_rcp<std::vector<double>>(la[1].lm_.size());
       Core::FE::extract_my_values(*tempnp, *nodaltempnp, la[1].lm_);
 
       // now set the current temperature vector in the parameter list

@@ -113,10 +113,10 @@ Mat::PAR::BeamElastHyperMaterialParameterGeneric::create_material()
 
   if (uses_fad())
   {
-    matobject = Teuchos::RCP(new Mat::BeamElastHyperMaterial<Sacado::Fad::DFad<double>>(this));
+    matobject = Teuchos::make_rcp<Mat::BeamElastHyperMaterial<Sacado::Fad::DFad<double>>>(this);
   }
   else
-    matobject = Teuchos::RCP(new Mat::BeamElastHyperMaterial<double>(this));
+    matobject = Teuchos::make_rcp<Mat::BeamElastHyperMaterial<double>>(this);
   return matobject;
 }
 

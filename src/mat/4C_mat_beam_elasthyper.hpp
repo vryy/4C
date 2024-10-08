@@ -135,7 +135,7 @@ namespace Mat
      */
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new BeamElastHyperMaterial(*this));
+      return Teuchos::make_rcp<BeamElastHyperMaterial>(*this);
     }
 
     /** \brief get quick accessible material parameter data

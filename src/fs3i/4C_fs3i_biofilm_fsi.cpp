@@ -84,7 +84,7 @@ void FS3I::BiofilmFSI::init()
   if (structaledis->num_global_nodes() == 0)
   {
     Teuchos::RCP<Core::FE::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>> alecreator =
-        Teuchos::RCP(new Core::FE::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>());
+        Teuchos::make_rcp<Core::FE::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>>();
     alecreator->create_matching_discretization(structdis, structaledis, 11);
     structaledis->fill_complete();
   }
@@ -98,7 +98,7 @@ void FS3I::BiofilmFSI::init()
   // ask base algorithm for the ale time integrator
   const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
   Teuchos::RCP<Adapter::AleBaseAlgorithm> ale =
-      Teuchos::RCP(new Adapter::AleBaseAlgorithm(fsidyn, structaledis));
+      Teuchos::make_rcp<Adapter::AleBaseAlgorithm>(fsidyn, structaledis);
   ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleFsiWrapper>(ale->ale_field());
   if (ale_ == Teuchos::null)
     FOUR_C_THROW("cast from Adapter::Ale to Adapter::AleFsiWrapper failed");
@@ -186,26 +186,26 @@ void FS3I::BiofilmFSI::setup()
   const int ndim = Global::Problem::instance()->n_dim();
 
   // set up ale-fluid couplings
-  icoupfa_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
+  icoupfa_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
   icoupfa_->setup_condition_coupling(*(fsi_->fluid_field()->discretization()),
       (fsi_->fluid_field()->interface()->fsi_cond_map()), *(fsi_->ale_field()->discretization()),
       (fsi_->ale_field()->interface()->fsi_cond_map()), condname, ndim);
   // the fluid-ale coupling always matches
   const Epetra_Map* fluidnodemap = fsi_->fluid_field()->discretization()->node_row_map();
   const Epetra_Map* fluidalenodemap = fsi_->ale_field()->discretization()->node_row_map();
-  coupfa_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
+  coupfa_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
   coupfa_->setup_coupling(*(fsi_->fluid_field()->discretization()),
       *(fsi_->ale_field()->discretization()), *fluidnodemap, *fluidalenodemap, ndim);
 
   // set up structale-structure couplings
-  icoupsa_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
+  icoupsa_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
   icoupsa_->setup_condition_coupling(*(fsi_->structure_field()->discretization()),
       fsi_->structure_field()->interface()->fsi_cond_map(), *structaledis,
       ale_->interface()->fsi_cond_map(), condname, ndim);
   // the structure-structale coupling always matches
   const Epetra_Map* structurenodemap = fsi_->structure_field()->discretization()->node_row_map();
   const Epetra_Map* structalenodemap = structaledis->node_row_map();
-  coupsa_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
+  coupsa_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
   coupsa_->setup_coupling(*(fsi_->structure_field()->discretization()), *structaledis,
       *structurenodemap, *structalenodemap, ndim);
 
@@ -222,10 +222,10 @@ void FS3I::BiofilmFSI::setup()
 
   struct_growth_disp_ = ale_to_struct_field(ale_->write_access_dispnp());
   fluid_growth_disp_ = ale_to_fluid_field(fsi_->ale_field()->write_access_dispnp());
-  scatra_struct_growth_disp_ = Teuchos::RCP(new Epetra_MultiVector(
-      *(scatravec_[1]->scatra_field()->discretization())->node_row_map(), 3, true));
-  scatra_fluid_growth_disp_ = Teuchos::RCP(new Epetra_MultiVector(
-      *(scatravec_[0]->scatra_field()->discretization())->node_row_map(), 3, true));
+  scatra_struct_growth_disp_ = Teuchos::make_rcp<Epetra_MultiVector>(
+      *(scatravec_[1]->scatra_field()->discretization())->node_row_map(), 3, true);
+  scatra_fluid_growth_disp_ = Teuchos::make_rcp<Epetra_MultiVector>(
+      *(scatravec_[0]->scatra_field()->discretization())->node_row_map(), 3, true);
 
   idispn_->PutScalar(0.0);
   idispnp_->PutScalar(0.0);
@@ -240,14 +240,14 @@ void FS3I::BiofilmFSI::setup()
   scatra_struct_growth_disp_->PutScalar(0.0);
   scatra_fluid_growth_disp_->PutScalar(0.0);
 
-  norminflux_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(
-      *(fsi_->structure_field()->discretization()->node_row_map())));
-  normtraction_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(
-      *(fsi_->structure_field()->discretization()->node_row_map())));
-  tangtractionone_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(
-      *(fsi_->structure_field()->discretization()->node_row_map())));
-  tangtractiontwo_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(
-      *(fsi_->structure_field()->discretization()->node_row_map())));
+  norminflux_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+      *(fsi_->structure_field()->discretization()->node_row_map()));
+  normtraction_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+      *(fsi_->structure_field()->discretization()->node_row_map()));
+  tangtractionone_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+      *(fsi_->structure_field()->discretization()->node_row_map()));
+  tangtractiontwo_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+      *(fsi_->structure_field()->discretization()->node_row_map()));
 
   return;
 }
@@ -371,17 +371,17 @@ void FS3I::BiofilmFSI::inner_timeloop()
   const bool avgrowth = biofilmcontrol.get<bool>("AVGROWTH");
   // in case of averaged values we need temporary variables
   Teuchos::RCP<Core::LinAlg::Vector<double>> normtempinflux_ =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(
-          *(fsi_->structure_field()->discretization()->node_row_map())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+          *(fsi_->structure_field()->discretization()->node_row_map()));
   Teuchos::RCP<Core::LinAlg::Vector<double>> normtemptraction_ =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(
-          *(fsi_->structure_field()->discretization()->node_row_map())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+          *(fsi_->structure_field()->discretization()->node_row_map()));
   Teuchos::RCP<Core::LinAlg::Vector<double>> tangtemptractionone_ =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(
-          *(fsi_->structure_field()->discretization()->node_row_map())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+          *(fsi_->structure_field()->discretization()->node_row_map()));
   Teuchos::RCP<Core::LinAlg::Vector<double>> tangtemptractiontwo_ =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(
-          *(fsi_->structure_field()->discretization()->node_row_map())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+          *(fsi_->structure_field()->discretization()->node_row_map()));
   normtempinflux_->PutScalar(0.0);
   normtemptraction_->PutScalar(0.0);
   tangtemptractionone_->PutScalar(0.0);
@@ -465,7 +465,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
 
     // calculate interface normals in deformed configuration
     Teuchos::RCP<Core::LinAlg::Vector<double>> nodalnormals =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*(strudis->dof_row_map())));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(strudis->dof_row_map()));
 
     Teuchos::ParameterList eleparams;
     eleparams.set("action", "calc_cur_nodal_normals");
@@ -478,7 +478,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
     const Epetra_Map* dofrowmap = strudis->dof_row_map();
     const Epetra_Map* noderowmap = strudis->node_row_map();
     Teuchos::RCP<Epetra_MultiVector> lambdanode =
-        Teuchos::RCP(new Epetra_MultiVector(*noderowmap, 3, true));
+        Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, 3, true);
 
     // lagrange multipliers defined on a nodemap are necessary
     for (int lnodeid = 0; lnodeid < strudis->num_my_row_nodes(); lnodeid++)
@@ -681,7 +681,7 @@ void FS3I::BiofilmFSI::compute_interface_vectors(Teuchos::RCP<Core::LinAlg::Vect
   // set action for elements: compute normal vectors at nodes (for reference configuration)
   Teuchos::RCP<Core::FE::Discretization> strudis = fsi_->structure_field()->discretization();
   Teuchos::RCP<Core::LinAlg::Vector<double>> nodalnormals =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*(strudis->dof_row_map())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(strudis->dof_row_map()));
   Teuchos::ParameterList eleparams;
   eleparams.set("action", "calc_ref_nodal_normals");
   strudis->evaluate_condition(eleparams, Teuchos::null, Teuchos::null, nodalnormals, Teuchos::null,

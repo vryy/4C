@@ -142,21 +142,22 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structu
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
-      slavematrix = Teuchos::RCP(
-          new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true));
-      mastermatrix = Teuchos::RCP(
-          new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *block_map_structure_, meshtying_strategy_s2i_->block_maps_master(), 81, false,
-              true));
+      slavematrix = Teuchos::make_rcp<
+          Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+
+          *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true);
+      mastermatrix = Teuchos::make_rcp<
+          Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+
+          *block_map_structure_, meshtying_strategy_s2i_->block_maps_master(), 81, false, true);
       break;
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      slavematrix = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-          *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true));
-      mastermatrix = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-          *meshtying_strategy_s2i_->coupling_adapter()->master_dof_map(), 27, false, true));
+      slavematrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+          *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true);
+      mastermatrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+          *meshtying_strategy_s2i_->coupling_adapter()->master_dof_map(), 27, false, true);
       break;
     }
     default:
@@ -249,8 +250,8 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // initialize auxiliary system matrix for linearizations of master-side scatra fluxes w.r.t.
       // master-side structural dofs
-      auto mastermatrixsparse = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-          *meshtying_strategy_s2i_->coupling_adapter()->master_dof_map(), 27, false, true));
+      auto mastermatrixsparse = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+          *meshtying_strategy_s2i_->coupling_adapter()->master_dof_map(), 27, false, true);
 
       // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and
       // assemble into auxiliary system matrix
@@ -353,26 +354,27 @@ void SSI::ScatraStructureOffDiagCoupling::
   if (scatra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
   {
     scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-            *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+            *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true);
     scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-            *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+            *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true);
     scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-            *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+            *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true);
   }
   else
   {
-    scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix =
-        Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-            *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true));
+    scatra_slave_flux_structure_slave_dofs_on_scatra_slave_matrix = Teuchos::make_rcp<
+        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+        *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true);
     scatra_master_flux_on_scatra_slave_structure_slave_dofs_on_scatra_slave_matrix =
-        Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-            *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true));
-    scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix =
-        Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-            *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true));
+        Teuchos::make_rcp<
+            Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+            *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true);
+    scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_matrix = Teuchos::make_rcp<
+        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+        *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true);
   }
 
   // create strategy for assembly of auxiliary system matrix
@@ -498,8 +500,8 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // initialize auxiliary system matrix for linearizations of master-side scatra fluxes w.r.t.
       // master-side structural dofs
-      auto mastermatrixsparse = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-          *meshtying_strategy_s2i_->coupling_adapter()->master_dof_map(), 27, false, true));
+      auto mastermatrixsparse = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+          *meshtying_strategy_s2i_->coupling_adapter()->master_dof_map(), 27, false, true);
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
       // Linearization is evaluated on scatra slave side node --> Transformation needed
@@ -601,14 +603,14 @@ void SSI::ScatraStructureOffDiagCoupling::
   Teuchos::RCP<Core::LinAlg::SparseOperator> evaluate_matrix;
   if (scatra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
   {
-    evaluate_matrix = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-        *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true));
+    evaluate_matrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+        *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), 27, false, true);
   }
   else
   {
-    evaluate_matrix =
-        Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-            *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true));
+    evaluate_matrix = Teuchos::make_rcp<
+        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+        *block_map_structure_, meshtying_strategy_s2i_->block_maps_slave(), 81, false, true);
   }
 
   // create strategy for assembly of auxiliary system matrix

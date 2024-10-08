@@ -36,9 +36,8 @@ namespace
      */
     GeometryPairLineToSurfacePatchTest()
     {
-      Teuchos::RCP<Epetra_SerialComm> comm =
-          Teuchos::RCP<Epetra_SerialComm>(new Epetra_SerialComm());
-      discret_ = Teuchos::RCP(new Core::FE::Discretization("unit_test", comm, 3));
+      Teuchos::RCP<Epetra_SerialComm> comm = Teuchos::make_rcp<Epetra_SerialComm>();
+      discret_ = Teuchos::make_rcp<Core::FE::Discretization>("unit_test", comm, 3);
     }
 
     /**
@@ -150,9 +149,9 @@ namespace
     }
 
     // Set the state in the face element, here also the FAD variables for each patch are set.
-    auto gid_map = Teuchos::RCP(new Epetra_Map(discret_->num_global_nodes() * 3,
-        discret_->num_global_nodes() * 3, 0, discret_->get_comm()));
-    auto displacement_vector = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gid_map));
+    auto gid_map = Teuchos::make_rcp<Epetra_Map>(discret_->num_global_nodes() * 3,
+        discret_->num_global_nodes() * 3, 0, discret_->get_comm());
+    auto displacement_vector = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gid_map);
     for (int i = 0; i < displacement_vector->GlobalLength(); i++)
       (*displacement_vector)[i] = i * 0.01;
     face_element->set_state(displacement_vector, face_elements_map);

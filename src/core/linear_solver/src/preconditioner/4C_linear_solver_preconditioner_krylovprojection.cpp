@@ -37,8 +37,8 @@ void Core::LinearSolver::KrylovProjectionPreconditioner::setup(
   // actual preconditioner is called first and the projection is done
   // afterwards.
 
-  p_ = Teuchos::RCP(
-      new Core::LinAlg::LinalgPrecondOperator(preconditioner_->prec_operator(), true, projector_));
+  p_ = Teuchos::make_rcp<Core::LinAlg::LinalgPrecondOperator>(
+      preconditioner_->prec_operator(), true, projector_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

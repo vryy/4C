@@ -44,7 +44,7 @@ void Solid::TimeInt::Explicit::setup()
   // build NOX interface
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Solid::TimeInt::NoxInterface> noxinterface_ptr =
-      Teuchos::RCP(new Solid::TimeInt::NoxInterface);
+      Teuchos::make_rcp<Solid::TimeInt::NoxInterface>();
   noxinterface_ptr->init(
       data_global_state_ptr(), explint_ptr_, dbc_ptr(), Teuchos::RCP(this, false));
   noxinterface_ptr->setup();

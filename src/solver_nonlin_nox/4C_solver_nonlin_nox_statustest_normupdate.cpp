@@ -89,8 +89,8 @@ void NOX::Nln::StatusTest::NormUpdate::compute_norm(
   {
     gStatus_ = ::NOX::StatusTest::Unevaluated;
     status_.assign(nChecks_, gStatus_);
-    normUpdate_ = Teuchos::RCP(new std::vector<double>(nChecks_, 1.0e+12));
-    normRefSol_ = Teuchos::RCP(new std::vector<double>(nChecks_, 1.0));
+    normUpdate_ = Teuchos::make_rcp<std::vector<double>>(nChecks_, 1.0e+12);
+    normRefSol_ = Teuchos::make_rcp<std::vector<double>>(nChecks_, 1.0);
     return gStatus_;
   }
 
@@ -198,8 +198,8 @@ void NOX::Nln::StatusTest::NormUpdate::compute_norm(
 ::NOX::StatusTest::StatusType NOX::Nln::StatusTest::NormUpdate::check_status_first_iter()
 {
   // set some default values
-  normUpdate_ = Teuchos::RCP(new std::vector<double>(nChecks_, 1.0e+12));
-  normRefSol_ = Teuchos::RCP(new std::vector<double>(nChecks_, 1.0));
+  normUpdate_ = Teuchos::make_rcp<std::vector<double>>(nChecks_, 1.0e+12);
+  normRefSol_ = Teuchos::make_rcp<std::vector<double>>(nChecks_, 1.0);
   return ::NOX::StatusTest::Unconverged;
 }
 
@@ -321,8 +321,8 @@ void NOX::Nln::StatusTest::NormUpdate::throw_error(
 NOX::Nln::StatusTest::NormUpdateSkipFirstIter::check_status_first_iter()
 {
   // set some default values
-  normUpdate_ = Teuchos::RCP(new std::vector<double>(nChecks_, 0.0));
-  normRefSol_ = Teuchos::RCP(new std::vector<double>(nChecks_, 1.0));
+  normUpdate_ = Teuchos::make_rcp<std::vector<double>>(nChecks_, 0.0);
+  normRefSol_ = Teuchos::make_rcp<std::vector<double>>(nChecks_, 1.0);
   return ::NOX::StatusTest::Converged;
 }
 

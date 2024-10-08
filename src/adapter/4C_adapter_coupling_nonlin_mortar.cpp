@@ -292,8 +292,8 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
         ii += 1;
       }
     }
-    Teuchos::RCP<CONTACT::Node> cnode = Teuchos::RCP(
-        new CONTACT::FriNode(node->id(), node->x(), node->owner(), dofids, false, false, false));
+    Teuchos::RCP<CONTACT::Node> cnode = Teuchos::make_rcp<CONTACT::FriNode>(
+        node->id(), node->x(), node->owner(), dofids, false, false, false);
 
     if (isnurbs)
     {
@@ -323,8 +323,8 @@ void Adapter::CouplingNonLinMortar::add_mortar_nodes(
         ii += 1;
       }
     }
-    Teuchos::RCP<CONTACT::Node> cnode = Teuchos::RCP(
-        new CONTACT::FriNode(node->id(), node->x(), node->owner(), dofids, true, true, false));
+    Teuchos::RCP<CONTACT::Node> cnode = Teuchos::make_rcp<CONTACT::FriNode>(
+        node->id(), node->x(), node->owner(), dofids, true, true, false);
 
     if (isnurbs)
     {
@@ -391,8 +391,8 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
     Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
-    Teuchos::RCP<CONTACT::Element> cele = Teuchos::RCP(new CONTACT::Element(
-        ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), false, isnurbs));
+    Teuchos::RCP<CONTACT::Element> cele = Teuchos::make_rcp<CONTACT::Element>(
+        ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), false, isnurbs);
 
     if (isnurbs)
     {
@@ -428,8 +428,8 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
     // an element offset AND a node offset for the the slave mortar elements
     if (true)  //(slidingale==false)
     {
-      Teuchos::RCP<CONTACT::Element> cele = Teuchos::RCP(new CONTACT::Element(
-          ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), true, isnurbs));
+      Teuchos::RCP<CONTACT::Element> cele = Teuchos::make_rcp<CONTACT::Element>(
+          ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), true, isnurbs);
 
       if (isnurbs)
       {
@@ -462,8 +462,8 @@ void Adapter::CouplingNonLinMortar::add_mortar_elements(
         nidsoff.push_back(ele->node_ids()[ele->num_node() - 1 - i] + nodeoffset);
       }
 
-      Teuchos::RCP<CONTACT::Element> cele = Teuchos::RCP(new CONTACT::Element(ele->id() + eleoffset,
-          ele->owner(), ele->shape(), ele->num_node(), nidsoff.data(), true));
+      Teuchos::RCP<CONTACT::Element> cele = Teuchos::make_rcp<CONTACT::Element>(
+          ele->id() + eleoffset, ele->owner(), ele->shape(), ele->num_node(), nidsoff.data(), true);
 
       interface->add_element(cele);
     }
@@ -483,19 +483,19 @@ void Adapter::CouplingNonLinMortar::init_matrices()
     FOUR_C_THROW("ERROR: Maps not initialized!");
 
   // init as standard sparse matrix --> local assembly
-  D_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));
-  M_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));
-  H_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));
-  T_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));
-  N_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*slavedofrowmap_, 81, false, false));
+  D_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
+  M_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
+  H_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
+  T_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
+  N_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 81, false, false);
 
-  gap_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*slavenoderowmap_, true));
+  gap_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavenoderowmap_, true);
 
   // init as fe matrix --> nonlocal assembly
-  DLin_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *slavedofrowmap_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  MLin_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *masterdofrowmap_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  DLin_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *slavedofrowmap_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  MLin_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *masterdofrowmap_, 81, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   // bye
   return;
@@ -534,9 +534,9 @@ void Adapter::CouplingNonLinMortar::complete_interface(
   interface->create_search_tree();
 
   // store old row maps (before parallel redistribution)
-  pslavedofrowmap_ = Teuchos::RCP(new Epetra_Map(*interface->slave_row_dofs()));
-  pmasterdofrowmap_ = Teuchos::RCP(new Epetra_Map(*interface->master_row_dofs()));
-  pslavenoderowmap_ = Teuchos::RCP(new Epetra_Map(*interface->slave_row_nodes()));
+  pslavedofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface->slave_row_dofs());
+  pmasterdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface->master_row_dofs());
+  pslavenoderowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface->slave_row_nodes());
   psmdofrowmap_ = Core::LinAlg::merge_map(pslavedofrowmap_, pmasterdofrowmap_, false);
 
   // print parallel distribution
@@ -564,9 +564,9 @@ void Adapter::CouplingNonLinMortar::complete_interface(
   }
 
   // store row maps (after parallel redistribution)
-  slavedofrowmap_ = Teuchos::RCP(new Epetra_Map(*interface->slave_row_dofs()));
-  masterdofrowmap_ = Teuchos::RCP(new Epetra_Map(*interface->master_row_dofs()));
-  slavenoderowmap_ = Teuchos::RCP(new Epetra_Map(*interface->slave_row_nodes()));
+  slavedofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface->slave_row_dofs());
+  masterdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface->master_row_dofs());
+  slavenoderowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface->slave_row_nodes());
   smdofrowmap_ = Core::LinAlg::merge_map(slavedofrowmap_, masterdofrowmap_, false);
 
   // store interface
@@ -683,8 +683,8 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   {
     Core::Nodes::Node* node = nodeiter->second;
 
-    Teuchos::RCP<CONTACT::Node> mrtrnode = Teuchos::RCP(new CONTACT::FriNode(
-        node->id(), node->x(), node->owner(), masterdis->dof(node), false, false, false));
+    Teuchos::RCP<CONTACT::Node> mrtrnode = Teuchos::make_rcp<CONTACT::FriNode>(
+        node->id(), node->x(), node->owner(), masterdis->dof(node), false, false, false);
 
     interface->add_node(mrtrnode);
   }
@@ -695,8 +695,8 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   {
     Core::Nodes::Node* node = nodeiter->second;
 
-    Teuchos::RCP<CONTACT::Node> mrtrnode = Teuchos::RCP(new CONTACT::FriNode(
-        node->id(), node->x(), node->owner(), slavedis->dof(node), true, true, false));
+    Teuchos::RCP<CONTACT::Node> mrtrnode = Teuchos::make_rcp<CONTACT::FriNode>(
+        node->id(), node->x(), node->owner(), slavedis->dof(node), true, true, false);
 
     interface->add_node(mrtrnode);
   }
@@ -707,8 +707,8 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   {
     Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
 
-    Teuchos::RCP<CONTACT::Element> mrtrele = Teuchos::RCP(new CONTACT::Element(
-        ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), false));
+    Teuchos::RCP<CONTACT::Element> mrtrele = Teuchos::make_rcp<CONTACT::Element>(
+        ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), false);
 
     interface->add_element(mrtrele);
   }
@@ -719,8 +719,8 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   {
     Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
 
-    Teuchos::RCP<CONTACT::Element> mrtrele = Teuchos::RCP(new CONTACT::Element(
-        ele->id() + eleoffset, ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), true));
+    Teuchos::RCP<CONTACT::Element> mrtrele = Teuchos::make_rcp<CONTACT::Element>(
+        ele->id() + eleoffset, ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), true);
 
     interface->add_element(mrtrele);
   }
@@ -748,8 +748,8 @@ void Adapter::CouplingNonLinMortar::setup_spring_dashpot(
   }
 
   // store old row maps (before parallel redistribution)
-  slavedofrowmap_ = Teuchos::RCP(new Epetra_Map(*interface->slave_row_dofs()));
-  masterdofrowmap_ = Teuchos::RCP(new Epetra_Map(*interface->master_row_dofs()));
+  slavedofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface->slave_row_dofs());
+  masterdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface->master_row_dofs());
 
   // store interface
   interface_ = interface;
@@ -810,8 +810,8 @@ void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename
     if (!ele) FOUR_C_THROW("ERROR: Cannot find ele with gid %", gid);
     CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
-    Teuchos::RCP<CONTACT::Integrator> integrator = Teuchos::RCP(
-        new CONTACT::Integrator(interface_->interface_params(), cele->shape(), *comm_));
+    Teuchos::RCP<CONTACT::Integrator> integrator = Teuchos::make_rcp<CONTACT::Integrator>(
+        interface_->interface_params(), cele->shape(), *comm_);
 
     integrator->integrate_d(*cele, *comm_, true);
   }
@@ -1062,7 +1062,7 @@ void Adapter::CouplingNonLinMortar::create_p()
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
   /********************************************************************/
   D_->complete();
-  Dinv_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*D_));
+  Dinv_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*D_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> diag =
       Core::LinAlg::create_vector(*slavedofrowmap_, true);
   int err = 0;

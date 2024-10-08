@@ -69,7 +69,7 @@ FLD::XFluid::XFluid(const Teuchos::RCP<Core::FE::Discretization>& actdis,
       xdiscret_(Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(actdis, true)),
       xfluid_timint_check_interfacetips_(true),
       xfluid_timint_check_sliding_on_surface_(true),
-      edgestab_(Teuchos::RCP(new XFEM::XfemEdgeStab())),
+      edgestab_(Teuchos::make_rcp<XFEM::XfemEdgeStab>()),
       turbmodel_(Inpar::FLUID::dynamic_smagorinsky),
       evaluate_cut_(true),
       newton_restart_monolithic_(false)
@@ -107,7 +107,7 @@ void FLD::XFluid::add_additional_scalar_dofset_and_coupling()
   // based on a dofrowmap and not on a noderowmap...)
 
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(1, 0, 0, true));
+      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(1, 0, 0, true);
 
   // add the dofset to the xfluid dis
   const int dofidx = xdiscret_->add_dof_set(dofsetaux);
@@ -195,8 +195,8 @@ void FLD::XFluid::init(bool createinitialstate)
   // create a Condition/Coupling Manager
   // -------------------------------------------------------------------
 
-  condition_manager_ = Teuchos::RCP(new XFEM::ConditionManager(
-      dofset_coupling_map_, discret_, meshcoupl_dis_, levelsetcoupl_dis_, time_, step_));
+  condition_manager_ = Teuchos::make_rcp<XFEM::ConditionManager>(
+      dofset_coupling_map_, discret_, meshcoupl_dis_, levelsetcoupl_dis_, time_, step_);
 
   condition_manager_->init();
 
@@ -255,8 +255,8 @@ void FLD::XFluid::init(bool createinitialstate)
   // -------------------------------------------------------------------
   // create the state creator
   // -------------------------------------------------------------------
-  state_creator_ = Teuchos::RCP(new FLD::XFluidStateCreator(condition_manager_,
-      params_->sublist("XFEM"), maxnumdofsets_, minnumdofsets_, include_inner_));
+  state_creator_ = Teuchos::make_rcp<FLD::XFluidStateCreator>(
+      condition_manager_, params_->sublist("XFEM"), maxnumdofsets_, minnumdofsets_, include_inner_);
 
 
   // -------------------------------------------------------------------
@@ -266,17 +266,17 @@ void FLD::XFluid::init(bool createinitialstate)
   // load GMSH output flags
   if (Global::Problem::instance()->io_params().get<bool>("OUTPUT_GMSH"))
   {
-    output_service_ = Teuchos::RCP(new XFluidOutputServiceGmsh(
-        params_->sublist("XFEM"), xdiscret_, condition_manager_, include_inner_));
+    output_service_ = Teuchos::make_rcp<XFluidOutputServiceGmsh>(
+        params_->sublist("XFEM"), xdiscret_, condition_manager_, include_inner_);
   }
   else
   {
-    output_service_ = Teuchos::RCP(new XFluidOutputService(xdiscret_, condition_manager_));
+    output_service_ = Teuchos::make_rcp<XFluidOutputService>(xdiscret_, condition_manager_);
   }
 
   // -------------------------------------------------------------------
   // Create velpresssplitter for uncut discretization.
-  velpressplitter_std_ = Teuchos::RCP(new Core::LinAlg::MapExtractor());
+  velpressplitter_std_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
   Core::LinAlg::create_map_extractor_from_discretization(
       *discret_, xdiscret_->initial_dof_set(), numdim_, *velpressplitter_std_);
 
@@ -355,7 +355,7 @@ void FLD::XFluid::set_x_fluid_params()
       params_xf_gen.get<bool>("XFLUID_TIMEINT_CHECK_SLIDINGONSURFACE");
 
   // for monolithic problems with xfluid (varying dofrowmaps)
-  permutation_map_ = Teuchos::RCP(new std::map<int, int>);
+  permutation_map_ = Teuchos::make_rcp<std::map<int, int>>();
   newton_restart_monolithic_ = false;
 
   // get interface stabilization specific parameters
@@ -607,7 +607,7 @@ void FLD::XFluid::create_state()
   if (false /*xfluid_.params_->get<bool>("INFNORMSCALING")*/)
   {
     fluid_infnormscaling_ =
-        Teuchos::RCP(new FLD::UTILS::FluidInfNormScaling(*state_->velpressplitter_));
+        Teuchos::make_rcp<FLD::UTILS::FluidInfNormScaling>(*state_->velpressplitter_);
   }
 }
 
@@ -648,7 +648,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluid::get_new_state()
 
   if (alefluid_)
   {
-    dispnpcol = Teuchos::RCP(new Core::LinAlg::Vector<double>(*xdiscret_->initial_dof_col_map()));
+    dispnpcol = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xdiscret_->initial_dof_col_map());
     Core::LinAlg::export_to(*dispnp_, *dispnpcol);
   }
 
@@ -1627,7 +1627,7 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XFluid::std_velnp()
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> initvec =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*xdiscret_->initial_dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xdiscret_->initial_dof_row_map(), true);
   Core::LinAlg::export_to(*(state_->velnp_), *initvec);
   return initvec;
 }
@@ -1635,7 +1635,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XFluid::std_velnp()
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XFluid::std_veln()
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> initvec =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*xdiscret_->initial_dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xdiscret_->initial_dof_row_map(), true);
   Core::LinAlg::export_to(*(state_->veln_), *initvec);
   return initvec;
 }
@@ -1717,11 +1717,11 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_analyt
     const int num_interf_norms = 8;
     const int num_stab_norms = 3;
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_dom_norms =
-        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(num_dom_norms));
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_dom_norms);
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_interf_norms =
-        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(num_interf_norms));
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_interf_norms);
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_stab_norms =
-        Teuchos::RCP(new Core::LinAlg::SerialDenseVector(num_stab_norms));
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_stab_norms);
 
     compute_error_norms(glob_dom_norms, glob_interf_norms, glob_stab_norms);
 
@@ -2785,7 +2785,7 @@ void FLD::XFluid::setup_krylov_space_projection(Core::Conditions::Condition* ksp
   std::vector<int> activemodeids(1, numdim_);
 
   // allocate kspsplitter_
-  kspsplitter_ = Teuchos::RCP(new FLD::UTILS::KSPMapExtractor());
+  kspsplitter_ = Teuchos::make_rcp<FLD::UTILS::KSPMapExtractor>();
   // create map of nodes involved in Krylov projection
 
   kspsplitter_->setup(*discret_);
@@ -2797,8 +2797,8 @@ void FLD::XFluid::setup_krylov_space_projection(Core::Conditions::Condition* ksp
   // set flag for projection update true only if ALE and integral weights
   if (alefluid_ and (*weighttype == "integration")) updateprojection_ = true;
 
-  projector_ = Teuchos::RCP(
-      new Core::LinAlg::KrylovProjector(activemodeids, weighttype, discret_->dof_row_map()));
+  projector_ = Teuchos::make_rcp<Core::LinAlg::KrylovProjector>(
+      activemodeids, weighttype, discret_->dof_row_map());
 
   // update the projector
   update_krylov_space_projection();
@@ -3377,13 +3377,13 @@ void FLD::XFluid::x_timint_store_old_state_data(const bool firstcall_in_timestep
   if (firstcall_in_timestep)
   {
     // store the solution of the old time step t^n w.r.t the old interface position
-    veln_Intn_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret_->dof_row_map()));
+    veln_Intn_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->dof_row_map());
     *veln_Intn_ = *(state_->veln_);
-    accn_Intn_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret_->dof_row_map()));
+    accn_Intn_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->dof_row_map());
     *accn_Intn_ = *(state_->accn_);
 
     // for BDF2
-    velnm_Intn_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret_->dof_row_map()));
+    velnm_Intn_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->dof_row_map());
     *velnm_Intn_ = *(state_->velnm_);
 
     // safe the old wizard and dofset w.r.t the interface position of the last time-step
@@ -3391,13 +3391,13 @@ void FLD::XFluid::x_timint_store_old_state_data(const bool firstcall_in_timestep
     dofset_Intn_ = state_->dof_set();
 
     // safe the old dofmap
-    dofcolmap_Intn_ = Teuchos::RCP(new Epetra_Map(*discret_->dof_col_map()));
+    dofcolmap_Intn_ = Teuchos::make_rcp<Epetra_Map>(*discret_->dof_col_map());
   }
 
   //------------------------------------------
   // store the last velocity solution w.r.t the last interface position (last XFSI iteration or last
   // time-step solution for first-call) to get mapped as fluid predictor for next XFSI iteration
-  velnp_Intnpi_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret_->dof_row_map()));
+  velnp_Intnpi_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->dof_row_map());
   *velnp_Intnpi_ = *state_->velnp_;
 
   // get the wizard w.r.t the last interface position (last XFSI iteration)
@@ -3534,7 +3534,7 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
   std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>> node_to_reconstr_method;
   std::map<Inpar::XFEM::XFluidTimeInt, std::map<int, std::set<int>>> reconstr_method_to_node;
   // vector of DOF-IDs which are Dirichlet BCs for ghost penalty reconstruction method
-  Teuchos::RCP<std::set<int>> dbcgids = Teuchos::RCP(new std::set<int>());
+  Teuchos::RCP<std::set<int>> dbcgids = Teuchos::make_rcp<std::set<int>>();
 
   //------------------------------------------------------------------------------------
   // set interface state vectors for mesh coupling objects
@@ -3557,12 +3557,12 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
   //-----------------------------time integration----------------------
 
   // create time integration class just locally not to keep pointers to dofset and wizard...
-  Teuchos::RCP<XFEM::XFluidTimeInt> xfluid_timeint = Teuchos::RCP(new XFEM::XFluidTimeInt(
+  Teuchos::RCP<XFEM::XFluidTimeInt> xfluid_timeint = Teuchos::make_rcp<XFEM::XFluidTimeInt>(
       false,  // is_newton_increment_transfer?
       discret_, condition_manager_, wizard_Intn_, state_->wizard(), dofset_Intn_, state_->dof_set(),
       xfluid_timintapproach_,  // use the chosen approach as defined in the input file
       node_to_reconstr_method, reconstr_method_to_node, step_, xfluid_timint_check_interfacetips_,
-      xfluid_timint_check_sliding_on_surface_));
+      xfluid_timint_check_sliding_on_surface_);
 
   {
     if (myrank_ == 0 and screen_out)
@@ -3656,10 +3656,12 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
 
     if (alefluid_)
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dispnpcol = Teuchos::RCP(
-          new Core::LinAlg::Vector<double>(*discretisation_xfem()->initial_dof_col_map()));
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dispncol = Teuchos::RCP(
-          new Core::LinAlg::Vector<double>(*discretisation_xfem()->initial_dof_col_map()));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> dispnpcol =
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+              *discretisation_xfem()->initial_dof_col_map());
+      Teuchos::RCP<Core::LinAlg::Vector<double>> dispncol =
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+              *discretisation_xfem()->initial_dof_col_map());
 
       Core::LinAlg::export_to(*dispnp_, *dispnpcol);  // dispnp row->col
       Core::LinAlg::export_to(*dispn_, *dispncol);    // dispn row->col
@@ -3751,7 +3753,7 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
   std::map<Inpar::XFEM::XFluidTimeInt, std::map<int, std::set<int>>> reconstr_method_to_node;
 
   // vector of DOF-IDs which are Dirichlet BCs for ghost penalty reconstruction method
-  Teuchos::RCP<std::set<int>> dbcgids = Teuchos::RCP(new std::set<int>());
+  Teuchos::RCP<std::set<int>> dbcgids = Teuchos::make_rcp<std::set<int>>();
 
   //------------------------------------------------------------------------------------
   // set interface state vectors for mesh coupling objects
@@ -3784,10 +3786,10 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
 
   // create time integration class just locally not to keep pointers to dofset and wizard...
   Teuchos::RCP<XFEM::XFluidTimeInt> xfluid_timeint =
-      Teuchos::RCP(new XFEM::XFluidTimeInt(true,  // is_newton_increment_transfer?
+      Teuchos::make_rcp<XFEM::XFluidTimeInt>(true,  // is_newton_increment_transfer?
           discret_, condition_manager_, wizard_Intnpi_, state_->wizard(), dofset_Intnpi_,
           state_->dof_set(), timint_method, node_to_reconstr_method, reconstr_method_to_node, step_,
-          xfluid_timint_check_interfacetips_, xfluid_timint_check_sliding_on_surface_));
+          xfluid_timint_check_interfacetips_, xfluid_timint_check_sliding_on_surface_);
 
   {
     if (myrank_ == 0 and screen_out)
@@ -3863,10 +3865,12 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
 
       if (alefluid_)
       {
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispnpcol = Teuchos::RCP(
-            new Core::LinAlg::Vector<double>(*discretisation_xfem()->initial_dof_col_map()));
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispncol = Teuchos::RCP(
-            new Core::LinAlg::Vector<double>(*discretisation_xfem()->initial_dof_col_map()));
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dispnpcol =
+            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+                *discretisation_xfem()->initial_dof_col_map());
+        Teuchos::RCP<Core::LinAlg::Vector<double>> dispncol =
+            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+                *discretisation_xfem()->initial_dof_col_map());
 
         Core::LinAlg::export_to(*dispnp_, *dispnpcol);  // dispnp row->col
         Core::LinAlg::export_to(*dispn_, *dispncol);    // dispn row->col
@@ -4080,11 +4084,11 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> FLD::XFluid::create_dbc_map_extractor(
     nummyelements = dbcgidsv.size();
     myglobalelements = dbcgidsv.data();
   }
-  Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::RCP(new Epetra_Map(
-      -1, nummyelements, myglobalelements, dofrowmap->IndexBase(), dofrowmap->Comm()));
+  Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, nummyelements, myglobalelements, dofrowmap->IndexBase(), dofrowmap->Comm());
 
   // build the map extractor of Dirichlet-conditioned and free DOFs
-  return Teuchos::RCP(new Core::LinAlg::MapExtractor(*dofrowmap, dbcmap));
+  return Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*dofrowmap, dbcmap);
 }
 
 
@@ -4151,11 +4155,11 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
   solverlist.set<int>("reuse", 0);
   solverparams.sublist("IFPACK Parameters");
 
-  Teuchos::RCP<Core::LinAlg::Solver> solver_gp = Teuchos::RCP(new Core::LinAlg::Solver(solverparams,
-      discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
+  Teuchos::RCP<Core::LinAlg::Solver> solver_gp = Teuchos::make_rcp<Core::LinAlg::Solver>(
+      solverparams, discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"),
-      false));
+      false);
 
   // ---------------------------------------------- new matrix and vectors
 
@@ -4184,8 +4188,9 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
 
   // note: we use explicitdirichlet =  false, as we don't want to create a new sysmat when applying
   // Dirichlet bcs note: savegraph = true as we assemble the matrix more than once
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_gp = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *state_->xfluiddofrowmap_, numentries, false, true, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_gp =
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*state_->xfluiddofrowmap_, numentries, false,
+          true, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_gp =
@@ -4310,7 +4315,7 @@ void FLD::XFluid::x_timint_semi_lagrangean(std::vector<Teuchos::RCP<Core::LinAlg
   // export veln row vector from t^n to a col vector
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> veln_col =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*olddofcolmap, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*olddofcolmap, true);
   Core::LinAlg::export_to(*veln_Intn_, *veln_col);
 
   //--------------------------------------------------------
@@ -4324,7 +4329,7 @@ void FLD::XFluid::x_timint_semi_lagrangean(std::vector<Teuchos::RCP<Core::LinAlg
        vec_it != oldRowStateVectors.end(); vec_it++)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> vec_col =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*olddofcolmap, true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*olddofcolmap, true);
     Core::LinAlg::export_to(**vec_it, *vec_col);
     oldColStateVectorsn.push_back(vec_col);
   }
@@ -4342,9 +4347,9 @@ void FLD::XFluid::x_timint_semi_lagrangean(std::vector<Teuchos::RCP<Core::LinAlg
     // basic time integration data
     Teuchos::RCP<XFEM::XfluidTimeintBase> timeIntData = Teuchos::null;
 
-    timeIntData = Teuchos::RCP(new XFEM::XfluidTimeintBase(discret_, bounddis, wizard_Intn_,
+    timeIntData = Teuchos::make_rcp<XFEM::XfluidTimeintBase>(discret_, bounddis, wizard_Intn_,
         state_->wizard(), dofset_Intn_, state_->dof_set(), oldColStateVectorsn, dispn, dispnp,
-        *dofcolmap_Intn_, *newdofrowmap, Teuchos::null));
+        *dofcolmap_Intn_, *newdofrowmap, Teuchos::null);
 
     // Safty check (both displacements have to exist or not --> based on that ale fluid is
     // activated)
@@ -4357,8 +4362,8 @@ void FLD::XFluid::x_timint_semi_lagrangean(std::vector<Teuchos::RCP<Core::LinAlg
       case Inpar::XFEM::Xf_TimeInt_STD_by_SL:
       {
         // time integration data for standard dofs, semi-lagrangean approach
-        timeIntStd_ = Teuchos::RCP(new XFEM::XfluidSemiLagrange(
-            *timeIntData, node_to_reconstr_method, xfemtimeint_, veln_col, dta_, theta_, true));
+        timeIntStd_ = Teuchos::make_rcp<XFEM::XfluidSemiLagrange>(
+            *timeIntData, node_to_reconstr_method, xfemtimeint_, veln_col, dta_, theta_, true);
         break;
       }
       default:
@@ -4603,7 +4608,7 @@ void FLD::XFluid::set_initial_flow_field(
 
 
     // vector of DOF-IDs which are Dirichlet BCs for ghost penalty reconstruction method
-    Teuchos::RCP<std::set<int>> dbcgids = Teuchos::RCP(new std::set<int>());
+    Teuchos::RCP<std::set<int>> dbcgids = Teuchos::make_rcp<std::set<int>>();
 
     const Teuchos::RCP<Cut::CutWizard>& wizard = state_->wizard();
     const Teuchos::RCP<XFEM::XFEMDofSet>& dofset = state_->dof_set();
@@ -5223,7 +5228,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XFluid::rhs_s_vec(const std::str
  *------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<Core::UTILS::ResultTest> FLD::XFluid::create_field_test()
 {
-  return Teuchos::RCP(new FLD::XFluidResultTest(*this));
+  return Teuchos::make_rcp<FLD::XFluidResultTest>(*this);
 }
 
 
@@ -5243,7 +5248,7 @@ void FLD::XFluid::gen_alpha_intermediate_values()
         state_->velpressplitter_->extract_other_vector(*state_->accnp_);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccam =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(onlyaccnp->Map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(onlyaccnp->Map());
 
     onlyaccam->Update((alphaM_), *onlyaccnp, (1.0 - alphaM_), *onlyaccn, 0.0);
 
@@ -5289,7 +5294,7 @@ void FLD::XFluid::gen_alpha_update_acceleration()
       state_->velpressplitter_->extract_other_vector(*state_->velnp_);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccnp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(onlyaccn->Map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(onlyaccn->Map());
 
   const double fact1 = 1.0 / (gamma_ * dta_);
   const double fact2 = 1.0 - (1.0 / gamma_);
@@ -5312,7 +5317,7 @@ void FLD::XFluid::update_gridv()
   const auto order = Teuchos::getIntegralValue<Inpar::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> gridv =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(dispnp_->Map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dispnp_->Map(), true);
 
   switch (order)
   {

@@ -903,9 +903,9 @@ void NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::solve(
       dynamic_cast<const ::NOX::Epetra::Vector&>(x).getEpetraVector().Map();
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> dir_ptr =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(map, true));
-  Teuchos::RCP<::NOX::Epetra::Vector> nox_dir = Teuchos::RCP(new ::NOX::Epetra::Vector(
-      dir_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(map, true);
+  Teuchos::RCP<::NOX::Epetra::Vector> nox_dir = Teuchos::make_rcp<::NOX::Epetra::Vector>(
+      dir_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
   // compute the new direction
   const NOX::Nln::Solver::LineSearchBased& nln_solver =
@@ -952,7 +952,7 @@ void NOX::Nln::Inner::StatusTest::Filter::BackupState::create(
   {
     const ::NOX::Epetra::Vector& nox_epetra_x =
         dynamic_cast<const ::NOX::Epetra::Vector&>(grp.getX());
-    xvector_ = Teuchos::RCP(new ::NOX::Epetra::Vector(nox_epetra_x));
+    xvector_ = Teuchos::make_rcp<::NOX::Epetra::Vector>(nox_epetra_x);
   }
   else
     xvector_->update(1.0, grp.getX(), 0.0);

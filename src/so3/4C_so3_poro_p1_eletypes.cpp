@@ -39,9 +39,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroP1Type::creat
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
-        new Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(
-            id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+        Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>>(
+
+        id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -50,9 +51,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroP1Type::creat
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroP1Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
-      new Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(
-          id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+      Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>>(
+
+      id, owner);
   return ele;
 }
 
@@ -123,9 +125,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroP1Type::creat
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
-        new Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(
-            id, owner));
+    Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+        Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>>(
+
+        id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -134,9 +137,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroP1Type::creat
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroP1Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::RCP(
-      new Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(
-          id, owner));
+  Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
+      Discret::ELEMENTS::So3PoroP1<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>>(
+
+      id, owner);
   return ele;
 }
 

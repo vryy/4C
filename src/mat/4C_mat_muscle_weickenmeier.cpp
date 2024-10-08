@@ -100,7 +100,7 @@ Mat::PAR::MuscleWeickenmeier::MuscleWeickenmeier(const Core::Mat::PAR::Parameter
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MuscleWeickenmeier::create_material()
 {
-  return Teuchos::RCP(new Mat::MuscleWeickenmeier(this));
+  return Teuchos::make_rcp<Mat::MuscleWeickenmeier>(this);
 }
 
 Mat::MuscleWeickenmeierType Mat::MuscleWeickenmeierType::instance_;

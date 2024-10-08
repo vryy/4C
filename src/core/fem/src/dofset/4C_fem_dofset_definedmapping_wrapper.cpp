@@ -150,22 +150,23 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
   }
 
   // Epetra maps
-  Teuchos::RCP<Epetra_Map> targetnodemap = Teuchos::RCP(
-      new Epetra_Map(-1, patchedtargetnodes.size(), patchedtargetnodes.data(), 0, *com));
+  Teuchos::RCP<Epetra_Map> targetnodemap = Teuchos::make_rcp<Epetra_Map>(
+      -1, patchedtargetnodes.size(), patchedtargetnodes.data(), 0, *com);
 
   Teuchos::RCP<Epetra_Map> permsourcenodemap =
-      Teuchos::RCP(new Epetra_Map(-1, permsourcenodes.size(), permsourcenodes.data(), 0, *com));
+      Teuchos::make_rcp<Epetra_Map>(-1, permsourcenodes.size(), permsourcenodes.data(), 0, *com);
 
   // we expect to get maps of exactly the same shape
   if (not targetnodemap->PointSameAs(*permsourcenodemap))
     FOUR_C_THROW("target and permuted source node maps do not match");
 
   // export target nodes to source node distribution
-  Teuchos::RCP<Core::LinAlg::Vector<int>> permsourcenodevec = Teuchos::RCP(
-      new Core::LinAlg::Vector<int>(*targetnodemap, permsourcenodemap->MyGlobalElements()));
+  Teuchos::RCP<Core::LinAlg::Vector<int>> permsourcenodevec =
+      Teuchos::make_rcp<Core::LinAlg::Vector<int>>(
+          *targetnodemap, permsourcenodemap->MyGlobalElements());
 
   // initialize the final mapping
-  targetlidtosourcegidmapping_ = Teuchos::RCP(new Core::LinAlg::Vector<int>(*dis.node_col_map()));
+  targetlidtosourcegidmapping_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
 
   // default value -1
   targetlidtosourcegidmapping_->PutValue(-1);

@@ -26,7 +26,7 @@ Core::LinAlg::SparseMatrix::SparseMatrix(
     Teuchos::RCP<Epetra_CrsGraph> crsgraph, Teuchos::RCP<Core::LinAlg::MultiMapExtractor> dbcmaps)
     : explicitdirichlet_(true), savegraph_(true), matrixtype_(CRS_MATRIX)
 {
-  sysmat_ = Teuchos::RCP(new Epetra_CrsMatrix(::Copy, *crsgraph));
+  sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, *crsgraph);
   graph_ = crsgraph;
   dbcmaps_ = dbcmaps;
 }
@@ -45,9 +45,9 @@ Core::LinAlg::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, const int npr
   if (!rowmap.UniqueGIDs()) FOUR_C_THROW("Row map is not unique");
 
   if (matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::RCP(new Epetra_CrsMatrix(::Copy, rowmap, npr, false));
+    sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, npr, false);
   else if (matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::RCP(new Epetra_FECrsMatrix(::Copy, rowmap, npr, false));
+    sysmat_ = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, rowmap, npr, false);
   else
     FOUR_C_THROW("matrix type is not correct");
 }
@@ -68,9 +68,9 @@ Core::LinAlg::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, std::vector<i
     FOUR_C_THROW("estimate for non zero entries per row does not match the size of row map");
 
   if (matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::RCP(new Epetra_CrsMatrix(::Copy, rowmap, numentries.data(), false));
+    sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, numentries.data(), false);
   else if (matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::RCP(new Epetra_FECrsMatrix(::Copy, rowmap, numentries.data(), false));
+    sysmat_ = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, rowmap, numentries.data(), false);
   else
     FOUR_C_THROW("matrix type is not correct");
 }
@@ -90,11 +90,11 @@ Core::LinAlg::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, 
   if (access == Copy)
   {
     if (matrixtype_ == CRS_MATRIX)
-      sysmat_ = Teuchos::RCP(new Epetra_CrsMatrix(*matrix));
+      sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(*matrix);
     else if (matrixtype_ == FE_MATRIX)
     {
-      sysmat_ = Teuchos::RCP(
-          new Epetra_FECrsMatrix(*(Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(matrix))));
+      sysmat_ = Teuchos::make_rcp<Epetra_FECrsMatrix>(
+          *(Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(matrix)));
     }
     else
       FOUR_C_THROW("matrix type is not correct");
@@ -111,7 +111,7 @@ Core::LinAlg::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, 
 
   if (sysmat_->Filled() and savegraph_)
   {
-    graph_ = Teuchos::RCP(new Epetra_CrsGraph(sysmat_->Graph()));
+    graph_ = Teuchos::make_rcp<Epetra_CrsGraph>(sysmat_->Graph());
   }
 }
 
@@ -155,9 +155,9 @@ Core::LinAlg::SparseMatrix::SparseMatrix(const Core::LinAlg::Vector<double>& dia
   if (!map.UniqueGIDs()) FOUR_C_THROW("Row map is not unique");
 
   if (matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::RCP(new Epetra_CrsMatrix(::Copy, map, map, 1, false));
+    sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, map, map, 1, false);
   else if (matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::RCP(new Epetra_FECrsMatrix(::Copy, map, map, 1, false));
+    sysmat_ = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, map, map, 1, false);
   else
     FOUR_C_THROW("matrix type is not correct");
 
@@ -232,11 +232,11 @@ Core::LinAlg::SparseMatrix& Core::LinAlg::SparseMatrix::operator=(const SparseMa
   if (mat.filled())
   {
     if (matrixtype_ == CRS_MATRIX)
-      sysmat_ = Teuchos::RCP(new Epetra_CrsMatrix(*mat.sysmat_));
+      sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(*mat.sysmat_);
     else if (matrixtype_ == FE_MATRIX)
     {
       sysmat_ =
-          Teuchos::RCP(new Epetra_FECrsMatrix(dynamic_cast<Epetra_FECrsMatrix&>(*mat.sysmat_)));
+          Teuchos::make_rcp<Epetra_FECrsMatrix>(dynamic_cast<Epetra_FECrsMatrix&>(*mat.sysmat_));
     }
     else
       FOUR_C_THROW("matrix type is not correct");
@@ -244,15 +244,15 @@ Core::LinAlg::SparseMatrix& Core::LinAlg::SparseMatrix::operator=(const SparseMa
   else
   {
     if (matrixtype_ == CRS_MATRIX)
-      sysmat_ = Teuchos::RCP(new Epetra_CrsMatrix(::Copy, mat.row_map(), 0, false));
+      sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, mat.row_map(), 0, false);
     else if (matrixtype_ == FE_MATRIX)
-      sysmat_ = Teuchos::RCP(new Epetra_FECrsMatrix(::Copy, mat.row_map(), 0, false));
+      sysmat_ = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, mat.row_map(), 0, false);
     else
       FOUR_C_THROW("matrix type is not correct");
   }
 
   if (mat.graph_ != Teuchos::null)
-    graph_ = Teuchos::RCP(new Epetra_CrsGraph(*mat.graph_));
+    graph_ = Teuchos::make_rcp<Epetra_CrsGraph>(*mat.graph_);
   else
     graph_ = Teuchos::null;
 
@@ -300,9 +300,9 @@ void Core::LinAlg::SparseMatrix::zero()
     // new matrix in memory at the same time!
     sysmat_ = Teuchos::null;
     if (matrixtype_ == CRS_MATRIX)
-      sysmat_ = Teuchos::RCP(new Epetra_CrsMatrix(::Copy, *graph_));
+      sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, *graph_);
     else if (matrixtype_ == FE_MATRIX)
-      sysmat_ = Teuchos::RCP(new Epetra_FECrsMatrix(::Copy, *graph_));
+      sysmat_ = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, *graph_);
     else
       FOUR_C_THROW("matrix type is not correct");
 
@@ -342,9 +342,9 @@ void Core::LinAlg::SparseMatrix::reset()
   // new matrix in memory at the same time!
   sysmat_ = Teuchos::null;
   if (matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::RCP(new Epetra_CrsMatrix(::Copy, rowmap, numentries.data(), false));
+    sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, numentries.data(), false);
   else if (matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::RCP(new Epetra_FECrsMatrix(::Copy, rowmap, numentries.data(), false));
+    sysmat_ = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, rowmap, numentries.data(), false);
   else
     FOUR_C_THROW("matrix type is not correct");
 
@@ -788,7 +788,7 @@ void Core::LinAlg::SparseMatrix::complete(bool enforce_complete)
   // keep mask for further use
   if (savegraph_ and graph_ == Teuchos::null)
   {
-    graph_ = Teuchos::RCP(new Epetra_CrsGraph(sysmat_->Graph()));
+    graph_ = Teuchos::make_rcp<Epetra_CrsGraph>(sysmat_->Graph());
   }
 }
 
@@ -823,7 +823,7 @@ void Core::LinAlg::SparseMatrix::complete(
   // keep mask for further use
   if (savegraph_ and graph_ == Teuchos::null)
   {
-    graph_ = Teuchos::RCP(new Epetra_CrsGraph(sysmat_->Graph()));
+    graph_ = Teuchos::make_rcp<Epetra_CrsGraph>(sysmat_->Graph());
   }
 }
 
@@ -850,9 +850,9 @@ void Core::LinAlg::SparseMatrix::un_complete()
 
   Teuchos::RCP<Epetra_CrsMatrix> mat = Teuchos::null;
   if (matrixtype_ == CRS_MATRIX)
-    mat = Teuchos::RCP(new Epetra_CrsMatrix(::Copy, rowmap, nonzeros.data(), false));
+    mat = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, nonzeros.data(), false);
   else if (matrixtype_ == FE_MATRIX)
-    mat = Teuchos::RCP(new Epetra_FECrsMatrix(::Copy, rowmap, nonzeros.data(), false));
+    mat = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, rowmap, nonzeros.data(), false);
   else
     FOUR_C_THROW("matrix type is not correct");
 
@@ -903,7 +903,7 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet(
     // make the code more explicit...
     if (savegraph_ and graph_ == Teuchos::null)
     {
-      graph_ = Teuchos::RCP(new Epetra_CrsGraph(sysmat_->Graph()));
+      graph_ = Teuchos::make_rcp<Epetra_CrsGraph>(sysmat_->Graph());
       if (not graph_->Filled()) FOUR_C_THROW("got unfilled graph from filled matrix");
     }
 
@@ -914,9 +914,9 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet(
 
     Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::null;
     if (matrixtype_ == CRS_MATRIX)
-      Anew = Teuchos::RCP(new Epetra_CrsMatrix(::Copy, rowmap, maxnumentries, false));
+      Anew = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, maxnumentries, false);
     else if (matrixtype_ == FE_MATRIX)
-      Anew = Teuchos::RCP(new Epetra_FECrsMatrix(::Copy, rowmap, maxnumentries, false));
+      Anew = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, rowmap, maxnumentries, false);
     else
       FOUR_C_THROW("matrix type is not correct");
 
@@ -1035,7 +1035,7 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet(const Epetra_Map& dbctoggle, bo
     // make the code more explicit...
     if (savegraph_ and graph_ == Teuchos::null)
     {
-      graph_ = Teuchos::RCP(new Epetra_CrsGraph(sysmat_->Graph()));
+      graph_ = Teuchos::make_rcp<Epetra_CrsGraph>(sysmat_->Graph());
       if (not graph_->Filled()) FOUR_C_THROW("got unfilled graph from filled matrix");
     }
 
@@ -1049,9 +1049,9 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet(const Epetra_Map& dbctoggle, bo
 
     Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::null;
     if (matrixtype_ == CRS_MATRIX)
-      Anew = Teuchos::RCP(new Epetra_CrsMatrix(::Copy, rowmap, maxnumentries, false));
+      Anew = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, maxnumentries, false);
     else if (matrixtype_ == FE_MATRIX)
-      Anew = Teuchos::RCP(new Epetra_FECrsMatrix(::Copy, rowmap, maxnumentries, false));
+      Anew = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, rowmap, maxnumentries, false);
     else
       FOUR_C_THROW("matrix type is not correct");
 
@@ -1155,7 +1155,7 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet_with_trafo(const Core::LinAlg::
     // make the code more explicit...
     if (savegraph_ and graph_ == Teuchos::null)
     {
-      graph_ = Teuchos::RCP(new Epetra_CrsGraph(sysmat_->Graph()));
+      graph_ = Teuchos::make_rcp<Epetra_CrsGraph>(sysmat_->Graph());
       if (not graph_->Filled()) FOUR_C_THROW("got unfilled graph from filled matrix");
     }
 
@@ -1174,7 +1174,7 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet_with_trafo(const Core::LinAlg::
     // initialise matrix Anew with general size (rowmap x colmap)
     // in case of coupled problem (e.g. TSI) transform the rectangular off-diagonal block k_Td
     Teuchos::RCP<Epetra_CrsMatrix> Anew =
-        Teuchos::RCP(new Epetra_CrsMatrix(::Copy, rowmap, colmap, maxnumentries, false));
+        Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, colmap, maxnumentries, false);
     std::vector<int> indices(maxnumentries, 0);
     std::vector<double> values(maxnumentries, 0.0);
     for (int i = 0; i < nummyrows; ++i)
@@ -1303,8 +1303,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::SparseMatrix::extract_dir
 {
   if (not filled()) FOUR_C_THROW("expect filled matrix to extract dirichlet lines");
 
-  Teuchos::RCP<SparseMatrix> dl = Teuchos::RCP(
-      new SparseMatrix(row_map(), max_num_entries(), explicit_dirichlet(), save_graph()));
+  Teuchos::RCP<SparseMatrix> dl = Teuchos::make_rcp<SparseMatrix>(
+      row_map(), max_num_entries(), explicit_dirichlet(), save_graph());
 
   const Epetra_Map& rowmap = sysmat_->RowMap();
   const Epetra_Map& colmap = sysmat_->ColMap();
@@ -1344,8 +1344,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::SparseMatrix::extract_dir
   if (not filled()) FOUR_C_THROW("expect filled matrix to extract dirichlet lines");
   if (not dbctoggle.UniqueGIDs()) FOUR_C_THROW("unique map required");
 
-  Teuchos::RCP<SparseMatrix> dl = Teuchos::RCP(
-      new SparseMatrix(row_map(), max_num_entries(), explicit_dirichlet(), save_graph()));
+  Teuchos::RCP<SparseMatrix> dl = Teuchos::make_rcp<SparseMatrix>(
+      row_map(), max_num_entries(), explicit_dirichlet(), save_graph());
 
   const Epetra_Map& rowmap = sysmat_->RowMap();
   const Epetra_Map& colmap = sysmat_->ColMap();

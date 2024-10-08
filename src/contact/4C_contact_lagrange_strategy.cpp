@@ -64,21 +64,21 @@ void CONTACT::LagrangeStrategy::initialize()
 {
   // (re)setup global matrices containing fc derivatives
   // must use FE_MATRIX type here, as we will do non-local assembly!
-  lindmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *gsdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
-  linmmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+  lindmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *gsdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+  linmmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   if (constr_direction_ == Inpar::CONTACT::constr_xyz)
   {
     // (re)setup global tangent matrix
-    if (!friction_) tmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivedofs_, 3));
+    if (!friction_) tmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 3);
 
     // (re)setup global normal matrix
-    if (regularized_) nmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivedofs_, 3));
+    if (regularized_) nmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 3);
 
     // (re)setup global matrix containing gap derivatives
-    smatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivedofs_, 3));
+    smatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 3);
 
     // inactive rhs for the saddle point problem
     Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::split_map(*gsdofrowmap_, *gactivedofs_);
@@ -90,21 +90,21 @@ void CONTACT::LagrangeStrategy::initialize()
     {
       // tangential rhs
       tangrhs_ = Core::LinAlg::create_vector(*gactivedofs_, true);
-      tderivmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivedofs_, 3));
+      tderivmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 3);
       if (regularized_)
-        nderivmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivedofs_, 3));
+        nderivmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 3);
     }
     // (re)setup of global friction
     else
     {
       // here the calculation of gstickt is necessary
       Teuchos::RCP<Epetra_Map> gstickdofs = Core::LinAlg::split_map(*gactivedofs_, *gslipdofs_);
-      linstickLM_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gstickdofs, 3));
-      linstickDIS_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gstickdofs, 3));
+      linstickLM_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gstickdofs, 3);
+      linstickDIS_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gstickdofs, 3);
       linstickRHS_ = Core::LinAlg::create_vector(*gstickdofs, true);
 
-      linslipLM_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gslipdofs_, 3));
-      linslipDIS_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gslipdofs_, 3));
+      linslipLM_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gslipdofs_, 3);
+      linslipDIS_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gslipdofs_, 3);
       linslipRHS_ = Core::LinAlg::create_vector(*gslipdofs_, true);
     }
   }
@@ -112,13 +112,13 @@ void CONTACT::LagrangeStrategy::initialize()
   else
   {
     // (re)setup global tangent matrix
-    if (!friction_) tmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivet_, 3));
+    if (!friction_) tmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivet_, 3);
 
     // (re)setup global normal matrix
-    if (regularized_) nmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactiven_, 3));
+    if (regularized_) nmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactiven_, 3);
 
     // (re)setup global matrix containing gap derivatives
-    smatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactiven_, 3));
+    smatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactiven_, 3);
 
     // inactive rhs for the saddle point problem
     Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::split_map(*gsdofrowmap_, *gactivedofs_);
@@ -130,20 +130,21 @@ void CONTACT::LagrangeStrategy::initialize()
     {
       // tangential rhs
       tangrhs_ = Core::LinAlg::create_vector(*gactivet_, true);
-      tderivmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivet_, 3));
-      if (regularized_) nderivmatrix_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactiven_, 3));
+      tderivmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivet_, 3);
+      if (regularized_)
+        nderivmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactiven_, 3);
     }
     // (re)setup of global friction
     else
     {
       // here the calculation of gstickt is necessary
       Teuchos::RCP<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
-      linstickLM_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gstickt, 3));
-      linstickDIS_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gstickt, 3));
+      linstickLM_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gstickt, 3);
+      linstickDIS_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gstickt, 3);
       linstickRHS_ = Core::LinAlg::create_vector(*gstickt, true);
 
-      linslipLM_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gslipt_, 3));
-      linslipDIS_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gslipt_, 3));
+      linslipLM_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gslipt_, 3);
+      linslipDIS_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gslipt_, 3);
       linslipRHS_ = Core::LinAlg::create_vector(*gslipt_, true);
     }
   }
@@ -284,7 +285,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     /* (1) Multiply Mortar matrices: m^ = inv(d) * m                    */
     /********************************************************************/
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invd =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dmatrix_));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dmatrix_);
 
     // for nonsmooth contact inverting D is more complex:
     // Note: this invertation if only applicable when vertex, edge and surface nodes
@@ -321,11 +322,11 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
       Teuchos::RCP<Core::LinAlg::Vector<double>> diagS =
           Core::LinAlg::create_vector(*gsdofSurf_, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> invdV =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dvv));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dvv);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> invdE =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dee));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dee);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> invdS =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dss));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dss);
 
       int err = 0;
 
@@ -359,7 +360,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
       if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
-      invd = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, true, true));
+      invd = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, true, true);
 
       dse->scale(-1.0);
       dsv->scale(-1.0);
@@ -517,7 +518,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
       Core::LinAlg::split_vector(
           *problem_dofs(), *feff, non_redist_gsmdofrowmap_, fsm, gndofrowmap_, fn);
       Teuchos::RCP<Core::LinAlg::Vector<double>> fsmtemp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsmdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsmdofrowmap_);
       Core::LinAlg::export_to(*fsm, *fsmtemp);
       fsm = fsmtemp;
     }
@@ -532,8 +533,8 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     const int mset = gmdofrowmap_->NumGlobalElements();
 
     // we want to split fsm into 2 groups s,m
-    fs = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
-    fm = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+    fs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+    fm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
 
     // do the vector splitting sm -> s+m
     Core::LinAlg::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
@@ -613,18 +614,18 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
 
     // we want to split fs into 2 groups a,i
     Teuchos::RCP<Core::LinAlg::Vector<double>> fa =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactivedofs_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
     Teuchos::RCP<Core::LinAlg::Vector<double>> fi =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
 
     // do the vector splitting s -> a+i
     Core::LinAlg::split_vector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
 
     // we want to split fa into 2 groups sl,st
     Teuchos::RCP<Core::LinAlg::Vector<double>> fsl =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gslipdofs_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipdofs_);
     Teuchos::RCP<Core::LinAlg::Vector<double>> fst =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gstdofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstdofs);
 
     // do the vector splitting a -> sl+st
     if (aset) Core::LinAlg::split_vector(*gactivedofs_, *fa, gslipdofs_, fsl, gstdofs, fst);
@@ -649,7 +650,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
 
     // do the multiplication dhat = invda * dai
     Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
     if (aset && iset)
       dhat = Core::LinAlg::matrix_multiply(*invda, false, *dai, false, false, false, true);
     dhat->complete(*gidofs, *gactivedofs_);
@@ -662,7 +663,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     // do the multiplication mhataam = invda * mmatrixa
     // (this is only different from mhata for 3D quadratic case!)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
     if (aset)
       mhataam = Core::LinAlg::matrix_multiply(*invda, false, *mmatrixa, false, false, false, true);
     mhataam->complete(*gmdofrowmap_, *gactivedofs_);
@@ -693,7 +694,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     //-------------------------------------------------------- SECOND LINE
     // kmn: add T(mhataam)*kan
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnmod =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
     kmnmod->add(*kmn, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
         Core::LinAlg::matrix_multiply(*mhataam, true, *kan, false, false, false, true);
@@ -702,7 +703,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
 
     // kmm: add T(mhataam)*kam
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmmod =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
     kmmmod->add(*kmm, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
         Core::LinAlg::matrix_multiply(*mhataam, true, *kam, false, false, false, true);
@@ -713,7 +714,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmimod;
     if (iset)
     {
-      kmimod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+      kmimod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
       kmimod->add(*kmi, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmiadd =
           Core::LinAlg::matrix_multiply(*mhataam, true, *kai, false, false, false, true);
@@ -725,7 +726,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmamod;
     if (aset)
     {
-      kmamod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+      kmamod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
       kmamod->add(*kma, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmaadd =
           Core::LinAlg::matrix_multiply(*mhataam, true, *kaa, false, false, false, true);
@@ -736,7 +737,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     //--------------------------------------------------------- THIRD LINE
     // kin: subtract T(dhat)*kan
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kinmod =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
     kinmod->add(*kin, false, 1.0, 1.0);
     if (aset && iset)
     {
@@ -748,7 +749,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
 
     // kim: subtract T(dhat)*kam
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kimmod =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
     kimmod->add(*kim, false, 1.0, 1.0);
     if (aset && iset)
     {
@@ -762,7 +763,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kiimod;
     if (iset)
     {
-      kiimod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+      kiimod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
       kiimod->add(*kii, false, 1.0, 1.0);
       if (aset)
       {
@@ -777,7 +778,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kiamod;
     if (iset && aset)
     {
-      kiamod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+      kiamod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
       kiamod->add(*kia, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kiaadd =
           Core::LinAlg::matrix_multiply(*dhat, true, *kaa, false, false, false, true);
@@ -897,11 +898,11 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     if (is_self_contact())
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecm =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecm2 =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(mold_->domain_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mold_->domain_map());
       Teuchos::RCP<Core::LinAlg::Vector<double>> zoldexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(mold_->row_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mold_->row_map());
       if (mold_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*zold_, *zoldexp);
       mold_->multiply(true, *zoldexp, *tempvecm2);
       if (mset) Core::LinAlg::export_to(*tempvecm2, *tempvecm);
@@ -911,23 +912,23 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     else
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecm =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
       mold_->multiply(true, *zold_, *tempvecm);
       fm->Update(alphaf_, *tempvecm, 1.0);
     }
 
     // fs: prepare alphaf * old contact forces (t_n)
     Teuchos::RCP<Core::LinAlg::Vector<double>> fsadd =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
 
     // for self contact, slave and master sets may have changed,
     // thus we have to export the product Dold^T * zold to fit
     if (is_self_contact())
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(dold_->domain_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dold_->domain_map());
       Teuchos::RCP<Core::LinAlg::Vector<double>> zoldexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(dold_->row_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dold_->row_map());
       if (dold_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*zold_, *zoldexp);
       dold_->multiply(true, *zoldexp, *tempvec);
       if (sset) Core::LinAlg::export_to(*tempvec, *fsadd);
@@ -942,14 +943,14 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> faadd =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactivedofs_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
       Core::LinAlg::export_to(*fsadd, *faadd);
       fa->Update(-alphaf_, *faadd, 1.0);
     }
 
     // fm: add T(mhat)*fa
     Teuchos::RCP<Core::LinAlg::Vector<double>> fmmod =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
     if (aset) mhataam->multiply(true, *fa, *fmmod);
     fmmod->Update(1.0, *fm, 1.0);
 
@@ -958,14 +959,14 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     if (iset)
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> fiadd =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
       Core::LinAlg::export_to(*fsadd, *fiadd);
       fi->Update(-alphaf_, *fiadd, 1.0);
     }
 
     // fi: add T(dhat)*fa
     Teuchos::RCP<Core::LinAlg::Vector<double>> fimod =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
     if (aset && iset) dhat->multiply(true, *fa, *fimod);
     fimod->Update(1.0, *fi, -1.0);
 
@@ -977,13 +978,13 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
 
     // split the lagrange multiplier vector in stick and slip part
     Teuchos::RCP<Core::LinAlg::Vector<double>> za =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactivedofs_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
     Teuchos::RCP<Core::LinAlg::Vector<double>> zi =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
     Teuchos::RCP<Core::LinAlg::Vector<double>> zst =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gstickdofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickdofs);
     Teuchos::RCP<Core::LinAlg::Vector<double>> zsl =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gslipdofs_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipdofs_);
 
     Core::LinAlg::split_vector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
     Core::LinAlg::split_vector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
@@ -994,17 +995,17 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     if (stickset)
     {
       if (constr_direction_ == Inpar::CONTACT::constr_xyz)
-        fstmod = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gstickdofs));
+        fstmod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickdofs);
       else
-        fstmod = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gstickt));
+        fstmod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickt);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
           Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
       temp1->multiply(false, *fa, *fstmod);
 
       if (constr_direction_ == Inpar::CONTACT::constr_xyz)
-        tempvec1 = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gstickdofs));
+        tempvec1 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickdofs);
       else
-        tempvec1 = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gstickt));
+        tempvec1 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickt);
 
       linstickLM_->multiply(false, *zst, *tempvec1);
       fstmod->Update(-1.0, *tempvec1, 1.0);
@@ -1018,17 +1019,17 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     if (slipset)
     {
       if (constr_direction_ == Inpar::CONTACT::constr_xyz)
-        fslmod = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gslipdofs_));
+        fslmod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipdofs_);
       else
-        fslmod = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gslipt_));
+        fslmod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipt_);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
           Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
       temp->multiply(false, *fa, *fslmod);
 
       if (constr_direction_ == Inpar::CONTACT::constr_xyz)
-        tempvec1 = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gslipdofs_));
+        tempvec1 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipdofs_);
       else
-        tempvec1 = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gslipt_));
+        tempvec1 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipt_);
 
       linslipLM_->multiply(false, *zsl, *tempvec1);
 
@@ -1097,8 +1098,9 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     /* (10) Global setup of kteffnew (including contact)                */
     /********************************************************************/
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-        *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype()));
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew =
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+            *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype());
     Teuchos::RCP<Core::LinAlg::Vector<double>> feffnew =
         Core::LinAlg::create_vector(*problem_dofs());
 
@@ -1159,14 +1161,14 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     //--------------------------------------------------------- FIRST LINE
     // add n subvector to feffnew
     Teuchos::RCP<Core::LinAlg::Vector<double>> fnexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fn, *fnexp);
     feffnew->Update(1.0, *fnexp, 1.0);
 
     //-------------------------------------------------------- SECOND LINE
     // add m subvector to feffnew
     Teuchos::RCP<Core::LinAlg::Vector<double>> fmmodexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fmmod, *fmmodexp);
     feffnew->Update(1.0, *fmmodexp, 1.0);
 
@@ -1175,7 +1177,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     Teuchos::RCP<Core::LinAlg::Vector<double>> fimodexp;
     if (iset)
     {
-      fimodexp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      fimodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*fimod, *fimodexp);
       feffnew->Update(1.0, *fimodexp, 1.0);
     }
@@ -1188,7 +1190,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
 
     if (aset)
     {
-      gexp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      gexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*gact, *gexp);
       feffnew->Update(-1.0, *gexp, 1.0);
     }
@@ -1198,7 +1200,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     Teuchos::RCP<Core::LinAlg::Vector<double>> fstmodexp;
     if (stickset)
     {
-      fstmodexp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      fstmodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*fstmod, *fstmodexp);
       feffnew->Update(1.0, *fstmodexp, +1.0);
     }
@@ -1207,7 +1209,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     if (stickset)
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> linstickRHSexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*linstickRHS_, *linstickRHSexp);
       feffnew->Update(-1.0, *linstickRHSexp, 1.0);
     }
@@ -1222,7 +1224,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
 
     if (slipset)
     {
-      fslmodexp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      fslmodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*fslmod, *fslmodexp);
       feffnew->Update(1.0, *fslmodexp, 1.0);
     }
@@ -1230,7 +1232,7 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     if (slipset)
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> linslipRHSexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*linslipRHS_, *linslipRHSexp);
       feffnew->Update(-1.0, *linslipRHSexp, 1.0);
     }
@@ -1281,40 +1283,40 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     {
       // add contact force terms
       Teuchos::RCP<Core::LinAlg::Vector<double>> fsexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecd =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(dmatrix_->domain_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->domain_map());
       Teuchos::RCP<Core::LinAlg::Vector<double>> zexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(dmatrix_->row_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
       if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*z_, *zexp);
       dmatrix_->multiply(true, *zexp, *tempvecd);
       Core::LinAlg::export_to(*tempvecd, *fsexp);
       feff->Update(-(1.0 - alphaf_), *fsexp, 1.0);
 
       Teuchos::RCP<Core::LinAlg::Vector<double>> fmexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecm =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(mmatrix_->domain_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mmatrix_->domain_map());
       mmatrix_->multiply(true, *zexp, *tempvecm);
       Core::LinAlg::export_to(*tempvecm, *fmexp);
       feff->Update(1.0 - alphaf_, *fmexp, 1.0);
 
       // add old contact forces (t_n)
       Teuchos::RCP<Core::LinAlg::Vector<double>> fsoldexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecdold =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(dold_->domain_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dold_->domain_map());
       Teuchos::RCP<Core::LinAlg::Vector<double>> zoldexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(dold_->row_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dold_->row_map());
       if (dold_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*zold_, *zoldexp);
       dold_->multiply(true, *zoldexp, *tempvecdold);
       Core::LinAlg::export_to(*tempvecdold, *fsoldexp);
       feff->Update(-alphaf_, *fsoldexp, 1.0);
 
       Teuchos::RCP<Core::LinAlg::Vector<double>> fmoldexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecmold =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(mold_->domain_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mold_->domain_map());
       mold_->multiply(true, *zoldexp, *tempvecmold);
       Core::LinAlg::export_to(*tempvecmold, *fmoldexp);
       feff->Update(alphaf_, *fmoldexp, 1.0);
@@ -1324,35 +1326,35 @@ void CONTACT::LagrangeStrategy::evaluate_friction(Teuchos::RCP<Core::LinAlg::Spa
     {
       // add contact force terms
       Teuchos::RCP<Core::LinAlg::Vector<double>> fs =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
       dmatrix_->multiply(true, *z_, *fs);
       Teuchos::RCP<Core::LinAlg::Vector<double>> fsexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*fs, *fsexp);
       feff->Update(-(1.0 - alphaf_), *fsexp, 1.0);
 
       Teuchos::RCP<Core::LinAlg::Vector<double>> fm =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
       mmatrix_->multiply(true, *z_, *fm);
       Teuchos::RCP<Core::LinAlg::Vector<double>> fmexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*fm, *fmexp);
       feff->Update(1.0 - alphaf_, *fmexp, 1.0);
 
       // add old contact forces (t_n)
       Teuchos::RCP<Core::LinAlg::Vector<double>> fsold =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
       dold_->multiply(true, *zold_, *fsold);
       Teuchos::RCP<Core::LinAlg::Vector<double>> fsoldexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*fsold, *fsoldexp);
       feff->Update(-alphaf_, *fsoldexp, 1.0);
 
       Teuchos::RCP<Core::LinAlg::Vector<double>> fmold =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
       mold_->multiply(true, *zold_, *fmold);
       Teuchos::RCP<Core::LinAlg::Vector<double>> fmoldexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*fmold, *fmoldexp);
       feff->Update(alphaf_, *fmoldexp, 1.0);
     }
@@ -1447,24 +1449,24 @@ void CONTACT::LagrangeStrategy::compute_contact_stresses()
   // further scaling for nonsmooth contact
   if (nonSmoothContact_)
   {
-    forcenormal_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+    forcenormal_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
     d_matrix()->multiply(true, *stressnormal_, *forcenormal_);
-    forcetangential_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+    forcetangential_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
     d_matrix()->multiply(true, *stresstangential_, *forcetangential_);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> forcenormal =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
     d_matrix()->multiply(true, *stressnormal_, *forcenormal);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> forcetangential =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
     d_matrix()->multiply(true, *stresstangential_, *forcetangential);
 
     // add penalty force normal
     if (fLTLn_ != Teuchos::null)
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> dummy =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
       Core::LinAlg::export_to(*fLTLn_, *dummy);
       forcenormal_->Update(1.0, *dummy, 1.0);
       forcenormal->Update(1.0, *dummy, 1.0);
@@ -1474,7 +1476,7 @@ void CONTACT::LagrangeStrategy::compute_contact_stresses()
     if (fLTLt_ != Teuchos::null)
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> dummy =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(slave_dof_row_map(true)));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(slave_dof_row_map(true));
       Core::LinAlg::export_to(*fLTLt_, *dummy);
       forcetangential_->Update(1.0, *dummy, 1.0);
       forcetangential->Update(1.0, *dummy, 1.0);
@@ -1687,8 +1689,8 @@ void CONTACT::LagrangeStrategy::save_reference_state(
           donebefore.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::RCP(new Mortar::Element(
-              j, selement->owner(), Core::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+              j, selement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
           // get nodes
           std::array<Core::Nodes::Node*, 2> nodes = {
@@ -1747,12 +1749,12 @@ void CONTACT::LagrangeStrategy::add_master_contributions(
     Teuchos::RCP<Core::LinAlg::Vector<double>>& feff, bool add_time_integration)
 {
   // create new contact force vector for LTL contact
-  Teuchos::RCP<Epetra_FEVector> fc = Teuchos::RCP(new Epetra_FEVector(feff->Map()), true);
+  Teuchos::RCP<Epetra_FEVector> fc = Teuchos::make_rcp<Epetra_FEVector>(feff->Map());
 
   // create new contact stiffness matric for LTL contact
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kc = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kc = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
       (dynamic_cast<Epetra_CrsMatrix*>(&(*kteff->epetra_operator())))->RowMap(), 100, true, false,
-      Core::LinAlg::SparseMatrix::FE_MATRIX));
+      Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   // loop over interface and assemble force and stiffness
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -1769,7 +1771,7 @@ void CONTACT::LagrangeStrategy::add_master_contributions(
   if (fc->GlobalAssemble(Add, false) != 0) FOUR_C_THROW("GlobalAssemble failed");
 
   // store fLTL values for time integration
-  fLTL_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(fc->Map()), true);
+  fLTL_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fc->Map());
   if (fLTL_->Update(1.0, *fc, 0.0)) FOUR_C_THROW("Update went wrong");
 
   if (add_time_integration)
@@ -1802,14 +1804,14 @@ void CONTACT::LagrangeStrategy::add_line_to_lin_contributions(
     Teuchos::RCP<Core::LinAlg::Vector<double>>& feff, bool add_time_integration)
 {
   // create new contact force vector for LTL contact
-  Teuchos::RCP<Epetra_FEVector> fc = Teuchos::RCP(new Epetra_FEVector(feff->Map()), true);
+  Teuchos::RCP<Epetra_FEVector> fc = Teuchos::make_rcp<Epetra_FEVector>(feff->Map());
 
-  fconservation_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(feff->Map()), true);
+  fconservation_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(feff->Map());
 
   // create new contact stiffness matric for LTL contact
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kc = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kc = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
       (dynamic_cast<Epetra_CrsMatrix*>(&(*kteff->epetra_operator())))->RowMap(), 100, true, false,
-      Core::LinAlg::SparseMatrix::FE_MATRIX));
+      Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   // loop over interface and assemble force and stiffness
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -1825,7 +1827,7 @@ void CONTACT::LagrangeStrategy::add_line_to_lin_contributions(
   if (fc->GlobalAssemble(Add, false) != 0) FOUR_C_THROW("GlobalAssemble failed");
 
   // store fLTL values for time integration
-  fLTL_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(fc->Map()), true);
+  fLTL_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fc->Map());
   if (fLTL_->Update(1.0, *fc, 0.0)) FOUR_C_THROW("Update went wrong");
 
   if (add_time_integration)
@@ -1857,14 +1859,14 @@ void CONTACT::LagrangeStrategy::add_line_to_lin_contributions_friction(
     Teuchos::RCP<Core::LinAlg::Vector<double>>& feff, bool add_time_integration)
 {
   // create new contact force vector for LTL contact
-  Teuchos::RCP<Epetra_FEVector> fc = Teuchos::RCP(new Epetra_FEVector(feff->Map()), true);
+  Teuchos::RCP<Epetra_FEVector> fc = Teuchos::make_rcp<Epetra_FEVector>(feff->Map());
 
-  fconservation_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(feff->Map()), true);
+  fconservation_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(feff->Map());
 
   // create new contact stiffness matric for LTL contact
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kc = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kc = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
       (dynamic_cast<Epetra_CrsMatrix*>(&(*kteff->epetra_operator())))->RowMap(), 100, true, false,
-      Core::LinAlg::SparseMatrix::FE_MATRIX));
+      Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   // loop over interface and assemble force and stiffness
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -1874,7 +1876,7 @@ void CONTACT::LagrangeStrategy::add_line_to_lin_contributions_friction(
   }
 
   // store normal forces
-  fLTLn_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(fc->Map()), true);
+  fLTLn_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fc->Map());
   if (fLTLn_->Update(1.0, *fc, 0.0)) FOUR_C_THROW("Update went wrong");
 
   // loop over interface and assemble force and stiffness
@@ -1888,7 +1890,7 @@ void CONTACT::LagrangeStrategy::add_line_to_lin_contributions_friction(
   fconservation_->Update(1.0, *fc, 0.0);
 
   // store tangential forces
-  fLTLt_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(fc->Map()), true);
+  fLTLt_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fc->Map());
   if (fLTLt_->Update(1.0, *fc, 0.0)) FOUR_C_THROW("Update went wrong");
   if (fLTLt_->Update(-1.0, *fLTLn_, 1.0)) FOUR_C_THROW("Update went wrong");
 
@@ -1896,7 +1898,7 @@ void CONTACT::LagrangeStrategy::add_line_to_lin_contributions_friction(
   if (fc->GlobalAssemble(Add, false) != 0) FOUR_C_THROW("GlobalAssemble failed");
 
   // store fLTL values for time integration
-  fLTL_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(fc->Map()), true);
+  fLTL_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fc->Map());
   if (fLTL_->Update(1.0, *fc, 0.0)) FOUR_C_THROW("Update went wrong");
 
   if (add_time_integration)
@@ -2093,7 +2095,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     /* (1) Multiply Mortar matrices: m^ = inv(d) * m                      */
     /**********************************************************************/
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invd =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dmatrix_));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dmatrix_);
 
     // for nonsmooth contact inverting D is more complex:
     // Note: this invertation if only applicable when vertex, edge and surface nodes
@@ -2130,11 +2132,11 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
       Teuchos::RCP<Core::LinAlg::Vector<double>> diagS =
           Core::LinAlg::create_vector(*gsdofSurf_, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> invdV =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dvv));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dvv);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> invdE =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dee));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dee);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> invdS =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dss));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dss);
 
       int err = 0;
 
@@ -2168,7 +2170,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
       if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
-      invd = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, true, true));
+      invd = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, true, true);
 
       dse->scale(-1.0);
       dsv->scale(-1.0);
@@ -2259,7 +2261,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     {
       // basis transformation
       Teuchos::RCP<Core::LinAlg::SparseMatrix> systrafo =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*problem_dofs(), 100, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
           Core::LinAlg::create_identity_matrix(*gndofrowmap_);
       systrafo->add(*eye, false, 1.0, 1.0);
@@ -2346,7 +2348,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
       Core::LinAlg::split_vector(
           *problem_dofs(), *feff, non_redist_gsmdofrowmap_, fsm, gndofrowmap_, fn);
       Teuchos::RCP<Core::LinAlg::Vector<double>> fsmtemp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsmdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsmdofrowmap_);
       Core::LinAlg::export_to(*fsm, *fsmtemp);
       fsm = fsmtemp;
     }
@@ -2361,8 +2363,8 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     const int mset = gmdofrowmap_->NumGlobalElements();
 
     // we want to split fsm into 2 groups s,m
-    fs = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
-    fm = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+    fs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+    fm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
 
     // do the vector splitting sm -> s+m
     Core::LinAlg::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
@@ -2424,9 +2426,9 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
 
     // we want to split fsmod into 2 groups a,i
     Teuchos::RCP<Core::LinAlg::Vector<double>> fa =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactivedofs_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
     Teuchos::RCP<Core::LinAlg::Vector<double>> fi =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
 
     // do the vector splitting s -> a+i
     Core::LinAlg::split_vector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
@@ -2446,7 +2448,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
 
     // do the multiplication dhat = invda * dai
     Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
     if (aset && iset)
       dhat = Core::LinAlg::matrix_multiply(*invda, false, *dai, false, false, false, true);
     dhat->complete(*gidofs, *gactivedofs_);
@@ -2459,7 +2461,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     // do the multiplication mhataam = invda * mmatrixa
     // (this is only different from mhata for 3D quadratic case!)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
     if (aset)
       mhataam = Core::LinAlg::matrix_multiply(*invda, false, *mmatrixa, false, false, false, true);
     mhataam->complete(*gmdofrowmap_, *gactivedofs_);
@@ -2489,7 +2491,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     //---------------------------------------------------------- SECOND LINE
     // kmn: add T(mhataam)*kan
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnmod =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
     kmnmod->add(*kmn, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
         Core::LinAlg::matrix_multiply(*mhataam, true, *kan, false, false, false, true);
@@ -2498,7 +2500,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
 
     // kmm: add T(mhataam)*kam
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmmod =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
     kmmmod->add(*kmm, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
         Core::LinAlg::matrix_multiply(*mhataam, true, *kam, false, false, false, true);
@@ -2509,7 +2511,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmimod;
     if (iset)
     {
-      kmimod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+      kmimod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
       kmimod->add(*kmi, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmiadd =
           Core::LinAlg::matrix_multiply(*mhataam, true, *kai, false, false, false, true);
@@ -2521,7 +2523,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmamod;
     if (aset)
     {
-      kmamod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+      kmamod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
       kmamod->add(*kma, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmaadd =
           Core::LinAlg::matrix_multiply(*mhataam, true, *kaa, false, false, false, true);
@@ -2533,7 +2535,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     //------------------- FOR 3D QUADRATIC CASE ----------------------------
     // kin: subtract T(dhat)*kan --
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kinmod =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
     kinmod->add(*kin, false, 1.0, 1.0);
     if (aset && iset)
     {
@@ -2545,7 +2547,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
 
     // kim: subtract T(dhat)*kam
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kimmod =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
     kimmod->add(*kim, false, 1.0, 1.0);
     if (aset && iset)
     {
@@ -2559,7 +2561,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kiimod;
     if (iset)
     {
-      kiimod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+      kiimod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
       kiimod->add(*kii, false, 1.0, 1.0);
       if (aset)
       {
@@ -2574,7 +2576,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kiamod;
     if (iset && aset)
     {
-      kiamod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+      kiamod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
       kiamod->add(*kia, false, 1.0, 1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kiaadd =
           Core::LinAlg::matrix_multiply(*dhat, true, *kaa, false, false, false, true);
@@ -2632,11 +2634,11 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     if (is_self_contact())
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecm =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecm2 =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(mold_->domain_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mold_->domain_map());
       Teuchos::RCP<Core::LinAlg::Vector<double>> zoldexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(mold_->row_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mold_->row_map());
       if (mold_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*zold_, *zoldexp);
       mold_->multiply(true, *zoldexp, *tempvecm2);
       if (mset) Core::LinAlg::export_to(*tempvecm2, *tempvecm);
@@ -2646,23 +2648,23 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     else
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecm =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
       mold_->multiply(true, *zold_, *tempvecm);
       fm->Update(alphaf_, *tempvecm, 1.0);
     }
 
     // fs: prepare alphaf * old contact forces (t_n)
     Teuchos::RCP<Core::LinAlg::Vector<double>> fsadd =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
 
     // for self contact, slave and master sets may have changed,
     // thus we have to export the product Dold^T * zold to fit
     if (is_self_contact())
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(dold_->domain_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dold_->domain_map());
       Teuchos::RCP<Core::LinAlg::Vector<double>> zoldexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(dold_->row_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dold_->row_map());
       if (dold_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*zold_, *zoldexp);
       dold_->multiply(true, *zoldexp, *tempvec);
       if (sset) Core::LinAlg::export_to(*tempvec, *fsadd);
@@ -2677,14 +2679,14 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> faadd =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactivedofs_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
       Core::LinAlg::export_to(*fsadd, *faadd);
       fa->Update(-alphaf_, *faadd, 1.0);
     }
 
     // fm: add T(mhat)*fa
     Teuchos::RCP<Core::LinAlg::Vector<double>> fmmod =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
     if (aset) mhataam->multiply(true, *fa, *fmmod);
     fmmod->Update(1.0, *fm, 1.0);
 
@@ -2693,14 +2695,14 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     if (iset)
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> fiadd =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
       Core::LinAlg::export_to(*fsadd, *fiadd);
       fi->Update(-alphaf_, *fiadd, 1.0);
     }
 
     // fi: add T(dhat)*fa
     Teuchos::RCP<Core::LinAlg::Vector<double>> fimod =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
     if (iset && aset) dhat->multiply(true, *fa, *fimod);
     fimod->Update(1.0, *fi, -1.0);
 
@@ -2714,9 +2716,9 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     if (aset)
     {
       if (constr_direction_ == Inpar::CONTACT::constr_xyz)
-        famod = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactivedofs_));
+        famod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
       else
-        famod = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactivet_));
+        famod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivet_);
 
       tinvda = Core::LinAlg::matrix_multiply(*tmatrix_, false, *invda, true, false, false, true);
       tinvda->multiply(false, *fa, *famod);
@@ -2769,8 +2771,9 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     /* (10) Global setup of kteffnew (including contact)                  */
     /**********************************************************************/
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-        *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype()));
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew =
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+            *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype());
     Teuchos::RCP<Core::LinAlg::Vector<double>> feffnew =
         Core::LinAlg::create_vector(*problem_dofs());
 
@@ -2820,14 +2823,14 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     //----------------------------------------------------------- FIRST LINE
     // add n subvector to feffnew
     Teuchos::RCP<Core::LinAlg::Vector<double>> fnexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fn, *fnexp);
     feffnew->Update(1.0, *fnexp, 1.0);
 
     //---------------------------------------------------------- SECOND LINE
     // add m subvector to feffnew
     Teuchos::RCP<Core::LinAlg::Vector<double>> fmmodexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fmmod, *fmmodexp);
     feffnew->Update(1.0, *fmmodexp, 1.0);
 
@@ -2836,7 +2839,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     Teuchos::RCP<Core::LinAlg::Vector<double>> fimodexp;
     if (iset)
     {
-      fimodexp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      fimodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*fimod, *fimodexp);
       feffnew->Update(1.0, *fimodexp, 1.0);
     }
@@ -2846,7 +2849,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     Teuchos::RCP<Core::LinAlg::Vector<double>> gexp;
     if (aset)
     {
-      gexp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      gexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*gact, *gexp);
       feffnew->Update(-1.0, *gexp, 1.0);
     }
@@ -2856,7 +2859,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     Teuchos::RCP<Core::LinAlg::Vector<double>> famodexp;
     if (aset)
     {
-      famodexp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      famodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*famod, *famodexp);
       feffnew->Update(1.0, *famodexp, 1.0);
     }
@@ -2885,7 +2888,7 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
       {
         // basis transformation
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systrafo =
-            Teuchos::RCP(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
+            Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*problem_dofs(), 100, false, true);
         Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
             Core::LinAlg::create_identity_matrix(*gndofrowmap_);
         systrafo->add(*eye, false, 1.0, 1.0);
@@ -2899,8 +2902,8 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
         Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffmatrix =
             Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(kteff);
         Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew =
-            Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-                *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype()));
+            Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+                *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype());
         kteffnew = Core::LinAlg::matrix_multiply(
             *kteffmatrix, false, *systrafo, false, false, false, true);
         kteffnew =
@@ -2930,40 +2933,40 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     {
       // add contact force terms
       Teuchos::RCP<Core::LinAlg::Vector<double>> fsexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecd =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(dmatrix_->domain_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->domain_map());
       Teuchos::RCP<Core::LinAlg::Vector<double>> zexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(dmatrix_->row_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
       if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*z_, *zexp);
       dmatrix_->multiply(true, *zexp, *tempvecd);
       Core::LinAlg::export_to(*tempvecd, *fsexp);
       feff->Update(-(1.0 - alphaf_), *fsexp, 1.0);
 
       Teuchos::RCP<Core::LinAlg::Vector<double>> fmexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecm =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(mmatrix_->domain_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mmatrix_->domain_map());
       mmatrix_->multiply(true, *zexp, *tempvecm);
       Core::LinAlg::export_to(*tempvecm, *fmexp);
       feff->Update(1.0 - alphaf_, *fmexp, 1.0);
 
       // add old contact forces (t_n)
       Teuchos::RCP<Core::LinAlg::Vector<double>> fsoldexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecdold =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(dold_->domain_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dold_->domain_map());
       Teuchos::RCP<Core::LinAlg::Vector<double>> zoldexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(dold_->row_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dold_->row_map());
       if (dold_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*zold_, *zoldexp);
       dold_->multiply(true, *zoldexp, *tempvecdold);
       Core::LinAlg::export_to(*tempvecdold, *fsoldexp);
       feff->Update(-alphaf_, *fsoldexp, 1.0);
 
       Teuchos::RCP<Core::LinAlg::Vector<double>> fmoldexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecmold =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(mold_->domain_map()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mold_->domain_map());
       mold_->multiply(true, *zoldexp, *tempvecmold);
       Core::LinAlg::export_to(*tempvecmold, *fmoldexp);
       feff->Update(alphaf_, *fmoldexp, 1.0);
@@ -2973,35 +2976,35 @@ void CONTACT::LagrangeStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spar
     {
       // add contact force terms
       Teuchos::RCP<Core::LinAlg::Vector<double>> fs =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
       dmatrix_->multiply(true, *z_, *fs);
       Teuchos::RCP<Core::LinAlg::Vector<double>> fsexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*fs, *fsexp);
       feff->Update(-(1.0 - alphaf_), *fsexp, 1.0);
 
       Teuchos::RCP<Core::LinAlg::Vector<double>> fm =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
       mmatrix_->multiply(true, *z_, *fm);
       Teuchos::RCP<Core::LinAlg::Vector<double>> fmexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*fm, *fmexp);
       feff->Update(1.0 - alphaf_, *fmexp, 1.0);
 
       // add old contact forces (t_n)
       Teuchos::RCP<Core::LinAlg::Vector<double>> fsold =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
       dold_->multiply(true, *zold_, *fsold);
       Teuchos::RCP<Core::LinAlg::Vector<double>> fsoldexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*fsold, *fsoldexp);
       feff->Update(-alphaf_, *fsoldexp, 1.0);
 
       Teuchos::RCP<Core::LinAlg::Vector<double>> fmold =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
       mold_->multiply(true, *zold_, *fmold);
       Teuchos::RCP<Core::LinAlg::Vector<double>> fmoldexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       Core::LinAlg::export_to(*fmold, *fmoldexp);
       feff->Update(alphaf_, *fmoldexp, 1.0);
     }
@@ -3051,19 +3054,19 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
   // the use of a toggle vector is more flexible here. It allows to apply dirichlet
   // conditions on different matrix blocks separately.
   Teuchos::RCP<Core::LinAlg::Vector<double>> dirichtoggle =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*(dbcmaps->full_map())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dbcmaps->full_map()));
   Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*(dbcmaps->cond_map())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dbcmaps->cond_map()));
   temp->PutScalar(1.0);
   Core::LinAlg::export_to(*temp, *dirichtoggle);
 
   // Initialize constraint matrices
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kzz =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, true, true));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, true, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kzd =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, false, true));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kdz =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gdisprowmap_, 100, false, true));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gdisprowmap_, 100, false, true);
 
   // Declare transformed constraint matrices
   Teuchos::RCP<Core::LinAlg::SparseMatrix> trkdz = Teuchos::null;
@@ -3100,10 +3103,10 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::split_map(*gsdofrowmap_, *gactivedofs_);
     Teuchos::RCP<Core::LinAlg::Vector<double>> ones =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
     ones->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*ones));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*ones);
     onesdiag->complete();
 
     // build constraint matrix kzz
@@ -3140,10 +3143,10 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::split_map(*gsdofrowmap_, *gactivedofs_);
     Teuchos::RCP<Core::LinAlg::Vector<double>> ones =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
     ones->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*ones));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*ones);
     onesdiag->complete();
 
     // build constraint matrix kzz
@@ -3214,14 +3217,14 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
      * Dirichlet BCs.
      */
     Teuchos::RCP<Core::LinAlg::Vector<double>> dirichtoggleexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*mergedmap));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mergedmap);
     {
       Core::LinAlg::export_to(*dirichtoggle, *dirichtoggleexp);
       Teuchos::RCP<Core::LinAlg::Vector<double>> lmDBC = Teuchos::null;
       if (parallel_redistribution_status())
-        lmDBC = Teuchos::RCP(new Core::LinAlg::Vector<double>(*non_redist_gsdofrowmap_, true));
+        lmDBC = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*non_redist_gsdofrowmap_, true);
       else
-        lmDBC = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+        lmDBC = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
       Core::LinAlg::export_to(*dirichtoggle, *lmDBC);
 
       if (parallel_redistribution_status())
@@ -3230,7 +3233,7 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
         lmDBC->ReplaceMap(*glmdofrowmap_);
 
       Teuchos::RCP<Core::LinAlg::Vector<double>> lmDBCexp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*mergedmap));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mergedmap);
       Core::LinAlg::export_to(*lmDBC, *lmDBCexp);
       if (dirichtoggleexp->Update(1., *lmDBCexp, 1.)) FOUR_C_THROW("Update failed.");
       trkzd->apply_dirichlet(*lmDBC, false);
@@ -3240,9 +3243,9 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
 
       // apply Dirichlet conditions to (0,0) and (0,1) blocks
       Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs(), true));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs(), true);
       Teuchos::RCP<Core::LinAlg::Vector<double>> rhscopy =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*fd));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fd);
       Core::LinAlg::apply_dirichlet_to_system(*stiffmt, *sold, *rhscopy, *zeros, *dirichtoggle);
       trkdz->apply_dirichlet(*dirichtoggle, false);
     }
@@ -3252,23 +3255,23 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
     Teuchos::RCP<Core::LinAlg::MapExtractor> dommapext = Teuchos::null;
     if (parallel_redistribution_status())
     {
-      rowmapext = Teuchos::RCP(
-          new Core::LinAlg::MapExtractor(*mergedmap, non_redist_glmdofrowmap_, problem_dofs()));
-      dommapext = Teuchos::RCP(
-          new Core::LinAlg::MapExtractor(*mergedmap, non_redist_glmdofrowmap_, problem_dofs()));
+      rowmapext = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+          *mergedmap, non_redist_glmdofrowmap_, problem_dofs());
+      dommapext = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+          *mergedmap, non_redist_glmdofrowmap_, problem_dofs());
     }
     else
     {
       rowmapext =
-          Teuchos::RCP(new Core::LinAlg::MapExtractor(*mergedmap, glmdofrowmap_, problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*mergedmap, glmdofrowmap_, problem_dofs());
       dommapext =
-          Teuchos::RCP(new Core::LinAlg::MapExtractor(*mergedmap, glmdofrowmap_, problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*mergedmap, glmdofrowmap_, problem_dofs());
     }
 
     // build block matrix for SIMPLER
-    blockMat =
-        Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-            *dommapext, *rowmapext, 81, false, false));
+    blockMat = Teuchos::make_rcp<
+        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+        *dommapext, *rowmapext, 81, false, false);
     // blockMat is declared as an Epetra_Operator, so we need to cast it to an actual block matrix
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>> mat =
         Teuchos::rcp_dynamic_cast<
@@ -3281,11 +3284,11 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
 
     // we also need merged rhs here
     Teuchos::RCP<Core::LinAlg::Vector<double>> fresmexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*mergedmap));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mergedmap);
     Core::LinAlg::export_to(*fd, *fresmexp);
     mergedrhs->Update(1.0, *fresmexp, 1.0);
     Teuchos::RCP<Core::LinAlg::Vector<double>> constrexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*mergedmap));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mergedmap);
     Core::LinAlg::export_to(*constrrhs_, *constrexp);
     mergedrhs->Update(1.0, *constrexp, 1.0);
 
@@ -3310,20 +3313,20 @@ void CONTACT::LagrangeStrategy::update_displacements_and_l_mincrements(
   if (parallel_redistribution_status())
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> sollmOrig =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*non_redist_glmdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*non_redist_glmdofrowmap_);
     Teuchos::RCP<Epetra_Map> mergedmapOrig =
         Core::LinAlg::merge_map(problem_dofs(), non_redist_glmdofrowmap_, false);
     Core::LinAlg::MapExtractor mapext(*mergedmapOrig, problem_dofs(), non_redist_glmdofrowmap_);
     mapext.extract_cond_vector(*blocksol, *sold);
     mapext.extract_other_vector(*blocksol, *sollmOrig);
 
-    sollm = Teuchos::RCP(new Core::LinAlg::Vector<double>(*glmdofrowmap_));
+    sollm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*glmdofrowmap_);
     Core::LinAlg::export_to(*sollmOrig, *sollm);
     sollm->ReplaceMap(*gsdofrowmap_);
   }
   else
   {
-    sollm = Teuchos::RCP(new Core::LinAlg::Vector<double>(*glmdofrowmap_));
+    sollm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*glmdofrowmap_);
     Teuchos::RCP<Epetra_Map> mergedmap =
         Core::LinAlg::merge_map(problem_dofs(), glmdofrowmap_, false);
     Core::LinAlg::MapExtractor mapext(*mergedmap, problem_dofs(), glmdofrowmap_);
@@ -3337,9 +3340,9 @@ void CONTACT::LagrangeStrategy::update_displacements_and_l_mincrements(
    */
   if (is_self_contact())
   {
-    zincr_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*sollm));
+    zincr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*sollm);
     Core::LinAlg::export_to(*z_, *zincr_);  // change the map of z_
-    z_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*zincr_));
+    z_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*zincr_);
     zincr_->Update(1.0, *sollm, 0.0);  // save sollm in zincr_
     z_->Update(1.0, *zincr_, 1.0);     // update z_
   }
@@ -3368,7 +3371,7 @@ void CONTACT::LagrangeStrategy::evaluate_constr_rhs()
 
   // initialize constraint r.h.s. (still with wrong map)
   Teuchos::RCP<Core::LinAlg::Vector<double>> constrrhs =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
 
   // We solve for the incremental Lagrange multiplier dz_. Hence,
   // we can keep the contact force terms on the right-hand side!
@@ -3397,14 +3400,14 @@ void CONTACT::LagrangeStrategy::evaluate_constr_rhs()
   }
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> gact_exp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   Core::LinAlg::export_to(*gact, *gact_exp);
 
   constrrhs->Update(-1.0, *gact_exp, 1.0);
 
   // export inactive rhs
   Teuchos::RCP<Core::LinAlg::Vector<double>> inactiverhsexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   Core::LinAlg::export_to(*inactiverhs_, *inactiverhsexp);
 
   // build constraint rhs (1)
@@ -3415,7 +3418,7 @@ void CONTACT::LagrangeStrategy::evaluate_constr_rhs()
   {
     // export tangential rhs
     Teuchos::RCP<Core::LinAlg::Vector<double>> tangrhs_exp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
     Core::LinAlg::export_to(*tangrhs_, *tangrhs_exp);
 
     // build constraint rhs (2)
@@ -3426,10 +3429,10 @@ void CONTACT::LagrangeStrategy::evaluate_constr_rhs()
   {
     // export stick and slip r.h.s.
     Teuchos::RCP<Core::LinAlg::Vector<double>> stickexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
     Core::LinAlg::export_to(*linstickRHS_, *stickexp);
     Teuchos::RCP<Core::LinAlg::Vector<double>> slipexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
     Core::LinAlg::export_to(*linslipRHS_, *slipexp);
 
     // build constraint rhs
@@ -3442,7 +3445,7 @@ void CONTACT::LagrangeStrategy::evaluate_constr_rhs()
   // export and set constraint rhs vector
   if (parallel_redistribution_status())
   {
-    constrrhs_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(lm_dof_row_map(false)));
+    constrrhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(lm_dof_row_map(false));
     Core::LinAlg::export_to(*constrrhs, *constrrhs_);
   }
   else
@@ -3503,7 +3506,7 @@ void CONTACT::LagrangeStrategy::evaluate_force(CONTACT::ParamsInterface& cparams
   auto lagmultquad = Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(params(), "LM_QUAD");
   if (is_dual_quad_slave_trafo() && lagmultquad == Inpar::Mortar::lagmult_lin)
   {
-    systrafo_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
+    systrafo_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*problem_dofs(), 100, false, true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
         Core::LinAlg::create_identity_matrix(*gndofrowmap_);
     systrafo_->add(*eye, false, 1.0, 1.0);
@@ -3513,7 +3516,7 @@ void CONTACT::LagrangeStrategy::evaluate_force(CONTACT::ParamsInterface& cparams
     systrafo_->add(*trafo_, false, 1.0, 1.0);
     systrafo_->complete();
 
-    invsystrafo_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
+    invsystrafo_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*problem_dofs(), 100, false, true);
     invsystrafo_->add(*eye, false, 1.0, 1.0);
     if (parallel_redistribution_status())
       invtrafo_ = Mortar::matrix_row_col_transform(
@@ -3533,9 +3536,9 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms()
 {
   if (nonSmoothContact_)
   {
-    nonsmooth_Penalty_force_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*probdofs_));
+    nonsmooth_Penalty_force_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*probdofs_);
     nonsmooth_Penalty_stiff_ =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*probdofs_, 100, true, true));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*probdofs_, 100, true, true);
     Teuchos::RCP<Core::LinAlg::SparseOperator> k =
         Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseOperator>(nonsmooth_Penalty_stiff_);
     if (!friction_)
@@ -3644,7 +3647,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
     /* (1) Multiply Mortar matrices: m^ = inv(d) * m                      */
     /**********************************************************************/
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invd =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dmatrix_));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dmatrix_);
 
     // for nonsmooth contact inverting D is more complex:
     // Note: this invertation if only applicable when vertex, edge and surface nodes
@@ -3681,11 +3684,11 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
       Teuchos::RCP<Core::LinAlg::Vector<double>> diagS =
           Core::LinAlg::create_vector(*gsdofSurf_, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> invdV =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dvv));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dvv);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> invdE =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dee));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dee);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> invdS =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dss));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dss);
 
       int err = 0;
 
@@ -3719,7 +3722,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_friction()
       if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
-      invd = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, true, true));
+      invd = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, true, true);
 
       dse->scale(-1.0);
       dsv->scale(-1.0);
@@ -3909,7 +3912,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
     /* (1) Multiply Mortar matrices: m^ = inv(d) * m                      */
     /**********************************************************************/
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invd =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dmatrix_));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dmatrix_);
 
     // for nonsmooth contact inverting D is more complex:
     // Note: this invertation if only applicable when vertex, edge and surface nodes
@@ -3946,11 +3949,11 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
       Teuchos::RCP<Core::LinAlg::Vector<double>> diagS =
           Core::LinAlg::create_vector(*gsdofSurf_, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> invdV =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dvv));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dvv);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> invdE =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dee));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dee);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> invdS =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dss));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dss);
 
       int err = 0;
 
@@ -3984,7 +3987,7 @@ void CONTACT::LagrangeStrategy::assemble_all_contact_terms_frictionless()
       if (err < 0) FOUR_C_THROW("replace_diagonal_values() failed with error code %d.", err);
 
       // 3. multiply all sub matrices
-      invd = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100, true, true));
+      invd = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, true, true);
 
       dse->scale(-1.0);
       dsv->scale(-1.0);
@@ -4114,7 +4117,7 @@ void CONTACT::LagrangeStrategy::eval_str_contact_rhs()
     return;
   }
 
-  strcontactrhs_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs(), true));
+  strcontactrhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs(), true);
 
   // for self contact, slave and master sets may have changed,
   // thus we have to export the products Dold^T * zold / D^T * z to fit
@@ -4123,20 +4126,20 @@ void CONTACT::LagrangeStrategy::eval_str_contact_rhs()
   {
     // add contact force terms
     Teuchos::RCP<Core::LinAlg::Vector<double>> fsexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecd =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(dmatrix_->domain_map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->domain_map());
     Teuchos::RCP<Core::LinAlg::Vector<double>> zexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(dmatrix_->row_map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
     if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*z_, *zexp);
     dmatrix_->multiply(true, *zexp, *tempvecd);
     Core::LinAlg::export_to(*tempvecd, *fsexp);
     strcontactrhs_->Update(1., *fsexp, 1.0);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> fmexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Teuchos::RCP<Core::LinAlg::Vector<double>> tempvecm =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(mmatrix_->domain_map()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mmatrix_->domain_map());
     mmatrix_->multiply(true, *zexp, *tempvecm);
     Core::LinAlg::export_to(*tempvecm, *fmexp);
     strcontactrhs_->Update(-1., *fmexp, 1.0);
@@ -4146,18 +4149,18 @@ void CONTACT::LagrangeStrategy::eval_str_contact_rhs()
   {
     // add contact force terms
     Teuchos::RCP<Core::LinAlg::Vector<double>> fs =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
     dmatrix_->multiply(true, *z_, *fs);
     Teuchos::RCP<Core::LinAlg::Vector<double>> fsexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fs, *fsexp);
     strcontactrhs_->Update(+1., *fsexp, 1.0);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> fm =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
     mmatrix_->multiply(true, *z_, *fm);
     Teuchos::RCP<Core::LinAlg::Vector<double>> fmexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fm, *fmexp);
     strcontactrhs_->Update(-1., *fmexp, 1.0);
   }
@@ -4256,8 +4259,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::LagrangeStrategy::get_matrix_b
   {
     case CONTACT::MatBlockType::displ_displ:
     {
-      mat_ptr = Teuchos::RCP(
-          new Core::LinAlg::SparseMatrix(slave_master_dof_row_map(true), 100, false, true));
+      mat_ptr = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+          slave_master_dof_row_map(true), 100, false, true);
 
       // build matrix kdd
       mat_ptr->add(*lindmatrix_, false, 1.0, 1.0);
@@ -4273,7 +4276,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::LagrangeStrategy::get_matrix_b
             mat_ptr, slave_master_dof_row_map_ptr(false), slave_master_dof_row_map_ptr(false));
 
       Teuchos::RCP<Core::LinAlg::SparseMatrix> full_mat_ptr =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*problem_dofs(), 100, false, true);
       full_mat_ptr->add(*mat_ptr, false, 1., 1.);
       full_mat_ptr->complete();
       if (is_dual_quad_slave_trafo() && lagmultquad == Inpar::Mortar::lagmult_lin)
@@ -4288,7 +4291,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::LagrangeStrategy::get_matrix_b
     {
       // build constraint matrix kdz
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kdz_ptr =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gdisprowmap_, 100, false, true));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gdisprowmap_, 100, false, true);
 
       kdz_ptr->add(*dmatrix_, true, 1.0, 1.0);
       kdz_ptr->add(*mmatrix_, true, -1.0, 1.0);
@@ -4309,7 +4312,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::LagrangeStrategy::get_matrix_b
     {
       // build constraint matrix kzd
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kzd_ptr =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 100, false, true));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slave_dof_row_map(true), 100, false, true);
 
       // build constraint matrix kzd
       if (gactiven_->NumGlobalElements())
@@ -4346,8 +4349,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::LagrangeStrategy::get_matrix_b
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kzz_ptr = Teuchos::null;
       if (is_self_contact())
       {
-        kzz_ptr = Teuchos::RCP(
-            new Core::LinAlg::SparseMatrix(global_self_contact_ref_map(), 100, false, true));
+        kzz_ptr = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+            global_self_contact_ref_map(), 100, false, true);
 
         Teuchos::RCP<Epetra_Map> unused_lmdofs =
             Core::LinAlg::split_map(global_self_contact_ref_map(), *gsdofrowmap_);
@@ -4358,17 +4361,17 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::LagrangeStrategy::get_matrix_b
       }
       else
       {
-        kzz_ptr =
-            Teuchos::RCP(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 100, false, true));
+        kzz_ptr = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+            slave_dof_row_map(true), 100, false, true);
       }
 
       // build unity matrix for inactive dofs
       Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::split_map(*gsdofrowmap_, *gactivedofs_);
       Teuchos::RCP<Core::LinAlg::Vector<double>> ones =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
       ones->PutScalar(1.0);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> onesdiag =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*ones));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*ones);
       onesdiag->complete();
 
       // build constraint matrix kzz
@@ -4428,7 +4431,7 @@ void CONTACT::LagrangeStrategy::run_post_compute_x(const CONTACT::ParamsInterfac
     if (lm_dof_row_map(true).NumGlobalElements() > 0)
     {
       Teuchos::RCP<Core::LinAlg::Vector<double>> zdir_ptr =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(lm_dof_row_map(true), true));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(lm_dof_row_map(true), true);
       Core::LinAlg::export_to(dir, *zdir_ptr);
       // get the current step length
       const double stepLength = cparams.get_step_length();
@@ -4467,7 +4470,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::LagrangeStrategy::get_
     {
       if (nonSmoothContact_ && nonsmooth_Penalty_force_ != Teuchos::null)
       {
-        vec_ptr = Teuchos::RCP(new Core::LinAlg::Vector<double>(*nonsmooth_Penalty_force_));
+        vec_ptr = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nonsmooth_Penalty_force_);
       }
 
       if (vec_ptr == Teuchos::null)
@@ -4476,7 +4479,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::LagrangeStrategy::get_
         vec_ptr->Update(1., *strcontactrhs_, 1.);
 
       Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
       if (is_dual_quad_slave_trafo() && Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(
                                             params(), "LM_QUAD") == Inpar::Mortar::lagmult_lin)
       {
@@ -4492,7 +4495,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::LagrangeStrategy::get_
       if (is_self_contact() && !is_condensed_system())
       {
         static Teuchos::RCP<Core::LinAlg::Vector<double>> tmp_ptr =
-            Teuchos::RCP(new Core::LinAlg::Vector<double>(lin_system_lm_dof_row_map(), false));
+            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(lin_system_lm_dof_row_map(), false);
         tmp_ptr->PutScalar(0.0);
         Core::LinAlg::export_to(*vec_ptr, *tmp_ptr);
         vec_ptr = tmp_ptr;
@@ -4520,7 +4523,7 @@ void CONTACT::LagrangeStrategy::reset_lagrange_multipliers(
     if (lm_dof_row_map(true).NumGlobalElements() == 0) return;
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> znew_ptr =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(lm_dof_row_map(true), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(lm_dof_row_map(true), true);
     Core::LinAlg::export_to(xnew, *znew_ptr);
     // ---------------------------------------------------------------------
     // Update the current lagrange multiplier
@@ -4568,17 +4571,17 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Core::LinAlg::Vector<double
 
     // extract slave displacements from disi
     Teuchos::RCP<Core::LinAlg::Vector<double>> disis =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
     if (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disis);
 
     // extract master displacements from disi
     Teuchos::RCP<Core::LinAlg::Vector<double>> disim =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
     if (gmdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disim);
 
     // extract other displacements from disi
     Teuchos::RCP<Core::LinAlg::Vector<double>> disin =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gndofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gndofrowmap_);
     if (gndofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disin);
 
     // condensation has been performed for active LM only,
@@ -4591,7 +4594,7 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Core::LinAlg::Vector<double
     Core::LinAlg::split_matrix2x2(
         invd_, gactivedofs_, tempmap, gactivedofs_, tempmap, invda, tempmtx1, tempmtx2, tempmtx3);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invdmod =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 10));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
     invdmod->add(*invda, false, 1.0, 1.0);
     invdmod->complete();
 
@@ -4603,7 +4606,7 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Core::LinAlg::Vector<double
     {
       // undo basis transformation to solution
       Teuchos::RCP<Core::LinAlg::SparseMatrix> systrafo =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*problem_dofs(), 100, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
           Core::LinAlg::create_identity_matrix(*gndofrowmap_);
       systrafo->add(*eye, false, 1.0, 1.0);
@@ -4627,10 +4630,10 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Core::LinAlg::Vector<double
       // invdmod->Multiply(false,*fs_,*z_);
 
       // full update
-      z_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      z_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
       z_->Update(1.0, *fs_, 0.0);
       Teuchos::RCP<Core::LinAlg::Vector<double>> mod =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
       kss_->multiply(false, *disis, *mod);
       z_->Update(-1.0, *mod, 1.0);
       ksm_->multiply(false, *disim, *mod);
@@ -4638,17 +4641,17 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Core::LinAlg::Vector<double
       ksn_->multiply(false, *disin, *mod);
       z_->Update(-1.0, *mod, 1.0);
       Teuchos::RCP<Core::LinAlg::Vector<double>> mod2 =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>((dold_->row_map())));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>((dold_->row_map()));
       if (dold_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*zold_, *mod2);
       Teuchos::RCP<Core::LinAlg::Vector<double>> mod3 =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>((dold_->row_map())));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>((dold_->row_map()));
       dold_->multiply(true, *mod2, *mod3);
       Teuchos::RCP<Core::LinAlg::Vector<double>> mod4 =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
       if (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*mod3, *mod4);
       z_->Update(-alphaf_, *mod4, 1.0);
       Teuchos::RCP<Core::LinAlg::Vector<double>> zcopy =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*z_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*z_);
       invdmod->multiply(true, *zcopy, *z_);
       z_->Scale(1 / (1 - alphaf_));
     }
@@ -4660,7 +4663,7 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Core::LinAlg::Vector<double
       // full update
       z_->Update(1.0, *fs_, 0.0);
       Teuchos::RCP<Core::LinAlg::Vector<double>> mod =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
       kss_->multiply(false, *disis, *mod);
       z_->Update(-1.0, *mod, 1.0);
       ksm_->multiply(false, *disim, *mod);
@@ -4670,7 +4673,7 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Core::LinAlg::Vector<double
       dold_->multiply(true, *zold_, *mod);
       z_->Update(-alphaf_, *mod, 1.0);
       Teuchos::RCP<Core::LinAlg::Vector<double>> zcopy =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*z_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*z_);
       invdmod->multiply(true, *zcopy, *z_);
       z_->Scale(1 / (1 - alphaf_));
     }
@@ -4693,7 +4696,7 @@ void CONTACT::LagrangeStrategy::recover(Teuchos::RCP<Core::LinAlg::Vector<double
     {
       // undo basis transformation to solution
       Teuchos::RCP<Core::LinAlg::SparseMatrix> systrafo =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*problem_dofs(), 100, false, true));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*problem_dofs(), 100, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> eye =
           Core::LinAlg::create_identity_matrix(*gndofrowmap_);
       systrafo->add(*eye, false, 1.0, 1.0);
@@ -4890,9 +4893,9 @@ void CONTACT::LagrangeStrategy::update_active_set()
   }
 
   // update zig-zagging history (shift by one)
-  if (zigzagtwo_ != Teuchos::null) zigzagthree_ = Teuchos::RCP(new Epetra_Map(*zigzagtwo_));
-  if (zigzagone_ != Teuchos::null) zigzagtwo_ = Teuchos::RCP(new Epetra_Map(*zigzagone_));
-  if (gactivenodes_ != Teuchos::null) zigzagone_ = Teuchos::RCP(new Epetra_Map(*gactivenodes_));
+  if (zigzagtwo_ != Teuchos::null) zigzagthree_ = Teuchos::make_rcp<Epetra_Map>(*zigzagtwo_);
+  if (zigzagone_ != Teuchos::null) zigzagtwo_ = Teuchos::make_rcp<Epetra_Map>(*zigzagone_);
+  if (gactivenodes_ != Teuchos::null) zigzagone_ = Teuchos::make_rcp<Epetra_Map>(*gactivenodes_);
 
   // (re)setup active global Epetra_Maps
   gactivenodes_ = Teuchos::null;
@@ -5092,22 +5095,22 @@ void CONTACT::LagrangeStrategy::update_active_set_semi_smooth(const bool firstSt
   // store the previous active set
   if (gactivenodes_ != Teuchos::null)
   {
-    gOldActiveSlaveNodes_ = Teuchos::RCP(new Epetra_Map(*gactivenodes_));
-    if (friction_) gOldslipnodes_ = Teuchos::RCP(new Epetra_Map(*gslipnodes_));
+    gOldActiveSlaveNodes_ = Teuchos::make_rcp<Epetra_Map>(*gactivenodes_);
+    if (friction_) gOldslipnodes_ = Teuchos::make_rcp<Epetra_Map>(*gslipnodes_);
   }
   else
   {
-    gOldActiveSlaveNodes_ = Teuchos::RCP(new Epetra_Map(0, 0, get_comm()));
-    if (friction_) gOldslipnodes_ = Teuchos::RCP(new Epetra_Map(0, 0, get_comm()));
+    gOldActiveSlaveNodes_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+    if (friction_) gOldslipnodes_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
   }
 
   // also update special flag for semi-smooth Newton convergence
   activesetssconv_ = activesetconv_;
 
   // update zig-zagging history (shift by one)
-  if (zigzagtwo_ != Teuchos::null) zigzagthree_ = Teuchos::RCP(new Epetra_Map(*zigzagtwo_));
-  if (zigzagone_ != Teuchos::null) zigzagtwo_ = Teuchos::RCP(new Epetra_Map(*zigzagone_));
-  if (gactivenodes_ != Teuchos::null) zigzagone_ = Teuchos::RCP(new Epetra_Map(*gactivenodes_));
+  if (zigzagtwo_ != Teuchos::null) zigzagthree_ = Teuchos::make_rcp<Epetra_Map>(*zigzagtwo_);
+  if (zigzagone_ != Teuchos::null) zigzagtwo_ = Teuchos::make_rcp<Epetra_Map>(*zigzagone_);
+  if (gactivenodes_ != Teuchos::null) zigzagone_ = Teuchos::make_rcp<Epetra_Map>(*gactivenodes_);
 
   // (re)setup active global Epetra_Maps
   gactivenodes_ = Teuchos::null;
@@ -5237,7 +5240,7 @@ void CONTACT::LagrangeStrategy::update(Teuchos::RCP<const Core::LinAlg::Vector<d
   if (fLTL_ != Teuchos::null)
   {
     // store fLTL values for time integration
-    fLTLOld_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(fLTL_->Map()), true);
+    fLTLOld_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fLTL_->Map());
     if (fLTLOld_->Update(1.0, *fLTL_, 0.0)) FOUR_C_THROW("Update went wrong");
   }
 
@@ -5378,7 +5381,7 @@ void CONTACT::LagrangeStrategy::do_regularization_scaling(bool aset, bool iset,
   Teuchos::RCP<Core::LinAlg::SparseMatrix> ninvda;
   if (aset)
   {
-    famod_n = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactiven_));
+    famod_n = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactiven_);
     ninvda = Core::LinAlg::matrix_multiply(*nmatrix_, false, *invda, true, false, false, true);
     ninvda->multiply(false, *fa, *famod_n);
   }
@@ -5409,7 +5412,7 @@ void CONTACT::LagrangeStrategy::do_regularization_scaling(bool aset, bool iset,
   Teuchos::RCP<Core::LinAlg::Vector<double>> famodexp_n;
   if (aset)
   {
-    famodexp_n = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+    famodexp_n = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*famod_n, *famodexp_n);
     feffnew->Update(-1.0, *famodexp_n, 1.0);
   }
@@ -5426,15 +5429,15 @@ void CONTACT::LagrangeStrategy::evaluate_regularization_scaling(
   /********************************************************************/
   // vector with all values alpha
   Teuchos::RCP<Core::LinAlg::Vector<double>> scalevec =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactiven_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactiven_, true);
 
   // vecor with (alpha + dalpha/dgap*scaling + d(1-alpha)/dgap)
   Teuchos::RCP<Core::LinAlg::Vector<double>> derivscalevec =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactiven_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactiven_, true);
 
   // vector with all values (1-alpha)
   Teuchos::RCP<Core::LinAlg::Vector<double>> scalevec2 =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactiven_, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactiven_, true);
   scalevec->PutScalar(1.0);
 
   {
@@ -5530,7 +5533,7 @@ void CONTACT::LagrangeStrategy::evaluate_regularization_scaling(
   if (err) FOUR_C_THROW("LeftScale failed!");
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> tmpgact =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gact));  // check later if this is required!!!
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gact);  // check later if this is required!!!
   gact->Multiply(1.0, *scalevec, *tmpgact, 0.0);
 
   return;
@@ -5669,7 +5672,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
     Core::LinAlg::split_vector(
         *problem_dofs(), *feff, non_redist_gsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Core::LinAlg::Vector<double>> fsmtemp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsmdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsmdofrowmap_);
     Core::LinAlg::export_to(*fsm, *fsmtemp);
     fsm = fsmtemp;
   }
@@ -5683,8 +5686,8 @@ void CONTACT::LagrangeStrategy::condense_friction(
   const int sset = gsdofrowmap_->NumGlobalElements();
 
   // we want to split fsm into 2 groups s,m
-  fs = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
-  fm = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+  fs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  fm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
 
   // do the vector splitting sm -> s+m
   Core::LinAlg::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
@@ -5742,18 +5745,18 @@ void CONTACT::LagrangeStrategy::condense_friction(
 
   // we want to split fs into 2 groups a,i
   Teuchos::RCP<Core::LinAlg::Vector<double>> fa =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactivedofs_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fi =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
 
   // do the vector splitting s -> a+i
   Core::LinAlg::split_vector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
 
   // we want to split fa into 2 groups sl,st
   Teuchos::RCP<Core::LinAlg::Vector<double>> fsl =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gslipdofs_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipdofs_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fst =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gstdofs));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstdofs);
 
   // do the vector splitting a -> sl+st
   if (aset) Core::LinAlg::split_vector(*gactivedofs_, *fa, gslipdofs_, fsl, gstdofs, fst);
@@ -5778,7 +5781,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
 
   // do the multiplication dhat = invda * dai
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
   if (aset && iset)
     dhat = Core::LinAlg::matrix_multiply(*invda, false, *dai, false, false, false, true);
   dhat->complete(*gidofs, *gactivedofs_);
@@ -5791,7 +5794,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   // do the multiplication mhataam = invda * mmatrixa
   // (this is only different from mhata for 3D quadratic case!)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
   if (aset)
     mhataam = Core::LinAlg::matrix_multiply(*invda, false, *mmatrixa, false, false, false, true);
   mhataam->complete(*gmdofrowmap_, *gactivedofs_);
@@ -5822,7 +5825,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   //-------------------------------------------------------- SECOND LINE
   // kmn: add T(mhataam)*kan
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnmod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
   kmnmod->add(*kmn, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
       Core::LinAlg::matrix_multiply(*mhataam, true, *kan, false, false, false, true);
@@ -5831,7 +5834,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
 
   // kmm: add T(mhataam)*kam
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmmod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
   kmmmod->add(*kmm, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
       Core::LinAlg::matrix_multiply(*mhataam, true, *kam, false, false, false, true);
@@ -5842,7 +5845,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmimod;
   if (iset)
   {
-    kmimod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+    kmimod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
     kmimod->add(*kmi, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmiadd =
         Core::LinAlg::matrix_multiply(*mhataam, true, *kai, false, false, false, true);
@@ -5854,7 +5857,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmamod;
   if (aset)
   {
-    kmamod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+    kmamod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
     kmamod->add(*kma, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmaadd =
         Core::LinAlg::matrix_multiply(*mhataam, true, *kaa, false, false, false, true);
@@ -5865,7 +5868,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   //--------------------------------------------------------- THIRD LINE
   // kin: subtract T(dhat)*kan
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kinmod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
   kinmod->add(*kin, false, 1.0, 1.0);
   if (aset && iset)
   {
@@ -5877,7 +5880,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
 
   // kim: subtract T(dhat)*kam
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kimmod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
   kimmod->add(*kim, false, 1.0, 1.0);
   if (aset && iset)
   {
@@ -5891,7 +5894,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kiimod;
   if (iset)
   {
-    kiimod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+    kiimod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
     kiimod->add(*kii, false, 1.0, 1.0);
     if (aset)
     {
@@ -5906,7 +5909,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kiamod;
   if (iset && aset)
   {
-    kiamod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+    kiamod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
     kiamod->add(*kia, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kiaadd =
         Core::LinAlg::matrix_multiply(*dhat, true, *kaa, false, false, false, true);
@@ -6015,7 +6018,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
 
   // fm: add T(mhat)*fa
   Teuchos::RCP<Core::LinAlg::Vector<double>> fmmod =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
   if (aset) mhataam->multiply(true, *fa, *fmmod);
   fmmod->Update(1.0, *fm, 1.0);
 
@@ -6024,7 +6027,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
 
   // fi: add T(dhat)*fa
   Teuchos::RCP<Core::LinAlg::Vector<double>> fimod =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
   if (aset && iset) dhat->multiply(true, *fa, *fimod);
   fimod->Update(1.0, *fi, -1.0);
 
@@ -6033,13 +6036,13 @@ void CONTACT::LagrangeStrategy::condense_friction(
   //--------------------------------------------------------- FIFTH LINE
   // split the lagrange multiplier vector in stick and slip part
   Teuchos::RCP<Core::LinAlg::Vector<double>> za =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactivedofs_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> zi =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
   Teuchos::RCP<Core::LinAlg::Vector<double>> zst =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gstickdofs));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickdofs);
   Teuchos::RCP<Core::LinAlg::Vector<double>> zsl =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gslipdofs_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipdofs_);
 
   Core::LinAlg::split_vector(*gsdofrowmap_, *z_, gactivedofs_, za, gidofs, zi);
   Core::LinAlg::split_vector(*gactivedofs_, *za, gstickdofs, zst, gslipdofs_, zsl);
@@ -6050,17 +6053,17 @@ void CONTACT::LagrangeStrategy::condense_friction(
   if (stickset)
   {
     if (constr_direction_ == Inpar::CONTACT::constr_xyz)
-      fstmod = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gstickdofs));
+      fstmod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickdofs);
     else
-      fstmod = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gstickt));
+      fstmod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickt);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
         Core::LinAlg::matrix_multiply(*linstickLM_, false, *invdst, true, false, false, true);
     temp1->multiply(false, *fa, *fstmod);
 
     if (constr_direction_ == Inpar::CONTACT::constr_xyz)
-      tempvec1 = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gstickdofs));
+      tempvec1 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickdofs);
     else
-      tempvec1 = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gstickt));
+      tempvec1 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gstickt);
 
     linstickLM_->multiply(false, *zst, *tempvec1);
     fstmod->Update(-1.0, *tempvec1, 1.0);
@@ -6074,17 +6077,17 @@ void CONTACT::LagrangeStrategy::condense_friction(
   if (slipset)
   {
     if (constr_direction_ == Inpar::CONTACT::constr_xyz)
-      fslmod = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gslipdofs_));
+      fslmod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipdofs_);
     else
-      fslmod = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gslipt_));
+      fslmod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipt_);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
         Core::LinAlg::matrix_multiply(*linslipLM_, false, *invdsl, true, false, false, true);
     temp->multiply(false, *fa, *fslmod);
 
     if (constr_direction_ == Inpar::CONTACT::constr_xyz)
-      tempvec1 = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gslipdofs_));
+      tempvec1 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipdofs_);
     else
-      tempvec1 = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gslipt_));
+      tempvec1 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gslipt_);
 
     linslipLM_->multiply(false, *zsl, *tempvec1);
 
@@ -6153,8 +6156,8 @@ void CONTACT::LagrangeStrategy::condense_friction(
   /* (10) Global setup of kteffnew (including contact)                */
   /********************************************************************/
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype()));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype());
   Teuchos::RCP<Core::LinAlg::Vector<double>> feffnew = Core::LinAlg::create_vector(*problem_dofs());
 
   //--------------------------------------------------------- FIRST LINE
@@ -6221,14 +6224,14 @@ void CONTACT::LagrangeStrategy::condense_friction(
   //--------------------------------------------------------- FIRST LINE
   // add n subvector to feffnew
   Teuchos::RCP<Core::LinAlg::Vector<double>> fnexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fn, *fnexp);
   feffnew->Update(1.0, *fnexp, 1.0);
 
   //-------------------------------------------------------- SECOND LINE
   // add m subvector to feffnew
   Teuchos::RCP<Core::LinAlg::Vector<double>> fmmodexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fmmod, *fmmodexp);
   feffnew->Update(1.0, *fmmodexp, 1.0);
 
@@ -6237,7 +6240,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   Teuchos::RCP<Core::LinAlg::Vector<double>> fimodexp;
   if (iset)
   {
-    fimodexp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+    fimodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fimod, *fimodexp);
     feffnew->Update(1.0, *fimodexp, 1.0);
   }
@@ -6250,7 +6253,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
 
   if (aset)
   {
-    gexp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+    gexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*gact, *gexp);
     feffnew->Update(-1.0, *gexp, 1.0);
   }
@@ -6260,7 +6263,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   Teuchos::RCP<Core::LinAlg::Vector<double>> fstmodexp;
   if (stickset)
   {
-    fstmodexp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+    fstmodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fstmod, *fstmodexp);
     feffnew->Update(1.0, *fstmodexp, +1.0);
   }
@@ -6269,7 +6272,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   if (stickset)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> linstickRHSexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*linstickRHS_, *linstickRHSexp);
     feffnew->Update(-1.0, *linstickRHSexp, 1.0);
   }
@@ -6284,7 +6287,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
 
   if (slipset)
   {
-    fslmodexp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+    fslmodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fslmod, *fslmodexp);
     feffnew->Update(1.0, *fslmodexp, 1.0);
   }
@@ -6292,7 +6295,7 @@ void CONTACT::LagrangeStrategy::condense_friction(
   if (slipset)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> linslipRHSexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*linslipRHS_, *linslipRHSexp);
     feffnew->Update(-1.0, *linslipRHSexp, 1.0);
   }
@@ -6517,7 +6520,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
     Core::LinAlg::split_vector(
         *problem_dofs(), *feff, non_redist_gsmdofrowmap_, fsm, gndofrowmap_, fn);
     Teuchos::RCP<Core::LinAlg::Vector<double>> fsmtemp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsmdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsmdofrowmap_);
     Core::LinAlg::export_to(*fsm, *fsmtemp);
     fsm = fsmtemp;
   }
@@ -6531,8 +6534,8 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   const int sset = gsdofrowmap_->NumGlobalElements();
 
   // we want to split fsm into 2 groups s,m
-  fs = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
-  fm = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+  fs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  fm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
 
   // do the vector splitting sm -> s+m
   Core::LinAlg::split_vector(*gsmdofrowmap_, *fsm, gsdofrowmap_, fs, gmdofrowmap_, fm);
@@ -6572,9 +6575,9 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
 
   // we want to split fsmod into 2 groups a,i
   Teuchos::RCP<Core::LinAlg::Vector<double>> fa =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactivedofs_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fi =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
 
   // do the vector splitting s -> a+i
   Core::LinAlg::split_vector(*gsdofrowmap_, *fs, gactivedofs_, fa, gidofs, fi);
@@ -6594,7 +6597,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
 
   // do the multiplication dhat = invda * dai
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
   if (aset && iset)
     dhat = Core::LinAlg::matrix_multiply(*invda, false, *dai, false, false, false, true);
   dhat->complete(*gidofs, *gactivedofs_);
@@ -6607,7 +6610,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   // do the multiplication mhataam = invda * mmatrixa
   // (this is only different from mhata for 3D quadratic case!)
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gactivedofs_, 10));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gactivedofs_, 10);
   if (aset)
     mhataam = Core::LinAlg::matrix_multiply(*invda, false, *mmatrixa, false, false, false, true);
   mhataam->complete(*gmdofrowmap_, *gactivedofs_);
@@ -6637,7 +6640,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   //---------------------------------------------------------- SECOND LINE
   // kmn: add T(mhataam)*kan
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnmod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
   kmnmod->add(*kmn, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmnadd =
       Core::LinAlg::matrix_multiply(*mhataam, true, *kan, false, false, false, true);
@@ -6646,7 +6649,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
 
   // kmm: add T(mhataam)*kam
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmmod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
   kmmmod->add(*kmm, false, 1.0, 1.0);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmadd =
       Core::LinAlg::matrix_multiply(*mhataam, true, *kam, false, false, false, true);
@@ -6657,7 +6660,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmimod;
   if (iset)
   {
-    kmimod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+    kmimod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
     kmimod->add(*kmi, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmiadd =
         Core::LinAlg::matrix_multiply(*mhataam, true, *kai, false, false, false, true);
@@ -6669,7 +6672,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kmamod;
   if (aset)
   {
-    kmamod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gmdofrowmap_, 100));
+    kmamod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
     kmamod->add(*kma, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kmaadd =
         Core::LinAlg::matrix_multiply(*mhataam, true, *kaa, false, false, false, true);
@@ -6681,7 +6684,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   //------------------- FOR 3D QUADRATIC CASE ----------------------------
   // kin: subtract T(dhat)*kan --
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kinmod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
   kinmod->add(*kin, false, 1.0, 1.0);
   if (aset && iset)
   {
@@ -6693,7 +6696,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
 
   // kim: subtract T(dhat)*kam
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kimmod =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
   kimmod->add(*kim, false, 1.0, 1.0);
   if (aset && iset)
   {
@@ -6707,7 +6710,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kiimod;
   if (iset)
   {
-    kiimod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+    kiimod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
     kiimod->add(*kii, false, 1.0, 1.0);
     if (aset)
     {
@@ -6722,7 +6725,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kiamod;
   if (iset && aset)
   {
-    kiamod = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gidofs, 100));
+    kiamod = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
     kiamod->add(*kia, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kiaadd =
         Core::LinAlg::matrix_multiply(*dhat, true, *kaa, false, false, false, true);
@@ -6777,14 +6780,14 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
 
   // fm: add T(mhat)*fa
   Teuchos::RCP<Core::LinAlg::Vector<double>> fmmod =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
   if (aset) mhataam->multiply(true, *fa, *fmmod);
   fmmod->Update(1.0, *fm, 1.0);
 
   //----------------------------------------------------------- THIRD LINE
   // fi: add T(dhat)*fa
   Teuchos::RCP<Core::LinAlg::Vector<double>> fimod =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*gidofs));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gidofs);
   if (iset && aset) dhat->multiply(true, *fa, *fimod);
   fimod->Update(1.0, *fi, -1.0);
 
@@ -6798,9 +6801,9 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   if (aset)
   {
     if (constr_direction_ == Inpar::CONTACT::constr_xyz)
-      famod = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactivedofs_));
+      famod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
     else
-      famod = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gactivet_));
+      famod = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivet_);
 
     tinvda = Core::LinAlg::matrix_multiply(*tmatrix_, false, *invda, true, false, false, true);
     tinvda->multiply(false, *fa, *famod);
@@ -6853,8 +6856,8 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   /* (10) Global setup of kteffnew (including contact)                  */
   /**********************************************************************/
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::RCP(new Core::LinAlg::SparseMatrix(
-      *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype()));
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype());
   Teuchos::RCP<Core::LinAlg::Vector<double>> feffnew = Core::LinAlg::create_vector(*problem_dofs());
 
   // Add all additional contributions from regularized contact to kteffnew and feffnew!
@@ -6903,14 +6906,14 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   //----------------------------------------------------------- FIRST LINE
   // add n subvector to feffnew
   Teuchos::RCP<Core::LinAlg::Vector<double>> fnexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fn, *fnexp);
   feffnew->Update(1.0, *fnexp, 1.0);
 
   //---------------------------------------------------------- SECOND LINE
   // add m subvector to feffnew
   Teuchos::RCP<Core::LinAlg::Vector<double>> fmmodexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
   Core::LinAlg::export_to(*fmmod, *fmmodexp);
   feffnew->Update(1.0, *fmmodexp, 1.0);
 
@@ -6919,7 +6922,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   Teuchos::RCP<Core::LinAlg::Vector<double>> fimodexp;
   if (iset)
   {
-    fimodexp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+    fimodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*fimod, *fimodexp);
     feffnew->Update(1.0, *fimodexp, 1.0);
   }
@@ -6929,7 +6932,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   Teuchos::RCP<Core::LinAlg::Vector<double>> gexp;
   if (aset)
   {
-    gexp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+    gexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*gact, *gexp);
     feffnew->Update(-1.0, *gexp, 1.0);
   }
@@ -6939,7 +6942,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   Teuchos::RCP<Core::LinAlg::Vector<double>> famodexp;
   if (aset)
   {
-    famodexp = Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem_dofs()));
+    famodexp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
     Core::LinAlg::export_to(*famod, *famodexp);
     feffnew->Update(1.0, *famodexp, 1.0);
   }
@@ -7036,17 +7039,17 @@ void CONTACT::LagrangeStrategy::run_post_apply_jacobian_inverse(
 
     // extract slave displacements from disi
     Teuchos::RCP<Core::LinAlg::Vector<double>> disis =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
     if (gsdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disis);
 
     // extract master displacements from disi
     Teuchos::RCP<Core::LinAlg::Vector<double>> disim =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gmdofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
     if (gmdofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disim);
 
     // extract other displacements from disi
     Teuchos::RCP<Core::LinAlg::Vector<double>> disin =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gndofrowmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gndofrowmap_);
     if (gndofrowmap_->NumGlobalElements()) Core::LinAlg::export_to(*disi, *disin);
 
     // condensation has been performed for active LM only,
@@ -7059,7 +7062,7 @@ void CONTACT::LagrangeStrategy::run_post_apply_jacobian_inverse(
     Core::LinAlg::split_matrix2x2(
         invd_, gactivedofs_, tempmap, gactivedofs_, tempmap, invda, tempmtx1, tempmtx2, tempmtx3);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> invdmod =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 10));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
     invdmod->add(*invda, false, 1.0, 1.0);
     invdmod->complete();
 
@@ -7071,10 +7074,10 @@ void CONTACT::LagrangeStrategy::run_post_apply_jacobian_inverse(
     if (is_self_contact())
     {
       // full update
-      z_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+      z_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
       z_->Update(1.0, *fs_, 0.0);
       Teuchos::RCP<Core::LinAlg::Vector<double>> mod =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
       kss_->multiply(false, *disis, *mod);
       z_->Update(-1.0, *mod, 1.0);
       ksm_->multiply(false, *disim, *mod);
@@ -7082,7 +7085,7 @@ void CONTACT::LagrangeStrategy::run_post_apply_jacobian_inverse(
       ksn_->multiply(false, *disin, *mod);
       z_->Update(-1.0, *mod, 1.0);
       Teuchos::RCP<Core::LinAlg::Vector<double>> zcopy =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*z_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*z_);
       invdmod->multiply(true, *zcopy, *z_);
       z_->Scale(1 / (1 - alphaf_));
     }
@@ -7091,7 +7094,7 @@ void CONTACT::LagrangeStrategy::run_post_apply_jacobian_inverse(
       // full update
       z_->Update(1.0, *fs_, 0.0);
       Teuchos::RCP<Core::LinAlg::Vector<double>> mod =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
       kss_->multiply(false, *disis, *mod);
       z_->Update(-1.0, *mod, 1.0);
       ksm_->multiply(false, *disim, *mod);
@@ -7099,7 +7102,7 @@ void CONTACT::LagrangeStrategy::run_post_apply_jacobian_inverse(
       ksn_->multiply(false, *disin, *mod);
       z_->Update(-1.0, *mod, 1.0);
       Teuchos::RCP<Core::LinAlg::Vector<double>> zcopy =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*z_));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*z_);
       invdmod->multiply(true, *zcopy, *z_);
       z_->Scale(1 / (1 - alphaf_));
     }

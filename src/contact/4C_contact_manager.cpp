@@ -338,8 +338,8 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
         if (frictionType != Inpar::CONTACT::friction_none)
         {
           Teuchos::RCP<CONTACT::FriNode> cnode =
-              Teuchos::RCP(new CONTACT::FriNode(node->id(), node->x(), node->owner(),
-                  discret.dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus));
+              Teuchos::make_rcp<CONTACT::FriNode>(node->id(), node->x(), node->owner(),
+                  discret.dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus);
           //-------------------
           // get nurbs weight!
           if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, cnode);
@@ -392,8 +392,9 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
         }
         else
         {
-          Teuchos::RCP<CONTACT::Node> cnode = Teuchos::RCP(new CONTACT::Node(node->id(), node->x(),
-              node->owner(), discret.dof(0, node), isslave[j], isactive[j] + foundinitialactive));
+          Teuchos::RCP<CONTACT::Node> cnode =
+              Teuchos::make_rcp<CONTACT::Node>(node->id(), node->x(), node->owner(),
+                  discret.dof(0, node), isslave[j], isactive[j] + foundinitialactive);
           //-------------------
           // get nurbs weight!
           if (nurbs)
@@ -474,8 +475,9 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
       for (fool = currele.begin(); fool != currele.end(); ++fool)
       {
         Teuchos::RCP<Core::Elements::Element> ele = fool->second;
-        Teuchos::RCP<CONTACT::Element> cele = Teuchos::RCP(new CONTACT::Element(ele->id() + ggsize,
-            ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), isslave[j], nurbs));
+        Teuchos::RCP<CONTACT::Element> cele =
+            Teuchos::make_rcp<CONTACT::Element>(ele->id() + ggsize, ele->owner(), ele->shape(),
+                ele->num_node(), ele->node_ids(), isslave[j], nurbs);
 
         if ((contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::poroelast ||
                 contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::poroscatra) &&
@@ -545,33 +547,33 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
 
   // build the correct data container
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr =
-      Teuchos::RCP(new CONTACT::AbstractStratDataContainer());
+      Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
 
   // create LagrangeStrategyWear for wear as non-distinct quantity
   if (stype == Inpar::CONTACT::solution_lagmult && wearLaw != Inpar::Wear::wear_none &&
       (wearType == Inpar::Wear::wear_intstate || wearType == Inpar::Wear::wear_primvar))
   {
-    strategy_ = Teuchos::RCP(new Wear::LagrangeStrategyWear(data_ptr, discret.dof_row_map(),
-        discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+    strategy_ = Teuchos::make_rcp<Wear::LagrangeStrategyWear>(data_ptr, discret.dof_row_map(),
+        discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof);
   }
   else if (stype == Inpar::CONTACT::solution_lagmult)
   {
     if (contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::poroelast ||
         contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::poroscatra)
     {
-      strategy_ = Teuchos::RCP(
-          new LagrangeStrategyPoro(data_ptr, discret.dof_row_map(), discret.node_row_map(),
-              contactParams, interfaces, dim, comm_, alphaf, maxdof, poroslave, poromaster));
+      strategy_ = Teuchos::make_rcp<LagrangeStrategyPoro>(data_ptr, discret.dof_row_map(),
+          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof, poroslave,
+          poromaster);
     }
     else if (contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::tsi)
     {
-      strategy_ = Teuchos::RCP(new LagrangeStrategyTsi(data_ptr, discret.dof_row_map(),
-          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::make_rcp<LagrangeStrategyTsi>(data_ptr, discret.dof_row_map(),
+          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof);
     }
     else
     {
-      strategy_ = Teuchos::RCP(new LagrangeStrategy(data_ptr, discret.dof_row_map(),
-          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::make_rcp<LagrangeStrategy>(data_ptr, discret.dof_row_map(),
+          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof);
     }
   }
   else if (((stype == Inpar::CONTACT::solution_penalty ||
@@ -579,8 +581,8 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
                algo != Inpar::Mortar::algorithm_gpts) ||
            stype == Inpar::CONTACT::solution_uzawa)
   {
-    strategy_ = Teuchos::RCP(new PenaltyStrategy(data_ptr, discret.dof_row_map(),
-        discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+    strategy_ = Teuchos::make_rcp<PenaltyStrategy>(data_ptr, discret.dof_row_map(),
+        discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof);
   }
   else if (algo == Inpar::Mortar::algorithm_gpts &&
            (stype == Inpar::CONTACT::solution_nitsche || stype == Inpar::CONTACT::solution_penalty))
@@ -589,25 +591,25 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
             contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::poroscatra) &&
         stype == Inpar::CONTACT::solution_nitsche)
     {
-      strategy_ = Teuchos::RCP(new NitscheStrategyPoro(data_ptr, discret.dof_row_map(),
-          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::make_rcp<NitscheStrategyPoro>(data_ptr, discret.dof_row_map(),
+          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof);
     }
     else if (contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::fsi &&
              stype == Inpar::CONTACT::solution_nitsche)
     {
-      strategy_ = Teuchos::RCP(new NitscheStrategyFsi(data_ptr, discret.dof_row_map(),
-          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::make_rcp<NitscheStrategyFsi>(data_ptr, discret.dof_row_map(),
+          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof);
     }
     else if (contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::fpi &&
              stype == Inpar::CONTACT::solution_nitsche)
     {
-      strategy_ = Teuchos::RCP(new NitscheStrategyFpi(data_ptr, discret.dof_row_map(),
-          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::make_rcp<NitscheStrategyFpi>(data_ptr, discret.dof_row_map(),
+          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof);
     }
     else
     {
-      strategy_ = Teuchos::RCP(new NitscheStrategy(data_ptr, discret.dof_row_map(),
-          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::make_rcp<NitscheStrategy>(data_ptr, discret.dof_row_map(),
+          discret.node_row_map(), contactParams, interfaces, dim, comm_, alphaf, maxdof);
     }
   }
   else
@@ -1238,15 +1240,15 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
 
   // evaluate active set and slip set
   Teuchos::RCP<Core::LinAlg::Vector<double>> activeset =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*get_strategy().active_row_nodes()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_strategy().active_row_nodes());
   activeset->PutScalar(1.0);
   if (get_strategy().is_friction())
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> slipset =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*get_strategy().slip_row_nodes()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_strategy().slip_row_nodes());
     slipset->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::Vector<double>> slipsetexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*get_strategy().active_row_nodes()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_strategy().active_row_nodes());
     Core::LinAlg::export_to(*slipset, *slipsetexp);
     activeset->Update(1.0, *slipsetexp, 1.0);
   }
@@ -1254,24 +1256,24 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   // export to problem node row map
   Teuchos::RCP<Epetra_Map> problemnodes = get_strategy().problem_nodes();
   Teuchos::RCP<Core::LinAlg::Vector<double>> activesetexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*problemnodes));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemnodes);
   Core::LinAlg::export_to(*activeset, *activesetexp);
 
   if (get_strategy().wear_both_discrete())
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> mactiveset =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*get_strategy().master_active_nodes()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_strategy().master_active_nodes());
     mactiveset->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::Vector<double>> slipset =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*get_strategy().master_slip_nodes()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_strategy().master_slip_nodes());
     slipset->PutScalar(1.0);
     Teuchos::RCP<Core::LinAlg::Vector<double>> slipsetexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*get_strategy().master_active_nodes()));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_strategy().master_active_nodes());
     Core::LinAlg::export_to(*slipset, *slipsetexp);
     mactiveset->Update(1.0, *slipsetexp, 1.0);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> mactivesetexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problemnodes));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemnodes);
     Core::LinAlg::export_to(*mactiveset, *mactivesetexp);
     activesetexp->Update(1.0, *mactivesetexp, 1.0);
   }
@@ -1288,7 +1290,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   if (gaps != Teuchos::null)
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> gapsexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*gapnodes));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gapnodes);
     Core::LinAlg::export_to(*gaps, *gapsexp);
 
     output.write_vector("gap", gapsexp);
@@ -1308,14 +1310,14 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   Teuchos::RCP<const Core::LinAlg::Vector<double>> normalstresses =
       get_strategy().contact_normal_stress();
   Teuchos::RCP<Core::LinAlg::Vector<double>> normalstressesexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*problemdofs));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemdofs);
   Core::LinAlg::export_to(*normalstresses, *normalstressesexp);
 
   // tangential plane
   Teuchos::RCP<const Core::LinAlg::Vector<double>> tangentialstresses =
       get_strategy().contact_tangential_stress();
   Teuchos::RCP<Core::LinAlg::Vector<double>> tangentialstressesexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*problemdofs));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemdofs);
   Core::LinAlg::export_to(*tangentialstresses, *tangentialstressesexp);
 
   // write to output
@@ -1329,14 +1331,14 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     Teuchos::RCP<const Core::LinAlg::Vector<double>> normalforce =
         get_strategy().contact_normal_force();
     Teuchos::RCP<Core::LinAlg::Vector<double>> normalforceexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problemdofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemdofs);
     Core::LinAlg::export_to(*normalforce, *normalforceexp);
 
     // tangential plane
     Teuchos::RCP<const Core::LinAlg::Vector<double>> tangentialforce =
         get_strategy().contact_tangential_force();
     Teuchos::RCP<Core::LinAlg::Vector<double>> tangentialforceexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problemdofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemdofs);
     Core::LinAlg::export_to(*tangentialforce, *tangentialforceexp);
 
     // write to output
@@ -1364,7 +1366,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
     // write output
     Teuchos::RCP<const Core::LinAlg::Vector<double>> wearoutput = get_strategy().contact_wear();
     Teuchos::RCP<Core::LinAlg::Vector<double>> wearoutputexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problemdofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemdofs);
     Core::LinAlg::export_to(*wearoutput, *wearoutputexp);
     output.write_vector("wear", wearoutputexp);
     get_strategy().reset_wear();
@@ -1381,7 +1383,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
         dynamic_cast<CONTACT::LagrangeStrategyPoro&>(get_strategy());
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdaout = costrategy.lambda_no_pen();
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdaoutexp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*problemdofs));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemdofs);
     Core::LinAlg::export_to(*lambdaout, *lambdaoutexp);
     output.write_vector("poronopen_lambda", lambdaoutexp);
   }

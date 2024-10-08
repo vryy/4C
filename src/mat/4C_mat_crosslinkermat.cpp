@@ -54,7 +54,7 @@ Mat::PAR::CrosslinkerMat::CrosslinkerMat(const Core::Mat::PAR::Parameter::Data& 
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::CrosslinkerMat::create_material()
 {
-  return Teuchos::RCP(new Mat::CrosslinkerMat(this));
+  return Teuchos::make_rcp<Mat::CrosslinkerMat>(this);
 }
 
 Mat::CrosslinkerMatType Mat::CrosslinkerMatType::instance_;

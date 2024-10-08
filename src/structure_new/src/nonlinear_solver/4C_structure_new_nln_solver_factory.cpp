@@ -36,16 +36,16 @@ Teuchos::RCP<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::Factory::build_nln
   switch (nlnSolType)
   {
     case Inpar::Solid::soltech_newtonfull:
-      nlnSolver = Teuchos::RCP(new Solid::Nln::SOLVER::FullNewton());
+      nlnSolver = Teuchos::make_rcp<Solid::Nln::SOLVER::FullNewton>();
       break;
     case Inpar::Solid::soltech_nox_nln:
-      nlnSolver = Teuchos::RCP(new Solid::Nln::SOLVER::Nox());
+      nlnSolver = Teuchos::make_rcp<Solid::Nln::SOLVER::Nox>();
       break;
     case Inpar::Solid::soltech_ptc:
-      nlnSolver = Teuchos::RCP(new Solid::Nln::SOLVER::PseudoTransient());
+      nlnSolver = Teuchos::make_rcp<Solid::Nln::SOLVER::PseudoTransient>();
       break;
     case Inpar::Solid::soltech_singlestep:
-      nlnSolver = Teuchos::RCP(new Solid::Nln::SOLVER::SingleStep());
+      nlnSolver = Teuchos::make_rcp<Solid::Nln::SOLVER::SingleStep>();
       break;
     case Inpar::Solid::soltech_newtonuzawanonlin:
     case Inpar::Solid::soltech_newtonuzawalin:

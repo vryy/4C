@@ -99,7 +99,7 @@ namespace Mat
 
     [[nodiscard]] Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new StVenantKirchhoff(*this));
+      return Teuchos::make_rcp<StVenantKirchhoff>(*this);
     }
 
     /// Young's modulus

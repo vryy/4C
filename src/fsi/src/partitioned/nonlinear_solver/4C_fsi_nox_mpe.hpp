@@ -112,7 +112,7 @@ namespace NOX
       Teuchos::RCP<::NOX::Direction::Generic> buildDirection(
           const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
       {
-        return Teuchos::RCP(new MinimalPolynomial(gd->getUtils(), params));
+        return Teuchos::make_rcp<MinimalPolynomial>(gd->getUtils(), params);
       }
     };
 

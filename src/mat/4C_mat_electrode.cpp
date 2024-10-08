@@ -199,7 +199,7 @@ Mat::PAR::Electrode::Electrode(const Core::Mat::PAR::Parameter::Data& matdata)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Electrode::create_material()
 {
-  return Teuchos::RCP(new Mat::Electrode(this));
+  return Teuchos::make_rcp<Mat::Electrode>(this);
 }
 
 /*----------------------------------------------------------------------*

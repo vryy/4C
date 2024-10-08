@@ -84,41 +84,41 @@ Teuchos::RCP<PoroElast::PoroBase> PoroElast::UTILS::create_poro_algorithm(
     case Inpar::PoroElast::Monolithic:
     {
       // create an PoroElast::Monolithic instance
-      poroalgo = Teuchos::RCP(new PoroElast::Monolithic(comm, timeparams, porosity_splitter));
+      poroalgo = Teuchos::make_rcp<PoroElast::Monolithic>(comm, timeparams, porosity_splitter);
       break;
     }  // monolithic case
     case Inpar::PoroElast::Monolithic_structuresplit:
     {
       // create an PoroElast::MonolithicStructureSplit instance
-      poroalgo = Teuchos::RCP(
-          new PoroElast::MonolithicStructureSplit(comm, timeparams, porosity_splitter));
+      poroalgo = Teuchos::make_rcp<PoroElast::MonolithicStructureSplit>(
+          comm, timeparams, porosity_splitter);
       break;
     }
     case Inpar::PoroElast::Monolithic_fluidsplit:
     {
       // create an PoroElast::MonolithicFluidSplit instance
       poroalgo =
-          Teuchos::RCP(new PoroElast::MonolithicFluidSplit(comm, timeparams, porosity_splitter));
+          Teuchos::make_rcp<PoroElast::MonolithicFluidSplit>(comm, timeparams, porosity_splitter);
       break;
     }
     case Inpar::PoroElast::Monolithic_nopenetrationsplit:
     {
       // create an PoroElast::MonolithicSplitNoPenetration instance
-      poroalgo = Teuchos::RCP(
-          new PoroElast::MonolithicSplitNoPenetration(comm, timeparams, porosity_splitter));
+      poroalgo = Teuchos::make_rcp<PoroElast::MonolithicSplitNoPenetration>(
+          comm, timeparams, porosity_splitter);
       break;
     }
     case Inpar::PoroElast::Partitioned:
     {
       // create an PoroElast::Partitioned instance
-      poroalgo = Teuchos::RCP(new PoroElast::Partitioned(comm, timeparams, porosity_splitter));
+      poroalgo = Teuchos::make_rcp<PoroElast::Partitioned>(comm, timeparams, porosity_splitter);
       break;
     }
     case Inpar::PoroElast::Monolithic_meshtying:
     {
       // create an PoroElast::MonolithicMeshtying instance
       poroalgo =
-          Teuchos::RCP(new PoroElast::MonolithicMeshtying(comm, timeparams, porosity_splitter));
+          Teuchos::make_rcp<PoroElast::MonolithicMeshtying>(comm, timeparams, porosity_splitter);
       break;
     }
     default:
@@ -148,7 +148,7 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElast::UTILS::build_poro_splitter(
   // Yes, it was. Go ahead for all processors (even if they do not carry any PoroP1 elements)
   if (glonumporop1 > 0)
   {
-    porositysplitter = Teuchos::RCP(new Core::LinAlg::MapExtractor());
+    porositysplitter = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
     const int ndim = Global::Problem::instance()->n_dim();
     Core::LinAlg::create_map_extractor_from_discretization(*dis, ndim, *porositysplitter);
   }
@@ -236,8 +236,8 @@ void PoroElast::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret
     }
 
     // re-build element column map
-    Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::RCP(
-        new Epetra_Map(-1, static_cast<int>(rdata.size()), rdata.data(), 0, voldi->get_comm()));
+    Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::make_rcp<Epetra_Map>(
+        -1, static_cast<int>(rdata.size()), rdata.data(), 0, voldi->get_comm());
     rdata.clear();
 
     // redistribute the volume discretization according to the

@@ -79,7 +79,7 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set(const Core::LinAlg::Vect
 {
   // export phi from row to column map
   const Teuchos::RCP<Core::LinAlg::Vector<double>> phicol =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*scatradis.dof_col_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*scatradis.dof_col_map());
   Core::LinAlg::export_to(phi, *phicol);
 
   // remark: loop over row elements is sufficient

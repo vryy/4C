@@ -45,7 +45,8 @@ void ScaTra::TimIntCardiacMonodomainHDG::setup()
   TimIntCardiacMonodomain::setup();
 
   // Activation time at time n+1
-  activation_time_interpol_.reset(new Core::LinAlg::Vector<double>(*discret_->node_row_map()));
+  activation_time_interpol_ =
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->node_row_map());
 }
 
 /*----------------------------------------------------------------------*
@@ -121,7 +122,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::collect_runtime_output_data()
       std::ostringstream temp;
       temp << k + 1;
       material_internal_state_np_component_ =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*(*material_internal_state_np_)(k)));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*material_internal_state_np_)(k));
 
       visualization_writer().append_result_data_vector_with_context(
           *material_internal_state_np_component_, Core::IO::OutputEntity::element,
@@ -192,7 +193,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::pack_material()
     hdgele->pack_material(buffer);
   }
 
-  Teuchos::RCP<std::vector<char>> block = Teuchos::RCP(new std::vector<char>);
+  Teuchos::RCP<std::vector<char>> block = Teuchos::make_rcp<std::vector<char>>();
   std::swap(*block, buffer());
   data_ = block;
 }
@@ -244,7 +245,8 @@ void ScaTra::TimIntCardiacMonodomainHDG::read_restart(
   // Call function from base class
   ScaTra::TimIntHDG::read_restart(step, input);
 
-  activation_time_interpol_.reset(new Core::LinAlg::Vector<double>(*discret_->node_row_map()));
+  activation_time_interpol_ =
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->node_row_map());
 }
 
 FOUR_C_NAMESPACE_CLOSE

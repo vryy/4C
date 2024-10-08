@@ -568,9 +568,9 @@ void CONTACT::SelfBinaryTree::init_leaf_nodes_and_map(std::vector<int>& elelist)
   {
     localelelist.clear();
     localelelist.push_back(elelist[i]);
-    Teuchos::RCP<SelfBinaryTreeNode> leaf = Teuchos::RCP(
-        new SelfBinaryTreeNode(SELFCO_LEAF, discret(), Teuchos::null, localelelist, dop_normals(),
-            sample_vectors(), kdop(), n_dim(), nvectors(), -1, nonsmoothsurface, treenodes_));
+    Teuchos::RCP<SelfBinaryTreeNode> leaf = Teuchos::make_rcp<SelfBinaryTreeNode>(SELFCO_LEAF,
+        discret(), Teuchos::null, localelelist, dop_normals(), sample_vectors(), kdop(), n_dim(),
+        nvectors(), -1, nonsmoothsurface, treenodes_);
     leaf->set_owner((discret().g_element(elelist[i]))->owner());
     leafsmap_[elelist[i]] = leaf;
   }
@@ -636,8 +636,8 @@ void CONTACT::SelfBinaryTree::get_contracted_node(
   for (unsigned i = 0; i < node2->elelist().size(); ++i) list.push_back(list2[i]);
 
   // define new (contracted) tree node
-  contractedNode = Teuchos::RCP(new SelfBinaryTreeNode(SELFCO_INNER, discret(), Teuchos::null, list,
-      dop_normals(), sample_vectors(), kdop(), n_dim(), nvectors(), -1, false, treenodes_));
+  contractedNode = Teuchos::make_rcp<SelfBinaryTreeNode>(SELFCO_INNER, discret(), Teuchos::null,
+      list, dop_normals(), sample_vectors(), kdop(), n_dim(), nvectors(), -1, false, treenodes_);
   contractedNode->set_children(node1, node2);
   node1->set_parent(contractedNode);
   node2->set_parent(contractedNode);
@@ -683,7 +683,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
         adjtreenodes.push_back(node2);
 
         // create edge and add it to the list
-        Teuchos::RCP<SelfDualEdge> edge = Teuchos::RCP(new SelfDualEdge(node1, node2, n_dim()));
+        Teuchos::RCP<SelfDualEdge> edge = Teuchos::make_rcp<SelfDualEdge>(node1, node2, n_dim());
         adjdualedges.push_back(edge);
       }
       // in 3D adjacency is more complicated
@@ -718,7 +718,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
         adjtreenodes.push_back(node2);
 
         // create edge and add it to the list
-        Teuchos::RCP<SelfDualEdge> edge = Teuchos::RCP(new SelfDualEdge(node1, node2, n_dim()));
+        Teuchos::RCP<SelfDualEdge> edge = Teuchos::make_rcp<SelfDualEdge>(node1, node2, n_dim());
         adjdualedges.push_back(edge);
       }
       // in 3D adjacency is more complicated (adjacent elements have at least 2 common nodes)
@@ -737,7 +737,8 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tree_nodes_and_dual_edges(
             if (node2 == Teuchos::null) FOUR_C_THROW("adjacent tree node not found in leafs map!!");
 
             // create edge and add it to the list
-            Teuchos::RCP<SelfDualEdge> edge = Teuchos::RCP(new SelfDualEdge(node1, node2, n_dim()));
+            Teuchos::RCP<SelfDualEdge> edge =
+                Teuchos::make_rcp<SelfDualEdge>(node1, node2, n_dim());
             adjdualedges.push_back(edge);
             break;
           }
@@ -1562,7 +1563,7 @@ void CONTACT::SelfBinaryTree::search_contact()
     if (contactpairs_.find(gid) != contactpairs_.end()) locdata.push_back(gid);
   }
   Teuchos::RCP<Epetra_Map> mymap =
-      Teuchos::RCP(new Epetra_Map(-1, (int)locdata.size(), locdata.data(), 0, get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, (int)locdata.size(), locdata.data(), 0, get_comm());
   Teuchos::RCP<Epetra_Map> redmap = Core::LinAlg::allreduce_e_map(*mymap);
   Core::Communication::Exporter ex(*mymap, *redmap, get_comm());
   ex.do_export(contactpairs_);
@@ -1648,10 +1649,10 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
     Teuchos::RCP<SelfDualEdge> newEdge(Teuchos::null);
 
     if (adjEdges[j]->get_node1() != node1 && adjEdges[j]->get_node1() != node2)
-      newEdge = Teuchos::RCP(new SelfDualEdge(newNode, adjEdges[j]->get_node1(), n_dim()));
+      newEdge = Teuchos::make_rcp<SelfDualEdge>(newNode, adjEdges[j]->get_node1(), n_dim());
 
     else if (adjEdges[j]->get_node2() != node1 && adjEdges[j]->get_node2() != node2)
-      newEdge = Teuchos::RCP(new SelfDualEdge(newNode, adjEdges[j]->get_node2(), n_dim()));
+      newEdge = Teuchos::make_rcp<SelfDualEdge>(newNode, adjEdges[j]->get_node2(), n_dim());
 
     else
       FOUR_C_THROW("Tried to contract identical tree nodes!!");

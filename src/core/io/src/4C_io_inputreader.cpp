@@ -597,7 +597,7 @@ namespace Core::IO
     //--------------------------------------------------------------------
 
     // allocate knotvector for this dis
-    disknots = Teuchos::RCP(new Core::FE::Nurbs::Knotvector(nurbs_dim, npatches));
+    disknots = Teuchos::make_rcp<Core::FE::Nurbs::Knotvector>(nurbs_dim, npatches);
 
     // make sure that we have some Knotvector object to fill
     if (disknots == Teuchos::null)
@@ -707,7 +707,7 @@ namespace Core::IO
             // create vectors for knots in this patch
             for (int rr = 0; rr < nurbs_dim; ++rr)
             {
-              patch_knots[rr] = Teuchos::RCP(new std::vector<double>);
+              patch_knots[rr] = Teuchos::make_rcp<std::vector<double>>();
               (*(patch_knots[rr])).clear();
             }
 

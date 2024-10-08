@@ -469,8 +469,8 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Core::LinAlg::BlockSparseMatri
   int npr = matrix(0, 0).max_num_entries();
   bool explicitdirichlet = matrix(0, 0).explicit_dirichlet();
   bool savegraph = matrix(0, 0).save_graph();
-  Teuchos::RCP<BlockSparseMatrixBase> bsm = Teuchos::RCP(new BlockSparseMatrix<Strategy>(
-      domain_extractor, range_extractor, npr, explicitdirichlet, savegraph));
+  Teuchos::RCP<BlockSparseMatrixBase> bsm = Teuchos::make_rcp<BlockSparseMatrix<Strategy>>(
+      domain_extractor, range_extractor, npr, explicitdirichlet, savegraph);
 
   for (std::vector<unsigned>::const_iterator r = row_block_ids.begin(); r != row_block_ids.end();
        ++r)

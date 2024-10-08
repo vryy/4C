@@ -94,7 +94,7 @@ FSI::FSIResultTest::FSIResultTest(
 
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->fluid_field()->discretization();
-      auto copy = Teuchos::RCP(new Core::LinAlg::Vector<double>(*fsiobject->lag_mult_));
+      auto copy = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fsiobject->lag_mult_);
       copy->ReplaceMap(*fsiobject->fluid_field()->interface()->fsi_cond_map());
       fsilambda_ = copy;
 

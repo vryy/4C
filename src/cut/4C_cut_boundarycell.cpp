@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 Cut::BoundaryCell::BoundaryCell(const Core::LinAlg::SerialDenseMatrix& xyz, Facet* facet,
     const std::vector<Point*>& points, int cubature_degree)
-    : facet_(facet), points_(Teuchos::RCP(new Cycle(points))), cubature_degree_(cubature_degree)
+    : facet_(facet), points_(Teuchos::make_rcp<Cycle>(points)), cubature_degree_(cubature_degree)
 {
   xyz_.shape(3, xyz.numCols());
 

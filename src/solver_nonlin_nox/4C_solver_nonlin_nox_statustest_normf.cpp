@@ -106,7 +106,7 @@ Teuchos::RCP<const std::vector<double>> NOX::Nln::StatusTest::NormF::compute_nor
 
   if (checkType == ::NOX::StatusTest::None)
   {
-    normF_ = Teuchos::RCP(new std::vector<double>(nChecks_, 0.0));
+    normF_ = Teuchos::make_rcp<std::vector<double>>(nChecks_, 0.0);
     status_.assign(status_.size(), ::NOX::StatusTest::Unevaluated);
     gStatus_ = ::NOX::StatusTest::Unevaluated;
   }

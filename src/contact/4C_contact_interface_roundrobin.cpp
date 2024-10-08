@@ -51,15 +51,15 @@ void CONTACT::Interface::round_robin_extend_ghosting(bool firstevaluation)
     slave_ele->delete_search_elements();
   }
 
-  Teuchos::RCP<Epetra_Map> currently_ghosted_elements = Teuchos::RCP(new Epetra_Map(-1,
-      (int)element_GIDs_to_be_ghosted.size(), element_GIDs_to_be_ghosted.data(), 0, get_comm()));
-  Teuchos::RCP<Epetra_Map> currently_ghosted_nodes = Teuchos::RCP(new Epetra_Map(
-      -1, (int)node_GIDs_to_be_ghosted.size(), node_GIDs_to_be_ghosted.data(), 0, get_comm()));
+  Teuchos::RCP<Epetra_Map> currently_ghosted_elements = Teuchos::make_rcp<Epetra_Map>(
+      -1, (int)element_GIDs_to_be_ghosted.size(), element_GIDs_to_be_ghosted.data(), 0, get_comm());
+  Teuchos::RCP<Epetra_Map> currently_ghosted_nodes = Teuchos::make_rcp<Epetra_Map>(
+      -1, (int)node_GIDs_to_be_ghosted.size(), node_GIDs_to_be_ghosted.data(), 0, get_comm());
 
   if (firstevaluation)
   {
-    eextendedghosting_ = Teuchos::RCP(new Epetra_Map(*currently_ghosted_elements));
-    nextendedghosting_ = Teuchos::RCP(new Epetra_Map(*currently_ghosted_nodes));
+    eextendedghosting_ = Teuchos::make_rcp<Epetra_Map>(*currently_ghosted_elements);
+    nextendedghosting_ = Teuchos::make_rcp<Epetra_Map>(*currently_ghosted_nodes);
   }
   else
   {
@@ -98,15 +98,15 @@ void CONTACT::Interface::round_robin_change_ownership()
   std::vector<int> ecol, erow;
 
   // create dummy
-  Teuchos::RCP<Epetra_Map> MasterColNodesdummy = Teuchos::RCP(new Epetra_Map(*master_col_nodes()));
+  Teuchos::RCP<Epetra_Map> MasterColNodesdummy = Teuchos::make_rcp<Epetra_Map>(*master_col_nodes());
   Teuchos::RCP<Epetra_Map> MasterColelesdummy =
-      Teuchos::RCP(new Epetra_Map(*master_col_elements()));
+      Teuchos::make_rcp<Epetra_Map>(*master_col_elements());
 
   // create origin maps
-  Teuchos::RCP<Epetra_Map> SCN = Teuchos::RCP(new Epetra_Map(*slave_col_nodes()));
-  Teuchos::RCP<Epetra_Map> SCE = Teuchos::RCP(new Epetra_Map(*slave_col_elements()));
-  Teuchos::RCP<Epetra_Map> SRN = Teuchos::RCP(new Epetra_Map(*slave_row_nodes()));
-  Teuchos::RCP<Epetra_Map> SRE = Teuchos::RCP(new Epetra_Map(*slave_row_elements()));
+  Teuchos::RCP<Epetra_Map> SCN = Teuchos::make_rcp<Epetra_Map>(*slave_col_nodes());
+  Teuchos::RCP<Epetra_Map> SCE = Teuchos::make_rcp<Epetra_Map>(*slave_col_elements());
+  Teuchos::RCP<Epetra_Map> SRN = Teuchos::make_rcp<Epetra_Map>(*slave_row_nodes());
+  Teuchos::RCP<Epetra_Map> SRE = Teuchos::make_rcp<Epetra_Map>(*slave_row_elements());
 
   // *****************************************
   // Elements
@@ -350,14 +350,14 @@ void CONTACT::Interface::round_robin_change_ownership()
 
   // create maps from sending
   Teuchos::RCP<Epetra_Map> noderowmap =
-      Teuchos::RCP(new Epetra_Map(-1, (int)nrow.size(), nrow.data(), 0, get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, (int)nrow.size(), nrow.data(), 0, get_comm());
   Teuchos::RCP<Epetra_Map> nodecolmap =
-      Teuchos::RCP(new Epetra_Map(-1, (int)ncol.size(), ncol.data(), 0, get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, (int)ncol.size(), ncol.data(), 0, get_comm());
 
   Teuchos::RCP<Epetra_Map> elerowmap =
-      Teuchos::RCP(new Epetra_Map(-1, (int)erow.size(), erow.data(), 0, get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, (int)erow.size(), erow.data(), 0, get_comm());
   Teuchos::RCP<Epetra_Map> elecolmap =
-      Teuchos::RCP(new Epetra_Map(-1, (int)ecol.size(), ecol.data(), 0, get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, (int)ecol.size(), ecol.data(), 0, get_comm());
 
   // Merge s/m column maps for eles and nodes
   Teuchos::RCP<Epetra_Map> colnodesfull = Core::LinAlg::merge_map(nodecolmap, SCN, true);
@@ -407,13 +407,13 @@ void CONTACT::Interface::round_robin_detect_ghosting()
 
   // Init Maps
   Teuchos::RCP<Epetra_Map> initial_slave_node_column_map =
-      Teuchos::RCP(new Epetra_Map(*slave_col_nodes()));
+      Teuchos::make_rcp<Epetra_Map>(*slave_col_nodes());
   Teuchos::RCP<Epetra_Map> initial_slave_element_column_map =
-      Teuchos::RCP(new Epetra_Map(*slave_col_elements()));
+      Teuchos::make_rcp<Epetra_Map>(*slave_col_elements());
   Teuchos::RCP<Epetra_Map> initial_master_node_column_map =
-      Teuchos::RCP(new Epetra_Map(*master_col_nodes()));
+      Teuchos::make_rcp<Epetra_Map>(*master_col_nodes());
   Teuchos::RCP<Epetra_Map> initial_master_element_column_map =
-      Teuchos::RCP(new Epetra_Map(*master_col_elements()));
+      Teuchos::make_rcp<Epetra_Map>(*master_col_elements());
 
   // *************************************
   // start RR loop for current interface

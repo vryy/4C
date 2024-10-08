@@ -52,8 +52,8 @@ Adapter::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
   }
   unsigned int numcond = tmp.size();
   if (numcond == 0) FOUR_C_THROW("no coupling conditions found");
-  coupmap_ = Teuchos::RCP(
-      new Epetra_Map(tmp.size(), tmp.size(), tmp.data(), 0, discretization()->get_comm()));
+  coupmap_ = Teuchos::make_rcp<Epetra_Map>(
+      tmp.size(), tmp.size(), tmp.data(), 0, discretization()->get_comm());
 }
 
 

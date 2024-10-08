@@ -57,13 +57,13 @@ SSI::SsiMono::SsiMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
           globaltimeparams.sublist("MONOLITHIC").get<double>("RELAX_LIN_SOLVER_TOLERANCE")),
       relax_lin_solver_iter_step_(
           globaltimeparams.sublist("MONOLITHIC").get<int>("RELAX_LIN_SOLVER_STEP")),
-      solver_(Teuchos::RCP(new Core::LinAlg::Solver(
+      solver_(Teuchos::make_rcp<Core::LinAlg::Solver>(
           Global::Problem::instance()->solver_params(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
           comm, Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY")))),
-      timer_(Teuchos::RCP(new Teuchos::Time("SSI_Mono", true)))
+              Global::Problem::instance()->io_params(), "VERBOSITY"))),
+      timer_(Teuchos::make_rcp<Teuchos::Time>("SSI_Mono", true))
 {
 }
 
@@ -501,17 +501,17 @@ void SSI::SsiMono::init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
       if (is_scatra_manifold())
       {
         strategy_convcheck_ =
-            Teuchos::RCP(new SSI::SsiMono::ConvCheckStrategyElchScaTraManifold(globaltimeparams));
+            Teuchos::make_rcp<SSI::SsiMono::ConvCheckStrategyElchScaTraManifold>(globaltimeparams);
       }
       else
         strategy_convcheck_ =
-            Teuchos::RCP(new SSI::SsiMono::ConvCheckStrategyElch(globaltimeparams));
+            Teuchos::make_rcp<SSI::SsiMono::ConvCheckStrategyElch>(globaltimeparams);
       break;
     }
 
     case Inpar::SSI::ScaTraTimIntType::standard:
     {
-      strategy_convcheck_ = Teuchos::RCP(new SSI::SsiMono::ConvCheckStrategyStd(globaltimeparams));
+      strategy_convcheck_ = Teuchos::make_rcp<SSI::SsiMono::ConvCheckStrategyStd>(globaltimeparams);
       break;
     }
 
@@ -708,7 +708,7 @@ void SSI::SsiMono::setup_system()
   SSI::SSIBase::setup_system();
 
   // setup the ssi maps object
-  ssi_maps_ = Teuchos::RCP(new SSI::UTILS::SSIMaps(*this));
+  ssi_maps_ = Teuchos::make_rcp<SSI::UTILS::SSIMaps>(*this);
 
   // perform initializations associated with global system matrix
   switch (matrixtype_)
@@ -743,11 +743,11 @@ void SSI::SsiMono::setup_system()
   }
 
   // initialize sub blocks and system matrix
-  ssi_matrices_ = Teuchos::RCP(new SSI::UTILS::SSIMatrices(
-      ssi_maps_, matrixtype_, scatra_field()->matrix_type(), is_scatra_manifold()));
+  ssi_matrices_ = Teuchos::make_rcp<SSI::UTILS::SSIMatrices>(
+      ssi_maps_, matrixtype_, scatra_field()->matrix_type(), is_scatra_manifold());
 
   // initialize residual and increment vectors
-  ssi_vectors_ = Teuchos::RCP(new SSI::UTILS::SSIVectors(ssi_maps_, is_scatra_manifold()));
+  ssi_vectors_ = Teuchos::make_rcp<SSI::UTILS::SSIVectors>(ssi_maps_, is_scatra_manifold());
 
   // initialize strategy for assembly
   strategy_assemble_ = SSI::build_assemble_strategy(
@@ -757,12 +757,12 @@ void SSI::SsiMono::setup_system()
   {
     // initialize object, that performs evaluations of OD coupling
     scatrastructure_off_diagcoupling_ =
-        Teuchos::RCP(new SSI::ScatraManifoldStructureOffDiagCoupling(block_map_structure(),
+        Teuchos::make_rcp<SSI::ScatraManifoldStructureOffDiagCoupling>(block_map_structure(),
             ssi_maps()->structure_dof_row_map(), ssi_structure_mesh_tying(),
-            meshtying_strategy_s2_i(), scatra_field(), scatra_manifold(), structure_field()));
+            meshtying_strategy_s2_i(), scatra_field(), scatra_manifold(), structure_field());
 
     // initialize object, that performs evaluations of scatra - scatra on manifold coupling
-    manifoldscatraflux_ = Teuchos::RCP(new SSI::ScaTraManifoldScaTraFluxEvaluator(*this));
+    manifoldscatraflux_ = Teuchos::make_rcp<SSI::ScaTraManifoldScaTraFluxEvaluator>(*this);
 
     // initialize object, that performs meshtying between manifold domains
     strategy_manifold_meshtying_ =
@@ -771,9 +771,9 @@ void SSI::SsiMono::setup_system()
   }
   else
   {
-    scatrastructure_off_diagcoupling_ = Teuchos::RCP(new SSI::ScatraStructureOffDiagCoupling(
+    scatrastructure_off_diagcoupling_ = Teuchos::make_rcp<SSI::ScatraStructureOffDiagCoupling>(
         block_map_structure(), ssi_maps()->structure_dof_row_map(), ssi_structure_mesh_tying(),
-        meshtying_strategy_s2_i(), scatra_field(), structure_field()));
+        meshtying_strategy_s2_i(), scatra_field(), structure_field());
   }
   // instantiate appropriate equilibration class
   strategy_equilibration_ = Core::LinAlg::build_equilibration(
@@ -1233,7 +1233,7 @@ void SSI::SsiMono::calc_initial_potential_field()
           scatra_elch_splitter->other_map(), structure_field()->dof_row_map());
     }
 
-    auto dbc_zeros = Teuchos::RCP(new Core::LinAlg::Vector<double>(*pseudo_dbc_map, true));
+    auto dbc_zeros = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pseudo_dbc_map, true);
 
     auto rhs = ssi_vectors_->residual();
     Core::LinAlg::apply_dirichlet_to_system(*ssi_matrices_->system_matrix(),
@@ -1350,7 +1350,7 @@ void SSI::SsiMono::calc_initial_time_derivative()
 
   // fill ones on main diag of structure block (not solved)
   auto ones_struct =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*structure_field()->dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*structure_field()->dof_row_map(), true);
   ones_struct->PutScalar(1.0);
   matrix_type() == Core::LinAlg::MatrixType::sparse
       ? Core::LinAlg::insert_my_row_diagonal_into_unfilled_matrix(
@@ -1363,11 +1363,10 @@ void SSI::SsiMono::calc_initial_time_derivative()
 
   // extract residuals of scatra and manifold from global residual
   auto rhs_scatra =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*scatra_field()->dof_row_map(), true));
-  auto rhs_manifold =
-      is_scatra_manifold()
-          ? Teuchos::RCP(new Core::LinAlg::Vector<double>(*scatra_manifold()->dof_row_map(), true))
-          : Teuchos::null;
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*scatra_field()->dof_row_map(), true);
+  auto rhs_manifold = is_scatra_manifold() ? Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+                                                 *scatra_manifold()->dof_row_map(), true)
+                                           : Teuchos::null;
 
   rhs_scatra->Update(1.0,
       *maps_sub_problems()->extract_vector(*ssi_vectors_->residual(),
@@ -1492,8 +1491,7 @@ void SSI::SsiMono::calc_initial_time_derivative()
   }
 
   // reconstruct global residual from partial residuals
-  auto rhs_system = Teuchos::RCP<Core::LinAlg::Vector<double>>(
-      new Core::LinAlg::Vector<double>(*dof_row_map(), true));
+  auto rhs_system = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
   maps_sub_problems()->insert_vector(
       *rhs_scatra, UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport), *rhs_system);
   if (is_scatra_manifold())
@@ -1515,13 +1513,12 @@ void SSI::SsiMono::calc_initial_time_derivative()
         Core::LinAlg::merge_map(scatra_elch_splitter->cond_map(), structure_field()->dof_row_map());
   }
   else
-    pseudo_dbc_map = Teuchos::RCP(new Epetra_Map(*structure_field()->dof_row_map()));
+    pseudo_dbc_map = Teuchos::make_rcp<Epetra_Map>(*structure_field()->dof_row_map());
 
-  auto dbc_zeros = Teuchos::RCP(new Core::LinAlg::Vector<double>(*pseudo_dbc_map, true));
+  auto dbc_zeros = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pseudo_dbc_map, true);
 
   // temporal derivative of transported scalars
-  auto phidtnp_system = Teuchos::RCP<Core::LinAlg::Vector<double>>(
-      new Core::LinAlg::Vector<double>(*dof_row_map(), true));
+  auto phidtnp_system = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
   Core::LinAlg::apply_dirichlet_to_system(
       *massmatrix_system, *phidtnp_system, *rhs_system, *dbc_zeros, *(pseudo_dbc_map));
 

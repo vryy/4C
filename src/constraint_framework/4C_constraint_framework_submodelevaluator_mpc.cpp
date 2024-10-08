@@ -539,7 +539,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_perio
         Core::IO::cout(Core::IO::debug) << dof << ", ";
       }
       Core::IO::cout(Core::IO::debug) << Core::IO::endl;
-      listMPCs_.emplace_back(Teuchos::RCP(new LinearCoupledEquation(mpcId++, pbcDofs, pbcCoefs)));
+      listMPCs_.emplace_back(Teuchos::make_rcp<LinearCoupledEquation>(mpcId++, pbcDofs, pbcCoefs));
     }
     Core::IO::cout(Core::IO::debug) << "\n";
   }
@@ -628,7 +628,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_linear
   for (; i < constraintRowIds.size(); ++i)
   {
     listMPCs_.emplace_back(
-        Teuchos::RCP(new LinearCoupledEquation(nMPC++, constraintColIds[i], constraintCoeffs[i])));
+        Teuchos::make_rcp<LinearCoupledEquation>(nMPC++, constraintColIds[i], constraintCoeffs[i]));
 
     Core::IO::cout(Core::IO::verbose) << "Linear MPC #" << i << "  Created: 0 = ";
     for (unsigned int o = 0; o < constraintColIds[i].size(); ++o)

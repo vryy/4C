@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Adapter::FluidXFEM::FluidXFEM(const Teuchos::ParameterList& prbdyn, std::string condname)
-    : fluid_(Teuchos::RCP(new Adapter::FluidBaseAlgorithm(prbdyn,
-                              Global::Problem::instance()->fluid_dynamic_params(), "fluid", false))
+    : fluid_(Teuchos::make_rcp<Adapter::FluidBaseAlgorithm>(
+          prbdyn, Global::Problem::instance()->fluid_dynamic_params(), "fluid", false)
                  ->fluid_field())
 {
   return;

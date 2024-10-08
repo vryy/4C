@@ -392,14 +392,14 @@ namespace Thermo
     Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override
     {
       const Epetra_Map* dofrowmap = discret_->dof_row_map(nds);
-      return Teuchos::RCP(new Epetra_Map(*dofrowmap));
+      return Teuchos::make_rcp<Epetra_Map>(*dofrowmap);
     }
 
     //! non-overlapping DOF map
     Teuchos::RCP<const Epetra_Map> dof_row_map() override
     {
       const Epetra_Map* dofrowmap = discret_->dof_row_map();
-      return Teuchos::RCP(new Epetra_Map(*dofrowmap));
+      return Teuchos::make_rcp<Epetra_Map>(*dofrowmap);
     }
 
     //! Access solver

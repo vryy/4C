@@ -69,10 +69,10 @@ FSI::MonolithicBase::MonolithicBase(
   create_structure_time_integrator(timeparams, structdis);
   create_fluid_and_ale_time_integrator(timeparams, fluiddis, aledis);
 
-  coupsf_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
-  coupsa_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
-  coupfa_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
-  icoupfa_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
+  coupsf_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+  coupsa_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+  coupfa_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+  icoupfa_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
 }
 
 
@@ -101,8 +101,8 @@ void FSI::MonolithicBase::create_structure_time_integrator(
 
   // ask base algorithm for the structural time integrator
   Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure =
-      Teuchos::RCP(new Adapter::StructureBaseAlgorithm(
-          timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
+      Teuchos::make_rcp<Adapter::StructureBaseAlgorithm>(
+          timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
   structure_ =
       Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(structure->structure_field());
   structure_->setup();
@@ -126,15 +126,15 @@ void FSI::MonolithicBase::create_fluid_and_ale_time_integrator(
   ale_ = Teuchos::null;
 
   // ask base algorithm for the fluid time integrator
-  Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluid = Teuchos::RCP(new Adapter::FluidBaseAlgorithm(
-      timeparams, Global::Problem::instance()->fluid_dynamic_params(), "fluid", true));
+  Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluid = Teuchos::make_rcp<Adapter::FluidBaseAlgorithm>(
+      timeparams, Global::Problem::instance()->fluid_dynamic_params(), "fluid", true);
   fluid_ = Teuchos::rcp_dynamic_cast<Adapter::FluidFSI>(fluid->fluid_field());
 
   if (fluid_ == Teuchos::null) FOUR_C_THROW("Cast from Adapter::Fluid to Adapter::FluidFSI failed");
 
   // ask base algorithm for the ale time integrator
   Teuchos::RCP<Adapter::AleBaseAlgorithm> ale =
-      Teuchos::RCP(new Adapter::AleBaseAlgorithm(timeparams, aledis));
+      Teuchos::make_rcp<Adapter::AleBaseAlgorithm>(timeparams, aledis);
   ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleFsiWrapper>(ale->ale_field());
 
   if (ale_ == Teuchos::null)
@@ -162,8 +162,8 @@ void FSI::MonolithicBase::prepare_time_step()
 /*----------------------------------------------------------------------------*/
 void FSI::MonolithicBase::prepare_time_step_fsi()
 {
-  ddgpred_ = Teuchos::RCP(
-      new Core::LinAlg::Vector<double>(*structure_field()->extract_interface_dispnp()));
+  ddgpred_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+      *structure_field()->extract_interface_dispnp());
   ddgpred_->Update(-1.0, *structure_field()->extract_interface_dispn(), 1.0);
 
   return;
@@ -336,21 +336,21 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   // enable debugging
   if (fsidyn.get<bool>("DEBUGOUTPUT"))
   {
-    sdbg_ = Teuchos::RCP(new UTILS::DebugWriter(structure_field()->discretization()));
+    sdbg_ = Teuchos::make_rcp<UTILS::DebugWriter>(structure_field()->discretization());
     // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->discretization()));
   }
 
   // write iterations-file
   std::string fileiter = Global::Problem::instance()->output_control_file()->file_name();
   fileiter.append(".iteration");
-  log_ = Teuchos::RCP(new std::ofstream(fileiter.c_str()));
+  log_ = Teuchos::make_rcp<std::ofstream>(fileiter.c_str());
 
   // write energy-file
   if (fsidyn.sublist("MONOLITHIC SOLVER").get<bool>("ENERGYFILE"))
   {
     std::string fileiter2 = Global::Problem::instance()->output_control_file()->file_name();
     fileiter2.append(".fsienergy");
-    logenergy_ = Teuchos::RCP(new std::ofstream(fileiter2.c_str()));
+    logenergy_ = Teuchos::make_rcp<std::ofstream>(fileiter2.c_str());
   }
 
   // "Initialize" interface solution increments due to structural predictor
@@ -485,7 +485,7 @@ void FSI::Monolithic::prepare_timeloop()
                                 ::NOX::Utils::StepperParameters | ::NOX::Utils::Debug | 0);
 
   // Create printing utilities
-  utils_ = Teuchos::RCP(new ::NOX::Utils(printParams));
+  utils_ = Teuchos::make_rcp<::NOX::Utils>(printParams);
 
   // write header of log-file
   if (get_comm().MyPID() == 0)
@@ -614,7 +614,7 @@ void FSI::Monolithic::time_step(const Teuchos::RCP<::NOX::Epetra::Interface::Req
 
   // start time measurement
   Teuchos::RCP<Teuchos::TimeMonitor> timemonitor =
-      Teuchos::RCP(new Teuchos::TimeMonitor(timer, true));
+      Teuchos::make_rcp<Teuchos::TimeMonitor>(timer, true);
 
   // calculate initial linear system at current position (no increment)
   // This initializes the field algorithms and creates the first linear
@@ -626,7 +626,7 @@ void FSI::Monolithic::time_step(const Teuchos::RCP<::NOX::Epetra::Interface::Req
   // The initial system is there, so we can happily extract the
   // initial guess. (The Dirichlet conditions are already build in!)
   Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess_v =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
   initial_guess(initial_guess_v);
 
   ::NOX::Epetra::Vector noxSoln(
@@ -638,7 +638,7 @@ void FSI::Monolithic::time_step(const Teuchos::RCP<::NOX::Epetra::Interface::Req
 
   // Create the Group
   Teuchos::RCP<NOX::FSI::Group> grp =
-      Teuchos::RCP(new NOX::FSI::Group(*this, printParams, interface, noxSoln, linSys));
+      Teuchos::make_rcp<NOX::FSI::Group>(*this, printParams, interface, noxSoln, linSys);
 
   // Convergence Tests
   Teuchos::RCP<::NOX::StatusTest::Combo> combo = create_status_test(nlParams, grp);
@@ -973,7 +973,7 @@ void FSI::Monolithic::set_default_parameters(
 Teuchos::RCP<::NOX::Direction::Generic> FSI::Monolithic::buildDirection(
     const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
 {
-  Teuchos::RCP<NOX::FSI::Newton> newton = Teuchos::RCP(new NOX::FSI::Newton(gd, params));
+  Teuchos::RCP<NOX::FSI::Newton> newton = Teuchos::make_rcp<NOX::FSI::Newton>(gd, params);
   for (unsigned i = 0; i < statustests_.size(); ++i)
   {
     statustests_[i]->set_newton(newton);
@@ -1034,9 +1034,9 @@ void FSI::Monolithic::setup_rhs(Core::LinAlg::Vector<double>& f, bool firstcall)
   {
     // Finally, we take care of Dirichlet boundary conditions
     Teuchos::RCP<Core::LinAlg::Vector<double>> rhs =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(f));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(f);
     Teuchos::RCP<const Core::LinAlg::Vector<double>> zeros =
-        Teuchos::RCP(new const Core::LinAlg::Vector<double>(f.Map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(f.Map(), true);
     Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros, *(dbcmaps_->cond_map()));
     f.Update(1.0, *rhs, 0.0);
   }
@@ -1155,8 +1155,9 @@ void FSI::BlockMonolithic::prepare_time_step_preconditioner()
 void FSI::BlockMonolithic::create_system_matrix(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat, bool structuresplit)
 {
-  mat = Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-      extractor(), extractor(), 81, false, true));
+  mat =
+      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+          extractor(), extractor(), 81, false, true);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1188,10 +1189,10 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
   const Teuchos::ParameterList& fsisolverparams =
       Global::Problem::instance()->solver_params(linsolvernumber);
 
-  auto solver = Teuchos::RCP(new Core::LinAlg::Solver(fsisolverparams, get_comm(),
+  auto solver = Teuchos::make_rcp<Core::LinAlg::Solver>(fsisolverparams, get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-          Global::Problem::instance()->io_params(), "VERBOSITY")));
+          Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   const auto azprectype =
       Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(fsisolverparams, "AZPREC");
@@ -1243,8 +1244,8 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::BlockMonolithic::create_linear_sy
     }
   }
 
-  linSys = Teuchos::RCP(new NOX::FSI::LinearSystem(
-      printParams, lsParams, Teuchos::RCP(iJac, false), J, noxSoln, solver));
+  linSys = Teuchos::make_rcp<NOX::FSI::LinearSystem>(
+      printParams, lsParams, Teuchos::RCP(iJac, false), J, noxSoln, solver);
 
   return linSys;
 }

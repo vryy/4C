@@ -217,7 +217,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   // define and initial with default value
   Teuchos::RCP<std::set<enum Inpar::Solid::ModelType>> modeltypes =
-      Teuchos::RCP(new std::set<enum Inpar::Solid::ModelType>());
+      Teuchos::make_rcp<std::set<enum Inpar::Solid::ModelType>>();
   modeltypes->insert(Inpar::Solid::model_structure);
   set_model_types(*modeltypes);
 
@@ -226,7 +226,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // the elements of the discretization
   // ---------------------------------------------------------------------------
   Teuchos::RCP<std::set<enum Inpar::Solid::EleTech>> eletechs =
-      Teuchos::RCP(new std::set<enum Inpar::Solid::EleTech>());
+      Teuchos::make_rcp<std::set<enum Inpar::Solid::EleTech>>();
   detect_element_technologies(*eletechs);
 
   // ---------------------------------------------------------------------------
@@ -234,10 +234,10 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // time integration
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Teuchos::ParameterList> ioflags =
-      Teuchos::RCP(new Teuchos::ParameterList(problem->io_params()));
+      Teuchos::make_rcp<Teuchos::ParameterList>(problem->io_params());
   Teuchos::RCP<Teuchos::ParameterList> time_adaptivity_params =
-      Teuchos::RCP(new Teuchos::ParameterList(sdyn_->sublist("TIMEADAPTIVITY")));
-  Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::RCP(new Teuchos::ParameterList());
+      Teuchos::make_rcp<Teuchos::ParameterList>(sdyn_->sublist("TIMEADAPTIVITY"));
+  Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::make_rcp<Teuchos::ParameterList>();
   set_params(*ioflags, *xparams, *time_adaptivity_params);
 
   // ---------------------------------------------------------------------------
@@ -281,7 +281,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   // initialize/setup the input/output data container
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Solid::TimeInt::BaseDataIO> dataio = Teuchos::RCP(new Solid::TimeInt::BaseDataIO());
+  Teuchos::RCP<Solid::TimeInt::BaseDataIO> dataio = Teuchos::make_rcp<Solid::TimeInt::BaseDataIO>();
   dataio->init(*ioflags, *sdyn_, *xparams, output);
   dataio->setup();
 
@@ -313,7 +313,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
         NOX::Nln::GROUP::PrePostOp::get_map(p_grp_opt);
     // create the new rotation vector update pre/post operator
     Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> prepostrotvec_ptr =
-        Teuchos::RCP(new NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater(dataglobalstate));
+        Teuchos::make_rcp<NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater>(dataglobalstate);
     // insert/replace the old pointer in the map
     prepostgroup_map[NOX::Nln::GROUP::prepost_rotvecupdate] = prepostrotvec_ptr;
   }
@@ -675,7 +675,7 @@ void Adapter::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
   // ---------------------------------------------------------------------------
   // nox parameter list
   Teuchos::RCP<Teuchos::ParameterList> snox =
-      Teuchos::RCP(new Teuchos::ParameterList(problem->structural_nox_params()));
+      Teuchos::make_rcp<Teuchos::ParameterList>(problem->structural_nox_params());
   Teuchos::ParameterList& nox = xparams.sublist("NOX");
   nox = *snox;
 
@@ -854,13 +854,13 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
         if ((actdis_->get_comm()).MyPID() == 0)
           Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
 
-        str_wrapper_ = Teuchos::RCP(new StructureConstrMerged(
-            Teuchos::RCP(new StructureNOXCorrectionWrapper(ti_strategy))));
+        str_wrapper_ = Teuchos::make_rcp<StructureConstrMerged>(
+            Teuchos::make_rcp<StructureNOXCorrectionWrapper>(ti_strategy));
       }
       else
       {
         // case of partitioned fsi
-        str_wrapper_ = Teuchos::RCP(new FSIStructureWrapper(ti_strategy));
+        str_wrapper_ = Teuchos::make_rcp<FSIStructureWrapper>(ti_strategy);
       }
       break;
     }
@@ -869,29 +869,29 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
       const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
       if (Teuchos::getIntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
               fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED") == Inpar::FSI::DirichletNeumann)
-        str_wrapper_ = Teuchos::RCP(new FBIStructureWrapper(ti_strategy));
+        str_wrapper_ = Teuchos::make_rcp<FBIStructureWrapper>(ti_strategy);
       else
         FOUR_C_THROW("Only DirichletNeumann is implemented for FBI so far");
       break;
     }
     case Core::ProblemType::immersed_fsi:
     {
-      str_wrapper_ = Teuchos::RCP(new FSIStructureWrapperImmersed(ti_strategy));
+      str_wrapper_ = Teuchos::make_rcp<FSIStructureWrapperImmersed>(ti_strategy);
       break;
     }
     case Core::ProblemType::ssi:
     case Core::ProblemType::ssti:
     {
-      str_wrapper_ = Teuchos::RCP(new SSIStructureWrapper(ti_strategy));
+      str_wrapper_ = Teuchos::make_rcp<SSIStructureWrapper>(ti_strategy);
       break;
     }
     case Core::ProblemType::pasi:
     {
-      str_wrapper_ = Teuchos::RCP(new PASIStructureWrapper(ti_strategy));
+      str_wrapper_ = Teuchos::make_rcp<PASIStructureWrapper>(ti_strategy);
       break;
     }
     case Core::ProblemType::redairways_tissue:
-      str_wrapper_ = Teuchos::RCP(new StructureRedAirway(ti_strategy));
+      str_wrapper_ = Teuchos::make_rcp<StructureRedAirway>(ti_strategy);
       break;
     case Core::ProblemType::poroelast:
     case Core::ProblemType::poroscatra:
@@ -910,19 +910,19 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
         if (coupling == Inpar::PoroElast::Monolithic_structuresplit or
             coupling == Inpar::PoroElast::Monolithic_fluidsplit or
             coupling == Inpar::PoroElast::Monolithic_nopenetrationsplit)
-          str_wrapper_ = Teuchos::RCP(new FPSIStructureWrapper(ti_strategy));
+          str_wrapper_ = Teuchos::make_rcp<FPSIStructureWrapper>(ti_strategy);
         else
-          str_wrapper_ = Teuchos::RCP(new StructureConstrMerged(ti_strategy));
+          str_wrapper_ = Teuchos::make_rcp<StructureConstrMerged>(ti_strategy);
       }
       else
       {
-        str_wrapper_ = Teuchos::RCP(new FPSIStructureWrapper(ti_strategy));
+        str_wrapper_ = Teuchos::make_rcp<FPSIStructureWrapper>(ti_strategy);
       }
       break;
     }
     default:
       /// wrap time loop for pure structure problems
-      str_wrapper_ = (Teuchos::RCP(new StructureTimeLoop(ti_strategy)));
+      str_wrapper_ = (Teuchos::make_rcp<StructureTimeLoop>(ti_strategy));
       break;
   }
 }

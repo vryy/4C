@@ -51,7 +51,7 @@ Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
     : Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
           numdofpernode, numscal, disname)
 {
-  my::reamanager_ = Teuchos::RCP(new ScaTraEleReaManagerAdvReac(my::numscal_));
+  my::reamanager_ = Teuchos::make_rcp<ScaTraEleReaManagerAdvReac>(my::numscal_);
 
   for (unsigned i = 0; i < numdim_gp_; ++i) gpcoord_[i] = 0.0;
 

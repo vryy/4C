@@ -49,8 +49,8 @@ void FLD::UTILS::FluidInfNormScaling::scale_system(
     Core::LinAlg::BlockSparseMatrixBase& mat = *matrcp;
 
     Teuchos::RCP<Epetra_CrsMatrix> A00 = mat.matrix(0, 0).epetra_matrix();
-    srowsum_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(A00->RowMap(), false));
-    scolsum_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(A00->RowMap(), false));
+    srowsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A00->RowMap(), false);
+    scolsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A00->RowMap(), false);
 
     if (leftscale_momentum_)
     {
@@ -59,8 +59,9 @@ void FLD::UTILS::FluidInfNormScaling::scale_system(
 
       // we want to have the infnorm of the whole(!) row including
       // the off-diagonal block matrix M_(0,1)
-      Teuchos::RCP<Core::LinAlg::Vector<double>> temp1 = Teuchos::RCP(
-          new Core::LinAlg::Vector<double>(mat.matrix(0, 0).epetra_matrix()->RowMap(), false));
+      Teuchos::RCP<Core::LinAlg::Vector<double>> temp1 =
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+              mat.matrix(0, 0).epetra_matrix()->RowMap(), false);
       srowsum_->Reciprocal(*srowsum_);
       mat.matrix(0, 1).epetra_matrix()->InvRowSums(*temp1->get_ptr_of_Epetra_Vector());
       temp1->Reciprocal(*temp1);
@@ -88,11 +89,11 @@ void FLD::UTILS::FluidInfNormScaling::scale_system(
 
     // continuity equation
     Teuchos::RCP<Epetra_CrsMatrix> A11 = mat.matrix(1, 1).epetra_matrix();
-    prowsum_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(A11->RowMap(), false));
-    pcolsum_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(A11->RowMap(), false));
+    prowsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A11->RowMap(), false);
+    pcolsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A11->RowMap(), false);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(A11->RowMap(), false));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A11->RowMap(), false);
     if (leftscale_continuity_)
     {
       A11->InvRowSums(*prowsum_->get_ptr_of_Epetra_Vector());
@@ -135,8 +136,8 @@ void FLD::UTILS::FluidInfNormScaling::scale_system(
         Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(matrix);
     if (smat == Teuchos::null) FOUR_C_THROW("Something went wrong.");
 
-    srowsum_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(smat->row_map(), false));
-    scolsum_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(smat->row_map(), false));
+    srowsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(smat->row_map(), false);
+    scolsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(smat->row_map(), false);
     prowsum_ = Teuchos::null;
     pcolsum_ = Teuchos::null;
 

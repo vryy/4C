@@ -74,7 +74,7 @@ namespace Core::UTILS::SymbolicExpressionDetails
     SyntaxTreeNode& operator=(const SyntaxTreeNode& other)
     {
       if (&other == this) return *this;
-      type_ = other.type;
+      type_ = other.type_;
       variable_ = other.variable_;
       function_ = other.function_;
       lhs_ = std::make_unique<SyntaxTreeNode>(*other.lhs_);

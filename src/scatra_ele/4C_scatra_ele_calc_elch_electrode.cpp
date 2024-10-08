@@ -47,12 +47,12 @@ Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::ScaTraEleCalcEl
     : myelch::ScaTraEleCalcElch(numdofpernode, numscal, disname)
 {
   // replace elch diffusion manager by diffusion manager for electrodes
-  my::diffmanager_ = Teuchos::RCP(new ScaTraEleDiffManagerElchElectrode(my::numscal_));
+  my::diffmanager_ = Teuchos::make_rcp<ScaTraEleDiffManagerElchElectrode>(my::numscal_);
 
   // replace elch internal variable manager by internal variable manager for electrodes
   my::scatravarmanager_ =
-      Teuchos::RCP(new ScaTraEleInternalVariableManagerElchElectrode<nsd_, nen_>(
-          my::numscal_, myelch::elchparams_));
+      Teuchos::make_rcp<ScaTraEleInternalVariableManagerElchElectrode<nsd_, nen_>>(
+          my::numscal_, myelch::elchparams_);
 
   // replace elch utility class by utility class for electrodes
   myelch::utils_ = Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::instance(

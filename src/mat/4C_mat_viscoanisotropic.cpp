@@ -50,7 +50,7 @@ Mat::PAR::ViscoAnisotropic::ViscoAnisotropic(const Core::Mat::PAR::Parameter::Da
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ViscoAnisotropic::create_material()
 {
-  return Teuchos::RCP(new Mat::ViscoAnisotropic(this));
+  return Teuchos::make_rcp<Mat::ViscoAnisotropic>(this);
 }
 
 Mat::ViscoAnisotropicType Mat::ViscoAnisotropicType::instance_;
@@ -160,10 +160,10 @@ void Mat::ViscoAnisotropic::unpack(Core::Communication::UnpackBuffer& buffer)
     return;
   }
   // unpack fiber internal variables
-  a1_ = Teuchos::RCP(new std::vector<std::vector<double>>(numgp));
-  a2_ = Teuchos::RCP(new std::vector<std::vector<double>>(numgp));
-  ca1_ = Teuchos::RCP(new std::vector<std::vector<double>>(numgp));
-  ca2_ = Teuchos::RCP(new std::vector<std::vector<double>>(numgp));
+  a1_ = Teuchos::make_rcp<std::vector<std::vector<double>>>(numgp);
+  a2_ = Teuchos::make_rcp<std::vector<std::vector<double>>>(numgp);
+  ca1_ = Teuchos::make_rcp<std::vector<std::vector<double>>>(numgp);
+  ca2_ = Teuchos::make_rcp<std::vector<std::vector<double>>>(numgp);
 
   for (int gp = 0; gp < numgp; ++gp)
   {
@@ -181,10 +181,10 @@ void Mat::ViscoAnisotropic::unpack(Core::Communication::UnpackBuffer& buffer)
 
   // unpack history
   extract_from_pack(buffer, numhist);
-  histstresscurr_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  artstresscurr_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  histstresslast_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  artstresslast_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  histstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  artstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  histstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  artstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
   for (int var = 0; var < numhist; var++)
   {
     // current vectors have to be initialized
@@ -212,10 +212,10 @@ void Mat::ViscoAnisotropic::setup(int numgp, const Core::IO::InputParameterConta
     Since we do not know know if thickness direction is defined, fibers are
     related to a local element cosy which has to be specified in the element line */
 
-  a1_ = Teuchos::RCP(new std::vector<std::vector<double>>(numgp));
-  a2_ = Teuchos::RCP(new std::vector<std::vector<double>>(numgp));
-  ca1_ = Teuchos::RCP(new std::vector<std::vector<double>>(numgp));
-  ca2_ = Teuchos::RCP(new std::vector<std::vector<double>>(numgp));
+  a1_ = Teuchos::make_rcp<std::vector<std::vector<double>>>(numgp);
+  a2_ = Teuchos::make_rcp<std::vector<std::vector<double>>>(numgp);
+  ca1_ = Teuchos::make_rcp<std::vector<std::vector<double>>>(numgp);
+  ca2_ = Teuchos::make_rcp<std::vector<std::vector<double>>>(numgp);
 
   if ((params_->gamma_ < 0) || (params_->gamma_ > 90)) FOUR_C_THROW("Fiber angle not in [0,90]");
   const double gamma = (params_->gamma_ * M_PI) / 180.;  // convert
@@ -268,10 +268,10 @@ void Mat::ViscoAnisotropic::setup(int numgp, const Core::IO::InputParameterConta
     FOUR_C_THROW("Check visocus parameters! Found beta < 0 or relax <= 0!");
 
   // initialize hist variables
-  histstresscurr_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  artstresscurr_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  histstresslast_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  artstresslast_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  histstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  artstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  histstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  artstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
   const Core::LinAlg::Matrix<NUM_STRESS_3D, 1> emptyvec(true);
 
   // how many stress types are used?
@@ -300,10 +300,10 @@ void Mat::ViscoAnisotropic::setup(const int numgp, const std::vector<double> thi
   // in material definition
   if (params_->elethick_ == 1)
   {
-    a1_ = Teuchos::RCP(new std::vector<std::vector<double>>(numgp));
-    a2_ = Teuchos::RCP(new std::vector<std::vector<double>>(numgp));
-    ca1_ = Teuchos::RCP(new std::vector<std::vector<double>>(numgp));
-    ca2_ = Teuchos::RCP(new std::vector<std::vector<double>>(numgp));
+    a1_ = Teuchos::make_rcp<std::vector<std::vector<double>>>(numgp);
+    a2_ = Teuchos::make_rcp<std::vector<std::vector<double>>>(numgp);
+    ca1_ = Teuchos::make_rcp<std::vector<std::vector<double>>>(numgp);
+    ca2_ = Teuchos::make_rcp<std::vector<std::vector<double>>>(numgp);
 
     if (abs(params_->gamma_) >= 1.0E-6)
       FOUR_C_THROW("Fibers can only be aligned in thickness direction for gamma = 0.0!");
@@ -365,8 +365,8 @@ void Mat::ViscoAnisotropic::update()
 
   // empty vectors of current data
   const Core::LinAlg::Matrix<NUM_STRESS_3D, 1> emptyvec(true);
-  histstresscurr_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
-  artstresscurr_ = Teuchos::RCP(new std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>);
+  histstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  artstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
   const int histsize = histstresslast_->size();
   histstresscurr_->resize(histsize);
   artstresscurr_->resize(histsize);

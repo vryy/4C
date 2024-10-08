@@ -30,14 +30,14 @@ void Solid::ModelEvaluator::BaseSSI::determine_stress_strain()
 
   // initialize map for element-wise stresses
   const auto stresses =
-      Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+      Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>();
 
   Core::Communication::UnpackBuffer buffer(stressdata);
   // loop over all row elements
   for (int i = 0; i < discret().element_row_map()->NumMyElements(); ++i)
   {
     // initialize matrix for stresses associated with current element
-    const auto stresses_ele = Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix);
+    const auto stresses_ele = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
 
     // extract stresses
     extract_from_pack(buffer, *stresses_ele);
@@ -101,7 +101,7 @@ void Solid::ModelEvaluator::BaseSSI::setup()
 
   if (discret().num_dof_sets() - 1 == 2)
     mechanical_stress_state_ =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*discret().dof_row_map(2), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret().dof_row_map(2), true);
 
   // set flag
   issetup_ = true;

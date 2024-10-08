@@ -45,7 +45,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::SoNurbs27Type::c
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::RCP(new Discret::ELEMENTS::Nurbs::SoNurbs27(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::Nurbs::SoNurbs27>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -56,7 +56,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::SoNurbs27Type::c
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::RCP(new Discret::ELEMENTS::Nurbs::SoNurbs27(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::Nurbs::SoNurbs27>(id, owner);
   return ele;
 }
 

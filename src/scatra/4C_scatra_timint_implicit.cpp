@@ -103,7 +103,7 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       calcflux_boundary_(
           Teuchos::getIntegralValue<Inpar::ScaTra::FluxType>(*params, "CALCFLUX_BOUNDARY")),
       calcflux_boundary_lumped_(params->get<bool>("CALCFLUX_BOUNDARY_LUMPED")),
-      writefluxids_(Teuchos::RCP(new std::vector<int>)),
+      writefluxids_(Teuchos::make_rcp<std::vector<int>>()),
       flux_domain_(Teuchos::null),
       flux_boundary_(Teuchos::null),
       flux_boundary_maps_(Teuchos::null),
@@ -213,8 +213,8 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
   const int restart_step = problem_->restart();
   if (restart_step > 0)
   {
-    auto reader = Teuchos::RCP(new Core::IO::DiscretizationReader(
-        discret_, Global::Problem::instance()->input_control_file(), restart_step));
+    auto reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+        discret_, Global::Problem::instance()->input_control_file(), restart_step);
 
     time_ = reader->read_double("time");
   }
@@ -246,7 +246,7 @@ void ScaTra::ScaTraTimIntImpl::init()
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
   // note: pbcs have to be correctly set up before extended ghosting is applied
-  auto pbc = Teuchos::RCP(new Core::Conditions::PeriodicBoundaryConditions(discret_, false));
+  auto pbc = Teuchos::make_rcp<Core::Conditions::PeriodicBoundaryConditions>(discret_, false);
   if (pbc->has_pbc() and not isinit_)
   {
     pbc->update_dofs_for_periodic_boundary_conditions();
@@ -358,7 +358,7 @@ void ScaTra::ScaTraTimIntImpl::setup()
   {
     // do not save the graph if fine-scale subgrid diffusivity is used in non-incremental case (very
     // special case)
-    sysmat_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*(discret_->dof_row_map()), 27));
+    sysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 27);
   }
   else
     sysmat_ = init_system_matrix();
@@ -412,7 +412,7 @@ void ScaTra::ScaTraTimIntImpl::setup()
   zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::RCP(new Core::LinAlg::MapExtractor());
+  dbcmaps_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
@@ -451,7 +451,7 @@ void ScaTra::ScaTraTimIntImpl::setup()
   // set parameters associated to potential statistical flux evaluations
   // -------------------------------------------------------------------
   // initialize vector for statistics (assume a maximum of 10 conditions)
-  sumnormfluxintegral_ = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(10));
+  sumnormfluxintegral_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(10);
 
   if (calcflux_domain_ != Inpar::ScaTra::flux_none or
       calcflux_boundary_ != Inpar::ScaTra::flux_none)
@@ -511,12 +511,12 @@ void ScaTra::ScaTraTimIntImpl::setup()
       discret_->get_condition("ScaTraFluxCalc", conditions);
 
       // set up map extractor
-      flux_boundary_maps_ = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor());
+      flux_boundary_maps_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
       Core::Conditions::MultiConditionSelector mcs;
       mcs.set_overlapping(true);
       for (auto& condition : conditions)
-        mcs.add_selector(Teuchos::RCP(new Core::Conditions::ConditionSelector(
-            *discret_, std::vector<Core::Conditions::Condition*>(1, condition))));
+        mcs.add_selector(Teuchos::make_rcp<Core::Conditions::ConditionSelector>(
+            *discret_, std::vector<Core::Conditions::Condition*>(1, condition)));
       mcs.setup_extractor(*discret_, *discret_->dof_row_map(), *flux_boundary_maps_);
     }
   }
@@ -572,13 +572,13 @@ void ScaTra::ScaTraTimIntImpl::setup()
     switch (outputscalars_)
     {
       case Inpar::ScaTra::outputscalars_entiredomain:
-        outputscalarstrategy_ = Teuchos::RCP(new OutputScalarsStrategyDomain);
+        outputscalarstrategy_ = Teuchos::make_rcp<OutputScalarsStrategyDomain>();
         break;
       case Inpar::ScaTra::outputscalars_condition:
-        outputscalarstrategy_ = Teuchos::RCP(new OutputScalarsStrategyCondition);
+        outputscalarstrategy_ = Teuchos::make_rcp<OutputScalarsStrategyCondition>();
         break;
       case Inpar::ScaTra::outputscalars_entiredomain_condition:
-        outputscalarstrategy_ = Teuchos::RCP(new OutputScalarsStrategyDomainAndCondition);
+        outputscalarstrategy_ = Teuchos::make_rcp<OutputScalarsStrategyDomainAndCondition>();
         break;
       default:
         FOUR_C_THROW("Unknown option for output of total and mean scalars!");
@@ -613,7 +613,7 @@ void ScaTra::ScaTraTimIntImpl::setup()
   if (computeintegrals_ != Inpar::ScaTra::computeintegrals_none)
   {
     // initialize domain integral output strategy
-    outputdomainintegralstrategy_ = Teuchos::RCP(new OutputDomainIntegralStrategy);
+    outputdomainintegralstrategy_ = Teuchos::make_rcp<OutputDomainIntegralStrategy>();
     outputdomainintegralstrategy_->init(this);
   }
   else
@@ -653,20 +653,20 @@ void ScaTra::ScaTraTimIntImpl::setup()
             "Calculation of relative error based on conditions desired, but no conditions "
             "specified!");
       }
-      relerrors_ =
-          Teuchos::RCP(new std::vector<double>(2 * num_dof_per_node() * relerrorconditions.size()));
+      relerrors_ = Teuchos::make_rcp<std::vector<double>>(
+          2 * num_dof_per_node() * relerrorconditions.size());
     }
     else if (calcerror_ == Inpar::ScaTra::calcerror_AnalyticSeries)
-      relerrors_ = Teuchos::RCP(new std::vector<double>(2));  // TODO: Update two n species
+      relerrors_ = Teuchos::make_rcp<std::vector<double>>(2);  // TODO: Update two n species
     else
     {
       // It is important to make a distinction as HDG always have NumDofPerNode = 0
       // The vector is therefore sized to contain the errors of one scalar and its gradient
       if (Global::Problem::instance()->spatial_approximation_type() ==
           Core::FE::ShapeFunctionType::hdg)
-        relerrors_ = Teuchos::RCP(new std::vector<double>(2));  // TODO: update to n species
+        relerrors_ = Teuchos::make_rcp<std::vector<double>>(2);  // TODO: update to n species
       else
-        relerrors_ = Teuchos::RCP(new std::vector<double>(2 * num_dof_per_node()));
+        relerrors_ = Teuchos::make_rcp<std::vector<double>>(2 * num_dof_per_node());
     }
   }
 
@@ -717,7 +717,7 @@ void ScaTra::ScaTraTimIntImpl::setup_nat_conv()
 
   // evaluate integrals of concentrations and domain
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(num_scal() + 1));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_scal() + 1);
   discret_->evaluate_scalars(eleparams, scalars);
 
   // calculate mean concentrations
@@ -789,7 +789,7 @@ void ScaTra::ScaTraTimIntImpl::init_turbulence_model(
   // -------------------------------------------------------------------
   if (fssgd_ != Inpar::ScaTra::fssugrdiff_no and turbparams->get<bool>("TURBMODEL_LS"))
   {
-    sysmat_sd_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap, 27));
+    sysmat_sd_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 27);
 
     // Output
     if (myrank_ == 0)
@@ -847,7 +847,7 @@ void ScaTra::ScaTraTimIntImpl::init_turbulence_model(
       turbmodel_ = Inpar::FLUID::multifractal_subgrid_scales;
 
       // initalize matrix used to build the scale separation operator
-      sysmat_sd_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap, 27));
+      sysmat_sd_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 27);
 
       Teuchos::ParameterList* mfsparams = &(extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"));
       if (mfsparams->get<std::string>("SCALE_SEPARATION") != "algebraic_multigrid_operator")
@@ -2330,7 +2330,7 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
     {
       // initialize calculation of initial field based on fast Fourier transformation
       Teuchos::RCP<HomIsoTurbInitialScalarField> HitInitialScalarField =
-          Teuchos::RCP(new ScaTra::HomIsoTurbInitialScalarField(*this, init));
+          Teuchos::make_rcp<ScaTra::HomIsoTurbInitialScalarField>(*this, init);
       // calculate initial field
       HitInitialScalarField->calculate_initial_field();
 
@@ -2401,8 +2401,8 @@ void ScaTra::ScaTraTimIntImpl::setup_krylov_space_projection(Core::Conditions::C
   if (isale_ and (*weighttype == "integration")) updateprojection_ = true;
 
   // create the projector
-  projector_ = Teuchos::RCP(
-      new Core::LinAlg::KrylovProjector(activemodeids, weighttype, discret_->dof_row_map()));
+  projector_ = Teuchos::make_rcp<Core::LinAlg::KrylovProjector>(
+      activemodeids, weighttype, discret_->dof_row_map());
 
   // update the projector
   update_krylov_space_projection();
@@ -2440,7 +2440,7 @@ void ScaTra::ScaTraTimIntImpl::update_krylov_space_projection()
 
     // initialize dofid vector to -1
     Teuchos::RCP<Core::LinAlg::IntSerialDenseVector> dofids =
-        Teuchos::RCP(new Core::LinAlg::IntSerialDenseVector(num_dof_per_node()));
+        Teuchos::make_rcp<Core::LinAlg::IntSerialDenseVector>(num_dof_per_node());
     for (int rr = 0; rr < num_dof_per_node(); ++rr)
     {
       (*dofids)[rr] = -1;
@@ -2473,7 +2473,7 @@ void ScaTra::ScaTraTimIntImpl::update_krylov_space_projection()
       */
 
       // get an Teuchos::RCP of the current column Core::LinAlg::Vector<double> of the MultiVector
-      auto wi = Teuchos::RCP(new Core::LinAlg::Vector<double>(*(*w)(imode)));
+      auto wi = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*w)(imode));
       // compute integral of shape functions
       discret_->evaluate_condition(mode_params, Teuchos::null, Teuchos::null, wi, Teuchos::null,
           Teuchos::null, "KrylovSpaceProjection");
@@ -2529,23 +2529,23 @@ void ScaTra::ScaTraTimIntImpl::create_meshtying_strategy()
 {
   if (msht_ != Inpar::FLUID::no_meshtying)  // fluid meshtying
   {
-    strategy_ = Teuchos::RCP(new MeshtyingStrategyFluid(this));
+    strategy_ = Teuchos::make_rcp<MeshtyingStrategyFluid>(this);
   }
   else if (s2_i_meshtying())  // scatra-scatra interface mesh tying
   {
-    strategy_ = Teuchos::RCP(new MeshtyingStrategyS2I(this, *params_));
+    strategy_ = Teuchos::make_rcp<MeshtyingStrategyS2I>(this, *params_);
   }
   else if (heteroreaccoupling_)  // scatra-scatra interface coupling
   {
-    strategy_ = Teuchos::RCP(new HeterogeneousReactionStrategy(this));
+    strategy_ = Teuchos::make_rcp<HeterogeneousReactionStrategy>(this);
   }
   else if (arterycoupling_)
   {
-    strategy_ = Teuchos::RCP(new MeshtyingStrategyArtery(this));
+    strategy_ = Teuchos::make_rcp<MeshtyingStrategyArtery>(this);
   }
   else  // standard case without meshtying
   {
-    strategy_ = Teuchos::RCP(new MeshtyingStrategyStd(this));
+    strategy_ = Teuchos::make_rcp<MeshtyingStrategyStd>(this);
   }
 }  // ScaTraTimIntImpl::create_meshtying_strategy
 
@@ -2553,7 +2553,7 @@ void ScaTra::ScaTraTimIntImpl::create_meshtying_strategy()
  *----------------------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::create_scalar_handler()
 {
-  scalarhandler_ = Teuchos::RCP(new ScalarHandler());
+  scalarhandler_ = Teuchos::make_rcp<ScalarHandler>();
 }
 
 /*----------------------------------------------------------------------*
@@ -3055,7 +3055,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_multi_scale_solve()
 
   // initialize relaxed macro-scale state vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_relaxed =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*phinp_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*phinp_);
 
   // begin outer iteration loop
   while (true)
@@ -3182,7 +3182,7 @@ ScaTra::ScaTraTimIntImpl::convert_dof_vector_to_componentwise_node_vector(
     const Teuchos::RCP<const Core::LinAlg::Vector<double>>& dof_vector, const int nds) const
 {
   Teuchos::RCP<Epetra_MultiVector> componentwise_node_vector =
-      Teuchos::RCP(new Epetra_MultiVector(*discret_->node_row_map(), nsd_, true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*discret_->node_row_map(), nsd_, true);
   for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
   {
     Core::Nodes::Node* node = discret_->l_row_node(inode);
@@ -3617,7 +3617,7 @@ void ScaTra::ScaTraTimIntImpl::setup_matrix_block_maps()
 
     // initialize full map extractor associated with blocks of global system matrix
     blockmaps_ =
-        Teuchos::RCP(new Core::LinAlg::MultiMapExtractor(*(discret_->dof_row_map()), blockmaps));
+        Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>(*(discret_->dof_row_map()), blockmaps);
     // safety check
     blockmaps_->check_for_valid_map_extractor();
   }
@@ -3650,8 +3650,8 @@ void ScaTra::ScaTraTimIntImpl::build_block_maps(
       FOUR_C_ASSERT(dof_set.size() == dofs.size(), "The dofs are not unique");
 #endif
 
-      blockmaps.emplace_back(Teuchos::RCP(
-          new Epetra_Map(-1, static_cast<int>(dofs.size()), dofs.data(), 0, discret_->get_comm())));
+      blockmaps.emplace_back(Teuchos::make_rcp<Epetra_Map>(
+          -1, static_cast<int>(dofs.size()), dofs.data(), 0, discret_->get_comm()));
     }
   }
   else
@@ -3755,7 +3755,7 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::ScaTraTimIntImpl::init_system
     {
       // initialize system matrix
       systemmatrix =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*discret_->dof_row_map(), 27, false, true));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*discret_->dof_row_map(), 27, false, true);
       break;
     }
 
@@ -3763,9 +3763,10 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::ScaTraTimIntImpl::init_system
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
       // initialize system matrix and associated strategy
-      systemmatrix = Teuchos::RCP(
-          new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *block_maps(), *block_maps(), 81, false, true));
+      systemmatrix = Teuchos::make_rcp<
+          Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+
+          *block_maps(), *block_maps(), 81, false, true);
 
       break;
     }
@@ -3959,7 +3960,7 @@ void ScaTra::ScaTraTimIntImpl::set_time_stepping_to_micro_scale()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::ScaTraTimIntImpl::create_scatra_field_test()
 {
-  return Teuchos::RCP(new ScaTra::ScaTraResultTest(Teuchos::RCP(this, false)));
+  return Teuchos::make_rcp<ScaTra::ScaTraResultTest>(Teuchos::RCP(this, false));
 }
 
 /*----------------------------------------------------------------------*

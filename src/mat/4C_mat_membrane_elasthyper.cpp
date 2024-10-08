@@ -35,7 +35,7 @@ Mat::PAR::MembraneElastHyper::MembraneElastHyper(const Core::Mat::PAR::Parameter
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MembraneElastHyper::create_material()
 {
-  return Teuchos::RCP(new Mat::MembraneElastHyper(this));
+  return Teuchos::make_rcp<Mat::MembraneElastHyper>(this);
 }  // Mat::PAR::MembraneElastHyper::create_material
 
 

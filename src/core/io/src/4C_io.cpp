@@ -160,7 +160,7 @@ void Core::IO::DiscretizationReader::read_serial_dense_matrix(
   for (int i = 0; i < elemap->NumMyElements(); ++i)
   {
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> matrix =
-        Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix);
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
     extract_from_pack(buffer, *matrix);
     (*mapdata)[elemap->GID(i)] = matrix;
   }
@@ -230,12 +230,12 @@ void Core::IO::DiscretizationReader::read_history_data(int step)
       meshreader_->read_element_data(step, get_comm().NumProc(), get_comm().MyPID());
 
   // before we unpack nodes/elements we store a copy of the nodal row/col map
-  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::RCP(new Epetra_Map(*dis_->node_row_map()));
-  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::RCP(new Epetra_Map(*dis_->node_col_map()));
+  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::make_rcp<Epetra_Map>(*dis_->node_row_map());
+  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::make_rcp<Epetra_Map>(*dis_->node_col_map());
 
   // before we unpack nodes/elements we store a copy of the nodal row/col map
-  Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::RCP(new Epetra_Map(*dis_->element_row_map()));
-  Teuchos::RCP<Epetra_Map> elecolmap = Teuchos::RCP(new Epetra_Map(*dis_->element_col_map()));
+  Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::make_rcp<Epetra_Map>(*dis_->element_row_map());
+  Teuchos::RCP<Epetra_Map> elecolmap = Teuchos::make_rcp<Epetra_Map>(*dis_->element_col_map());
 
   // unpack nodes and elements and redistributed to current layout
 
@@ -470,7 +470,7 @@ Teuchos::RCP<Core::IO::HDFReader> Core::IO::DiscretizationReader::open_files(
 
   const std::string filename = map_read_string(result_step, filestring);
 
-  Teuchos::RCP<HDFReader> reader = Teuchos::RCP(new HDFReader(dirname));
+  Teuchos::RCP<HDFReader> reader = Teuchos::make_rcp<HDFReader>(dirname);
   reader->open(filename, numoutputproc, get_comm().NumProc(), get_comm().MyPID());
   return reader;
 }

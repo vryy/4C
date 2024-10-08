@@ -135,11 +135,11 @@ bool Coupling::Adapter::MatrixLogicalSplitAndTransform::operator()(
     {
       if (exporter_ == Teuchos::null)
       {
-        exporter_ = Teuchos::RCP(new Epetra_Export(permsrcmap, src.row_map()));
+        exporter_ = Teuchos::make_rcp<Epetra_Export>(permsrcmap, src.row_map());
       }
 
       Teuchos::RCP<Epetra_CrsMatrix> permsrc =
-          Teuchos::RCP(new Epetra_CrsMatrix(::Copy, permsrcmap, 0));
+          Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, permsrcmap, 0);
       int err = permsrc->Import(*src.epetra_matrix(), *exporter_, Insert);
       if (err) FOUR_C_THROW("Import failed with err=%d", err);
 

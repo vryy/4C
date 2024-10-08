@@ -88,13 +88,13 @@ void Inpar::ALE::set_valid_conditions(
   // Ale update boundary condition
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> linealeupdate =
-      Teuchos::RCP(new Core::Conditions::ConditionDefinition("DESIGN ALE UPDATE LINE CONDITIONS",
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN ALE UPDATE LINE CONDITIONS",
           "ALEUPDATECoupling", "ALEUPDATE Coupling", Core::Conditions::ALEUPDATECoupling, true,
-          Core::Conditions::geometry_type_line));
+          Core::Conditions::geometry_type_line);
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfaleupdate =
-      Teuchos::RCP(new Core::Conditions::ConditionDefinition("DESIGN ALE UPDATE SURF CONDITIONS",
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN ALE UPDATE SURF CONDITIONS",
           "ALEUPDATECoupling", "ALEUPDATE Coupling", Core::Conditions::ALEUPDATECoupling, true,
-          Core::Conditions::geometry_type_surface));
+          Core::Conditions::geometry_type_surface);
 
   for (const auto& cond : {linealeupdate, surfaleupdate})
   {

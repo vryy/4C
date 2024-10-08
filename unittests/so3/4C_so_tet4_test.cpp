@@ -25,23 +25,23 @@ namespace
     void SetUp() override
     {
       // create a discretization, that creates node to element pointers and keeps the nodes alive
-      testdis_ = Teuchos::RCP(
-          new Core::FE::Discretization("dummy", Teuchos::RCP(new Epetra_SerialComm), 3));
+      testdis_ = Teuchos::make_rcp<Core::FE::Discretization>(
+          "dummy", Teuchos::make_rcp<Epetra_SerialComm>(), 3);
 
       // create 4 nodes
       const std::array<int, 4> nodeids = {0, 1, 2, 3};
       std::vector<std::vector<double>> coords = {
           {-0.1, -0.2, -0.5}, {1.25, 0.23, 0.66}, {1.20, 0.99, 0.5}, {-0.10, -0.2, 1.96}};
       for (int lid = 0; lid < 4; ++lid)
-        testdis_->add_node(Teuchos::RCP(new Core::Nodes::Node(lid, coords[lid], 0)));
+        testdis_->add_node(Teuchos::make_rcp<Core::Nodes::Node>(lid, coords[lid], 0));
 
       // create 1 element
-      testele_ = Teuchos::RCP(new Discret::ELEMENTS::SoTet4(0, 0));
+      testele_ = Teuchos::make_rcp<Discret::ELEMENTS::SoTet4>(0, 0);
       testele_->set_node_ids(4, nodeids.data());
       testdis_->add_element(testele_);
       testdis_->fill_complete(false, false, false);
 
-      copytestele_ = Teuchos::RCP(new Discret::ELEMENTS::SoTet4(*testele_));
+      copytestele_ = Teuchos::make_rcp<Discret::ELEMENTS::SoTet4>(*testele_);
     }
 
     // Delete pointers.

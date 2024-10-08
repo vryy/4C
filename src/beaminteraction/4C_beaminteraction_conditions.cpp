@@ -120,8 +120,9 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
         if (condition_1 != Teuchos::null && condition_2 != Teuchos::null)
         {
           // We found the matching conditions, now create the beam-to-beam condition objects.
-          interaction_vector.push_back(Teuchos::RCP(
-              new BEAMINTERACTION::BeamToBeamContactCondition(condition_1, condition_2)));
+          interaction_vector.push_back(
+              Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamContactCondition>(
+                  condition_1, condition_2));
         }
         else
           FOUR_C_THROW("Could not find both conditions (%s) for the COUPLING_ID %d",
@@ -177,19 +178,19 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
           Teuchos::RCP<BeamInteractionConditionBase> new_condition;
           if (interaction_type ==
               Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying)
-            new_condition = Teuchos::RCP(
-                new BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying(map_item.second.first,
-                    map_item.second.second, params_ptr->beam_to_solid_volume_meshtying_params()));
+            new_condition = Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying>(
+                map_item.second.first, map_item.second.second,
+                params_ptr->beam_to_solid_volume_meshtying_params());
           else if (interaction_type == Inpar::BEAMINTERACTION::BeamInteractionConditions::
                                            beam_to_solid_surface_meshtying)
-            new_condition = Teuchos::RCP(new BEAMINTERACTION::BeamToSolidConditionSurface(
+            new_condition = Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidConditionSurface>(
                 map_item.second.first, map_item.second.second,
-                params_ptr->beam_to_solid_surface_meshtying_params(), true));
+                params_ptr->beam_to_solid_surface_meshtying_params(), true);
           else if (interaction_type ==
                    Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact)
-            new_condition = Teuchos::RCP(new BEAMINTERACTION::BeamToSolidConditionSurface(
+            new_condition = Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidConditionSurface>(
                 map_item.second.first, map_item.second.second,
-                params_ptr->beam_to_solid_surface_contact_params(), false));
+                params_ptr->beam_to_solid_surface_contact_params(), false);
           else
             FOUR_C_THROW("Got unexpected interaction type.");
           interaction_vector.push_back(new_condition);
@@ -219,9 +220,9 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
         // We found the matching conditions, now create the beam-to-beam coupling condition object
         Teuchos::RCP<BeamInteractionConditionBase> new_condition;
 
-        new_condition = Teuchos::RCP(new BEAMINTERACTION::BeamToBeamPointCouplingCondition(
+        new_condition = Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamPointCouplingCondition>(
             condition, condition->parameters().get<double>("POSITIONAL_PENALTY_PARAMETER"),
-            condition->parameters().get<double>("ROTATIONAL_PENALTY_PARAMETER")));
+            condition->parameters().get<double>("ROTATIONAL_PENALTY_PARAMETER"));
 
         interaction_vector.push_back(new_condition);
       }

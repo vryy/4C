@@ -251,14 +251,14 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::read_restart(
       std::stringstream velname;
       velname << "histvel_" << i;
       Teuchos::RCP<Core::LinAlg::Vector<double>> vel_ptr =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*global_state().get_vel_n()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().get_vel_n());
       ioreader.read_vector(vel_ptr, velname.str());
       global_state().get_multi_vel()->update_steps(*vel_ptr);
 
       std::stringstream accname;
       accname << "histacc_" << i;
       Teuchos::RCP<Core::LinAlg::Vector<double>> acc_ptr =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*global_state().get_acc_n()));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().get_acc_n());
       ioreader.read_vector(acc_ptr, accname.str());
       global_state().get_multi_acc()->update_steps(*acc_ptr);
     }

@@ -108,8 +108,8 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::prepare_nodal_data_vect
     const std::string& name = name_and_size.first;
     const int size = name_and_size.second;
 
-    data_nodes_[name] = Teuchos::RCP(new Epetra_MultiVector(node_col_map, size, true));
-    data_nodes_count_[name] = Teuchos::RCP(new Core::LinAlg::Vector<int>(node_col_map, true));
+    data_nodes_[name] = Teuchos::make_rcp<Epetra_MultiVector>(node_col_map, size, true);
+    data_nodes_count_[name] = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(node_col_map, true);
   }
 }
 
@@ -121,7 +121,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::prepare_element_center_
     const std::string& name = name_and_size.first;
     const int size = name_and_size.second;
 
-    data_element_center_[name] = Teuchos::RCP(new Epetra_MultiVector(element_col_map, size, true));
+    data_element_center_[name] = Teuchos::make_rcp<Epetra_MultiVector>(element_col_map, size, true);
   }
 }
 
@@ -139,7 +139,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::prepare_gauss_point_dat
     gp_data.resize(max_num_gp_);
     for (auto& data_i : gp_data)
     {
-      data_i = Teuchos::RCP(new Epetra_MultiVector(element_col_map, size, true));
+      data_i = Teuchos::make_rcp<Epetra_MultiVector>(element_col_map, size, true);
     }
   }
 }

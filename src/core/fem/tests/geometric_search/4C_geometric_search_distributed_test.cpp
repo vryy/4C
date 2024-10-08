@@ -35,7 +35,7 @@ namespace
 
     GeometricSearchDistributed()
     {
-      comm_ = Teuchos::RCP(new Epetra_MpiComm(MPI_COMM_WORLD));
+      comm_ = Teuchos::make_rcp<Epetra_MpiComm>(MPI_COMM_WORLD);
       verbosity_ = Core::IO::minimal;
       my_rank_ = comm_->MyPID();
     }

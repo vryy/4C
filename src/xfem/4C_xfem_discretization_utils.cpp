@@ -196,7 +196,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
       noderowmap->MaxAllGID() - noderowmap->MinAllGID() + 1;  // if id's are not continuous numbered
   int maxNumMyReservedDofsperNode = (xgen_params.get<int>("MAX_NUM_DOFSETS")) * numdof;
   Teuchos::RCP<Core::DOFSets::FixedSizeDofSet> maxdofset =
-      Teuchos::RCP(new Core::DOFSets::FixedSizeDofSet(maxNumMyReservedDofsperNode, nodeindexrange));
+      Teuchos::make_rcp<Core::DOFSets::FixedSizeDofSet>(
+          maxNumMyReservedDofsperNode, nodeindexrange);
 
   const int fluid_nds = 0;
   xdis->replace_dof_set(fluid_nds, maxdofset, true);  // fluid dofset has nds = 0
@@ -346,7 +347,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
     if (sourcegnode_iter->second->owner() == myrank)
     {
       Teuchos::RCP<Core::Nodes::Node> sourcegnode =
-          Teuchos::RCP(new Core::Nodes::Node(nid, sourcegnode_iter->second->x(), myrank));
+          Teuchos::make_rcp<Core::Nodes::Node>(nid, sourcegnode_iter->second->x(), myrank);
       targetdis->add_node(sourcegnode);
       condnoderowset.insert(nid);
       targetnoderowvec.push_back(nid);
@@ -459,13 +460,13 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::redistribute(
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(dis->get_comm().Clone());
 
   Teuchos::RCP<Epetra_Map> noderowmap =
-      Teuchos::RCP(new Epetra_Map(-1, noderowvec.size(), noderowvec.data(), 0, *comm));
+      Teuchos::make_rcp<Epetra_Map>(-1, noderowvec.size(), noderowvec.data(), 0, *comm);
 
   Teuchos::RCP<Epetra_Map> nodecolmap =
-      Teuchos::RCP(new Epetra_Map(-1, nodecolvec.size(), nodecolvec.data(), 0, *comm));
+      Teuchos::make_rcp<Epetra_Map>(-1, nodecolvec.size(), nodecolvec.data(), 0, *comm);
   if (!dis->filled()) dis->redistribute(*noderowmap, *nodecolmap);
 
-  Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::RCP(new Epetra_Map(*dis->element_row_map()));
+  Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::make_rcp<Epetra_Map>(*dis->element_row_map());
   Teuchos::RCP<const Epetra_CrsGraph> nodegraph = Core::Rebalance::build_graph(dis, elerowmap);
 
   Teuchos::ParameterList rebalanceParams;

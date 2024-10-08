@@ -135,7 +135,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new MurnaghanTaitFluid(*this));
+      return Teuchos::make_rcp<MurnaghanTaitFluid>(*this);
     }
 
     /// compute density

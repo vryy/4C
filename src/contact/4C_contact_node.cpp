@@ -345,7 +345,7 @@ void CONTACT::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   bool hasdata = extract_int(buffer);
   if (hasdata)
   {
-    codata_ = Teuchos::RCP(new CONTACT::NodeDataContainer());
+    codata_ = Teuchos::make_rcp<CONTACT::NodeDataContainer>();
     codata_->unpack(buffer);
   }
   else
@@ -357,7 +357,7 @@ void CONTACT::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   bool hasdataporo = extract_int(buffer);
   if (hasdataporo)
   {
-    coporodata_ = Teuchos::RCP(new CONTACT::NodePoroDataContainer());
+    coporodata_ = Teuchos::make_rcp<CONTACT::NodePoroDataContainer>();
     coporodata_->unpack(buffer);
   }
   else
@@ -369,7 +369,7 @@ void CONTACT::Node::unpack(Core::Communication::UnpackBuffer& buffer)
   bool hasTSIdata = (bool)extract_int(buffer);
   if (hasTSIdata)
   {
-    cTSIdata_ = Teuchos::RCP(new CONTACT::NodeTSIDataContainer());
+    cTSIdata_ = Teuchos::make_rcp<CONTACT::NodeTSIDataContainer>();
     cTSIdata_->unpack(buffer);
   }
   else
@@ -528,8 +528,8 @@ void CONTACT::Node::initialize_data_container()
   // only initialize if not yet done
   if (modata_ == Teuchos::null && codata_ == Teuchos::null)
   {
-    codata_ = Teuchos::RCP(new CONTACT::NodeDataContainer());
-    modata_ = Teuchos::RCP(new Mortar::NodeDataContainer());
+    codata_ = Teuchos::make_rcp<CONTACT::NodeDataContainer>();
+    modata_ = Teuchos::make_rcp<Mortar::NodeDataContainer>();
   }
 
   return;
@@ -544,7 +544,7 @@ void CONTACT::Node::initialize_poro_data_container()
 
   if (coporodata_ == Teuchos::null)
   {
-    coporodata_ = Teuchos::RCP(new CONTACT::NodePoroDataContainer());
+    coporodata_ = Teuchos::make_rcp<CONTACT::NodePoroDataContainer>();
   }
 
   return;
@@ -559,7 +559,7 @@ void CONTACT::Node::initialize_ehl_data_container()
 
   if (cEHLdata_ == Teuchos::null)
   {
-    cEHLdata_ = Teuchos::RCP(new CONTACT::NodeEhlDataContainer());
+    cEHLdata_ = Teuchos::make_rcp<CONTACT::NodeEhlDataContainer>();
   }
 
   return;
@@ -573,7 +573,7 @@ void CONTACT::Node::initialize_tsi_data_container(double t_ref, double t_dam)
   // only initialize if not yet done
 
   if (cTSIdata_ == Teuchos::null)
-    cTSIdata_ = Teuchos::RCP(new CONTACT::NodeTSIDataContainer(t_ref, t_dam));
+    cTSIdata_ = Teuchos::make_rcp<CONTACT::NodeTSIDataContainer>(t_ref, t_dam);
 
   return;
 }
@@ -677,8 +677,8 @@ void CONTACT::Node::build_averaged_edge_tangent()
           donebefore.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::RCP(
-              new Mortar::Element(j, cele->owner(), Core::FE::CellType::line2, 2, nodeIds, false));
+          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+              j, cele->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
           // get nodes
           std::array<Core::Nodes::Node*, 2> nodes = {

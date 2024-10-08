@@ -94,7 +94,7 @@ namespace Core::DOFSets
     /// create a copy of this object
     Teuchos::RCP<DofSet> clone() override
     {
-      return Teuchos::RCP(new DofSetPredefinedDoFNumber(*this));
+      return Teuchos::make_rcp<DofSetPredefinedDoFNumber>(*this);
     }
 
     /// Add Dof Set to list #static_dofsets_
@@ -118,7 +118,7 @@ namespace Core::DOFSets
       {
         Core::LinAlg::Vector<int> numdofpernodenodewise_rowmap(*dis.node_row_map());
         Core::LinAlg::export_to(*numdofpernodenodewise_, numdofpernodenodewise_rowmap);
-        numdofpernodenodewise_ = Teuchos::RCP(new Core::LinAlg::Vector<int>(*dis.node_col_map()));
+        numdofpernodenodewise_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
         Core::LinAlg::export_to(numdofpernodenodewise_rowmap, *numdofpernodenodewise_);
       }
       if (numdofperelementelewise_ != Teuchos::null and
@@ -127,7 +127,7 @@ namespace Core::DOFSets
         Core::LinAlg::Vector<int> numdofperelementelewise_rowmap(*dis.element_row_map());
         Core::LinAlg::export_to(*numdofperelementelewise_, numdofperelementelewise_rowmap);
         numdofperelementelewise_ =
-            Teuchos::RCP(new Core::LinAlg::Vector<int>(*dis.element_col_map()));
+            Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.element_col_map());
         Core::LinAlg::export_to(numdofperelementelewise_rowmap, *numdofperelementelewise_);
       }
       if (numdofperfacefacewise_ != Teuchos::null)

@@ -46,8 +46,8 @@ namespace Core::Binstrategy::Utils
     }
 
     std::vector<int> colnodes(nodes.begin(), nodes.end());
-    Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::RCP(
-        new Epetra_Map(-1, (int)colnodes.size(), colnodes.data(), 0, discret->get_comm()));
+    Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::make_rcp<Epetra_Map>(
+        -1, (int)colnodes.size(), colnodes.data(), 0, discret->get_comm());
 
     // now ghost the nodes
     discret->export_column_nodes(*nodecolmap);

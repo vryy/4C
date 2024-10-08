@@ -66,7 +66,7 @@ namespace Core::DOFSets
 
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> clone() override { return Teuchos::RCP(new FixedSizeDofSet(*this)); }
+    Teuchos::RCP<DofSet> clone() override { return Teuchos::make_rcp<FixedSizeDofSet>(*this); }
 
     /// Get maximum GID of degree of freedom row map
     int max_all_gid() const override { return min_all_gid() + numMyReservedDofs_; }

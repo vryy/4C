@@ -66,7 +66,7 @@ BEAMINTERACTION::BeamLinkTruss::BeamLinkTruss(const BEAMINTERACTION::BeamLinkTru
 Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkTruss::clone() const
 {
   Teuchos::RCP<BEAMINTERACTION::BeamLinkTruss> newlinker =
-      Teuchos::RCP(new BEAMINTERACTION::BeamLinkTruss(*this));
+      Teuchos::make_rcp<BEAMINTERACTION::BeamLinkTruss>(*this);
   return newlinker;
 }
 
@@ -102,7 +102,7 @@ void BEAMINTERACTION::BeamLinkTruss::setup(const int matnum)
    *
    *       We really only use it as a calculation routine for a sophisticated
    *       (displacement-reaction force) relation here! */
-  linkele_ = Teuchos::RCP(new Discret::ELEMENTS::Truss3(-1, 0));
+  linkele_ = Teuchos::make_rcp<Discret::ELEMENTS::Truss3>(-1, 0);
 
   // set material
   linkele_->set_material(0, Mat::factory(matnum));

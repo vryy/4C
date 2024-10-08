@@ -63,11 +63,11 @@ ScaTra::CCCVCondition::CCCVCondition(const Core::Conditions::Condition& cccvcycl
     if (condition->parameters().get<int>("ConditionID") ==
         cccvcyclingcondition.parameters().get<int>("CONDITION_ID_FOR_CHARGE"))
       halfcycle_charge_ =
-          Teuchos::RCP(new ScaTra::CCCVHalfCycleCondition(*condition, adaptivetimestepping));
+          Teuchos::make_rcp<ScaTra::CCCVHalfCycleCondition>(*condition, adaptivetimestepping);
     if (condition->parameters().get<int>("ConditionID") ==
         cccvcyclingcondition.parameters().get<int>("CONDITION_ID_FOR_DISCHARGE"))
       halfcycle_discharge_ =
-          Teuchos::RCP(new ScaTra::CCCVHalfCycleCondition(*condition, adaptivetimestepping));
+          Teuchos::make_rcp<ScaTra::CCCVHalfCycleCondition>(*condition, adaptivetimestepping);
   }
   if (halfcycle_charge_ == Teuchos::null) FOUR_C_THROW("Invalid halfcycle for charge!");
   if (halfcycle_discharge_ == Teuchos::null) FOUR_C_THROW("Invalid halfcycle for discharge!");

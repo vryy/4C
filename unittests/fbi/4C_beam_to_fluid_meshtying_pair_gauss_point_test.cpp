@@ -45,7 +45,7 @@ namespace
       Teuchos::ParameterList line_to_volume_params_list;
       Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(line_to_volume_params_list);
       evaluation_data_ =
-          Teuchos::RCP(new GEOMETRYPAIR::LineTo3DEvaluationData(line_to_volume_params_list));
+          Teuchos::make_rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(line_to_volume_params_list);
     }
 
     /**
@@ -69,10 +69,10 @@ namespace
       // Create the elements.
       const int dummy_node_ids[2] = {0, 1};
       Teuchos::RCP<Core::Elements::Element> beam_element =
-          Teuchos::RCP(new Discret::ELEMENTS::Beam3eb(0, 0));
+          Teuchos::make_rcp<Discret::ELEMENTS::Beam3eb>(0, 0);
       beam_element->set_node_ids(2, dummy_node_ids);
       Teuchos::RCP<Discret::ELEMENTS::Fluid> fluid_element =
-          Teuchos::RCP(new Discret::ELEMENTS::Fluid(1, 0));
+          Teuchos::make_rcp<Discret::ELEMENTS::Fluid>(1, 0);
       fluid_element->set_dis_type(Core::FE::CellType::hex8);
 
       // Set up the beam element.
@@ -90,7 +90,7 @@ namespace
       beam_element_cast->set_up_reference_geometry(xrefe);
 
       Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> intersection_params =
-          Teuchos::RCP(new FBI::BeamToFluidMeshtyingParams());
+          Teuchos::make_rcp<FBI::BeamToFluidMeshtyingParams>();
 
       // Call Init on the beam contact pair.
       std::vector<const Core::Elements::Element*> pair_elements;

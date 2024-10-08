@@ -219,7 +219,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Generic::get_f
   const Core::LinAlg::Vector<double>& fextnp = *global_state().get_fext_np();
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fext_incr =
-      Teuchos::RCP<Core::LinAlg::Vector<double>>(new Core::LinAlg::Vector<double>(fextnp));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fextnp);
   fext_incr->Update(-1.0, fextn, 1.0);
 
   return fext_incr;

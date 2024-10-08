@@ -29,7 +29,7 @@ Mat::PAR::ScatraMatPoroECM::ScatraMatPoroECM(const Core::Mat::PAR::Parameter::Da
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScatraMatPoroECM::create_material()
 {
-  return Teuchos::RCP(new Mat::ScatraMatPoroECM(this));
+  return Teuchos::make_rcp<Mat::ScatraMatPoroECM>(this);
 }
 
 

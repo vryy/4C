@@ -389,7 +389,7 @@ void Solid::TimeInt::Base::initialize_energy_file_stream_and_write_headers()
 Teuchos::RCP<Core::UTILS::ResultTest> Solid::TimeInt::Base::create_field_test()
 {
   check_init_setup();
-  Teuchos::RCP<Solid::ResultTest> resulttest = Teuchos::RCP(new Solid::ResultTest());
+  Teuchos::RCP<Solid::ResultTest> resulttest = Teuchos::make_rcp<Solid::ResultTest>();
   resulttest->init(get_data_global_state(), integrator().eval_data());
   resulttest->setup();
 
@@ -910,7 +910,7 @@ void Solid::TimeInt::Base::read_restart(const int stepn)
   dataglobalstate_->get_step_n() = stepn;
   dataglobalstate_->get_step_np() = stepn + 1;
   dataglobalstate_->get_multi_time() =
-      Teuchos::RCP(new TimeStepping::TimIntMStep<double>(0, 0, ioreader.read_double("time")));
+      Teuchos::make_rcp<TimeStepping::TimIntMStep<double>>(0, 0, ioreader.read_double("time"));
   const double& timen = dataglobalstate_->get_time_n();
   const double& dt = (*dataglobalstate_->get_delta_time())[0];
   dataglobalstate_->get_time_np() = timen + dt;

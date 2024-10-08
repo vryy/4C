@@ -183,14 +183,14 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::setup()
   // vector of fluid stresses interpolated to structural bdry. int. points and integrated over
   // structural surface
   struct_bdry_traction_ =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*(immersedstructure_->dof_row_map()), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(immersedstructure_->dof_row_map()), true);
 
   // vector with fluid velocities interpolated from structure
-  fluid_artificial_velocity_ = Teuchos::RCP(
-      new Core::LinAlg::Vector<double>(*(mb_fluid_field()->fluid_field()->dof_row_map()), true));
+  fluid_artificial_velocity_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+      *(mb_fluid_field()->fluid_field()->dof_row_map()), true);
 
   // build 3D search tree for fluid domain
-  fluid_SearchTree_ = Teuchos::RCP(new Core::Geo::SearchTree(5));
+  fluid_SearchTree_ = Teuchos::make_rcp<Core::Geo::SearchTree>(5);
 
   // find positions of the background fluid discretization
   for (int lid = 0; lid < fluiddis_->num_my_col_nodes(); ++lid)
@@ -214,7 +214,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::setup()
 
   // construct 3D search tree for structural domain
   // initialized in setup_structural_discretization()
-  structure_SearchTree_ = Teuchos::RCP(new Core::Geo::SearchTree(5));
+  structure_SearchTree_ = Teuchos::make_rcp<Core::Geo::SearchTree>(5);
 
   // Validation flag for velocity in artificial domain. After each structure solve the velocity
   // becomes invalid and needs to be projected again.
@@ -275,7 +275,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::fsi_op(
   {
     // get the current artificial velocity state
     const Teuchos::RCP<Core::LinAlg::Vector<double>> artificial_velocity_n =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(x));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(x);
 
     ////////////////////
     // CALL FluidOp
@@ -301,7 +301,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::fsi_op(
   {
     // get the current interface force state
     const Teuchos::RCP<Core::LinAlg::Vector<double>> iforcen =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(x));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(x);
 
     ////////////////////
     // CALL StructOp
@@ -351,7 +351,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::fsi_op(
     // !!! EXPERIMENTAL !!!
     // set F to zero to tell NOX that this timestep is converged
     Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(F.Map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(F.Map(), true);
     F.Update(1.0, *zeros, 0.0);
     // !!! EXPERIMENTAL !!!
 
@@ -497,7 +497,7 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::build_immersed_dirich_map
 
   int nummydirichvals = mydirichdofs.size();
   dirichmap =
-      Teuchos::RCP(new Epetra_Map(-1, nummydirichvals, mydirichdofs.data(), 0, dis->get_comm()));
+      Teuchos::make_rcp<Epetra_Map>(-1, nummydirichvals, mydirichdofs.data(), 0, dis->get_comm());
 
   return;
 }

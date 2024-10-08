@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::AleXFFsiWrapper::AleXFFsiWrapper(Teuchos::RCP<Ale> ale) : AleFsiWrapper(ale)
 {
   // create the FSI interface
-  xff_interface_ = Teuchos::RCP(new ALE::UTILS::XFluidFluidMapExtractor);
+  xff_interface_ = Teuchos::make_rcp<ALE::UTILS::XFluidFluidMapExtractor>();
   xff_interface_->setup(*discretization());
   setup_dbc_map_ex(ALE::UTILS::MapExtractor::dbc_set_x_ff, interface(), xff_interface_);
   setup_dbc_map_ex(ALE::UTILS::MapExtractor::dbc_set_x_fsi, interface());

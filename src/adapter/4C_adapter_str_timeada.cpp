@@ -51,11 +51,11 @@ Teuchos::RCP<Adapter::Structure> Adapter::StructureTimeAda::create(
   {
     case Inpar::Solid::timada_kind_zienxie:
       // Adaptive time integration with Zienkiewicz-Xie error indicator
-      return Teuchos::RCP(new Adapter::StructureTimeAdaZienXie(ti_strategy));
+      return Teuchos::make_rcp<Adapter::StructureTimeAdaZienXie>(ti_strategy);
 
     case Inpar::Solid::timada_kind_joint_explicit:
       // Adaptive time integration using auxiliary time integrator
-      return Teuchos::RCP(new Adapter::StructureTimeAdaJoint(ti_strategy));
+      return Teuchos::make_rcp<Adapter::StructureTimeAdaJoint>(ti_strategy);
 
     default:
       // Unknown adaptive time integration

@@ -39,7 +39,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3Type::create(
   if (eletype == "TRUSS3")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::RCP(new Discret::ELEMENTS::Truss3(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::Truss3>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -50,7 +50,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::RCP(new Discret::ELEMENTS::Truss3(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::Truss3>(id, owner);
   return ele;
 }
 

@@ -31,7 +31,7 @@ CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams::LinearConstitutiveLawPara
 Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
 CONTACT::CONSTITUTIVELAW::LinearConstitutiveLawParams::create_constitutive_law()
 {
-  return Teuchos::RCP(new CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw(this));
+  return Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw>(this);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

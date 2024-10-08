@@ -84,7 +84,7 @@ void electromagnetics_drt()
   int eledofs = dynamic_cast<Discret::ELEMENTS::Elemag*>(elemagdishdg->l_col_element(0))
                     ->num_dof_per_element_auxiliary();
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(0, eledofs, 0, false));
+      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(0, eledofs, 0, false);
   elemagdishdg->add_dof_set(dofsetaux);
 
   // call fill complete on discretization
@@ -98,17 +98,17 @@ void electromagnetics_drt()
         "LINEAR_SOLVER in ELECTROMAGNETIC DYNAMIC to a valid number!");
 
   Teuchos::RCP<Core::LinAlg::Solver> solver =
-      Teuchos::RCP(new Core::LinAlg::Solver(problem->solver_params(linsolvernumber_elemag), comm,
+      Teuchos::make_rcp<Core::LinAlg::Solver>(problem->solver_params(linsolvernumber_elemag), comm,
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY")));
+              Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   // declare output writer
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = elemagdishdg->writer();
 
   // declare electromagnetic parameter list
   Teuchos::RCP<Teuchos::ParameterList> params =
-      Teuchos::RCP(new Teuchos::ParameterList(elemagparams));
+      Teuchos::make_rcp<Teuchos::ParameterList>(elemagparams);
 
   // set restart step if required
   int restart = problem->restart();
@@ -129,7 +129,7 @@ void electromagnetics_drt()
     case Inpar::EleMag::elemag_bdf2:
     case Inpar::EleMag::elemag_bdf4:
     {
-      elemagalgo = Teuchos::RCP(new EleMag::ElemagTimeInt(elemagdishdg, solver, params, output));
+      elemagalgo = Teuchos::make_rcp<EleMag::ElemagTimeInt>(elemagdishdg, solver, params, output);
       break;
     }
     case Inpar::EleMag::elemag_genAlpha:
@@ -188,8 +188,8 @@ void electromagnetics_drt()
 
         if (ishdg)
         {
-          scatradis = Teuchos::RCP(
-              new Core::FE::DiscretizationHDG((std::string) "scatra", newcomm, problem->n_dim()));
+          scatradis = Teuchos::make_rcp<Core::FE::DiscretizationHDG>(
+              (std::string) "scatra", newcomm, problem->n_dim());
 
           scatradis->fill_complete();
 
@@ -199,8 +199,8 @@ void electromagnetics_drt()
         }
         else
         {
-          scatradis = Teuchos::RCP(
-              new Core::FE::Discretization((std::string) "scatra", newcomm, problem->n_dim()));
+          scatradis = Teuchos::make_rcp<Core::FE::Discretization>(
+              (std::string) "scatra", newcomm, problem->n_dim());
           scatradis->fill_complete();
 
           Core::FE::clone_discretization<
@@ -235,8 +235,8 @@ void electromagnetics_drt()
 
             // add proxy of velocity related degrees of freedom to scatra discretization
             Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-                Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
-                    Global::Problem::instance()->n_dim() + 1, 0, 0, true));
+                Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+                    Global::Problem::instance()->n_dim() + 1, 0, 0, true);
             if (scatradis->add_dof_set(dofsetaux) != 1)
               FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
 
@@ -246,8 +246,8 @@ void electromagnetics_drt()
             // create scatra output
             // access the problem-specific parameter list
             Teuchos::RCP<Teuchos::ParameterList> scatraparams =
-                Teuchos::RCP(new Teuchos::ParameterList(
-                    Global::Problem::instance()->scalar_transport_dynamic_params()));
+                Teuchos::make_rcp<Teuchos::ParameterList>(
+                    Global::Problem::instance()->scalar_transport_dynamic_params());
 
             // TODO (berardocco) Might want to add the scatra section in the input file to avoid
             // adding params to the elemag or using existing ones for scatra purposes
@@ -266,7 +266,7 @@ void electromagnetics_drt()
 
             // create necessary extra parameter list for scatra
             Teuchos::RCP<Teuchos::ParameterList> scatraextraparams;
-            scatraextraparams = Teuchos::RCP(new Teuchos::ParameterList());
+            scatraextraparams = Teuchos::make_rcp<Teuchos::ParameterList>();
             scatraextraparams->set<bool>("isale", false);
             const Teuchos::ParameterList& fdyn =
                 Global::Problem::instance()->fluid_dynamic_params();
@@ -284,11 +284,13 @@ void electromagnetics_drt()
               scatraparams->set<int>("LINEAR_SOLVER", elemagparams.get<int>("LINEAR_SOLVER"));
 
             // create solver
-            Teuchos::RCP<Core::LinAlg::Solver> scatrasolver = Teuchos::RCP(new Core::LinAlg::Solver(
-                Global::Problem::instance()->solver_params(scatraparams->get<int>("LINEAR_SOLVER")),
-                scatradis->get_comm(), Global::Problem::instance()->solver_params_callback(),
-                Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                    Global::Problem::instance()->io_params(), "VERBOSITY")));
+            Teuchos::RCP<Core::LinAlg::Solver> scatrasolver =
+                Teuchos::make_rcp<Core::LinAlg::Solver>(
+                    Global::Problem::instance()->solver_params(
+                        scatraparams->get<int>("LINEAR_SOLVER")),
+                    scatradis->get_comm(), Global::Problem::instance()->solver_params_callback(),
+                    Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
+                        Global::Problem::instance()->io_params(), "VERBOSITY"));
 
             // create instance of scalar transport basis algorithm (empty fluid discretization)
             Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatraalgo;
@@ -305,8 +307,8 @@ void electromagnetics_drt()
                 scatraparams->sublist("STABILIZATION")
                     .set("TAU_VALUE", elemagparams.get<double>("TAU"));
 
-              scatraalgo = Teuchos::RCP(new ScaTra::TimIntStationaryHDG(
-                  scatradis, scatrasolver, scatraparams, scatraextraparams, output));
+              scatraalgo = Teuchos::make_rcp<ScaTra::TimIntStationaryHDG>(
+                  scatradis, scatrasolver, scatraparams, scatraextraparams, output);
             }
             else
             {
@@ -315,8 +317,8 @@ void electromagnetics_drt()
               scatraparams->sublist("STABILIZATION")
                   .set<Inpar::ScaTra::StabType>(
                       "STABTYPE", Inpar::ScaTra::StabType::stabtype_no_stabilization);
-              scatraalgo = Teuchos::RCP(new ScaTra::TimIntStationary(
-                  scatradis, scatrasolver, scatraparams, scatraextraparams, output));
+              scatraalgo = Teuchos::make_rcp<ScaTra::TimIntStationary>(
+                  scatradis, scatrasolver, scatraparams, scatraextraparams, output);
             }
 
             // scatraparams->print(std::cout);

@@ -28,10 +28,10 @@ PoroElast::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
     : Monolithic(comm, timeparams, porosity_splitter), normrhsfactiven_(0.0), tolfres_ncoup_(0.0)
 {
   // Initialize mortar adapter for meshtying interface
-  mortar_adapter_ = Teuchos::RCP(new Adapter::CouplingPoroMortar(
+  mortar_adapter_ = Teuchos::make_rcp<Adapter::CouplingPoroMortar>(
       Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
-      Global::Problem::instance()->spatial_approximation_type()));
+      Global::Problem::instance()->spatial_approximation_type());
 
   const int ndim = Global::Problem::instance()->n_dim();
   std::vector<int> coupleddof(ndim, 1);  // 1,1,1 should be in coupleddof
@@ -39,7 +39,7 @@ PoroElast::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
   mortar_adapter_->setup(structure_field()->discretization(), structure_field()->discretization(),
       coupleddof, "Mortar");
 
-  fvelactiverowdofmap_ = Teuchos::RCP(new Core::LinAlg::MultiMapExtractor);
+  fvelactiverowdofmap_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
 
   // mesh tying not yet works for non-matching structure and fluid discretizations
   if (not matchinggrid_)
@@ -70,7 +70,7 @@ void PoroElast::MonolithicMeshtying::evaluate(
       fluid_field()->extract_pressure_part(fluid_field()->velnp());
   // initialize modified pressure vector with fluid velocity dof map
   Teuchos::RCP<Core::LinAlg::Vector<double>> modfpres =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*fluid_field()->velocity_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluid_field()->velocity_row_map(), true);
 
   const int ndim = Global::Problem::instance()->n_dim();
   int* mygids = fpres->Map().MyGlobalElements();
@@ -132,9 +132,9 @@ void PoroElast::MonolithicMeshtying::recover_lagrange_multiplier_after_newton_st
 
   // RecoverStructuralLM
   Teuchos::RCP<Core::LinAlg::Vector<double>> tmpsx =
-      Teuchos::RCP<Core::LinAlg::Vector<double>>(new Core::LinAlg::Vector<double>(*s_iterinc));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*s_iterinc);
   Teuchos::RCP<Core::LinAlg::Vector<double>> tmpfx =
-      Teuchos::RCP<Core::LinAlg::Vector<double>>(new Core::LinAlg::Vector<double>(*f_iterinc));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*f_iterinc);
 
   mortar_adapter_->recover_fluid_lm_poro_mt(tmpsx, tmpfx);
 }

@@ -29,15 +29,15 @@ namespace
       const std::string& type, const std::vector<std::pair<std::string, double>>& params)
   {
     if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
-      return Teuchos::RCP(new PoroMultiPhaseScaTra::TumorGrowthLawHeaviside<dim>(params));
+      return Teuchos::make_rcp<PoroMultiPhaseScaTra::TumorGrowthLawHeaviside<dim>>(params);
     else if (type == "NECROSIS_LAW_HEAVISIDE")
-      return Teuchos::RCP(new PoroMultiPhaseScaTra::NecrosisLawHeaviside<dim>(params));
+      return Teuchos::make_rcp<PoroMultiPhaseScaTra::NecrosisLawHeaviside<dim>>(params);
     else if (type == "OXYGEN_CONSUMPTION_LAW_HEAVISIDE")
-      return Teuchos::RCP(new PoroMultiPhaseScaTra::OxygenConsumptionLawHeaviside<dim>(params));
+      return Teuchos::make_rcp<PoroMultiPhaseScaTra::OxygenConsumptionLawHeaviside<dim>>(params);
     else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_OXY")
-      return Teuchos::RCP(new PoroMultiPhaseScaTra::TumorGrowthLawHeavisideOxy<dim>(params));
+      return Teuchos::make_rcp<PoroMultiPhaseScaTra::TumorGrowthLawHeavisideOxy<dim>>(params);
     else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
-      return Teuchos::RCP(new PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecro<dim>(params));
+      return Teuchos::make_rcp<PoroMultiPhaseScaTra::TumorGrowthLawHeavisideNecro<dim>>(params);
     else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT")
     {
       return Teuchos::RCP(
@@ -50,11 +50,11 @@ namespace
     }
     else if (type == "LUNG_OXYGEN_EXCHANGE_LAW")
     {
-      return Teuchos::RCP(new PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>(params));
+      return Teuchos::make_rcp<PoroMultiPhaseScaTra::LungOxygenExchangeLaw<dim>>(params);
     }
     else if (type == "LUNG_CARBONDIOXIDE_EXCHANGE_LAW")
     {
-      return Teuchos::RCP(new PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>(params));
+      return Teuchos::make_rcp<PoroMultiPhaseScaTra::LungCarbonDioxideExchangeLaw<dim>>(params);
     }
     else
     {

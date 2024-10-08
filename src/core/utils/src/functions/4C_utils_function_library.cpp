@@ -43,7 +43,7 @@ namespace
       std::vector<double> coefficients =
           function_lin_def.container().get<std::vector<double>>("COEFF");
 
-      return Teuchos::RCP(new Core::UTILS::FastPolynomialFunction(std::move(coefficients)));
+      return Teuchos::make_rcp<Core::UTILS::FastPolynomialFunction>(std::move(coefficients));
     }
     else if (function_lin_def.container().get_or<bool>("CUBIC_SPLINE_FROM_CSV", false))
     {
@@ -53,7 +53,7 @@ namespace
       if (csv_file.empty())
         FOUR_C_THROW("You forgot to specify the *.csv file for cubic spline interpolation!");
 
-      return Teuchos::RCP(new Core::UTILS::CubicSplineFromCSV(csv_file.string()));
+      return Teuchos::make_rcp<Core::UTILS::CubicSplineFromCSV>(csv_file.string());
     }
     else
       return {Teuchos::null};

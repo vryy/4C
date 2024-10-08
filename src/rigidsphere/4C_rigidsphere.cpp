@@ -56,7 +56,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RigidsphereType::create
   if (eletype == "RIGIDSPHERE")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::RCP(new Discret::ELEMENTS::Rigidsphere(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::Rigidsphere>(id, owner);
     return (ele);
   }
   return (Teuchos::null);
@@ -67,7 +67,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RigidsphereType::create
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RigidsphereType::create(
     const int id, const int owner)
 {
-  return (Teuchos::RCP(new Rigidsphere(id, owner)));
+  return (Teuchos::make_rcp<Rigidsphere>(id, owner));
 }
 
 /*----------------------------------------------------------------------*

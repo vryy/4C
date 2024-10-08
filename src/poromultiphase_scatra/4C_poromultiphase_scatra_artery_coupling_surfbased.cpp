@@ -57,7 +57,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
 
   // this vector keeps track of evaluation of GPs
   Teuchos::RCP<Epetra_MultiVector> gp_vector =
-      Teuchos::RCP(new Epetra_MultiVector(*arterydis_->element_col_map(), numgp_per_artele));
+      Teuchos::make_rcp<Epetra_MultiVector>(*arterydis_->element_col_map(), numgp_per_artele);
 
   // pre-evaluate
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++) coupl_elepairs_[i]->pre_evaluate(gp_vector);

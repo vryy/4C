@@ -232,7 +232,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
 {
   MAP temp_table;
 
-  comm_ = Teuchos::RCP(new Epetra_MpiComm(MPI_COMM_WORLD));
+  comm_ = Teuchos::make_rcp<Epetra_MpiComm>(MPI_COMM_WORLD);
 
   /* The warning system is not set up. It's rather stupid anyway. */
 
@@ -513,7 +513,7 @@ void PostProblem::read_meshes()
           if (comm_->MyPID() == 0)
             packed_knots = reader.read_knotvector(step);
           else
-            packed_knots = Teuchos::RCP(new std::vector<char>());
+            packed_knots = Teuchos::make_rcp<std::vector<char>>();
 
           // distribute knots to all procs
           if (comm_->NumProc() > 1)
@@ -551,7 +551,7 @@ void PostProblem::read_meshes()
           }
 
           Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots =
-              Teuchos::RCP(new Core::FE::Nurbs::Knotvector());
+              Teuchos::make_rcp<Core::FE::Nurbs::Knotvector>();
 
           Core::Communication::UnpackBuffer knot_buffer(*packed_knots);
           knots->unpack(knot_buffer);
@@ -630,12 +630,12 @@ PostField PostProblem::getfield(MAP* field_info)
     case Core::FE::ShapeFunctionType::polynomial:
     case Core::FE::ShapeFunctionType::hdg:
     {
-      dis = Teuchos::RCP(new Core::FE::Discretization(field_name, comm_, ndim));
+      dis = Teuchos::make_rcp<Core::FE::Discretization>(field_name, comm_, ndim);
       break;
     }
     case Core::FE::ShapeFunctionType::nurbs:
     {
-      dis = Teuchos::RCP(new Core::FE::Nurbs::NurbsDiscretization(field_name, comm_, ndim));
+      dis = Teuchos::make_rcp<Core::FE::Nurbs::NurbsDiscretization>(field_name, comm_, ndim);
       break;
     }
     default:
@@ -886,7 +886,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> PostResult::read_result(const std::st
   }
   Teuchos::RCP<Epetra_Vector> test =
       Teuchos::rcp_dynamic_cast<Epetra_Vector>(read_multi_result(name));
-  return Teuchos::RCP<Core::LinAlg::Vector<double>>(new Core::LinAlg::Vector<double>(*test));
+  return Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*test);
 }
 
 /*----------------------------------------------------------------------*
@@ -916,13 +916,13 @@ PostResult::read_result_serialdensematrix(const std::string name)
       file_.read_result_data_vec_char(id_path, value_path, columns, *comm, elemap);
 
   Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> mapdata =
-      Teuchos::RCP(new std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>);
+      Teuchos::make_rcp<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>();
 
   Core::Communication::UnpackBuffer data_buffer(*data);
   for (int i = 0; i < elemap->NumMyElements(); ++i)
   {
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstress =
-        Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix);
+        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
     extract_from_pack(data_buffer, *gpstress);
     (*mapdata)[elemap->GID(i)] = gpstress;
   }

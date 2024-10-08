@@ -46,7 +46,7 @@ Mat::PAR::Maxwell0dAcinusDoubleExponential::Maxwell0dAcinusDoubleExponential(
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::Maxwell0dAcinusDoubleExponential::create_material()
 {
-  return Teuchos::RCP(new Mat::Maxwell0dAcinusDoubleExponential(this));
+  return Teuchos::make_rcp<Mat::Maxwell0dAcinusDoubleExponential>(this);
 }
 
 

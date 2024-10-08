@@ -280,7 +280,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new FluidPoroSinglePhase(*this));
+      return Teuchos::make_rcp<FluidPoroSinglePhase>(*this);
     }
 
     /// return density
@@ -425,7 +425,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new FluidPoroSingleVolFrac(*this));
+      return Teuchos::make_rcp<FluidPoroSingleVolFrac>(*this);
     }
 
     /// Return quick accessible material parameter data
@@ -520,7 +520,7 @@ namespace Mat
     /// return copy of this material object
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new FluidPoroVolFracPressure(*this));
+      return Teuchos::make_rcp<FluidPoroVolFracPressure>(*this);
     }
 
     /// Return quick accessible material parameter data

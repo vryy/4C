@@ -53,11 +53,11 @@ void FSI::DirichletNeumannSlideale::setup()
   auto aletype = Teuchos::getIntegralValue<Inpar::FSI::SlideALEProj>(
       Global::Problem::instance()->fsi_dynamic_params(), "SLIDEALEPROJ");
 
-  slideale_ = Teuchos::RCP(new FSI::UTILS::SlideAleUtils(structure_field()->discretization(),
-      mb_fluid_field()->discretization(), structure_fluid_coupling_mortar(), true, aletype));
+  slideale_ = Teuchos::make_rcp<FSI::UTILS::SlideAleUtils>(structure_field()->discretization(),
+      mb_fluid_field()->discretization(), structure_fluid_coupling_mortar(), true, aletype);
 
-  islave_ = Teuchos::RCP(
-      new Core::LinAlg::Vector<double>(*structure_fluid_coupling_mortar().slave_dof_map(), true));
+  islave_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+      *structure_fluid_coupling_mortar().slave_dof_map(), true);
 }
 
 
@@ -110,8 +110,9 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannSlideale::fluid_
     if (fillFlag == MF_Res and mfresitemax_ > 0) mb_fluid_field()->set_itemax(mfresitemax_ + 1);
 
     // new Core::LinAlg::Vector<double> for aledisp in interface
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iale = Teuchos::RCP(new Core::LinAlg::Vector<double>(
-        *(structure_fluid_coupling_mortar().master_dof_map()), true));
+    Teuchos::RCP<Core::LinAlg::Vector<double>> iale =
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+            *(structure_fluid_coupling_mortar().master_dof_map()), true);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> idispn =
         structure_field()->extract_interface_dispn();

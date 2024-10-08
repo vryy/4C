@@ -24,8 +24,8 @@ namespace
     {
       // initialize container for material parameters
       const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
-          Teuchos::RCP(new CONTACT::CONSTITUTIVELAW::Container(
-              1, Inpar::CONTACT::ConstitutiveLawType::colaw_linear, "Linear Constitutivelaw"));
+          Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::Container>(
+              1, Inpar::CONTACT::ConstitutiveLawType::colaw_linear, "Linear Constitutivelaw");
 
       // add parameters to container
       container->add("A", 1.5);

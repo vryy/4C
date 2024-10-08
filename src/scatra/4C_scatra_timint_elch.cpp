@@ -316,9 +316,8 @@ void ScaTra::ScaTraTimIntElch::setup()
       }
 
       // new cccv condition
-      cccv_condition_ =
-          Teuchos::RCP(new ScaTra::CCCVCondition(cccvcyclingcondition, cccvhalfcycleconditions,
-              params_->get<bool>("ADAPTIVE_TIMESTEPPING"), num_dof_per_node()));
+      cccv_condition_ = Teuchos::make_rcp<ScaTra::CCCVCondition>(cccvcyclingcondition,
+          cccvhalfcycleconditions, params_->get<bool>("ADAPTIVE_TIMESTEPPING"), num_dof_per_node());
 
       break;
     }
@@ -355,14 +354,14 @@ void ScaTra::ScaTraTimIntElch::setup_conc_pot_split()
     }
   }
 
-  auto concdofmap = Teuchos::RCP(new const Epetra_Map(
-      -1, static_cast<int>(conc_dofs.size()), conc_dofs.data(), 0, discret_->get_comm()));
-  auto potdofmap = Teuchos::RCP(new const Epetra_Map(
-      -1, static_cast<int>(pot_dofs.size()), pot_dofs.data(), 0, discret_->get_comm()));
+  auto concdofmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(conc_dofs.size()), conc_dofs.data(), 0, discret_->get_comm());
+  auto potdofmap = Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(pot_dofs.size()), pot_dofs.data(), 0, discret_->get_comm());
 
   // set up concentration-potential splitter
-  splitter_ =
-      Teuchos::RCP(new Core::LinAlg::MapExtractor(*discret_->dof_row_map(), potdofmap, concdofmap));
+  splitter_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+      *discret_->dof_row_map(), potdofmap, concdofmap);
 }
 
 /*---------------------------------------------------------------------*
@@ -392,16 +391,16 @@ void ScaTra::ScaTraTimIntElch::setup_conc_pot_pot_split()
 
   // transform sets to maps
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(3, Teuchos::null);
-  maps[0] = Teuchos::RCP(new Epetra_Map(
-      -1, static_cast<int>(conc_dofs.size()), conc_dofs.data(), 0, discret_->get_comm()));
-  maps[1] = Teuchos::RCP(new Epetra_Map(
-      -1, static_cast<int>(pot_el_dofs.size()), pot_el_dofs.data(), 0, discret_->get_comm()));
-  maps[2] = Teuchos::RCP(new Epetra_Map(
-      -1, static_cast<int>(pot_ed_dofs.size()), pot_ed_dofs.data(), 0, discret_->get_comm()));
+  maps[0] = Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(conc_dofs.size()), conc_dofs.data(), 0, discret_->get_comm());
+  maps[1] = Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(pot_el_dofs.size()), pot_el_dofs.data(), 0, discret_->get_comm());
+  maps[2] = Teuchos::make_rcp<Epetra_Map>(
+      -1, static_cast<int>(pot_ed_dofs.size()), pot_ed_dofs.data(), 0, discret_->get_comm());
 
   // set up concentration-potential-potential splitter
   splitter_macro_ =
-      Teuchos::RCP(new Core::LinAlg::MultiMapExtractor(*discret_->dof_row_map(), maps));
+      Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>(*discret_->dof_row_map(), maps);
 }
 
 /*----------------------------------------------------------------------*
@@ -662,7 +661,7 @@ void ScaTra::ScaTraTimIntElch::prepare_first_time_step()
  *----------------------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElch::create_scalar_handler()
 {
-  scalarhandler_ = Teuchos::RCP(new ScalarHandlerElch());
+  scalarhandler_ = Teuchos::make_rcp<ScalarHandlerElch>();
 }
 
 /*----------------------------------------------------------------------*
@@ -700,7 +699,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_error_compared_to_analytical_sol()
 
       // get (squared) error values
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-          Teuchos::RCP(new Core::LinAlg::SerialDenseVector(3));
+          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(3);
       discret_->evaluate_scalars(eleparams, errors);
 
       double conerr1 = 0.0;
@@ -748,7 +747,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_error_compared_to_analytical_sol()
 
       // get (squared) error values
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-          Teuchos::RCP(new Core::LinAlg::SerialDenseVector(3));
+          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(3);
       discret_->evaluate_scalars(eleparams, errors);
 
       // for the L2 norm, we need the square root
@@ -780,7 +779,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_error_compared_to_analytical_sol()
 
       // get (squared) error values
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-          Teuchos::RCP(new Core::LinAlg::SerialDenseVector(1));
+          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(1);
       discret_->evaluate_scalars(eleparams, errors);
 
       // for the L2 norm, we need the square root
@@ -851,8 +850,8 @@ void ScaTra::ScaTraTimIntElch::read_restart_problem_specific(
     if (isale_)
     {
       // reconstruct map from two vectors (ID of condition [key], volume [value])
-      auto conditionid_vec = Teuchos::RCP(new std::vector<int>);
-      auto electrodeinitvol_vec = Teuchos::RCP(new std::vector<double>);
+      auto conditionid_vec = Teuchos::make_rcp<std::vector<int>>();
+      auto electrodeinitvol_vec = Teuchos::make_rcp<std::vector<double>>();
       reader.read_redundant_int_vector(conditionid_vec, "electrodeconditionids");
       reader.read_redundant_double_vector(electrodeinitvol_vec, "electrodeinitvols");
       if (conditionid_vec->size() != electrodeinitvol_vec->size())
@@ -1024,7 +1023,7 @@ ScaTra::ScaTraTimIntElch::evaluate_single_electrode_info(
   // physical meaning of vector components is described in post_process_single_electrode_info
   // routine
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(11));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(11);
 
   // evaluate relevant boundary integrals
   discret_->evaluate_scalars(eleparams, scalars, condstring, condid);
@@ -1052,7 +1051,7 @@ ScaTra::ScaTraTimIntElch::evaluate_single_electrode_info_point(
   // physical meaning of vector components is described in post_process_single_electrode_info
   // routine
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(numscalars));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(numscalars);
 
   // extract nodal cloud of current condition
   const std::vector<int>* nodeids = condition->get_nodes();
@@ -1373,7 +1372,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_info_interior()
       // fourth component = integral of velocity divergence (ALE only)
       // fifth component  = integral of concentration times velocity divergence (ALE only)
       // sixth component  = integral of velocity times concentration gradient (ALE only)
-      auto scalars = Teuchos::RCP(new Core::LinAlg::SerialDenseVector(isale_ ? 6 : 3));
+      auto scalars = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(isale_ ? 6 : 3);
 
       // evaluate current condition for electrode state of charge
       discret_->evaluate_scalars(condparams, scalars, "ElectrodeSOC", condid);
@@ -1490,7 +1489,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_cell_voltage()
         // initialize result vector
         // first component = electric potential integral, second component = domain integral
         Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
-            Teuchos::RCP(new Core::LinAlg::SerialDenseVector(2));
+            Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(2);
 
         // evaluate current condition for electrode state of charge
         discret_->evaluate_scalars(condparams, scalars, "CellVoltage", condid);
@@ -1568,8 +1567,8 @@ void ScaTra::ScaTraTimIntElch::write_restart() const
     if (isale_)
     {
       // extract condition ID and volume into two separate std vectors and write out
-      auto conditionid_vec = Teuchos::RCP(new std::vector<int>);
-      auto electrodeinitvol_vec = Teuchos::RCP(new std::vector<double>);
+      auto conditionid_vec = Teuchos::make_rcp<std::vector<int>>();
+      auto electrodeinitvol_vec = Teuchos::make_rcp<std::vector<double>>();
       for (const auto& electrodeinitvol : electrodeinitvols_)
       {
         conditionid_vec->push_back(electrodeinitvol.first);
@@ -1671,7 +1670,7 @@ void ScaTra::ScaTraTimIntElch::setup_nat_conv()
 
   // evaluate integrals of concentrations and domain
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(num_dof_per_node() + 1));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_dof_per_node() + 1);
   discret_->evaluate_scalars(eleparams, scalars);
 
   // calculate mean concentration
@@ -1875,22 +1874,22 @@ void ScaTra::ScaTraTimIntElch::create_meshtying_strategy()
   // fluid meshtying
   if (msht_ != Inpar::FLUID::no_meshtying)
   {
-    strategy_ = Teuchos::RCP(new MeshtyingStrategyFluidElch(this));
+    strategy_ = Teuchos::make_rcp<MeshtyingStrategyFluidElch>(this);
   }
   // scatra-scatra interface coupling
   else if (s2_i_meshtying())
   {
-    strategy_ = Teuchos::RCP(new MeshtyingStrategyS2IElch(this, *params_));
+    strategy_ = Teuchos::make_rcp<MeshtyingStrategyS2IElch>(this, *params_);
   }
   // ScaTra-ScaTra interface contact
   else if (s2_i_kinetics() and !s2_i_meshtying())
   {
-    strategy_ = Teuchos::RCP(new MeshtyingStrategyStd(this));
+    strategy_ = Teuchos::make_rcp<MeshtyingStrategyStd>(this);
   }
   // standard case without meshtying
   else
   {
-    strategy_ = Teuchos::RCP(new MeshtyingStrategyStdElch(this));
+    strategy_ = Teuchos::make_rcp<MeshtyingStrategyStdElch>(this);
   }
 }
 
@@ -2131,7 +2130,7 @@ double ScaTra::ScaTraTimIntElch::compute_conductivity(
 
   // evaluate integrals of scalar(s) and domain
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> sigma_domint =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseVector(num_scal() + 2));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_scal() + 2);
   discret_->evaluate_scalars(eleparams, sigma_domint);
   const double domint = (*sigma_domint)[num_scal() + 1];
 
@@ -2218,16 +2217,18 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
       // There are maximal two electrode conditions by definition
       // current flow i at electrodes
       Teuchos::RCP<std::vector<double>> actualcurrent =
-          Teuchos::RCP(new std::vector<double>(2, 0.0));
+          Teuchos::make_rcp<std::vector<double>>(2, 0.0);
       // residual at electrodes = i*timefac
       Teuchos::RCP<std::vector<double>> currresidual =
-          Teuchos::RCP(new std::vector<double>(2, 0.0));
-      Teuchos::RCP<std::vector<double>> currtangent = Teuchos::RCP(new std::vector<double>(2, 0.0));
+          Teuchos::make_rcp<std::vector<double>>(2, 0.0);
+      Teuchos::RCP<std::vector<double>> currtangent =
+          Teuchos::make_rcp<std::vector<double>>(2, 0.0);
       Teuchos::RCP<std::vector<double>> electrodesurface =
-          Teuchos::RCP(new std::vector<double>(2, 0.0));
+          Teuchos::make_rcp<std::vector<double>>(2, 0.0);
       Teuchos::RCP<std::vector<double>> electrodepot =
-          Teuchos::RCP(new std::vector<double>(2, 0.0));
-      Teuchos::RCP<std::vector<double>> meanoverpot = Teuchos::RCP(new std::vector<double>(2, 0.0));
+          Teuchos::make_rcp<std::vector<double>>(2, 0.0);
+      Teuchos::RCP<std::vector<double>> meanoverpot =
+          Teuchos::make_rcp<std::vector<double>>(2, 0.0);
       double meanelectrodesurface(0.0);
       // Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first
       // residual is calculated
@@ -2934,8 +2935,8 @@ void ScaTra::ScaTraTimIntElch::apply_dirichlet_bc(const double time,
 
       // transform set into vector and then into Epetra map
       std::vector<int> dbcgidsvec(dbcgids.begin(), dbcgids.end());
-      auto dbcmap = Teuchos::RCP(new const Epetra_Map(-1, static_cast<int>(dbcgids.size()),
-          dbcgidsvec.data(), dof_row_map()->IndexBase(), dof_row_map()->Comm()));
+      auto dbcmap = Teuchos::make_rcp<Epetra_Map>(-1, static_cast<int>(dbcgids.size()),
+          dbcgidsvec.data(), dof_row_map()->IndexBase(), dof_row_map()->Comm());
 
       // merge map with existing map for Dirichlet boundary conditions
       // Note: the dbcmaps_ internal member is reset every time evaluate_dirichlet() is called on
@@ -3202,8 +3203,8 @@ void ScaTra::ScaTraTimIntElch::build_block_maps(
         std::unordered_set<int> dof_set(dofs.begin(), dofs.end());
         FOUR_C_ASSERT(dof_set.size() == dofs.size(), "The dofs are not unique");
 #endif
-        blockmaps.emplace_back(Teuchos::RCP(new Epetra_Map(
-            -1, static_cast<int>(dofs.size()), dofs.data(), 0, discret_->get_comm())));
+        blockmaps.emplace_back(Teuchos::make_rcp<Epetra_Map>(
+            -1, static_cast<int>(dofs.size()), dofs.data(), 0, discret_->get_comm()));
       }
     }
   }
@@ -3270,7 +3271,7 @@ void ScaTra::ScaTraTimIntElch::reduce_dimension_null_space_blocks(
     // This can be done more elegant as writing it back in a different container!
     const int dimnsnew = mueluparams.get<int>("null space: dimension");
     Teuchos::RCP<Epetra_MultiVector> nspVectornew =
-        Teuchos::RCP(new Epetra_MultiVector(*(block_maps()->Map(iblock)), dimnsnew, true));
+        Teuchos::make_rcp<Epetra_MultiVector>(*(block_maps()->Map(iblock)), dimnsnew, true);
     Core::LinAlg::std_vector_to_epetra_multi_vector(nullspace, nspVectornew, dimnsnew);
 
     mueluparams.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nspVectornew);
@@ -3304,7 +3305,7 @@ double ScaTra::ScaTraTimIntElch::get_current_temperature() const
  *-----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::ScaTraTimIntElch::create_scatra_field_test()
 {
-  return Teuchos::RCP(new ScaTra::ElchResultTest(Teuchos::RCP(this, false)));
+  return Teuchos::make_rcp<ScaTra::ElchResultTest>(Teuchos::RCP(this, false));
 }
 
 /*----------------------------------------------------------------------*

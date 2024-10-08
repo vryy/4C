@@ -85,7 +85,7 @@ namespace Mat
 
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new LinElast1D(*this));
+      return Teuchos::make_rcp<LinElast1D>(*this);
     }
 
     /// mass density
@@ -149,7 +149,7 @@ namespace Mat
 
     Teuchos::RCP<Core::Mat::Material> clone() const override
     {
-      return Teuchos::RCP(new LinElast1DGrowth(*this));
+      return Teuchos::make_rcp<LinElast1DGrowth>(*this);
     }
     /// elastic energy based on @p def_grad and @p conc
     double evaluate_elastic_energy(double def_grad, double conc) const;

@@ -47,7 +47,7 @@ Mat::PAR::MatList::MatList(const Core::Mat::PAR::Parameter::Data& matdata)
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatList::create_material()
 {
-  return Teuchos::RCP(new Mat::MatList(this));
+  return Teuchos::make_rcp<Mat::MatList>(this);
 }
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatList::material_by_id(const int id) const

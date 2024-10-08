@@ -50,7 +50,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
       searchdis_(searchdis),
       basisnodes_(discret.num_global_nodes())
 {
-  extrusionvalue_ = Teuchos::RCP(new std::vector<double>);
+  extrusionvalue_ = Teuchos::make_rcp<std::vector<double>>();
   extrusionvalue_->clear();
 
   Inpar::BEAMCONTACT::OctreeType bboxtype_input = Inpar::BEAMCONTACT::boct_none;
@@ -129,7 +129,7 @@ Beam3ContactOctTree::Beam3ContactOctTree(Teuchos::ParameterList& params,
         "BEAMS_EXTVAL in your input file.");
 
   // statmech input section no longer existent, get parameters out of new section if needed
-  periodlength_ = Teuchos::RCP(new std::vector<double>);
+  periodlength_ = Teuchos::make_rcp<std::vector<double>>();
   periodlength_->clear();
   for (int i = 0; i < 2; i++) periodlength_->push_back(0);
   periodic_bc_ = false;
@@ -258,7 +258,7 @@ bool Beam3ContactOctTree::intersect_b_boxes_with(
 
   // determine bounding box limits
   Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits =
-      Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix(1, 1));
+      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(1, 1);
 
   // build bounding box according to given type
   switch (boundingbox_)
@@ -424,11 +424,11 @@ void Beam3ContactOctTree::initialize_octree_search()
   // intersection optimization)
   if (periodic_bc_)
     numshifts_ =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*(searchdis_.element_col_map()), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(searchdis_.element_col_map()), true);
 
   // determine radius factor by looking at the absolute mean variance of a bounding box (not quite
   // sure...) beam diameter
-  diameter_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*(searchdis_.element_col_map())));
+  diameter_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(searchdis_.element_col_map()));
   switch (boundingbox_)
   {
     // for this case, the diameter is calculated in create_spbb()
@@ -475,8 +475,8 @@ void Beam3ContactOctTree::initialize_octree_search()
   // maxnumshifts = 0)
   int maxnumshifts = 0;
   if (periodic_bc_) maxnumshifts = 3;
-  allbboxes_ = Teuchos::RCP(new Epetra_MultiVector(
-      *(searchdis_.element_col_map()), (maxnumshifts + 1) * numbboxcoords + 1, true));
+  allbboxes_ = Teuchos::make_rcp<Epetra_MultiVector>(
+      *(searchdis_.element_col_map()), (maxnumshifts + 1) * numbboxcoords + 1, true);
 
   return;
 }
@@ -992,7 +992,7 @@ bool Beam3ContactOctTree::locate_all()
   // communicate bbox2octant_ to all Procs
   searchdis_.get_comm().MaxAll(&maxnumoctlocal, &maxnumoctglobal, 1);
   bbox2octant_ =
-      Teuchos::RCP(new Epetra_MultiVector(*(searchdis_.element_col_map()), maxnumoctglobal, true));
+      Teuchos::make_rcp<Epetra_MultiVector>(*(searchdis_.element_col_map()), maxnumoctglobal, true);
 
   // fill epetra vector
   if (!searchdis_.get_comm().MyPID())
@@ -1023,7 +1023,7 @@ bool Beam3ContactOctTree::locate_all()
     Epetra_Map octtreemap(-1, (int)gids.size(), gids.data(), 0, discret_.get_comm());
 
     // build Epetra_MultiVectors which hold the BBs of the OctreeMap; for communication
-    bboxesinoctants_ = Teuchos::RCP(new Epetra_MultiVector(octtreemap, maxdepthglobal), true);
+    bboxesinoctants_ = Teuchos::make_rcp<Epetra_MultiVector>(octtreemap, maxdepthglobal);
     Epetra_MultiVector bboxinoctrow(octtreerowmap, maxdepthglobal, true);
 
     // fill bboxinoct for Proc 0
@@ -1107,7 +1107,7 @@ void Beam3ContactOctTree::locate_box(std::vector<std::vector<double>>& allbboxes
     if (boundingbox_ == Beam3ContactOctTree::cyloriented ||
         boundingbox_ == Beam3ContactOctTree::spherical)
     {
-      octcenter = Teuchos::RCP(new Core::LinAlg::Matrix<3, 1>);
+      octcenter = Teuchos::make_rcp<Core::LinAlg::Matrix<3, 1>>();
       for (int i = 0; i < (int)octcenter->m(); i++)
         (*octcenter)(i) = 0.5 * (suboctlimits[oct](2 * i) + suboctlimits[oct](2 * i + 1));
     }

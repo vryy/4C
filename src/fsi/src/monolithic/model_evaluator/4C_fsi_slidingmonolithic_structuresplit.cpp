@@ -144,17 +144,17 @@ FSI::SlidingMonolithicStructureSplit::SlidingMonolithicStructureSplit(
 
   notsetup_ = true;
 
-  coupsfm_ = Teuchos::RCP(new Coupling::Adapter::CouplingMortar(
+  coupsfm_ = Teuchos::make_rcp<Coupling::Adapter::CouplingMortar>(
       Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
-      Global::Problem::instance()->spatial_approximation_type()));
-  fscoupfa_ = Teuchos::RCP(new Coupling::Adapter::Coupling());
+      Global::Problem::instance()->spatial_approximation_type());
+  fscoupfa_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
 
-  aigtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
-  fmiitransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
-  fmgitransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
-  fsaigtransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
-  fsmgitransform_ = Teuchos::RCP(new Coupling::Adapter::MatrixColTransform);
+  aigtransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
+  fmiitransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
+  fmgitransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
+  fsaigtransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
+  fsmgitransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
 
   set_lambda();
   ddiinc_ = Teuchos::null;
@@ -209,10 +209,10 @@ FSI::SlidingMonolithicStructureSplit::SlidingMonolithicStructureSplit(
 /*----------------------------------------------------------------------------*/
 void FSI::SlidingMonolithicStructureSplit::set_lambda()
 {
-  lambda_ = Teuchos::RCP(
-      new Core::LinAlg::Vector<double>(*structure_field()->interface()->fsi_cond_map(), true));
-  lambdaold_ = Teuchos::RCP(
-      new Core::LinAlg::Vector<double>(*structure_field()->interface()->fsi_cond_map(), true));
+  lambda_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+      *structure_field()->interface()->fsi_cond_map(), true);
+  lambdaold_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+      *structure_field()->interface()->fsi_cond_map(), true);
 
   return;
 }
@@ -284,8 +284,8 @@ void FSI::SlidingMonolithicStructureSplit::setup_system()
     // build ale system matrix in splitted system
     ale_field()->create_system_matrix(ale_field()->interface());
 
-    aleresidual_ = Teuchos::RCP(
-        new Core::LinAlg::Vector<double>(*fsi_ale_field()->fsi_interface()->other_map()));
+    aleresidual_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+        *fsi_ale_field()->fsi_interface()->other_map());
 
     // -------------------------------------------------------------------------
     // Build the global Dirichlet map extractor
@@ -295,7 +295,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_system()
     // enable debugging
     if (fsidyn.get<bool>("DEBUGOUTPUT"))
     {
-      pcdbg_ = Teuchos::RCP(new UTILS::MonolithicDebugWriter(*this));
+      pcdbg_ = Teuchos::make_rcp<UTILS::MonolithicDebugWriter>(*this);
     }
 
     create_system_matrix();
@@ -307,13 +307,13 @@ void FSI::SlidingMonolithicStructureSplit::setup_system()
       // volume in initialize_elements()
       structure_field()->discretization()->fill_complete(false, true, true);
       // set up sliding ale utils
-      slideale_ = Teuchos::RCP(new FSI::UTILS::SlideAleUtils(structure_field()->discretization(),
-          fluid_field()->discretization(), *coupsfm_, false, aleproj_));
+      slideale_ = Teuchos::make_rcp<FSI::UTILS::SlideAleUtils>(structure_field()->discretization(),
+          fluid_field()->discretization(), *coupsfm_, false, aleproj_);
 
       iprojdisp_ =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*coupsfm_->master_dof_map(), true));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*coupsfm_->master_dof_map(), true);
       iprojdispinc_ =
-          Teuchos::RCP(new Core::LinAlg::Vector<double>(*coupsfm_->master_dof_map(), true));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*coupsfm_->master_dof_map(), true);
     }
     notsetup_ = false;
   }
@@ -359,7 +359,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_dbc_map_extractor()
   Teuchos::RCP<const Epetra_Map> dbcmap = Core::LinAlg::MultiMapExtractor::merge_maps(dbcmaps);
 
   // Finally, create the global FSI Dirichlet map extractor
-  dbcmaps_ = Teuchos::RCP(new Core::LinAlg::MapExtractor(*dof_row_map(), dbcmap, true));
+  dbcmaps_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*dof_row_map(), dbcmap, true);
   if (dbcmaps_ == Teuchos::null) FOUR_C_THROW("Creation of FSI Dirichlet map extractor failed.");
 
   return;
@@ -391,11 +391,11 @@ void FSI::SlidingMonolithicStructureSplit::setup_rhs_residual(Core::LinAlg::Vect
 
   // get single field residuals
   Teuchos::RCP<const Core::LinAlg::Vector<double>> sv =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*structure_field()->rhs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*structure_field()->rhs());
   Teuchos::RCP<const Core::LinAlg::Vector<double>> fv =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*fluid_field()->rhs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluid_field()->rhs());
   Teuchos::RCP<const Core::LinAlg::Vector<double>> av =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*ale_field()->rhs()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ale_field()->rhs());
 
   // extract only inner DOFs from structure (=slave) and ALE field
   Teuchos::RCP<const Core::LinAlg::Vector<double>> sov =
@@ -442,7 +442,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_rhs_lambda(Core::LinAlg::Vector
     // project Lagrange multiplier field onto the master interface DOFs and consider temporal
     // scaling
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(mortarm->domain_map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortarm->domain_map(), true);
     mortarm->multiply(true, *lambdaold_, *lambda);
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
         fluid_field()->interface()->insert_fsi_cond_vector(*lambda);
@@ -521,8 +521,8 @@ void FSI::SlidingMonolithicStructureSplit::setup_rhs_firstiter(Core::LinAlg::Vec
    *
    */
   // ----------addressing term 1
-  rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(sig.range_map(), true));
-  auxvec = Teuchos::RCP(new Core::LinAlg::Vector<double>(mortarp->range_map(), true));
+  rhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(sig.range_map(), true);
+  auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortarp->range_map(), true);
 
   mortarp->Apply(*fveln, *auxvec);
   sig.Apply(*auxvec, *rhs);
@@ -533,7 +533,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_rhs_firstiter(Core::LinAlg::Vec
   // ----------end of term 1
 
   // ----------addressing term 2
-  rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(sig.range_map(), true));
+  rhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(sig.range_map(), true);
 
   sig.Apply(*ddgpred_, *rhs);
 
@@ -555,7 +555,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_rhs_firstiter(Core::LinAlg::Vec
     // extract F^{G}_{I \Gamma}
     const Core::LinAlg::SparseMatrix& fmig = mmm->matrix(0, 1);
 
-    rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(fmig.range_map(), true));
+    rhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fmig.range_map(), true);
 
     fmig.Apply(*fveln, *rhs);
 
@@ -589,7 +589,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_rhs_firstiter(Core::LinAlg::Vec
     // extract F^{G}_{\Gamma\Gamma}
     const Core::LinAlg::SparseMatrix& fmgg = mmm->matrix(1, 1);
 
-    rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(fmgg.range_map(), true));
+    rhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fmgg.range_map(), true);
 
     fmgg.Apply(*fveln, *rhs);
 
@@ -601,9 +601,9 @@ void FSI::SlidingMonolithicStructureSplit::setup_rhs_firstiter(Core::LinAlg::Vec
   // ----------end of term 1
 
   // ----------addressing term 2
-  rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(mortarp->domain_map(), true));
-  auxvec = Teuchos::RCP(new Core::LinAlg::Vector<double>(sgg.range_map(), true));
-  tmpvec = Teuchos::RCP(new Core::LinAlg::Vector<double>(mortarp->range_map(), true));
+  rhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortarp->domain_map(), true);
+  auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(sgg.range_map(), true);
+  tmpvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortarp->range_map(), true);
 
   mortarp->Apply(*fveln, *tmpvec);
   sgg.Apply(*tmpvec, *auxvec);
@@ -616,8 +616,8 @@ void FSI::SlidingMonolithicStructureSplit::setup_rhs_firstiter(Core::LinAlg::Vec
   // ----------end of term 2
 
   // ----------addressing term 3
-  rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(mortarp->domain_map(), true));
-  auxvec = Teuchos::RCP(new Core::LinAlg::Vector<double>(sgg.range_map(), true));
+  rhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortarp->domain_map(), true);
+  auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(sgg.range_map(), true);
 
   sgg.Apply(*ddgpred_, *auxvec);
   mortarp->multiply(true, *auxvec, *rhs);
@@ -638,7 +638,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_rhs_firstiter(Core::LinAlg::Vec
    *
    */
   // ----------addressing term 1
-  rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(aig.range_map(), true));
+  rhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(aig.range_map(), true);
 
   aig.Apply(*fluid_to_ale_interface(fveln), *rhs);
 
@@ -651,7 +651,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_rhs_firstiter(Core::LinAlg::Vec
   // only if relative movement between ale and structure is possible
   if (aleproj_ != Inpar::FSI::ALEprojection_none)
   {
-    rhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(aig.row_map(), true));
+    rhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(aig.row_map(), true);
 
     aig.Apply(*fluid_to_ale_interface(iprojdispinc_), *rhs);
 
@@ -741,7 +741,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_system_matrix(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sig =
       matrix_multiply(s->matrix(0, 1), false, *mortarp, false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lsig =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(sig->row_map(), 81, false));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sig->row_map(), 81, false);
 
   lsig->add(*sig, false, 1. / timescale, 0.0);
   lsig->complete(f->domain_map(), sig->range_map());
@@ -752,7 +752,7 @@ void FSI::SlidingMonolithicStructureSplit::setup_system_matrix(
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sgi =
       matrix_multiply(*mortarp, true, s->matrix(1, 0), false, false, false, true);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> lsgi =
-      Teuchos::RCP(new Core::LinAlg::SparseMatrix(f->row_map(), 81, false));
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(f->row_map(), 81, false);
 
   lsgi->add(*sgi, false, (1. - ftiparam) / ((1. - stiparam) * scale), 0.0);
   lsgi->complete(sgi->domain_map(), f->range_map());
@@ -812,8 +812,8 @@ void FSI::SlidingMonolithicStructureSplit::setup_system_matrix(
   // matrices
   sgiprev_ = sgicur_;
   sggprev_ = sggcur_;
-  sgicur_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(s->matrix(1, 0)));
-  sggcur_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(s->matrix(1, 1)));
+  sgicur_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(s->matrix(1, 0));
+  sggcur_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(s->matrix(1, 1));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -825,7 +825,7 @@ void FSI::SlidingMonolithicStructureSplit::update()
   // update history variables for sliding ale
   if (aleproj_ != Inpar::FSI::ALEprojection_none)
   {
-    iprojdisp_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*coupsfm_->master_dof_map(), true));
+    iprojdisp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*coupsfm_->master_dof_map(), true);
     Teuchos::RCP<Core::LinAlg::Vector<double>> idispale = ale_to_fluid_interface(
         ale_field()->interface()->extract_fsi_cond_vector(*ale_field()->dispnp()));
 
@@ -839,7 +839,7 @@ void FSI::SlidingMonolithicStructureSplit::update()
     slideale_->evaluate_fluid_mortar(idispale, iprojdisp_);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*iprojdisp_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*iprojdisp_);
     temp->ReplaceMap(idispale->Map());
     Teuchos::RCP<Core::LinAlg::Vector<double>> acx = fluid_to_ale_interface(temp);
     ale_field()->apply_interface_displacements(acx);
@@ -869,8 +869,8 @@ void FSI::SlidingMonolithicStructureSplit::scale_system(
 
     // do scaling of structure rows
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.matrix(0, 0).epetra_matrix();
-    srowsum_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(A->RowMap(), false));
-    scolsum_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    srowsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A->RowMap(), false);
+    scolsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A->RowMap(), false);
     A->InvRowSums(*srowsum_->get_ptr_of_Epetra_Vector());
     A->InvColSums(*scolsum_->get_ptr_of_Epetra_Vector());
     if (A->LeftScale(*srowsum_) or A->RightScale(*scolsum_) or
@@ -882,8 +882,8 @@ void FSI::SlidingMonolithicStructureSplit::scale_system(
 
     // do scaling of ale rows
     A = mat.matrix(2, 2).epetra_matrix();
-    arowsum_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(A->RowMap(), false));
-    acolsum_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(A->RowMap(), false));
+    arowsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A->RowMap(), false);
+    acolsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A->RowMap(), false);
     A->InvRowSums(*arowsum_->get_ptr_of_Epetra_Vector());
     A->InvColSums(*acolsum_->get_ptr_of_Epetra_Vector());
     if (A->LeftScale(*arowsum_) or A->RightScale(*acolsum_) or
@@ -1002,17 +1002,17 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::SlidingMonolithicStructureSplit::cre
   // ---------------------------------------------------------------------------
   // Create the top-level test combo
   Teuchos::RCP<::NOX::StatusTest::Combo> combo =
-      Teuchos::RCP(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
+      Teuchos::make_rcp<::NOX::StatusTest::Combo>(::NOX::StatusTest::Combo::OR);
 
   // Create test combo for convergence of residuals and iterative increments
   Teuchos::RCP<::NOX::StatusTest::Combo> converged =
-      Teuchos::RCP(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
+      Teuchos::make_rcp<::NOX::StatusTest::Combo>(::NOX::StatusTest::Combo::AND);
 
   // Create some other plausibility tests
   Teuchos::RCP<::NOX::StatusTest::MaxIters> maxiters =
-      Teuchos::RCP(new ::NOX::StatusTest::MaxIters(nlParams.get<int>("Max Iterations")));
+      Teuchos::make_rcp<::NOX::StatusTest::MaxIters>(nlParams.get<int>("Max Iterations"));
   Teuchos::RCP<::NOX::StatusTest::FiniteValue> fv =
-      Teuchos::RCP(new ::NOX::StatusTest::FiniteValue);
+      Teuchos::make_rcp<::NOX::StatusTest::FiniteValue>();
 
   // Add single tests to the top-level test combo
   combo->addStatusTest(fv);
@@ -1021,7 +1021,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::SlidingMonolithicStructureSplit::cre
 
   // Start filling the 'converged' combo here
   // require one solve
-  converged->addStatusTest(Teuchos::RCP(new NOX::FSI::MinIters(1)));
+  converged->addStatusTest(Teuchos::make_rcp<NOX::FSI::MinIters>(1));
 
 
   // ---------------------------------------------------------------------------
@@ -1029,23 +1029,24 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::SlidingMonolithicStructureSplit::cre
   // ---------------------------------------------------------------------------
   // create ::NOX::StatusTest::Combo for structural displacement field
   Teuchos::RCP<::NOX::StatusTest::Combo> structcombo =
-      Teuchos::RCP(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
+      Teuchos::make_rcp<::NOX::StatusTest::Combo>(::NOX::StatusTest::Combo::AND);
 
   // create Norm-objects for each norm that has to be tested
-  Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp_L2 = Teuchos::RCP(new NOX::FSI::PartialNormF(
+  Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp_L2 = Teuchos::make_rcp<NOX::FSI::PartialNormF>(
       "DISPL residual", extractor(), 0, nlParams.get<double>("Tol dis res L2"),
-      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
-  Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp_inf = Teuchos::RCP(new NOX::FSI::PartialNormF(
-      "DISPL residual", extractor(), 0, nlParams.get<double>("Tol dis res Inf"),
-      ::NOX::Abstract::Vector::MaxNorm, NOX::FSI::PartialNormF::Unscaled));
+      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled);
+  Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp_inf =
+      Teuchos::make_rcp<NOX::FSI::PartialNormF>("DISPL residual", extractor(), 0,
+          nlParams.get<double>("Tol dis res Inf"), ::NOX::Abstract::Vector::MaxNorm,
+          NOX::FSI::PartialNormF::Unscaled);
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate_L2 =
-      Teuchos::RCP(new NOX::FSI::PartialNormUpdate("DISPL update", extractor(), 0,
+      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("DISPL update", extractor(), 0,
           nlParams.get<double>("Tol dis inc L2"), ::NOX::Abstract::Vector::TwoNorm,
-          NOX::FSI::PartialNormUpdate::Scaled));
+          NOX::FSI::PartialNormUpdate::Scaled);
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate_inf =
-      Teuchos::RCP(new NOX::FSI::PartialNormUpdate("DISPL update", extractor(), 0,
+      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("DISPL update", extractor(), 0,
           nlParams.get<double>("Tol dis inc Inf"), ::NOX::Abstract::Vector::MaxNorm,
-          NOX::FSI::PartialNormUpdate::Unscaled));
+          NOX::FSI::PartialNormUpdate::Unscaled);
 
   // tests needed to adapt relative tolerance of the linear solver
   add_status_test(structureDisp_L2);
@@ -1071,23 +1072,24 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::SlidingMonolithicStructureSplit::cre
 
   // create ::NOX::StatusTest::Combo for interface
   Teuchos::RCP<::NOX::StatusTest::Combo> interfacecombo =
-      Teuchos::RCP(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
+      Teuchos::make_rcp<::NOX::StatusTest::Combo>(::NOX::StatusTest::Combo::AND);
 
   // create Norm-objects for each norm that has to be tested
-  Teuchos::RCP<NOX::FSI::PartialNormF> interfaceTest_L2 = Teuchos::RCP(new NOX::FSI::PartialNormF(
+  Teuchos::RCP<NOX::FSI::PartialNormF> interfaceTest_L2 = Teuchos::make_rcp<NOX::FSI::PartialNormF>(
       "GAMMA residual", interfaceextract, 0, nlParams.get<double>("Tol fsi res L2"),
-      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
-  Teuchos::RCP<NOX::FSI::PartialNormF> interfaceTest_inf = Teuchos::RCP(new NOX::FSI::PartialNormF(
-      "GAMMA residual", interfaceextract, 0, nlParams.get<double>("Tol fsi res Inf"),
-      ::NOX::Abstract::Vector::MaxNorm, NOX::FSI::PartialNormF::Unscaled));
+      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled);
+  Teuchos::RCP<NOX::FSI::PartialNormF> interfaceTest_inf =
+      Teuchos::make_rcp<NOX::FSI::PartialNormF>("GAMMA residual", interfaceextract, 0,
+          nlParams.get<double>("Tol fsi res Inf"), ::NOX::Abstract::Vector::MaxNorm,
+          NOX::FSI::PartialNormF::Unscaled);
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> interfaceTestUpdate_L2 =
-      Teuchos::RCP(new NOX::FSI::PartialNormUpdate("GAMMA update", interfaceextract, 0,
+      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("GAMMA update", interfaceextract, 0,
           nlParams.get<double>("Tol fsi inc L2"), ::NOX::Abstract::Vector::TwoNorm,
-          NOX::FSI::PartialNormUpdate::Scaled));
+          NOX::FSI::PartialNormUpdate::Scaled);
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> interfaceTestUpdate_inf =
-      Teuchos::RCP(new NOX::FSI::PartialNormUpdate("GAMMA update", interfaceextract, 0,
+      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("GAMMA update", interfaceextract, 0,
           nlParams.get<double>("Tol fsi inc Inf"), ::NOX::Abstract::Vector::MaxNorm,
-          NOX::FSI::PartialNormUpdate::Unscaled));
+          NOX::FSI::PartialNormUpdate::Unscaled);
 
   // tests needed to adapt relative tolerance of the linear solver
   add_status_test(interfaceTest_L2);
@@ -1113,23 +1115,24 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::SlidingMonolithicStructureSplit::cre
 
   // create ::NOX::StatusTest::Combo for fluid velocity field
   Teuchos::RCP<::NOX::StatusTest::Combo> fluidvelcombo =
-      Teuchos::RCP(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
+      Teuchos::make_rcp<::NOX::StatusTest::Combo>(::NOX::StatusTest::Combo::AND);
 
   // create Norm-objects for each norm that has to be tested
-  Teuchos::RCP<NOX::FSI::PartialNormF> innerFluidVel_L2 = Teuchos::RCP(new NOX::FSI::PartialNormF(
+  Teuchos::RCP<NOX::FSI::PartialNormF> innerFluidVel_L2 = Teuchos::make_rcp<NOX::FSI::PartialNormF>(
       "VELOC residual", fluidvelextract, 0, nlParams.get<double>("Tol vel res L2"),
-      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
-  Teuchos::RCP<NOX::FSI::PartialNormF> innerFluidVel_inf = Teuchos::RCP(new NOX::FSI::PartialNormF(
-      "VELOC residual", fluidvelextract, 0, nlParams.get<double>("Tol vel res Inf"),
-      ::NOX::Abstract::Vector::MaxNorm, NOX::FSI::PartialNormF::Unscaled));
+      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled);
+  Teuchos::RCP<NOX::FSI::PartialNormF> innerFluidVel_inf =
+      Teuchos::make_rcp<NOX::FSI::PartialNormF>("VELOC residual", fluidvelextract, 0,
+          nlParams.get<double>("Tol vel res Inf"), ::NOX::Abstract::Vector::MaxNorm,
+          NOX::FSI::PartialNormF::Unscaled);
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> innerFluidVelUpdate_L2 =
-      Teuchos::RCP(new NOX::FSI::PartialNormUpdate("VELOC update", fluidvelextract, 0,
+      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("VELOC update", fluidvelextract, 0,
           nlParams.get<double>("Tol vel inc L2"), ::NOX::Abstract::Vector::TwoNorm,
-          NOX::FSI::PartialNormUpdate::Scaled));
+          NOX::FSI::PartialNormUpdate::Scaled);
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> innerFluidVelUpdate_inf =
-      Teuchos::RCP(new NOX::FSI::PartialNormUpdate("VELOC update", fluidvelextract, 0,
+      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("VELOC update", fluidvelextract, 0,
           nlParams.get<double>("Tol vel inc Inf"), ::NOX::Abstract::Vector::MaxNorm,
-          NOX::FSI::PartialNormUpdate::Unscaled));
+          NOX::FSI::PartialNormUpdate::Unscaled);
 
   // tests needed to adapt relative tolerance of the linear solver
   add_status_test(innerFluidVel_L2);
@@ -1155,23 +1158,23 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::SlidingMonolithicStructureSplit::cre
 
   // create ::NOX::StatusTest::Combo for fluid pressure field
   Teuchos::RCP<::NOX::StatusTest::Combo> fluidpresscombo =
-      Teuchos::RCP(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
+      Teuchos::make_rcp<::NOX::StatusTest::Combo>(::NOX::StatusTest::Combo::AND);
 
   // create Norm-objects for each norm that has to be tested
-  Teuchos::RCP<NOX::FSI::PartialNormF> fluidPress_L2 = Teuchos::RCP(new NOX::FSI::PartialNormF(
+  Teuchos::RCP<NOX::FSI::PartialNormF> fluidPress_L2 = Teuchos::make_rcp<NOX::FSI::PartialNormF>(
       "PRESS residual", fluidpressextract, 0, nlParams.get<double>("Tol pre res L2"),
-      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled));
-  Teuchos::RCP<NOX::FSI::PartialNormF> fluidPress_inf = Teuchos::RCP(new NOX::FSI::PartialNormF(
+      ::NOX::Abstract::Vector::TwoNorm, NOX::FSI::PartialNormF::Scaled);
+  Teuchos::RCP<NOX::FSI::PartialNormF> fluidPress_inf = Teuchos::make_rcp<NOX::FSI::PartialNormF>(
       "PRESS residual", fluidpressextract, 0, nlParams.get<double>("Tol pre res Inf"),
-      ::NOX::Abstract::Vector::MaxNorm, NOX::FSI::PartialNormF::Unscaled));
+      ::NOX::Abstract::Vector::MaxNorm, NOX::FSI::PartialNormF::Unscaled);
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> fluidPressUpdate_L2 =
-      Teuchos::RCP(new NOX::FSI::PartialNormUpdate("PRESS update", fluidpressextract, 0,
+      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("PRESS update", fluidpressextract, 0,
           nlParams.get<double>("Tol pre inc L2"), ::NOX::Abstract::Vector::TwoNorm,
-          NOX::FSI::PartialNormUpdate::Scaled));
+          NOX::FSI::PartialNormUpdate::Scaled);
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> fluidPressUpdate_inf =
-      Teuchos::RCP(new NOX::FSI::PartialNormUpdate("PRESS update", fluidpressextract, 0,
+      Teuchos::make_rcp<NOX::FSI::PartialNormUpdate>("PRESS update", fluidpressextract, 0,
           nlParams.get<double>("Tol pre inc Inf"), ::NOX::Abstract::Vector::MaxNorm,
-          NOX::FSI::PartialNormUpdate::Unscaled));
+          NOX::FSI::PartialNormUpdate::Unscaled);
 
   // tests needed to adapt relative tolerance of the linear solver
   add_status_test(fluidPress_L2);
@@ -1261,14 +1264,14 @@ void FSI::SlidingMonolithicStructureSplit::extract_field_vectors(
   if (disiprev_ != Teuchos::null)
     ddiinc_->Update(1.0, *sox, -1.0, *disiprev_, 0.0);  // compute current iteration increment
   else
-    ddiinc_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*sox));  // first iteration increment
+    ddiinc_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*sox);  // first iteration increment
 
   disiprev_ = sox;  // store current step increment
 
   if (velgprev_ != Teuchos::null)
     duginc_->Update(1.0, *fcx, -1.0, *velgprev_, 0.0);  // compute current iteration increment
   else
-    duginc_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*fcx));  // first iteration increment
+    duginc_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fcx);  // first iteration increment
 
   velgprev_ = fcx;  // store current step increment
 }
@@ -1330,7 +1333,7 @@ void FSI::SlidingMonolithicStructureSplit::read_restart(int step)
   // read Lagrange multiplier
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*structure_field()->dof_row_map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*structure_field()->dof_row_map(), true);
     Core::IO::DiscretizationReader reader = Core::IO::DiscretizationReader(
         structure_field()->discretization(), input_control_file, step);
     reader.read_vector(lambdafull, "fsilambda");
@@ -1431,10 +1434,10 @@ void FSI::SlidingMonolithicStructureSplit::recover_lagrange_multiplier()
 
   // ---------Addressing term (3)
   Teuchos::RCP<Core::LinAlg::Vector<double>> structureresidual =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(
-          *structure_field()->interface()->extract_fsi_cond_vector(*structure_field()->rhs())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+          *structure_field()->interface()->extract_fsi_cond_vector(*structure_field()->rhs()));
   structureresidual->Scale(-1.0);  // invert sign to obtain residual, not rhs
-  tmpvec = Teuchos::RCP(new Core::LinAlg::Vector<double>(*structureresidual));
+  tmpvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*structureresidual);
   // ---------End of term (3)
 
   /* You might want to comment out terms (4) to (6) since they tend to
@@ -1469,7 +1472,7 @@ void FSI::SlidingMonolithicStructureSplit::recover_lagrange_multiplier()
    */
 
   // ---------Addressing term (2)
-  auxvec = Teuchos::RCP(new Core::LinAlg::Vector<double>(mortardinv->domain_map(), true));
+  auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortardinv->domain_map(), true);
   mortardinv->multiply(true, *tmpvec, *auxvec);
   lambda_->Update(1.0, *auxvec, 1.0);
   // ---------End of term (2)
@@ -1499,12 +1502,12 @@ void FSI::SlidingMonolithicStructureSplit::calculate_interface_energy_increment(
 
   // interface traction weighted by time integration factors
   Teuchos::RCP<Core::LinAlg::Vector<double>> tractionstructure =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(lambda_->Map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(lambda_->Map(), true);
   tractionstructure->Update(stiparam - ftiparam, *lambdaold_, ftiparam - stiparam, *lambda_, 0.0);
 
   // displacement increment of this time step
   Teuchos::RCP<Core::LinAlg::Vector<double>> deltad =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*structure_field()->dof_row_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*structure_field()->dof_row_map(), true);
   deltad->Update(1.0, *structure_field()->dispnp(), -1.0, *structure_field()->dispn(), 0.0);
 
   // calculate the energy increment
@@ -1538,13 +1541,13 @@ void FSI::SlidingMonolithicStructureSplit::check_kinematic_constraint()
 
   // prepare vectors for projected interface quantities
   Teuchos::RCP<Core::LinAlg::Vector<double>> disnpproj =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(mortard->range_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortard->range_map(), true);
   Teuchos::RCP<Core::LinAlg::Vector<double>> disnproj =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(mortard->range_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortard->range_map(), true);
   Teuchos::RCP<Core::LinAlg::Vector<double>> velnpproj =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(mortarm->range_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortarm->range_map(), true);
   Teuchos::RCP<Core::LinAlg::Vector<double>> velnproj =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(mortarm->range_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortarm->range_map(), true);
 
   // projection of interface displacements
   mortard->Apply(*disnp, *disnpproj);
@@ -1556,7 +1559,7 @@ void FSI::SlidingMonolithicStructureSplit::check_kinematic_constraint()
 
   // calculate violation of kinematic interface constraint
   Teuchos::RCP<Core::LinAlg::Vector<double>> violation =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*disnpproj));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*disnpproj);
   violation->Update(-1.0, *disnproj, 1.0);
   violation->Update(-1.0 / timescale, *velnpproj, 1.0 / timescale, *velnproj, 1.0);
   violation->Update(-dt(), *velnproj, 1.0);
@@ -1595,9 +1598,9 @@ void FSI::SlidingMonolithicStructureSplit::check_dynamic_equilibrium()
 
   // auxiliary vectors
   Teuchos::RCP<Core::LinAlg::Vector<double>> tractionmaster =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(mortarm->domain_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortarm->domain_map(), true);
   Teuchos::RCP<Core::LinAlg::Vector<double>> tractionslave =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(mortard->domain_map(), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortard->domain_map(), true);
 
   // calculate forces on master and slave side
   mortarm->multiply(true, *lambda_, *tractionmaster);
@@ -1605,7 +1608,7 @@ void FSI::SlidingMonolithicStructureSplit::check_dynamic_equilibrium()
 
   // calculate violation of dynamic equilibrium
   Teuchos::RCP<Core::LinAlg::Vector<double>> violation =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*tractionmaster));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*tractionmaster);
   violation->Update(-1.0, *tractionslave, 1.0);
 
   // calculate some norms

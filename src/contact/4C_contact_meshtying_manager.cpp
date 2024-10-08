@@ -212,8 +212,8 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
         if (!node) FOUR_C_THROW("Cannot find node with gid %", gid);
 
         // create Node object
-        Teuchos::RCP<Mortar::Node> mtnode = Teuchos::RCP(new Mortar::Node(
-            node->id(), node->x(), node->owner(), discret.dof(0, node), isslave[j]));
+        Teuchos::RCP<Mortar::Node> mtnode = Teuchos::make_rcp<Mortar::Node>(
+            node->id(), node->x(), node->owner(), discret.dof(0, node), isslave[j]);
         //-------------------
         // get nurbs weight!
         if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, mtnode);
@@ -280,8 +280,8 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
       for (const auto& element : currele)
       {
         Teuchos::RCP<Core::Elements::Element> ele = element.second;
-        Teuchos::RCP<Mortar::Element> mtele = Teuchos::RCP(new Mortar::Element(ele->id() + ggsize,
-            ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), isslave[j], nurbs));
+        Teuchos::RCP<Mortar::Element> mtele = Teuchos::make_rcp<Mortar::Element>(ele->id() + ggsize,
+            ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), isslave[j], nurbs);
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs) Mortar::UTILS::prepare_nurbs_element(discret, ele, mtele, spatialDim);
@@ -330,18 +330,18 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
     if (problemtype != Core::ProblemType::poroelast && problemtype != Core::ProblemType::fpsi &&
         problemtype != Core::ProblemType::fpsi_xfem && problemtype != Core::ProblemType::fps3i)
     {
-      strategy_ = Teuchos::RCP(new MtLagrangeStrategy(discret.dof_row_map(), discret.node_row_map(),
-          mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::make_rcp<MtLagrangeStrategy>(discret.dof_row_map(),
+          discret.node_row_map(), mtparams, interfaces, spatialDim, comm_, alphaf, maxdof);
     }
     else
     {
-      strategy_ = Teuchos::RCP(new PoroMtLagrangeStrategy(discret.dof_row_map(),
-          discret.node_row_map(), mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
+      strategy_ = Teuchos::make_rcp<PoroMtLagrangeStrategy>(discret.dof_row_map(),
+          discret.node_row_map(), mtparams, interfaces, spatialDim, comm_, alphaf, maxdof);
     }
   }
   else if (stype == Inpar::CONTACT::solution_penalty or stype == Inpar::CONTACT::solution_uzawa)
-    strategy_ = Teuchos::RCP(new MtPenaltyStrategy(discret.dof_row_map(), discret.node_row_map(),
-        mtparams, interfaces, spatialDim, comm_, alphaf, maxdof));
+    strategy_ = Teuchos::make_rcp<MtPenaltyStrategy>(discret.dof_row_map(), discret.node_row_map(),
+        mtparams, interfaces, spatialDim, comm_, alphaf, maxdof);
   else
     FOUR_C_THROW("Unrecognized strategy");
 
@@ -657,20 +657,20 @@ void CONTACT::MtManager::postprocess_quantities(Core::IO::DiscretizationWriter& 
   // evaluate interface tractions
   Teuchos::RCP<Epetra_Map> problem = get_strategy().problem_dofs();
   Teuchos::RCP<Core::LinAlg::Vector<double>> traction =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*(get_strategy().lagrange_multiplier_old())));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(get_strategy().lagrange_multiplier_old()));
   Teuchos::RCP<Core::LinAlg::Vector<double>> tractionexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem);
   Core::LinAlg::export_to(*traction, *tractionexp);
 
   // evaluate slave and master forces
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcslave =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(get_strategy().d_matrix()->row_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(get_strategy().d_matrix()->row_map());
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcmaster =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(get_strategy().m_matrix()->domain_map()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(get_strategy().m_matrix()->domain_map());
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcslaveexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcmasterexp =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*problem));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem);
   get_strategy().d_matrix()->multiply(true, *traction, *fcslave);
   get_strategy().m_matrix()->multiply(true, *traction, *fcmaster);
   Core::LinAlg::export_to(*fcslave, *fcslaveexp);

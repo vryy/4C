@@ -41,7 +41,7 @@ void Solid::EXPLICIT::Generic::setup()
 
   // create the new generic pre/post operator
   Teuchos::RCP<NOX::Nln::Abstract::PrePostOperator> prepost_generic_ptr =
-      Teuchos::RCP(new NOX::Nln::PrePostOp::EXPLICIT::Generic(*this));
+      Teuchos::make_rcp<NOX::Nln::PrePostOp::EXPLICIT::Generic>(*this);
 
   // Get the current map. If there is no map, return a new empty one. (reference)
   NOX::Nln::GROUP::PrePostOperator::Map& prepostgroup_map =

@@ -72,7 +72,7 @@ NOX::Nln::LinSystem::PrePostOperator::Map& NOX::Nln::LinSystem::PrePostOp::get_m
   Teuchos::RCP<NOX::Nln::LinSystem::PrePostOperator::Map>& mapptr =
       p_linsolver.get<Teuchos::RCP<NOX::Nln::LinSystem::PrePostOperator::Map>>(
           "User Defined Pre/Post Operator",
-          Teuchos::RCP(new NOX::Nln::LinSystem::PrePostOperator::Map()));
+          Teuchos::make_rcp<NOX::Nln::LinSystem::PrePostOperator::Map>());
 
   return *mapptr;
 }

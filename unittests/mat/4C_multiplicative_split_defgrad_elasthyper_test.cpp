@@ -104,7 +104,7 @@ namespace
               1, Core::Materials::MaterialType::mfi_lin_scalar_iso, mat_inelastic_data));
 
       // set parameter list
-      auto parameter_list_pointer = Teuchos::RCP(new Teuchos::ParameterList());
+      auto parameter_list_pointer = Teuchos::make_rcp<Teuchos::ParameterList>();
       auto structural_dynamic_params = parameter_list_pointer->sublist("STRUCTURAL DYNAMIC", false);
 
       structural_dynamic_params.set("MASSLIN", "No");
@@ -126,12 +126,12 @@ namespace
 
       // get pointer to parameter class
       parameters_multiplicative_split_defgrad_ =
-          Teuchos::RCP(new Mat::PAR::MultiplicativeSplitDefgradElastHyper(
-              Core::Mat::PAR::Parameter::Data{.parameters = multiplicativeSplitDefgradData}));
+          Teuchos::make_rcp<Mat::PAR::MultiplicativeSplitDefgradElastHyper>(
+              Core::Mat::PAR::Parameter::Data{.parameters = multiplicativeSplitDefgradData});
 
       // setup pointer to MultiplicativeSplitDefgrad_ElastHyper object
-      multiplicative_split_defgrad_ = Teuchos::RCP(new Mat::MultiplicativeSplitDefgradElastHyper(
-          parameters_multiplicative_split_defgrad_.get()));
+      multiplicative_split_defgrad_ = Teuchos::make_rcp<Mat::MultiplicativeSplitDefgradElastHyper>(
+          parameters_multiplicative_split_defgrad_.get());
     }
 
     void set_ref_values_evaluate_kin_quant_elast()

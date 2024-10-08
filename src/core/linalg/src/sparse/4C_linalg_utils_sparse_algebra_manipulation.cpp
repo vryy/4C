@@ -168,7 +168,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Core::LinAlg::extract_my_vector(
     const Core::LinAlg::Vector<double>& source, const Epetra_Map& target_map)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> target =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(target_map));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(target_map);
 
   extract_my_vector(source, *target);
 
@@ -325,8 +325,8 @@ bool Core::LinAlg::split_matrix2x2(Teuchos::RCP<Epetra_CrsMatrix> A,
     FOUR_C_THROW("Both A11rowmap and A22rowmap == null on entry");
 
   std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
-  maps[0] = Teuchos::RCP(new Epetra_Map(*A11rowmap));
-  maps[1] = Teuchos::RCP(new Epetra_Map(*A22rowmap));
+  maps[0] = Teuchos::make_rcp<Epetra_Map>(*A11rowmap);
+  maps[1] = Teuchos::make_rcp<Epetra_Map>(*A22rowmap);
   Core::LinAlg::MultiMapExtractor extractor(A->RowMap(), maps);
 
   // create SparseMatrix view to input matrix A
@@ -368,10 +368,10 @@ bool Core::LinAlg::split_matrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
   // local variables
   std::vector<Teuchos::RCP<const Epetra_Map>> rangemaps(2);
   std::vector<Teuchos::RCP<const Epetra_Map>> domainmaps(2);
-  rangemaps[0] = Teuchos::RCP(new Epetra_Map(*A11rowmap));
-  rangemaps[1] = Teuchos::RCP(new Epetra_Map(*A22rowmap));
-  domainmaps[0] = Teuchos::RCP(new Epetra_Map(*A11domainmap));
-  domainmaps[1] = Teuchos::RCP(new Epetra_Map(*A22domainmap));
+  rangemaps[0] = Teuchos::make_rcp<Epetra_Map>(*A11rowmap);
+  rangemaps[1] = Teuchos::make_rcp<Epetra_Map>(*A22rowmap);
+  domainmaps[0] = Teuchos::make_rcp<Epetra_Map>(*A11domainmap);
+  domainmaps[1] = Teuchos::make_rcp<Epetra_Map>(*A22domainmap);
   Core::LinAlg::MultiMapExtractor range(A->range_map(), rangemaps);
   Core::LinAlg::MultiMapExtractor domain(A->domain_map(), domainmaps);
 
@@ -381,10 +381,10 @@ bool Core::LinAlg::split_matrix2x2(Teuchos::RCP<Core::LinAlg::SparseMatrix> A,
   Ablock->complete();
   // extract internal data from Ablock in Teuchos::RCP form and let Ablock die
   // (this way, internal data from Ablock will live)
-  A11 = Teuchos::RCP(new SparseMatrix((*Ablock)(0, 0), View));
-  A12 = Teuchos::RCP(new SparseMatrix((*Ablock)(0, 1), View));
-  A21 = Teuchos::RCP(new SparseMatrix((*Ablock)(1, 0), View));
-  A22 = Teuchos::RCP(new SparseMatrix((*Ablock)(1, 1), View));
+  A11 = Teuchos::make_rcp<SparseMatrix>((*Ablock)(0, 0), View);
+  A12 = Teuchos::make_rcp<SparseMatrix>((*Ablock)(0, 1), View);
+  A21 = Teuchos::make_rcp<SparseMatrix>((*Ablock)(1, 0), View);
+  A22 = Teuchos::make_rcp<SparseMatrix>((*Ablock)(1, 1), View);
 
   return true;
 }
@@ -642,7 +642,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::split_map(const Epetra_Map& Amap, const E
   int gcount;
   Comm.SumAll(&count, &gcount, 1);
   Teuchos::RCP<Epetra_Map> Aunknown =
-      Teuchos::RCP(new Epetra_Map(gcount, count, myaugids.data(), 0, Comm));
+      Teuchos::make_rcp<Epetra_Map>(gcount, count, myaugids.data(), 0, Comm);
 
   return Aunknown;
 }
@@ -661,7 +661,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::merge_map(
     if ((overlap == false) && map1.NumGlobalElements() > 0)
       FOUR_C_THROW("Core::LinAlg::merge_map: Result map is overlapping");
     else
-      return Teuchos::RCP(new Epetra_Map(map1));
+      return Teuchos::make_rcp<Epetra_Map>(map1);
   }
 
   std::vector<int> mygids(map1.NumMyElements() + map2.NumMyElements());
@@ -690,7 +690,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::merge_map(
   // sort merged map
   sort(mygids.begin(), mygids.end());
 
-  return Teuchos::RCP(new Epetra_Map(-1, (int)mygids.size(), mygids.data(), 0, map1.Comm()));
+  return Teuchos::make_rcp<Epetra_Map>(-1, (int)mygids.size(), mygids.data(), 0, map1.Comm());
 }
 
 /*----------------------------------------------------------------------*
@@ -703,9 +703,9 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::merge_map(const Teuchos::RCP<const Epetra
   if (map1 == Teuchos::null && map2 == Teuchos::null)
     return Teuchos::null;
   else if (map1 == Teuchos::null)
-    return Teuchos::RCP(new Epetra_Map(*map2));
+    return Teuchos::make_rcp<Epetra_Map>(*map2);
   else if (map2 == Teuchos::null)
-    return Teuchos::RCP(new Epetra_Map(*map1));
+    return Teuchos::make_rcp<Epetra_Map>(*map1);
 
   // wrapped call to non-Teuchos::RCP version of MergeMap
   return Core::LinAlg::merge_map(*map1, *map2, overlap);
@@ -719,7 +719,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::intersect_map(const Epetra_Map& map1, con
   // check if the maps are identical
   if (map1.SameAs(map2))
   {
-    return Teuchos::RCP(new Epetra_Map(map1));
+    return Teuchos::make_rcp<Epetra_Map>(map1);
   }
 
   std::vector<int> mygids(std::min(map1.NumMyElements(), map2.NumMyElements()), -1);
@@ -739,7 +739,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::intersect_map(const Epetra_Map& map1, con
   // sort merged map
   sort(mygids.begin(), mygids.end());
 
-  return Teuchos::RCP(new Epetra_Map(-1, (int)mygids.size(), mygids.data(), 0, map1.Comm()));
+  return Teuchos::make_rcp<Epetra_Map>(-1, (int)mygids.size(), mygids.data(), 0, map1.Comm());
 }
 
 /*----------------------------------------------------------------------*

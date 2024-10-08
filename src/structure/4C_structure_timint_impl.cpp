@@ -300,7 +300,7 @@ void Solid::TimIntImpl::setup()
   disi_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // prepare matrix for scaled thickness business of thin shell structures
-  stcmat_ = Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
+  stcmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, true, true);
   stccompl_ = false;
 
   return;
@@ -779,8 +779,8 @@ void Solid::TimIntImpl::setup_krylov_space_projection(Core::Conditions::Conditio
   updateprojection_ = false;
 
   // create the projector
-  projector_ = Teuchos::RCP(
-      new Core::LinAlg::KrylovProjector(activemodeids, weighttype, discret_->dof_row_map()));
+  projector_ = Teuchos::make_rcp<Core::LinAlg::KrylovProjector>(
+      activemodeids, weighttype, discret_->dof_row_map());
 
   // update the projector
   update_krylov_space_projection();
@@ -804,7 +804,7 @@ void Solid::TimIntImpl::update_krylov_space_projection()
   // get number of modes and their ids
   std::vector<int> modeids = projector_->modes();
 
-  Teuchos::RCP<Epetra_Map> nullspaceMap = Teuchos::RCP(new Epetra_Map(*discret_->dof_row_map()));
+  Teuchos::RCP<Epetra_Map> nullspaceMap = Teuchos::make_rcp<Epetra_Map>(*discret_->dof_row_map());
   Teuchos::RCP<Epetra_MultiVector> nullspace =
       Core::FE::compute_null_space(*discret_, 3, 6, nullspaceMap);
   if (nullspace == Teuchos::null) FOUR_C_THROW("nullspace not successfully computed");
@@ -1034,7 +1034,7 @@ void Solid::TimIntImpl::apply_force_stiff_contact_meshtying(
       {
         // set structural velocity for poro normal no penetration
         Teuchos::RCP<Core::LinAlg::Vector<double>> svel =
-            Teuchos::RCP(new Core::LinAlg::Vector<double>(*velnp()));
+            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*velnp());
         cmtbridge_->contact_manager()->get_strategy().set_state(Mortar::state_svelocity, *svel);
       }
     }
@@ -1883,11 +1883,11 @@ int Solid::TimIntImpl::newton_ls()
 
   // Temporal copies of different vectors. Necessary for the sufficient decrease check.
   Teuchos::RCP<Core::LinAlg::Vector<double>> tdisn =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*disn_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*disn_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> tveln =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*veln_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*veln_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> taccn =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*accn_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*accn_);
 
   // equilibrium iteration loop (outer full Newton loop)
   while (
@@ -2488,10 +2488,10 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
   {
     // allocate additional vectors and matrices
     Teuchos::RCP<Core::LinAlg::Vector<double>> conrhs =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*(conman_->get_error())));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(conman_->get_error()));
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> lagrincr =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*(conman_->get_constraint_map())));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(conman_->get_constraint_map()));
 
     // check whether we have a sanely filled stiffness matrix
     if (not stiff_->filled())
@@ -2548,7 +2548,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       Teuchos::RCP<Core::LinAlg::SparseMatrix> constr =
           (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(conman_->get_constr_matrix()));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> constrT =
-          Teuchos::RCP(new Core::LinAlg::SparseMatrix(*constr));
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*constr);
 
       constr->apply_dirichlet(*(dbcmaps_->cond_map()), false);
 
@@ -2603,7 +2603,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
         element_error = element_error_check(params.get<bool>("eval_error"));
 
       // compute residual and stiffness of constraint equations
-      conrhs = Teuchos::RCP(new Core::LinAlg::Vector<double>(*(conman_->get_error())));
+      conrhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(conman_->get_error()));
 
       // blank residual at (locally oriented) Dirichlet DOFs
       // rotate to local co-ordinate systems
@@ -4157,15 +4157,15 @@ void Solid::TimIntImpl::use_block_matrix(
 {
   // (re)allocate system matrix
   stiff_ =
-      Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *domainmaps, *rangemaps, 81, false, true));
+      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+          *domainmaps, *rangemaps, 81, false, true);
   mass_ =
-      Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *domainmaps, *rangemaps, 81, false, true));
+      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+          *domainmaps, *rangemaps, 81, false, true);
   if (damping_ != Inpar::Solid::damp_none)
-    damp_ =
-        Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-            *domainmaps, *rangemaps, 81, false, true));
+    damp_ = Teuchos::make_rcp<
+        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+        *domainmaps, *rangemaps, 81, false, true);
 
   // recalculate mass and damping matrices
 
@@ -4300,7 +4300,7 @@ void Solid::TimIntImpl::compute_stc_matrix()
     pe.set("stc_layer", lay);
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpstcmat =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dof_row_map_view(), 81, true, true);
     tmpstcmat->zero();
 
     discret_->evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);

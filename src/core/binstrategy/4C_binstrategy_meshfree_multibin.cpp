@@ -38,7 +38,7 @@ Teuchos::RCP<Core::Elements::Element> Core::FE::MeshFree::MeshfreeMultiBinType::
   if (eletype == "MESHFREEMULTIBIN")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::RCP(new Core::FE::MeshFree::MeshfreeMultiBin(id, owner));
+        Teuchos::make_rcp<Core::FE::MeshFree::MeshfreeMultiBin>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -49,7 +49,7 @@ Teuchos::RCP<Core::Elements::Element> Core::FE::MeshFree::MeshfreeMultiBinType::
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::RCP(new Core::FE::MeshFree::MeshfreeMultiBin(id, owner));
+      Teuchos::make_rcp<Core::FE::MeshFree::MeshfreeMultiBin>(id, owner);
   return ele;
 }
 

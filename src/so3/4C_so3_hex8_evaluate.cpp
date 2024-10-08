@@ -1108,7 +1108,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
         // get EleID Id()
         int gid = id();
         Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstress =
-            Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix);
+            Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
         gpstress->shape(NUMGPT_SOH8, Mat::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
@@ -1122,7 +1122,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
 
         // strains
         Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstrain =
-            Teuchos::RCP(new Core::LinAlg::SerialDenseMatrix);
+            Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
         gpstrain->shape(NUMGPT_SOH8, Mat::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix

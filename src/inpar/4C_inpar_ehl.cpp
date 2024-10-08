@@ -146,23 +146,23 @@ void Inpar::EHL::set_valid_conditions(
   // ehl mortar coupling
 
   Teuchos::RCP<Core::Conditions::ConditionDefinition> lineehl =
-      Teuchos::RCP(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE EHL MORTAR COUPLING CONDITIONS 2D", "EHLCoupling", "Line EHL Coupling",
-          Core::Conditions::EHLCoupling, true, Core::Conditions::geometry_type_line));
+          Core::Conditions::EHLCoupling, true, Core::Conditions::geometry_type_line);
   Teuchos::RCP<Core::Conditions::ConditionDefinition> surfehl =
-      Teuchos::RCP(new Core::Conditions::ConditionDefinition(
+      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF EHL MORTAR COUPLING CONDITIONS 3D", "EHLCoupling", "Surface EHL Coupling",
-          Core::Conditions::EHLCoupling, true, Core::Conditions::geometry_type_surface));
+          Core::Conditions::EHLCoupling, true, Core::Conditions::geometry_type_surface);
 
   for (const auto& cond : {lineehl, surfehl})
   {
-    cond->add_component(Teuchos::RCP(new Input::IntComponent("Interface ID")));
-    cond->add_component(Teuchos::RCP(new Input::SelectionComponent("Side", "Master",
+    cond->add_component(Teuchos::make_rcp<Input::IntComponent>("Interface ID"));
+    cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>("Side", "Master",
         Teuchos::tuple<std::string>("Master", "Slave"),
-        Teuchos::tuple<std::string>("Master", "Slave"))));
-    cond->add_component(Teuchos::RCP(new Input::SelectionComponent("Initialization", "Active",
+        Teuchos::tuple<std::string>("Master", "Slave")));
+    cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>("Initialization", "Active",
         Teuchos::tuple<std::string>("Inactive", "Active"),
-        Teuchos::tuple<std::string>("Inactive", "Active"), true)));
+        Teuchos::tuple<std::string>("Inactive", "Active"), true));
     add_named_real(cond, "FrCoeffOrBound", "", 0.0, true);
 
     condlist.push_back(cond);

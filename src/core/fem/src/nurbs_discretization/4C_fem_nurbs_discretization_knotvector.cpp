@@ -104,7 +104,7 @@ Core::FE::Nurbs::Knotvector::Knotvector(const Core::FE::Nurbs::Knotvector& old)
     (knot_values_[np]).resize(dim_);
     for (int rr = 0; rr < dim_; ++rr)
     {
-      ((knot_values_[np])[rr]) = Teuchos::RCP(new std::vector<double>);
+      ((knot_values_[np])[rr]) = Teuchos::make_rcp<std::vector<double>>();
       *((knot_values_[np])[rr]) = *((old.knot_values_[np])[rr]);
     }
   }
@@ -858,7 +858,7 @@ void Core::FE::Nurbs::Knotvector::unpack(Core::Communication::UnpackBuffer& buff
   {
     for (int rr = 0; rr < dim_; ++rr)
     {
-      (knot_values_[np])[rr] = Teuchos::RCP(new std::vector<double>((n_x_m_x_l_[np])[rr]));
+      (knot_values_[np])[rr] = Teuchos::make_rcp<std::vector<double>>((n_x_m_x_l_[np])[rr]);
 
       extract_from_pack(buffer, (*((knot_values_[np])[rr])));
     }

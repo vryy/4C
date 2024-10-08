@@ -54,7 +54,7 @@ Mat::PAR::MatListReactions::MatListReactions(const Core::Mat::PAR::Parameter::Da
 
 Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatListReactions::create_material()
 {
-  return Teuchos::RCP(new Mat::MatListReactions(this));
+  return Teuchos::make_rcp<Mat::MatListReactions>(this);
 }
 
 

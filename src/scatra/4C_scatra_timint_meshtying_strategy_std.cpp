@@ -97,15 +97,15 @@ const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyStd::solver() const
 void ScaTra::MeshtyingStrategyStd::init_conv_check_strategy()
 {
   if (scatratimint_->micro_scale())
-    convcheckstrategy_ = Teuchos::RCP(new ScaTra::ConvCheckStrategyStdMicroScale(
-        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
+    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyStdMicroScale>(
+        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
   else if (Global::Problem::instance()->get_problem_type() ==
            Core::ProblemType::poromultiphasescatra)
-    convcheckstrategy_ = Teuchos::RCP(new ScaTra::ConvCheckStrategyPoroMultiphaseScatra(
-        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
+    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyPoroMultiphaseScatra>(
+        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
   else
-    convcheckstrategy_ = Teuchos::RCP(new ScaTra::ConvCheckStrategyStd(
-        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR")));
+    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyStd>(
+        scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
 
   return;
 }  // ScaTra::MeshtyingStrategyStd::init_conv_check_strategy

@@ -110,7 +110,7 @@ namespace Core::DOFSets
 
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSet> clone() { return Teuchos::RCP(new DofSet(*this)); }
+    virtual Teuchos::RCP<DofSet> clone() { return Teuchos::make_rcp<DofSet>(*this); }
 
     //! @name Access methods
 

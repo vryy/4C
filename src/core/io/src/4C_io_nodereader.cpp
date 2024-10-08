@@ -106,7 +106,7 @@ void Core::IO::read_nodes(const Core::IO::DatFileReader& reader,
           {
             // create node and add to discretization
             Teuchos::RCP<Core::Nodes::Node> node =
-                Teuchos::RCP(new Core::Nodes::Node(nodeid, coords, myrank));
+                Teuchos::make_rcp<Core::Nodes::Node>(nodeid, coords, myrank);
             di->add_node(node);
           }
 
@@ -135,7 +135,7 @@ void Core::IO::read_nodes(const Core::IO::DatFileReader& reader,
           {
             // create node and add to discretization
             Teuchos::RCP<Core::Nodes::Node> node =
-                Teuchos::RCP(new Core::Nodes::ImmersedNode(nodeid, coords, myrank));
+                Teuchos::make_rcp<Core::Nodes::ImmersedNode>(nodeid, coords, myrank);
             dis->add_node(node);
           }
 
@@ -168,7 +168,7 @@ void Core::IO::read_nodes(const Core::IO::DatFileReader& reader,
           {
             // create node/control point and add to discretization
             Teuchos::RCP<Core::FE::Nurbs::ControlPoint> node =
-                Teuchos::RCP(new Core::FE::Nurbs::ControlPoint(cpid, coords, weight, myrank));
+                Teuchos::make_rcp<Core::FE::Nurbs::ControlPoint>(cpid, coords, weight, myrank);
             dis->add_node(node);
           }
 
@@ -288,8 +288,8 @@ void Core::IO::read_nodes(const Core::IO::DatFileReader& reader,
               find_dis_node(element_readers, nodeid);
           for (auto& dis : discretizations)
           {
-            auto node = Teuchos::RCP(
-                new Core::Nodes::FiberNode(nodeid, coords, cosyDirections, fibers, angles, myrank));
+            auto node = Teuchos::make_rcp<Core::Nodes::FiberNode>(
+                nodeid, coords, cosyDirections, fibers, angles, myrank);
             dis->add_node(node);
           }
 

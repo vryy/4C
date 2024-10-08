@@ -100,7 +100,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidType::create(
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidType::create(
     const int id, const int owner)
 {
-  return Teuchos::RCP(new Discret::ELEMENTS::Solid(id, owner));
+  return Teuchos::make_rcp<Discret::ELEMENTS::Solid>(id, owner);
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SolidType::create(

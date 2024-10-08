@@ -125,7 +125,7 @@ int Core::FE::DiscretizationHDG::fill_complete(
                                  ->num_dof_per_element_auxiliary()
                            : 0;
         Teuchos::RCP<Core::DOFSets::DofSetInterface> dofset_ele =
-            Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(0, ndof_ele, 0, false));
+            Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(0, ndof_ele, 0, false);
 
         this->add_dof_set(dofset_ele);
       }
@@ -138,7 +138,7 @@ int Core::FE::DiscretizationHDG::fill_complete(
                                   ->num_dof_per_node_auxiliary()
                             : 0;
         Teuchos::RCP<Core::DOFSets::DofSetInterface> dofset_node =
-            Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(ndof_node, 0, 0, false));
+            Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(ndof_node, 0, 0, false);
 
         this->add_dof_set(dofset_node);
       }

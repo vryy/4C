@@ -49,7 +49,7 @@ Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
           numdofpernode, numscal, disname)
 {
   // replace diffusion manager
-  my::diffmanager_ = Teuchos::RCP(new ScaTraEleDiffManagerElchDiffCondMultiScale(my::numscal_));
+  my::diffmanager_ = Teuchos::make_rcp<ScaTraEleDiffManagerElchDiffCondMultiScale>(my::numscal_);
 }
 
 /*----------------------------------------------------------------------*

@@ -46,8 +46,8 @@ XFEM::XfaCouplingManager::XfaCouplingManager(Teuchos::RCP<FLD::XFluid> xfluid,
       }
 
       std::cout << "|== XFACoupling_Manager: Setup of Ale Structure Coupling! ==|" << std::endl;
-      ale_struct_coupling_ = Teuchos::RCP(new XFEM::CouplingCommManager(
-          ale_->discretization(), structure_->discretization(), "StructAleCoupling"));
+      ale_struct_coupling_ = Teuchos::make_rcp<XFEM::CouplingCommManager>(
+          ale_->discretization(), structure_->discretization(), "StructAleCoupling");
     }
   }
 }
@@ -94,7 +94,7 @@ void XFEM::XfaCouplingManager::set_coupling_states()
 
   // 2 Get AleDisplacements
   Teuchos::RCP<Core::LinAlg::Vector<double>> aledisplacements =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*get_map_extractor(0)->Map(1), true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->Map(1), true);
   insert_vector(1, ale_->dispnp(), 0, aledisplacements, CouplingCommManager::partial_to_partial);
   // 3 Set Fluid Dispnp
   get_map_extractor(0)->insert_vector(*aledisplacements, 1, *xfluid_->write_access_dispnp());

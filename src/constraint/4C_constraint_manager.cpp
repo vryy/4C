@@ -71,22 +71,22 @@ void CONSTRAINTS::ConstrManager::init(
   offset_id_ = 10000;
   // Check, what kind of constraining boundary conditions there are
   volconstr3d_ =
-      Teuchos::RCP(new Constraint(actdisc_, "VolumeConstraint_3D", offset_id_, max_constr_id_));
+      Teuchos::make_rcp<Constraint>(actdisc_, "VolumeConstraint_3D", offset_id_, max_constr_id_);
   areaconstr3d_ =
-      Teuchos::RCP(new Constraint(actdisc_, "AreaConstraint_3D", offset_id_, max_constr_id_));
+      Teuchos::make_rcp<Constraint>(actdisc_, "AreaConstraint_3D", offset_id_, max_constr_id_);
   areaconstr2d_ =
-      Teuchos::RCP(new Constraint(actdisc_, "AreaConstraint_2D", offset_id_, max_constr_id_));
+      Teuchos::make_rcp<Constraint>(actdisc_, "AreaConstraint_2D", offset_id_, max_constr_id_);
   mpconline2d_ =
-      Teuchos::RCP(new MPConstraint2(actdisc_, "MPC_NodeOnLine_2D", offset_id_, max_constr_id_));
+      Teuchos::make_rcp<MPConstraint2>(actdisc_, "MPC_NodeOnLine_2D", offset_id_, max_constr_id_);
   mpconplane3d_ =
-      Teuchos::RCP(new MPConstraint3(actdisc_, "MPC_NodeOnPlane_3D", offset_id_, max_constr_id_));
-  mpcnormcomp3d_ = Teuchos::RCP(
-      new MPConstraint3(actdisc_, "MPC_NormalComponent_3D", offset_id_, max_constr_id_));
+      Teuchos::make_rcp<MPConstraint3>(actdisc_, "MPC_NodeOnPlane_3D", offset_id_, max_constr_id_);
+  mpcnormcomp3d_ = Teuchos::make_rcp<MPConstraint3>(
+      actdisc_, "MPC_NormalComponent_3D", offset_id_, max_constr_id_);
 
-  volconstr3dpen_ = Teuchos::RCP(new ConstraintPenalty(actdisc_, "VolumeConstraint_3D_Pen"));
-  areaconstr3dpen_ = Teuchos::RCP(new ConstraintPenalty(actdisc_, "AreaConstraint_3D_Pen"));
+  volconstr3dpen_ = Teuchos::make_rcp<ConstraintPenalty>(actdisc_, "VolumeConstraint_3D_Pen");
+  areaconstr3dpen_ = Teuchos::make_rcp<ConstraintPenalty>(actdisc_, "AreaConstraint_3D_Pen");
   mpcnormcomp3dpen_ =
-      Teuchos::RCP(new MPConstraint3Penalty(actdisc_, "MPC_NormalComponent_3D_Pen"));
+      Teuchos::make_rcp<MPConstraint3Penalty>(actdisc_, "MPC_NormalComponent_3D_Pen");
 
   havepenaconstr_ = (mpcnormcomp3dpen_->have_constraint()) or
                     (volconstr3dpen_->have_constraint()) or (areaconstr3dpen_->have_constraint());
@@ -114,7 +114,7 @@ void CONSTRAINTS::ConstrManager::setup(
   if (haveconstraint_)
   {
     num_constr_id_ = std::max(max_constr_id_ - offset_id_ + 1, 0);
-    constrdofset_ = Teuchos::RCP(new ConstraintDofSet());
+    constrdofset_ = Teuchos::make_rcp<ConstraintDofSet>();
     constrdofset_->assign_degrees_of_freedom(actdisc_, num_constr_id_, 0);
     offset_id_ -= constrdofset_->first_gid();
     Teuchos::ParameterList p;
@@ -123,18 +123,18 @@ void CONSTRAINTS::ConstrManager::setup(
     const Epetra_Map* dofrowmap = actdisc_->dof_row_map();
     // initialize constrMatrix
     constr_matrix_ =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap, num_constr_id_, false, true));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, num_constr_id_, false, true);
     // build Epetra_Map used as domainmap for constrMatrix and rowmap for result vectors
-    constrmap_ = Teuchos::RCP(new Epetra_Map(*(constrdofset_->dof_row_map())));
+    constrmap_ = Teuchos::make_rcp<Epetra_Map>(*(constrdofset_->dof_row_map()));
     // build an all reduced version of the constraintmap, since sometimes all processors
     // have to know all values of the constraints and Lagrange multipliers
     redconstrmap_ = Core::LinAlg::allreduce_e_map(*constrmap_);
     // importer
-    conimpo_ = Teuchos::RCP(new Epetra_Export(*redconstrmap_, *constrmap_));
+    conimpo_ = Teuchos::make_rcp<Epetra_Export>(*redconstrmap_, *constrmap_);
     // sum up initial values
-    refbasevalues_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*constrmap_));
+    refbasevalues_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*constrmap_);
     Teuchos::RCP<Core::LinAlg::Vector<double>> refbaseredundant =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*redconstrmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redconstrmap_);
     // Compute initial values and assemble them to the completely redundant vector
     // We will always use the third systemvector for this purpose
     p.set("OffsetID", offset_id_);
@@ -160,12 +160,12 @@ void CONSTRAINTS::ConstrManager::setup(
 
     // Initialize Lagrange Multipliers, reference values and errors
     actdisc_->clear_state();
-    referencevalues_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*constrmap_));
-    actvalues_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*constrmap_, true));
-    constrainterr_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*constrmap_));
-    lagr_mult_vec_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*constrmap_, true));
-    lagr_mult_vec_old_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*constrmap_, true));
-    fact_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*constrmap_));
+    referencevalues_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*constrmap_);
+    actvalues_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*constrmap_, true);
+    constrainterr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*constrmap_);
+    lagr_mult_vec_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*constrmap_, true);
+    lagr_mult_vec_old_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*constrmap_, true);
+    fact_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*constrmap_);
   }
   //----------------------------------------------------------------------------
   //---------------------------------------------------------Monitor Conditions!
@@ -173,11 +173,11 @@ void CONSTRAINTS::ConstrManager::setup(
   min_monitor_id_ = 10000;
   int maxMonitorID = 0;
   volmonitor3d_ =
-      Teuchos::RCP(new Monitor(actdisc_, "VolumeMonitor_3D", min_monitor_id_, maxMonitorID));
+      Teuchos::make_rcp<Monitor>(actdisc_, "VolumeMonitor_3D", min_monitor_id_, maxMonitorID);
   areamonitor3d_ =
-      Teuchos::RCP(new Monitor(actdisc_, "AreaMonitor_3D", min_monitor_id_, maxMonitorID));
+      Teuchos::make_rcp<Monitor>(actdisc_, "AreaMonitor_3D", min_monitor_id_, maxMonitorID);
   areamonitor2d_ =
-      Teuchos::RCP(new Monitor(actdisc_, "AreaMonitor_2D", min_monitor_id_, maxMonitorID));
+      Teuchos::make_rcp<Monitor>(actdisc_, "AreaMonitor_2D", min_monitor_id_, maxMonitorID);
   //----------------------------------------------------
   //--------------include possible further monitors here
   //----------------------------------------------------
@@ -194,14 +194,14 @@ void CONSTRAINTS::ConstrManager::setup(
       nummyele = num_monitor_id_;
     }
     // initialize maps and importer
-    monitormap_ = Teuchos::RCP(new Epetra_Map(num_monitor_id_, nummyele, 0, actdisc_->get_comm()));
+    monitormap_ = Teuchos::make_rcp<Epetra_Map>(num_monitor_id_, nummyele, 0, actdisc_->get_comm());
     redmonmap_ = Core::LinAlg::allreduce_e_map(*monitormap_);
-    monimpo_ = Teuchos::RCP(new Epetra_Export(*redmonmap_, *monitormap_));
-    monitorvalues_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*monitormap_));
-    initialmonvalues_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*monitormap_));
+    monimpo_ = Teuchos::make_rcp<Epetra_Export>(*redmonmap_, *monitormap_);
+    monitorvalues_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*monitormap_);
+    initialmonvalues_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*monitormap_);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> initialmonredundant =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*redmonmap_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redmonmap_);
     p1.set("OffsetID", min_monitor_id_);
     volmonitor3d_->evaluate(p1, initialmonredundant);
     areamonitor3d_->evaluate(p1, initialmonredundant);
@@ -209,7 +209,7 @@ void CONSTRAINTS::ConstrManager::setup(
 
     // Export redundant vector into distributed one
     initialmonvalues_->Export(*initialmonredundant, *monimpo_, Add);
-    monitortypes_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*redmonmap_));
+    monitortypes_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redmonmap_);
     build_moni_type();
   }
 
@@ -250,18 +250,18 @@ void CONSTRAINTS::ConstrManager::evaluate_force_stiff(const double time,
   // Convert Core::LinAlg::Vector<double> containing lagrange multipliers to an completely
   // redundant Epetra_vector since every element with the constraint condition needs them
   Teuchos::RCP<Core::LinAlg::Vector<double>> lagrMultVecDense =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*redconstrmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redconstrmap_);
   Core::LinAlg::export_to(*lagr_mult_vec_, *lagrMultVecDense);
   p.set("LagrMultVector", lagrMultVecDense);
   // Construct a redundant time curve factor and put it into parameter list
   Teuchos::RCP<Core::LinAlg::Vector<double>> factredundant =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*redconstrmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redconstrmap_);
   p.set("vector curve factors", factredundant);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> actredundant =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*redconstrmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redconstrmap_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> refbaseredundant =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*redconstrmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redconstrmap_);
 
   actdisc_->clear_state();
   actdisc_->set_state("displacement", disp);
@@ -283,7 +283,7 @@ void CONSTRAINTS::ConstrManager::evaluate_force_stiff(const double time,
   actvalues_->PutScalar(0.0);
   actvalues_->Export(*actredundant, *conimpo_, Add);
   Teuchos::RCP<Core::LinAlg::Vector<double>> addrefbase =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*constrmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*constrmap_);
   addrefbase->Export(*refbaseredundant, *conimpo_, Add);
   refbasevalues_->Update(1.0, *addrefbase, 1.0);
   fact_->PutScalar(0.0);
@@ -317,7 +317,7 @@ void CONSTRAINTS::ConstrManager::compute_error(
   actdisc_->set_state("displacement", disp);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> actredundant =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*redconstrmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redconstrmap_);
   Core::LinAlg::export_to(*actvalues_, *actredundant);
   // Compute current values and assemble them to the completely redundant vector
   // We will always use the third systemvector for this purpose
@@ -423,7 +423,7 @@ void CONSTRAINTS::ConstrManager::compute_monitor_values(
   actdisc_->set_state("displacement", disp);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> actmonredundant =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*redmonmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redmonmap_);
   p.set("OffsetID", min_monitor_id_);
 
   volmonitor3d_->evaluate(p, actmonredundant);
@@ -456,7 +456,7 @@ void CONSTRAINTS::ConstrManager::compute_monitor_values(
     actdisc_->set_state("displacement", disp);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> actmonredundant =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*redmonmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redmonmap_);
   p.set("OffsetID", min_monitor_id_);
 
   volmonitor3d_->evaluate(p, actmonredundant);
@@ -496,9 +496,9 @@ void CONSTRAINTS::ConstrManager::build_moni_type()
   Teuchos::ParameterList p1;
   // build distributed and redundant dummy monitor vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> dummymonredundant =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*redmonmap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redmonmap_);
   Teuchos::RCP<Core::LinAlg::Vector<double>> dummymondist =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*monitormap_));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*monitormap_);
   p1.set("OffsetID", min_monitor_id_);
 
   // do the volumes
@@ -547,8 +547,8 @@ void CONSTRAINTS::ConstrManager::use_block_matrix(
 {
   // (re)allocate system matrix
   constr_matrix_ =
-      Teuchos::RCP(new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-          *domainmaps, *rangemaps, 81, false, true));
+      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+          *domainmaps, *rangemaps, 81, false, true);
 }
 
 FOUR_C_NAMESPACE_CLOSE

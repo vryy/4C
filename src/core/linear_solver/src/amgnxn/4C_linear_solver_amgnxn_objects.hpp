@@ -85,7 +85,7 @@ namespace Core::LinearSolver::AMGNxN
     Teuchos::RCP<BlockedMatrix> get_blocked_matrix_rcp(
         const std::vector<int>& row_blocks, const std::vector<int>& col_blocks) const
     {
-      return Teuchos::RCP(new BlockedMatrix(get_blocked_matrix(row_blocks, col_blocks)));
+      return Teuchos::make_rcp<BlockedMatrix>(get_blocked_matrix(row_blocks, col_blocks));
     }
 
     virtual BlockedMatrix get_blocked_matrix(

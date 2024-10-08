@@ -85,13 +85,13 @@ void loma_dyn(int restart)
 
       // create instance of scalar transport basis algorithm (no fluid discretization)
       Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatraonly =
-          Teuchos::RCP(new Adapter::ScaTraBaseAlgorithm(
-              lomacontrol, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber)));
+          Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(
+              lomacontrol, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
       Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-          Teuchos::RCP(new Core::DOFSets::DofSetPredefinedDoFNumber(
-              Global::Problem::instance()->n_dim() + 1, 0, 0, true));
+          Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+              Global::Problem::instance()->n_dim() + 1, 0, 0, true);
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
       scatraonly->scatra_field()->set_number_of_dof_set_velocity(1);
@@ -164,8 +164,8 @@ void loma_dyn(int restart)
             "TRANSPORT DYNAMIC to a valid number!");
 
       // create a LowMach::Algorithm instance
-      Teuchos::RCP<LowMach::Algorithm> loma = Teuchos::RCP(new LowMach::Algorithm(
-          comm, lomacontrol, Global::Problem::instance()->solver_params(linsolvernumber)));
+      Teuchos::RCP<LowMach::Algorithm> loma = Teuchos::make_rcp<LowMach::Algorithm>(
+          comm, lomacontrol, Global::Problem::instance()->solver_params(linsolvernumber));
 
       // add proxy of fluid transport degrees of freedom to scatra discretization
       if (scatradis->add_dof_set(fluiddis->get_dof_set_proxy()) != 1)

@@ -902,8 +902,8 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
         if (ftype != Inpar::CONTACT::friction_none)
         {
           Teuchos::RCP<CONTACT::FriNode> cnode =
-              Teuchos::RCP(new CONTACT::FriNode(node->id(), node->x(), node->owner(),
-                  discret().dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus));
+              Teuchos::make_rcp<CONTACT::FriNode>(node->id(), node->x(), node->owner(),
+                  discret().dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus);
           //-------------------
           // get nurbs weight!
           if (nurbs)
@@ -965,15 +965,15 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
           Teuchos::RCP<CONTACT::Node> cnode;
           if (mircolaw == true)
           {
-            cnode = Teuchos::RCP(new CONTACT::RoughNode(node->id(), node->x(), node->owner(),
+            cnode = Teuchos::make_rcp<CONTACT::RoughNode>(node->id(), node->x(), node->owner(),
                 discret().dof(0, node), isslave[j], isactive[j] + foundinitialactive,
                 hurstexponentfunction, initialtopologystddeviationfunction, resolution,
-                randomtopologyflag, randomseedflag, randomgeneratorseed));
+                randomtopologyflag, randomseedflag, randomgeneratorseed);
           }
           else
           {
-            cnode = Teuchos::RCP(new CONTACT::Node(node->id(), node->x(), node->owner(),
-                discret().dof(0, node), isslave[j], isactive[j] + foundinitialactive));
+            cnode = Teuchos::make_rcp<CONTACT::Node>(node->id(), node->x(), node->owner(),
+                discret().dof(0, node), isslave[j], isactive[j] + foundinitialactive);
           }
 
           //-------------------
@@ -1086,8 +1086,9 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
         // the slave condition )
         if (dbc_slave_eles.find(ele.get()) != dbc_slave_eles.end()) continue;
 
-        Teuchos::RCP<CONTACT::Element> cele = Teuchos::RCP(new CONTACT::Element(ele->id() + ggsize,
-            ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), isslave[j], nurbs));
+        Teuchos::RCP<CONTACT::Element> cele =
+            Teuchos::make_rcp<CONTACT::Element>(ele->id() + ggsize, ele->owner(), ele->shape(),
+                ele->num_node(), ele->node_ids(), isslave[j], nurbs);
 
         if (isporo) set_poro_parent_element(slavetype, mastertype, cele, ele, discret());
 
@@ -1288,31 +1289,31 @@ Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(
   switch (stype)
   {
     case Inpar::CONTACT::solution_multiscale:
-      interface_data_ptr = Teuchos::RCP(new CONTACT::InterfaceDataContainer());
-      newinterface = Teuchos::RCP(new CONTACT::ConstitutivelawInterface(
-          interface_data_ptr, id, comm, dim, icparams, selfcontact, contactconstitutivelaw_id));
+      interface_data_ptr = Teuchos::make_rcp<CONTACT::InterfaceDataContainer>();
+      newinterface = Teuchos::make_rcp<CONTACT::ConstitutivelawInterface>(
+          interface_data_ptr, id, comm, dim, icparams, selfcontact, contactconstitutivelaw_id);
       break;
     // ------------------------------------------------------------------------
     // Default case for the wear, TSI and standard Lagrangian case
     // ------------------------------------------------------------------------
     default:
     {
-      interface_data_ptr = Teuchos::RCP(new CONTACT::InterfaceDataContainer());
+      interface_data_ptr = Teuchos::make_rcp<CONTACT::InterfaceDataContainer>();
 
       if (wlaw != Inpar::Wear::wear_none)
       {
-        newinterface = Teuchos::RCP(
-            new Wear::WearInterface(interface_data_ptr, id, comm, dim, icparams, selfcontact));
+        newinterface = Teuchos::make_rcp<Wear::WearInterface>(
+            interface_data_ptr, id, comm, dim, icparams, selfcontact);
       }
       else if (icparams.get<int>("PROBTYPE") == Inpar::CONTACT::tsi &&
                stype == Inpar::CONTACT::solution_lagmult)
       {
-        newinterface = Teuchos::RCP(
-            new CONTACT::TSIInterface(interface_data_ptr, id, comm, dim, icparams, selfcontact));
+        newinterface = Teuchos::make_rcp<CONTACT::TSIInterface>(
+            interface_data_ptr, id, comm, dim, icparams, selfcontact);
       }
       else
-        newinterface = Teuchos::RCP(
-            new CONTACT::Interface(interface_data_ptr, id, comm, dim, icparams, selfcontact));
+        newinterface = Teuchos::make_rcp<CONTACT::Interface>(
+            interface_data_ptr, id, comm, dim, icparams, selfcontact);
       break;
     }
   }
@@ -1554,9 +1555,9 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strate
   if (stype == Inpar::CONTACT::solution_lagmult && wlaw != Inpar::Wear::wear_none &&
       (wtype == Inpar::Wear::wear_intstate || wtype == Inpar::Wear::wear_primvar))
   {
-    data_ptr = Teuchos::RCP(new CONTACT::AbstractStratDataContainer());
-    strategy_ptr = Teuchos::RCP(new Wear::LagrangeStrategyWear(
-        data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset));
+    data_ptr = Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
+    strategy_ptr = Teuchos::make_rcp<Wear::LagrangeStrategyWear>(
+        data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset);
   }
   else if (stype == Inpar::CONTACT::solution_lagmult)
   {
@@ -1577,15 +1578,15 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strate
     }
     else if (params.get<int>("PROBTYPE") == Inpar::CONTACT::tsi)
     {
-      data_ptr = Teuchos::RCP(new CONTACT::AbstractStratDataContainer());
-      strategy_ptr = Teuchos::RCP(new LagrangeStrategyTsi(data_ptr, dof_row_map, node_row_map,
-          params, interfaces, dim, comm_ptr, dummy, dof_offset));
+      data_ptr = Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
+      strategy_ptr = Teuchos::make_rcp<LagrangeStrategyTsi>(data_ptr, dof_row_map, node_row_map,
+          params, interfaces, dim, comm_ptr, dummy, dof_offset);
     }
     else
     {
-      data_ptr = Teuchos::RCP(new CONTACT::AbstractStratDataContainer());
-      strategy_ptr = Teuchos::RCP(new LagrangeStrategy(data_ptr, dof_row_map, node_row_map, params,
-          interfaces, dim, comm_ptr, dummy, dof_offset));
+      data_ptr = Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
+      strategy_ptr = Teuchos::make_rcp<LagrangeStrategy>(data_ptr, dof_row_map, node_row_map,
+          params, interfaces, dim, comm_ptr, dummy, dof_offset);
     }
   }
   else if (((stype == Inpar::CONTACT::solution_penalty or
@@ -1593,8 +1594,8 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strate
                algo != Inpar::Mortar::algorithm_gpts) &&
            stype != Inpar::CONTACT::solution_uzawa)
   {
-    strategy_ptr = Teuchos::RCP(new PenaltyStrategy(
-        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset));
+    strategy_ptr = Teuchos::make_rcp<PenaltyStrategy>(
+        dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dummy, dof_offset);
   }
   else if (stype == Inpar::CONTACT::solution_uzawa)
   {
@@ -1613,27 +1614,27 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::build_strate
   {
     if (params.get<int>("PROBTYPE") == Inpar::CONTACT::tsi)
     {
-      data_ptr = Teuchos::RCP(new CONTACT::AbstractStratDataContainer());
-      strategy_ptr = Teuchos::RCP(new NitscheStrategyTsi(
-          data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset));
+      data_ptr = Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
+      strategy_ptr = Teuchos::make_rcp<NitscheStrategyTsi>(
+          data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset);
     }
     else if (params.get<int>("PROBTYPE") == Inpar::CONTACT::ssi)
     {
-      data_ptr = Teuchos::RCP(new CONTACT::AbstractStratDataContainer());
-      strategy_ptr = Teuchos::RCP(new NitscheStrategySsi(
-          data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset));
+      data_ptr = Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
+      strategy_ptr = Teuchos::make_rcp<NitscheStrategySsi>(
+          data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset);
     }
     else if (params.get<int>("PROBTYPE") == Inpar::CONTACT::ssi_elch)
     {
-      data_ptr = Teuchos::RCP(new CONTACT::AbstractStratDataContainer());
-      strategy_ptr = Teuchos::RCP(new NitscheStrategySsiElch(
-          data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset));
+      data_ptr = Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
+      strategy_ptr = Teuchos::make_rcp<NitscheStrategySsiElch>(
+          data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset);
     }
     else
     {
-      data_ptr = Teuchos::RCP(new CONTACT::AbstractStratDataContainer());
-      strategy_ptr = Teuchos::RCP(new NitscheStrategy(
-          data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset));
+      data_ptr = Teuchos::make_rcp<CONTACT::AbstractStratDataContainer>();
+      strategy_ptr = Teuchos::make_rcp<NitscheStrategy>(
+          data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, 0, dof_offset);
     }
   }
   else

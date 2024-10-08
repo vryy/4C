@@ -1231,7 +1231,7 @@ void SSTI::AssembleStrategySparse::apply_structural_dbc_system_matrix(
 
     // extract structural rows of global system matrix
     auto systemmatrix_structure =
-        Teuchos::RCP(new Core::LinAlg::SparseMatrix(*dofrowmap_structure, 27, false, true));
+        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap_structure, 27, false, true);
     Coupling::Adapter::MatrixLogicalSplitAndTransform()(*systemmatrix_sparse, *dofrowmap_structure,
         systemmatrix->domain_map(), 1.0, nullptr, nullptr, *systemmatrix_structure);
     systemmatrix_structure->complete(systemmatrix->domain_map(), *dofrowmap_structure);
@@ -1298,7 +1298,7 @@ void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<
 
     // apply pseudo Dirichlet conditions to transformed slave-side part of structural right-hand
     // side vector
-    auto zeros = Teuchos::RCP(new Core::LinAlg::Vector<double>(residual_structure.Map()));
+    auto zeros = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(residual_structure.Map());
 
     if (locsysmanager_structure != Teuchos::null)
       locsysmanager_structure->rotate_global_to_local(rhs_structure_master);
@@ -1337,12 +1337,12 @@ Teuchos::RCP<SSTI::AssembleStrategyBase> SSTI::build_assemble_strategy(
       {
         case Core::LinAlg::MatrixType::block_condition:
         {
-          assemblestrategy = Teuchos::RCP(new SSTI::AssembleStrategyBlockBlock(ssti_mono));
+          assemblestrategy = Teuchos::make_rcp<SSTI::AssembleStrategyBlockBlock>(ssti_mono);
           break;
         }
         case Core::LinAlg::MatrixType::sparse:
         {
-          assemblestrategy = Teuchos::RCP(new SSTI::AssembleStrategyBlockSparse(ssti_mono));
+          assemblestrategy = Teuchos::make_rcp<SSTI::AssembleStrategyBlockSparse>(ssti_mono);
           break;
         }
         default:
@@ -1355,7 +1355,7 @@ Teuchos::RCP<SSTI::AssembleStrategyBase> SSTI::build_assemble_strategy(
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      assemblestrategy = Teuchos::RCP(new SSTI::AssembleStrategySparse(ssti_mono));
+      assemblestrategy = Teuchos::make_rcp<SSTI::AssembleStrategySparse>(ssti_mono);
       break;
     }
     default:

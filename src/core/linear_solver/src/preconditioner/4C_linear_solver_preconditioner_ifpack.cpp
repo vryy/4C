@@ -39,7 +39,7 @@ void Core::LinearSolver::IFPACKPreconditioner::setup(
 
     // create a copy of the scaled matrix
     // so we can reuse the preconditioner
-    pmatrix_ = Teuchos::RCP(new Epetra_CrsMatrix(*A));
+    pmatrix_ = Teuchos::make_rcp<Epetra_CrsMatrix>(*A);
 
     // get the type of ifpack preconditioner from solver parameter list
     std::string prectype = solverlist_.get("Preconditioner Type", "ILU");

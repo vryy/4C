@@ -92,7 +92,7 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
     {
       // if no map is given, we calculate the nullspace on the map describing the
       // whole discretization
-      nullspaceMap = Teuchos::RCP(new Epetra_Map(*dis.dof_row_map()));
+      nullspaceMap = Teuchos::make_rcp<Epetra_Map>(*dis.dof_row_map());
     }
 
     auto nullspace = Core::FE::compute_null_space(dis, numdf, dimns, nullspaceMap);
@@ -143,7 +143,7 @@ void Core::LinearSolver::Parameters::fix_null_space(std::string field, const Epe
     FOUR_C_THROW("New problem size larger than old - full rebuild of nullspace neccessary");
 
   Teuchos::RCP<Epetra_MultiVector> nullspaceNew =
-      Teuchos::RCP(new Epetra_MultiVector(newmap, ndim, true));
+      Teuchos::make_rcp<Epetra_MultiVector>(newmap, ndim, true);
 
   for (int i = 0; i < ndim; i++)
   {
@@ -192,7 +192,7 @@ Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(
         "null.");
 
   Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> nullspace =
-      Teuchos::RCP(new Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>(nullspace_data));
+      Teuchos::make_rcp<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>>(nullspace_data);
 
   nullspace->replaceMap(row_map);
 

@@ -55,10 +55,10 @@ Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::ScaTraEleCalcLsRein
           Discret::ELEMENTS::ScaTraEleParameterLsReinit::instance(disname))  // parameter class
 {
   // set appropriate diffusion manager
-  my::diffmanager_ = Teuchos::RCP(new ScaTraEleDiffManagerLsReinit<nsd_>(my::numscal_));
+  my::diffmanager_ = Teuchos::make_rcp<ScaTraEleDiffManagerLsReinit<nsd_>>(my::numscal_);
   // set appropriate internal variable manager
   my::scatravarmanager_ =
-      Teuchos::RCP(new ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>(my::numscal_));
+      Teuchos::make_rcp<ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(my::numscal_);
 
   // safety checks
   if (my::scatrapara_->rb_sub_gr_vel())

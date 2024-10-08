@@ -48,12 +48,12 @@ void Solid::ModelEvaluator::LagPenConstraint::setup()
   check_init();
 
   // build the NOX::Nln::CONSTRAINT::Interface::Required object
-  noxinterface_ptr_ = Teuchos::RCP(new LAGPENCONSTRAINT::NoxInterface);
+  noxinterface_ptr_ = Teuchos::make_rcp<LAGPENCONSTRAINT::NoxInterface>();
   noxinterface_ptr_->init(global_state_ptr());
   noxinterface_ptr_->setup();
 
   // build the NOX::Nln::CONSTRAINT::Interface::Preconditioner object
-  noxinterface_prec_ptr_ = Teuchos::RCP(new LAGPENCONSTRAINT::NoxInterfacePrec());
+  noxinterface_prec_ptr_ = Teuchos::make_rcp<LAGPENCONSTRAINT::NoxInterfacePrec>();
   noxinterface_prec_ptr_->init(global_state_ptr());
   noxinterface_prec_ptr_->setup();
 
@@ -64,15 +64,15 @@ void Solid::ModelEvaluator::LagPenConstraint::setup()
 
   // contributions of constraints to structural rhs and stiffness
   fstrconstr_np_ptr_ =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*global_state().dof_row_map_view()));
-  stiff_constr_ptr_ = Teuchos::RCP(
-      new Core::LinAlg::SparseMatrix(*global_state().dof_row_map_view(), 81, true, true));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view());
+  stiff_constr_ptr_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      *global_state().dof_row_map_view(), 81, true, true);
 
   // ToDo: we do not want to hand in the structural dynamics parameter list
   // to the manager in the future! -> get rid of it as soon as old
   // time-integration dies ...
   // initialize constraint manager
-  constrman_ = Teuchos::RCP(new CONSTRAINTS::ConstrManager());
+  constrman_ = Teuchos::make_rcp<CONSTRAINTS::ConstrManager>();
   constrman_->init(dis, Global::Problem::instance()->structural_dynamic_params());
   constrman_->setup(disnp_ptr_, Global::Problem::instance()->structural_dynamic_params());
 
@@ -242,7 +242,7 @@ void Solid::ModelEvaluator::LagPenConstraint::run_post_compute_x(
   check_init_setup();
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> lagmult_incr =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*get_block_dof_row_map_ptr()));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_block_dof_row_map_ptr());
 
   Core::LinAlg::export_to(dir, *lagmult_incr);
 

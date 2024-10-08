@@ -78,7 +78,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidScatraType::create
 Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidScatraType::create(
     const int id, const int owner)
 {
-  return Teuchos::RCP(new Discret::ELEMENTS::SolidScatra(id, owner));
+  return Teuchos::make_rcp<Discret::ELEMENTS::SolidScatra>(id, owner);
 }
 
 Core::Communication::ParObject* Discret::ELEMENTS::SolidScatraType::create(

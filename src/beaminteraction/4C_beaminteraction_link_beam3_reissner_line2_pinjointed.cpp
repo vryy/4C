@@ -72,7 +72,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2PinJ
     const
 {
   Teuchos::RCP<BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed> newlinker =
-      Teuchos::RCP(new BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed(*this));
+      Teuchos::make_rcp<BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed>(*this);
   return newlinker;
 }
 
@@ -223,7 +223,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::setup(const int matnum)
    *
    *       We really only use it as a calculation routine for a sophisticated
    *       (displacement-reaction force) relation here! */
-  linkele_ = Teuchos::RCP(new Discret::ELEMENTS::Beam3r(-1, 0));
+  linkele_ = Teuchos::make_rcp<Discret::ELEMENTS::Beam3r>(-1, 0);
 
   // set material
   linkele_->set_material(0, Mat::factory(matnum));

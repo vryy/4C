@@ -122,10 +122,8 @@ int Core::LinAlg::Ana::OperatorInverse::apply(
   Core::LinAlg::SolverParams solver_params;
   solver_params.refactor = true;
   solver_params.reset = reset_;
-  auto out_converted =
-      Teuchos::RCP<Core::LinAlg::Vector<double>>(new Core::LinAlg::Vector<double>(*out));
-  auto in_converted =
-      Teuchos::RCP<Core::LinAlg::Vector<double>>(new Core::LinAlg::Vector<double>(*in));
+  auto out_converted = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*out);
+  auto in_converted = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*in);
   solver_.solve(rcpop, out_converted, in_converted, solver_params);
 
   return 0;

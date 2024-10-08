@@ -46,7 +46,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedInterAcinarDepType::
   if (eletype == "RED_ACINAR_INTER_DEP")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::RCP(new Discret::ELEMENTS::RedInterAcinarDep(id, owner));
+        Teuchos::make_rcp<Discret::ELEMENTS::RedInterAcinarDep>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -60,7 +60,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedInterAcinarDepType::
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::RCP(new Discret::ELEMENTS::RedInterAcinarDep(id, owner));
+      Teuchos::make_rcp<Discret::ELEMENTS::RedInterAcinarDep>(id, owner);
   return ele;
 }
 

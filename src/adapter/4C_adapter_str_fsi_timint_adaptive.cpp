@@ -78,12 +78,12 @@ void Adapter::StructureFSITimIntAda::indicate_errors(double& err, double& errcon
   // extract the condition part of the full error vector
   // (i.e. only interface displacement DOFs)
   Teuchos::RCP<Core::LinAlg::Vector<double>> errorcond =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->extract_fsi_cond_vector(*error)));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->extract_fsi_cond_vector(*error));
 
   // in case of structure split: extract the other part of the full error vector
   // (i.e. only interior displacement DOFs)
   Teuchos::RCP<Core::LinAlg::Vector<double>> errorother =
-      Teuchos::RCP(new Core::LinAlg::Vector<double>(*interface_->extract_fsi_cond_vector(*error)));
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->extract_fsi_cond_vector(*error));
 
   // calculate L2-norms of different subsets of local discretization error vector
   err = Solid::calculate_vector_norm(errnorm_, *error, numdbcdofs_);

@@ -39,27 +39,24 @@ void PARTICLEWALL::WallDataState::init(
   const bool isloaded = params_.get<bool>("PARTICLE_WALL_LOADED");
 
   // set current dof row and column map
-  curr_dof_row_map_ = Teuchos::RCP(new Epetra_Map(*walldiscretization_->dof_row_map()));
+  curr_dof_row_map_ = Teuchos::make_rcp<Epetra_Map>(*walldiscretization_->dof_row_map());
 
   // create states needed for moving walls
   if (ismoving)
   {
-    disp_row_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*curr_dof_row_map_), true);
+    disp_row_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*curr_dof_row_map_);
     disp_col_ =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*walldiscretization_->dof_col_map()), true);
-    disp_row_last_transfer_ =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*curr_dof_row_map_), true);
-    vel_col_ =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*walldiscretization_->dof_col_map()), true);
-    acc_col_ =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*walldiscretization_->dof_col_map()), true);
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*walldiscretization_->dof_col_map());
+    disp_row_last_transfer_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*curr_dof_row_map_);
+    vel_col_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*walldiscretization_->dof_col_map());
+    acc_col_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*walldiscretization_->dof_col_map());
   }
 
   // create states needed for loaded walls
   if (isloaded)
   {
     force_col_ =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*walldiscretization_->dof_col_map()), true);
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*walldiscretization_->dof_col_map());
   }
 }
 
@@ -102,27 +99,27 @@ void PARTICLEWALL::WallDataState::update_maps_of_state_vectors()
     // export row map based displacement vector
     Teuchos::RCP<Core::LinAlg::Vector<double>> temp = disp_row_;
     disp_row_ =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*walldiscretization_->dof_row_map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*walldiscretization_->dof_row_map(), true);
     Core::LinAlg::export_to(*temp, *disp_row_);
 
     // update column map based displacement vector
     disp_col_ =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*walldiscretization_->dof_col_map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*walldiscretization_->dof_col_map(), true);
     Core::LinAlg::export_to(*disp_row_, *disp_col_);
 
     // store displacements after last transfer
-    disp_row_last_transfer_ = Teuchos::RCP(new Core::LinAlg::Vector<double>(*disp_row_));
+    disp_row_last_transfer_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*disp_row_);
   }
 
   if (vel_col_ != Teuchos::null)
   {
     // export old column to old row map based vector (no communication)
     Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*curr_dof_row_map_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*curr_dof_row_map_);
     Core::LinAlg::export_to(*vel_col_, *temp);
     // export old row map based vector to new column map based vector
     vel_col_ =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*walldiscretization_->dof_col_map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*walldiscretization_->dof_col_map(), true);
     Core::LinAlg::export_to(*temp, *vel_col_);
   }
 
@@ -130,11 +127,11 @@ void PARTICLEWALL::WallDataState::update_maps_of_state_vectors()
   {
     // export old column to old row map based vector (no communication)
     Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*curr_dof_row_map_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*curr_dof_row_map_);
     Core::LinAlg::export_to(*acc_col_, *temp);
     // export old row map based vector to new column map based vector
     acc_col_ =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*walldiscretization_->dof_col_map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*walldiscretization_->dof_col_map(), true);
     Core::LinAlg::export_to(*temp, *acc_col_);
   }
 
@@ -142,16 +139,16 @@ void PARTICLEWALL::WallDataState::update_maps_of_state_vectors()
   {
     // export old column to old row map based vector (no communication)
     Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*curr_dof_row_map_));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*curr_dof_row_map_);
     Core::LinAlg::export_to(*force_col_, *temp);
     // export old row map based vector to new column map based vector
     force_col_ =
-        Teuchos::RCP(new Core::LinAlg::Vector<double>(*walldiscretization_->dof_col_map(), true));
+        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*walldiscretization_->dof_col_map(), true);
     Core::LinAlg::export_to(*temp, *force_col_);
   }
 
   // set new dof row map
-  curr_dof_row_map_ = Teuchos::RCP(new Epetra_Map(*walldiscretization_->dof_row_map()));
+  curr_dof_row_map_ = Teuchos::make_rcp<Epetra_Map>(*walldiscretization_->dof_row_map());
 }
 
 FOUR_C_NAMESPACE_CLOSE
