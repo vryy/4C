@@ -45,7 +45,7 @@ SOLVER                          Belos
 AZTOL                           1e-10
 AZOUTPUT                        10
 AZPREC                          Teko
-TEKO_XML_FILE                   xml/block_preconditioner/porofluid.xml
+TEKO_XML_FILE                   xml/block_preconditioner/poromultifluid.xml
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 4 MATIDS 10 20 30 40 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 4
 
