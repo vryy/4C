@@ -69,8 +69,6 @@ namespace Core::LinearSolver
     multigrid_muelu,      ///< multigrid preconditioner (MueLu package, recommended!)
     multigrid_muelu_contactsp,  ///< multigrid preconditioner for blocked contact problems in saddle
                                 ///< point formulation (MueLu package)
-    multigrid_muelu_beamsolid,  ///< multigrid preconditioner for blocked beam solid interaction
-                                ///< problems (MueLu package)
     multigrid_nxn,  ///< multigrid preconditioner for a nxn block matrix (indirectly MueLu package)
     block_teko,     ///< block preconditioning (Teko package, recommended!)
     cheap_simple    ///< CheapSIMPLE for 2x2 systems? (inhouse implementation)

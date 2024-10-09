@@ -17,6 +17,7 @@
 #include "4C_linear_solver_preconditioner_type.hpp"
 
 #include <MueLu_UseDefaultTypes.hpp>
+#include <Teko_LU2x2Strategy.hpp>
 #include <Xpetra_BlockedCrsMatrix.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -49,6 +50,49 @@ namespace Core::LinearSolver
 
     //! preconditioner
     Teuchos::RCP<Epetra_Operator> p_;
+  };
+
+
+  /**
+   * \brief A special routine for a block LU2x2 method using a sparse approximate inverse
+   *
+   * This special block LU2x2 routine uses a sparse approximate inverse to compute an explicit
+   * Schur complement. Further information on the implementation can be found in:
+   * M. Firmbach, I. Steinbrecher, A. Popp and M. Mayr: An approximate block factorization
+   * preconditioner for mixed-dimensional beam-solid interaction.
+   * Computer Methods in Applied Mechanics and Engineering, 431:838-853, 2024,
+   * https://doi.org/10.1016/j.cma.2024.117256
+   */
+  class LU2x2SpaiStrategy : public Teko::LU2x2Strategy
+  {
+   public:
+    LU2x2SpaiStrategy() = default;
+
+    LU2x2SpaiStrategy(const Teuchos::RCP<Teko::InverseFactory>& invFA,
+        const Teuchos::RCP<Teko::InverseFactory>& invS);
+
+    const Teko::LinearOp getHatInvA00(
+        const Teko::BlockedLinearOp& A, Teko::BlockPreconditionerState& state) const override;
+
+    const Teko::LinearOp getTildeInvA00(
+        const Teko::BlockedLinearOp& A, Teko::BlockPreconditionerState& state) const override;
+
+    const Teko::LinearOp getInvS(
+        const Teko::BlockedLinearOp& A, Teko::BlockPreconditionerState& state) const override;
+
+    void initializeFromParameterList(
+        const Teuchos::ParameterList& lulist, const Teko::InverseLibrary& invLib) override;
+
+   private:
+    void initialize_state(
+        const Teko::BlockedLinearOp& A, Teko::BlockPreconditionerState& state) const;
+
+    Teuchos::RCP<Teko::InverseFactory> inv_factory_f_;
+    Teuchos::RCP<Teko::InverseFactory> inv_factory_s_;
+
+    // Sparse approximate inverse parameters
+    double drop_tol_;
+    int fill_level_;
   };
 }  // namespace Core::LinearSolver
 
