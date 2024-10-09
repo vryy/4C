@@ -646,14 +646,14 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::create_linear_solver(
   // plausibility check
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
+    case Core::LinearSolver::PreconditionerType::block_teko:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
     }
     break;
     default:
-      FOUR_C_THROW("AMGnxn preconditioner expected");
+      FOUR_C_THROW("Block preconditioner expected");
       break;
   }
 
@@ -667,23 +667,13 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::create_linear_solver(
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::build_block_null_spaces(
     Teuchos::RCP<Core::LinAlg::Solver>& solver)
 {
-  // equip smoother for structure matrix block with empty parameter sublists to trigger null space
-  // computation
-  Teuchos::ParameterList& blocksmootherparams = solver->params().sublist("Inverse1");
-  blocksmootherparams.sublist("Belos Parameters");
-  blocksmootherparams.sublist("MueLu Parameters");
+  Teuchos::ParameterList& structure_params = solver->params().sublist("Inverse1");
+  Core::LinearSolver::Parameters::compute_solver_parameters(
+      *structure_field()->discretization(), structure_params);
 
-  structure_field()->discretization()->compute_null_space_if_necessary(blocksmootherparams);
-
-  // equip smoother for fluid matrix block with empty parameter sublists to trigger null space
-  // computation
-  Teuchos::ParameterList& blocksmootherparams2 = solver->params().sublist("Inverse2");
-  blocksmootherparams2.sublist("Belos Parameters");
-  blocksmootherparams2.sublist("MueLu Parameters");
-
-  fluid_field()->discretization()->compute_null_space_if_necessary(blocksmootherparams2);
-
-  return;
+  Teuchos::ParameterList& fluid_params = solver->params().sublist("Inverse2");
+  Core::LinearSolver::Parameters::compute_solver_parameters(
+      *fluid_field()->discretization(), fluid_params);
 }
 
 /*----------------------------------------------------------------------*

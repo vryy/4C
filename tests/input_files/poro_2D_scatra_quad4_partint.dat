@@ -72,7 +72,7 @@ NAME                            Poro_Interaction_Solver
 SOLVER                          Belos
 SOLVER_XML_FILE                 xml/linear_solver/iterative_gmres_template.xml
 AZPREC                          Teko
-TEKO_XML_FILE                   xml/block_preconditioner/poro.xml
+TEKO_XML_FILE                   xml/block_preconditioner/porofluid.xml
 AZREUSE                         10
 --------------------------------------------------------------------SOLVER 3
 NAME                            Sca_Tra_Solver

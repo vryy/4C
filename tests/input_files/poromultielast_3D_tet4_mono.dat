@@ -43,9 +43,8 @@ NAME                            iterative_poromultiphase_solver
 SOLVER                          Belos
 AZTOL                           1e-10
 AZOUTPUT                        10
-AZPREC                          AMGnxn
-AMGNXN_TYPE                     XML
-AMGNXN_XML_FILE                 poromultielast_3D_hex8_mono_BGS-AMG_2x2.xml
+AZPREC                          Teko
+TEKO_XML_FILE                   xml/block_preconditioner/poromultifluid.xml
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 4 MATIDS 10 20 30 40 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 4
 

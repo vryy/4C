@@ -228,25 +228,16 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_block_nul
   // only fluid
   else
   {
-    // equip smoother for fluid matrix block with empty parameter sublists to trigger null space
-    // computation
     Teuchos::ParameterList& blocksmootherparams1 = solver_->params().sublist("Inverse1");
-    blocksmootherparams1.sublist("Belos Parameters");
-    blocksmootherparams1.sublist("MueLu Parameters");
-
-    poro_field()->fluid_field()->discretization()->compute_null_space_if_necessary(
-        blocksmootherparams1);
+    Core::LinearSolver::Parameters::compute_solver_parameters(
+        *poro_field()->fluid_field()->discretization(), blocksmootherparams1);
   }
 
-  // equip smoother for scatra matrix block with empty parameter sublists to trigger null space
-  // computation
   Teuchos::ParameterList& blocksmootherparams =
       solver_->params().sublist("Inverse" + std::to_string(struct_offset_ + 2));
-  blocksmootherparams.sublist("Belos Parameters");
-  blocksmootherparams.sublist("MueLu Parameters");
 
-  scatra_algo()->scatra_field()->discretization()->compute_null_space_if_necessary(
-      blocksmootherparams);
+  Core::LinearSolver::Parameters::compute_solver_parameters(
+      *scatra_algo()->scatra_field()->discretization(), blocksmootherparams);
 }
 
 /*----------------------------------------------------------------------*
@@ -309,14 +300,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::create_linear_s
   // plausibility check
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
+    case Core::LinearSolver::PreconditionerType::block_teko:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
     }
     break;
     default:
-      FOUR_C_THROW("AMGnxn preconditioner expected");
+      FOUR_C_THROW("Block preconditioner expected");
       break;
   }
 
@@ -1676,12 +1667,11 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
   // artery-scatra
   Teuchos::ParameterList& blocksmootherparams5 =
       solver_->params().sublist("Inverse" + std::to_string(struct_offset_ + 4));
-  blocksmootherparams5.sublist("Belos Parameters");
-  blocksmootherparams5.sublist("MueLu Parameters");
 
   // build null space of complete discretization
-  scatramsht_->art_scatra_field()->discretization()->compute_null_space_if_necessary(
-      blocksmootherparams5);
+  Core::LinearSolver::Parameters::compute_solver_parameters(
+      *scatramsht_->art_scatra_field()->discretization(), blocksmootherparams5);
+
   // fix the null space if some DOFs are condensed out
   Core::LinearSolver::Parameters::fix_null_space("ArteryScatra",
       *(scatramsht_->art_scatra_field()->discretization()->dof_row_map(0)),
