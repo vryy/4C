@@ -229,7 +229,8 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   // some actions need a partitioned system followed by a renewal of the partition
   if (not Global::Problem::instance()->restart() and post_partition_problem()) partition_problem();
 
-  post_setup();
+  // only call post_setup at this stage for non restarted simulations
+  if (not Global::Problem::instance()->restart()) post_setup();
 
   // some screen output
   Core::Rebalance::UTILS::print_parallel_distribution(*ia_discret_);
