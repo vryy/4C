@@ -54,7 +54,7 @@ namespace CONTACT
    *  interface class itself, makes it possible to share the interface
    *  data between different interface objects w/o the need of copying them.
    *
-   *  \author hiermeier \date 03/17 */
+   * */
   class InterfaceDataContainer : public Mortar::InterfaceDataContainer
   {
    public:
@@ -66,17 +66,17 @@ namespace CONTACT
 
     inline bool& is_self_contact() { return selfcontact_; }
 
-    inline bool is_self_contact() const { return selfcontact_; }
+    [[nodiscard]] inline bool is_self_contact() const { return selfcontact_; }
 
     inline bool& is_friction() { return friction_; }
 
-    inline bool is_friction() const { return friction_; }
+    [[nodiscard]] inline bool is_friction() const { return friction_; }
 
     inline bool& is_non_smooth_contact() { return non_smooth_contact_; }
 
-    inline bool is_non_smooth_contact() const { return non_smooth_contact_; }
+    [[nodiscard]] inline bool is_non_smooth_contact() const { return non_smooth_contact_; }
 
-    inline bool is_two_half_pass() const { return two_half_pass_; }
+    [[nodiscard]] inline bool is_two_half_pass() const { return two_half_pass_; }
 
     inline bool& is_two_half_pass() { return two_half_pass_; }
 
@@ -85,110 +85,158 @@ namespace CONTACT
       return constr_direction_;
     }
 
-    inline enum Inpar::CONTACT::ConstraintDirection constraint_direction() const
+    [[nodiscard]] inline enum Inpar::CONTACT::ConstraintDirection constraint_direction() const
     {
       return constr_direction_;
     }
 
     inline Teuchos::RCP<Epetra_Map>& active_nodes() { return activenodes_; }
 
-    inline const Teuchos::RCP<Epetra_Map>& active_nodes() const { return activenodes_; }
+    [[nodiscard]] inline const Teuchos::RCP<Epetra_Map>& active_nodes() const
+    {
+      return activenodes_;
+    }
 
     inline Teuchos::RCP<Epetra_Map>& active_dofs() { return activedofs_; }
 
-    inline Teuchos::RCP<const Epetra_Map> active_dofs() const { return activedofs_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> active_dofs() const { return activedofs_; }
 
-    inline Teuchos::RCP<Epetra_Map>& in_active_nodes() { return inactivenodes_; }
+    inline Teuchos::RCP<Epetra_Map>& inactive_nodes() { return inactivenodes_; }
 
-    inline const Teuchos::RCP<Epetra_Map>& in_active_nodes() const { return inactivenodes_; }
+    [[nodiscard]] inline const Teuchos::RCP<Epetra_Map>& inactive_nodes() const
+    {
+      return inactivenodes_;
+    }
 
-    inline Teuchos::RCP<Epetra_Map>& in_active_dofs() { return inactivedofs_; }
+    inline Teuchos::RCP<Epetra_Map>& inactive_dofs() { return inactivedofs_; }
 
-    inline Teuchos::RCP<const Epetra_Map> in_active_dofs() const { return inactivedofs_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> inactive_dofs() const
+    {
+      return inactivedofs_;
+    }
 
     inline Teuchos::RCP<Epetra_Map>& active_n() { return activen_; }
 
-    inline Teuchos::RCP<const Epetra_Map> active_n() const { return activen_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> active_n() const { return activen_; }
 
     inline Teuchos::RCP<Epetra_Map>& active_t() { return activet_; }
 
-    inline Teuchos::RCP<const Epetra_Map> active_t() const { return activet_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> active_t() const { return activet_; }
 
     inline Teuchos::RCP<Epetra_Map>& slip_nodes() { return slipnodes_; }
 
-    inline Teuchos::RCP<const Epetra_Map> slip_nodes() const { return slipnodes_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> slip_nodes() const { return slipnodes_; }
 
     inline Teuchos::RCP<Epetra_Map>& slip_dofs() { return slipdofs_; }
 
-    inline Teuchos::RCP<const Epetra_Map> slip_dofs() const { return slipdofs_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> slip_dofs() const { return slipdofs_; }
 
     inline Teuchos::RCP<Epetra_Map>& slip_t() { return slipt_; }
 
-    inline Teuchos::RCP<const Epetra_Map> slip_t() const { return slipt_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> slip_t() const { return slipt_; }
 
     inline Teuchos::RCP<Epetra_Map>& non_smooth_nodes() { return nonsmoothnodes_; }
 
-    inline Teuchos::RCP<const Epetra_Map> non_smooth_nodes() const { return nonsmoothnodes_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> non_smooth_nodes() const
+    {
+      return nonsmoothnodes_;
+    }
 
     inline Teuchos::RCP<Epetra_Map>& smooth_nodes() { return smoothnodes_; }
 
-    inline Teuchos::RCP<const Epetra_Map> smooth_nodes() const { return smoothnodes_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> smooth_nodes() const
+    {
+      return smoothnodes_;
+    }
 
-    inline Teuchos::RCP<const Epetra_Map> sdof_vertex_rowmap() const { return sdof_vertex_rowmap_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> sdof_vertex_rowmap() const
+    {
+      return sdof_vertex_rowmap_;
+    }
 
     inline Teuchos::RCP<Epetra_Map>& sdof_vertex_rowmap() { return sdof_vertex_rowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> sdof_vertex_colmap() const { return sdof_vertex_colmap_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> sdof_vertex_colmap() const
+    {
+      return sdof_vertex_colmap_;
+    }
 
     inline Teuchos::RCP<Epetra_Map>& sdof_vertex_colmap() { return sdof_vertex_colmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> sdof_edge_rowmap() const { return sdof_edge_rowmap_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> sdof_edge_rowmap() const
+    {
+      return sdof_edge_rowmap_;
+    }
 
     inline Teuchos::RCP<Epetra_Map>& sdof_edge_rowmap() { return sdof_edge_rowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> sdof_edge_colmap() const { return sdof_edge_colmap_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> sdof_edge_colmap() const
+    {
+      return sdof_edge_colmap_;
+    }
 
     inline Teuchos::RCP<Epetra_Map>& sdof_edge_colmap() { return sdof_edge_colmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> sdof_surf_rowmap() const { return sdof_surf_rowmap_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> sdof_surf_rowmap() const
+    {
+      return sdof_surf_rowmap_;
+    }
 
     inline Teuchos::RCP<Epetra_Map>& sdof_surf_rowmap() { return sdof_surf_rowmap_; }
 
-    inline Teuchos::RCP<const Epetra_Map> sdof_surf_colmap() const { return sdof_surf_colmap_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> sdof_surf_colmap() const
+    {
+      return sdof_surf_colmap_;
+    }
 
     inline Teuchos::RCP<Epetra_Map>& sdof_surf_colmap() { return sdof_surf_colmap_; }
 
     inline Teuchos::RCP<Epetra_Map>& n_extended_ghosting() { return nextendedghosting_; }
 
-    inline Teuchos::RCP<const Epetra_Map> n_extended_ghosting() const { return nextendedghosting_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> n_extended_ghosting() const
+    {
+      return nextendedghosting_;
+    }
 
     inline Teuchos::RCP<Epetra_Map>& e_extended_ghosting() { return eextendedghosting_; }
 
-    inline Teuchos::RCP<const Epetra_Map> e_extended_ghosting() const { return eextendedghosting_; }
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> e_extended_ghosting() const
+    {
+      return eextendedghosting_;
+    }
 
     inline Teuchos::RCP<SelfBinaryTree>& binary_tree_self() { return binarytreeself_; }
 
-    inline Teuchos::RCP<const SelfBinaryTree> binary_tree_self() const { return binarytreeself_; }
+    [[nodiscard]] inline Teuchos::RCP<const SelfBinaryTree> binary_tree_self() const
+    {
+      return binarytreeself_;
+    }
 
     inline Teuchos::RCP<Core::LinAlg::Vector<double>>& cn_values() { return cn_values_; }
 
-    inline Teuchos::RCP<const Core::LinAlg::Vector<double>> cn_values() const { return cn_values_; }
+    [[nodiscard]] inline Teuchos::RCP<const Core::LinAlg::Vector<double>> cn_values() const
+    {
+      return cn_values_;
+    }
 
     inline Teuchos::RCP<Core::LinAlg::Vector<double>>& ct_values() { return ct_values_; }
 
-    inline Teuchos::RCP<const Core::LinAlg::Vector<double>> ct_values() const { return ct_values_; }
+    [[nodiscard]] inline Teuchos::RCP<const Core::LinAlg::Vector<double>> ct_values() const
+    {
+      return ct_values_;
+    }
 
     inline int& sm_pairs() { return smpairs_; }
 
-    inline int sm_pairs() const { return smpairs_; }
+    [[nodiscard]] inline int sm_pairs() const { return smpairs_; }
 
     inline int& sm_int_pairs() { return smintpairs_; }
 
-    inline int sm_int_pairs() const { return smintpairs_; }
+    [[nodiscard]] inline int sm_int_pairs() const { return smintpairs_; }
 
     inline int& int_cells() { return intcells_; }
 
-    inline int int_cells() const { return intcells_; }
+    [[nodiscard]] inline int int_cells() const { return intcells_; }
 
     /// @}
 
@@ -351,14 +399,14 @@ namespace CONTACT
 
     \return Boolean flag to indicate self contact status of this interface
     */
-    bool self_contact() const { return selfcontact_; }
+    [[nodiscard]] bool self_contact() const { return selfcontact_; }
 
     /*!
     \brief Get two half pass status of this interface
 
     \return Boolean flag to indicate if two half pass algorithm shall be used
     */
-    bool two_half_pass() const { return two_half_pass_; }
+    [[nodiscard]] bool two_half_pass() const { return two_half_pass_; }
 
     /*!
     \brief Get row map of active nodes
@@ -366,7 +414,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    Teuchos::RCP<const Epetra_Map> active_nodes() const
+    [[nodiscard]] Teuchos::RCP<const Epetra_Map> active_nodes() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
@@ -379,14 +427,14 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    Teuchos::RCP<const Epetra_Map> active_dofs() const
+    [[nodiscard]] Teuchos::RCP<const Epetra_Map> active_dofs() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
       return activedofs_;
     }
 
-    Teuchos::RCP<const Epetra_Map> inactive_nodes() const
+    [[nodiscard]] Teuchos::RCP<const Epetra_Map> inactive_nodes() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
@@ -399,7 +447,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> inactive_dofs() const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> inactive_dofs() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
@@ -412,7 +460,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> active_n_dofs() const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> active_n_dofs() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
@@ -425,7 +473,7 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> active_t_dofs() const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> active_t_dofs() const
     {
       if (not filled()) FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
 
@@ -438,13 +486,16 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> slip_nodes() const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> slip_nodes() const
     {
       if (filled())
+      {
         return slipnodes_;
+      }
       else
+      {
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
-      exit(EXIT_FAILURE);  // calm down the compiler
+      }
     }
 
     /*!
@@ -453,13 +504,16 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> slip_dofs() const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> slip_dofs() const
     {
       if (filled())
+      {
         return slipdofs_;
+      }
       else
+      {
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
-      exit(EXIT_FAILURE);  // calm down the compiler
+      }
     }
 
     /*!
@@ -468,13 +522,16 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> slip_t_dofs() const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> slip_t_dofs() const
     {
       if (filled())
+      {
         return slipt_;
+      }
       else
+      {
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
-      exit(EXIT_FAILURE);  // calm down the compiler
+      }
     }
 
     /*!
@@ -483,13 +540,16 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> non_smooth_nodes() const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> non_smooth_nodes() const
     {
       if (filled())
+      {
         return nonsmoothnodes_;
+      }
       else
+      {
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
-      exit(EXIT_FAILURE);  // calm down the compiler
+      }
     }
 
     /*!
@@ -498,13 +558,16 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> smooth_nodes() const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> smooth_nodes() const
     {
       if (filled())
+      {
         return smoothnodes_;
+      }
       else
+      {
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
-      exit(EXIT_FAILURE);  // calm down the compiler
+      }
     }
 
     /*!
@@ -513,13 +576,16 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> sdof_vertex_rowmap() const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> sdof_vertex_rowmap() const
     {
       if (filled())
+      {
         return sdofVertexRowmap_;
+      }
       else
+      {
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
-      exit(EXIT_FAILURE);  // calm down the compiler
+      }
     }
     /*!
     \brief Get row map of smooth nodes
@@ -527,64 +593,79 @@ namespace CONTACT
     \pre Filled() == true is prerequisite
 
     */
-    virtual Teuchos::RCP<const Epetra_Map> sdof_vertex_colmap() const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> sdof_vertex_colmap() const
     {
       if (filled())
+      {
         return sdofVertexColmap_;
+      }
       else
+      {
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
-      exit(EXIT_FAILURE);  // calm down the compiler
+      }
     }
-    virtual Teuchos::RCP<const Epetra_Map> sdof_edge_rowmap() const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> sdof_edge_rowmap() const
     {
       if (filled())
+      {
         return sdofEdgeRowmap_;
+      }
       else
+      {
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
-      exit(EXIT_FAILURE);  // calm down the compiler
+      }
     }
-    virtual Teuchos::RCP<const Epetra_Map> sdof_edge_colmap() const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> sdof_edge_colmap() const
     {
       if (filled())
+      {
         return sdofEdgeColmap_;
+      }
       else
+      {
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
-      exit(EXIT_FAILURE);  // calm down the compiler
+      }
     }
-    virtual Teuchos::RCP<const Epetra_Map> sdof_surf_rowmap() const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> sdof_surf_rowmap() const
     {
       if (filled())
+      {
         return sdofSurfRowmap_;
+      }
       else
+      {
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
-      exit(EXIT_FAILURE);  // calm down the compiler
+      }
     }
-    virtual Teuchos::RCP<const Epetra_Map> sdof_surf_colmap() const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Map> sdof_surf_colmap() const
     {
       if (filled())
+      {
         return sdofSurfColmap_;
+      }
       else
+      {
         FOUR_C_THROW("CONTACT::Interface::fill_complete was not called");
-      exit(EXIT_FAILURE);  // calm down the compiler
+      }
     }
 
     /*!
     \brief Get number of slave / master pairs of this interface (proc local)
 
     */
-    virtual int slave_master_pairs() const { return smpairs_; }
+    [[nodiscard]] virtual int slave_master_pairs() const { return smpairs_; }
 
     /*!
     \brief Get number of slave / master integration pairs of this interface (proc local)
 
     */
-    virtual int slave_master_int_pairs() const { return smintpairs_; }
+    [[nodiscard]] virtual int slave_master_int_pairs() const { return smintpairs_; }
 
     /*!
     \brief Get number of integration cells of this interface (proc local)
 
     */
-    virtual int integration_cells() const { return intcells_; }
+    [[nodiscard]] virtual int integration_cells() const { return intcells_; }
 
     //@}
 
@@ -776,18 +857,6 @@ namespace CONTACT
 
     */
     void evaluate_lts() final;
-
-    /*!
-    \brief evaluate coupling terms for lts coupling + lin
-
-    */
-    void evaluate_lts_master();
-
-    /*!
-    \brief evaluate coupling terms for lts coupling + lin
-
-    */
-    void evaluate_nts_master();
 
     /*!
     \brief evaluate coupling terms for ltl coupling + lin
@@ -1284,9 +1353,9 @@ namespace CONTACT
     */
     void add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
 
-    inline bool is_friction() const { return friction_; }
+    [[nodiscard]] inline bool is_friction() const { return friction_; }
 
-    const Interface& get_ma_sharing_ref_interface() const;
+    [[nodiscard]] const Interface& get_ma_sharing_ref_interface() const;
 
     //! @name Output
     //! @{
@@ -1296,17 +1365,17 @@ namespace CONTACT
 
     //! @}
    public:
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> cn() const { return cnValues_; };
+    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> cn() const { return cnValues_; };
 
-    const Core::LinAlg::Vector<double>& cn_ref() const
+    [[nodiscard]] const Core::LinAlg::Vector<double>& cn_ref() const
     {
       if (cnValues_.is_null()) FOUR_C_THROW("The cnValues_ is not initialized!");
       return *cnValues_;
     }
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> ct() const { return ctValues_; };
+    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> ct() const { return ctValues_; };
 
-    const Core::LinAlg::Vector<double>& ct_ref() const
+    [[nodiscard]] const Core::LinAlg::Vector<double>& ct_ref() const
     {
       if (ctValues_.is_null()) FOUR_C_THROW("The ctValues_ is not initialized!");
       return *ctValues_;
@@ -1464,61 +1533,23 @@ namespace CONTACT
         std::vector<Core::Gen::Pairedvector<int, double>>& normaltonodelin) const;
 
     /*!
-    \brief Compute scaling factors for transition between nts, mortar etc.
-
-    */
-    virtual void compute_scaling();
-
-    /*!
-    \brief 2D version of scaling computation
-
-    */
-    virtual void compute_scaling_ltl();
-
-    /*!
     \brief Set new cn and ct values (global interface vector)
 
     */
     virtual void set_cn_ct_values(const int& iter);  // newton step
 
-    /*!
-    \brief Routine to scale nodal normals between nodal averaged normal and cpp normal
-
-    */
-    virtual void scale_normals();
-
-    /*!
-    \brief 2D version of nodal normal scaling
-
-    */
-    virtual void scale_normals_2d();
-
-    /*!
-    \brief 3D version of nodal normal scaling
-
-    */
-    virtual void scale_normals_3d();
 
     /*!
     \brief Routine which stores entries from nts algorithm into mortar nodes to reuse
            standard assemble functions
-
     */
     virtual void store_nt_svalues();
 
     /*!
     \brief Routine which stores entries from lts algorithm into mortar nodes to reuse
            standard assemble functions
-
     */
     virtual void store_lt_svalues();
-
-    /*!
-    \brief These functions are not properly implemented/used!!!!
-
-    */
-    virtual void detect_non_smooth_geometries();
-    virtual void evaluate_averaged_nodal_normals();
 
     /*!
     \brief Update interface master and slave sets
