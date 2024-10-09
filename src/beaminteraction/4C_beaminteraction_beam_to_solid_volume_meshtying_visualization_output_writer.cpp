@@ -218,6 +218,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
           Teuchos::make_rcp<std::unordered_set<int>>();
       visualization_params.set<Teuchos::RCP<std::unordered_set<int>>>("beam_tracker", beam_tracker);
 
+      // This map is used to ensure, that the continuous Lagrange multiplier field is only written
+      // once per beam element.
+      Teuchos::RCP<std::unordered_set<int>> beam_tracker_2d_3d_continuous =
+          Teuchos::rcp(new std::unordered_set<int>());
+      visualization_params.set<Teuchos::RCP<std::unordered_set<int>>>(
+          "beam_tracker_2d_3d_continuous", beam_tracker_2d_3d_continuous);
+
       // Add the pair specific output.
       for (const auto& pair : indirect_assembly_manager->get_mortar_manager()->get_contact_pairs())
         pair->get_pair_visualization(output_writer_base_ptr_, visualization_params);
@@ -227,6 +234,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
       visualization_params.remove("lambda");
       visualization_params.remove("mortar_manager");
       visualization_params.remove("beam_tracker");
+      visualization_params.remove("beam_tracker_2d_3d_continuous");
     }
   }
 
