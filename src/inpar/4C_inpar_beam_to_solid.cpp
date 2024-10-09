@@ -167,6 +167,11 @@ void Inpar::BeamToSolid::set_valid_parameters(Teuchos::ParameterList& list)
     Core::Utils::int_parameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
         "Number of segments for continuous mortar output", &beam_to_solid_volume_mestying_output);
 
+    Core::Utils::int_parameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS_CIRCUMFERENCE", 8,
+        "Number of segments for continuous mortar output along the beam cross-section "
+        "circumference",
+        &beam_to_solid_volume_mestying_output);
+
     Core::Utils::bool_parameter("SEGMENTATION", "No",
         "Enable / disable output of segmentation points.", &beam_to_solid_volume_mestying_output);
 

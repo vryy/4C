@@ -81,6 +81,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams::setup
       beam_to_solid_volume_meshtying_visualization_output_paramslist.get<int>(
           "MORTAR_LAMBDA_CONTINUOUS_SEGMENTS");
 
+  mortar_lambda_continuous_segments_circumference_ =
+      beam_to_solid_volume_meshtying_visualization_output_paramslist.get<int>(
+          "MORTAR_LAMBDA_CONTINUOUS_SEGMENTS_CIRCUMFERENCE");
+
   segmentation_ =
       beam_to_solid_volume_meshtying_visualization_output_paramslist.get<bool>("SEGMENTATION");
 
