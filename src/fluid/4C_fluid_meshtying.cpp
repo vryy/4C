@@ -187,35 +187,39 @@ void FLD::Meshtying::setup_meshtying(const std::vector<int>& coupleddof, const b
               mapext, mapext, 1, false, true);
       sysmatsolve_ = matsolve;
 
-      // fixing length of nullspace for block matrix (solver/preconditioner ML)
-      if (msht_ == Inpar::FLUID::condensed_bmat_merged)
+      if (solver_.params().isSublist("MueLu Parameters") or
+          solver_.params().isSublist("Teko Parameters"))
       {
-        std::string inv = "BMatMerged";
-        const Epetra_Map& oldmap = *(dofrowmap_);
-        const Epetra_Map& newmap = *(mergedmap_);
-        Core::LinearSolver::Parameters::fix_null_space(
-            inv.data(), oldmap, newmap, solver_.params());
-        std::cout << std::endl;
-      }
-      else if (msht_ == Inpar::FLUID::condensed_bmat)
-      {
-        // fixing length of Inverse1 nullspace (solver/preconditioner ML)
+        // fixing length of nullspace for block matrix (solver/preconditioner ML)
+        if (msht_ == Inpar::FLUID::condensed_bmat_merged)
         {
-          std::string inv = "Inverse1";
+          std::string inv = "BMatMerged";
           const Epetra_Map& oldmap = *(dofrowmap_);
-          const Epetra_Map& newmap = matsolve->matrix(0, 0).epetra_matrix()->RowMap();
+          const Epetra_Map& newmap = *(mergedmap_);
           Core::LinearSolver::Parameters::fix_null_space(
-              inv.data(), oldmap, newmap, solver_.params().sublist("Inverse1"));
+              inv.data(), oldmap, newmap, solver_.params());
           std::cout << std::endl;
         }
-        // fixing length of Inverse2 nullspace (solver/preconditioner ML)
+        else if (msht_ == Inpar::FLUID::condensed_bmat)
         {
-          std::string inv = "Inverse2";
-          const Epetra_Map& oldmap = *(dofrowmap_);
-          const Epetra_Map& newmap = matsolve->matrix(1, 1).epetra_matrix()->RowMap();
-          Core::LinearSolver::Parameters::fix_null_space(
-              inv.data(), oldmap, newmap, solver_.params().sublist("Inverse2"));
-          std::cout << std::endl;
+          // fixing length of Inverse1 nullspace (solver/preconditioner ML)
+          {
+            std::string inv = "Inverse1";
+            const Epetra_Map& oldmap = *(dofrowmap_);
+            const Epetra_Map& newmap = matsolve->matrix(0, 0).epetra_matrix()->RowMap();
+            Core::LinearSolver::Parameters::fix_null_space(
+                inv.data(), oldmap, newmap, solver_.params().sublist("Inverse1"));
+            std::cout << std::endl;
+          }
+          // fixing length of Inverse2 nullspace (solver/preconditioner ML)
+          {
+            std::string inv = "Inverse2";
+            const Epetra_Map& oldmap = *(dofrowmap_);
+            const Epetra_Map& newmap = matsolve->matrix(1, 1).epetra_matrix()->RowMap();
+            Core::LinearSolver::Parameters::fix_null_space(
+                inv.data(), oldmap, newmap, solver_.params().sublist("Inverse2"));
+            std::cout << std::endl;
+          }
         }
       }
     }
