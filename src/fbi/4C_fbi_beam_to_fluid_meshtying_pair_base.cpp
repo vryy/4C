@@ -157,7 +157,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam,
        index_segment++)
   {
     out << "    segment " << index_segment << ": ";
-    out << "eta in [" << this->line_to_3D_segments_[index_segment].get_etadata() << ", "
+    out << "eta in [" << this->line_to_3D_segments_[index_segment].get_eta_a() << ", "
         << this->line_to_3D_segments_[index_segment].get_eta_b() << "]";
     out << ", Gauss points = "
         << this->line_to_3D_segments_[index_segment].get_number_of_projection_points();
@@ -233,7 +233,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::get_pair_visual
     for (const auto& segment : this->line_to_3D_segments_)
     {
       // Add the left and right boundary point of the segment.
-      for (const auto& segmentation_point : {segment.get_etadata(), segment.get_eta_b()})
+      for (const auto& segmentation_point : {segment.get_eta_a(), segment.get_eta_b()})
       {
         GEOMETRYPAIR::evaluate_position<Beam>(segmentation_point, this->ele1posref_, X);
         GEOMETRYPAIR::evaluate_position<Beam>(segmentation_point, this->ele1pos_, r);

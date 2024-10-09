@@ -150,7 +150,7 @@ namespace
 
       // The first pair contains the full beam.
       EXPECT_NEAR(
-          -1., segments_vector[0][0].get_etadata(), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
+          -1., segments_vector[0][0].get_eta_a(), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(
           1., segments_vector[0][0].get_eta_b(), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
     }
@@ -190,10 +190,10 @@ namespace
 
       // Check the parameter coordinates.
       EXPECT_NEAR(
-          -1., segments_vector[0][0].get_etadata(), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
+          -1., segments_vector[0][0].get_eta_a(), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(0.36285977578126655, segments_vector[0][0].get_eta_b(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
-      EXPECT_NEAR(0.36285977578126744, segments_vector[1][0].get_etadata(),
+      EXPECT_NEAR(0.36285977578126744, segments_vector[1][0].get_eta_a(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(
           1.0, segments_vector[1][0].get_eta_b(), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
@@ -230,11 +230,11 @@ namespace
       EXPECT_EQ(segments_vector[0].size(), 2);
 
       // Check the segment coordinates on the line.
-      EXPECT_NEAR(-0.7495456134309243, segments_vector[0][0].get_etadata(),
+      EXPECT_NEAR(-0.7495456134309243, segments_vector[0][0].get_eta_a(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(-0.44451080329628256, segments_vector[0][0].get_eta_b(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
-      EXPECT_NEAR(0.076870238957896297, segments_vector[0][1].get_etadata(),
+      EXPECT_NEAR(0.076870238957896297, segments_vector[0][1].get_eta_a(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(0.95200105410689462, segments_vector[0][1].get_eta_b(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
@@ -271,11 +271,11 @@ namespace
       EXPECT_EQ(segments_vector[0].size(), 2);
 
       // Check the segment coordinates on the line.
-      EXPECT_NEAR(-0.40853230756138476, segments_vector[0][0].get_etadata(),
+      EXPECT_NEAR(-0.40853230756138476, segments_vector[0][0].get_eta_a(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(-0.079518054716933712, segments_vector[0][0].get_eta_b(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
-      EXPECT_NEAR(0.88282786408473413, segments_vector[0][1].get_etadata(),
+      EXPECT_NEAR(0.88282786408473413, segments_vector[0][1].get_eta_a(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(0.97917616983415101, segments_vector[0][1].get_eta_b(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
@@ -317,7 +317,7 @@ namespace
       EXPECT_EQ(segments_vector[0].size(), 1);
 
       // Check the segment coordinates on the line.
-      EXPECT_NEAR(-0.40769440465702655, segments_vector[0][0].get_etadata(),
+      EXPECT_NEAR(-0.40769440465702655, segments_vector[0][0].get_eta_a(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(-0.0090552523537554153, segments_vector[0][0].get_eta_b(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
@@ -354,11 +354,11 @@ namespace
       EXPECT_EQ(segments_vector[0].size(), 2);
 
       // Check the segment coordinates on the line.
-      EXPECT_NEAR(-1.0, segments_vector[0][0].get_etadata(),
-          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
+      EXPECT_NEAR(
+          -1.0, segments_vector[0][0].get_eta_a(), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(-0.9435487116990338, segments_vector[0][0].get_eta_b(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
-      EXPECT_NEAR(-0.03868932051359714, segments_vector[0][1].get_etadata(),
+      EXPECT_NEAR(-0.03868932051359714, segments_vector[0][1].get_eta_a(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(0.9822380322126314, segments_vector[0][1].get_eta_b(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
@@ -402,8 +402,8 @@ namespace
     // Check results.
     {
       EXPECT_EQ(segments_vector[0].size(), 1);
-      EXPECT_NEAR(-1.0, segments_vector[0][0].get_etadata(),
-          GEOMETRYPAIR::Constants::projection_xi_eta_tol);
+      EXPECT_NEAR(
+          -1.0, segments_vector[0][0].get_eta_a(), GEOMETRYPAIR::Constants::projection_xi_eta_tol);
       EXPECT_NEAR(0.9822380322126314, segments_vector[0][0].get_eta_b(),
           GEOMETRYPAIR::Constants::projection_xi_eta_tol);
     }

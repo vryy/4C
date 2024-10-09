@@ -409,14 +409,13 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<ScalarType, Line, Surface
     {
       // Position of the projection point within the segment.
       auto& projection_point_double = segment_double.get_projection_points()[i_point];
-      const double factor = (projection_point_double.get_eta() - segment_double.get_etadata()) /
+      const double factor = (projection_point_double.get_eta() - segment_double.get_eta_a()) /
                             segment_double.get_segment_length();
 
       // Calculate spatial point.
       auto& projection_point = projection_points[i_point];
       projection_point.set_from_other_point_double(projection_point_double);
-      projection_point.set_eta(
-          new_segment.get_etadata() + new_segment.get_segment_length() * factor);
+      projection_point.set_eta(new_segment.get_eta_a() + new_segment.get_segment_length() * factor);
 
       evaluate_position<Line>(projection_point.get_eta(), element_data_line, point_in_space);
 

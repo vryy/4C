@@ -108,8 +108,8 @@ void GEOMETRYPAIR::LineTo3DBase<PairType>::project_gauss_points_on_segment_to_ot
   StartValues<other::geometry_type_>::set(xi_start);
   for (unsigned int i = 0; i < (unsigned int)gauss_points.nquad; i++)
   {
-    scalar_type eta = segment.get_etadata() + (segment.get_eta_b() - segment.get_etadata()) * 0.5 *
-                                                  (gauss_points.qxg[i][0] + 1.);
+    scalar_type eta = segment.get_eta_a() + (segment.get_eta_b() - segment.get_eta_a()) * 0.5 *
+                                                (gauss_points.qxg[i][0] + 1.);
     projection_points.push_back(
         ProjectionPoint1DTo3D<scalar_type>(eta, xi_start, gauss_points.qwgt[i]));
   }

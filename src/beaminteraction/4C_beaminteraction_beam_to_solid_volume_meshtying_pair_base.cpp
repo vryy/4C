@@ -158,7 +158,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
       visualization_params
           .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
               "btsv-output_params_ptr");
-  const bool write_unique_ids = output_params_ptr->get_write_unique_i_ds_flag();
+  const bool write_unique_ids = output_params_ptr->get_write_unique_ids_flag();
 
   if (visualization_segmentation != Teuchos::null)
   {
@@ -184,7 +184,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<ScalarType, Beam,
     for (const auto& segment : this->line_to_3D_segments_)
     {
       // Add the left and right boundary point of the segment.
-      for (const auto& segmentation_point : {segment.get_etadata(), segment.get_eta_b()})
+      for (const auto& segmentation_point : {segment.get_eta_a(), segment.get_eta_b()})
       {
         GEOMETRYPAIR::evaluate_position<Beam>(segmentation_point, this->ele1posref_, X);
         GEOMETRYPAIR::evaluate_position<Beam>(segmentation_point, this->ele1pos_, r);

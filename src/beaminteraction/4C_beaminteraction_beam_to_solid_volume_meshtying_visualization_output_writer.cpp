@@ -49,7 +49,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
           "beam-to-solid-volume", visualization_params_);
 
   // Whether or not to write unique cell and node IDs.
-  const bool write_unique_ids = output_params_ptr_->get_write_unique_i_ds_flag();
+  const bool write_unique_ids = output_params_ptr_->get_write_unique_ids_flag();
 
   // Depending on the selected input parameters, create the needed writers. All node / cell data
   // fields that should be output eventually have to be defined here. This helps to prevent issues
@@ -181,7 +181,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
         beam_contact->beam_interaction_data_state().get_dis_np()->get_ptr_of_MultiVector(),
         Core::LinAlg::MultiVector<double>(
             *beam_contact->beam_interaction_data_state().get_force_np()),
-        output_params_ptr_->get_write_unique_i_ds_flag());
+        output_params_ptr_->get_write_unique_ids_flag());
 
 
   // Loop over the assembly managers and add the visualization for the pairs contained in the

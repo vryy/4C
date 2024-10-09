@@ -245,9 +245,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_p
              i_curve_segment++)
         {
           // Get the position, displacement and lambda value at the current point.
-          xi = segment.get_etadata() + i_curve_segment *
-                                           (segment.get_eta_b() - segment.get_etadata()) /
-                                           (double)mortar_segments;
+          xi = segment.get_eta_a() + i_curve_segment * (segment.get_eta_b() - segment.get_eta_a()) /
+                                         (double)mortar_segments;
           GEOMETRYPAIR::evaluate_position<Beam>(xi, this->ele1pos_, current_beamposition);
           GEOMETRYPAIR::evaluate_position<Beam>(xi, this->ele1posref_, ref_beamposition);
           beamdisplacement = current_beamposition;

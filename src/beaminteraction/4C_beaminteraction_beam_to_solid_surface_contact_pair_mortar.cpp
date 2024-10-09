@@ -310,7 +310,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
   const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
       visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
           "btss-output_params_ptr");
-  const bool write_unique_ids = output_params_ptr->get_write_unique_i_ds_flag();
+  const bool write_unique_ids = output_params_ptr->get_write_unique_ids_flag();
 
   if (visualization_continuous != Teuchos::null)
   {
