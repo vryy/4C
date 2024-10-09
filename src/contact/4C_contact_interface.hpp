@@ -101,16 +101,16 @@ namespace CONTACT
 
     [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> active_dofs() const { return activedofs_; }
 
-    inline Teuchos::RCP<Epetra_Map>& in_active_nodes() { return inactivenodes_; }
+    inline Teuchos::RCP<Epetra_Map>& inactive_nodes() { return inactivenodes_; }
 
-    [[nodiscard]] inline const Teuchos::RCP<Epetra_Map>& in_active_nodes() const
+    [[nodiscard]] inline const Teuchos::RCP<Epetra_Map>& inactive_nodes() const
     {
       return inactivenodes_;
     }
 
-    inline Teuchos::RCP<Epetra_Map>& in_active_dofs() { return inactivedofs_; }
+    inline Teuchos::RCP<Epetra_Map>& inactive_dofs() { return inactivedofs_; }
 
-    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> in_active_dofs() const
+    [[nodiscard]] inline Teuchos::RCP<const Epetra_Map> inactive_dofs() const
     {
       return inactivedofs_;
     }

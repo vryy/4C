@@ -98,8 +98,8 @@ CONTACT::Interface::Interface(const Teuchos::RCP<CONTACT::InterfaceDataContainer
       constr_direction_(interface_data_->constraint_direction()),
       activenodes_(interface_data_->active_nodes()),
       activedofs_(interface_data_->active_dofs()),
-      inactivenodes_(interface_data_->in_active_nodes()),
-      inactivedofs_(interface_data_->in_active_dofs()),
+      inactivenodes_(interface_data_->inactive_nodes()),
+      inactivedofs_(interface_data_->inactive_dofs()),
       activen_(interface_data_->active_n()),
       activet_(interface_data_->active_t()),
       slipnodes_(interface_data_->slip_nodes()),
@@ -143,8 +143,8 @@ CONTACT::Interface::Interface(const Teuchos::RCP<Mortar::InterfaceDataContainer>
       constr_direction_(interface_data_->constraint_direction()),
       activenodes_(interface_data_->active_nodes()),
       activedofs_(interface_data_->active_dofs()),
-      inactivenodes_(interface_data_->in_active_nodes()),
-      inactivedofs_(interface_data_->in_active_dofs()),
+      inactivenodes_(interface_data_->inactive_nodes()),
+      inactivedofs_(interface_data_->inactive_dofs()),
       activen_(interface_data_->active_n()),
       activet_(interface_data_->active_t()),
       slipnodes_(interface_data_->slip_nodes()),
@@ -4617,7 +4617,8 @@ double CONTACT::Interface::compute_cpp_normal_3d(Mortar::Node& mrtrnode,
           donebefore.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(j, mele->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
+          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+              j, mele->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
           // get nodes
           Core::Nodes::Node* nodes[2] = {mele->nodes()[nodeLIds[0]], mele->nodes()[nodeLIds[1]]};
