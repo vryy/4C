@@ -62,11 +62,8 @@ namespace Core::LinearSolver
   //! Different preconditioners within the ML, MueLu and Ifpack package
   enum class PreconditionerType
   {
-    ilu,                  ///< incomplete LU factorization with fill in levels (Ifpack package)
-    multigrid_ml,         ///< standard multigrid for structures (ML package, outdated)
-    multigrid_ml_fluid2,  ///< energy optimal multigrid for unsymmetric fluid problems (ML package,
-                          ///< outdated)
-    multigrid_muelu,      ///< multigrid preconditioner (MueLu package, recommended!)
+    ilu,              ///< incomplete LU factorization with fill in levels (Ifpack package)
+    multigrid_muelu,  ///< multigrid preconditioner (MueLu package, recommended!)
     multigrid_muelu_contactsp,  ///< multigrid preconditioner for blocked contact problems in saddle
                                 ///< point formulation (MueLu package)
     multigrid_nxn,  ///< multigrid preconditioner for a nxn block matrix (indirectly MueLu package)

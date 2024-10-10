@@ -729,10 +729,6 @@ AZOUTPUT                        0
 //                              LU
 //                              RILU
 //                              BILU
-//                              ML
-//                              MLFLUID
-//                              MLFLUID2
-//                              MLAPI
 //                              GaussSeidel
 //                              DownwindGaussSeidel
 //                              AMG(Braess-Sarazin)
@@ -772,84 +768,6 @@ IFPACKGFILL                     0
 //
 // The amount of overlap used for the ifpack "ilu" and "ilut" preconditioners.
 IFPACKOVERLAP                   0
-//
-// objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_AGG_SIZE                     27
-//
-//                              UC,METIS,VBMETIS,MIS
-ML_COARSEN                      UC
-//
-// damping coarse grid
-ML_DAMPCOARSE                   1
-//
-// damping fine grid
-ML_DAMPFINE                     1
-//
-// damping med grids
-ML_DAMPMED                      1
-//
-// ML stop coarsening when coarse ndof smaller then this
-ML_MAXCOARSESIZE                5000
-//
-// ML max number of levels
-ML_MAXLEVEL                     5
-//
-// ML print-out level (0-10)
-ML_PRINT                        0
-//
-// damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_SMO                  0
-//
-// threshold for prolongator smoother/aggregation
-ML_PROLONG_THRES                0
-//
-//                              SGS
-//                              Jacobi
-//                              Chebychev
-//                              MLS
-//                              ILU
-//                              KLU
-//                              Superlu
-//                              GS
-//                              DGS
-//                              Umfpack
-//                              BS
-//                              SIMPLE
-//                              SIMPLEC
-ML_SMOOTHERCOARSE               Umfpack
-//
-//                              SGS
-//                              Jacobi
-//                              Chebychev
-//                              MLS
-//                              ILU
-//                              KLU
-//                              Superlu
-//                              GS
-//                              DGS
-//                              Umfpack
-//                              BS
-//                              SIMPLE
-//                              SIMPLEC
-ML_SMOOTHERFINE                 ILU
-//
-//                              SGS
-//                              Jacobi
-//                              Chebychev
-//                              MLS
-//                              ILU
-//                              KLU
-//                              Superlu
-//                              GS
-//                              DGS
-//                              Umfpack
-//                              BS
-//                              SIMPLE
-//                              SIMPLEC
-ML_SMOOTHERMED                  ILU
-//
-// no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_SMOTIMES 1 1 1 1 1
 //
 // User specified name for solver block
 NAME ALE solver
@@ -915,10 +833,6 @@ AZOUTPUT                        0
 //                              LU
 //                              RILU
 //                              BILU
-//                              ML
-//                              MLFLUID
-//                              MLFLUID2
-//                              MLAPI
 //                              GaussSeidel
 //                              DownwindGaussSeidel
 //                              AMG(Braess-Sarazin)
@@ -958,84 +872,6 @@ IFPACKGFILL                     0
 //
 // The amount of overlap used for the ifpack "ilu" and "ilut" preconditioners.
 IFPACKOVERLAP                   0
-//
-// objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_AGG_SIZE                     27
-//
-//                              UC,METIS,VBMETIS,MIS
-ML_COARSEN                      UC
-//
-// damping coarse grid
-ML_DAMPCOARSE                   1
-//
-// damping fine grid
-ML_DAMPFINE                     1
-//
-// damping med grids
-ML_DAMPMED                      1
-//
-// ML stop coarsening when coarse ndof smaller then this
-ML_MAXCOARSESIZE                5000
-//
-// ML max number of levels
-ML_MAXLEVEL                     5
-//
-// ML print-out level (0-10)
-ML_PRINT                        0
-//
-// damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_SMO                  0
-//
-// threshold for prolongator smoother/aggregation
-ML_PROLONG_THRES                0
-//
-//                              SGS
-//                              Jacobi
-//                              Chebychev
-//                              MLS
-//                              ILU
-//                              KLU
-//                              Superlu
-//                              GS
-//                              DGS
-//                              Umfpack
-//                              BS
-//                              SIMPLE
-//                              SIMPLEC
-ML_SMOOTHERCOARSE               Umfpack
-//
-//                              SGS
-//                              Jacobi
-//                              Chebychev
-//                              MLS
-//                              ILU
-//                              KLU
-//                              Superlu
-//                              GS
-//                              DGS
-//                              Umfpack
-//                              BS
-//                              SIMPLE
-//                              SIMPLEC
-ML_SMOOTHERFINE                 ILU
-//
-//                              SGS
-//                              Jacobi
-//                              Chebychev
-//                              MLS
-//                              ILU
-//                              KLU
-//                              Superlu
-//                              GS
-//                              DGS
-//                              Umfpack
-//                              BS
-//                              SIMPLE
-//                              SIMPLEC
-ML_SMOOTHERMED                  ILU
-//
-// no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_SMOTIMES 1 1 1 1 1
 //
 // User specified name for solver block
 NAME Fluid solver
@@ -1101,10 +937,6 @@ AZOUTPUT                        0
 //                              LU
 //                              RILU
 //                              BILU
-//                              ML
-//                              MLFLUID
-//                              MLFLUID2
-//                              MLAPI
 //                              GaussSeidel
 //                              DownwindGaussSeidel
 //                              AMG(Braess-Sarazin)
@@ -1144,84 +976,6 @@ IFPACKGFILL                     0
 //
 // The amount of overlap used for the ifpack "ilu" and "ilut" preconditioners.
 IFPACKOVERLAP                   0
-//
-// objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
-ML_AGG_SIZE                     27
-//
-//                              UC,METIS,VBMETIS,MIS
-ML_COARSEN                      UC
-//
-// damping coarse grid
-ML_DAMPCOARSE                   1
-//
-// damping fine grid
-ML_DAMPFINE                     1
-//
-// damping med grids
-ML_DAMPMED                      1
-//
-// ML stop coarsening when coarse ndof smaller then this
-ML_MAXCOARSESIZE                5000
-//
-// ML max number of levels
-ML_MAXLEVEL                     5
-//
-// ML print-out level (0-10)
-ML_PRINT                        0
-//
-// damping factor for prolongator smoother (usually 1.33 or 0.0)
-ML_PROLONG_SMO                  0
-//
-// threshold for prolongator smoother/aggregation
-ML_PROLONG_THRES                0
-//
-//                              SGS
-//                              Jacobi
-//                              Chebychev
-//                              MLS
-//                              ILU
-//                              KLU
-//                              Superlu
-//                              GS
-//                              DGS
-//                              Umfpack
-//                              BS
-//                              SIMPLE
-//                              SIMPLEC
-ML_SMOOTHERCOARSE               Umfpack
-//
-//                              SGS
-//                              Jacobi
-//                              Chebychev
-//                              MLS
-//                              ILU
-//                              KLU
-//                              Superlu
-//                              GS
-//                              DGS
-//                              Umfpack
-//                              BS
-//                              SIMPLE
-//                              SIMPLEC
-ML_SMOOTHERFINE                 ILU
-//
-//                              SGS
-//                              Jacobi
-//                              Chebychev
-//                              MLS
-//                              ILU
-//                              KLU
-//                              Superlu
-//                              GS
-//                              DGS
-//                              Umfpack
-//                              BS
-//                              SIMPLE
-//                              SIMPLEC
-ML_SMOOTHERMED                  ILU
-//
-// no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_SMOTIMES 1 1 1 1 1
 //
 // User specified name for solver block
 NAME Structure solver

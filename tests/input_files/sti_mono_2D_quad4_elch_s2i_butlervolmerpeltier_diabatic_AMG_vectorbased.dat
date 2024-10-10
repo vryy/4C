@@ -49,8 +49,6 @@ SOLVER                          Belos
 AZPREC                          MueLu
 MUELU_XML_FILE                  xml/multigrid/sti_template.xml
 AZSUB                           100
-ML_MAXCOARSESIZE                1
-ML_MAXLEVEL                     2
 -----------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS

@@ -775,8 +775,6 @@ void FLD::XWall::setup_l2_projection()
       // ... test!
       switch (prectyp)
       {
-        case Core::LinearSolver::PreconditionerType::multigrid_ml:
-        case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2:
         case Core::LinearSolver::PreconditionerType::multigrid_muelu:
         {
           if (proj_)

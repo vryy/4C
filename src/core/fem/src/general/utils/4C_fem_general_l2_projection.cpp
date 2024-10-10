@@ -224,16 +224,11 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::solve_nodal_l2_project
         Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(solverparams, "AZPREC");
     switch (prectyp)
     {
-      case Core::LinearSolver::PreconditionerType::multigrid_ml:
-      case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2:
       case Core::LinearSolver::PreconditionerType::multigrid_muelu:
       {
         Teuchos::ParameterList *preclist_ptr = nullptr;
-        // switch here between ML and MueLu cases
-        if (prectyp == Core::LinearSolver::PreconditionerType::multigrid_ml or
-            prectyp == Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2)
-          preclist_ptr = &((solver.params()).sublist("ML Parameters"));
-        else if (prectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu)
+        // Parameter for MueLu
+        if (prectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu)
           preclist_ptr = &((solver.params()).sublist("MueLu Parameters"));
         else
           FOUR_C_THROW("please add correct parameter list");
