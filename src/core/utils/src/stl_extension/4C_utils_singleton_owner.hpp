@@ -13,6 +13,7 @@
 #include "4C_config.hpp"
 
 #include <functional>
+#include <list>
 #include <map>
 #include <memory>
 #include <type_traits>
@@ -26,6 +27,65 @@ namespace Core::UTILS
   {
     create,   //!< Create an instance (if not already created)
     destruct  //!< Destruct an existing instance
+  };
+
+  /**
+   * @brief Registry for SingletonOwner objects.
+   *
+   * This class solves a problem with singleton objects. Before the program starts, we call
+   * SingletonOwnerRegistry::initialize() to ensure that the SingletonOwnerRegistry is initialized
+   * before any SingletonOwner objects are created. At the end of the program, we call
+   * SingletonOwnerRegistry::finalize() which will destroy all singletons that are managed by any
+   * SingletonOwner. While this might seem pointless, given that the program is about to end, it is
+   * necessary to ensure that resources held within the singletons are released properly. Certain
+   * libraries (e.g. Kokkos) perform clean-up tasks at the end of the program, which might fail if
+   * associated resources were still held by singletons.
+   *
+   * @note Funnily enough, this class is a singleton itself.
+   */
+  class SingletonOwnerRegistry
+  {
+   public:
+    /**
+     * @brief Initialize the SingletonOwnerRegistry.
+     *
+     * This function is called at the beginning of the program to ensure that the
+     * SingletonOwnerRegistry is initialized before any SingletonOwner objects are created. This is
+     * necessary to ensure that the SingletonOwnerRegistry is destroyed after all SingletonOwner
+     * objects are destroyed.
+     *
+     */
+    static void initialize();
+
+    /**
+     * @brief Destroy all singletons that are managed by a SingletonOwner.
+     *
+     * This function is called at the end of the program to ensure that all singletons are
+     * destructed.
+     */
+    static void finalize();
+
+   private:
+    SingletonOwnerRegistry() = default;
+    static SingletonOwnerRegistry& instance();
+
+    /**
+     * Register a deleter function for a singleton owner.
+     */
+    static void register_deleter(void* owner, std::function<void()> deleter);
+
+    /**
+     * Unregister a deleter function for a singleton owner.
+     */
+    static void unregister(void* owner);
+
+    /**
+     * Store the deleters.
+     */
+    std::map<void*, std::function<void()>> deleters_;
+
+    template <typename T, typename... CreationArgs>
+    friend class SingletonOwner;
   };
 
   /*!
@@ -56,14 +116,17 @@ namespace Core::UTILS
     //! Deleted copy constructor. Only one object can own the singleton.
     SingletonOwner(const SingletonOwner& other) = delete;
 
-    //! Allow move construction.
-    SingletonOwner(SingletonOwner&& other) noexcept = default;
+    //! Deleted move constructor to keep things simple.
+    SingletonOwner(SingletonOwner&& other) noexcept = delete;
 
     //! Deleted copy assignment. Only one object can own the singleton.
     SingletonOwner& operator=(const SingletonOwner& other) = delete;
 
-    //! Allow move assignment.
-    SingletonOwner& operator=(SingletonOwner&& other) noexcept = default;
+    //! Deleted move assignment to keep things simple.
+    SingletonOwner& operator=(SingletonOwner&& other) noexcept = delete;
+
+    //! Destructor.
+    ~SingletonOwner();
 
     /*!
      * @brief Return pointer to singleton instance
@@ -77,6 +140,11 @@ namespace Core::UTILS
      *
      */
     T* instance(SingletonAction action, CreationArgs... args);
+
+    /**
+     * @brief Destroy the singleton instance.
+     */
+    void destroy_instance();
 
    private:
     //! singleton instance
@@ -195,6 +263,13 @@ namespace Core::UTILS
   SingletonOwner<T, CreationArgs...>::SingletonOwner(Fn&& creator)
       : creator_(std::forward<Fn>(creator))
   {
+    SingletonOwnerRegistry::register_deleter(this, [this]() { destroy_instance(); });
+  }
+
+  template <typename T, typename... CreationArgs>
+  SingletonOwner<T, CreationArgs...>::~SingletonOwner()
+  {
+    SingletonOwnerRegistry::unregister(this);
   }
 
 
@@ -207,9 +282,16 @@ namespace Core::UTILS
     }
     else if (action == SingletonAction::destruct)
     {
-      instance_.reset();
+      destroy_instance();
     }
     return instance_.get();
+  }
+
+
+  template <typename T, typename... CreationArgs>
+  void SingletonOwner<T, CreationArgs...>::destroy_instance()
+  {
+    instance_.reset();
   }
 
 
