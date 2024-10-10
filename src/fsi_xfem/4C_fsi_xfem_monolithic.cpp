@@ -2117,7 +2117,6 @@ void FSI::MonolithicXFEM::create_linear_solver()
     case Core::LinearSolver::PreconditionerType::block_teko:
       break;
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
-    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
     case Core::LinearSolver::PreconditionerType::cheap_simple:
     {
       // no plausibility checks here
@@ -2135,7 +2134,6 @@ void FSI::MonolithicXFEM::create_linear_solver()
   // prepare linear solvers and preconditioners
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
     case Core::LinearSolver::PreconditionerType::cheap_simple:
     {
       // This should be the default case (well-tested and used)
