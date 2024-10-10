@@ -17,6 +17,8 @@
 
 #include <Epetra_Comm.h>
 
+#include <vector>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::GeometricSearch
