@@ -418,7 +418,7 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
         if (lid < 0)
           FOUR_C_THROW("given dof is not stored on proc %d although map is colmap", myrank_);
         else
-          (*nodevals_phi)[i] = (*(phicol.get()))[lid];
+          (*nodevals_phi)[i] = (*phicol)[lid];
       }
     }
 

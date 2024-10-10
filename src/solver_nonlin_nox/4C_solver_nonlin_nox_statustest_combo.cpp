@@ -61,7 +61,7 @@ NOX::Nln::StatusTest::Combo& NOX::Nln::StatusTest::Combo::addStatusTest(
 NOX::Nln::StatusTest::Combo& NOX::Nln::StatusTest::Combo::add_status_test(
     const Teuchos::RCP<::NOX::StatusTest::Generic>& a, const bool& init)
 {
-  if (isSafe(*(a.get())))
+  if (isSafe(*a))
   {
     tests_.push_back(a);
     // add the test to the test-vector of the base class

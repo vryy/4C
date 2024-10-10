@@ -1957,7 +1957,7 @@ namespace Core::FE
      * \author gee \date 05/11
      */
     void evaluate_scalars(Teuchos::ParameterList& params, /*!< parameters */
-        Teuchos::RCP<Epetra_MultiVector> scalars /*!< output element-wise scalar quantities */
+        Epetra_MultiVector& scalars /*!< output element-wise scalar quantities */
     );
 
     /*!

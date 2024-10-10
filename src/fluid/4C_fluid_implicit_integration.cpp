@@ -4932,7 +4932,7 @@ Teuchos::RCP<double> FLD::FluidImplicitTimeInt::evaluate_div_u()
 
     // optional: elementwise defined div u may be written to standard output file (not implemented
     // yet)
-    discret_->evaluate_scalars(eleparams, divu);
+    discret_->evaluate_scalars(eleparams, *divu);
 
     discret_->clear_state();
 
@@ -5014,7 +5014,7 @@ double FLD::FluidImplicitTimeInt::evaluate_dt_via_cfl_if_applicable()
 
     // optional: elementwise defined h_u may be written to standard output file (not implemented
     // yet)
-    discret_->evaluate_scalars(eleparams, h_u);
+    discret_->evaluate_scalars(eleparams, *h_u);
 
     discret_->clear_state();
 

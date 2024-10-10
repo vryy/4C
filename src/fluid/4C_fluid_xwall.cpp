@@ -1335,7 +1335,7 @@ void FLD::XWall::calc_mk()
 
   set_x_wall_params_xw_dis(eleparams);
 
-  xwdiscret_->evaluate_scalars(eleparams, mkxw);
+  xwdiscret_->evaluate_scalars(eleparams, *mkxw);
 
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> mkxwv =

@@ -1390,7 +1390,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::calculate_phase_velocities()
 
   add_time_integration_specific_vectors();
 
-  discret_->evaluate_scalars(eleparams, phase_velocities_);
+  discret_->evaluate_scalars(eleparams, *phase_velocities_);
 }
 
 /*----------------------------------------------------------------------------*

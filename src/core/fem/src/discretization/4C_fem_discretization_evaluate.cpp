@@ -615,15 +615,15 @@ void Core::FE::Discretization::evaluate_scalars(
  |  evaluate/assemble scalars across elements (public)         gee 05/11|
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate_scalars(
-    Teuchos::ParameterList& params, Teuchos::RCP<Epetra_MultiVector> scalars)
+    Teuchos::ParameterList& params, Epetra_MultiVector& scalars)
 {
   if (!filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
-  Epetra_MultiVector& sca = *(scalars.get());
+  Epetra_MultiVector& sca = scalars;
 
   // number of scalars
-  const int numscalars = scalars->NumVectors();
+  const int numscalars = scalars.NumVectors();
   if (numscalars <= 0) FOUR_C_THROW("scalars vector of interest has size <=0");
 
   // define element matrices and vectors
@@ -640,7 +640,7 @@ void Core::FE::Discretization::evaluate_scalars(
     // pointer to current element
     Core::Elements::Element* actele = l_row_element(i);
 
-    if (!scalars->Map().MyGID(actele->id()))
+    if (!scalars.Map().MyGID(actele->id()))
       FOUR_C_THROW("Proc does not have global element %d", actele->id());
 
     // get element location vector
