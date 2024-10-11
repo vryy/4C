@@ -10,12 +10,13 @@ DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Multiphase_Poroelasticity
 RESTART                         0
+--------------------------------------------------------------------------IO
+VERBOSITY                       standard
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
 DYNAMICTYP                      OneStepTheta
 LINEAR_SOLVER                   1
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-
 THETA                           1.0
 ---------------------------------------------POROFLUIDMULTIPHASE DYNAMIC
 TIMEINTEGR                      One_Step_Theta
@@ -42,10 +43,11 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            iterative_poromultiphase_solver
 SOLVER                          Belos
-AZTOL                           1e-10
-AZOUTPUT                        10
 AZPREC                          Teko
 TEKO_XML_FILE                   xml/block_preconditioner/poromultifluid.xml
+AZTOL                           1e-06
+AZREUSE                         10
+AZOUTPUT                        10
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 4 MATIDS 10 20 30 40 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 4
 
