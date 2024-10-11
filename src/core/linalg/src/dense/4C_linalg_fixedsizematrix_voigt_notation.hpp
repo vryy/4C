@@ -259,6 +259,20 @@ namespace Core::LinAlg::Voigt
   template <NotationType rows_notation, NotationType cols_notation>
   void fourth_order_identity_matrix(Core::LinAlg::Matrix<6, 6>& id);
 
+  /*!
+   * @brief Modify the representation of the input 6x6 Voigt matrix, by applying scalar factors to
+   * rows and columns associated with mixed indices, e.g., with (1, 2)
+   *
+   * @note Helpful when converting between Voigt representations, e.g., from stress-stress form to
+   * stress-strain form
+   * @param[in]  input  input 6x6 Voigt matrix
+   * @param[in]  scalar_row  scalar factor applied to rows 4, 5, 6 of the Voigt matrix
+   * @param[in]  scalar_col  scalar factor applied to columns 4, 5, 6 of the Voigt matrix
+   * @returns modified 6x6 Voigt matrix
+   */
+  Core::LinAlg::Matrix<6, 6> modify_voigt_representation(
+      const Core::LinAlg::Matrix<6, 6>& input, const double scalar_row, const double scalar_col);
+
   /// collection of index mappings from matrix to Voigt-notation or vice versa
   struct IndexMappings
   {

@@ -274,6 +274,119 @@ namespace
     FOUR_C_EXPECT_NEAR(a_kron_b, a_kron_b_ref, 1.0e-10);
   }
 
+  TEST(MaterialServiceTest, TestADBCProduct)
+  {
+    // test the calculation of the fourth order ADBC product of two second-order tensors
+    Core::LinAlg::Matrix<3, 3> x(false);
+    x(0, 0) = 1.0000000000;
+    x(0, 1) = 2.0000000000;
+    x(0, 2) = 3.0000000000;
+    x(1, 0) = 0.0000000000;
+    x(1, 1) = 5.0000000000;
+    x(1, 2) = 1.2000000000;
+    x(2, 0) = 1.0000000000;
+    x(2, 1) = 1.0000000000;
+    x(2, 2) = 1.0000000000;
+
+    Core::LinAlg::Matrix<3, 3> y(false);
+    y(0, 0) = 1.0000000000;
+    y(0, 1) = 0.0000000000;
+    y(0, 2) = 5.0000000000;
+    y(1, 0) = 0.0000000000;
+    y(1, 1) = 0.0000000000;
+    y(1, 2) = 7.0000000000;
+    y(2, 0) = 1.3000000000;
+    y(2, 1) = 1.2000000000;
+    y(2, 2) = 1.0000000000;
+
+    Core::LinAlg::Matrix<9, 9> x_adbc_y_ref(true);
+    x_adbc_y_ref(0, 0) = 1.0000000000;
+    x_adbc_y_ref(0, 1) = 0.0000000000;
+    x_adbc_y_ref(0, 2) = 15.0000000000;
+    x_adbc_y_ref(0, 3) = 2.0000000000;
+    x_adbc_y_ref(0, 4) = 0.0000000000;
+    x_adbc_y_ref(0, 5) = 3.0000000000;
+    x_adbc_y_ref(0, 6) = 0.0000000000;
+    x_adbc_y_ref(0, 7) = 10.0000000000;
+    x_adbc_y_ref(0, 8) = 5.0000000000;
+    x_adbc_y_ref(1, 0) = 0.0000000000;
+    x_adbc_y_ref(1, 1) = 0.0000000000;
+    x_adbc_y_ref(1, 2) = 8.4000000000;
+    x_adbc_y_ref(1, 3) = 0.0000000000;
+    x_adbc_y_ref(1, 4) = 0.0000000000;
+    x_adbc_y_ref(1, 5) = 0.0000000000;
+    x_adbc_y_ref(1, 6) = 0.0000000000;
+    x_adbc_y_ref(1, 7) = 35.0000000000;
+    x_adbc_y_ref(1, 8) = 0.0000000000;
+    x_adbc_y_ref(2, 0) = 1.3000000000;
+    x_adbc_y_ref(2, 1) = 1.2000000000;
+    x_adbc_y_ref(2, 2) = 1.0000000000;
+    x_adbc_y_ref(2, 3) = 1.3000000000;
+    x_adbc_y_ref(2, 4) = 1.2000000000;
+    x_adbc_y_ref(2, 5) = 1.3000000000;
+    x_adbc_y_ref(2, 6) = 1.2000000000;
+    x_adbc_y_ref(2, 7) = 1.0000000000;
+    x_adbc_y_ref(2, 8) = 1.0000000000;
+    x_adbc_y_ref(3, 0) = 0.0000000000;
+    x_adbc_y_ref(3, 1) = 0.0000000000;
+    x_adbc_y_ref(3, 2) = 21.0000000000;
+    x_adbc_y_ref(3, 3) = 0.0000000000;
+    x_adbc_y_ref(3, 4) = 0.0000000000;
+    x_adbc_y_ref(3, 5) = 0.0000000000;
+    x_adbc_y_ref(3, 6) = 0.0000000000;
+    x_adbc_y_ref(3, 7) = 14.0000000000;
+    x_adbc_y_ref(3, 8) = 7.0000000000;
+    x_adbc_y_ref(4, 0) = 0.0000000000;
+    x_adbc_y_ref(4, 1) = 6.0000000000;
+    x_adbc_y_ref(4, 2) = 1.2000000000;
+    x_adbc_y_ref(4, 3) = 6.5000000000;
+    x_adbc_y_ref(4, 4) = 1.4400000000;
+    x_adbc_y_ref(4, 5) = 1.5600000000;
+    x_adbc_y_ref(4, 6) = 0.0000000000;
+    x_adbc_y_ref(4, 7) = 5.0000000000;
+    x_adbc_y_ref(4, 8) = 0.0000000000;
+    x_adbc_y_ref(5, 0) = 1.3000000000;
+    x_adbc_y_ref(5, 1) = 2.4000000000;
+    x_adbc_y_ref(5, 2) = 3.0000000000;
+    x_adbc_y_ref(5, 3) = 2.6000000000;
+    x_adbc_y_ref(5, 4) = 3.6000000000;
+    x_adbc_y_ref(5, 5) = 3.9000000000;
+    x_adbc_y_ref(5, 6) = 1.2000000000;
+    x_adbc_y_ref(5, 7) = 2.0000000000;
+    x_adbc_y_ref(5, 8) = 1.0000000000;
+    x_adbc_y_ref(6, 0) = 0.0000000000;
+    x_adbc_y_ref(6, 1) = 0.0000000000;
+    x_adbc_y_ref(6, 2) = 6.0000000000;
+    x_adbc_y_ref(6, 3) = 5.0000000000;
+    x_adbc_y_ref(6, 4) = 0.0000000000;
+    x_adbc_y_ref(6, 5) = 1.2000000000;
+    x_adbc_y_ref(6, 6) = 0.0000000000;
+    x_adbc_y_ref(6, 7) = 25.0000000000;
+    x_adbc_y_ref(6, 8) = 0.0000000000;
+    x_adbc_y_ref(7, 0) = 0.0000000000;
+    x_adbc_y_ref(7, 1) = 0.0000000000;
+    x_adbc_y_ref(7, 2) = 7.0000000000;
+    x_adbc_y_ref(7, 3) = 0.0000000000;
+    x_adbc_y_ref(7, 4) = 0.0000000000;
+    x_adbc_y_ref(7, 5) = 0.0000000000;
+    x_adbc_y_ref(7, 6) = 0.0000000000;
+    x_adbc_y_ref(7, 7) = 7.0000000000;
+    x_adbc_y_ref(7, 8) = 7.0000000000;
+    x_adbc_y_ref(8, 0) = 1.0000000000;
+    x_adbc_y_ref(8, 1) = 0.0000000000;
+    x_adbc_y_ref(8, 2) = 5.0000000000;
+    x_adbc_y_ref(8, 3) = 1.0000000000;
+    x_adbc_y_ref(8, 4) = 0.0000000000;
+    x_adbc_y_ref(8, 5) = 1.0000000000;
+    x_adbc_y_ref(8, 6) = 0.0000000000;
+    x_adbc_y_ref(8, 7) = 5.0000000000;
+    x_adbc_y_ref(8, 8) = 5.0000000000;
+
+    Core::LinAlg::Matrix<9, 9> x_adbc_y(true);
+    Mat::add_adbc_tensor_product(1.0, x, y, x_adbc_y);
+
+    FOUR_C_EXPECT_NEAR(x_adbc_y, x_adbc_y_ref, 1.0e-10);
+  }
 
   TEST(MaterialServiceTest, TestDyadicProductMatrixMatrix)
   {
