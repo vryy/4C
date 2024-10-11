@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 // Compilers do not always warn about this and this is not guaranteed to be a problem (after all,
 // why would we compile the class twice?). Here we encountered the warning in unity builds, so this
 // is not an anonymous namespace but the INTERNAL one.
-namespace Input::INTERNAL
+namespace Input::Internal
 {
   template <class T>
   std::string string_from_data_type()
@@ -469,12 +469,12 @@ namespace Input::INTERNAL
     std::string name_;
     std::filesystem::path path_;
   };
-}  // namespace Input::INTERNAL
+}  // namespace Input::Internal
 
 
 namespace Input
 {
-  namespace INTERNAL
+  namespace Internal
   {
     /**
      * Internal data used in the implementation. This type has value semantics.
@@ -494,11 +494,11 @@ namespace Input
       /// Store the read data.
       Core::IO::InputParameterContainer container_;
     };
-  }  // namespace INTERNAL
+  }  // namespace Internal
 
 
   LineDefinition::LineDefinition()
-      : pimpl_(std::make_unique<INTERNAL::LineDefinitionImplementation>())
+      : pimpl_(std::make_unique<Internal::LineDefinitionImplementation>())
   {
   }
 
@@ -511,17 +511,17 @@ namespace Input
   LineDefinition& LineDefinition::operator=(LineDefinition&&) noexcept = default;
 
   LineDefinition::LineDefinition(const LineDefinition& other)
-      : pimpl_(std::make_unique<INTERNAL::LineDefinitionImplementation>(*other.pimpl_))
+      : pimpl_(std::make_unique<Internal::LineDefinitionImplementation>(*other.pimpl_))
   {
   }
 
   LineDefinition& LineDefinition::operator=(const LineDefinition& other)
   {
-    pimpl_ = std::make_unique<INTERNAL::LineDefinitionImplementation>(*other.pimpl_);
+    pimpl_ = std::make_unique<Internal::LineDefinitionImplementation>(*other.pimpl_);
     return *this;
   }
 
-  LineDefinition::LineDefinition(std::unique_ptr<INTERNAL::LineDefinitionImplementation>&& pimpl)
+  LineDefinition::LineDefinition(std::unique_ptr<Internal::LineDefinitionImplementation>&& pimpl)
       : pimpl_(std::move(pimpl))
   {
   }
@@ -529,7 +529,7 @@ namespace Input
 
 
   LineDefinition::Builder::Builder()
-      : pimpl_(std::make_unique<INTERNAL::LineDefinitionImplementation>())
+      : pimpl_(std::make_unique<Internal::LineDefinitionImplementation>())
   {
   }
 
@@ -542,18 +542,18 @@ namespace Input
       LineDefinition::Builder&&) noexcept = default;
 
   LineDefinition::Builder::Builder(const LineDefinition::Builder& other)
-      : pimpl_(std::make_unique<INTERNAL::LineDefinitionImplementation>(*other.pimpl_))
+      : pimpl_(std::make_unique<Internal::LineDefinitionImplementation>(*other.pimpl_))
   {
   }
 
   LineDefinition::Builder& LineDefinition::Builder::operator=(const LineDefinition::Builder& other)
   {
-    pimpl_ = std::make_unique<INTERNAL::LineDefinitionImplementation>(*other.pimpl_);
+    pimpl_ = std::make_unique<Internal::LineDefinitionImplementation>(*other.pimpl_);
     return *this;
   }
 
   LineDefinition::Builder::Builder(const LineDefinition& line_definition)
-      : pimpl_(std::make_unique<INTERNAL::LineDefinitionImplementation>(*line_definition.pimpl_))
+      : pimpl_(std::make_unique<Internal::LineDefinitionImplementation>(*line_definition.pimpl_))
   {
   }
 
@@ -566,13 +566,13 @@ namespace Input
   LineDefinition LineDefinition::Builder::build() const&
   {
     // Make a copy of the implementation details
-    return LineDefinition(std::make_unique<INTERNAL::LineDefinitionImplementation>(*pimpl_));
+    return LineDefinition(std::make_unique<Internal::LineDefinitionImplementation>(*pimpl_));
   }
 
 
   LineDefinition::Builder& LineDefinition::Builder::add_tag(std::string name)
   {
-    pimpl_->components_.emplace_back(INTERNAL::TagComponent{std::move(name)});
+    pimpl_->components_.emplace_back(Internal::TagComponent{std::move(name)});
     return *this;
   }
 
@@ -580,8 +580,8 @@ namespace Input
 
   LineDefinition::Builder& LineDefinition::Builder::add_string(std::string name)
   {
-    pimpl_->components_.emplace_back(INTERNAL::GenericComponent<std::string>{
-        std::move(name), "''", INTERNAL::Behavior::ignore_name});
+    pimpl_->components_.emplace_back(Internal::GenericComponent<std::string>{
+        std::move(name), "''", Internal::Behavior::ignore_name});
     return *this;
   }
 
@@ -590,7 +590,7 @@ namespace Input
   LineDefinition::Builder& LineDefinition::Builder::add_int(std::string name)
   {
     pimpl_->components_.emplace_back(
-        INTERNAL::GenericComponent<int>{std::move(name), 0, INTERNAL::Behavior::ignore_name});
+        Internal::GenericComponent<int>{std::move(name), 0, Internal::Behavior::ignore_name});
     return *this;
   }
 
@@ -598,8 +598,8 @@ namespace Input
 
   LineDefinition::Builder& LineDefinition::Builder::add_int_vector(std::string name, int length)
   {
-    pimpl_->components_.emplace_back(INTERNAL::GenericComponent(
-        std::move(name), std::vector<int>(length), INTERNAL::Behavior::ignore_name));
+    pimpl_->components_.emplace_back(Internal::GenericComponent(
+        std::move(name), std::vector<int>(length), Internal::Behavior::ignore_name));
     return *this;
   }
 
@@ -607,8 +607,8 @@ namespace Input
 
   LineDefinition::Builder& LineDefinition::Builder::add_double_vector(std::string name, int length)
   {
-    pimpl_->components_.emplace_back(INTERNAL::GenericComponent(
-        std::move(name), std::vector<double>(length), INTERNAL::Behavior::ignore_name));
+    pimpl_->components_.emplace_back(Internal::GenericComponent(
+        std::move(name), std::vector<double>(length), Internal::Behavior::ignore_name));
     return *this;
   }
 
@@ -617,7 +617,7 @@ namespace Input
   LineDefinition::Builder& LineDefinition::Builder::add_named_string(std::string name)
   {
     pimpl_->components_.emplace_back(
-        INTERNAL::GenericComponent<std::string>{std::move(name), "''"});
+        Internal::GenericComponent<std::string>{std::move(name), "''"});
     return *this;
   }
 
@@ -625,7 +625,7 @@ namespace Input
 
   LineDefinition::Builder& LineDefinition::Builder::add_named_int(std::string name)
   {
-    pimpl_->components_.emplace_back(INTERNAL::GenericComponent<int>{std::move(name), 0});
+    pimpl_->components_.emplace_back(Internal::GenericComponent<int>{std::move(name), 0});
     return *this;
   }
 
@@ -635,7 +635,7 @@ namespace Input
       std::string name, int length)
   {
     pimpl_->components_.emplace_back(
-        INTERNAL::GenericComponent(std::move(name), std::vector<int>(length)));
+        Internal::GenericComponent(std::move(name), std::vector<int>(length)));
     return *this;
   }
 
@@ -643,7 +643,7 @@ namespace Input
 
   LineDefinition::Builder& LineDefinition::Builder::add_named_double(std::string name)
   {
-    pimpl_->components_.emplace_back(INTERNAL::GenericComponent<double>{std::move(name), 0.0});
+    pimpl_->components_.emplace_back(Internal::GenericComponent<double>{std::move(name), 0.0});
     return *this;
   }
 
@@ -653,7 +653,7 @@ namespace Input
       std::string name, int length)
   {
     pimpl_->components_.emplace_back(
-        INTERNAL::GenericComponent(std::move(name), std::vector<double>(length)));
+        Internal::GenericComponent(std::move(name), std::vector<double>(length)));
     return *this;
   }
 
@@ -662,8 +662,8 @@ namespace Input
   LineDefinition::Builder& LineDefinition::Builder::add_named_double_vector(
       std::string name, LengthDefinition length_definition)
   {
-    pimpl_->components_.emplace_back(INTERNAL::GenericComponent<std::vector<double>>(name,
-        std::vector<double>{}, INTERNAL::Behavior::read_print_name,
+    pimpl_->components_.emplace_back(Internal::GenericComponent<std::vector<double>>(name,
+        std::vector<double>{}, Internal::Behavior::read_print_name,
         [lengthdef = std::move(length_definition)](
             Core::IO::InputParameterContainer& linedef, std::vector<double>& values)
         {
@@ -678,7 +678,7 @@ namespace Input
 
   LineDefinition::Builder& LineDefinition::Builder::add_named_path(std::string name)
   {
-    pimpl_->components_.emplace_back(INTERNAL::PathComponent(name));
+    pimpl_->components_.emplace_back(Internal::PathComponent(name));
     return *this;
   }
 
@@ -688,7 +688,7 @@ namespace Input
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       FOUR_C_THROW("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(name, INTERNAL::TagComponent{name});
+    pimpl_->optionaltail_.emplace(name, Internal::TagComponent{name});
     return *this;
   }
 
@@ -699,7 +699,7 @@ namespace Input
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       FOUR_C_THROW("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(name, INTERNAL::GenericComponent<std::string>{name, "''"});
+    pimpl_->optionaltail_.emplace(name, Internal::GenericComponent<std::string>{name, "''"});
     return *this;
   }
 
@@ -709,7 +709,7 @@ namespace Input
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       FOUR_C_THROW("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(name, INTERNAL::GenericComponent<int>{name, 0});
+    pimpl_->optionaltail_.emplace(name, Internal::GenericComponent<int>{name, 0});
     return *this;
   }
 
@@ -720,7 +720,7 @@ namespace Input
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       FOUR_C_THROW("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(name, INTERNAL::GenericComponent(name, std::vector<int>(length)));
+    pimpl_->optionaltail_.emplace(name, Internal::GenericComponent(name, std::vector<int>(length)));
     return *this;
   }
 
@@ -731,7 +731,7 @@ namespace Input
   {
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       FOUR_C_THROW("optional component '%s' already defined", name.c_str());
-    pimpl_->optionaltail_.emplace(name, INTERNAL::GenericComponent<double>{name, 0.});
+    pimpl_->optionaltail_.emplace(name, Internal::GenericComponent<double>{name, 0.});
     return *this;
   }
 
@@ -743,7 +743,7 @@ namespace Input
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       FOUR_C_THROW("optional component '%s' already defined", name.c_str());
     pimpl_->optionaltail_.emplace(
-        name, INTERNAL::GenericComponent(name, std::vector<double>(length)));
+        name, Internal::GenericComponent(name, std::vector<double>(length)));
     return *this;
   }
 
@@ -756,8 +756,8 @@ namespace Input
       FOUR_C_THROW("optional component '%s' already defined", name.c_str());
 
     pimpl_->optionaltail_.emplace(
-        name, INTERNAL::GenericComponent<std::vector<double>>(name, std::vector<double>{},
-                  INTERNAL::Behavior::read_print_name,
+        name, Internal::GenericComponent<std::vector<double>>(name, std::vector<double>{},
+                  Internal::Behavior::read_print_name,
                   [lengthdef = std::move(lengthdef)](
                       Core::IO::InputParameterContainer& linedef, std::vector<double>& values)
                   {
@@ -776,7 +776,7 @@ namespace Input
     if (pimpl_->optionaltail_.find(name) != pimpl_->optionaltail_.end())
       FOUR_C_THROW("optional component '%s' already defined", name.c_str());
     pimpl_->optionaltail_.emplace(
-        name, INTERNAL::GenericComponent(name, std::vector<std::string>(length, "''")));
+        name, Internal::GenericComponent(name, std::vector<std::string>(length, "''")));
     return *this;
   }
 
@@ -790,7 +790,7 @@ namespace Input
     using T = std::vector<std::string>;
 
     pimpl_->optionaltail_.emplace(
-        name, INTERNAL::GenericComponent<T>(name, T{}, INTERNAL::Behavior::read_print_name,
+        name, Internal::GenericComponent<T>(name, T{}, Internal::Behavior::read_print_name,
                   [lengthdef = std::move(lengthdef)](
                       Core::IO::InputParameterContainer& linedef, T& values)
                   {
@@ -812,7 +812,7 @@ namespace Input
     using T = std::vector<std::pair<std::string, double>>;
 
     pimpl_->optionaltail_.emplace(
-        name, INTERNAL::GenericComponent<T>(name, T{}, INTERNAL::Behavior::read_print_name,
+        name, Internal::GenericComponent<T>(name, T{}, Internal::Behavior::read_print_name,
                   [lengthdef = std::move(lengthdef)](
                       Core::IO::InputParameterContainer& linedef, T& values)
                   {

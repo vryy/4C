@@ -940,7 +940,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::for_
       evaluate_element_nodes<celltype>(ele, discretization, lm);
 
   Discret::ELEMENTS::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+      [&](const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       { integrator(solid_material, integration_factor, gp); });

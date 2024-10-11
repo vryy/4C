@@ -24,7 +24,7 @@ namespace Discret::ELEMENTS
   template <Core::FE::CellType celltype>
   struct MulfLinearizationContainer
   {
-    Core::LinAlg::Matrix<Details::num_str<celltype>,
+    Core::LinAlg::Matrix<Internal::num_str<celltype>,
         Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
         Bop{};
   };
@@ -48,7 +48,7 @@ namespace Discret::ELEMENTS
     template <typename Evaluator>
     static auto evaluate(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
-        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping, MulfHistoryData<celltype>& history_data,
         Evaluator evaluator)
@@ -66,10 +66,10 @@ namespace Discret::ELEMENTS
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> cauchygreen =
           evaluate_cauchy_green<celltype>(spatial_material_mapping);
 
-      const Core::LinAlg::Matrix<Details::num_str<celltype>, 1> gl_strain =
+      const Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> gl_strain =
           evaluate_green_lagrange_strain(cauchygreen);
 
-      Core::LinAlg::Matrix<Details::num_str<celltype>,
+      Core::LinAlg::Matrix<Internal::num_str<celltype>,
           Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
           Bop = evaluate_strain_gradient(jacobian_mapping, spatial_material_mapping);
 
@@ -83,7 +83,7 @@ namespace Discret::ELEMENTS
       return evaluator(spatial_material_mapping.deformation_gradient_, gl_strain, linearization);
     }
 
-    static Core::LinAlg::Matrix<Details::num_str<celltype>,
+    static Core::LinAlg::Matrix<Internal::num_str<celltype>,
         Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
     get_linear_b_operator(const MulfLinearizationContainer<celltype>& linearization)
     {
@@ -100,7 +100,7 @@ namespace Discret::ELEMENTS
           linearization.Bop, stress, integration_factor, force_vector);
     }
 
-    static void add_stiffness_matrix(const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+    static void add_stiffness_matrix(const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const MulfLinearizationContainer<celltype>& linearization,
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
@@ -134,10 +134,10 @@ namespace Discret::ELEMENTS
 
     static inline void update_prestress(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
-        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
-        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+        const Core::LinAlg::Matrix<Internal::num_dim<celltype>, Internal::num_dim<celltype>>&
             deformation_gradient,
         MulfHistoryData<celltype>& history_data)
     {
@@ -173,7 +173,7 @@ namespace Discret::ELEMENTS
           std::declval<const Core::FE::Discretization&>(), std::declval<const std::vector<int>&>(),
           std::declval<Teuchos::ParameterList&>()))>> = true;
 
-  namespace Details
+  namespace Internal
   {
     struct UpdatePrestressAction
     {
@@ -205,14 +205,14 @@ namespace Discret::ELEMENTS
       const std::vector<int>& lm;
       Teuchos::ParameterList& params;
     };
-  }  // namespace Details
+  }  // namespace Internal
 
   template <typename VariantType>
   void update_prestress(VariantType& variant, const Core::Elements::Element& element,
       Mat::So3Material& mat, const Core::FE::Discretization& discretization,
       const std::vector<int>& lm, Teuchos::ParameterList& params)
   {
-    std::visit(Details::UpdatePrestressAction(element, mat, discretization, lm, params), variant);
+    std::visit(Internal::UpdatePrestressAction(element, mat, discretization, lm, params), variant);
   }
 }  // namespace Discret::ELEMENTS
 

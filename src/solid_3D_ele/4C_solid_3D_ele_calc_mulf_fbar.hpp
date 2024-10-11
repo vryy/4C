@@ -27,12 +27,12 @@ namespace Discret::ELEMENTS
   template <Core::FE::CellType celltype>
   struct MulfFBarPreparationData
   {
-    Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_nodes<celltype>> N_XYZ{};
+    Core::LinAlg::Matrix<Internal::num_dim<celltype>, Internal::num_nodes<celltype>> N_XYZ{};
 
     SpatialMaterialMapping<celltype> spatial_material_mapping{};
   };
 
-  namespace Details
+  namespace Internal
   {
     template <Core::FE::CellType celltype>
     SpatialMaterialMapping<celltype> evaluate_mulf_spatial_material_mapping_centroid(
@@ -91,7 +91,7 @@ namespace Discret::ELEMENTS
       invJ_new.multiply_tn(inv_delta_defgrd, mulf_data.inverse_jacobian);
       mulf_data.inverse_jacobian = std::move(invJ_new);
     }
-  }  // namespace Details
+  }  // namespace Internal
 
 
 
@@ -126,7 +126,7 @@ namespace Discret::ELEMENTS
       }
 
       // set coordinates in parameter space at centroid as zero -> xi = [0; 0; 0]
-      Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi_centroid =
+      Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1> xi_centroid =
           evaluate_parameter_coordinate_centroid<celltype>();
 
       // shape functions and derivatives evaluated at element centroid
@@ -139,14 +139,14 @@ namespace Discret::ELEMENTS
       Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::num_nodes<celltype>> N_XYZ_0;
       N_XYZ_0.multiply(jacobian_mapping.inverse_jacobian_, shape_functions_centeroid.derivatives_);
 
-      return {N_XYZ_0, Details::evaluate_mulf_spatial_material_mapping_centroid(
+      return {N_XYZ_0, Internal::evaluate_mulf_spatial_material_mapping_centroid(
                            shape_functions_centeroid, nodal_coordinates, global_history)};
     }
 
     template <typename Evaluator>
     static auto evaluate(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
-        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
         const MulfFBarPreparationData<celltype>& mapping_center,
@@ -186,12 +186,12 @@ namespace Discret::ELEMENTS
           });
 
       const SpatialMaterialMapping<celltype> spatial_material_mapping_bar =
-          Details::get_spatial_material_mapping_bar(spatial_material_mapping, fbar_factor);
+          Internal::get_spatial_material_mapping_bar(spatial_material_mapping, fbar_factor);
 
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> cauchygreen_bar =
           evaluate_cauchy_green<celltype>(spatial_material_mapping_bar);
 
-      const Core::LinAlg::Matrix<Details::num_str<celltype>, 1> gl_strain_bar =
+      const Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> gl_strain_bar =
           evaluate_green_lagrange_strain(cauchygreen_bar);
 
       return evaluator(
@@ -199,7 +199,7 @@ namespace Discret::ELEMENTS
     }
 
 
-    static Core::LinAlg::Matrix<Details::num_str<celltype>,
+    static Core::LinAlg::Matrix<Internal::num_str<celltype>,
         Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
     get_linear_b_operator(const FBarLinearizationContainer<celltype>& linearization)
     {
@@ -217,7 +217,7 @@ namespace Discret::ELEMENTS
           linearization.Bop, stress, integration_factor / linearization.fbar_factor, force_vector);
     }
 
-    static void add_stiffness_matrix(const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+    static void add_stiffness_matrix(const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const FBarLinearizationContainer<celltype>& linearization,
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
@@ -259,26 +259,26 @@ namespace Discret::ELEMENTS
         const MulfFBarPreparationData<celltype>& mapping_center,
         MulfHistoryData<celltype>& mulf_data_centeroid)
     {
-      Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> xi_centroid =
+      Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1> xi_centroid =
           evaluate_parameter_coordinate_centroid<celltype>();
 
       ShapeFunctionsAndDerivatives<celltype> shape_functions_centeroid =
           evaluate_shape_functions_and_derivs<celltype>(xi_centroid, element_nodes);
 
-      Details::update_mulf_history(element_nodes, shape_functions_centeroid, mulf_data_centeroid);
+      Internal::update_mulf_history(element_nodes, shape_functions_centeroid, mulf_data_centeroid);
     }
 
     static inline void update_prestress(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
-        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
-        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+        const Core::LinAlg::Matrix<Internal::num_dim<celltype>, Internal::num_dim<celltype>>&
             deformation_gradient,
         const MulfFBarPreparationData<celltype>& mapping_center,
         MulfHistoryData<celltype>& mulf_data_centeroid, MulfHistoryData<celltype>& mulf_data_gp)
     {
-      Details::update_mulf_history(element_nodes, shape_functions, mulf_data_gp);
+      Internal::update_mulf_history(element_nodes, shape_functions, mulf_data_gp);
     }
   };
 

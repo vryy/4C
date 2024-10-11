@@ -36,7 +36,7 @@ namespace Core::IO
   //! define this variable here to be used in 4C when referring to that cell type.
   static constexpr int polyhedron_cell_type = 42;
 
-  namespace INTERNAL
+  namespace Internal
   {
     /**
      * @brief Return a string representation of the supported scalar types
@@ -59,7 +59,7 @@ namespace Core::IO
     {
       return "double";
     }
-  }  // namespace INTERNAL
+  }  // namespace Internal
 
 
   /**
@@ -636,7 +636,7 @@ namespace Core::IO
       catch (const std::bad_variant_access& ex)
       {
         const std::string requested_type =
-            "std::vector<" + INTERNAL::scalar_type_to_string<typename T::value_type>() + ">";
+            "std::vector<" + Internal::scalar_type_to_string<typename T::value_type>() + ">";
         std::string allocated_type = "";
         if (std::holds_alternative<std::vector<double>>(data_vector))
           allocated_type = "std::vector<double>";

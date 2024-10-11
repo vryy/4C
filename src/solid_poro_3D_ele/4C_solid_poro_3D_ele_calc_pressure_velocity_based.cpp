@@ -35,34 +35,35 @@ namespace
    * @return dInverseDeformationGradientTransposed_dDisp
    */
   template <Core::FE::CellType celltype,
-      std::enable_if_t<Discret::ELEMENTS::DETAIL::num_dim<celltype> == 3, int> = 0>
-  Core::LinAlg::Matrix<Discret::ELEMENTS::DETAIL::num_dim<celltype> *
-                           Discret::ELEMENTS::DETAIL::num_dim<celltype>,
-      Discret::ELEMENTS::DETAIL::num_dim<celltype> * Discret::ELEMENTS::DETAIL::num_nodes<celltype>>
+      std::enable_if_t<Discret::ELEMENTS::Internal::num_dim<celltype> == 3, int> = 0>
+  Core::LinAlg::Matrix<Discret::ELEMENTS::Internal::num_dim<celltype> *
+                           Discret::ELEMENTS::Internal::num_dim<celltype>,
+      Discret::ELEMENTS::Internal::num_dim<celltype> *
+          Discret::ELEMENTS::Internal::num_nodes<celltype>>
   compute_linearization_of_deformation_gradient_transposed_wrt_disp(
       const Discret::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping,
       const Discret::ELEMENTS::SpatialMaterialMapping<celltype>& spatial_material_mapping,
       const Inpar::Solid::KinemType& kinematictype = Inpar::Solid::KinemType::nonlinearTotLag)
   {
-    Core::LinAlg::Matrix<Discret::ELEMENTS::DETAIL::num_dim<celltype> *
-                             Discret::ELEMENTS::DETAIL::num_dim<celltype>,
-        Discret::ELEMENTS::DETAIL::num_dim<celltype> *
-            Discret::ELEMENTS::DETAIL::num_nodes<celltype>>
+    Core::LinAlg::Matrix<Discret::ELEMENTS::Internal::num_dim<celltype> *
+                             Discret::ELEMENTS::Internal::num_dim<celltype>,
+        Discret::ELEMENTS::Internal::num_dim<celltype> *
+            Discret::ELEMENTS::Internal::num_nodes<celltype>>
         dInverseDeformationGradientTransposed_dDisp(true);
     if (kinematictype != Inpar::Solid::KinemType::linear)
     {
       // dF^-T/dus
-      for (int i = 0; i < Discret::ELEMENTS::DETAIL::num_dim<celltype>; i++)
+      for (int i = 0; i < Discret::ELEMENTS::Internal::num_dim<celltype>; i++)
       {
-        for (int n = 0; n < Discret::ELEMENTS::DETAIL::num_nodes<celltype>; n++)
+        for (int n = 0; n < Discret::ELEMENTS::Internal::num_nodes<celltype>; n++)
         {
-          for (int j = 0; j < Discret::ELEMENTS::DETAIL::num_dim<celltype>; j++)
+          for (int j = 0; j < Discret::ELEMENTS::Internal::num_dim<celltype>; j++)
           {
-            const int gid = Discret::ELEMENTS::DETAIL::num_dim<celltype> * n + j;
-            for (int k = 0; k < Discret::ELEMENTS::DETAIL::num_dim<celltype>; k++)
-              for (int l = 0; l < Discret::ELEMENTS::DETAIL::num_dim<celltype>; l++)
+            const int gid = Discret::ELEMENTS::Internal::num_dim<celltype> * n + j;
+            for (int k = 0; k < Discret::ELEMENTS::Internal::num_dim<celltype>; k++)
+              for (int l = 0; l < Discret::ELEMENTS::Internal::num_dim<celltype>; l++)
                 dInverseDeformationGradientTransposed_dDisp(
-                    i * Discret::ELEMENTS::DETAIL::num_dim<celltype> + l, gid) +=
+                    i * Discret::ELEMENTS::Internal::num_dim<celltype> + l, gid) +=
                     -spatial_material_mapping.inverse_deformation_gradient_(l, j) *
                     jacobian_mapping.N_XYZ_(k, n) *
                     spatial_material_mapping.inverse_deformation_gradient_(k, i);
@@ -85,38 +86,39 @@ namespace
    * w.r.t. displacements times material gradient of fluid pressure
    */
   template <Core::FE::CellType celltype,
-      std::enable_if_t<Discret::ELEMENTS::DETAIL::num_dim<celltype> == 3, int> = 0>
-  Core::LinAlg::Matrix<Discret::ELEMENTS::DETAIL::num_dim<celltype> *
-                           Discret::ELEMENTS::DETAIL::num_dim<celltype>,
-      Discret::ELEMENTS::DETAIL::num_dim<celltype> * Discret::ELEMENTS::DETAIL::num_nodes<celltype>>
+      std::enable_if_t<Discret::ELEMENTS::Internal::num_dim<celltype> == 3, int> = 0>
+  Core::LinAlg::Matrix<Discret::ELEMENTS::Internal::num_dim<celltype> *
+                           Discret::ELEMENTS::Internal::num_dim<celltype>,
+      Discret::ELEMENTS::Internal::num_dim<celltype> *
+          Discret::ELEMENTS::Internal::num_nodes<celltype>>
   evaluate_inverse_deformation_gradient_linearization_multiplication(
-      const Core::LinAlg::Matrix<Discret::ELEMENTS::DETAIL::num_dim<celltype> *
-                                     Discret::ELEMENTS::DETAIL::num_dim<celltype>,
-          Discret::ELEMENTS::DETAIL::num_dim<celltype> *
-              Discret::ELEMENTS::DETAIL::num_nodes<celltype>>&
+      const Core::LinAlg::Matrix<Discret::ELEMENTS::Internal::num_dim<celltype> *
+                                     Discret::ELEMENTS::Internal::num_dim<celltype>,
+          Discret::ELEMENTS::Internal::num_dim<celltype> *
+              Discret::ELEMENTS::Internal::num_nodes<celltype>>&
           d_inverse_deformationgradient_transposed_ddisp,
-      const Core::LinAlg::Matrix<Discret::ELEMENTS::DETAIL::num_dim<celltype>, 1>& Gradp,
+      const Core::LinAlg::Matrix<Discret::ELEMENTS::Internal::num_dim<celltype>, 1>& Gradp,
       const Inpar::Solid::KinemType& kinematictype = Inpar::Solid::KinemType::nonlinearTotLag)
   {
     // dF^-T/dus * Grad p
-    Core::LinAlg::Matrix<Discret::ELEMENTS::DETAIL::num_dim<celltype> *
-                             Discret::ELEMENTS::DETAIL::num_dim<celltype>,
-        Discret::ELEMENTS::DETAIL::num_dim<celltype> *
-            Discret::ELEMENTS::DETAIL::num_nodes<celltype>>
+    Core::LinAlg::Matrix<Discret::ELEMENTS::Internal::num_dim<celltype> *
+                             Discret::ELEMENTS::Internal::num_dim<celltype>,
+        Discret::ELEMENTS::Internal::num_dim<celltype> *
+            Discret::ELEMENTS::Internal::num_nodes<celltype>>
         dInverseDeformationGradient_dDisp_Gradp(true);
     if (kinematictype != Inpar::Solid::KinemType::linear)
     {
-      for (int i = 0; i < Discret::ELEMENTS::DETAIL::num_dim<celltype>; i++)
+      for (int i = 0; i < Discret::ELEMENTS::Internal::num_dim<celltype>; i++)
       {
-        for (int n = 0; n < Discret::ELEMENTS::DETAIL::num_nodes<celltype>; n++)
+        for (int n = 0; n < Discret::ELEMENTS::Internal::num_nodes<celltype>; n++)
         {
-          for (int j = 0; j < Discret::ELEMENTS::DETAIL::num_dim<celltype>; j++)
+          for (int j = 0; j < Discret::ELEMENTS::Internal::num_dim<celltype>; j++)
           {
-            const int gid = Discret::ELEMENTS::DETAIL::num_dim<celltype> * n + j;
-            for (int l = 0; l < Discret::ELEMENTS::DETAIL::num_dim<celltype>; l++)
+            const int gid = Discret::ELEMENTS::Internal::num_dim<celltype> * n + j;
+            for (int l = 0; l < Discret::ELEMENTS::Internal::num_dim<celltype>; l++)
               dInverseDeformationGradient_dDisp_Gradp(i, gid) +=
                   d_inverse_deformationgradient_transposed_ddisp(
-                      i * Discret::ELEMENTS::DETAIL::num_dim<celltype> + l, gid) *
+                      i * Discret::ELEMENTS::Internal::num_dim<celltype> + l, gid) *
                   Gradp(l);
           }
         }
@@ -512,7 +514,7 @@ void Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<celltype>::couplin
             Core::LinAlg::Matrix<num_str_, 1> cauchycouplstressvector;
             Solid::UTILS::pk2_to_cauchy(pk2_couplstress_gp,
                 spatial_material_mapping.deformation_gradient_, cauchycouplstressvector);
-            Details::assemble_vector_to_matrix_row(cauchycouplstressvector, couplstress_data, gp);
+            Internal::assemble_vector_to_matrix_row(cauchycouplstressvector, couplstress_data, gp);
           }
           break;
           case Inpar::Solid::stress_none:

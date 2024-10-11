@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::IO
 {
-  namespace INTERNAL
+  namespace Internal
   {
     template <typename T>
     const T* try_get_any_data(const std::string& name, const std::any& data)
@@ -47,7 +47,7 @@ namespace Core::IO
             Core::UTILS::try_demangle(data.type().name()).c_str());
       }
     }
-  }  // namespace INTERNAL
+  }  // namespace Internal
 
   /*!
   \brief A data storage container
@@ -161,7 +161,7 @@ namespace Core::IO
         const auto it = map.find(name);
         if (it != map.end())
         {
-          return INTERNAL::try_get_any_data<T>(name, it->second);
+          return Internal::try_get_any_data<T>(name, it->second);
         }
         else
         {

@@ -389,7 +389,7 @@ void Solid::UTILS::Shell::nodal_block_information_shell(
 void Solid::UTILS::Shell::Director::setup_director_for_element(
     const Core::Elements::Element& ele, Core::LinAlg::SerialDenseMatrix& nodal_directors)
 {
-  constexpr auto num_dim = Discret::ELEMENTS::Shell::DETAIL::num_dim;
+  constexpr auto num_dim = Discret::ELEMENTS::Shell::Internal::num_dim;
   const int num_node = ele.num_node();
   Core::LinAlg::SerialDenseMatrix xrefe(num_node, num_dim);
   for (int i = 0; i < num_node; ++i)
@@ -432,7 +432,7 @@ void Solid::UTILS::Shell::Director::average_director(const Core::LinAlg::Matrix<
 {
   Core::LinAlg::Matrix<3, 1> davn(true);
   Core::LinAlg::Matrix<3, 1> averdir(true);
-  for (int dim = 0; dim < Discret::ELEMENTS::Shell::DETAIL::num_dim; ++dim)
+  for (int dim = 0; dim < Discret::ELEMENTS::Shell::Internal::num_dim; ++dim)
     averdir(dim) = dir_list(dim, 0);
 
   for (int i = 1; i < num_directors; ++i)
@@ -447,7 +447,7 @@ void Solid::UTILS::Shell::Director::average_director(const Core::LinAlg::Matrix<
     // if the length is small, both directors point nearly in the same direction
     if (length <= 1.e-12)
     {
-      for (int dim = 0; dim < Discret::ELEMENTS::Shell::DETAIL::num_dim; ++dim)
+      for (int dim = 0; dim < Discret::ELEMENTS::Shell::Internal::num_dim; ++dim)
         davn(dim) = 0.5 * (averdir(dim) + dir_list(dim, i));
     }
     // if not average the nodal directors
@@ -484,7 +484,7 @@ void Solid::UTILS::Shell::Director::average_director(const Core::LinAlg::Matrix<
                    alpha * SquareValue(averdir(0)) * dir_list(2, i) +
                    alpha * averdir(0) * averdir(2) * dir_list(0, i) + averdir(2);
     }
-    for (int dim = 0; dim < Discret::ELEMENTS::Shell::DETAIL::num_dim; ++dim)
+    for (int dim = 0; dim < Discret::ELEMENTS::Shell::Internal::num_dim; ++dim)
     {
       averdir(dim) = davn(dim);
       nodal_director(dim) = davn(dim);
@@ -546,7 +546,7 @@ void Solid::UTILS::Shell::Director::average_directors_at_nodes(
     std::map<int, std::vector<double>>& director_map)
 {
   const int max_ele = 8;
-  static constexpr int num_dim = Discret::ELEMENTS::Shell::DETAIL::num_dim;
+  static constexpr int num_dim = Discret::ELEMENTS::Shell::Internal::num_dim;
   Core::LinAlg::Matrix<num_dim, max_ele> collaverdir(true);
 
   // loop through all row nodes and build director map
@@ -621,7 +621,7 @@ void Solid::UTILS::Shell::Director::setup_shell_element_directors(
       // configuration
       const int num_node = scatra_ele->num_node();
       Core::LinAlg::SerialDenseMatrix nodal_directors(
-          num_node, Discret::ELEMENTS::Shell::DETAIL::num_dim);
+          num_node, Discret::ELEMENTS::Shell::Internal::num_dim);
       setup_director_for_element(*scatra_ele, nodal_directors);
       scatra_ele->set_all_nodal_directors(nodal_directors);
     }
@@ -631,7 +631,7 @@ void Solid::UTILS::Shell::Director::setup_shell_element_directors(
       // configuration
       const int num_node = shell_ele->num_node();
       Core::LinAlg::SerialDenseMatrix nodal_directors(
-          num_node, Discret::ELEMENTS::Shell::DETAIL::num_dim);
+          num_node, Discret::ELEMENTS::Shell::Internal::num_dim);
       setup_director_for_element(*shell_ele, nodal_directors);
       shell_ele->set_all_nodal_directors(nodal_directors);
     }

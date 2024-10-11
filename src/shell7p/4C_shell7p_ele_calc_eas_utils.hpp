@@ -32,13 +32,14 @@ namespace Discret::ELEMENTS::Shell::EAS
    */
   template <Core::FE::CellType distype>
   Core::LinAlg::SerialDenseMatrix evaluate_t0inv(
-      const Core::LinAlg::Matrix<Discret::ELEMENTS::Shell::DETAIL::num_dim,
-          Discret::ELEMENTS::Shell::DETAIL::num_dim>& akov,
-      const Core::LinAlg::Matrix<Discret::ELEMENTS::Shell::DETAIL::num_dim,
-          Discret::ELEMENTS::Shell::DETAIL::num_dim>& akon0)
+      const Core::LinAlg::Matrix<Discret::ELEMENTS::Shell::Internal::num_dim,
+          Discret::ELEMENTS::Shell::Internal::num_dim>& akov,
+      const Core::LinAlg::Matrix<Discret::ELEMENTS::Shell::Internal::num_dim,
+          Discret::ELEMENTS::Shell::Internal::num_dim>& akon0)
   {
-    Core::LinAlg::SerialDenseMatrix T0inv(Discret::ELEMENTS::Shell::DETAIL::num_internal_variables,
-        Discret::ELEMENTS::Shell::DETAIL::num_internal_variables);
+    Core::LinAlg::SerialDenseMatrix T0inv(
+        Discret::ELEMENTS::Shell::Internal::num_internal_variables,
+        Discret::ELEMENTS::Shell::Internal::num_internal_variables);
     double t11, t12, t13, t21, t22, t23, t31, t32, t33;
     // components of the transformation matrix T0^{-1}
     t11 = 0.0;
@@ -50,7 +51,7 @@ namespace Discret::ELEMENTS::Shell::EAS
     t31 = 0.0;
     t32 = 0.0;
     t33 = 1.0;
-    for (int i = 0; i < Discret::ELEMENTS::Shell::DETAIL::num_dim; ++i)
+    for (int i = 0; i < Discret::ELEMENTS::Shell::Internal::num_dim; ++i)
     {
       t11 += akov(0, i) * akon0(0, i);
       t12 += akov(0, i) * akon0(1, i);
@@ -142,12 +143,12 @@ namespace Discret::ELEMENTS::Shell::EAS
     T0inv(10, 11) = 2 * t23 * t33;
     T0inv(11, 11) = t33 * t33;
 
-    for (int i = 0; i < Discret::ELEMENTS::Shell::DETAIL::node_dof; ++i)
+    for (int i = 0; i < Discret::ELEMENTS::Shell::Internal::node_dof; ++i)
     {
-      for (int j = 0; j < Discret::ELEMENTS::Shell::DETAIL::node_dof; ++j)
+      for (int j = 0; j < Discret::ELEMENTS::Shell::Internal::node_dof; ++j)
       {
-        T0inv(i, j + Discret::ELEMENTS::Shell::DETAIL::node_dof) = 0.0;
-        T0inv(i + Discret::ELEMENTS::Shell::DETAIL::node_dof, j) = 0.0;
+        T0inv(i, j + Discret::ELEMENTS::Shell::Internal::node_dof) = 0.0;
+        T0inv(i + Discret::ELEMENTS::Shell::Internal::node_dof, j) = 0.0;
       }
     }
     return T0inv;
@@ -171,7 +172,7 @@ namespace Discret::ELEMENTS::Shell::EAS
   {
     // evaluation of the shape function matrix to interpolate the enhanced strains alpha
     Core::LinAlg::SerialDenseMatrix M(
-        Discret::ELEMENTS::Shell::DETAIL::num_internal_variables, locking_types.total);
+        Discret::ELEMENTS::Shell::Internal::num_internal_variables, locking_types.total);
 
     const double xi = xi_gp[0];
     const double eta = xi_gp[1];
@@ -184,7 +185,7 @@ namespace Discret::ELEMENTS::Shell::EAS
     const double xietaeta = xieta * eta;
     const double xixietaeta = xieta * xieta;
 
-    const int num_node = Discret::ELEMENTS::Shell::DETAIL::num_node<distype>;
+    const int num_node = Discret::ELEMENTS::Shell::Internal::num_node<distype>;
     if (num_node > 4)
     {
       // membrane locking: E_{11}, E_{12}, E_{22} constant
@@ -670,7 +671,7 @@ namespace Discret::ELEMENTS::Shell::EAS
         evaluate_t0inv<distype>(a_reference.kovariant_, metrics_centroid_reference.kontravariant_);
     // transform basis of M-matrix to gaussian point: M_gp = detJ0/ detJ * T0^-T * M
     Core::LinAlg::SerialDenseMatrix M_gp(
-        Discret::ELEMENTS::Shell::DETAIL::num_internal_variables, neas);
+        Discret::ELEMENTS::Shell::Internal::num_internal_variables, neas);
     M_gp.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS,
         metrics_centroid_reference.detJ_ / a_reference.detJ_, T0inv, M, 0.0);
     return M_gp;

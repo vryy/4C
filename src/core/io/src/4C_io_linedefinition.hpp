@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Input
 {
-  namespace INTERNAL
+  namespace Internal
   {
     class LineDefinitionImplementation;
   }
@@ -244,7 +244,7 @@ namespace Input
 
      private:
       /// Implementation details are hidden behind the PIMPL idiom.
-      std::unique_ptr<INTERNAL::LineDefinitionImplementation> pimpl_;
+      std::unique_ptr<Internal::LineDefinitionImplementation> pimpl_;
     };
 
     /// print to dat file comment
@@ -274,10 +274,10 @@ namespace Input
 
    private:
     /// Constructor called by the Builder to directly pass on implementation.
-    explicit LineDefinition(std::unique_ptr<INTERNAL::LineDefinitionImplementation>&& pimpl);
+    explicit LineDefinition(std::unique_ptr<Internal::LineDefinitionImplementation>&& pimpl);
 
     /// Implementation details are hidden behind the PIMPL idiom.
-    std::unique_ptr<INTERNAL::LineDefinitionImplementation> pimpl_;
+    std::unique_ptr<Internal::LineDefinitionImplementation> pimpl_;
   };
 
 

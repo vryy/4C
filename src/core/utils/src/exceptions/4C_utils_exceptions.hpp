@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core
 {
-  namespace INTERNAL
+  namespace Internal
   {
     class ExceptionImplementation;
   }
@@ -66,10 +66,10 @@ namespace Core
      * Pointer to implementation. This technique is used to minimize the footprint of the exception
      * class that is put on the stack.
      */
-    std::unique_ptr<INTERNAL::ExceptionImplementation> pimpl_;
+    std::unique_ptr<Internal::ExceptionImplementation> pimpl_;
   };
 
-  namespace INTERNAL
+  namespace Internal
   {
 
     [[noreturn]] void throw_error(const char* file, int line, const char* format, ...);
@@ -92,7 +92,7 @@ namespace Core
       }
     };
 
-  }  // namespace INTERNAL
+  }  // namespace Internal
 }  // namespace Core
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -136,7 +136,7 @@ namespace Core
  * @endcode
  */
 #define FOUR_C_THROW \
-  FourC::Core::INTERNAL::ErrorHelper { __FILE__, __LINE__ }
+  FourC::Core::Internal::ErrorHelper { __FILE__, __LINE__ }
 
 /**
  * Throw an error in the form of a Core::Exception, unless the @p test is true.

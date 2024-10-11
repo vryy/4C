@@ -139,7 +139,7 @@ double Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_internal_energy(
   Shell::BasisVectorsAndMetrics<distype> g_current;
 
   // init enhanced strains for shell
-  Core::LinAlg::SerialDenseVector strain_enh(Shell::DETAIL::num_internal_variables);
+  Core::LinAlg::SerialDenseVector strain_enh(Shell::Internal::num_internal_variables);
 
 
   Shell::for_each_gauss_point<distype>(nodal_coordinates, intpoints_midsurface_,
@@ -174,7 +174,7 @@ double Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_internal_energy(
           solid_material.strain_energy(strains.gl_strain_, psi, gp, ele.id());
 
           double thickness = 0.0;
-          for (int i = 0; i < Shell::DETAIL::num_node<distype>; ++i)
+          for (int i = 0; i < Shell::Internal::num_node<distype>; ++i)
             thickness += thickness * shape_functions.shapefunctions_(i);
 
           intenergy += psi * integration_factor * 0.5 * thickness;
@@ -251,7 +251,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(
   Shell::BasisVectorsAndMetrics<distype> g_current;
 
   // init enhanced strains for shell:
-  Core::LinAlg::SerialDenseVector strain_enh(Shell::DETAIL::num_internal_variables);
+  Core::LinAlg::SerialDenseVector strain_enh(Shell::Internal::num_internal_variables);
 
   Shell::for_each_gauss_point<distype>(nodal_coordinates, intpoints_midsurface_,
       [&](const std::array<double, 2>& xi_gp,
@@ -279,13 +279,14 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(
           auto strains = Shell::evaluate_strains(g_reference, g_current);
 
           // update the deformation gradient
-          Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> defgrd_enh(false);
-          Shell::calc_consistent_defgrd<Shell::DETAIL::num_dim>(
+          Core::LinAlg::Matrix<Shell::Internal::num_dim, Shell::Internal::num_dim> defgrd_enh(
+              false);
+          Shell::calc_consistent_defgrd<Shell::Internal::num_dim>(
               strains.defgrd_, strains.gl_strain_, defgrd_enh);
           strains.defgrd_ = defgrd_enh;
 
           // evaluate stress in global cartesian system
-          auto stress = Shell::evaluate_material_stress_cartesian_system<Shell::DETAIL::num_dim>(
+          auto stress = Shell::evaluate_material_stress_cartesian_system<Shell::Internal::num_dim>(
               solid_material, strains, params, gp, ele.id());
           Shell::assemble_strain_type_to_matrix_row<distype>(
               strains, strainIO.type, strain_data, gp, 0.5);
@@ -348,7 +349,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
   Shell::BasisVectorsAndMetrics<distype> g_current;
 
   // init enhanced strain for shell
-  constexpr auto num_internal_variables = Shell::DETAIL::num_internal_variables;
+  constexpr auto num_internal_variables = Shell::Internal::num_internal_variables;
   Core::LinAlg::SerialDenseVector strain_enh(num_internal_variables);
   Shell::StressEnhanced stress_enh;
 
@@ -414,13 +415,14 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
           // update the deformation gradient (if needed?)
           if (solid_material.needs_defgrd())
           {
-            Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> defgrd_enh(false);
-            Shell::calc_consistent_defgrd<Shell::DETAIL::num_dim>(
+            Core::LinAlg::Matrix<Shell::Internal::num_dim, Shell::Internal::num_dim> defgrd_enh(
+                false);
+            Shell::calc_consistent_defgrd<Shell::Internal::num_dim>(
                 strains.defgrd_, strains.gl_strain_, defgrd_enh);
             strains.defgrd_ = defgrd_enh;
           }
 
-          auto stress = Shell::evaluate_material_stress_cartesian_system<Shell::DETAIL::num_dim>(
+          auto stress = Shell::evaluate_material_stress_cartesian_system<Shell::Internal::num_dim>(
               solid_material, strains, params, gp, ele.id());
           Shell::map_material_stress_to_curvilinear_system(stress, g_reference);
           Shell::thickness_integration<distype>(stress_enh, stress, factor, zeta);
@@ -448,9 +450,9 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
               shape_functions_ans, shape_functions, stress_enh.stress_, shell_data_.num_ans,
               integration_factor, *stiffness_matrix);
           // make stiffness matrix absolute symmetric
-          for (int i = 0; i < Shell::DETAIL::numdofperelement<distype>; ++i)
+          for (int i = 0; i < Shell::Internal::numdofperelement<distype>; ++i)
           {
-            for (int j = i + 1; j < Shell::DETAIL::numdofperelement<distype>; ++j)
+            for (int j = i + 1; j < Shell::Internal::numdofperelement<distype>; ++j)
             {
               const double average = 0.5 * ((*stiffness_matrix)(i, j) + (*stiffness_matrix)(j, i));
               (*stiffness_matrix)(i, j) = average;
@@ -530,7 +532,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::update(Core::Elements::Element&
     Shell::BasisVectorsAndMetrics<distype> g_current;
 
     // enhanced strains
-    Core::LinAlg::SerialDenseVector strain_enh(Shell::DETAIL::num_internal_variables);
+    Core::LinAlg::SerialDenseVector strain_enh(Shell::Internal::num_internal_variables);
 
     Shell::for_each_gauss_point<distype>(nodal_coordinates, intpoints_midsurface_,
         [&](const std::array<double, 2>& xi_gp,
@@ -561,9 +563,9 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::update(Core::Elements::Element&
             if (solid_material.needs_defgrd())
             {
               // update the deformation gradient (if needed?)
-              Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> defgrd_enh(
+              Core::LinAlg::Matrix<Shell::Internal::num_dim, Shell::Internal::num_dim> defgrd_enh(
                   false);
-              Shell::calc_consistent_defgrd<Shell::DETAIL::num_dim>(
+              Shell::calc_consistent_defgrd<Shell::Internal::num_dim>(
                   strains.defgrd_, strains.gl_strain_, defgrd_enh);
               strains.defgrd_ = defgrd_enh;
             }

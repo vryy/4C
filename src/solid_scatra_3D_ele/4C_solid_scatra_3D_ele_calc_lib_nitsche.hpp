@@ -66,7 +66,7 @@ namespace Discret::ELEMENTS
           std::declval<SolidScatraCauchyNDirLinearizations<dim>&>()))>> = true;
 
 
-  namespace Details
+  namespace Internal
   {
     template <int dim>
     struct EvaluateSolidScatraCauchyNDirAction
@@ -115,7 +115,7 @@ namespace Discret::ELEMENTS
       const Core::LinAlg::Matrix<dim, 1>& dir;
       SolidScatraCauchyNDirLinearizations<dim>& linearizations;
     };
-  }  // namespace Details
+  }  // namespace Internal
 
   template <typename VariantType>
   double get_normal_cauchy_stress_at_xi(VariantType& variant,
@@ -124,7 +124,7 @@ namespace Discret::ELEMENTS
       const Core::LinAlg::Matrix<3, 1>& xi, const Core::LinAlg::Matrix<3, 1>& n,
       const Core::LinAlg::Matrix<3, 1>& dir, SolidScatraCauchyNDirLinearizations<3>& linearizations)
   {
-    return std::visit(Details::EvaluateSolidScatraCauchyNDirAction<3>(
+    return std::visit(Internal::EvaluateSolidScatraCauchyNDirAction<3>(
                           element, mat, disp, scalars, xi, n, dir, linearizations),
         variant);
   }

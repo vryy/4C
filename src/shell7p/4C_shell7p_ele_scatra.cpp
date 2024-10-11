@@ -186,8 +186,8 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Shell7pScatraType::compute_nu
 
   // set director
   const Core::LinAlg::SerialDenseMatrix nodal_directors = shell->get_directors();
-  Core::LinAlg::Matrix<Shell::DETAIL::num_dim, 1> director(true);
-  for (int dim = 0; dim < Shell::DETAIL::num_dim; ++dim)
+  Core::LinAlg::Matrix<Shell::Internal::num_dim, 1> director(true);
+  for (int dim = 0; dim < Shell::Internal::num_dim; ++dim)
     director(dim, 0) = nodal_directors(j, dim) * half_thickness;
 
   return Solid::UTILS::Shell::compute_shell_null_space(node, x0, director);

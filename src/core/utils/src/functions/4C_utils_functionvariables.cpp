@@ -532,7 +532,7 @@ Core::UTILS::FunctionVariable& Core::UTILS::PiecewiseVariable::find_piece_for_ti
   return **active_piece;
 }
 
-std::vector<double> Core::UTILS::INTERNAL::extract_time_vector(const Input::LineDefinition& timevar)
+std::vector<double> Core::UTILS::Internal::extract_time_vector(const Input::LineDefinition& timevar)
 {
   // read the number of points
   int numpoints = timevar.container().get<int>("NUMPOINTS");

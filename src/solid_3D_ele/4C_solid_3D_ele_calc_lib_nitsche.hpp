@@ -31,7 +31,7 @@ namespace Mat
 
 namespace Discret::ELEMENTS
 {
-  namespace Details
+  namespace Internal
   {
     template <unsigned a, unsigned b, unsigned c>
     static inline void multiply_tn(const Core::LinAlg::Matrix<a, b>& mat1,
@@ -42,7 +42,7 @@ namespace Discret::ELEMENTS
 
       out_mat.multiply_tn(mat1, mat2);
     }
-  }  // namespace Details
+  }  // namespace Internal
 
   /*!
    * @brief Evaluate the derivative of the Cauchy stress w.r.t. the nodal displacements
@@ -59,7 +59,7 @@ namespace Discret::ELEMENTS
       const Core::LinAlg::Matrix<9, 1>& d_cauchyndir_dF,
       Core::LinAlg::SerialDenseMatrix& d_cauchyndir_dd)
   {
-    Details::multiply_tn(d_F_dd, d_cauchyndir_dF, d_cauchyndir_dd);
+    Internal::multiply_tn(d_F_dd, d_cauchyndir_dF, d_cauchyndir_dd);
   }
 
   /*!
@@ -79,7 +79,7 @@ namespace Discret::ELEMENTS
       const Core::LinAlg::Matrix<9, Core::FE::dim<celltype>>& d2_cauchyndir_dF_dn,
       Core::LinAlg::SerialDenseMatrix& d2_cauchyndir_dd_dn)
   {
-    Details::multiply_tn(d_F_dd, d2_cauchyndir_dF_dn, d2_cauchyndir_dd_dn);
+    Internal::multiply_tn(d_F_dd, d2_cauchyndir_dF_dn, d2_cauchyndir_dd_dn);
   }
 
   /*!
@@ -99,7 +99,7 @@ namespace Discret::ELEMENTS
       const Core::LinAlg::Matrix<9, Core::FE::dim<celltype>>& d2_cauchyndir_dF_ddir,
       Core::LinAlg::SerialDenseMatrix& d2_cauchyndir_dd_ddir)
   {
-    Details::multiply_tn(d_F_dd, d2_cauchyndir_dF_ddir, d2_cauchyndir_dd_ddir);
+    Internal::multiply_tn(d_F_dd, d2_cauchyndir_dF_ddir, d2_cauchyndir_dd_ddir);
   }
 
   /*!
@@ -121,7 +121,7 @@ namespace Discret::ELEMENTS
     Core::LinAlg::Matrix<9, Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
         d2_cauchyndir_dF_2d_F_dd(false);
     d2_cauchyndir_dF_2d_F_dd.multiply(d2_cauchyndir_dF2, d_F_dd);
-    Details::multiply_tn(d_F_dd, d2_cauchyndir_dF_2d_F_dd, d2_cauchyndir_dd_dd);
+    Internal::multiply_tn(d_F_dd, d2_cauchyndir_dF_2d_F_dd, d2_cauchyndir_dd_dd);
   }
 
   /*!
@@ -244,7 +244,7 @@ namespace Discret::ELEMENTS
   };
 
 
-  namespace Details
+  namespace Internal
   {
     template <typename T, typename... Args>
     std::optional<T> make_optional_if(bool condition, Args&&... params)
@@ -252,7 +252,7 @@ namespace Discret::ELEMENTS
       if (condition) return std::optional<T>(std::forward<Args>(params)...);
       return std::nullopt;
     }
-  }  // namespace Details
+  }  // namespace Internal
 
   /*!
    * @brief Returns the tensor-dependencies with those values initialized that are needed for the
@@ -273,21 +273,21 @@ namespace Discret::ELEMENTS
   {
     CauchyNDirLinearizationDependencies<celltype> linearization_dependencies{};
     linearization_dependencies.d_cauchyndir_dF =
-        Details::make_optional_if<Core::LinAlg::Matrix<9, 1>>(
+        Internal::make_optional_if<Core::LinAlg::Matrix<9, 1>>(
             linearizations.d_cauchyndir_dd || linearizations.d_cauchyndir_dxi ||
                 linearizations.d2_cauchyndir_dd_dxi,
             true);
 
     linearization_dependencies.d2_cauchyndir_dF2 =
-        Details::make_optional_if<Core::LinAlg::Matrix<9, 9>>(
+        Internal::make_optional_if<Core::LinAlg::Matrix<9, 9>>(
             linearizations.d2_cauchyndir_dd2, true);
 
     linearization_dependencies.d2_cauchyndir_dF_dn =
-        Details::make_optional_if<Core::LinAlg::Matrix<9, 3>>(
+        Internal::make_optional_if<Core::LinAlg::Matrix<9, 3>>(
             linearizations.d2_cauchyndir_dd_dn, true);
 
     linearization_dependencies.d2_cauchyndir_dF_ddir =
-        Details::make_optional_if<Core::LinAlg::Matrix<9, 3>>(
+        Internal::make_optional_if<Core::LinAlg::Matrix<9, 3>>(
             linearizations.d2_cauchyndir_dd_ddir, true);
 
 
@@ -405,7 +405,7 @@ namespace Discret::ELEMENTS
           std::declval<const Core::LinAlg::Matrix<dim, 1>&>(),
           std::declval<CauchyNDirLinearizations<dim>&>()))>> = true;
 
-  namespace Details
+  namespace Internal
   {
     template <int dim>
     struct EvaluateCauchyNDirAction
@@ -442,7 +442,7 @@ namespace Discret::ELEMENTS
       const Core::LinAlg::Matrix<dim, 1>& dir;
       CauchyNDirLinearizations<dim>& linearizations;
     };
-  }  // namespace Details
+  }  // namespace Internal
 
   /*!
    * @brief Evaluate optional function @p get_normal_cauchy_stress_at_xi(....) on SolidVariant @p
@@ -458,7 +458,7 @@ namespace Discret::ELEMENTS
       CauchyNDirLinearizations<dim>& linearizations)
   {
     return std::visit(
-        Details::EvaluateCauchyNDirAction<dim>(element, mat, disp, xi, n, dir, linearizations),
+        Internal::EvaluateCauchyNDirAction<dim>(element, mat, disp, xi, n, dir, linearizations),
         variant);
   }
 }  // namespace Discret::ELEMENTS

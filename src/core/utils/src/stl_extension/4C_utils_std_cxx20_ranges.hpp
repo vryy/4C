@@ -22,7 +22,7 @@ namespace std_20  // NOLINT
   namespace ranges::views  // NOLINT
   {
     namespace views = ranges::views;
-    namespace INTERNAL
+    namespace Internal
     {
       template <typename Iterator>
       class IteratorRange
@@ -99,7 +99,7 @@ namespace std_20  // NOLINT
         Range range_;
         Predicate pred_;
       };
-    }  // namespace INTERNAL
+    }  // namespace Internal
 
     /**
      * \brief Returns a view that includes all elements of the given @p container.
@@ -108,7 +108,7 @@ namespace std_20  // NOLINT
     template <typename Container>
     auto all(Container& container)
     {
-      return INTERNAL::IteratorRange(std::begin(container), std::end(container));
+      return Internal::IteratorRange(std::begin(container), std::end(container));
     }
 
     /**
@@ -118,7 +118,7 @@ namespace std_20  // NOLINT
     template <typename Range, typename Predicate>
     auto filter(Range range, Predicate predicate)
     {
-      return INTERNAL::FilterRange<Range, Predicate>(range, predicate);
+      return Internal::FilterRange<Range, Predicate>(range, predicate);
     }
   }  // namespace ranges::views
 }  // namespace std_20

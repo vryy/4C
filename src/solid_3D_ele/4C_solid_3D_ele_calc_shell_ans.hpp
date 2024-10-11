@@ -43,7 +43,7 @@ namespace Discret::ELEMENTS
     std::array<SamplingPointData<celltype>, num_sampling_points> sampling_point_data{};
   };
 
-  namespace Details
+  namespace Internal
   {
     template <Core::FE::CellType celltype>
     Core::LinAlg::Matrix<num_str<celltype>, num_dof_per_ele<celltype>> evaluate_local_b_operator(
@@ -221,10 +221,10 @@ namespace Discret::ELEMENTS
     void add_ans_geometric_stiffness(const Core::LinAlg::Matrix<3, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const Stress<celltype>& stress, const double integration_factor,
-        const Core::LinAlg::Matrix<DETAIL::num_str<celltype>, DETAIL::num_str<celltype>>& TinvT,
+        const Core::LinAlg::Matrix<Internal::num_str<celltype>, Internal::num_str<celltype>>& TinvT,
         const ShellANSPreparationData<celltype>& preparation_data,
-        Core::LinAlg::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>,
-            DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>& stiffness_matrix)
+        Core::LinAlg::Matrix<Internal::num_dim<celltype> * Internal::num_nodes<celltype>,
+            Internal::num_dim<celltype> * Internal::num_nodes<celltype>>& stiffness_matrix)
     {
       for (int inod = 0; inod < Core::FE::num_nodes<celltype>; ++inod)
       {
@@ -315,17 +315,17 @@ namespace Discret::ELEMENTS
         }
       }
     }
-  }  // namespace Details
+  }  // namespace Internal
 
 
   template <Core::FE::CellType celltype>
   struct ShellANSLinearizationContainer
   {
-    Core::LinAlg::Matrix<Details::num_str<celltype>,
+    Core::LinAlg::Matrix<Internal::num_str<celltype>,
         Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
         Bop_{};
 
-    Core::LinAlg::Matrix<DETAIL::num_str<celltype>, DETAIL::num_str<celltype>> TinvT{};
+    Core::LinAlg::Matrix<Internal::num_str<celltype>, Internal::num_str<celltype>> TinvT{};
   };
 
   /*!
@@ -408,14 +408,14 @@ namespace Discret::ELEMENTS
     template <typename Evaluator>
     static inline auto evaluate(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
-        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
         const ShellANSPreparationData<celltype>& preparation_data, Evaluator evaluator)
     {
       // evaluate local b-op
       Core::LinAlg::Matrix<num_str<celltype>, num_dof_per_ele<celltype>> bop_local =
-          Details::evaluate_local_b_operator(
+          Internal::evaluate_local_b_operator(
               element_nodes, xi, shape_functions, jacobian_mapping, preparation_data);
 
       const ShellANSLinearizationContainer<celltype> linearization = std::invoke(
@@ -427,7 +427,7 @@ namespace Discret::ELEMENTS
             return linearization;
           });
 
-      Core::LinAlg::Matrix<6, 1> gl_strain_local = Details::evaluate_local_glstrain(
+      Core::LinAlg::Matrix<6, 1> gl_strain_local = Internal::evaluate_local_glstrain(
           element_nodes, xi, shape_functions, jacobian_mapping, preparation_data);
 
       Core::LinAlg::Matrix<6, 1> gl_strain;
@@ -446,10 +446,10 @@ namespace Discret::ELEMENTS
     static inline Core::LinAlg::Matrix<9, Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
     evaluate_d_deformation_gradient_d_displacements(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
-        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
-        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+        const Core::LinAlg::Matrix<Internal::num_dim<celltype>, Internal::num_dim<celltype>>&
             deformation_gradient,
         const ShellANSPreparationData<celltype>& preparation_data)
     {
@@ -461,10 +461,10 @@ namespace Discret::ELEMENTS
     static inline Core::LinAlg::Matrix<9, Core::FE::dim<celltype>>
     evaluate_d_deformation_gradient_d_xi(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
-        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
-        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+        const Core::LinAlg::Matrix<Internal::num_dim<celltype>, Internal::num_dim<celltype>>&
             deformation_gradient,
         const ShellANSPreparationData<celltype>& preparation_data)
     {
@@ -475,10 +475,10 @@ namespace Discret::ELEMENTS
         Core::FE::num_nodes<celltype> * Core::FE::dim<celltype> * Core::FE::dim<celltype>>
     evaluate_d_deformation_gradient_d_displacements_d_xi(const Core::Elements::Element& ele,
         const ElementNodes<celltype>& element_nodes,
-        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+        const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const JacobianMapping<celltype>& jacobian_mapping,
-        const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>>&
+        const Core::LinAlg::Matrix<Internal::num_dim<celltype>, Internal::num_dim<celltype>>&
             deformation_gradient,
         const ShellANSPreparationData<celltype>& preparation_data)
     {
@@ -488,7 +488,7 @@ namespace Discret::ELEMENTS
           "not implemented");
     }
 
-    static Core::LinAlg::Matrix<Details::num_str<celltype>,
+    static Core::LinAlg::Matrix<Internal::num_str<celltype>,
         Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
     get_linear_b_operator(const ShellANSLinearizationContainer<celltype>& linearization)
     {
@@ -506,7 +506,7 @@ namespace Discret::ELEMENTS
           linearization.Bop_, stress, integration_factor, force_vector);
     }
 
-    static void add_stiffness_matrix(const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+    static void add_stiffness_matrix(const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
         const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
         const ShellANSLinearizationContainer<celltype>& linearization,
         const JacobianMapping<celltype>& jacobian_mapping, const Stress<celltype>& stress,
@@ -518,7 +518,7 @@ namespace Discret::ELEMENTS
           linearization.Bop_, stress, integration_factor, stiffness_matrix);
 
 
-      Details::add_ans_geometric_stiffness(xi, shape_functions, stress, integration_factor,
+      Internal::add_ans_geometric_stiffness(xi, shape_functions, stress, integration_factor,
           linearization.TinvT, preparation_data, stiffness_matrix);
     }
   };

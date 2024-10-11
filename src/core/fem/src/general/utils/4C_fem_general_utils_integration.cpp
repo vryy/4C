@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace Internal
+namespace Core::FE::Internal
 {
   namespace
   {
@@ -55,7 +55,7 @@ namespace Internal
         }
     }
   }  // namespace
-}  // namespace Internal
+}  // namespace Core::FE::Internal
 
 
 Core::FE::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D intrule) : intrule_(intrule)
