@@ -52,9 +52,9 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
     const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
     Core::LinAlg::SerialDenseMatrix* element_stiffness_matrix, double total_time)
 {
-  constexpr auto num_dim = Shell::DETAIL::num_dim;
-  constexpr auto numnod = Shell::DETAIL::num_node<distype>;
-  constexpr auto noddof = Shell::DETAIL::node_dof;
+  constexpr auto num_dim = Shell::Internal::num_dim;
+  constexpr auto numnod = Shell::Internal::num_node<distype>;
+  constexpr auto noddof = Shell::Internal::node_dof;
 
   Core::FE::IntegrationPoints2D intpoints =
       create_gauss_integration_points<distype>(get_gauss_rule<distype>());
@@ -132,7 +132,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
   const auto& value = condition.parameters().get<std::vector<double>>("VAL");
 
   // ensure that at least as many curves/functs as dofs are available
-  if (onoff.size() < DETAIL::node_dof)
+  if (onoff.size() < Internal::node_dof)
     FOUR_C_THROW(
         "Fewer functions or curves defined than the element's nodal degree of freedoms (6).");
 
@@ -249,7 +249,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
     }
 
     double value_times_integration_factor = 0.0;
-    for (int dim = 0; dim < Shell::DETAIL::num_dim; ++dim)
+    for (int dim = 0; dim < Shell::Internal::num_dim; ++dim)
     {
       switch (ltype)
       {
@@ -294,7 +294,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
           FOUR_C_THROW("Unknown type of SurfaceNeumann load");
       }  // end switch(eletype)
 
-      for (auto nodeid = 0; nodeid < Shell::DETAIL::num_node<distype>; ++nodeid)
+      for (auto nodeid = 0; nodeid < Shell::Internal::num_node<distype>; ++nodeid)
       {
         // Evaluates the Neumann boundary condition: f_{x,y,z}^i=\sum_j N^i(xi^j) * value(t) *
         // integration_factor_j
@@ -306,7 +306,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
     // load linerization (if neccessary)
     if (loadlin)
     {
-      constexpr auto numdof = DETAIL::numdofperelement<distype>;
+      constexpr auto numdof = Internal::numdofperelement<distype>;
       Core::LinAlg::Matrix<num_dim, numdof> dnormal;
       Core::LinAlg::Matrix<num_dim, numdof> dg1;
       Core::LinAlg::Matrix<num_dim, numdof> dg2;

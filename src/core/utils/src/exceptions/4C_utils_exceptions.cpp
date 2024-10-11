@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core
 {
-  namespace INTERNAL
+  namespace Internal
   {
     void throw_error(const char* file_name, int line_number, const std::string& format, ...)
     {
@@ -86,7 +86,7 @@ namespace Core
        */
       mutable std::string what_message_{};
     };
-  }  // namespace INTERNAL
+  }  // namespace Internal
 
   const char* Exception::what() const noexcept
   {
@@ -105,7 +105,7 @@ namespace Core
   constexpr std::size_t skip_frames = 2;
 
   Exception::Exception(std::string message)
-      : pimpl_(new INTERNAL::ExceptionImplementation{
+      : pimpl_(new Internal::ExceptionImplementation{
             std::move(message), boost::stacktrace::stacktrace(skip_frames, /*max_depth=*/-1)})
   {
   }

@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::LinAlg::INTERNAL
+namespace Core::LinAlg::Internal
 {
   /*!
    \brief Utility function to get type string of a matrix/vector object
@@ -105,7 +105,7 @@ namespace Core::LinAlg::INTERNAL
             std::to_string(c.numRows()) + "x" + std::to_string(c.numCols()) + ") respectively.")
             .c_str());
   }
-}  // namespace Core::LinAlg::INTERNAL
+}  // namespace Core::LinAlg::Internal
 
 namespace Core::LinAlg
 {
@@ -120,7 +120,7 @@ namespace Core::LinAlg
       const SerialDenseVector::Base& b)
   {
     const int err = c.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, A, b, 0.0);
-    INTERNAL::check_error_code_in_debug<false, false>(err, A, b, c);
+    Internal::check_error_code_in_debug<false, false>(err, A, b, c);
     return err;
   }
 
@@ -135,7 +135,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& A, const SerialDenseVector::Base& b)
   {
     const int err = c.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, alpha, A, b, beta);
-    INTERNAL::check_error_code_in_debug<false, false>(err, A, b, c);
+    Internal::check_error_code_in_debug<false, false>(err, A, b, c);
     return err;
   }
 
@@ -150,7 +150,7 @@ namespace Core::LinAlg
       const SerialDenseVector::Base& b)
   {
     const int err = c.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, A, b, 0.0);
-    INTERNAL::check_error_code_in_debug<true, false>(err, A, b, c);
+    Internal::check_error_code_in_debug<true, false>(err, A, b, c);
     return err;
   }
 
@@ -165,7 +165,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& A, const SerialDenseVector::Base& b)
   {
     const int err = c.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha, A, b, beta);
-    INTERNAL::check_error_code_in_debug<true, false>(err, A, b, c);
+    Internal::check_error_code_in_debug<true, false>(err, A, b, c);
     return err;
   }
 
@@ -180,7 +180,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, A, B, 0.0);
-    INTERNAL::check_error_code_in_debug<false, false>(err, A, B, C);
+    Internal::check_error_code_in_debug<false, false>(err, A, B, C);
     return err;
   }
 
@@ -195,7 +195,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& A, const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, alpha, A, B, beta);
-    INTERNAL::check_error_code_in_debug<false, false>(err, A, B, C);
+    Internal::check_error_code_in_debug<false, false>(err, A, B, C);
     return err;
   }
 
@@ -210,7 +210,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, A, B, 0.0);
-    INTERNAL::check_error_code_in_debug<true, false>(err, A, B, C);
+    Internal::check_error_code_in_debug<true, false>(err, A, B, C);
     return err;
   }
 
@@ -225,7 +225,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& A, const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha, A, B, beta);
-    INTERNAL::check_error_code_in_debug<true, false>(err, A, B, C);
+    Internal::check_error_code_in_debug<true, false>(err, A, B, C);
     return err;
   }
 
@@ -240,7 +240,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, A, B, 0.0);
-    INTERNAL::check_error_code_in_debug<false, true>(err, A, B, C);
+    Internal::check_error_code_in_debug<false, true>(err, A, B, C);
     return err;
   }
 
@@ -255,7 +255,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& A, const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, alpha, A, B, beta);
-    INTERNAL::check_error_code_in_debug<false, true>(err, A, B, C);
+    Internal::check_error_code_in_debug<false, true>(err, A, B, C);
     return err;
   }
 
@@ -270,7 +270,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::TRANS, Teuchos::TRANS, 1.0, A, B, 0.0);
-    INTERNAL::check_error_code_in_debug<true, true>(err, A, B, C);
+    Internal::check_error_code_in_debug<true, true>(err, A, B, C);
     return err;
   }
 
@@ -285,7 +285,7 @@ namespace Core::LinAlg
       const SerialDenseMatrix::Base& A, const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::TRANS, Teuchos::TRANS, alpha, A, B, beta);
-    INTERNAL::check_error_code_in_debug<true, true>(err, A, B, C);
+    Internal::check_error_code_in_debug<true, true>(err, A, B, C);
     return err;
   }
 }  // namespace Core::LinAlg

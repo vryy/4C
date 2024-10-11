@@ -22,7 +22,7 @@ In this file, the helper for defining type trait functionality is defined
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::FE::Details
+namespace Core::FE::Internal
 {
   //! @name helper functions for cell-type related type lists
   /// @{
@@ -49,7 +49,7 @@ namespace Core::FE::Details
   template <CellType... celltypes>
   struct celltype_sequence_to_string_array<CelltypeSequence<celltypes...>>
   {
-    static constexpr std::array value = {Details::CellTypeInformation<celltypes>::name...};
+    static constexpr std::array value = {Internal::CellTypeInformation<celltypes>::name...};
   };
 
   template <typename T>
@@ -148,11 +148,11 @@ namespace Core::FE::Details
       FOUR_C_THROW(
           "The function you are calling is not implemented for the cell type %s. Supported "
           "celltypes are %s",
-          Details::CellTypeInformation<celltype_t()>::name, celltypes_str_acc.c_str());
+          Internal::CellTypeInformation<celltype_t()>::name, celltypes_str_acc.c_str());
     }
   };
   /// @}
-}  // namespace Core::FE::Details
+}  // namespace Core::FE::Internal
 
 FOUR_C_NAMESPACE_CLOSE
 

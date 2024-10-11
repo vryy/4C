@@ -43,7 +43,7 @@ namespace Discret::ELEMENTS
   void extract_from_pack(Core::Communication::UnpackBuffer& buffer,
       Discret::ELEMENTS::SolidScatraElementProperties& properties);
 
-  namespace Details
+  namespace Internal
   {
 
     using ImplementedSolidScatraCellTypes =
@@ -75,10 +75,10 @@ namespace Discret::ELEMENTS
 
     using SolidScatraEvaluators = Core::FE::Join<DisplacementBasedSolidScatraEvaluator,
         DisplacementBasedLinearKinematicsSolidScatraEvaluator, FbarScatraEvaluators>;
-  }  // namespace Details
+  }  // namespace Internal
 
   /// Variant holding the different implementations for the solid-scatra element
-  using SolidScatraCalcVariant = CreateVariantType<Details::SolidScatraEvaluators>;
+  using SolidScatraCalcVariant = CreateVariantType<Internal::SolidScatraEvaluators>;
 
   SolidScatraCalcVariant create_solid_scatra_calculation_interface(Core::FE::CellType celltype,
       const Discret::ELEMENTS::SolidElementProperties& element_properties);

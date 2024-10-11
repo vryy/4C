@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::FADUtils
 {
-  namespace Details
+  namespace Internal
   {
     template <typename T, typename AlwaysVoid = void>
     constexpr bool is_double_convertible = false;
@@ -30,13 +30,13 @@ namespace Core::FADUtils
     template <typename T>
     constexpr bool is_double_convertible<T,
         std::void_t<decltype(static_cast<double>(std::declval<std::remove_cv_t<T>>()))>> = true;
-  }  // namespace Details
+  }  // namespace Internal
 
   /*!
    * \brief Overload of CastToDouble() for any type that is convertible to double.
    */
   template <typename ScalarType,
-      std::enable_if_t<Details::is_double_convertible<ScalarType>, bool> = true>
+      std::enable_if_t<Internal::is_double_convertible<ScalarType>, bool> = true>
   inline double cast_to_double(ScalarType a)
   {
     return static_cast<double>(a);

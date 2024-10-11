@@ -33,10 +33,10 @@ namespace Discret::ELEMENTS::Shell
   template <Core::FE::CellType distype>
   struct NodalCoordinates
   {
-    Core::LinAlg::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim> x_refe_;
-    Core::LinAlg::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim> x_curr_;
-    Core::LinAlg::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim> a3_refe_;
-    Core::LinAlg::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim> a3_curr_;
+    Core::LinAlg::Matrix<Internal::num_node<distype>, Internal::num_dim> x_refe_;
+    Core::LinAlg::Matrix<Internal::num_node<distype>, Internal::num_dim> x_curr_;
+    Core::LinAlg::Matrix<Internal::num_node<distype>, Internal::num_dim> a3_refe_;
+    Core::LinAlg::Matrix<Internal::num_node<distype>, Internal::num_dim> a3_curr_;
   };
 
   /*!
@@ -49,12 +49,13 @@ namespace Discret::ELEMENTS::Shell
    * @param index   (int)  : Integer to consider either displacements or director displacmenets
    */
   template <Core::FE::CellType distype>
-  void spatial_configuration(Core::LinAlg::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim>& x,
-      const Core::LinAlg::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim>& x_refe,
+  void spatial_configuration(
+      Core::LinAlg::Matrix<Internal::num_node<distype>, Internal::num_dim>& x,
+      const Core::LinAlg::Matrix<Internal::num_node<distype>, Internal::num_dim>& x_refe,
       const std::vector<double>& disp, const int index)
   {
-    const int nodedof = Discret::ELEMENTS::Shell::DETAIL::node_dof;
-    for (int i = 0; i < DETAIL::num_node<distype>; ++i)
+    const int nodedof = Discret::ELEMENTS::Shell::Internal::node_dof;
+    for (int i = 0; i < Internal::num_node<distype>; ++i)
     {
       x(i, 0) = x_refe(i, 0) + disp[i * nodedof + 0 + index];
       x(i, 1) = x_refe(i, 1) + disp[i * nodedof + 1 + index];
@@ -78,7 +79,7 @@ namespace Discret::ELEMENTS::Shell
       const Core::LinAlg::SerialDenseMatrix& a3_reference, const double factor)
   {
     Discret::ELEMENTS::Shell::NodalCoordinates<distype> coordinates;
-    for (auto i = 0; i < Discret::ELEMENTS::Shell::DETAIL::num_node<distype>; ++i)
+    for (auto i = 0; i < Discret::ELEMENTS::Shell::Internal::num_node<distype>; ++i)
     {
       const double h2 = thickness * factor * 0.5;
 
@@ -91,7 +92,7 @@ namespace Discret::ELEMENTS::Shell
       coordinates.a3_refe_(i, 1) = a3_reference(i, 1) * h2;
       coordinates.a3_refe_(i, 2) = a3_reference(i, 2) * h2;
 
-      const int nodedof = DETAIL::node_dof;
+      const int nodedof = Internal::node_dof;
       coordinates.x_curr_(i, 0) = coordinates.x_refe_(i, 0) + disp[i * nodedof + 0];
       coordinates.x_curr_(i, 1) = coordinates.x_refe_(i, 1) + disp[i * nodedof + 1];
       coordinates.x_curr_(i, 2) = coordinates.x_refe_(i, 2) + disp[i * nodedof + 2];
@@ -109,7 +110,7 @@ namespace Discret::ELEMENTS::Shell
    */
   struct Strains
   {
-    Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> defgrd_;
+    Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim> defgrd_;
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> gl_strain_;
   };
 
@@ -264,8 +265,8 @@ namespace Discret::ELEMENTS::Shell
   template <Core::FE::CellType distype>
   struct ShapefunctionsAndDerivatives
   {
-    Core::LinAlg::Matrix<DETAIL::num_node<distype>, 1> shapefunctions_;
-    Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_node<distype>> derivatives_;
+    Core::LinAlg::Matrix<Internal::num_node<distype>, 1> shapefunctions_;
+    Core::LinAlg::Matrix<Internal::num_dim, Internal::num_node<distype>> derivatives_;
   };
 
   /*!
@@ -295,11 +296,11 @@ namespace Discret::ELEMENTS::Shell
   template <Core::FE::CellType distype>
   struct BasisVectorsAndMetrics
   {
-    Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> kovariant_;
-    Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> kontravariant_;
-    Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> metric_kovariant_;
-    Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> metric_kontravariant_;
-    Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> partial_derivative_;
+    Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim> kovariant_;
+    Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim> kontravariant_;
+    Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim> metric_kovariant_;
+    Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim> metric_kontravariant_;
+    Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim> partial_derivative_;
     double detJ_;
   };
 
@@ -317,19 +318,19 @@ namespace Discret::ELEMENTS::Shell
    */
   template <Core::FE::CellType distype>
   Core::LinAlg::SerialDenseMatrix calc_b_operator(
-      const Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim>& akov,
-      const Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim>& da3kov,
+      const Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim>& akov,
+      const Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim>& da3kov,
       const Discret::ELEMENTS::Shell::ShapefunctionsAndDerivatives<distype>&
           shapefunctions_derivatives)
   {
-    const Core::LinAlg::Matrix<DETAIL::num_node<distype>, 1> shapefunctions =
+    const Core::LinAlg::Matrix<Internal::num_node<distype>, 1> shapefunctions =
         shapefunctions_derivatives.shapefunctions_;
-    const Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_node<distype>>& derivs =
+    const Core::LinAlg::Matrix<Internal::num_dim, Internal::num_node<distype>>& derivs =
         shapefunctions_derivatives.derivatives_;
     Core::LinAlg::SerialDenseMatrix Bop(
-        DETAIL::num_internal_variables, DETAIL::numdofperelement<distype>);
-    const int nodedof = DETAIL::node_dof;
-    for (int i = 0; i < DETAIL::num_node<distype>; ++i)
+        Internal::num_internal_variables, Internal::numdofperelement<distype>);
+    const int nodedof = Internal::node_dof;
+    for (int i = 0; i < Internal::num_node<distype>; ++i)
     {
       Bop(0, nodedof * i + 0) = derivs(0, i) * akov(0, 0);
       Bop(0, nodedof * i + 1) = derivs(0, i) * akov(0, 1);
@@ -438,8 +439,8 @@ namespace Discret::ELEMENTS::Shell
       const std::vector<ShapefunctionsAndDerivatives<distype>>& shapefunctions_q,
       const std::vector<BasisVectorsAndMetrics<distype>>& metric_currq, const int& numans)
   {
-    const int nodedof = DETAIL::node_dof;
-    for (int i = 0; i < DETAIL::num_node<distype>; ++i)
+    const int nodedof = Internal::node_dof;
+    for (int i = 0; i < Internal::num_node<distype>; ++i)
     {
       Bop(2, nodedof * i + 0) = 0.0;
       Bop(2, nodedof * i + 1) = 0.0;
@@ -511,14 +512,14 @@ namespace Discret::ELEMENTS::Shell
    */
   template <Core::FE::CellType distype>
   double update_gauss_point_thickness(
-      const Core::LinAlg::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim>& a3current,
-      const Core::LinAlg::Matrix<DETAIL::num_node<distype>, 1>& shapefunctions)
+      const Core::LinAlg::Matrix<Internal::num_node<distype>, Internal::num_dim>& a3current,
+      const Core::LinAlg::Matrix<Internal::num_node<distype>, 1>& shapefunctions)
   {
     double current_thickness = 0;
-    for (int i = 0; i < DETAIL::num_node<distype>; ++i)
+    for (int i = 0; i < Internal::num_node<distype>; ++i)
     {
       double nodal_thickness = 0;
-      for (int d = 0; d < DETAIL::num_dim; ++d)
+      for (int d = 0; d < Internal::num_dim; ++d)
         nodal_thickness += a3current(i, d) * a3current(i, d);
       nodal_thickness = 2 * std::sqrt(nodal_thickness);
       current_thickness += shapefunctions(i) * nodal_thickness;
@@ -571,8 +572,9 @@ namespace Discret::ELEMENTS::Shell
   void evaluate_kovariant_vectors_and_metrics(
       const Discret::ELEMENTS::Shell::ShapefunctionsAndDerivatives<distype>& shape_functions,
       Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& basis_and_metrics,
-      const Core::LinAlg::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim>& x,
-      const Core::LinAlg::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim>& a3, const double zeta)
+      const Core::LinAlg::Matrix<Internal::num_node<distype>, Internal::num_dim>& x,
+      const Core::LinAlg::Matrix<Internal::num_node<distype>, Internal::num_dim>& a3,
+      const double zeta)
   {
     // interpolation of kovariant a1,a2
     basis_and_metrics.kovariant_.multiply_nn(1.0, shape_functions.derivatives_, x, 0.0);
@@ -581,16 +583,16 @@ namespace Discret::ELEMENTS::Shell
     // the displacements across the thickness
     if (zeta)
     {
-      Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> tmp(true);
+      Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim> tmp(true);
       tmp.multiply_nn(zeta, shape_functions.derivatives_, a3, 0.0);
       basis_and_metrics.kovariant_.update(1.0, tmp, 1.0);
     }
 
     // interpolation of a3
-    for (int idim = 0; idim < DETAIL::num_dim; idim++)
+    for (int idim = 0; idim < Internal::num_dim; idim++)
     {
       basis_and_metrics.kovariant_(2, idim) = 0.0;
-      for (int inode = 0; inode < DETAIL::num_node<distype>; inode++)
+      for (int inode = 0; inode < Internal::num_node<distype>; inode++)
         basis_and_metrics.kovariant_(2, idim) +=
             shape_functions.shapefunctions_(inode) * a3(inode, idim);
     }
@@ -618,9 +620,9 @@ namespace Discret::ELEMENTS::Shell
     metrics.detJ_ = metrics.kontravariant_.invert();
 
     // get the transpose
-    for (int i = 0; i < DETAIL::num_dim; ++i)
+    for (int i = 0; i < Internal::num_dim; ++i)
     {
-      for (int j = i + 1; j < DETAIL::num_dim; ++j)
+      for (int j = i + 1; j < Internal::num_dim; ++j)
       {
         const double tmp = metrics.kontravariant_(j, i);
         metrics.kontravariant_(j, i) = metrics.kontravariant_(i, j);
@@ -670,7 +672,7 @@ namespace Discret::ELEMENTS::Shell
     double b31r = 0.0;
     double b32r = 0.0;
 
-    for (int i = 0; i < DETAIL::num_dim; ++i)
+    for (int i = 0; i < Internal::num_dim; ++i)
     {
       b11c += a_current.kovariant_(0, i) * a_current.partial_derivative_(0, i);
       b12c += a_current.kovariant_(0, i) * a_current.partial_derivative_(1, i);
@@ -771,7 +773,7 @@ namespace Discret::ELEMENTS::Shell
     double b31r = 0.0;
     double b32r = 0.0;
 
-    for (int i = 0; i < DETAIL::num_dim; ++i)
+    for (int i = 0; i < Internal::num_dim; ++i)
     {
       b11c += a_current.kovariant_(0, i) * a_current.partial_derivative_(0, i);
       b12c += a_current.kovariant_(0, i) * a_current.partial_derivative_(1, i);
@@ -929,16 +931,16 @@ namespace Discret::ELEMENTS::Shell
       const BasisVectorsAndMetrics<distype>& g_current)
   {
     //  evaluate strain tensor in curvilinear coordinate system E_ij = 0.5 (g_ij-G_ij)
-    Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> gl_strain_tensor(true);
-    for (int i = 0; i < DETAIL::num_dim; ++i)
+    Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim> gl_strain_tensor(true);
+    for (int i = 0; i < Internal::num_dim; ++i)
     {
-      for (int j = 0; j < DETAIL::num_dim; ++j)
+      for (int j = 0; j < Internal::num_dim; ++j)
         gl_strain_tensor(i, j) =
             0.5 * (g_current.metric_kovariant_(i, j) - g_reference.metric_kovariant_(i, j));
     }
     // map gl strains from curvilinear system to global cartesian system
-    Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> gl_strain_tensor_cartesian(true);
-    Core::LinAlg::Tensor::inverse_tensor_rotation<DETAIL::num_dim>(
+    Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim> gl_strain_tensor_cartesian(true);
+    Core::LinAlg::Tensor::inverse_tensor_rotation<Internal::num_dim>(
         g_reference.kontravariant_, gl_strain_tensor, gl_strain_tensor_cartesian);
     // GL strain vector glstrain for solid material E={E11,E22,E33,2*E12,2*E23,2*E31}
     Core::LinAlg::Voigt::Strains::matrix_to_vector(gl_strain_tensor_cartesian, strains.gl_strain_);
@@ -966,9 +968,9 @@ namespace Discret::ELEMENTS::Shell
   {
     // transform Piola-Kirchhoff-stresses from global cartesian coordinate system back to local
     // curvilinear coordinate system
-    Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> stress_tensor(true);
+    Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim> stress_tensor(true);
     Core::LinAlg::Voigt::Stresses::vector_to_matrix(stress.pk2_, stress_tensor);
-    Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> tmp(true);
+    Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim> tmp(true);
     Core::LinAlg::Tensor::tensor_rotation(g_reference.kontravariant_, stress_tensor, tmp);
 
     // re-arrange indices for shell element formulation:
@@ -983,7 +985,7 @@ namespace Discret::ELEMENTS::Shell
     // transform elasticity matrix from global cartesian coordinate system back to local
     // curvilinear coordinate system
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> Cmat(true);
-    Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> g_metrics_trans(true);
+    Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim> g_metrics_trans(true);
     g_metrics_trans.update_t(g_reference.kontravariant_);
     Core::LinAlg::Tensor::inverse_fourth_tensor_rotation(g_metrics_trans, stress.cmat_, Cmat);
 
@@ -1094,19 +1096,19 @@ namespace Discret::ELEMENTS::Shell
    */
   template <Core::FE::CellType distype>
   void green_lagrange_to_euler_almansi(const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& gl,
-      const Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim>& defgrd,
+      const Core::LinAlg::Matrix<Shell::Internal::num_dim, Shell::Internal::num_dim>& defgrd,
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& ea)
   {
-    Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> invdefgrd(defgrd);
+    Core::LinAlg::Matrix<Shell::Internal::num_dim, Shell::Internal::num_dim> invdefgrd(defgrd);
     invdefgrd.invert();
 
-    Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> E_matrix;
+    Core::LinAlg::Matrix<Shell::Internal::num_dim, Shell::Internal::num_dim> E_matrix;
     Core::LinAlg::Voigt::Strains::vector_to_matrix(gl, E_matrix);
 
-    Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> invFTE;
+    Core::LinAlg::Matrix<Shell::Internal::num_dim, Shell::Internal::num_dim> invFTE;
     invFTE.multiply_tn(invdefgrd, E_matrix);
 
-    Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> ea_matrix;
+    Core::LinAlg::Matrix<Shell::Internal::num_dim, Shell::Internal::num_dim> ea_matrix;
     ea_matrix.multiply_nn(invFTE, invdefgrd);
 
     Core::LinAlg::Voigt::Strains::matrix_to_vector(ea_matrix, ea);
@@ -1122,16 +1124,16 @@ namespace Discret::ELEMENTS::Shell
    */
   template <Core::FE::CellType distype>
   void pk2_to_cauchy(const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& pk2,
-      const Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim>& defgrd,
+      const Core::LinAlg::Matrix<Shell::Internal::num_dim, Shell::Internal::num_dim>& defgrd,
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& cauchy)
   {
-    Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> S_matrix;
+    Core::LinAlg::Matrix<Shell::Internal::num_dim, Shell::Internal::num_dim> S_matrix;
     Core::LinAlg::Voigt::Stresses::vector_to_matrix(pk2, S_matrix);
 
-    Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> FS;
+    Core::LinAlg::Matrix<Shell::Internal::num_dim, Shell::Internal::num_dim> FS;
     FS.multiply_nn(defgrd, S_matrix);
 
-    Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> cauchy_matrix;
+    Core::LinAlg::Matrix<Shell::Internal::num_dim, Shell::Internal::num_dim> cauchy_matrix;
     cauchy_matrix.multiply_nt(1.0 / defgrd.determinant(), FS, defgrd, 0.0);
 
     Core::LinAlg::Voigt::Stresses::matrix_to_vector(cauchy_matrix, cauchy);
@@ -1263,7 +1265,7 @@ namespace Discret::ELEMENTS::Shell
     else if (distype == Core::FE::CellType::quad9)
     {
       const double sqrt3inv = 1.0 / (sqrt(3.0));
-      collocation_points.resize(DETAIL::num_internal_variables);
+      collocation_points.resize(Internal::num_internal_variables);
       // for a_13
       collocation_points[0] = {-sqrt3inv, -1.0};
       collocation_points[1] = {-sqrt3inv, 0.0};
@@ -1333,23 +1335,23 @@ namespace Discret::ELEMENTS::Shell
       const Discret::ELEMENTS::Shell::Stress<Mat::NUM_STRESS_3D>& stress,
       const double& integration_factor, const double& zeta)
   {
-    for (int i = 0; i < DETAIL::node_dof; ++i)
+    for (int i = 0; i < Internal::node_dof; ++i)
     {
       const double stress_fact = stress.pk2_(i) * integration_factor;
       stress_enh.stress_(i) += stress_fact;
-      stress_enh.stress_(i + DETAIL::node_dof) += stress_fact * zeta;
+      stress_enh.stress_(i + Internal::node_dof) += stress_fact * zeta;
 
-      for (int j = 0; j < DETAIL::node_dof; ++j)
+      for (int j = 0; j < Internal::node_dof; ++j)
       {
         const double C_fact = stress.cmat_(i, j) * integration_factor;
         stress_enh.dmat_(i, j) += C_fact;
-        stress_enh.dmat_(i + DETAIL::node_dof, j) += C_fact * zeta;
-        stress_enh.dmat_(i + DETAIL::node_dof, j + DETAIL::node_dof) += C_fact * zeta * zeta;
+        stress_enh.dmat_(i + Internal::node_dof, j) += C_fact * zeta;
+        stress_enh.dmat_(i + Internal::node_dof, j + Internal::node_dof) += C_fact * zeta * zeta;
       }
     }
     // symmetrize enhanced material tensor
-    for (int i = 0; i < DETAIL::num_internal_variables; i++)
-      for (int j = i + 1; j < DETAIL::num_internal_variables; j++)
+    for (int i = 0; i < Internal::num_internal_variables; i++)
+      for (int j = i + 1; j < Internal::num_internal_variables; j++)
         stress_enh.dmat_(i, j) = stress_enh.dmat_(j, i);
   }
 
@@ -1394,7 +1396,7 @@ namespace Discret::ELEMENTS::Shell
   {
     // calculate Ke = integration_factor * B^TDB
     Core::LinAlg::SerialDenseMatrix DB(
-        DETAIL::num_internal_variables, DETAIL::numdofperelement<distype>);
+        Internal::num_internal_variables, Internal::numdofperelement<distype>);
     DB.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Dmat, Bop, 0.0);
     stiffness_matrix.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, integration_fac, Bop, DB, 1.0);
   }
@@ -1424,9 +1426,9 @@ namespace Discret::ELEMENTS::Shell
       const Core::LinAlg::SerialDenseVector& stress_enh, const int& numans,
       const double& integration_fac, Core::LinAlg::SerialDenseMatrix& stiffness_matrix)
   {
-    const int nodedof = DETAIL::node_dof;
-    const int num_dim = DETAIL::num_dim;
-    for (int inod = 0; inod < DETAIL::num_node<distype>; ++inod)
+    const int nodedof = Internal::node_dof;
+    const int num_dim = Internal::num_dim;
+    for (int inod = 0; inod < Internal::num_node<distype>; ++inod)
     {
       for (int jnod = 0; jnod <= inod; ++jnod)
       {
@@ -1543,7 +1545,7 @@ namespace Discret::ELEMENTS::Shell
   {
     // half element thickness at gaussian point
     double half_thickness = 0.0;
-    for (int i = 0; i < DETAIL::num_node<distype>; ++i)
+    for (int i = 0; i < Internal::num_node<distype>; ++i)
       half_thickness += thickness * shapefunctions.shapefunctions_(i);
     half_thickness *= 0.5;
 
@@ -1551,10 +1553,10 @@ namespace Discret::ELEMENTS::Shell
 
     // integrate consistent mass matrix
     double massfactor;
-    const int nodedof = DETAIL::node_dof;
-    for (int inod = 0; inod < DETAIL::num_node<distype>; ++inod)
+    const int nodedof = Internal::node_dof;
+    for (int inod = 0; inod < Internal::num_node<distype>; ++inod)
     {
-      for (int jnod = 0; jnod < DETAIL::num_node<distype>; ++jnod)
+      for (int jnod = 0; jnod < Internal::num_node<distype>; ++jnod)
       {
         massfactor = shapefunctions.shapefunctions_(inod) * shapefunctions.shapefunctions_(jnod);
         double massfactor_v = massfactor * mass_matrix_variables.factor_v_;
@@ -1621,9 +1623,10 @@ namespace Discret::ELEMENTS::Shell
       evaluate_metrics(shapefunctions, a_reference, a_current, nodal_coordinates, 0.0);
 
       // make h as cross product in ref configuration to get area da on shell mid-surface
-      Core::LinAlg::Matrix<DETAIL::num_dim, 1> h(true);
+      Core::LinAlg::Matrix<Internal::num_dim, 1> h(true);
       {
-        Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> akovrefe = a_reference.kovariant_;
+        Core::LinAlg::Matrix<Internal::num_dim, Internal::num_dim> akovrefe =
+            a_reference.kovariant_;
         h(0) = akovrefe(0, 1) * akovrefe(1, 2) - akovrefe(0, 2) * akovrefe(1, 1);
         h(1) = akovrefe(0, 2) * akovrefe(1, 0) - akovrefe(0, 0) * akovrefe(1, 2);
         h(2) = akovrefe(0, 0) * akovrefe(1, 1) - akovrefe(0, 1) * akovrefe(1, 0);

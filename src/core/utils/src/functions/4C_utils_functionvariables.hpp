@@ -224,11 +224,11 @@ namespace Core::UTILS
     std::vector<Teuchos::RCP<FunctionVariable>> pieces_;
   };
 
-  namespace INTERNAL
+  namespace Internal
   {
     //! Internal helper to figure out the correct time points from input.
     std::vector<double> extract_time_vector(const Input::LineDefinition& timevar);
-  }  // namespace INTERNAL
+  }  // namespace Internal
 }  // namespace Core::UTILS
 
 FOUR_C_NAMESPACE_CLOSE

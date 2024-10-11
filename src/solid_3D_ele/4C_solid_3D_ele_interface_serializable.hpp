@@ -52,7 +52,7 @@ namespace Discret::ELEMENTS
   ///@}
 
 
-  namespace Details
+  namespace Internal
   {
     /*!
      * @brief This struct should be used to serialize an item within a sum type (e.g.
@@ -113,7 +113,7 @@ namespace Discret::ELEMENTS
 
       Core::Communication::UnpackBuffer& buffer_;
     };
-  }  // namespace Details
+  }  // namespace Internal
 
   /*!
    * @brief Pack the item within the variant if it is packable
@@ -125,7 +125,7 @@ namespace Discret::ELEMENTS
   template <typename VariantType>
   void pack(const VariantType& variant, Core::Communication::PackBuffer& data)
   {
-    std::visit(Details::PackAction(data), variant);
+    std::visit(Internal::PackAction(data), variant);
   }
 
   /*!
@@ -138,7 +138,7 @@ namespace Discret::ELEMENTS
   template <typename VariantType>
   void unpack(VariantType& variant, Core::Communication::UnpackBuffer& buffer)
   {
-    std::visit(Details::UnpackAction(buffer), variant);
+    std::visit(Internal::UnpackAction(buffer), variant);
   }
 }  // namespace Discret::ELEMENTS
 

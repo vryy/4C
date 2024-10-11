@@ -24,7 +24,7 @@ namespace Solid::ELEMENTS
 }
 namespace Discret::ELEMENTS
 {
-  namespace Details
+  namespace Internal
   {
     /*!
      * @brief A simple container type that holds a pointer to the value of type T providing value
@@ -72,16 +72,16 @@ namespace Discret::ELEMENTS
       using type = std::variant<VariantItem<Ts>...>;
     };
 
-  }  // namespace Details
+  }  // namespace Internal
 
   /*!
    * @brief Meta function to create a std::variant of all provides types wrapped in a @p
-   * Details::VariantItem.
+   * Internal::VariantItem.
    */
   template <typename... Ts>
-  using CreateVariantType = typename Details::CreateVariant<Ts...>::type;
+  using CreateVariantType = typename Internal::CreateVariant<Ts...>::type;
 
-  namespace Details
+  namespace Internal
   {
     /*!
      * @brief A struct that determines whether @p T is a valid template type
@@ -99,7 +99,7 @@ namespace Discret::ELEMENTS
     struct IsValidTypeTrait<T, std::void_t<typename T::type>> : std::true_type
     {
     };
-  }  // namespace Details
+  }  // namespace Internal
 
   /*!
    * @brief Determines whether we have implemented a solid calculation formulation
@@ -107,7 +107,7 @@ namespace Discret::ELEMENTS
    * @tparam T typename: Template parameter that may be a valid type or not
    */
   template <typename T>
-  constexpr bool is_valid_type = Details::IsValidTypeTrait<T>::value;
+  constexpr bool is_valid_type = Internal::IsValidTypeTrait<T>::value;
 
   /*!
    * @brief An automatic switch from runtime kinematic type to constexpr kinematic type.

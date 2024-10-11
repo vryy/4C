@@ -30,7 +30,7 @@ namespace Solid::ELEMENTS
 }
 namespace Discret::ELEMENTS
 {
-  namespace Details
+  namespace Internal
   {
     using ImplementedSolidCellTypes = Core::FE::CelltypeSequence<Core::FE::CellType::hex8,
         Core::FE::CellType::hex18, Core::FE::CellType::hex20, Core::FE::CellType::hex27,
@@ -69,9 +69,9 @@ namespace Discret::ELEMENTS
     using SolidEvaluators = Core::FE::Join<DisplacementBasedEvaluators,
         DisplacementBasedLinearKinematicsEvaluators, FbarEvaluators, EASEvaluators, MulfEvaluators,
         FBarMulfEvaluators, SolidShellEvaluators>;
-  }  // namespace Details
+  }  // namespace Internal
 
-  using SolidCalcVariant = CreateVariantType<Details::SolidEvaluators>;
+  using SolidCalcVariant = CreateVariantType<Internal::SolidEvaluators>;
 
   // forward declaration
   class SolidEleCalcInterface;

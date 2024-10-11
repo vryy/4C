@@ -311,7 +311,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype,
   double element_mass = 0.0;
   double element_volume = 0.0;
   for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+      [&](const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -412,7 +412,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
   ensure_positive_jacobian_determinant_at_element_nodes(nodal_coordinates);
 
   for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+      [&](const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -433,7 +433,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
                   solid_material, deformation_gradient, gl_strain, params, gp, ele.id());
 
               // linear B-opeartor
-              const Core::LinAlg::Matrix<Details::num_str<celltype>,
+              const Core::LinAlg::Matrix<Internal::num_str<celltype>,
                   Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
                   bop = SolidFormulation::get_linear_b_operator(linearization);
 
@@ -493,7 +493,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::update(
       prepare(ele, nodal_coordinates, history_data_);
 
   Discret::ELEMENTS::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+      [&](const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -541,7 +541,7 @@ double Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calcul
 
   double intenergy = 0;
   Discret::ELEMENTS::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+      [&](const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -597,7 +597,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::calculat
       prepare(ele, nodal_coordinates, history_data_);
 
   Discret::ELEMENTS::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+      [&](const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
       {

@@ -675,7 +675,7 @@ namespace Core::FE
   };
 
 
-  namespace DETAIL
+  namespace Internal
   {
     template <unsigned dim>
     struct DimToIntegrationPoints
@@ -699,10 +699,10 @@ namespace Core::FE
     {
       using type = Core::FE::IntegrationPoints3D;
     };
-  }  // namespace DETAIL
+  }  // namespace Internal
 
   template <unsigned dim>
-  using IntegrationPoints = typename DETAIL::DimToIntegrationPoints<dim>::type;
+  using IntegrationPoints = typename Internal::DimToIntegrationPoints<dim>::type;
 
 
 

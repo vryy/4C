@@ -42,8 +42,8 @@ namespace
   {
     // we need the (residual) displacement at the previous step
     Core::LinAlg::SerialDenseVector disp_inc(
-        Discret::ELEMENTS::Shell::DETAIL::numdofperelement<distype>);
-    for (int i = 0; i < Discret::ELEMENTS::Shell::DETAIL::numdofperelement<distype>; ++i)
+        Discret::ELEMENTS::Shell::Internal::numdofperelement<distype>);
+    for (int i = 0; i < Discret::ELEMENTS::Shell::Internal::numdofperelement<distype>; ++i)
       disp_inc(i) = residual[i];
 
     Core::LinAlg::SerialDenseMatrix eashelp(neas, 1);
@@ -79,7 +79,7 @@ namespace
     // IMPORTANT: here we save D_Tilde in invDTilde_, since after the loop over all Gaussian points,
     // we invert the matrix. At this point, this is still D_Tilde and NOT invD_Tilde
     Core::LinAlg::SerialDenseMatrix MTDmat(
-        neas, Discret::ELEMENTS::Shell::DETAIL::num_internal_variables);
+        neas, Discret::ELEMENTS::Shell::Internal::num_internal_variables);
     MTDmat.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, M, stress_enh.dmat_, 0.0);
 
     eas_data.invDTilde_.multiply(
@@ -120,7 +120,8 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::setup(Core::Elements::Elemen
   eas_iteration_data_.alpha_.shape(locking_types.total, 1);
   eas_iteration_data_.RTilde_.shape(locking_types_.total, 1);
   eas_iteration_data_.invDTilde_.shape(locking_types_.total, locking_types_.total);
-  eas_iteration_data_.transL_.shape(locking_types_.total, Shell::DETAIL::numdofperelement<distype>);
+  eas_iteration_data_.transL_.shape(
+      locking_types_.total, Shell::Internal::numdofperelement<distype>);
 
   //  set up of materials with GP data (e.g., history variables)
   solid_material.setup(intpoints_midsurface_.num_points(), container);
@@ -266,10 +267,10 @@ double Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_internal_energy(
 
   Discret::ELEMENTS::Shell::Strains strains;
   // init enhanced strain for shell
-  Core::LinAlg::SerialDenseVector strain_enh(Shell::DETAIL::num_internal_variables);
+  Core::LinAlg::SerialDenseVector strain_enh(Shell::Internal::num_internal_variables);
 
   // init EAS shape function matrix
-  Core::LinAlg::SerialDenseMatrix M(Shell::DETAIL::num_internal_variables, locking_types_.total);
+  Core::LinAlg::SerialDenseMatrix M(Shell::Internal::num_internal_variables, locking_types_.total);
 
   Shell::for_each_gauss_point<distype>(nodal_coordinates, intpoints_midsurface_,
       [&](const std::array<double, 2>& xi_gp,
@@ -312,7 +313,7 @@ double Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_internal_energy(
           solid_material.strain_energy(strains.gl_strain_, psi, gp, ele.id());
 
           double thickness = 0.0;
-          for (int i = 0; i < Shell::DETAIL::num_node<distype>; ++i)
+          for (int i = 0; i < Shell::Internal::num_node<distype>; ++i)
             thickness += thickness * shape_functions.shapefunctions_(i);
 
           intenergy += psi * integration_factor * 0.5 * thickness;
@@ -402,11 +403,11 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
   Shell::BasisVectorsAndMetrics<distype> g_current;
 
   // init enhanced strains for shell
-  Core::LinAlg::SerialDenseVector strain_enh(Shell::DETAIL::num_internal_variables);
+  Core::LinAlg::SerialDenseVector strain_enh(Shell::Internal::num_internal_variables);
   Shell::StressEnhanced stress_enh;
 
   // init EAS shape function matrix
-  Core::LinAlg::SerialDenseMatrix M(Shell::DETAIL::num_internal_variables, locking_types_.total);
+  Core::LinAlg::SerialDenseMatrix M(Shell::Internal::num_internal_variables, locking_types_.total);
 
   Shell::for_each_gauss_point<distype>(nodal_coordinates, intpoints_midsurface_,
       [&](const std::array<double, 2>& xi_gp,
@@ -443,13 +444,14 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
           auto strains = Shell::evaluate_strains(g_reference, g_current);
 
           // update the deformation gradient
-          Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> defgrd_enh(false);
-          Shell::calc_consistent_defgrd<Shell::DETAIL::num_dim>(
+          Core::LinAlg::Matrix<Shell::Internal::num_dim, Shell::Internal::num_dim> defgrd_enh(
+              false);
+          Shell::calc_consistent_defgrd<Shell::Internal::num_dim>(
               strains.defgrd_, strains.gl_strain_, defgrd_enh);
           strains.defgrd_ = defgrd_enh;
 
           // evaluate stress in local cartesian system
-          auto stress = Shell::evaluate_material_stress_cartesian_system<Shell::DETAIL::num_dim>(
+          auto stress = Shell::evaluate_material_stress_cartesian_system<Shell::Internal::num_dim>(
               solid_material, strains, params, gp, ele.id());
           Shell::assemble_strain_type_to_matrix_row<distype>(
               strains, strainIO.type, strain_data, gp, 0.5);
@@ -505,7 +507,8 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
   // clear EAS data for integration
   eas_iteration_data_.RTilde_.shape(locking_types_.total, 1);
   eas_iteration_data_.invDTilde_.shape(locking_types_.total, locking_types_.total);
-  eas_iteration_data_.transL_.shape(locking_types_.total, Shell::DETAIL::numdofperelement<distype>);
+  eas_iteration_data_.transL_.shape(
+      locking_types_.total, Shell::Internal::numdofperelement<distype>);
 
   // Assumed Natural Strains (ANS) Technology to remedy transverse shear strain locking
   // for a_13 and a_23 each
@@ -539,7 +542,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
   Shell::BasisVectorsAndMetrics<distype> g_current;
 
   // init enhanced strain for shell
-  constexpr auto num_internal_variables = Shell::DETAIL::num_internal_variables;
+  constexpr auto num_internal_variables = Shell::Internal::num_internal_variables;
   Core::LinAlg::SerialDenseVector strain_enh(num_internal_variables);
   Shell::StressEnhanced stress_enh;
 
@@ -614,13 +617,14 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
           // update the deformation gradient (if needed?)
           if (solid_material.needs_defgrd())
           {
-            Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> defgrd_enh(false);
-            Shell::calc_consistent_defgrd<Shell::DETAIL::num_dim>(
+            Core::LinAlg::Matrix<Shell::Internal::num_dim, Shell::Internal::num_dim> defgrd_enh(
+                false);
+            Shell::calc_consistent_defgrd<Shell::Internal::num_dim>(
                 strains.defgrd_, strains.gl_strain_, defgrd_enh);
             strains.defgrd_ = defgrd_enh;
           }
 
-          auto stress = Shell::evaluate_material_stress_cartesian_system<Shell::DETAIL::num_dim>(
+          auto stress = Shell::evaluate_material_stress_cartesian_system<Shell::Internal::num_dim>(
               solid_material, strains, params, gp, ele.id());
           Shell::map_material_stress_to_curvilinear_system(stress, g_reference);
           Shell::thickness_integration<distype>(stress_enh, stress, factor, zeta);
@@ -675,7 +679,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
 
   // compute  L * DTilde^-1  which is later needed for force and stiffness update
   Core::LinAlg::SerialDenseMatrix LinvDTilde(
-      Shell::DETAIL::numdofperelement<distype>, locking_types_.total);
+      Shell::Internal::numdofperelement<distype>, locking_types_.total);
   LinvDTilde.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., eas_iteration_data_.transL_,
       eas_iteration_data_.invDTilde_, 0.);
   if (stiffness_matrix != nullptr)
@@ -692,9 +696,9 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
   if (stiffness_matrix != nullptr)
   {
     // make stiffness matrix absolute symmetric
-    for (int i = 0; i < Shell::DETAIL::numdofperelement<distype>; ++i)
+    for (int i = 0; i < Shell::Internal::numdofperelement<distype>; ++i)
     {
-      for (int j = i + 1; j < Shell::DETAIL::numdofperelement<distype>; ++j)
+      for (int j = i + 1; j < Shell::Internal::numdofperelement<distype>; ++j)
       {
         const double average = 0.5 * ((*stiffness_matrix)(i, j) + (*stiffness_matrix)(j, i));
         (*stiffness_matrix)(i, j) = average;
@@ -823,7 +827,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::update(Core::Elements::Eleme
     Shell::BasisVectorsAndMetrics<distype> g_current;
 
     // enhanced strain for shell
-    constexpr auto num_internal_variables = Shell::DETAIL::num_internal_variables;
+    constexpr auto num_internal_variables = Shell::Internal::num_internal_variables;
     Core::LinAlg::SerialDenseVector strain_enh(num_internal_variables);
 
     // init EAS shape function matrix
@@ -866,10 +870,10 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::update(Core::Elements::Eleme
             if (solid_material.needs_defgrd())
             {
               // update the deformation gradient (if needed)
-              Core::LinAlg::Matrix<Discret::ELEMENTS::Shell::DETAIL::num_dim,
-                  Discret::ELEMENTS::Shell::DETAIL::num_dim>
+              Core::LinAlg::Matrix<Discret::ELEMENTS::Shell::Internal::num_dim,
+                  Discret::ELEMENTS::Shell::Internal::num_dim>
                   defgrd_enh(false);
-              Shell::calc_consistent_defgrd<Shell::DETAIL::num_dim>(
+              Shell::calc_consistent_defgrd<Shell::Internal::num_dim>(
                   strains.defgrd_, strains.gl_strain_, defgrd_enh);
               strains.defgrd_ = defgrd_enh;
             }

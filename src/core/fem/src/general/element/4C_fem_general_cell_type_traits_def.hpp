@@ -20,7 +20,7 @@ In this file, the helper defining the mapping from celltype to their properties 
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::FE::Details
+namespace Core::FE::Internal
 {
   //! @name Definition of the mapping celltype to string
   /// @{
@@ -346,7 +346,7 @@ namespace Core::FE::Details
                          is_quad<celltype>::value || is_tri<celltype>::value ||
                          is_line<celltype>::value>;
   /// @}
-}  // namespace Core::FE::Details
+}  // namespace Core::FE::Internal
 
 FOUR_C_NAMESPACE_CLOSE
 

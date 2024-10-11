@@ -54,7 +54,7 @@ namespace Solid::ELEMENTS
   };
 }  // namespace Solid::ELEMENTS
 
-namespace Discret::ELEMENTS::Shell::DETAIL
+namespace Discret::ELEMENTS::Shell::Internal
 {
   template <Core::FE::CellType distype>
   inline static constexpr int num_node = Core::FE::num_nodes<distype>;
@@ -64,7 +64,7 @@ namespace Discret::ELEMENTS::Shell::DETAIL
 
   template <Core::FE::CellType distype>
   inline static constexpr int numdofperelement = num_node<distype>* node_dof;
-}  // namespace Discret::ELEMENTS::Shell::DETAIL
+}  // namespace Discret::ELEMENTS::Shell::Internal
 
 namespace Solid::UTILS::Shell
 {

@@ -28,11 +28,8 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret::ELEMENTS
 {
-  namespace Details
+  namespace Internal
   {
-    template <Core::FE::CellType celltype>
-    inline static constexpr int num_str = Core::FE::dim<celltype>*(Core::FE::dim<celltype> + 1) / 2;
-
     /*!
      * @brief Assemble a vector into a matrix row
      *
@@ -47,7 +44,7 @@ namespace Discret::ELEMENTS
     {
       for (unsigned i = 0; i < num_str; ++i) data(row, static_cast<int>(i)) = vector(i);
     }
-  }  // namespace Details
+  }  // namespace Internal
 
   template <typename T>
   inline std::vector<char>& get_stress_data(const T& ele, const Teuchos::ParameterList& params)
@@ -116,7 +113,7 @@ namespace Discret::ELEMENTS
    */
   template <Core::FE::CellType celltype>
   void assemble_strain_type_to_matrix_row(
-      const Core::LinAlg::Matrix<Details::num_str<celltype>, 1>& gl_strain,
+      const Core::LinAlg::Matrix<Internal::num_str<celltype>, 1>& gl_strain,
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>& defgrd,
       const Inpar::Solid::StrainType strain_type, Core::LinAlg::SerialDenseMatrix& data,
       const int row)
@@ -125,27 +122,27 @@ namespace Discret::ELEMENTS
     {
       case Inpar::Solid::strain_gl:
       {
-        Core::LinAlg::Matrix<Details::num_str<celltype>, 1> gl_strain_stress_like;
+        Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> gl_strain_stress_like;
         Core::LinAlg::Voigt::Strains::to_stress_like(gl_strain, gl_strain_stress_like);
-        Details::assemble_vector_to_matrix_row(gl_strain_stress_like, data, row);
+        Internal::assemble_vector_to_matrix_row(gl_strain_stress_like, data, row);
         return;
       }
       case Inpar::Solid::strain_ea:
       {
-        const Core::LinAlg::Matrix<Details::num_str<celltype>, 1> ea =
+        const Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> ea =
             Solid::UTILS::green_lagrange_to_euler_almansi(gl_strain, defgrd);
-        Core::LinAlg::Matrix<Details::num_str<celltype>, 1> ea_stress_like;
+        Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> ea_stress_like;
         Core::LinAlg::Voigt::Strains::to_stress_like(ea, ea_stress_like);
-        Details::assemble_vector_to_matrix_row(ea_stress_like, data, row);
+        Internal::assemble_vector_to_matrix_row(ea_stress_like, data, row);
         return;
       }
       case Inpar::Solid::strain_log:
       {
-        const Core::LinAlg::Matrix<Details::num_str<celltype>, 1> log_strain =
+        const Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> log_strain =
             Solid::UTILS::green_lagrange_to_log_strain(gl_strain);
-        Core::LinAlg::Matrix<Details::num_str<celltype>, 1> log_strain_stress_like;
+        Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> log_strain_stress_like;
         Core::LinAlg::Voigt::Strains::to_stress_like(log_strain, log_strain_stress_like);
-        Details::assemble_vector_to_matrix_row(log_strain_stress_like, data, row);
+        Internal::assemble_vector_to_matrix_row(log_strain_stress_like, data, row);
         return;
       }
       case Inpar::Solid::strain_none:
@@ -177,14 +174,14 @@ namespace Discret::ELEMENTS
     {
       case Inpar::Solid::stress_2pk:
       {
-        Details::assemble_vector_to_matrix_row(stress.pk2_, data, row);
+        Internal::assemble_vector_to_matrix_row(stress.pk2_, data, row);
         return;
       }
       case Inpar::Solid::stress_cauchy:
       {
-        Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1> cauchy;
+        Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> cauchy;
         Solid::UTILS::pk2_to_cauchy(stress.pk2_, defgrd, cauchy);
-        Details::assemble_vector_to_matrix_row(cauchy, data, row);
+        Internal::assemble_vector_to_matrix_row(cauchy, data, row);
         return;
       }
       case Inpar::Solid::stress_none:

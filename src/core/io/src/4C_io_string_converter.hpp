@@ -59,7 +59,7 @@ namespace Core::IO
    *
    * ## Implementation details
    *
-   * The StringConverter<T> uses the INTERNAL::Rank<T> class to decide how many different
+   * The StringConverter<T> uses the Internal::Rank<T> class to decide how many different
    * separators are required to convert the string to the given (nested) type T.
    * Arithmetic types have rank 0, for list-compatible types the list-rank increments by one for
    * each level, for map-compatible types, both, the map- and list-rank increment by one for each
@@ -85,7 +85,7 @@ namespace Core::IO
     static T Parse(const std::string &str) = delete;
   };
 
-  namespace INTERNAL
+  namespace Internal
   {
     template <typename TypeVec>
     void check_dimension(const std::vector<TypeVec> &vec, size_t expectedSize)
@@ -224,7 +224,7 @@ namespace Core::IO
      * @brief Parse the split string into an std::vector or std::list.
      */
     template <class T,
-        std::enable_if_t<INTERNAL::StringPatternTraits<T>::is_list_compatible, int> = 0>
+        std::enable_if_t<Internal::StringPatternTraits<T>::is_list_compatible, int> = 0>
     void parse_split_string(T &t, const std::vector<std::string> &split_str)
     {
       for (const auto &str : split_str)
@@ -280,7 +280,7 @@ namespace Core::IO
       check_dimension(split_str, sizeof...(Args));
       parse_split_string_helper<0>(t, split_str);
     };
-  }  // namespace INTERNAL
+  }  // namespace Internal
 
   /**
    * @brief Convert a string into an integer
@@ -357,16 +357,16 @@ namespace Core::IO
    * T (std::array, std::pair, std::tuple).
    */
   template <class T>
-  struct StringConverter<T, std::enable_if_t<INTERNAL::StringPatternTraits<T>::is_list_compatible>>
+  struct StringConverter<T, std::enable_if_t<Internal::StringPatternTraits<T>::is_list_compatible>>
   {
     static T parse(const std::string &str)
     {
-      const char sep = INTERNAL::get_separator_at_rank<INTERNAL::StringPatternTraits<T>::list_rank>(
-          INTERNAL::default_list_separator);
+      const char sep = Internal::get_separator_at_rank<Internal::StringPatternTraits<T>::list_rank>(
+          Internal::default_list_separator);
       auto split_str = Core::UTILS::split_string_list(str, sep);
 
       T t;
-      INTERNAL::parse_split_string(t, split_str);
+      Internal::parse_split_string(t, split_str);
       return t;
     }
   };
@@ -382,25 +382,25 @@ namespace Core::IO
    * definition.
    */
   template <class T>
-  struct StringConverter<T, std::enable_if_t<INTERNAL::StringPatternTraits<T>::is_map_compatible>>
+  struct StringConverter<T, std::enable_if_t<Internal::StringPatternTraits<T>::is_map_compatible>>
   {
     static T parse(const std::string &str)
     {
       T t;
 
       const char sep_map =
-          INTERNAL::get_separator_at_rank<INTERNAL::StringPatternTraits<T>::map_rank>(
-              INTERNAL::default_map_separator);
+          Internal::get_separator_at_rank<Internal::StringPatternTraits<T>::map_rank>(
+              Internal::default_map_separator);
       const char sep_list =
-          INTERNAL::get_separator_at_rank<INTERNAL::StringPatternTraits<T>::list_rank>(
-              INTERNAL::default_list_separator);
+          Internal::get_separator_at_rank<Internal::StringPatternTraits<T>::list_rank>(
+              Internal::default_list_separator);
 
       auto split_str = Core::UTILS::split_string_list(str, sep_list);
 
       for (const auto &split_str_i : split_str)
       {
         auto key_val = Core::UTILS::split_string_list(split_str_i, sep_map);
-        INTERNAL::check_dimension(key_val, 2);
+        Internal::check_dimension(key_val, 2);
 
         t.insert(std::make_pair(StringConverter<typename T::key_type>::parse(key_val[0]),
             StringConverter<typename T::mapped_type>::parse(key_val[1])));

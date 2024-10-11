@@ -29,7 +29,7 @@ namespace Core::Communication
 }  // namespace Core::Communication
 namespace MIXTURE
 {
-  namespace Details
+  namespace Internal
   {
     template <typename Integer>
     [[nodiscard]] Integer integer_power(Integer x, unsigned int p)
@@ -43,7 +43,7 @@ namespace MIXTURE
       else
         return x * tmp * tmp;
     }
-  }  // namespace Details
+  }  // namespace Internal
   /*!
    * @brief Container for tracking adapted history integration intervals with providing some
    * convenience functions.
@@ -122,7 +122,7 @@ namespace MIXTURE
         {
           current_index += 1;
           current_base_index =
-              level_begin_index + level_step * Details::integer_power(2, item.level_);
+              level_begin_index + level_step * Internal::integer_power(2, item.level_);
 
           for (; current_item_index < indices.size(); ++current_item_index)
           {
@@ -182,7 +182,7 @@ namespace MIXTURE
         {
           current_index += 1;
           current_base_index =
-              level_begin_index + level_step * Details::integer_power(2, item.level_);
+              level_begin_index + level_step * Internal::integer_power(2, item.level_);
 
           for (; current_item_index < indices.size(); ++current_item_index)
           {
@@ -246,7 +246,7 @@ namespace MIXTURE
     std::vector<TimestepAdaptivityInfoItem> list_;
   };
 
-  namespace Details
+  namespace Internal
   {
     void adapt_timestep_adaptivity_info(MIXTURE::TimestepAdaptivityInfo& timestep_adaptivity_info,
         unsigned int level, unsigned int num_coarsened_intervals);
@@ -275,7 +275,7 @@ namespace MIXTURE
 
       return num_coarsening_level;
     }
-  }  // namespace Details
+  }  // namespace Internal
 
   /*!
    * @brief Method to optimize the history size for Simpson Integration
@@ -333,14 +333,14 @@ namespace MIXTURE
           });
 
       unsigned int num_coarsenable_intervals =
-          Details::get_number_coarsenable_intervals<CoarsenableEvaluator>(base_adaptivity_info,
+          Internal::get_number_coarsenable_intervals<CoarsenableEvaluator>(base_adaptivity_info,
               current_adaptivity_info, begin_index, max_simpson_intervals, coarsenable_evaluator);
 
       if (num_coarsenable_intervals > 0)
       {
-        Details::adapt_timestep_adaptivity_info(
+        Internal::adapt_timestep_adaptivity_info(
             current_adaptivity_info, check_level, num_coarsenable_intervals);
-        Details::mark_coarsened_timestep_as_to_be_deleted(
+        Internal::mark_coarsened_timestep_as_to_be_deleted(
             items_to_delete, num_coarsenable_intervals, begin_index);
       }
     }

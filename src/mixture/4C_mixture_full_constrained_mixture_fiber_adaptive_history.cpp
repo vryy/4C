@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void MIXTURE::Details::adapt_timestep_adaptivity_info(
+void MIXTURE::Internal::adapt_timestep_adaptivity_info(
     MIXTURE::TimestepAdaptivityInfo& timestep_adaptivity_info, unsigned int level,
     unsigned int num_coarsened_intervals)
 {
@@ -34,7 +34,7 @@ void MIXTURE::Details::adapt_timestep_adaptivity_info(
   }
 }
 
-void MIXTURE::Details::mark_coarsened_timestep_as_to_be_deleted(std::vector<bool>& items_to_delete,
+void MIXTURE::Internal::mark_coarsened_timestep_as_to_be_deleted(std::vector<bool>& items_to_delete,
     const unsigned int num_items_to_delete, const unsigned int begin_index)
 {
   bool last_deleted = true;

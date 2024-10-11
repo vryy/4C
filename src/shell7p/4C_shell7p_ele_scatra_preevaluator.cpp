@@ -59,7 +59,7 @@ void Discret::ELEMENTS::Shell::pre_evaluate_scatra(Core::Elements::Element& ele,
     // ask for the number of dofs of second dofset (scatra)
     const int numscal = discretization.num_dof(1, ele.nodes()[0]);
 
-    if (dof_index_array[1].size() != Shell::DETAIL::num_node<distype> * numscal)
+    if (dof_index_array[1].size() != Shell::Internal::num_node<distype> * numscal)
       FOUR_C_THROW("location vector length does not match!");
 
     // name of scalarfield
@@ -81,10 +81,10 @@ void Discret::ELEMENTS::Shell::pre_evaluate_scatra(Core::Elements::Element& ele,
       Core::FE::extract_my_values(*scalarnp, *myscalar, dof_index_array[1].lm_);
 
       // element vector for k-th scalar
-      std::vector<Core::LinAlg::Matrix<Shell::DETAIL::num_node<distype>, 1>> elescalar(numscal);
+      std::vector<Core::LinAlg::Matrix<Shell::Internal::num_node<distype>, 1>> elescalar(numscal);
       for (int k = 0; k < numscal; ++k)
       {
-        for (int i = 0; i < Shell::DETAIL::num_node<distype>; ++i)
+        for (int i = 0; i < Shell::Internal::num_node<distype>; ++i)
         {
           (elescalar.at(k))(i, 0) = myscalar->at(numscal * i + k);
         }
@@ -96,7 +96,7 @@ void Discret::ELEMENTS::Shell::pre_evaluate_scatra(Core::Elements::Element& ele,
               intpoints_midsurface_.num_points(), std::vector<double>(numscal, 0.0));
 
       // allocate vector for shape functions and matrix for derivatives at gp
-      Core::LinAlg::Matrix<Shell::DETAIL::num_node<distype>, 1> shapefunctions(true);
+      Core::LinAlg::Matrix<Shell::Internal::num_node<distype>, 1> shapefunctions(true);
 
       // loop over gauss points
       for (int gp = 0; gp < intpoints_midsurface_.num_points(); ++gp)

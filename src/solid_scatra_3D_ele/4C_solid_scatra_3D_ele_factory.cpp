@@ -43,7 +43,7 @@ namespace
   struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
       Discret::ELEMENTS::ElementTechnology::none, Discret::ELEMENTS::PrestressTechnology::none>
   {
-    using type = Discret::ELEMENTS::Details::DisplacementBasedSolidScatraIntegrator<celltype>;
+    using type = Discret::ELEMENTS::Internal::DisplacementBasedSolidScatraIntegrator<celltype>;
   };
 
   /*!
@@ -54,8 +54,9 @@ namespace
   struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::linear,
       Discret::ELEMENTS::ElementTechnology::none, Discret::ELEMENTS::PrestressTechnology::none>
   {
-    using type = Discret::ELEMENTS::Details::DisplacementBasedLinearKinematicsSolidScatraIntegrator<
-        celltype>;
+    using type =
+        Discret::ELEMENTS::Internal::DisplacementBasedLinearKinematicsSolidScatraIntegrator<
+            celltype>;
   };
 
 
@@ -67,7 +68,7 @@ namespace
       Discret::ELEMENTS::ElementTechnology::fbar, Discret::ELEMENTS::PrestressTechnology::none,
       std::enable_if_t<celltype == Core::FE::CellType::hex8>>
   {
-    using type = Discret::ELEMENTS::Details::FBarSolidScatraIntegrator<celltype>;
+    using type = Discret::ELEMENTS::Internal::FBarSolidScatraIntegrator<celltype>;
   };
 }  // namespace
 
@@ -93,7 +94,7 @@ Discret::ELEMENTS::create_solid_scatra_calculation_interface(Core::FE::CellType 
 {
   // We have 4 different element properties and each combination results in a different element
   // formulation.
-  return Core::FE::cell_type_switch<Details::ImplementedSolidScatraCellTypes>(celltype,
+  return Core::FE::cell_type_switch<Internal::ImplementedSolidScatraCellTypes>(celltype,
       [&](auto celltype_t)
       {
         return switch_kinematic_type(element_properties.kintype,

@@ -194,7 +194,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::try_create_function_of_ti
           else if (vartype == "linearinterpolation")
           {
             // read times
-            std::vector<double> times = INTERNAL::extract_time_vector(line);
+            std::vector<double> times = Internal::extract_time_vector(line);
 
             // read values
             auto values = line.container().get<std::vector<double>>("VALUES");
@@ -205,7 +205,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::try_create_function_of_ti
           else if (vartype == "multifunction")
           {
             // read times
-            std::vector<double> times = INTERNAL::extract_time_vector(line);
+            std::vector<double> times = Internal::extract_time_vector(line);
 
             // read descriptions (strings separated with spaces)
             auto description_vec = line.container().get<std::vector<std::string>>("DESCRIPTION");
@@ -222,7 +222,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::try_create_function_of_ti
           else if (vartype == "fourierinterpolation")
           {
             // read times
-            std::vector<double> times = INTERNAL::extract_time_vector(line);
+            std::vector<double> times = Internal::extract_time_vector(line);
 
             // read values
             auto values = line.container().get<std::vector<double>>("VALUES");

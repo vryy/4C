@@ -175,7 +175,7 @@ Discret::ELEMENTS::SolidCalcVariant Discret::ELEMENTS::create_solid_calculation_
 {
   // We have 4 different element properties and each combination results in a different element
   // formulation.
-  return Core::FE::cell_type_switch<Details::ImplementedSolidCellTypes>(celltype,
+  return Core::FE::cell_type_switch<Internal::ImplementedSolidCellTypes>(celltype,
       [&](auto celltype_t)
       {
         return switch_kinematic_type(element_properties.kintype,
