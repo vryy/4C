@@ -180,7 +180,7 @@ void SSI::DBCHandlerBlock::apply_structure_dbc_with_loc_sys_rotation_to_system_m
         .apply_dirichlet_with_trafo(
             *locsysmanager_structure->trafo(), *dbcmap_structure, (iblock == position_structure()));
     locsysmanager_structure->rotate_local_to_global(
-        *Teuchos::rcpFromRef(systemmatrix_block->matrix(position_structure(), iblock)));
+        systemmatrix_block->matrix(position_structure(), iblock));
   }
 }
 

@@ -1336,8 +1336,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
         const Core::Conditions::Condition* condition =
             ele->nodes()[i]->get_condition("ArtPrescribedCond");
         Cparams.set<std::string>("Condition Name", "ArtPrescribedCond");
-        Arteries::UTILS::solve_prescribed_terminal_bc(
-            *Teuchos::rcpFromRef(discretization), condition, Cparams);
+        Arteries::UTILS::solve_prescribed_terminal_bc(discretization, condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1353,8 +1352,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
             "coupling with 3D fluid params", CoupledTo3DParams);
         Cparams.set<std::string>("Condition Name", "Art_redD_3D_CouplingCond");
 
-        Arteries::UTILS::solve_prescribed_terminal_bc(
-            *Teuchos::rcpFromRef(discretization), condition, Cparams);
+        Arteries::UTILS::solve_prescribed_terminal_bc(discretization, condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1363,8 +1361,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
       if (ele->nodes()[i]->get_condition("ArtRfCond"))
       {
         const Core::Conditions::Condition* condition = ele->nodes()[i]->get_condition("ArtRfCond");
-        Arteries::UTILS::solve_reflective_terminal(
-            *Teuchos::rcpFromRef(discretization), condition, Cparams);
+        Arteries::UTILS::solve_reflective_terminal(discretization, condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1377,8 +1374,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
         Cparams.set<double>("external pressure", pext_(i));
         Cparams.set<double>("terminal volumetric flow rate", qn_(i));
         Cparams.set<double>("terminal cross-sectional area", an_(i));
-        Arteries::UTILS::solve_expl_windkessel_bc(
-            *Teuchos::rcpFromRef(discretization), condition, Cparams);
+        Arteries::UTILS::solve_expl_windkessel_bc(discretization, condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------

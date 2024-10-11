@@ -319,7 +319,7 @@ bool Solid::Dbc::rotate_global_to_local(Core::LinAlg::Vector<double>& v, bool of
     Core::LinAlg::Vector<double> v_displ(*g_state().dof_row_map_view());
     Core::LinAlg::extract_my_vector(v, v_displ);
 
-    locsysman_ptr_->rotate_global_to_local(*Teuchos::rcpFromRef(v_displ), offset);
+    locsysman_ptr_->rotate_global_to_local(v_displ, offset);
 
     Core::LinAlg::assemble_my_vector(0.0, v, 1.0, v_displ);
   }
@@ -367,7 +367,7 @@ bool Solid::Dbc::rotate_local_to_global(Core::LinAlg::Vector<double>& v, bool of
     Core::LinAlg::Vector<double> v_displ(*g_state().dof_row_map_view());
     Core::LinAlg::extract_my_vector(v, v_displ);
 
-    locsysman_ptr_->rotate_local_to_global(*Teuchos::rcpFromRef(v_displ), offset);
+    locsysman_ptr_->rotate_local_to_global(v_displ, offset);
 
     Core::LinAlg::assemble_my_vector(0.0, v, 1.0, v_displ);
   }
@@ -401,7 +401,7 @@ void Solid::Dbc::extract_freact(Core::LinAlg::Vector<double>& b) const
   insert_vector_in_non_dbc_dofs(zeros_ptr_, Teuchos::rcpFromRef(freact()));
 
   // turn the reaction forces back to the global coordinate system if necessary
-  rotate_local_to_global(*Teuchos::rcpFromRef(freact()));
+  rotate_local_to_global(freact());
 }
 
 /*----------------------------------------------------------------------------*

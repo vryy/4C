@@ -153,9 +153,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategyPoro::setup_mat
   {
     case CONTACT::MatBlockType::displ_porofluid:
       return Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-          *Teuchos::rcpFromRef<const Epetra_Map>(
-              *Global::Problem::instance()->get_dis("structure")->dof_row_map()),
-          100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+          *Global::Problem::instance()->get_dis("structure")->dof_row_map(), 100, true, false,
+          Core::LinAlg::SparseMatrix::FE_MATRIX);
     case CONTACT::MatBlockType::porofluid_displ:
     case CONTACT::MatBlockType::porofluid_porofluid:
       return Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
