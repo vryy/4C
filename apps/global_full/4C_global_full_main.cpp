@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
 
   Core::UTILS::SingletonOwnerRegistry::initialize();
   MPI_Init(&argc, &argv);
-  Kokkos::ScopeGuard kokkos_guard(argc, argv);
+  Kokkos::ScopeGuard kokkos_guard{};
 
   Teuchos::RCP<Core::Communication::Communicators> communicators =
       Core::Communication::create_comm(std::vector<std::string>(argv, argv + argc));
