@@ -343,16 +343,14 @@ void CONTACT::MtAbstractStrategy::mortar_coupling(
   // compute g-vector at global level
   Teuchos::RCP<Core::LinAlg::Vector<double>> xs = Core::LinAlg::create_vector(*gsdofrowmap_, true);
   Teuchos::RCP<Core::LinAlg::Vector<double>> xm = Core::LinAlg::create_vector(*gmdofrowmap_, true);
-  assemble_coords("slave", true, xs);
-  assemble_coords("master", true, xm);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Dxs =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  dmatrix_->multiply(false, *xs, *Dxs);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Mxm =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  mmatrix_->multiply(false, *xm, *Mxm);
-  g_->Update(1.0, *Dxs, 1.0);
-  g_->Update(-1.0, *Mxm, 1.0);
+  assemble_coords("slave", true, *xs);
+  assemble_coords("master", true, *xm);
+  Core::LinAlg::Vector<double> Dxs(*gsdofrowmap_);
+  dmatrix_->multiply(false, *xs, Dxs);
+  Core::LinAlg::Vector<double> Mxm(*gsdofrowmap_);
+  mmatrix_->multiply(false, *xm, Mxm);
+  g_->Update(1.0, Dxs, 1.0);
+  g_->Update(-1.0, Mxm, 1.0);
 
   return;
 }
@@ -574,16 +572,14 @@ void CONTACT::MtAbstractStrategy::mesh_initialization(
   // compute g-vector at global level
   Teuchos::RCP<Core::LinAlg::Vector<double>> xs = Core::LinAlg::create_vector(*gsdofrowmap_, true);
   Teuchos::RCP<Core::LinAlg::Vector<double>> xm = Core::LinAlg::create_vector(*gmdofrowmap_, true);
-  assemble_coords("slave", true, xs);
-  assemble_coords("master", true, xm);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Dxs =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  dmatrix_->multiply(false, *xs, *Dxs);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Mxm =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  mmatrix_->multiply(false, *xm, *Mxm);
-  g_->Update(1.0, *Dxs, 1.0);
-  g_->Update(-1.0, *Mxm, 1.0);
+  assemble_coords("slave", true, *xs);
+  assemble_coords("master", true, *xm);
+  Core::LinAlg::Vector<double> Dxs(*gsdofrowmap_);
+  dmatrix_->multiply(false, *xs, Dxs);
+  Core::LinAlg::Vector<double> Mxm(*gsdofrowmap_);
+  mmatrix_->multiply(false, *xm, Mxm);
+  g_->Update(1.0, Dxs, 1.0);
+  g_->Update(-1.0, Mxm, 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -639,11 +635,10 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
 
     // export global quantity to current interface slave dof row map
     Teuchos::RCP<const Epetra_Map> sdofrowmap = interface_[i]->slave_row_dofs();
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vectorinterface =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*sdofrowmap);
+    Core::LinAlg::Vector<double> vectorinterface(*sdofrowmap);
 
     if (vectorglobal != Teuchos::null)
-      Core::LinAlg::export_to(*vectorglobal, *vectorinterface);
+      Core::LinAlg::export_to(*vectorglobal, vectorinterface);
     else
       FOUR_C_THROW("store_nodal_quantities: Null vector handed in!");
 
@@ -665,24 +660,24 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
 
       for (int dof = 0; dof < n_dim(); ++dof)
       {
-        locindex[dof] = (vectorinterface->Map()).LID(mtnode->dofs()[dof]);
+        locindex[dof] = (vectorinterface.Map()).LID(mtnode->dofs()[dof]);
         if (locindex[dof] < 0) FOUR_C_THROW("StoreNodalQuantites: Did not find dof in map");
 
         switch (type)
         {
           case Mortar::StrategyBase::lmcurrent:
           {
-            mtnode->mo_data().lm()[dof] = (*vectorinterface)[locindex[dof]];
+            mtnode->mo_data().lm()[dof] = (vectorinterface)[locindex[dof]];
             break;
           }
           case Mortar::StrategyBase::lmold:
           {
-            mtnode->mo_data().lmold()[dof] = (*vectorinterface)[locindex[dof]];
+            mtnode->mo_data().lmold()[dof] = (vectorinterface)[locindex[dof]];
             break;
           }
           case Mortar::StrategyBase::lmuzawa:
           {
-            mtnode->mo_data().lmuzawa()[dof] = (*vectorinterface)[locindex[dof]];
+            mtnode->mo_data().lmuzawa()[dof] = (vectorinterface)[locindex[dof]];
             break;
           }
           case Mortar::StrategyBase::lmupdate:
@@ -693,7 +688,7 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
                   "Slave Node %i is active and at the same time carries D.B.C.s!", mtnode->id());
 
             // store updated LM into node
-            mtnode->mo_data().lm()[dof] = (*vectorinterface)[locindex[dof]];
+            mtnode->mo_data().lm()[dof] = (vectorinterface)[locindex[dof]];
             break;
           }
           default:
@@ -748,10 +743,9 @@ void CONTACT::MtAbstractStrategy::store_dirichlet_status(
 
   // create old style dirichtoggle vector (supposed to go away)
   non_redist_gsdirichtoggle_ = Core::LinAlg::create_vector(*gsdofrowmap_, true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dbcmaps->cond_map()));
-  temp->PutScalar(1.0);
-  Core::LinAlg::export_to(*temp, *non_redist_gsdirichtoggle_);
+  Core::LinAlg::Vector<double> temp(*(dbcmaps->cond_map()));
+  temp.PutScalar(1.0);
+  Core::LinAlg::export_to(temp, *non_redist_gsdirichtoggle_);
 
   return;
 }
@@ -816,20 +810,16 @@ void CONTACT::MtAbstractStrategy::interface_forces(bool output)
   if (emtype == Inpar::CONTACT::output_none) return;
 
   // compute discrete slave and master interface forces
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcslavetemp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmastertemp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mmatrix_->domain_map());
-  dmatrix_->multiply(true, *z_, *fcslavetemp);
-  mmatrix_->multiply(true, *z_, *fcmastertemp);
+  Core::LinAlg::Vector<double> fcslavetemp(dmatrix_->row_map());
+  Core::LinAlg::Vector<double> fcmastertemp(mmatrix_->domain_map());
+  dmatrix_->multiply(true, *z_, fcslavetemp);
+  mmatrix_->multiply(true, *z_, fcmastertemp);
 
   // export the interface forces to full dof layout
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcslave =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmaster =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
-  Core::LinAlg::export_to(*fcslavetemp, *fcslave);
-  Core::LinAlg::export_to(*fcmastertemp, *fcmaster);
+  Core::LinAlg::Vector<double> fcslave(*problem_dofs());
+  Core::LinAlg::Vector<double> fcmaster(*problem_dofs());
+  Core::LinAlg::export_to(fcslavetemp, fcslave);
+  Core::LinAlg::export_to(fcmastertemp, fcmaster);
 
   // interface forces and moments
   std::vector<double> gfcs(3);
@@ -847,10 +837,8 @@ void CONTACT::MtAbstractStrategy::interface_forces(bool output)
   std::vector<double> ggmcmnew(3);
 
   // weighted gap vector
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gapslave =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gapmaster =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mmatrix_->domain_map());
+  Core::LinAlg::Vector<double> gapslave(dmatrix_->row_map());
+  Core::LinAlg::Vector<double> gapmaster(mmatrix_->domain_map());
 
   // loop over all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -869,9 +857,9 @@ void CONTACT::MtAbstractStrategy::interface_forces(bool output)
       // forces and positions
       for (int d = 0; d < n_dim(); ++d)
       {
-        int dofid = (fcslavetemp->Map()).LID(mtnode->dofs()[d]);
+        int dofid = (fcslavetemp.Map()).LID(mtnode->dofs()[d]);
         if (dofid < 0) FOUR_C_THROW("interface_forces: Did not find slave dof in map");
-        nodeforce[d] = (*fcslavetemp)[dofid];
+        nodeforce[d] = (fcslavetemp)[dofid];
         gfcs[d] += nodeforce[d];
         position[d] = mtnode->xspatial()[d];
       }
@@ -893,7 +881,7 @@ void CONTACT::MtAbstractStrategy::interface_forces(bool output)
         lm[d] = mtnode->dofs()[d];
         lmowner[d] = mtnode->owner();
       }
-      Core::LinAlg::assemble(*gapslave, posnode, lm, lmowner);
+      Core::LinAlg::assemble(gapslave, posnode, lm, lmowner);
     }
 
     // loop over all master nodes on the current interface
@@ -910,9 +898,9 @@ void CONTACT::MtAbstractStrategy::interface_forces(bool output)
       // forces and positions
       for (int d = 0; d < n_dim(); ++d)
       {
-        int dofid = (fcmastertemp->Map()).LID(mtnode->dofs()[d]);
+        int dofid = (fcmastertemp.Map()).LID(mtnode->dofs()[d]);
         if (dofid < 0) FOUR_C_THROW("interface_forces: Did not find master dof in map");
-        nodeforce[d] = -(*fcmastertemp)[dofid];
+        nodeforce[d] = -(fcmastertemp)[dofid];
         gfcm[d] += nodeforce[d];
         position[d] = mtnode->xspatial()[d];
       }
@@ -934,21 +922,18 @@ void CONTACT::MtAbstractStrategy::interface_forces(bool output)
         lm[d] = mtnode->dofs()[d];
         lmowner[d] = mtnode->owner();
       }
-      Core::LinAlg::assemble(*gapmaster, posnode, lm, lmowner);
+      Core::LinAlg::assemble(gapmaster, posnode, lm, lmowner);
     }
   }
 
   // weighted gap
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gapslavefinal =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gapmasterfinal =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mmatrix_->row_map());
-  dmatrix_->multiply(false, *gapslave, *gapslavefinal);
-  mmatrix_->multiply(false, *gapmaster, *gapmasterfinal);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gapfinal =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
-  gapfinal->Update(1.0, *gapslavefinal, 0.0);
-  gapfinal->Update(-1.0, *gapmasterfinal, 1.0);
+  Core::LinAlg::Vector<double> gapslavefinal(dmatrix_->row_map());
+  Core::LinAlg::Vector<double> gapmasterfinal(mmatrix_->row_map());
+  dmatrix_->multiply(false, gapslave, gapslavefinal);
+  mmatrix_->multiply(false, gapmaster, gapmasterfinal);
+  Core::LinAlg::Vector<double> gapfinal(dmatrix_->row_map());
+  gapfinal.Update(1.0, gapslavefinal, 0.0);
+  gapfinal.Update(-1.0, gapmasterfinal, 1.0);
 
   // again, for alternative moment: lambda x gap
   // loop over all interfaces
@@ -969,10 +954,10 @@ void CONTACT::MtAbstractStrategy::interface_forces(bool output)
       // LMs and gaps
       for (int d = 0; d < n_dim(); ++d)
       {
-        int dofid = (fcslavetemp->Map()).LID(mtnode->dofs()[d]);
+        int dofid = (fcslavetemp.Map()).LID(mtnode->dofs()[d]);
         if (dofid < 0) FOUR_C_THROW("interface_forces: Did not find slave dof in map");
-        nodegaps[d] = (*gapslavefinal)[dofid];
-        nodegapm[d] = (*gapmasterfinal)[dofid];
+        nodegaps[d] = (gapslavefinal)[dofid];
+        nodegapm[d] = (gapmasterfinal)[dofid];
         lm[d] = mtnode->mo_data().lm()[d];
       }
 
@@ -1095,7 +1080,7 @@ void CONTACT::MtAbstractStrategy::visualize_gmsh(const int step, const int iter)
  | Visualization of meshtying segments with gmsh              popp 08/08|
  *----------------------------------------------------------------------*/
 void CONTACT::MtAbstractStrategy::assemble_coords(
-    const std::string& sidename, bool ref, Teuchos::RCP<Core::LinAlg::Vector<double>> vec)
+    const std::string& sidename, bool ref, Core::LinAlg::Vector<double>& vec)
 {
   // NOTE:
   // An alternative way of doing this would be to loop over
@@ -1151,7 +1136,7 @@ void CONTACT::MtAbstractStrategy::assemble_coords(
     }
 
     // do assembly
-    Core::LinAlg::assemble(*vec, val, lm, lmowner);
+    Core::LinAlg::assemble(vec, val, lm, lmowner);
   }
 
   return;

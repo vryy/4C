@@ -322,8 +322,7 @@ namespace PoroElast
     void buid_no_penetration_map(const Epetra_Comm& comm, Teuchos::RCP<const Epetra_Map> dofRowMap);
 
     //! apply rhs terms of no penetration condition to global rhs vector
-    void apply_cond_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs);
+    void apply_cond_rhs(Core::LinAlg::Vector<double>& iterinc, Core::LinAlg::Vector<double>& rhs);
 
     //! return no penetration map extractor
     Teuchos::RCP<const Core::LinAlg::MapExtractor> extractor() { return nopenetration_; }
@@ -344,7 +343,7 @@ namespace PoroElast
     void clear(PoroElast::Coupltype coupltype = PoroElast::undefined);
 
     //! setup coupling matrixes and vecors
-    void setup(Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid);
+    void setup(const Epetra_Map& dofRowMap, const Epetra_Map* dofRowMapFluid);
 
     //! return constraint matrix, that fits to coupling type
     Teuchos::RCP<Core::LinAlg::SparseMatrix> constraint_matrix(PoroElast::Coupltype coupltype);

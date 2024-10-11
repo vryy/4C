@@ -38,26 +38,26 @@ XFEM::XfpCouplingManager::XfpCouplingManager(Teuchos::RCP<XFEM::ConditionManager
       condmanager->get_mesh_coupling(cond_name_ps_ps_));
   if (mcfpi_ps_ps_ == Teuchos::null)
     FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porostructure!");
-  mcfpi_ps_ps_->initialize_struc_pres_map(poro_->fluid_structure_coupling().slave_dof_map(),
-      poro_->fluid_structure_coupling().perm_master_dof_map());
+  mcfpi_ps_ps_->initialize_struc_pres_map(*poro_->fluid_structure_coupling().slave_dof_map(),
+      *poro_->fluid_structure_coupling().perm_master_dof_map());
 
   mcfpi_ps_pf_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
       condmanager->get_mesh_coupling(cond_name_ps_pf_));
   if (mcfpi_ps_pf_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
-  mcfpi_ps_pf_->initialize_struc_pres_map(poro_->fluid_structure_coupling().slave_dof_map(),
-      poro_->fluid_structure_coupling().perm_master_dof_map());
+  mcfpi_ps_pf_->initialize_struc_pres_map(*poro_->fluid_structure_coupling().slave_dof_map(),
+      *poro_->fluid_structure_coupling().perm_master_dof_map());
 
   mcfpi_pf_ps_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
       condmanager->get_mesh_coupling(cond_name_pf_ps_));
   if (mcfpi_pf_ps_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
-  mcfpi_pf_ps_->initialize_struc_pres_map(poro_->fluid_structure_coupling().slave_dof_map(),
-      poro_->fluid_structure_coupling().perm_master_dof_map());
+  mcfpi_pf_ps_->initialize_struc_pres_map(*poro_->fluid_structure_coupling().slave_dof_map(),
+      *poro_->fluid_structure_coupling().perm_master_dof_map());
 
   mcfpi_pf_pf_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
       condmanager->get_mesh_coupling(cond_name_pf_pf_));
   if (mcfpi_pf_pf_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
-  mcfpi_pf_pf_->initialize_struc_pres_map(poro_->fluid_structure_coupling().slave_dof_map(),
-      poro_->fluid_structure_coupling().perm_master_dof_map());
+  mcfpi_pf_pf_->initialize_struc_pres_map(*poro_->fluid_structure_coupling().slave_dof_map(),
+      *poro_->fluid_structure_coupling().perm_master_dof_map());
 
   // safety check
   if (!mcfpi_ps_ps_->i_dispnp()->Map().SameAs(*get_map_extractor(0)->Map(1)))
@@ -148,41 +148,36 @@ void XFEM::XfpCouplingManager::add_coupling_matrix(
     C_fs_block.add(*xfluid_->c_xs_matrix(cond_name_ps_ps_), false, scaling * scaling_disp_vel, 1.0);
 
     // 2// Add Blocks f-pf(5), ps-pf(6)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_ps_pf =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-            xfluid_->c_ss_matrix(cond_name_ps_pf_)->row_map(), 81, false);
-    insert_matrix(-1, 0, *xfluid_->c_ss_matrix(cond_name_ps_pf_), 1, *C_ps_pf,
+    Core::LinAlg::SparseMatrix C_ps_pf(
+        xfluid_->c_ss_matrix(cond_name_ps_pf_)->row_map(), 81, false);
+    insert_matrix(-1, 0, *xfluid_->c_ss_matrix(cond_name_ps_pf_), 1, C_ps_pf,
         CouplingCommManager::col, 1, true, false);
-    C_ps_pf->complete(*get_map_extractor(1)->Map(1), *get_map_extractor(0)->Map(1));
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_f_pf = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-        xfluid_->c_xs_matrix(cond_name_ps_pf_)->row_map(), 81, false);
-    insert_matrix(-1, 0, *xfluid_->c_xs_matrix(cond_name_ps_pf_), 1, *C_f_pf,
+    C_ps_pf.complete(*get_map_extractor(1)->Map(1), *get_map_extractor(0)->Map(1));
+    Core::LinAlg::SparseMatrix C_f_pf(xfluid_->c_xs_matrix(cond_name_ps_pf_)->row_map(), 81, false);
+    insert_matrix(-1, 0, *xfluid_->c_xs_matrix(cond_name_ps_pf_), 1, C_f_pf,
         CouplingCommManager::col, 1, true, false);
-    C_f_pf->complete(*get_map_extractor(1)->Map(1), C_fs_block.range_map());
-    C_fs_block.add(*C_f_pf, false, scaling, 1.0);
-    C_ss_block.add(*C_ps_pf, false, scaling, 1.0);
+    C_f_pf.complete(*get_map_extractor(1)->Map(1), C_fs_block.range_map());
+    C_fs_block.add(C_f_pf, false, scaling, 1.0);
+    C_ss_block.add(C_ps_pf, false, scaling, 1.0);
 
     // 3// Add Blocks pf-f(7), pf-ps(8)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_pf_ps =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*get_map_extractor(1)->Map(1), 81, false);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_pf_f =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*get_map_extractor(1)->Map(1), 81, false);
-    insert_matrix(-1, 0, *xfluid_->c_ss_matrix(cond_name_pf_ps_), 1, *C_pf_ps,
+    Core::LinAlg::SparseMatrix C_pf_ps(*get_map_extractor(1)->Map(1), 81, false);
+    Core::LinAlg::SparseMatrix C_pf_f(*get_map_extractor(1)->Map(1), 81, false);
+    insert_matrix(-1, 0, *xfluid_->c_ss_matrix(cond_name_pf_ps_), 1, C_pf_ps,
         CouplingCommManager::row, 1, true, false);
-    C_pf_ps->complete(*get_map_extractor(0)->Map(1), *get_map_extractor(1)->Map(1));
-    insert_matrix(-1, 0, *xfluid_->c_sx_matrix(cond_name_pf_ps_), 1, *C_pf_f,
+    C_pf_ps.complete(*get_map_extractor(0)->Map(1), *get_map_extractor(1)->Map(1));
+    insert_matrix(-1, 0, *xfluid_->c_sx_matrix(cond_name_pf_ps_), 1, C_pf_f,
         CouplingCommManager::row, 1, true, false);
-    C_pf_f->complete(*xfluid_->dof_row_map(), *get_map_extractor(1)->Map(1));
-    C_ss_block.add(*C_pf_ps, false, scaling * scaling_disp_vel * dt, 1.0);
-    C_sf_block.add(*C_pf_f, false, scaling * dt, 1.0);
+    C_pf_f.complete(*xfluid_->dof_row_map(), *get_map_extractor(1)->Map(1));
+    C_ss_block.add(C_pf_ps, false, scaling * scaling_disp_vel * dt, 1.0);
+    C_sf_block.add(C_pf_f, false, scaling * dt, 1.0);
 
     // 4// Add Block pf-pf(9)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> C_pf_pf =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*get_map_extractor(1)->Map(1), 81, false);
-    insert_matrix(-1, 0, *xfluid_->c_ss_matrix(cond_name_pf_pf_), 1, *C_pf_pf,
+    Core::LinAlg::SparseMatrix C_pf_pf(*get_map_extractor(1)->Map(1), 81, false);
+    insert_matrix(-1, 0, *xfluid_->c_ss_matrix(cond_name_pf_pf_), 1, C_pf_pf,
         CouplingCommManager::row_and_col);
-    C_pf_pf->complete(*get_map_extractor(1)->Map(1), *get_map_extractor(1)->Map(1));
-    C_ss_block.add(*C_pf_pf, false, scaling * dt, 1.0);
+    C_pf_pf.complete(*get_map_extractor(1)->Map(1), *get_map_extractor(1)->Map(1));
+    C_ss_block.add(C_pf_pf, false, scaling * dt, 1.0);
   }
   else if (idx_.size() == 3)
   {

@@ -165,9 +165,9 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
     col_filtered_reynoldsstress_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
     col_filtered_modeled_subgrid_stress_ =
         Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
-    boxf_->get_filtered_velocity(col_filtered_vel_);
-    boxf_->get_filtered_reynolds_stress(col_filtered_reynoldsstress_);
-    boxf_->get_filtered_modeled_subgrid_stress(col_filtered_modeled_subgrid_stress_);
+    boxf_->get_filtered_velocity(*col_filtered_vel_);
+    boxf_->get_filtered_reynolds_stress(*col_filtered_reynoldsstress_);
+    boxf_->get_filtered_modeled_subgrid_stress(*col_filtered_modeled_subgrid_stress_);
 
     if (physicaltype_ == Inpar::FLUID::loma)
     {
@@ -175,9 +175,9 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
       col_filtered_dens_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
       col_filtered_dens_strainrate_ =
           Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
-      boxf_->get_filtered_dens_velocity(col_filtered_dens_vel_);
-      boxf_->get_density(col_filtered_dens_);
-      boxf_->get_density_strainrate(col_filtered_dens_strainrate_);
+      boxf_->get_filtered_dens_velocity(*col_filtered_dens_vel_);
+      boxf_->get_density(*col_filtered_dens_);
+      boxf_->get_density_strainrate(*col_filtered_dens_strainrate_);
     }
   }
 
@@ -232,13 +232,13 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_prt(
   col_filtered_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   col_filtered_dens_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   col_filtered_dens_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
-  boxfsc_->get_filtered_velocity(col_filtered_vel_);
-  boxfsc_->get_filtered_dens_velocity(col_filtered_dens_vel_);
-  boxfsc_->get_filtered_dens_velocity_temp(col_filtered_dens_vel_temp_);
-  boxfsc_->get_filtered_dens_rateofstrain_temp(col_filtered_dens_rateofstrain_temp_);
-  boxfsc_->get_temp(col_filtered_temp_);
-  boxfsc_->get_density(col_filtered_dens_);
-  boxfsc_->get_dens_temp(col_filtered_dens_temp_);
+  boxfsc_->get_filtered_velocity(*col_filtered_vel_);
+  boxfsc_->get_filtered_dens_velocity(*col_filtered_dens_vel_);
+  boxfsc_->get_filtered_dens_velocity_temp(*col_filtered_dens_vel_temp_);
+  boxfsc_->get_filtered_dens_rateofstrain_temp(*col_filtered_dens_rateofstrain_temp_);
+  boxfsc_->get_temp(*col_filtered_temp_);
+  boxfsc_->get_density(*col_filtered_dens_);
+  boxfsc_->get_dens_temp(*col_filtered_dens_temp_);
   // number of elements per layer
   // required for calculation of mean Prt in turbulent channel flow
   int numele_layer = 0;
@@ -319,10 +319,8 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
 
   // final constants (Cs*delta)^2 and (Ci*delta)^2 (loma only)
   const Epetra_Map* elerowmap = discret_->element_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Cs_delta_sq =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*elerowmap, true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Ci_delta_sq =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*elerowmap, true);
+  Core::LinAlg::Vector<double> Cs_delta_sq(*elerowmap, true);
+  Core::LinAlg::Vector<double> Ci_delta_sq(*elerowmap, true);
 
   if (homdir_)
   {
@@ -462,8 +460,8 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
     double ele_Ci_delta_sq = calc_smag_const_params.get<double>("ele_Ci_delta_sq");
     // and store it in vector
     const int id = ele->id();
-    int myerr = Cs_delta_sq->ReplaceGlobalValues(1, &ele_Cs_delta_sq, &id);
-    myerr += Ci_delta_sq->ReplaceGlobalValues(1, &ele_Ci_delta_sq, &id);
+    int myerr = Cs_delta_sq.ReplaceGlobalValues(1, &ele_Cs_delta_sq, &id);
+    myerr += Ci_delta_sq.ReplaceGlobalValues(1, &ele_Ci_delta_sq, &id);
     if (myerr != 0) FOUR_C_THROW("Problem");
 
     // local contributions to in plane averaging for channel flows
@@ -595,12 +593,12 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*elecolmap, true);
   col_Cs_delta_sq->PutScalar(0.0);
 
-  Core::LinAlg::export_to(*Cs_delta_sq, *col_Cs_delta_sq);
+  Core::LinAlg::export_to(Cs_delta_sq, *col_Cs_delta_sq);
   Teuchos::RCP<Core::LinAlg::Vector<double>> col_Ci_delta_sq =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*elecolmap, true);
   col_Ci_delta_sq->PutScalar(0.0);
 
-  Core::LinAlg::export_to(*Ci_delta_sq, *col_Ci_delta_sq);
+  Core::LinAlg::export_to(Ci_delta_sq, *col_Ci_delta_sq);
 
   // store in parameters
   Teuchos::ParameterList* modelparams = &(params_.sublist("TURBULENCE MODEL"));
@@ -704,8 +702,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
   TEUCHOS_FUNC_TIME_MONITOR("ComputePrt");
 
   const Epetra_Map* elerowmap = scatradiscret_->element_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Prt =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*elerowmap, true);
+  Core::LinAlg::Vector<double> Prt(*elerowmap, true);
 
   // for special flows, LijMij and MijMij averaged in each
   // hom. direction
@@ -845,7 +842,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
     double ele_Prt = calc_turb_prandtl_params.get<double>("ele_Prt");
     // and store it in vector
     const int id = ele->id();
-    int myerr = Prt->ReplaceGlobalValues(1, &ele_Prt, &id);
+    int myerr = Prt.ReplaceGlobalValues(1, &ele_Prt, &id);
     if (myerr != 0) FOUR_C_THROW("Problem");
 
     // local contributions to in plane averaging for channel flows
@@ -964,7 +961,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
   Teuchos::RCP<Core::LinAlg::Vector<double>> col_Prt =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*elecolmap, true);
   col_Prt->PutScalar(0.0);
-  Core::LinAlg::export_to(*Prt, *col_Prt);
+  Core::LinAlg::export_to(Prt, *col_Prt);
   // store in parameters
   Teuchos::ParameterList* modelparams = &(extraparams.sublist("TURBULENCE MODEL"));
   modelparams->set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_ele_Prt", col_Prt);

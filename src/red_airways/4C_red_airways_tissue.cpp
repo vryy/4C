@@ -222,9 +222,9 @@ void Airway::RedAirwayTissue::do_red_airway_step()
   // Scale with -1 (redairway convention: outflow is negative)
   coupflux_ip_->Scale(-1.0);
 
-  redairways_->set_airway_flux_from_tissue(coupflux_ip_);
+  redairways_->set_airway_flux_from_tissue(*coupflux_ip_);
   redairways_->integrate_step();
-  redairways_->extract_pressure(couppres_ip_tilde_);
+  redairways_->extract_pressure(*couppres_ip_tilde_);
   couppres_ip_tilde_->Update(0.0, *couppres_ip_tilde_, normal_);
 }
 
@@ -277,11 +277,10 @@ void Airway::RedAirwayTissue::relax_pressure(int iter)
         //  \tilde{p}_{i+2} = couppres_ip_tilde_
         omega_np_->Update(1.0, *couppres_il_, -1.0, *couppres_im_, 0.0);
 
-        Teuchos::RCP<Core::LinAlg::Vector<double>> denominator =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*omega_np_);
-        denominator->Update(-1.0, *couppres_im_tilde_, +1.0, *couppres_ip_tilde_, 1.0);
+        Core::LinAlg::Vector<double> denominator(*omega_np_);
+        denominator.Update(-1.0, *couppres_im_tilde_, +1.0, *couppres_ip_tilde_, 1.0);
 
-        omega_np_->ReciprocalMultiply(1.0, *denominator, *omega_np_, 0.0);
+        omega_np_->ReciprocalMultiply(1.0, denominator, *omega_np_, 0.0);
 
         // Safety check for \omega_i+1
         for (int i = 0; i < couppres_ip_->Map().NumMyElements(); ++i)
@@ -342,10 +341,10 @@ void Airway::RedAirwayTissue::relax_pressure(int iter)
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayTissue::do_structure_step()
 {
-  structure_->set_pressure(couppres_ip_);
+  structure_->set_pressure(*couppres_ip_);
   structure_->prepare_time_step();
   structure_->solve();
-  structure_->calc_flux(coupflux_ip_, coupvol_ip_, dt());
+  structure_->calc_flux(*coupflux_ip_, *coupvol_ip_, dt());
 }
 
 
@@ -393,7 +392,7 @@ bool Airway::RedAirwayTissue::not_converged(int iter)
   }
 
   // Output
-  output_iteration(pres_inc, scaled_pres_inc, flux_inc, scaled_flux_inc, iter);
+  output_iteration(*pres_inc, *scaled_pres_inc, *flux_inc, *scaled_flux_inc, iter);
 
   // Update values
   couppres_il_->Update(1.0, *couppres_im_, 0.0);
@@ -415,10 +414,9 @@ bool Airway::RedAirwayTissue::not_converged(int iter)
 /*----------------------------------------------------------------------*
  |  Output of one iteration between fields               yoshihara 09/12|
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayTissue::output_iteration(Teuchos::RCP<Core::LinAlg::Vector<double>> pres_inc,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scaled_pres_inc,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> flux_inc,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scaled_flux_inc, int iter)
+void Airway::RedAirwayTissue::output_iteration(Core::LinAlg::Vector<double>& pres_inc,
+    Core::LinAlg::Vector<double>& scaled_pres_inc, Core::LinAlg::Vector<double>& flux_inc,
+    Core::LinAlg::Vector<double>& scaled_flux_inc, int iter)
 {
   if (couppres_ip_->Comm().MyPID() == 0)
   {
@@ -434,7 +432,7 @@ void Airway::RedAirwayTissue::output_iteration(Teuchos::RCP<Core::LinAlg::Vector
     {
       printf("     %d       %4.3e     %4.3e     %4.3e     %4.3e     %4.3e     %4.3e     %4.3e\n",
           couppres_ip_->Map().GID(i), (*coupvol_ip_)[i], (*couppres_ip_)[i], (*coupflux_ip_)[i],
-          (*pres_inc)[i], (*flux_inc)[i], (*scaled_pres_inc)[i], (*scaled_flux_inc)[i]);
+          (pres_inc)[i], (flux_inc)[i], (scaled_pres_inc)[i], (scaled_flux_inc)[i]);
     }
     printf(
         "------------------------------------------------------------------------------------------"

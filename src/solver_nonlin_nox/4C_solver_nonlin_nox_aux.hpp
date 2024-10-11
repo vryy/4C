@@ -65,8 +65,7 @@ namespace NOX
        *  \param xincr : current step increment $x_{i}^{k} - x_{i}^{k-1}$
        */
       double root_mean_square_norm(const double& atol, const double& rtol,
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> xnew,
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> xincr,
+          const Core::LinAlg::Vector<double>& xnew, const Core::LinAlg::Vector<double>& xincr,
           const bool& disable_implicit_weighting = false);
 
       /*! \brief Do a recursive search for a NOX::Nln::StatusTest::NormWRMS object in the StatusTest

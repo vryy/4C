@@ -51,10 +51,10 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
       Teuchos::make_rcp<Epetra_Map>(-1, sortmap.size(), sortmap.data(), 0, proc0map_->Comm());
 
   // get the number of elements for each distype (global numbers)
-  numElePerDisType_ = get_num_ele_per_dis_type(dis);
+  numElePerDisType_ = get_num_ele_per_dis_type(*dis);
 
   // get the global ids of elements for each distype (global numbers)
-  eleGidPerDisType_ = get_ele_gid_per_dis_type(dis, numElePerDisType_);
+  eleGidPerDisType_ = get_ele_gid_per_dis_type(*dis, numElePerDisType_);
 
   // map between distypes in 4C and existing Ensight strings
   // it includes only strings for cell types known in ensight
@@ -357,16 +357,16 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::write_coordinates(
     case Core::FE::ShapeFunctionType::polynomial:
     case Core::FE::ShapeFunctionType::hdg:
     {
-      write_coordinates_for_polynomial_shapefunctions(geofile, dis, proc0map);
+      write_coordinates_for_polynomial_shapefunctions(geofile, *dis, proc0map);
       break;
     }
     case Core::FE::ShapeFunctionType::nurbs:
     {
       // write real geometry coordinates
-      if (!writecp_) write_coordinates_for_nurbs_shapefunctions(geofile, dis, proc0map);
+      if (!writecp_) write_coordinates_for_nurbs_shapefunctions(geofile, *dis, proc0map);
       // write control point coordinates
       else
-        write_coordinates_for_polynomial_shapefunctions(geofile, dis, proc0map);
+        write_coordinates_for_polynomial_shapefunctions(geofile, *dis, proc0map);
       break;
     }
     default:
@@ -523,7 +523,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
           case Core::FE::CellType::nurbs4:
           {
             if (!writecp_)
-              write_nurbs_cell(actele->shape(), actele->id(), geofile, nodevector, dis, proc0map);
+              write_nurbs_cell(actele->shape(), actele->id(), geofile, nodevector, *dis, *proc0map);
             else
             {
               // standard case with direct support
@@ -541,7 +541,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
           case Core::FE::CellType::nurbs9:
           {
             if (!writecp_)
-              write_nurbs_cell(actele->shape(), actele->id(), geofile, nodevector, dis, proc0map);
+              write_nurbs_cell(actele->shape(), actele->id(), geofile, nodevector, *dis, *proc0map);
             else
             {
               // write subelements
@@ -557,7 +557,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
           case Core::FE::CellType::nurbs27:
           {
             if (!writecp_)
-              write_nurbs_cell(actele->shape(), actele->id(), geofile, nodevector, dis, proc0map);
+              write_nurbs_cell(actele->shape(), actele->id(), geofile, nodevector, *dis, *proc0map);
             else
             {
               // write subelements
@@ -581,7 +581,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
     // proc 1 to proc n have to send their stored node connectivity to proc0
     // which does the writing
 
-    write_node_connectivity_par(geofile, dis, nodevector, proc0map);
+    write_node_connectivity_par(geofile, *dis, nodevector, *proc0map);
   }
   return;
 }
@@ -594,8 +594,7 @@ void EnsightWriter::write_cells(std::ofstream& geofile,
  \date 12/07
 */
 void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
-    const Teuchos::RCP<Core::FE::Discretization> dis, const std::vector<int>& nodevector,
-    const Teuchos::RCP<Epetra_Map> proc0map) const
+    Core::FE::Discretization& dis, const std::vector<int>& nodevector, Epetra_Map& proc0map) const
 {
   using namespace FourC;
 
@@ -605,7 +604,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
   std::vector<char> rblock;  // recieving block
 
   // create an exporter for communication
-  Core::Communication::Exporter exporter(dis->get_comm());
+  Core::Communication::Exporter exporter(dis.get_comm());
 
   // pack my node ids into sendbuffer
   sblock.clear();
@@ -615,7 +614,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
   swap(sblock, data());
 
   // now we start the communication
-  for (unsigned int pid = 0; pid < static_cast<unsigned int>(dis->get_comm().NumProc()); ++pid)
+  for (unsigned int pid = 0; pid < static_cast<unsigned int>(dis.get_comm().NumProc()); ++pid)
   {
     MPI_Request request;
     int tag = 0;
@@ -661,7 +660,7 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
       for (int i = 0; i < (int)nodeids.size(); ++i)
       {
         // using the same map as for the writing the node coordinates
-        int id = (proc0map->LID(nodeids[i])) + 1;
+        int id = (proc0map.LID(nodeids[i])) + 1;
         write(geofile, id);
       }
       nodeids.clear();
@@ -682,16 +681,16 @@ void EnsightWriter::write_node_connectivity_par(std::ofstream& geofile,
  * \date 01/08
  */
 EnsightWriter::NumElePerDisType EnsightWriter::get_num_ele_per_dis_type(
-    const Teuchos::RCP<Core::FE::Discretization> dis) const
+    Core::FE::Discretization& dis) const
 {
   using namespace FourC;
 
-  const Epetra_Map* elementmap = dis->element_row_map();
+  const Epetra_Map* elementmap = dis.element_row_map();
 
   NumElePerDisType numElePerDisType;
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
-    Core::Elements::Element* actele = dis->g_element(elementmap->GID(iele));
+    Core::Elements::Element* actele = dis.g_element(elementmap->GID(iele));
     const Core::FE::CellType distype = actele->shape();
     // update counter for current distype
     numElePerDisType[distype]++;
@@ -713,12 +712,11 @@ EnsightWriter::NumElePerDisType EnsightWriter::get_num_ele_per_dis_type(
   }
 
   // wait for all procs before communication is started
-  (dis->get_comm()).Barrier();
+  (dis.get_comm()).Barrier();
 
   // form the global sum
   std::vector<int> globalnumeleperdistype(numeledistypes);
-  (dis->get_comm())
-      .SumAll(myNumElePerDisType.data(), globalnumeleperdistype.data(), numeledistypes);
+  (dis.get_comm()).SumAll(myNumElePerDisType.data(), globalnumeleperdistype.data(), numeledistypes);
 
   // create return argument containing the global element numbers per distype
   NumElePerDisType globalNumElePerDisType;
@@ -775,11 +773,11 @@ int EnsightWriter::get_num_sub_ele(const Core::FE::CellType distype) const
  * \brief parse all elements and get the global ids of the elements for each distype
  */
 EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
-    const Teuchos::RCP<Core::FE::Discretization> dis, NumElePerDisType numeleperdistype) const
+    Core::FE::Discretization& dis, NumElePerDisType numeleperdistype) const
 {
   using namespace FourC;
 
-  const Epetra_Map* elementmap = dis->element_row_map();
+  const Epetra_Map* elementmap = dis.element_row_map();
 
   EleGidPerDisType eleGidPerDisType;
 
@@ -793,7 +791,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
   for (int iele = 0; iele < elementmap->NumMyElements(); ++iele)
   {
     const int gid = elementmap->GID(iele);
-    Core::Elements::Element* actele = dis->g_element(gid);
+    Core::Elements::Element* actele = dis.g_element(gid);
     const Core::FE::CellType distype = actele->shape();
     // update counter for current distype
     eleGidPerDisType[distype].push_back(gid);
@@ -806,14 +804,14 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
   for (iterator = numElePerDisType_.begin(); iterator != numElePerDisType_.end(); ++iterator)
   {
     // wait for all procs before communication is started
-    (dis->get_comm()).Barrier();
+    (dis.get_comm()).Barrier();
 
     // no we have to communicate everything from proc 1...proc n to proc 0
     std::vector<char> sblock;  // sending block
     std::vector<char> rblock;  // recieving block
 
     // create an exporter for communication
-    Core::Communication::Exporter exporter(dis->get_comm());
+    Core::Communication::Exporter exporter(dis.get_comm());
 
     // pack my element gids of this discretization type into sendbuffer
     sblock.clear();
@@ -823,7 +821,7 @@ EnsightWriter::EleGidPerDisType EnsightWriter::get_ele_gid_per_dis_type(
     swap(sblock, data());
 
     // now we start the communication
-    for (unsigned int pid = 0; pid < static_cast<unsigned int>(dis->get_comm().NumProc()); ++pid)
+    for (unsigned int pid = 0; pid < static_cast<unsigned int>(dis.get_comm().NumProc()); ++pid)
     {
       MPI_Request request;
       int tag = 0;
@@ -1548,7 +1546,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
   if (field_->problem()->spatial_approximation_type() == Core::FE::ShapeFunctionType::nurbs &&
       !writecp_)
   {
-    write_dof_result_step_for_nurbs(file, numdf, data, name, offset);
+    write_dof_result_step_for_nurbs(file, numdf, *data, name, offset);
   }
   else if (field_->problem()->spatial_approximation_type() ==
                Core::FE::ShapeFunctionType::polynomial or
@@ -1577,9 +1575,8 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
     //------------------------------------------------------------------
 
     // would be nice to have an Epetra_IntMultiVector, instead of casting to doubles
-    Teuchos::RCP<Epetra_MultiVector> dofgidpernodelid =
-        Teuchos::make_rcp<Epetra_MultiVector>(*nodemap, numdf);
-    dofgidpernodelid->PutScalar(-1.0);
+    Epetra_MultiVector dofgidpernodelid(*nodemap, numdf);
+    dofgidpernodelid.PutScalar(-1.0);
 
     const int mynumnp = nodemap->NumMyElements();
     for (int idf = 0; idf < numdf; ++idf)
@@ -1591,7 +1588,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
         const double dofgid = (double)dis->dof(n, frompid + idf) + offset;
         if (dofgid > -1.0)
         {
-          dofgidpernodelid->ReplaceMyValue(inode, idf, dofgid);
+          dofgidpernodelid.ReplaceMyValue(inode, idf, dofgid);
         }
         else
         {
@@ -1601,10 +1598,9 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
     }
 
     // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-    Teuchos::RCP<Epetra_MultiVector> dofgidpernodelid_proc0 =
-        Teuchos::make_rcp<Epetra_MultiVector>(*proc0map_, numdf);
+    Epetra_MultiVector dofgidpernodelid_proc0(*proc0map_, numdf);
     Epetra_Import proc0dofimporter(*proc0map_, *nodemap);
-    err = dofgidpernodelid_proc0->Import(*dofgidpernodelid, proc0dofimporter, Insert);
+    err = dofgidpernodelid_proc0.Import(dofgidpernodelid, proc0dofimporter, Insert);
     if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
 
@@ -1621,7 +1617,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
       std::map<int, double>::iterator iter;
       if (numdf > 1) FLD::get_relevant_slave_nodes_of_rot_sym_pbc(pbcslavenodemap, dis);
 
-      double* dofgids = (dofgidpernodelid_proc0->Values());  // columnwise data storage
+      double* dofgids = (dofgidpernodelid_proc0.Values());  // columnwise data storage
       for (int idf = 0; idf < numdf; ++idf)
       {
         for (int inode = 0; inode < finalnumnode;
@@ -1643,7 +1639,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
             {
               // this is the desired component of the rotated vector field result
               double value =
-                  FLD::get_component_of_rotated_vector_field(idf, proc0data, lid, iter->second);
+                  FLD::get_component_of_rotated_vector_field(idf, *proc0data, lid, iter->second);
               write(file, static_cast<float>(value));
             }
             else
@@ -1727,7 +1723,7 @@ void EnsightWriter::write_nodal_result_step(std::ofstream& file,
   if (field_->problem()->spatial_approximation_type() == Core::FE::ShapeFunctionType::nurbs &&
       !writecp_)
   {
-    write_nodal_result_step_for_nurbs(file, numdf, data, name, 0);
+    write_nodal_result_step_for_nurbs(file, numdf, *data, name, 0);
   }
   else if (field_->problem()->spatial_approximation_type() ==
                Core::FE::ShapeFunctionType::polynomial or
@@ -1736,10 +1732,9 @@ void EnsightWriter::write_nodal_result_step(std::ofstream& file,
                writecp_))
   {
     // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-    Teuchos::RCP<Epetra_MultiVector> data_proc0 =
-        Teuchos::make_rcp<Epetra_MultiVector>(*proc0map_, numdf);
+    Epetra_MultiVector data_proc0(*proc0map_, numdf);
     Epetra_Import proc0dofimporter(*proc0map_, datamap);
-    int err = data_proc0->Import(*data, proc0dofimporter, Insert);
+    int err = data_proc0.Import(*data, proc0dofimporter, Insert);
     if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
     //---------------
@@ -1763,13 +1758,12 @@ void EnsightWriter::write_nodal_result_step(std::ofstream& file,
       }
       for (int idf = 0; idf < numdf; ++idf)
       {
-        Teuchos::RCP<Core::LinAlg::Vector<double>> column =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*data_proc0)(mycols[idf]));
+        Core::LinAlg::Vector<double> column(*(data_proc0)(mycols[idf]));
 
         for (int inode = 0; inode < finalnumnode;
              inode++)  // inode == lid of node because we use proc0map_
         {
-          write(file, static_cast<float>((*column)[inode]));
+          write(file, static_cast<float>((column)[inode]));
         }
       }
     }  // if (myrank_==0)
@@ -1835,20 +1829,18 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
 
   // contract result values on proc0 (proc0 gets everything, other procs empty)
   Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> proc0data =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*proc0datamap);
-  int err = proc0data->Import(*data, proc0dataimporter, Insert);
+  Core::LinAlg::Vector<double> proc0data(*proc0datamap);
+  int err = proc0data.Import(*data, proc0dataimporter, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
-  const Epetra_BlockMap& finaldatamap = proc0data->Map();
+  const Epetra_BlockMap& finaldatamap = proc0data.Map();
 
   //------------------------------------------------------------------
   // each processor provides its dof global id information for proc 0
   //------------------------------------------------------------------
 
-  Teuchos::RCP<Epetra_MultiVector> dofgidperelementlid =
-      Teuchos::make_rcp<Epetra_MultiVector>(*elementmap, numdof);
-  dofgidperelementlid->PutScalar(-1.0);
+  Epetra_MultiVector dofgidperelementlid(*elementmap, numdof);
+  dofgidperelementlid.PutScalar(-1.0);
 
   const int nummyelem = elementmap->NumMyElements();
   for (int idof = 0; idof < numdof; ++idof)
@@ -1859,7 +1851,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
       const double dofgid = (double)dis->dof(n, from + idof);
       if (dofgid > -1.0)
       {
-        dofgidperelementlid->ReplaceMyValue(ielem, idof, dofgid);
+        dofgidperelementlid.ReplaceMyValue(ielem, idof, dofgid);
       }
       else
       {
@@ -1869,10 +1861,9 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
   }
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  Teuchos::RCP<Epetra_MultiVector> dofgidperelementlid_proc0 =
-      Teuchos::make_rcp<Epetra_MultiVector>(*proc0map_, numdof);
+  Epetra_MultiVector dofgidperelementlid_proc0(*proc0map_, numdof);
   Epetra_Import proc0dofimporter(*proc0map_, *elementmap);
-  err = dofgidperelementlid_proc0->Import(*dofgidperelementlid, proc0dofimporter, Insert);
+  err = dofgidperelementlid_proc0.Import(dofgidperelementlid, proc0dofimporter, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
   const int numglobelem = elementmap->NumGlobalElements();
@@ -1901,7 +1892,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
 
     if (myrank_ == 0)  // ensures pointer dofgids is valid
     {
-      double* dofgids = (dofgidperelementlid_proc0->Values());  // columnwise data storage
+      double* dofgids = (dofgidperelementlid_proc0.Values());  // columnwise data storage
       for (int idof = 0; idof < numdof; ++idof)
       {
         for (int ielem = 0; ielem < numelepertype;
@@ -1916,7 +1907,7 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
           int lid = finaldatamap.LID(actdofgid);
           if (lid > -1)
           {
-            write(file, static_cast<float>((*proc0data)[lid]));
+            write(file, static_cast<float>((proc0data)[lid]));
           }
           else
             FOUR_C_THROW("received illegal dof local id: %d", lid);
@@ -2005,12 +1996,11 @@ void EnsightWriter::write_element_result_step(std::ofstream& file,
 
   // contract result values on proc0 (proc0 gets everything, other procs empty)
   Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
-  Teuchos::RCP<Epetra_MultiVector> proc0data =
-      Teuchos::make_rcp<Epetra_MultiVector>(*proc0datamap, numcol);
-  int err = proc0data->Import(*data, proc0dataimporter, Insert);
+  Epetra_MultiVector proc0data(*proc0datamap, numcol);
+  int err = proc0data.Import(*data, proc0dataimporter, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
-  const Epetra_BlockMap& finaldatamap = proc0data->Map();
+  const Epetra_BlockMap& finaldatamap = proc0data.Map();
 
   //-------------------------
   // specify the element type
@@ -2054,8 +2044,7 @@ void EnsightWriter::write_element_result_step(std::ofstream& file,
       for (int col = 0; col < numdf; ++col)
       {
         // extract actual column
-        Teuchos::RCP<Core::LinAlg::Vector<double>> datacolumn =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*proc0data)(mycols[col] + from));
+        Core::LinAlg::Vector<double> datacolumn(*(proc0data)(mycols[col] + from));
         for (int iele = 0; iele < numelepertype; iele++)
         {
           // extract element global id
@@ -2065,7 +2054,7 @@ void EnsightWriter::write_element_result_step(std::ofstream& file,
           int lid = finaldatamap.LID(gid);
           if (lid > -1)
           {
-            for (int i = 0; i < numsubele; ++i) write(file, static_cast<float>((*datacolumn)[lid]));
+            for (int i = 0; i < numsubele; ++i) write(file, static_cast<float>((datacolumn)[lid]));
           }
           else
             FOUR_C_THROW("received illegal dof local id: %d", lid);
@@ -2339,8 +2328,8 @@ std::string EnsightWriter::get_file_section_string_from_filesets(
     coordinates of the nodes in the discretization.
 */
 /*----------------------------------------------------------------------*/
-void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstream& geofile,
-    const Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
+void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(
+    std::ofstream& geofile, Core::FE::Discretization& dis, Teuchos::RCP<Epetra_Map>& proc0map)
 {
   using namespace FourC;
 
@@ -2350,7 +2339,7 @@ void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstrea
 
   const int NSD = 3;  // number of space dimensions
 
-  const Epetra_Map* nodemap = dis->node_row_map();
+  const Epetra_Map* nodemap = dis.node_row_map();
   const int numnp = nodemap->NumMyElements();
   nodecoords = Teuchos::make_rcp<Epetra_MultiVector>(*nodemap, 3);
 
@@ -2358,7 +2347,7 @@ void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstrea
   for (int inode = 0; inode < numnp; inode++)
   {
     int gid = nodemap->GID(inode);
-    const Core::Nodes::Node* actnode = dis->g_node(gid);
+    const Core::Nodes::Node* actnode = dis.g_node(gid);
     for (int isd = 0; isd < NSD; ++isd)
     {
       double val = ((actnode->x())[isd]);
@@ -2371,9 +2360,8 @@ void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstrea
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map, *nodemap);
-  Teuchos::RCP<Epetra_MultiVector> allnodecoords =
-      Teuchos::make_rcp<Epetra_MultiVector>(*proc0map, 3);
-  int err = allnodecoords->Import(*nodecoords, proc0importer, Insert);
+  Epetra_MultiVector allnodecoords(*proc0map, 3);
+  int err = allnodecoords.Import(*nodecoords, proc0importer, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
   // write the node coordinates (only proc 0)
@@ -2381,8 +2369,8 @@ void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(std::ofstrea
   // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
   if (myrank_ == 0)
   {
-    double* coords = allnodecoords->Values();
-    int numentries = (3 * (allnodecoords->GlobalLength()));
+    double* coords = allnodecoords.Values();
+    int numentries = (3 * (allnodecoords.GlobalLength()));
     FOUR_C_ASSERT(numentries == (3 * nodemap->NumGlobalElements()),
         "proc 0 has not all of the node coordinates");
     if (nodeidgiven_)

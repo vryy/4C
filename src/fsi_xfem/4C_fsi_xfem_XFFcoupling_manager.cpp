@@ -118,15 +118,13 @@ void XFEM::XffCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vecto
     const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
   // REMARK: Copy this vector to store the correct lambda_ in update!
-  Teuchos::RCP<Core::LinAlg::Vector<double>> coup_rhs_sum =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xfluid_->rhs_s_vec(cond_name_));
+  Core::LinAlg::Vector<double> coup_rhs_sum(*xfluid_->rhs_s_vec(cond_name_));
 
-  coup_rhs_sum->Scale(scaling);
+  coup_rhs_sum.Scale(scaling);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> coup_rhs =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*me.Map(idx_[0]), true);
-  Core::LinAlg::export_to(*coup_rhs_sum, *coup_rhs);
-  me.add_vector(*coup_rhs, idx_[0], *rhs);
+  Core::LinAlg::Vector<double> coup_rhs(*me.Map(idx_[0]), true);
+  Core::LinAlg::export_to(coup_rhs_sum, coup_rhs);
+  me.add_vector(coup_rhs, idx_[0], *rhs);
 
   return;
 }

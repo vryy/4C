@@ -123,7 +123,7 @@ void ScaTra::LevelSetAlgorithm::capture_interface(
   double surf = 0.0;
   // reconstruct interface and calculate volumes, etc ...
   ScaTra::LevelSet::Intersection intersect;
-  intersect.capture_zero_level_set(phinp_, discret_, volminus, volplus, surf, interface);
+  intersect.capture_zero_level_set(*phinp_, *discret_, volminus, volplus, surf, interface);
 
   // do mass conservation check
   mass_conservation_check(volminus, writetofile);
@@ -284,11 +284,10 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
 
         double errL1 = (*errors)[0] / (*errors)[1];  // division by thickness of element layer for
                                                      // 2D problems with domain size 1
-        Teuchos::RCP<Core::LinAlg::Vector<double>> phidiff =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*phinp_);
-        phidiff->Update(-1.0, *phiref, 1.0);
+        Core::LinAlg::Vector<double> phidiff(*phinp_);
+        phidiff.Update(-1.0, *phiref, 1.0);
         double errLinf = 0.0;
-        phidiff->NormInf(&errLinf);
+        phidiff.NormInf(&errLinf);
 
         const std::string simulation = problem_->output_control_file()->file_name();
         const std::string fname = simulation + "_shape.error";
@@ -483,9 +482,8 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
   Teuchos::RCP<const Core::LinAlg::Vector<double>> convel_col =
       discret_->get_state(nds_vel(), "convective velocity field");
   if (convel_col == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> convel =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->dof_row_map(nds_vel()), true);
-  Core::LinAlg::export_to(*convel_col, *convel);
+  Core::LinAlg::Vector<double> convel(*discret_->dof_row_map(nds_vel()), true);
+  Core::LinAlg::export_to(*convel_col, convel);
 
   // temporary vector for convective velocity (based on dofrowmap of standard (non-XFEM) dofset)
   // remark: operations must not be performed on 'convel', because the vector is accessed by both
@@ -570,13 +568,12 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
 
 
   // these sets contain the element/node GIDs that have been collected
-  Teuchos::RCP<std::set<int>> allcollectednodes = Teuchos::make_rcp<std::set<int>>();
-  Teuchos::RCP<std::set<int>> allcollectedelements = Teuchos::make_rcp<std::set<int>>();
+  std::set<int> allcollectednodes;
+  std::set<int> allcollectedelements;
 
   // export phinp to column map
-  const Teuchos::RCP<Core::LinAlg::Vector<double>> phinpcol =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->dof_col_map());
-  Core::LinAlg::export_to(*phinp_, *phinpcol);
+  Core::LinAlg::Vector<double> phinpcol(*discret_->dof_col_map());
+  Core::LinAlg::export_to(*phinp_, phinpcol);
 
   // this loop determines how many layers around the cut elements will be collected
   for (int loopcounter = 0; loopcounter < convel_layers_; ++loopcounter)
@@ -599,18 +596,18 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
           const int nodegid = nodeids[inode];
           Core::Nodes::Node* node = discret_->g_node(nodegid);
           const int dofgid = discret_->dof(0, node, 0);
-          const int doflid = phinpcol->Map().LID(dofgid);
+          const int doflid = phinpcol.Map().LID(dofgid);
           if (doflid < 0)
             FOUR_C_THROW(
                 "Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>", myrank_, dofgid);
 
-          if (plus_domain((*phinpcol)[doflid]) == false)
+          if (plus_domain((phinpcol)[doflid]) == false)
             gotnegativephi = true;
           else
             gotpositivephi = true;
         }
 
-        if (gotpositivephi and gotnegativephi) allcollectedelements->insert(ele->id());
+        if (gotpositivephi and gotnegativephi) allcollectedelements.insert(ele->id());
       }
     }
     else
@@ -620,7 +617,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       // elements
       //------------------------------------------------------------------------------------------
       std::set<int>::const_iterator nodeit;
-      for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
+      for (nodeit = allcollectednodes.begin(); nodeit != allcollectednodes.end(); ++nodeit)
       {
         const int nodelid = discret_->node_row_map()->LID(*nodeit);
         Core::Nodes::Node* node = discret_->l_row_node(nodelid);
@@ -628,7 +625,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
         for (int iele = 0; iele < node->num_element(); ++iele)
         {
           Core::Elements::Element* ele = elements[iele];
-          allcollectedelements->insert(ele->id());
+          allcollectedelements.insert(ele->id());
         }
       }  // loop over elements
     }
@@ -641,7 +638,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     std::set<int>::const_iterator eleit;
     std::map<int, std::vector<int>>* col_pbcmapmastertoslave =
         discret_->get_all_pbc_coupled_col_nodes();
-    for (eleit = allcollectedelements->begin(); eleit != allcollectedelements->end(); ++eleit)
+    for (eleit = allcollectedelements.begin(); eleit != allcollectedelements.end(); ++eleit)
     {
       const int elelid = discret_->element_col_map()->LID(*eleit);
       Core::Elements::Element* ele = discret_->l_col_element(elelid);
@@ -656,7 +653,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
 
         if (mypbc.size() == 0)
         {
-          allcollectednodes->insert(node->id());
+          allcollectednodes.insert(node->id());
         }
         else
         {
@@ -689,7 +686,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
             }
           }
 
-          for (size_t i = 0; i < pbcnodes.size(); ++i) allcollectednodes->insert(pbcnodes[i]);
+          for (size_t i = 0; i < pbcnodes.size(); ++i) allcollectednodes.insert(pbcnodes[i]);
         }
       }  // loop over elements' nodes
     }    // loop over elements
@@ -698,18 +695,18 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     // with all nodes collected it is time to communicate them to all other procs
     // which then eliminate all but their row nodes
     {
-      Teuchos::RCP<std::set<int>> globalcollectednodes = Teuchos::make_rcp<std::set<int>>();
+      std::set<int> globalcollectednodes;
       Core::LinAlg::gather<int>(
-          *allcollectednodes, *globalcollectednodes, numproc, allproc.data(), discret_->get_comm());
+          allcollectednodes, globalcollectednodes, numproc, allproc.data(), discret_->get_comm());
 
-      allcollectednodes->clear();
+      allcollectednodes.clear();
       std::set<int>::const_iterator gnodesit;
-      for (gnodesit = globalcollectednodes->begin(); gnodesit != globalcollectednodes->end();
+      for (gnodesit = globalcollectednodes.begin(); gnodesit != globalcollectednodes.end();
            ++gnodesit)
       {
         const int nodegid = (*gnodesit);
         const int nodelid = discret_->node_row_map()->LID(nodegid);
-        if (nodelid >= 0) allcollectednodes->insert(nodegid);
+        if (nodelid >= 0) allcollectednodes.insert(nodegid);
       }
     }
   }  // loop over layers of elements
@@ -723,7 +720,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<3, 2>>>();
 
   std::set<int>::const_iterator nodeit;
-  for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
+  for (nodeit = allcollectednodes.begin(); nodeit != allcollectednodes.end(); ++nodeit)
   {
     const int nodelid = discret_->node_row_map()->LID(*nodeit);
     Core::Nodes::Node* node = discret_->l_row_node(nodelid);
@@ -732,8 +729,8 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     for (int iele = 0; iele < node->num_element(); ++iele)
     {
       Core::Elements::Element* ele = eles[iele];
-      std::set<int>::const_iterator foundit = allcollectedelements->find(ele->id());
-      if (foundit != allcollectedelements->end()) elementcount++;
+      std::set<int>::const_iterator foundit = allcollectedelements.find(ele->id());
+      if (foundit != allcollectedelements.end()) elementcount++;
     }
 
     if (elementcount < 8)
@@ -745,10 +742,10 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       {
         // get global and local dof IDs
         const int gid = nodedofs[i];
-        const int lid = convel->Map().LID(gid);
+        const int lid = convel.Map().LID(gid);
         if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
         coordandvel(i, 0) = coord[i];
-        coordandvel(i, 1) = (*convel)[lid];
+        coordandvel(i, 1) = (convel)[lid];
       }
       surfacenodes->push_back(coordandvel);
     }
@@ -779,14 +776,14 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
     {
       // get global and local dof IDs
       const int gid = nodedofs[i];
-      const int lid = convel->Map().LID(gid);
+      const int lid = convel.Map().LID(gid);
       if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
 
-      fluidvel(i) = (*convel)[lid];
+      fluidvel(i) = (convel)[lid];
     }
 
-    std::set<int>::const_iterator foundit = allcollectednodes->find(lnode->id());
-    if (foundit == allcollectednodes->end())
+    std::set<int>::const_iterator foundit = allcollectednodes.find(lnode->id());
+    if (foundit == allcollectednodes.end())
     {
       // find closest node in surfacenodes
       Core::LinAlg::Matrix<3, 2> closestnodedata(true);
@@ -884,7 +881,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       {
         // get global and local dof IDs
         const int gid = nodedofs[icomp];
-        const int lid = convel->Map().LID(gid);
+        const int lid = convel.Map().LID(gid);
         if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
 
         int err = conveltmp->ReplaceMyValue(lid, 0, closestnodedata(icomp, 1));
@@ -897,7 +894,7 @@ void ScaTra::LevelSetAlgorithm::manipulate_fluid_field_for_gfunc()
       {
         // get global and local dof IDs
         const int gid = nodedofs[icomp];
-        const int lid = convel->Map().LID(gid);
+        const int lid = convel.Map().LID(gid);
         if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
 
         int err = conveltmp->ReplaceMyValue(lid, 0, fluidvel(icomp));
@@ -995,7 +992,7 @@ void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
  | redistribute the scatra discretization and vectors         rasthofer 07/11 |
  | according to nodegraph according to nodegraph              DA wichmann     |
  *----------------------------------------------------------------------------*/
-void ScaTra::LevelSetAlgorithm::redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph)
+void ScaTra::LevelSetAlgorithm::redistribute(Epetra_CrsGraph& nodegraph)
 {
   // TODO: works if and only if discretization has already been redistributed
   //      change this and use unused nodegraph

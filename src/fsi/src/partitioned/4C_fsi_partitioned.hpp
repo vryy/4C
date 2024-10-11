@@ -174,7 +174,7 @@ namespace FSI
      *    PhD-Thesis, 2009
      */
     Teuchos::RCP<Core::LinAlg::Vector<double>> interface_velocity(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> idispnp) const;
+        const Core::LinAlg::Vector<double>& idispnp) const;
 
     /// current interface displacements
     /*!
@@ -225,7 +225,7 @@ namespace FSI
     /// create linear solver framework
     Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system(Teuchos::ParameterList& nlParams,
         const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface,
-        ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils);
+        ::NOX::Epetra::Vector& noxSoln, ::NOX::Utils& utils);
 
     /// create convergence tests including testing framework
     Teuchos::RCP<::NOX::StatusTest::Combo> create_status_test(

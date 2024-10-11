@@ -95,7 +95,7 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
           fluid_field()->convective_vel(), Teuchos::null, Teuchos::null, Teuchos::null);
     else
       scatra_field()->set_velocity_field(
-          volcoupl_fluidscatra_->apply_vector_mapping21(fluid_field()->convective_vel()),
+          volcoupl_fluidscatra_->apply_vector_mapping21(*fluid_field()->convective_vel()),
           Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
@@ -199,7 +199,7 @@ Adapter::ScaTraFluidCouplingAlgorithm::fluid_to_scatra(
       return fluidvector;
       break;
     case Inpar::ScaTra::coupling_volmortar:
-      return volcoupl_fluidscatra_->apply_vector_mapping21(fluidvector);
+      return volcoupl_fluidscatra_->apply_vector_mapping21(*fluidvector);
       break;
     default:
       FOUR_C_THROW("unknown field coupling type");
@@ -220,7 +220,7 @@ Adapter::ScaTraFluidCouplingAlgorithm::scatra_to_fluid(
       return scatravector;
       break;
     case Inpar::ScaTra::coupling_volmortar:
-      return volcoupl_fluidscatra_->apply_vector_mapping12(scatravector);
+      return volcoupl_fluidscatra_->apply_vector_mapping12(*scatravector);
       break;
     default:
       FOUR_C_THROW("unknown field coupling type");

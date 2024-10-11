@@ -89,7 +89,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
     for (const auto& segment : this->line_to_3D_segments_)
       for (const auto& segmentation_point : {segment.get_start_point(), segment.get_end_point()})
         points.push_back(segmentation_point);
-    add_visualization_integration_points(visualization_segmentation, points, visualization_params);
+    add_visualization_integration_points(*visualization_segmentation, points, visualization_params);
   }
 
   Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
@@ -102,7 +102,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
       for (const auto& segmentation_point : (segment.get_projection_points()))
         points.push_back(segmentation_point);
     add_visualization_integration_points(
-        visualization_integration_points, points, visualization_params);
+        *visualization_integration_points, points, visualization_params);
   }
 }
 
@@ -112,12 +112,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
 template <typename ScalarType, typename Beam, typename Surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::
     add_visualization_integration_points(
-        const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>&
-            visualization_writer,
+        BEAMINTERACTION::BeamToSolidOutputWriterVisualization& visualization_writer,
         const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<ScalarType>>& points,
         const Teuchos::ParameterList& visualization_params) const
 {
-  auto& visualization_data = visualization_writer->get_visualization_data();
+  auto& visualization_data = visualization_writer.get_visualization_data();
 
   // Setup variables.
   Core::LinAlg::Matrix<3, 1, ScalarType> X_beam, u_beam;

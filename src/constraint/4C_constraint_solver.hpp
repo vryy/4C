@@ -54,8 +54,8 @@ namespace CONSTRAINTS
     /*!
       \brief Set it up
      */
-    void setup(Teuchos::RCP<Core::FE::Discretization> discr, Core::LinAlg::Solver& solver,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::ParameterList params);
+    void setup(Core::FE::Discretization& discr, Core::LinAlg::Solver& solver,
+        Core::LinAlg::MapExtractor& dbcmaps, Teuchos::ParameterList params);
 
     /*!
       \brief Solve constraint linear system
@@ -103,46 +103,40 @@ namespace CONSTRAINTS
     /*!
       \brief Solve linear system using uzawa algorithm to deal with zero entries on the diagonal;
     */
-    void solve_uzawa(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,  ///< stiffness matrix
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>
-            constr,  ///< constraint matrix with Dirichlet zeros
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    void solve_uzawa(Core::LinAlg::SparseMatrix& stiff,  ///< stiffness matrix
+        Core::LinAlg::SparseMatrix& constr,              ///< constraint matrix with Dirichlet zeros
+        Core::LinAlg::SparseMatrix&
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
         Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc,  ///< displacement increment to compute
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            lagrinc,  ///< lagrange multiplier increment to compute
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsstandard,  ///< standard right hand side
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsconstr     ///< constraint errors
+        Core::LinAlg::Vector<double>& lagrinc,      ///< lagrange multiplier increment to compute
+        Core::LinAlg::Vector<double>& rhsstandard,  ///< standard right hand side
+        Core::LinAlg::Vector<double>& rhsconstr     ///< constraint errors
     );
 
     /*!
       \brief Solve linear system using uzawa algorithm to deal with zero entries on the diagonal;
     */
-    void solve_simple(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,  ///< stiffness matrix
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>
-            constr,  ///< constraint matrix with Dirichlet zeros
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    void solve_simple(Core::LinAlg::SparseMatrix& stiff,  ///< stiffness matrix
+        Core::LinAlg::SparseMatrix& constr,  ///< constraint matrix with Dirichlet zeros
+        Core::LinAlg::SparseMatrix&
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc,  ///< displacement increment to compute
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            lagrinc,  ///< lagrange multiplier increment to compute
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsstandard,  ///< standard right hand side
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsconstr     ///< constraint errors
+        Core::LinAlg::Vector<double>& dispinc,      ///< displacement increment to compute
+        Core::LinAlg::Vector<double>& lagrinc,      ///< lagrange multiplier increment to compute
+        Core::LinAlg::Vector<double>& rhsstandard,  ///< standard right hand side
+        Core::LinAlg::Vector<double>& rhsconstr     ///< constraint errors
     );
 
     /*!
       \brief Solve linear system directly by assembling everything into one big matrix
     */
-    void solve_direct(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,  ///< stiffness matrix
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>
-            constr,  ///< constraint matrix with Dirichlet zeros
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    void solve_direct(Core::LinAlg::SparseMatrix& stiff,  ///< stiffness matrix
+        Core::LinAlg::SparseMatrix& constr,  ///< constraint matrix with Dirichlet zeros
+        Core::LinAlg::SparseMatrix&
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc,  ///< displacement increment to compute
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            lagrinc,  ///< lagrange multiplier increment to compute
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsstandard,  ///< standard right hand side
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsconstr     ///< constraint errors
+        Core::LinAlg::Vector<double>& dispinc,      ///< displacement increment to compute
+        Core::LinAlg::Vector<double>& lagrinc,      ///< lagrange multiplier increment to compute
+        Core::LinAlg::Vector<double>& rhsstandard,  ///< standard right hand side
+        Core::LinAlg::Vector<double>& rhsconstr     ///< constraint errors
     );
 
     Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization

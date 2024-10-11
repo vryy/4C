@@ -177,9 +177,8 @@ void XFEM::XfsCouplingManager::add_coupling_matrix(
 void XFEM::XfsCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
     const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> coup_rhs_sum =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xfluid_->rhs_s_vec(
-          cond_name_));  // REMARK: Copy this vector to store the correct lambda_ in update!
+  Core::LinAlg::Vector<double> coup_rhs_sum(*xfluid_->rhs_s_vec(
+      cond_name_));  // REMARK: Copy this vector to store the correct lambda_ in update!
   /// Lagrange multiplier \lambda_\Gamma^n at the interface (ie forces onto the structure,
   /// Robin-type forces consisting of fluid forces and the Nitsche penalty term contribution)
   if (lambda_ != Teuchos::null)
@@ -198,21 +197,20 @@ void XFEM::XfsCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vecto
     // scale factor for the structure system matrix w.r.t the new time step
     const double scaling_S = 1.0 / (1.0 - stiparam);  // 1/(1-alpha_F) = 1/weight^S_np
     // add Lagrange multiplier (structural forces from t^n)
-    int err = coup_rhs_sum->Update(stiparam * scaling_S, *lambda_, scaling);
+    int err = coup_rhs_sum.Update(stiparam * scaling_S, *lambda_, scaling);
     if (err) FOUR_C_THROW("Update of Nit_Struct_FSI RHS failed with errcode = %d!", err);
   }
   else
   {
-    coup_rhs_sum->Scale(scaling);
+    coup_rhs_sum.Scale(scaling);
   }
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> coup_rhs =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*me.Map(idx_[0]), true);
+  Core::LinAlg::Vector<double> coup_rhs(*me.Map(idx_[0]), true);
   Core::LinAlg::export_to(
-      *coup_rhs_sum, *coup_rhs);  // use this command as long as poro ist not split
-                                  // into two bocks in the monolithic algorithm!
+      coup_rhs_sum, coup_rhs);  // use this command as long as poro ist not split
+                                // into two bocks in the monolithic algorithm!
   // insert_vector(0,coup_rhs_sum,0,coup_rhs,Coupling_Comm_Manager::partial_to_full);
-  me.add_vector(*coup_rhs, idx_[0], *rhs);
+  me.add_vector(coup_rhs, idx_[0], *rhs);
 }
 
 /*----------------------------------------------------------------------*/

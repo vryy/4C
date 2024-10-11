@@ -237,19 +237,19 @@ void EHL::Monolithic::newton_full()
 
     // --------------------------------------------- build residual norms
     // include all stuff here related with convergence test
-    normrhs_ = calculate_vector_norm(iternorm_, rhs_);
+    normrhs_ = calculate_vector_norm(iternorm_, *rhs_);
     // vector of displacement and pressure residual
     Teuchos::RCP<Core::LinAlg::Vector<double>> strrhs;
     Teuchos::RCP<Core::LinAlg::Vector<double>> lubricationrhs;
     // extract field vectors
     extract_field_vectors(rhs_, strrhs, lubricationrhs);
-    normstrrhs_ = calculate_vector_norm(iternormstr_, strrhs);
-    normlubricationrhs_ = calculate_vector_norm(iternormlubrication_, lubricationrhs);
+    normstrrhs_ = calculate_vector_norm(iternormstr_, *strrhs);
+    normlubricationrhs_ = calculate_vector_norm(iternormlubrication_, *lubricationrhs);
 
     // --------------------------------- build residual incremental norms
-    norminc_ = calculate_vector_norm(iternorm_, iterinc_);
-    normdisi_ = calculate_vector_norm(iternormstr_, sx);
-    normprei_ = calculate_vector_norm(iternormlubrication_, lx);
+    norminc_ = calculate_vector_norm(iternorm_, *iterinc_);
+    normdisi_ = calculate_vector_norm(iternormstr_, *sx);
+    normprei_ = calculate_vector_norm(iternormlubrication_, *lx);
 
     // in case of 'Mix'-convergence criterion: save the norm of the 1st
     // iteration in (norm . iter0_)
@@ -509,11 +509,11 @@ void EHL::Monolithic::setup_system_matrix()
       Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*mortaradapter_->master_dof_map(), 81);
 
   // pressure term
-  lin_pressure_force_disp(ds_dd, dm_dd);
+  lin_pressure_force_disp(*ds_dd, *dm_dd);
   // couette term
-  lin_couette_force_disp(ds_dd, dm_dd);
+  lin_couette_force_disp(*ds_dd, *dm_dd);
   // poiseuille term
-  lin_poiseuille_force_disp(ds_dd, dm_dd);
+  lin_poiseuille_force_disp(*ds_dd, *dm_dd);
 
   // complete matrices
   ds_dd->complete(*mortaradapter_->s_mdof_map(), *mortaradapter_->slave_dof_map());
@@ -548,13 +548,13 @@ void EHL::Monolithic::setup_system_matrix()
           *mortaradapter_->master_dof_map(), 81, true, true);
 
   // pressure force
-  lin_pressure_force_pres(slaveiforce_derivp, masteriforce_derivp);
+  lin_pressure_force_pres(*slaveiforce_derivp, *masteriforce_derivp);
 
   // poiseuille force
-  lin_poiseuille_force_pres(slaveiforce_derivp, masteriforce_derivp);
+  lin_poiseuille_force_pres(*slaveiforce_derivp, *masteriforce_derivp);
 
   // couette force
-  lin_couette_force_pres(slaveiforce_derivp, masteriforce_derivp);
+  lin_couette_force_pres(*slaveiforce_derivp, *masteriforce_derivp);
 
   slaveiforce_derivp->complete(
       *lubrication_->lubrication_field()->dof_row_map(), *mortaradapter_->slave_dof_map());
@@ -1384,14 +1384,14 @@ void EHL::Monolithic::unscale_solution(Core::LinAlg::BlockSparseMatrixBase& mat,
  | calculate vector norm                                    wirtz 01/16 |
  *----------------------------------------------------------------------*/
 double EHL::Monolithic::calculate_vector_norm(
-    const enum Inpar::EHL::VectorNorm norm, const Teuchos::RCP<Core::LinAlg::Vector<double>> vect)
+    const enum Inpar::EHL::VectorNorm norm, Core::LinAlg::Vector<double>& vect)
 {
   // L1 norm
   // norm = sum_0^i vect[i]
   if (norm == Inpar::EHL::norm_l1)
   {
     double vectnorm;
-    vect->Norm1(&vectnorm);
+    vect.Norm1(&vectnorm);
     return vectnorm;
   }
   // L2/Euclidian norm
@@ -1399,7 +1399,7 @@ double EHL::Monolithic::calculate_vector_norm(
   else if (norm == Inpar::EHL::norm_l2)
   {
     double vectnorm;
-    vect->Norm2(&vectnorm);
+    vect.Norm2(&vectnorm);
     return vectnorm;
   }
   // RMS norm
@@ -1407,23 +1407,23 @@ double EHL::Monolithic::calculate_vector_norm(
   else if (norm == Inpar::EHL::norm_rms)
   {
     double vectnorm;
-    vect->Norm2(&vectnorm);
-    return vectnorm / sqrt((double)vect->GlobalLength());
+    vect.Norm2(&vectnorm);
+    return vectnorm / sqrt((double)vect.GlobalLength());
   }
   // infinity/maximum norm
   // norm = max( vect[i] )
   else if (norm == Inpar::EHL::norm_inf)
   {
     double vectnorm;
-    vect->NormInf(&vectnorm);
+    vect.NormInf(&vectnorm);
     return vectnorm;
   }
   // norm = sum_0^i vect[i]/length_vect
   else if (norm == Inpar::EHL::norm_l1_scaled)
   {
     double vectnorm;
-    vect->Norm1(&vectnorm);
-    return vectnorm / ((double)vect->GlobalLength());
+    vect.Norm1(&vectnorm);
+    return vectnorm / ((double)vect.GlobalLength());
   }
   else
   {
@@ -1607,8 +1607,8 @@ void EHL::Monolithic::prepare_output(bool force_prepare)
 /*----------------------------------------------------------------------*/
 
 
-void EHL::Monolithic::lin_pressure_force_disp(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dd,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dd)
+void EHL::Monolithic::lin_pressure_force_disp(
+    Core::LinAlg::SparseMatrix& ds_dd, Core::LinAlg::SparseMatrix& dm_dd)
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> p_deriv_normal =
       Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*mortaradapter_->nderiv_matrix());
@@ -1626,51 +1626,47 @@ void EHL::Monolithic::lin_pressure_force_disp(Teuchos::RCP<Core::LinAlg::SparseM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tmp = Core::LinAlg::matrix_multiply(
       *mortaradapter_->get_mortar_matrix_d(), true, *p_deriv_normal, false, false, false, true);
   if (tmp.is_null()) FOUR_C_THROW("matrix_multiply failed");
-  ds_dd->add(*tmp, false, +1., 1.);
+  ds_dd.add(*tmp, false, +1., 1.);
 
   tmp = Teuchos::null;
   tmp = Core::LinAlg::matrix_multiply(
       *mortaradapter_->get_mortar_matrix_m(), true, *p_deriv_normal, false, false, false, true);
   if (tmp.is_null()) FOUR_C_THROW("matrix_multiply failed");
-  dm_dd->add(*tmp, false, -1., 1.);
+  dm_dd.add(*tmp, false, -1., 1.);
 
   return;
 }
 
-void EHL::Monolithic::lin_poiseuille_force_disp(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dd,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dd)
+void EHL::Monolithic::lin_poiseuille_force_disp(
+    Core::LinAlg::SparseMatrix& ds_dd, Core::LinAlg::SparseMatrix& dm_dd)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> p_int =
       ada_strDisp_to_lubPres_->slave_to_master(lubrication_->lubrication_field()->prenp());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> p_int_full =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  Core::LinAlg::export_to(*p_int, *p_int_full);
+  Core::LinAlg::Vector<double> p_int_full(*mortaradapter_->slave_dof_map());
+  Core::LinAlg::export_to(*p_int, p_int_full);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> nodal_gap =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  if (slavemaptransform_->multiply(false, *mortaradapter_->nodal_gap(), *nodal_gap))
+  Core::LinAlg::Vector<double> nodal_gap(*mortaradapter_->slave_dof_map());
+  if (slavemaptransform_->multiply(false, *mortaradapter_->nodal_gap(), nodal_gap))
     FOUR_C_THROW("multiply failed");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> grad_p =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  if (mortaradapter_->surf_grad_matrix()->Apply(*p_int_full, *grad_p)) FOUR_C_THROW("apply failed");
+  Core::LinAlg::Vector<double> grad_p(*mortaradapter_->slave_dof_map());
+  if (mortaradapter_->surf_grad_matrix()->Apply(p_int_full, grad_p)) FOUR_C_THROW("apply failed");
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> deriv_Poiseuille =
       Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
           *mortaradapter_->slave_dof_map(), 81, false, false);
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> derivH_gradP =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*mortaradapter_->nodal_gap_deriv());
-  if (derivH_gradP->left_scale(*grad_p)) FOUR_C_THROW("leftscale failed");
-  deriv_Poiseuille->add(*derivH_gradP, false, -.5, 1.);
+  Core::LinAlg::SparseMatrix derivH_gradP(*mortaradapter_->nodal_gap_deriv());
+  if (derivH_gradP.left_scale(grad_p)) FOUR_C_THROW("leftscale failed");
+  deriv_Poiseuille->add(derivH_gradP, false, -.5, 1.);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> p_int_full_col =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
           *mortaradapter_->interface()->slave_col_dofs());
-  Core::LinAlg::export_to(*p_int_full, *p_int_full_col);
+  Core::LinAlg::export_to(p_int_full, *p_int_full_col);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> h_derivGrad_nodalP =
-      mortaradapter_->assemble_surf_grad_deriv(p_int_full_col);
-  if (h_derivGrad_nodalP->left_scale(*nodal_gap)) FOUR_C_THROW("leftscale failed");
+      mortaradapter_->assemble_surf_grad_deriv(*p_int_full_col);
+  if (h_derivGrad_nodalP->left_scale(nodal_gap)) FOUR_C_THROW("leftscale failed");
   deriv_Poiseuille->add(*h_derivGrad_nodalP, false, -.5, 1.);
 
   deriv_Poiseuille->complete(*mortaradapter_->s_mdof_map(), *mortaradapter_->slave_dof_map());
@@ -1678,17 +1674,17 @@ void EHL::Monolithic::lin_poiseuille_force_disp(Teuchos::RCP<Core::LinAlg::Spars
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tmp = Core::LinAlg::matrix_multiply(
       *mortaradapter_->get_mortar_matrix_d(), true, *deriv_Poiseuille, false, false, false, true);
   if (tmp.is_null()) FOUR_C_THROW("matrix_multiply failed");
-  ds_dd->add(*tmp, false, +1., 1.);
+  ds_dd.add(*tmp, false, +1., 1.);
 
   tmp = Teuchos::null;
   tmp = Core::LinAlg::matrix_multiply(
       *mortaradapter_->get_mortar_matrix_m(), true, *deriv_Poiseuille, false, false, false, true);
   if (tmp.is_null()) FOUR_C_THROW("matrix_multiply failed");
-  dm_dd->add(*tmp, false, +1., 1.);
+  dm_dd.add(*tmp, false, +1., 1.);
 }
 
-void EHL::Monolithic::lin_couette_force_disp(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dd,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dd)
+void EHL::Monolithic::lin_couette_force_disp(
+    Core::LinAlg::SparseMatrix& ds_dd, Core::LinAlg::SparseMatrix& dm_dd)
 {
   const int ndim = Global::Problem::instance()->n_dim();
   Core::FE::Discretization& lub_dis = *lubrication_->lubrication_field()->discretization();
@@ -1713,57 +1709,50 @@ void EHL::Monolithic::lin_couette_force_disp(Teuchos::RCP<Core::LinAlg::SparseMa
   Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec_str =
       ada_strDisp_to_lubDisp_->slave_to_master(visc_vec);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> height =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  if (slavemaptransform_->multiply(false, *mortaradapter_->nodal_gap(), *height))
+  Core::LinAlg::Vector<double> height(*mortaradapter_->slave_dof_map());
+  if (slavemaptransform_->multiply(false, *mortaradapter_->nodal_gap(), height))
     FOUR_C_THROW("multiply failed");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> h_inv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  if (h_inv->Reciprocal(*height)) FOUR_C_THROW("Reciprocal failed");
+  Core::LinAlg::Vector<double> h_inv(*mortaradapter_->slave_dof_map());
+  if (h_inv.Reciprocal(height)) FOUR_C_THROW("Reciprocal failed");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> hinv_visc =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  hinv_visc->Multiply(1., *h_inv, *visc_vec_str, 0.);
+  Core::LinAlg::Vector<double> hinv_visc(*mortaradapter_->slave_dof_map());
+  hinv_visc.Multiply(1., h_inv, *visc_vec_str, 0.);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> deriv_Couette =
       Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
           *mortaradapter_->slave_dof_map(), 81, false, false);
 
   {
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tmp =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*mortaradapter_->rel_tang_vel_deriv());
-    tmp->left_scale(*hinv_visc);
-    tmp->scale(-1.);
-    deriv_Couette->add(*tmp, false, 1., 1.);
+    Core::LinAlg::SparseMatrix tmp(*mortaradapter_->rel_tang_vel_deriv());
+    tmp.left_scale(hinv_visc);
+    tmp.scale(-1.);
+    deriv_Couette->add(tmp, false, 1., 1.);
   }
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> hinv_hinv_visc =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-    hinv_hinv_visc->Multiply(1., *h_inv, *hinv_visc, 0.);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> hinv_hinv_visc_vel =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-    hinv_hinv_visc_vel->Multiply(1., *hinv_hinv_visc, *mortaradapter_->rel_tang_vel(), 0.);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tmp =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*mortaradapter_->nodal_gap_deriv());
-    tmp->left_scale(*hinv_hinv_visc_vel);
-    deriv_Couette->add(*tmp, false, 1., 1.);
+    Core::LinAlg::Vector<double> hinv_hinv_visc(*mortaradapter_->slave_dof_map());
+    hinv_hinv_visc.Multiply(1., h_inv, hinv_visc, 0.);
+    Core::LinAlg::Vector<double> hinv_hinv_visc_vel(*mortaradapter_->slave_dof_map());
+    hinv_hinv_visc_vel.Multiply(1., hinv_hinv_visc, *mortaradapter_->rel_tang_vel(), 0.);
+    Core::LinAlg::SparseMatrix tmp(*mortaradapter_->nodal_gap_deriv());
+    tmp.left_scale(hinv_hinv_visc_vel);
+    deriv_Couette->add(tmp, false, 1., 1.);
   }
   deriv_Couette->complete(*mortaradapter_->s_mdof_map(), *mortaradapter_->slave_dof_map());
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tmp = Core::LinAlg::matrix_multiply(
       *mortaradapter_->get_mortar_matrix_d(), true, *deriv_Couette, false, false, false, true);
   if (tmp.is_null()) FOUR_C_THROW("matrix_multiply failed");
-  ds_dd->add(*tmp, false, +1., 1.);
+  ds_dd.add(*tmp, false, +1., 1.);
 
   tmp = Teuchos::null;
   tmp = Core::LinAlg::matrix_multiply(
       *mortaradapter_->get_mortar_matrix_m(), true, *deriv_Couette, false, false, false, true);
   if (tmp.is_null()) FOUR_C_THROW("matrix_multiply failed");
-  dm_dd->add(*tmp, false, -1., 1.);
+  dm_dd.add(*tmp, false, -1., 1.);
 }
 
-void EHL::Monolithic::lin_pressure_force_pres(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dp,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dp)
+void EHL::Monolithic::lin_pressure_force_pres(
+    Core::LinAlg::SparseMatrix& ds_dp, Core::LinAlg::SparseMatrix& dm_dp)
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> tmp = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
       *mortaradapter_->slave_dof_map(), 81, false, false);
@@ -1780,25 +1769,24 @@ void EHL::Monolithic::lin_pressure_force_pres(Teuchos::RCP<Core::LinAlg::SparseM
   Teuchos::RCP<Core::LinAlg::SparseMatrix> a = Core::LinAlg::matrix_multiply(
       *mortaradapter_->get_mortar_matrix_d(), true, *tmp, false, false, false, true);
   if (a.is_null()) FOUR_C_THROW("matrix_multiply failed");
-  ds_dp->add(*a, false, +1., 1.);
+  ds_dp.add(*a, false, +1., 1.);
 
   a = Teuchos::null;
   a = Core::LinAlg::matrix_multiply(
       *mortaradapter_->get_mortar_matrix_m(), true, *tmp, false, false, false, true);
   if (a.is_null()) FOUR_C_THROW("matrix_multiply failed");
-  dm_dp->add(*a, false, -1., 1.);
+  dm_dp.add(*a, false, -1., 1.);
 }
 
-void EHL::Monolithic::lin_poiseuille_force_pres(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dp,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dp)
+void EHL::Monolithic::lin_poiseuille_force_pres(
+    Core::LinAlg::SparseMatrix& ds_dp, Core::LinAlg::SparseMatrix& dm_dp)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> nodal_gap =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  if (slavemaptransform_->multiply(false, *mortaradapter_->nodal_gap(), *nodal_gap))
+  Core::LinAlg::Vector<double> nodal_gap(*mortaradapter_->slave_dof_map());
+  if (slavemaptransform_->multiply(false, *mortaradapter_->nodal_gap(), nodal_gap))
     FOUR_C_THROW("multiply failed");
 
   Core::LinAlg::SparseMatrix m(*mortaradapter_->surf_grad_matrix());
-  m.left_scale(*nodal_gap);
+  m.left_scale(nodal_gap);
   m.scale(-.5);
 
   {
@@ -1807,16 +1795,15 @@ void EHL::Monolithic::lin_poiseuille_force_pres(Teuchos::RCP<Core::LinAlg::Spars
     Teuchos::RCP<Core::LinAlg::SparseMatrix> a = Core::LinAlg::matrix_multiply(
         *mortaradapter_->get_mortar_matrix_d(), true, m, false, true, false, true);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> b =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(a->row_map(), 81, false, false);
+    Core::LinAlg::SparseMatrix b(a->row_map(), 81, false, false);
 
     Coupling::Adapter::MatrixColTransform().operator()(a->row_map(), a->col_map(), *a, 1.,
-        Coupling::Adapter::CouplingMasterConverter(*ada_strDisp_to_lubPres_), *b, true, false);
-    b->complete(*d, *r);
+        Coupling::Adapter::CouplingMasterConverter(*ada_strDisp_to_lubPres_), b, true, false);
+    b.complete(*d, *r);
 
-    ds_dp->un_complete();
-    ds_dp->add(*b, false, 1., 1.);
-    ds_dp->complete(*d, *r);
+    ds_dp.un_complete();
+    ds_dp.add(b, false, 1., 1.);
+    ds_dp.complete(*d, *r);
   }
 
   {
@@ -1825,35 +1812,31 @@ void EHL::Monolithic::lin_poiseuille_force_pres(Teuchos::RCP<Core::LinAlg::Spars
     Teuchos::RCP<Core::LinAlg::SparseMatrix> a = Core::LinAlg::matrix_multiply(
         *mortaradapter_->get_mortar_matrix_m(), true, m, false, true, false, true);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> b =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(a->row_map(), 81, false, false);
+    Core::LinAlg::SparseMatrix b(a->row_map(), 81, false, false);
 
     Coupling::Adapter::MatrixColTransform().operator()(a->row_map(), a->col_map(), *a, 1.,
-        Coupling::Adapter::CouplingMasterConverter(*ada_strDisp_to_lubPres_), *b, true, false);
-    b->complete(*d, *r);
+        Coupling::Adapter::CouplingMasterConverter(*ada_strDisp_to_lubPres_), b, true, false);
+    b.complete(*d, *r);
 
-    dm_dp->un_complete();
-    dm_dp->add(*b, false, 1., 1.);
-    dm_dp->complete(*d, *r);
+    dm_dp.un_complete();
+    dm_dp.add(b, false, 1., 1.);
+    dm_dp.complete(*d, *r);
   }
   return;
 }
 
-void EHL::Monolithic::lin_couette_force_pres(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dp,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dp)
+void EHL::Monolithic::lin_couette_force_pres(
+    Core::LinAlg::SparseMatrix& ds_dp, Core::LinAlg::SparseMatrix& dm_dp)
 {
   const int ndim = Global::Problem::instance()->n_dim();
   const Teuchos::RCP<const Core::LinAlg::Vector<double>> relVel = mortaradapter_->rel_tang_vel();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> height =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  if (slavemaptransform_->multiply(false, *mortaradapter_->nodal_gap(), *height))
+  Core::LinAlg::Vector<double> height(*mortaradapter_->slave_dof_map());
+  if (slavemaptransform_->multiply(false, *mortaradapter_->nodal_gap(), height))
     FOUR_C_THROW("multiply failed");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> h_inv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  if (h_inv->Reciprocal(*height)) FOUR_C_THROW("Reciprocal failed");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> hinv_relV =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  hinv_relV->Multiply(1., *h_inv, *relVel, 0.);
+  Core::LinAlg::Vector<double> h_inv(*mortaradapter_->slave_dof_map());
+  if (h_inv.Reciprocal(height)) FOUR_C_THROW("Reciprocal failed");
+  Core::LinAlg::Vector<double> hinv_relV(*mortaradapter_->slave_dof_map());
+  hinv_relV.Multiply(1., h_inv, *relVel, 0.);
 
   Core::FE::Discretization& lub_dis = *lubrication_->lubrication_field()->discretization();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dVisc_dp =
@@ -1886,28 +1869,28 @@ void EHL::Monolithic::lin_couette_force_pres(Teuchos::RCP<Core::LinAlg::SparseMa
 
   dVisc_str_dp->complete(*lub_dis.dof_row_map(0), *mortaradapter_->slave_dof_map());
 
-  dVisc_str_dp->left_scale(*hinv_relV);
+  dVisc_str_dp->left_scale(hinv_relV);
 
   {
     Teuchos::RCP<const Epetra_Map> r = mortaradapter_->slave_dof_map();
     Teuchos::RCP<const Epetra_Map> d = lubrication_->lubrication_field()->dof_row_map(0);
 
-    ds_dp->un_complete();
-    ds_dp->add(*Core::LinAlg::matrix_multiply(*mortaradapter_->get_mortar_matrix_d(), true,
-                   *dVisc_str_dp, false, true, false, true),
+    ds_dp.un_complete();
+    ds_dp.add(*Core::LinAlg::matrix_multiply(*mortaradapter_->get_mortar_matrix_d(), true,
+                  *dVisc_str_dp, false, true, false, true),
         false, 1., 1.);
-    ds_dp->complete(*d, *r);
+    ds_dp.complete(*d, *r);
   }
 
   {
     Teuchos::RCP<const Epetra_Map> r = mortaradapter_->master_dof_map();
     Teuchos::RCP<const Epetra_Map> d = lubrication_->lubrication_field()->dof_row_map(0);
 
-    dm_dp->un_complete();
-    dm_dp->add(*Core::LinAlg::matrix_multiply(*mortaradapter_->get_mortar_matrix_m(), true,
-                   *dVisc_str_dp, false, true, false, true),
+    dm_dp.un_complete();
+    dm_dp.add(*Core::LinAlg::matrix_multiply(*mortaradapter_->get_mortar_matrix_m(), true,
+                  *dVisc_str_dp, false, true, false, true),
         false, -1., 1.);
-    dm_dp->complete(*d, *r);
+    dm_dp.complete(*d, *r);
   }
 }
 

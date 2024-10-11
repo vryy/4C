@@ -192,7 +192,7 @@ void Solid::Dbc::apply_dirichlet_bc(const double& time,
   check_init_setup();
   // We have to rotate forward ...
   // ---------------------------------------------------------------------------
-  if (!dis.is_null()) rotate_global_to_local(dis, true);
+  if (!dis.is_null()) rotate_global_to_local(*dis, true);
   if (!vel.is_null()) rotate_global_to_local(vel);
   if (!acc.is_null()) rotate_global_to_local(acc);
 
@@ -215,7 +215,7 @@ void Solid::Dbc::apply_dirichlet_bc(const double& time,
 
   // We have to rotate back into global Cartesian frame
   // ---------------------------------------------------------------------------
-  if (dis != Teuchos::null) rotate_local_to_global(dis, true);
+  if (dis != Teuchos::null) rotate_local_to_global(*dis, true);
   if (vel != Teuchos::null) rotate_local_to_global(vel);
   if (acc != Teuchos::null) rotate_local_to_global(acc);
 }
@@ -252,7 +252,7 @@ void Solid::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Core::LinAlg::Vector<
   // rotate the coordinate system: global --> local
   rotate_global_to_local(b);
 
-  extract_freact(b);
+  extract_freact(*b);
   Core::LinAlg::apply_dirichlet_to_system(*b, *zeros_ptr_, *(dbcmap_ptr_->cond_map()));
 }
 
@@ -281,7 +281,7 @@ void Solid::Dbc::apply_dirichlet_to_local_jacobian(
    *                                                          hiermeier 01/18 */
   if (A->is_dbc_applied(*dbcmap_ptr_->cond_map(), true, get_loc_sys_trafo().get())) return;
 
-  if (rotate_global_to_local(A))
+  if (rotate_global_to_local(*A))
   {
     Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> mats =
         g_state().extract_displ_row_of_blocks(*A);
@@ -305,13 +305,12 @@ void Solid::Dbc::apply_dirichlet_to_local_jacobian(
 bool Solid::Dbc::rotate_global_to_local(const Teuchos::RCP<Core::LinAlg::Vector<double>>& v) const
 {
   check_init_setup();
-  return rotate_global_to_local(v, false);
+  return rotate_global_to_local(*v, false);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Dbc::rotate_global_to_local(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& v, bool offset) const
+bool Solid::Dbc::rotate_global_to_local(Core::LinAlg::Vector<double>& v, bool offset) const
 {
   check_init_setup();
   if (not is_loc_sys()) return false;
@@ -319,32 +318,32 @@ bool Solid::Dbc::rotate_global_to_local(
   if (g_state().max_block_number() > 1)
   {
     Core::LinAlg::Vector<double> v_displ(*g_state().dof_row_map_view());
-    Core::LinAlg::extract_my_vector(*v, v_displ);
+    Core::LinAlg::extract_my_vector(v, v_displ);
 
     locsysman_ptr_->rotate_global_to_local(*Teuchos::rcpFromRef(v_displ), offset);
 
-    Core::LinAlg::assemble_my_vector(0.0, *v, 1.0, v_displ);
+    Core::LinAlg::assemble_my_vector(0.0, v, 1.0, v_displ);
   }
   else
-    locsysman_ptr_->rotate_global_to_local(*v, offset);
+    locsysman_ptr_->rotate_global_to_local(v, offset);
 
   return true;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Dbc::rotate_global_to_local(const Teuchos::RCP<Core::LinAlg::SparseOperator>& A) const
+bool Solid::Dbc::rotate_global_to_local(Core::LinAlg::SparseOperator& A) const
 {
   check_init_setup();
   if (not is_loc_sys()) return false;
 
   Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> mats =
-      g_state().extract_displ_row_of_blocks(*A);
+      g_state().extract_displ_row_of_blocks(A);
 
   for (unsigned i = 0; i < mats->size(); ++i)
     locsysman_ptr_->rotate_global_to_local(Teuchos::rcpFromRef(*(*mats)[i]));
 
-  if (not A->filled()) A->complete();
+  if (not A.filled()) A.complete();
 
   return true;
 }
@@ -354,13 +353,12 @@ bool Solid::Dbc::rotate_global_to_local(const Teuchos::RCP<Core::LinAlg::SparseO
 bool Solid::Dbc::rotate_local_to_global(const Teuchos::RCP<Core::LinAlg::Vector<double>>& v) const
 {
   check_init_setup();
-  return rotate_local_to_global(v, false);
+  return rotate_local_to_global(*v, false);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Dbc::rotate_local_to_global(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& v, bool offset) const
+bool Solid::Dbc::rotate_local_to_global(Core::LinAlg::Vector<double>& v, bool offset) const
 {
   check_init_setup();
   if (not is_loc_sys()) return false;
@@ -368,14 +366,14 @@ bool Solid::Dbc::rotate_local_to_global(
   if (g_state().max_block_number() > 1)
   {
     Core::LinAlg::Vector<double> v_displ(*g_state().dof_row_map_view());
-    Core::LinAlg::extract_my_vector(*v, v_displ);
+    Core::LinAlg::extract_my_vector(v, v_displ);
 
     locsysman_ptr_->rotate_local_to_global(*Teuchos::rcpFromRef(v_displ), offset);
 
-    Core::LinAlg::assemble_my_vector(0.0, *v, 1.0, v_displ);
+    Core::LinAlg::assemble_my_vector(0.0, v, 1.0, v_displ);
   }
   else
-    locsysman_ptr_->rotate_local_to_global(*v, offset);
+    locsysman_ptr_->rotate_local_to_global(v, offset);
 
   // reset flag
   return false;
@@ -393,11 +391,11 @@ Teuchos::RCP<const Core::LinAlg::SparseMatrix> Solid::Dbc::get_loc_sys_trafo() c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::extract_freact(Teuchos::RCP<Core::LinAlg::Vector<double>>& b) const
+void Solid::Dbc::extract_freact(Core::LinAlg::Vector<double>& b) const
 {
   check_init_setup();
 
-  Core::LinAlg::extract_my_vector(*b, freact());
+  Core::LinAlg::extract_my_vector(b, freact());
   freact().Scale(-1.0);
 
   // put zeros on all non-DBC dofs

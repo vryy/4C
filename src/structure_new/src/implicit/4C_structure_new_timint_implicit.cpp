@@ -171,12 +171,11 @@ void Solid::TimeInt::Implicit::update_state_incrementally(
       Teuchos::rcpFromRef(*const_cast<Core::LinAlg::Vector<double>*>(disiterinc.get()));
 
   // wrap the displacement vector in a nox_epetra_Vector
-  Teuchos::RCP<const ::NOX::Epetra::Vector> nox_disiterinc_ptr =
-      Teuchos::make_rcp<::NOX::Epetra::Vector>(
-          mutable_disiterinc->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+  const ::NOX::Epetra::Vector nox_disiterinc_ptr(
+      mutable_disiterinc->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
   // updated the state vector in the nox group
-  grp_ptr->computeX(*grp_ptr, *nox_disiterinc_ptr, 1.0);
+  grp_ptr->computeX(*grp_ptr, nox_disiterinc_ptr, 1.0);
 
   // Reset the state variables
   const auto& x_eptra = dynamic_cast<const ::NOX::Epetra::Vector&>(grp_ptr->getX());

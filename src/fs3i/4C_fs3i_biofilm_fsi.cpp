@@ -83,9 +83,8 @@ void FS3I::BiofilmFSI::init()
 
   if (structaledis->num_global_nodes() == 0)
   {
-    Teuchos::RCP<Core::FE::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>> alecreator =
-        Teuchos::make_rcp<Core::FE::DiscretizationCreator<ALE::UTILS::AleCloneStrategy>>();
-    alecreator->create_matching_discretization(*structdis, *structaledis, 11);
+    Core::FE::DiscretizationCreator<ALE::UTILS::AleCloneStrategy> alecreator;
+    alecreator.create_matching_discretization(*structdis, *structaledis, 11);
     structaledis->fill_complete();
   }
   if (comm_.MyPID() == 0)
@@ -310,7 +309,7 @@ void FS3I::BiofilmFSI::timeloop()
       }
 
       // compute interface displacement and velocity
-      compute_interface_vectors(idispnp_, iveln_, struidispnp_, struiveln_);
+      compute_interface_vectors(*idispnp_, *iveln_, struidispnp_, *struiveln_);
 
       // do all the settings and solve the fluid on a deforming mesh
       fluid_ale_solve();
@@ -370,22 +369,18 @@ void FS3I::BiofilmFSI::inner_timeloop()
       Global::Problem::instance()->biofilm_control_params();
   const bool avgrowth = biofilmcontrol.get<bool>("AVGROWTH");
   // in case of averaged values we need temporary variables
-  Teuchos::RCP<Core::LinAlg::Vector<double>> normtempinflux_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *(fsi_->structure_field()->discretization()->node_row_map()));
-  Teuchos::RCP<Core::LinAlg::Vector<double>> normtemptraction_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *(fsi_->structure_field()->discretization()->node_row_map()));
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tangtemptractionone_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *(fsi_->structure_field()->discretization()->node_row_map()));
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tangtemptractiontwo_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *(fsi_->structure_field()->discretization()->node_row_map()));
-  normtempinflux_->PutScalar(0.0);
-  normtemptraction_->PutScalar(0.0);
-  tangtemptractionone_->PutScalar(0.0);
-  tangtemptractiontwo_->PutScalar(0.0);
+  Core::LinAlg::Vector<double> normtempinflux_(
+      *(fsi_->structure_field()->discretization()->node_row_map()));
+  Core::LinAlg::Vector<double> normtemptraction_(
+      *(fsi_->structure_field()->discretization()->node_row_map()));
+  Core::LinAlg::Vector<double> tangtemptractionone_(
+      *(fsi_->structure_field()->discretization()->node_row_map()));
+  Core::LinAlg::Vector<double> tangtemptractiontwo_(
+      *(fsi_->structure_field()->discretization()->node_row_map()));
+  normtempinflux_.PutScalar(0.0);
+  normtemptraction_.PutScalar(0.0);
+  tangtemptractionone_.PutScalar(0.0);
+  tangtemptractiontwo_.PutScalar(0.0);
 
   while (step_fsi_ < nstep_fsi_ and t + 1e-10 * dt_fsi_ < maxtime_fsi_)
   {
@@ -477,8 +472,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
 
     const Epetra_Map* dofrowmap = strudis->dof_row_map();
     const Epetra_Map* noderowmap = strudis->node_row_map();
-    Teuchos::RCP<Epetra_MultiVector> lambdanode =
-        Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, 3, true);
+    Epetra_MultiVector lambdanode(*noderowmap, 3, true);
 
     // lagrange multipliers defined on a nodemap are necessary
     for (int lnodeid = 0; lnodeid < strudis->num_my_row_nodes(); lnodeid++)
@@ -501,7 +495,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
 
         double lambdai = (*lambdafull)[lid];
         int lnodeid = noderowmap->LID(lnode->id());
-        ((*lambdanode)(index))->ReplaceMyValues(1, &lambdai, &lnodeid);
+        ((lambdanode)(index))->ReplaceMyValues(1, &lambdai, &lnodeid);
       }
     }
     // loop over all local interface nodes of structure discretization
@@ -600,7 +594,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
         // components of the forces acting on the interface are important.
         // Since probably they will have a different effect on the biofilm growth,
         // they are calculated separately and different coefficients can be used.
-        double traccomp = (*((*lambdanode)(index)))[lnodeid];
+        double traccomp = (*((lambdanode)(index)))[lnodeid];
         tempnormtrac += traccomp * unitnormal[index];
         temptangtracone += traccomp * unittangentone[index];
         temptangtractwo += traccomp * unittangenttwo[index];
@@ -608,12 +602,10 @@ void FS3I::BiofilmFSI::inner_timeloop()
 
       if (avgrowth)
       {
-        (*((*normtempinflux_->get_ptr_of_Epetra_Vector())(0)))[lnodeid] += tempflux;
-        (*((*normtemptraction_->get_ptr_of_Epetra_Vector())(0)))[lnodeid] += abs(tempnormtrac);
-        (*((*tangtemptractionone_->get_ptr_of_Epetra_Vector())(0)))[lnodeid] +=
-            abs(temptangtracone);
-        (*((*tangtemptractiontwo_->get_ptr_of_Epetra_Vector())(0)))[lnodeid] +=
-            abs(temptangtractwo);
+        (*((*normtempinflux_.get_ptr_of_Epetra_Vector())(0)))[lnodeid] += tempflux;
+        (*((*normtemptraction_.get_ptr_of_Epetra_Vector())(0)))[lnodeid] += abs(tempnormtrac);
+        (*((*tangtemptractionone_.get_ptr_of_Epetra_Vector())(0)))[lnodeid] += abs(temptangtracone);
+        (*((*tangtemptractiontwo_.get_ptr_of_Epetra_Vector())(0)))[lnodeid] += abs(temptangtractwo);
       }
       else
       {
@@ -642,13 +634,13 @@ void FS3I::BiofilmFSI::inner_timeloop()
 
       // Fix this.
       (*((*norminflux_->get_ptr_of_Epetra_Vector())(0)))[lnodeid] =
-          (*((*normtempinflux_->get_ptr_of_Epetra_Vector())(0)))[lnodeid] / step_fsi_;
+          (*((*normtempinflux_.get_ptr_of_Epetra_Vector())(0)))[lnodeid] / step_fsi_;
       (*((*normtraction_->get_ptr_of_Epetra_Vector())(0)))[lnodeid] =
-          (*((*normtemptraction_->get_ptr_of_Epetra_Vector())(0)))[lnodeid] / step_fsi_;
+          (*((*normtemptraction_.get_ptr_of_Epetra_Vector())(0)))[lnodeid] / step_fsi_;
       (*((*tangtractionone_->get_ptr_of_Epetra_Vector())(0)))[lnodeid] =
-          (*((*tangtemptractionone_->get_ptr_of_Epetra_Vector())(0)))[lnodeid] / step_fsi_;
+          (*((*tangtemptractionone_.get_ptr_of_Epetra_Vector())(0)))[lnodeid] / step_fsi_;
       (*((*tangtractiontwo_->get_ptr_of_Epetra_Vector())(0)))[lnodeid] =
-          (*((*tangtemptractiontwo_->get_ptr_of_Epetra_Vector())(0)))[lnodeid] / step_fsi_;
+          (*((*tangtemptractiontwo_.get_ptr_of_Epetra_Vector())(0)))[lnodeid] / step_fsi_;
     }
   }
 
@@ -666,10 +658,9 @@ void FS3I::BiofilmFSI::set_fsi_solution()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::compute_interface_vectors(Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iveln,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> struidispnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> struiveln)
+void FS3I::BiofilmFSI::compute_interface_vectors(Core::LinAlg::Vector<double>& idispnp,
+    Core::LinAlg::Vector<double>& iveln, Teuchos::RCP<Core::LinAlg::Vector<double>> struidispnp,
+    Core::LinAlg::Vector<double>& struiveln)
 {
   // initialize structure interface displacement at time t^{n+1}
   // shouldn't that be zeroed?
@@ -748,7 +739,7 @@ void FS3I::BiofilmFSI::compute_interface_vectors(Teuchos::RCP<Core::LinAlg::Vect
   struidispnp->Update(dt_bio_, *struiveln_, 0.0);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fluididisp = fsi_->struct_to_fluid(struidispnp);
-  idispnp->Update(1.0, *fluididisp, 0.0);
+  idispnp.Update(1.0, *fluididisp, 0.0);
 
   return;
 }
@@ -789,14 +780,14 @@ void FS3I::BiofilmFSI::fluid_ale_solve()
   // change nodes reference position also for scatra fluid field
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[0];
   Teuchos::RCP<Core::FE::Discretization> scatradis = scatra->scatra_field()->discretization();
-  FS3I::BioFilm::UTILS::scatra_change_config(scatradis, fluiddis, fluiddisp);
+  FS3I::BioFilm::UTILS::scatra_change_config(*scatradis, *fluiddis, *fluiddisp);
 
   // set the total displacement due to growth for output reasons
   // fluid
   fluid_growth_disp_->Update(1.0, *fluiddisp, 1.0);
   fsi_->fluid_field()->set_fld_gr_disp(fluid_growth_disp_);
   // fluid scatra
-  vec_to_scatravec(scatradis, fluid_growth_disp_, scatra_fluid_growth_disp_);
+  vec_to_scatravec(*scatradis, *fluid_growth_disp_, *scatra_fluid_growth_disp_);
   scatra->scatra_field()->set_sc_fld_gr_disp(scatra_fluid_growth_disp_);
 
   // computation of fluid solution
@@ -837,14 +828,14 @@ void FS3I::BiofilmFSI::struct_ale_solve()
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
   Teuchos::RCP<Core::FE::Discretization> struscatradis =
       struscatra->scatra_field()->discretization();
-  FS3I::BioFilm::UTILS::scatra_change_config(struscatradis, structdis, structdisp);
+  FS3I::BioFilm::UTILS::scatra_change_config(*struscatradis, *structdis, *structdisp);
 
   // set the total displacement due to growth for output reasons
   // structure
   struct_growth_disp_->Update(1.0, *structdisp, 1.0);
   fsi_->structure_field()->set_str_gr_disp(struct_growth_disp_);
   // structure scatra
-  vec_to_scatravec(struscatradis, struct_growth_disp_, scatra_struct_growth_disp_);
+  vec_to_scatravec(*struscatradis, *struct_growth_disp_, *scatra_struct_growth_disp_);
   struscatra->scatra_field()->set_sc_str_gr_disp(scatra_struct_growth_disp_);
 
   // computation of structure solution
@@ -905,24 +896,24 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::struct_to_ale(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::vec_to_scatravec(Teuchos::RCP<Core::FE::Discretization> scatradis,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vec, Teuchos::RCP<Epetra_MultiVector> scatravec)
+void FS3I::BiofilmFSI::vec_to_scatravec(Core::FE::Discretization& scatradis,
+    Core::LinAlg::Vector<double>& vec, Epetra_MultiVector& scatravec)
 {
   // define error variable
   int err(0);
 
   // loop over all local nodes of scatra discretization
-  for (int lnodeid = 0; lnodeid < scatradis->num_my_row_nodes(); lnodeid++)
+  for (int lnodeid = 0; lnodeid < scatradis.num_my_row_nodes(); lnodeid++)
   {
     // determine number of space dimensions
     const int numdim = Global::Problem::instance()->n_dim();
 
     for (int index = 0; index < numdim; ++index)
     {
-      double vecval = (*vec)[index + numdim * lnodeid];
+      double vecval = (vec)[index + numdim * lnodeid];
 
       // insert value into node-based vector
-      err = scatravec->ReplaceMyValue(lnodeid, index, vecval);
+      err = scatravec.ReplaceMyValue(lnodeid, index, vecval);
 
       if (err != 0) FOUR_C_THROW("Error while inserting value into vector scatravec!");
     }
@@ -930,7 +921,7 @@ void FS3I::BiofilmFSI::vec_to_scatravec(Teuchos::RCP<Core::FE::Discretization> s
     // for 1- and 2-D problems: set all unused vector components to zero
     for (int index = numdim; index < 3; ++index)
     {
-      err = scatravec->ReplaceMyValue(lnodeid, index, 0.0);
+      err = scatravec.ReplaceMyValue(lnodeid, index, 0.0);
       if (err != 0) FOUR_C_THROW("Error while inserting value into vector scatravec!");
     }
   }

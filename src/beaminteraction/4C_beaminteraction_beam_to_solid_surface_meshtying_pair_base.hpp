@@ -143,7 +143,7 @@ namespace BEAMINTERACTION
      * @param visualization_params (in) Parameter list with visualization parameters.
      */
     void add_visualization_integration_points(
-        const Teuchos::RCP<BeamToSolidOutputWriterVisualization>& visualization_writer,
+        BeamToSolidOutputWriterVisualization& visualization_writer,
         const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points,
         const Teuchos::ParameterList& visualization_params) const;
 

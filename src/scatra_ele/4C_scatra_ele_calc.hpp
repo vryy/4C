@@ -551,12 +551,10 @@ namespace Discret
 
       //! calculate filtered quantities for dynamic Smagorinsky model
       void scatra_apply_box_filter(double& dens_hat, double& temp_hat, double& dens_temp_hat,
-          double& phi2_hat, double& phiexpression_hat, Teuchos::RCP<std::vector<double>> vel_hat,
-          Teuchos::RCP<std::vector<double>> densvel_hat,
-          Teuchos::RCP<std::vector<double>> densveltemp_hat,
-          Teuchos::RCP<std::vector<double>> densstraintemp_hat,
-          Teuchos::RCP<std::vector<double>> phi_hat,
-          Teuchos::RCP<std::vector<std::vector<double>>> alphaijsc_hat, double& volume,
+          double& phi2_hat, double& phiexpression_hat, std::vector<double>& vel_hat,
+          std::vector<double>& densvel_hat, std::vector<double>& densveltemp_hat,
+          std::vector<double>& densstraintemp_hat, std::vector<double>& phi_hat,
+          std::vector<std::vector<double>>& alphaijsc_hat, double& volume,
           const Core::Elements::Element* ele, Teuchos::ParameterList& params);
 
       //! get density at integration point

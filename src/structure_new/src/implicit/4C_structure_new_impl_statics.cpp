@@ -153,24 +153,21 @@ double Solid::IMPLICIT::Statics::calc_ref_norm_force(
       Teuchos::rcp_const_cast<Core::LinAlg::Vector<double>>(global_state().get_freact_np());
 
   // switch from Core::LinAlg::Vector<double> to ::NOX::Epetra::Vector (view but read-only)
-  Teuchos::RCP<const ::NOX::Epetra::Vector> fintnp_nox_ptr =
-      Teuchos::make_rcp<::NOX::Epetra::Vector>(
-          fintnp->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
-  Teuchos::RCP<const ::NOX::Epetra::Vector> fextnp_nox_ptr =
-      Teuchos::make_rcp<::NOX::Epetra::Vector>(
-          fextnp->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
-  Teuchos::RCP<const ::NOX::Epetra::Vector> freactnp_nox_ptr =
-      Teuchos::make_rcp<::NOX::Epetra::Vector>(
-          freactnp->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+  const ::NOX::Epetra::Vector fintnp_nox_ptr(
+      fintnp->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+  const ::NOX::Epetra::Vector fextnp_nox_ptr(
+      fextnp->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+  const ::NOX::Epetra::Vector freactnp_nox_ptr(
+      freactnp->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
   // norm of the internal forces
-  double fintnorm = fintnp_nox_ptr->norm(type);
+  double fintnorm = fintnp_nox_ptr.norm(type);
 
   // norm of the external forces
-  double fextnorm = fextnp_nox_ptr->norm(type);
+  double fextnorm = fextnp_nox_ptr.norm(type);
 
   // norm of reaction forces
-  double freactnorm = freactnp_nox_ptr->norm(type);
+  double freactnorm = freactnp_nox_ptr.norm(type);
 
   // return characteristic norm
   return std::max(fintnorm, std::max(fextnorm, freactnorm));

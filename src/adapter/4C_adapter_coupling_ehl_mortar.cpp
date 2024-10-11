@@ -205,8 +205,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   interface_->assemble_lin_dm(linDcontactLM, linMcontactLM);
 
   // D and M matrix for the active nodes
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> dInv = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-      *interface_->slave_row_dofs(), 100, true, false);
+  Core::LinAlg::SparseMatrix dInv(*interface_->slave_row_dofs(), 100, true, false);
 
   // linearized normal contact
   interface_->assemble_s(*dcsdd);
@@ -276,28 +275,24 @@ void Adapter::CouplingEhlMortar::condense_contact(
       Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmat->matrix(0, 0), Core::LinAlg::Copy);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kst =
       Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmat->matrix(0, 1), Core::LinAlg::Copy);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kts =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmat->matrix(1, 0), Core::LinAlg::Copy);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> ktt =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sysmat->matrix(1, 1), Core::LinAlg::Copy);
+  Core::LinAlg::SparseMatrix kts(sysmat->matrix(1, 0), Core::LinAlg::Copy);
+  Core::LinAlg::SparseMatrix ktt(sysmat->matrix(1, 1), Core::LinAlg::Copy);
 
   // get some maps
   Teuchos::RCP<Epetra_Map> gdisp_DofRowMap = Teuchos::make_rcp<Epetra_Map>(kss->row_map());
-  Teuchos::RCP<Epetra_Map> gpres_DofRowMap = Teuchos::make_rcp<Epetra_Map>(ktt->row_map());
+  Teuchos::RCP<Epetra_Map> gpres_DofRowMap = Teuchos::make_rcp<Epetra_Map>(ktt.row_map());
   Teuchos::RCP<Epetra_Map> gmdof = Teuchos::make_rcp<Epetra_Map>(*interface_->master_row_dofs());
   Teuchos::RCP<Epetra_Map> active_dofs = Teuchos::make_rcp<Epetra_Map>(*interface_->active_dofs());
 
   // split rhs
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rs =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(kss->row_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rt =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(ktt->row_map(), true);
-  Core::LinAlg::export_to(*combined_RHS, *rs);
-  Core::LinAlg::export_to(*combined_RHS, *rt);
+  Core::LinAlg::Vector<double> rs(kss->row_map(), true);
+  Core::LinAlg::Vector<double> rt(ktt.row_map(), true);
+  Core::LinAlg::export_to(*combined_RHS, rs);
+  Core::LinAlg::export_to(*combined_RHS, rt);
 
   // we don't want the rhs but the residual
-  rs->Scale(-1.);
-  rt->Scale(-1.);
+  rs.Scale(-1.);
+  rt.Scale(-1.);
 
   // add last time step contact forces to rhs
   if (fscn_ != Teuchos::null)  // in the first time step, we don't have any history of the
@@ -305,7 +300,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   {
     Core::LinAlg::Vector<double> tmp(kss->row_map());
     Core::LinAlg::export_to(*fscn_, tmp);
-    if (rs->Update(alphaf_, tmp, 1.) != 0)  // fscn already scaled with alphaf_ in update
+    if (rs.Update(alphaf_, tmp, 1.) != 0)  // fscn already scaled with alphaf_ in update
       FOUR_C_THROW("update went wrong");
   }
 
@@ -331,8 +326,8 @@ void Adapter::CouplingEhlMortar::condense_contact(
     sysmat->reset();
     sysmat->assign(0, 0, Core::LinAlg::Copy, *kss);
     sysmat->assign(0, 1, Core::LinAlg::Copy, *kst);
-    sysmat->assign(1, 0, Core::LinAlg::Copy, *kts);
-    sysmat->assign(1, 1, Core::LinAlg::Copy, *ktt);
+    sysmat->assign(1, 0, Core::LinAlg::Copy, kts);
+    sysmat->assign(1, 1, Core::LinAlg::Copy, ktt);
     return;
   }
 
@@ -426,12 +421,12 @@ void Adapter::CouplingEhlMortar::condense_contact(
   // ****************************************************
   // split structural rhs
   Core::LinAlg::Vector<double> rsni(*str_gni_dofs);
-  Core::LinAlg::export_to(*rs, rsni);
+  Core::LinAlg::export_to(rs, rsni);
   Core::LinAlg::Vector<double> rsm(*interface_->master_row_dofs());
-  Core::LinAlg::export_to(*rs, rsm);
+  Core::LinAlg::export_to(rs, rsm);
   Teuchos::RCP<Core::LinAlg::Vector<double>> rsa =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->active_dofs());
-  Core::LinAlg::export_to(*rs, *rsa);
+  Core::LinAlg::export_to(rs, *rsa);
   // ****************************************************
   // split rhs vectors***********************************
   // ****************************************************
@@ -524,7 +519,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
 
   // reset rhs
   combined_RHS->PutScalar(0.);
-  CONTACT::UTILS::add_vector(*rt, *combined_RHS);
+  CONTACT::UTILS::add_vector(rt, *combined_RHS);
 
   // **********************************************************************
   // **********************************************************************
@@ -658,8 +653,7 @@ void Adapter::CouplingEhlMortar::recover_coupled(Teuchos::RCP<Core::LinAlg::Vect
 /*----------------------------------------------------------------------*
  |  Store dirichlet B.C. status into CNode                    popp 06/09|
  *----------------------------------------------------------------------*/
-void Adapter::CouplingEhlMortar::store_dirichlet_status(
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps)
+void Adapter::CouplingEhlMortar::store_dirichlet_status(const Core::LinAlg::MapExtractor& dbcmaps)
 {
   // loop over all slave row nodes on the current interface
   for (int j = 0; j < interface_->slave_row_nodes()->NumMyElements(); ++j)
@@ -673,7 +667,7 @@ void Adapter::CouplingEhlMortar::store_dirichlet_status(
     for (int k = 0; k < cnode->num_dof(); ++k)
     {
       int currdof = cnode->dofs()[k];
-      int lid = (dbcmaps->cond_map())->LID(currdof);
+      int lid = (dbcmaps.cond_map())->LID(currdof);
 
       // store dbc status if found
       if (lid >= 0 && cnode->dbc_dofs()[k] == false) cnode->set_dbc() = true;
@@ -693,10 +687,9 @@ void Adapter::CouplingEhlMortar::store_dirichlet_status(
   // create old style dirichtoggle vector (supposed to go away)
   sdirichtoggle_ =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->slave_row_dofs(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dbcmaps->cond_map()));
-  temp->PutScalar(1.0);
-  Core::LinAlg::export_to(*temp, *sdirichtoggle_);
+  Core::LinAlg::Vector<double> temp(*(dbcmaps.cond_map()));
+  temp.PutScalar(1.0);
+  Core::LinAlg::export_to(temp, *sdirichtoggle_);
 
   return;
 }
@@ -707,11 +700,10 @@ bool Adapter::CouplingEhlMortar::already_evaluated(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
 {
   if (evaluated_state_.is_null()) return false;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> diff =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*disp);
-  if (diff->Update(-1., *evaluated_state_, 1.)) FOUR_C_THROW("update failed");
+  Core::LinAlg::Vector<double> diff(*disp);
+  if (diff.Update(-1., *evaluated_state_, 1.)) FOUR_C_THROW("update failed");
   double inf_diff = -1.;
-  if (diff->NormInf(&inf_diff)) FOUR_C_THROW("NormInf failed");
+  if (diff.NormInf(&inf_diff)) FOUR_C_THROW("NormInf failed");
   if (inf_diff < 1.e-13) return true;
 
   return false;
@@ -1001,7 +993,7 @@ void Adapter::CouplingEhlMortar::assemble_surf_grad()
 }
 
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::CouplingEhlMortar::assemble_surf_grad_deriv(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> x)
+    const Core::LinAlg::Vector<double>& x)
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> SurfGradDeriv =
       Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
@@ -1037,9 +1029,9 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::CouplingEhlMortar::assemble_su
       const int col = p->first;
       for (auto q = p->second.begin(); q != p->second.end(); ++q)
       {
-        const int lid = x->Map().LID(q->first);
+        const int lid = x.Map().LID(q->first);
         if (lid < 0) FOUR_C_THROW("not my gid");
-        const double x_val = x->operator[](lid);
+        const double x_val = x.operator[](lid);
         for (int d = 0; d < interface()->n_dim(); ++d)
         {
           const double val = x_val * q->second(d) / dval;
@@ -1060,9 +1052,9 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Adapter::CouplingEhlMortar::assemble_su
           {
             const int row = cnode->dofs()[d];
             const int x_gid = q->first;
-            const int x_lid = x->Map().LID(x_gid);
+            const int x_lid = x.Map().LID(x_gid);
             if (x_lid < 0) FOUR_C_THROW("not my gid");
-            double x_val = x->operator[](x_lid);
+            double x_val = x.operator[](x_lid);
             const double val = -x_val * q->second(d) / (dval * dval) * p->second;
             SurfGradDeriv->assemble(val, row, col);
           }

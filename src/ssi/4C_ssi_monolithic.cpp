@@ -150,7 +150,7 @@ void SSI::SsiMono::apply_meshtying_to_sub_problems()
         is_uncomplete_of_matrices_necessary_for_mesh_tying());
 
     ssi_vectors_->structure_residual()->Update(
-        1.0, strategy_meshtying_->apply_meshtying_to_structure_rhs(structure_field()->rhs()), 1.0);
+        1.0, strategy_meshtying_->apply_meshtying_to_structure_rhs(*structure_field()->rhs()), 1.0);
 
     if (is_scatra_manifold())
     {
@@ -225,7 +225,8 @@ void SSI::SsiMono::apply_manifold_meshtying()
       manifoldscatraflux_->matrix_manifold_scatra());
 
   // RHS
-  strategy_manifold_meshtying_->apply_mesh_tying_to_manifold_rhs(ssi_vectors_->manifold_residual());
+  strategy_manifold_meshtying_->apply_mesh_tying_to_manifold_rhs(
+      *ssi_vectors_->manifold_residual());
 }
 
 /*--------------------------------------------------------------------------*
@@ -246,7 +247,7 @@ void SSI::SsiMono::assemble_mat_and_rhs()
   // assemble monolithic RHS
   strategy_assemble_->assemble_rhs(ssi_vectors_->residual(), ssi_vectors_->scatra_residual(),
       ssi_vectors_->structure_residual(),
-      is_scatra_manifold() ? ssi_vectors_->manifold_residual() : Teuchos::null);
+      *(is_scatra_manifold() ? ssi_vectors_->manifold_residual() : Teuchos::null));
 }
 
 /*--------------------------------------------------------------------------*
@@ -351,7 +352,7 @@ void SSI::SsiMono::evaluate_off_diag_contributions()
   // evaluate off-diagonal scatra-structure block (interface contributions) of global system matrix
   if (ssi_interface_meshtying())
     scatrastructure_off_diagcoupling_->evaluate_off_diag_block_scatra_structure_interface(
-        ssi_matrices_->scatra_structure_matrix());
+        *ssi_matrices_->scatra_structure_matrix());
 
   // evaluate off-diagonal structure-scatra block (we only have domain contributions so far) of
   // global system matrix
@@ -603,7 +604,7 @@ void SSI::SsiMono::prepare_time_step()
   // has to be called AFTER ScaTraField()->prepare_time_step() to ensure
   // consistent scalar transport state vector with valid Dirichlet conditions
   set_scatra_solution(scatra_field()->phinp());
-  if (is_scatra_manifold()) set_scatra_manifold_solution(scatra_manifold()->phinp());
+  if (is_scatra_manifold()) set_scatra_manifold_solution(*scatra_manifold()->phinp());
 
   // evaluate temperature from function and set to structural discretization
   evaluate_and_set_temperature_field();
@@ -946,7 +947,7 @@ void SSI::SsiMono::update()
 void SSI::SsiMono::update_iter_scatra()
 {
   // update scalar transport field
-  scatra_field()->update_iter(maps_sub_problems()->extract_vector(*ssi_vectors_->increment(),
+  scatra_field()->update_iter(*maps_sub_problems()->extract_vector(*ssi_vectors_->increment(),
       UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport)));
   scatra_field()->compute_intermediate_values();
 
@@ -970,7 +971,7 @@ void SSI::SsiMono::update_iter_scatra()
       }
     }
 
-    scatra_manifold()->update_iter(increment_manifold);
+    scatra_manifold()->update_iter(*increment_manifold);
     scatra_manifold()->compute_intermediate_values();
   }
 }
@@ -1161,7 +1162,7 @@ void SSI::SsiMono::distribute_solution_all_fields(const bool restore_velocity)
   set_struct_solution(structure_field()->dispnp(), structure_field()->velnp(),
       is_s2_i_kinetics_with_pseudo_contact());
   set_scatra_solution(scatra_field()->phinp());
-  if (is_scatra_manifold()) set_scatra_manifold_solution(scatra_manifold()->phinp());
+  if (is_scatra_manifold()) set_scatra_manifold_solution(*scatra_manifold()->phinp());
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -1233,11 +1234,11 @@ void SSI::SsiMono::calc_initial_potential_field()
           scatra_elch_splitter->other_map(), structure_field()->dof_row_map());
     }
 
-    auto dbc_zeros = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pseudo_dbc_map, true);
+    Core::LinAlg::Vector<double> dbc_zeros(*pseudo_dbc_map, true);
 
     auto rhs = ssi_vectors_->residual();
     Core::LinAlg::apply_dirichlet_to_system(*ssi_matrices_->system_matrix(),
-        *ssi_vectors_->increment(), *rhs, *dbc_zeros, *pseudo_dbc_map);
+        *ssi_vectors_->increment(), *rhs, dbc_zeros, *pseudo_dbc_map);
     ssi_vectors_->residual()->Update(1.0, *rhs, 0.0);
 
     // time needed for evaluating elements and assembling global system of equations
@@ -1326,27 +1327,28 @@ void SSI::SsiMono::calc_initial_time_derivative()
   auto massmatrix_scatra =
       scatra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse
           ? Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseOperator>(
-                UTILS::SSIMatrices::setup_sparse_matrix(scatra_field()->dof_row_map()))
+                UTILS::SSIMatrices::setup_sparse_matrix(*scatra_field()->dof_row_map()))
           : Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseOperator>(
                 UTILS::SSIMatrices::setup_block_matrix(
-                    scatra_field()->block_maps(), scatra_field()->block_maps()));
+                    *scatra_field()->block_maps(), *scatra_field()->block_maps()));
 
   auto massmatrix_manifold =
       is_scatra_manifold()
           ? (scatra_manifold()->matrix_type() == Core::LinAlg::MatrixType::sparse
                     ? Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseOperator>(
-                          UTILS::SSIMatrices::setup_sparse_matrix(scatra_manifold()->dof_row_map()))
+                          UTILS::SSIMatrices::setup_sparse_matrix(
+                              *scatra_manifold()->dof_row_map()))
                     : Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseOperator>(
                           UTILS::SSIMatrices::setup_block_matrix(
-                              scatra_manifold()->block_maps(), scatra_manifold()->block_maps())))
+                              *scatra_manifold()->block_maps(), *scatra_manifold()->block_maps())))
           : Teuchos::null;
 
   auto massmatrix_system = matrix_type() == Core::LinAlg::MatrixType::sparse
                                ? Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseOperator>(
-                                     UTILS::SSIMatrices::setup_sparse_matrix(dof_row_map()))
+                                     UTILS::SSIMatrices::setup_sparse_matrix(*dof_row_map()))
                                : Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseOperator>(
                                      UTILS::SSIMatrices::setup_block_matrix(
-                                         block_map_system_matrix(), block_map_system_matrix()));
+                                         *block_map_system_matrix(), *block_map_system_matrix()));
 
   // fill ones on main diag of structure block (not solved)
   auto ones_struct =
@@ -1515,12 +1517,12 @@ void SSI::SsiMono::calc_initial_time_derivative()
   else
     pseudo_dbc_map = Teuchos::make_rcp<Epetra_Map>(*structure_field()->dof_row_map());
 
-  auto dbc_zeros = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pseudo_dbc_map, true);
+  Core::LinAlg::Vector<double> dbc_zeros(*pseudo_dbc_map, true);
 
   // temporal derivative of transported scalars
   auto phidtnp_system = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
   Core::LinAlg::apply_dirichlet_to_system(
-      *massmatrix_system, *phidtnp_system, *rhs_system, *dbc_zeros, *(pseudo_dbc_map));
+      *massmatrix_system, *phidtnp_system, *rhs_system, dbc_zeros, *(pseudo_dbc_map));
 
   // solve global system of equations for initial time derivative of state variables
   Core::LinAlg::SolverParams solver_params;
@@ -1662,8 +1664,7 @@ void SSI::SsiMono::print_system_matrix_rhs_to_mat_lab_format()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SSI::SsiMono::set_scatra_manifold_solution(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi)
+void SSI::SsiMono::set_scatra_manifold_solution(const Core::LinAlg::Vector<double>& phi)
 {
   // scatra values on master side copied to manifold
   auto manifold_on_scatra =
@@ -1671,7 +1672,7 @@ void SSI::SsiMono::set_scatra_manifold_solution(
 
   for (const auto& coup : manifoldscatraflux_->scatra_manifold_couplings())
   {
-    auto manifold_cond = coup->manifold_map_extractor()->extract_cond_vector(*phi);
+    auto manifold_cond = coup->manifold_map_extractor()->extract_cond_vector(phi);
     auto manifold_on_scatra_cond = coup->coupling_adapter()->slave_to_master(manifold_cond);
     coup->scatra_map_extractor()->insert_cond_vector(*manifold_on_scatra_cond, *manifold_on_scatra);
   }

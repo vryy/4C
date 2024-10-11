@@ -134,10 +134,9 @@ void Solid::ModelEvaluator::Meshtying::setup()
               Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
                   *(strategy_ptr_->non_redist_slave_row_dofs()), true);
 
-          auto exporter = Teuchos::make_rcp<Epetra_Export>(
-              Xslavemod->Map(), *strategy_ptr_->non_redist_slave_row_dofs());
+          Epetra_Export exporter(Xslavemod->Map(), *strategy_ptr_->non_redist_slave_row_dofs());
 
-          int err = original_vec->Export(*Xslavemod, *exporter, Insert);
+          int err = original_vec->Export(*Xslavemod, exporter, Insert);
           if (err) FOUR_C_THROW("Import failed with err=%d", err);
 
           Xslavemod_noredist = original_vec;

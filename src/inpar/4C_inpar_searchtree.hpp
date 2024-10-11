@@ -29,7 +29,7 @@ namespace Inpar
     };
 
     /// set the searchtree parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
   }  // namespace Geo
 

@@ -42,8 +42,7 @@ NOX::Nln::LinSystem::Factory::Factory()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::build_linear_system(
     const NOX::Nln::LinSystem::LinearSystemType& linsystype, NOX::Nln::GlobalData& noxNlnGlobalData,
-    const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac,
-    const Teuchos::RCP<::NOX::Epetra::Vector>& cloneVector,
+    const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac, ::NOX::Epetra::Vector& cloneVector,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& precMat,
     const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject) const
 {
@@ -71,7 +70,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::build_li
     case NOX::Nln::LinSystem::linear_system_structure:
     {
       linSys = Teuchos::make_rcp<NOX::Nln::Solid::LinearSystem>(printParams, lsParams, linSolvers,
-          iReq, iJac, jac, iPrec, precMat, *cloneVector, scalingObject);
+          iReq, iJac, jac, iPrec, precMat, cloneVector, scalingObject);
       break;
     }
     // structural/contact case
@@ -83,7 +82,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::build_li
           noxNlnGlobalData.get_constraint_prec_interfaces();
 
       linSys = Teuchos::make_rcp<NOX::Nln::CONTACT::LinearSystem>(printParams, lsParams, linSolvers,
-          iReq, iJac, iConstr, jac, iPrec, iConstrPrec, precMat, *cloneVector, scalingObject);
+          iReq, iJac, iConstr, jac, iPrec, iConstrPrec, precMat, cloneVector, scalingObject);
       break;
     }
     case NOX::Nln::LinSystem::linear_system_structure_meshtying:
@@ -95,14 +94,14 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::build_li
 
       linSys =
           Teuchos::make_rcp<NOX::Nln::MeshTying::LinearSystem>(printParams, lsParams, linSolvers,
-              iReq, iJac, iConstr, jac, iPrec, iConstrPrec, precMat, *cloneVector, scalingObject);
+              iReq, iJac, iConstr, jac, iPrec, iConstrPrec, precMat, cloneVector, scalingObject);
       break;
     }
     // structural/cardiovascular0d case
     case NOX::Nln::LinSystem::linear_system_structure_cardiovascular0d:
     {
       linSys = Teuchos::make_rcp<NOX::Nln::Cardiovascular0D::LinearSystem>(printParams, lsParams,
-          linSolvers, iReq, iJac, jac, iPrec, precMat, *cloneVector, scalingObject);
+          linSolvers, iReq, iJac, jac, iPrec, precMat, cloneVector, scalingObject);
       break;
     }
     // structural/constraint case
@@ -114,7 +113,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::build_li
           noxNlnGlobalData.get_constraint_prec_interfaces();
 
       linSys = Teuchos::make_rcp<NOX::Nln::LAGPENCONSTRAINT::LinearSystem>(printParams, lsParams,
-          linSolvers, iReq, iJac, iConstr, jac, iPrec, iConstrPrec, precMat, *cloneVector,
+          linSolvers, iReq, iJac, iConstr, jac, iPrec, iConstrPrec, precMat, cloneVector,
           scalingObject);
 
       break;
@@ -146,7 +145,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::build_linear_syst
 {
   Factory factory;
   return factory.build_linear_system(
-      linsystype, noxNlnGlobalData, jac, cloneVector, precMat, scalingObject);
+      linsystype, noxNlnGlobalData, jac, *cloneVector, precMat, scalingObject);
 }
 
 FOUR_C_NAMESPACE_CLOSE

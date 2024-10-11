@@ -122,7 +122,7 @@ namespace TSI
     //! communicate displacement vector to thermal field to enable their
     //! visualisation on the deformed body
     void output_deformation_in_thr(Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp,
-        Teuchos::RCP<Core::FE::Discretization> structdis);
+        Core::FE::Discretization& structdis);
 
     //@}
 
@@ -148,7 +148,7 @@ namespace TSI
 
     //! velocity calculation given the displacements (like in FSI)
     Teuchos::RCP<const Core::LinAlg::Vector<double>> calc_velocity(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp);
+        const Core::LinAlg::Vector<double>& dispnp);
 
     //! displacements at time n+1 for thermal output
     Teuchos::RCP<Epetra_MultiVector> dispnp_;

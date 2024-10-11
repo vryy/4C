@@ -284,7 +284,7 @@ namespace FLD
     void init_coupling_matrices_and_rhs();
 
     /// Complete coupling matrices and rhs vectors
-    void complete_coupling_matrices_and_rhs(const Teuchos::RCP<const Epetra_Map>& fluiddofrowmap);
+    void complete_coupling_matrices_and_rhs(const Epetra_Map& fluiddofrowmap);
 
 
    public:
@@ -292,7 +292,7 @@ namespace FLD
      \brief initialize ALE state vectors
      @param dispnp and grivnp vectors w.r.t initial full dofrowmap
      */
-    void init_ale_state_vectors(const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,
+    void init_ale_state_vectors(XFEM::DiscretizationXFEM& xdiscret,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_initmap,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> gridvnp_initmap);
 

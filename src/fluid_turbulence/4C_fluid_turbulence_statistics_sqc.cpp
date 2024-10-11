@@ -908,10 +908,10 @@ void FLD::TurbulenceStatisticsSqc::do_lift_drag_time_sample(double dragforce, do
 //----------------------------------------------------------------------
 // sampling of velocity/pressure values
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp)
+void FLD::TurbulenceStatisticsSqc::do_time_sample(Core::LinAlg::Vector<double>& velnp)
 {
   // compute squared values of velocity
-  squaredvelnp_->Multiply(1.0, *velnp, *velnp, 0.0);
+  squaredvelnp_->Multiply(1.0, velnp, velnp, 0.0);
 
   //----------------------------------------------------------------------
   // increase sample counter
@@ -977,10 +977,10 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double v;
       double w;
       double p;
-      velnp->Dot(*toggleu_, &u);
-      velnp->Dot(*togglev_, &v);
-      velnp->Dot(*togglew_, &w);
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*toggleu_, &u);
+      velnp.Dot(*togglev_, &v);
+      velnp.Dot(*togglew_, &w);
+      velnp.Dot(*togglep_, &p);
 
       double uu;
       double vv;
@@ -997,19 +997,19 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double locuv = 0.0;
       double locuw = 0.0;
       double locvw = 0.0;
-      for (int rr = 1; rr < velnp->MyLength(); ++rr)
+      for (int rr = 1; rr < velnp.MyLength(); ++rr)
       {
-        locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
+        locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
       discret_->get_comm().SumAll(&locuv, &uv, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locuw, &uw, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locvw, &vw, 1);
 
@@ -1093,10 +1093,10 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double v;
       double w;
       double p;
-      velnp->Dot(*toggleu_, &u);
-      velnp->Dot(*togglev_, &v);
-      velnp->Dot(*togglew_, &w);
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*toggleu_, &u);
+      velnp.Dot(*togglev_, &v);
+      velnp.Dot(*togglew_, &w);
+      velnp.Dot(*togglep_, &p);
 
       double uu;
       double vv;
@@ -1113,19 +1113,19 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double locuv = 0.0;
       double locuw = 0.0;
       double locvw = 0.0;
-      for (int rr = 1; rr < velnp->MyLength(); ++rr)
+      for (int rr = 1; rr < velnp.MyLength(); ++rr)
       {
-        locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
+        locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
       discret_->get_comm().SumAll(&locuv, &uv, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locuw, &uw, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locvw, &vw, 1);
 
@@ -1210,10 +1210,10 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double v;
       double w;
       double p;
-      velnp->Dot(*toggleu_, &u);
-      velnp->Dot(*togglev_, &v);
-      velnp->Dot(*togglew_, &w);
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*toggleu_, &u);
+      velnp.Dot(*togglev_, &v);
+      velnp.Dot(*togglew_, &w);
+      velnp.Dot(*togglep_, &p);
 
       double uu;
       double vv;
@@ -1230,19 +1230,19 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double locuv = 0.0;
       double locuw = 0.0;
       double locvw = 0.0;
-      for (int rr = 1; rr < velnp->MyLength(); ++rr)
+      for (int rr = 1; rr < velnp.MyLength(); ++rr)
       {
-        locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
+        locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
       discret_->get_comm().SumAll(&locuv, &uv, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locuw, &uw, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locvw, &vw, 1);
 
@@ -1327,10 +1327,10 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double v;
       double w;
       double p;
-      velnp->Dot(*toggleu_, &u);
-      velnp->Dot(*togglev_, &v);
-      velnp->Dot(*togglew_, &w);
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*toggleu_, &u);
+      velnp.Dot(*togglev_, &v);
+      velnp.Dot(*togglew_, &w);
+      velnp.Dot(*togglep_, &p);
 
       double uu;
       double vv;
@@ -1347,19 +1347,19 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double locuv = 0.0;
       double locuw = 0.0;
       double locvw = 0.0;
-      for (int rr = 1; rr < velnp->MyLength(); ++rr)
+      for (int rr = 1; rr < velnp.MyLength(); ++rr)
       {
-        locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
+        locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
       discret_->get_comm().SumAll(&locuv, &uv, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locuw, &uw, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locvw, &vw, 1);
 
@@ -1443,10 +1443,10 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double v;
       double w;
       double p;
-      velnp->Dot(*toggleu_, &u);
-      velnp->Dot(*togglev_, &v);
-      velnp->Dot(*togglew_, &w);
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*toggleu_, &u);
+      velnp.Dot(*togglev_, &v);
+      velnp.Dot(*togglew_, &w);
+      velnp.Dot(*togglep_, &p);
 
       double uu;
       double vv;
@@ -1463,19 +1463,19 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double locuv = 0.0;
       double locuw = 0.0;
       double locvw = 0.0;
-      for (int rr = 1; rr < velnp->MyLength(); ++rr)
+      for (int rr = 1; rr < velnp.MyLength(); ++rr)
       {
-        locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
+        locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
       discret_->get_comm().SumAll(&locuv, &uv, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locuw, &uw, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locvw, &vw, 1);
 
@@ -1559,10 +1559,10 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double v;
       double w;
       double p;
-      velnp->Dot(*toggleu_, &u);
-      velnp->Dot(*togglev_, &v);
-      velnp->Dot(*togglew_, &w);
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*toggleu_, &u);
+      velnp.Dot(*togglev_, &v);
+      velnp.Dot(*togglew_, &w);
+      velnp.Dot(*togglep_, &p);
 
       double uu;
       double vv;
@@ -1579,19 +1579,19 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double locuv = 0.0;
       double locuw = 0.0;
       double locvw = 0.0;
-      for (int rr = 1; rr < velnp->MyLength(); ++rr)
+      for (int rr = 1; rr < velnp.MyLength(); ++rr)
       {
-        locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
+        locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
       discret_->get_comm().SumAll(&locuv, &uv, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locuw, &uw, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locvw, &vw, 1);
 
@@ -1675,10 +1675,10 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double v;
       double w;
       double p;
-      velnp->Dot(*toggleu_, &u);
-      velnp->Dot(*togglev_, &v);
-      velnp->Dot(*togglew_, &w);
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*toggleu_, &u);
+      velnp.Dot(*togglev_, &v);
+      velnp.Dot(*togglew_, &w);
+      velnp.Dot(*togglep_, &p);
 
       double uu;
       double vv;
@@ -1695,19 +1695,19 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double locuv = 0.0;
       double locuw = 0.0;
       double locvw = 0.0;
-      for (int rr = 1; rr < velnp->MyLength(); ++rr)
+      for (int rr = 1; rr < velnp.MyLength(); ++rr)
       {
-        locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
+        locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
       discret_->get_comm().SumAll(&locuv, &uv, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locuw, &uw, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locvw, &vw, 1);
 
@@ -1791,10 +1791,10 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double v;
       double w;
       double p;
-      velnp->Dot(*toggleu_, &u);
-      velnp->Dot(*togglev_, &v);
-      velnp->Dot(*togglew_, &w);
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*toggleu_, &u);
+      velnp.Dot(*togglev_, &v);
+      velnp.Dot(*togglew_, &w);
+      velnp.Dot(*togglep_, &p);
 
       double uu;
       double vv;
@@ -1811,19 +1811,19 @@ void FLD::TurbulenceStatisticsSqc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double locuv = 0.0;
       double locuw = 0.0;
       double locvw = 0.0;
-      for (int rr = 1; rr < velnp->MyLength(); ++rr)
+      for (int rr = 1; rr < velnp.MyLength(); ++rr)
       {
-        locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
+        locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
       }
       discret_->get_comm().SumAll(&locuv, &uv, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locuw, &uw, 1);
-      for (int rr = 2; rr < velnp->MyLength(); ++rr)
+      for (int rr = 2; rr < velnp.MyLength(); ++rr)
       {
-        locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
+        locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
       }
       discret_->get_comm().SumAll(&locvw, &vw, 1);
 

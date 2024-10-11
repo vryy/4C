@@ -142,8 +142,7 @@ namespace UTILS
     void evaluate_d_struct_dp(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
-            sysmat  ///< Cardiovascular0D offdiagonal matrix dfext/dp
+        Core::LinAlg::SparseOperator& sysmat  ///< Cardiovascular0D offdiagonal matrix dfext/dp
     );
 
    protected:

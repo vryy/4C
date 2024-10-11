@@ -674,10 +674,9 @@ void Adapter::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
   // because a few parameters are overwritten
   // ---------------------------------------------------------------------------
   // nox parameter list
-  Teuchos::RCP<Teuchos::ParameterList> snox =
-      Teuchos::make_rcp<Teuchos::ParameterList>(problem->structural_nox_params());
+  Teuchos::ParameterList snox(problem->structural_nox_params());
   Teuchos::ParameterList& nox = xparams.sublist("NOX");
-  nox = *snox;
+  nox = snox;
 
   /* overrule certain parameters
    *

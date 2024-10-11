@@ -549,7 +549,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::update_residual(
 
   for (mapiter = coup_map_3d_.begin(); mapiter != coup_map_3d_.end(); mapiter++)
   {
-    mapiter->second->FluidCouplingBc::update_residual(residual);
+    mapiter->second->FluidCouplingBc::update_residual(*residual);
   }
 
   return;
@@ -575,7 +575,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::evaluate_dirichlet(
 
   for (mapiter = coup_map_3d_.begin(); mapiter != coup_map_3d_.end(); mapiter++)
   {
-    mapiter->second->FluidCouplingBc::evaluate_dirichlet(velnp, condmap, time);
+    mapiter->second->FluidCouplingBc::evaluate_dirichlet(*velnp, condmap, time);
   }
 
   return;
@@ -1119,10 +1119,9 @@ void FLD::UTILS::FluidCouplingBc::inflow_boundary(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*!
  */
-void FLD::UTILS::FluidCouplingBc::update_residual(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual)
+void FLD::UTILS::FluidCouplingBc::update_residual(Core::LinAlg::Vector<double>& residual)
 {
-  residual->Update(1.0, *couplingbc_, 1.0);
+  residual.Update(1.0, *couplingbc_, 1.0);
 }
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -1137,7 +1136,7 @@ void FLD::UTILS::FluidCouplingBc::update_residual(
 /*!
  */
 void FLD::UTILS::FluidCouplingBc::evaluate_dirichlet(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp, const Epetra_Map& condmap, double time)
+    Core::LinAlg::Vector<double>& velnp, const Epetra_Map& condmap, double time)
 {
   return;
   std::cout << "Evaluating Dirich!" << std::endl;
@@ -1211,15 +1210,15 @@ void FLD::UTILS::FluidCouplingBc::evaluate_dirichlet(
         {
           int lid = discret_3d_->dof_row_map()->LID(dof_gid);
 
-          double val = (*velnp)[lid] * velocity_;
+          double val = (velnp)[lid] * velocity_;
           //        std::cout<<"Vel["<<gid<<"]: "<<(*velnp) [lid]<<std::endl;
-          if ((*velnp)[lid] > 1.0)
+          if ((velnp)[lid] > 1.0)
           {
             FOUR_C_THROW("coupled 3D/Reduced-D must have Dirichlet BC = 1");
             exit(1);
           }
-          std::cout << "[" << dof_gid << "]\t|" << val << "\t<-<" << (*velnp)[lid] << "|\t";
-          velnp->ReplaceGlobalValues(1, &val, &dof_gid);
+          std::cout << "[" << dof_gid << "]\t|" << val << "\t<-<" << (velnp)[lid] << "|\t";
+          velnp.ReplaceGlobalValues(1, &val, &dof_gid);
         }
       }
     }

@@ -30,9 +30,9 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string condname)
     : timeparams_(prbdyn)
 {
-  Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluid = Teuchos::make_rcp<Adapter::FluidBaseAlgorithm>(
+  Adapter::FluidBaseAlgorithm fluid(
       prbdyn, Global::Problem::instance()->fluid_dynamic_params(), "fluid", true, false);
-  fluid_ = fluid->fluid_field();
+  fluid_ = fluid.fluid_field();
   Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::make_rcp<Adapter::AleBaseAlgorithm>(
       prbdyn, Global::Problem::instance()->get_dis("ale"));
   ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleFluidWrapper>(ale->ale_field(), true);
@@ -121,7 +121,7 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
   // initializing the fluid is done later as for xfluids the first cut is done
   // there (coupfa_ cannot be build anymore!!!)
   fluid_field()->init();
-  fluid->set_initial_flow_field(
+  fluid.set_initial_flow_field(
       Global::Problem::instance()->fluid_dynamic_params());  // call from base algorithm
 
 

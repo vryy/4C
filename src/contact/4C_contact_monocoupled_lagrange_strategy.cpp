@@ -190,16 +190,15 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
 
     //---------------------------------------------------------- SECOND LINE
     // km: add T(mhataam)*kan
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kmmod =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
-    kmmod->add(*km, false, 1.0, 1.0);
+    Core::LinAlg::SparseMatrix kmmod(*gmdofrowmap_, 100);
+    kmmod.add(*km, false, 1.0, 1.0);
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kmadd =
           Core::LinAlg::matrix_multiply(*mhataam_, true, *ka, false, false, false, true);
-      kmmod->add(*kmadd, false, 1.0, 1.0);
+      kmmod.add(*kmadd, false, 1.0, 1.0);
     }
-    kmmod->complete(kteff->domain_map(), km->row_map());
+    kmmod.complete(kteff->domain_map(), km->row_map());
 
     //----------------------------------------------------------- THIRD LINE
     //------------------- FOR 3D QUADRATIC CASE ----------------------------
@@ -208,16 +207,15 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     // else!!!
 
     // kin: subtract T(dhat)*kan --
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kimod =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gidofs, 100);
-    kimod->add(*ki, false, 1.0, 1.0);
+    Core::LinAlg::SparseMatrix kimod(*gidofs, 100);
+    kimod.add(*ki, false, 1.0, 1.0);
     if (aset)
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix> kiadd =
           Core::LinAlg::matrix_multiply(*dhat_, true, *ka, false, false, false, true);
-      kimod->add(*kiadd, false, -1.0, 1.0);
+      kimod.add(*kiadd, false, -1.0, 1.0);
     }
-    kimod->complete(kteff->domain_map(), ki->row_map());
+    kimod.complete(kteff->domain_map(), ki->row_map());
 
     //---------------------------------------------------------- FOURTH LINE
     // nothing to do
@@ -258,10 +256,10 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     kteffnew->add(*kn, false, 1.0, 1.0);
     //---------------------------------------------------------- SECOND LINE
     // add m submatrices to kteffnew
-    kteffnew->add(*kmmod, false, 1.0, 1.0);
+    kteffnew->add(kmmod, false, 1.0, 1.0);
     //----------------------------------------------------------- THIRD LINE
     // add i submatrices to kteffnew
-    if (iset) kteffnew->add(*kimod, false, 1.0, 1.0);
+    if (iset) kteffnew->add(kimod, false, 1.0, 1.0);
 
     //---------------------------------------------------------- FOURTH LINE
     // for off diag blocks this line is empty (weighted normal = f(disp))
@@ -330,10 +328,9 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
     Core::LinAlg::split_matrix2x2(
         invd_, gactivedofs_, tempmap, gactivedofs_, tempmap, invda, tempmtx1, tempmtx2, tempmtx3);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> invdmod =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 10);
-    invdmod->add(*invda, false, 1.0, 1.0);
-    invdmod->complete();
+    Core::LinAlg::SparseMatrix invdmod(*gsdofrowmap_, 10);
+    invdmod.add(*invda, false, 1.0, 1.0);
+    invdmod.complete();
 
     std::map<int, Teuchos::RCP<Core::LinAlg::SparseOperator>>::iterator matiter;
     std::map<int, Teuchos::RCP<Core::LinAlg::Vector<double>>>::iterator inciter;
@@ -385,19 +382,16 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
       }
       else
       {
-        Teuchos::RCP<Core::LinAlg::Vector<double>> zfluid =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(z_->Map(), true);
+        Core::LinAlg::Vector<double> zfluid(z_->Map(), true);
 
-        Teuchos::RCP<Core::LinAlg::Vector<double>> mod =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-        matiter->second->multiply(false, *inciter->second, *mod);
-        zfluid->Update(-1.0, *mod, 0.0);
-        Teuchos::RCP<Core::LinAlg::Vector<double>> zcopy =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*zfluid);
-        invdmod->multiply(true, *zcopy, *zfluid);
-        zfluid->Scale(1 / (1 - alphaf_));
+        Core::LinAlg::Vector<double> mod(*gsdofrowmap_);
+        matiter->second->multiply(false, *inciter->second, mod);
+        zfluid.Update(-1.0, mod, 0.0);
+        Core::LinAlg::Vector<double> zcopy(zfluid);
+        invdmod.multiply(true, zcopy, zfluid);
+        zfluid.Scale(1 / (1 - alphaf_));
 
-        z_->Update(1.0, *zfluid, 1.0);  // Add Offdiag  -  Coupling Contribution to LM!!!
+        z_->Update(1.0, zfluid, 1.0);  // Add Offdiag  -  Coupling Contribution to LM!!!
       }
     }
   }

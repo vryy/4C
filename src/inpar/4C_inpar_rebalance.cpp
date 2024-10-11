@@ -15,12 +15,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::Rebalance::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Rebalance::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& meshpartitioning = list->sublist("MESH PARTITIONING", false, "");
+  Teuchos::ParameterList& meshpartitioning = list.sublist("MESH PARTITIONING", false, "");
 
   setStringToIntegralParameter<Core::Rebalance::RebalanceType>("METHOD", "hypergraph",
       "Type of rebalance/partition algorithm to be used for decomposing the entire mesh into "

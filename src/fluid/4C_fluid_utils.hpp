@@ -354,7 +354,7 @@ namespace FLD
      private:
       /// return stress vector
       Teuchos::RCP<Core::LinAlg::Vector<double>> calc_stresses(
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual);
+          const Core::LinAlg::Vector<double>& trueresidual);
 
       /// integrate shape functions at nodes marked by condition
       Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape(std::string condname);
@@ -365,15 +365,15 @@ namespace FLD
 
       /// smooth stress/wss via ML-aggregation
       Teuchos::RCP<Core::LinAlg::Vector<double>> aggreagte_stresses(
-          Teuchos::RCP<Core::LinAlg::Vector<double>> wss);
+          Core::LinAlg::Vector<double>& wss);
 
       /// time average stresses
       Teuchos::RCP<Core::LinAlg::Vector<double>> time_average_stresses(
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> stresses, double dt);
+          const Core::LinAlg::Vector<double>& stresses, double dt);
 
       /// time average wss
       Teuchos::RCP<Core::LinAlg::Vector<double>> time_average_wss(
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> wss, double dt);
+          const Core::LinAlg::Vector<double>& wss, double dt);
 
       /// Calculate Aggregation Matrix
       void calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat);
@@ -445,7 +445,7 @@ namespace FLD
      *                     formulation is used.
      */
     void lift_drag(const Teuchos::RCP<const Core::FE::Discretization> dis,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual,
+        const Core::LinAlg::Vector<double>& trueresidual,
         const Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp, const int ndim,
         Teuchos::RCP<std::map<int, std::vector<double>>>& liftdragvals, bool alefluid);
 
@@ -545,8 +545,7 @@ namespace FLD
     \brief Project velocity gradient, depends on time integrator used
 
     */
-    Teuchos::RCP<Epetra_MultiVector> project_gradient(
-        Teuchos::RCP<Core::FE::Discretization> discret,
+    Teuchos::RCP<Epetra_MultiVector> project_gradient(Core::FE::Discretization& discret,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> vel, bool alefluid);
 
   }  // namespace UTILS

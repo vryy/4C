@@ -121,32 +121,30 @@ void XFEM::DiscretizationXFEM::store_initial_dofs(const std::vector<int>& nds)
  * with all active dofs (public)                                       ager 11/14|
  *  *---------------------------------------------------------------------------*/
 void XFEM::DiscretizationXFEM::export_initialto_active_vector(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& initialvec,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& activevec)
+    const Core::LinAlg::Vector<double>& initialvec, Core::LinAlg::Vector<double>& activevec)
 {
   // Is the discretization initialized?
   initialized();
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fullvec =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*initialpermdofrowmap_, true);
+  Core::LinAlg::Vector<double> fullvec(*initialpermdofrowmap_, true);
 
   {  // Export manually as target.Map().UniqueGIDs() gives = true, although this shouldn't be the
      // case
     //(UniqueGIDs() just checks if gid occurs on more procs!)
-    if (initialvec->Comm().NumProc() == 1 &&
-        activevec->Comm().NumProc() == 1)  // for one proc , Export works fine!
+    if (initialvec.Comm().NumProc() == 1 &&
+        activevec.Comm().NumProc() == 1)  // for one proc , Export works fine!
     {
-      Core::LinAlg::export_to(*initialvec, *fullvec);
+      Core::LinAlg::export_to(initialvec, fullvec);
     }
     else
     {
-      Epetra_Import importer(fullvec->Map(), initialvec->Map());
-      int err = fullvec->Import(*initialvec, importer, Insert);
+      Epetra_Import importer(fullvec.Map(), initialvec.Map());
+      int err = fullvec.Import(initialvec, importer, Insert);
       if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
     }
   }
-  fullvec->ReplaceMap(*initialfulldofrowmap_);  /// replace |1 2 3 4|1 2 3 4| -> |1 2 3 4|5 6 7 8|
-  Core::LinAlg::export_to(*fullvec, *activevec);
+  fullvec.ReplaceMap(*initialfulldofrowmap_);  /// replace |1 2 3 4|1 2 3 4| -> |1 2 3 4|5 6 7 8|
+  Core::LinAlg::export_to(fullvec, activevec);
 }
 
 /*------------------------------------------------------------------------------*
@@ -154,13 +152,12 @@ void XFEM::DiscretizationXFEM::export_initialto_active_vector(
  * with all active dofs (public)                                       ager 11/14|
  *  *---------------------------------------------------------------------------*/
 void XFEM::DiscretizationXFEM::export_activeto_initial_vector(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> activevec,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> initialvec)
+    const Core::LinAlg::Vector<double>& activevec, Core::LinAlg::Vector<double>& initialvec)
 {
   // Is the discretization initialized?
   initialized();
 
-  Core::LinAlg::export_to(*activevec, *initialvec);
+  Core::LinAlg::export_to(activevec, initialvec);
 }
 
 /*----------------------------------------------------------------------*

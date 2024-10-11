@@ -50,14 +50,12 @@ namespace XFEM
 
     void set_coupling_dofsets() override;
 
-    bool have_matching_nodes(const Teuchos::RCP<Core::FE::Discretization>& dis_A,
-        const Teuchos::RCP<Core::FE::Discretization>& dis_B);
+    bool have_matching_nodes(Core::FE::Discretization& dis_A, Core::FE::Discretization& dis_B);
 
     void map_cutter_to_bg_vector(const Teuchos::RCP<Core::FE::Discretization>& source_dis,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& source_vec_dofbased, const int source_nds,
+        Core::LinAlg::Vector<double>& source_vec_dofbased, const int source_nds,
         const Teuchos::RCP<Core::FE::Discretization>& target_dis,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& target_vec_dofbased,
-        const int target_nds);
+        Core::LinAlg::Vector<double>& target_vec_dofbased, const int target_nds);
 
     // TODO: sort the functions...
 
@@ -442,7 +440,7 @@ namespace XFEM
         Core::LinAlg::SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
         Core::LinAlg::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
         XFEM::UTILS::extract_quantity_at_element(esmoothedgradphi_test, actele,
-            gradphinp_smoothed_node_col_, cutter_dis_, cutter_nds_phi_, nsd_);
+            *gradphinp_smoothed_node_col_, *cutter_dis_, cutter_nds_phi_, nsd_);
 
         // Gradients @ GaussPoints
         gradphi.multiply(esmoothedgradphi, funct);
@@ -452,7 +450,7 @@ namespace XFEM
         Core::LinAlg::SerialDenseMatrix ephi_test(nen, 1);
         Core::LinAlg::Matrix<nen, 1> ephi(ephi_test, View);
         XFEM::UTILS::extract_quantity_at_element(ephi_test, actele,
-            cutter_phinp_col_->get_ptr_of_Epetra_Vector(), cutter_dis_, cutter_nds_phi_, 1);
+            *cutter_phinp_col_->get_ptr_of_Epetra_Vector(), *cutter_dis_, cutter_nds_phi_, 1);
 
         // Gradients @ GaussPoints
         gradphi.multiply(derxy, ephi);
@@ -463,7 +461,7 @@ namespace XFEM
         Core::LinAlg::SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
         Core::LinAlg::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
         XFEM::UTILS::extract_quantity_at_element(esmoothedgradphi_test, actele,
-            gradphinp_smoothed_node_col_, cutter_dis_, cutter_nds_phi_, nsd_);
+            *gradphinp_smoothed_node_col_, *cutter_dis_, cutter_nds_phi_, nsd_);
 
         // Gradients @ GaussPoints
         gradphi.multiply(esmoothedgradphi, funct);

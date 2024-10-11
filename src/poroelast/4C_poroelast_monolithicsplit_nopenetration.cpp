@@ -125,29 +125,26 @@ void PoroElast::MonolithicSplitNoPenetration::setup_vector(Core::LinAlg::Vector<
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcv =
       fluid_field()->interface()->extract_fsi_cond_vector(*fv);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Dlam = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-      *fluid_field()->interface()->fsi_cond_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> couprhs =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *fluid_field()->interface()->fsi_cond_map(), true);
+  Core::LinAlg::Vector<double> Dlam(*fluid_field()->interface()->fsi_cond_map(), true);
+  Core::LinAlg::Vector<double> couprhs(*fluid_field()->interface()->fsi_cond_map(), true);
   if (k_dn_ != Teuchos::null)
   {
     double stiparam = structure_field()->tim_int_param();
 
-    k_dn_->multiply(false, *lambda_, *Dlam);  // D(n)*lambda(n)
+    k_dn_->multiply(false, *lambda_, Dlam);  // D(n)*lambda(n)
 
-    Dlam->Scale(stiparam);  //*(1-b)
+    Dlam.Scale(stiparam);  //*(1-b)
   }
-  Dlam->Update(-1.0, *fcv, 1.0);
-  k_lambdainv_d_->multiply(false, *Dlam, *couprhs);
+  Dlam.Update(-1.0, *fcv, 1.0);
+  k_lambdainv_d_->multiply(false, Dlam, couprhs);
 
-  couprhs->Update(1.0, *nopenetration_rhs_, 1.0);
+  couprhs.Update(1.0, *nopenetration_rhs_, 1.0);
 
   // std::cout << "nopenetration_rhs_: " << *nopenetration_rhs_ << std::endl;
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fullcouprhs =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluid_field()->dof_row_map(), true);
-  Core::LinAlg::export_to(*couprhs, *fullcouprhs);
+  Core::LinAlg::export_to(couprhs, *fullcouprhs);
   extractor()->insert_vector(*fullcouprhs, 1, f);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fullfov =
@@ -223,27 +220,23 @@ void PoroElast::MonolithicSplitNoPenetration::recover_lagrange_multiplier_after_
    *                          - (1-b)/b * invD^{n+1} * D^n * \lambda^n
    */
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tmplambda =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *fluid_field()->interface()->fsi_cond_map(), true);
+  Core::LinAlg::Vector<double> tmplambda(*fluid_field()->interface()->fsi_cond_map(), true);
 
-  tmplambda->Update(1.0, *cfsgiddi, 0.0);
-  tmplambda->Update(1.0, *fgiddi, 1.0);
-  tmplambda->Update(1.0, *cfsggddg, 1.0);
-  tmplambda->Update(1.0, *fggddg, 1.0);
-  tmplambda->Update(-1.0, *rhs_fgcur_, 1.0);
+  tmplambda.Update(1.0, *cfsgiddi, 0.0);
+  tmplambda.Update(1.0, *fgiddi, 1.0);
+  tmplambda.Update(1.0, *cfsggddg, 1.0);
+  tmplambda.Update(1.0, *fggddg, 1.0);
+  tmplambda.Update(-1.0, *rhs_fgcur_, 1.0);
 
   if (k_dn_ != Teuchos::null)  // for first timestep lambda = 0 !
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> Dlam =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-            *fluid_field()->interface()->fsi_cond_map(), true);
-    k_dn_->Apply(*lambda_, *Dlam);  // D(n)*lambda(n)
-    Dlam->Scale(stiparam);          //*(1-b)
-    tmplambda->Update(1.0, *Dlam, 1.0);
+    Core::LinAlg::Vector<double> Dlam(*fluid_field()->interface()->fsi_cond_map(), true);
+    k_dn_->Apply(*lambda_, Dlam);  // D(n)*lambda(n)
+    Dlam.Scale(stiparam);          //*(1-b)
+    tmplambda.Update(1.0, Dlam, 1.0);
   }
 
-  k_inv_d_->Apply(*tmplambda, *lambdanp_);
+  k_inv_d_->Apply(tmplambda, *lambdanp_);
   lambdanp_->Scale(-1 / (1.0 - stiparam));  //*-1/b
 }
 
@@ -720,7 +713,7 @@ void PoroElast::MonolithicSplitNoPenetration::build_convergence_norms()
 {
   Monolithic::build_convergence_norms();
 
-  normrhs_nopenetration_ = UTILS::calculate_vector_norm(vectornormfres_, nopenetration_rhs_);
+  normrhs_nopenetration_ = UTILS::calculate_vector_norm(vectornormfres_, *nopenetration_rhs_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

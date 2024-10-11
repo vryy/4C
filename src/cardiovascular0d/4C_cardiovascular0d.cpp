@@ -259,7 +259,7 @@ void UTILS::Cardiovascular0D::evaluate(Teuchos::ParameterList& params,
 
 
 void UTILS::Cardiovascular0D::evaluate_d_struct_dp(
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat)
+    Teuchos::ParameterList& params, Core::LinAlg::SparseOperator& sysmat)
 {
   // get structural time-integrator dependent values
   double sc_strtimint = params.get("scale_timint", 1.0);
@@ -487,7 +487,7 @@ void UTILS::Cardiovascular0D::evaluate_d_struct_dp(
       }
 
       elevector.scale(sc_strtimint);
-      sysmat->assemble(eid, lmstride, elevector, lm, lmowner, colvec);
+      sysmat.assemble(eid, lmstride, elevector, lm, lmowner, colvec);
     }
   }
 

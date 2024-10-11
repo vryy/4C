@@ -114,7 +114,7 @@ void FLD::UTILS::FluidImpedanceWrapper::add_impedance_bc_to_residual_and_sysmat(
     mapiter->second->FluidImpedanceBc::flow_rate_calculation(mapiter->first);
     // calc pressure and traction vector and appliy to fluid residual and sysmat
     mapiter->second->FluidImpedanceBc::calculate_impedance_tractions_and_update_residual_and_sysmat(
-        residual, sysmat, dta, time, mapiter->first);
+        *residual, *sysmat, dta, time, mapiter->first);
   }
   return;
 }
@@ -331,9 +331,8 @@ void FLD::UTILS::FluidImpedanceBc::flow_rate_calculation(const int condid)
  |  Apply Impedance to outflow boundary                      Thon 07/16 |
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_residual_and_sysmat(
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat, const double dta, const double time,
-    const int condid)
+    Core::LinAlg::Vector<double>& residual, Core::LinAlg::SparseOperator& sysmat, const double dta,
+    const double time, const int condid)
 {
   // ---------------------------------------------------------------------//
   // ---------------------------------------------------------------------//
@@ -415,10 +414,9 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
 
     // now move dQdu to one proc
     Teuchos::RCP<Epetra_Map> dofrowmapred = Core::LinAlg::allreduce_e_map(*dofrowmap);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dQdu_full =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmapred, true);
+    Core::LinAlg::Vector<double> dQdu_full(*dofrowmapred, true);
 
-    Core::LinAlg::export_to(*dQdu, *dQdu_full);  //!!! add off proc components
+    Core::LinAlg::export_to(*dQdu, dQdu_full);  //!!! add off proc components
 
 
     // calculate d wk/du = d/du ( (v,n)_gamma n,phi)_Gamma were (d wk/du)_i,j= timefacs*
@@ -434,10 +432,10 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
       const double val = (*dQdu)[lid];
       if (abs(val) > 1e-15)
       {
-        for (int lid2 = 0; lid2 < dQdu_full->MyLength(); lid2++)
+        for (int lid2 = 0; lid2 < dQdu_full.MyLength(); lid2++)
         {
           const int gid2 = dofrowmapred->GID(lid2);
-          const double val2 = (*dQdu_full)[lid2];
+          const double val2 = (dQdu_full)[lid2];
           const double actmatentry = tfaclhs * val * val2;
           if (abs(actmatentry) > 1e-15) impedancetbcsysmat_->assemble(actmatentry, gid, gid2);
         }
@@ -461,10 +459,10 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
   // ---------------------------------------------------------------------//
 
   // Apply traction vector to fluid residual
-  residual->Update(1.0, *impedancetbc_, 1.0);
+  residual.Update(1.0, *impedancetbc_, 1.0);
 
   // Add linerisation to fluid sysmat
-  sysmat->add(*impedancetbcsysmat_, false, Q_np_fac, 1.0);
+  sysmat.add(*impedancetbcsysmat_, false, Q_np_fac, 1.0);
 
   return;
 }  // FluidImplicitTimeInt::outflow_boundary

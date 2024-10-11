@@ -211,7 +211,7 @@ namespace FLD
       }
 
   */
-    void get_filtered_velocity(Teuchos::RCP<Epetra_MultiVector> velocity)
+    void get_filtered_velocity(Epetra_MultiVector& velocity)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
@@ -219,7 +219,7 @@ namespace FLD
         for (int i = 0; i < 3; ++i)
         {
           double val = (*((*col_filtered_vel_)(i)))[nid];
-          int err = ((*velocity)(i))->ReplaceMyValues(1, &val, &nid);
+          int err = ((velocity)(i))->ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
@@ -228,7 +228,7 @@ namespace FLD
 
 
 
-    void get_filtered_dens_velocity(Teuchos::RCP<Epetra_MultiVector> densvelocity)
+    void get_filtered_dens_velocity(Epetra_MultiVector& densvelocity)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
@@ -236,14 +236,14 @@ namespace FLD
         for (int i = 0; i < 3; ++i)
         {
           double val = (*((*col_filtered_dens_vel_)(i)))[nid];
-          int err = ((*densvelocity)(i))->ReplaceMyValues(1, &val, &nid);
+          int err = ((densvelocity)(i))->ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
     }
 
-    void get_filtered_dens_velocity_temp(Teuchos::RCP<Epetra_MultiVector> densvelocity)
+    void get_filtered_dens_velocity_temp(Epetra_MultiVector& densvelocity)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
@@ -251,14 +251,14 @@ namespace FLD
         for (int i = 0; i < 3; ++i)
         {
           double val = (*((*col_filtered_dens_vel_temp_)(i)))[nid];
-          int err = ((*densvelocity)(i))->ReplaceMyValues(1, &val, &nid);
+          int err = ((densvelocity)(i))->ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
     }
 
-    void get_filtered_dens_rateofstrain_temp(Teuchos::RCP<Epetra_MultiVector> densvelocity)
+    void get_filtered_dens_rateofstrain_temp(Epetra_MultiVector& densvelocity)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
@@ -266,14 +266,14 @@ namespace FLD
         for (int i = 0; i < 3; ++i)
         {
           double val = (*((*col_filtered_dens_rateofstrain_temp_)(i)))[nid];
-          int err = ((*densvelocity)(i))->ReplaceMyValues(1, &val, &nid);
+          int err = ((densvelocity)(i))->ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
     }
 
-    void get_filtered_reynolds_stress(Teuchos::RCP<Epetra_MultiVector> reystr)
+    void get_filtered_reynolds_stress(Epetra_MultiVector& reystr)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
@@ -284,7 +284,7 @@ namespace FLD
           {
             const int ij = 3 * i + j;
             double val = (*((*col_filtered_reynoldsstress_)(ij)))[nid];
-            int err = ((*reystr)(ij))->ReplaceMyValues(1, &val, &nid);
+            int err = ((reystr)(ij))->ReplaceMyValues(1, &val, &nid);
             if (err != 0) FOUR_C_THROW("dof not on proc");
           }
         }
@@ -292,7 +292,7 @@ namespace FLD
       return;
     }
 
-    void get_filtered_modeled_subgrid_stress(Teuchos::RCP<Epetra_MultiVector> mosubstr)
+    void get_filtered_modeled_subgrid_stress(Epetra_MultiVector& mosubstr)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
@@ -303,7 +303,7 @@ namespace FLD
           {
             const int ij = 3 * i + j;
             double val = (*((*col_filtered_modeled_subgrid_stress_)(ij)))[nid];
-            int err = ((*mosubstr)(ij))->ReplaceMyValues(1, &val, &nid);
+            int err = ((mosubstr)(ij))->ReplaceMyValues(1, &val, &nid);
             if (err != 0) FOUR_C_THROW("dof not on proc");
           }
         }
@@ -313,7 +313,7 @@ namespace FLD
 
 
 
-    void get_filtered_vreman_strainrate(Teuchos::RCP<Epetra_MultiVector> strainr)
+    void get_filtered_vreman_strainrate(Epetra_MultiVector& strainr)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
@@ -324,7 +324,7 @@ namespace FLD
           {
             const int ij = 3 * i + j;
             double val = (*((*col_filtered_strainrate_)(ij)))[nid];
-            int err = ((*strainr)(ij))->ReplaceMyValues(1, &val, &nid);
+            int err = ((strainr)(ij))->ReplaceMyValues(1, &val, &nid);
             if (err != 0) FOUR_C_THROW("dof not on proc");
           }
         }
@@ -332,7 +332,7 @@ namespace FLD
       return;
     }
 
-    void get_filtered_vreman_alphaij(Teuchos::RCP<Epetra_MultiVector> alphij)
+    void get_filtered_vreman_alphaij(Epetra_MultiVector& alphij)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
@@ -343,14 +343,14 @@ namespace FLD
           {
             const int ij = 3 * i + j;
             double val = (*((*col_filtered_alphaij_)(ij)))[nid];
-            int err = ((*alphij)(ij))->ReplaceMyValues(1, &val, &nid);
+            int err = ((alphij)(ij))->ReplaceMyValues(1, &val, &nid);
             if (err != 0) FOUR_C_THROW("dof not on proc");
           }
         }
       }
       return;
     }
-    void get_filtered_vreman_alphaijsc(Teuchos::RCP<Epetra_MultiVector> alphijsc)
+    void get_filtered_vreman_alphaijsc(Epetra_MultiVector& alphijsc)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
@@ -361,7 +361,7 @@ namespace FLD
           {
             const int ij = 3 * i + j;
             double val = (*((*col_filtered_alphaijsc_)(ij)))[nid];
-            int err = ((*alphijsc)(ij))->ReplaceMyValues(1, &val, &nid);
+            int err = ((alphijsc)(ij))->ReplaceMyValues(1, &val, &nid);
             if (err != 0) FOUR_C_THROW("dof not on proc");
           }
         }
@@ -370,55 +370,55 @@ namespace FLD
     }
 
 
-    void get_expression(Teuchos::RCP<Core::LinAlg::Vector<double>> expr)
+    void get_expression(Core::LinAlg::Vector<double>& expr)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         double val = (*col_filtered_expression_)[nid];
-        int err = expr->ReplaceMyValues(1, &val, &nid);
+        int err = expr.ReplaceMyValues(1, &val, &nid);
         if (err != 0) FOUR_C_THROW("dof not on proc");
       }
       return;
     }
 
 
-    void get_density(Teuchos::RCP<Core::LinAlg::Vector<double>> dens)
+    void get_density(Core::LinAlg::Vector<double>& dens)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         {
           double val = (*col_filtered_dens_)[nid];
-          int err = dens->ReplaceMyValues(1, &val, &nid);
+          int err = dens.ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
     }
 
-    void get_temp(Teuchos::RCP<Core::LinAlg::Vector<double>> dens)
+    void get_temp(Core::LinAlg::Vector<double>& dens)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         {
           double val = (*col_filtered_temp_)[nid];
-          int err = dens->ReplaceMyValues(1, &val, &nid);
+          int err = dens.ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
     }
 
-    void get_dens_temp(Teuchos::RCP<Core::LinAlg::Vector<double>> dens)
+    void get_dens_temp(Core::LinAlg::Vector<double>& dens)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         {
           double val = (*col_filtered_dens_temp_)[nid];
-          int err = dens->ReplaceMyValues(1, &val, &nid);
+          int err = dens.ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
@@ -426,28 +426,28 @@ namespace FLD
     }
 
 
-    void get_density_strainrate(Teuchos::RCP<Core::LinAlg::Vector<double>> densstrainr)
+    void get_density_strainrate(Core::LinAlg::Vector<double>& densstrainr)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         {
           double val = (*col_filtered_dens_strainrate_)[nid];
-          int err = densstrainr->ReplaceMyValues(1, &val, &nid);
+          int err = densstrainr.ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
     }
 
-    void get_alpha2(Teuchos::RCP<Core::LinAlg::Vector<double>> alph2)
+    void get_alpha2(Core::LinAlg::Vector<double>& alph2)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         {
           double val = (*col_filtered_alpha2_)[nid];
-          int err = alph2->ReplaceMyValues(1, &val, &nid);
+          int err = alph2.ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
@@ -456,7 +456,7 @@ namespace FLD
 
 
 
-    void get_fine_scale_velocity(Teuchos::RCP<Epetra_MultiVector> velocity)
+    void get_fine_scale_velocity(Epetra_MultiVector& velocity)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
@@ -464,7 +464,7 @@ namespace FLD
         for (int i = 0; i < 3; ++i)
         {
           double val = (*((*col_fs_vel_)(i)))[nid];
-          int err = ((*velocity)(i))->ReplaceMyValues(1, &val, &nid);
+          int err = ((velocity)(i))->ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
@@ -472,8 +472,7 @@ namespace FLD
     }
 
 
-    void filtered_rey_str_comp(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> outvec, const int i, const int j)
+    void filtered_rey_str_comp(Core::LinAlg::Vector<double>& outvec, const int i, const int j)
     {
       // loop all elements on this proc (including ghosted ones)
       int ij = 3 * (i - 1) + (j - 1);
@@ -485,13 +484,12 @@ namespace FLD
 
         double val = (*((*filtered_reynoldsstress_)(ij)))[nid];
 
-        (outvec)->ReplaceGlobalValues(1, &val, &id);
+        (outvec).ReplaceGlobalValues(1, &val, &id);
       }
       return;
     }
 
-    void filtered_vel_comp(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> outvec, const int i, const int j)
+    void filtered_vel_comp(Core::LinAlg::Vector<double>& outvec, const int i, const int j)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_row_nodes(); ++nid)
@@ -504,12 +502,12 @@ namespace FLD
         double valj = (*((*filtered_vel_)(j - 1)))[nid];
         double val = vali * valj;
 
-        (outvec)->ReplaceGlobalValues(1, &val, &id);
+        (outvec).ReplaceGlobalValues(1, &val, &id);
       }
       return;
     }
 
-    void outputof_fine_scale_vel(Teuchos::RCP<Core::LinAlg::Vector<double>> outvec)
+    void outputof_fine_scale_vel(Core::LinAlg::Vector<double>& outvec)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int n = 0; n < discret_->num_my_row_nodes(); ++n)
@@ -525,13 +523,13 @@ namespace FLD
 
           int id = dofs[d];
 
-          (outvec)->ReplaceGlobalValues(1, &val, &id);
+          (outvec).ReplaceGlobalValues(1, &val, &id);
         }
       }
       return;
     }
 
-    void outputof_averaged_vel(Teuchos::RCP<Core::LinAlg::Vector<double>> outvec)
+    void outputof_averaged_vel(Core::LinAlg::Vector<double>& outvec)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int n = 0; n < discret_->num_my_row_nodes(); ++n)
@@ -547,13 +545,13 @@ namespace FLD
 
           int id = dofs[d];
 
-          (outvec)->ReplaceGlobalValues(1, &val, &id);
+          (outvec).ReplaceGlobalValues(1, &val, &id);
         }
       }
       return;
     }
 
-    void get_filtered_phi(Teuchos::RCP<Epetra_MultiVector> phi)
+    void get_filtered_phi(Epetra_MultiVector& phi)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
@@ -561,35 +559,35 @@ namespace FLD
         for (int i = 0; i < 3; ++i)
         {
           double val = (*((*col_filtered_phi_)(i)))[nid];
-          int err = ((*phi)(i))->ReplaceMyValues(1, &val, &nid);
+          int err = ((phi)(i))->ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
     }
 
-    void get_filtered_phi2(Teuchos::RCP<Core::LinAlg::Vector<double>> phi2)
+    void get_filtered_phi2(Core::LinAlg::Vector<double>& phi2)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         {
           double val = (*col_filtered_phi2_)[nid];
-          int err = phi2->ReplaceMyValues(1, &val, &nid);
+          int err = phi2.ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
       return;
     }
 
-    void get_filtered_phiexpression(Teuchos::RCP<Core::LinAlg::Vector<double>> phiexpression)
+    void get_filtered_phiexpression(Core::LinAlg::Vector<double>& phiexpression)
     {
       // loop all elements on this proc (including ghosted ones)
       for (int nid = 0; nid < discret_->num_my_col_nodes(); ++nid)
       {
         {
           double val = (*col_filtered_phiexpression_)[nid];
-          int err = phiexpression->ReplaceMyValues(1, &val, &nid);
+          int err = phiexpression.ReplaceMyValues(1, &val, &nid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }
       }
@@ -623,11 +621,11 @@ namespace FLD
 
     void apply_box_filter(const Teuchos::RCP<const Core::LinAlg::Vector<double>> velocity,
         const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle);
+        const Core::LinAlg::Vector<double>& dirichtoggle);
 
     void apply_box_filter_scatra(const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar,
-        const double thermpress,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle, const int ndsvel);
+        const double thermpress, const Core::LinAlg::Vector<double>& dirichtoggle,
+        const int ndsvel);
 
 
 

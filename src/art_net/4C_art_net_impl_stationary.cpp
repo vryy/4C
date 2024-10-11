@@ -337,7 +337,7 @@ void Arteries::ArtNetImplStationary::prepare_time_step()
   apply_dirichlet_bc();
 
   // Apply Neumann
-  apply_neumann_bc(neumann_loads_);
+  apply_neumann_bc(*neumann_loads_);
 }
 
 /*----------------------------------------------------------------------*
@@ -386,11 +386,10 @@ void Arteries::ArtNetImplStationary::reset_artery_diam_previous_time_step()
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary conditions                kremheller 03/18 |
  *----------------------------------------------------------------------*/
-void Arteries::ArtNetImplStationary::apply_neumann_bc(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& neumann_loads)
+void Arteries::ArtNetImplStationary::apply_neumann_bc(Core::LinAlg::Vector<double>& neumann_loads)
 {
   // prepare load vector
-  neumann_loads->PutScalar(0.0);
+  neumann_loads.PutScalar(0.0);
 
   // create parameter list
   Teuchos::ParameterList condparams;
@@ -399,7 +398,7 @@ void Arteries::ArtNetImplStationary::apply_neumann_bc(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // evaluate Neumann boundary conditions
-  discret_->evaluate_neumann(condparams, *neumann_loads);
+  discret_->evaluate_neumann(condparams, neumann_loads);
   discret_->clear_state();
 
   return;

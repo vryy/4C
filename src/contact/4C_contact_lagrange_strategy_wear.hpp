@@ -48,23 +48,21 @@ namespace Wear
 
     */
     void condense_wear_discr(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& gact);
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff, Core::LinAlg::Vector<double>& gact);
 
     /*!
     \brief Condense lm. for frictional contact with explicit/implicit wear algorithm
 
     */
     void condense_wear_impl_expl(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& gact);
+        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff, Core::LinAlg::Vector<double>& gact);
 
     /*!
     \brief Prepare SaddlePointSystem
 
     */
-    void prepare_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff);
+    void prepare_saddle_point_system(
+        Core::LinAlg::SparseOperator& kteff, Core::LinAlg::Vector<double>& feff);
 
     /*!
     \brief Recovery method

@@ -64,7 +64,7 @@ namespace Inpar
     };
 
     /// Defines all valid parameters for ale problem
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// Defines ale specific conditions
     void set_valid_conditions(

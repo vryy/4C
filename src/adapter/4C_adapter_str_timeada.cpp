@@ -405,7 +405,7 @@ void Adapter::StructureTimeAda::indicate(bool& accepted, double& stpsiznew)
 {
   // norm of local discretisation error vector
   const int numneglect = stm_->get_dbc_map_extractor()->cond_map()->NumGlobalElements();
-  const double norm = calculate_vector_norm(errnorm_, locerrdisn_, numneglect);
+  const double norm = calculate_vector_norm(errnorm_, *locerrdisn_, numneglect);
 
   // check if acceptable
   accepted = (norm < errtol_);
@@ -492,34 +492,34 @@ double Adapter::StructureTimeAda::calculate_dt(const double norm)
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */
 double Adapter::StructureTimeAda::calculate_vector_norm(const enum Inpar::Solid::VectorNorm norm,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> vect, const int numneglect)
+    Core::LinAlg::Vector<double>& vect, const int numneglect)
 {
   // L1 norm
   if (norm == Inpar::Solid::norm_l1)
   {
     double vectnorm;
-    vect->Norm1(&vectnorm);
+    vect.Norm1(&vectnorm);
     return vectnorm;
   }
   // L2/Euclidian norm
   else if (norm == Inpar::Solid::norm_l2)
   {
     double vectnorm;
-    vect->Norm2(&vectnorm);
+    vect.Norm2(&vectnorm);
     return vectnorm;
   }
   // RMS norm
   else if (norm == Inpar::Solid::norm_rms)
   {
     double vectnorm;
-    vect->Norm2(&vectnorm);
-    return vectnorm / sqrt((double)(vect->GlobalLength() - numneglect));
+    vect.Norm2(&vectnorm);
+    return vectnorm / sqrt((double)(vect.GlobalLength() - numneglect));
   }
   // infinity/maximum norm
   else if (norm == Inpar::Solid::norm_inf)
   {
     double vectnorm;
-    vect->NormInf(&vectnorm);
+    vect.NormInf(&vectnorm);
     return vectnorm;
   }
   else

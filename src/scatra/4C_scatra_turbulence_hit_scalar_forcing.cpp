@@ -285,13 +285,9 @@ namespace ScaTra
     //-------------------------------------------------------------------------------
 
     // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<double>> local_phi =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> global_phi =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<std::complex<double>> phi_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<double> local_phi(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> global_phi(nummodes_ * nummodes_ * nummodes_);
 
     //-----------------------------------
     // prepare Fourier transformation
@@ -340,13 +336,13 @@ namespace ScaTra
       int lid = discret_->dof_row_map()->LID(dofs[0]);
       // set value
       // since we are interested at E at n+1, we use phi at n+1 also for gen-alpha
-      (*local_phi)[pos] = (*phinp_)[lid];
+      (local_phi)[pos] = (*phinp_)[lid];
     }
 
     // get values from all processors
     // number of nodes without slave nodes
     const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-    discret_->get_comm().SumAll(local_phi->data(), global_phi->data(), countallnodes);
+    discret_->get_comm().SumAll(local_phi.data(), global_phi.data(), countallnodes);
 
     //----------------------------------------
     // fast Fourier transformation using FFTW
@@ -357,8 +353,8 @@ namespace ScaTra
 
 #ifdef FOUR_C_WITH_FFTW
     // set-up
-    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_phi->data(),
-        (reinterpret_cast<fftw_complex*>(phi_hat->data())), FFTW_ESTIMATE);
+    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_phi.data(),
+        (reinterpret_cast<fftw_complex*>(phi_hat.data())), FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
     // free memory
@@ -366,9 +362,9 @@ namespace ScaTra
     fftw_cleanup();
 
     // scale solution (not done in the fftw routine)
-    for (int i = 0; i < phi_hat->size(); i++)
+    for (int i = 0; i < phi_hat.size(); i++)
     {
-      (*phi_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
+      (phi_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
     }
 #else
     FOUR_C_THROW("FFTW required for HIT!");
@@ -492,7 +488,7 @@ namespace ScaTra
           // u_i * conj(u_i) = real(u_i)^2 + imag(u_i)^2
           // const std::complex<double> energy = 0.5 * ((*phi_hat)[pos] * conj((*phi_hat)[pos]);
           // instead
-          const double scalarvariance = 0.5 * norm((*phi_hat)[pos]);
+          const double scalarvariance = 0.5 * norm((phi_hat)[pos]);
 
           if (forcing_type_ == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
           {
@@ -625,13 +621,9 @@ namespace ScaTra
       //-------------------------------------------------------------------------------
 
       // set and initialize working arrays
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat =
-          Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-              nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-      Teuchos::RCP<Teuchos::Array<double>> local_phi =
-          Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-      Teuchos::RCP<Teuchos::Array<double>> global_phi =
-          Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
+      Teuchos::Array<std::complex<double>> phi_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+      Teuchos::Array<double> local_phi(nummodes_ * nummodes_ * nummodes_);
+      Teuchos::Array<double> global_phi(nummodes_ * nummodes_ * nummodes_);
 
       //-----------------------------------
       // prepare Fourier transformation
@@ -681,18 +673,18 @@ namespace ScaTra
         // set value
         if (not is_genalpha_)
         {
-          (*local_phi)[pos] = (*phinp_)[lid];
+          (local_phi)[pos] = (*phinp_)[lid];
         }
         else
         {
-          (*local_phi)[pos] = (*phiaf_)[lid];
+          (local_phi)[pos] = (*phiaf_)[lid];
         }
       }
 
       // get values form all processors
       // number of nodes without slave nodes
       const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-      discret_->get_comm().SumAll(local_phi->data(), global_phi->data(), countallnodes);
+      discret_->get_comm().SumAll(local_phi.data(), global_phi.data(), countallnodes);
 
       //----------------------------------------
       // fast Fourier transformation using FFTW
@@ -703,8 +695,8 @@ namespace ScaTra
 
 #ifdef FOUR_C_WITH_FFTW
       // set-up
-      fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_phi->data(),
-          (reinterpret_cast<fftw_complex*>(phi_hat->data())), FFTW_ESTIMATE);
+      fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_phi.data(),
+          (reinterpret_cast<fftw_complex*>(phi_hat.data())), FFTW_ESTIMATE);
       // fft
       fftw_execute(fft);
       // free memory
@@ -715,9 +707,9 @@ namespace ScaTra
 #endif
 
       // scale solution (not done in the fftw routine)
-      for (int i = 0; i < phi_hat->size(); i++)
+      for (int i = 0; i < phi_hat.size(); i++)
       {
-        (*phi_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
+        (phi_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
       }
 
       //----------------------------------------
@@ -725,18 +717,15 @@ namespace ScaTra
       //----------------------------------------
 
       // Fourier coefficients of forcing
-      Teuchos::RCP<Teuchos::Array<std::complex<double>>> fphi_hat =
-          Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-              nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+      Teuchos::Array<std::complex<double>> fphi_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
       // where f_hat = -C(k) * u_hat according to Hickel 2007
       // C denotes a linear compensation factor
 
-      Teuchos::RCP<Teuchos::Array<double>> fphi =
-          Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
+      Teuchos::Array<double> fphi(nummodes_ * nummodes_ * nummodes_);
 
       for (int rr = 0; rr < (nummodes_ * nummodes_ * (nummodes_ / 2 + 1)); rr++)
       {
-        (*fphi_hat)[rr] = -((*force_fac_)(rr)) * ((*phi_hat)[rr]);
+        (fphi_hat)[rr] = -((*force_fac_)(rr)) * ((phi_hat)[rr]);
       }
 
       //----------------------------------------
@@ -746,7 +735,7 @@ namespace ScaTra
 #ifdef FOUR_C_WITH_FFTW
       // setup
       fftw_plan fft_back = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-          (reinterpret_cast<fftw_complex*>(fphi_hat->data())), fphi->data(), FFTW_ESTIMATE);
+          (reinterpret_cast<fftw_complex*>(fphi_hat.data())), fphi.data(), FFTW_ESTIMATE);
       // fft
       fftw_execute(fft_back);
       // free memory
@@ -800,7 +789,7 @@ namespace ScaTra
         // get local dof id corresponding to the global id
         int lid = discret_->dof_row_map()->LID(dofs[0]);
         // set value
-        int err = forcing_->ReplaceMyValues(1, &((*fphi)[pos]), &lid);
+        int err = forcing_->ReplaceMyValues(1, &((fphi)[pos]), &lid);
         if (err > 0) FOUR_C_THROW("Could not set forcing!");
       }
     }

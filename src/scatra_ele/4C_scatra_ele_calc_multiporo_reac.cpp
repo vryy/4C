@@ -818,7 +818,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::set_advanced_reacti
 {
   const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::rea_manager();
 
-  fill_coupling_vector_and_add_variables(k, matreaclist, remanager);
+  fill_coupling_vector_and_add_variables(k, *matreaclist, *remanager);
 
   const ScaTra::Action act = var_manager()->get_action();
 
@@ -899,8 +899,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_react(
  *-------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::fill_coupling_vector_and_add_variables(
-    const int k, const Teuchos::RCP<Mat::MatListReactions> matreaclist,
-    const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager)
+    const int k, Mat::MatListReactions& matreaclist, ScaTraEleReaManagerAdvReac& remanager)
 {
   // if it is empty rebuilt it
   if (couplingvalues_.empty())
@@ -948,11 +947,11 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::fill_coupling_vecto
     }
 
     // initialize and add the variables to the reaction manager --> has to be done only once
-    remanager->initialize_rea_body_force_deriv_vector_add_variables(
+    remanager.initialize_rea_body_force_deriv_vector_add_variables(
         my::numdofpernode_, couplingvalues_.size());
     // error will be thrown if reaction != by-reaction coupling is chosen
     for (int j = 0; j < my::numdofpernode_; j++)
-      matreaclist->add_additional_variables(j, couplingvalues_);
+      matreaclist.add_additional_variables(j, couplingvalues_);
   }
   // directly copy values (rely on order for performance reasons)
   else

@@ -174,8 +174,8 @@ namespace CONTACT
      \brief Compute penalty scaling factor kappa on slave element
 
      */
-    void integrate_kappa_penalty(Mortar::Element& sele, double* sxia, double* sxib,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector> gseg);
+    void integrate_kappa_penalty(
+        Mortar::Element& sele, double* sxia, double* sxib, Core::LinAlg::SerialDenseVector& gseg);
 
 
     /*!
@@ -191,7 +191,7 @@ namespace CONTACT
 
      */
     void integrate_kappa_penalty(Mortar::Element& sele, Mortar::IntElement& sintele, double* sxia,
-        double* sxib, Teuchos::RCP<Core::LinAlg::SerialDenseVector> gseg);
+        double* sxib, Core::LinAlg::SerialDenseVector& gseg);
 
     //@}
 
@@ -709,9 +709,8 @@ namespace CONTACT
         Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseMatrix& sderiv,
         Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& mderiv,
         Core::LinAlg::SerialDenseVector& lmval, Core::LinAlg::SerialDenseMatrix& lmderiv,
-        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult, double* gpn, double& jac,
-        double& wgt, double* jumpval, double* wearval,
-        Core::Gen::Pairedvector<int, double>& dsliptmatrixgp,
+        Core::LinAlg::SerialDenseMatrix& lagmult, double* gpn, double& jac, double& wgt,
+        double* jumpval, double* wearval, Core::Gen::Pairedvector<int, double>& dsliptmatrixgp,
         Core::Gen::Pairedvector<int, double>& dweargp,
         const std::vector<Core::Gen::Pairedvector<int, double>>& dsxigp,
         const std::vector<Core::Gen::Pairedvector<int, double>>& dmxigp,
@@ -726,9 +725,8 @@ namespace CONTACT
         Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseMatrix& sderiv,
         Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& mderiv,
         Core::LinAlg::SerialDenseVector& lmval, Core::LinAlg::SerialDenseMatrix& lmderiv,
-        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult, double* gpn, double& jac,
-        double& wgt, double* jumpval, double* wearval,
-        Core::Gen::Pairedvector<int, double>& dsliptmatrixgp,
+        Core::LinAlg::SerialDenseMatrix& lagmult, double* gpn, double& jac, double& wgt,
+        double* jumpval, double* wearval, Core::Gen::Pairedvector<int, double>& dsliptmatrixgp,
         Core::Gen::Pairedvector<int, double>& dweargp,
         const std::vector<Core::Gen::Pairedvector<int, double>>& dsxigp,
         const std::vector<Core::Gen::Pairedvector<int, double>>& dmxigp,

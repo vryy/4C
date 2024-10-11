@@ -307,7 +307,7 @@ namespace Coupling::Adapter
     ) const;
 
     /// recover slave-sided dofs
-    void mortar_recover(Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,  ///< in: tangent matrix
+    void mortar_recover(Core::LinAlg::SparseMatrix& k,  ///< in: tangent matrix
         Teuchos::RCP<Core::LinAlg::Vector<double>>&
             inc  ///< in:  solution vector     w/o condensation
                  ///< out: solution vector     w/  condensation
@@ -345,9 +345,8 @@ namespace Coupling::Adapter
 
    private:
     /// perform mesh relocation
-    void mesh_relocation(
-        Teuchos::RCP<Core::FE::Discretization> slavedis,  ///< [in] Slave discretization
-        Teuchos::RCP<Core::FE::Discretization> aledis,    ///< [in] ALE discretization
+    void mesh_relocation(Core::FE::Discretization& slavedis,  ///< [in] Slave discretization
+        Teuchos::RCP<Core::FE::Discretization> aledis,        ///< [in] ALE discretization
         Teuchos::RCP<const Epetra_Map>
             masterdofrowmap,  ///< [in] DOF row map of master discretization
         Teuchos::RCP<const Epetra_Map>

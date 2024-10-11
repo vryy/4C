@@ -301,7 +301,7 @@ void Solid::TimInt::setup()
 
 
   // Check for porosity dofs within the structure and build a map extractor if necessary
-  porositysplitter_ = PoroElast::UTILS::build_poro_splitter(discret_);
+  porositysplitter_ = PoroElast::UTILS::build_poro_splitter(*discret_);
 
 
   // we have successfully set up this class
@@ -508,7 +508,7 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
       *discret_, mortarconditions, contactconditions, time_integration_factor);
 
   cmtbridge_->store_dirichlet_status(dbcmaps_);
-  cmtbridge_->set_state(zeros_);
+  cmtbridge_->set_state(*zeros_);
 
   // contact and constraints together not yet implemented
   if (conman_->have_constraint())
@@ -1006,7 +1006,7 @@ void Solid::TimInt::determine_mass_damp_consist_accel()
 
   /* get external force (no linearization since we assume Rayleigh damping
    * to be independent of follower loads) */
-  apply_force_external((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext);
+  apply_force_external((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), *fext);
 
   // get initial internal force and stiffness and mass
   {
@@ -1347,15 +1347,14 @@ void Solid::TimInt::update_step_contact_vum()
       }
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Mass =
           Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_);
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> Minv =
-          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*Mass);
+      Core::LinAlg::SparseMatrix Minv(*Mass);
       Teuchos::RCP<Core::LinAlg::Vector<double>> diag = Core::LinAlg::create_vector(*dofmap, true);
       int err = 0;
-      Minv->extract_diagonal_copy(*diag);
+      Minv.extract_diagonal_copy(*diag);
       err = diag->Reciprocal(*diag);
       if (err != 0) FOUR_C_THROW("Reciprocal: Zero diagonal entry!");
-      err = Minv->replace_diagonal_values(*diag);
-      Minv->complete(*dofmap, *dofmap);
+      err = Minv.replace_diagonal_values(*diag);
+      Minv.complete(*dofmap, *dofmap);
 
       // displacement increment Dd
       Teuchos::RCP<Core::LinAlg::Vector<double>> Dd = Core::LinAlg::create_vector(*dofmap, true);
@@ -1365,29 +1364,28 @@ void Solid::TimInt::update_step_contact_vum()
       // mortar operator Bc
       Teuchos::RCP<const Core::LinAlg::SparseMatrix> Mmat = cmtbridge_->get_strategy().m_matrix();
       Teuchos::RCP<const Core::LinAlg::SparseMatrix> Dmat = cmtbridge_->get_strategy().d_matrix();
-      Teuchos::RCP<Epetra_Map> slavedofmap = Teuchos::make_rcp<Epetra_Map>(Dmat->range_map());
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> Bc =
-          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofmap, 10);
+      Epetra_Map slavedofmap(Dmat->range_map());
+      Core::LinAlg::SparseMatrix Bc(*dofmap, 10);
       Teuchos::RCP<const Core::LinAlg::SparseMatrix> M =
-          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofmap, 10);
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slavedofmap, 10);
       Teuchos::RCP<const Core::LinAlg::SparseMatrix> D =
-          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofmap, 10);
+          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slavedofmap, 10);
       if (Teuchos::getIntegralValue<Inpar::Mortar::ParallelRedist>(
               cmtbridge_->get_strategy().params().sublist("PARALLEL REDISTRIBUTION"),
               "PARALLEL_REDIST") != Inpar::Mortar::ParallelRedist::redist_none)
       {
-        M = Mortar::matrix_col_transform(Mmat, notredistmasterdofmap);
-        D = Mortar::matrix_col_transform(Dmat, notredistslavedofmap);
+        M = Mortar::matrix_col_transform(*Mmat, *notredistmasterdofmap);
+        D = Mortar::matrix_col_transform(*Dmat, *notredistslavedofmap);
       }
       else
       {
         M = Mmat;
         D = Dmat;
       }
-      Bc->add(*M, true, -1.0, 1.0);
-      Bc->add(*D, true, 1.0, 1.0);
-      Bc->complete(*slavedofmap, *dofmap);
-      Bc->apply_dirichlet(*(dbcmaps_->cond_map()), false);
+      Bc.add(*M, true, -1.0, 1.0);
+      Bc.add(*D, true, 1.0, 1.0);
+      Bc.complete(slavedofmap, *dofmap);
+      Bc.apply_dirichlet(*(dbcmaps_->cond_map()), false);
 
       // matrix of the normal vectors
       Teuchos::RCP<Core::LinAlg::SparseMatrix> N =
@@ -1405,7 +1403,7 @@ void Solid::TimInt::update_step_contact_vum()
 
       // auxiliary operator BN = Bc * N
       Teuchos::RCP<Core::LinAlg::SparseMatrix> BN =
-          Core::LinAlg::matrix_multiply(*Bc, false, *N, true, false, false, true);
+          Core::LinAlg::matrix_multiply(Bc, false, *N, true, false, false, true);
 
       // operator A
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx1;
@@ -1413,7 +1411,7 @@ void Solid::TimInt::update_step_contact_vum()
       Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx3;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> A;
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Atemp1 =
-          Core::LinAlg::matrix_multiply(*BN, true, *Minv, false, false, false, true);
+          Core::LinAlg::matrix_multiply(*BN, true, Minv, false, false, false, true);
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Atemp2 =
           Core::LinAlg::matrix_multiply(*Atemp1, false, *BN, false, false, false, true);
       Atemp2->scale(R4);
@@ -1580,8 +1578,7 @@ void Solid::TimInt::update_step_contact_vum()
       double res = 1.0;
       double initres = 1.0;
       double dfik = 0;
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> DF =
-          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*activenodemap, 10);
+      Core::LinAlg::SparseMatrix DF(*activenodemap, 10);
 
       // rhs f
       for (int i = 0; i < activenodemap->NumMyElements(); ++i)
@@ -1615,15 +1612,15 @@ void Solid::TimInt::update_step_contact_vum()
             {
               dfik += (*x)[j] * (*p)[j];
             }
-            DF->assemble(dfik, activenodemap->GID(i), activenodemap->GID(k));
+            DF.assemble(dfik, activenodemap->GID(i), activenodemap->GID(k));
           }
           else
           {
-            DF->assemble((*x)[k] * (*p)[i], activenodemap->GID(i), activenodemap->GID(k));
+            DF.assemble((*x)[k] * (*p)[i], activenodemap->GID(i), activenodemap->GID(k));
           }
         }
       }
-      DF->complete(*activenodemap, *activenodemap);
+      DF.complete(*activenodemap, *activenodemap);
 
       // (3) Newton-Iteration
       Teuchos::RCP<Core::LinAlg::Vector<double>> mf =
@@ -1640,7 +1637,7 @@ void Solid::TimInt::update_step_contact_vum()
         mf->Update(-1.0, *f, 0.0);
         Core::LinAlg::SolverParams solver_params;
         solver_params.refactor = true;
-        solver_->solve(DF->epetra_operator(), dp, mf, solver_params);
+        solver_->solve(DF.epetra_operator(), dp, mf, solver_params);
 
         // Update solution p_n = p_n-1 + dp
         p->Update(1.0, *dp, 1.0);
@@ -1663,7 +1660,7 @@ void Solid::TimInt::update_step_contact_vum()
         res /= initres;
 
         // jacobian DF
-        DF->put_scalar(0.0);
+        DF.put_scalar(0.0);
         for (int i = 0; i < activenodemap->NumMyElements(); ++i)
         {
           x->PutScalar(0.0);
@@ -1678,11 +1675,11 @@ void Solid::TimInt::update_step_contact_vum()
               {
                 dfik += (*x)[j] * (*p)[j];
               }
-              DF->assemble(dfik, activenodemap->GID(i), activenodemap->GID(k));
+              DF.assemble(dfik, activenodemap->GID(i), activenodemap->GID(k));
             }
             else
             {
-              DF->assemble((*x)[k] * (*p)[i], activenodemap->GID(i), activenodemap->GID(k));
+              DF.assemble((*x)[k] * (*p)[i], activenodemap->GID(i), activenodemap->GID(k));
             }
           }
         }
@@ -1705,7 +1702,7 @@ void Solid::TimInt::update_step_contact_vum()
       Teuchos::RCP<Core::LinAlg::Vector<double>> VU = Core::LinAlg::create_vector(*dofmap, true);
       Core::LinAlg::export_to(*p, *ptemp1);
       BN->multiply(false, *ptemp1, *ptemp2);
-      Minv->multiply(false, *ptemp2, *VU);
+      Minv.multiply(false, *ptemp2, *VU);
       veln_->Update(1.0, *VU, 1.0);
     }
   }
@@ -1829,14 +1826,14 @@ void Solid::TimInt::set_restart_state(Teuchos::RCP<Core::LinAlg::Vector<double>>
 
   // the following is copied from read_mesh()
   // before we unpack nodes/elements we store a copy of the nodal row/col map
-  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::make_rcp<Epetra_Map>(*discret_->node_row_map());
-  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::make_rcp<Epetra_Map>(*discret_->node_col_map());
+  Epetra_Map noderowmap(*discret_->node_row_map());
+  Epetra_Map nodecolmap(*discret_->node_col_map());
 
   // unpack nodes and elements
   // so everything should be OK
   discret_->unpack_my_nodes(*nodedata);
   discret_->unpack_my_elements(*elementdata);
-  discret_->redistribute(*noderowmap, *nodecolmap);
+  discret_->redistribute(noderowmap, nodecolmap);
 }
 /*----------------------------------------------------------------------*/
 /* Read and set restart values for constraints */
@@ -2194,8 +2191,8 @@ void Solid::TimInt::output_restart(bool& datawritten)
   // contact and meshtying
   if (have_contact_meshtying())
   {
-    cmtbridge_->write_restart(output_);
-    cmtbridge_->postprocess_quantities(output_);
+    cmtbridge_->write_restart(*output_);
+    cmtbridge_->postprocess_quantities(*output_);
 
     {
       Teuchos::RCP<Teuchos::ParameterList> cmtOutputParams =
@@ -2211,7 +2208,7 @@ void Solid::TimInt::output_restart(bool& datawritten)
   // beam contact
   if (have_beam_contact())
   {
-    beamcman_->write_restart(output_);
+    beamcman_->write_restart(*output_);
   }
 
   // biofilm growth
@@ -2273,7 +2270,7 @@ void Solid::TimInt::output_state(bool& datawritten)
   // meshtying and contact output
   if (have_contact_meshtying())
   {
-    cmtbridge_->postprocess_quantities(output_);
+    cmtbridge_->postprocess_quantities(*output_);
 
     {
       Teuchos::RCP<Teuchos::ParameterList> cmtOutputParams =
@@ -2294,7 +2291,7 @@ void Solid::TimInt::output_state(bool& datawritten)
   }
 
   // springdashpot output
-  if (springman_->have_spring_dashpot()) springman_->output(output_, discret_, disn_);
+  if (springman_->have_spring_dashpot()) springman_->output(*output_, *discret_, *disn_);
 }
 
 /*----------------------------------------------------------------------*/
@@ -2332,12 +2329,12 @@ void Solid::TimInt::add_restart_to_output_state()
   if (springman_->have_spring_dashpot()) springman_->output_restart(output_, discret_, disn_);
 
   // contact/meshtying
-  if (have_contact_meshtying()) cmtbridge_->write_restart(output_, true);
+  if (have_contact_meshtying()) cmtbridge_->write_restart(*output_, true);
 
   // TODO: add missing restart data for surface stress and contact/meshtying here
 
   // beam contact
-  if (have_beam_contact()) beamcman_->write_restart(output_);
+  if (have_beam_contact()) beamcman_->write_restart(*output_);
 
 
   // finally add the missing mesh information, order is important here
@@ -2896,8 +2893,7 @@ void Solid::TimInt::prepare_output_micro()
 void Solid::TimInt::apply_force_external(const double time,
     const Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
     const Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> vel,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& fext)
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> vel, Core::LinAlg::Vector<double>& fext)
 {
   Teuchos::ParameterList p;
   // other parameters needed by the elements
@@ -2912,7 +2908,7 @@ void Solid::TimInt::apply_force_external(const double time,
 
   if (damping_ == Inpar::Solid::damp_material) discret_->set_state(0, "velocity", vel);
 
-  discret_->evaluate_neumann(p, *fext);
+  discret_->evaluate_neumann(p, fext);
 }
 
 /*----------------------------------------------------------------------*/

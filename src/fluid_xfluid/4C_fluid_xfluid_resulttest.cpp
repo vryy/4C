@@ -55,56 +55,56 @@ void FLD::XFluidResultTest::test_node(
 
   if (dis == discret_->name())
   {
-    test_node(container, nerr, test_count, node, discret_, velnp_);
+    test_node(container, nerr, test_count, node, *discret_, *velnp_);
   }
   else if (dis == coupl_discret_->name())
   {
-    test_node(container, nerr, test_count, node, coupl_discret_, coupl_velnp_);
+    test_node(container, nerr, test_count, node, *coupl_discret_, *coupl_velnp_);
   }
   else
     return;
 }
 
 void FLD::XFluidResultTest::test_node(const Core::IO::InputParameterContainer& container, int& nerr,
-    int& test_count, int node, const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& velnp)
+    int& test_count, int node, const Core::FE::Discretization& discret,
+    const Core::LinAlg::Vector<double>& velnp)
 {
-  int havenode(discret->have_global_node(node));
+  int havenode(discret.have_global_node(node));
   int isnodeofanybody(0);
-  discret->get_comm().SumAll(&havenode, &isnodeofanybody, 1);
+  discret.get_comm().SumAll(&havenode, &isnodeofanybody, 1);
 
   if (isnodeofanybody == 0)
   {
-    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1, discret->name().c_str());
+    FOUR_C_THROW("Node %d does not belong to discretization %s", node + 1, discret.name().c_str());
   }
   else
   {
-    if (discret->have_global_node(node))
+    if (discret.have_global_node(node))
     {
-      Core::Nodes::Node* actnode = discret->g_node(node);
+      Core::Nodes::Node* actnode = discret.g_node(node);
 
-      if (actnode->owner() != discret->get_comm().MyPID()) return;
+      if (actnode->owner() != discret.get_comm().MyPID()) return;
 
       double result = 0.;
 
-      const Epetra_BlockMap& velnpmap = velnp->Map();
+      const Epetra_BlockMap& velnpmap = velnp.Map();
 
       std::string position = container.get<std::string>("QUANTITY");
       if (position == "velx")
       {
-        result = (*velnp)[velnpmap.LID(discret->dof(0, actnode, 0))];
+        result = (velnp)[velnpmap.LID(discret.dof(0, actnode, 0))];
       }
       else if (position == "vely")
       {
-        result = (*velnp)[velnpmap.LID(discret->dof(0, actnode, 1))];
+        result = (velnp)[velnpmap.LID(discret.dof(0, actnode, 1))];
       }
       else if (position == "velz")
       {
-        result = (*velnp)[velnpmap.LID(discret->dof(0, actnode, 2))];
+        result = (velnp)[velnpmap.LID(discret.dof(0, actnode, 2))];
       }
       else if (position == "pressure")
       {
-        result = (*velnp)[velnpmap.LID(discret->dof(0, actnode, 3))];
+        result = (velnp)[velnpmap.LID(discret.dof(0, actnode, 3))];
       }
       else
       {

@@ -399,31 +399,28 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_residual(Core::LinAlg::Vector<do
   const Teuchos::RCP<Core::LinAlg::SparseMatrix> mortarp = coupsfm_->get_mortar_matrix_p();
 
   // get single field residuals
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> sv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*structure_field()->rhs());
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> fv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluid_field()->rhs());
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> av =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ale_field()->rhs());
+  const Core::LinAlg::Vector<double> sv(*structure_field()->rhs());
+  const Core::LinAlg::Vector<double> fv(*fluid_field()->rhs());
+  const Core::LinAlg::Vector<double> av(*ale_field()->rhs());
 
   // extract only inner DOFs from fluid (=slave) and ALE field
   Teuchos::RCP<Core::LinAlg::Vector<double>> fov =
-      fluid_field()->interface()->extract_other_vector(*fv);
+      fluid_field()->interface()->extract_other_vector(fv);
   fov = fluid_field()->interface()->insert_other_vector(*fov);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> aov =
-      ale_field()->interface()->extract_other_vector(*av);
+      ale_field()->interface()->extract_other_vector(av);
 
   /* add fluid interface residual to structure interface residual considering
    * temporal scaling
    */
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcv =
-      fluid_field()->interface()->extract_fsi_cond_vector(*fv);
+      fluid_field()->interface()->extract_fsi_cond_vector(fv);
   Teuchos::RCP<Core::LinAlg::Vector<double>> scv =
       Core::LinAlg::create_vector(*structure_field()->interface()->fsi_cond_map(), true);
   mortarp->multiply(true, *fcv, *scv);
   Teuchos::RCP<Core::LinAlg::Vector<double>> modsv =
       structure_field()->interface()->insert_fsi_cond_vector(*scv);
-  modsv->Update(1.0, *sv, (1.0 - stiparam) / (1.0 - ftiparam) * fluidscale);
+  modsv->Update(1.0, sv, (1.0 - stiparam) / (1.0 - ftiparam) * fluidscale);
 
   if (structure_field()->get_stc_algo() == Inpar::Solid::stc_currsym)
   {
@@ -432,7 +429,7 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_residual(Core::LinAlg::Vector<do
   }
 
   // put the single field residuals together
-  FSI::Monolithic::combine_field_vectors(f, modsv, fov, aov);
+  FSI::Monolithic::combine_field_vectors(f, *modsv, *fov, *aov);
 
   // add additional ale residual
   extractor().add_vector(*aleresidual_, 2, f);
@@ -456,11 +453,10 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_lambda(Core::LinAlg::Vector<doub
 
     /* project Lagrange multiplier field onto the master interface DOFs and
      * consider temporal scaling */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortarm->domain_map(), true);
-    mortarm->multiply(true, *lambdaold_, *lambda);
+    Core::LinAlg::Vector<double> lambda(mortarm->domain_map(), true);
+    mortarm->multiply(true, *lambdaold_, lambda);
     Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
-        structure_field()->interface()->insert_fsi_cond_vector(*lambda);
+        structure_field()->interface()->insert_fsi_cond_vector(lambda);
     lambdafull->Scale(stiparam - (ftiparam * (1.0 - stiparam)) / (1.0 - ftiparam));
 
     // add Lagrange multiplier
@@ -705,11 +701,10 @@ void FSI::MortarMonolithicFluidSplit::setup_rhs_firstiter(Core::LinAlg::Vector<d
 
       fmgg.Apply(*iprojdispinc_, *rhs);
 
-      Teuchos::RCP<Core::LinAlg::Vector<double>> tmprhs =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortarp->domain_map());
-      mortarp->multiply(true, *rhs, *tmprhs);
+      Core::LinAlg::Vector<double> tmprhs(mortarp->domain_map());
+      mortarp->multiply(true, *rhs, tmprhs);
 
-      rhs = structure_field()->interface()->insert_fsi_cond_vector(*tmprhs);
+      rhs = structure_field()->interface()->insert_fsi_cond_vector(tmprhs);
 
       auto zeros = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(rhs->Map(), true);
       Core::LinAlg::apply_dirichlet_to_system(
@@ -905,12 +900,11 @@ void FSI::MortarMonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
         matrix_multiply(mmm->matrix(1, 1), false, *mortarp, false, false, false, true);
     fmgg = matrix_multiply(*mortarp, true, *fmgg, false, false, false, true);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> lfmgg =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(fmgg->row_map(), 81, false);
-    lfmgg->add(*fmgg, false, 1.0, 0.0);
-    lfmgg->complete(s->domain_map(), fmgg->range_map());
+    Core::LinAlg::SparseMatrix lfmgg(fmgg->row_map(), 81, false);
+    lfmgg.add(*fmgg, false, 1.0, 0.0);
+    lfmgg.complete(s->domain_map(), fmgg->range_map());
 
-    s->add(*lfmgg, false, scale * (1. - stiparam) / (1. - ftiparam), 1.0);
+    s->add(lfmgg, false, scale * (1. - stiparam) / (1. - ftiparam), 1.0);
 
     // ---------Addressing contribution to block (3,2)
     Teuchos::RCP<Core::LinAlg::SparseMatrix> fmig =
@@ -1463,7 +1457,7 @@ void FSI::MortarMonolithicFluidSplit::update()
     iprojdispinc_->Update(-1.0, *iprojdisp_, 1.0, *idispale, 0.0);
 
     slideale_->evaluate_mortar(
-        structure_field()->extract_interface_dispnp(), iprojdisp_, *coupsfm_);
+        *structure_field()->extract_interface_dispnp(), *iprojdisp_, *coupsfm_);
     slideale_->evaluate_fluid_mortar(idispale, iprojdisp_);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
@@ -1569,7 +1563,8 @@ void FSI::MortarMonolithicFluidSplit::read_restart(int step)
   set_time_step(fluid_field()->time(), fluid_field()->step());
 
   if (aleproj_ != Inpar::FSI::ALEprojection_none)
-    slideale_->evaluate_mortar(structure_field()->extract_interface_dispn(), iprojdisp_, *coupsfm_);
+    slideale_->evaluate_mortar(
+        *structure_field()->extract_interface_dispn(), *iprojdisp_, *coupsfm_);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1790,13 +1785,12 @@ void FSI::MortarMonolithicFluidSplit::calculate_interface_energy_increment()
   const Teuchos::RCP<Core::LinAlg::SparseMatrix> mortarm = coupsfm_->get_mortar_matrix_m();
 
   // interface traction weighted by time integration factors
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tractionfluid =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(lambda_->Map(), true);
+  Core::LinAlg::Vector<double> tractionfluid(lambda_->Map(), true);
   Teuchos::RCP<Core::LinAlg::Vector<double>> tractionstructure =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
           *structure_field()->interface()->fsi_cond_map(), true);
-  tractionfluid->Update(stiparam - ftiparam, *lambdaold_, ftiparam - stiparam, *lambda_, 0.0);
-  mortarm->multiply(true, *tractionfluid, *tractionstructure);
+  tractionfluid.Update(stiparam - ftiparam, *lambdaold_, ftiparam - stiparam, *lambda_, 0.0);
+  mortarm->multiply(true, tractionfluid, *tractionstructure);
 
   // displacement increment of this time step
   Teuchos::RCP<Core::LinAlg::Vector<double>> deltad =
@@ -1840,38 +1834,33 @@ void FSI::MortarMonolithicFluidSplit::check_kinematic_constraint()
   const Teuchos::RCP<Core::LinAlg::Vector<double>> veln = fluid_field()->extract_interface_veln();
 
   // prepare vectors for projected interface quantities
-  Teuchos::RCP<Core::LinAlg::Vector<double>> disnpproj =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortarm->range_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> disnproj =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortarm->range_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> velnpproj =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortard->range_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> velnproj =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortard->range_map(), true);
+  Core::LinAlg::Vector<double> disnpproj(mortarm->range_map(), true);
+  Core::LinAlg::Vector<double> disnproj(mortarm->range_map(), true);
+  Core::LinAlg::Vector<double> velnpproj(mortard->range_map(), true);
+  Core::LinAlg::Vector<double> velnproj(mortard->range_map(), true);
 
   // projection of interface displacements
-  mortarm->Apply(*disnp, *disnpproj);
-  mortarm->Apply(*disn, *disnproj);
+  mortarm->Apply(*disnp, disnpproj);
+  mortarm->Apply(*disn, disnproj);
 
   // projection of interface velocities
-  mortard->Apply(*velnp, *velnpproj);
-  mortard->Apply(*veln, *velnproj);
+  mortard->Apply(*velnp, velnpproj);
+  mortard->Apply(*veln, velnproj);
 
   // calculate violation of kinematic interface constraint
-  Teuchos::RCP<Core::LinAlg::Vector<double>> violation =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*disnpproj);
-  violation->Update(-1.0, *disnproj, 1.0);
-  violation->Update(-1.0 / timescale, *velnpproj, 1.0 / timescale, *velnproj, 1.0);
-  violation->Update(-dt(), *velnproj, 1.0);
+  Core::LinAlg::Vector<double> violation(disnpproj);
+  violation.Update(-1.0, disnproj, 1.0);
+  violation.Update(-1.0 / timescale, velnpproj, 1.0 / timescale, velnproj, 1.0);
+  violation.Update(-dt(), velnproj, 1.0);
 
   // calculate some norms
   double violationl2 = 0.0;
   double violationinf = 0.0;
-  violation->Norm2(&violationl2);
-  violation->NormInf(&violationinf);
+  violation.Norm2(&violationl2);
+  violation.NormInf(&violationinf);
 
   // scale L2-Norm with length of vector
-  violationl2 /= sqrt(violation->MyLength());
+  violationl2 /= sqrt(violation.MyLength());
 
   // output to screen
   std::ios_base::fmtflags flags = utils()->out().flags();
@@ -1897,25 +1886,22 @@ void FSI::MortarMonolithicFluidSplit::check_dynamic_equilibrium()
 #endif
 
   // auxiliary vectors
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tractionmaster =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortarm->domain_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tractionslave =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mortard->domain_map(), true);
+  Core::LinAlg::Vector<double> tractionmaster(mortarm->domain_map(), true);
+  Core::LinAlg::Vector<double> tractionslave(mortard->domain_map(), true);
 
   // calculate tractions on master and slave side
-  mortarm->multiply(true, *lambda_, *tractionmaster);
-  mortard->multiply(true, *lambda_, *tractionslave);
+  mortarm->multiply(true, *lambda_, tractionmaster);
+  mortard->multiply(true, *lambda_, tractionslave);
 
   // calculate violation of dynamic equilibrium
-  Teuchos::RCP<Core::LinAlg::Vector<double>> violation =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*tractionmaster);
-  violation->Update(-1.0, *tractionslave, 1.0);
+  Core::LinAlg::Vector<double> violation(tractionmaster);
+  violation.Update(-1.0, tractionslave, 1.0);
 
   // calculate some norms
   double violationl2 = 0.0;
   double violationinf = 0.0;
-  violation->Norm2(&violationl2);
-  violation->NormInf(&violationinf);
+  violation.Norm2(&violationl2);
+  violation.NormInf(&violationinf);
 
   // scale L2-Norm with sqrt of length of interface vector
   violationl2 /= sqrt(fluid_field()->interface()->fsi_cond_map()->NumGlobalElements());
@@ -1948,10 +1934,10 @@ void FSI::MortarMonolithicFluidSplit::combine_field_vectors(Core::LinAlg::Vector
         ale_field()->interface()->extract_other_vector(*av);
 
     // put them together
-    FSI::Monolithic::combine_field_vectors(v, sv, fov, aov);
+    FSI::Monolithic::combine_field_vectors(v, *sv, *fov, *aov);
   }
   else
-    FSI::Monolithic::combine_field_vectors(v, sv, fv, av);
+    FSI::Monolithic::combine_field_vectors(v, *sv, *fv, *av);
 }
 
 /*----------------------------------------------------------------------------*/

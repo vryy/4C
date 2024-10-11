@@ -402,9 +402,8 @@ void XFEM::ConditionManager::set_level_set_field(const double time)
 
 
 void XFEM::ConditionManager::write_access_geometric_quantities(
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& scalaraf,
-    Teuchos::RCP<Epetra_MultiVector>& smoothed_gradphiaf,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& curvatureaf)
+    Core::LinAlg::Vector<double>& scalaraf, Epetra_MultiVector& smoothed_gradphiaf,
+    Core::LinAlg::Vector<double>& curvatureaf)
 {
   // TOOD: when using two-phase in combination with other levelset, how to access to the right
   // coupling twophase coupling object?
@@ -453,10 +452,8 @@ void XFEM::ConditionManager::update_level_set_field()
 
   Teuchos::RCP<Core::LinAlg::Vector<int>> node_lsc_coup_idx =
       Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*bg_dis_->node_row_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<int>> node_lsc_coup_idx_col =
-      Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*bg_dis_->node_col_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<int>> ele_lsc_coup_idx =
-      Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*bg_dis_->element_row_map(), true);
+  Core::LinAlg::Vector<int> node_lsc_coup_idx_col(*bg_dis_->node_col_map(), true);
+  Core::LinAlg::Vector<int> ele_lsc_coup_idx(*bg_dis_->element_row_map(), true);
 
   // for each row node, the dominating levelset coupling index
   for (int lsc = 0; lsc < num_level_set_coupling(); ++lsc)
@@ -491,11 +488,11 @@ void XFEM::ConditionManager::update_level_set_field()
       combine_level_set_field(bg_phinp_, tmp, lsc, node_lsc_coup_idx, ls_boolean_type);
     }
 
-    if (coupling->apply_complementary_operator()) build_complementary_level_set(bg_phinp_);
+    if (coupling->apply_complementary_operator()) build_complementary_level_set(*bg_phinp_);
   }
 
   // export to column vector
-  Core::LinAlg::export_to(*node_lsc_coup_idx, *node_lsc_coup_idx_col);
+  Core::LinAlg::export_to(*node_lsc_coup_idx, node_lsc_coup_idx_col);
 
   // set the levelset coupling index for all row elements
   const Epetra_Map* elerowmap = bg_dis_->element_row_map();
@@ -514,7 +511,7 @@ void XFEM::ConditionManager::update_level_set_field()
     for (int n = 0; n < numnode; ++n)
     {
       int nlid = nodecolmap->LID(nodeids[n]);
-      lsc_coupling_indices.insert((*node_lsc_coup_idx_col)[nlid]);
+      lsc_coupling_indices.insert((node_lsc_coup_idx_col)[nlid]);
     }
 
     //    if(lsc_coupling_indices.size() > 1)
@@ -527,10 +524,10 @@ void XFEM::ConditionManager::update_level_set_field()
     //    }
 
     // take the one with the lowest coupling index!
-    (*ele_lsc_coup_idx)[leleid] = *(lsc_coupling_indices.begin());
+    (ele_lsc_coup_idx)[leleid] = *(lsc_coupling_indices.begin());
   }
 
-  Core::LinAlg::export_to(*ele_lsc_coup_idx, *ele_lsc_coup_idx_col_);
+  Core::LinAlg::export_to(ele_lsc_coup_idx, *ele_lsc_coup_idx_col_);
 
   is_levelset_uptodate_ = true;
 }
@@ -544,16 +541,16 @@ void XFEM::ConditionManager::combine_level_set_field(
   switch (ls_boolean_type)
   {
     case XFEM::CouplingBase::ls_cut:
-      set_maximum(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
+      set_maximum(vec1, vec2, lsc_index_2, *node_lsc_coup_idx);
       break;
     case XFEM::CouplingBase::ls_union:
-      set_minimum(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
+      set_minimum(vec1, vec2, lsc_index_2, *node_lsc_coup_idx);
       break;
     case XFEM::CouplingBase::ls_difference:
-      set_difference(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
+      set_difference(vec1, vec2, lsc_index_2, *node_lsc_coup_idx);
       break;
     case XFEM::CouplingBase::ls_sym_difference:
-      set_symmetric_difference(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
+      set_symmetric_difference(vec1, vec2, lsc_index_2, *node_lsc_coup_idx);
       break;
     default:
       FOUR_C_THROW("unsupported type of boolean operation between two level-sets");
@@ -563,20 +560,19 @@ void XFEM::ConditionManager::combine_level_set_field(
 
 
 void XFEM::ConditionManager::check_for_equal_maps(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2)
+    Core::LinAlg::Vector<double>& vec1, Core::LinAlg::Vector<double>& vec2)
 {
-  if (not vec1->Map().PointSameAs(vec2->Map())) FOUR_C_THROW("maps do not match!");
+  if (not vec1.Map().PointSameAs(vec2.Map())) FOUR_C_THROW("maps do not match!");
 }
 
 
 void XFEM::ConditionManager::set_minimum(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
-    Teuchos::RCP<Core::LinAlg::Vector<int>>& node_lsc_coup_idx)
+    Core::LinAlg::Vector<int>& node_lsc_coup_idx)
 {
   int err = -1;
 
-  check_for_equal_maps(vec1, vec2);
+  check_for_equal_maps(*vec1, *vec2);
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < bg_dis_->num_my_row_nodes(); lnodeid++)
@@ -589,7 +585,7 @@ void XFEM::ConditionManager::set_minimum(Teuchos::RCP<Core::LinAlg::Vector<doubl
     int arg = -1;
     double final_val = XFEM::argmin(val1, val2, arg);
 
-    if (arg == 2) (*node_lsc_coup_idx)[lnodeid] = lsc_index_2;  // else keep the old lsc coupling
+    if (arg == 2) (node_lsc_coup_idx)[lnodeid] = lsc_index_2;  // else keep the old lsc coupling
 
     // now copy the values
     err = vec1->ReplaceMyValue(lnodeid, 0, final_val);
@@ -600,11 +596,11 @@ void XFEM::ConditionManager::set_minimum(Teuchos::RCP<Core::LinAlg::Vector<doubl
 
 void XFEM::ConditionManager::set_maximum(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
-    Teuchos::RCP<Core::LinAlg::Vector<int>>& node_lsc_coup_idx)
+    Core::LinAlg::Vector<int>& node_lsc_coup_idx)
 {
   int err = -1;
 
-  check_for_equal_maps(vec1, vec2);
+  check_for_equal_maps(*vec1, *vec2);
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < bg_dis_->num_my_row_nodes(); lnodeid++)
@@ -616,7 +612,7 @@ void XFEM::ConditionManager::set_maximum(Teuchos::RCP<Core::LinAlg::Vector<doubl
     int arg = -1;
     double final_val = XFEM::argmax(val1, val2, arg);
 
-    if (arg == 2) (*node_lsc_coup_idx)[lnodeid] = lsc_index_2;  // else keep the old lsc coupling
+    if (arg == 2) (node_lsc_coup_idx)[lnodeid] = lsc_index_2;  // else keep the old lsc coupling
 
     // now copy the values
     err = vec1->ReplaceMyValue(lnodeid, 0, final_val);
@@ -627,11 +623,11 @@ void XFEM::ConditionManager::set_maximum(Teuchos::RCP<Core::LinAlg::Vector<doubl
 
 void XFEM::ConditionManager::set_difference(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
-    Teuchos::RCP<Core::LinAlg::Vector<int>>& node_lsc_coup_idx)
+    Core::LinAlg::Vector<int>& node_lsc_coup_idx)
 {
   int err = -1;
 
-  check_for_equal_maps(vec1, vec2);
+  check_for_equal_maps(*vec1, *vec2);
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < bg_dis_->num_my_row_nodes(); lnodeid++)
@@ -643,7 +639,7 @@ void XFEM::ConditionManager::set_difference(Teuchos::RCP<Core::LinAlg::Vector<do
     int arg = -1;
     double final_val = XFEM::argmax(val1, -val2, arg);
 
-    if (arg == 2) (*node_lsc_coup_idx)[lnodeid] = lsc_index_2;  // else keep the old lsc coupling
+    if (arg == 2) (node_lsc_coup_idx)[lnodeid] = lsc_index_2;  // else keep the old lsc coupling
 
     // now copy the values
     err = vec1->ReplaceMyValue(lnodeid, 0, final_val);
@@ -654,11 +650,11 @@ void XFEM::ConditionManager::set_difference(Teuchos::RCP<Core::LinAlg::Vector<do
 void XFEM::ConditionManager::set_symmetric_difference(
     Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
-    Teuchos::RCP<Core::LinAlg::Vector<int>>& node_lsc_coup_idx)
+    Core::LinAlg::Vector<int>& node_lsc_coup_idx)
 {
   int err = -1;
 
-  check_for_equal_maps(vec1, vec2);
+  check_for_equal_maps(*vec1, *vec2);
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < bg_dis_->num_my_row_nodes(); lnodeid++)
@@ -676,11 +672,11 @@ void XFEM::ConditionManager::set_symmetric_difference(
 
     if (arg_tmp3 == 2)
       if (arg_tmp2 == 2)
-        (*node_lsc_coup_idx)[lnodeid] = lsc_index_2;  // else keep the old lsc coupling
+        (node_lsc_coup_idx)[lnodeid] = lsc_index_2;  // else keep the old lsc coupling
 
     if (arg_tmp3 == 1)
       if (arg_tmp1 == 2)
-        (*node_lsc_coup_idx)[lnodeid] = lsc_index_2;  // else keep the old lsc coupling
+        (node_lsc_coup_idx)[lnodeid] = lsc_index_2;  // else keep the old lsc coupling
 
 
     // now copy the values
@@ -690,10 +686,9 @@ void XFEM::ConditionManager::set_symmetric_difference(
 }
 
 
-void XFEM::ConditionManager::build_complementary_level_set(
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1)
+void XFEM::ConditionManager::build_complementary_level_set(Core::LinAlg::Vector<double>& vec1)
 {
-  vec1->Scale(-1.0);
+  vec1.Scale(-1.0);
 }
 
 

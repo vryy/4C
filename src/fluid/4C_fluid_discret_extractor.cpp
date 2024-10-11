@@ -366,15 +366,14 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     }
 
     // this is the actual redistribution
-    Teuchos::RCP<Epetra_Map> sepcondelenodesmap =
-        Teuchos::make_rcp<Epetra_Map>(*childdiscret_->element_row_map());
+    Epetra_Map sepcondelenodesmap(*childdiscret_->element_row_map());
     Teuchos::Time time("", true);
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(parentdiscret_->get_comm().Clone());
 
     // Starting from the current partitioning of the discretization, compute nodal maps with a
     // hopefully better partitioning
     Teuchos::RCP<const Epetra_CrsGraph> sepcondnodemap =
-        Core::Rebalance::build_graph(*childdiscret_, *sepcondelenodesmap);
+        Core::Rebalance::build_graph(*childdiscret_, sepcondelenodesmap);
 
     Teuchos::ParameterList rebalanceParams;
     rebalanceParams.set<std::string>("num parts", std::to_string(comm->NumProc()));

@@ -178,8 +178,7 @@ namespace BEAMINTERACTION
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param displacement_vector (in) Global displacement vector.
      */
-    void evaluate_and_assemble_positional_coupling(
-        const Teuchos::RCP<const Core::FE::Discretization>& discret,
+    void evaluate_and_assemble_positional_coupling(const Core::FE::Discretization& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector) const;
@@ -193,8 +192,7 @@ namespace BEAMINTERACTION
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param displacement_vector (in) Global displacement vector.
      */
-    void evaluate_and_assemble_rotational_coupling(
-        const Teuchos::RCP<const Core::FE::Discretization>& discret,
+    void evaluate_and_assemble_rotational_coupling(const Core::FE::Discretization& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector) const;

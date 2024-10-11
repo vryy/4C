@@ -71,7 +71,7 @@ void BEAMINTERACTION::BeamContactPair::setup()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair::create(
     std::vector<Core::Elements::Element const*> const& ele_ptrs,
-    const Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions>& beam_interaction_conditions_ptr)
+    BEAMINTERACTION::BeamInteractionConditions& beam_interaction_conditions_ptr)
 {
   // Check the type of the second element.
   const bool other_is_beam =
@@ -86,7 +86,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
   if (other_is_beam or other_is_solid)
   {
     // Beam-to-beam and beam-to-solid pairs are exclusively created by conditions.
-    return beam_interaction_conditions_ptr->create_contact_pair(ele_ptrs);
+    return beam_interaction_conditions_ptr.create_contact_pair(ele_ptrs);
   }
   else if (other_is_sphere)
   {

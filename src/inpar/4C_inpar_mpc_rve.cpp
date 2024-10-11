@@ -15,13 +15,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 // set the mpc specific parameters
-void Inpar::RveMpc::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::RveMpc::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
 
 
-  Teuchos::ParameterList& mpc = list->sublist("MULTI POINT CONSTRAINTS", false, "");
+  Teuchos::ParameterList& mpc = list.sublist("MULTI POINT CONSTRAINTS", false, "");
 
   Teuchos::setStringToIntegralParameter<Inpar::RveMpc::RveReferenceDeformationDefinition>(
       "RVE_REFERENCE_POINTS", "automatic", "Method of definition of the reference points of an RVE",

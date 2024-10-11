@@ -132,8 +132,8 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
 
   ia_state_ptr_->get_dis_np() =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state_ptr()->get_dis_np());
-  BEAMINTERACTION::UTILS::periodic_boundary_consistent_dis_vector(ia_state_ptr_->get_dis_np(),
-      tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), ia_discret_);
+  BEAMINTERACTION::UTILS::periodic_boundary_consistent_dis_vector(*ia_state_ptr_->get_dis_np(),
+      *tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), *ia_discret_);
 
   // -------------------------------------------------------------------------
   // initialize coupling adapter to transform matrices between the two discrets
@@ -588,9 +588,9 @@ void Solid::ModelEvaluator::BeamInteraction::reset(const Core::LinAlg::Vector<do
 
   // get current displacement state and export to interaction discretization dofmap
   BEAMINTERACTION::UTILS::update_dof_map_of_vector(
-      ia_discret_, ia_state_ptr_->get_dis_np(), global_state().get_dis_np());
-  BEAMINTERACTION::UTILS::periodic_boundary_consistent_dis_vector(ia_state_ptr_->get_dis_np(),
-      tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), ia_discret_);
+      *ia_discret_, ia_state_ptr_->get_dis_np(), global_state().get_dis_np());
+  BEAMINTERACTION::UTILS::periodic_boundary_consistent_dis_vector(*ia_state_ptr_->get_dis_np(),
+      *tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), *ia_discret_);
 
   // update column vector
   ia_state_ptr_->get_dis_col_np() =
@@ -954,8 +954,7 @@ bool Solid::ModelEvaluator::BeamInteraction::check_if_beam_discret_redistributio
       Inpar::BEAMINTERACTION::repstr_adaptive)
     return true;
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dis_increment =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
+  Core::LinAlg::Vector<double> dis_increment(*global_state().dof_row_map(), true);
   int doflid[3];
   for (int i = 0; i < discret_ptr_->num_my_row_nodes(); ++i)
   {
@@ -979,15 +978,15 @@ bool Solid::ModelEvaluator::BeamInteraction::check_if_beam_discret_redistributio
       // about a periodic boundary shift of a node between dis_at_last_redistr_ and the current
       // disp)
       doflid[dim] = dis_at_last_redistr_->Map().LID(dofnode[dim]);
-      (*dis_increment)[doflid[dim]] =
+      (dis_increment)[doflid[dim]] =
           (*global_state().get_dis_np())[doflid[dim]] - (*dis_at_last_redistr_)[doflid[dim]];
     }
   }
 
   // get maximal displacement increment since last redistribution over all procs
   std::array<double, 2> extrema = {0.0, 0.0};
-  dis_increment->MinValue(&extrema[0]);
-  dis_increment->MaxValue(&extrema[1]);
+  dis_increment.MinValue(&extrema[0]);
+  dis_increment.MaxValue(&extrema[1]);
   double gmaxdisincr = std::max(-extrema[0], extrema[1]);
 
   // some verbose screen output
@@ -1159,13 +1158,13 @@ void Solid::ModelEvaluator::BeamInteraction::update_maps()
   // todo: check if update is necessary (->SameAs())
 
   // beam displacement
-  BEAMINTERACTION::UTILS::update_dof_map_of_vector(ia_discret_, ia_state_ptr_->get_dis_np());
+  BEAMINTERACTION::UTILS::update_dof_map_of_vector(*ia_discret_, ia_state_ptr_->get_dis_np());
 
   // get current displacement state and export to interaction discretization dofmap
   BEAMINTERACTION::UTILS::update_dof_map_of_vector(
-      ia_discret_, ia_state_ptr_->get_dis_np(), global_state().get_dis_np());
-  BEAMINTERACTION::UTILS::periodic_boundary_consistent_dis_vector(ia_state_ptr_->get_dis_np(),
-      tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), ia_discret_);
+      *ia_discret_, ia_state_ptr_->get_dis_np(), global_state().get_dis_np());
+  BEAMINTERACTION::UTILS::periodic_boundary_consistent_dis_vector(*ia_state_ptr_->get_dis_np(),
+      *tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), *ia_discret_);
 
   // update column vector
   ia_state_ptr_->get_dis_col_np() =

@@ -66,7 +66,7 @@ namespace SSTI
     //! assemble RHS
     void assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> RHS,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> RHSscatra,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> RHSstructure,
+        const Core::LinAlg::Vector<double>& RHSstructure,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> RHSthermo);
 
     //! assemble ScaTra-Block into system matrix

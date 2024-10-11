@@ -92,7 +92,7 @@ void XFEM::LevelSetCoupling::set_cutter_discretization()
 
   // do we have node-matching disretizations? otherwise we need to somehow project quantities
   // between the meshes
-  have_nodematching_dis_ = have_matching_nodes(cutter_dis_, bg_dis_);
+  have_nodematching_dis_ = have_matching_nodes(*cutter_dis_, *bg_dis_);
 
 
   std::string dofset_name = "";
@@ -114,20 +114,19 @@ void XFEM::LevelSetCoupling::set_cutter_discretization()
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 bool XFEM::LevelSetCoupling::have_matching_nodes(
-    const Teuchos::RCP<Core::FE::Discretization>& dis_A,
-    const Teuchos::RCP<Core::FE::Discretization>& dis_B)
+    Core::FE::Discretization& dis_A, Core::FE::Discretization& dis_B)
 {
   // check for equal node row maps
-  const Epetra_Map* noderowmap_A = dis_A->node_row_map();
-  const Epetra_Map* noderowmap_B = dis_B->node_row_map();
+  const Epetra_Map* noderowmap_A = dis_A.node_row_map();
+  const Epetra_Map* noderowmap_B = dis_B.node_row_map();
 
   if (!(noderowmap_A->SameAs(*noderowmap_B))) return false;
 
   // check for equal node coordinates
   for (int lid = 0; lid < noderowmap_A->NumMyElements(); ++lid)
   {
-    const Core::Nodes::Node* node_A = dis_A->l_row_node(lid);
-    const Core::Nodes::Node* node_B = dis_B->l_row_node(lid);
+    const Core::Nodes::Node* node_A = dis_A.l_row_node(lid);
+    const Core::Nodes::Node* node_B = dis_B.l_row_node(lid);
 
     const int nsd = node_A->n_dim();
 
@@ -522,7 +521,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
 
   // map the cutterdis-based phinp to the bgdis-noderowmap based phinp
   map_cutter_to_bg_vector(
-      cutter_dis_, cutter_phinp_, cutter_nds_phi_, bg_dis_, phinp_, bg_nds_phi_);
+      cutter_dis_, *cutter_phinp_, cutter_nds_phi_, bg_dis_, *phinp_, bg_nds_phi_);
 
   // check if boundary position changed from the last step
 
@@ -540,11 +539,11 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
  *---------------------------------------------------------------------------*/
 void XFEM::LevelSetCoupling::map_cutter_to_bg_vector(
     const Teuchos::RCP<Core::FE::Discretization>& source_dis,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& source_vec_dofbased, const int source_nds,
+    Core::LinAlg::Vector<double>& source_vec_dofbased, const int source_nds,
     const Teuchos::RCP<Core::FE::Discretization>& target_dis,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& target_vec_dofbased, const int target_nds)
+    Core::LinAlg::Vector<double>& target_vec_dofbased, const int target_nds)
 {
-  if (have_matching_nodes(source_dis, target_dis))  // check for equal node positions
+  if (have_matching_nodes(*source_dis, *target_dis))  // check for equal node positions
   {
     // here we assume that source_dis and target_dis are equal!
 
@@ -568,11 +567,11 @@ void XFEM::LevelSetCoupling::map_cutter_to_bg_vector(
         FOUR_C_THROW("we expect a unique dof per node here!");
 
       std::vector<double> val_source;
-      Core::FE::extract_my_values(*source_vec_dofbased, val_source, lm_source);
+      Core::FE::extract_my_values(source_vec_dofbased, val_source, lm_source);
 
       // set to a dofrowmap based vector!
-      const int lid_target = target_vec_dofbased->Map().LID(lm_target[0]);
-      const int err = target_vec_dofbased->ReplaceMyValues(1, val_source.data(), &lid_target);
+      const int lid_target = target_vec_dofbased.Map().LID(lm_target[0]);
+      const int err = target_vec_dofbased.ReplaceMyValues(1, val_source.data(), &lid_target);
       if (err) FOUR_C_THROW("could not replace values for convective velocity");
     }
   }

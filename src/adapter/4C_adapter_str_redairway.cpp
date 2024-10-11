@@ -58,16 +58,16 @@ Adapter::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
 
 
 /*======================================================================*/
-void Adapter::StructureRedAirway::set_pressure(Teuchos::RCP<Core::LinAlg::Vector<double>> couppres)
+void Adapter::StructureRedAirway::set_pressure(Core::LinAlg::Vector<double>& couppres)
 {
-  const Epetra_BlockMap& condmap = couppres->Map();
+  const Epetra_BlockMap& condmap = couppres.Map();
 
   for (int i = 0; i < condmap.NumMyElements(); ++i)
   {
     int condID = condmap.GID(i);
     Core::Conditions::Condition* cond = coupcond_[condID];
     std::vector<double> newval(6, 0.0);
-    newval[0] = (*couppres)[i];
+    newval[0] = (couppres)[i];
     cond->parameters().add("VAL", newval);
   }
 }
@@ -153,17 +153,17 @@ void Adapter::StructureRedAirway::init_vol()
 
 
 /*======================================================================*/
-void Adapter::StructureRedAirway::calc_flux(Teuchos::RCP<Core::LinAlg::Vector<double>> coupflux,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> coupvol, double dt)
+void Adapter::StructureRedAirway::calc_flux(
+    Core::LinAlg::Vector<double>& coupflux, Core::LinAlg::Vector<double>& coupvol, double dt)
 {
   calc_vol(vnp_);
 
   for (int i = 0; i < coupmap_->NumMyElements(); ++i)
   {
     int coupID = coupmap_->GID(i);
-    int lid = coupflux->Map().LID(coupID);
-    (*coupflux)[lid] = (vnp_[coupID] - vn_[coupID]) / dt;
-    (*coupvol)[lid] = vnp_[coupID];
+    int lid = coupflux.Map().LID(coupID);
+    (coupflux)[lid] = (vnp_[coupID] - vn_[coupID]) / dt;
+    (coupvol)[lid] = vnp_[coupID];
   }
 }
 

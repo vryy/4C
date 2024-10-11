@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 Teuchos::RCP<Adapter::ArtNet> Arteries::UTILS::create_algorithm(
     Inpar::ArtDyn::TimeIntegrationScheme timintscheme, Teuchos::RCP<Core::FE::Discretization> dis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
-    const Teuchos::ParameterList& artparams, Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    const Teuchos::ParameterList& artparams, Core::IO::DiscretizationWriter& output)
 {
   // Creation of Coupled Problem algortihm.
   Teuchos::RCP<Adapter::ArtNet> algo = Teuchos::null;
@@ -41,14 +41,14 @@ Teuchos::RCP<Adapter::ArtNet> Arteries::UTILS::create_algorithm(
     {
       // create algorithm
       algo = Teuchos::make_rcp<Arteries::ArtNetExplicitTimeInt>(
-          dis, linsolvernumber, probparams, artparams, *output);
+          dis, linsolvernumber, probparams, artparams, output);
       break;
     }
     case Inpar::ArtDyn::TimeIntegrationScheme::stationary:
     {
       // create algorithm
       algo = Teuchos::make_rcp<Arteries::ArtNetImplStationary>(
-          dis, linsolvernumber, probparams, artparams, *output);
+          dis, linsolvernumber, probparams, artparams, output);
       break;
     }
     default:
@@ -70,24 +70,23 @@ void Arteries::UTILS::assign_material_pointers(
   Teuchos::RCP<Core::FE::Discretization> arterydis = problem->get_dis(artery_disname);
   Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
 
-  set_material_pointers_matching_grid(arterydis, scatradis);
+  set_material_pointers_matching_grid(*arterydis, *scatradis);
 }
 
 /*----------------------------------------------------------------------*
  | reset Material pointers after redistribution        kremheller 03/18 |
  *----------------------------------------------------------------------*/
 void Arteries::UTILS::set_material_pointers_matching_grid(
-    Teuchos::RCP<const Core::FE::Discretization> sourcedis,
-    Teuchos::RCP<const Core::FE::Discretization> targetdis)
+    const Core::FE::Discretization& sourcedis, const Core::FE::Discretization& targetdis)
 {
-  const int numelements = targetdis->num_my_col_elements();
+  const int numelements = targetdis.num_my_col_elements();
 
   for (int i = 0; i < numelements; ++i)
   {
-    Core::Elements::Element* targetele = targetdis->l_col_element(i);
+    Core::Elements::Element* targetele = targetdis.l_col_element(i);
     const int gid = targetele->id();
 
-    Core::Elements::Element* sourceele = sourcedis->g_element(gid);
+    Core::Elements::Element* sourceele = sourcedis.g_element(gid);
 
     // for coupling we add the source material to the target element and vice versa
     targetele->add_material(sourceele->material());

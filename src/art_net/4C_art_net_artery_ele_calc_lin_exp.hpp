@@ -106,8 +106,8 @@ namespace Discret
           const Core::LinAlg::Matrix<my::iel_, 1>& eareanp,
           const Core::LinAlg::Matrix<my::iel_, 1>& earean,
           Core::LinAlg::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
-          Core::LinAlg::Matrix<2 * my::iel_, 1>& rhs,
-          Teuchos::RCP<const Core::Mat::Material> material, double dt);
+          Core::LinAlg::Matrix<2 * my::iel_, 1>& rhs, const Core::Mat::Material& material,
+          double dt);
 
       virtual bool solve_riemann(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,

@@ -20,14 +20,14 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::Mortar::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Mortar::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   /* parameters for mortar coupling */
-  Teuchos::ParameterList& mortar = list->sublist("MORTAR COUPLING", false, "");
+  Teuchos::ParameterList& mortar = list.sublist("MORTAR COUPLING", false, "");
 
   setStringToIntegralParameter<Inpar::Mortar::ShapeFcn>("LM_SHAPEFCN", "Dual",
       "Type of employed set of shape functions",

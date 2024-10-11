@@ -123,8 +123,8 @@ namespace FLD
     moments for velocities, pressure and Cs are added to global
     'sum' vectors.
     */
-    void do_time_sample(const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> force);
+    void do_time_sample(
+        const Core::LinAlg::Vector<double>& velnp, const Core::LinAlg::Vector<double>& force);
 
 
     /*!
@@ -132,9 +132,9 @@ namespace FLD
     values are added to global vectors. This method allows to do the time
     average of the nodal values after a certain amount of timesteps.
     */
-    void do_loma_time_sample(const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> scanp,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> force, const double eosfac);
+    void do_loma_time_sample(const Core::LinAlg::Vector<double>& velnp,
+        const Core::LinAlg::Vector<double>& scanp, const Core::LinAlg::Vector<double>& force,
+        const double eosfac);
 
 
     /*!
@@ -142,9 +142,8 @@ namespace FLD
     values are added to global vectors. This method allows to do the time
     average of the nodal values after a certain amount of timesteps.
     */
-    void do_scatra_time_sample(const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> scanp,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> force);
+    void do_scatra_time_sample(const Core::LinAlg::Vector<double>& velnp,
+        const Core::LinAlg::Vector<double>& scanp, const Core::LinAlg::Vector<double>& force);
 
 
     /*!

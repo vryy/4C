@@ -836,24 +836,24 @@ void CONTACT::SelfBinaryTree::calculate_dual_graph(
  |  Calculate number of slabs intersections (private)      schmidt 12/18|
  *----------------------------------------------------------------------*/
 int CONTACT::SelfBinaryTree::calculate_slabs_intercepts(
-    Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
+    SelfBinaryTreeNode& treenode1, SelfBinaryTreeNode& treenode2)
 {
   int nintercepts = 0;
 
   for (int i = 0; i < kdop() / 2; ++i)
   {
-    if (treenode1->slabs()(i, 0) <= treenode2->slabs()(i, 0))
+    if (treenode1.slabs()(i, 0) <= treenode2.slabs()(i, 0))
     {
-      if (treenode1->slabs()(i, 1) >= treenode2->slabs()(i, 0))
+      if (treenode1.slabs()(i, 1) >= treenode2.slabs()(i, 0))
         nintercepts++;
-      else if (treenode1->slabs()(i, 1) >= treenode2->slabs()(i, 1))
+      else if (treenode1.slabs()(i, 1) >= treenode2.slabs()(i, 1))
         nintercepts++;
     }
-    else if (treenode1->slabs()(i, 0) >= treenode2->slabs()(i, 0))
+    else if (treenode1.slabs()(i, 0) >= treenode2.slabs()(i, 0))
     {
-      if (treenode2->slabs()(i, 1) >= treenode1->slabs()(i, 1))
+      if (treenode2.slabs()(i, 1) >= treenode1.slabs()(i, 1))
         nintercepts++;
-      else if (treenode2->slabs()(i, 1) >= treenode1->slabs()(i, 0))
+      else if (treenode2.slabs()(i, 1) >= treenode1.slabs()(i, 0))
         nintercepts++;
     }
   }
@@ -938,7 +938,7 @@ void CONTACT::SelfBinaryTree::initialize_tree_bottom_up(
 
     // check if the new tree node includes the whole self contact-surface in this case the tree node
     // has saved itself as adjacent edge
-    if (adjEdges[0] == contractedEdge)
+    if (*adjEdges[0] == *contractedEdge)
     {
       // save the tree node as root and continue the loop
       roots_.push_back(newNode);
@@ -974,7 +974,7 @@ void CONTACT::SelfBinaryTree::add_tree_nodes_to_contact_pairs(
 {
   bool isadjacent(true);
 
-  if (n_dim() == 2) isadjacent = test_adjacent_2d(treenode1, treenode2);
+  if (n_dim() == 2) isadjacent = test_adjacent_2d(*treenode1, *treenode2);
   if (n_dim() == 3) isadjacent = test_adjacent_3d(treenode1, treenode2);
   if (!isadjacent)
   {
@@ -1057,7 +1057,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tnodes()
             for (int l = 0; l < (int)adjtnodes.size(); ++l)
             {
               if (adjtnodes[l] == Teuchos::null) FOUR_C_THROW("Teuchos::null pointer");
-              if (adjofleftchild[k]->parent() == adjtnodes[l])
+              if (*adjofleftchild[k]->parent() == *adjtnodes[l])
               {
                 issaved = true;
                 break;
@@ -1078,7 +1078,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tnodes()
             for (int m = 0; m < (int)adjtnodes.size(); ++m)
             {
               if (adjtnodes[m] == Teuchos::null) FOUR_C_THROW("Teuchos::null pointer");
-              if (adjofrightchild[k]->parent() == adjtnodes[m])
+              if (*adjofrightchild[k]->parent() == *adjtnodes[m])
               {
                 issaved = true;
                 break;
@@ -1126,7 +1126,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tnodes()
             for (int p = 0; p < (int)adjtnodes.size(); ++p)
             {
               if (adjtnode == Teuchos::null) FOUR_C_THROW("Teuchos::null vector!!");
-              if (adjtnode == adjtnodes[p])
+              if (*adjtnode == *adjtnodes[p])
               {
                 issaved = true;
                 break;
@@ -1147,22 +1147,22 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tnodes()
 /*----------------------------------------------------------------------*
  | Search for self contact (protected)                        popp 01/11|
  *----------------------------------------------------------------------*/
-void CONTACT::SelfBinaryTree::search_self_contact(Teuchos::RCP<SelfBinaryTreeNode> treenode)
+void CONTACT::SelfBinaryTree::search_self_contact(SelfBinaryTreeNode& treenode)
 {
-  if (treenode->qualified_vectors().size() == 0) FOUR_C_THROW("no test vectors defined!");
+  if (treenode.qualified_vectors().size() == 0) FOUR_C_THROW("no test vectors defined!");
 
   // if there is a qualified sample vector, there is no self contact
-  for (int i = 0; i < (int)treenode->qualified_vectors().size(); i++)
-    if (treenode->qualified_vectors()[i] == true)
+  for (int i = 0; i < (int)treenode.qualified_vectors().size(); i++)
+    if (treenode.qualified_vectors()[i] == true)
     {
       return;
     }
 
-  if (treenode->type() != SELFCO_LEAF)
+  if (treenode.type() != SELFCO_LEAF)
   {
-    search_self_contact(treenode->leftchild());
-    search_self_contact(treenode->rightchild());
-    evaluate_contact_and_adjacency(treenode->leftchild(), treenode->rightchild(), true);
+    search_self_contact(*treenode.leftchild());
+    search_self_contact(*treenode.rightchild());
+    evaluate_contact_and_adjacency(treenode.leftchild(), treenode.rightchild(), true);
   }
 }
 
@@ -1175,7 +1175,7 @@ void CONTACT::SelfBinaryTree::search_root_contact(
   // check if tree nodes intercept (they only intercept if ALL slabs intersect!)
   int nintercepts = 0;
 
-  nintercepts = calculate_slabs_intercepts(treenode1, treenode2);
+  nintercepts = calculate_slabs_intercepts(*treenode1, *treenode2);
 
   // tree nodes intercept
   if (nintercepts == kdop() / 2)
@@ -1225,7 +1225,7 @@ void CONTACT::SelfBinaryTree::evaluate_contact_and_adjacency(
   // (they only intercept if ALL slabs intersect!)
   int nintercepts = 0;
 
-  nintercepts = calculate_slabs_intercepts(treenode1, treenode2);
+  nintercepts = calculate_slabs_intercepts(*treenode1, *treenode2);
 
   if (nintercepts == kdop() / 2)
   {
@@ -1233,7 +1233,7 @@ void CONTACT::SelfBinaryTree::evaluate_contact_and_adjacency(
     if (isadjacent)
     {
       if (n_dim() == 2)
-        isadjacent = test_adjacent_2d(treenode1, treenode2);
+        isadjacent = test_adjacent_2d(*treenode1, *treenode2);
       else
       {
         isadjacent = test_adjacent_3d(treenode1, treenode2);
@@ -1296,12 +1296,12 @@ void CONTACT::SelfBinaryTree::evaluate_contact_and_adjacency(
  | find contact and test adjacency (public)                    popp 06/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::SelfBinaryTree::test_adjacent_2d(
-    Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
+    SelfBinaryTreeNode& treenode1, SelfBinaryTreeNode& treenode2)
 {
   if (n_dim() != 2) FOUR_C_THROW("test_adjacent_2d: problem must be 2D!!\n");
 
-  std::vector<int> endnodes1 = treenode1->endnodes();
-  std::vector<int> endnodes2 = treenode2->endnodes();
+  std::vector<int> endnodes1 = treenode1.endnodes();
+  std::vector<int> endnodes2 = treenode2.endnodes();
 
   if (endnodes1.size() != 2 or endnodes2.size() != 2)
     FOUR_C_THROW("treenode has not 2 endnodes!!\n");
@@ -1347,7 +1347,7 @@ bool CONTACT::SelfBinaryTree::test_adjacent_3d(
     std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjtnodes = treenode1->adjacent_treenodes();
     for (int i = 0; i < (int)adjtnodes.size(); i++)
     {
-      if (adjtnodes[i] == treenode2)
+      if (*adjtnodes[i] == *treenode2)
       {
         //   treenodes are adjacent
         return true;
@@ -1361,7 +1361,7 @@ bool CONTACT::SelfBinaryTree::test_adjacent_3d(
     // (they only intercept if ALL slabs intercept!)
     int nintercepts = 0;
 
-    nintercepts = calculate_slabs_intercepts(treenode1, treenode2);
+    nintercepts = calculate_slabs_intercepts(*treenode1, *treenode2);
 
     // if the bounding voumes overlap
     if (nintercepts == kdop() / 2)
@@ -1373,7 +1373,7 @@ bool CONTACT::SelfBinaryTree::test_adjacent_3d(
             adjacencymatrix_[treenode1->elelist()[0]];
         for (int i = 0; i < (int)adjleafs.size(); i++)
         {
-          if (treenode2 == adjleafs[i])
+          if (*treenode2 == *adjleafs[i])
           {
             // leaves are adjacent
             return true;
@@ -1491,7 +1491,7 @@ void CONTACT::SelfBinaryTree::search_contact()
   //**********************************************************************
   // STEP 3: search for self contact starting at root nodes
   //**********************************************************************
-  for (int k = 0; k < (int)myroots.size(); ++k) search_self_contact(roots_[myroots[k]]);
+  for (int k = 0; k < (int)myroots.size(); ++k) search_self_contact(*roots_[myroots[k]]);
 
   //**********************************************************************
   // STEP 4: search for two-body contact between different roots
@@ -1562,10 +1562,9 @@ void CONTACT::SelfBinaryTree::search_contact()
     int gid = elements_->GID(i);
     if (contactpairs_.find(gid) != contactpairs_.end()) locdata.push_back(gid);
   }
-  Teuchos::RCP<Epetra_Map> mymap =
-      Teuchos::make_rcp<Epetra_Map>(-1, (int)locdata.size(), locdata.data(), 0, get_comm());
-  Teuchos::RCP<Epetra_Map> redmap = Core::LinAlg::allreduce_e_map(*mymap);
-  Core::Communication::Exporter ex(*mymap, *redmap, get_comm());
+  Epetra_Map mymap(-1, (int)locdata.size(), locdata.data(), 0, get_comm());
+  Teuchos::RCP<Epetra_Map> redmap = Core::LinAlg::allreduce_e_map(mymap);
+  Core::Communication::Exporter ex(mymap, *redmap, get_comm());
   ex.do_export(contactpairs_);
 
   // now do new slave and master sorting
@@ -1688,7 +1687,7 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
             // find the old edge in the list of neighbors and replace it by the new edge
             for (unsigned a = 0; a < edge_iter->second.size(); ++a)
             {
-              if (edge_iter->second.at(a) == adjEdges[j]) edge_iter->second.at(a) = newEdge;
+              if (*edge_iter->second.at(a) == *adjEdges[j]) edge_iter->second.at(a) = newEdge;
             }
           }
         }
@@ -1705,7 +1704,7 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
         for (unsigned n = 0; n < newAdjEdges.size(); ++n)
         {
           // here we make use of the customized == operator in dual edge
-          if (newAdjEdges[n] == newEdge)
+          if (*newAdjEdges[n] == *newEdge)
           {
             issaved = true;
             break;
@@ -1718,7 +1717,7 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
         // aren't adjacent edges of the contracted edge, as we have to update those separately
 
         // get the common (tree)node of the contracted edge and the old edge
-        Teuchos::RCP<SelfBinaryTreeNode> commonnode = contractedEdge->common_node(adjEdges[j]);
+        Teuchos::RCP<SelfBinaryTreeNode> commonnode = contractedEdge->common_node(*adjEdges[j]);
 
         // loop over all neighbors of old edge
         for (unsigned k = 0; k < adjEdgesOfNeighbor.size(); ++k)
@@ -1726,12 +1725,12 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
           // check if the current edge is not the contracted edge or a neighbor of the contracted
           // edge (we do not need to update these edges now)
           if (adjEdgesOfNeighbor[k] != contractedEdge &&
-              adjEdges[j]->common_node(adjEdgesOfNeighbor[k]) != commonnode)
+              adjEdges[j]->common_node(*adjEdgesOfNeighbor[k]) != commonnode)
           {
             // if the current edge (=neighbor of the new and old edge) is not a neighbor of the
             // contracted edge, they do not have a common node
             Teuchos::RCP<SelfBinaryTreeNode> commonnode2 =
-                contractedEdge->common_node(adjEdgesOfNeighbor[k]);
+                contractedEdge->common_node(*adjEdgesOfNeighbor[k]);
 
             // now we want to save the current edge as neighbor of the new edge
             if (commonnode2 == Teuchos::null)
@@ -1750,7 +1749,7 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
                 bool edgesaved = false;
                 for (unsigned z = 0; z < edge_iter1->second.size(); ++z)
                 {
-                  if (edge_iter1->second.at(z) == adjEdgesOfNeighbor[k]) edgesaved = true;
+                  if (*edge_iter1->second.at(z) == *adjEdgesOfNeighbor[k]) edgesaved = true;
                 }
                 // if not yet saved, save it
                 if (!edgesaved) edge_iter1->second.push_back(adjEdgesOfNeighbor[k]);
@@ -1774,7 +1773,7 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
                   edge_iter2->second.begin();
               while (adjIter != edge_iter2->second.end())
               {
-                if (*adjIter == adjEdges[j])
+                if (**adjIter == *adjEdges[j])
                 {
                   // erase the old edge
                   adjIter = edge_iter2->second.erase(adjIter);
@@ -1782,7 +1781,7 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
                 }
                 else
                 {
-                  if (*adjIter == newEdge) newedgesaved = true;
+                  if (**adjIter == *newEdge) newedgesaved = true;
                   ++adjIter;
                 }
               }
@@ -1807,14 +1806,14 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
     Teuchos::RCP<SelfBinaryTreeNode> bnode2 = adjEdges[1]->get_node2();
 
     // check for ring (eight possible combinations)
-    if ((node1 == anode1 && node2 == bnode1 && anode2 == bnode2) ||
-        (node1 == anode2 && node2 == bnode1 && anode1 == bnode2) ||
-        (node1 == anode1 && node2 == bnode2 && anode2 == bnode1) ||
-        (node1 == anode2 && node2 == bnode2 && anode1 == bnode1) ||
-        (node1 == bnode1 && node2 == anode1 && bnode2 == anode2) ||
-        (node1 == bnode2 && node2 == anode1 && bnode1 == anode2) ||
-        (node1 == bnode1 && node2 == anode2 && bnode2 == anode1) ||
-        (node1 == bnode2 && node2 == anode2 && bnode1 == anode1))
+    if ((*node1 == *anode1 && *node2 == *bnode1 && *anode2 == *bnode2) ||
+        (*node1 == *anode2 && *node2 == *bnode1 && *anode1 == *bnode2) ||
+        (*node1 == *anode1 && *node2 == *bnode2 && *anode2 == *bnode1) ||
+        (*node1 == *anode2 && *node2 == *bnode2 && *anode1 == *bnode1) ||
+        (*node1 == *bnode1 && *node2 == *anode1 && *bnode2 == *anode2) ||
+        (*node1 == *bnode2 && *node2 == *anode1 && *bnode1 == *anode2) ||
+        (*node1 == *bnode1 && *node2 == *anode2 && *bnode2 == *anode1) ||
+        (*node1 == *bnode2 && *node2 == *anode2 && *bnode1 == *anode1))
     {
       // check for inconsistency
       if (newAdjEdges.size() != 1) FOUR_C_THROW("Inconsistent 3D ring in dual graph");

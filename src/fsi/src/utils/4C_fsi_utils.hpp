@@ -56,8 +56,8 @@ namespace FSI
   {
     /// Check whether fluid node numbers and ALE node numbers are equal.
     bool fluid_ale_nodes_disjoint(
-        Teuchos::RCP<Core::FE::Discretization> fluiddis,  ///< pointer to fluid discretization
-        Teuchos::RCP<Core::FE::Discretization> aledis     ///< pointer to ALE discretization
+        Core::FE::Discretization& fluiddis,  ///< pointer to fluid discretization
+        Core::FE::Discretization& aledis     ///< pointer to ALE discretization
     );
 
     /*!
@@ -89,9 +89,9 @@ namespace FSI
 
       /// Compute new coupling matrices D and M for solid/fluid
       void evaluate_mortar(
-          Teuchos::RCP<Core::LinAlg::Vector<double>> idispstruct,  ///< displacement of structure
-          Teuchos::RCP<Core::LinAlg::Vector<double>> idispfluid,   ///< (proj.) displacement of ale
-          Coupling::Adapter::CouplingMortar& coupsf                ///< mortar adapter
+          Core::LinAlg::Vector<double>& idispstruct,  ///< displacement of structure
+          Core::LinAlg::Vector<double>& idispfluid,   ///< (proj.) displacement of ale
+          Coupling::Adapter::CouplingMortar& coupsf   ///< mortar adapter
       );
 
       /// Compute new coupling matrices D and M for solid/ale coupling
@@ -121,32 +121,30 @@ namespace FSI
       );
 
       /// compute approximate interface rotation (structuresplit)
-      void rotation(Core::FE::Discretization& mtrdis,           ///< mtr interface  discretization
-          Teuchos::RCP<Core::LinAlg::Vector<double>> idispale,  ///< vector of ALE displacements
-          const Epetra_Comm& comm,                              ///< communicator
+      void rotation(Core::FE::Discretization& mtrdis,  ///< mtr interface  discretization
+          Core::LinAlg::Vector<double>& idispale,      ///< vector of ALE displacements
+          const Epetra_Comm& comm,                     ///< communicator
           std::map<int, double>& rotrat,  ///< rotation ratio of tangential displacements
-          Teuchos::RCP<Core::LinAlg::Vector<double>>
+          Core::LinAlg::Vector<double>&
               rotfull  ///< vector of full displacements in tangential directions
       );
 
 
       /// calculate current position of structure interface nodes
       std::map<int, Core::LinAlg::Matrix<3, 1>> current_struct_pos(
-          Teuchos::RCP<Core::LinAlg::Vector<double>>
-              reddisp,                             ///< redundant version of structure displacements
+          Core::LinAlg::Vector<double>& reddisp,   ///< redundant version of structure displacements
           Core::FE::Discretization& interfacedis,  ///< interface discretization
           std::map<int, double>& maxcoord);
 
 
       /// project ALE nodes onto the structure surface
       void slide_projection(Adapter::FSIStructureWrapper& structure,  ///< structure adapter
-          Teuchos::RCP<Core::FE::Discretization> fluiddis,            ///< fluid discretization
+          Core::FE::Discretization& fluiddis,                         ///< fluid discretization
           Teuchos::RCP<Core::LinAlg::Vector<double>>
-              idispale,  ///< standard ALE interface displacement
-          Teuchos::RCP<Core::LinAlg::Vector<double>>
-              iprojdispale,                           ///< projected ALE interface displacement
-          Coupling::Adapter::CouplingMortar& coupsf,  ///< mortar adapter
-          const Epetra_Comm& comm                     ///< communicator
+              idispale,                                ///< standard ALE interface displacement
+          Core::LinAlg::Vector<double>& iprojdispale,  ///< projected ALE interface displacement
+          Coupling::Adapter::CouplingMortar& coupsf,   ///< mortar adapter
+          const Epetra_Comm& comm                      ///< communicator
       );
 
       /// Build full redundant structure and fluid elements.

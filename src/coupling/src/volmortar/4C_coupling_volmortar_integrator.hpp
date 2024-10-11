@@ -74,20 +74,20 @@ namespace Coupling::VolMortar
 
     */
     void integrate_cells_2d(Core::Elements::Element& sele, Core::Elements::Element& mele,
-        Teuchos::RCP<Mortar::IntCell> cell, Core::LinAlg::SparseMatrix& dmatrix,
-        Core::LinAlg::SparseMatrix& mmatrix, Teuchos::RCP<const Core::FE::Discretization> slavedis,
-        Teuchos::RCP<const Core::FE::Discretization> masterdis, int sdofset, int mdofset);
+        Mortar::IntCell& cell, Core::LinAlg::SparseMatrix& dmatrix,
+        Core::LinAlg::SparseMatrix& mmatrix, const Core::FE::Discretization& slavedis,
+        const Core::FE::Discretization& masterdis, int sdofset, int mdofset);
 
     /*!
     \brief Integrate cell for 3D problems
 
     */
     void integrate_cells_3d(Core::Elements::Element& Aele, Core::Elements::Element& Bele,
-        Teuchos::RCP<Coupling::VolMortar::Cell> cell, Core::LinAlg::SparseMatrix& dmatrix_A,
+        Coupling::VolMortar::Cell& cell, Core::LinAlg::SparseMatrix& dmatrix_A,
         Core::LinAlg::SparseMatrix& mmatrix_A, Core::LinAlg::SparseMatrix& dmatrix_B,
-        Core::LinAlg::SparseMatrix& mmatrix_B, Teuchos::RCP<const Core::FE::Discretization> Adis,
-        Teuchos::RCP<const Core::FE::Discretization> Bdis, int sdofset_A, int mdofset_A,
-        int sdofset_B, int mdofset_B);
+        Core::LinAlg::SparseMatrix& mmatrix_B, const Core::FE::Discretization& Adis,
+        const Core::FE::Discretization& Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
+        int mdofset_B);
 
     /*!
     \brief Integrate cell for 3D problems
@@ -98,9 +98,8 @@ namespace Coupling::VolMortar
         Teuchos::RCP<Core::FE::GaussPoints> intpoints, bool switched_conf,
         Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
         Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
-        Teuchos::RCP<const Core::FE::Discretization> Adis,
-        Teuchos::RCP<const Core::FE::Discretization> Bdis, int sdofset_A, int mdofset_A,
-        int sdofset_B, int mdofset_B);
+        const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int sdofset_A,
+        int mdofset_A, int sdofset_B, int mdofset_B);
 
     /*!
     \brief Integrate ele for 3D problems
@@ -109,9 +108,8 @@ namespace Coupling::VolMortar
     void integrate_ele_3d(int domain, Core::Elements::Element& Aele, Core::Elements::Element& Bele,
         Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
         Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
-        Teuchos::RCP<const Core::FE::Discretization> Adis,
-        Teuchos::RCP<const Core::FE::Discretization> Bdis, int sdofset_A, int mdofset_A,
-        int sdofset_B, int mdofset_B);
+        const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int sdofset_A,
+        int mdofset_A, int sdofset_B, int mdofset_B);
 
     /*!
     \brief Integrate ele for 3D problems
@@ -119,8 +117,8 @@ namespace Coupling::VolMortar
     */
     void integrate_ele_based_3d_a_dis(Core::Elements::Element& Aele, std::vector<int>& foundeles,
         Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
-        Teuchos::RCP<const Core::FE::Discretization> Adiscret,
-        Teuchos::RCP<const Core::FE::Discretization> Bdiscret, int dofsetA, int dofsetB);
+        const Core::FE::Discretization& Adiscret, const Core::FE::Discretization& Bdiscret,
+        int dofsetA, int dofsetB);
 
     /*!
     \brief Integrate ele for 3D problems
@@ -128,8 +126,8 @@ namespace Coupling::VolMortar
     */
     void integrate_ele_based_3d_b_dis(Core::Elements::Element& Bele, std::vector<int>& foundeles,
         Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
-        Teuchos::RCP<const Core::FE::Discretization> Adiscret,
-        Teuchos::RCP<const Core::FE::Discretization> Bdiscret, int dofsetA, int dofsetB);
+        const Core::FE::Discretization& Adiscret, const Core::FE::Discretization& Bdiscret,
+        int dofsetA, int dofsetB);
 
    protected:
     /*!
@@ -369,19 +367,16 @@ namespace Coupling::VolMortar
       std::vector<int>& foundeles, int& found, int& gpid, double& jac, double& wgt, double& gpdist,
       double* Axi, double* AuxXi, double* globgp, DualQuad& dq, Shapefcn& shape,
       Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
-      Teuchos::RCP<const Core::FE::Discretization> Adis,
-      Teuchos::RCP<const Core::FE::Discretization> Bdis, int dofseta, int dofsetb,
-      const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
-      const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap);
+      const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int dofseta,
+      int dofsetb, const Epetra_Map& PAB_dofrowmap, const Epetra_Map& PAB_dofcolmap);
 
   // evaluation of nts approach
   template <Core::FE::CellType distype>
   bool cons_interpolator_eval(Core::Nodes::Node* node, Core::Elements::Element* ele,
-      Core::LinAlg::SparseMatrix& pmatrix, Teuchos::RCP<const Core::FE::Discretization> nodediscret,
-      Teuchos::RCP<const Core::FE::Discretization> elediscret, std::vector<int>& foundeles,
-      int& found, int& eleid, double& dist, double* AuxXi, double* nodepos,
-      std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
-      const Teuchos::RCP<const Epetra_Map>& P_dofcolmap);
+      Core::LinAlg::SparseMatrix& pmatrix, const Core::FE::Discretization& nodediscret,
+      const Core::FE::Discretization& elediscret, std::vector<int>& foundeles, int& found,
+      int& eleid, double& dist, double* AuxXi, double* nodepos, std::pair<int, int>& dofset,
+      const Epetra_Map& P_dofrowmap, const Epetra_Map& P_dofcolmap);
 
   //===================================
   // Alternative to VolMortar coupling:

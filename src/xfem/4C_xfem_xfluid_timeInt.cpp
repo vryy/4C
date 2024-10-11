@@ -300,7 +300,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
 
     // just one dofset at new timestep t^(n+1)
     if (numDofSets_new == 1)
-      unique_std_uncut_np = non_intersected_elements(node, wizard_new_);
+      unique_std_uncut_np = non_intersected_elements(node, *wizard_new_);
     else
       unique_std_uncut_np = false;
   }
@@ -312,7 +312,7 @@ void XFEM::XFluidTimeInt::transfer_nodal_dofs_to_new_map(
 
     // just one dofset at new timestep t^n
     if (numDofSets_old == 1)
-      unique_std_uncut_n = non_intersected_elements(node, wizard_old_);
+      unique_std_uncut_n = non_intersected_elements(node, *wizard_old_);
     else
       unique_std_uncut_n = false;
   }
@@ -862,8 +862,7 @@ std::map<int, std::set<int>>& XFEM::XFluidTimeInt::get_node_to_dof_map_for_recon
 // -------------------------------------------------------------------
 // all surrounding elements non-intersected ?
 // -------------------------------------------------------------------
-bool XFEM::XFluidTimeInt::non_intersected_elements(
-    Core::Nodes::Node* n, const Teuchos::RCP<Cut::CutWizard> wizard)
+bool XFEM::XFluidTimeInt::non_intersected_elements(Core::Nodes::Node* n, Cut::CutWizard& wizard)
 {
   const int numele = n->num_element();
 
@@ -875,7 +874,7 @@ bool XFEM::XFluidTimeInt::non_intersected_elements(
     Core::Elements::Element* e = elements[i];
 
     // we have to check elements and its sub-elements in case of quadratic elements
-    Cut::ElementHandle* ehandle = wizard->get_element(e);
+    Cut::ElementHandle* ehandle = wizard.get_element(e);
 
     // elements which do not have an element-handle are non-intersected anyway
     if (ehandle == nullptr) continue;

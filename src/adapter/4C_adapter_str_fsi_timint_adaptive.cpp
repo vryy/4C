@@ -77,23 +77,21 @@ void Adapter::StructureFSITimIntAda::indicate_errors(double& err, double& errcon
 
   // extract the condition part of the full error vector
   // (i.e. only interface displacement DOFs)
-  Teuchos::RCP<Core::LinAlg::Vector<double>> errorcond =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->extract_fsi_cond_vector(*error));
+  Core::LinAlg::Vector<double> errorcond(*interface_->extract_fsi_cond_vector(*error));
 
   // in case of structure split: extract the other part of the full error vector
   // (i.e. only interior displacement DOFs)
-  Teuchos::RCP<Core::LinAlg::Vector<double>> errorother =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->extract_fsi_cond_vector(*error));
+  Core::LinAlg::Vector<double> errorother(*interface_->extract_fsi_cond_vector(*error));
 
   // calculate L2-norms of different subsets of local discretization error vector
   err = Solid::calculate_vector_norm(errnorm_, *error, numdbcdofs_);
-  errcond = Solid::calculate_vector_norm(errnorm_, *errorcond, numdbcfsidofs_);
-  errother = Solid::calculate_vector_norm(errnorm_, *errorother, numdbcinnerdofs_);
+  errcond = Solid::calculate_vector_norm(errnorm_, errorcond, numdbcfsidofs_);
+  errother = Solid::calculate_vector_norm(errnorm_, errorother, numdbcinnerdofs_);
 
   // calculate L-inf-norms of different subsets of local discretization error vector
   errinf = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, *error);
-  errinfcond = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, *errorcond);
-  errinfother = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, *errorother);
+  errinfcond = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, errorcond);
+  errinfother = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, errorother);
 }
 
 /*----------------------------------------------------------------------------*/

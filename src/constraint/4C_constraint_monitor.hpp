@@ -106,9 +106,8 @@ namespace CONSTRAINTS
     void evaluate_monitor(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            systemvector  ///< distributed vector that may be filled
-                          ///< by aasembly of element contributions
+        Core::LinAlg::Vector<double>& systemvector  ///< distributed vector that may be filled
+                                                    ///< by aasembly of element contributions
     );
   };  // class
 }  // namespace CONSTRAINTS

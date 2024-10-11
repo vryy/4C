@@ -55,8 +55,7 @@ namespace FLD
         const Teuchos::RCP<Core::FE::Discretization>& embfluiddiscret, const double& time);
 
     /// build merged fluid dirichlet map extractor
-    void create_merged_dbc_map_extractor(
-        Teuchos::RCP<const Core::LinAlg::MapExtractor> embfluiddbcmaps);
+    void create_merged_dbc_map_extractor(const Core::LinAlg::MapExtractor& embfluiddbcmaps);
 
     //! @name Accessors
     //@{

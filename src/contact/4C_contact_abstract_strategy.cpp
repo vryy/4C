@@ -319,7 +319,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact(
                 << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
                 << std::endl;
     }
-    redistributed = redistribute_contact_old(dis, vel);
+    redistributed = redistribute_contact_old(dis, *vel);
   }
 
   return redistributed;
@@ -378,8 +378,7 @@ bool CONTACT::AbstractStrategy::redistribute_with_safe_ghosting(
  | parallel redistribution                                   popp 09/10 |
  *----------------------------------------------------------------------*/
 bool CONTACT::AbstractStrategy::redistribute_contact_old(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dis, const Core::LinAlg::Vector<double>& vel)
 {
   // decide whether redistribution should be applied or not
   bool first_time_step = is_first_time_step();
@@ -397,7 +396,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact_old(
   if (Teuchos::getIntegralValue<Inpar::Mortar::ExtendGhosting>(
           params().sublist("PARALLEL REDISTRIBUTION"), "GHOSTING_STRATEGY") ==
       Inpar::Mortar::ExtendGhosting::binning)
-    calc_mean_velocity_for_binning(*vel);
+    calc_mean_velocity_for_binning(vel);
 
   /* set old and current displacement state
    * (needed for search within redistribution) */
@@ -684,7 +683,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
     }
     else if (dold_->row_map().NumGlobalElements() > 0)
       dold_ = Mortar::matrix_row_col_transform(
-          dold_, slave_dof_row_map_ptr(true), slave_dof_row_map_ptr(true));
+          *dold_, *slave_dof_row_map_ptr(true), *slave_dof_row_map_ptr(true));
 
     if (mold_ == Teuchos::null)
     {
@@ -694,7 +693,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
       mold_->complete(*gmdofrowmap_, slave_dof_row_map(true));
     }
     else if (mold_->row_map().NumGlobalElements() > 0)
-      mold_ = Mortar::matrix_row_col_transform(mold_, slave_dof_row_map_ptr(true), gmdofrowmap_);
+      mold_ = Mortar::matrix_row_col_transform(*mold_, *slave_dof_row_map_ptr(true), *gmdofrowmap_);
   }
 
   // output contact stress vectors
@@ -765,7 +764,7 @@ void CONTACT::AbstractStrategy::setup(bool redistributed, bool init)
     }
     else
       doldmod_ = Mortar::matrix_row_col_transform(
-          doldmod_, slave_dof_row_map_ptr(true), slave_dof_row_map_ptr(true));
+          *doldmod_, *slave_dof_row_map_ptr(true), *slave_dof_row_map_ptr(true));
   }
 
   if (init)
@@ -1073,13 +1072,12 @@ void CONTACT::AbstractStrategy::calc_mean_velocity_for_binning(
   // create vector of interface velocities
   for (const auto& interface : interfaces())
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> interfaceVelocity =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface->discret().dof_row_map());
-    Core::LinAlg::export_to(velocity, *interfaceVelocity);
+    Core::LinAlg::Vector<double> interfaceVelocity(*interface->discret().dof_row_map());
+    Core::LinAlg::export_to(velocity, interfaceVelocity);
 
     double meanVelocity = 0.0;
 
-    int err = interfaceVelocity->MeanValue(&meanVelocity);
+    int err = interfaceVelocity.MeanValue(&meanVelocity);
     if (err)
       FOUR_C_THROW("Calculation of mean velocity for interface %s failed.",
           interface->discret().name().c_str());
@@ -1795,10 +1793,9 @@ void CONTACT::AbstractStrategy::store_dirichlet_status(
   }
   // create old style dirichtoggle vector (supposed to go away)
   non_redist_gsdirichtoggle_ = Core::LinAlg::create_vector(slave_dof_row_map(true), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dbcmaps->cond_map()));
-  temp->PutScalar(1.0);
-  Core::LinAlg::export_to(*temp, *non_redist_gsdirichtoggle_);
+  Core::LinAlg::Vector<double> temp(*(dbcmaps->cond_map()));
+  temp.PutScalar(1.0);
+  Core::LinAlg::export_to(temp, *non_redist_gsdirichtoggle_);
 
   post_store_dirichlet_status(dbcmaps);
 }
@@ -2133,35 +2130,30 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
   if (emtype == Inpar::CONTACT::output_none) return;
 
   // compute discrete slave and master interface forces
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcslavetemp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmastertemp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mmatrix_->domain_map());
+  Core::LinAlg::Vector<double> fcslavetemp(dmatrix_->row_map());
+  Core::LinAlg::Vector<double> fcmastertemp(mmatrix_->domain_map());
 
   // for self contact, slave and master sets may have changed,
   // thus we have to export z to new D and M dimensions
   if (is_self_contact())
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zexp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
-    if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*z_, *zexp);
-    dmatrix_->multiply(true, *zexp, *fcslavetemp);
-    mmatrix_->multiply(true, *zexp, *fcmastertemp);
+    Core::LinAlg::Vector<double> zexp(dmatrix_->row_map());
+    if (dmatrix_->row_map().NumGlobalElements()) Core::LinAlg::export_to(*z_, zexp);
+    dmatrix_->multiply(true, zexp, fcslavetemp);
+    mmatrix_->multiply(true, zexp, fcmastertemp);
   }
   // if there is no self contact everything is ok
   else
   {
-    dmatrix_->multiply(true, *z_, *fcslavetemp);
-    mmatrix_->multiply(true, *z_, *fcmastertemp);
+    dmatrix_->multiply(true, *z_, fcslavetemp);
+    mmatrix_->multiply(true, *z_, fcmastertemp);
   }
 
   // export the interface forces to full dof layout
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcslave =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmaster =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
-  Core::LinAlg::export_to(*fcslavetemp, *fcslave);
-  Core::LinAlg::export_to(*fcmastertemp, *fcmaster);
+  Core::LinAlg::Vector<double> fcslave(*problem_dofs());
+  Core::LinAlg::Vector<double> fcmaster(*problem_dofs());
+  Core::LinAlg::export_to(fcslavetemp, fcslave);
+  Core::LinAlg::export_to(fcmastertemp, fcmaster);
 
   // contact forces and moments
   std::vector<double> gfcs(3);
@@ -2179,10 +2171,8 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
   std::vector<double> ggmcmnew(3);
 
   // weighted gap vector
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gapslave =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gapmaster =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mmatrix_->domain_map());
+  Core::LinAlg::Vector<double> gapslave(dmatrix_->row_map());
+  Core::LinAlg::Vector<double> gapmaster(mmatrix_->domain_map());
 
   // loop over all interfaces
   for (int i = 0; i < (int)interfaces().size(); ++i)
@@ -2201,9 +2191,9 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
       // forces and positions
       for (int d = 0; d < n_dim(); ++d)
       {
-        int dofid = (fcslavetemp->Map()).LID(cnode->dofs()[d]);
+        int dofid = (fcslavetemp.Map()).LID(cnode->dofs()[d]);
         if (dofid < 0) FOUR_C_THROW("ContactForces: Did not find slave dof in map");
-        nodeforce[d] = (*fcslavetemp)[dofid];
+        nodeforce[d] = (fcslavetemp)[dofid];
         gfcs[d] += nodeforce[d];
         position[d] = cnode->xspatial()[d];
       }
@@ -2225,7 +2215,7 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
         lm[d] = cnode->dofs()[d];
         lmowner[d] = cnode->owner();
       }
-      Core::LinAlg::assemble(*gapslave, posnode, lm, lmowner);
+      Core::LinAlg::assemble(gapslave, posnode, lm, lmowner);
     }
 
     // loop over all master nodes on the current interface
@@ -2242,9 +2232,9 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
       // forces and positions
       for (int d = 0; d < n_dim(); ++d)
       {
-        int dofid = (fcmastertemp->Map()).LID(cnode->dofs()[d]);
+        int dofid = (fcmastertemp.Map()).LID(cnode->dofs()[d]);
         if (dofid < 0) FOUR_C_THROW("ContactForces: Did not find master dof in map");
-        nodeforce[d] = -(*fcmastertemp)[dofid];
+        nodeforce[d] = -(fcmastertemp)[dofid];
         gfcm[d] += nodeforce[d];
         position[d] = cnode->xspatial()[d];
       }
@@ -2266,21 +2256,18 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
         lm[d] = cnode->dofs()[d];
         lmowner[d] = cnode->owner();
       }
-      Core::LinAlg::assemble(*gapmaster, posnode, lm, lmowner);
+      Core::LinAlg::assemble(gapmaster, posnode, lm, lmowner);
     }
   }
 
   // weighted gap
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gapslavefinal =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gapmasterfinal =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mmatrix_->row_map());
-  dmatrix_->multiply(false, *gapslave, *gapslavefinal);
-  mmatrix_->multiply(false, *gapmaster, *gapmasterfinal);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gapfinal =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dmatrix_->row_map());
-  gapfinal->Update(1.0, *gapslavefinal, 0.0);
-  gapfinal->Update(-1.0, *gapmasterfinal, 1.0);
+  Core::LinAlg::Vector<double> gapslavefinal(dmatrix_->row_map());
+  Core::LinAlg::Vector<double> gapmasterfinal(mmatrix_->row_map());
+  dmatrix_->multiply(false, gapslave, gapslavefinal);
+  mmatrix_->multiply(false, gapmaster, gapmasterfinal);
+  Core::LinAlg::Vector<double> gapfinal(dmatrix_->row_map());
+  gapfinal.Update(1.0, gapslavefinal, 0.0);
+  gapfinal.Update(-1.0, gapmasterfinal, 1.0);
 
   // again, for alternative moment: lambda x gap
   // loop over all interfaces
@@ -2301,10 +2288,10 @@ void CONTACT::AbstractStrategy::interface_forces(bool output)
       // LMs and gaps
       for (int d = 0; d < n_dim(); ++d)
       {
-        int dofid = (fcslavetemp->Map()).LID(cnode->dofs()[d]);
+        int dofid = (fcslavetemp.Map()).LID(cnode->dofs()[d]);
         if (dofid < 0) FOUR_C_THROW("ContactForces: Did not find slave dof in map");
-        nodegaps[d] = (*gapslavefinal)[dofid];
-        nodegapm[d] = (*gapmasterfinal)[dofid];
+        nodegaps[d] = (gapslavefinal)[dofid];
+        nodegapm[d] = (gapmasterfinal)[dofid];
         lm[d] = cnode->mo_data().lm()[d];
       }
 

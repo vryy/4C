@@ -123,10 +123,10 @@ namespace Cut
         plain_volumecell_set& cells, std::vector<Core::FE::GaussIntegration>& intpoints);
 
     void append_volume_cell_gauss_points_tessellation(
-        Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Cut::VolumeCell* vc);
+        Core::FE::GaussPointsComposite& gpc, Cut::VolumeCell* vc);
 
     void append_volume_cell_gauss_points_moment_fitting(
-        Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Cut::VolumeCell* vc);
+        Core::FE::GaussPointsComposite& gpc, Cut::VolumeCell* vc);
 
     void append_volume_cell_gauss_points_direct_divergence(
         Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Cut::VolumeCell* vc);

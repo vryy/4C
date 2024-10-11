@@ -49,15 +49,13 @@ namespace PoroMultiPhaseScaTra
         Teuchos::RCP<Core::LinAlg::Vector<double>> rhs) override;
 
     //! set-up of linear system of equations of coupled problem
-    void setup_system(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
+    void setup_system(Core::LinAlg::BlockSparseMatrixBase& sysmat,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs, Core::LinAlg::SparseMatrix& sysmat_cont,
+        Core::LinAlg::SparseMatrix& sysmat_art,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_cont,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_art,
-        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
-        Teuchos::RCP<const Epetra_Map> dbcmap_art,
-        Teuchos::RCP<const Epetra_Map> dbcmap_art_with_collapsed);
+        const Core::LinAlg::MapExtractor& dbcmap_cont, const Epetra_Map& dbcmap_art,
+        const Epetra_Map& dbcmap_art_with_collapsed);
 
     //! setup the strategy
     void setup() override;
@@ -179,7 +177,7 @@ namespace PoroMultiPhaseScaTra
         const Core::LinAlg::SerialDenseVector& Kappa_ele);
 
     //! sum D and M into global force and stiffness matrix
-    void sum_dm_into_global_force_stiff(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    void sum_dm_into_global_force_stiff(Core::LinAlg::BlockSparseMatrixBase& sysmat,
         Teuchos::RCP<Core::LinAlg::Vector<double>> rhs);
 
     //! invert kappa vector

@@ -59,14 +59,14 @@ namespace Discret
           const double timefac,                        ///< time factor
           const double fac,                            ///< Gauss integration factor
           const Core::LinAlg::Matrix<nen_, 1>& funct,  ///< shape functions at int. point
-          const Teuchos::RCP<Core::Conditions::Condition>& cond,  ///< condition
-          const int nume,                  ///< number of transferred electrons
-          const std::vector<int>& stoich,  ///< stoichiometry of the reaction
-          const double valence_k,          ///< valence of the single reactant
-          const int kinetics,              ///< desired electrode kinetics model
-          const double pot0,               ///< actual electrode potential on metal side
-          const double frt,                ///< factor F/RT
-          const double fns,                ///< factor fns = s_k / (nume * faraday * (-1))
+          Core::Conditions::Condition& cond,           ///< condition
+          const int nume,                              ///< number of transferred electrons
+          const std::vector<int>& stoich,              ///< stoichiometry of the reaction
+          const double valence_k,                      ///< valence of the single reactant
+          const int kinetics,                          ///< desired electrode kinetics model
+          const double pot0,                           ///< actual electrode potential on metal side
+          const double frt,                            ///< factor F/RT
+          const double fns,     ///< factor fns = s_k / (nume * faraday * (-1))
           const double scalar,  ///< scaling factor for element matrix and right-hand side vector
                                 ///< contributions
           const int k           ///< index of evaluated scalar
@@ -75,10 +75,10 @@ namespace Discret
       //! evaluate electrode kinetics status information at integration point on domain or boundary
       //! element
       void evaluate_electrode_status_at_integration_point(
-          const Core::Elements::Element* ele,                     ///< current element
-          Core::LinAlg::SerialDenseVector& scalars,               ///< scalars to be computed
-          const Teuchos::ParameterList& params,                   ///< parameter list
-          const Teuchos::RCP<Core::Conditions::Condition>& cond,  ///< condition
+          const Core::Elements::Element* ele,        ///< current element
+          Core::LinAlg::SerialDenseVector& scalars,  ///< scalars to be computed
+          const Teuchos::ParameterList& params,      ///< parameter list
+          Core::Conditions::Condition& cond,         ///< condition
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>&

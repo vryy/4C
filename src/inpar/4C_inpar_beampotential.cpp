@@ -19,14 +19,14 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::BEAMPOTENTIAL::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::BEAMPOTENTIAL::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   /* parameters for potential-based beam interaction */
-  Teuchos::ParameterList& beampotential = list->sublist("BEAM POTENTIAL", false, "");
+  Teuchos::ParameterList& beampotential = list.sublist("BEAM POTENTIAL", false, "");
 
   setNumericStringParameter("POT_LAW_EXPONENT", "1.0",
       "negative(!) exponent(s)  \f$m_i\f$ of potential law "

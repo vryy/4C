@@ -902,20 +902,19 @@ void NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::solve(
   const Epetra_BlockMap& map =
       dynamic_cast<const ::NOX::Epetra::Vector&>(x).getEpetraVector().Map();
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dir_ptr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(map, true);
-  Teuchos::RCP<::NOX::Epetra::Vector> nox_dir = Teuchos::make_rcp<::NOX::Epetra::Vector>(
-      dir_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+  Core::LinAlg::Vector<double> dir_ptr(map, true);
+  ::NOX::Epetra::Vector nox_dir(
+      dir_ptr.get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
   // compute the new direction
   const NOX::Nln::Solver::LineSearchBased& nln_solver =
       dynamic_cast<const NOX::Nln::Solver::LineSearchBased&>(solver);
   ::NOX::Direction::Generic& direction = nln_solver.get_direction();
-  bool success = direction.compute(*nox_dir, grp, solver);
+  bool success = direction.compute(nox_dir, grp, solver);
   if (not success) FOUR_C_THROW("Solving of the SOC system failed!");
 
   // update the state in the group object
-  grp.computeX(grp, *nox_dir, linesearch.get_step_length());
+  grp.computeX(grp, nox_dir, linesearch.get_step_length());
 }
 
 /*----------------------------------------------------------------------------*

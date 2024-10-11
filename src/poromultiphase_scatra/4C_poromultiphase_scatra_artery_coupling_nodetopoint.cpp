@@ -114,9 +114,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::setup_system
     Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art)
 {
   // call base class
-  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup_system(sysmat, rhs,
-      sysmat_cont, sysmat_art, rhs_cont, rhs_art, dbcmap_cont, dbcmap_art->cond_map(),
-      dbcmap_art->cond_map());
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup_system(*sysmat, rhs,
+      *sysmat_cont, *sysmat_art, rhs_cont, rhs_art, *dbcmap_cont, *dbcmap_art->cond_map(),
+      *dbcmap_art->cond_map());
 }
 
 /*----------------------------------------------------------------------*

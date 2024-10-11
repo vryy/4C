@@ -120,7 +120,7 @@ void SSTI::SSTIMono::assemble_mat_and_rhs()
 
   // assemble RHS
   strategy_assemble_->assemble_rhs(
-      residual_, scatra_field()->residual(), structure_field()->rhs(), thermo_field()->residual());
+      residual_, scatra_field()->residual(), *structure_field()->rhs(), thermo_field()->residual());
 
   double mydt = timer_->wallTime() - starttime;
   get_comm().MaxAll(&mydt, &dtassemble_, 1);
@@ -556,9 +556,9 @@ void SSTI::SSTIMono::evaluate_subproblems()
   if (interface_meshtying())
   {
     scatrastructureoffdiagcoupling_->evaluate_off_diag_block_scatra_structure_interface(
-        ssti_matrices_->scatra_structure_interface());
+        *ssti_matrices_->scatra_structure_interface());
     thermostructureoffdiagcoupling_->evaluate_off_diag_block_thermo_structure_interface(
-        ssti_matrices_->thermo_structure_interface());
+        *ssti_matrices_->thermo_structure_interface());
     scatrathermooffdiagcoupling_->evaluate_off_diag_block_thermo_scatra_interface(
         ssti_matrices_->thermo_scatra_interface());
     scatrathermooffdiagcoupling_->evaluate_off_diag_block_scatra_thermo_interface(
@@ -600,10 +600,10 @@ void SSTI::SSTIMono::linear_solve()
  *--------------------------------------------------------------------------------------*/
 void SSTI::SSTIMono::update_iter_states()
 {
-  scatra_field()->update_iter(extract_sub_increment(Subproblem::scalar_transport));
+  scatra_field()->update_iter(*extract_sub_increment(Subproblem::scalar_transport));
   scatra_field()->compute_intermediate_values();
 
-  thermo_field()->update_iter(extract_sub_increment(Subproblem::thermo));
+  thermo_field()->update_iter(*extract_sub_increment(Subproblem::thermo));
   thermo_field()->compute_intermediate_values();
 
   structure_field()->update_state_incrementally(extract_sub_increment(Subproblem::structure));

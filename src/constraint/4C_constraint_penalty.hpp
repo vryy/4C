@@ -46,9 +46,8 @@ namespace CONSTRAINTS
     void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            systemvector3  ///< distributed vector that may be filled
-                           ///< by assembly of element contributions
+        Core::LinAlg::Vector<double>& systemvector3  ///< distributed vector that may be filled
+                                                     ///< by assembly of element contributions
     );
 
     /// initialization routine called by the manager ctor
@@ -111,27 +110,24 @@ namespace CONSTRAINTS
         Teuchos::RCP<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        Core::LinAlg::SparseOperator&
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
         Teuchos::RCP<Core::LinAlg::Vector<double>>
-            systemvector1,  ///< distributed vector that may be filled by
-                            ///< aasembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            systemvector2,  ///< distributed vector that may be filled by
-                            ///< aasembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            systemvector3  ///< distributed vector that may be filled
-                           ///< by aasembly of element contributions
+            systemvector1,                            ///< distributed vector that may be filled by
+                                                      ///< aasembly of element contributions
+        Core::LinAlg::Vector<double>& systemvector2,  ///< distributed vector that may be filled by
+                                                      ///< aasembly of element contributions
+        Core::LinAlg::Vector<double>& systemvector3   ///< distributed vector that may be filled
+                                                      ///< by aasembly of element contributions
     );
 
     //! Compute and assemble initial constraint values (depending on user specific activation times)
     void evaluate_error(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            systemvector  ///< distributed vector that may be filled
-                          ///< by aasembly of element contributions
+        Core::LinAlg::Vector<double>& systemvector  ///< distributed vector that may be filled
+                                                    ///< by aasembly of element contributions
     );
   };  // class
 }  // namespace CONSTRAINTS

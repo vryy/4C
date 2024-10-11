@@ -47,7 +47,7 @@ namespace Adapter
     void evaluate_no_penetration_cond(Teuchos::RCP<Core::LinAlg::Vector<double>> Cond_RHS,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> ConstraintMatrix,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> struct_vel_constraint_matrix,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> condVector, Teuchos::RCP<std::set<int>> condIDs,
+        Teuchos::RCP<Core::LinAlg::Vector<double>> condVector, std::set<int>& condIDs,
         PoroElast::Coupltype coupltype = PoroElast::fluidfluid);
 
     //! calls the VelPresSplitter on the time integrator

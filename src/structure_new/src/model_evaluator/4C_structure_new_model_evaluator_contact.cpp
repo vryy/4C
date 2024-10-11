@@ -76,7 +76,7 @@ void Solid::ModelEvaluator::Contact::setup()
   factory.build_search_tree(interfaces);
 
   // print final screen output
-  factory.print(interfaces, strategy_ptr_, cparams);
+  factory.print(interfaces, *strategy_ptr_, cparams);
 
   // ---------------------------------------------------------------------
   // final touches to the contact strategy
@@ -325,10 +325,9 @@ bool Solid::ModelEvaluator::Contact::assemble_jacobian(
      * matrix at the (lm,lm)-block */
     else
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> ones =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(global_state().block_map(type()), false);
-      err = ones->PutScalar(1.0);
-      block_ptr = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*ones);
+      Core::LinAlg::Vector<double> ones(global_state().block_map(type()), false);
+      err = ones.PutScalar(1.0);
+      block_ptr = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(ones);
       global_state().assign_model_block(jac, *block_ptr, type(), Solid::MatBlockType::lm_lm);
     }
     // reset the block pointer, just to be on the safe side
@@ -485,43 +484,36 @@ void Solid::ModelEvaluator::Contact::output_step_state(
   // *********************************************************************
 
   // evaluate active set and slip set
-  Teuchos::RCP<Core::LinAlg::Vector<double>> activeset =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().active_row_nodes());
-  activeset->PutScalar(1.0);
+  Core::LinAlg::Vector<double> activeset(*strategy().active_row_nodes());
+  activeset.PutScalar(1.0);
   if (strategy().is_friction())
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> slipset =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().slip_row_nodes());
-    slipset->PutScalar(1.0);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> slipsetexp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().active_row_nodes());
-    Core::LinAlg::export_to(*slipset, *slipsetexp);
-    activeset->Update(1.0, *slipsetexp, 1.0);
+    Core::LinAlg::Vector<double> slipset(*strategy().slip_row_nodes());
+    slipset.PutScalar(1.0);
+    Core::LinAlg::Vector<double> slipsetexp(*strategy().active_row_nodes());
+    Core::LinAlg::export_to(slipset, slipsetexp);
+    activeset.Update(1.0, slipsetexp, 1.0);
   }
 
   // export to problem node row map
   Teuchos::RCP<const Epetra_Map> problemnodes = strategy().problem_nodes();
   Teuchos::RCP<Core::LinAlg::Vector<double>> activesetexp =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemnodes);
-  Core::LinAlg::export_to(*activeset, *activesetexp);
+  Core::LinAlg::export_to(activeset, *activesetexp);
 
   if (strategy().wear_both_discrete())
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mactiveset =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().master_active_nodes());
-    mactiveset->PutScalar(1.0);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> slipset =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().master_slip_nodes());
-    slipset->PutScalar(1.0);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> slipsetexp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().master_active_nodes());
-    Core::LinAlg::export_to(*slipset, *slipsetexp);
-    mactiveset->Update(1.0, *slipsetexp, 1.0);
+    Core::LinAlg::Vector<double> mactiveset(*strategy().master_active_nodes());
+    mactiveset.PutScalar(1.0);
+    Core::LinAlg::Vector<double> slipset(*strategy().master_slip_nodes());
+    slipset.PutScalar(1.0);
+    Core::LinAlg::Vector<double> slipsetexp(*strategy().master_active_nodes());
+    Core::LinAlg::export_to(slipset, slipsetexp);
+    mactiveset.Update(1.0, slipsetexp, 1.0);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mactivesetexp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemnodes);
-    Core::LinAlg::export_to(*mactiveset, *mactivesetexp);
-    activesetexp->Update(1.0, *mactivesetexp, 1.0);
+    Core::LinAlg::Vector<double> mactivesetexp(*problemnodes);
+    Core::LinAlg::export_to(mactiveset, mactivesetexp);
+    activesetexp->Update(1.0, mactivesetexp, 1.0);
   }
 
   iowriter.write_vector("activeset", activesetexp, Core::IO::nodevector);

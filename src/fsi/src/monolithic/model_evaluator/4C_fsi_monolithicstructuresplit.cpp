@@ -362,28 +362,25 @@ void FSI::MonolithicStructureSplit::setup_rhs_residual(Core::LinAlg::Vector<doub
   const double fluidscale = fluid_field()->residual_scaling();
 
   // get single field residuals
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> sv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*structure_field()->rhs());
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> fv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluid_field()->rhs());
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> av =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ale_field()->rhs());
+  const Core::LinAlg::Vector<double> sv(*structure_field()->rhs());
+  const Core::LinAlg::Vector<double> fv(*fluid_field()->rhs());
+  const Core::LinAlg::Vector<double> av(*ale_field()->rhs());
 
   //  // extract only inner DOFs from structure (=slave) and ALE field
   Teuchos::RCP<const Core::LinAlg::Vector<double>> sov =
-      structure_field()->interface()->extract_other_vector(*sv);
+      structure_field()->interface()->extract_other_vector(sv);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> aov =
-      ale_field()->interface()->extract_other_vector(*av);
+      ale_field()->interface()->extract_other_vector(av);
 
   // add structure interface residual to fluid interface residual considering temporal scaling
   Teuchos::RCP<Core::LinAlg::Vector<double>> scv =
-      structure_field()->interface()->extract_fsi_cond_vector(*sv);
+      structure_field()->interface()->extract_fsi_cond_vector(sv);
   Teuchos::RCP<Core::LinAlg::Vector<double>> modfv =
       fluid_field()->interface()->insert_fsi_cond_vector(*struct_to_fluid(scv));
-  modfv->Update(1.0, *fv, (1.0 - ftiparam) / ((1.0 - stiparam) * fluidscale));
+  modfv->Update(1.0, fv, (1.0 - ftiparam) / ((1.0 - stiparam) * fluidscale));
 
   // put the single field residuals together
-  FSI::Monolithic::combine_field_vectors(f, sov, modfv, aov);
+  FSI::Monolithic::combine_field_vectors(f, *sov, *modfv, *aov);
 
   // add additional ale residual
   extractor().add_vector(*aleresidual_, 2, f);
@@ -696,17 +693,16 @@ void FSI::MonolithicStructureSplit::setup_system_matrix(Core::LinAlg::BlockSpars
     f->add(fmgg, false, 1. / timescale, 1.0);
     f->add(fmig, false, 1. / timescale, 1.0);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> lfmgi =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(f->row_map(), 81, false);
+    Core::LinAlg::SparseMatrix lfmgi(f->row_map(), 81, false);
     (*fmgitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmgi, 1.,
-        Coupling::Adapter::CouplingMasterConverter(coupfa), *lfmgi, false, false);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), lfmgi, false, false);
 
     (*fmiitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmii, 1.,
-        Coupling::Adapter::CouplingMasterConverter(coupfa), *lfmgi, false, true);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), lfmgi, false, true);
 
-    lfmgi->complete(aii.domain_map(), f->range_map());
+    lfmgi.complete(aii.domain_map(), f->range_map());
 
-    mat.assign(1, 2, Core::LinAlg::View, *lfmgi);
+    mat.assign(1, 2, Core::LinAlg::View, lfmgi);
   }
 
   f->complete();
@@ -1380,10 +1376,10 @@ void FSI::MonolithicStructureSplit::combine_field_vectors(Core::LinAlg::Vector<d
         ale_field()->interface()->extract_other_vector(*av);
 
     // put them together
-    FSI::Monolithic::combine_field_vectors(v, sov, fv, aov);
+    FSI::Monolithic::combine_field_vectors(v, *sov, *fv, *aov);
   }
   else
-    FSI::Monolithic::combine_field_vectors(v, sv, fv, av);
+    FSI::Monolithic::combine_field_vectors(v, *sv, *fv, *av);
 }
 
 /*----------------------------------------------------------------------*/

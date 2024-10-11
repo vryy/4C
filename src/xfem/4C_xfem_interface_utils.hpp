@@ -128,9 +128,9 @@ namespace XFEM
 
     //! compute characteristic element length h_k
     template <Core::FE::CellType distype>
-    double compute_char_ele_length(Core::Elements::Element* ele,   ///< fluid element
-        Core::LinAlg::SerialDenseMatrix& ele_xyze,                 ///< element coordinates
-        const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
+    double compute_char_ele_length(Core::Elements::Element* ele,  ///< fluid element
+        Core::LinAlg::SerialDenseMatrix& ele_xyze,                ///< element coordinates
+        XFEM::ConditionManager& cond_manager,                     ///< XFEM condition manager
         const Cut::plain_volumecell_set& vcSet,  ///< volumecell sets for volume integration
         const std::map<int, std::vector<Cut::BoundaryCell*>>&
             bcells,  ///< bcells for boundary cell integration

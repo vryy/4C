@@ -59,10 +59,9 @@ namespace Airway
     /// flag whether iteration between fields should be finished
     bool not_converged(int iter);
 
-    void output_iteration(Teuchos::RCP<Core::LinAlg::Vector<double>> pres_inc,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> scaled_pres_inc,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> flux_inc,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> scaled_flux_inc, int iter);
+    void output_iteration(Core::LinAlg::Vector<double>& pres_inc,
+        Core::LinAlg::Vector<double>& scaled_pres_inc, Core::LinAlg::Vector<double>& flux_inc,
+        Core::LinAlg::Vector<double>& scaled_flux_inc, int iter);
 
     void update_and_output();
 

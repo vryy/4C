@@ -144,7 +144,7 @@ namespace ALE
         Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp);
 
     //! Split vector and save parts in a std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>> >
-    void split_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> vector,  ///> vector to split
+    void split_vector(Core::LinAlg::Vector<double>& vector,  ///> vector to split
         std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
             splitvector);  ///> container for the split vector
 
@@ -170,8 +170,7 @@ namespace ALE
     //! Split vector and save parts in a std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>> >
     void split_vector_based_on3x3(Teuchos::RCP<Core::LinAlg::Vector<double>>
                                       orgvector,  ///> original vector based on 3x3 blockmatrix
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            vectorbasedon2x2);  ///> split vector based on 2x2 blockmatrix
+        Core::LinAlg::Vector<double>& vectorbasedon2x2);  ///> split vector based on 2x2 blockmatrix
 
    private:
     //! meshting options

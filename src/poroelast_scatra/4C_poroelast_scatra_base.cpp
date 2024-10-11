@@ -67,7 +67,7 @@ PoroElastScaTra::PoroScatraBase::PoroScatraBase(
   // Create the two uncoupled subproblems.
   // 1. poro problem
   poro_ = PoroElast::UTILS::create_poro_algorithm(
-      timeparams, comm, false, PoroElastScaTra::UTILS::build_poro_scatra_splitter(structdis));
+      timeparams, comm, false, PoroElastScaTra::UTILS::build_poro_scatra_splitter(*structdis));
 
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");
@@ -136,11 +136,11 @@ void PoroElastScaTra::PoroScatraBase::set_scatra_solution()
   }
   else
   {
-    phinp_s = volcoupl_structurescatra_->apply_vector_mapping12(scatra_->scatra_field()->phinp());
-    phinp_f = volcoupl_fluidscatra_->apply_vector_mapping12(scatra_->scatra_field()->phinp());
-    phin_s = volcoupl_structurescatra_->apply_vector_mapping12(scatra_->scatra_field()->phin());
-    phin_f = volcoupl_fluidscatra_->apply_vector_mapping12(scatra_->scatra_field()->phin());
-    phidtnp = volcoupl_fluidscatra_->apply_vector_mapping12(scatra_->scatra_field()->phidtnp());
+    phinp_s = volcoupl_structurescatra_->apply_vector_mapping12(*scatra_->scatra_field()->phinp());
+    phinp_f = volcoupl_fluidscatra_->apply_vector_mapping12(*scatra_->scatra_field()->phinp());
+    phin_s = volcoupl_structurescatra_->apply_vector_mapping12(*scatra_->scatra_field()->phin());
+    phin_f = volcoupl_fluidscatra_->apply_vector_mapping12(*scatra_->scatra_field()->phin());
+    phidtnp = volcoupl_fluidscatra_->apply_vector_mapping12(*scatra_->scatra_field()->phidtnp());
   }
 
   // porous structure
@@ -168,8 +168,8 @@ void PoroElastScaTra::PoroScatraBase::set_velocity_fields()
   }
   else
   {
-    convel = volcoupl_fluidscatra_->apply_vector_mapping21(poro_->fluid_field()->convective_vel());
-    velnp = volcoupl_fluidscatra_->apply_vector_mapping21(poro_->fluid_field()->velnp());
+    convel = volcoupl_fluidscatra_->apply_vector_mapping21(*poro_->fluid_field()->convective_vel());
+    velnp = volcoupl_fluidscatra_->apply_vector_mapping21(*poro_->fluid_field()->velnp());
   }
 
   scatra_->scatra_field()->set_velocity_field(convel,  // convective vel.
@@ -193,7 +193,7 @@ void PoroElastScaTra::PoroScatraBase::set_mesh_disp()
   }
   else
   {
-    dispnp = volcoupl_fluidscatra_->apply_vector_mapping21(fluid_field()->dispnp());
+    dispnp = volcoupl_fluidscatra_->apply_vector_mapping21(*fluid_field()->dispnp());
   }
 
   scatra_->scatra_field()->apply_mesh_movement(dispnp);
@@ -206,7 +206,7 @@ void PoroElastScaTra::PoroScatraBase::set_mesh_disp()
   }
   else
   {
-    sdispnp = volcoupl_structurescatra_->apply_vector_mapping21(structure_field()->dispnp());
+    sdispnp = volcoupl_structurescatra_->apply_vector_mapping21(*structure_field()->dispnp());
   }
 
   scatra_->scatra_field()->discretization()->set_state(1, "displacement", sdispnp);

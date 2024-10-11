@@ -634,7 +634,7 @@ void XFEM::MeshCouplingFPI::gmsh_output(const std::string& filename_base, const 
 
   // compute the current boundary position
   std::map<int, Core::LinAlg::Matrix<3, 1>> currinterfacepositions;
-  XFEM::UTILS::extract_node_vectors(cutter_dis_, currinterfacepositions, idispnp_);
+  XFEM::UTILS::extract_node_vectors(*cutter_dis_, currinterfacepositions, idispnp_);
 
 
   const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
@@ -690,7 +690,7 @@ void XFEM::MeshCouplingFPI::gmsh_output_discretization(std::ostream& gmshfilecon
   Teuchos::RCP<Core::LinAlg::Vector<double>> solid_dispnp =
       Core::LinAlg::create_vector(*cond_dis_->dof_row_map(), true);
 
-  XFEM::UTILS::extract_node_vectors(cond_dis_, currsolidpositions, solid_dispnp);
+  XFEM::UTILS::extract_node_vectors(*cond_dis_, currsolidpositions, solid_dispnp);
 
   XFEM::UTILS::print_discretization_to_stream(cond_dis_, cond_dis_->name(), true, false, true,
       false, false, false, gmshfilecontent, &currsolidpositions);

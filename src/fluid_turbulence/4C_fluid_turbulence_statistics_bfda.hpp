@@ -58,7 +58,7 @@ namespace FLD
     //! @name functions for averaging
 
 
-    void do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp);
+    void do_time_sample(Core::LinAlg::Vector<double>& velnp);
 
     /*!
     \brief Dump the result to file.

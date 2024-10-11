@@ -297,15 +297,13 @@ namespace Solid
 
     //! Build total residual vector and effective tangential stiffness
     //! matrix in case of nonlinear, rotational inertia effects
-    void build_res_stiff_nl_mass_rot(Teuchos::RCP<Core::LinAlg::Vector<double>> fres_,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fextn_,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fintn_,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> finertn_,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> mass_);
+    void build_res_stiff_nl_mass_rot(Core::LinAlg::Vector<double>& fres_,
+        Core::LinAlg::Vector<double>& fextn_, Core::LinAlg::Vector<double>& fintn_,
+        Core::LinAlg::Vector<double>& finertn_, Core::LinAlg::SparseOperator& stiff_,
+        Core::LinAlg::SparseOperator& mass_);
 
     //! Check, if there are solely beam elements in the whole discretization
-    bool solely_beam3_elements(Teuchos::RCP<Core::FE::Discretization> actdis);
+    bool solely_beam3_elements(Core::FE::Discretization& actdis);
 
    protected:
     //! equal operator is NOT wanted

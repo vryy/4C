@@ -151,36 +151,36 @@ void Mortar::sort(double* dlist, int N, int* list2)
  | transform the row map of a matrix (GIDs)                   popp 08/10|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_transform_gids(
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> inmat, Teuchos::RCP<const Epetra_Map> newrowmap)
+    const Core::LinAlg::SparseMatrix& inmat, const Epetra_Map& newrowmap)
 {
   // initialize output matrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> outmat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*newrowmap, 100, false, true);
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(newrowmap, 100, false, true);
 
   // transform input matrix to newrowmap
-  for (int i = 0; i < (inmat->epetra_matrix())->NumMyRows(); ++i)
+  for (int i = 0; i < (inmat.epetra_matrix())->NumMyRows(); ++i)
   {
     int NumEntries = 0;
     double* Values;
     int* Indices;
-    int err = (inmat->epetra_matrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
+    int err = (inmat.epetra_matrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
     if (err != 0) FOUR_C_THROW("ExtractMyRowView error: %d", err);
 
     // pull indices back to global
     std::vector<int> idx(NumEntries);
     for (int j = 0; j < NumEntries; ++j)
     {
-      idx[j] = (inmat->col_map()).GID(Indices[j]);
+      idx[j] = (inmat.col_map()).GID(Indices[j]);
     }
 
     err = (outmat->epetra_matrix())
               ->InsertGlobalValues(
-                  newrowmap->GID(i), NumEntries, const_cast<double*>(Values), idx.data());
+                  newrowmap.GID(i), NumEntries, const_cast<double*>(Values), idx.data());
     if (err < 0) FOUR_C_THROW("InsertGlobalValues error: %d", err);
   }
 
   // complete output matrix
-  outmat->complete(inmat->domain_map(), *newrowmap);
+  outmat->complete(inmat.domain_map(), newrowmap);
 
   return outmat;
 }
@@ -189,27 +189,26 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_transform_gids(
  | transform the column map of a matrix (GIDs)                popp 08/10|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_col_transform_gids(
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> inmat,
-    Teuchos::RCP<const Epetra_Map> newdomainmap)
+    const Core::LinAlg::SparseMatrix& inmat, const Epetra_Map& newdomainmap)
 {
   // initialize output matrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> outmat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(inmat->row_map(), 100, false, true);
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(inmat.row_map(), 100, false, true);
 
   // mapping of column gids
   std::map<int, int> gidmap;
-  Core::Communication::Exporter ex(inmat->domain_map(), inmat->col_map(), inmat->Comm());
-  for (int i = 0; i < inmat->domain_map().NumMyElements(); ++i)
-    gidmap[inmat->domain_map().GID(i)] = newdomainmap->GID(i);
+  Core::Communication::Exporter ex(inmat.domain_map(), inmat.col_map(), inmat.Comm());
+  for (int i = 0; i < inmat.domain_map().NumMyElements(); ++i)
+    gidmap[inmat.domain_map().GID(i)] = newdomainmap.GID(i);
   ex.do_export(gidmap);
 
   // transform input matrix to newdomainmap
-  for (int i = 0; i < (inmat->epetra_matrix())->NumMyRows(); ++i)
+  for (int i = 0; i < (inmat.epetra_matrix())->NumMyRows(); ++i)
   {
     int NumEntries = 0;
     double* Values;
     int* Indices;
-    int err = (inmat->epetra_matrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
+    int err = (inmat.epetra_matrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
     if (err != 0) FOUR_C_THROW("ExtractMyRowView error: %d", err);
     std::vector<int> idx;
     std::vector<double> vals;
@@ -218,7 +217,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_col_transform_gids(
 
     for (int j = 0; j < NumEntries; ++j)
     {
-      int gid = (inmat->col_map()).GID(Indices[j]);
+      int gid = (inmat.col_map()).GID(Indices[j]);
       std::map<int, int>::const_iterator iter = gidmap.find(gid);
       if (iter != gidmap.end())
       {
@@ -233,12 +232,12 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_col_transform_gids(
     NumEntries = vals.size();
     err = (outmat->epetra_matrix())
               ->InsertGlobalValues(
-                  inmat->row_map().GID(i), NumEntries, const_cast<double*>(Values), idx.data());
+                  inmat.row_map().GID(i), NumEntries, const_cast<double*>(Values), idx.data());
     if (err < 0) FOUR_C_THROW("InsertGlobalValues error: %d", err);
   }
 
   // complete output matrix
-  outmat->complete(*newdomainmap, inmat->row_map());
+  outmat->complete(newdomainmap, inmat.row_map());
 
   return outmat;
 }
@@ -314,27 +313,27 @@ void Mortar::replace_column_and_domain_map(Core::LinAlg::SparseMatrix& mat,
  | transform the row and column maps of a matrix (GIDs)       popp 08/10|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_col_transform_gids(
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> inmat, Teuchos::RCP<const Epetra_Map> newrowmap,
-    Teuchos::RCP<const Epetra_Map> newdomainmap)
+    const Core::LinAlg::SparseMatrix& inmat, const Epetra_Map& newrowmap,
+    const Epetra_Map& newdomainmap)
 {
   // initialize output matrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> outmat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*newrowmap, 100, true, true);
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(newrowmap, 100, true, true);
 
   // mapping of column gids
   std::map<int, int> gidmap;
-  Core::Communication::Exporter ex(inmat->domain_map(), inmat->col_map(), inmat->Comm());
-  for (int i = 0; i < inmat->domain_map().NumMyElements(); ++i)
-    gidmap[inmat->domain_map().GID(i)] = newdomainmap->GID(i);
+  Core::Communication::Exporter ex(inmat.domain_map(), inmat.col_map(), inmat.Comm());
+  for (int i = 0; i < inmat.domain_map().NumMyElements(); ++i)
+    gidmap[inmat.domain_map().GID(i)] = newdomainmap.GID(i);
   ex.do_export(gidmap);
 
   // transform input matrix to newrowmap and newdomainmap
-  for (int i = 0; i < (inmat->epetra_matrix())->NumMyRows(); ++i)
+  for (int i = 0; i < (inmat.epetra_matrix())->NumMyRows(); ++i)
   {
     int NumEntries = 0;
     double* Values;
     int* Indices;
-    int err = (inmat->epetra_matrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
+    int err = (inmat.epetra_matrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
     if (err != 0) FOUR_C_THROW("ExtractMyRowView error: %d", err);
     std::vector<int> idx;
     std::vector<double> vals;
@@ -343,7 +342,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_col_transform_gids(
 
     for (int j = 0; j < NumEntries; ++j)
     {
-      int gid = (inmat->col_map()).GID(Indices[j]);
+      int gid = (inmat.col_map()).GID(Indices[j]);
       std::map<int, int>::const_iterator iter = gidmap.find(gid);
       if (iter != gidmap.end())
       {
@@ -358,12 +357,12 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_col_transform_gids(
     NumEntries = vals.size();
     err = (outmat->epetra_matrix())
               ->InsertGlobalValues(
-                  newrowmap->GID(i), NumEntries, const_cast<double*>(Values), idx.data());
+                  newrowmap.GID(i), NumEntries, const_cast<double*>(Values), idx.data());
     if (err < 0) FOUR_C_THROW("InsertGlobalValues error: %d", err);
   }
 
   // complete output matrix
-  outmat->complete(*newdomainmap, *newrowmap);
+  outmat->complete(newdomainmap, newrowmap);
 
   return outmat;
 }
@@ -372,10 +371,10 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_col_transform_gids(
  | transform the row map of a matrix                          popp 08/10|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_transform(
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> inmat, Teuchos::RCP<const Epetra_Map> newrowmap)
+    const Core::LinAlg::SparseMatrix& inmat, const Epetra_Map& newrowmap)
 {
   // redistribute input matrix
-  Teuchos::RCP<Epetra_CrsMatrix> permmat = redistribute(*inmat, *newrowmap, inmat->domain_map());
+  Teuchos::RCP<Epetra_CrsMatrix> permmat = redistribute(inmat, newrowmap, inmat.domain_map());
 
   // output matrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> outmat =
@@ -388,16 +387,15 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_transform(
  | transform the column map of a matrix                       popp 08/10|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_col_transform(
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> inmat,
-    Teuchos::RCP<const Epetra_Map> newdomainmap)
+    const Core::LinAlg::SparseMatrix& inmat, const Epetra_Map& newdomainmap)
 {
   // initialize output matrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> outmat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*inmat);
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(inmat);
 
   // complete output matrix
   outmat->un_complete();
-  outmat->complete(*newdomainmap, inmat->row_map());
+  outmat->complete(newdomainmap, inmat.row_map());
 
   return outmat;
 }
@@ -406,11 +404,11 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_col_transform(
  | transform the row and column maps of a matrix              popp 08/10|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_col_transform(
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> inmat, Teuchos::RCP<const Epetra_Map> newrowmap,
-    Teuchos::RCP<const Epetra_Map> newdomainmap)
+    const Core::LinAlg::SparseMatrix& inmat, const Epetra_Map& newrowmap,
+    const Epetra_Map& newdomainmap)
 {
   // redistribute input matrix
-  Teuchos::RCP<Epetra_CrsMatrix> permmat = redistribute(*inmat, *newrowmap, *newdomainmap);
+  Teuchos::RCP<Epetra_CrsMatrix> permmat = redistribute(inmat, newrowmap, newdomainmap);
 
   // output matrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> outmat =
@@ -424,12 +422,11 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_col_transform(
 Teuchos::RCP<Epetra_CrsMatrix> Mortar::redistribute(const Core::LinAlg::SparseMatrix& src,
     const Epetra_Map& permrowmap, const Epetra_Map& permdomainmap)
 {
-  Teuchos::RCP<Epetra_Export> exporter =
-      Teuchos::make_rcp<Epetra_Export>(permrowmap, src.row_map());
+  Epetra_Export exporter(permrowmap, src.row_map());
 
   Teuchos::RCP<Epetra_CrsMatrix> permsrc =
       Teuchos::make_rcp<Epetra_CrsMatrix>(Copy, permrowmap, src.max_num_entries());
-  int err = permsrc->Import(*src.epetra_matrix(), *exporter, Insert);
+  int err = permsrc->Import(*src.epetra_matrix(), exporter, Insert);
   if (err) FOUR_C_THROW("Import failed with err=%d", err);
 
   permsrc->FillComplete(permdomainmap, permrowmap);
@@ -762,13 +759,12 @@ void Mortar::UTILS::create_volume_ghosting(const Core::FE::Discretization& dis_s
     }
 
     // re-build element column map
-    Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::make_rcp<Epetra_Map>(
-        -1, (int)rdata.size(), rdata.data(), 0, voldis[disidx]->get_comm());
+    Epetra_Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0, voldis[disidx]->get_comm());
     rdata.clear();
 
     // redistribute the volume discretization according to the
     // new (=old) element column layout & and ghost also nodes!
-    voldis[disidx]->extended_ghosting(*newelecolmap, true, true, true, false);  // no check!!!
+    voldis[disidx]->extended_ghosting(newelecolmap, true, true, true, false);  // no check!!!
   }
 
   // 2 Reconnect Face Element -- Parent Element Pointers to first dis in dis_tar
@@ -842,7 +838,7 @@ void Mortar::UTILS::create_volume_ghosting(const Core::FE::Discretization& dis_s
  |  Prepare mortar element for nurbs-case                    farah 11/14|
  *----------------------------------------------------------------------*/
 void Mortar::UTILS::prepare_nurbs_element(Core::FE::Discretization& discret,
-    Teuchos::RCP<Core::Elements::Element> ele, Teuchos::RCP<Mortar::Element> cele, int dim)
+    Teuchos::RCP<Core::Elements::Element> ele, Mortar::Element& cele, int dim)
 {
   Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
       dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discret));
@@ -858,9 +854,9 @@ void Mortar::UTILS::prepare_nurbs_element(Core::FE::Discretization& discret,
       faceele->parent_master_element()->id(), faceele->face_master_number());
 
   // store nurbs specific data to node
-  cele->zero_sized() = zero_size;
-  cele->knots() = mortarknots;
-  cele->normal_fac() = normalfac;
+  cele.zero_sized() = zero_size;
+  cele.knots() = mortarknots;
+  cele.normal_fac() = normalfac;
 
   return;
 }
@@ -869,11 +865,11 @@ void Mortar::UTILS::prepare_nurbs_element(Core::FE::Discretization& discret,
 /*----------------------------------------------------------------------*
  |  Prepare mortar node for nurbs-case                       farah 11/14|
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::prepare_nurbs_node(Core::Nodes::Node* node, Teuchos::RCP<Mortar::Node> mnode)
+void Mortar::UTILS::prepare_nurbs_node(Core::Nodes::Node* node, Mortar::Node& mnode)
 {
   Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(node);
 
-  mnode->nurbs_w() = cp->w();
+  mnode.nurbs_w() = cp->w();
 
   return;
 }
@@ -962,57 +958,49 @@ void Mortar::UTILS::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::Sparse
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::mortar_rhs_condensation(Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& p)
+void Mortar::UTILS::mortar_rhs_condensation(
+    Core::LinAlg::Vector<double>& rhs, Core::LinAlg::SparseMatrix& p)
 {
   // prepare maps
   Teuchos::RCP<Epetra_Map> gsdofrowmap =
-      Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p->range_map()));
+      Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p.range_map()));
   Teuchos::RCP<Epetra_Map> gmdofrowmap =
-      Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p->domain_map()));
+      Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p.domain_map()));
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fs =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fm_cond =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap);
-  Core::LinAlg::export_to(*rhs, *fs);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fs_full =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(rhs->Map());
-  Core::LinAlg::export_to(*fs, *fs_full);
-  if (rhs->Update(-1., *fs_full, 1.)) FOUR_C_THROW("update failed");
+  Core::LinAlg::Vector<double> fs(*gsdofrowmap);
+  Core::LinAlg::Vector<double> fm_cond(*gmdofrowmap);
+  Core::LinAlg::export_to(rhs, fs);
+  Core::LinAlg::Vector<double> fs_full(rhs.Map());
+  Core::LinAlg::export_to(fs, fs_full);
+  if (rhs.Update(-1., fs_full, 1.)) FOUR_C_THROW("update failed");
 
-  if (p->multiply(true, *fs, *fm_cond)) FOUR_C_THROW("multiply failed");
+  if (p.multiply(true, fs, fm_cond)) FOUR_C_THROW("multiply failed");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fm_cond_full =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(rhs->Map());
-  Core::LinAlg::export_to(*fm_cond, *fm_cond_full);
-  if (rhs->Update(1., *fm_cond_full, 1.)) FOUR_C_THROW("update failed");
+  Core::LinAlg::Vector<double> fm_cond_full(rhs.Map());
+  Core::LinAlg::export_to(fm_cond, fm_cond_full);
+  if (rhs.Update(1., fm_cond_full, 1.)) FOUR_C_THROW("update failed");
 
   return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::mortar_recover(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& p)
+void Mortar::UTILS::mortar_recover(Core::LinAlg::Vector<double>& inc, Core::LinAlg::SparseMatrix& p)
 {
   // prepare maps
   Teuchos::RCP<Epetra_Map> gsdofrowmap =
-      Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p->range_map()));
+      Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p.range_map()));
   Teuchos::RCP<Epetra_Map> gmdofrowmap =
-      Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p->domain_map()));
+      Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p.domain_map()));
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> m_inc =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap);
-  Core::LinAlg::export_to(*inc, *m_inc);
+  Core::LinAlg::Vector<double> m_inc(*gmdofrowmap);
+  Core::LinAlg::export_to(inc, m_inc);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> s_inc =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap);
-  if (p->multiply(false, *m_inc, *s_inc)) FOUR_C_THROW("multiply failed");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> s_inc_full =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(inc->Map());
-  Core::LinAlg::export_to(*s_inc, *s_inc_full);
-  if (inc->Update(1., *s_inc_full, 1.)) FOUR_C_THROW("update failed");
+  Core::LinAlg::Vector<double> s_inc(*gsdofrowmap);
+  if (p.multiply(false, m_inc, s_inc)) FOUR_C_THROW("multiply failed");
+  Core::LinAlg::Vector<double> s_inc_full(inc.Map());
+  Core::LinAlg::export_to(s_inc, s_inc_full);
+  if (inc.Update(1., s_inc_full, 1.)) FOUR_C_THROW("update failed");
 
   return;
 }
@@ -1045,7 +1033,7 @@ void Mortar::UTILS::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::BlockS
 void Mortar::UTILS::mortar_rhs_condensation(Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs,
     const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p)
 {
-  for (unsigned i = 0; i < p.size(); mortar_rhs_condensation(rhs, p[i++]))
+  for (unsigned i = 0; i < p.size(); mortar_rhs_condensation(*rhs, *p[i++]))
     ;
 }
 
@@ -1054,7 +1042,7 @@ void Mortar::UTILS::mortar_rhs_condensation(Teuchos::RCP<Core::LinAlg::Vector<do
 void Mortar::UTILS::mortar_recover(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc,
     const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p)
 {
-  for (unsigned i = 0; i < p.size(); mortar_recover(inc, p[i++]))
+  for (unsigned i = 0; i < p.size(); mortar_recover(*inc, *p[i++]))
     ;
 }
 

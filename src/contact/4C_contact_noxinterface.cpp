@@ -165,8 +165,8 @@ double CONTACT::NoxInterface::get_lagrange_multiplier_update_rms(
     }
   }
 
-  rms = NOX::Nln::Aux::root_mean_square_norm(aTol, rTol, strategy().lagrange_multiplier_np(true),
-      strategy().lagrange_multiplier_increment(), disable_implicit_weighting);
+  rms = NOX::Nln::Aux::root_mean_square_norm(aTol, rTol, *strategy().lagrange_multiplier_np(true),
+      *strategy().lagrange_multiplier_increment(), disable_implicit_weighting);
 
   return rms;
 }
@@ -210,13 +210,12 @@ double CONTACT::NoxInterface::get_lagrange_multiplier_update_norms(
     }
   }
 
-  Teuchos::RCP<const ::NOX::Epetra::Vector> zincr_nox_ptr =
-      Teuchos::make_rcp<::NOX::Epetra::Vector>(
-          zincr_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+  const ::NOX::Epetra::Vector zincr_nox_ptr(
+      zincr_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
-  updatenorm = zincr_nox_ptr->norm(type);
+  updatenorm = zincr_nox_ptr.norm(type);
   // do scaling if desired
-  if (isScaled) updatenorm /= static_cast<double>(zincr_nox_ptr->length());
+  if (isScaled) updatenorm /= static_cast<double>(zincr_nox_ptr.length());
 
   return updatenorm;
 }

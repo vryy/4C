@@ -64,9 +64,8 @@ void CONTACT::NitscheStrategyTsi::set_parent_state(const enum Mortar::StateType&
 {
   if (statename == Mortar::state_temperature)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> global =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis.dof_col_map(), true);
-    Core::LinAlg::export_to(vec, *global);
+    Core::LinAlg::Vector<double> global(*dis.dof_col_map(), true);
+    Core::LinAlg::export_to(vec, global);
 
     // set state on interfaces
     for (auto& interface : interface_)
@@ -87,7 +86,7 @@ void CONTACT::NitscheStrategyTsi::set_parent_state(const enum Mortar::StateType&
         ele_parentT->location_vector(dis, lm, lmowner, lmstride);
 
         std::vector<double> myval;
-        Core::FE::extract_my_values(*global, myval, lm);
+        Core::FE::extract_my_values(global, myval, lm);
 
         ele->mo_data().parent_temp() = myval;
         ele->mo_data().parent_temp_dof() = lm;

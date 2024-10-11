@@ -66,39 +66,37 @@ void dyn_fluid_drt(const int restart)
     }
 
     // create instance of fluid turbulent flow algorithm
-    Teuchos::RCP<FLD::TurbulentFlowAlgorithm> turbfluidalgo =
-        Teuchos::make_rcp<FLD::TurbulentFlowAlgorithm>(comm, fdyn);
+    FLD::TurbulentFlowAlgorithm turbfluidalgo(comm, fdyn);
 
     // read the restart information, set vectors and variables
-    if (restart) turbfluidalgo->read_restart(restart);
+    if (restart) turbfluidalgo.read_restart(restart);
 
     // run simulation for a separate part of the complete domain to get turbulent flow in it
     // after restart a turbulent inflow profile is computed in the separate inflow section and
     // transferred as dirichlet boundary condition to the problem domain of interest
     // this finally allows to get high quality turbulent inflow conditions during simulation of the
     // actual flow
-    turbfluidalgo->time_loop();
+    turbfluidalgo.time_loop();
 
     // perform result tests if required
-    Global::Problem::instance()->add_field_test(turbfluidalgo->do_result_check());
+    Global::Problem::instance()->add_field_test(turbfluidalgo.do_result_check());
     Global::Problem::instance()->test_all(comm);
   }
   // solve a simple fluid problem
   else
   {
     // create instance of fluid basis algorithm
-    Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluidalgo =
-        Teuchos::make_rcp<Adapter::FluidBaseAlgorithm>(fdyn, fdyn, "fluid", false);
+    Adapter::FluidBaseAlgorithm fluidalgo(fdyn, fdyn, "fluid", false);
 
     // read the restart information, set vectors and variables
-    if (restart) fluidalgo->fluid_field()->read_restart(restart);
+    if (restart) fluidalgo.fluid_field()->read_restart(restart);
 
     // run the simulation
     //    fluidalgo->fluid_field()->TimeLoop();
-    fluidalgo->fluid_field()->integrate();
+    fluidalgo.fluid_field()->integrate();
 
     // perform result tests if required
-    Global::Problem::instance()->add_field_test(fluidalgo->fluid_field()->create_field_test());
+    Global::Problem::instance()->add_field_test(fluidalgo.fluid_field()->create_field_test());
     Global::Problem::instance()->test_all(comm);
   }
 

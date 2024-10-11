@@ -331,7 +331,7 @@ void UTILS::Cardiovascular0DArterialProxDist::evaluate(Teuchos::ParameterList& p
   if (assmat3)
   {
     // offdiagonal stiffness block (0,1 block)
-    evaluate_d_struct_dp(params, sysmat3);
+    evaluate_d_struct_dp(params, *sysmat3);
   }
 
   return;

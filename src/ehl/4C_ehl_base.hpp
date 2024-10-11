@@ -69,17 +69,17 @@ namespace EHL
 
     /// evaluate fluid forces on structure
     Teuchos::RCP<Core::LinAlg::Vector<double>> evaluate_fluid_force(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> pressure);
+        const Core::LinAlg::Vector<double>& pressure);
 
    protected:
-    void add_pressure_force(Teuchos::RCP<Core::LinAlg::Vector<double>> slaveiforce,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> masteriforce);
+    void add_pressure_force(
+        Core::LinAlg::Vector<double>& slaveiforce, Core::LinAlg::Vector<double>& masteriforce);
 
-    void add_poiseuille_force(Teuchos::RCP<Core::LinAlg::Vector<double>> slaveiforce,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> masteriforce);
+    void add_poiseuille_force(
+        Core::LinAlg::Vector<double>& slaveiforce, Core::LinAlg::Vector<double>& masteriforce);
 
-    void add_couette_force(Teuchos::RCP<Core::LinAlg::Vector<double>> slaveiforce,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> masteriforce);
+    void add_couette_force(
+        Core::LinAlg::Vector<double>& slaveiforce, Core::LinAlg::Vector<double>& masteriforce);
 
     /// underlying structure of the EHL problem
     Teuchos::RCP<Adapter::Structure> structure_;
@@ -133,7 +133,7 @@ namespace EHL
 
     /// velocity calculation given the displacements
     Teuchos::RCP<Core::LinAlg::Vector<double>> calc_velocity(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp);
+        const Core::LinAlg::Vector<double>& dispnp);
 
    private:
     /// setup discretizations and dofsets
@@ -141,7 +141,7 @@ namespace EHL
         const std::string lubrication_disname);
 
     /// set structure mesh displacement on lubrication field
-    void set_mesh_disp(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp);
+    void set_mesh_disp(const Core::LinAlg::Vector<double>& disp);
 
     /// set average tangential interface velocity (ie structural velocities
     /// this is invariant w.r.t. rigid body rotations

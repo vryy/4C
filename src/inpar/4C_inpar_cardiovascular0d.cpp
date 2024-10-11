@@ -21,14 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::Cardiovascular0D::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Cardiovascular0D::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   Teuchos::ParameterList& cardvasc0dstruct =
-      list->sublist("CARDIOVASCULAR 0D-STRUCTURE COUPLING", false, "");
+      list.sublist("CARDIOVASCULAR 0D-STRUCTURE COUPLING", false, "");
 
   Core::UTILS::double_parameter("TOL_CARDVASC0D_RES", 1.0E-08,
       "tolerance in the cardiovascular0d error norm for the Newton iteration", &cardvasc0dstruct);
@@ -519,7 +519,7 @@ void Inpar::Cardiovascular0D::set_valid_parameters(Teuchos::RCP<Teuchos::Paramet
   Core::UTILS::double_parameter(
       "ppO2_ven_sys_0", 1.0, "initial systemic venous O2 partial pressure", &cardvascrespir0d);
 
-  Teuchos::ParameterList& mor = list->sublist("MOR", false, "");
+  Teuchos::ParameterList& mor = list.sublist("MOR", false, "");
 
   Core::UTILS::string_parameter(
       "POD_MATRIX", "none", "filename of file containing projection matrix", &mor);

@@ -135,9 +135,8 @@ namespace FLD
 
     */
     void do_time_sample(int step, Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> force,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> phi,
-        Teuchos::RCP<const Core::DOFSets::DofSet> stddofset);
+        Core::LinAlg::Vector<double>& force, Core::LinAlg::Vector<double>& phi,
+        const Core::DOFSets::DofSet& stddofset);
 
     /*!
     \brief Write (dump) the statistics to a file

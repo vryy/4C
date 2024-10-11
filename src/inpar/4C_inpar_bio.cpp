@@ -20,12 +20,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::ArtDyn::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::ArtDyn::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
-  Teuchos::ParameterList& andyn = list->sublist("ARTERIAL DYNAMIC", false, "");
+  Teuchos::ParameterList& andyn = list.sublist("ARTERIAL DYNAMIC", false, "");
 
   setStringToIntegralParameter<TimeIntegrationScheme>("DYNAMICTYP", "ExpTaylorGalerkin",
       "Explicit Taylor Galerkin Scheme", tuple<std::string>("ExpTaylorGalerkin", "Stationary"),
@@ -58,14 +58,14 @@ void Inpar::ArtDyn::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
 
 
 
-void Inpar::ArteryNetwork::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::ArteryNetwork::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   Teuchos::ParameterList& redtisdyn =
-      list->sublist("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC", false, "");
+      list.sublist("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC", false, "");
   Core::UTILS::double_parameter("CONVTOL_P", 1E-6,
       "Coupled red_airway and tissue iteration convergence for pressure", &redtisdyn);
   Core::UTILS::double_parameter("CONVTOL_Q", 1E-6,
@@ -284,10 +284,10 @@ void Inpar::ArteryNetwork::set_valid_conditions(
 
 
 
-void Inpar::BioFilm::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::BioFilm::set_valid_parameters(Teuchos::ParameterList& list)
 {
   Teuchos::ParameterList& biofilmcontrol =
-      list->sublist("BIOFILM CONTROL", false, "control parameters for biofilm problems\n");
+      list.sublist("BIOFILM CONTROL", false, "control parameters for biofilm problems\n");
 
   Core::UTILS::bool_parameter(
       "BIOFILMGROWTH", "No", "Scatra algorithm for biofilm growth", &biofilmcontrol);
@@ -345,14 +345,13 @@ void Inpar::BioFilm::set_valid_conditions(
 }
 
 
-void Inpar::ReducedLung::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::ReducedLung::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& redawdyn =
-      list->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC", false, "");
+  Teuchos::ParameterList& redawdyn = list.sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC", false, "");
 
   setStringToIntegralParameter<RedAirwaysDyntype>("DYNAMICTYP", "OneStepTheta",
       "OneStepTheta Scheme", tuple<std::string>("OneStepTheta"),

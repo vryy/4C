@@ -68,8 +68,8 @@ namespace TSI
     void setup_tsi(const Epetra_Comm& comm);
 
 
-    void set_material_pointers_matching_grid(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
-        Teuchos::RCP<const Core::FE::Discretization> targetdis);
+    void set_material_pointers_matching_grid(
+        const Core::FE::Discretization& sourcedis, const Core::FE::Discretization& targetdis);
 
     //! strategy for material assignment for non matching meshes with TSI
 

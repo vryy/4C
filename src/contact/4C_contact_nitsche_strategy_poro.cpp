@@ -69,9 +69,8 @@ void CONTACT::NitscheStrategyPoro::set_parent_state(const enum Mortar::StateType
   //
   if (statename == Mortar::state_fvelocity || statename == Mortar::state_fpressure)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> global =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis.dof_col_map(), true);
-    Core::LinAlg::export_to(vec, *global);
+    Core::LinAlg::Vector<double> global(*dis.dof_col_map(), true);
+    Core::LinAlg::export_to(vec, global);
 
     // set state on interfaces
     for (const auto& interface : interface_)
@@ -94,7 +93,7 @@ void CONTACT::NitscheStrategyPoro::set_parent_state(const enum Mortar::StateType
           ele->parent_slave_element()->location_vector(dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
-          Core::FE::extract_my_values(*global, myval, lm);
+          Core::FE::extract_my_values(global, myval, lm);
 
           std::vector<double> vel;
           std::vector<double> pres;

@@ -779,7 +779,7 @@ void FPSI::Monolithic::linear_solve()
 
     // line search
     if (linesearch_)
-      line_search(sparse);
+      line_search(*sparse);
     else
     {
       // standard solver call
@@ -810,7 +810,7 @@ void FPSI::Monolithic::linear_solve()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic::line_search(Teuchos::RCP<Core::LinAlg::SparseMatrix>& sparse)
+void FPSI::Monolithic::line_search(Core::LinAlg::SparseMatrix& sparse)
 {
   // Note: the line search code seems to be experimental and is not
   // working properly (perhaps just a sign is wrong somewhere ...)
@@ -907,7 +907,7 @@ void FPSI::Monolithic::line_search(Teuchos::RCP<Core::LinAlg::SparseMatrix>& spa
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = iter_ == 1;
-    solver_->solve(sparse->epetra_operator(), iterinc_, rhs_, solver_params);
+    solver_->solve(sparse.epetra_operator(), iterinc_, rhs_, solver_params);
   }
 
   if (islinesearch_ == false)
@@ -915,7 +915,7 @@ void FPSI::Monolithic::line_search(Teuchos::RCP<Core::LinAlg::SparseMatrix>& spa
     // check whether iterinc_ points in right direction
     Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec =
         Core::LinAlg::create_vector(*dof_row_map(), true);
-    sparse->multiply(true, *rhs_, *tempvec);
+    sparse.multiply(true, *rhs_, *tempvec);
     double climb = 0.0;
     tempvec->Dot(*iterinc_, &climb);
     climb = -climb;
@@ -1558,17 +1558,14 @@ void FPSI::Monolithic::fpsifd_check()
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
   // store old rhs
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_old =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
-  rhs_old->Update(1.0, *rhs_, 0.0);
+  Core::LinAlg::Vector<double> rhs_old(*dof_row_map(), true);
+  rhs_old.Update(1.0, *rhs_, 0.0);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_copy =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
+  Core::LinAlg::Vector<double> rhs_copy(*dof_row_map(), true);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_copy =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*sparse, Core::LinAlg::Copy);
+  Core::LinAlg::SparseMatrix sparse_copy(*sparse, Core::LinAlg::Copy);
 
 
   std::cout << "\n****************** FPSI finite difference check ******************" << std::endl;
@@ -1598,26 +1595,26 @@ void FPSI::Monolithic::fpsifd_check()
     evaluate(iterinc);  // initial iterinc is varied at first dof (0-th element)
     setup_system_matrix();
 
-    rhs_copy->Update(1.0, *rhs_, 0.0);
+    rhs_copy.Update(1.0, *rhs_, 0.0);
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
     poro_field()->clear_poro_iterinc();
     Core::LinAlg::apply_dirichlet_to_system(
-        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *fluid_field()->interface()->fsi_cond_map());
+        sparse_copy, *iterinc_, rhs_copy, *zeros_, *fluid_field()->interface()->fsi_cond_map());
     Core::LinAlg::apply_dirichlet_to_system(
-        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *combined_dbc_map());
+        sparse_copy, *iterinc_, rhs_copy, *zeros_, *combined_dbc_map());
 
-    rhs_copy->Update(-1.0, *rhs_old, 1.0);  // finite difference approximation of partial derivative
-    rhs_copy->Scale(-1.0 / delta);
+    rhs_copy.Update(-1.0, rhs_old, 1.0);  // finite difference approximation of partial derivative
+    rhs_copy.Scale(-1.0 / delta);
 
     if (i == columntocheck)
     {
       std::cout << "iterinc:  " << std::endl;
       iterinc->Print(std::cout);
       std::cout << "rhs_old:  " << std::endl;
-      rhs_old->Print(std::cout);
+      rhs_old.Print(std::cout);
       std::cout << "rhs_copy: " << std::endl;
-      rhs_copy->Print(std::cout);
+      rhs_copy.Print(std::cout);
       FOUR_C_THROW("Stopped by FPSI - fd_check!");
     }
 
@@ -1625,7 +1622,7 @@ void FPSI::Monolithic::fpsifd_check()
     for (int j_loc = 0; j_loc < dofs; ++j_loc)  // loop over rows
     {
       int j = dof_row_map()->GID(j_loc);
-      double value = (*rhs_copy)[j_loc];
+      double value = (rhs_copy)[j_loc];
       stiff_approx->InsertGlobalValues(
           j, 1, &value, index);  // int InsertGlobalValues(int GlobalRow, int NumEntries, double*
                                  // Values, int* Indices);
@@ -1647,12 +1644,11 @@ void FPSI::Monolithic::fpsifd_check()
   int err = stiff_approx->FillComplete();
   if (err) FOUR_C_THROW("FD_Check: FillComplete failed with err-code: %d", err);
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(stiff_approx, Core::LinAlg::Copy);
+  Core::LinAlg::SparseMatrix temp(stiff_approx, Core::LinAlg::Copy);
 
-  Teuchos::RCP<Epetra_CrsMatrix> stiff_approx_sparse = temp->epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> stiff_approx_sparse = temp.epetra_matrix();
 
-  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = sparse_copy->epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = sparse_copy.epetra_matrix();
 
   // calc error (subtraction of sparse_crs and stiff_approx_sparse)
   for (int i_loc = 0; i_loc < dofs; i_loc++)
@@ -1796,24 +1792,24 @@ void FPSI::Monolithic::fpsifd_check()
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Monolithic::extract_columnsfrom_sparse(Teuchos::RCP<Epetra_CrsMatrix> src,
-    const Teuchos::RCP<const Epetra_Map>& colmap, Teuchos::RCP<Epetra_CrsMatrix> dst)
+void FPSI::Monolithic::extract_columnsfrom_sparse(
+    Epetra_CrsMatrix& src, const Epetra_Map& colmap, Epetra_CrsMatrix& dst)
 {
-  dst->PutScalar(0.0);  // clear matrix
-  int rows = src->NumGlobalRows();
+  dst.PutScalar(0.0);  // clear matrix
+  int rows = src.NumGlobalRows();
   for (int row = 0; row < rows; ++row)
   {
-    int g_row = src->RangeMap().GID(row);
+    int g_row = src.RangeMap().GID(row);
     int numentries;
-    int length = src->NumGlobalEntries(g_row);
+    int length = src.NumGlobalEntries(g_row);
     std::vector<double> values(length);
     std::vector<int> indices(length);
-    src->ExtractGlobalRowCopy(g_row, length, numentries, values.data(), indices.data());
+    src.ExtractGlobalRowCopy(g_row, length, numentries, values.data(), indices.data());
     for (int col = 0; col < length; ++col)  // loop over non-zero columns in active row
     {
-      if (colmap->LID(indices[col]) != -1)
+      if (colmap.LID(indices[col]) != -1)
       {
-        dst->InsertGlobalValues(
+        dst.InsertGlobalValues(
             g_row, 1, &values[col], &indices[col]);  // add column value of active row!
       }
     }

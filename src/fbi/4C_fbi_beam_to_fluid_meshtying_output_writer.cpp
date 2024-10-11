@@ -87,15 +87,14 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_runtime(
 {
   auto [output_time, output_step] =
       Core::IO::get_time_and_time_step_index_for_output(visualization_params_, time, i_step);
-  write_output_beam_to_fluid_mesh_tying(couplingenforcer, output_step, output_time);
+  write_output_beam_to_fluid_mesh_tying(*couplingenforcer, output_step, output_time);
 }
 
 /**
  *
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_fluid_mesh_tying(
-    const Teuchos::RCP<Adapter::FBIConstraintenforcer>& couplingenforcer, int i_step,
-    double time) const
+    Adapter::FBIConstraintenforcer& couplingenforcer, int i_step, double time) const
 {
   // Parameter list that will be passed to all contact pairs when they create their visualization.
   Teuchos::ParameterList visualization_params;
@@ -111,40 +110,40 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
   {
     // Add the reference geometry and displacement to the visualization.
     visualization->add_discretization_nodal_reference_position(
-        couplingenforcer->get_structure()->get_discretization());
+        couplingenforcer.get_structure()->get_discretization());
     visualization->add_discretization_nodal_data(
-        "velocity", couplingenforcer->get_structure()->velnp());
+        "velocity", couplingenforcer.get_structure()->velnp());
     visualization->add_discretization_nodal_data(
-        "displacement", couplingenforcer->get_structure()->dispnp());
+        "displacement", couplingenforcer.get_structure()->dispnp());
 
     // Create maps with the GIDs of beam nodes
     std::vector<int> gid_beam_dof;
     std::vector<int> gid_node;
     for (int i_lid = 0;
-         i_lid < couplingenforcer->get_structure()->get_discretization()->num_my_row_nodes();
+         i_lid < couplingenforcer.get_structure()->get_discretization()->num_my_row_nodes();
          i_lid++)
     {
       gid_node.clear();
       Core::Nodes::Node* current_node =
-          couplingenforcer->get_structure()->get_discretization()->l_row_node(i_lid);
-      couplingenforcer->get_structure()->get_discretization()->dof(current_node, gid_node);
+          couplingenforcer.get_structure()->get_discretization()->l_row_node(i_lid);
+      couplingenforcer.get_structure()->get_discretization()->dof(current_node, gid_node);
       if (BEAMINTERACTION::UTILS::is_beam_node(*current_node))
         for (unsigned int dim = 0; dim < 3; ++dim) gid_beam_dof.push_back(gid_node[dim]);
     }
     Epetra_Map beam_dof_map(-1, gid_beam_dof.size(), gid_beam_dof.data(), 0,
-        couplingenforcer->get_structure()->get_discretization()->get_comm());
+        couplingenforcer.get_structure()->get_discretization()->get_comm());
 
     // Extract the forces and add them to the discretization.
     Teuchos::RCP<Core::LinAlg::Vector<double>> force_beam =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(beam_dof_map, true);
-    Core::LinAlg::export_to(*couplingenforcer->assemble_structure_coupling_residual(), *force_beam);
+    Core::LinAlg::export_to(*couplingenforcer.assemble_structure_coupling_residual(), *force_beam);
 
 
     visualization->add_discretization_nodal_data("force", force_beam);
   }
 
   // Add the pair specific visualization by looping over the individual contact pairs.
-  for (const auto& pair : *couplingenforcer->get_bridge()->get_pairs())
+  for (const auto& pair : *couplingenforcer.get_bridge()->get_pairs())
     pair->get_pair_visualization(output_writer_base_ptr_, visualization_params);
 
 

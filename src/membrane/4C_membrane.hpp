@@ -382,7 +382,7 @@ namespace Discret
       /// (braeu 07/16)
       void update_element(std::vector<double>& disp,  // current displacements
           Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
-          Teuchos::RCP<Core::Mat::Material> mat);     // material
+          Core::Mat::Material& mat);                  // material
 
      public:
       /** \brief set the parameter interface ptr for the solid elements

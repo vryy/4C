@@ -380,9 +380,9 @@ namespace Discret
       */
       void compute_area_deriv(const Core::LinAlg::SerialDenseMatrix& x,  ///< spatial configuration
           const int numnode,                                             ///< number of nodes
-          const int ndof,  ///< number of degrees of freedom
-          double& A,       ///< area
-          const Teuchos::RCP<Core::LinAlg::SerialDenseVector>& Adiff,  ///< first derivative
+          const int ndof,                          ///< number of degrees of freedom
+          double& A,                               ///< area
+          Core::LinAlg::SerialDenseVector& Adiff,  ///< first derivative
           const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& Adiff2  ///< second derivative
       );
 
@@ -390,9 +390,9 @@ namespace Discret
       //! displacements
       void compute_vol_deriv(const Core::LinAlg::SerialDenseMatrix& x,  ///< spatial configuration
           const int numnode,                                            ///< number of nodes
-          const int ndof,  ///< number of degrees of freedom
-          double& V,       ///< volume
-          const Teuchos::RCP<Core::LinAlg::SerialDenseVector>& Vdiff,   ///< first derivative
+          const int ndof,                          ///< number of degrees of freedom
+          double& V,                               ///< volume
+          Core::LinAlg::SerialDenseVector& Vdiff,  ///< first derivative
           const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& Vdiff2,  ///< second derivative
           const int minind = 0,  ///< minimal index to compute enclosed volume with
           const int maxind = 2   ///< maximal index to compute enclosed volume with

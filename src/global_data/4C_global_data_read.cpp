@@ -2179,13 +2179,13 @@ void Global::read_materials(Global::Problem& problem, Core::IO::DatFileReader& r
   {
     for (auto& section_i : section)
     {
-      Teuchos::RCP<std::stringstream> condline = Teuchos::make_rcp<std::stringstream>(section_i);
+      std::stringstream condline(section_i);
 
       std::string mat;
       std::string number;
       std::string name;
-      (*condline) >> mat >> number >> name;
-      if ((not(*condline)) or (mat != "MAT"))
+      (condline) >> mat >> number >> name;
+      if ((not(condline)) or (mat != "MAT"))
         FOUR_C_THROW("invalid material line in '%s'", name.c_str());
 
       // extract material ID
@@ -2218,7 +2218,7 @@ void Global::read_contact_constitutive_laws(
   for (auto& m : coconstlawlist)
   {
     // read contact constitutive law from DAT file of type
-    m->read(problem, reader, problem.contact_constitutive_laws());
+    m->read(problem, reader, *problem.contact_constitutive_laws());
   }
 
   // check if every contact constitutive law was identified
@@ -2228,13 +2228,13 @@ void Global::read_contact_constitutive_laws(
   {
     for (auto& section_i : section)
     {
-      Teuchos::RCP<std::stringstream> condline = Teuchos::make_rcp<std::stringstream>(section_i);
+      std::stringstream condline(section_i);
 
       std::string coconstlaw;
       std::string number;
       std::string name;
-      (*condline) >> coconstlaw >> number >> name;
-      if ((not(*condline)) or (coconstlaw != "LAW"))
+      (condline) >> coconstlaw >> number >> name;
+      if ((not(condline)) or (coconstlaw != "LAW"))
         FOUR_C_THROW("invalid contact constitutive law line in '%s'", name.c_str());
 
       // extract contact constitutive law ID

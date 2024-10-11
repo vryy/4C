@@ -96,9 +96,8 @@ void CONTACT::NitscheStrategySsi::set_parent_state(const enum Mortar::StateType&
     case Mortar::state_elch:
     case Mortar::state_scalar:
     {
-      auto scatra_dofcolmap =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis.dof_col_map(), true);
-      Core::LinAlg::export_to(vec, *scatra_dofcolmap);
+      Core::LinAlg::Vector<double> scatra_dofcolmap(*dis.dof_col_map(), true);
+      Core::LinAlg::export_to(vec, scatra_dofcolmap);
 
       // set state on interfaces
       for (const auto& interface : interface_)
@@ -127,7 +126,7 @@ void CONTACT::NitscheStrategySsi::set_parent_state(const enum Mortar::StateType&
             mortar_parent_ele->location_vector(dis, lm, lmowner, lmstride);
 
           std::vector<double> myval;
-          Core::FE::extract_my_values(*scatra_dofcolmap, myval, lm);
+          Core::FE::extract_my_values(scatra_dofcolmap, myval, lm);
 
           mortar_ele->mo_data().parent_scalar() = myval;
           mortar_ele->mo_data().parent_scalar_dof() = lm;

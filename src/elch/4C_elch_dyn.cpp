@@ -77,7 +77,7 @@ void elch_dyn(int restart)
       }
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      auto scatraonly = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(
+      Adapter::ScaTraBaseAlgorithm scatraonly(
           scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
@@ -85,7 +85,7 @@ void elch_dyn(int restart)
           Global::Problem::instance()->n_dim() + 1, 0, 0, true);
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      scatraonly->scatra_field()->set_number_of_dof_set_velocity(1);
+      scatraonly.scatra_field()->set_number_of_dof_set_velocity(1);
 
       // now me may redistribute or ghost the scatra discretization
       // finalize discretization
@@ -93,7 +93,7 @@ void elch_dyn(int restart)
 
       // now we can call init() on the base algorithm
       // scatra time integrator is constructed and initialized inside
-      scatraonly->init();
+      scatraonly.init();
 
       // now me may redistribute or ghost the scatra discretization
       // finalize discretization
@@ -103,22 +103,22 @@ void elch_dyn(int restart)
       // all objects relying on the parallel distribution are
       // created and pointers are set.
       // calls setup() on time integrator inside.
-      scatraonly->setup();
+      scatraonly.setup();
 
       // read the restart information, set vectors and variables
-      if (restart) scatraonly->scatra_field()->read_restart(restart);
+      if (restart) scatraonly.scatra_field()->read_restart(restart);
 
       // set velocity field
       // note: The order read_restart() before set_velocity_field() is important here!!
       // for time-dependent velocity fields, set_velocity_field() is additionally called in each
       // prepare_time_step()-call
-      scatraonly->scatra_field()->set_velocity_field();
+      scatraonly.scatra_field()->set_velocity_field();
 
       // enter time loop to solve problem with given convective velocity
-      scatraonly->scatra_field()->time_loop();
+      scatraonly.scatra_field()->time_loop();
 
       // perform the result test if required
-      scatraonly->scatra_field()->test_results();
+      scatraonly.scatra_field()->test_results();
 
       break;
     }
@@ -193,21 +193,21 @@ void elch_dyn(int restart)
 
         // create an ElCh::MovingBoundaryAlgorithm instance
         // NOTE: elch reads time parameters from scatra dynamic section!
-        auto elch = Teuchos::make_rcp<ElCh::MovingBoundaryAlgorithm>(
+        ElCh::MovingBoundaryAlgorithm elch(
             comm, elchcontrol, scatradyn, problem->solver_params(linsolvernumber));
 
         // add proxy of fluid degrees of freedom to scatra discretization
         if (scatradis->add_dof_set(fluiddis->get_dof_set_proxy()) != 1)
           FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-        elch->scatra_field()->set_number_of_dof_set_velocity(1);
+        elch.scatra_field()->set_number_of_dof_set_velocity(1);
 
         // add proxy of ALE degrees of freedom to scatra discretization
         if (scatradis->add_dof_set(aledis->get_dof_set_proxy()) != 2)
           FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-        elch->scatra_field()->set_number_of_dof_set_displacement(2);
+        elch.scatra_field()->set_number_of_dof_set_displacement(2);
 
         // now we must call init()
-        elch->init();
+        elch.init();
 
         // NOTE : At this point we may redistribute and/or
         //        ghost our discretizations at will.
@@ -216,19 +216,19 @@ void elch_dyn(int restart)
         aledis->fill_complete();
 
         // now we can call setup() on the scatra time integrator
-        elch->setup();
+        elch.setup();
 
         // read the restart information, set vectors and variables
-        if (restart) elch->read_restart(restart);
+        if (restart) elch.read_restart(restart);
 
         // solve the whole electrochemistry problem
-        elch->time_loop();
+        elch.time_loop();
 
         // summarize the performance measurements
         Teuchos::TimeMonitor::summarize();
 
         // perform the result test
-        elch->test_results();
+        elch.test_results();
       }
       else
       {
@@ -243,16 +243,16 @@ void elch_dyn(int restart)
 
         // create an ElCh::Algorithm instance
         // NOTE: elch reads time parameters from scatra dynamic section!
-        auto elch = Teuchos::make_rcp<ElCh::Algorithm>(
+        ElCh::Algorithm elch(
             comm, elchcontrol, scatradyn, fdyn, problem->solver_params(linsolvernumber));
 
         // add proxy of fluid degrees of freedom to scatra discretization
         if (scatradis->add_dof_set(fluiddis->get_dof_set_proxy()) != 1)
           FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-        elch->scatra_field()->set_number_of_dof_set_velocity(1);
+        elch.scatra_field()->set_number_of_dof_set_velocity(1);
 
         // now we must call init()
-        elch->init();
+        elch.init();
 
         // NOTE : At this point we may redistribute and/or
         //        ghost our discretizations at will.
@@ -261,19 +261,19 @@ void elch_dyn(int restart)
         aledis->fill_complete();
 
         // discretizations are done, now we can call setup() on the algorithm
-        elch->setup();
+        elch.setup();
 
         // read the restart information, set vectors and variables
-        if (restart) elch->read_restart(restart);
+        if (restart) elch.read_restart(restart);
 
         // solve the whole electrochemistry problem
-        elch->time_loop();
+        elch.time_loop();
 
         // summarize the performance measurements
         Teuchos::TimeMonitor::summarize();
 
         // perform the result test
-        elch->test_results();
+        elch.test_results();
       }
 
       break;

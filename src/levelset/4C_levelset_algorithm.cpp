@@ -243,7 +243,7 @@ void ScaTra::LevelSetAlgorithm::get_initial_volume_of_minus_domain(
   interface.clear();
   // reconstruct interface and calculate volumes, etc ...
   ScaTra::LevelSet::Intersection intersect;
-  intersect.capture_zero_level_set(phinp, scatradis, volumedomainminus, volplus, surf, interface);
+  intersect.capture_zero_level_set(*phinp, *scatradis, volumedomainminus, volplus, surf, interface);
 }
 
 /*----------------------------------------------------------------------*

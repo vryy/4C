@@ -88,7 +88,7 @@ namespace FLD
     \brief Compute the in-shell mean values of first and second order
     moments for velocities, pressure (and transported scalar fields).
     */
-    void do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
+    void do_time_sample(Core::LinAlg::Vector<double>& velnp,
         Teuchos::RCP<Core::LinAlg::Vector<double>> scanp,
         Teuchos::RCP<Core::LinAlg::Vector<double>> fullphinp);
 
@@ -139,8 +139,8 @@ namespace FLD
     //@}
 
     // Add results from scalar transport field solver to statistics
-    void add_scatra_results(Teuchos::RCP<Core::FE::Discretization> scatradis,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> phinp);
+    void add_scatra_results(
+        Teuchos::RCP<Core::FE::Discretization> scatradis, Core::LinAlg::Vector<double>& phinp);
 
    protected:
     /*!

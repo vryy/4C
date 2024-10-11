@@ -98,12 +98,10 @@ void FSI::Algorithm::setup()
                    "\n"
                 << std::endl;
 
-    Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure =
-        Teuchos::make_rcp<Adapter::StructureBaseAlgorithm>(
-            Global::Problem::instance()->fsi_dynamic_params(),
-            const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+    Adapter::StructureBaseAlgorithm structure(Global::Problem::instance()->fsi_dynamic_params(),
+        const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     structure_ =
-        Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(structure->structure_field());
+        Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(structure.structure_field());
     structure_->setup();
 
     if (structure_ == Teuchos::null)
@@ -118,10 +116,9 @@ void FSI::Algorithm::setup()
         "If you want to use yet unsupported elements or you want to do crack simulation,\n"
         "set INT_STRATEGY to Old in ---STRUCUTRAL DYNAMIC section!");
 
-  Teuchos::RCP<Adapter::FluidMovingBoundaryBaseAlgorithm> MBFluidbase =
-      Teuchos::make_rcp<Adapter::FluidMovingBoundaryBaseAlgorithm>(
-          Global::Problem::instance()->fsi_dynamic_params(), "FSICoupling");
-  fluid_ = MBFluidbase->mb_fluid_field();
+  Adapter::FluidMovingBoundaryBaseAlgorithm MBFluidbase(
+      Global::Problem::instance()->fsi_dynamic_params(), "FSICoupling");
+  fluid_ = MBFluidbase.mb_fluid_field();
 
   coupsf_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
 }

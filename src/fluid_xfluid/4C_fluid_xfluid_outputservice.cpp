@@ -58,7 +58,7 @@ void FLD::XFluidOutputService::prepare_output()
 }
 
 void FLD::XFluidOutputService::output(int step, double time, bool write_restart_data,
-    Teuchos::RCP<const FLD::XFluidState> state, Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp,
+    const FLD::XFluidState& state, Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp,
     Teuchos::RCP<Core::LinAlg::Vector<double>> gridvnp)
 {
   discret_->writer()->new_step(step, time);
@@ -114,13 +114,13 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
       {
         // std::cout << dofrowmap->LID(gdofs[idof]) << std::endl;
         (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] =
-            (*state->velnp_)[xdofrowmap->LID(gdofs_current[idof])];
+            (*state.velnp_)[xdofrowmap->LID(gdofs_current[idof])];
       }
     }
     else if (gdofs_current.size() % gdofs_original.size() == 0)  // multiple dofsets
     {
       // if there are multiple dofsets we write output for the standard dofset
-      Cut::Node* node = state->wizard()->get_node(xfemnode->id());
+      Cut::Node* node = state.wizard()->get_node(xfemnode->id());
 
       const std::vector<Teuchos::RCP<Cut::NodalDofSet>>& dofcellsets = node->nodal_dof_sets();
 
@@ -152,7 +152,7 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
       for (std::size_t idof = 0; idof < numdof; ++idof)
       {
         (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] =
-            (*state->velnp_)[xdofrowmap->LID(gdofs_current[offset + idof])];
+            (*state.velnp_)[xdofrowmap->LID(gdofs_current[offset + idof])];
       }
 
 
@@ -206,13 +206,13 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
     restart_count_++;
 
     // velocity/pressure vector
-    discret_->writer()->write_vector("velnp_res", state->velnp_);
+    discret_->writer()->write_vector("velnp_res", state.velnp_);
 
     // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-    discret_->writer()->write_vector("accnp_res", state->accnp_);
-    discret_->writer()->write_vector("accn_res", state->accn_);
-    discret_->writer()->write_vector("veln_res", state->veln_);
-    discret_->writer()->write_vector("velnm_res", state->velnm_);
+    discret_->writer()->write_vector("accnp_res", state.accnp_);
+    discret_->writer()->write_vector("accn_res", state.accn_);
+    discret_->writer()->write_vector("veln_res", state.veln_);
+    discret_->writer()->write_vector("velnm_res", state.velnm_);
 
     if (dispnp != Teuchos::null)
     {
@@ -566,20 +566,20 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
             if (e->is_cut())
             {
               gmsh_output_volume_cell(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
-                  gmshfilecontent_acc, actele, e, vc, nds, vel, acc);
+                  gmshfilecontent_acc, actele, e, vc, nds, *vel, acc);
               if (vc->position() == Cut::Point::outside)
               {
                 if (cond_manager_->has_mesh_coupling())
-                  gmsh_output_boundary_cell(*discret_, gmshfilecontent_bound, vc, wizard);
+                  gmsh_output_boundary_cell(*discret_, gmshfilecontent_bound, vc, *wizard);
               }
             }
             else
             {
               gmsh_output_element(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
-                  gmshfilecontent_acc, actele, nds, vel, acc, dispnp);
+                  gmshfilecontent_acc, actele, nds, *vel, acc, dispnp);
             }
             gmsh_output_element(*discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost,
-                gmshfilecontent_acc_ghost, actele, nds, vel, acc, dispnp);
+                gmshfilecontent_acc_ghost, actele, nds, *vel, acc, dispnp);
           }
           set_counter += 1;
         }
@@ -590,7 +590,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
 
         // one standard uncut physical element
         gmsh_output_element(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
-            gmshfilecontent_acc, actele, nds, vel, acc, dispnp);
+            gmshfilecontent_acc, actele, nds, *vel, acc, dispnp);
       }
       else
       {
@@ -601,9 +601,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
     {
       std::vector<int> nds;  // empty vector
       gmsh_output_element(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
-          gmshfilecontent_acc, actele, nds, vel, acc, dispnp);
+          gmshfilecontent_acc, actele, nds, *vel, acc, dispnp);
       gmsh_output_element(*discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost,
-          gmshfilecontent_acc_ghost, actele, nds, vel, acc, dispnp);
+          gmshfilecontent_acc_ghost, actele, nds, *vel, acc, dispnp);
     }
   }  // loop elements
 
@@ -628,14 +628,13 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
 
 /// Gmsh output function for elements without an Cut::ElementHandle
 void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
-    Core::FE::Discretization& discret,  ///< background fluid discretization
-    std::ofstream& vel_f,               ///< output file stream for velocity
-    std::ofstream& press_f,             ///< output file stream for pressure
-    std::ofstream& acc_f,               ///< output file stream for acceleration
-    Core::Elements::Element* actele,    ///< element
-    std::vector<int>& nds,              ///< vector holding the nodal dofsets
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>
-        vel,  ///< vector holding velocity and pressure dofs
+    Core::FE::Discretization& discret,        ///< background fluid discretization
+    std::ofstream& vel_f,                     ///< output file stream for velocity
+    std::ofstream& press_f,                   ///< output file stream for pressure
+    std::ofstream& acc_f,                     ///< output file stream for acceleration
+    Core::Elements::Element* actele,          ///< element
+    std::vector<int>& nds,                    ///< vector holding the nodal dofsets
+    const Core::LinAlg::Vector<double>& vel,  ///< vector holding velocity and pressure dofs
     Teuchos::RCP<const Core::LinAlg::Vector<double>> acc,    ///< vector holding acceleration
     Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp  ///< vector holding ale displacements
 )
@@ -667,7 +666,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
   }
 
   std::vector<double> m(la[0].lm_.size());
-  Core::FE::extract_my_values(*vel, m, la[0].lm_);
+  Core::FE::extract_my_values(vel, m, la[0].lm_);
 
   std::vector<double> m_acc(la[0].lm_.size());
   if (acc_output)
@@ -762,16 +761,15 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
 
 /// Gmsh output function for volumecells
 void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
-    Core::FE::Discretization& discret,  ///< background fluid discretization
-    std::ofstream& vel_f,               ///< output file stream for velocity
-    std::ofstream& press_f,             ///< output file stream for pressure
-    std::ofstream& acc_f,               ///< output file stream for acceleration
-    Core::Elements::Element* actele,    ///< element
-    Cut::ElementHandle* e,              ///< elementhandle
-    Cut::VolumeCell* vc,                ///< volumecell
-    const std::vector<int>& nds,        ///< vector holding the nodal dofsets
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>
-        velvec,  ///< vector holding velocity and pressure dofs
+    Core::FE::Discretization& discret,           ///< background fluid discretization
+    std::ofstream& vel_f,                        ///< output file stream for velocity
+    std::ofstream& press_f,                      ///< output file stream for pressure
+    std::ofstream& acc_f,                        ///< output file stream for acceleration
+    Core::Elements::Element* actele,             ///< element
+    Cut::ElementHandle* e,                       ///< elementhandle
+    Cut::VolumeCell* vc,                         ///< volumecell
+    const std::vector<int>& nds,                 ///< vector holding the nodal dofsets
+    const Core::LinAlg::Vector<double>& velvec,  ///< vector holding velocity and pressure dofs
     Teuchos::RCP<const Core::LinAlg::Vector<double>> accvec  ///< vector holding acceleration
 )
 {
@@ -796,7 +794,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
   actele->location_vector(discret, nds, la, false);
 
   std::vector<double> m(la[0].lm_.size());
-  Core::FE::extract_my_values(*velvec, m, la[0].lm_);
+  Core::FE::extract_my_values(velvec, m, la[0].lm_);
 
   std::vector<double> m_acc(la[0].lm_.size());
   if (acc_output)
@@ -1151,10 +1149,10 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
 
 /// Gmsh output function for boundarycells
 void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
-    Core::FE::Discretization& discret,          ///< background fluid discretization
-    std::ofstream& bound_f,                     ///< output file stream for boundary mesh
-    Cut::VolumeCell* vc,                        ///< volumecell
-    const Teuchos::RCP<Cut::CutWizard>& wizard  ///< cut wizard
+    Core::FE::Discretization& discret,  ///< background fluid discretization
+    std::ofstream& bound_f,             ///< output file stream for boundary mesh
+    Cut::VolumeCell* vc,                ///< volumecell
+    Cut::CutWizard& wizard              ///< cut wizard
 )
 {
   bound_f.setf(std::ios::scientific, std::ios::floatfield);
@@ -1176,7 +1174,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_boundary_cell(
 
     Core::Elements::Element* side = cond_manager_->get_side(sid);
 
-    Cut::SideHandle* s = wizard->get_mesh_cutting_side(sid, 0);
+    Cut::SideHandle* s = wizard.get_mesh_cutting_side(sid, 0);
 
     const int numnodes = side->num_node();
     Core::Nodes::Node** nodes = side->nodes();

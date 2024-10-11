@@ -461,7 +461,7 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
 
     // Create the linear system
     Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys =
-        create_linear_system(nlParams, interface, noxSoln, utils_);
+        create_linear_system(nlParams, interface, noxSoln, *utils_);
 
     // Create the Group
     Teuchos::RCP<::NOX::Epetra::Group> grp =
@@ -544,7 +544,7 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
 Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system(
     Teuchos::ParameterList& nlParams,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& interface,
-    ::NOX::Epetra::Vector& noxSoln, Teuchos::RCP<::NOX::Utils> utils)
+    ::NOX::Epetra::Vector& noxSoln, ::NOX::Utils& utils)
 {
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
 
@@ -661,8 +661,8 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
       if (dirParams.get("Method", "Newton") != "User Defined")
       {
         if (get_comm().MyPID() == 0)
-          utils->out() << "Warning: No Jacobian for solver " << dirParams.get("Method", "Newton")
-                       << "\n";
+          utils.out() << "Warning: No Jacobian for solver " << dirParams.get("Method", "Newton")
+                      << "\n";
       }
       linSys = Teuchos::make_rcp<::NOX::Epetra::LinearSystemAztecOO>(
           printParams, lsParams, interface, noxSoln);
@@ -679,7 +679,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
     if (lsParams.get("Preconditioner", "None") == "None")
     {
       if (get_comm().MyPID() == 0)
-        utils->out() << "Warning: Preconditioner turned off in linear solver settings.\n";
+        utils.out() << "Warning: Preconditioner turned off in linear solver settings.\n";
     }
 
     Teuchos::ParameterList& fdParams = nlParams.sublist("Finite Difference");
@@ -861,7 +861,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::struct_op(
  | Calculate interface velocity based on given interface displacement   |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::interface_velocity(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> idispnp) const
+    const Core::LinAlg::Vector<double>& idispnp) const
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = Teuchos::null;
@@ -869,12 +869,12 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::interface_velocity(
   if (fsidyn.get<bool>("SECONDORDER"))
   {
     ivel = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*iveln_);
-    ivel->Update(2. / dt(), *idispnp, -2. / dt(), *idispn_, -1.);
+    ivel->Update(2. / dt(), idispnp, -2. / dt(), *idispn_, -1.);
   }
   else
   {
     ivel = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*idispn_);
-    ivel->Update(1. / dt(), *idispnp, -1. / dt());
+    ivel->Update(1. / dt(), idispnp, -1. / dt());
   }
   return ivel;
 }

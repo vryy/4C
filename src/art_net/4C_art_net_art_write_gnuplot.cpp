@@ -204,7 +204,7 @@ void Arteries::UTILS::ArtWriteGnuplotWrapper::write(Teuchos::ParameterList& para
     for (mapiter = agmap_.begin(); mapiter != agmap_.end(); mapiter++)
     {
       art_num = mapiter->first;
-      mapiter->second->ArtWriteGnuplot::write(discret_, params, agnode_map_[art_num]);
+      mapiter->second->ArtWriteGnuplot::write(*discret_, params, agnode_map_[art_num]);
     }
   }
 }
@@ -265,7 +265,7 @@ Arteries::UTILS::ArtWriteGnuplot::ArtWriteGnuplot() {}
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<Core::FE::Discretization> discret,
+void Arteries::UTILS::ArtWriteGnuplot::write(Core::FE::Discretization& discret,
     Teuchos::ParameterList& params, const std::vector<int>* nodes)
 {
   // defining the Length
@@ -276,21 +276,21 @@ void Arteries::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<Core::FE::Discretizati
   for (unsigned int i = 0; i < nodes->size() - 1; i++)
   {
     // get the elements connected to the node
-    if (!discret->have_global_node((*nodes)[i]))
+    if (!discret.have_global_node((*nodes)[i]))
     {
-      int proc = discret->get_comm().MyPID();
+      int proc = discret.get_comm().MyPID();
       FOUR_C_THROW("Global Node (%d) doesn't exist on processor (%d)\n", (*nodes)[i], proc);
       exit(1);
     }
 
     //    Core::Nodes::Node * nd = discret->lColNode((*nodes)[i]);
-    Core::Nodes::Node* nd = discret->g_node((*nodes)[i]);
+    Core::Nodes::Node* nd = discret.g_node((*nodes)[i]);
     Core::Elements::Element** ele = nd->elements();
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
     std::vector<int> lmstride;
-    Teuchos::RCP<std::vector<int>> lmowner = Teuchos::make_rcp<std::vector<int>>();
+    std::vector<int> lmowner;
     const int* ele_nodes = ele[0][0].node_ids();
 
     if (ele_nodes[0] == (*nodes)[i])
@@ -298,13 +298,13 @@ void Arteries::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<Core::FE::Discretizati
     else
       ElemNum = 1;
 
-    ele[ElemNum][0].location_vector(*discret, lm, *lmowner, lmstride);
+    ele[ElemNum][0].location_vector(discret, lm, lmowner, lmstride);
 
     // get node coordinates and number of elements per node
     Core::LinAlg::Matrix<3, 2> xyze;
     for (int inode = 0; inode < 2; inode++)
     {
-      const auto& x = discret->g_node((*nodes)[i + inode])->x();
+      const auto& x = discret.g_node((*nodes)[i + inode])->x();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
@@ -314,7 +314,7 @@ void Arteries::UTILS::ArtWriteGnuplot::write(Teuchos::RCP<Core::FE::Discretizati
               pow(xyze(2, 0) - xyze(2, 1), 2));
 
     // get the degrees of freedom
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> qanp = discret->get_state("qanp");
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> qanp = discret.get_state("qanp");
     std::vector<double> myqanp(lm.size());
     Core::FE::extract_my_values(*qanp, myqanp, lm);
 

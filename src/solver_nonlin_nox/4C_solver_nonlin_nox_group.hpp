@@ -102,7 +102,7 @@ namespace NOX
 
       /// compute element volumes
       ::NOX::Abstract::Group::ReturnType compute_element_volumes(
-          Teuchos::RCP<Core::LinAlg::Vector<double>>& ele_vols) const;
+          Core::LinAlg::Vector<double>& ele_vols) const;
 
       /*! get the nodal dofs from the elements corresponding to the provided
        *  global element ids */
@@ -111,8 +111,7 @@ namespace NOX
 
       /// compute trial element volumes
       ::NOX::Abstract::Group::ReturnType compute_trial_element_volumes(
-          Teuchos::RCP<Core::LinAlg::Vector<double>>& ele_vols, const ::NOX::Abstract::Vector& dir,
-          double step);
+          Core::LinAlg::Vector<double>& ele_vols, const ::NOX::Abstract::Vector& dir, double step);
 
       //! @}
 

@@ -127,7 +127,7 @@ namespace CONTACT
         Teuchos::RCP<Coupling::Adapter::Coupling> coupST);
 
     void store_nodal_quantities(
-        Mortar::StrategyBase::QuantityType type, Teuchos::RCP<Coupling::Adapter::Coupling> coupST);
+        Mortar::StrategyBase::QuantityType type, Coupling::Adapter::Coupling& coupST);
 
     /*!
      \brief Update contact at end of time step

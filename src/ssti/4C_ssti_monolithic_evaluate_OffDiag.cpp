@@ -83,9 +83,9 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_structure_interface(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> thermostructureinterface)
+    Core::LinAlg::SparseOperator& thermostructureinterface)
 {
-  thermostructureinterface->zero();
+  thermostructureinterface.zero();
 
   // slave and master matrix for evaluation of conditions
   Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix(Teuchos::null);
@@ -123,21 +123,21 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
 
   copy_slave_to_master_thermo_structure_interface(slavematrix, mastermatrix);
 
-  thermostructureinterface->add(*slavematrix, false, 1.0, 1.0);
-  thermostructureinterface->add(*mastermatrix, false, 1.0, 1.0);
+  thermostructureinterface.add(*slavematrix, false, 1.0, 1.0);
+  thermostructureinterface.add(*mastermatrix, false, 1.0, 1.0);
 
   // finalize thermo-structure matrix block
   switch (thermo_->scatra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::block_condition:
     {
-      thermostructureinterface->complete();
+      thermostructureinterface.complete();
       break;
     }
 
     case Core::LinAlg::MatrixType::sparse:
     {
-      thermostructureinterface->complete(*full_map_structure_, *full_map_thermo_);
+      thermostructureinterface.complete(*full_map_structure_, *full_map_thermo_);
       break;
     }
 

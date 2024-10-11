@@ -82,18 +82,6 @@ namespace FSI
     virtual void create_system_matrix();
     //@}
 
-
-   protected:
-    //--------------------------------------------------------------------------//
-    //! @name Safety routines
-
-    //! validate the input parameter combinations
-    void validate_parameters();
-
-    //@}
-
-
-
     //--------------------------------------------------------------------------//
     //! @name Restart routine
 
@@ -118,6 +106,17 @@ namespace FSI
 
     //! write output
     void output() override;
+
+   protected:
+    //--------------------------------------------------------------------------//
+    //! @name Safety routines
+
+    //! validate the input parameter combinations
+    void validate_parameters();
+
+    //@}
+
+
 
     //@}
 
@@ -165,7 +164,7 @@ namespace FSI
     void apply_dbc();
 
     //! Extract initial guess from fields
-    void initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> ig);
+    void initial_guess(Core::LinAlg::Vector<double>& ig);
 
     //! Create the combined DOF row map for the FSI problem; row maps of structure and xfluid to an
     //! global FSI DOF row map
@@ -180,9 +179,9 @@ namespace FSI
     //!
     //! As usual, the ordering is: structure -- fluid
     void combine_field_vectors(
-        Core::LinAlg::Vector<double>& v,  ///< composed vector containing all field vectors
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,  ///< structural DOFs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv   ///< fluid DOFs
+        Core::LinAlg::Vector<double>& v,         ///< composed vector containing all field vectors
+        const Core::LinAlg::Vector<double>& sv,  ///< structural DOFs
+        const Core::LinAlg::Vector<double>& fv   ///< fluid DOFs
     );
 
 
@@ -242,11 +241,11 @@ namespace FSI
 
     //! forward permutation of fluid dofs - transform vectors (based on dofsets) w.r.t old interface
     //! position forward to a vector (based on dofsets) w.r.t. new interface position
-    void permute_fluid_dofs_forward(Teuchos::RCP<Core::LinAlg::Vector<double>>& fx);
+    void permute_fluid_dofs_forward(Core::LinAlg::Vector<double>& fx);
 
     //! backward permutation of fluid dofs - transform vectors (based on dofsets) w.r.t new
     //! interface position backward to a vector (based on dofsets) w.r.t. old interface position
-    void permute_fluid_dofs_backward(Teuchos::RCP<Core::LinAlg::Vector<double>>& fx);
+    void permute_fluid_dofs_backward(Core::LinAlg::Vector<double>& fx);
 
     //@}
 

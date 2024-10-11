@@ -18,13 +18,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::EHL::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::EHL::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& ehldyn = list->sublist("ELASTO HYDRO DYNAMIC", false,
+  Teuchos::ParameterList& ehldyn = list.sublist("ELASTO HYDRO DYNAMIC", false,
       "Elastohydrodynamic paramters for elastohydrodynamic lubrication (lubrication structure "
       "interaction)");
 

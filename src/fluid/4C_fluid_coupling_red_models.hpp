@@ -242,19 +242,19 @@ namespace FLD
       */
       void inflow_boundary(double flowrate, double time, double dta, double theta, int condid);
 
-      void update_residual(Teuchos::RCP<Core::LinAlg::Vector<double>> residual);
+      void update_residual(Core::LinAlg::Vector<double>& residual);
 
 
 
       void evaluate_dirichlet(
-          Teuchos::RCP<Core::LinAlg::Vector<double>> velnp, const Epetra_Map& condmap, double time);
+          Core::LinAlg::Vector<double>& velnp, const Epetra_Map& condmap, double time);
 
       /*!
       \brief compute TimeUpdate
       */
       void time_update() {}
 
-      void integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>& params) {}
+      void integrate(bool flag, Teuchos::ParameterList& params) {}
 
       void save_state(){};
 

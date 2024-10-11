@@ -110,7 +110,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_force()
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
     {
       springdashpotparams.set("dt", (*global_state().get_delta_time())[0]);
-      spring->evaluate_force(*fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
+      spring->evaluate_force(*fspring_np_ptr_, disnp_ptr_, *velnp_ptr_, springdashpotparams);
     }
   }
 
@@ -150,7 +150,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_stiff()
     {
       springdashpotparams.set("dt", (*global_state().get_delta_time())[0]);
       spring->evaluate_force_stiff(
-          *stiff_spring_ptr_, *fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
+          *stiff_spring_ptr_, *fspring_np_ptr_, disnp_ptr_, *velnp_ptr_, springdashpotparams);
     }
   }
 
@@ -194,7 +194,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_force_stiff()
     {
       springdashpotparams.set("dt", (*global_state().get_delta_time())[0]);
       spring->evaluate_force_stiff(
-          *stiff_spring_ptr_, *fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
+          *stiff_spring_ptr_, *fspring_np_ptr_, disnp_ptr_, *velnp_ptr_, springdashpotparams);
     }
   }
 
@@ -244,9 +244,9 @@ void Solid::ModelEvaluator::SpringDashpot::write_restart(
 
     if (stype == CONSTRAINTS::SpringDashpot::xyz or
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
-      spring->output_prestr_offset(springoffsetprestr);
+      spring->output_prestr_offset(*springoffsetprestr);
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
-      spring->output_prestr_offset_old(springoffsetprestr_old);
+      spring->output_prestr_offset_old(*springoffsetprestr_old);
   }
 
   // write vector to output for restart
@@ -275,8 +275,8 @@ void Solid::ModelEvaluator::SpringDashpot::read_restart(Core::IO::Discretization
 
     if (stype == CONSTRAINTS::SpringDashpot::xyz or
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
-      spring->set_restart(tempvec);
-    if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal) spring->set_restart_old(tempvecold);
+      spring->set_restart(*tempvec);
+    if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal) spring->set_restart_old(*tempvecold);
   }
 }
 
@@ -299,7 +299,7 @@ void Solid::ModelEvaluator::SpringDashpot::update_step_state(const double& timef
     {
       case Inpar::Solid::PreStress::mulf:
       case Inpar::Solid::PreStress::material_iterative:
-        for (const auto& spring : springs_) spring->reset_prestress(global_state().get_dis_np());
+        for (const auto& spring : springs_) spring->reset_prestress(*global_state().get_dis_np());
       default:
         break;
     }
@@ -324,7 +324,7 @@ void Solid::ModelEvaluator::SpringDashpot::output_step_state(
   bool found_cursurfnormal = false;
   for (const auto& spring : springs_)
   {
-    spring->output_gap_normal(gap, normals, springstress);
+    spring->output_gap_normal(*gap, *normals, *springstress);
 
     // get spring type from current condition
     const CONSTRAINTS::SpringDashpot::SpringType stype = spring->get_spring_type();

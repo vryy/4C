@@ -125,7 +125,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVolCoupl::fluid_
   {
     // normal fluid solve
     // the displacement -> velocity conversion at the interface
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = interface_velocity(idisp);
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = interface_velocity(*idisp);
 
     // A rather simple hack. We need something better!
     const int itemax = mb_fluid_field()->itemax();
@@ -270,12 +270,10 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
     Teuchos::RCP<Core::LinAlg::Vector<double>> disp_fluid,
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> correction =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(disp_fluid->Map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> DofColMapDummy =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *fluidale->fluid_field()->discretization()->dof_col_map(), true);
-  Core::LinAlg::export_to(*deltadisp, *DofColMapDummy);
+  Core::LinAlg::Vector<double> correction(disp_fluid->Map(), true);
+  Core::LinAlg::Vector<double> DofColMapDummy(
+      *fluidale->fluid_field()->discretization()->dof_col_map(), true);
+  Core::LinAlg::export_to(*deltadisp, DofColMapDummy);
 
   const double tol = 1e-5;
 
@@ -362,7 +360,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
 
       // extract local values of the global vectors
       std::vector<double> FSIdisp(dofsFSI.size());
-      Core::FE::extract_my_values(*DofColMapDummy, FSIdisp, dofsFSI);
+      Core::FE::extract_my_values(DofColMapDummy, FSIdisp, dofsFSI);
 
       std::vector<int> temp2 = fluidale->fluid_field()->discretization()->dof(fluidnode);
       std::vector<int> dofs;
@@ -376,16 +374,16 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
         lmowner[idof] = fluidnode->owner();
       }
 
-      Core::LinAlg::assemble(*correction, gnode, dofs, lmowner);
+      Core::LinAlg::assemble(correction, gnode, dofs, lmowner);
     }  // end fluid volume node loop
   }    // end ale fsi element loop
 
   // do correction
-  disp_fluid->Update(1.0, *correction, 1.0);
+  disp_fluid->Update(1.0, correction, 1.0);
 
   // calc norm
   double norm = 0.0;
-  correction->Norm2(&norm);
+  correction.Norm2(&norm);
 
   // output
   if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
@@ -401,15 +399,13 @@ void FSI::VolCorrector::correct_vol_displacements_phys_space(
     Teuchos::RCP<Core::LinAlg::Vector<double>> disp_fluid,
     Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> correction =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(disp_fluid->Map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> DofColMapDummy =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *fluidale->fluid_field()->discretization()->dof_col_map(), true);
-  Core::LinAlg::export_to(*deltadisp, *DofColMapDummy);
+  Core::LinAlg::Vector<double> correction(disp_fluid->Map(), true);
+  Core::LinAlg::Vector<double> DofColMapDummy(
+      *fluidale->fluid_field()->discretization()->dof_col_map(), true);
+  Core::LinAlg::export_to(*deltadisp, DofColMapDummy);
 
   std::map<int, Core::LinAlg::Matrix<9, 2>> CurrentDOPs =
-      calc_background_dops(fluidale->fluid_field()->discretization());
+      calc_background_dops(*fluidale->fluid_field()->discretization());
 
   Teuchos::RCP<std::set<int>> FSIaleeles = Core::Conditions::conditioned_element_map(
       *fluidale->ale_field()->discretization(), "FSICoupling");
@@ -425,11 +421,11 @@ void FSI::VolCorrector::correct_vol_displacements_phys_space(
   }
 
   // do correction
-  disp_fluid->Update(1.0, *correction, 1.0);
+  disp_fluid->Update(1.0, correction, 1.0);
 
   // calc norm
   double norm = 0.0;
-  correction->Norm2(&norm);
+  correction.Norm2(&norm);
 
   // output
   if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
@@ -482,7 +478,7 @@ void FSI::VolCorrector::setup(const int dim, Teuchos::RCP<Adapter::FluidAle> flu
 
 
   std::map<int, Core::LinAlg::Matrix<9, 2>> CurrentDOPs =
-      calc_background_dops(fluidale->fluid_field()->discretization());
+      calc_background_dops(*fluidale->fluid_field()->discretization());
 
   Teuchos::RCP<std::set<int>> FSIaleeles = Core::Conditions::conditioned_element_map(
       *fluidale->ale_field()->discretization(), "FSICoupling");
@@ -611,13 +607,13 @@ void FSI::VolCorrector::init_dop_normals()
  |  Calculate Dops for background mesh                       farah 05/16|
  *----------------------------------------------------------------------*/
 std::map<int, Core::LinAlg::Matrix<9, 2>> FSI::VolCorrector::calc_background_dops(
-    Teuchos::RCP<Core::FE::Discretization> searchdis)
+    Core::FE::Discretization& searchdis)
 {
   std::map<int, Core::LinAlg::Matrix<9, 2>> currentKDOPs;
 
-  for (int lid = 0; lid < searchdis->num_my_col_elements(); ++lid)
+  for (int lid = 0; lid < searchdis.num_my_col_elements(); ++lid)
   {
-    Core::Elements::Element* sele = searchdis->l_col_element(lid);
+    Core::Elements::Element* sele = searchdis.l_col_element(lid);
 
     currentKDOPs[sele->id()] = calc_dop(*sele);
   }

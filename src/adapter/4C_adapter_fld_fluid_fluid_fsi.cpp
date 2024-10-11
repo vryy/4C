@@ -304,7 +304,7 @@ void Adapter::FluidFluidFSI::prepare_shape_derivatives()
   // the dof-maps may have changed: create a new shape derivatives matrix
   Teuchos::RCP<std::set<int>> condelements =
       mergedfluidinterface_->conditioned_element_map(*fluidimpl_->discretization()());
-  xfluidfluid_->prepare_shape_derivatives(mergedfluidinterface_, condelements);
+  xfluidfluid_->prepare_shape_derivatives(*mergedfluidinterface_, condelements);
 }
 
 FOUR_C_NAMESPACE_CLOSE

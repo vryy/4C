@@ -220,7 +220,7 @@ int Discret::ELEMENTS::ElemagEleCalc<distype>::evaluate(Discret::ELEMENTS::Elema
       */
 
       update_interior_variables_and_compute_residual(
-          params, *ele, mat, elevec1, dt, errormaps, updateonly);
+          params, *ele, *mat, elevec1, dt, errormaps, updateonly);
 
       break;
     }
@@ -1237,9 +1237,8 @@ Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::LocalSolver(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ElemagEleCalc<distype>::update_interior_variables_and_compute_residual(
-    Teuchos::ParameterList& params, Discret::ELEMENTS::Elemag& ele,
-    const Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec,
-    double dt, bool errormaps, bool updateonly)
+    Teuchos::ParameterList& params, Discret::ELEMENTS::Elemag& ele, Core::Mat::Material& mat,
+    Core::LinAlg::SerialDenseVector& elevec, double dt, bool errormaps, bool updateonly)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
       "Discret::ELEMENTS::ElemagEleCalc::update_interior_variables_and_compute_residual");

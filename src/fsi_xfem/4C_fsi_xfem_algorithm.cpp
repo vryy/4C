@@ -61,11 +61,10 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
     // access the structural discretization
     Teuchos::RCP<Core::FE::Discretization> structdis =
         Global::Problem::instance()->get_dis("structure");
-    Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure =
-        Teuchos::make_rcp<Adapter::StructureBaseAlgorithm>(
-            timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+    Adapter::StructureBaseAlgorithm structure(
+        timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     structureporo_ = Teuchos::make_rcp<Adapter::StructurePoroWrapper>(
-        structure->structure_field(), Adapter::StructurePoroWrapper::type_StructureField, true);
+        structure.structure_field(), Adapter::StructurePoroWrapper::type_StructureField, true);
   }
   else if (type == Adapter::StructurePoroWrapper::type_PoroField)
   {
@@ -99,9 +98,8 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
     Global::Problem* problem = Global::Problem::instance();
     const Teuchos::ParameterList& fsidynparams = problem->fsi_dynamic_params();
     // ask base algorithm for the ale time integrator
-    Teuchos::RCP<Adapter::AleBaseAlgorithm> ale = Teuchos::make_rcp<Adapter::AleBaseAlgorithm>(
-        fsidynparams, Global::Problem::instance()->get_dis("ale"));
-    ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleFpsiWrapper>(ale->ale_field());
+    Adapter::AleBaseAlgorithm ale(fsidynparams, Global::Problem::instance()->get_dis("ale"));
+    ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleFpsiWrapper>(ale.ale_field());
     if (ale_ == Teuchos::null)
       FOUR_C_THROW("Cast from Adapter::Ale to Adapter::AleFpsiWrapper failed");
   }

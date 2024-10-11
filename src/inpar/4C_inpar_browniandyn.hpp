@@ -30,7 +30,7 @@ namespace Inpar
     };
 
     /// set the brownian dynamic parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
   }  // namespace BrownianDynamics
 

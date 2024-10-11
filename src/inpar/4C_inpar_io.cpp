@@ -18,12 +18,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::IO::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::IO::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& io = list->sublist("IO", false, "");
+  Teuchos::ParameterList& io = list.sublist("IO", false, "");
 
   Core::UTILS::bool_parameter("OUTPUT_GMSH", "No", "", &io);
   Core::UTILS::bool_parameter("OUTPUT_ROT", "No", "", &io);

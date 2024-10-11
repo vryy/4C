@@ -399,8 +399,7 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
   Teuchos::RCP<Epetra_Map> domainmap = Core::LinAlg::MultiMapExtractor::merge_maps(domainmaps);
 
   // build the corresponding map extractor
-  Teuchos::RCP<Core::LinAlg::MapExtractor> domainmapex =
-      Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*domainmap, dbcfsimap);
+  Core::LinAlg::MapExtractor domainmapex(*domainmap, dbcfsimap);
 
   const int numofrowentries = 82;
   Teuchos::RCP<Core::LinAlg::SparseMatrix> B =
@@ -467,10 +466,9 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
   Teuchos::RCP<Core::LinAlg::Vector<double>> BTvR =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*domainmap);
   B->multiply(true, *velnp(), *BTvR);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dbcfsimap, true);
+  Core::LinAlg::Vector<double> zeros(*dbcfsimap, true);
 
-  domainmapex->insert_cond_vector(*zeros, *BTvR);
+  domainmapex.insert_cond_vector(zeros, *BTvR);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> x =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*domainmap);
@@ -539,10 +537,8 @@ void Adapter::FluidFSI::calculate_error()
 void Adapter::FluidFSI::time_step_auxiliar()
 {
   // current state
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> veln_vector =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*veln());
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> accn_vector =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*accn());
+  const Core::LinAlg::Vector<double> veln_vector(*veln());
+  const Core::LinAlg::Vector<double> accn_vector(*accn());
 
   // prepare vector for solution of auxiliary time step
   locerrvelnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluid_->dof_row_map(), true);
@@ -558,7 +554,7 @@ void Adapter::FluidFSI::time_step_auxiliar()
     }
     case Inpar::FSI::timada_fld_expleuler:
     {
-      explicit_euler(*veln_vector, *accn_vector, *locerrvelnp_);
+      explicit_euler(veln_vector, accn_vector, *locerrvelnp_);
 
       break;
     }
@@ -567,14 +563,13 @@ void Adapter::FluidFSI::time_step_auxiliar()
       if (step() >= 1)  // adams_bashforth2 only if at least second time step
       {
         // Acceleration from previous time step
-        Teuchos::RCP<Core::LinAlg::Vector<double>> accnm_vector =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*extract_velocity_part(accnm()));
+        Core::LinAlg::Vector<double> accnm_vector(*extract_velocity_part(accnm()));
 
-        adams_bashforth2(*veln_vector, *accn_vector, *accnm_vector, *locerrvelnp_);
+        adams_bashforth2(veln_vector, accn_vector, accnm_vector, *locerrvelnp_);
       }
       else  // explicit_euler as starting algorithm
       {
-        explicit_euler(*veln_vector, *accn_vector, *locerrvelnp_);
+        explicit_euler(veln_vector, accn_vector, *locerrvelnp_);
       }
 
       break;
@@ -649,9 +644,7 @@ void Adapter::FluidFSI::indicate_error_norms(double& err, double& errcond, doubl
       *locerrvelnp_, *zeros, *(get_dbc_map_extractor()->cond_map()));
 
   // extract the condition part of the full error vector (i.e. only interface velocity DOFs)
-  Teuchos::RCP<Core::LinAlg::Vector<double>> errorcond =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *interface()->extract_fsi_cond_vector(*locerrvelnp_));
+  Core::LinAlg::Vector<double> errorcond(*interface()->extract_fsi_cond_vector(*locerrvelnp_));
 
   /* in case of structure split: extract the other part of the full error vector
    * (i.e. interior velocity and all pressure DOFs) */
@@ -664,14 +657,14 @@ void Adapter::FluidFSI::indicate_error_norms(double& err, double& errcond, doubl
   err =
       calculate_error_norm(*locerrvelnp_, get_dbc_map_extractor()->cond_map()->NumGlobalElements() +
                                               pressure_row_map()->NumGlobalElements());
-  errcond = calculate_error_norm(*errorcond, numfsidbcdofs_);
+  errcond = calculate_error_norm(errorcond, numfsidbcdofs_);
   errother = calculate_error_norm(
       *errorother, pressure_row_map()->NumGlobalElements() +
                        (get_dbc_map_extractor()->cond_map()->NumGlobalElements() - numfsidbcdofs_));
 
   // calculate L-inf-norms of temporal discretization errors
   locerrvelnp_->NormInf(&errinf);
-  errorcond->NormInf(&errinfcond);
+  errorcond.NormInf(&errinfcond);
   errorother->NormInf(&errinfother);
 
   return;

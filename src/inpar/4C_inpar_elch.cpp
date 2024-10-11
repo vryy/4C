@@ -17,14 +17,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::ElCh::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::ElCh::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   Teuchos::ParameterList& elchcontrol =
-      list->sublist("ELCH CONTROL", false, "control parameters for electrochemistry problems\n");
+      list.sublist("ELCH CONTROL", false, "control parameters for electrochemistry problems\n");
 
   Core::UTILS::int_parameter("MOVBOUNDARYITEMAX", 10,
       "Maximum number of outer iterations in electrode shape change computations", &elchcontrol);

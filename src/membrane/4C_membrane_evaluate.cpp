@@ -198,7 +198,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
-      update_element(mydisp, params, material());
+      update_element(mydisp, params, *material());
     }
     break;
 
@@ -1530,8 +1530,8 @@ Discret::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
  |  Update history variables (e.g. remodeling of fiber directions) (protected)      braeu 07/16|
  *---------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Membrane<distype>::update_element(std::vector<double>& disp,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material> mat)
+void Discret::ELEMENTS::Membrane<distype>::update_element(
+    std::vector<double>& disp, Teuchos::ParameterList& params, Core::Mat::Material& mat)
 {
   // Calculate current deformation gradient
   if (solid_material()->uses_extended_update())

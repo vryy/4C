@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
     std::vector<Core::Elements::Element const*> const& ele_ptrs,
-    const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr)
+    FBI::BeamToFluidMeshtyingParams& params_ptr)
 {
   // Cast the fluid element.
   Discret::ELEMENTS::Fluid const* fluidele =
@@ -32,7 +32,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
 
   // Get the meshtying discretization method.
   Inpar::FBI::BeamToFluidDiscretization meshtying_discretization =
-      params_ptr->get_contact_discretization();
+      params_ptr.get_contact_discretization();
 
   // Check which contact discretization is wanted.
   if (meshtying_discretization == Inpar::FBI::BeamToFluidDiscretization::gauss_point_to_segment)
@@ -66,7 +66,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
   else if (meshtying_discretization == Inpar::FBI::BeamToFluidDiscretization::mortar)
   {
     Inpar::FBI::BeamToFluidMeshtingMortarShapefunctions mortar_shape_function =
-        params_ptr->get_mortar_shape_function_type();
+        params_ptr.get_mortar_shape_function_type();
 
     switch (mortar_shape_function)
     {

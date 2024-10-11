@@ -41,18 +41,18 @@ void FPSI::FpsiBase::redistribute_interface()
     Teuchos::RCP<std::map<int, int>> PoroFluid_Fluid_InterfaceMap =
         FPSI_UTILS->get_poro_fluid_fluid_interface_map();
 
-    FPSI_UTILS->redistribute_interface(problem->get_dis("fluid"), problem->get_dis("porofluid"),
-        "fpsi_coupling", *PoroFluid_Fluid_InterfaceMap);
-    FPSI_UTILS->redistribute_interface(problem->get_dis("ale"), problem->get_dis("porofluid"),
-        "fpsi_coupling", *PoroFluid_Fluid_InterfaceMap);
-    FPSI_UTILS->redistribute_interface(problem->get_dis("porofluid"), problem->get_dis("fluid"),
-        "fpsi_coupling", *Fluid_PoroFluid_InterfaceMap);
-    FPSI_UTILS->redistribute_interface(problem->get_dis("structure"), problem->get_dis("fluid"),
-        "fpsi_coupling", *Fluid_PoroFluid_InterfaceMap);
+    FPSI_UTILS->redistribute_interface(
+        *problem->get_dis("fluid"), "fpsi_coupling", *PoroFluid_Fluid_InterfaceMap);
+    FPSI_UTILS->redistribute_interface(
+        *problem->get_dis("ale"), "fpsi_coupling", *PoroFluid_Fluid_InterfaceMap);
+    FPSI_UTILS->redistribute_interface(
+        *problem->get_dis("porofluid"), "fpsi_coupling", *Fluid_PoroFluid_InterfaceMap);
+    FPSI_UTILS->redistribute_interface(
+        *problem->get_dis("structure"), "fpsi_coupling", *Fluid_PoroFluid_InterfaceMap);
 
     // Material pointers need to be reset after redistribution.
     PoroElast::UTILS::set_material_pointers_matching_grid(
-        problem->get_dis("structure"), problem->get_dis("porofluid"));
+        *problem->get_dis("structure"), *problem->get_dis("porofluid"));
   }
 
   return;

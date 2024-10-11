@@ -132,8 +132,8 @@ namespace CONTACT
     \param[out] ele Reference to pointer of contact parent element
 
     */
-    void set_poro_parent_element(int& slavetype, int& mastertype,
-        Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<Core::Elements::Element>& ele);
+    void set_poro_parent_element(int& slavetype, int& mastertype, CONTACT::Element& cele,
+        Teuchos::RCP<Core::Elements::Element>& ele);
 
     /*!
     \brief Find Physical Type (Poro or Structure) of Poro Interface

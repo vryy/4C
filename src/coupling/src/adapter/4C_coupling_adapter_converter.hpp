@@ -198,19 +198,17 @@ namespace Coupling::Adapter
     /*!
       Internal method called by internal_add.
      */
-    void add_into_filled(Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
+    void add_into_filled(Epetra_CrsMatrix& esrc, const Epetra_Map& logical_range_map,
         const Epetra_Map& logical_domain_map, const Core::LinAlg::Vector<double>& selector,
-        const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
-        double scale);
+        const Epetra_Map& matching_dst_rows, Epetra_CrsMatrix& edst, bool exactmatch, double scale);
 
     /// slow method that adds into unfilled matrices
     /*!
       Internal method called by internal_add.
      */
-    void add_into_unfilled(Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
+    void add_into_unfilled(Epetra_CrsMatrix& esrc, const Epetra_Map& logical_range_map,
         const Epetra_Map& logical_domain_map, const Core::LinAlg::Vector<double>& selector,
-        const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
-        double scale);
+        const Epetra_Map& matching_dst_rows, Epetra_CrsMatrix& edst, bool exactmatch, double scale);
 
     /// source and destination gid matching
     std::map<int, int> gidmap_;

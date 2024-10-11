@@ -88,7 +88,7 @@ namespace Inpar
     };
 
     /// set the beam contact parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /**
      * \brief Set beam beam-to-beam specific conditions.

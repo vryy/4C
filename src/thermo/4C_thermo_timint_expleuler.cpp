@@ -67,7 +67,7 @@ void Thermo::TimIntExplEuler::integrate_step()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  apply_force_external(timen_, tempn_, fextn_);
+  apply_force_external(timen_, tempn_, *fextn_);
 
   // interface forces to external forces
   fextn_->Update(1.0, *fifc_, 1.0);

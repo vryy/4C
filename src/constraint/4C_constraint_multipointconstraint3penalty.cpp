@@ -134,7 +134,7 @@ void CONSTRAINTS::MPConstraint3Penalty::initialize(Teuchos::ParameterList& param
         FOUR_C_THROW("Constraint/monitor is not an multi point constraint!");
     }
 
-    evaluate_error(constraintdis_.find(condID)->second, params, initerror_, true);
+    evaluate_error(*constraintdis_.find(condID)->second, params, *initerror_, true);
 
     activecons_.find(condID)->second = true;
     if (actdisc_->get_comm().MyPID() == 0)
@@ -171,7 +171,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate(Teuchos::ParameterList& params,
   std::map<int, Teuchos::RCP<Core::FE::Discretization>>::iterator discriter;
   for (discriter = constraintdis_.begin(); discriter != constraintdis_.end(); discriter++)
 
-    evaluate_error(discriter->second, params, acterror_);
+    evaluate_error(*discriter->second, params, *acterror_);
 
   //    std::cout << "current error "<< *acterror_<<std::endl;
 
@@ -313,18 +313,18 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
     // build unique node row map
     std::vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
     rownodeset.clear();
-    Teuchos::RCP<Epetra_Map> constraintnoderowmap = Teuchos::make_rcp<Epetra_Map>(
+    Epetra_Map constraintnoderowmap(
         -1, boundarynoderowvec.size(), boundarynoderowvec.data(), 0, newdis->get_comm());
     boundarynoderowvec.clear();
 
     // build overlapping node column map
     std::vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
     colnodeset.clear();
-    Teuchos::RCP<Epetra_Map> constraintnodecolmap = Teuchos::make_rcp<Epetra_Map>(
+    Epetra_Map constraintnodecolmap(
         -1, constraintnodecolvec.size(), constraintnodecolvec.data(), 0, newdis->get_comm());
 
     constraintnodecolvec.clear();
-    newdis->redistribute(*constraintnoderowmap, *constraintnodecolmap);
+    newdis->redistribute(constraintnoderowmap, constraintnodecolmap);
     // put new discretization into the map
     newdiscmap[(*conditer)->parameters().get<int>("ConditionID")] = newdis;
     // increase counter
@@ -380,12 +380,12 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
         const std::string action = params.get<std::string>("action");
         Teuchos::RCP<Core::LinAlg::Vector<double>> displast =
             params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("old disp");
-        set_constr_state("displacement", displast);
+        set_constr_state("displacement", *displast);
         // last converged step is used reference
         initialize(params);
         Teuchos::RCP<Core::LinAlg::Vector<double>> disp =
             params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("new disp");
-        set_constr_state("displacement", disp);
+        set_constr_state("displacement", *disp);
         params.set("action", action);
       }
 
@@ -436,12 +436,11 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<Core::FE::Discretization> disc,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,
-    bool init)
+void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Core::FE::Discretization& disc,
+    Teuchos::ParameterList& params, Core::LinAlg::Vector<double>& systemvector, bool init)
 {
-  if (!(disc->filled())) FOUR_C_THROW("fill_complete() was not called");
-  if (!(disc->have_dofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
+  if (!(disc.filled())) FOUR_C_THROW("fill_complete() was not called");
+  if (!(disc.have_dofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   // define element matrices and vectors
   Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -452,11 +451,11 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<Core::FE::Di
 
   // loop over column elements
   const double time = params.get("total time", -1.0);
-  const int numcolele = disc->num_my_col_elements();
+  const int numcolele = disc.num_my_col_elements();
   for (int i = 0; i < numcolele; ++i)
   {
     // some useful data for computation
-    Core::Elements::Element* actele = disc->l_col_element(i);
+    Core::Elements::Element* actele = disc.l_col_element(i);
     int eid = actele->id();
     int condID = eletocond_id_.find(eid)->second;
     Core::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
@@ -466,7 +465,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<Core::FE::Di
     std::vector<int> lm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
-    actele->location_vector(*disc, lm, lmowner, lmstride);
+    actele->location_vector(disc, lm, lmowner, lmstride);
     elevector3.size(1);
     params.set("ConditionID", eid);
 
@@ -478,9 +477,9 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<Core::FE::Di
     {
       // call the element evaluate method
       int err = actele->evaluate(
-          params, *disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
+          params, disc, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
       if (err)
-        FOUR_C_THROW("Proc %d: Element %d returned err=%d", disc->get_comm().MyPID(), eid, err);
+        FOUR_C_THROW("Proc %d: Element %d returned err=%d", disc.get_comm().MyPID(), eid, err);
     }
 
     // assembly
@@ -488,7 +487,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<Core::FE::Di
     std::vector<int> constrowner;
     constrlm.push_back(eid);
     constrowner.push_back(actele->owner());
-    Core::LinAlg::assemble(*systemvector, elevector3, constrlm, constrowner);
+    Core::LinAlg::assemble(systemvector, elevector3, constrlm, constrowner);
 
     activecons_.find(condID)->second = true;
 
@@ -499,10 +498,9 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Teuchos::RCP<Core::FE::Di
     }
   }
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> acterrdist =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*errormap_);
-  acterrdist->Export(*systemvector, *errorexport_, Add);
-  systemvector->Import(*acterrdist, *errorimport_, Insert);
+  Core::LinAlg::Vector<double> acterrdist(*errormap_);
+  acterrdist.Export(systemvector, *errorexport_, Add);
+  systemvector.Import(acterrdist, *errorimport_, Insert);
   return;
 }  // end of evaluate_error
 

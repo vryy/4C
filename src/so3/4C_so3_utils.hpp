@@ -108,7 +108,7 @@ namespace Discret
           Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& defgrd,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Core::FE::dim<distype>>& xdisp,
           const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
-          const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, int gp);
+          Discret::ELEMENTS::PreStress& mulfHistory, int gp);
 
       /*!
        * \brief Compute the deformation gradient in case of no prestressing

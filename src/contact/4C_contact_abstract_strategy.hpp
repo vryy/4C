@@ -1413,7 +1413,7 @@ namespace CONTACT
     \return TRUE if the interface has been redistributed. Return FALSE otherwise.
     */
     bool redistribute_contact_old(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel);
+        const Core::LinAlg::Vector<double>& vel);
 
     //! @}
 

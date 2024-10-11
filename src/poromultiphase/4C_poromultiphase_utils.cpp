@@ -147,7 +147,7 @@ void POROMULTIPHASE::UTILS::assign_material_pointers(
   Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
   Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
 
-  PoroElast::UTILS::set_material_pointers_matching_grid(structdis, fluiddis);
+  PoroElast::UTILS::set_material_pointers_matching_grid(*structdis, *fluiddis);
 }
 
 /*----------------------------------------------------------------------*
@@ -197,15 +197,14 @@ POROMULTIPHASE::UTILS::create_poro_multi_phase_algorithm(
  | calculate vector norm                             kremheller 07/17   |
  *----------------------------------------------------------------------*/
 double POROMULTIPHASE::UTILS::calculate_vector_norm(
-    const enum Inpar::POROMULTIPHASE::VectorNorm norm,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> vect)
+    const enum Inpar::POROMULTIPHASE::VectorNorm norm, const Core::LinAlg::Vector<double>& vect)
 {
   // L1 norm
   // norm = sum_0^i vect[i]
   if (norm == Inpar::POROMULTIPHASE::norm_l1)
   {
     double vectnorm;
-    vect->Norm1(&vectnorm);
+    vect.Norm1(&vectnorm);
     return vectnorm;
   }
   // L2/Euclidian norm
@@ -213,7 +212,7 @@ double POROMULTIPHASE::UTILS::calculate_vector_norm(
   else if (norm == Inpar::POROMULTIPHASE::norm_l2)
   {
     double vectnorm;
-    vect->Norm2(&vectnorm);
+    vect.Norm2(&vectnorm);
     return vectnorm;
   }
   // RMS norm
@@ -221,23 +220,23 @@ double POROMULTIPHASE::UTILS::calculate_vector_norm(
   else if (norm == Inpar::POROMULTIPHASE::norm_rms)
   {
     double vectnorm;
-    vect->Norm2(&vectnorm);
-    return vectnorm / sqrt((double)vect->GlobalLength());
+    vect.Norm2(&vectnorm);
+    return vectnorm / sqrt((double)vect.GlobalLength());
   }
   // infinity/maximum norm
   // norm = max( vect[i] )
   else if (norm == Inpar::POROMULTIPHASE::norm_inf)
   {
     double vectnorm;
-    vect->NormInf(&vectnorm);
+    vect.NormInf(&vectnorm);
     return vectnorm;
   }
   // norm = sum_0^i vect[i]/length_vect
   else if (norm == Inpar::POROMULTIPHASE::norm_l1_scaled)
   {
     double vectnorm;
-    vect->Norm1(&vectnorm);
-    return vectnorm / ((double)vect->GlobalLength());
+    vect.Norm1(&vectnorm);
+    return vectnorm / ((double)vect.GlobalLength());
   }
   else
   {

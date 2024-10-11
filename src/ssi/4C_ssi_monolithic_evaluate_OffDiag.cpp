@@ -132,7 +132,7 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structure_interface(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> scatrastructureinterface)
+    Core::LinAlg::SparseOperator& scatrastructureinterface)
 {
   // slave and master matrix for evaluation of conditions
   Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix(Teuchos::null);
@@ -179,8 +179,8 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structu
       slavematrix, mastermatrix);
 
   // add contributions from slave side and master side
-  scatrastructureinterface->add(*slavematrix, false, 1.0, 1.0);
-  scatrastructureinterface->add(*mastermatrix, false, 1.0, 1.0);
+  scatrastructureinterface.add(*slavematrix, false, 1.0, 1.0);
+  scatrastructureinterface.add(*mastermatrix, false, 1.0, 1.0);
 }
 
 /*-----------------------------------------------------------------------------------*
@@ -250,7 +250,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // initialize auxiliary system matrix for linearizations of master-side scatra fluxes w.r.t.
       // master-side structural dofs
-      auto mastermatrixsparse = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      Core::LinAlg::SparseMatrix mastermatrixsparse(
           *meshtying_strategy_s2i_->coupling_adapter()->master_dof_map(), 27, false, true);
 
       // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and
@@ -267,18 +267,18 @@ void SSI::ScatraStructureOffDiagCoupling::
 
           Coupling::Adapter::MatrixLogicalSplitAndTransform()(blockslavematrix->matrix(iblock, 0),
               *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), *slave_dof_map, -1.0,
-              &slave_side_converter_scatra, &(*slave_side_converter_struct), *mastermatrixsparse,
+              &slave_side_converter_scatra, &(*slave_side_converter_struct), mastermatrixsparse,
               true, true);
         }
       }
 
       // finalize auxiliary system matrix
-      mastermatrixsparse->complete(*full_map_structure(), *scatra_field()->dof_row_map());
+      mastermatrixsparse.complete(*full_map_structure(), *scatra_field()->dof_row_map());
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
       auto mastermatrix_split =
           Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *mastermatrixsparse, *block_map_structure_, *scatra_field()->block_maps());
+              mastermatrixsparse, *block_map_structure_, *scatra_field()->block_maps());
       mastermatrix_split->complete();
       blockmastermatrix->add(*mastermatrix_split, false, 1.0, 1.0);
 
@@ -500,7 +500,7 @@ void SSI::ScatraStructureOffDiagCoupling::
 
       // initialize auxiliary system matrix for linearizations of master-side scatra fluxes w.r.t.
       // master-side structural dofs
-      auto mastermatrixsparse = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      Core::LinAlg::SparseMatrix mastermatrixsparse(
           *meshtying_strategy_s2i_->coupling_adapter()->master_dof_map(), 27, false, true);
 
       // "slave side" from scatra and from structure do not need to be the same nodes.
@@ -552,18 +552,18 @@ void SSI::ScatraStructureOffDiagCoupling::
           Coupling::Adapter::MatrixLogicalSplitAndTransform()(
               scatra_master_flux_on_scatra_slave_dofs_structure_slave_dofs_iblock,
               *meshtying_strategy_s2i_->coupling_adapter()->slave_dof_map(), *slave_dof_map, 1.0,
-              &slave_side_converter_scatra, &(*slave_side_converter_struct), *mastermatrixsparse,
+              &slave_side_converter_scatra, &(*slave_side_converter_struct), mastermatrixsparse,
               true, true);
         }
       }
 
       // finalize auxiliary system matrix
-      mastermatrixsparse->complete(*full_map_structure(), *scatra_field()->dof_row_map());
+      mastermatrixsparse.complete(*full_map_structure(), *scatra_field()->dof_row_map());
 
       // split auxiliary system matrix and assemble into scatra-structure matrix block
       auto mastermatrix_split =
           Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
-              *mastermatrixsparse, *block_map_structure_, *scatra_field()->block_maps());
+              mastermatrixsparse, *block_map_structure_, *scatra_field()->block_maps());
       mastermatrix_split->complete();
       mastermatrix_block->add(*mastermatrix_split, false, 1.0, 1.0);
 

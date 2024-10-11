@@ -317,11 +317,11 @@ namespace Inpar
     };
 
     /// set the xfem parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// set specific xfem conditions
     void set_valid_conditions(
-        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>> &condlist);
+        std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
   }  // namespace XFEM
 

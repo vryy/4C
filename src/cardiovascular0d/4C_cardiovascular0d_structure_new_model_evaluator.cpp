@@ -245,7 +245,7 @@ void Solid::ModelEvaluator::Cardiovascular0D::run_post_compute_x(
   Teuchos::RCP<Core::LinAlg::Vector<double>> cv0d_incr =
       global_state().extract_model_entries(Inpar::Solid::model_cardiovascular0d, dir);
 
-  cardvasc0dman_->update_cv0_d_dof(cv0d_incr);
+  cardvasc0dman_->update_cv0_d_dof(*cv0d_incr);
 
   return;
 }

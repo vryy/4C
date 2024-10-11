@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Inpar::SOLVER
 {
   //! set the parameters for the linear solver
-  void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+  void set_valid_parameters(Teuchos::ParameterList& list);
 
 }  // namespace Inpar::SOLVER
 

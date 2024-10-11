@@ -133,8 +133,7 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
 //
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::add_to_current_time_average(const double dt,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> scavec,
+    Core::LinAlg::Vector<double>& vec, const Teuchos::RCP<Core::LinAlg::Vector<double>> scavec,
     const Teuchos::RCP<Core::LinAlg::Vector<double>> scatravec)
 {
   // remember time included in this average
@@ -155,7 +154,7 @@ void FLD::TurbulenceStatisticsGeneralMean::add_to_current_time_average(const dou
   const double oldfac = old_time / curr_avg_time_;
   const double incfac = dt / curr_avg_time_;
 
-  curr_avg_->Update(incfac, *vec, oldfac);
+  curr_avg_->Update(incfac, vec, oldfac);
 
   if (withscatra_)
   {
@@ -1199,8 +1198,7 @@ void FLD::TurbulenceStatisticsGeneralMean::reset_fluid_avg_vectors(const Epetra_
 //
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsGeneralMean::redistribute(
-    Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset,
-    Teuchos::RCP<Core::FE::Discretization> discret)
+    Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset, Core::FE::Discretization& discret)
 {
   standarddofset_ = Teuchos::null;
   standarddofset_ = standarddofset;
@@ -1208,7 +1206,7 @@ void FLD::TurbulenceStatisticsGeneralMean::redistribute(
 
   // split based on complete fluid field
   Core::LinAlg::create_map_extractor_from_discretization(
-      *discret, *standarddofset_, 3, velpressplitter_);
+      discret, *standarddofset_, 3, velpressplitter_);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> old;
 
@@ -1270,8 +1268,7 @@ Add results from scalar transport field solver to statistics
 
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsGeneralMean::add_scatra_results(
-    Teuchos::RCP<Core::FE::Discretization> scatradis,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp)
+    Teuchos::RCP<Core::FE::Discretization> scatradis, Core::LinAlg::Vector<double>& phinp)
 {
   withscatra_ = true;  // now it is clear: we have scatra results as well!
 

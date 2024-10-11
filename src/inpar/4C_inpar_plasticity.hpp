@@ -19,7 +19,7 @@ namespace Inpar
   namespace Plasticity
   {
     /// set the plasticity parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
   }  // namespace Plasticity
 

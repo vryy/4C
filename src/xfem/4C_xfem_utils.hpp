@@ -25,7 +25,7 @@ namespace XFEM
   {
     //! extract the nodal vectors and store them in node-vector-map
     //! \author schott \date 01/13
-    void extract_node_vectors(Teuchos::RCP<Core::FE::Discretization> dis,
+    void extract_node_vectors(Core::FE::Discretization& dis,
         std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap,
         Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp);
 
@@ -60,18 +60,16 @@ namespace XFEM
     \brief Needs a column-vector to extract correctly in parallel
      */
     void extract_quantity_at_element(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
-        const Core::Elements::Element* element,
-        const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
-        Teuchos::RCP<Core::FE::Discretization>& dis, const int nds_vector, const int nsd);
+        const Core::Elements::Element* element, const Epetra_MultiVector& global_col_vector,
+        Core::FE::Discretization& dis, const int nds_vector, const int nsd);
 
     //! @name Extract quantities on a node
     /*!
     \brief Needs a column-vector to extract correctly in parallel
      */
     void extract_quantity_at_node(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
-        const Core::Nodes::Node* node,
-        const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
-        Teuchos::RCP<Core::FE::Discretization>& dis, const int nds_vector, const unsigned int nsd);
+        const Core::Nodes::Node* node, const Epetra_MultiVector& global_col_vector,
+        Core::FE::Discretization& dis, const int nds_vector, const unsigned int nsd);
 
   }  // namespace UTILS
 }  // namespace XFEM

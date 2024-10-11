@@ -42,7 +42,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::add_component(Teuchos::RCP<Input::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CONSTITUTIVELAW::LawDefinition::read(const Global::Problem& problem,
-    Core::IO::DatFileReader& reader, Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle)
+    Core::IO::DatFileReader& reader, CONTACT::CONSTITUTIVELAW::Bundle& bundle)
 {
   std::string name = "--CONTACT CONSTITUTIVE LAWS";
   std::vector<const char*> section = reader.section(name);
@@ -75,7 +75,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::read(const Global::Problem& proble
         if (id <= -1) FOUR_C_THROW("Illegal negative ID provided");
 
         // check if material ID is already in use
-        if (bundle->find(id) != -1)
+        if (bundle.find(id) != -1)
           FOUR_C_THROW("More than one contact constitutivelaw with 'Law %d'", id);
 
         // the read-in contact constitutive law line
@@ -95,7 +95,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::read(const Global::Problem& proble
               coconstlawname_.c_str(), condline->str().c_str());
 
         // put contact constitutive law in map of laws
-        bundle->insert(id, container);
+        bundle.insert(id, container);
       }
     }
   }

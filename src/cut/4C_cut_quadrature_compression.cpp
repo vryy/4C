@@ -47,7 +47,7 @@ bool Cut::QuadratureCompression::perform_compression_of_quadrature(
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> rhs =
       Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
 
-  form_matrix_system(gin, vander, rhs);
+  form_matrix_system(gin, *vander, *rhs);
 
   bool success = compress_leja_points(gin, vander, rhs, x);
 
@@ -61,17 +61,16 @@ bool Cut::QuadratureCompression::perform_compression_of_quadrature(
  * Compute the Vandermonde matrix and RHS of the matrix system sudhakar 08/15
  *---------------------------------------------------------------------------------------------------------------*/
 void Cut::QuadratureCompression::form_matrix_system(Core::FE::GaussPointsComposite& gin,
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs)
+    Core::LinAlg::SerialDenseMatrix& mat, Core::LinAlg::SerialDenseVector& rhs)
 {
-  mat->shape(gin.num_points(), 56);
+  mat.shape(gin.num_points(), 56);
 
-  int ma = mat->numRows();
-  int na = mat->numCols();
+  int ma = mat.numRows();
+  int na = mat.numCols();
 
   // std::cout<<"number of original quadrature points = "<<gin.num_points()<<"\n";
 
-  rhs->shape(na, 1);
+  rhs.shape(na, 1);
 
   for (int pt = 0; pt < ma; pt++)
   {
@@ -119,88 +118,88 @@ void Cut::QuadratureCompression::form_matrix_system(Core::FE::GaussPointsComposi
 #endif
 
     // zeroth order term
-    (*mat)(pt, 0) = 1.0;
+    (mat)(pt, 0) = 1.0;
 
     // first order term
-    (*mat)(pt, 1) = x;
-    (*mat)(pt, 2) = y;
-    (*mat)(pt, 3) = z;
+    (mat)(pt, 1) = x;
+    (mat)(pt, 2) = y;
+    (mat)(pt, 3) = z;
 
     // second order terms
     if (na > 4)
     {
-      (*mat)(pt, 4) = x2;     // x^2
-      (*mat)(pt, 5) = x * y;  // xy
-      (*mat)(pt, 6) = x * z;  // xz
-      (*mat)(pt, 7) = y2;     // y^2
-      (*mat)(pt, 8) = y * z;  // yz
-      (*mat)(pt, 9) = z2;     // z^2
+      (mat)(pt, 4) = x2;     // x^2
+      (mat)(pt, 5) = x * y;  // xy
+      (mat)(pt, 6) = x * z;  // xz
+      (mat)(pt, 7) = y2;     // y^2
+      (mat)(pt, 8) = y * z;  // yz
+      (mat)(pt, 9) = z2;     // z^2
     }
 
     // third order terms
     if (na > 10)
     {
-      (*mat)(pt, 10) = x3;         // x^3
-      (*mat)(pt, 11) = x2 * y;     // x^2 y
-      (*mat)(pt, 12) = x2 * z;     // x^2 z
-      (*mat)(pt, 13) = x * y2;     // xy^2
-      (*mat)(pt, 14) = x * y * z;  // xyz
-      (*mat)(pt, 15) = x * z2;     // xz^2
-      (*mat)(pt, 16) = y3;         // y^3
-      (*mat)(pt, 17) = y2 * z;     // y^2 z
-      (*mat)(pt, 18) = y * z2;     // yz^2
-      (*mat)(pt, 19) = z3;         // z^3
+      (mat)(pt, 10) = x3;         // x^3
+      (mat)(pt, 11) = x2 * y;     // x^2 y
+      (mat)(pt, 12) = x2 * z;     // x^2 z
+      (mat)(pt, 13) = x * y2;     // xy^2
+      (mat)(pt, 14) = x * y * z;  // xyz
+      (mat)(pt, 15) = x * z2;     // xz^2
+      (mat)(pt, 16) = y3;         // y^3
+      (mat)(pt, 17) = y2 * z;     // y^2 z
+      (mat)(pt, 18) = y * z2;     // yz^2
+      (mat)(pt, 19) = z3;         // z^3
     }
 
     // fourth order terms
     if (na > 20)
     {
-      (*mat)(pt, 20) = x4;          // x^4
-      (*mat)(pt, 21) = x3 * y;      // x^3 y
-      (*mat)(pt, 22) = x3 * z;      // x^3 z
-      (*mat)(pt, 23) = x2 * y2;     // x^2 y^2
-      (*mat)(pt, 24) = x2 * y * z;  // x^2 yz
-      (*mat)(pt, 25) = x2 * z2;     // x^2 z^2
-      (*mat)(pt, 26) = x * y3;      // xy^3
-      (*mat)(pt, 27) = x * y2 * z;  // xy^2 z
-      (*mat)(pt, 28) = x * y * z2;  // xyz^2
-      (*mat)(pt, 29) = x * z3;      // xz^3
-      (*mat)(pt, 30) = y4;          // y^4
-      (*mat)(pt, 31) = y3 * z;      // y^3 z
-      (*mat)(pt, 32) = y2 * z2;     // y^2 z^2
-      (*mat)(pt, 33) = y * z3;      // yz^3
-      (*mat)(pt, 34) = z4;          // z^4
+      (mat)(pt, 20) = x4;          // x^4
+      (mat)(pt, 21) = x3 * y;      // x^3 y
+      (mat)(pt, 22) = x3 * z;      // x^3 z
+      (mat)(pt, 23) = x2 * y2;     // x^2 y^2
+      (mat)(pt, 24) = x2 * y * z;  // x^2 yz
+      (mat)(pt, 25) = x2 * z2;     // x^2 z^2
+      (mat)(pt, 26) = x * y3;      // xy^3
+      (mat)(pt, 27) = x * y2 * z;  // xy^2 z
+      (mat)(pt, 28) = x * y * z2;  // xyz^2
+      (mat)(pt, 29) = x * z3;      // xz^3
+      (mat)(pt, 30) = y4;          // y^4
+      (mat)(pt, 31) = y3 * z;      // y^3 z
+      (mat)(pt, 32) = y2 * z2;     // y^2 z^2
+      (mat)(pt, 33) = y * z3;      // yz^3
+      (mat)(pt, 34) = z4;          // z^4
     }
 
     // fifth order terms
     if (na > 35)
     {
-      (*mat)(pt, 35) = x5;           // x^5
-      (*mat)(pt, 36) = x4 * y;       // x^4 y
-      (*mat)(pt, 37) = x4 * z;       // x^4 z
-      (*mat)(pt, 38) = x3 * y2;      // x^3 y^2
-      (*mat)(pt, 39) = x3 * y * z;   // x^3 yz
-      (*mat)(pt, 40) = x3 * z2;      // x^3 z^2
-      (*mat)(pt, 41) = x2 * y3;      // x^2 y^3
-      (*mat)(pt, 42) = x2 * y2 * z;  // x^2 y^2 z
-      (*mat)(pt, 43) = x2 * y * z2;  // x^2 yz^2
-      (*mat)(pt, 44) = x2 * z3;      // x^2 z^3
-      (*mat)(pt, 45) = x * y4;       // xy^4
-      (*mat)(pt, 46) = x * y3 * z;   // xy^3 z
-      (*mat)(pt, 47) = x * y2 * z2;  // xy^2 z^2
-      (*mat)(pt, 48) = x * y * z3;   // xyz^3
-      (*mat)(pt, 49) = x * z4;       // xz^4
-      (*mat)(pt, 50) = y5;           // y^5
-      (*mat)(pt, 51) = y4 * z;       // y^4 z
-      (*mat)(pt, 52) = y3 * z2;      // y^3 z^2
-      (*mat)(pt, 53) = y2 * z3;      // y^2 z^3
-      (*mat)(pt, 54) = y * z4;       // yz^4
-      (*mat)(pt, 55) = z5;           // z^5
+      (mat)(pt, 35) = x5;           // x^5
+      (mat)(pt, 36) = x4 * y;       // x^4 y
+      (mat)(pt, 37) = x4 * z;       // x^4 z
+      (mat)(pt, 38) = x3 * y2;      // x^3 y^2
+      (mat)(pt, 39) = x3 * y * z;   // x^3 yz
+      (mat)(pt, 40) = x3 * z2;      // x^3 z^2
+      (mat)(pt, 41) = x2 * y3;      // x^2 y^3
+      (mat)(pt, 42) = x2 * y2 * z;  // x^2 y^2 z
+      (mat)(pt, 43) = x2 * y * z2;  // x^2 yz^2
+      (mat)(pt, 44) = x2 * z3;      // x^2 z^3
+      (mat)(pt, 45) = x * y4;       // xy^4
+      (mat)(pt, 46) = x * y3 * z;   // xy^3 z
+      (mat)(pt, 47) = x * y2 * z2;  // xy^2 z^2
+      (mat)(pt, 48) = x * y * z3;   // xyz^3
+      (mat)(pt, 49) = x * z4;       // xz^4
+      (mat)(pt, 50) = y5;           // y^5
+      (mat)(pt, 51) = y4 * z;       // y^4 z
+      (mat)(pt, 52) = y3 * z2;      // y^3 z^2
+      (mat)(pt, 53) = y2 * z3;      // y^2 z^3
+      (mat)(pt, 54) = y * z4;       // yz^4
+      (mat)(pt, 55) = z5;           // z^5
     }
 
     // form the RHS of the equations
-    (*rhs)(0) += wei;
-    for (int ind = 1; ind < na; ind++) (*rhs)(ind) += (*mat)(pt, ind) * wei;
+    (rhs)(0) += wei;
+    for (int ind = 1; ind < na; ind++) (rhs)(ind) += (mat)(pt, ind) * wei;
   }
 }
 
@@ -227,15 +226,14 @@ bool Cut::QuadratureCompression::compress_leja_points(Core::FE::GaussPointsCompo
   int ma = mat->numRows();
   int na = mat->numCols();
 
-  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> matTemp =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
-  matTemp->shape(ma, na);
+  Core::LinAlg::SerialDenseMatrix matTemp;
+  matTemp.shape(ma, na);
 
   // copy this matrix to another
   // because after performing LU decomposition, the original matrix stores the components of L and U
   for (int ii = 0; ii < ma; ii++)
   {
-    for (int jj = 0; jj < na; jj++) (*matTemp)(ii, jj) = (*mat)(ii, jj);
+    for (int jj = 0; jj < na; jj++) (matTemp)(ii, jj) = (*mat)(ii, jj);
   }
 
   // printing for matlab checking
@@ -272,7 +270,7 @@ bool Cut::QuadratureCompression::compress_leja_points(Core::FE::GaussPointsCompo
 
   std::vector<int> work(na, 0.0);
 
-  get_pivotal_rows(work_temp, work);
+  get_pivotal_rows(*work_temp, work);
 
   /*work_temp->print(std::cout);
   std::cout<<"work = ";
@@ -289,7 +287,7 @@ bool Cut::QuadratureCompression::compress_leja_points(Core::FE::GaussPointsCompo
     int rowno = work[ptno];
     for (int ind = 0; ind < na; ind++)
     {
-      (*sqrmat)(ind, ptno) = (*matTemp)(rowno, ind);
+      (*sqrmat)(ind, ptno) = (matTemp)(rowno, ind);
     }
   }
 
@@ -305,7 +303,7 @@ bool Cut::QuadratureCompression::compress_leja_points(Core::FE::GaussPointsCompo
   // rhs->print(std::cout);
   // sol->print(std::cout);
 
-  gout_ = form_new_quadrature_rule(gin, sol, work, na);
+  gout_ = form_new_quadrature_rule(gin, *sol, work, na);
 
   // compute_and_print_error( gin, rhs, sol, work, na );
 
@@ -317,7 +315,7 @@ bool Cut::QuadratureCompression::compress_leja_points(Core::FE::GaussPointsCompo
  *sudhakar 08/15 (just creating the required data structure)
  *-------------------------------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<Core::FE::GaussPoints> Cut::QuadratureCompression::form_new_quadrature_rule(
-    Core::FE::GaussPointsComposite& gin, Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol,
+    Core::FE::GaussPointsComposite& gin, Core::LinAlg::SerialDenseVector& sol,
     std::vector<int>& work, int& na)
 {
   Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
@@ -325,7 +323,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::QuadratureCompression::form_new_quadrat
 
   for (int pt = 0; pt < na; pt++)
   {
-    double wei = (*sol)(pt);
+    double wei = (sol)(pt);
     int quadNo = work[pt];
     const double* loc = gin.point(quadNo);
 
@@ -336,16 +334,16 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::QuadratureCompression::form_new_quadrat
 }
 
 void Cut::QuadratureCompression::get_pivotal_rows(
-    Teuchos::RCP<Core::LinAlg::IntSerialDenseVector>& work_temp, std::vector<int>& work)
+    Core::LinAlg::IntSerialDenseVector& work_temp, std::vector<int>& work)
 {
   int na = (int)work.size();
   int index = 0;
 
-  work[0] = (*work_temp)(0);
+  work[0] = (work_temp)(0);
 
   for (int i = 1; i < na; i++)
   {
-    int val = (*work_temp)(i);
+    int val = (work_temp)(i);
     index = get_correct_index(val, work, i - 1);
     work[i] = index;
   }
@@ -385,8 +383,8 @@ int Cut::QuadratureCompression::get_correct_index(
  *08/15 base functions (either Chebyshev or monomial) and print the maximum absolute error
  *--------------------------------------------------------------------------------------------------------------------*/
 void Cut::QuadratureCompression::compute_and_print_error(Core::FE::GaussPointsComposite& gin,
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs,
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol, std::vector<int>& work, int& na)
+    Core::LinAlg::SerialDenseVector& rhs, Core::LinAlg::SerialDenseVector& sol,
+    std::vector<int>& work, int& na)
 {
   /*-------------------------------------------------------------------*/
   // solution check
@@ -395,7 +393,7 @@ void Cut::QuadratureCompression::compute_and_print_error(Core::FE::GaussPointsCo
 
   for (int pt = 0; pt < na; pt++)
   {
-    double wei = (*sol)(pt);
+    double wei = (sol)(pt);
     int quadNo = work[pt];
     const double* loc = gin.point(quadNo);
 
@@ -514,7 +512,7 @@ void Cut::QuadratureCompression::compute_and_print_error(Core::FE::GaussPointsCo
   std::vector<double> error(na);
   for (int pt = 0; pt < na; pt++)
   {
-    error[pt] = fabs(check[pt] - (*rhs)(pt));
+    error[pt] = fabs(check[pt] - (rhs)(pt));
     if (error[pt] > max_error) max_error = error[pt];
   }
 
@@ -528,12 +526,11 @@ void Cut::QuadratureCompression::compute_and_print_error(Core::FE::GaussPointsCo
 }
 
 void Cut::QuadratureCompression::teuchos_gels(Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs,
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol)
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs, Core::LinAlg::SerialDenseVector& sol)
 {
   mat->shape(3, 4);
   rhs->shape(3, 1);
-  sol->shape(4, 1);
+  sol.shape(4, 1);
 
   (*mat)(0, 0) = 5.0;
   (*mat)(0, 1) = 7.0;
@@ -551,10 +548,10 @@ void Cut::QuadratureCompression::teuchos_gels(Teuchos::RCP<Core::LinAlg::SerialD
   (*rhs)(0) = 17.0;
   (*rhs)(1) = 27.0;
   (*rhs)(2) = 22.0;
-  (*sol)(0) = 0.0;
-  (*sol)(1) = 0.0;
-  (*sol)(2) = 0.0;
-  (*sol)(3) = 0.0;
+  (sol)(0) = 0.0;
+  (sol)(1) = 0.0;
+  (sol)(2) = 0.0;
+  (sol)(3) = 0.0;
 
   int ma = mat->numRows();
   int na = mat->numCols();
@@ -616,8 +613,7 @@ void Cut::QuadratureCompression::qr_decomposition_teuchos(
 
 void Cut::QuadratureCompression::qr_decomposition_lapack(
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs,
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol)
+    Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs, Core::LinAlg::SerialDenseVector& sol)
 {
   int ma = mat->numRows();
   int na = mat->numCols();
@@ -626,7 +622,7 @@ void Cut::QuadratureCompression::qr_decomposition_lapack(
 
   mat->shape(3, 4);
   rhs->shape(3, 1);
-  sol->shape(4, 1);
+  sol.shape(4, 1);
 
   (*mat)(0, 0) = 5.0;
   (*mat)(0, 1) = 7.0;
@@ -644,10 +640,10 @@ void Cut::QuadratureCompression::qr_decomposition_lapack(
   (*rhs)(0) = 17.0;
   (*rhs)(1) = 27.0;
   (*rhs)(2) = 22.0;
-  (*sol)(0) = 0.0;
-  (*sol)(1) = 0.0;
-  (*sol)(2) = 0.0;
-  (*sol)(3) = 0.0;
+  (sol)(0) = 0.0;
+  (sol)(1) = 0.0;
+  (sol)(2) = 0.0;
+  (sol)(3) = 0.0;
 
   Teuchos::RCP<Core::LinAlg::IntSerialDenseVector> jpvt =
       Teuchos::make_rcp<Core::LinAlg::IntSerialDenseVector>();

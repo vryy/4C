@@ -232,7 +232,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::setup()
   beam_interaction_conditions_ptr_ =
       Teuchos::make_rcp<BEAMINTERACTION::BeamInteractionConditions>();
   beam_interaction_conditions_ptr_->set_beam_interaction_conditions(
-      discret_ptr(), beam_contact_params_ptr_);
+      *discret_ptr(), *beam_contact_params_ptr_);
 
   // set flag
   issetup_ = true;
@@ -1013,7 +1013,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
 
       // construct, init and setup contact pairs
       Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newbeaminteractionpair =
-          BEAMINTERACTION::BeamContactPair::create(ele_ptrs, beam_interaction_conditions_ptr_);
+          BEAMINTERACTION::BeamContactPair::create(ele_ptrs, *beam_interaction_conditions_ptr_);
 
       if (newbeaminteractionpair != Teuchos::null)
       {

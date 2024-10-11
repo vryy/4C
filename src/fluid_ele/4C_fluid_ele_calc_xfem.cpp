@@ -1018,8 +1018,8 @@ namespace Discret
 
         if (cond_manager->has_averaging_strategy(Inpar::XFEM::Xfluid_Sided))
         {
-          h_k = XFEM::UTILS::compute_char_ele_length<distype>(
-              ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->visc_stab_hk());
+          h_k = XFEM::UTILS::compute_char_ele_length<distype>(ele, ele_xyze, *cond_manager, vcSet,
+              bcells, bintpoints, fldparaxfem_->visc_stab_hk());
           inv_hk = 1.0 / h_k;
         }
 
@@ -1380,7 +1380,7 @@ namespace Discret
 
       // compute characteristic element length based on the background element
       const double h_k = XFEM::UTILS::compute_char_ele_length<distype>(
-          ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->visc_stab_hk());
+          ele, ele_xyze, *cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->visc_stab_hk());
 
       //--------------------------------------------------------
       // declaration of matrices & rhs
@@ -1523,7 +1523,7 @@ namespace Discret
       // reshape coupling matrices for convective stabilization terms
       if (add_conv_stab || my::fldparatimint_->is_new_ost_implementation())
       {
-        hybrid_lm_create_special_contribution_matrices(cond_manager, begids, side_coupling_extra);
+        hybrid_lm_create_special_contribution_matrices(*cond_manager, begids, side_coupling_extra);
       }
 
 
@@ -1933,7 +1933,7 @@ namespace Discret
             std::vector<double> dummy2;
 
             get_interface_jump_vectors(coupcond, coupling, ivelint_jump, itraction_jump,
-                proj_tangential, LB_proj_matrix, x_gp_lin, normal, si, rst, kappa_m, kappa_s,
+                proj_tangential, LB_proj_matrix, x_gp_lin, normal, *si, rst, kappa_m, kappa_s,
                 visc_m, dummy1, dummy2);
 
             if (cond_type == Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN or
@@ -1964,7 +1964,7 @@ namespace Discret
                 - |  (virt tau) * n^f , Du  |
                    \                      */
 
-              hybrid_lm_evaluate_surf_based(ci[coup_sid], bK_ss, K_su, K_us, rhs_s, epreaf, K_uu,
+              hybrid_lm_evaluate_surf_based(*ci[coup_sid], bK_ss, K_su, K_us, rhs_s, epreaf, K_uu,
                   rhs_uu, G_up, G_pu, rhs_up, rhs_pu, normal, timefacfac, ivelint_jump,
                   itraction_jump, cond_manager->is_coupling(coup_sid, my::eid_), is_MHVS);
 
@@ -2138,7 +2138,7 @@ namespace Discret
         }    // end loop boundary cells of side
 
         if (assemble_iforce)
-          assemble_interface_force(mc_fsi->i_forcecol(), *cutter_dis, cutla[0].lm_, iforce);
+          assemble_interface_force(*mc_fsi->i_forcecol(), *cutter_dis, cutla[0].lm_, iforce);
 
       }  // end loop cut sides
 
@@ -3007,7 +3007,7 @@ namespace Discret
      *-------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::hybrid_lm_evaluate_surf_based(
-        Teuchos::RCP<Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>>& si,
+        Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>& si,
         const Core::LinAlg::Matrix<nen_, nen_>& bK_ss,
         Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numstressdof_, numdofpernode_>&
             K_su,
@@ -3119,10 +3119,10 @@ namespace Discret
       if (eval_side_coupling)
       {
         if (is_MHVS)
-          si->mhvs_build_coupling_matrices(
+          si.mhvs_build_coupling_matrices(
               normal, timesurffac, my::funct_, rhs_s, press, rhs_pu, ivelint_jump, itraction_jump);
         else
-          si->mhcs_build_coupling_matrices(
+          si.mhcs_build_coupling_matrices(
               normal, timesurffac, my::funct_, rhs_s, ivelint_jump, itraction_jump);
       }
       else
@@ -3302,7 +3302,7 @@ namespace Discret
       if (cond_manager->has_averaging_strategy(Inpar::XFEM::Xfluid_Sided))
       {
         h_k = XFEM::UTILS::compute_char_ele_length<distype>(
-            ele, ele_xyze, cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->visc_stab_hk());
+            ele, ele_xyze, *cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->visc_stab_hk());
         inv_hk = 1.0 / h_k;
       }
 
@@ -3575,8 +3575,8 @@ namespace Discret
           else  // ... char. length defined otherwise
           {
             // compute characteristic element length based on the embedded element
-            h_k = XFEM::UTILS::compute_char_ele_length<distype>(coupl_ele, coupl_xyze, cond_manager,
-                vcSet, bcells, bintpoints, fldparaxfem_->visc_stab_hk(), ci, side);
+            h_k = XFEM::UTILS::compute_char_ele_length<distype>(coupl_ele, coupl_xyze,
+                *cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->visc_stab_hk(), ci, side);
             inv_hk = 1.0 / h_k;
           }
         }
@@ -3743,7 +3743,7 @@ namespace Discret
             lb_proj_matrix_.clear();
 
             get_interface_jump_vectors(coupcond, coupling, ivelint_jump_, itraction_jump_,
-                proj_tangential_, lb_proj_matrix_, x_gp_lin_, normal_, si, rst_, kappa_m,
+                proj_tangential_, lb_proj_matrix_, x_gp_lin_, normal_, *si, rst_, kappa_m,
                 viscaf_master_, viscaf_slave_, rst_slave, eledisp, coupl_ele);
 
             double fulltraction = 0.0;
@@ -3862,15 +3862,15 @@ namespace Discret
                 if (cond_type != Inpar::XFEM::CouplingCond_LEVELSET_TWOPHASE and
                     cond_type != Inpar::XFEM::CouplingCond_LEVELSET_COMBUSTION)
                 {
-                  get_interface_jump_vectors_old_state(coupcond, coupling, ivelintn_jump_,
-                      itractionn_jump_, x_gp_lin_, normal_, si,
+                  get_interface_jump_vectors_old_state(coupcond, *coupling, ivelintn_jump_,
+                      itractionn_jump_, x_gp_lin_, normal_, *si,
                       my::funct_.dot(epren_),  // bg p^n
                       rst_);
                 }
                 else
                 {
-                  get_interface_jump_vectors_old_state(coupcond, coupling, ivelintn_jump_,
-                      itractionn_jump_, x_gp_lin_, normal_, ci,
+                  get_interface_jump_vectors_old_state(coupcond, *coupling, ivelintn_jump_,
+                      itractionn_jump_, x_gp_lin_, normal_, *ci,
                       my::funct_.dot(epren_),  // bg p^n
                       rst_);
                 }
@@ -3948,7 +3948,7 @@ namespace Discret
         }    // end loop boundary cells of side
 
         if (assemble_iforce)
-          assemble_interface_force(mc_fsi->i_forcecol(), *cutter_dis, cutla[0].lm_, iforce);
+          assemble_interface_force(*mc_fsi->i_forcecol(), *cutter_dis, cutla[0].lm_, iforce);
       }  // end loop cut sides
 
 
@@ -3979,7 +3979,7 @@ namespace Discret
             LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
         const Core::LinAlg::Matrix<nsd_, 1>& x,       ///< global coordinates of Gaussian point
         const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
-        Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>>
+        Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>&
             si,                                 ///< side implementation for cutter element
         Core::LinAlg::Matrix<3, 1>& rst,        ///< local coordinates of GP for bg element
         double& kappa_m,                        ///< fluid sided weighting
@@ -4013,7 +4013,7 @@ namespace Discret
           else
           {
             // evaluate function at nodes at current time
-            si->get_interface_jump_velnp(ivelint_jump);
+            si.get_interface_jump_velnp(ivelint_jump);
           }
 
           break;
@@ -4052,7 +4052,7 @@ namespace Discret
         case Inpar::XFEM::CouplingCond_SURF_FSI_PART:
         {
           // evaluate function at nodes at current time
-          si->get_interface_jump_velnp(ivelint_jump);
+          si.get_interface_jump_velnp(ivelint_jump);
           break;
         }
         case Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID:
@@ -4085,7 +4085,7 @@ namespace Discret
 
           if (!eval_dirich_at_gp)
           {
-            si->get_interface_jump_velnp(ivelint_jump);
+            si.get_interface_jump_velnp(ivelint_jump);
           }
 
           break;
@@ -4155,15 +4155,15 @@ namespace Discret
      *--------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::get_interface_jump_vectors_old_state(
-        const XFEM::EleCoupCond& coupcond,          ///< coupling condition for given interface side
-        Teuchos::RCP<XFEM::CouplingBase> coupling,  ///< coupling object
+        const XFEM::EleCoupCond& coupcond,  ///< coupling condition for given interface side
+        XFEM::CouplingBase& coupling,       ///< coupling object
         Core::LinAlg::Matrix<nsd_, 1>&
             ivelintn_jump,  ///< prescribed interface jump vector for velocity
         Core::LinAlg::Matrix<nsd_, 1>&
             itractionn_jump,                     ///< prescribed interface jump vector for traction
         const Core::LinAlg::Matrix<nsd_, 1>& x,  ///< global coordinates of Gaussian point
         const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
-        Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>>
+        Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>&
             si,                          ///< side implementation for cutter element
         const double& presn_m,           ///< coupling master pressure
         Core::LinAlg::Matrix<3, 1>& rst  ///< local coordinates of GP for bg element
@@ -4184,13 +4184,13 @@ namespace Discret
           if (evaltype == "funct_gausspoint")
           {
             // evaluate function at Gaussian point at current time
-            coupling->evaluate_coupling_conditions_old_state(
+            coupling.evaluate_coupling_conditions_old_state(
                 ivelintn_jump, itractionn_jump, x, cond);
           }
           else
           {
             // evaluate function at nodes for previous time
-            si->get_interface_jump_veln(ivelintn_jump);
+            si.get_interface_jump_veln(ivelintn_jump);
           }
 
           break;
@@ -4200,7 +4200,7 @@ namespace Discret
         case Inpar::XFEM::CouplingCond_LEVELSET_NEUMANN:
         {
           // evaluate condition function at Gaussian point
-          coupling->evaluate_coupling_conditions_old_state(ivelintn_jump, itractionn_jump, x, cond);
+          coupling.evaluate_coupling_conditions_old_state(ivelintn_jump, itractionn_jump, x, cond);
           break;
         }
         case Inpar::XFEM::CouplingCond_SURF_NAVIER_SLIP:
@@ -4214,7 +4214,7 @@ namespace Discret
         case Inpar::XFEM::CouplingCond_SURF_FSI_PART:
         {
           // evaluate function at nodes at current time
-          si->get_interface_jump_veln(ivelintn_jump);
+          si.get_interface_jump_veln(ivelintn_jump);
           break;
         }
         case Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID:
@@ -4232,7 +4232,7 @@ namespace Discret
         {
           // Spatial velocity gradient for slave side
           Core::LinAlg::Matrix<nsd_, nsd_> vderxyn_s(true);
-          si->get_interface_vel_gradn(vderxyn_s);
+          si.get_interface_vel_gradn(vderxyn_s);
 
 
           // Calculate the old jump using the reconstructed values of p and u for the new interface
@@ -4243,7 +4243,7 @@ namespace Discret
 
           // Pressure part
           double presn_s = 0.0;
-          si->get_interface_presn(presn_s);
+          si.get_interface_presn(presn_s);
 
           itractionn_jump.update(-(presn_m - presn_s), normal, 0.0);
 
@@ -4330,8 +4330,8 @@ namespace Discret
      *--------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::hybrid_lm_create_special_contribution_matrices(
-        const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-        std::set<int>& begids,  ///< ids of intersecting boundary elements
+        XFEM::ConditionManager& cond_manager,  ///< XFEM condition manager
+        std::set<int>& begids,                 ///< ids of intersecting boundary elements
         std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>&
             side_coupling_extra  ///< contributions to coupling matrices from convective
                                  ///< stabilizations
@@ -4345,19 +4345,19 @@ namespace Discret
       {
         const int coup_sid = *bgid;
 
-        if (!cond_manager->is_coupling(coup_sid, my::eid_))
+        if (!cond_manager.is_coupling(coup_sid, my::eid_))
           continue;  // no coupling with current side
 
-        if (cond_manager->is_level_set_coupling(coup_sid))
+        if (cond_manager.is_level_set_coupling(coup_sid))
           FOUR_C_THROW(
               "hybrid_lm_create_special_contribution_matrices for level-set coupling not supported "
               "yet");
 
         Teuchos::RCP<Core::FE::Discretization> cutter_dis = Teuchos::null;
-        if (cond_manager->is_mesh_coupling(coup_sid))
-          cutter_dis = cond_manager->get_cutter_dis(coup_sid);
+        if (cond_manager.is_mesh_coupling(coup_sid))
+          cutter_dis = cond_manager.get_cutter_dis(coup_sid);
 
-        Core::Elements::Element* side = cond_manager->get_side(
+        Core::Elements::Element* side = cond_manager.get_side(
             coup_sid);  // for each boundary element there is one corresponding side
 
         std::vector<int> patchlm;
@@ -4434,10 +4434,10 @@ namespace Discret
      *----------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::assemble_interface_force(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iforcecol,  ///< interface force column vector
-        Core::FE::Discretization& cutdis,                      ///< cut discretization
-        std::vector<int>& lm,                                  ///< local dof map
-        Core::LinAlg::SerialDenseVector& iforce                ///< interface force vector
+        Core::LinAlg::Vector<double>& iforcecol,  ///< interface force column vector
+        Core::FE::Discretization& cutdis,         ///< cut discretization
+        std::vector<int>& lm,                     ///< local dof map
+        Core::LinAlg::SerialDenseVector& iforce   ///< interface force vector
     )
     {
       // TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::assemble_interface_force");
@@ -4449,7 +4449,7 @@ namespace Discret
         int gdof = lm[idof];
 
         // f^i = ( N^i, t ) = ( N^i, (-pI+2mu*eps(u))*n )
-        (*iforcecol)[dofcolmap->LID(gdof)] += iforce[idof];
+        (iforcecol)[dofcolmap->LID(gdof)] += iforce[idof];
       }
 
       return;

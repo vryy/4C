@@ -71,15 +71,14 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged:
 
   // get initial guesses from structure and constraintmanager
   Teuchos::RCP<const Core::LinAlg::Vector<double>> strucGuess = structure_->initial_guess();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrGuess =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *(structure_->get_constraint_manager()->get_constraint_map()), true);
+  const Core::LinAlg::Vector<double> lagrGuess(
+      *(structure_->get_constraint_manager()->get_constraint_map()), true);
 
   // merge stuff together
   Teuchos::RCP<Core::LinAlg::Vector<double>> mergedGuess =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_, true);
   conmerger_->add_cond_vector(*strucGuess, *mergedGuess);
-  conmerger_->add_other_vector(*lagrGuess, *mergedGuess);
+  conmerger_->add_other_vector(lagrGuess, *mergedGuess);
 
   return mergedGuess;
 }
@@ -146,15 +145,14 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged:
 {
   // get last converged state from structure and constraintmanager
   Teuchos::RCP<const Core::LinAlg::Vector<double>> strudis = structure_->veln();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrmult =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          structure_->get_constraint_manager()->get_lagr_mult_vector_old()->Map(), true);
+  const Core::LinAlg::Vector<double> lagrmult(
+      structure_->get_constraint_manager()->get_lagr_mult_vector_old()->Map(), true);
 
   // merge stuff together
   Teuchos::RCP<Core::LinAlg::Vector<double>> mergedstat =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_, true);
   conmerger_->add_cond_vector(*strudis, *mergedstat);
-  conmerger_->add_other_vector(*lagrmult, *mergedstat);
+  conmerger_->add_other_vector(lagrmult, *mergedstat);
 
   return mergedstat;
 }
@@ -165,15 +163,14 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::StructureConstrMerged:
 {
   // get last converged state from structure and constraintmanager
   Teuchos::RCP<const Core::LinAlg::Vector<double>> strudis = structure_->accn();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagrmult =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          structure_->get_constraint_manager()->get_lagr_mult_vector_old()->Map(), true);
+  const Core::LinAlg::Vector<double> lagrmult(
+      structure_->get_constraint_manager()->get_lagr_mult_vector_old()->Map(), true);
 
   // merge stuff together
   Teuchos::RCP<Core::LinAlg::Vector<double>> mergedstat =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_, true);
   conmerger_->add_cond_vector(*strudis, *mergedstat);
-  conmerger_->add_other_vector(*lagrmult, *mergedstat);
+  conmerger_->add_other_vector(lagrmult, *mergedstat);
 
   return mergedstat;
 }

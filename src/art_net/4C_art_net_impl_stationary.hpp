@@ -63,8 +63,7 @@ namespace Arteries
     void reset_artery_diam_previous_time_step();
 
     //! Apply Neumann boundary conditions
-    void apply_neumann_bc(
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& neumann_loads  //!< Neumann loads
+    void apply_neumann_bc(Core::LinAlg::Vector<double>& neumann_loads  //!< Neumann loads
     );
 
     /// add neumann BC to residual

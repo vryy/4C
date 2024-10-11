@@ -120,7 +120,7 @@ namespace XFEM
     void evaluate_edge_stab_boundary_gp(
         Teuchos::ParameterList& eleparams,               ///< element parameter list
         Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
-        Teuchos::RCP<Core::FE::Discretization>
+        Core::FE::Discretization&
             boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
         Discret::ELEMENTS::FluidIntFace* faceele,                ///< face element
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
@@ -136,8 +136,7 @@ namespace XFEM
 
    private:
     //! get the cut side for face's element identified using the sorted node ids
-    Cut::SideHandle* get_face(
-        Core::Elements::Element* faceele, Teuchos::RCP<Cut::CutWizard> wizard);
+    Cut::SideHandle* get_face(Core::Elements::Element* faceele, Cut::CutWizard& wizard);
 
     // reset maps for output
     void reset();

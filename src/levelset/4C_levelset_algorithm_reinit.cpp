@@ -1394,7 +1394,7 @@ void ScaTra::LevelSetAlgorithm::correct_volume()
   interface.clear();
   // reconstruct interface and calculate volumes, etc ...
   ScaTra::LevelSet::Intersection intersect;
-  intersect.capture_zero_level_set(phinp_, discret_, volminus, volplus, surface, interface);
+  intersect.capture_zero_level_set(*phinp_, *discret_, volminus, volplus, surface, interface);
 
   const double voldelta = initvolminus_ - volminus;
   if (myrank_ == 0)
@@ -1407,12 +1407,11 @@ void ScaTra::LevelSetAlgorithm::correct_volume()
   // called after a reinitialization.
   const double thickness = -voldelta / surface;
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> one =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(phin_->Map());
-  one->PutScalar(1.0);
+  Core::LinAlg::Vector<double> one(phin_->Map());
+  one.PutScalar(1.0);
 
   // update phi
-  phinp_->Update(thickness, *one, 1.0);
+  phinp_->Update(thickness, one, 1.0);
 
   if (myrank_ == 0) Core::IO::cout << "done" << Core::IO::endl;
 
@@ -1463,10 +1462,8 @@ void ScaTra::LevelSetAlgorithm::reinitialize_with_elliptic_equation()
   // schemes for level-set problems
 
   // some preparations
-  Teuchos::RCP<Core::LinAlg::Vector<double>> phinmloc =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*phinp_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> inc =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
+  Core::LinAlg::Vector<double> phinmloc(*phinp_);
+  Core::LinAlg::Vector<double> inc(*(discret_->dof_row_map()), true);
   int step = 0;
   bool not_conv = true;
 
@@ -1488,9 +1485,9 @@ void ScaTra::LevelSetAlgorithm::reinitialize_with_elliptic_equation()
     //-----------------------------
     // check convergence
     //-----------------------------
-    inc->Update(1.0, *phinp_, -1.0, *phinmloc, 0.0);
+    inc.Update(1.0, *phinp_, -1.0, phinmloc, 0.0);
     double norm = 0.0;
-    inc->Norm2(&norm);
+    inc.Norm2(&norm);
 
     if (myrank_ == 0)
       std::cout << "STEP:  " << step << "/" << pseudostepmax_
@@ -1506,7 +1503,7 @@ void ScaTra::LevelSetAlgorithm::reinitialize_with_elliptic_equation()
       if (step >= pseudostepmax_) not_conv = false;
     }
 
-    phinmloc->Update(1.0, *phinp_, 0.0);
+    phinmloc.Update(1.0, *phinp_, 0.0);
   }
 
   //-------------------------------------------------

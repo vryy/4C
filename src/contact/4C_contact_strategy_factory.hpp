@@ -78,7 +78,7 @@ namespace CONTACT
       static Teuchos::RCP<CONTACT::Interface> create_interface(
           const enum Inpar::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
           const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-          const Teuchos::RCP<const Core::FE::Discretization>& parent_dis,
+          const Core::FE::Discretization& parent_dis,
           Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_ptr,
           const int contactconstitutivelaw_id = -1);
 
@@ -110,8 +110,7 @@ namespace CONTACT
 
       //! print some final screen output
       void print(const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces,
-          const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr,
-          const Teuchos::ParameterList& params) const;
+          CONTACT::AbstractStrategy& strategy_ptr, const Teuchos::ParameterList& params) const;
 
       /*! \brief print strategy banner
        *
@@ -130,7 +129,7 @@ namespace CONTACT
        *
        *  \author Ager */
       void set_poro_parent_element(enum Mortar::Element::PhysicalType& slavetype,
-          enum Mortar::Element::PhysicalType& mastertype, Teuchos::RCP<CONTACT::Element>& cele,
+          enum Mortar::Element::PhysicalType& mastertype, CONTACT::Element& cele,
           Teuchos::RCP<Core::Elements::Element>& ele,
           const Core::FE::Discretization& discret) const;
 

@@ -856,15 +856,14 @@ void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
        * pseudo time step. Finally, we modify the jacobian.
        *
        *        (\delta^{-1} \boldsymbol{I} + \boldsymbol{J}) */
-      Teuchos::RCP<Core::LinAlg::Vector<double>> v =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*scaling_diag_op_ptr_);
+      Core::LinAlg::Vector<double> v(*scaling_diag_op_ptr_);
       // Scale v with scaling factor
-      v->Scale(deltaInv * scaleFactor);
+      v.Scale(deltaInv * scaleFactor);
       // get the diagonal terms of the jacobian
       Teuchos::RCP<Core::LinAlg::Vector<double>> diag =
           Core::LinAlg::create_vector(jac.row_map(), false);
       jac.extract_diagonal_copy(*diag);
-      diag->Update(1.0, *v, 1.0);
+      diag->Update(1.0, v, 1.0);
       // Finally modify the jacobian
       jac.replace_diagonal_values(*diag);
       break;

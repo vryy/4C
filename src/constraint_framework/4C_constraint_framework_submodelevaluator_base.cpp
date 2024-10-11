@@ -45,10 +45,9 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_force_stiff(
   if (me_force_ptr != Teuchos::null)
   {
     //  Calculate force contribution
-    Teuchos::RCP<Core::LinAlg::Vector<double>> r_pen =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(stiff_ptr_->row_map(), true);
-    Q_Ld_->multiply(true, *constraint_vector_, *r_pen);
-    Core::LinAlg::assemble_my_vector(1.0, *me_force_ptr, penalty_parameter_, *r_pen);
+    Core::LinAlg::Vector<double> r_pen(stiff_ptr_->row_map(), true);
+    Q_Ld_->multiply(true, *constraint_vector_, r_pen);
+    Core::LinAlg::assemble_my_vector(1.0, *me_force_ptr, penalty_parameter_, r_pen);
   }
   return true;
 }

@@ -69,7 +69,7 @@ namespace Inpar
     };
 
     /// set the wear parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
   }  // namespace Wear
 }  // namespace Inpar
 

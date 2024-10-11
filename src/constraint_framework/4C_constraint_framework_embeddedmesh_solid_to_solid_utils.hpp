@@ -77,8 +77,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
    * @param cut_elements_vector (out) vector of cut elements
    */
   void get_coupling_pairs_and_background_elements(Teuchos::RCP<Cut::CutWizard>& cutwizard,
-      CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr,
-      Teuchos::RCP<Core::FE::Discretization>& discret,
+      CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr, Core::FE::Discretization& discret,
       std::vector<Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>&
           embeddedmesh_coupling_pairs,
       std::vector<Core::Elements::Element*>& cut_elements_vector);
@@ -88,8 +87,8 @@ namespace CONSTRAINTS::EMBEDDEDMESH
    * @param cut_elements_vector (in) vector of cut elements
    * @param cutwizard (in) object of the cut library that performs the cut operation.
    */
-  void change_gauss_rule_of_cut_elements(std::vector<Core::Elements::Element*> cut_elements_vector,
-      Teuchos::RCP<Cut::CutWizard>& cutwizard);
+  void change_gauss_rule_of_cut_elements(
+      std::vector<Core::Elements::Element*> cut_elements_vector, Cut::CutWizard& cutwizard);
 
   /**
    * \brief Get the number of Lagrange multiplier values corresponding to the solid nodes and
@@ -152,7 +151,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
 
   bool is_interface_node(Core::Nodes::Node const& node);
 
-  bool is_interface_element_surface(Teuchos::RCP<Core::Elements::Element> ele);
+  bool is_interface_element_surface(Core::Elements::Element& ele);
 
   void get_current_element_displacement(Core::FE::Discretization const& discret,
       Core::Elements::Element const* ele, const Core::LinAlg::Vector<double>& displacement_vector,

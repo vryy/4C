@@ -307,8 +307,8 @@ void CONTACT::PenaltyStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spars
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, non_redist_gsdofrowmap_);
-    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, non_redist_gmdofrowmap_);
+    lindmatrix_ = Mortar::matrix_row_transform(*lindmatrix_, *non_redist_gsdofrowmap_);
+    linmmatrix_ = Mortar::matrix_row_transform(*linmmatrix_, *non_redist_gmdofrowmap_);
   }
 
   // add to kteff
@@ -330,8 +330,8 @@ void CONTACT::PenaltyStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spars
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    dtilde = Mortar::matrix_row_transform(dtilde, non_redist_gsdofrowmap_);
-    mtilde = Mortar::matrix_row_transform(mtilde, non_redist_gmdofrowmap_);
+    dtilde = Mortar::matrix_row_transform(*dtilde, *non_redist_gsdofrowmap_);
+    mtilde = Mortar::matrix_row_transform(*mtilde, *non_redist_gmdofrowmap_);
   }
 
   // add to kteff
@@ -347,46 +347,39 @@ void CONTACT::PenaltyStrategy::evaluate_contact(Teuchos::RCP<Core::LinAlg::Spars
     // we initialize fcmdold with dold-rowmap instead of gsdofrowmap
     // (this way, possible self contact is automatically included)
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcmdold =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dold_->row_map());
-    dold_->multiply(true, *zold_, *fcmdold);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcmdoldtemp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
-    Core::LinAlg::export_to(*fcmdold, *fcmdoldtemp);
-    feff->Update(-alphaf_, *fcmdoldtemp, 1.0);
+    Core::LinAlg::Vector<double> fcmdold(dold_->row_map());
+    dold_->multiply(true, *zold_, fcmdold);
+    Core::LinAlg::Vector<double> fcmdoldtemp(*problem_dofs());
+    Core::LinAlg::export_to(fcmdold, fcmdoldtemp);
+    feff->Update(-alphaf_, fcmdoldtemp, 1.0);
   }
 
   {
     // we initialize fcmmold with mold-domainmap instead of gmdofrowmap
     // (this way, possible self contact is automatically included)
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcmmold =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mold_->domain_map());
-    mold_->multiply(true, *zold_, *fcmmold);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcmmoldtemp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
-    Core::LinAlg::export_to(*fcmmold, *fcmmoldtemp);
-    feff->Update(alphaf_, *fcmmoldtemp, 1.0);
+    Core::LinAlg::Vector<double> fcmmold(mold_->domain_map());
+    mold_->multiply(true, *zold_, fcmmold);
+    Core::LinAlg::Vector<double> fcmmoldtemp(*problem_dofs());
+    Core::LinAlg::export_to(fcmmold, fcmmoldtemp);
+    feff->Update(alphaf_, fcmmoldtemp, 1.0);
   }
 
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcmd =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-    dmatrix_->multiply(true, *z_, *fcmd);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcmdtemp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
-    Core::LinAlg::export_to(*fcmd, *fcmdtemp);
-    feff->Update(-(1 - alphaf_), *fcmdtemp, 1.0);
+    Core::LinAlg::Vector<double> fcmd(*gsdofrowmap_);
+    dmatrix_->multiply(true, *z_, fcmd);
+    Core::LinAlg::Vector<double> fcmdtemp(*problem_dofs());
+    Core::LinAlg::export_to(fcmd, fcmdtemp);
+    feff->Update(-(1 - alphaf_), fcmdtemp, 1.0);
   }
 
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> fcmm =
         Core::LinAlg::create_vector(*gmdofrowmap_, true);
     mmatrix_->multiply(true, *z_, *fcmm);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcmmtemp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
-    Core::LinAlg::export_to(*fcmm, *fcmmtemp);
-    feff->Update(1 - alphaf_, *fcmmtemp, 1.0);
+    Core::LinAlg::Vector<double> fcmmtemp(*problem_dofs());
+    Core::LinAlg::export_to(*fcmm, fcmmtemp);
+    feff->Update(1 - alphaf_, fcmmtemp, 1.0);
   }
 
 #ifdef CONTACTFDGAP
@@ -499,8 +492,8 @@ void CONTACT::PenaltyStrategy::initialize_uzawa(Teuchos::RCP<Core::LinAlg::Spars
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    dtilde = Mortar::matrix_row_transform(dtilde, non_redist_gsdofrowmap_);
-    mtilde = Mortar::matrix_row_transform(mtilde, non_redist_gmdofrowmap_);
+    dtilde = Mortar::matrix_row_transform(*dtilde, *non_redist_gsdofrowmap_);
+    mtilde = Mortar::matrix_row_transform(*mtilde, *non_redist_gmdofrowmap_);
   }
 
   // remove contact stiffness #2 from kteff
@@ -510,37 +503,30 @@ void CONTACT::PenaltyStrategy::initialize_uzawa(Teuchos::RCP<Core::LinAlg::Spars
   // remove old force terms
   // (FIXME: redundant code to evaluate_contact(), expect for minus sign)
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmdold =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dold_->row_map());
-  dold_->multiply(true, *zold_, *fcmdold);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmdoldtemp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
-  Core::LinAlg::export_to(*fcmdold, *fcmdoldtemp);
-  feff->Update(alphaf_, *fcmdoldtemp, 1.0);
+  Core::LinAlg::Vector<double> fcmdold(dold_->row_map());
+  dold_->multiply(true, *zold_, fcmdold);
+  Core::LinAlg::Vector<double> fcmdoldtemp(*problem_dofs());
+  Core::LinAlg::export_to(fcmdold, fcmdoldtemp);
+  feff->Update(alphaf_, fcmdoldtemp, 1.0);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmmold =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(mold_->domain_map());
-  mold_->multiply(true, *zold_, *fcmmold);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmmoldtemp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
-  Core::LinAlg::export_to(*fcmmold, *fcmmoldtemp);
-  feff->Update(-alphaf_, *fcmmoldtemp, 1.0);
+  Core::LinAlg::Vector<double> fcmmold(mold_->domain_map());
+  mold_->multiply(true, *zold_, fcmmold);
+  Core::LinAlg::Vector<double> fcmmoldtemp(*problem_dofs());
+  Core::LinAlg::export_to(fcmmold, fcmmoldtemp);
+  feff->Update(-alphaf_, fcmmoldtemp, 1.0);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmd =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-  dmatrix_->multiply(true, *z_, *fcmd);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmdtemp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
-  Core::LinAlg::export_to(*fcmd, *fcmdtemp);
-  feff->Update(1 - alphaf_, *fcmdtemp, 1.0);
+  Core::LinAlg::Vector<double> fcmd(*gsdofrowmap_);
+  dmatrix_->multiply(true, *z_, fcmd);
+  Core::LinAlg::Vector<double> fcmdtemp(*problem_dofs());
+  Core::LinAlg::export_to(fcmd, fcmdtemp);
+  feff->Update(1 - alphaf_, fcmdtemp, 1.0);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fcmm =
       Core::LinAlg::create_vector(*gmdofrowmap_, true);
   mmatrix_->multiply(true, *z_, *fcmm);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fcmmtemp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
-  Core::LinAlg::export_to(*fcmm, *fcmmtemp);
-  feff->Update(-(1 - alphaf_), *fcmmtemp, 1.0);
+  Core::LinAlg::Vector<double> fcmmtemp(*problem_dofs());
+  Core::LinAlg::export_to(*fcmm, fcmmtemp);
+  feff->Update(-(1 - alphaf_), fcmmtemp, 1.0);
 
   // reset some matrices
   // must use FE_MATRIX type here, as we will do non-local assembly!
@@ -882,8 +868,8 @@ void CONTACT::PenaltyStrategy::assemble()
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    lindmatrix_ = Mortar::matrix_row_transform(lindmatrix_, non_redist_gsdofrowmap_);
-    linmmatrix_ = Mortar::matrix_row_transform(linmmatrix_, non_redist_gmdofrowmap_);
+    lindmatrix_ = Mortar::matrix_row_transform(*lindmatrix_, *non_redist_gsdofrowmap_);
+    linmmatrix_ = Mortar::matrix_row_transform(*linmmatrix_, *non_redist_gmdofrowmap_);
   }
 
   // add to kteff
@@ -905,8 +891,8 @@ void CONTACT::PenaltyStrategy::assemble()
   // transform if necessary
   if (parallel_redistribution_status())
   {
-    dtilde = Mortar::matrix_row_transform(dtilde, non_redist_gsdofrowmap_);
-    mtilde = Mortar::matrix_row_transform(mtilde, non_redist_gmdofrowmap_);
+    dtilde = Mortar::matrix_row_transform(*dtilde, *non_redist_gsdofrowmap_);
+    mtilde = Mortar::matrix_row_transform(*mtilde, *non_redist_gmdofrowmap_);
   }
 
   // add to kteff
@@ -918,23 +904,20 @@ void CONTACT::PenaltyStrategy::assemble()
   // **********************************************************************
   // feff += -alphaf * fc,n - (1-alphaf) * fc,n+1,k
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcmd =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
-    dmatrix_->multiply(true, *z_, *fcmd);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcmdtemp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
-    Core::LinAlg::export_to(*fcmd, *fcmdtemp);
-    fc_->Update(-(1.), *fcmdtemp, 1.0);
+    Core::LinAlg::Vector<double> fcmd(*gsdofrowmap_);
+    dmatrix_->multiply(true, *z_, fcmd);
+    Core::LinAlg::Vector<double> fcmdtemp(*problem_dofs());
+    Core::LinAlg::export_to(fcmd, fcmdtemp);
+    fc_->Update(-(1.), fcmdtemp, 1.0);
   }
 
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> fcmm =
         Core::LinAlg::create_vector(*gmdofrowmap_, true);
     mmatrix_->multiply(true, *z_, *fcmm);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcmmtemp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problem_dofs());
-    Core::LinAlg::export_to(*fcmm, *fcmmtemp);
-    fc_->Update(1, *fcmmtemp, 1.0);
+    Core::LinAlg::Vector<double> fcmmtemp(*problem_dofs());
+    Core::LinAlg::export_to(*fcmm, fcmmtemp);
+    fc_->Update(1, fcmmtemp, 1.0);
   }
 
   fc_->Scale(-1.);

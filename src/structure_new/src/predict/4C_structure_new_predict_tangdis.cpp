@@ -207,13 +207,11 @@ void NOX::Nln::GROUP::PrePostOp::TangDis::run_post_compute_f(
   // check if the jacobian is filled
   if (not stiff_ptr->filled()) FOUR_C_THROW("The jacobian is not yet filled!");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> freact_ptr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *tang_predict_ptr_->global_state().dof_row_map_view());
-  if (stiff_ptr->multiply(false, dbc_incr, *freact_ptr)) FOUR_C_THROW("Multiply failed!");
+  Core::LinAlg::Vector<double> freact_ptr(*tang_predict_ptr_->global_state().dof_row_map_view());
+  if (stiff_ptr->multiply(false, dbc_incr, freact_ptr)) FOUR_C_THROW("Multiply failed!");
 
   // finally add the linear reaction forces to the current rhs
-  Core::LinAlg::assemble_my_vector(1.0, F, 1.0, *freact_ptr);
+  Core::LinAlg::assemble_my_vector(1.0, F, 1.0, freact_ptr);
 }
 
 FOUR_C_NAMESPACE_CLOSE

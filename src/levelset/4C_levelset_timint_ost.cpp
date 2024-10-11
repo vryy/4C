@@ -236,7 +236,7 @@ void ScaTra::LevelSetTimIntOneStepTheta::redistribute(
     const Teuchos::RCP<Epetra_CrsGraph>& nodegraph)
 {
   // let the base class do the basic redistribution and transfer of the base class members
-  LevelSetAlgorithm::redistribute(nodegraph);
+  LevelSetAlgorithm::redistribute(*nodegraph);
 
   // now do all the ost specfic steps
   const Epetra_Map* newdofrowmap = discret_->dof_row_map();

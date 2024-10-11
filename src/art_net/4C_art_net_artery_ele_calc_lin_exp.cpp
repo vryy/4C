@@ -281,7 +281,7 @@ int Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::scatra_evaluate(Artery* ele
   }
 
   // call routine for calculating element matrix and right hand side
-  scatra_sysmat(ele, escatran, ewfnp, ewbnp, eareanp, earean, elemat1, elevec1, mat, dt);
+  scatra_sysmat(ele, escatran, ewfnp, ewbnp, eareanp, earean, elemat1, elevec1, *mat, dt);
   return 0;
 }
 
@@ -874,8 +874,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::scatra_sysmat(Artery* ele,
     const Core::LinAlg::Matrix<my::iel_, 1>& eareanp,
     const Core::LinAlg::Matrix<my::iel_, 1>& earean,
     Core::LinAlg::Matrix<2 * my::iel_, 2 * my::iel_>& sysmat,
-    Core::LinAlg::Matrix<2 * my::iel_, 1>& rhs, Teuchos::RCP<const Core::Mat::Material> material,
-    double dt)
+    Core::LinAlg::Matrix<2 * my::iel_, 1>& rhs, const Core::Mat::Material& material, double dt)
 {
   // get the nodal coordinates of the element
   Core::Nodes::Node** nodes = ele->nodes();
@@ -1338,7 +1337,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
             ele->nodes()[i]->get_condition("ArtPrescribedCond");
         Cparams.set<std::string>("Condition Name", "ArtPrescribedCond");
         Arteries::UTILS::solve_prescribed_terminal_bc(
-            Teuchos::rcpFromRef(discretization), condition, Cparams);
+            *Teuchos::rcpFromRef(discretization), condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1355,7 +1354,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
         Cparams.set<std::string>("Condition Name", "Art_redD_3D_CouplingCond");
 
         Arteries::UTILS::solve_prescribed_terminal_bc(
-            Teuchos::rcpFromRef(discretization), condition, Cparams);
+            *Teuchos::rcpFromRef(discretization), condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1365,7 +1364,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
       {
         const Core::Conditions::Condition* condition = ele->nodes()[i]->get_condition("ArtRfCond");
         Arteries::UTILS::solve_reflective_terminal(
-            Teuchos::rcpFromRef(discretization), condition, Cparams);
+            *Teuchos::rcpFromRef(discretization), condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1379,7 +1378,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
         Cparams.set<double>("terminal volumetric flow rate", qn_(i));
         Cparams.set<double>("terminal cross-sectional area", an_(i));
         Arteries::UTILS::solve_expl_windkessel_bc(
-            Teuchos::rcpFromRef(discretization), condition, Cparams);
+            *Teuchos::rcpFromRef(discretization), condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------

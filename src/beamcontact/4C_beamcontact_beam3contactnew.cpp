@@ -3564,7 +3564,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::update_ele_smooth_tange
 
   nodaltangentssmooth1_ =
       BEAMINTERACTION::Beam3TangentSmoothing::calculate_nodal_tangents<numnodes>(
-          currentpositions, elepos_aux, element1_, neighbors1_);
+          currentpositions, elepos_aux, element1_, *neighbors1_);
 
   elepos_aux.clear();
   // Tangent smoothing only possible with data type double (not with Sacado FAD)
@@ -3573,7 +3573,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::update_ele_smooth_tange
 
   nodaltangentssmooth2_ =
       BEAMINTERACTION::Beam3TangentSmoothing::calculate_nodal_tangents<numnodes>(
-          currentpositions, elepos_aux, element2_, neighbors2_);
+          currentpositions, elepos_aux, element2_, *neighbors2_);
 }
 /*----------------------------------------------------------------------*
  |  end: Update nodal coordinates (public)

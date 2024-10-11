@@ -128,9 +128,9 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // maps are created and data is broadcast to the supporting procs
   int tag = 0;
-  Teuchos::RCP<Epetra_Map> oldmap = Teuchos::make_rcp<Epetra_Map>(1, 1, &tag, 0, *subcomm);
-  Teuchos::RCP<Epetra_Map> newmap = Teuchos::make_rcp<Epetra_Map>(1, 1, &tag, 0, *subcomm);
-  Core::Communication::Exporter exporter(*oldmap, *newmap, *subcomm);
+  Epetra_Map oldmap(1, 1, &tag, 0, *subcomm);
+  Epetra_Map newmap(1, 1, &tag, 0, *subcomm);
+  Core::Communication::Exporter exporter(oldmap, newmap, *subcomm);
   exporter.do_export<MultiScale::MicroStaticParObject>(condnamemap);
 
   // standard evaluation of the micro material
@@ -277,9 +277,9 @@ void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool 
 
   // maps are created and data is broadcast to the supporting procs
   int tag = 0;
-  Teuchos::RCP<Epetra_Map> oldmap = Teuchos::make_rcp<Epetra_Map>(1, 1, &tag, 0, *subcomm);
-  Teuchos::RCP<Epetra_Map> newmap = Teuchos::make_rcp<Epetra_Map>(1, 1, &tag, 0, *subcomm);
-  Core::Communication::Exporter exporter(*oldmap, *newmap, *subcomm);
+  Epetra_Map oldmap(1, 1, &tag, 0, *subcomm);
+  Epetra_Map newmap(1, 1, &tag, 0, *subcomm);
+  Core::Communication::Exporter exporter(oldmap, newmap, *subcomm);
   exporter.do_export<MultiScale::MicroStaticParObject>(condnamemap);
 
   if (matgp_.find(gp) == matgp_.end())

@@ -1418,8 +1418,8 @@ namespace Mortar
     \param[in] imbalance Max. relative imbalance of subdomain size
     */
     void redistribute_master_side(Teuchos::RCP<Epetra_Map>& rownodes,
-        Teuchos::RCP<Epetra_Map>& colnodes, const Teuchos::RCP<Epetra_Map>& roweles,
-        const Teuchos::RCP<Epetra_Comm>& comm, const int parts, const double imbalance) const;
+        Teuchos::RCP<Epetra_Map>& colnodes, Epetra_Map& roweles, Epetra_Comm& comm, const int parts,
+        const double imbalance) const;
 
     /*!
     \brief Setup the binning strategy for geometrically motivated extended ghosting

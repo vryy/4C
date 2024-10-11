@@ -145,7 +145,7 @@ void FLD::Boxfilter::apply_filter(const Teuchos::RCP<const Core::LinAlg::Vector<
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle)
 {
   // perform filtering depending on the LES model
-  apply_box_filter(velocity, scalar, thermpress, dirichtoggle);
+  apply_box_filter(velocity, scalar, thermpress, *dirichtoggle);
 
   return;
 }
@@ -155,7 +155,7 @@ void FLD::Boxfilter::apply_filter_scatra(
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle, const int ndsvel)
 {
   // perform filtering depending on the LES model
-  apply_box_filter_scatra(scalar, thermpress, dirichtoggle, ndsvel);
+  apply_box_filter_scatra(scalar, thermpress, *dirichtoggle, ndsvel);
 
   return;
 }
@@ -167,7 +167,7 @@ void FLD::Boxfilter::apply_filter_scatra(
 void FLD::Boxfilter::apply_box_filter(
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> velocity,
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle)
+    const Core::LinAlg::Vector<double>& dirichtoggle)
 {
   TEUCHOS_FUNC_TIME_MONITOR("apply_filter_for_dynamic_computation_of_cs");
 
@@ -197,8 +197,7 @@ void FLD::Boxfilter::apply_box_filter(
   const Epetra_Map* noderowmap = discret_->node_row_map();
 
   // alloc an additional vector to store/add up the patch volume
-  Teuchos::RCP<Core::LinAlg::Vector<double>> patchvol =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
+  Core::LinAlg::Vector<double> patchvol(*noderowmap, true);
 
   // free mem and reallocate to zero out vecs
   if (velocity_) filtered_vel_ = Teuchos::null;
@@ -346,7 +345,7 @@ void FLD::Boxfilter::apply_box_filter(
         // now assemble the computed values into the global vector
         int id = (node->id());
 
-        patchvol->SumIntoGlobalValues(1, &volume_contribution, &id);
+        patchvol.SumIntoGlobalValues(1, &volume_contribution, &id);
 
 
         if (density_) filtered_dens_->SumIntoGlobalValues(1, &dens_hat, &id);
@@ -448,7 +447,7 @@ void FLD::Boxfilter::apply_box_filter(
         int lid = noderowmap->LID(master_gid);
         if (lid < 0) FOUR_C_THROW("nodelid < 0 ?");
 
-        val = (*patchvol)[lid];
+        val = (patchvol)[lid];
 
         if (density_) dens_val = (*filtered_dens_)[lid];
         if (densstrainrate_) dens_strainrate_val = (*filtered_dens_strainrate_)[lid];
@@ -478,7 +477,7 @@ void FLD::Boxfilter::apply_box_filter(
         for (auto slave_gid : slave_gids)
         {
           lid = noderowmap->LID(slave_gid);
-          val += (*patchvol)[lid];
+          val += (patchvol)[lid];
 
           if (density_) dens_val += (*filtered_dens_)[lid];
           if (densstrainrate_) dens_strainrate_val += (*filtered_dens_strainrate_)[lid];
@@ -507,7 +506,7 @@ void FLD::Boxfilter::apply_box_filter(
 
         // replace value by sum
         lid = noderowmap->LID(master_gid);
-        int error = patchvol->ReplaceMyValues(1, &val, &lid);
+        int error = patchvol.ReplaceMyValues(1, &val, &lid);
         if (error != 0) FOUR_C_THROW("dof not on proc");
 
         {
@@ -553,7 +552,7 @@ void FLD::Boxfilter::apply_box_filter(
         {
           int err = 0;
           lid = noderowmap->LID(slave_gid);
-          err += patchvol->ReplaceMyValues(1, &val, &lid);
+          err += patchvol.ReplaceMyValues(1, &val, &lid);
 
           {
             int err = 0;
@@ -621,7 +620,7 @@ void FLD::Boxfilter::apply_box_filter(
         int gid = nodedofset[index];
         int lid = dofrowmap->LID(gid);
 
-        if ((*dirichtoggle)[lid] == 1)  // this is a dirichlet node
+        if ((dirichtoggle)[lid] == 1)  // this is a dirichlet node
         {
           is_dirichlet_node++;
           double vel_i = (*velocity)[lid];
@@ -638,7 +637,7 @@ void FLD::Boxfilter::apply_box_filter(
         int err = 0;
 
         // determine volume
-        double thisvol = (*patchvol)[lnodeid];
+        double thisvol = (patchvol)[lnodeid];
 
         // determine density
         double dens = 1.0;
@@ -772,7 +771,7 @@ void FLD::Boxfilter::apply_box_filter(
         }    // end loop idim
 
         double volval = 1.0;
-        err += patchvol->ReplaceMyValues(1, &volval, &lnodeid);
+        err += patchvol.ReplaceMyValues(1, &volval, &lnodeid);
         if (err != 0) FOUR_C_THROW("dof/node not on proc");
       }  // is dirichlet node
     }    // end loop all nodes
@@ -786,7 +785,7 @@ void FLD::Boxfilter::apply_box_filter(
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < discret_->num_my_row_nodes(); ++lnodeid)
   {
-    double thisvol = (*patchvol)[lnodeid];
+    double thisvol = (patchvol)[lnodeid];
 
     int err = 0;
     double val = 0.0;
@@ -948,7 +947,7 @@ void FLD::Boxfilter::apply_box_filter(
  *----------------------------------------------------------------------*/
 void FLD::Boxfilter::apply_box_filter_scatra(
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle, const int ndsvel)
+    const Core::LinAlg::Vector<double>& dirichtoggle, const int ndsvel)
 {
   TEUCHOS_FUNC_TIME_MONITOR("apply_filter_for_dynamic_computation_of_prt");
   if (apply_box_filter_ == true) FOUR_C_THROW("not yet considered");
@@ -979,8 +978,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
   const Epetra_Map* noderowmap = scatradiscret_->node_row_map();
 
   // alloc an additional vector to store/add up the patch volume
-  Teuchos::RCP<Core::LinAlg::Vector<double>> patchvol =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
+  Core::LinAlg::Vector<double> patchvol(*noderowmap, true);
 
   // free mem and reallocate to zero out vecs
   filtered_dens_vel_temp_ = Teuchos::null;
@@ -1095,7 +1093,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
         // now assemble the computed values into the global vector
         int id = (node->id());
 
-        patchvol->SumIntoGlobalValues(1, &volume_contribution, &id);
+        patchvol.SumIntoGlobalValues(1, &volume_contribution, &id);
         filtered_dens_->SumIntoGlobalValues(1, &dens_hat, &id);
         filtered_temp_->SumIntoGlobalValues(1, &temp_hat, &id);
         filtered_dens_temp_->SumIntoGlobalValues(1, &dens_temp_hat, &id);
@@ -1167,7 +1165,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
         int lid = noderowmap->LID(master_gid);
         if (lid < 0) FOUR_C_THROW("nodelid < 0 ?");
 
-        val = (*patchvol)[lid];
+        val = (patchvol)[lid];
 
         dens_val = (*filtered_dens_)[lid];
         dens_temp_val = (*filtered_dens_temp_)[lid];
@@ -1196,7 +1194,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
         for (auto slave_gid : slave_gids)
         {
           lid = noderowmap->LID(slave_gid);
-          val += (*patchvol)[lid];
+          val += (patchvol)[lid];
 
           dens_val += (*filtered_dens_)[lid];
           dens_temp_val += (*filtered_dens_temp_)[lid];
@@ -1224,7 +1222,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
 
         // replace value by sum
         lid = noderowmap->LID(master_gid);
-        int error = patchvol->ReplaceMyValues(1, &val, &lid);
+        int error = patchvol.ReplaceMyValues(1, &val, &lid);
         if (error != 0) FOUR_C_THROW("dof not on proc");
 
         int e = 0;
@@ -1263,7 +1261,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
         {
           int err = 0;
           lid = noderowmap->LID(slave_gid);
-          err += patchvol->ReplaceMyValues(1, &val, &lid);
+          err += patchvol.ReplaceMyValues(1, &val, &lid);
 
           err += filtered_dens_->ReplaceMyValues(1, &dens_val, &lid);
           err += filtered_dens_temp_->ReplaceMyValues(1, &dens_temp_val, &lid);
@@ -1366,10 +1364,10 @@ void FLD::Boxfilter::apply_box_filter_scatra(
           int lid = dofrowmap->LID(gid);
 
           // this is a dirichlet node
-          if ((*dirichtoggle)[lid] == 1) is_dirichlet_node = true;
+          if ((dirichtoggle)[lid] == 1) is_dirichlet_node = true;
 
           // get volume
-          double thisvol = (*patchvol)[lnodeid];
+          double thisvol = (patchvol)[lnodeid];
           // and density
           double dens = (*filtered_dens_)[lnodeid] / thisvol;
           int err = 0;
@@ -1457,7 +1455,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
           }
 
           double volval = 1.0;
-          err += patchvol->ReplaceMyValues(1, &volval, &lnodeid);
+          err += patchvol.ReplaceMyValues(1, &volval, &lnodeid);
           if (err != 0) FOUR_C_THROW("dof/node not on proc");
         }
       }
@@ -1471,7 +1469,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < scatradiscret_->num_my_row_nodes(); ++lnodeid)
   {
-    double thisvol = (*patchvol)[lnodeid];
+    double thisvol = (patchvol)[lnodeid];
 
     int err = 0;
     double val = 0.0;

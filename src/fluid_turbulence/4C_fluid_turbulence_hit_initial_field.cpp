@@ -204,22 +204,13 @@ namespace FLD
 #ifdef FOUR_C_WITH_FFTW
 
     // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u1_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u2_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u3_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
-    Teuchos::RCP<Teuchos::Array<double>> u1 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> u2 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> u3 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> u1(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> u2(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> u3(nummodes_ * nummodes_ * nummodes_);
 
     //-------------------------------------------------
     // construction of initial field in spectral space
@@ -244,26 +235,26 @@ namespace FLD
           if (k_1 == (-nummodes_ / 2) or k_2 == (-nummodes_ / 2) or k_3 == (-nummodes_ / 2))
           {
             // odd-ball wave numbers are set to zero to ensure that solution is a real function
-            ((*u1_hat)[pos]).real(0.0);
+            ((u1_hat)[pos]).real(0.0);
             // this is important to have here
-            ((*u1_hat)[pos]).imag(0.0);
+            ((u1_hat)[pos]).imag(0.0);
             // remaining analogously
-            ((*u2_hat)[pos]).real(0.0);
-            ((*u2_hat)[pos]).imag(0.0);
-            ((*u3_hat)[pos]).real(0.0);
-            ((*u3_hat)[pos]).imag(0.0);
+            ((u2_hat)[pos]).real(0.0);
+            ((u2_hat)[pos]).imag(0.0);
+            ((u3_hat)[pos]).real(0.0);
+            ((u3_hat)[pos]).imag(0.0);
           }
           else if (k_1 == 0 and k_2 == 0 and k_3 == 0)
           {
             // likewise set to zero since there will not be any conjugate complex
-            ((*u1_hat)[pos]).real(0.0);
+            ((u1_hat)[pos]).real(0.0);
             // this is important to have here
-            ((*u1_hat)[pos]).imag(0.0);
+            ((u1_hat)[pos]).imag(0.0);
             // remaining analogously
-            ((*u2_hat)[pos]).real(0.0);
-            ((*u2_hat)[pos]).imag(0.0);
-            ((*u3_hat)[pos]).real(0.0);
-            ((*u3_hat)[pos]).imag(0.0);
+            ((u2_hat)[pos]).real(0.0);
+            ((u2_hat)[pos]).imag(0.0);
+            ((u3_hat)[pos]).real(0.0);
+            ((u3_hat)[pos]).imag(0.0);
           }
           else
           {
@@ -344,31 +335,31 @@ namespace FLD
               // construct velocity from alpha, beta and k
               if (k_12 > 1.0e-9)
               {
-                (*u1_hat)[pos] =
+                (u1_hat)[pos] =
                     (alpha * k * ((double)k_2) + beta * ((double)k_1) * ((double)k_3)) / (k * k_12);
-                (*u2_hat)[pos] =
+                (u2_hat)[pos] =
                     (beta * ((double)k_2) * ((double)k_3) - alpha * k * ((double)k_1)) / (k * k_12);
                 if (k_3 == 0)
-                  (*u3_hat)[pos] = -beta * k_12 / k;
+                  (u3_hat)[pos] = -beta * k_12 / k;
                 else
-                  (*u3_hat)[pos] =
-                      -(((double)k_1) * ((*u1_hat)[pos]) + ((double)k_2) * ((*u2_hat)[pos])) /
+                  (u3_hat)[pos] =
+                      -(((double)k_1) * ((u1_hat)[pos]) + ((double)k_2) * ((u2_hat)[pos])) /
                       ((double)k_3);
               }
               else
               {
-                (*u1_hat)[pos] = alpha;
-                (*u2_hat)[pos] = beta;
-                (*u3_hat)[pos] =
-                    -(((double)k_1) * ((*u1_hat)[pos]) + ((double)k_2) * ((*u2_hat)[pos])) /
+                (u1_hat)[pos] = alpha;
+                (u2_hat)[pos] = beta;
+                (u3_hat)[pos] =
+                    -(((double)k_1) * ((u1_hat)[pos]) + ((double)k_2) * ((u2_hat)[pos])) /
                     ((double)k_3);
               }
             }
             else
             {
-              (*u1_hat)[pos] = conj((*u1_hat)[pos_conj]);
-              (*u2_hat)[pos] = conj((*u2_hat)[pos_conj]);
-              (*u3_hat)[pos] = conj((*u3_hat)[pos_conj]);
+              (u1_hat)[pos] = conj((u1_hat)[pos_conj]);
+              (u2_hat)[pos] = conj((u2_hat)[pos_conj]);
+              (u3_hat)[pos] = conj((u3_hat)[pos_conj]);
             }
           }
         }
@@ -382,15 +373,9 @@ namespace FLD
     // k_3: [0,nummodes_/2]
     // using peridocity and conjugate symmetry allows for setting
     // the Fourier coefficients in the required interval
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat_fftw =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat_fftw =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat_fftw =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u1_hat_fftw(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u2_hat_fftw(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u3_hat_fftw(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
     for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_ - 1); fftw_k_1++)
     {
@@ -449,15 +434,15 @@ namespace FLD
           // set value
           if (not conjugate)
           {
-            (*u1_hat_fftw)[pos] = (*u1_hat)[pos_cond];
-            (*u2_hat_fftw)[pos] = (*u2_hat)[pos_cond];
-            (*u3_hat_fftw)[pos] = (*u3_hat)[pos_cond];
+            (u1_hat_fftw)[pos] = (u1_hat)[pos_cond];
+            (u2_hat_fftw)[pos] = (u2_hat)[pos_cond];
+            (u3_hat_fftw)[pos] = (u3_hat)[pos_cond];
           }
           else
           {
-            (*u1_hat_fftw)[pos] = conj((*u1_hat)[pos_cond]);
-            (*u2_hat_fftw)[pos] = conj((*u2_hat)[pos_cond]);
-            (*u3_hat_fftw)[pos] = conj((*u3_hat)[pos_cond]);
+            (u1_hat_fftw)[pos] = conj((u1_hat)[pos_cond]);
+            (u2_hat_fftw)[pos] = conj((u2_hat)[pos_cond]);
+            (u3_hat_fftw)[pos] = conj((u3_hat)[pos_cond]);
           }
         }
       }
@@ -470,7 +455,7 @@ namespace FLD
 #ifdef FOUR_C_WITH_FFTW
     // set-up
     fftw_plan fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-        (reinterpret_cast<fftw_complex*>(u1_hat_fftw->data())), u1->data(), FFTW_ESTIMATE);
+        (reinterpret_cast<fftw_complex*>(u1_hat_fftw.data())), u1.data(), FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
     // free memory
@@ -478,12 +463,12 @@ namespace FLD
 
     // similar for the remaining two directions
     fftw_plan fft_2 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-        (reinterpret_cast<fftw_complex*>(u2_hat_fftw->data())), u2->data(), FFTW_ESTIMATE);
+        (reinterpret_cast<fftw_complex*>(u2_hat_fftw.data())), u2.data(), FFTW_ESTIMATE);
     fftw_execute(fft_2);
     // free memory
     fftw_destroy_plan(fft_2);
     fftw_plan fft_3 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-        (reinterpret_cast<fftw_complex*>(u3_hat_fftw->data())), u3->data(), FFTW_ESTIMATE);
+        (reinterpret_cast<fftw_complex*>(u3_hat_fftw.data())), u3.data(), FFTW_ESTIMATE);
     fftw_execute(fft_3);
     // free memory
     fftw_destroy_plan(fft_3);
@@ -538,12 +523,12 @@ namespace FLD
       // get local dof id corresponding to the global id
       int lid = discret_->dof_row_map()->LID(dofs[0]);
       // set value
-      int err = velnp_->ReplaceMyValues(1, &((*u1)[pos]), &lid);
+      int err = velnp_->ReplaceMyValues(1, &((u1)[pos]), &lid);
       // analogous for remaining directions
       lid = discret_->dof_row_map()->LID(dofs[1]);
-      err = velnp_->ReplaceMyValues(1, &((*u2)[pos]), &lid);
+      err = velnp_->ReplaceMyValues(1, &((u2)[pos]), &lid);
       lid = discret_->dof_row_map()->LID(dofs[2]);
-      err = velnp_->ReplaceMyValues(1, &((*u3)[pos]), &lid);
+      err = velnp_->ReplaceMyValues(1, &((u3)[pos]), &lid);
       if (err > 0) FOUR_C_THROW("Could not set initial field!");
     }
 
@@ -864,23 +849,23 @@ namespace FLD
 
     // push coordinates in vector
     {
-      Teuchos::RCP<std::vector<double>> copycoordinates = Teuchos::make_rcp<std::vector<double>>();
+      std::vector<double> copycoordinates;
 
       for (std::vector<double>::iterator coord1 = coordinates_->begin();
            coord1 != coordinates_->end(); ++coord1)
       {
-        copycoordinates->push_back(*coord1);
+        copycoordinates.push_back(*coord1);
       }
 
       coordinates_->clear();
 
-      double elesize = abs(copycoordinates->at(1) - copycoordinates->at(0));
+      double elesize = abs(copycoordinates.at(1) - copycoordinates.at(0));
       // use 5 sampling locations in each element in each direction
       const std::array<double, 5> localcoords = {0.9, 0.7, 0.5, 0.3, 0.1};
-      for (std::vector<double>::iterator coord1 = copycoordinates->begin();
-           coord1 != copycoordinates->end(); ++coord1)
+      for (std::vector<double>::iterator coord1 = copycoordinates.begin();
+           coord1 != copycoordinates.end(); ++coord1)
       {
-        if (coord1 != copycoordinates->begin())
+        if (coord1 != copycoordinates.begin())
           for (int i = 0; i < 5; i++) coordinates_->push_back(*coord1 - elesize * localcoords[i]);
       }
     }
@@ -897,22 +882,13 @@ namespace FLD
 #ifdef FOUR_C_WITH_FFTW
 
     // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u1_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u2_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u3_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
-    Teuchos::RCP<Teuchos::Array<double>> u1 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> u2 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> u3 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> u1(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> u2(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> u3(nummodes_ * nummodes_ * nummodes_);
 
     //-------------------------------------------------
     // construction of initial field in spectral space
@@ -937,26 +913,26 @@ namespace FLD
           if (k_1 == (-nummodes_ / 2) or k_2 == (-nummodes_ / 2) or k_3 == (-nummodes_ / 2))
           {
             // odd-ball wave numbers are set to zero to ensure that solution is a real function
-            ((*u1_hat)[pos]).real(0.0);
+            ((u1_hat)[pos]).real(0.0);
             // this is important to have here
-            ((*u1_hat)[pos]).imag(0.0);
+            ((u1_hat)[pos]).imag(0.0);
             // remaining analogously
-            ((*u2_hat)[pos]).real(0.0);
-            ((*u2_hat)[pos]).imag(0.0);
-            ((*u3_hat)[pos]).real(0.0);
-            ((*u3_hat)[pos]).imag(0.0);
+            ((u2_hat)[pos]).real(0.0);
+            ((u2_hat)[pos]).imag(0.0);
+            ((u3_hat)[pos]).real(0.0);
+            ((u3_hat)[pos]).imag(0.0);
           }
           else if (k_1 == 0 and k_2 == 0 and k_3 == 0)
           {
             // likewise set to zero since there will not be any conjugate complex
-            ((*u1_hat)[pos]).real(0.0);
+            ((u1_hat)[pos]).real(0.0);
             // this is important to have here
-            ((*u1_hat)[pos]).imag(0.0);
+            ((u1_hat)[pos]).imag(0.0);
             // remaining analogously
-            ((*u2_hat)[pos]).real(0.0);
-            ((*u2_hat)[pos]).imag(0.0);
-            ((*u3_hat)[pos]).real(0.0);
-            ((*u3_hat)[pos]).imag(0.0);
+            ((u2_hat)[pos]).real(0.0);
+            ((u2_hat)[pos]).imag(0.0);
+            ((u3_hat)[pos]).real(0.0);
+            ((u3_hat)[pos]).imag(0.0);
           }
           else
           {
@@ -1037,31 +1013,31 @@ namespace FLD
               // construct velocity from alpha, beta and k
               if (k_12 > 1.0e-9)
               {
-                (*u1_hat)[pos] =
+                (u1_hat)[pos] =
                     (alpha * k * ((double)k_2) + beta * ((double)k_1) * ((double)k_3)) / (k * k_12);
-                (*u2_hat)[pos] =
+                (u2_hat)[pos] =
                     (beta * ((double)k_2) * ((double)k_3) - alpha * k * ((double)k_1)) / (k * k_12);
                 if (k_3 == 0)
-                  (*u3_hat)[pos] = -beta * k_12 / k;
+                  (u3_hat)[pos] = -beta * k_12 / k;
                 else
-                  (*u3_hat)[pos] =
-                      -(((double)k_1) * ((*u1_hat)[pos]) + ((double)k_2) * ((*u2_hat)[pos])) /
+                  (u3_hat)[pos] =
+                      -(((double)k_1) * ((u1_hat)[pos]) + ((double)k_2) * ((u2_hat)[pos])) /
                       ((double)k_3);
               }
               else
               {
-                (*u1_hat)[pos] = alpha;
-                (*u2_hat)[pos] = beta;
-                (*u3_hat)[pos] =
-                    -(((double)k_1) * ((*u1_hat)[pos]) + ((double)k_2) * ((*u2_hat)[pos])) /
+                (u1_hat)[pos] = alpha;
+                (u2_hat)[pos] = beta;
+                (u3_hat)[pos] =
+                    -(((double)k_1) * ((u1_hat)[pos]) + ((double)k_2) * ((u2_hat)[pos])) /
                     ((double)k_3);
               }
             }
             else
             {
-              (*u1_hat)[pos] = conj((*u1_hat)[pos_conj]);
-              (*u2_hat)[pos] = conj((*u2_hat)[pos_conj]);
-              (*u3_hat)[pos] = conj((*u3_hat)[pos_conj]);
+              (u1_hat)[pos] = conj((u1_hat)[pos_conj]);
+              (u2_hat)[pos] = conj((u2_hat)[pos_conj]);
+              (u3_hat)[pos] = conj((u3_hat)[pos_conj]);
             }
           }
         }
@@ -1075,15 +1051,9 @@ namespace FLD
     // k_3: [0,nummodes_/2]
     // using peridocity and conjugate symmetry allows for setting
     // the Fourier coefficients in the required interval
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat_fftw =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat_fftw =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat_fftw =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u1_hat_fftw(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u2_hat_fftw(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u3_hat_fftw(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
     for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_ - 1); fftw_k_1++)
     {
@@ -1142,15 +1112,15 @@ namespace FLD
           // set value
           if (not conjugate)
           {
-            (*u1_hat_fftw)[pos] = (*u1_hat)[pos_cond];
-            (*u2_hat_fftw)[pos] = (*u2_hat)[pos_cond];
-            (*u3_hat_fftw)[pos] = (*u3_hat)[pos_cond];
+            (u1_hat_fftw)[pos] = (u1_hat)[pos_cond];
+            (u2_hat_fftw)[pos] = (u2_hat)[pos_cond];
+            (u3_hat_fftw)[pos] = (u3_hat)[pos_cond];
           }
           else
           {
-            (*u1_hat_fftw)[pos] = conj((*u1_hat)[pos_cond]);
-            (*u2_hat_fftw)[pos] = conj((*u2_hat)[pos_cond]);
-            (*u3_hat_fftw)[pos] = conj((*u3_hat)[pos_cond]);
+            (u1_hat_fftw)[pos] = conj((u1_hat)[pos_cond]);
+            (u2_hat_fftw)[pos] = conj((u2_hat)[pos_cond]);
+            (u3_hat_fftw)[pos] = conj((u3_hat)[pos_cond]);
           }
         }
       }
@@ -1163,7 +1133,7 @@ namespace FLD
 #ifdef FOUR_C_WITH_FFTW
     // set-up
     fftw_plan fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-        (reinterpret_cast<fftw_complex*>(u1_hat_fftw->data())), u1->data(), FFTW_ESTIMATE);
+        (reinterpret_cast<fftw_complex*>(u1_hat_fftw.data())), u1.data(), FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
     // free memory
@@ -1171,12 +1141,12 @@ namespace FLD
 
     // similar for the remaining two directions
     fftw_plan fft_2 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-        (reinterpret_cast<fftw_complex*>(u2_hat_fftw->data())), u2->data(), FFTW_ESTIMATE);
+        (reinterpret_cast<fftw_complex*>(u2_hat_fftw.data())), u2.data(), FFTW_ESTIMATE);
     fftw_execute(fft_2);
     // free memory
     fftw_destroy_plan(fft_2);
     fftw_plan fft_3 = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-        (reinterpret_cast<fftw_complex*>(u3_hat_fftw->data())), u3->data(), FFTW_ESTIMATE);
+        (reinterpret_cast<fftw_complex*>(u3_hat_fftw.data())), u3.data(), FFTW_ESTIMATE);
     fftw_execute(fft_3);
     // free memory
     fftw_destroy_plan(fft_3);
@@ -1254,9 +1224,9 @@ namespace FLD
         const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
 
         // set value
-        interpolVec(i * 6 + 0) = (*u1)[pos];
-        interpolVec(i * 6 + 1) = (*u2)[pos];
-        interpolVec(i * 6 + 2) = (*u3)[pos];
+        interpolVec(i * 6 + 0) = (u1)[pos];
+        interpolVec(i * 6 + 1) = (u2)[pos];
+        interpolVec(i * 6 + 2) = (u3)[pos];
       }
 
       // 2nd evaluate

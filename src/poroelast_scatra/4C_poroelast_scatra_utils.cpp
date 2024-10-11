@@ -116,23 +116,23 @@ Teuchos::RCP<PoroElastScaTra::PoroScatraBase> PoroElastScaTra::UTILS::create_por
 }
 
 Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElastScaTra::UTILS::build_poro_scatra_splitter(
-    Teuchos::RCP<Core::FE::Discretization> dis)
+    Core::FE::Discretization& dis)
 {
   Teuchos::RCP<Core::LinAlg::MapExtractor> porositysplitter = Teuchos::null;
 
   // Loop through all elements on processor
-  int locporop1 = std::count_if(dis->my_col_element_range().begin(),
-      dis->my_col_element_range().end(), is_poro_scatra_element);
+  int locporop1 = std::count_if(
+      dis.my_col_element_range().begin(), dis.my_col_element_range().end(), is_poro_scatra_element);
 
   // Was at least one PoroP1 found on one processor?
   int glonumporop1 = 0;
-  dis->get_comm().MaxAll(&locporop1, &glonumporop1, 1);
+  dis.get_comm().MaxAll(&locporop1, &glonumporop1, 1);
   // Yes, it was. Go ahead for all processors (even if they do not carry any PoroP1 elements)
   if (glonumporop1 > 0)
   {
     porositysplitter = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
     const int ndim = Global::Problem::instance()->n_dim();
-    Core::LinAlg::create_map_extractor_from_discretization(*dis, ndim, *porositysplitter);
+    Core::LinAlg::create_map_extractor_from_discretization(dis, ndim, *porositysplitter);
   }
 
   return porositysplitter;
@@ -192,19 +192,18 @@ void PoroElastScaTra::UTILS::create_volume_ghosting(Core::FE::Discretization& id
     }
 
     // re-build element column map
-    Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::make_rcp<Epetra_Map>(
-        -1, static_cast<int>(rdata.size()), rdata.data(), 0, voldi->get_comm());
+    Epetra_Map newelecolmap(-1, static_cast<int>(rdata.size()), rdata.data(), 0, voldi->get_comm());
     rdata.clear();
 
     // redistribute the volume discretization according to the
     // new (=old) element column layout & and ghost also nodes!
-    voldi->extended_ghosting(*newelecolmap, true, true, true, false);  // no check!!!
+    voldi->extended_ghosting(newelecolmap, true, true, true, false);  // no check!!!
   }
 
   // 2 Material pointers need to be reset after redistribution.
-  PoroElast::UTILS::set_material_pointers_matching_grid(voldis[0], voldis[1]);
-  PoroElast::UTILS::set_material_pointers_matching_grid(voldis[0], voldis[2]);
-  PoroElast::UTILS::set_material_pointers_matching_grid(voldis[1], voldis[2]);
+  PoroElast::UTILS::set_material_pointers_matching_grid(*voldis[0], *voldis[1]);
+  PoroElast::UTILS::set_material_pointers_matching_grid(*voldis[0], *voldis[2]);
+  PoroElast::UTILS::set_material_pointers_matching_grid(*voldis[1], *voldis[2]);
 
   // 3 Reconnect Face Element -- Porostructural Parent Element Pointers!
   PoroElast::UTILS::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));

@@ -62,7 +62,7 @@ namespace Inpar
     };
 
     /// Define all valid parameters for electromagnetic problem.
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// Set specific electromagnetic conditions.
     void set_valid_conditions(

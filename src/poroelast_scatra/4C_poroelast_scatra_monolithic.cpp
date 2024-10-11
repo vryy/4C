@@ -130,9 +130,9 @@ void PoroElastScaTra::PoroScatraMono::read_restart(int restart)
     // Material pointers to other field were deleted during read_restart().
     // They need to be reset.
     PoroElast::UTILS::set_material_pointers_matching_grid(
-        poro_field()->structure_field()->discretization(), scatra_field()->discretization());
+        *poro_field()->structure_field()->discretization(), *scatra_field()->discretization());
     PoroElast::UTILS::set_material_pointers_matching_grid(
-        poro_field()->fluid_field()->discretization(), scatra_field()->discretization());
+        *poro_field()->fluid_field()->discretization(), *scatra_field()->discretization());
   }
 }
 
@@ -305,7 +305,7 @@ void PoroElastScaTra::PoroScatraMono::evaluate(
   // Newton update of the fluid field
   // update velocities and pressures before passed to the structural field
   //  update_iter_incrementally(fx),
-  scatra_field()->update_iter(scatrainc);
+  scatra_field()->update_iter(*scatrainc);
 
   // call all elements and assemble rhs and matrices
   /// poro field
@@ -931,7 +931,7 @@ void PoroElastScaTra::PoroScatraMono::build_convergence_norms()
   //------------------------------------------------------------ build residual force norms
 
   // global norm
-  normrhs_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, rhs_);
+  normrhs_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, *rhs_);
 
   // split vectors
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_s;
@@ -961,13 +961,13 @@ void PoroElastScaTra::PoroScatraMono::build_convergence_norms()
   //    normrhsporo_ = UTILS::calculate_vector_norm(vectornormfres_,rhs_poro);
   //  }
   //  else
-  normrhsstruct_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, rhs_s);
+  normrhsstruct_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, *rhs_s);
 
-  normrhsfluid_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, rhs_f);
-  normrhsfluidvel_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, rhs_fvel);
-  normrhsfluidpres_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, rhs_fpres);
+  normrhsfluid_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, *rhs_f);
+  normrhsfluidvel_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, *rhs_fvel);
+  normrhsfluidpres_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, *rhs_fpres);
 
-  normrhsscalar_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, rhs_scalar);
+  normrhsscalar_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, *rhs_scalar);
 
 
   //------------------------------------------------------------- build residual increment norms
@@ -1002,13 +1002,13 @@ void PoroElastScaTra::PoroScatraMono::build_convergence_norms()
   //    normincporo_       = UTILS::calculate_vector_norm(vectornorminc_,interincporo);
   //  }
   //  else
-  normincstruct_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, interincs);
+  normincstruct_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, *interincs);
 
-  normincfluid_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, interincf);
-  normincfluidvel_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, interincfvel);
-  normincfluidpres_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, interincfpres);
+  normincfluid_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, *interincf);
+  normincfluidvel_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, *interincfvel);
+  normincfluidpres_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, *interincfpres);
 
-  normincscalar_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, interincscalar);
+  normincscalar_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, *interincscalar);
 
   return;
 }
@@ -1240,15 +1240,12 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
   stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_old =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
-  rhs_old->Update(1.0, *rhs_, 0.0);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_copy =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
+  Core::LinAlg::Vector<double> rhs_old(*dof_row_map(), true);
+  rhs_old.Update(1.0, *rhs_, 0.0);
+  Core::LinAlg::Vector<double> rhs_copy(*dof_row_map(), true);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_copy =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*sparse, Core::LinAlg::Copy);
+  Core::LinAlg::SparseMatrix sparse_copy(*sparse, Core::LinAlg::Copy);
 
 
   const int zeilennr = -1;
@@ -1267,26 +1264,26 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
     evaluate(iterinc);
     setup_rhs();
 
-    rhs_copy->Update(1.0, *rhs_, 0.0);
+    rhs_copy.Update(1.0, *rhs_, 0.0);
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
     Core::LinAlg::apply_dirichlet_to_system(
-        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *combined_dbc_map());
+        sparse_copy, *iterinc_, rhs_copy, *zeros_, *combined_dbc_map());
 
 
     if (i == spaltenr)
     {
-      std::cout << "rhs_: " << (*rhs_copy)[zeilennr] << std::endl;
-      std::cout << "rhs_old: " << (*rhs_old)[zeilennr] << std::endl;
+      std::cout << "rhs_: " << (rhs_copy)[zeilennr] << std::endl;
+      std::cout << "rhs_old: " << (rhs_old)[zeilennr] << std::endl;
     }
 
-    rhs_copy->Update(-1.0, *rhs_old, 1.0);
-    rhs_copy->Scale(-1.0 / delta);
+    rhs_copy.Update(-1.0, rhs_old, 1.0);
+    rhs_copy.Scale(-1.0 / delta);
 
     int* index = &i;
     for (int j = 0; j < dofs; ++j)
     {
-      double value = (*rhs_copy)[j];
+      double value = (rhs_copy)[j];
       stiff_approx->InsertGlobalValues(j, 1, &value, index);
 
       if ((j == zeilennr) and (i == spaltenr))
@@ -1338,9 +1335,9 @@ void PoroElastScaTra::PoroScatraMono::fd_check()
   stiff_approx_sparse =
       Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(stiff_approx, Core::LinAlg::Copy);
 
-  stiff_approx_sparse->add(*sparse_copy, false, -1.0, 1.0);
+  stiff_approx_sparse->add(sparse_copy, false, -1.0, 1.0);
 
-  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = sparse_copy->epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = sparse_copy.epetra_matrix();
 
   Teuchos::RCP<Epetra_CrsMatrix> error_crs = stiff_approx_sparse->epetra_matrix();
 

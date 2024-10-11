@@ -141,14 +141,14 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::Utils::setup_discretizations(const Epetra_Com
   }
   else  // ALE discretization already filled
   {
-    if (!FSI::UTILS::fluid_ale_nodes_disjoint(fluiddis, aledis))
+    if (!FSI::UTILS::fluid_ale_nodes_disjoint(*fluiddis, *aledis))
       FOUR_C_THROW(
           "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
           "Use the ALE cloning functionality or ensure non-overlapping node numbering!");
   }
 
-  setup_interface_map(comm, structdis, porofluiddis, fluiddis, aledis);
+  setup_interface_map(comm, *structdis, porofluiddis, fluiddis, *aledis);
 
   // 4.- get coupling algorithm
   Teuchos::RCP<FPSI::FpsiBase> fpsi_algo = Teuchos::null;
@@ -453,9 +453,8 @@ void FPSI::Utils::setup_local_interface_facing_element_map(Core::FE::Discretizat
 /*---------------------------------------------------------------------------/
 | Redistribute Interface (for parallel distr.)                        rauch  |
 /---------------------------------------------------------------------------*/
-void FPSI::Utils::redistribute_interface(Teuchos::RCP<Core::FE::Discretization> masterdis,
-    Teuchos::RCP<const Core::FE::Discretization> slavedis, const std::string& condname,
-    std::map<int, int>& interfacefacingelementmap)
+void FPSI::Utils::redistribute_interface(Core::FE::Discretization& masterdis,
+    const std::string& condname, std::map<int, int>& interfacefacingelementmap)
 {
   int printid = -1;
 
@@ -465,7 +464,7 @@ void FPSI::Utils::redistribute_interface(Teuchos::RCP<Core::FE::Discretization> 
   Core::Elements::Element* masterele = nullptr;
 
   Global::Problem* problem = Global::Problem::instance();
-  const Epetra_Comm& comm = problem->get_dis(masterdis->name())->get_comm();
+  const Epetra_Comm& comm = problem->get_dis(masterdis.name())->get_comm();
   Teuchos::RCP<Epetra_Comm> rcpcomm = Teuchos::RCP(comm.Clone());
 
   int mymapsize = interfacefacingelementmap.size();
@@ -507,9 +506,9 @@ void FPSI::Utils::redistribute_interface(Teuchos::RCP<Core::FE::Discretization> 
       comm.Broadcast(&mastereleid, 1, proc);
       comm.Broadcast(&slaveeleid, 1, proc);
 
-      if (masterdis->have_global_element(mastereleid))
+      if (masterdis.have_global_element(mastereleid))
       {
-        masterele = masterdis->g_element(mastereleid);
+        masterele = masterdis.g_element(mastereleid);
         mastereleowner = masterele->owner();
 
         if (masterele->owner() != comm.MyPID())
@@ -527,12 +526,12 @@ void FPSI::Utils::redistribute_interface(Teuchos::RCP<Core::FE::Discretization> 
       }  // now every processor knows the mastereleowner
 
       std::vector<int> procHasMasterEle(comm.NumProc());
-      HasMasterEle = masterdis->have_global_element(mastereleid);
+      HasMasterEle = masterdis.have_global_element(mastereleid);
       comm.GatherAll(&HasMasterEle, procHasMasterEle.data(), 1);
 
       // ghost parent master element on master discretization of proc owning the matching slave
       // interface element
-      const Epetra_Map colcopy = *(masterdis->element_col_map());
+      const Epetra_Map colcopy = *(masterdis.element_col_map());
       int myglobalelementsize = colcopy.NumMyElements();
       std::vector<int> myglobalelements(myglobalelementsize);
       colcopy.MyGlobalElements(myglobalelements.data());
@@ -550,8 +549,7 @@ void FPSI::Utils::redistribute_interface(Teuchos::RCP<Core::FE::Discretization> 
 
       int globalsize;
       comm.SumAll(&myglobalelementsize, &globalsize, 1);
-      Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::make_rcp<Epetra_Map>(
-          globalsize, myglobalelementsize, myglobalelements.data(), 0, comm);
+      Epetra_Map newelecolmap(globalsize, myglobalelementsize, myglobalelements.data(), 0, comm);
 
       if (mastereleid == printid)
       {
@@ -569,15 +567,15 @@ void FPSI::Utils::redistribute_interface(Teuchos::RCP<Core::FE::Discretization> 
         {
           // std::cout<<counter<<" --Before: Have GID "<<mastereleid<<" =
           // "<<masterdis->HaveGlobalElement(mastereleid)<<" on proc "<<slaveeleowner<<endl;
-          before = masterdis->have_global_element(mastereleid);
+          before = masterdis.have_global_element(mastereleid);
         }
         comm.Barrier();
-        masterdis->extended_ghosting(*newelecolmap, true, false, true, true);
+        masterdis.extended_ghosting(newelecolmap, true, false, true, true);
         if (comm.MyPID() == proc)
         {
           // std::cout<<counter<<" --After: Have GID "<<mastereleid<<" =
           // "<<masterdis->HaveGlobalElement(mastereleid)<<" on proc "<<slaveeleowner<<endl;
-          after = masterdis->have_global_element(mastereleid);
+          after = masterdis.have_global_element(mastereleid);
           if (after == 0 and before == 0)
             FOUR_C_THROW("Element with gid=%d has not been redistributed ! ", mastereleid);
         }
@@ -605,10 +603,9 @@ void FPSI::Utils::redistribute_interface(Teuchos::RCP<Core::FE::Discretization> 
 /*---------------------------------------------------------------------------/
 | Setup Interface Map (for parallel distr.)                           rauch  |
 /---------------------------------------------------------------------------*/
-void FPSI::Utils::setup_interface_map(const Epetra_Comm& comm,
-    Teuchos::RCP<Core::FE::Discretization> structdis,
+void FPSI::Utils::setup_interface_map(const Epetra_Comm& comm, Core::FE::Discretization& structdis,
     Teuchos::RCP<Core::FE::Discretization> porofluiddis,
-    Teuchos::RCP<Core::FE::Discretization> fluiddis, Teuchos::RCP<Core::FE::Discretization> aledis)
+    Teuchos::RCP<Core::FE::Discretization> fluiddis, Core::FE::Discretization& aledis)
 {
   poro_fluid_fluid_interface_map_ = Teuchos::make_rcp<std::map<int, int>>();
   fluid_poro_fluid_interface_map_ = Teuchos::make_rcp<std::map<int, int>>();

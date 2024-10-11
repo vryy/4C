@@ -758,10 +758,10 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
     else if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(
                  structparams, "INT_STRATEGY") == Inpar::Solid::IntegrationStrategy::int_old)
     {
-      auto structure = Teuchos::make_rcp<Adapter::StructureBaseAlgorithm>(
+      Adapter::StructureBaseAlgorithm structure(
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
       structure_ = Teuchos::rcp_dynamic_cast<Adapter::SSIStructureWrapper>(
-          structure->structure_field(), true);
+          structure.structure_field(), true);
       if (structure_ == Teuchos::null)
         FOUR_C_THROW("cast from Adapter::Structure to Adapter::SSIStructureWrapper failed");
     }

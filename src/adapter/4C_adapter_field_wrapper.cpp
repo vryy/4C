@@ -74,11 +74,10 @@ void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector<
   if (stepinc != Teuchos::null)
   {
     // iteration increments
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*stepinc);
+    Core::LinAlg::Vector<double> iterinc(*stepinc);
     if (stepinc_ != Teuchos::null)
     {
-      iterinc->Update(-1.0, *stepinc_, 1.0);
+      iterinc.Update(-1.0, *stepinc_, 1.0);
 
       // update incremental dof member to provided step increments
       // shortly: disinc_^<i> := disp^<i+1>
@@ -89,7 +88,7 @@ void Adapter::FieldWrapper::get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector<
       stepinc_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*stepinc);
     }
     // output is iterinc!
-    stepinc = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*iterinc);
+    stepinc = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(iterinc);
   }
 }
 

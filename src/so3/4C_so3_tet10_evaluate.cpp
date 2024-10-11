@@ -279,7 +279,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
-      update_element(mydisp, params, material());
+      update_element(mydisp, params, *material());
     }
     break;
 
@@ -1560,8 +1560,8 @@ void Discret::ELEMENTS::SoTet10::update_jacobian_mapping(
 /*----------------------------------------------------------------------*
  |  Update material                                                     |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet10::update_element(std::vector<double>& disp,
-    Teuchos::ParameterList& params, const Teuchos::RCP<Core::Mat::Material>& mat)
+void Discret::ELEMENTS::SoTet10::update_element(
+    std::vector<double>& disp, Teuchos::ParameterList& params, Core::Mat::Material& mat)
 {
   if (solid_material()->uses_extended_update())
   {

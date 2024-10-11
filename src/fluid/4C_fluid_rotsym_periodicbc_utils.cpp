@@ -22,24 +22,23 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::get_component_of_rotated_vector_field(const int idf,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> proc0data, const int lid,
-    const double rotangle)
+    const Core::LinAlg::Vector<double>& proc0data, const int lid, const double rotangle)
 {
   switch (idf)
   {
     case 0:
     {
       // we assume that local dof id of y-component is lid+1
-      double xvalue = (*proc0data)[lid];
-      double yvalue = (*proc0data)[lid + 1];
+      double xvalue = (proc0data)[lid];
+      double yvalue = (proc0data)[lid + 1];
       return (xvalue * cos(rotangle) - yvalue * sin(rotangle));
       break;
     }
     case 1:
     {
       // we assume that local dof id of x-component is lid-1
-      double xvalue = (*proc0data)[lid - 1];
-      double yvalue = (*proc0data)[lid];
+      double xvalue = (proc0data)[lid - 1];
+      double yvalue = (proc0data)[lid];
       return (xvalue * sin(rotangle) + yvalue * (cos(rotangle)));
       break;
     }
@@ -47,7 +46,7 @@ double FLD::get_component_of_rotated_vector_field(const int idf,
       break;
   }
 
-  return (*proc0data)[lid];  // case > 1: return unchanged value
+  return (proc0data)[lid];  // case > 1: return unchanged value
 }
 
 

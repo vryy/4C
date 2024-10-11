@@ -113,13 +113,13 @@ namespace Inpar
 
 
 
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+    void set_valid_parameters(Teuchos::ParameterList& list)
     {
       using namespace Input;
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
-      Teuchos::ParameterList& sdyn = list->sublist("STRUCTURAL DYNAMIC", false, "");
+      Teuchos::ParameterList& sdyn = list.sublist("STRUCTURAL DYNAMIC", false, "");
 
       setStringToIntegralParameter<Solid::IntegrationStrategy>("INT_STRATEGY", "Old",
           "global type of the used integration strategy", tuple<std::string>("Old", "Standard"),

@@ -19,13 +19,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::BEAMCONTACT::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::BEAMCONTACT::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& beamcontact = list->sublist("BEAM CONTACT", false, "");
+  Teuchos::ParameterList& beamcontact = list.sublist("BEAM CONTACT", false, "");
 
   setStringToIntegralParameter<Inpar::BEAMCONTACT::Strategy>("BEAMS_STRATEGY", "None",
       "Type of employed solving strategy",

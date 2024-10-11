@@ -114,16 +114,16 @@ const Teuchos::RCP<Adapter::FluidPoro>& Adapter::StructurePoroWrapper::fluid_fie
 
 //! Insert FSI Condition Vector
 Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::StructurePoroWrapper::insert_fsi_cond_vector(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> cond)
+    const Core::LinAlg::Vector<double>& cond)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> tmpcond;
   switch (type_)
   {
     case FieldWrapper::type_StructureField:
-      return interface()->insert_fsi_cond_vector(*cond);
+      return interface()->insert_fsi_cond_vector(cond);
       break;
     case FieldWrapper::type_PoroField:
-      tmpcond = interface()->insert_fsi_cond_vector(*cond);
+      tmpcond = interface()->insert_fsi_cond_vector(cond);
       return poro_->extractor()->insert_vector(*tmpcond, 0);  // into structural part = 0
       break;
     default:

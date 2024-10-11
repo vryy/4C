@@ -90,8 +90,7 @@ namespace BEAMINTERACTION
      * @param time (in) Scalar time value for this visualization step.
      */
     void write_output_beam_to_fluid_mesh_tying(
-        const Teuchos::RCP<Adapter::FBIConstraintenforcer>& couplingenforcer, int i_step,
-        double time) const;
+        Adapter::FBIConstraintenforcer& couplingenforcer, int i_step, double time) const;
 
    private:
     //! Parameter container for output.

@@ -59,13 +59,11 @@ void FLD::UTILS::FluidInfNormScaling::scale_system(
 
       // we want to have the infnorm of the whole(!) row including
       // the off-diagonal block matrix M_(0,1)
-      Teuchos::RCP<Core::LinAlg::Vector<double>> temp1 =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-              mat.matrix(0, 0).epetra_matrix()->RowMap(), false);
+      Core::LinAlg::Vector<double> temp1(mat.matrix(0, 0).epetra_matrix()->RowMap(), false);
       srowsum_->Reciprocal(*srowsum_);
-      mat.matrix(0, 1).epetra_matrix()->InvRowSums(*temp1->get_ptr_of_Epetra_Vector());
-      temp1->Reciprocal(*temp1);
-      srowsum_->Update(1.0, *temp1, 1.0);
+      mat.matrix(0, 1).epetra_matrix()->InvRowSums(*temp1.get_ptr_of_Epetra_Vector());
+      temp1.Reciprocal(temp1);
+      srowsum_->Update(1.0, temp1, 1.0);
       srowsum_->Reciprocal(*srowsum_);
     }
     else
@@ -92,8 +90,7 @@ void FLD::UTILS::FluidInfNormScaling::scale_system(
     prowsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A11->RowMap(), false);
     pcolsum_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A11->RowMap(), false);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(A11->RowMap(), false);
+    Core::LinAlg::Vector<double> temp(A11->RowMap(), false);
     if (leftscale_continuity_)
     {
       A11->InvRowSums(*prowsum_->get_ptr_of_Epetra_Vector());
@@ -102,9 +99,9 @@ void FLD::UTILS::FluidInfNormScaling::scale_system(
       // we want to have the infnorm of the whole(!) row including
       // the off-diagonal block matrix M_(1,0)
       prowsum_->Reciprocal(*prowsum_);
-      mat.matrix(1, 0).epetra_matrix()->InvRowSums(*temp->get_ptr_of_Epetra_Vector());
-      temp->Reciprocal(*temp);
-      prowsum_->Update(1.0, *temp, 1.0);
+      mat.matrix(1, 0).epetra_matrix()->InvRowSums(*temp.get_ptr_of_Epetra_Vector());
+      temp.Reciprocal(temp);
+      prowsum_->Update(1.0, temp, 1.0);
       prowsum_->Reciprocal(*prowsum_);
     }
     else

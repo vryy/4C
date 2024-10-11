@@ -569,7 +569,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
-      update_element(mydisp, params, material());
+      update_element(mydisp, params, *material());
     }
     break;
     //==================================================================================
@@ -2727,13 +2727,13 @@ void Discret::ELEMENTS::SoHex8::update_jacobian_mapping(
 /*---------------------------------------------------------------------------------------------*
  |  Update history variables (e.g. remodeling of fiber directions) (protected)      braeu 07/16|
  *---------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::update_element(std::vector<double>& disp,
-    Teuchos::ParameterList& params, const Teuchos::RCP<Core::Mat::Material>& mat)
+void Discret::ELEMENTS::SoHex8::update_element(
+    std::vector<double>& disp, Teuchos::ParameterList& params, Core::Mat::Material& mat)
 {
   // Calculate current deformation gradient
-  if ((mat->material_type() == Core::Materials::m_constraintmixture) ||
-      (mat->material_type() == Core::Materials::m_elasthyper) ||
-      (mat->material_type() == Core::Materials::m_growthremodel_elasthyper) ||
+  if ((mat.material_type() == Core::Materials::m_constraintmixture) ||
+      (mat.material_type() == Core::Materials::m_elasthyper) ||
+      (mat.material_type() == Core::Materials::m_growthremodel_elasthyper) ||
       (solid_material()->uses_extended_update()))
   {
     Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(false);

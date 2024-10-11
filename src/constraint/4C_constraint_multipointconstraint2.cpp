@@ -212,19 +212,19 @@ CONSTRAINTS::MPConstraint2::create_discretization_from_condition(
   // build unique node row map
   std::vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
-  Teuchos::RCP<Epetra_Map> constraintnoderowmap = Teuchos::make_rcp<Epetra_Map>(
+  Epetra_Map constraintnoderowmap(
       -1, boundarynoderowvec.size(), boundarynoderowvec.data(), 0, newdis->get_comm());
   boundarynoderowvec.clear();
 
   // build overlapping node column map
   std::vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  Teuchos::RCP<Epetra_Map> constraintnodecolmap = Teuchos::make_rcp<Epetra_Map>(
+  Epetra_Map constraintnodecolmap(
       -1, constraintnodecolvec.size(), constraintnodecolvec.data(), 0, newdis->get_comm());
 
   constraintnodecolvec.clear();
 
-  newdis->redistribute(*constraintnoderowmap, *constraintnodecolmap);
+  newdis->redistribute(constraintnoderowmap, constraintnodecolmap);
 
   std::map<int, Teuchos::RCP<Core::FE::Discretization>> newdismap;
   newdismap[startID] = newdis;

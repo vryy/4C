@@ -754,26 +754,25 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
         glob_macro_micro_coupled_node_gids, glob_macro_slave_node_master_node_gids);
 
   // setup Epetra maps for coupled nodes
-  auto master_node_map = Teuchos::make_rcp<Epetra_Map>(
+  Epetra_Map master_node_map(
       -1, static_cast<int>(my_macro_node_gids.size()), &my_macro_node_gids[0], 0, comm);
-  auto slave_node_map = Teuchos::make_rcp<Epetra_Map>(
+  Epetra_Map slave_node_map(
       -1, static_cast<int>(my_micro_node_gids.size()), &my_micro_node_gids[0], 0, comm);
-  auto perm_slave_node_map =
-      Teuchos::make_rcp<Epetra_Map>(-1, static_cast<int>(my_micro_permuted_node_gids.size()),
-          &my_micro_permuted_node_gids[0], 0, comm);
+  Epetra_Map perm_slave_node_map(-1, static_cast<int>(my_micro_permuted_node_gids.size()),
+      &my_micro_permuted_node_gids[0], 0, comm);
 
   // setup coupling adapter between micro (slave) and macro (master) for all dof of the nodes
-  auto macro_micro_coupling_adapter_temp = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
-  macro_micro_coupling_adapter_temp->setup_coupling(*discret_, *microdis, *master_node_map,
-      *slave_node_map, *perm_slave_node_map, num_dof_per_node());
+  FourC::Coupling::Adapter::Coupling macro_micro_coupling_adapter_temp;
+  macro_micro_coupling_adapter_temp.setup_coupling(*discret_, *microdis, master_node_map,
+      slave_node_map, perm_slave_node_map, num_dof_per_node());
 
   // setup actual coupling adapter only for dofs for which coupling is activated
   std::vector<int> my_slave_dofs;
   std::vector<int> my_perm_master_dofs;
   for (int slave_lid = 0;
-       slave_lid < macro_micro_coupling_adapter_temp->slave_dof_map()->NumMyElements(); ++slave_lid)
+       slave_lid < macro_micro_coupling_adapter_temp.slave_dof_map()->NumMyElements(); ++slave_lid)
   {
-    const int slave_gid = macro_micro_coupling_adapter_temp->slave_dof_map()->GID(slave_lid);
+    const int slave_gid = macro_micro_coupling_adapter_temp.slave_dof_map()->GID(slave_lid);
 
     for (int dbc_lid = 0;
          dbc_lid < micro_scatra_field()->dirich_maps()->cond_map()->NumMyElements(); ++dbc_lid)
@@ -783,7 +782,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
       {
         my_slave_dofs.emplace_back(slave_gid);
         my_perm_master_dofs.emplace_back(
-            macro_micro_coupling_adapter_temp->perm_master_dof_map()->GID(slave_lid));
+            macro_micro_coupling_adapter_temp.perm_master_dof_map()->GID(slave_lid));
         break;
       }
     }
@@ -794,11 +793,11 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
   std::vector<int> my_master_dofs;
   std::vector<int> my_perm_slave_dofs;
   for (int master_lid = 0;
-       master_lid < macro_micro_coupling_adapter_temp->master_dof_map()->NumMyElements();
+       master_lid < macro_micro_coupling_adapter_temp.master_dof_map()->NumMyElements();
        ++master_lid)
   {
-    const int slave_gid = macro_micro_coupling_adapter_temp->perm_slave_dof_map()->GID(master_lid);
-    const int master_gid = macro_micro_coupling_adapter_temp->master_dof_map()->GID(master_lid);
+    const int slave_gid = macro_micro_coupling_adapter_temp.perm_slave_dof_map()->GID(master_lid);
+    const int master_gid = macro_micro_coupling_adapter_temp.master_dof_map()->GID(master_lid);
     if (std::find(glob_slave_dofs.begin(), glob_slave_dofs.end(), slave_gid) !=
         glob_slave_dofs.end())
     {
@@ -946,7 +945,7 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
 
       sparse_systemmatrix->add(*system_matrix(), false, 1.0, 1.0);
 
-      auto micro_side_converter = Teuchos::make_rcp<Coupling::Adapter::CouplingSlaveConverter>(
+      FourC::Coupling::Adapter::CouplingSlaveConverter micro_side_converter(
           *macro_micro_coupling_adapter_);
 
       // micro: interior - interior
@@ -957,17 +956,17 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
       // micro: interior - slave
       Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->other_map(), *micro_coupling_dofs_->cond_map(), 1.0, nullptr,
-          &(*micro_side_converter), *sparse_systemmatrix, true, true);
+          &(micro_side_converter), *sparse_systemmatrix, true, true);
 
       // micro: slave - interior
       Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->cond_map(), *micro_coupling_dofs_->other_map(), 1.0,
-          &(*micro_side_converter), nullptr, *sparse_systemmatrix, true, true);
+          &(micro_side_converter), nullptr, *sparse_systemmatrix, true, true);
 
       // micro: slave - slave
       Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->cond_map(), *micro_coupling_dofs_->cond_map(), 1.0,
-          &(*micro_side_converter), &(*micro_side_converter), *sparse_systemmatrix, true, true);
+          &(micro_side_converter), &(micro_side_converter), *sparse_systemmatrix, true, true);
       break;
     }
     case Core::LinAlg::MatrixType::block_field:
@@ -977,7 +976,7 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
 
       block_systemmatrix->matrix(0, 0).add(*system_matrix(), false, 1.0, 1.0);
 
-      auto micro_side_converter = Teuchos::make_rcp<Coupling::Adapter::CouplingSlaveConverter>(
+      FourC::Coupling::Adapter::CouplingSlaveConverter micro_side_converter(
           *macro_micro_coupling_adapter_);
 
       // micro: interior - interior
@@ -988,18 +987,18 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
       // micro: interior - slave
       Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->other_map(), *micro_coupling_dofs_->cond_map(), 1.0, nullptr,
-          &(*micro_side_converter), block_systemmatrix->matrix(1, 0), true, true);
+          &(micro_side_converter), block_systemmatrix->matrix(1, 0), true, true);
 
       // micro: slave - interior
       Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->cond_map(), *micro_coupling_dofs_->other_map(), 1.0,
-          &(*micro_side_converter), nullptr, block_systemmatrix->matrix(0, 1), true, true);
+          &(micro_side_converter), nullptr, block_systemmatrix->matrix(0, 1), true, true);
 
       // micro: slave - slave
       Coupling::Adapter::MatrixLogicalSplitAndTransform()(*micro_scatra_field()->system_matrix(),
           *micro_coupling_dofs_->cond_map(), *micro_coupling_dofs_->cond_map(), 1.0,
-          &(*micro_side_converter), &(*micro_side_converter), block_systemmatrix->matrix(0, 0),
-          true, true);
+          &(micro_side_converter), &(micro_side_converter), block_systemmatrix->matrix(0, 0), true,
+          true);
       break;
     }
     default:
@@ -1052,8 +1051,8 @@ void ScaTra::ScaTraTimIntElchSCL::update_iter_micro_macro()
   auto macro_extract_to_micro = macro_micro_coupling_adapter_->master_to_slave(macro_extract);
   micro_coupling_dofs_->insert_cond_vector(*macro_extract_to_micro, *increment_micro);
 
-  update_iter(increment_macro);
-  micro_scatra_field()->update_iter(increment_micro);
+  update_iter(*increment_macro);
+  micro_scatra_field()->update_iter(*increment_micro);
 }
 
 /*----------------------------------------------------------------------------------------*
@@ -1078,13 +1077,13 @@ void ScaTra::ScaTraTimIntElchSCL::redistribute_micro_discretization()
   if (myPID > 0) my_col_nodes.emplace_back(my_row_nodes[0] - 1);
   if (myPID < num_proc - 1) my_col_nodes.emplace_back(my_row_nodes.back() + 1);
 
-  auto new_node_row_map = Teuchos::make_rcp<Epetra_Map>(
+  Epetra_Map new_node_row_map(
       num_nodes, static_cast<int>(my_row_nodes.size()), &my_row_nodes[0], 0, micro_dis->get_comm());
 
-  auto new_node_col_map = Teuchos::make_rcp<Epetra_Map>(
+  Epetra_Map new_node_col_map(
       -1, static_cast<int>(my_col_nodes.size()), &my_col_nodes[0], 0, micro_dis->get_comm());
 
-  micro_dis->redistribute(*new_node_row_map, *new_node_col_map, true, true, true);
+  micro_dis->redistribute(new_node_row_map, new_node_col_map, true, true, true);
 }
 
 /*----------------------------------------------------------------------*

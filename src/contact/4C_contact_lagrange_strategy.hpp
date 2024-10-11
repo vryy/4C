@@ -425,21 +425,17 @@ namespace CONTACT
     \brief do additional matrix manipulations for regularization scaling
 
     */
-    void do_regularization_scaling(bool aset, bool iset,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& invda,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& kan,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& kam,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& kai,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& kaa,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& fa,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteffnew,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feffnew);
+    void do_regularization_scaling(bool aset, bool iset, Core::LinAlg::SparseMatrix& invda,
+        Core::LinAlg::SparseMatrix& kan, Core::LinAlg::SparseMatrix& kam,
+        Core::LinAlg::SparseMatrix& kai, Core::LinAlg::SparseMatrix& kaa,
+        Core::LinAlg::Vector<double>& fa, Core::LinAlg::SparseMatrix& kteffnew,
+        Core::LinAlg::Vector<double>& feffnew);
 
     /*!
     \brief calculate regularization scaling and apply it to matrixes
 
     */
-    void evaluate_regularization_scaling(Teuchos::RCP<Core::LinAlg::Vector<double>> gact);
+    void evaluate_regularization_scaling(Core::LinAlg::Vector<double>& gact);
 
     /*!
     \brief Saving reference state is required for penalty support (LTL)
@@ -516,21 +512,21 @@ namespace CONTACT
     \brief Add penalty terms for LTL edge contact
 
     */
-    void add_line_to_lin_contributions(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void add_line_to_lin_contributions(Core::LinAlg::SparseOperator& kteff,
         Teuchos::RCP<Core::LinAlg::Vector<double>>& feff, bool add_time_integration = true);
 
     /*!
     \brief Add penalty terms for master contact
 
     */
-    void add_master_contributions(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff, bool add_time_integration = true);
+    void add_master_contributions(Core::LinAlg::SparseOperator& kteff,
+        Core::LinAlg::Vector<double>& feff, bool add_time_integration = true);
 
     /*!
     \brief Add penalty terms for LTL edge contact
 
     */
-    void add_line_to_lin_contributions_friction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void add_line_to_lin_contributions_friction(Core::LinAlg::SparseOperator& kteff,
         Teuchos::RCP<Core::LinAlg::Vector<double>>& feff, bool add_time_integration = true);
 
     // don't want = operator and cctor

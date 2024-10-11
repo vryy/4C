@@ -92,7 +92,7 @@ std::ostream& NOX::Nln::Inner::StatusTest::VolumeChange::print(
   const NOX::Nln::Group& nln_grp = dynamic_cast<const NOX::Nln::Group&>(grp);
 
   ele_vols = Teuchos::null;
-  return nln_grp.compute_element_volumes(ele_vols);
+  return nln_grp.compute_element_volumes(*ele_vols);
 }
 
 /*----------------------------------------------------------------------------*

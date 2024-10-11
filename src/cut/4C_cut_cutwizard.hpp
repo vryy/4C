@@ -216,7 +216,7 @@ namespace Cut
     //  Extract these sides and create boundary cell for these!
     void set_marked_condition_sides(
         // const int mc_idx,
-        Teuchos::RCP<Core::FE::Discretization> cutter_dis,
+        Core::FE::Discretization& cutter_dis,
         // Teuchos::RCP<const Core::LinAlg::Vector<double>> cutter_disp_col,
         const int start_ele_gid);
 

@@ -17,13 +17,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::CONTACT::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::CONTACT::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   /* parameters for structural meshtying and contact */
-  Teuchos::ParameterList& scontact = list->sublist("CONTACT DYNAMIC", false, "");
+  Teuchos::ParameterList& scontact = list.sublist("CONTACT DYNAMIC", false, "");
 
   Core::UTILS::int_parameter(
       "LINEAR_SOLVER", -1, "number of linear solver used for meshtying and contact", &scontact);

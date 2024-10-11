@@ -579,11 +579,11 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<Core::FE::Dis
 //----------------------------------------------------------------------
 // sampling of velocity/pressure values
 //----------------------------------------------------------------------
-void FLD::TurbulenceStatisticsBfs::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> stresses)
+void FLD::TurbulenceStatisticsBfs::do_time_sample(
+    Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& stresses)
 {
   // compute squared values of velocity
-  squaredvelnp_->Multiply(1.0, *velnp, *velnp, 0.0);
+  squaredvelnp_->Multiply(1.0, velnp, velnp, 0.0);
 
   //----------------------------------------------------------------------
   // increase sample counter
@@ -658,12 +658,12 @@ void FLD::TurbulenceStatisticsBfs::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
         // get values for velocity derivative and pressure
         //----------------------------------------------------------------------
         double u;
-        velnp->Dot(*toggleu_, &u);
+        velnp.Dot(*toggleu_, &u);
         double p;
-        velnp->Dot(*togglep_, &p);
+        velnp.Dot(*togglep_, &p);
         // stresses
         double tauw;
-        stresses->Dot(*togglev_, &tauw);
+        stresses.Dot(*togglev_, &tauw);
 
         //----------------------------------------------------------------------
         // calculate spatial means
@@ -755,10 +755,10 @@ void FLD::TurbulenceStatisticsBfs::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
         double v;
         double w;
         double p;
-        velnp->Dot(*toggleu_, &u);
-        velnp->Dot(*togglev_, &v);
-        velnp->Dot(*togglew_, &w);
-        velnp->Dot(*togglep_, &p);
+        velnp.Dot(*toggleu_, &u);
+        velnp.Dot(*togglev_, &v);
+        velnp.Dot(*togglew_, &w);
+        velnp.Dot(*togglep_, &p);
 
         double uu;
         double vv;
@@ -775,19 +775,19 @@ void FLD::TurbulenceStatisticsBfs::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
         double locuv = 0.0;
         double locuw = 0.0;
         double locvw = 0.0;
-        for (int rr = 1; rr < velnp->MyLength(); ++rr)
+        for (int rr = 1; rr < velnp.MyLength(); ++rr)
         {
-          locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
+          locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
         }
         discret_->get_comm().SumAll(&locuv, &uv, 1);
-        for (int rr = 2; rr < velnp->MyLength(); ++rr)
+        for (int rr = 2; rr < velnp.MyLength(); ++rr)
         {
-          locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
+          locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
         }
         discret_->get_comm().SumAll(&locuw, &uw, 1);
-        for (int rr = 2; rr < velnp->MyLength(); ++rr)
+        for (int rr = 2; rr < velnp.MyLength(); ++rr)
         {
-          locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
+          locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
         }
         discret_->get_comm().SumAll(&locvw, &vw, 1);
 
@@ -820,17 +820,16 @@ void FLD::TurbulenceStatisticsBfs::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
 // sampling of velocity, pressure and temperature values
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scanp, const double eosfac)
+    Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& scanp, const double eosfac)
 {
   // compute squared values of velocity
-  squaredvelnp_->Multiply(1.0, *velnp, *velnp, 0.0);
-  squaredscanp_->Multiply(1.0, *scanp, *scanp, 0.0);
+  squaredvelnp_->Multiply(1.0, velnp, velnp, 0.0);
+  squaredscanp_->Multiply(1.0, scanp, scanp, 0.0);
   // compute 1/T and (1/T)^2
   for (int rr = 0; rr < squaredscanp_->MyLength(); ++rr)
   {
-    if ((*scanp)[rr] > 0)  // temperature in kelvin is always > 0
-      (*invscanp_)[rr] = 1 / ((*scanp)[rr]);
+    if ((scanp)[rr] > 0)  // temperature in kelvin is always > 0
+      (*invscanp_)[rr] = 1 / ((scanp)[rr]);
   }
   squaredinvscanp_->Multiply(1.0, *invscanp_, *invscanp_, 0.0);
 
@@ -903,11 +902,11 @@ void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
         // get values for velocity derivative, pressure and temperature
         //----------------------------------------------------------------------
         double u;
-        velnp->Dot(*toggleu_, &u);
+        velnp.Dot(*toggleu_, &u);
         double p;
-        velnp->Dot(*togglep_, &p);
+        velnp.Dot(*togglep_, &p);
         double T;
-        scanp->Dot(*togglep_, &T);
+        scanp.Dot(*togglep_, &T);
 
         double rho;
         invscanp_->Dot(*togglep_, &rho);
@@ -1007,13 +1006,13 @@ void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
         double v;
         double w;
         double p;
-        velnp->Dot(*toggleu_, &u);
-        velnp->Dot(*togglev_, &v);
-        velnp->Dot(*togglew_, &w);
-        velnp->Dot(*togglep_, &p);
+        velnp.Dot(*toggleu_, &u);
+        velnp.Dot(*togglev_, &v);
+        velnp.Dot(*togglew_, &w);
+        velnp.Dot(*togglep_, &p);
 
         double T;
-        scanp->Dot(*togglep_, &T);
+        scanp.Dot(*togglep_, &T);
 
         double uu;
         double vv;
@@ -1030,19 +1029,19 @@ void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
         double locuv = 0.0;
         double locuw = 0.0;
         double locvw = 0.0;
-        for (int rr = 1; rr < velnp->MyLength(); ++rr)
+        for (int rr = 1; rr < velnp.MyLength(); ++rr)
         {
-          locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
+          locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
         }
         discret_->get_comm().SumAll(&locuv, &uv, 1);
-        for (int rr = 2; rr < velnp->MyLength(); ++rr)
+        for (int rr = 2; rr < velnp.MyLength(); ++rr)
         {
-          locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
+          locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
         }
         discret_->get_comm().SumAll(&locuw, &uw, 1);
-        for (int rr = 2; rr < velnp->MyLength(); ++rr)
+        for (int rr = 2; rr < velnp.MyLength(); ++rr)
         {
-          locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
+          locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
         }
         discret_->get_comm().SumAll(&locvw, &vw, 1);
 
@@ -1053,14 +1052,14 @@ void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
         double vT;
         double locuT = 0.0;
         double locvT = 0.0;
-        for (int rr = 3; rr < velnp->MyLength(); ++rr)
+        for (int rr = 3; rr < velnp.MyLength(); ++rr)
         {
-          locuT += ((*velnp)[rr - 3] * (*toggleu_)[rr - 3]) * ((*scanp)[rr] * (*togglep_)[rr]);
+          locuT += ((velnp)[rr - 3] * (*toggleu_)[rr - 3]) * ((scanp)[rr] * (*togglep_)[rr]);
         }
         discret_->get_comm().SumAll(&locuT, &uT, 1);
-        for (int rr = 3; rr < velnp->MyLength(); ++rr)
+        for (int rr = 3; rr < velnp.MyLength(); ++rr)
         {
-          locvT += ((*velnp)[rr - 2] * (*togglev_)[rr - 2]) * ((*scanp)[rr] * (*togglep_)[rr]);
+          locvT += ((velnp)[rr - 2] * (*togglev_)[rr - 2]) * ((scanp)[rr] * (*togglep_)[rr]);
         }
         discret_->get_comm().SumAll(&locvT, &vT, 1);
 
@@ -1076,16 +1075,16 @@ void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
         double rhov;
         double locrhou = 0.0;
         double locrhov = 0.0;
-        for (int rr = 3; rr < velnp->MyLength(); ++rr)
+        for (int rr = 3; rr < velnp.MyLength(); ++rr)
         {
           locrhou += (eosfac * ((*invscanp_)[rr] * (*togglep_)[rr])) *
-                     ((*velnp)[rr - 3] * (*toggleu_)[rr - 3]);
+                     ((velnp)[rr - 3] * (*toggleu_)[rr - 3]);
         }
         discret_->get_comm().SumAll(&locrhou, &rhou, 1);
-        for (int rr = 3; rr < velnp->MyLength(); ++rr)
+        for (int rr = 3; rr < velnp.MyLength(); ++rr)
         {
           locrhov += (eosfac * ((*invscanp_)[rr] * (*togglep_)[rr])) *
-                     ((*velnp)[rr - 2] * (*togglev_)[rr - 2]);
+                     ((velnp)[rr - 2] * (*togglev_)[rr - 2]);
         }
         discret_->get_comm().SumAll(&locrhov, &rhov, 1);
 
@@ -1130,12 +1129,11 @@ void FLD::TurbulenceStatisticsBfs::do_loma_time_sample(
 // sampling of velocity, pressure and scalar values
 //----------------------------------------------------------------------
 void FLD::TurbulenceStatisticsBfs::do_scatra_time_sample(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scanp)
+    Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& scanp)
 {
   // compute squared values of velocity
-  squaredvelnp_->Multiply(1.0, *velnp, *velnp, 0.0);
-  squaredscanp_->Multiply(1.0, *scanp, *scanp, 0.0);
+  squaredvelnp_->Multiply(1.0, velnp, velnp, 0.0);
+  squaredscanp_->Multiply(1.0, scanp, scanp, 0.0);
 
   //----------------------------------------------------------------------
   // increase sample counter
@@ -1206,11 +1204,11 @@ void FLD::TurbulenceStatisticsBfs::do_scatra_time_sample(
         // get values for velocity derivative, pressure and temperature
         //----------------------------------------------------------------------
         double u;
-        velnp->Dot(*toggleu_, &u);
+        velnp.Dot(*toggleu_, &u);
         double p;
-        velnp->Dot(*togglep_, &p);
+        velnp.Dot(*togglep_, &p);
         double T;
-        scanp->Dot(*togglep_, &T);
+        scanp.Dot(*togglep_, &T);
 
         //----------------------------------------------------------------------
         // calculate spatial means
@@ -1303,13 +1301,13 @@ void FLD::TurbulenceStatisticsBfs::do_scatra_time_sample(
         double v;
         double w;
         double p;
-        velnp->Dot(*toggleu_, &u);
-        velnp->Dot(*togglev_, &v);
-        velnp->Dot(*togglew_, &w);
-        velnp->Dot(*togglep_, &p);
+        velnp.Dot(*toggleu_, &u);
+        velnp.Dot(*togglev_, &v);
+        velnp.Dot(*togglew_, &w);
+        velnp.Dot(*togglep_, &p);
 
         double T;
-        scanp->Dot(*togglep_, &T);
+        scanp.Dot(*togglep_, &T);
 
         double uu;
         double vv;
@@ -1326,19 +1324,19 @@ void FLD::TurbulenceStatisticsBfs::do_scatra_time_sample(
         double locuv = 0.0;
         double locuw = 0.0;
         double locvw = 0.0;
-        for (int rr = 1; rr < velnp->MyLength(); ++rr)
+        for (int rr = 1; rr < velnp.MyLength(); ++rr)
         {
-          locuv += ((*velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((*velnp)[rr] * (*togglev_)[rr]);
+          locuv += ((velnp)[rr - 1] * (*toggleu_)[rr - 1]) * ((velnp)[rr] * (*togglev_)[rr]);
         }
         discret_->get_comm().SumAll(&locuv, &uv, 1);
-        for (int rr = 2; rr < velnp->MyLength(); ++rr)
+        for (int rr = 2; rr < velnp.MyLength(); ++rr)
         {
-          locuw += ((*velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((*velnp)[rr] * (*togglew_)[rr]);
+          locuw += ((velnp)[rr - 2] * (*toggleu_)[rr - 2]) * ((velnp)[rr] * (*togglew_)[rr]);
         }
         discret_->get_comm().SumAll(&locuw, &uw, 1);
-        for (int rr = 2; rr < velnp->MyLength(); ++rr)
+        for (int rr = 2; rr < velnp.MyLength(); ++rr)
         {
-          locvw += ((*velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((*velnp)[rr] * (*togglew_)[rr]);
+          locvw += ((velnp)[rr - 1] * (*togglev_)[rr - 1]) * ((velnp)[rr] * (*togglew_)[rr]);
         }
         discret_->get_comm().SumAll(&locvw, &vw, 1);
 
@@ -1349,14 +1347,14 @@ void FLD::TurbulenceStatisticsBfs::do_scatra_time_sample(
         double vT;
         double locuT = 0.0;
         double locvT = 0.0;
-        for (int rr = 3; rr < velnp->MyLength(); ++rr)
+        for (int rr = 3; rr < velnp.MyLength(); ++rr)
         {
-          locuT += ((*velnp)[rr - 3] * (*toggleu_)[rr - 3]) * ((*scanp)[rr] * (*togglep_)[rr]);
+          locuT += ((velnp)[rr - 3] * (*toggleu_)[rr - 3]) * ((scanp)[rr] * (*togglep_)[rr]);
         }
         discret_->get_comm().SumAll(&locuT, &uT, 1);
-        for (int rr = 3; rr < velnp->MyLength(); ++rr)
+        for (int rr = 3; rr < velnp.MyLength(); ++rr)
         {
-          locvT += ((*velnp)[rr - 2] * (*togglev_)[rr - 2]) * ((*scanp)[rr] * (*togglep_)[rr]);
+          locvT += ((velnp)[rr - 2] * (*togglev_)[rr - 2]) * ((scanp)[rr] * (*togglep_)[rr]);
         }
         discret_->get_comm().SumAll(&locvT, &vT, 1);
 

@@ -544,11 +544,10 @@ void Adapter::ScaTraBaseAlgorithm::setup()
               Global::Problem::instance()->sti_dynamic_params(), "SCATRATIMINTTYPE") ==
               Inpar::STI::ScaTraTimIntType::elch))
   {
-    auto elchparams = Teuchos::make_rcp<Teuchos::ParameterList>(
-        Global::Problem::instance()->elch_control_params());
+    Teuchos::ParameterList elchparams(Global::Problem::instance()->elch_control_params());
 
     // create a 2nd solver for block-preconditioning if chosen from input
-    if (elchparams->get<bool>("BLOCKPRECOND"))
+    if (elchparams.get<bool>("BLOCKPRECOND"))
     {
       const auto& solver = scatra_->solver();
 

@@ -72,8 +72,7 @@ namespace CONSTRAINTS
     // old version, NOT consistently integrated over element surface!!
     void evaluate_force(Core::LinAlg::Vector<double>& fint,
         const Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,
-        const Teuchos::ParameterList& p);
+        const Core::LinAlg::Vector<double>& vel, const Teuchos::ParameterList& p);
 
     //! add contribution of spring dashpot BC to stiffness matrix
     // old version, NOT consistently integrated over element surface!!
@@ -81,7 +80,7 @@ namespace CONSTRAINTS
     // -> however should migrate to new EvaluateRobin... mhv 08/2016
     void evaluate_force_stiff(Core::LinAlg::SparseMatrix& stiff, Core::LinAlg::Vector<double>& fint,
         const Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> vel, Teuchos::ParameterList p);
+        const Core::LinAlg::Vector<double>& vel, Teuchos::ParameterList p);
 
     // NEW version, consistently integrated over element surface!!
     void evaluate_robin(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
@@ -93,17 +92,17 @@ namespace CONSTRAINTS
     void reset_newton();
 
     //! reset after prestressing with MULF
-    void reset_prestress(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis);
+    void reset_prestress(const Core::LinAlg::Vector<double>& dis);
 
     //! set reset after prestressing with MULF
-    void set_restart(Teuchos::RCP<Core::LinAlg::Vector<double>> vec);
+    void set_restart(Core::LinAlg::Vector<double>& vec);
 
     //! set reset after prestressing with MULF
-    void set_restart_old(Teuchos::RCP<Epetra_MultiVector> vec);
+    void set_restart_old(Epetra_MultiVector& vec);
 
     //! output of gap, normal, and nodal stiffness
-    void output_gap_normal(Teuchos::RCP<Core::LinAlg::Vector<double>>& gap,
-        Teuchos::RCP<Epetra_MultiVector>& normals, Teuchos::RCP<Epetra_MultiVector>& stress) const;
+    void output_gap_normal(Core::LinAlg::Vector<double>& gap, Epetra_MultiVector& normals,
+        Epetra_MultiVector& stress) const;
 
     //! select spring stiffness for tensile or compressive spring
     double select_stiffness(double gap)
@@ -115,10 +114,10 @@ namespace CONSTRAINTS
     }
 
     //! output of spring offset
-    void output_prestr_offset(Teuchos::RCP<Core::LinAlg::Vector<double>>& springprestroffset) const;
+    void output_prestr_offset(Core::LinAlg::Vector<double>& springprestroffset) const;
 
     //! output of spring offset
-    void output_prestr_offset_old(Teuchos::RCP<Epetra_MultiVector>& springprestroffset) const;
+    void output_prestr_offset_old(Epetra_MultiVector& springprestroffset) const;
 
     //! return type of spring
     SpringType get_spring_type() { return springtype_; }

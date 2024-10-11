@@ -288,8 +288,7 @@ namespace LUBRICATION
     virtual void add_neumann_to_residual() = 0;
 
     //! Apply Neumann boundary conditions
-    void apply_neumann_bc(
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& neumann_loads  //!< Neumann loads
+    void apply_neumann_bc(Core::LinAlg::Vector<double>& neumann_loads  //!< Neumann loads
     );
 
     //! call elements to calculate system matrix and rhs and assemble

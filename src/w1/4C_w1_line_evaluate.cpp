@@ -718,8 +718,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
       const Core::FE::IntPointsAndWeights<1> intpoints(gaussrule);
 
       const int ngp = intpoints.ip().nquad;
-      Teuchos::RCP<Core::LinAlg::SerialDenseVector> poro =
-          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(ngp);
+      Core::LinAlg::SerialDenseVector poro(ngp);
       const int numdim = 2;
       const int numnode = num_node();
       const int noddof = num_dof_per_node(*(nodes()[0]));

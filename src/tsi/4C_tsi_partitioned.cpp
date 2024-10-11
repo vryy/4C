@@ -117,7 +117,7 @@ void TSI::Partitioned::read_restart(int step)
   // Material pointers to other field were deleted during read_restart().
   // They need to be reset.
   TSI::UTILS::set_material_pointers_matching_grid(
-      structure_field()->discretization(), thermo_field()->discretization());
+      *structure_field()->discretization(), *thermo_field()->discretization());
 
   // structural and thermal contact
   prepare_contact_strategy();
@@ -250,7 +250,7 @@ void TSI::Partitioned::time_loop_one_way()
     {
       // the displacement -> velocity conversion
       // use this kind of calculation for quasi-static structure calculation
-      vel_ = calc_velocity(disp_);
+      vel_ = calc_velocity(*disp_);
     }
     //  else use vel_ from WriteAccessVelnp()
 
@@ -354,7 +354,7 @@ void TSI::Partitioned::time_loop_sequ_stagg()
 
     // get the velocities needed as predictor for the thermo field for the next
     // time step
-    if (quasistatic_) vel_ = calc_velocity(disp_);
+    if (quasistatic_) vel_ = calc_velocity(*disp_);
     // else vel_ = structure_field()->WriteAccessVelnp();
 
   }  // end displacement coupling
@@ -383,7 +383,7 @@ void TSI::Partitioned::time_loop_sequ_stagg()
 
     // extract the velocities of the current solution
     // quasistatic to exlude oszillation, use displacements to compute velocities
-    if (quasistatic_) vel_ = calc_velocity(disp_);
+    if (quasistatic_) vel_ = calc_velocity(*disp_);
     // else vel_ = WriteAccessVelnp_
 
     // ----------------------------------------------------- thermo field
@@ -520,7 +520,7 @@ void TSI::Partitioned::outer_iteration_loop()
         dispnp->Update(1.0, *(structure_field()->dispnp()), 0.0);
 
         if (quasistatic_)
-          vel_ = calc_velocity(dispnp);
+          vel_ = calc_velocity(*dispnp);
         else
           vel_ = structure_field()->velnp();
 
@@ -567,7 +567,7 @@ void TSI::Partitioned::outer_iteration_loop()
         // extract the velocities of the current solution
 
         // quasistatic to exlude oszillation, use displacements to compute velocities
-        if (quasistatic_) vel_ = calc_velocity(disp_);
+        if (quasistatic_) vel_ = calc_velocity(*disp_);
         // else use Velnp()
 
         // ------------------------------------------------- thermo field
@@ -799,7 +799,7 @@ void TSI::Partitioned::outer_iteration_loop()
             dispnp->Update(1.0, *(structure_field()->dispnp()), 0.0);
 
             // calculate the velocities with the updated/relaxed displacements
-            if (quasistatic_) vel_ = calc_velocity(dispnp);
+            if (quasistatic_) vel_ = calc_velocity(*dispnp);
             // else use Velnp
           }
           else  // (itnum > 1)
@@ -830,7 +830,7 @@ void TSI::Partitioned::outer_iteration_loop()
 
         // velocity has to fit the corresponding displacements
         // --> update velocities according to relaxed displacements
-        vel_ = calc_velocity(dispnp);
+        vel_ = calc_velocity(*dispnp);
 
         // ----------------------------------------------- end relaxation
       }  // end OUTER ITERATION
@@ -911,7 +911,7 @@ void TSI::Partitioned::outer_iteration_loop()
 
         // extract the velocities of the current solution
         // the displacement -> velocity conversion
-        if (quasistatic_) vel_ = calc_velocity(disp_);
+        if (quasistatic_) vel_ = calc_velocity(*disp_);
         // else use vel_
 
         // ------------------------------------------------- thermo field

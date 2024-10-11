@@ -62,7 +62,7 @@ namespace SSI
     void assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_scatra,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_structure,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_manifold);
+        const Core::LinAlg::Vector<double>& rhs_manifold);
 
     //! assemble ScaTra-ScaTra-Block into system matrix
     virtual void assemble_scatra_scatra(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,

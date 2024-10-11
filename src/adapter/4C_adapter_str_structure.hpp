@@ -574,7 +574,7 @@ namespace Adapter
      * \sa create_linear_solver()
      */
     Teuchos::RCP<Core::LinAlg::Solver> create_contact_meshtying_solver(
-        Teuchos::RCP<Core::FE::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
+        Core::FE::Discretization& actdis, const Teuchos::ParameterList& sdyn);
 
     /*! \brief Create linear solver for pure structure problems
      *

@@ -20,12 +20,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::TSI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::TSI::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& tsidyn = list->sublist("TSI DYNAMIC", false,
+  Teuchos::ParameterList& tsidyn = list.sublist("TSI DYNAMIC", false,
       "Thermo Structure Interaction\n"
       "Dynamic section for TSI solver with various coupling methods");
 
@@ -141,7 +141,7 @@ void Inpar::TSI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   /*----------------------------------------------------------------------*/
   /* parameters for tsi contact */
-  Teuchos::ParameterList& tsic = list->sublist("TSI CONTACT", false, "");
+  Teuchos::ParameterList& tsic = list.sublist("TSI CONTACT", false, "");
 
   Core::UTILS::double_parameter(
       "HEATTRANSSLAVE", 0.0, "Heat transfer parameter for slave side in thermal contact", &tsic);

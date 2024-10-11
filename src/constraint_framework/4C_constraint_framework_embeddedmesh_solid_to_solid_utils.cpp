@@ -95,7 +95,7 @@ void CONSTRAINTS::EMBEDDEDMESH::prepare_and_perform_cut(Teuchos::RCP<Cut::CutWiz
     if (mc_coupl->is_marked_geometry())
     {
       cutwizard->set_marked_condition_sides(
-          mc_coupl->get_cutter_dis(), condition_manager->get_mesh_coupling_start_gid(mc_idx));
+          *mc_coupl->get_cutter_dis(), condition_manager->get_mesh_coupling_start_gid(mc_idx));
     }
   }
 
@@ -160,8 +160,7 @@ Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair> coupling_pair_mort
 
 void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
     Teuchos::RCP<Cut::CutWizard>& cutwizard,
-    CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr,
-    Teuchos::RCP<Core::FE::Discretization>& discret,
+    CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr, Core::FE::Discretization& discret,
     std::vector<Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>&
         embeddedmesh_coupling_pairs,
     std::vector<Core::Elements::Element*>& cut_elements_vector)
@@ -186,7 +185,7 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
     if (background_element->is_cut())
     {
       // Get the element of the background mesh
-      Core::Elements::Element* background_ele = discret->g_element(background_element->id());
+      Core::Elements::Element* background_ele = discret.g_element(background_element->id());
 
       // Create a multimap the boundary cells and their ids of this background element
       std::multimap<int, Cut::BoundaryCell*> boundarycells_ids_multimap;
@@ -217,7 +216,7 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
       for (auto iter_id = uniqueBoundaryCellIds.begin(); iter_id != uniqueBoundaryCellIds.end();
            iter_id++)
       {
-        Core::Elements::Element* interfaceEle = discret->g_element(*iter_id);
+        Core::Elements::Element* interfaceEle = discret.g_element(*iter_id);
         std::vector<Teuchos::RCP<Core::Elements::Element>> interfaceEleSurfaces =
             interfaceEle->surfaces();
         if (interfaceEleSurfaces[0] == Teuchos::null)
@@ -226,7 +225,7 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
         Teuchos::RCP<Core::Elements::Element> surface_ele;
         for (const auto& interfaceEleSurface : interfaceEleSurfaces)
         {
-          if (CONSTRAINTS::EMBEDDEDMESH::is_interface_element_surface(interfaceEleSurface))
+          if (CONSTRAINTS::EMBEDDEDMESH::is_interface_element_surface(*interfaceEleSurface))
             surface_ele = interfaceEleSurface;
         }
 
@@ -264,8 +263,7 @@ void CONSTRAINTS::EMBEDDEDMESH::get_coupling_pairs_and_background_elements(
 }
 
 void CONSTRAINTS::EMBEDDEDMESH::change_gauss_rule_of_cut_elements(
-    std::vector<Core::Elements::Element*> cut_elements_vector,
-    Teuchos::RCP<Cut::CutWizard>& cutwizard)
+    std::vector<Core::Elements::Element*> cut_elements_vector, Cut::CutWizard& cutwizard)
 {
   // loop over column elements
   for (Core::Elements::Element* cut_ele : cut_elements_vector)
@@ -277,12 +275,12 @@ void CONSTRAINTS::EMBEDDEDMESH::change_gauss_rule_of_cut_elements(
           "This implementation of the embedded mesh method only works for new solid elements.");
 
     // Get the element handle. If this element is a background element, this will exist
-    Cut::ElementHandle* elementHandle = cutwizard->get_element(cut_ele);
+    Cut::ElementHandle* elementHandle = cutwizard.get_element(cut_ele);
     if (!elementHandle) FOUR_C_THROW("No element handle found for this cut element");
 
     std::vector<Core::FE::GaussIntegration> gp_intpoints_cut;
     elementHandle->get_gauss_rule_integration_cells(
-        gp_intpoints_cut, cutwizard->do_inside_cells_have_physical_meaning());
+        gp_intpoints_cut, cutwizard.do_inside_cells_have_physical_meaning());
 
     Core::FE::GaussIntegration integration_rule =
         create_gauss_integration_from_collection(gp_intpoints_cut);
@@ -328,11 +326,10 @@ bool CONSTRAINTS::EMBEDDEDMESH::is_interface_node(Core::Nodes::Node const& node)
   return is_node_on_interface;
 }
 
-bool CONSTRAINTS::EMBEDDEDMESH::is_interface_element_surface(
-    Teuchos::RCP<Core::Elements::Element> ele)
+bool CONSTRAINTS::EMBEDDEDMESH::is_interface_element_surface(Core::Elements::Element& ele)
 {
-  for (int i = 0; i < ele->num_point(); i++)
-    if (!CONSTRAINTS::EMBEDDEDMESH::is_interface_node(*(ele->nodes()[i]))) return false;
+  for (int i = 0; i < ele.num_point(); i++)
+    if (!CONSTRAINTS::EMBEDDEDMESH::is_interface_node(*(ele.nodes()[i]))) return false;
 
   return true;
 }

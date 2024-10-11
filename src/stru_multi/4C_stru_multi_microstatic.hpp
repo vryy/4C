@@ -130,8 +130,8 @@ namespace MultiScale
     \brief Write output and (possibly) restart
 
     */
-    void output(Teuchos::RCP<Core::IO::DiscretizationWriter> output, const double time,
-        const int istep, const double dt);
+    void output(Core::IO::DiscretizationWriter& output, const double time, const int istep,
+        const double dt);
 
     /*!
     \brief Determine toggle vector identifying prescribed boundary dofs
@@ -144,8 +144,7 @@ namespace MultiScale
     associated macroscale deformation gradient
 
     */
-    void evaluate_micro_bc(
-        Core::LinAlg::Matrix<3, 3>* defgrd, Teuchos::RCP<Core::LinAlg::Vector<double>> disp);
+    void evaluate_micro_bc(Core::LinAlg::Matrix<3, 3>* defgrd, Core::LinAlg::Vector<double>& disp);
 
     /*!
     \brief Set old state given from micromaterialgp

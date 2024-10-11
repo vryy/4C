@@ -98,7 +98,7 @@ namespace Inpar::S2I
   };
 
   //! set valid parameters for scatra-scatra interface coupling
-  void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+  void set_valid_parameters(Teuchos::ParameterList& list);
 
   //! set valid conditions for scatra-scatra interface coupling
   void set_valid_conditions(

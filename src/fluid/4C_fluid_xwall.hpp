@@ -66,11 +66,10 @@ namespace FLD
     virtual void set_x_wall_params(Teuchos::ParameterList& eleparams);
 
     // adapt ml nullspace for aggregation for scale separation (mfs)
-    void adapt_ml_nullspace(const Teuchos::RCP<Core::LinAlg::Solver>& solver);
+    void adapt_ml_nullspace(Core::LinAlg::Solver& solver);
 
     // get output vector of enriched dofs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get_output_vector(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vel);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> get_output_vector(Core::LinAlg::Vector<double>& vel);
 
     // returns, if Properties for GenAlpha have to be updated
     virtual void update_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double>> trueresidual,
@@ -94,7 +93,7 @@ namespace FLD
 
     // fix residual at Dirichlet-inflow nodes such that the wss can be calculated
     Teuchos::RCP<Core::LinAlg::Vector<double>> fix_dirichlet_inflow(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> trueresidual);
+        Core::LinAlg::Vector<double>& trueresidual);
 
     // set current non-linear iteration number
     void set_iter(int iter)
@@ -126,11 +125,11 @@ namespace FLD
     void setup_l2_projection();
 
     // calculate wall shear stress
-    void calc_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> wss);
+    void calc_tau_w(
+        int step, Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& wss);
 
     // l2 project vectors
-    void l2_project_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
+    void l2_project_vector(Core::LinAlg::Vector<double>& veln,
         Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
         Teuchos::RCP<Core::LinAlg::Vector<double>> accn);
 

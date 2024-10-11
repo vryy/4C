@@ -191,7 +191,7 @@ void Solid::TimIntGenAlpha::setup()
   // external force vector F_{n+1} at new time
   fextn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // set initial external force vector
-  apply_force_external((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
+  apply_force_external((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), *fext_);
 
   // inertial force vector F_{int;n} at last time
   finert_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
@@ -242,7 +242,7 @@ void Solid::TimIntGenAlpha::setup()
 
     nonlinear_mass_sanity_check(fext_, (*dis_)(0), (*vel_)(0), (*acc_)(0), &sdynparams_);
 
-    if (have_nonlinear_mass() == Inpar::Solid::ml_rotations and !solely_beam3_elements(discret_))
+    if (have_nonlinear_mass() == Inpar::Solid::ml_rotations and !solely_beam3_elements(*discret_))
     {
       FOUR_C_THROW(
           "Multiplicative Gen-Alpha time integration scheme only implemented for beam elements so "
@@ -343,7 +343,7 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  apply_force_stiff_external(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
+  apply_force_stiff_external(timen_, (*dis_)(0), disn_, (*vel_)(0), *fextn_, stiff_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -476,12 +476,12 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList
   // applied
   else
   {
-    build_res_stiff_nl_mass_rot(fres_, fextn_, fintn_, finertn_, stiff_, mass_);
+    build_res_stiff_nl_mass_rot(*fres_, *fextn_, *fintn_, *finertn_, *stiff_, *mass_);
   }
 
   // apply forces and stiffness due to beam contact ----> TR-like
   // F_{c;n+1-alpha_f} := (1.-alphaf) * F_{c;n+1} + alpha_f * F_{c;n}
-  apply_force_stiff_beam_contact(stiff_, fres_, disn_, predict);
+  apply_force_stiff_beam_contact(*stiff_, *fres_, *disn_, predict);
 
   // apply forces and stiffness due to contact / meshtying ----> TR-like
   // F_{c;n+1-alpha_f} := (1.-alphaf) * F_{c;n+1} + alpha_f * F_{c;n}
@@ -537,7 +537,7 @@ void Solid::TimIntGenAlpha::evaluate_force_residual()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  apply_force_external(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_);
+  apply_force_external(timen_, (*dis_)(0), disn_, (*vel_)(0), *fextn_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -850,13 +850,10 @@ void Solid::TimIntGenAlpha::write_restart_force(Teuchos::RCP<Core::IO::Discretiz
  * Build total residual vector and effective tangential stiffness    meier 05/14
  * matrix in case of nonlinear, rotational inertia effects
  *----------------------------------------------------------------------------*/
-void Solid::TimIntGenAlpha::build_res_stiff_nl_mass_rot(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fres_,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fextn_,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fintn_,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> finertn_,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> mass_)
+void Solid::TimIntGenAlpha::build_res_stiff_nl_mass_rot(Core::LinAlg::Vector<double>& fres_,
+    Core::LinAlg::Vector<double>& fextn_, Core::LinAlg::Vector<double>& fintn_,
+    Core::LinAlg::Vector<double>& finertn_, Core::LinAlg::SparseOperator& stiff_,
+    Core::LinAlg::SparseOperator& mass_)
 {
   /* build residual
    *    Res = F_{inert;n+1}
@@ -865,9 +862,9 @@ void Solid::TimIntGenAlpha::build_res_stiff_nl_mass_rot(
    * Remark: In the case of an multiplicative Gen-Alpha time integration scheme,
    * all forces are evaluated at the end point n+1.
    */
-  fres_->Update(-1.0, *fextn_, 0.0);
-  fres_->Update(1.0, *fintn_, 1.0);
-  fres_->Update(1.0, *finertn_, 1.0);
+  fres_.Update(-1.0, fextn_, 0.0);
+  fres_.Update(1.0, fintn_, 1.0);
+  fres_.Update(1.0, finertn_, 1.0);
 
   /* build tangent matrix : effective dynamic stiffness matrix
    *    K_{Teffdyn} = M
@@ -877,22 +874,22 @@ void Solid::TimIntGenAlpha::build_res_stiff_nl_mass_rot(
    * considered at element level (see, e.g., beam3r_evaluate.cpp). Therefore,
    * we don't have to apply them here.
    */
-  stiff_->add(*mass_, false, 1.0, 1.0);
+  stiff_.add(mass_, false, 1.0, 1.0);
 }
 
 /*-----------------------------------------------------------------------------*
  * Check, if there are solely beam elements in the whole             meier 05/14
  * discretization
  *----------------------------------------------------------------------------*/
-bool Solid::TimIntGenAlpha::solely_beam3_elements(Teuchos::RCP<Core::FE::Discretization> actdis)
+bool Solid::TimIntGenAlpha::solely_beam3_elements(Core::FE::Discretization& actdis)
 {
   bool solelybeameles = true;
 
-  for (int i = 0; i < actdis->num_my_row_elements(); i++)
+  for (int i = 0; i < actdis.num_my_row_elements(); i++)
   {
-    Core::Elements::Element* element = actdis->l_col_element(i);
+    Core::Elements::Element* element = actdis.l_col_element(i);
     Core::Nodes::Node* node = (element->nodes())[0];
-    int numdof = actdis->num_dof(node);
+    int numdof = actdis.num_dof(node);
 
     // So far we simply check, if we have at least 6 DoFs per node, which is only true for beam
     // elements

@@ -56,7 +56,7 @@ namespace NOX
 
        protected:
         //! initialize additional variables after base class initialization
-        void init(const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests);
+        void init(NOX::Nln::Inner::StatusTest::Generic& innerTests);
 
         void printUpdate() override;
       };  // class SingleStep

@@ -148,9 +148,8 @@ void CONTACT::NitscheStrategy::set_parent_state(const enum Mortar::StateType& st
 {
   if (statename == Mortar::state_new_displacement || statename == Mortar::state_svelocity)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> global =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis.dof_col_map(), true);
-    Core::LinAlg::export_to(vec, *global);
+    Core::LinAlg::Vector<double> global(*dis.dof_col_map(), true);
+    Core::LinAlg::export_to(vec, global);
 
     // set state on interfaces
     for (const auto& interface : interface_)
@@ -171,7 +170,7 @@ void CONTACT::NitscheStrategy::set_parent_state(const enum Mortar::StateType& st
         ele->parent_element()->location_vector(dis, lm, lmowner, lmstride);
 
         std::vector<double> myval;
-        Core::FE::extract_my_values(*global, myval, lm);
+        Core::FE::extract_my_values(global, myval, lm);
 
         switch (statename)
         {

@@ -147,8 +147,8 @@ void ScaTra::ScaTraUtils::check_consistency_with_s2_i_kinetics_condition(
  *----------------------------------------------------------------------*/
 template <const int dim>
 Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average(
-    Teuchos::RCP<Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> state, const int scatra_dofid)
+    Teuchos::RCP<Core::FE::Discretization> discret, const Core::LinAlg::Vector<double>& state,
+    const int scatra_dofid)
 {
   // number space dimensions
   const size_t nsd = dim;
@@ -161,7 +161,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
   const Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_col =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret->dof_col_map());
   // export dof_row_map to DofColMap phinp
-  Core::LinAlg::export_to(*state, *phinp_col);
+  Core::LinAlg::export_to(state, *phinp_col);
 
   // ---------------------------------------------------------------
 
@@ -303,13 +303,13 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
     {
       node_gradphi_smoothed =
           do_mean_value_averaging_of_element_gradient_node<nsd, Core::FE::CellType::hex8>(
-              discret, elements, phinp_col, nodegid, scatra_dofid);
+              *discret, elements, *phinp_col, nodegid, scatra_dofid);
     }
     else if (DISTYPE == Core::FE::CellType::hex27)
     {
       node_gradphi_smoothed =
           do_mean_value_averaging_of_element_gradient_node<nsd, Core::FE::CellType::hex27>(
-              discret, elements, phinp_col, nodegid, scatra_dofid);
+              *discret, elements, *phinp_col, nodegid, scatra_dofid);
     }
     else
       FOUR_C_THROW("Element type not supported yet!");
@@ -349,17 +349,15 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
 
 template Teuchos::RCP<Epetra_MultiVector>
 ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average<3>(
-    Teuchos::RCP<Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> state, const int scatra_dofid);
+    Teuchos::RCP<Core::FE::Discretization> discret, const Core::LinAlg::Vector<double>& state,
+    const int scatra_dofid);
 
 
 
 template <const int dim, Core::FE::CellType distype>
 Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::do_mean_value_averaging_of_element_gradient_node(
-    Teuchos::RCP<Core::FE::Discretization> discret,
-    std::vector<const Core::Elements::Element*> elements,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_node, const int nodegid,
-    const int scatra_dofid)
+    Core::FE::Discretization& discret, std::vector<const Core::Elements::Element*> elements,
+    Core::LinAlg::Vector<double>& phinp_node, const int nodegid, const int scatra_dofid)
 {
   // number of nodes of this element for interpolation
   const int numnode = Core::FE::num_nodes<distype>;
@@ -394,7 +392,7 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::do_mean_value_averaging_of_ele
       {
         nodeID_adj[inode] = ptToNodeIds_adj[inode];
 
-        const std::vector<int> lm = discret->dof(scatra_dofid, (ele_adj->nodes()[inode]));
+        const std::vector<int> lm = discret.dof(scatra_dofid, (ele_adj->nodes()[inode]));
         if (lm.size() != 1) FOUR_C_THROW("assume a unique level-set dof in cutterdis-Dofset");
         nodeDOFID_adj[inode] = lm[0];
 
@@ -405,7 +403,7 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::do_mean_value_averaging_of_ele
 
       // extract the phi-values of adjacent element with local ids from global vector *phinp
       // get pointer to vector holding G-function values at the fluid nodes
-      Core::FE::extract_my_values(*phinp_node, ephinp, nodeDOFID_adj);
+      Core::FE::extract_my_values(phinp_node, ephinp, nodeDOFID_adj);
       Core::LinAlg::Matrix<numnode, 1> ephi_adj(ephinp);
 
       //-------------------------------------
@@ -491,16 +489,12 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::do_mean_value_averaging_of_ele
 // Templates for Mean value averaging -- For now only HEX-type elements allowed!
 template Core::LinAlg::Matrix<3, 1>
 ScaTra::ScaTraUtils::do_mean_value_averaging_of_element_gradient_node<3, Core::FE::CellType::hex8>(
-    Teuchos::RCP<Core::FE::Discretization> discret,
-    std::vector<const Core::Elements::Element*> elements,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_node, const int nodegid,
-    const int scatra_dofid);
+    Core::FE::Discretization& discret, std::vector<const Core::Elements::Element*> elements,
+    Core::LinAlg::Vector<double>& phinp_node, const int nodegid, const int scatra_dofid);
 
 template Core::LinAlg::Matrix<3, 1>
 ScaTra::ScaTraUtils::do_mean_value_averaging_of_element_gradient_node<3, Core::FE::CellType::hex27>(
-    Teuchos::RCP<Core::FE::Discretization> discret,
-    std::vector<const Core::Elements::Element*> elements,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_node, const int nodegid,
-    const int scatra_dofid);
+    Core::FE::Discretization& discret, std::vector<const Core::Elements::Element*> elements,
+    Core::LinAlg::Vector<double>& phinp_node, const int nodegid, const int scatra_dofid);
 
 FOUR_C_NAMESPACE_CLOSE

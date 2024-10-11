@@ -187,7 +187,7 @@ void FLD::XFluidStateCreator::create_new_cut_state(
     if (mc_coupl->is_marked_geometry())
     {
       wizard->set_marked_condition_sides(
-          mc_coupl->get_cutter_dis(), condition_manager_->get_mesh_coupling_start_gid(mc_idx));
+          *mc_coupl->get_cutter_dis(), condition_manager_->get_mesh_coupling_start_gid(mc_idx));
     }
   }
 

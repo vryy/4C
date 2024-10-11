@@ -17,12 +17,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
-void Inpar::FSI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::FSI::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& fsidyn = list->sublist("FSI DYNAMIC", false,
+  Teuchos::ParameterList& fsidyn = list.sublist("FSI DYNAMIC", false,
       "Fluid Structure Interaction\n"
       "FSI solver with various coupling methods");
 

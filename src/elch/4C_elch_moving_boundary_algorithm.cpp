@@ -141,7 +141,7 @@ void ElCh::MovingBoundaryAlgorithm::time_loop()
       iter++;
 
       /// compute interface displacement and velocity
-      compute_interface_vectors(idispnp_, iveln_);
+      compute_interface_vectors(*idispnp_, *iveln_);
 
       // save guessed value before solve
       incr->Update(1.0, *idispnp_, 0.0);
@@ -153,7 +153,7 @@ void ElCh::MovingBoundaryAlgorithm::time_loop()
       solve_scatra();
 
       /// compute interface displacement and velocity
-      compute_interface_vectors(idispnp_, iveln_);
+      compute_interface_vectors(*idispnp_, *iveln_);
 
       // compare with value after solving
       incr->Update(-1.0, *idispnp_, 1.0);
@@ -324,8 +324,7 @@ void ElCh::MovingBoundaryAlgorithm::output()
 
 
 void ElCh::MovingBoundaryAlgorithm::compute_interface_vectors(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iveln)
+    Core::LinAlg::Vector<double>& idispnp, Core::LinAlg::Vector<double>& iveln)
 {
   // calculate normal flux vector field at FSI boundaries (no output to file)
   fluxnp_ = scatra_field()->calc_flux_at_boundary(false);
@@ -338,7 +337,7 @@ void ElCh::MovingBoundaryAlgorithm::compute_interface_vectors(
   // id of the reacting species
   int reactingspeciesid = 0;
 
-  const Epetra_BlockMap& ivelmap = iveln->Map();
+  const Epetra_BlockMap& ivelmap = iveln.Map();
 
   // loop over all local nodes of fluid discretization
   for (int lnodeid = 0; lnodeid < fluiddis->num_my_row_nodes(); lnodeid++)
@@ -376,8 +375,8 @@ void ElCh::MovingBoundaryAlgorithm::compute_interface_vectors(
 
   // have to compute an approximate displacement from given interface velocity
   // id^{n+1} = id^{n} + \delta t vel_i
-  idispnp->Update(1.0, *idispn_, 0.0);
-  idispnp->Update(dt(), *iveln_, 1.0);
+  idispnp.Update(1.0, *idispn_, 0.0);
+  idispnp.Update(dt(), *iveln_, 1.0);
 }
 
 /*----------------------------------------------------------------------*/

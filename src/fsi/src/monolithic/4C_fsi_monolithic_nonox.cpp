@@ -171,7 +171,7 @@ void FSI::MonolithicNoNOX::newton()
     // build linear system stiffness matrix and rhs/force
     // residual for each field
 
-    evaluate(iterinc_);
+    evaluate(*iterinc_);
 
     // create the linear system
     // J(x_i) \Delta x_i = - R(x_i)
@@ -320,7 +320,7 @@ void FSI::MonolithicNoNOX::linear_solve()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> step_increment)
+void FSI::MonolithicNoNOX::evaluate(const Core::LinAlg::Vector<double>& step_increment)
 {
   Teuchos::RCP<const Core::LinAlg::Vector<double>> sx;
   Teuchos::RCP<const Core::LinAlg::Vector<double>> fx;
@@ -328,7 +328,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<doub
 
   // Save the inner fluid map that includes the background fluid DOF in order to
   // determine a change.
-  const Epetra_BlockMap fluidincrementmap = extractor().extract_vector(*step_increment, 1)->Map();
+  const Epetra_BlockMap fluidincrementmap = extractor().extract_vector(step_increment, 1)->Map();
 
   if (not firstcall_)
   {
@@ -342,7 +342,7 @@ void FSI::MonolithicNoNOX::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<doub
     // The update of the latest increment with step increment:
     // x^n+1_i+1 = x^n     + stepinc
 
-    x_sum_->Update(1.0, *step_increment, 1.0);
+    x_sum_->Update(1.0, step_increment, 1.0);
 
     extract_field_vectors(x_sum_, sx, fx, ax);
 

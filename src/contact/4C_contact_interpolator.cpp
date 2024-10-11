@@ -213,14 +213,14 @@ void NTS::Interpolator::interpolate_2d(Mortar::Node& snode, std::vector<Mortar::
       if (wear)
       {
         FOUR_C_THROW("stop");
-        nw_wear_2d(mynode, *meles[nummaster], mval, mderiv, scoord, mcoord, scoordold, mcoordold,
-            lagmult, lid, linsize, jumpval, area, gpn, dmxi, dslipmatrix, dwear);
+        nw_wear_2d(mynode, *meles[nummaster], mval, mderiv, scoord, mcoord, *scoordold, *mcoordold,
+            *lagmult, lid, linsize, jumpval, area, gpn, dmxi, dslipmatrix, dwear);
       }
 
       // calculate node-wise slip
       if (pwslip_)
       {
-        nw_slip_2d(mynode, *meles[nummaster], mval, mderiv, scoord, mcoord, scoordold, mcoordold,
+        nw_slip_2d(mynode, *meles[nummaster], mval, mderiv, scoord, mcoord, *scoordold, *mcoordold,
             lid, linsize, dmxi);
       }
 
@@ -676,9 +676,8 @@ void NTS::Interpolator::nw_t_e_2d(CONTACT::Node& mynode, double& area, double& j
 void NTS::Interpolator::nw_slip_2d(CONTACT::Node& mynode, Mortar::Element& mele,
     Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& mderiv,
     Core::LinAlg::SerialDenseMatrix& scoord, Core::LinAlg::SerialDenseMatrix& mcoord,
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> scoordold,
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> mcoordold, int& snodes, int& linsize,
-    Core::Gen::Pairedvector<int, double>& dmxi)
+    Core::LinAlg::SerialDenseMatrix& scoordold, Core::LinAlg::SerialDenseMatrix& mcoordold,
+    int& snodes, int& linsize, Core::Gen::Pairedvector<int, double>& dmxi)
 {
   const int ncol = mele.num_node();
   const int ndof = mynode.num_dof();
@@ -706,15 +705,15 @@ void NTS::Interpolator::nw_slip_2d(CONTACT::Node& mynode, Mortar::Element& mele,
   tanv[2] += mynode.data().txi()[2];
 
   // delta D
-  sjumpv[0] += (scoord(0, snodes) - (*scoordold)(0, snodes));
-  sjumpv[1] += (scoord(1, snodes) - (*scoordold)(1, snodes));
-  sjumpv[2] += (scoord(2, snodes) - (*scoordold)(2, snodes));
+  sjumpv[0] += (scoord(0, snodes) - (scoordold)(0, snodes));
+  sjumpv[1] += (scoord(1, snodes) - (scoordold)(1, snodes));
+  sjumpv[2] += (scoord(2, snodes) - (scoordold)(2, snodes));
 
   for (int i = 0; i < ncol; ++i)
   {
-    mjumpv[0] += mval[i] * (mcoord(0, i) - (*mcoordold)(0, i));
-    mjumpv[1] += mval[i] * (mcoord(1, i) - (*mcoordold)(1, i));
-    mjumpv[2] += mval[i] * (mcoord(2, i) - (*mcoordold)(2, i));
+    mjumpv[0] += mval[i] * (mcoord(0, i) - (mcoordold)(0, i));
+    mjumpv[1] += mval[i] * (mcoord(1, i) - (mcoordold)(1, i));
+    mjumpv[2] += mval[i] * (mcoord(2, i) - (mcoordold)(2, i));
   }
 
   // normalize interpolated GP tangent back to length 1.0 !!!
@@ -789,7 +788,7 @@ void NTS::Interpolator::nw_slip_2d(CONTACT::Node& mynode, Mortar::Element& mele,
 
       for (_CI p = dmxi.begin(); p != dmxi.end(); ++p)
         dslipgp[p->first] -=
-            tanv[k] * mderiv(z, 0) * (mcoord(k, z) - (*mcoordold)(k, z)) * (p->second);
+            tanv[k] * mderiv(z, 0) * (mcoord(k, z) - (mcoordold)(k, z)) * (p->second);
     }
   }
 
@@ -817,10 +816,9 @@ void NTS::Interpolator::nw_slip_2d(CONTACT::Node& mynode, Mortar::Element& mele,
 void NTS::Interpolator::nw_wear_2d(CONTACT::Node& mynode, Mortar::Element& mele,
     Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& mderiv,
     Core::LinAlg::SerialDenseMatrix& scoord, Core::LinAlg::SerialDenseMatrix& mcoord,
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> scoordold,
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> mcoordold,
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult, int& snodes, int& linsize,
-    double& jumpval, double& area, double* gpn, Core::Gen::Pairedvector<int, double>& dmxi,
+    Core::LinAlg::SerialDenseMatrix& scoordold, Core::LinAlg::SerialDenseMatrix& mcoordold,
+    Core::LinAlg::SerialDenseMatrix& lagmult, int& snodes, int& linsize, double& jumpval,
+    double& area, double* gpn, Core::Gen::Pairedvector<int, double>& dmxi,
     Core::Gen::Pairedvector<int, double>& dslipmatrix, Core::Gen::Pairedvector<int, double>& dwear)
 {
   const int ncol = mele.num_node();
@@ -845,14 +843,14 @@ void NTS::Interpolator::nw_wear_2d(CONTACT::Node& mynode, Mortar::Element& mele,
   gpt[2] += mynode.data().txi()[2];
 
   // delta D
-  sgpjump[0] += (scoord(0, snodes) - ((*scoordold)(0, snodes)));
-  sgpjump[1] += (scoord(1, snodes) - ((*scoordold)(1, snodes)));
-  sgpjump[2] += (scoord(2, snodes) - ((*scoordold)(2, snodes)));
+  sgpjump[0] += (scoord(0, snodes) - ((scoordold)(0, snodes)));
+  sgpjump[1] += (scoord(1, snodes) - ((scoordold)(1, snodes)));
+  sgpjump[2] += (scoord(2, snodes) - ((scoordold)(2, snodes)));
 
   // LM interpolation
-  gplm[0] += ((*lagmult)(0, snodes));
-  gplm[1] += ((*lagmult)(1, snodes));
-  gplm[2] += ((*lagmult)(2, snodes));
+  gplm[0] += ((lagmult)(0, snodes));
+  gplm[1] += ((lagmult)(1, snodes));
+  gplm[2] += ((lagmult)(2, snodes));
 
   // normalize interpolated GP tangent back to length 1.0 !!!
   lengtht = sqrt(gpt[0] * gpt[0] + gpt[1] * gpt[1] + gpt[2] * gpt[2]);
@@ -863,9 +861,9 @@ void NTS::Interpolator::nw_wear_2d(CONTACT::Node& mynode, Mortar::Element& mele,
   // interpolation of master GP jumps (relative displacement increment)
   for (int i = 0; i < ncol; ++i)
   {
-    mgpjump[0] += mval[i] * (mcoord(0, i) - (*mcoordold)(0, i));
-    mgpjump[1] += mval[i] * (mcoord(1, i) - (*mcoordold)(1, i));
-    mgpjump[2] += mval[i] * (mcoord(2, i) - (*mcoordold)(2, i));
+    mgpjump[0] += mval[i] * (mcoord(0, i) - (mcoordold)(0, i));
+    mgpjump[1] += mval[i] * (mcoord(1, i) - (mcoordold)(1, i));
+    mgpjump[2] += mval[i] * (mcoord(2, i) - (mcoordold)(2, i));
   }
 
   // jump
@@ -987,9 +985,9 @@ void NTS::Interpolator::nw_wear_2d(CONTACT::Node& mynode, Mortar::Element& mele,
     {
       for (_CI p = dmxi.begin(); p != dmxi.end(); ++p)
       {
-        double valx = mderiv(i, 0) * (mcoord(0, i) - ((*mcoordold)(0, i)));
+        double valx = mderiv(i, 0) * (mcoord(0, i) - ((mcoordold)(0, i)));
         dmap_mcoord_gp_x[p->first] += valx * (p->second);
-        double valy = mderiv(i, 0) * (mcoord(1, i) - ((*mcoordold)(1, i)));
+        double valy = mderiv(i, 0) * (mcoord(1, i) - ((mcoordold)(1, i)));
         dmap_mcoord_gp_y[p->first] += valy * (p->second);
       }
     }

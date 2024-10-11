@@ -82,7 +82,7 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager::evaluate_for
   // Evaluate the global mortar matrices
   mortar_manager_->evaluate_global_coupling_contributions(displacement_vector);
   mortar_manager_->add_global_force_stiffness_penalty_contributions(
-      global_state_ptr, me_stiff_ptr, me_force_ptr);
+      *global_state_ptr, me_stiff_ptr, me_force_ptr);
 
   return true;
 }

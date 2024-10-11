@@ -213,10 +213,10 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
   const int restart_step = problem_->restart();
   if (restart_step > 0)
   {
-    auto reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+    FourC::Core::IO::DiscretizationReader reader(
         discret_, Global::Problem::instance()->input_control_file(), restart_step);
 
-    time_ = reader->read_double("time");
+    time_ = reader.read_double("time");
   }
 
   visualization_writer_ = std::make_shared<Core::IO::DiscretizationVisualizationWriterMesh>(
@@ -246,10 +246,10 @@ void ScaTra::ScaTraTimIntImpl::init()
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
   // note: pbcs have to be correctly set up before extended ghosting is applied
-  auto pbc = Teuchos::make_rcp<Core::Conditions::PeriodicBoundaryConditions>(discret_, false);
-  if (pbc->has_pbc() and not isinit_)
+  FourC::Core::Conditions::PeriodicBoundaryConditions pbc(discret_, false);
+  if (pbc.has_pbc() and not isinit_)
   {
-    pbc->update_dofs_for_periodic_boundary_conditions();
+    pbc.update_dofs_for_periodic_boundary_conditions();
   }
 
   // -------------------------------------------------------------------
@@ -2028,7 +2028,7 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
       for (auto& initfieldcondition : initfieldconditions)
       {
         const int condmaxnumdofpernode =
-            scalarhandler_->num_dof_per_node_in_condition(*initfieldcondition, discret_);
+            scalarhandler_->num_dof_per_node_in_condition(*initfieldcondition, *discret_);
 
         if (condmaxnumdofpernode != 0) numdofpernode.insert(condmaxnumdofpernode);
       }
@@ -2329,10 +2329,9 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
     case Inpar::ScaTra::initialfield_forced_hit_low_Sc:
     {
       // initialize calculation of initial field based on fast Fourier transformation
-      Teuchos::RCP<HomIsoTurbInitialScalarField> HitInitialScalarField =
-          Teuchos::make_rcp<ScaTra::HomIsoTurbInitialScalarField>(*this, init);
+      HomIsoTurbInitialScalarField HitInitialScalarField(*this, init);
       // calculate initial field
-      HitInitialScalarField->calculate_initial_field();
+      HitInitialScalarField.calculate_initial_field();
 
       break;
     }
@@ -2344,15 +2343,14 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntImpl::update_iter(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc)
+void ScaTra::ScaTraTimIntImpl::update_iter(const Core::LinAlg::Vector<double>& inc)
 {
   // store incremental vector to be available for convergence check
   // if incremental vector is received from outside for coupled problem
-  increment_->Update(1.0, *inc, 0.0);
+  increment_->Update(1.0, inc, 0.0);
 
   // update scalar values by adding increments
-  phinp_->Update(1.0, *inc, 1.0);
+  phinp_->Update(1.0, inc, 1.0);
 }
 
 /*--------------------------------------------------------------------------*
@@ -2882,7 +2880,7 @@ void ScaTra::ScaTraTimIntImpl::linear_solve()
     dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
 
     //------------------------------------------------ update solution vector
-    update_iter(increment_);
+    update_iter(*increment_);
 
     //--------------------------------------------- compute norm of increment
     double incnorm_L2(0.0);
@@ -3179,7 +3177,7 @@ std::string ScaTra::ScaTraTimIntImpl::map_tim_int_enum_to_string(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector>
 ScaTra::ScaTraTimIntImpl::convert_dof_vector_to_componentwise_node_vector(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& dof_vector, const int nds) const
+    const Core::LinAlg::Vector<double>& dof_vector, const int nds) const
 {
   Teuchos::RCP<Epetra_MultiVector> componentwise_node_vector =
       Teuchos::make_rcp<Epetra_MultiVector>(*discret_->node_row_map(), nsd_, true);
@@ -3188,7 +3186,7 @@ ScaTra::ScaTraTimIntImpl::convert_dof_vector_to_componentwise_node_vector(
     Core::Nodes::Node* node = discret_->l_row_node(inode);
     for (int idim = 0; idim < nsd_; ++idim)
       (*componentwise_node_vector)[idim][inode] =
-          (*dof_vector)[dof_vector->Map().LID(discret_->dof(nds, node, idim))];
+          (dof_vector)[dof_vector.Map().LID(discret_->dof(nds, node, idim))];
   }
   return componentwise_node_vector;
 }
@@ -3316,7 +3314,7 @@ int ScaTra::ScaTraTimIntImpl::num_dof_per_node_in_condition(
     const Core::Conditions::Condition& condition) const
 {
   if (scalarhandler_ == Teuchos::null) FOUR_C_THROW("scalar handler was not initialized!");
-  return scalarhandler_->num_dof_per_node_in_condition(condition, discret_);
+  return scalarhandler_->num_dof_per_node_in_condition(condition, *discret_);
 }
 
 /*-----------------------------------------------------------------------------*

@@ -892,7 +892,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(
     case Core::FE::CellType::hex8:
     {
       scatra_apply_box_filter(dens_hat, temp_hat, dens_temp_hat, phi2_hat, phiexpression_hat,
-          vel_hat, densvel_hat, densveltemp_hat, densstraintemp_hat, phi_hat, alphaijsc_hat,
+          *vel_hat, *densvel_hat, *densveltemp_hat, *densstraintemp_hat, *phi_hat, *alphaijsc_hat,
           volume_contribution, ele, params);
 
       break;

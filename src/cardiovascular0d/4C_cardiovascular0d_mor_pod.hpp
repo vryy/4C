@@ -42,23 +42,19 @@ namespace Cardiovascular0D
         const std::string& pod_matrix_file_name, const std::string& absolute_path_to_input_file);
 
     //! M_red = V^T * M * V
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> reduce_diagnoal(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> M);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> reduce_diagnoal(Core::LinAlg::SparseMatrix& M);
 
     //! M_red = V^T * M
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> reduce_off_diagonal(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> M);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> reduce_off_diagonal(Core::LinAlg::SparseMatrix& M);
 
     //! v_red = V^T * v
     Teuchos::RCP<Epetra_MultiVector> reduce_rhs(Teuchos::RCP<Epetra_MultiVector> v);
 
     //! v_red = V^T * v
-    Teuchos::RCP<Core::LinAlg::Vector<double>> reduce_residual(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> v);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> reduce_residual(Core::LinAlg::Vector<double>& v);
 
     //! v = V * v_red
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extend_solution(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> v);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> extend_solution(Core::LinAlg::Vector<double>& v);
 
     bool have_mor() { return havemor_; };
 
@@ -77,14 +73,13 @@ namespace Cardiovascular0D
         const std::string& absolute_path_to_pod_file, Teuchos::RCP<Epetra_MultiVector>& projmatrix);
 
     //! Multiply two Epetra MultiVectors
-    void multiply_epetra_multi_vectors(Teuchos::RCP<Epetra_MultiVector>, char,
-        Teuchos::RCP<Epetra_MultiVector>, char, Teuchos::RCP<Epetra_Map>,
-        Teuchos::RCP<Epetra_Import>, Teuchos::RCP<Epetra_MultiVector>);
+    void multiply_epetra_multi_vectors(Epetra_MultiVector&, char, Epetra_MultiVector&, char,
+        Epetra_Map&, Epetra_Import&, Epetra_MultiVector&);
 
     //! Epetra_MultiVector to Core::LinAlg::SparseMatrix
-    void epetra_multi_vector_to_linalg_sparse_matrix(Teuchos::RCP<Epetra_MultiVector> multivect,
-        Teuchos::RCP<Epetra_Map> rangemap, Teuchos::RCP<Epetra_Map> domainmap,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sparsemat);
+    void epetra_multi_vector_to_linalg_sparse_matrix(Epetra_MultiVector& multivect,
+        Epetra_Map& rangemap, Teuchos::RCP<Epetra_Map> domainmap,
+        Core::LinAlg::SparseMatrix& sparsemat);
 
     //! Check orthogonality of POD basis vectors with M^T * M - I == 0
     bool is_pod_basis_orthogonal(const Epetra_MultiVector& M);

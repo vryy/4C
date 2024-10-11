@@ -227,11 +227,10 @@ namespace FPSI
     }
 
     /// Extract specific columns from Sparse Matrix
-    void extract_columnsfrom_sparse(Teuchos::RCP<Epetra_CrsMatrix> src,  ///< source Matrix
-        const Teuchos::RCP<const Epetra_Map>&
-            colmap,  ///< map with column gids to be extracted! (gid which are not in the source
-                     ///< Matrix will be ignored!)
-        Teuchos::RCP<Epetra_CrsMatrix> dst);  ///< destination Matrix (will be filled!)
+    void extract_columnsfrom_sparse(Epetra_CrsMatrix& src,  ///< source Matrix
+        const Epetra_Map& colmap,  ///< map with column gids to be extracted! (gid which are not in
+                                   ///< the source Matrix will be ignored!)
+        Epetra_CrsMatrix& dst);    ///< destination Matrix (will be filled!)
 
     //! Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
@@ -247,7 +246,7 @@ namespace FPSI
     void linear_solve();
 
     //! solve using line search method
-    void line_search(Teuchos::RCP<Core::LinAlg::SparseMatrix>& sparse);
+    void line_search(Core::LinAlg::SparseMatrix& sparse);
 
     //! create linear solver (setup of parameter lists, etc...)
     void create_linear_solver();

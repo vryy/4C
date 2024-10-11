@@ -92,7 +92,7 @@ namespace SSI
      * @return structure right hand side vector including mesh tying contributions
      */
     Core::LinAlg::Vector<double> apply_meshtying_to_structure_rhs(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_rhs);
+        const Core::LinAlg::Vector<double>& structure_rhs);
 
     /*!
      * @brief apply mesh tying to the structure scatra matrix

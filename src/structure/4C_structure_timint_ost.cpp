@@ -124,7 +124,7 @@ void Solid::TimIntOneStepTheta::setup()
   // external force vector F_{n+1} at new time
   fextn_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
   // set initial external force vector
-  apply_force_external((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), fext_);
+  apply_force_external((*time_)[0], (*dis_)(0), disn_, (*vel_)(0), *fext_);
 
   // inertial force vector F_{int;n} at last time
   finert_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
@@ -273,7 +273,7 @@ void Solid::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::Parameter
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  apply_force_stiff_external(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
+  apply_force_stiff_external(timen_, (*dis_)(0), disn_, (*vel_)(0), *fextn_, stiff_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -389,7 +389,7 @@ void Solid::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::Parameter
   }
 
   // apply forces and stiffness due to beam contact
-  apply_force_stiff_beam_contact(stiff_, fres_, disn_, predict);
+  apply_force_stiff_beam_contact(*stiff_, *fres_, *disn_, predict);
 
   // apply forces and stiffness due to contact / meshtying
   // Note that we ALWAYS use a TR-like approach to compute the interface
@@ -428,7 +428,7 @@ void Solid::TimIntOneStepTheta::evaluate_force_residual()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  apply_force_external(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_);
+  apply_force_external(timen_, (*dis_)(0), disn_, (*vel_)(0), *fextn_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);

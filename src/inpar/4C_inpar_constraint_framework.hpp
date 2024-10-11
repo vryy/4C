@@ -68,7 +68,7 @@ namespace Inpar::CONSTRAINTS
   /**
   \brief Set constraint parameters
   */
-  void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+  void set_valid_parameters(Teuchos::ParameterList& list);
 }  // namespace Inpar::CONSTRAINTS
 
 FOUR_C_NAMESPACE_CLOSE

@@ -42,16 +42,16 @@ SSI::MeshtyingStrategySparse::MeshtyingStrategySparse(const bool is_scatra_manif
     : MeshtyingStrategyBase(is_scatra_manifold_value, ssi_maps, ssi_structure_meshtying)
 {
   temp_scatra_struct_mat_ =
-      SSI::UTILS::SSIMatrices::setup_sparse_matrix(ssi_maps()->scatra_dof_row_map());
+      SSI::UTILS::SSIMatrices::setup_sparse_matrix(*ssi_maps()->scatra_dof_row_map());
 
   if (is_scatra_manifold())
   {
     temp_scatramanifold_struct_mat_ =
-        SSI::UTILS::SSIMatrices::setup_sparse_matrix(ssi_maps()->scatra_manifold_dof_row_map());
+        SSI::UTILS::SSIMatrices::setup_sparse_matrix(*ssi_maps()->scatra_manifold_dof_row_map());
   }
 
   temp_struct_scatra_mat_ =
-      SSI::UTILS::SSIMatrices::setup_sparse_matrix(ssi_maps()->structure_dof_row_map());
+      SSI::UTILS::SSIMatrices::setup_sparse_matrix(*ssi_maps()->structure_dof_row_map());
 }
 
 /*-------------------------------------------------------------------------*
@@ -64,16 +64,16 @@ SSI::MeshtyingStrategyBlock::MeshtyingStrategyBlock(const bool is_scatra_manifol
       position_structure_(ssi_maps()->get_block_positions(SSI::Subproblem::structure).at(0))
 {
   temp_scatra_struct_mat_ = SSI::UTILS::SSIMatrices::setup_block_matrix(
-      ssi_maps()->block_map_scatra(), ssi_maps()->block_map_structure());
+      *ssi_maps()->block_map_scatra(), *ssi_maps()->block_map_structure());
 
   if (is_scatra_manifold())
   {
     temp_scatramanifold_struct_mat_ = SSI::UTILS::SSIMatrices::setup_block_matrix(
-        ssi_maps()->block_map_scatra_manifold(), ssi_maps()->block_map_structure());
+        *ssi_maps()->block_map_scatra_manifold(), *ssi_maps()->block_map_structure());
   }
 
   temp_struct_scatra_mat_ = SSI::UTILS::SSIMatrices::setup_block_matrix(
-      ssi_maps()->block_map_structure(), ssi_maps()->block_map_scatra());
+      *ssi_maps()->block_map_structure(), *ssi_maps()->block_map_scatra());
 
   if (is_scatra_manifold())
     block_position_scatra_manifold_ = ssi_maps()->get_block_positions(SSI::Subproblem::manifold);
@@ -196,10 +196,10 @@ void SSI::MeshtyingStrategyBase::apply_meshtying_to_xxx_structure(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 Core::LinAlg::Vector<double> SSI::MeshtyingStrategyBase::apply_meshtying_to_structure_rhs(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_rhs)
+    const Core::LinAlg::Vector<double>& structure_rhs)
 {
   // make copy of structure right-hand side vector
-  Core::LinAlg::Vector<double> rhs_structure(*structure_rhs);
+  Core::LinAlg::Vector<double> rhs_structure(structure_rhs);
 
   auto rhs_structure_master =
       Core::LinAlg::create_vector(*ssi_maps_->structure_dof_row_map(), true);

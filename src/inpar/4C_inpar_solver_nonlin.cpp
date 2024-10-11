@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Inpar::NlnSol::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::NlnSol::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
@@ -27,7 +27,7 @@ void Inpar::NlnSol::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> li
   /*----------------------------------------------------------------------*
    * parameters for NOX - non-linear solution
    *----------------------------------------------------------------------*/
-  Teuchos::ParameterList& snox = list->sublist("STRUCT NOX", false, "");
+  Teuchos::ParameterList& snox = list.sublist("STRUCT NOX", false, "");
 
   {
     std::vector<std::string> nonlinear_solver_valid_input = {"Line Search Based",

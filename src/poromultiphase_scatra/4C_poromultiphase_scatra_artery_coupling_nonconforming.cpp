@@ -196,15 +196,12 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup_system(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
+    Core::LinAlg::BlockSparseMatrixBase& sysmat, Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
+    Core::LinAlg::SparseMatrix& sysmat_cont, Core::LinAlg::SparseMatrix& sysmat_art,
     Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_cont,
     Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_art,
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
-    Teuchos::RCP<const Epetra_Map> dbcmap_art,
-    Teuchos::RCP<const Epetra_Map> dbcmap_art_with_collapsed)
+    const Core::LinAlg::MapExtractor& dbcmap_cont, const Epetra_Map& dbcmap_art,
+    const Epetra_Map& dbcmap_art_with_collapsed)
 {
   // add normal part to rhs
   rhs->Update(1.0, *globalex_->insert_vector(*rhs_cont, 0), 1.0);
@@ -212,25 +209,25 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup_syst
 
   // apply DBCs
   // 1) on vector
-  Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros_cont_, *(dbcmap_cont->cond_map()));
-  Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros_art_, *(dbcmap_art));
+  Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros_cont_, *(dbcmap_cont.cond_map()));
+  Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros_art_, (dbcmap_art));
   // 2) on OD-matrices
-  sysmat->matrix(0, 1).complete(sysmat_art->range_map(), sysmat_cont->range_map());
-  sysmat->matrix(1, 0).complete(sysmat_cont->range_map(), sysmat_art->range_map());
-  sysmat->matrix(0, 1).apply_dirichlet(*(dbcmap_cont->cond_map()), false);
-  sysmat->matrix(1, 0).apply_dirichlet(*(dbcmap_art_with_collapsed), false);
+  sysmat.matrix(0, 1).complete(sysmat_art.range_map(), sysmat_cont.range_map());
+  sysmat.matrix(1, 0).complete(sysmat_cont.range_map(), sysmat_art.range_map());
+  sysmat.matrix(0, 1).apply_dirichlet(*(dbcmap_cont.cond_map()), false);
+  sysmat.matrix(1, 0).apply_dirichlet((dbcmap_art_with_collapsed), false);
 
   // 3) get also the main-diag terms into the global sysmat
-  sysmat->matrix(0, 0).add(*sysmat_cont, false, 1.0, 1.0);
-  sysmat->matrix(1, 1).add(*sysmat_art, false, 1.0, 1.0);
-  sysmat->matrix(0, 0).complete();
-  sysmat->matrix(1, 1).complete();
+  sysmat.matrix(0, 0).add(sysmat_cont, false, 1.0, 1.0);
+  sysmat.matrix(1, 1).add(sysmat_art, false, 1.0, 1.0);
+  sysmat.matrix(0, 0).complete();
+  sysmat.matrix(1, 1).complete();
   // and apply DBC
-  sysmat->matrix(0, 0).apply_dirichlet(*(dbcmap_cont->cond_map()), true);
-  sysmat->matrix(1, 1).apply_dirichlet(*(dbcmap_art_with_collapsed), true);
+  sysmat.matrix(0, 0).apply_dirichlet(*(dbcmap_cont.cond_map()), true);
+  sysmat.matrix(1, 1).apply_dirichlet((dbcmap_art_with_collapsed), true);
   // Assign view to 3D system matrix (such that it now includes also contributions from coupling)
   // this is important! Monolithic algorithms use this matrix
-  sysmat_cont->assign(Core::LinAlg::View, sysmat->matrix(0, 0));
+  sysmat_cont.assign(Core::LinAlg::View, sysmat.matrix(0, 0));
 }
 
 /*----------------------------------------------------------------------*
@@ -522,7 +519,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::evaluate_c
   // assemble D and M contributions into global force and stiffness
   if (coupling_method_ == Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::mp and
       num_coupled_dofs_ > 0)
-    sum_dm_into_global_force_stiff(sysmat, rhs);
+    sum_dm_into_global_force_stiff(*sysmat, rhs);
 }
 
 /*----------------------------------------------------------------------*
@@ -583,8 +580,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::fe_assembl
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
-    sum_dm_into_global_force_stiff(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
+    sum_dm_into_global_force_stiff(
+        Core::LinAlg::BlockSparseMatrixBase& sysmat, Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
 {
   // invert
   invert_kappa();
@@ -594,16 +591,15 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
   m_->complete(*contdis_->dof_row_map(), *arterydis_->dof_row_map());
 
   // get kappa matrix
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kappaInvMat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*new Core::LinAlg::Vector<double>(*kappa_inv_));
-  kappaInvMat->complete();
+  Core::LinAlg::SparseMatrix kappaInvMat(*new Core::LinAlg::Vector<double>(*kappa_inv_));
+  kappaInvMat.complete();
 
   // kappa^{-1}*M
   Teuchos::RCP<Core::LinAlg::SparseMatrix> km =
-      Core::LinAlg::matrix_multiply(*kappaInvMat, false, *m_, false, false, false, true);
+      Core::LinAlg::matrix_multiply(kappaInvMat, false, *m_, false, false, false, true);
   // kappa^{-1}*D
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kd =
-      Core::LinAlg::matrix_multiply(*kappaInvMat, false, *d_, false, false, false, true);
+      Core::LinAlg::matrix_multiply(kappaInvMat, false, *d_, false, false, false, true);
 
   // D^T*kappa^{-1}*D
   Teuchos::RCP<Core::LinAlg::SparseMatrix> dtkd =
@@ -616,10 +612,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::
       Core::LinAlg::matrix_multiply(*m_, true, *km, false, false, false, true);
 
   // add matrices
-  sysmat->matrix(0, 0).add(*mtkm, false, pp_ * timefacrhs_cont_, 1.0);
-  sysmat->matrix(1, 1).add(*dtkd, false, pp_ * timefacrhs_art_, 1.0);
-  sysmat->matrix(1, 0).add(*dtkm, false, -pp_ * timefacrhs_art_, 1.0);
-  sysmat->matrix(0, 1).add(*dtkm, true, -pp_ * timefacrhs_cont_, 1.0);
+  sysmat.matrix(0, 0).add(*mtkm, false, pp_ * timefacrhs_cont_, 1.0);
+  sysmat.matrix(1, 1).add(*dtkd, false, pp_ * timefacrhs_art_, 1.0);
+  sysmat.matrix(1, 0).add(*dtkm, false, -pp_ * timefacrhs_art_, 1.0);
+  sysmat.matrix(0, 1).add(*dtkm, true, -pp_ * timefacrhs_cont_, 1.0);
 
   // add vector
   Teuchos::RCP<Core::LinAlg::Vector<double>> art_contribution =

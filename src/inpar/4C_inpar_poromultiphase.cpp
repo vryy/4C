@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::POROMULTIPHASE::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::POROMULTIPHASE::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -25,7 +25,7 @@ void Inpar::POROMULTIPHASE::set_valid_parameters(Teuchos::RCP<Teuchos::Parameter
 
   // ----------------------------------------------------------------------
   // (1) general control parameters
-  Teuchos::ParameterList& poromultiphasedyn = list->sublist(
+  Teuchos::ParameterList& poromultiphasedyn = list.sublist(
       "POROMULTIPHASE DYNAMIC", false, "Control paramters for multiphase porous medium");
 
   // Output type

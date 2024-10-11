@@ -182,7 +182,7 @@ void BEAMINTERACTION::get_beam_triad_interpolation_scheme(const Core::FE::Discre
   // Get the rotations of the beam rotation nodes.
   std::vector<double> beam_displacement_vector_full_double;
   BEAMINTERACTION::UTILS::get_current_element_dis(
-      discret, beam_ele, displacement_vector, beam_displacement_vector_full_double);
+      discret, beam_ele, *displacement_vector, beam_displacement_vector_full_double);
 
   // Create object for triad interpolation schemes.
   std::vector<Core::LinAlg::Matrix<4, 1, double>> nodal_quaternions(3);

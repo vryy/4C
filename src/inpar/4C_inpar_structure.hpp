@@ -720,7 +720,7 @@ namespace Inpar
     //!@}
 
     /// set the structure parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// set structure-specific conditions
     void set_valid_conditions(

@@ -908,7 +908,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
           // get nurbs weight!
           if (nurbs)
           {
-            prepare_nurbs_node(node, cnode);
+            prepare_nurbs_node(node, *cnode);
           }
 
           // get edge and corner information:
@@ -980,7 +980,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
           // get nurbs weight!
           if (nurbs)
           {
-            prepare_nurbs_node(node, cnode);
+            prepare_nurbs_node(node, *cnode);
           }
 
           // get edge and corner information:
@@ -1090,7 +1090,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
             Teuchos::make_rcp<CONTACT::Element>(ele->id() + ggsize, ele->owner(), ele->shape(),
                 ele->num_node(), ele->node_ids(), isslave[j], nurbs);
 
-        if (isporo) set_poro_parent_element(slavetype, mastertype, cele, ele, discret());
+        if (isporo) set_poro_parent_element(slavetype, mastertype, *cele, ele, discret());
 
         if (algo == Inpar::Mortar::algorithm_gpts)
         {
@@ -1107,7 +1107,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
         {
-          prepare_nurbs_element(discret(), ele, cele);
+          prepare_nurbs_element(discret(), ele, *cele);
         }
 
         interface->add_element(cele);
@@ -1269,7 +1269,7 @@ Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(co
 {
   auto stype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(icparams, "STRATEGY");
 
-  return create_interface(stype, id, comm, dim, icparams, selfcontact, parent_dis,
+  return create_interface(stype, id, comm, dim, icparams, selfcontact, *parent_dis,
       interfaceData_ptr, contactconstitutivelaw_id);
 }
 
@@ -1278,7 +1278,7 @@ Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(co
 Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(
     const enum Inpar::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
     const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-    const Teuchos::RCP<const Core::FE::Discretization>& parent_dis,
+    const Core::FE::Discretization& parent_dis,
     Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_ptr,
     const int contactconstitutivelaw_id)
 {
@@ -1325,7 +1325,7 @@ Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::set_poro_parent_element(
     enum Mortar::Element::PhysicalType& slavetype, enum Mortar::Element::PhysicalType& mastertype,
-    Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<Core::Elements::Element>& ele,
+    CONTACT::Element& cele, Teuchos::RCP<Core::Elements::Element>& ele,
     const Core::FE::Discretization& discret) const
 {
   // ints to communicate decision over poro bools between processors on every interface
@@ -1333,10 +1333,10 @@ void CONTACT::STRATEGY::Factory::set_poro_parent_element(
   Teuchos::RCP<Core::Elements::FaceElement> faceele =
       Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
   if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
-  cele->phys_type() = Mortar::Element::other;
+  cele.phys_type() = Mortar::Element::other;
   std::vector<Teuchos::RCP<Core::Conditions::Condition>> poroCondVec;
   discret.get_condition("PoroCoupling", poroCondVec);
-  if (!cele->is_slave())  // treat an element as a master element if it is no slave element
+  if (!cele.is_slave())  // treat an element as a master element if it is no slave element
   {
     for (auto& poroCond : poroCondVec)
     {
@@ -1352,22 +1352,22 @@ void CONTACT::STRATEGY::Factory::set_poro_parent_element(
                 "struct and poro master elements on the same processor - no mixed interface "
                 "supported");
           }
-          cele->phys_type() = Mortar::Element::poro;
+          cele.phys_type() = Mortar::Element::poro;
           mastertype = Mortar::Element::poro;
           break;
         }
       }
     }
-    if (cele->phys_type() == Mortar::Element::other)
+    if (cele.phys_type() == Mortar::Element::other)
     {
       if (mastertype == Mortar::Element::structure)
         FOUR_C_THROW(
             "struct and poro master elements on the same processor - no mixed interface supported");
-      cele->phys_type() = Mortar::Element::structure;
+      cele.phys_type() = Mortar::Element::structure;
       mastertype = Mortar::Element::structure;
     }
   }
-  else if (cele->is_slave())  // treat an element as slave element if it is one
+  else if (cele.is_slave())  // treat an element as slave element if it is one
   {
     for (auto& poroCond : poroCondVec)
     {
@@ -1383,24 +1383,24 @@ void CONTACT::STRATEGY::Factory::set_poro_parent_element(
                 "struct and poro master elements on the same processor - no mixed interface "
                 "supported");
           }
-          cele->phys_type() = Mortar::Element::poro;
+          cele.phys_type() = Mortar::Element::poro;
           slavetype = Mortar::Element::poro;
           break;
         }
       }
     }
-    if (cele->phys_type() == Mortar::Element::other)
+    if (cele.phys_type() == Mortar::Element::other)
     {
       if (slavetype == Mortar::Element::poro)
         FOUR_C_THROW(
             "struct and poro master elements on the same processor - no mixed interface supported");
-      cele->phys_type() = Mortar::Element::structure;
+      cele.phys_type() = Mortar::Element::structure;
       slavetype = Mortar::Element::structure;
     }
   }
   // store information about parent for porous contact (required for calculation of deformation
   // gradient!) in every contact element although only really needed for phystype poro
-  cele->set_parent_master_element(faceele->parent_element(), faceele->face_parent_number());
+  cele.set_parent_master_element(faceele->parent_element(), faceele->face_parent_number());
 }
 
 /*----------------------------------------------------------------------------*
@@ -1664,8 +1664,7 @@ void CONTACT::STRATEGY::Factory::build_search_tree(
  *----------------------------------------------------------------------------*/
 void CONTACT::STRATEGY::Factory::print(
     const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces,
-    const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr,
-    const Teuchos::ParameterList& params) const
+    CONTACT::AbstractStrategy& strategy_ptr, const Teuchos::ParameterList& params) const
 {
   // print friction information of interfaces
   if (get_comm().MyPID() == 0)
@@ -1696,7 +1695,7 @@ void CONTACT::STRATEGY::Factory::print(
 
   if (get_comm().MyPID() == 0)
   {
-    print_strategy_banner(strategy_ptr->type());
+    print_strategy_banner(strategy_ptr.type());
   }
 }
 

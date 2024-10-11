@@ -46,11 +46,6 @@ namespace Core::LinAlg
 
 namespace XFEM
 {
-  /// evaluate Neumann boundary conditions
-  void evaluate_neumann(Teuchos::ParameterList& params,
-      Teuchos::RCP<Core::FE::Discretization> discret,
-      Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,
-      Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix = Teuchos::null);
 
   /// evaluate Neumann boundary conditions
   void evaluate_neumann(Teuchos::ParameterList& params,
@@ -60,9 +55,8 @@ namespace XFEM
   /// evaluate standard Neumann boundary conditions
   void evaluate_neumann_standard(
       std::multimap<std::string, Core::Conditions::Condition*>& condition, const double time,
-      bool assemblemat, Teuchos::ParameterList& params,
-      Teuchos::RCP<Core::FE::Discretization> discret, Core::LinAlg::Vector<double>& systemvector,
-      Core::LinAlg::SparseOperator* systemmatrix);
+      bool assemblemat, Teuchos::ParameterList& params, Core::FE::Discretization& discret,
+      Core::LinAlg::Vector<double>& systemvector, Core::LinAlg::SparseOperator* systemmatrix);
 
 
 }  // namespace XFEM

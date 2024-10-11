@@ -408,7 +408,7 @@ void SSI::SSICouplingNonMatchingVolume::set_mesh_disp(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
 {
   scatra->scatra_field()->apply_mesh_movement(
-      volcoupl_structurescatra_->apply_vector_mapping21(disp));
+      volcoupl_structurescatra_->apply_vector_mapping21(*disp));
 }
 
 /*----------------------------------------------------------------------*/
@@ -419,10 +419,10 @@ void SSI::SSICouplingNonMatchingVolume::set_velocity_fields(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
 {
   scatra->scatra_field()->set_velocity_field(
-      volcoupl_structurescatra_->apply_vector_mapping21(convvel),  // convective vel.
-      Teuchos::null,                                               // acceleration
-      volcoupl_structurescatra_->apply_vector_mapping21(vel),      // velocity
-      Teuchos::null                                                // fsvel
+      volcoupl_structurescatra_->apply_vector_mapping21(*convvel),  // convective vel.
+      Teuchos::null,                                                // acceleration
+      volcoupl_structurescatra_->apply_vector_mapping21(*vel),      // velocity
+      Teuchos::null                                                 // fsvel
   );
 }
 
@@ -431,7 +431,7 @@ void SSI::SSICouplingNonMatchingVolume::set_velocity_fields(
 void SSI::SSICouplingNonMatchingVolume::set_scalar_field(Core::FE::Discretization& dis,
     Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
-  dis.set_state(nds, "scalarfield", volcoupl_structurescatra_->apply_vector_mapping12(phi));
+  dis.set_state(nds, "scalarfield", volcoupl_structurescatra_->apply_vector_mapping12(*phi));
 }
 
 /*----------------------------------------------------------------------*/

@@ -732,13 +732,12 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::evaluate_gp_state(
   // calculate 2nd derivatives of saturation w.r.t. pressure
   // TODO: this should work for pressure und diffpressure DOFs, however not for
   //       saturation DOFs
-  Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> dummyderiv =
-      Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseMatrix>>(
-          numfluidphases, Core::LinAlg::SerialDenseMatrix(numfluidphases, numfluidphases));
-  multiphasemat.evaluate_second_deriv_of_saturation_wrt_pressure(*dummyderiv, pressure);
+  std::vector<Core::LinAlg::SerialDenseMatrix> dummyderiv(
+      numfluidphases, Core::LinAlg::SerialDenseMatrix(numfluidphases, numfluidphases));
+  multiphasemat.evaluate_second_deriv_of_saturation_wrt_pressure(dummyderiv, pressure);
   for (int i = 0; i < numfluidphases; i++)
   {
-    Core::LinAlg::multiply_tn(deriv, *pressurederiv_, (*dummyderiv)[i]);
+    Core::LinAlg::multiply_tn(deriv, *pressurederiv_, (dummyderiv)[i]);
     Core::LinAlg::multiply((*saturationderivderiv_)[i], deriv, *pressurederiv_);
   }
 

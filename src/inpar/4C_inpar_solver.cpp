@@ -202,7 +202,7 @@ namespace Inpar::SOLVER
   }
 
 
-  void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+  void set_valid_parameters(Teuchos::ParameterList& list)
   {
     // set valid parameters for solver blocks
 
@@ -214,7 +214,7 @@ namespace Inpar::SOLVER
       ss << "SOLVER " << i;
       std::stringstream ss_description;
       ss_description << "solver parameters for solver block " << i;
-      Teuchos::ParameterList& solverlist = list->sublist(ss.str(), false, ss_description.str());
+      Teuchos::ParameterList& solverlist = list.sublist(ss.str(), false, ss_description.str());
       set_valid_solver_parameters(solverlist);
     }
   }

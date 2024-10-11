@@ -1891,7 +1891,7 @@ void FLD::FluidImplicitTimeInt::assemble_edge_based_matand_rhs()
       params.set<Inpar::XFEM::FaceType>("FaceType", Inpar::XFEM::face_type_porof);
     // set action for elements
     params.set<FLD::IntFaceAction>("action", FLD::EOS_and_GhostPenalty_stabilization);
-    evaluate_fluid_edge_based(sysmat_, residual_, params);
+    evaluate_fluid_edge_based(sysmat_, *residual_, params);
 
     discret_->clear_state();
   }
@@ -1900,8 +1900,7 @@ void FLD::FluidImplicitTimeInt::assemble_edge_based_matand_rhs()
 
 void FLD::FluidImplicitTimeInt::evaluate_fluid_edge_based(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::ParameterList edgebasedparams)
+    Core::LinAlg::Vector<double>& systemvector1, Teuchos::ParameterList edgebasedparams)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::FluidImplicitTimeInt::EvaluateEdgeBased");
 
@@ -2018,11 +2017,11 @@ void FLD::FluidImplicitTimeInt::evaluate_fluid_edge_based(
 
   //------------------------------------------------------------
   // need to export residual_col to systemvector1 (residual_)
-  Core::LinAlg::Vector<double> res_tmp(systemvector1->Map(), false);
+  Core::LinAlg::Vector<double> res_tmp(systemvector1.Map(), false);
   Epetra_Export exporter(residual_col->Map(), res_tmp.Map());
   int err2 = res_tmp.Export(*residual_col, exporter, Add);
   if (err2) FOUR_C_THROW("Export using exporter returned err=%d", err2);
-  systemvector1->Update(1.0, res_tmp, 1.0);
+  systemvector1.Update(1.0, res_tmp, 1.0);
 
   return;
 }
@@ -2358,7 +2357,7 @@ bool FLD::FluidImplicitTimeInt::convergence_check(int itnum, int itmax, const do
   if (projector_ != Teuchos::null)
   {
     if (msht_ == Inpar::FLUID::condensed_bmat_merged or msht_ == Inpar::FLUID::condensed_bmat)
-      meshtying_->apply_pt_to_residual(sysmat_, residual_, projector_);
+      meshtying_->apply_pt_to_residual(*sysmat_, residual_, *projector_);
     else
       projector_->apply_pt(*residual_);
   }
@@ -2570,7 +2569,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
       {
         // Obtain local degree of freedom indices
         std::vector<int> dofsLocalInd;
-        get_dofs_vector_local_indicesfor_node(gIdNode, gridv, false, &dofsLocalInd);
+        get_dofs_vector_local_indicesfor_node(gIdNode, *gridv, false, &dofsLocalInd);
 
         // Calculate new ale velocities
         for (int i = 0; i < numdim_; i++)
@@ -2633,7 +2632,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
 
           // Obtain local degree of freedom indices
           std::vector<int> dofsLocalInd;
-          get_dofs_vector_local_indicesfor_node(gIdNode, nodeNormals, false, &dofsLocalInd);
+          get_dofs_vector_local_indicesfor_node(gIdNode, *nodeNormals, false, &dofsLocalInd);
 
           // Calculate current position for node
           Core::Nodes::Node* currNode = discret_->g_node(gIdNode);
@@ -2668,7 +2667,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
 
         // Obtain local degree of freedom indices
         std::vector<int> dofsLocalInd;
-        get_dofs_vector_local_indicesfor_node(gIdNode, nodeNormals, false, &dofsLocalInd);
+        get_dofs_vector_local_indicesfor_node(gIdNode, *nodeNormals, false, &dofsLocalInd);
 
         // Calculate length of node normal
         double lengthNodeNormal = 0.0;
@@ -2733,7 +2732,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
         {
           // Obtain local degree of freedom indices
           std::vector<int> dofsLocalInd;
-          get_dofs_vector_local_indicesfor_node(gIdNode, nodeNormals, false, &dofsLocalInd);
+          get_dofs_vector_local_indicesfor_node(gIdNode, *nodeNormals, false, &dofsLocalInd);
 
           // Calculate dot product between velnp and nodeNormals
           double velnpDotNodeNormal = 0.0;
@@ -2772,7 +2771,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
         {
           // Obtain local degree of freedom indices
           std::vector<int> dofsLocalInd;
-          get_dofs_vector_local_indicesfor_node(gIdNode, nodeNormals, false, &dofsLocalInd);
+          get_dofs_vector_local_indicesfor_node(gIdNode, *nodeNormals, false, &dofsLocalInd);
 
           // Calculate dot product between velnp and the node tangent vector
           double velnpDotNodeTangent = 0.0;
@@ -2801,7 +2800,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
         {
           // Obtain local degree of freedom indices
           std::vector<int> dofsLocalInd;
-          get_dofs_vector_local_indicesfor_node(gIdNode, nodeNormals, false, &dofsLocalInd);
+          get_dofs_vector_local_indicesfor_node(gIdNode, *nodeNormals, false, &dofsLocalInd);
 
           // Calculate dot product between velnp and nodeNormals
           double velnpDotNodeNormal = 0.0;
@@ -2872,7 +2871,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
         {
           // Obtain local degree of freedom indices
           std::vector<int> dofsLocalInd;
-          get_dofs_vector_local_indicesfor_node(gIdNode, nodeNormals, false, &dofsLocalInd);
+          get_dofs_vector_local_indicesfor_node(gIdNode, *nodeNormals, false, &dofsLocalInd);
 
           // Calculate current position for node and its vector length
           Core::Nodes::Node* currNode = discret_->g_node(gIdNode);
@@ -2963,8 +2962,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
  | For a given node, obtain local indices of dofs in a vector (like e.g. velnp)         hahn 08/14 |
  *-------------------------------------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::get_dofs_vector_local_indicesfor_node(int nodeGid,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vec, bool withPressure,
-    std::vector<int>* dofsLocalInd)
+    Core::LinAlg::Vector<double>& vec, bool withPressure, std::vector<int>* dofsLocalInd)
 {
   // Determine dimensions to be taken care of
   int dim = numdim_;
@@ -2986,9 +2984,9 @@ void FLD::FluidImplicitTimeInt::get_dofs_vector_local_indicesfor_node(int nodeGi
   for (int i = 0; i < dim; i++)
   {
     int dofGid = dofsGid[i];
-    if (!vec->Map().MyGID(dofGid))
+    if (!vec.Map().MyGID(dofGid))
       FOUR_C_THROW("Sparse vector does not have global row  %d or vectors don't match", dofGid);
-    (*dofsLocalInd)[i] = vec->Map().LID(dofGid);
+    (*dofsLocalInd)[i] = vec.Map().LID(dofGid);
   }
 }
 
@@ -3490,7 +3488,7 @@ void FLD::FluidImplicitTimeInt::output()
 
     if (xwall_ != Teuchos::null)
     {
-      output_->write_vector("xwall_enrvelnp", xwall_->get_output_vector(velnp_));
+      output_->write_vector("xwall_enrvelnp", xwall_->get_output_vector(*velnp_));
       output_->write_vector("xwall_tauw", xwall_->get_tauw_vector());
     }
 
@@ -3547,7 +3545,7 @@ void FLD::FluidImplicitTimeInt::output()
 
       if (xwall_ != Teuchos::null)
         output_->write_vector("wss", stressmanager_->get_pre_calc_wall_shear_stresses(
-                                         xwall_->fix_dirichlet_inflow(trueresidual_)));
+                                         xwall_->fix_dirichlet_inflow(*trueresidual_)));
 
       // flow rate, flow volume and impedance in case of flow-dependent pressure bc
       if (nonlinearbc_) output_nonlinear_bc();
@@ -3620,7 +3618,7 @@ void FLD::FluidImplicitTimeInt::output()
     {
       output_->write_vector("xwall_tauw", xwall_->get_tauw_vector());
       output_->write_vector("wss", stressmanager_->get_pre_calc_wall_shear_stresses(
-                                       xwall_->fix_dirichlet_inflow(trueresidual_)));
+                                       xwall_->fix_dirichlet_inflow(*trueresidual_)));
     }
 
     // flow rate, flow volume and impedance in case of flow-dependent pressure bc
@@ -4522,10 +4520,9 @@ void FLD::FluidImplicitTimeInt::set_initial_flow_field(
            initfield == Inpar::FLUID::initfield_passive_hit_const_input)
   {
     // initialize calculation of initial field based on fast Fourier transformation
-    Teuchos::RCP<HomIsoTurbInitialField> HitInitialField =
-        Teuchos::make_rcp<FLD::HomIsoTurbInitialField>(*this, initfield);
+    HomIsoTurbInitialField HitInitialField(*this, initfield);
     // calculate initial field
-    HitInitialField->calculate_initial_field();
+    HitInitialField.calculate_initial_field();
 
     // get statistics of initial field
     call_statistics_manager();
@@ -4927,19 +4924,18 @@ Teuchos::RCP<double> FLD::FluidImplicitTimeInt::evaluate_div_u()
     set_state_tim_int();
 
     const Epetra_Map* elementrowmap = discret_->element_row_map();
-    Teuchos::RCP<Epetra_MultiVector> divu =
-        Teuchos::make_rcp<Epetra_MultiVector>(*elementrowmap, 1, true);
+    Epetra_MultiVector divu(*elementrowmap, 1, true);
 
     // optional: elementwise defined div u may be written to standard output file (not implemented
     // yet)
-    discret_->evaluate_scalars(eleparams, *divu);
+    discret_->evaluate_scalars(eleparams, divu);
 
     discret_->clear_state();
 
     double maxdivu = 0.0;
     Teuchos::RCP<double> sumdivu = Teuchos::make_rcp<double>(0.0);
-    divu->Norm1(&(*sumdivu));
-    divu->NormInf(&maxdivu);
+    divu.Norm1(&(*sumdivu));
+    divu.NormInf(&maxdivu);
 
     if (myrank_ == 0)
     {
@@ -5009,18 +5005,17 @@ double FLD::FluidImplicitTimeInt::evaluate_dt_via_cfl_if_applicable()
     }
 
     const Epetra_Map* elementrowmap = discret_->element_row_map();
-    Teuchos::RCP<Epetra_MultiVector> h_u =
-        Teuchos::make_rcp<Epetra_MultiVector>(*elementrowmap, 1, true);
+    Epetra_MultiVector h_u(*elementrowmap, 1, true);
 
     // optional: elementwise defined h_u may be written to standard output file (not implemented
     // yet)
-    discret_->evaluate_scalars(eleparams, *h_u);
+    discret_->evaluate_scalars(eleparams, h_u);
 
     discret_->clear_state();
 
     double min_h_u = 0.0;
 
-    h_u->MinValue(&min_h_u);
+    h_u.MinValue(&min_h_u);
 
     if (cfl_estimator_ == Inpar::FLUID::only_print_cfl_number && myrank_ == 0)
     {
@@ -5087,11 +5082,11 @@ void FLD::FluidImplicitTimeInt::lift_drag() const
 
       forces->Update(1.0, *trueresidual_, 1.0, *slip_bc_normal_tractions_, 0.0);
 
-      FLD::UTILS::lift_drag(discret_, forces, dispnp_, numdim_, liftdragvals, alefluid_);
+      FLD::UTILS::lift_drag(discret_, *forces, dispnp_, numdim_, liftdragvals, alefluid_);
     }
     else
     {
-      FLD::UTILS::lift_drag(discret_, trueresidual_, dispnp_, numdim_, liftdragvals, alefluid_);
+      FLD::UTILS::lift_drag(discret_, *trueresidual_, dispnp_, numdim_, liftdragvals, alefluid_);
     }
 
     if (liftdragvals != Teuchos::null and discret_->get_comm().MyPID() == 0)
@@ -5968,7 +5963,7 @@ void FLD::FluidImplicitTimeInt::apply_scale_separation_for_les()
         Boxf_->apply_filter(evaluation_vel(), scaaf_, return_thermpressaf(), dirichtoggle);
 
         // get fine-scale velocity
-        Boxf_->outputof_fine_scale_vel(fsvelaf_);
+        Boxf_->outputof_fine_scale_vel(*fsvelaf_);
 
         break;
       }
@@ -6430,10 +6425,9 @@ void FLD::FluidImplicitTimeInt::write_output_kinetic_energy()
 
   // compute kinetic energy
   double energy = 0.0;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> mtimesu =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(massmat_->OperatorRangeMap(), true);
-  massmat_->Apply(*velnp_, *mtimesu);
-  velnp_->Dot(*mtimesu, &energy);
+  Core::LinAlg::Vector<double> mtimesu(massmat_->OperatorRangeMap(), true);
+  massmat_->Apply(*velnp_, mtimesu);
+  velnp_->Dot(mtimesu, &energy);
   energy *= 0.5;
 
   // write to file
@@ -6485,7 +6479,7 @@ void FLD::FluidImplicitTimeInt::set_dirichlet_neumann_bc()
 
   // Preparation for including DC on the master side in the condensation process
   if (msht_ != Inpar::FLUID::no_meshtying)
-    meshtying_->include_dirichlet_in_condensation(velnp_, veln_);
+    meshtying_->include_dirichlet_in_condensation(*velnp_, *veln_);
 
   discret_->clear_state();
 

@@ -90,7 +90,7 @@ void CONSTRAINTS::Monitor::evaluate(
     default:
       FOUR_C_THROW("Unknown monitor type to be evaluated in Monitor class!");
   }
-  evaluate_monitor(params, systemvector);
+  evaluate_monitor(params, *systemvector);
 }
 
 
@@ -100,7 +100,7 @@ void CONSTRAINTS::Monitor::evaluate(
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::Monitor::evaluate_monitor(
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector)
+    Teuchos::ParameterList& params, Core::LinAlg::Vector<double>& systemvector)
 {
   if (!(actdisc_->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -149,7 +149,7 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
       std::vector<int> constrowner;
       constrlm.push_back(condID - offsetID);
       constrowner.push_back(curr->second->owner());
-      Core::LinAlg::assemble(*systemvector, elevector3, constrlm, constrowner);
+      Core::LinAlg::assemble(systemvector, elevector3, constrlm, constrowner);
     }
   }
 }

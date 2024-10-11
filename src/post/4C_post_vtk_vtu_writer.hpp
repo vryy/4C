@@ -133,9 +133,8 @@ class PostVtuWriter : public PostVtkWriter
    *  \author hiermeier (originally Seitz) \date 10/17 */
   template <Core::FE::CellType nurbs_type>
   void wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele, int ncomponents,
-      const int numdf, std::vector<double>& solution,
-      Teuchos::RCP<Core::LinAlg::Vector<double>> ghostedData, const int from,
-      const bool fillzeros) const;
+      const int numdf, std::vector<double>& solution, Core::LinAlg::Vector<double>& ghostedData,
+      const int from, const bool fillzeros) const;
 
   virtual void write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam3Base* beamele,
       const int& ncomponents, const int& numdf, std::vector<double>& solution,
@@ -153,8 +152,7 @@ class PostVtuWriter : public PostVtkWriter
    *  \author hiermeier (originally Seitz) \date 10/17 */
   template <Core::FE::CellType nurbs_type>
   void write_nodal_result_step_nurbs_ele(const Core::Elements::Element* ele, int ncomponents,
-      const int numdf, std::vector<double>& solution,
-      Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
+      const int numdf, std::vector<double>& solution, Epetra_MultiVector& ghostedData) const;
 
   ///! width of the proc identifier number in the processor specific file names
   const int proc_file_padding_;

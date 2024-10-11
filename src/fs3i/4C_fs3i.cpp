@@ -597,7 +597,7 @@ void FS3I::FS3IBase::setup_coupled_scatra_rhs()
       scatravec_[0]->scatra_field()->residual();
   Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra2 =
       scatravec_[1]->scatra_field()->residual();
-  setup_coupled_scatra_vector(scatrarhs_, scatra1, scatra2);
+  setup_coupled_scatra_vector(*scatrarhs_, *scatra1, *scatra2);
 
   // additional contributions in case of finite interface permeability
   if (!infperm_)
@@ -628,31 +628,29 @@ void FS3I::FS3IBase::setup_coupled_scatra_rhs()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::setup_coupled_scatra_vector(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> globalvec,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec1,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec2)
+void FS3I::FS3IBase::setup_coupled_scatra_vector(Core::LinAlg::Vector<double>& globalvec,
+    const Core::LinAlg::Vector<double>& vec1, const Core::LinAlg::Vector<double>& vec2)
 {
   if (infperm_)
   {
     // concentrations are assumed to be equal at the interface
     // extract the inner (uncoupled) dofs from second field
     Teuchos::RCP<Core::LinAlg::Vector<double>> vec2_other =
-        scatrafieldexvec_[1]->extract_vector(*vec2, 0);
+        scatrafieldexvec_[1]->extract_vector(vec2, 0);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> vec2_boundary =
-        scatrafieldexvec_[1]->extract_vector(*vec2, 1);
+        scatrafieldexvec_[1]->extract_vector(vec2, 1);
     Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
         scatrafieldexvec_[0]->insert_vector(*scatra2_to_scatra1(vec2_boundary), 1);
-    temp->Update(1.0, *vec1, 1.0);
+    temp->Update(1.0, vec1, 1.0);
 
-    scatraglobalex_->insert_vector(*temp, 0, *globalvec);
-    scatraglobalex_->insert_vector(*vec2_other, 1, *globalvec);
+    scatraglobalex_->insert_vector(*temp, 0, globalvec);
+    scatraglobalex_->insert_vector(*vec2_other, 1, globalvec);
   }
   else
   {
-    scatraglobalex_->insert_vector(*vec1, 0, *globalvec);
-    scatraglobalex_->insert_vector(*vec2, 1, *globalvec);
+    scatraglobalex_->insert_vector(vec1, 0, globalvec);
+    scatraglobalex_->insert_vector(vec2, 1, globalvec);
   }
 }
 
@@ -767,30 +765,29 @@ void FS3I::FS3IBase::scatra_iter_update()
   // fields and extract respective vectors
   Teuchos::RCP<const Core::LinAlg::Vector<double>> inc1;
   Teuchos::RCP<const Core::LinAlg::Vector<double>> inc2;
-  extract_scatra_field_vectors(scatraincrement_, inc1, inc2);
+  extract_scatra_field_vectors(*scatraincrement_, inc1, inc2);
 
   // update both fluid- and structure-based solution vectors
-  scatravec_[0]->scatra_field()->update_iter(inc1);
-  scatravec_[1]->scatra_field()->update_iter(inc2);
+  scatravec_[0]->scatra_field()->update_iter(*inc1);
+  scatravec_[1]->scatra_field()->update_iter(*inc2);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::FS3IBase::extract_scatra_field_vectors(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> globalvec,
+void FS3I::FS3IBase::extract_scatra_field_vectors(const Core::LinAlg::Vector<double>& globalvec,
     Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec1,
     Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec2)
 {
   if (infperm_)
   {
     // process fluid scatra unknowns
-    vec1 = scatraglobalex_->extract_vector(*globalvec, 0);
+    vec1 = scatraglobalex_->extract_vector(globalvec, 0);
 
     // process structure scatra unknowns at the boundary
     Teuchos::RCP<Core::LinAlg::Vector<double>> vec1_boundary =
         scatrafieldexvec_[0]->extract_vector(*vec1, 1);
     Teuchos::RCP<const Core::LinAlg::Vector<double>> vec2_inner =
-        scatraglobalex_->extract_vector(*globalvec, 1);
+        scatraglobalex_->extract_vector(globalvec, 1);
     Teuchos::RCP<Core::LinAlg::Vector<double>> vec2_boundary = scatra1_to_scatra2(vec1_boundary);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> vec2_temp =
@@ -800,8 +797,8 @@ void FS3I::FS3IBase::extract_scatra_field_vectors(
   }
   else
   {
-    vec1 = scatraglobalex_->extract_vector(*globalvec, 0);
-    vec2 = scatraglobalex_->extract_vector(*globalvec, 1);
+    vec1 = scatraglobalex_->extract_vector(globalvec, 0);
+    vec2 = scatraglobalex_->extract_vector(globalvec, 1);
   }
 }
 

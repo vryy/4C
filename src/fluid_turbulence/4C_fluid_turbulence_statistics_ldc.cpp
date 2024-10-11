@@ -526,7 +526,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(Teuchos::RCP<Core::FE::Dis
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsLdc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp)
+void FLD::TurbulenceStatisticsLdc::do_time_sample(Core::LinAlg::Vector<double>& velnp)
 {
   //----------------------------------------------------------------------
   // increase sample counter
@@ -586,10 +586,10 @@ void FLD::TurbulenceStatisticsLdc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double v;
       double w;
       double p;
-      velnp->Dot(*toggleu_, &u);
-      velnp->Dot(*togglev_, &v);
-      velnp->Dot(*togglew_, &w);
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*toggleu_, &u);
+      velnp.Dot(*togglev_, &v);
+      velnp.Dot(*togglew_, &w);
+      velnp.Dot(*togglep_, &p);
 
       //----------------------------------------------------------------------
       // calculate spatial means for velocity and pressure on this centerline
@@ -673,10 +673,10 @@ void FLD::TurbulenceStatisticsLdc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double v;
       double w;
       double p;
-      velnp->Dot(*toggleu_, &u);
-      velnp->Dot(*togglev_, &v);
-      velnp->Dot(*togglew_, &w);
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*toggleu_, &u);
+      velnp.Dot(*togglev_, &v);
+      velnp.Dot(*togglew_, &w);
+      velnp.Dot(*togglep_, &p);
 
       //----------------------------------------------------------------------
       // calculate spatial means for velocity and pressure on this centerline
@@ -760,10 +760,10 @@ void FLD::TurbulenceStatisticsLdc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
       double v;
       double w;
       double p;
-      velnp->Dot(*toggleu_, &u);
-      velnp->Dot(*togglev_, &v);
-      velnp->Dot(*togglew_, &w);
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*toggleu_, &u);
+      velnp.Dot(*togglev_, &v);
+      velnp.Dot(*togglew_, &w);
+      velnp.Dot(*togglep_, &p);
 
       //----------------------------------------------------------------------
       // calculate spatial means for velocity and pressure on this centerline
@@ -800,10 +800,8 @@ void FLD::TurbulenceStatisticsLdc::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
 /*----------------------------------------------------------------------*
  *
  *----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsLdc::do_loma_time_sample(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scanp, Core::LinAlg::Vector<double>& force,
-    const double eosfac)
+void FLD::TurbulenceStatisticsLdc::do_loma_time_sample(Core::LinAlg::Vector<double>& velnp,
+    Core::LinAlg::Vector<double>& scanp, Core::LinAlg::Vector<double>& force, const double eosfac)
 {
   //----------------------------------------------------------------------
   // increase sample counter
@@ -863,13 +861,13 @@ void FLD::TurbulenceStatisticsLdc::do_loma_time_sample(
       double v;
       double w;
       double p;
-      velnp->Dot(*toggleu_, &u);
-      velnp->Dot(*togglev_, &v);
-      velnp->Dot(*togglew_, &w);
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*toggleu_, &u);
+      velnp.Dot(*togglev_, &v);
+      velnp.Dot(*togglew_, &w);
+      velnp.Dot(*togglep_, &p);
 
       double T;
-      scanp->Dot(*togglep_, &T);
+      scanp.Dot(*togglep_, &T);
 
       //----------------------------------------------------------------------
       // calculate spatial means for vel., press., dens. and temp.
@@ -964,13 +962,13 @@ void FLD::TurbulenceStatisticsLdc::do_loma_time_sample(
       double v;
       double w;
       double p;
-      velnp->Dot(*toggleu_, &u);
-      velnp->Dot(*togglev_, &v);
-      velnp->Dot(*togglew_, &w);
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*toggleu_, &u);
+      velnp.Dot(*togglev_, &v);
+      velnp.Dot(*togglew_, &w);
+      velnp.Dot(*togglep_, &p);
 
       double T;
-      scanp->Dot(*togglep_, &T);
+      scanp.Dot(*togglep_, &T);
 
       //----------------------------------------------------------------------
       // calculate spatial means for vel., press., dens. and temp.
@@ -1064,13 +1062,13 @@ void FLD::TurbulenceStatisticsLdc::do_loma_time_sample(
       double v;
       double w;
       double p;
-      velnp->Dot(*toggleu_, &u);
-      velnp->Dot(*togglev_, &v);
-      velnp->Dot(*togglew_, &w);
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*toggleu_, &u);
+      velnp.Dot(*togglev_, &v);
+      velnp.Dot(*togglew_, &w);
+      velnp.Dot(*togglep_, &p);
 
       double T;
-      scanp->Dot(*togglep_, &T);
+      scanp.Dot(*togglep_, &T);
 
       //----------------------------------------------------------------------
       // calculate spatial means for vel., press., dens. and temp.

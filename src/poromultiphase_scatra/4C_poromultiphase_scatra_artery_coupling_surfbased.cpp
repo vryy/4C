@@ -63,8 +63,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++) coupl_elepairs_[i]->pre_evaluate(gp_vector);
 
   // delete the inactive pairs
-  coupl_elepairs_.erase(
-      std::remove_if(coupl_elepairs_.begin(), coupl_elepairs_.end(), is_not_active),
+  coupl_elepairs_.erase(std::remove_if(coupl_elepairs_.begin(), coupl_elepairs_.end(),
+                            [](auto& pair) { return !pair->is_active(); }),
       coupl_elepairs_.end());
 
   // the following takes care of a very special case, namely, if a GP on the lateral surface lies
@@ -166,15 +166,6 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::is_not_active(
-    const Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>
-        coupling_pair)
-{
-  return not coupling_pair->is_active();
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::setup()
 {
   // call base class
@@ -220,9 +211,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::setup_system(
     Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art)
 {
   // call base class
-  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup_system(sysmat, rhs,
-      sysmat_cont, sysmat_art, rhs_cont, rhs_art, dbcmap_cont, dbcmap_art->cond_map(),
-      dbcmap_art->cond_map());
+  PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup_system(*sysmat, rhs,
+      *sysmat_cont, *sysmat_art, rhs_cont, rhs_art, *dbcmap_cont, *dbcmap_art->cond_map(),
+      *dbcmap_art->cond_map());
 }
 
 /*----------------------------------------------------------------------*

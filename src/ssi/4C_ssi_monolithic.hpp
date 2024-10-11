@@ -210,7 +210,7 @@ namespace SSI
     void print_time_step_info();
 
     //! set scatra manifold solution on scatra field
-    void set_scatra_manifold_solution(Teuchos::RCP<const Core::LinAlg::Vector<double>> phi);
+    void set_scatra_manifold_solution(const Core::LinAlg::Vector<double>& phi);
 
     //! evaluate time step using Newton-Raphson iteration
     void newton_loop();

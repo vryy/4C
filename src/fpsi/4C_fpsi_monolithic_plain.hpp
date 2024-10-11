@@ -103,12 +103,11 @@ namespace FPSI
     /// build block vector from field vectors
     void setup_vector(
         Core::LinAlg::Vector<double>& f,  ///< composed vector that contains all field vectors
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,  ///< structural dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
-            pfv,  ///< poro fluid velocities and pressure
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv,  ///< fluid velocities and pressure
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> av,  ///< ale displacements
-        double fluidscale                                     ///< residual scaling for fluid
+        const Core::LinAlg::Vector<double>& sv,   ///< structural dofs
+        const Core::LinAlg::Vector<double>& pfv,  ///< poro fluid velocities and pressure
+        const Core::LinAlg::Vector<double>& fv,   ///< fluid velocities and pressure
+        const Core::LinAlg::Vector<double>& av,   ///< ale displacements
+        double fluidscale                         ///< residual scaling for fluid
     );
 
     void setup_rhs_lambda(

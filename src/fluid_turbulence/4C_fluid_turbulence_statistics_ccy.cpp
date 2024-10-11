@@ -474,7 +474,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<Core::FE::Dis
                             'sum' vectors.
 
  -----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCcy::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
+void FLD::TurbulenceStatisticsCcy::do_time_sample(Core::LinAlg::Vector<double>& velnp,
     Teuchos::RCP<Core::LinAlg::Vector<double>> scanp,
     Teuchos::RCP<Core::LinAlg::Vector<double>> fullphinp)
 {
@@ -482,7 +482,7 @@ void FLD::TurbulenceStatisticsCcy::do_time_sample(Teuchos::RCP<Core::LinAlg::Vec
   numsamp_++;
 
   // meanvelnp is a refcount copy of velnp
-  meanvelnp_->Update(1.0, *velnp, 0.0);
+  meanvelnp_->Update(1.0, velnp, 0.0);
 
   if (withscatra_)
   {
@@ -1496,8 +1496,7 @@ Add results from scalar transport fields to statistics
 
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCcy::add_scatra_results(
-    Teuchos::RCP<Core::FE::Discretization> scatradis,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp)
+    Teuchos::RCP<Core::FE::Discretization> scatradis, Core::LinAlg::Vector<double>& phinp)
 {
   if (withscatra_)
   {

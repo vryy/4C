@@ -16,12 +16,12 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::BrownianDynamics::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::BrownianDynamics::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& browniandyn_list = list->sublist("BROWNIAN DYNAMICS", false, "");
+  Teuchos::ParameterList& browniandyn_list = list.sublist("BROWNIAN DYNAMICS", false, "");
 
   Core::UTILS::bool_parameter(
       "BROWNDYNPROB", "No", "switch Brownian dynamics on/off", &browniandyn_list);

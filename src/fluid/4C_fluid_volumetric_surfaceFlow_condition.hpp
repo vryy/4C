@@ -124,7 +124,7 @@ namespace FLD
       /*!
       \brief export and set boundary values
       */
-      void export_and_set_boundary_values(Teuchos::RCP<Core::LinAlg::Vector<double>> source,
+      void export_and_set_boundary_values(Core::LinAlg::Vector<double>& source,
           Teuchos::RCP<Core::LinAlg::Vector<double>> target, std::string name);
 
       /*!
@@ -229,17 +229,15 @@ namespace FLD
       /*!
       \brief update_residual
       */
-      void update_residual(Teuchos::RCP<Core::LinAlg::Vector<double>> residual);
+      void update_residual(Core::LinAlg::Vector<double>& residual);
 
       /*!
       \brief Evaluate velocities
       */
-      void velocities(Teuchos::RCP<Core::FE::Discretization> disc,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> bcdof,
-          Teuchos::RCP<Epetra_Map> cond_noderowmap,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> local_radii,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> border_radii,
-          Teuchos::RCP<std::vector<double>> normal, Teuchos::RCP<Teuchos::ParameterList> params);
+      void velocities(Core::FE::Discretization& disc, Core::LinAlg::Vector<double>& bcdof,
+          Epetra_Map& cond_noderowmap, Core::LinAlg::Vector<double>& local_radii,
+          Core::LinAlg::Vector<double>& border_radii, std::vector<double>& normal,
+          Teuchos::ParameterList& params);
 
       /*!
       \brief Polynomail shaped velocity profile
@@ -270,7 +268,7 @@ namespace FLD
       /*!
       \brief Calculate the Flowrate on a boundary
       */
-      void set_velocities(const Teuchos::RCP<Core::LinAlg::Vector<double>> velocities);
+      void set_velocities(Core::LinAlg::Vector<double>& velocities);
 
       /*!
       \brief Reset condition velocities
@@ -287,7 +285,7 @@ namespace FLD
       /*!
       \brief export and set boundary values
       */
-      void export_and_set_boundary_values(Teuchos::RCP<Core::LinAlg::Vector<double>> source,
+      void export_and_set_boundary_values(Core::LinAlg::Vector<double>& source,
           Teuchos::RCP<Core::LinAlg::Vector<double>> target, std::string name);
 
       /*!
@@ -329,8 +327,8 @@ namespace FLD
       /*!
       \brief Interpolation function
       */
-      void interpolate(Teuchos::RCP<std::vector<double>> V1, Teuchos::RCP<std::vector<double>> V2,
-          int index1, int& index2, double period);
+      void interpolate(
+          std::vector<double>& V1, std::vector<double>& V2, int index1, int& index2, double period);
 
       /*!
       \brief Return prebiasing flag

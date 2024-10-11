@@ -65,9 +65,9 @@ namespace PoroElastScaTra
         scatradis->fill_complete();
 
         // assign materials. Order is important here!
-        PoroElast::UTILS::set_material_pointers_matching_grid(structdis, fluiddis);
-        PoroElast::UTILS::set_material_pointers_matching_grid(structdis, scatradis);
-        PoroElast::UTILS::set_material_pointers_matching_grid(fluiddis, scatradis);
+        PoroElast::UTILS::set_material_pointers_matching_grid(*structdis, *fluiddis);
+        PoroElast::UTILS::set_material_pointers_matching_grid(*structdis, *scatradis);
+        PoroElast::UTILS::set_material_pointers_matching_grid(*fluiddis, *scatradis);
 
         // the problem is two way coupled, thus each discretization must know the other
         // discretization
@@ -110,7 +110,7 @@ namespace PoroElastScaTra
             Global::Problem::instance()->output_control_file(), dis, nullptr, nullptr, false);
 
         // set material pointers
-        PoroElast::UTILS::set_material_pointers_matching_grid(structdis, fluiddis);
+        PoroElast::UTILS::set_material_pointers_matching_grid(*structdis, *fluiddis);
 
         // first call fill_complete for single discretizations.
         // This way the physical dofs are numbered successively

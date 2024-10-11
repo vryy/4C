@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | set the particle parameters                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
-void Inpar::PARTICLE::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::PARTICLE::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -31,7 +31,7 @@ void Inpar::PARTICLE::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> 
    | general control parameters for particle simulations                     |
    *-------------------------------------------------------------------------*/
   Teuchos::ParameterList& particledyn =
-      list->sublist("PARTICLE DYNAMIC", false, "control parameters for particle simulations\n");
+      list.sublist("PARTICLE DYNAMIC", false, "control parameters for particle simulations\n");
 
   // type of particle time integration
   setStringToIntegralParameter<DynamicType>("DYNAMICTYP", "VelocityVerlet",

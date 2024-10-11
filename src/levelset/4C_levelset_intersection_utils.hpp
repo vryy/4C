@@ -66,8 +66,8 @@ namespace ScaTra
       /** \brief construct zero iso-contour of level-set field
        *
        *  \author rasthofer \date 09/13 */
-      void capture_zero_level_set(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& phi,
-          const Teuchos::RCP<const Core::FE::Discretization>& scatradis, double& volumedomainminus,
+      void capture_zero_level_set(const Core::LinAlg::Vector<double>& phi,
+          const Core::FE::Discretization& scatradis, double& volumedomainminus,
           double& volumedomainplus, double& zerosurface,
           std::map<int, Core::Geo::BoundaryIntCells>& elementBoundaryIntCells);
 

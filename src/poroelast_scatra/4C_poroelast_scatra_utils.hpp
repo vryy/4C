@@ -57,7 +57,7 @@ namespace PoroElastScaTra
   namespace UTILS
   {
     Teuchos::RCP<Core::LinAlg::MapExtractor> build_poro_scatra_splitter(
-        Teuchos::RCP<Core::FE::Discretization> dis);
+        Core::FE::Discretization& dis);
 
     //! check if element is a poro-scatra-element
     bool is_poro_scatra_element(const Core::Elements::Element* actele);

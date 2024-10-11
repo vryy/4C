@@ -135,7 +135,7 @@ int Solid::TimIntExplEuler::integrate_step()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  apply_force_external(timen_, disn_, veln_, fextn_);
+  apply_force_external(timen_, disn_, veln_, *fextn_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);

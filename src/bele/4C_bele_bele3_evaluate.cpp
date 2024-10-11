@@ -133,25 +133,25 @@ int Discret::ELEMENTS::Bele3::evaluate(Teuchos::ParameterList& params,
         if (*projtype == "yz")
         {
           compute_vol_deriv(
-              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 0, 0);
+              xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2, 0, 0);
         }
         else if (*projtype == "xz")
         {
           compute_vol_deriv(
-              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 1, 1);
+              xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2, 1, 1);
         }
         else if (*projtype == "xy")
         {
           compute_vol_deriv(
-              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 2, 2);
+              xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2, 2, 2);
         }
         else
         {
-          compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2);
+          compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2);
         }
       }
       else
-        compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2);
+        compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2);
 
       // update rhs vector and corresponding column in "constraint" matrix
       elevec1 = *Vdiff1;
@@ -248,8 +248,7 @@ double Discret::ELEMENTS::Bele3::compute_constr_vols(
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
 void Discret::ELEMENTS::Bele3::compute_vol_deriv(const Core::LinAlg::SerialDenseMatrix& xc,
-    const int numnode, const int ndof, double& V,
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> Vdiff1,
+    const int numnode, const int ndof, double& V, Core::LinAlg::SerialDenseVector& Vdiff1,
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Vdiff2, const int minindex, const int maxindex)
 {
   // necessary constants
@@ -258,7 +257,7 @@ void Discret::ELEMENTS::Bele3::compute_vol_deriv(const Core::LinAlg::SerialDense
 
   // initialize
   V = 0.0;
-  Vdiff1->size(ndof);
+  Vdiff1.size(ndof);
   if (Vdiff2 != Teuchos::null) Vdiff2->shape(ndof, ndof);
 
   // Volume is calculated by evaluating the integral
@@ -316,13 +315,13 @@ void Discret::ELEMENTS::Bele3::compute_vol_deriv(const Core::LinAlg::SerialDense
       //-------- compute first derivative
       for (int i = 0; i < numnode; i++)
       {
-        (*Vdiff1)[3 * i + inda] +=
+        (Vdiff1)[3 * i + inda] +=
             invnumind * intpoints.qwgt[gpid] * dotprodc *
             (deriv(0, i) * metrictensor(1, indb) - metrictensor(0, indb) * deriv(1, i));
-        (*Vdiff1)[3 * i + indb] +=
+        (Vdiff1)[3 * i + indb] +=
             invnumind * intpoints.qwgt[gpid] * dotprodc *
             (deriv(1, i) * metrictensor(0, inda) - metrictensor(1, inda) * deriv(0, i));
-        (*Vdiff1)[3 * i + indc] += invnumind * intpoints.qwgt[gpid] * funct[i] * detA;
+        (Vdiff1)[3 * i + indc] += invnumind * intpoints.qwgt[gpid] * funct[i] * detA;
       }
 
       //-------- compute second derivative

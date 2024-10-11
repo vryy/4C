@@ -54,9 +54,8 @@ namespace PoroElast
 
    private:
     //! build block vector from field vectors
-    void setup_vector(Core::LinAlg::Vector<double>& f,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv, double fluidscale);
+    void setup_vector(Core::LinAlg::Vector<double>& f, const Core::LinAlg::Vector<double>& sv,
+        const Core::LinAlg::Vector<double>& fv, double fluidscale);
 
     //! extract the field vectors from a given composed vector
     /*!

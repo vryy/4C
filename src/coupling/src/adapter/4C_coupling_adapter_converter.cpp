@@ -208,25 +208,24 @@ void Coupling::Adapter::MatrixLogicalSplitAndTransform::internal_add(
   Core::LinAlg::export_to(dselector, selector);
 
   if (edst->Filled())
-    add_into_filled(esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows, edst,
-        exactmatch, scale);
+    add_into_filled(*esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows,
+        *edst, exactmatch, scale);
   else
-    add_into_unfilled(esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows,
-        edst, exactmatch, scale);
+    add_into_unfilled(*esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows,
+        *edst, exactmatch, scale);
 }
 
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_filled(
-    Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
-    const Epetra_Map& logical_domain_map, const Core::LinAlg::Vector<double>& selector,
-    const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
-    double scale)
+void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_filled(Epetra_CrsMatrix& esrc,
+    const Epetra_Map& logical_range_map, const Epetra_Map& logical_domain_map,
+    const Core::LinAlg::Vector<double>& selector, const Epetra_Map& matching_dst_rows,
+    Epetra_CrsMatrix& edst, bool exactmatch, double scale)
 {
-  const Epetra_Map& srccolmap = esrc->ColMap();
-  const Epetra_Map& dstrowmap = edst->RowMap();
+  const Epetra_Map& srccolmap = esrc.ColMap();
+  const Epetra_Map& dstrowmap = edst.RowMap();
 
   // If the destination matrix is filled, we can add in local indices. This code is similar
   // to what is done in Core::LinAlg::Add(SparseMatrix, SparseMatrix) for the filled case.
@@ -244,7 +243,7 @@ void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_filled(
     for (std::map<int, int>::const_iterator iter = gidmap_.begin(); iter != gidmap_.end(); ++iter)
     {
       const int lid = srccolmap.LID(iter->first);
-      if (lid != -1) lidvector_[lid] = edst->ColMap().LID(iter->second);
+      if (lid != -1) lidvector_[lid] = edst.ColMap().LID(iter->second);
     }
   }
 
@@ -254,14 +253,14 @@ void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_filled(
     int NumEntriesA, NumEntriesB;
     double *ValuesA, *ValuesB;
     int *IndicesA, *IndicesB;
-    const int rowA = esrc->RowMap().LID(logical_range_map.GID(i));
+    const int rowA = esrc.RowMap().LID(logical_range_map.GID(i));
     if (rowA == -1) FOUR_C_THROW("Internal error");
-    int err = esrc->ExtractMyRowView(rowA, NumEntriesA, ValuesA, IndicesA);
+    int err = esrc.ExtractMyRowView(rowA, NumEntriesA, ValuesA, IndicesA);
     if (err != 0) FOUR_C_THROW("ExtractMyRowView error: %d", err);
 
     // identify the local row index in the destination matrix corresponding to i
     const int rowB = dstrowmap.LID(matching_dst_rows.GID(i));
-    err = edst->ExtractMyRowView(rowB, NumEntriesB, ValuesB, IndicesB);
+    err = edst.ExtractMyRowView(rowB, NumEntriesB, ValuesB, IndicesB);
     if (err != 0) FOUR_C_THROW("ExtractMyRowView error: %d", err);
 
     // loop through the columns in source matrix and find respective place in destination
@@ -294,8 +293,8 @@ void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_filled(
         FOUR_C_THROW(
             "Source matrix entry with global row ID %d and global column ID %d couldn't be added to"
             " destination matrix entry with global row ID %d and unknown global column ID %d!",
-            esrc->RowMap().GID(i), srccolmap.GID(IndicesA[jA]), matching_dst_rows.GID(i),
-            edst->ColMap().GID(col));
+            esrc.RowMap().GID(i), srccolmap.GID(IndicesA[jA]), matching_dst_rows.GID(i),
+            edst.ColMap().GID(col));
       }
 
       ValuesB[jB] += ValuesA[jA] * scale;
@@ -307,13 +306,12 @@ void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_filled(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_unfilled(
-    Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
-    const Epetra_Map& logical_domain_map, const Core::LinAlg::Vector<double>& selector,
-    const Epetra_Map& matching_dst_rows, Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch,
-    double scale)
+void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_unfilled(Epetra_CrsMatrix& esrc,
+    const Epetra_Map& logical_range_map, const Epetra_Map& logical_domain_map,
+    const Core::LinAlg::Vector<double>& selector, const Epetra_Map& matching_dst_rows,
+    Epetra_CrsMatrix& edst, bool exactmatch, double scale)
 {
-  const Epetra_Map& srccolmap = esrc->ColMap();
+  const Epetra_Map& srccolmap = esrc.ColMap();
 
   // standard code for the unfilled case
   std::vector<int> idx;
@@ -324,8 +322,8 @@ void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_unfilled(
     int NumEntries;
     double* Values;
     int* Indices;
-    int err = esrc->ExtractMyRowView(
-        esrc->RowMap().LID(logical_range_map.GID(i)), NumEntries, Values, Indices);
+    int err = esrc.ExtractMyRowView(
+        esrc.RowMap().LID(logical_range_map.GID(i)), NumEntries, Values, Indices);
     if (err != 0) FOUR_C_THROW("ExtractMyRowView error: %d", err);
 
     idx.clear();
@@ -359,19 +357,19 @@ void Coupling::Adapter::MatrixLogicalSplitAndTransform::add_into_unfilled(
     // We might want to preserve a Dirichlet row in our destination matrix
     // here as well. Skip for now.
 
-    if (edst->NumAllocatedGlobalEntries(globalRow) == 0)
+    if (edst.NumAllocatedGlobalEntries(globalRow) == 0)
     {
-      int err = edst->InsertGlobalValues(globalRow, NumEntries, vals.data(), idx.data());
+      int err = edst.InsertGlobalValues(globalRow, NumEntries, vals.data(), idx.data());
       if (err < 0) FOUR_C_THROW("InsertGlobalValues error: %d", err);
     }
     else
       for (int j = 0; j < NumEntries; ++j)
       {
         // add all values, including zeros, as we need a proper matrix graph
-        int err = edst->SumIntoGlobalValues(globalRow, 1, &vals[j], &idx[j]);
+        int err = edst.SumIntoGlobalValues(globalRow, 1, &vals[j], &idx[j]);
         if (err > 0)
         {
-          err = edst->InsertGlobalValues(globalRow, 1, &vals[j], &idx[j]);
+          err = edst.InsertGlobalValues(globalRow, 1, &vals[j], &idx[j]);
           if (err < 0) FOUR_C_THROW("InsertGlobalValues error: %d", err);
         }
         else if (err < 0)

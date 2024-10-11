@@ -431,7 +431,7 @@ void UTILS::Cardiovascular0DManager::evaluate_force_stiff(const double time,
   // since fint will be set to the generalized mid-point by the respective structural
   // time-integrator!
   // Core::LinAlg::export_to(*cv0ddof_np_,*cv0ddof_np_red);
-  evaluate_neumann_cardiovascular0_d_coupling(p, cv0ddof_np_red, fint, stiff);
+  evaluate_neumann_cardiovascular0_d_coupling(p, *cv0ddof_np_red, fint, stiff);
 
   return;
 }
@@ -464,19 +464,17 @@ void UTILS::Cardiovascular0DManager::update_time_step()
 
 void UTILS::Cardiovascular0DManager::check_periodic()  // not yet thoroughly tested!
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddof_T_N_red =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redcardiovascular0dmap_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddof_T_NP_red =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redcardiovascular0dmap_);
-  Core::LinAlg::export_to(*cv0ddof_t_n_, *cv0ddof_T_N_red);
-  Core::LinAlg::export_to(*cv0ddof_t_np_, *cv0ddof_T_NP_red);
+  Core::LinAlg::Vector<double> cv0ddof_T_N_red(*redcardiovascular0dmap_);
+  Core::LinAlg::Vector<double> cv0ddof_T_NP_red(*redcardiovascular0dmap_);
+  Core::LinAlg::export_to(*cv0ddof_t_n_, cv0ddof_T_N_red);
+  Core::LinAlg::export_to(*cv0ddof_t_np_, cv0ddof_T_NP_red);
 
   std::vector<double> vals;
   for (int j = 0; j < num_cardiovascular0_did_; j++)
   {
     //    if(j<34 or j>53) // exclude oscillatory lung dofs
     vals.push_back(fabs(
-        ((*cv0ddof_T_NP_red)[j] - (*cv0ddof_T_N_red)[j]) / fmax(1.0, fabs((*cv0ddof_T_N_red)[j]))));
+        ((cv0ddof_T_NP_red)[j] - (cv0ddof_T_N_red)[j]) / fmax(1.0, fabs((cv0ddof_T_N_red)[j]))));
     //      vals.push_back( fabs(
     //      ((*cv0ddof_T_NP_red)[j]-(*cv0ddof_T_N_red)[j])/fabs((*cv0ddof_T_N_red)[j]) ) );
   }
@@ -527,11 +525,11 @@ void UTILS::Cardiovascular0DManager::reset_step()
 /*----------------------------------------------------------------------*/
 /* iterative iteration update of state */
 void UTILS::Cardiovascular0DManager::update_cv0_d_dof(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddofincrement)
+    Core::LinAlg::Vector<double>& cv0ddofincrement)
 {
   // new end-point solution
   // cv0ddof_{n+1}^{i+1} := cv0ddof_{n+1}^{i} + Inccv0ddof_{n+1}^{i}
-  cv0ddof_np_->Update(1.0, *cv0ddofincrement, 1.0);
+  cv0ddof_np_->Update(1.0, cv0ddofincrement, 1.0);
 
   return;
 }
@@ -554,14 +552,14 @@ void UTILS::Cardiovascular0DManager::read_restart(
         Core::LinAlg::create_vector(*cardvasc0d, true);
     // old rhs contributions
     reader.read_vector(tempvec, "cv0d_df_np");
-    set0_d_df_n(tempvec);
+    set0_d_df_n(*tempvec);
     reader.read_vector(tempvec, "cv0d_f_np");
-    set0_d_f_n(tempvec);
+    set0_d_f_n(*tempvec);
     // old dof and vol vector
     reader.read_vector(tempvec, "cv0d_dof_np");
-    set0_d_dof_n(tempvec);
+    set0_d_dof_n(*tempvec);
     reader.read_vector(tempvec, "vol_np");
-    set0_d_v_n(tempvec);
+    set0_d_v_n(*tempvec);
   }
 
   totaltime_ = time;
@@ -573,7 +571,7 @@ void UTILS::Cardiovascular0DManager::read_restart(
 
 /*----------------------------------------------------------------------*/
 void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling(
-    Teuchos::ParameterList params, const Teuchos::RCP<Core::LinAlg::Vector<double>> actpres,
+    Teuchos::ParameterList params, Core::LinAlg::Vector<double>& actpres,
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix)
 {
@@ -601,9 +599,9 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
     Core::Conditions::Condition* coupcond = cardvasc0dstructcoupcond[i];
     std::vector<double> newval(6, 0.0);
     if (cardvasc0d_4elementwindkessel_->have_cardiovascular0_d())
-      newval[0] = -(*actpres)[3 * id_strcoupcond];
+      newval[0] = -(actpres)[3 * id_strcoupcond];
     if (cardvasc0d_arterialproxdist_->have_cardiovascular0_d())
-      newval[0] = -(*actpres)[4 * id_strcoupcond];
+      newval[0] = -(actpres)[4 * id_strcoupcond];
 
     if (cardvasc0d_syspulcirculation_->have_cardiovascular0_d())
     {
@@ -620,10 +618,10 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
               cardvasc0d_syspulcirculation_->get_cardiovascular0_d_condition()[j]
                   ->parameters()
                   .get<std::string>("TYPE");
-          if (conditiontype == "ventricle_left") newval[0] = -(*actpres)[3];
-          if (conditiontype == "ventricle_right") newval[0] = -(*actpres)[11];
-          if (conditiontype == "atrium_left") newval[0] = -(*actpres)[0];
-          if (conditiontype == "atrium_right") newval[0] = -(*actpres)[8];
+          if (conditiontype == "ventricle_left") newval[0] = -(actpres)[3];
+          if (conditiontype == "ventricle_right") newval[0] = -(actpres)[11];
+          if (conditiontype == "atrium_left") newval[0] = -(actpres)[0];
+          if (conditiontype == "atrium_right") newval[0] = -(actpres)[8];
           if (conditiontype == "dummy") newval[0] = 0.;
         }
       }
@@ -645,10 +643,10 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
               cardvascrespir0d_syspulperiphcirculation_->get_cardiovascular0_d_condition()[j]
                   ->parameters()
                   .get<std::string>("TYPE");
-          if (conditiontype == "ventricle_left") newval[0] = -(*actpres)[3];
-          if (conditiontype == "ventricle_right") newval[0] = -(*actpres)[27];
-          if (conditiontype == "atrium_left") newval[0] = -(*actpres)[0];
-          if (conditiontype == "atrium_right") newval[0] = -(*actpres)[24];
+          if (conditiontype == "ventricle_left") newval[0] = -(actpres)[3];
+          if (conditiontype == "ventricle_right") newval[0] = -(actpres)[27];
+          if (conditiontype == "atrium_left") newval[0] = -(actpres)[0];
+          if (conditiontype == "atrium_right") newval[0] = -(actpres)[24];
           if (conditiontype == "dummy") newval[0] = 0.;
         }
       }
@@ -699,28 +697,24 @@ void UTILS::Cardiovascular0DManager::print_pres_flux(bool init) const
   // prepare stuff for printing to screen
   // ATTENTION: we print the mid-point pressure (NOT the end-point pressure at t_{n+1}),
   // since this is the one where mechanical equilibrium is guaranteed
-  Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddof_m_red =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redcardiovascular0dmap_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dcv0ddof_m_red =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redcardiovascular0dmap_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> v_m_red =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redcardiovascular0dmap_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddof_np_red =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redcardiovascular0dmap_);
+  Core::LinAlg::Vector<double> cv0ddof_m_red(*redcardiovascular0dmap_);
+  Core::LinAlg::Vector<double> dcv0ddof_m_red(*redcardiovascular0dmap_);
+  Core::LinAlg::Vector<double> v_m_red(*redcardiovascular0dmap_);
+  Core::LinAlg::Vector<double> cv0ddof_np_red(*redcardiovascular0dmap_);
   if (init)
   {
-    Core::LinAlg::export_to(*cv0ddof_n_, *cv0ddof_m_red);
-    Core::LinAlg::export_to(*v_n_, *v_m_red);
+    Core::LinAlg::export_to(*cv0ddof_n_, cv0ddof_m_red);
+    Core::LinAlg::export_to(*v_n_, v_m_red);
   }
   else
   {
-    Core::LinAlg::export_to(*cv0ddof_m_, *cv0ddof_m_red);
-    Core::LinAlg::export_to(*v_m_, *v_m_red);
+    Core::LinAlg::export_to(*cv0ddof_m_, cv0ddof_m_red);
+    Core::LinAlg::export_to(*v_m_, v_m_red);
   }
 
-  Core::LinAlg::export_to(*dcv0ddof_m_, *dcv0ddof_m_red);
+  Core::LinAlg::export_to(*dcv0ddof_m_, dcv0ddof_m_red);
 
-  Core::LinAlg::export_to(*cv0ddof_n_, *cv0ddof_np_red);
+  Core::LinAlg::export_to(*cv0ddof_n_, cv0ddof_np_red);
 
   if (myrank_ == 0)
   {
@@ -729,168 +723,168 @@ void UTILS::Cardiovascular0DManager::print_pres_flux(bool init) const
       if (cardvasc0d_4elementwindkessel_->have_cardiovascular0_d())
       {
         printf("Cardiovascular0D output id%2d:\n", current_id_[i]);
-        printf("%2d p: %10.16e \n", current_id_[i], (*cv0ddof_m_red)[3 * i]);
-        printf("%2d V: %10.16e \n", current_id_[i], (*v_m_red)[3 * i]);
+        printf("%2d p: %10.16e \n", current_id_[i], (cv0ddof_m_red)[3 * i]);
+        printf("%2d V: %10.16e \n", current_id_[i], (v_m_red)[3 * i]);
       }
       if (cardvasc0d_arterialproxdist_->have_cardiovascular0_d())
       {
         printf("Cardiovascular0D output id%2d:\n", current_id_[i]);
-        printf("%2d p_v: %10.16e \n", current_id_[i], (*cv0ddof_m_red)[4 * i]);
-        printf("%2d p_ar_prox: %10.16e \n", current_id_[i], (*cv0ddof_m_red)[4 * i + 1]);
-        printf("%2d q_ar_prox: %10.16e \n", current_id_[i], (*cv0ddof_m_red)[4 * i + 2]);
-        printf("%2d p_ar_dist: %10.16e \n", current_id_[i], (*cv0ddof_m_red)[4 * i + 3]);
-        printf("%2d V_v: %10.16e \n", current_id_[i], (*v_m_red)[4 * i]);
+        printf("%2d p_v: %10.16e \n", current_id_[i], (cv0ddof_m_red)[4 * i]);
+        printf("%2d p_ar_prox: %10.16e \n", current_id_[i], (cv0ddof_m_red)[4 * i + 1]);
+        printf("%2d q_ar_prox: %10.16e \n", current_id_[i], (cv0ddof_m_red)[4 * i + 2]);
+        printf("%2d p_ar_dist: %10.16e \n", current_id_[i], (cv0ddof_m_red)[4 * i + 3]);
+        printf("%2d V_v: %10.16e \n", current_id_[i], (v_m_red)[4 * i]);
         if (enhanced_output_ and !(init))
         {
-          printf("%2d dp_v/dt: %10.16e \n", current_id_[i], (*dcv0ddof_m_red)[4 * i]);
-          printf("%2d dp_ar_prox/dt: %10.16e \n", current_id_[i], (*dcv0ddof_m_red)[4 * i + 1]);
-          printf("%2d dq_ar_prox/dt: %10.16e \n", current_id_[i], (*dcv0ddof_m_red)[4 * i + 2]);
-          printf("%2d dp_ar_dist/dt: %10.16e \n", current_id_[i], (*dcv0ddof_m_red)[4 * i + 3]);
+          printf("%2d dp_v/dt: %10.16e \n", current_id_[i], (dcv0ddof_m_red)[4 * i]);
+          printf("%2d dp_ar_prox/dt: %10.16e \n", current_id_[i], (dcv0ddof_m_red)[4 * i + 1]);
+          printf("%2d dq_ar_prox/dt: %10.16e \n", current_id_[i], (dcv0ddof_m_red)[4 * i + 2]);
+          printf("%2d dp_ar_dist/dt: %10.16e \n", current_id_[i], (dcv0ddof_m_red)[4 * i + 3]);
         }
       }
     }
 
     if (cardvasc0d_syspulcirculation_->have_cardiovascular0_d())
     {
-      printf("p_at_l: %10.16e \n", (*cv0ddof_m_red)[0]);
-      printf("q_vin_l: %10.16e \n", (*cv0ddof_m_red)[1]);
-      printf("q_vout_l: %10.16e \n", (*cv0ddof_m_red)[2]);
-      printf("p_v_l: %10.16e \n", (*cv0ddof_m_red)[3]);
-      printf("p_ar_sys: %10.16e \n", (*cv0ddof_m_red)[4]);
-      printf("q_ar_sys: %10.16e \n", (*cv0ddof_m_red)[5]);
-      printf("p_ven_sys: %10.16e \n", (*cv0ddof_m_red)[6]);
-      printf("q_ven_sys: %10.16e \n", (*cv0ddof_m_red)[7]);
-      printf("p_at_r: %10.16e \n", (*cv0ddof_m_red)[8]);
-      printf("q_vin_r: %10.16e \n", (*cv0ddof_m_red)[9]);
-      printf("q_vout_r: %10.16e \n", (*cv0ddof_m_red)[10]);
-      printf("p_v_r: %10.16e \n", (*cv0ddof_m_red)[11]);
-      printf("p_ar_pul: %10.16e \n", (*cv0ddof_m_red)[12]);
-      printf("q_ar_pul: %10.16e \n", (*cv0ddof_m_red)[13]);
-      printf("p_ven_pul: %10.16e \n", (*cv0ddof_m_red)[14]);
-      printf("q_ven_pul: %10.16e \n", (*cv0ddof_m_red)[15]);
+      printf("p_at_l: %10.16e \n", (cv0ddof_m_red)[0]);
+      printf("q_vin_l: %10.16e \n", (cv0ddof_m_red)[1]);
+      printf("q_vout_l: %10.16e \n", (cv0ddof_m_red)[2]);
+      printf("p_v_l: %10.16e \n", (cv0ddof_m_red)[3]);
+      printf("p_ar_sys: %10.16e \n", (cv0ddof_m_red)[4]);
+      printf("q_ar_sys: %10.16e \n", (cv0ddof_m_red)[5]);
+      printf("p_ven_sys: %10.16e \n", (cv0ddof_m_red)[6]);
+      printf("q_ven_sys: %10.16e \n", (cv0ddof_m_red)[7]);
+      printf("p_at_r: %10.16e \n", (cv0ddof_m_red)[8]);
+      printf("q_vin_r: %10.16e \n", (cv0ddof_m_red)[9]);
+      printf("q_vout_r: %10.16e \n", (cv0ddof_m_red)[10]);
+      printf("p_v_r: %10.16e \n", (cv0ddof_m_red)[11]);
+      printf("p_ar_pul: %10.16e \n", (cv0ddof_m_red)[12]);
+      printf("q_ar_pul: %10.16e \n", (cv0ddof_m_red)[13]);
+      printf("p_ven_pul: %10.16e \n", (cv0ddof_m_red)[14]);
+      printf("q_ven_pul: %10.16e \n", (cv0ddof_m_red)[15]);
       // print volumes (no state variables)
-      printf("V_at_l: %10.16e \n", (*v_m_red)[0]);
-      printf("V_v_l: %10.16e \n", (*v_m_red)[2]);
-      printf("V_ar_sys: %10.16e \n", (*v_m_red)[4]);
-      printf("V_ven_sys: %10.16e \n", (*v_m_red)[6]);
-      printf("V_at_r: %10.16e \n", (*v_m_red)[8]);
-      printf("V_v_r: %10.16e \n", (*v_m_red)[10]);
-      printf("V_ar_pul: %10.16e \n", (*v_m_red)[12]);
-      printf("V_ven_pul: %10.16e \n", (*v_m_red)[14]);
+      printf("V_at_l: %10.16e \n", (v_m_red)[0]);
+      printf("V_v_l: %10.16e \n", (v_m_red)[2]);
+      printf("V_ar_sys: %10.16e \n", (v_m_red)[4]);
+      printf("V_ven_sys: %10.16e \n", (v_m_red)[6]);
+      printf("V_at_r: %10.16e \n", (v_m_red)[8]);
+      printf("V_v_r: %10.16e \n", (v_m_red)[10]);
+      printf("V_ar_pul: %10.16e \n", (v_m_red)[12]);
+      printf("V_ven_pul: %10.16e \n", (v_m_red)[14]);
     }
 
     if (cardvascrespir0d_syspulperiphcirculation_->have_cardiovascular0_d())
     {
-      printf("p_at_l: %10.16e \n", (*cv0ddof_m_red)[0]);
-      printf("q_vin_l: %10.16e \n", (*cv0ddof_m_red)[1]);
-      printf("q_vout_l: %10.16e \n", (*cv0ddof_m_red)[2]);
-      printf("p_v_l: %10.16e \n", (*cv0ddof_m_red)[3]);
-      printf("p_ar_sys: %10.16e \n", (*cv0ddof_m_red)[4]);
-      printf("q_ar_sys: %10.16e \n", (*cv0ddof_m_red)[5]);
-      printf("p_arperi_sys: %10.16e \n", (*cv0ddof_m_red)[6]);
-      printf("q_arspl_sys: %10.16e \n", (*cv0ddof_m_red)[7]);
-      printf("q_arespl_sys: %10.16e \n", (*cv0ddof_m_red)[8]);
-      printf("q_armsc_sys: %10.16e \n", (*cv0ddof_m_red)[9]);
-      printf("q_arcer_sys: %10.16e \n", (*cv0ddof_m_red)[10]);
-      printf("q_arcor_sys: %10.16e \n", (*cv0ddof_m_red)[11]);
-      printf("p_venspl_sys: %10.16e \n", (*cv0ddof_m_red)[12]);
-      printf("q_venspl_sys: %10.16e \n", (*cv0ddof_m_red)[13]);
-      printf("p_venespl_sys: %10.16e \n", (*cv0ddof_m_red)[14]);
-      printf("q_venespl_sys: %10.16e \n", (*cv0ddof_m_red)[15]);
-      printf("p_venmsc_sys: %10.16e \n", (*cv0ddof_m_red)[16]);
-      printf("q_venmsc_sys: %10.16e \n", (*cv0ddof_m_red)[17]);
-      printf("p_vencer_sys: %10.16e \n", (*cv0ddof_m_red)[18]);
-      printf("q_vencer_sys: %10.16e \n", (*cv0ddof_m_red)[19]);
-      printf("p_vencor_sys: %10.16e \n", (*cv0ddof_m_red)[20]);
-      printf("q_vencor_sys: %10.16e \n", (*cv0ddof_m_red)[21]);
-      printf("p_ven_sys: %10.16e \n", (*cv0ddof_m_red)[22]);
-      printf("q_ven_sys: %10.16e \n", (*cv0ddof_m_red)[23]);
-      printf("p_at_r: %10.16e \n", (*cv0ddof_m_red)[24]);
-      printf("q_vin_r: %10.16e \n", (*cv0ddof_m_red)[25]);
-      printf("q_vout_r: %10.16e \n", (*cv0ddof_m_red)[26]);
-      printf("p_v_r: %10.16e \n", (*cv0ddof_m_red)[27]);
-      printf("p_ar_pul: %10.16e \n", (*cv0ddof_m_red)[28]);
-      printf("q_ar_pul: %10.16e \n", (*cv0ddof_m_red)[29]);
-      printf("p_cap_pul: %10.16e \n", (*cv0ddof_m_red)[30]);
-      printf("q_cap_pul: %10.16e \n", (*cv0ddof_m_red)[31]);
-      printf("p_ven_pul: %10.16e \n", (*cv0ddof_m_red)[32]);
-      printf("q_ven_pul: %10.16e \n", (*cv0ddof_m_red)[33]);
+      printf("p_at_l: %10.16e \n", (cv0ddof_m_red)[0]);
+      printf("q_vin_l: %10.16e \n", (cv0ddof_m_red)[1]);
+      printf("q_vout_l: %10.16e \n", (cv0ddof_m_red)[2]);
+      printf("p_v_l: %10.16e \n", (cv0ddof_m_red)[3]);
+      printf("p_ar_sys: %10.16e \n", (cv0ddof_m_red)[4]);
+      printf("q_ar_sys: %10.16e \n", (cv0ddof_m_red)[5]);
+      printf("p_arperi_sys: %10.16e \n", (cv0ddof_m_red)[6]);
+      printf("q_arspl_sys: %10.16e \n", (cv0ddof_m_red)[7]);
+      printf("q_arespl_sys: %10.16e \n", (cv0ddof_m_red)[8]);
+      printf("q_armsc_sys: %10.16e \n", (cv0ddof_m_red)[9]);
+      printf("q_arcer_sys: %10.16e \n", (cv0ddof_m_red)[10]);
+      printf("q_arcor_sys: %10.16e \n", (cv0ddof_m_red)[11]);
+      printf("p_venspl_sys: %10.16e \n", (cv0ddof_m_red)[12]);
+      printf("q_venspl_sys: %10.16e \n", (cv0ddof_m_red)[13]);
+      printf("p_venespl_sys: %10.16e \n", (cv0ddof_m_red)[14]);
+      printf("q_venespl_sys: %10.16e \n", (cv0ddof_m_red)[15]);
+      printf("p_venmsc_sys: %10.16e \n", (cv0ddof_m_red)[16]);
+      printf("q_venmsc_sys: %10.16e \n", (cv0ddof_m_red)[17]);
+      printf("p_vencer_sys: %10.16e \n", (cv0ddof_m_red)[18]);
+      printf("q_vencer_sys: %10.16e \n", (cv0ddof_m_red)[19]);
+      printf("p_vencor_sys: %10.16e \n", (cv0ddof_m_red)[20]);
+      printf("q_vencor_sys: %10.16e \n", (cv0ddof_m_red)[21]);
+      printf("p_ven_sys: %10.16e \n", (cv0ddof_m_red)[22]);
+      printf("q_ven_sys: %10.16e \n", (cv0ddof_m_red)[23]);
+      printf("p_at_r: %10.16e \n", (cv0ddof_m_red)[24]);
+      printf("q_vin_r: %10.16e \n", (cv0ddof_m_red)[25]);
+      printf("q_vout_r: %10.16e \n", (cv0ddof_m_red)[26]);
+      printf("p_v_r: %10.16e \n", (cv0ddof_m_red)[27]);
+      printf("p_ar_pul: %10.16e \n", (cv0ddof_m_red)[28]);
+      printf("q_ar_pul: %10.16e \n", (cv0ddof_m_red)[29]);
+      printf("p_cap_pul: %10.16e \n", (cv0ddof_m_red)[30]);
+      printf("q_cap_pul: %10.16e \n", (cv0ddof_m_red)[31]);
+      printf("p_ven_pul: %10.16e \n", (cv0ddof_m_red)[32]);
+      printf("q_ven_pul: %10.16e \n", (cv0ddof_m_red)[33]);
       // print volumes (no state variables)
-      printf("V_at_l: %10.16e \n", (*v_m_red)[0]);
-      printf("V_v_l: %10.16e \n", (*v_m_red)[2]);
-      printf("V_ar_sys: %10.16e \n", (*v_m_red)[4]);
-      printf("V_arperi_sys: %10.16e \n", (*v_m_red)[6]);
-      printf("V_venspl_sys: %10.16e \n", (*v_m_red)[12]);
-      printf("V_venespl_sys: %10.16e \n", (*v_m_red)[14]);
-      printf("V_venmsc_sys: %10.16e \n", (*v_m_red)[16]);
-      printf("V_vencer_sys: %10.16e \n", (*v_m_red)[18]);
-      printf("V_vencor_sys: %10.16e \n", (*v_m_red)[20]);
-      printf("V_ven_sys: %10.16e \n", (*v_m_red)[22]);
-      printf("V_at_r: %10.16e \n", (*v_m_red)[24]);
-      printf("V_v_r: %10.16e \n", (*v_m_red)[26]);
-      printf("V_ar_pul: %10.16e \n", (*v_m_red)[28]);
-      printf("V_cap_pul: %10.16e \n", (*v_m_red)[30]);
-      printf("V_ven_pul: %10.16e \n", (*v_m_red)[32]);
+      printf("V_at_l: %10.16e \n", (v_m_red)[0]);
+      printf("V_v_l: %10.16e \n", (v_m_red)[2]);
+      printf("V_ar_sys: %10.16e \n", (v_m_red)[4]);
+      printf("V_arperi_sys: %10.16e \n", (v_m_red)[6]);
+      printf("V_venspl_sys: %10.16e \n", (v_m_red)[12]);
+      printf("V_venespl_sys: %10.16e \n", (v_m_red)[14]);
+      printf("V_venmsc_sys: %10.16e \n", (v_m_red)[16]);
+      printf("V_vencer_sys: %10.16e \n", (v_m_red)[18]);
+      printf("V_vencor_sys: %10.16e \n", (v_m_red)[20]);
+      printf("V_ven_sys: %10.16e \n", (v_m_red)[22]);
+      printf("V_at_r: %10.16e \n", (v_m_red)[24]);
+      printf("V_v_r: %10.16e \n", (v_m_red)[26]);
+      printf("V_ar_pul: %10.16e \n", (v_m_red)[28]);
+      printf("V_cap_pul: %10.16e \n", (v_m_red)[30]);
+      printf("V_ven_pul: %10.16e \n", (v_m_red)[32]);
 
       if (cardvasc0d_model_->get_respiratory_model())
       {
         // 0D lung
-        printf("V_alv: %10.16e \n", (*cv0ddof_m_red)[34]);
-        printf("q_alv: %10.16e \n", (*cv0ddof_m_red)[35]);
-        printf("p_alv: %10.16e \n", (*cv0ddof_m_red)[36]);
-        printf("fCO2_alv: %10.16e \n", (*cv0ddof_m_red)[37]);
-        printf("fO2_alv: %10.16e \n", (*cv0ddof_m_red)[38]);
+        printf("V_alv: %10.16e \n", (cv0ddof_m_red)[34]);
+        printf("q_alv: %10.16e \n", (cv0ddof_m_red)[35]);
+        printf("p_alv: %10.16e \n", (cv0ddof_m_red)[36]);
+        printf("fCO2_alv: %10.16e \n", (cv0ddof_m_red)[37]);
+        printf("fO2_alv: %10.16e \n", (cv0ddof_m_red)[38]);
         // (auxiliary) incoming systemic capillary fluxes
-        printf("q_arspl_sys_in: %10.16e \n", (*cv0ddof_m_red)[39]);
-        printf("q_arespl_sys_in: %10.16e \n", (*cv0ddof_m_red)[40]);
-        printf("q_armsc_sys_in: %10.16e \n", (*cv0ddof_m_red)[41]);
-        printf("q_arcer_sys_in: %10.16e \n", (*cv0ddof_m_red)[42]);
-        printf("q_arcor_sys_in: %10.16e \n", (*cv0ddof_m_red)[43]);
+        printf("q_arspl_sys_in: %10.16e \n", (cv0ddof_m_red)[39]);
+        printf("q_arespl_sys_in: %10.16e \n", (cv0ddof_m_red)[40]);
+        printf("q_armsc_sys_in: %10.16e \n", (cv0ddof_m_red)[41]);
+        printf("q_arcer_sys_in: %10.16e \n", (cv0ddof_m_red)[42]);
+        printf("q_arcor_sys_in: %10.16e \n", (cv0ddof_m_red)[43]);
         // the partial pressures
-        printf("ppCO2_at_r: %10.16e \n", (*cv0ddof_m_red)[44]);
-        printf("ppO2_at_r: %10.16e \n", (*cv0ddof_m_red)[45]);
-        printf("ppCO2_v_r: %10.16e \n", (*cv0ddof_m_red)[46]);
-        printf("ppO2_v_r: %10.16e \n", (*cv0ddof_m_red)[47]);
-        printf("ppCO2_ar_pul: %10.16e \n", (*cv0ddof_m_red)[48]);
-        printf("ppO2_ar_pul: %10.16e \n", (*cv0ddof_m_red)[49]);
-        printf("ppCO2_cap_pul: %10.16e \n", (*cv0ddof_m_red)[50]);
-        printf("ppO2_cap_pul: %10.16e \n", (*cv0ddof_m_red)[51]);
-        printf("ppCO2_ven_pul: %10.16e \n", (*cv0ddof_m_red)[52]);
-        printf("ppO2_ven_pul: %10.16e \n", (*cv0ddof_m_red)[53]);
-        printf("ppCO2_at_l: %10.16e \n", (*cv0ddof_m_red)[54]);
-        printf("ppO2_at_l: %10.16e \n", (*cv0ddof_m_red)[55]);
-        printf("ppCO2_v_l: %10.16e \n", (*cv0ddof_m_red)[56]);
-        printf("ppO2_v_l: %10.16e \n", (*cv0ddof_m_red)[57]);
-        printf("ppCO2_ar_sys: %10.16e \n", (*cv0ddof_m_red)[58]);
-        printf("ppO2_ar_sys: %10.16e \n", (*cv0ddof_m_red)[59]);
-        printf("ppCO2_arspl_sys: %10.16e \n", (*cv0ddof_m_red)[60]);
-        printf("ppO2_arspl_sys: %10.16e \n", (*cv0ddof_m_red)[61]);
-        printf("ppCO2_arespl_sys: %10.16e \n", (*cv0ddof_m_red)[62]);
-        printf("ppO2_arespl_sys: %10.16e \n", (*cv0ddof_m_red)[63]);
-        printf("ppCO2_armsc_sys: %10.16e \n", (*cv0ddof_m_red)[64]);
-        printf("ppO2_armsc_sys: %10.16e \n", (*cv0ddof_m_red)[65]);
-        printf("ppCO2_arcer_sys: %10.16e \n", (*cv0ddof_m_red)[66]);
-        printf("ppO2_arcer_sys: %10.16e \n", (*cv0ddof_m_red)[67]);
-        printf("ppCO2_arcor_sys: %10.16e \n", (*cv0ddof_m_red)[68]);
-        printf("ppO2_arcor_sys: %10.16e \n", (*cv0ddof_m_red)[69]);
-        printf("ppCO2_venspl_sys: %10.16e \n", (*cv0ddof_m_red)[70]);
-        printf("ppO2_venspl_sys: %10.16e \n", (*cv0ddof_m_red)[71]);
-        printf("ppCO2_venespl_sys: %10.16e \n", (*cv0ddof_m_red)[72]);
-        printf("ppO2_venespl_sys: %10.16e \n", (*cv0ddof_m_red)[73]);
-        printf("ppCO2_venmsc_sys: %10.16e \n", (*cv0ddof_m_red)[74]);
-        printf("ppO2_venmsc_sys: %10.16e \n", (*cv0ddof_m_red)[75]);
-        printf("ppCO2_vencer_sys: %10.16e \n", (*cv0ddof_m_red)[76]);
-        printf("ppO2_vencer_sys: %10.16e \n", (*cv0ddof_m_red)[77]);
-        printf("ppCO2_vencor_sys: %10.16e \n", (*cv0ddof_m_red)[78]);
-        printf("ppO2_vencor_sys: %10.16e \n", (*cv0ddof_m_red)[79]);
-        printf("ppCO2_ven_sys: %10.16e \n", (*cv0ddof_m_red)[80]);
-        printf("ppO2_ven_sys: %10.16e \n", (*cv0ddof_m_red)[81]);
+        printf("ppCO2_at_r: %10.16e \n", (cv0ddof_m_red)[44]);
+        printf("ppO2_at_r: %10.16e \n", (cv0ddof_m_red)[45]);
+        printf("ppCO2_v_r: %10.16e \n", (cv0ddof_m_red)[46]);
+        printf("ppO2_v_r: %10.16e \n", (cv0ddof_m_red)[47]);
+        printf("ppCO2_ar_pul: %10.16e \n", (cv0ddof_m_red)[48]);
+        printf("ppO2_ar_pul: %10.16e \n", (cv0ddof_m_red)[49]);
+        printf("ppCO2_cap_pul: %10.16e \n", (cv0ddof_m_red)[50]);
+        printf("ppO2_cap_pul: %10.16e \n", (cv0ddof_m_red)[51]);
+        printf("ppCO2_ven_pul: %10.16e \n", (cv0ddof_m_red)[52]);
+        printf("ppO2_ven_pul: %10.16e \n", (cv0ddof_m_red)[53]);
+        printf("ppCO2_at_l: %10.16e \n", (cv0ddof_m_red)[54]);
+        printf("ppO2_at_l: %10.16e \n", (cv0ddof_m_red)[55]);
+        printf("ppCO2_v_l: %10.16e \n", (cv0ddof_m_red)[56]);
+        printf("ppO2_v_l: %10.16e \n", (cv0ddof_m_red)[57]);
+        printf("ppCO2_ar_sys: %10.16e \n", (cv0ddof_m_red)[58]);
+        printf("ppO2_ar_sys: %10.16e \n", (cv0ddof_m_red)[59]);
+        printf("ppCO2_arspl_sys: %10.16e \n", (cv0ddof_m_red)[60]);
+        printf("ppO2_arspl_sys: %10.16e \n", (cv0ddof_m_red)[61]);
+        printf("ppCO2_arespl_sys: %10.16e \n", (cv0ddof_m_red)[62]);
+        printf("ppO2_arespl_sys: %10.16e \n", (cv0ddof_m_red)[63]);
+        printf("ppCO2_armsc_sys: %10.16e \n", (cv0ddof_m_red)[64]);
+        printf("ppO2_armsc_sys: %10.16e \n", (cv0ddof_m_red)[65]);
+        printf("ppCO2_arcer_sys: %10.16e \n", (cv0ddof_m_red)[66]);
+        printf("ppO2_arcer_sys: %10.16e \n", (cv0ddof_m_red)[67]);
+        printf("ppCO2_arcor_sys: %10.16e \n", (cv0ddof_m_red)[68]);
+        printf("ppO2_arcor_sys: %10.16e \n", (cv0ddof_m_red)[69]);
+        printf("ppCO2_venspl_sys: %10.16e \n", (cv0ddof_m_red)[70]);
+        printf("ppO2_venspl_sys: %10.16e \n", (cv0ddof_m_red)[71]);
+        printf("ppCO2_venespl_sys: %10.16e \n", (cv0ddof_m_red)[72]);
+        printf("ppO2_venespl_sys: %10.16e \n", (cv0ddof_m_red)[73]);
+        printf("ppCO2_venmsc_sys: %10.16e \n", (cv0ddof_m_red)[74]);
+        printf("ppO2_venmsc_sys: %10.16e \n", (cv0ddof_m_red)[75]);
+        printf("ppCO2_vencer_sys: %10.16e \n", (cv0ddof_m_red)[76]);
+        printf("ppO2_vencer_sys: %10.16e \n", (cv0ddof_m_red)[77]);
+        printf("ppCO2_vencor_sys: %10.16e \n", (cv0ddof_m_red)[78]);
+        printf("ppO2_vencor_sys: %10.16e \n", (cv0ddof_m_red)[79]);
+        printf("ppCO2_ven_sys: %10.16e \n", (cv0ddof_m_red)[80]);
+        printf("ppO2_ven_sys: %10.16e \n", (cv0ddof_m_red)[81]);
 
         if (enhanced_output_)
         {
           // oxygen saturations (no state variables - stored in volume vector for convenience!)
-          printf("SO2_ar_pul: %10.16e \n", (*v_m_red)[49]);
-          printf("SO2_ar_sys: %10.16e \n", (*v_m_red)[59]);
+          printf("SO2_ar_pul: %10.16e \n", (v_m_red)[49]);
+          printf("SO2_ar_sys: %10.16e \n", (v_m_red)[59]);
         }
       }
     }
@@ -924,19 +918,17 @@ void UTILS::Cardiovascular0DManager::solver_setup(
 
 
 int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_structstiff,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsstruct, const double k_ptc)
+    Core::LinAlg::Vector<double>& dispinc, Core::LinAlg::Vector<double>& rhsstruct,
+    const double k_ptc)
 {
   // create old style dirichtoggle vector (supposed to go away)
   dirichtoggle_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dbcmaps_->full_map()));
-  Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dbcmaps_->cond_map()));
-  temp->PutScalar(1.0);
-  Core::LinAlg::export_to(*temp, *dirichtoggle_);
+  Core::LinAlg::Vector<double> temp(*(dbcmaps_->cond_map()));
+  temp.PutScalar(1.0);
+  Core::LinAlg::export_to(temp, *dirichtoggle_);
 
   // allocate additional vectors and matrices
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhscardvasc0d =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(get_cardiovascular0_drhs()));
+  Core::LinAlg::Vector<double> rhscardvasc0d(*(get_cardiovascular0_drhs()));
   Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddofincr =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(get_cardiovascular0_d_map()));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_cardvasc0dstiff =
@@ -995,18 +987,17 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   {
     // reduce linear system
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_structstiff_R =
-        mor_->reduce_diagnoal(mat_structstiff);
+        mor_->reduce_diagnoal(*mat_structstiff);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_dcardvasc0d_dd_R =
-        mor_->reduce_off_diagonal(mat_dcardvasc0d_dd);
+        mor_->reduce_off_diagonal(*mat_dcardvasc0d_dd);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_dstruct_dcv0ddof_R =
-        mor_->reduce_off_diagonal(mat_dstruct_dcv0ddof);
+        mor_->reduce_off_diagonal(*mat_dstruct_dcv0ddof);
     Teuchos::RCP<Epetra_MultiVector> rhsstruct_R =
-        mor_->reduce_rhs(rhsstruct->get_ptr_of_Epetra_MultiVector());
+        mor_->reduce_rhs(rhsstruct.get_ptr_of_Epetra_MultiVector());
 
     // define maps of reduced standard dofs and additional pressures
-    Teuchos::RCP<Epetra_Map> structmap_R =
-        Teuchos::make_rcp<Epetra_Map>(mor_->get_red_dim(), 0, actdisc_->get_comm());
-    Teuchos::RCP<Epetra_Map> standrowmap_R = Teuchos::make_rcp<Epetra_Map>(*structmap_R);
+    Epetra_Map structmap_R(mor_->get_red_dim(), 0, actdisc_->get_comm());
+    Teuchos::RCP<Epetra_Map> standrowmap_R = Teuchos::make_rcp<Epetra_Map>(structmap_R);
     Teuchos::RCP<Epetra_Map> cardvasc0drowmap_R =
         Teuchos::make_rcp<Epetra_Map>(mat_cardvasc0dstiff->row_map());
 
@@ -1035,7 +1026,7 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     blockmat->complete();
 
     // export 0D part of rhs
-    Core::LinAlg::export_to(*rhscardvasc0d, *mergedrhs);
+    Core::LinAlg::export_to(rhscardvasc0d, *mergedrhs);
     // make the 0D part of the rhs negative
     mergedrhs->Scale(-1.0);
     // export reduced structure part of rhs -> no need to make it negative since this has been done
@@ -1060,12 +1051,12 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     blockmat->complete();
 
     // export 0D part of rhs
-    Core::LinAlg::export_to(*rhscardvasc0d, *mergedrhs);
+    Core::LinAlg::export_to(rhscardvasc0d, *mergedrhs);
     // make the 0D part of the rhs negative
     mergedrhs->Scale(-1.0);
     // export structure part of rhs -> no need to make it negative since this has been done by the
     // structural time integrator already!
-    Core::LinAlg::export_to(*rhsstruct, *mergedrhs);
+    Core::LinAlg::export_to(rhsstruct, *mergedrhs);
   }
 
   // ONLY compatability
@@ -1144,23 +1135,22 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     mapext_R.extract_vector(*mergedsol, 0, *disp_R);
 
     // initialize and write vector with pressure dofs, replace row map
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddof =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mapext_R.Map(1));
-    mapext_R.extract_vector(*mergedsol, 1, *cv0ddof);
-    cv0ddof->ReplaceMap(*cardvasc0drowmap);
+    Core::LinAlg::Vector<double> cv0ddof(*mapext_R.Map(1));
+    mapext_R.extract_vector(*mergedsol, 1, cv0ddof);
+    cv0ddof.ReplaceMap(*cardvasc0drowmap);
 
     // extend reduced displacement dofs to high dimension
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disp_full = mor_->extend_solution(disp_R);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> disp_full = mor_->extend_solution(*disp_R);
 
     // assemble displacement and pressure dofs
     mergedsol_full = mapext.insert_vector(*disp_full, 0);
-    mapext.add_vector(*cv0ddof, 1, *mergedsol_full, 1);
+    mapext.add_vector(cv0ddof, 1, *mergedsol_full, 1);
   }
   else
     mergedsol_full = mergedsol;
 
   // store results in smaller vectors
-  mapext.extract_vector(*mergedsol_full, 0, *dispinc);
+  mapext.extract_vector(*mergedsol_full, 0, dispinc);
   mapext.extract_vector(*mergedsol_full, 1, *cv0ddofincr);
 
   cv0ddofincrement_->Update(1., *cv0ddofincr, 0.);
@@ -1168,7 +1158,7 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   counter_++;
 
   // update 0D cardiovascular dofs
-  update_cv0_d_dof(cv0ddofincr);
+  update_cv0_d_dof(*cv0ddofincr);
 
   return linsolveerror_;
 }

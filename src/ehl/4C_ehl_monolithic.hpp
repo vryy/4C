@@ -147,19 +147,19 @@ namespace EHL
             matvel  //!< lubrication matrix associated with linearization wrt velocities
     );
 
-    void lin_pressure_force_disp(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dd,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dd);
-    void lin_poiseuille_force_disp(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dd,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dd);
-    void lin_couette_force_disp(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dd,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dd);
+    void lin_pressure_force_disp(
+        Core::LinAlg::SparseMatrix& ds_dd, Core::LinAlg::SparseMatrix& dm_dd);
+    void lin_poiseuille_force_disp(
+        Core::LinAlg::SparseMatrix& ds_dd, Core::LinAlg::SparseMatrix& dm_dd);
+    void lin_couette_force_disp(
+        Core::LinAlg::SparseMatrix& ds_dd, Core::LinAlg::SparseMatrix& dm_dd);
 
-    void lin_pressure_force_pres(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dp,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dp);
-    void lin_poiseuille_force_pres(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dp,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dp);
-    void lin_couette_force_pres(Teuchos::RCP<Core::LinAlg::SparseMatrix>& ds_dp,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& dm_dp);
+    void lin_pressure_force_pres(
+        Core::LinAlg::SparseMatrix& ds_dp, Core::LinAlg::SparseMatrix& dm_dp);
+    void lin_poiseuille_force_pres(
+        Core::LinAlg::SparseMatrix& ds_dp, Core::LinAlg::SparseMatrix& dm_dp);
+    void lin_couette_force_pres(
+        Core::LinAlg::SparseMatrix& ds_dp, Core::LinAlg::SparseMatrix& dm_dp);
     //@}
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
@@ -194,7 +194,7 @@ namespace EHL
 
     //! Determine norm of force residual
     double calculate_vector_norm(const enum Inpar::EHL::VectorNorm norm,  //!< norm to use
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> vect  //!< the vector of interest
+        Core::LinAlg::Vector<double>& vect  //!< the vector of interest
     );
 
     //@}

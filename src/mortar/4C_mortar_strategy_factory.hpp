@@ -117,15 +117,14 @@ namespace Mortar
        *
        *  \author Farah */
       void prepare_nurbs_element(const Core::FE::Discretization& discret,
-          Teuchos::RCP<Core::Elements::Element> ele, Teuchos::RCP<Mortar::Element> cele) const;
+          Teuchos::RCP<Core::Elements::Element> ele, Mortar::Element& cele) const;
 
       /*! \brief Prepare mortar node for NURBS case
        *
        *  Stores control point weight
        *
        *  \author Farah */
-      void prepare_nurbs_node(
-          const Core::Nodes::Node* node, Teuchos::RCP<Mortar::Node> mnode) const;
+      void prepare_nurbs_node(const Core::Nodes::Node* node, Mortar::Node& mnode) const;
 
       //!@}
 

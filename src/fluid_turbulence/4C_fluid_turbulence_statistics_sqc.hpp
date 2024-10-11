@@ -91,7 +91,7 @@ namespace FLD
     global vectors. This method allows to do the time average of the
     nodal values after a certain amount of timesteps.
     */
-    void do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp);
+    void do_time_sample(Core::LinAlg::Vector<double>& velnp);
 
     /*!
     \brief Dump the result to file.

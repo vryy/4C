@@ -76,7 +76,7 @@ void PoroElast::MonolithicStructureSplit::setup_rhs(bool firstcall)
   rhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
 
   setup_vector(
-      *rhs_, structure_field()->rhs(), fluid_field()->rhs(), fluid_field()->residual_scaling());
+      *rhs_, *structure_field()->rhs(), *fluid_field()->rhs(), fluid_field()->residual_scaling());
 
   // store interface force onto the structure to know it in the next time step as previous force
   // in order to recover the Lagrange multiplier
@@ -199,13 +199,13 @@ void PoroElast::MonolithicStructureSplit::setup_system_matrix(
 }
 
 void PoroElast::MonolithicStructureSplit::setup_vector(Core::LinAlg::Vector<double>& f,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fv, double fluidscale)
+    const Core::LinAlg::Vector<double>& sv, const Core::LinAlg::Vector<double>& fv,
+    double fluidscale)
 {
   // extract the inner and boundary dofs of all three fields
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> sov =
-      structure_field()->interface()->extract_other_vector(*sv);
+      structure_field()->interface()->extract_other_vector(sv);
 
   if (fluidscale != 0.0)
   {
@@ -216,10 +216,10 @@ void PoroElast::MonolithicStructureSplit::setup_vector(Core::LinAlg::Vector<doub
 
     // add fluid interface values to structure vector
     Teuchos::RCP<Core::LinAlg::Vector<double>> scv =
-        structure_field()->interface()->extract_fsi_cond_vector(*sv);
+        structure_field()->interface()->extract_fsi_cond_vector(sv);
     Teuchos::RCP<Core::LinAlg::Vector<double>> modfv =
         fluid_field()->interface()->insert_fsi_cond_vector(*structure_to_fluid_at_interface(scv));
-    modfv->Update(1.0, *fv, (1.0 - ftiparam) / ((1.0 - stiparam) * fluidscale));
+    modfv->Update(1.0, fv, (1.0 - ftiparam) / ((1.0 - stiparam) * fluidscale));
 
     // add contribution of Lagrange multiplier from previous time step
     if (lambda_ != Teuchos::null)
@@ -230,7 +230,7 @@ void PoroElast::MonolithicStructureSplit::setup_vector(Core::LinAlg::Vector<doub
   }
   else
   {
-    extractor()->insert_vector(*fv, 1, f);
+    extractor()->insert_vector(fv, 1, f);
   }
 
   extractor()->insert_vector(*sov, 0, f);
@@ -264,9 +264,9 @@ void PoroElast::MonolithicStructureSplit::extract_field_vectors(
         structure_field()->interface()->insert_other_vector(*sox);
     structure_field()->interface()->insert_fsi_cond_vector(*scx, *s);
 
-    auto zeros = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(s->Map(), true);
+    FourC::Core::LinAlg::Vector<double> zeros(s->Map(), true);
     Core::LinAlg::apply_dirichlet_to_system(
-        *s, *zeros, *(structure_field()->get_dbc_map_extractor()->cond_map()));
+        *s, zeros, *(structure_field()->get_dbc_map_extractor()->cond_map()));
 
     sx = s;
 

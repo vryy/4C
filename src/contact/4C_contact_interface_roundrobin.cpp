@@ -98,9 +98,8 @@ void CONTACT::Interface::round_robin_change_ownership()
   std::vector<int> ecol, erow;
 
   // create dummy
-  Teuchos::RCP<Epetra_Map> MasterColNodesdummy = Teuchos::make_rcp<Epetra_Map>(*master_col_nodes());
-  Teuchos::RCP<Epetra_Map> MasterColelesdummy =
-      Teuchos::make_rcp<Epetra_Map>(*master_col_elements());
+  Epetra_Map MasterColNodesdummy(*master_col_nodes());
+  Epetra_Map MasterColelesdummy(*master_col_elements());
 
   // create origin maps
   Teuchos::RCP<Epetra_Map> SCN = Teuchos::make_rcp<Epetra_Map>(*slave_col_nodes());
@@ -125,9 +124,9 @@ void CONTACT::Interface::round_robin_change_ownership()
   Core::Communication::PackBuffer dataeles;
 
   // now pack/store
-  for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
+  for (int i = 0; i < (int)MasterColelesdummy.NumMyElements(); ++i)
   {
-    int gid = MasterColelesdummy->GID(i);
+    int gid = MasterColelesdummy.GID(i);
     Core::Elements::Element* ele = discret().g_element(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
@@ -141,9 +140,9 @@ void CONTACT::Interface::round_robin_change_ownership()
   std::swap(sdataeles, dataeles());
 
   // delete the elements from discretization
-  for (int i = 0; i < (int)MasterColelesdummy->NumMyElements(); ++i)
+  for (int i = 0; i < (int)MasterColelesdummy.NumMyElements(); ++i)
   {
-    int gid = MasterColelesdummy->GID(i);
+    int gid = MasterColelesdummy.GID(i);
     Core::Elements::Element* ele = discret().g_element(gid);
     if (!ele) FOUR_C_THROW("Cannot find ele with gid %i", gid);
     Mortar::Element* mele = dynamic_cast<Mortar::Element*>(ele);
@@ -219,9 +218,9 @@ void CONTACT::Interface::round_robin_change_ownership()
 
   Core::Communication::PackBuffer datanodes;
 
-  for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
+  for (int i = 0; i < (int)MasterColNodesdummy.NumMyElements(); ++i)
   {
-    int gid = MasterColNodesdummy->GID(i);
+    int gid = MasterColNodesdummy.GID(i);
     Core::Nodes::Node* node = discret().g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find ele with gid %i", gid);
 
@@ -254,9 +253,9 @@ void CONTACT::Interface::round_robin_change_ownership()
   std::swap(sdatanodes, datanodes());
 
   // DELETING
-  for (int i = 0; i < (int)MasterColNodesdummy->NumMyElements(); ++i)
+  for (int i = 0; i < (int)MasterColNodesdummy.NumMyElements(); ++i)
   {
-    int gid = MasterColNodesdummy->GID(i);
+    int gid = MasterColNodesdummy.GID(i);
     Core::Nodes::Node* node = discret().g_node(gid);
     if (!node) FOUR_C_THROW("Cannot find ele with gid %i", gid);
 

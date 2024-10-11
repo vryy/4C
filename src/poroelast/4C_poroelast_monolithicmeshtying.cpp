@@ -142,7 +142,7 @@ void PoroElast::MonolithicMeshtying::recover_lagrange_multiplier_after_newton_st
 void PoroElast::MonolithicMeshtying::build_convergence_norms()
 {
   //------------------------------------------------------------ build residual force norms
-  normrhs_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_);
+  normrhs_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_s;
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_f;
@@ -171,15 +171,15 @@ void PoroElast::MonolithicMeshtying::build_convergence_norms()
   }
   else
   {
-    normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_s);
+    normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_s);
   }
 
-  normrhsfluid_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_f);
-  normrhsfluidvel_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_fvel_other);
+  normrhsfluid_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_f);
+  normrhsfluidvel_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_fvel_other);
   // residual norm of normal coupling condition on poro-fluid
-  normrhsfactiven_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_fvel_activen);
+  normrhsfactiven_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_fvel_activen);
 
-  normrhsfluidpres_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_fpres);
+  normrhsfluidpres_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_fpres);
 
 
   //------------------------------------------------------------- build residual increment norms
@@ -199,10 +199,10 @@ void PoroElast::MonolithicMeshtying::build_convergence_norms()
   interincfvel = fluid_field()->extract_velocity_part(interincf);
   interincfpres = fluid_field()->extract_pressure_part(interincf);
 
-  normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, interincs);
-  normincfluid_ = UTILS::calculate_vector_norm(vectornorminc_, interincf);
-  normincfluidvel_ = UTILS::calculate_vector_norm(vectornorminc_, interincfvel);
-  normincfluidpres_ = UTILS::calculate_vector_norm(vectornorminc_, interincfpres);
+  normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, *interincs);
+  normincfluid_ = UTILS::calculate_vector_norm(vectornorminc_, *interincf);
+  normincfluidvel_ = UTILS::calculate_vector_norm(vectornorminc_, *interincfvel);
+  normincfluidpres_ = UTILS::calculate_vector_norm(vectornorminc_, *interincfpres);
 }
 
 void PoroElast::MonolithicMeshtying::setup_extractor()

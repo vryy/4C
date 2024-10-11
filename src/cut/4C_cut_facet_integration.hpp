@@ -75,14 +75,13 @@ namespace Cut
     \brief Generate Gaussian points over the considered facet by triangulating it. This is used
     when DirectDivergence option is used for Gauss point generation
     */
-    void divergence_integration_rule(Mesh &mesh, Teuchos::RCP<Core::FE::CollectedGaussPoints> &cgp);
+    void divergence_integration_rule(Mesh &mesh, Core::FE::CollectedGaussPoints &cgp);
 
     /*!
     \brief Generate Gaussian points over the considered facet by triangulating it. This is used
     when DirectDivergence option is used for Gauss point generation
     */
-    void divergence_integration_rule_new(
-        Mesh &mesh, Teuchos::RCP<Core::FE::CollectedGaussPoints> &cgp);
+    void divergence_integration_rule_new(Mesh &mesh, Core::FE::CollectedGaussPoints &cgp);
 
    private:
     /*!

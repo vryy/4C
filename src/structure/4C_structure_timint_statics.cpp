@@ -196,7 +196,7 @@ void Solid::TimIntStatics::evaluate_force_stiff_residual(Teuchos::ParameterList&
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  apply_force_stiff_external(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_, stiff_);
+  apply_force_stiff_external(timen_, (*dis_)(0), disn_, (*vel_)(0), *fextn_, stiff_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -248,7 +248,7 @@ void Solid::TimIntStatics::evaluate_force_stiff_residual(Teuchos::ParameterList&
   // i.e. do nothing here
 
   // apply forces and stiffness due to beam contact
-  apply_force_stiff_beam_contact(stiff_, fres_, disn_, predict);
+  apply_force_stiff_beam_contact(*stiff_, *fres_, *disn_, predict);
 
   // apply forces and stiffness due to contact / meshtying
   apply_force_stiff_contact_meshtying(stiff_, fres_, disn_, predict);
@@ -279,7 +279,7 @@ void Solid::TimIntStatics::evaluate_force_residual()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  apply_force_external(timen_, (*dis_)(0), disn_, (*vel_)(0), fextn_);
+  apply_force_external(timen_, (*dis_)(0), disn_, (*vel_)(0), *fextn_);
 
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);

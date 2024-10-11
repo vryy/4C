@@ -18,12 +18,12 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-void Inpar::CONSTRAINTS::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::CONSTRAINTS::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& embeddedmeshcoupling = list->sublist("EMBEDDED MESH COUPLING", false, "");
+  Teuchos::ParameterList& embeddedmeshcoupling = list.sublist("EMBEDDED MESH COUPLING", false, "");
   {
     setStringToIntegralParameter<EmbeddedMeshCouplingStrategy>("COUPLING_STRATEGY", "none",
         "Strategy to couple background and overlapping mesh", tuple<std::string>("none", "mortar"),

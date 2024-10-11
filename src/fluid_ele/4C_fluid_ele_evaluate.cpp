@@ -341,18 +341,18 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
         {
           case Core::FE::CellType::hex8:
           {
-            FLD::f3_apply_box_filter<8>(this, fldpara, myvel, mytemp, thermpress, vel_hat,
-                densvel_hat, reynoldsstress_hat, modeled_subgrid_stress, volume_contribution,
-                dens_hat, dens_strainrate_hat, expression_hat, alpha2_hat, strainrate_hat,
-                alphaij_hat);
+            FLD::f3_apply_box_filter<8>(this, fldpara, myvel, mytemp, thermpress, *vel_hat,
+                *densvel_hat, *reynoldsstress_hat, *modeled_subgrid_stress, volume_contribution,
+                dens_hat, dens_strainrate_hat, expression_hat, alpha2_hat, *strainrate_hat,
+                *alphaij_hat);
             break;
           }
           case Core::FE::CellType::tet4:
           {
-            FLD::f3_apply_box_filter<4>(this, fldpara, myvel, mytemp, thermpress, vel_hat,
-                densvel_hat, reynoldsstress_hat, modeled_subgrid_stress, volume_contribution,
-                dens_hat, dens_strainrate_hat, expression_hat, alpha2_hat, strainrate_hat,
-                alphaij_hat);
+            FLD::f3_apply_box_filter<4>(this, fldpara, myvel, mytemp, thermpress, *vel_hat,
+                *densvel_hat, *reynoldsstress_hat, *modeled_subgrid_stress, volume_contribution,
+                dens_hat, dens_strainrate_hat, expression_hat, alpha2_hat, *strainrate_hat,
+                *alphaij_hat);
             break;
           }
           default:
@@ -416,17 +416,17 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
         {
           case Core::FE::CellType::hex8:
           {
-            FLD::f3_calc_smag_const_lij_mij_and_mij_mij<8>(this, fldpara, col_filtered_vel,
-                col_filtered_reynoldsstress, col_filtered_modeled_subgrid_stress,
-                col_filtered_dens_vel, col_filtered_dens, col_filtered_dens_strainrate, LijMij,
+            FLD::f3_calc_smag_const_lij_mij_and_mij_mij<8>(this, fldpara, *col_filtered_vel,
+                *col_filtered_reynoldsstress, *col_filtered_modeled_subgrid_stress,
+                *col_filtered_dens_vel, *col_filtered_dens, *col_filtered_dens_strainrate, LijMij,
                 MijMij, CI_numerator, CI_denominator, xcenter, ycenter, zcenter);
             break;
           }
           case Core::FE::CellType::tet4:
           {
-            FLD::f3_calc_smag_const_lij_mij_and_mij_mij<4>(this, fldpara, col_filtered_vel,
-                col_filtered_reynoldsstress, col_filtered_modeled_subgrid_stress,
-                col_filtered_dens_vel, col_filtered_dens, col_filtered_dens_strainrate, LijMij,
+            FLD::f3_calc_smag_const_lij_mij_and_mij_mij<4>(this, fldpara, *col_filtered_vel,
+                *col_filtered_reynoldsstress, *col_filtered_modeled_subgrid_stress,
+                *col_filtered_dens_vel, *col_filtered_dens, *col_filtered_dens_strainrate, LijMij,
                 MijMij, CI_numerator, CI_denominator, xcenter, ycenter, zcenter);
             break;
           }
@@ -500,14 +500,16 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
         {
           case Core::FE::CellType::hex8:
           {
-            FLD::f3_calc_vreman_const<8>(this, col_filtered_strainrate, col_filtered_alphaij,
-                col_filtered_expression, col_filtered_alpha2, cv_numerator, cv_denominator, volume);
+            FLD::f3_calc_vreman_const<8>(this, *col_filtered_strainrate, *col_filtered_alphaij,
+                *col_filtered_expression, *col_filtered_alpha2, cv_numerator, cv_denominator,
+                volume);
             break;
           }
           case Core::FE::CellType::tet4:
           {
-            FLD::f3_calc_vreman_const<4>(this, col_filtered_strainrate, col_filtered_alphaij,
-                col_filtered_expression, col_filtered_alpha2, cv_numerator, cv_denominator, volume);
+            FLD::f3_calc_vreman_const<4>(this, *col_filtered_strainrate, *col_filtered_alphaij,
+                *col_filtered_expression, *col_filtered_alpha2, cv_numerator, cv_denominator,
+                volume);
             break;
           }
           default:

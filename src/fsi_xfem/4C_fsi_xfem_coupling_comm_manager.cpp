@@ -238,12 +238,11 @@ void XFEM::CouplingCommManager::setup_multi_map_extractors(
   for (std::map<int, Teuchos::RCP<const Core::FE::Discretization>>::iterator dit = dis.begin();
        dit != dis.end(); ++dit)
   {
-    Teuchos::RCP<Core::Conditions::MultiConditionSelector> mcs =
-        Teuchos::make_rcp<Core::Conditions::MultiConditionSelector>();
+    Core::Conditions::MultiConditionSelector mcs;
     mme_[dit->first] = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
-    mcs->add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+    mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
         *dit->second, cond_name_, startdim_, enddim_));
-    mcs->setup_extractor(*dit->second, *dit->second->dof_row_map(), *mme_[dit->first]);
+    mcs.setup_extractor(*dit->second, *dit->second->dof_row_map(), *mme_[dit->first]);
   }
 }
 

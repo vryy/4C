@@ -121,7 +121,7 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
 
   // container for split residual vector
   std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> splitres(3);
-  split_vector(residual, splitres);
+  split_vector(*residual, splitres);
 
   /**********************************************************************/
   /* Evaluate mortar matrices                                           */
@@ -261,43 +261,36 @@ void ALE::Meshsliding::condensation_operation_block_matrix(
   //---------------------------------------------------------- SECOND LINE
 
   // r_m: add P^T*r_s
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rm_mod =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_, true);
-  P->multiply(true, *(splitres[2]), *rm_mod);
+  Core::LinAlg::Vector<double> rm_mod(*gmdofrowmap_, true);
+  P->multiply(true, *(splitres[2]), rm_mod);
 
   // export and add r_m subvector to residual
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rm_modexp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
-  Core::LinAlg::export_to(*rm_mod, *rm_modexp);
-  residual->Update(1.0, *rm_modexp, 1.0);
+  Core::LinAlg::Vector<double> rm_modexp(*dofrowmap_);
+  Core::LinAlg::export_to(rm_mod, rm_modexp);
+  residual->Update(1.0, rm_modexp, 1.0);
 
   //----------------------------------------------------------- THIRD LINE
 
   // r_s: * 0
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rs_delete =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
-  Core::LinAlg::export_to(*(splitres[2]), *rs_delete);
-  residual->Update(-1.0, *rs_delete, 1.0);
+  Core::LinAlg::Vector<double> rs_delete(*dofrowmap_);
+  Core::LinAlg::export_to(*(splitres[2]), rs_delete);
+  residual->Update(-1.0, rs_delete, 1.0);
 
   // r_s: add - T*D^(-1)*r_s
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rs_mod_interm =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
-  d_inv_->multiply(false, *rs_, *rs_mod_interm);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rs_mod =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
-  T->multiply(false, *rs_mod_interm, *rs_mod);
+  Core::LinAlg::Vector<double> rs_mod_interm(*gsdofrowmap_, true);
+  d_inv_->multiply(false, *rs_, rs_mod_interm);
+  Core::LinAlg::Vector<double> rs_mod(*gsdofrowmap_, true);
+  T->multiply(false, rs_mod_interm, rs_mod);
 
   // export and subtract rs_mod from residual
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rs_modexp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
-  Core::LinAlg::export_to(*rs_mod, *rs_modexp);
-  residual->Update(-1.0, *rs_modexp, 1.0);
+  Core::LinAlg::Vector<double> rs_modexp(*dofrowmap_);
+  Core::LinAlg::export_to(rs_mod, rs_modexp);
+  residual->Update(-1.0, rs_modexp, 1.0);
 
   // r_s: add gap
-  Teuchos::RCP<Core::LinAlg::Vector<double>> g_exp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap_);
-  Core::LinAlg::export_to(*gap, *g_exp);
-  residual->Update(1.0, *g_exp, 1.0);
+  Core::LinAlg::Vector<double> g_exp(*dofrowmap_);
+  Core::LinAlg::export_to(*gap, g_exp);
+  residual->Update(1.0, g_exp, 1.0);
 
   return;
 }
@@ -364,30 +357,28 @@ void ALE::Meshsliding::recover(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc)
 
   // split displacement increment
   std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> splitinc(3);
-  split_vector(inc, splitinc);
+  split_vector(*inc, splitinc);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> lm_temp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> mod =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_, true);
+  Core::LinAlg::Vector<double> lm_temp(*gsdofrowmap_, true);
+  Core::LinAlg::Vector<double> mod(*gsdofrowmap_, true);
 
   // r_s
-  lm_temp->Update(1.0, *rs_, 1.0);
+  lm_temp.Update(1.0, *rs_, 1.0);
 
   // + A_ss*d_s
-  a_ss_->multiply(false, *(splitinc[2]), *mod);
-  lm_temp->Update(1.0, *mod, 1.0);
+  a_ss_->multiply(false, *(splitinc[2]), mod);
+  lm_temp.Update(1.0, mod, 1.0);
 
   // + A_sm*d_m
-  a_sm_->multiply(false, *(splitinc[1]), *mod);
-  lm_temp->Update(1.0, *mod, 1.0);
+  a_sm_->multiply(false, *(splitinc[1]), mod);
+  lm_temp.Update(1.0, mod, 1.0);
 
   // + A_sn*d_n
-  a_sn_->multiply(false, *(splitinc[0]), *mod);
-  lm_temp->Update(1.0, *mod, 1.0);
+  a_sn_->multiply(false, *(splitinc[0]), mod);
+  lm_temp.Update(1.0, mod, 1.0);
 
   // - D^(-1) *
-  d_inv_->multiply(false, *lm_temp, *lm_);
+  d_inv_->multiply(false, lm_temp, *lm_);
   lm_->Scale(-1.0);
 }
 

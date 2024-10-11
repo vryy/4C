@@ -139,11 +139,11 @@ namespace CONSTRAINTS
     void update_lagr_mult(double factor);
 
     /// Add a vector as residual increment to the vector of Lagrange multipliers
-    void update_lagr_mult(Teuchos::RCP<Core::LinAlg::Vector<double>> vect  ///< vector to add
+    void update_lagr_mult(Core::LinAlg::Vector<double>& vect  ///< vector to add
     );
 
     /// Add a vector as total increment to the vector of Lagrange multipliers
-    void update_tot_lagr_mult(Teuchos::RCP<Core::LinAlg::Vector<double>> vect  ///< vector to add
+    void update_tot_lagr_mult(Core::LinAlg::Vector<double>& vect  ///< vector to add
     );
 
     /*!
@@ -258,17 +258,17 @@ namespace CONSTRAINTS
 
     /// Reset reference base values for restart computations
     void set_ref_base_values(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> newrefvals,  ///< new reference base values
-        const double& time                                      ///< current time
+        Core::LinAlg::Vector<double>& newrefvals,  ///< new reference base values
+        const double& time                         ///< current time
     );
 
     /// Reset lagrange multipliers
     void set_lagr_mult_vector(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> newlagrmult  ///< new lagrange multipliers
+        Core::LinAlg::Vector<double>& newlagrmult  ///< new lagrange multipliers
     )
     {
-      lagr_mult_vec_->Update(1.0, *newlagrmult, 0.0);
-      lagr_mult_vec_old_->Update(1.0, *newlagrmult, 0.0);
+      lagr_mult_vec_->Update(1.0, newlagrmult, 0.0);
+      lagr_mult_vec_old_->Update(1.0, newlagrmult, 0.0);
       return;
     }
 

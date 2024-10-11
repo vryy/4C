@@ -30,9 +30,8 @@ namespace FS3I
   {
     namespace UTILS
     {
-      void scatra_change_config(Teuchos::RCP<Core::FE::Discretization> scatradis,
-          Teuchos::RCP<Core::FE::Discretization> dis,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> disp);
+      void scatra_change_config(Core::FE::Discretization& scatradis, Core::FE::Discretization& dis,
+          Core::LinAlg::Vector<double>& disp);
 
     } /* namespace UTILS */
   }   // namespace BioFilm

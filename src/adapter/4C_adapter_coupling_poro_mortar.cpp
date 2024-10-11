@@ -430,7 +430,7 @@ void Adapter::CouplingPoroMortar::evaluate_poro_mt(Teuchos::RCP<Core::LinAlg::Ve
   interface_->evaluate();
 
   porolagstrategy_->poro_mt_prepare_fluid_coupling();
-  porolagstrategy_->poro_initialize(coupfs, fdofrowmap, firstinit_);
+  porolagstrategy_->poro_initialize(coupfs, *fdofrowmap, firstinit_);
   if (firstinit_) firstinit_ = false;
 
   // do system matrix manipulations

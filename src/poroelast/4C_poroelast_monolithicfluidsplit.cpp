@@ -82,7 +82,7 @@ void PoroElast::MonolithicFluidSplit::setup_rhs(bool firstcall)
   rhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
 
   setup_vector(
-      *rhs_, structure_field()->rhs(), fluid_field()->rhs(), fluid_field()->residual_scaling());
+      *rhs_, structure_field()->rhs(), *fluid_field()->rhs(), fluid_field()->residual_scaling());
 
   if (firstcall and evaluateinterface_)
   {
@@ -257,13 +257,13 @@ void PoroElast::MonolithicFluidSplit::setup_system_matrix(Core::LinAlg::BlockSpa
 }
 
 void PoroElast::MonolithicFluidSplit::setup_vector(Core::LinAlg::Vector<double>& f,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fv, double fluidscale)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv, const Core::LinAlg::Vector<double>& fv,
+    double fluidscale)
 {
   // extract the inner and boundary dofs of all fields
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> fov =
-      fluid_field()->interface()->extract_other_vector(*fv);
+      fluid_field()->interface()->extract_other_vector(fv);
 #ifdef FLUIDSPLITAMG
   fov = fluid_field()->interface()->insert_other_vector(*fov);
 #endif
@@ -304,9 +304,9 @@ void PoroElast::MonolithicFluidSplit::extract_field_vectors(
         fluid_field()->interface()->insert_other_vector(*fox);
     fluid_field()->interface()->insert_fsi_cond_vector(*fcx, *f);
 
-    auto zeros = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(f->Map(), true);
+    FourC::Core::LinAlg::Vector<double> zeros(f->Map(), true);
     Core::LinAlg::apply_dirichlet_to_system(
-        *f, *zeros, *(fluid_field()->get_dbc_map_extractor()->cond_map()));
+        *f, zeros, *(fluid_field()->get_dbc_map_extractor()->cond_map()));
 
     fx = f;
 

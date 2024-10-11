@@ -113,8 +113,7 @@ namespace Mortar
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
           std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces, const Epetra_Map* dof_row_map,
           const Epetra_Map* node_row_map, const int dim,
-          const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
-          Teuchos::RCP<Mortar::StratDataContainer> data_ptr);
+          const Teuchos::RCP<const Epetra_Comm>& comm_ptr, Mortar::StratDataContainer& data_ptr);
 
      protected:
      private:

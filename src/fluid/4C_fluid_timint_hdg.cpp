@@ -341,10 +341,9 @@ void FLD::TimIntHDG::set_initial_flow_field(
       initfield == Inpar::FLUID::initfield_passive_hit_const_input)
   {
     // initialize calculation of initial field based on fast Fourier transformation
-    Teuchos::RCP<HomIsoTurbInitialField> HitInitialFieldHDG =
-        Teuchos::make_rcp<FLD::HomIsoTurbInitialFieldHDG>(*this, initfield);
+    HomIsoTurbInitialFieldHDG HitInitialFieldHDG(*this, initfield);
     // calculate initial field
-    HitInitialFieldHDG->calculate_initial_field();
+    HitInitialFieldHDG.calculate_initial_field();
 
     // get statistics of initial field
     call_statistics_manager();

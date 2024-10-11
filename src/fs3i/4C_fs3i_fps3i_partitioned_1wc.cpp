@@ -233,7 +233,7 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
           scatravec_[0]->scatra_field()->phinp();
       Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra2 =
           scatravec_[1]->scatra_field()->phinp();
-      setup_coupled_scatra_vector(con, scatra1, scatra2);
+      setup_coupled_scatra_vector(*con, *scatra1, *scatra2);
       con->Norm2(&connorm);
 
       // care for the case that nothing really happens in the concentration field

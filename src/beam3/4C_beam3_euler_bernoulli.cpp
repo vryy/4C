@@ -241,17 +241,16 @@ int Discret::ELEMENTS::Beam3ebType::initialize(Core::FE::Discretization& dis)
 
     // the next section is needed in case of periodic boundary conditions and a shifted
     // configuration (i.e. elements cut by the periodic boundary) in the input file
-    Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox =
-        Teuchos::make_rcp<Core::Geo::MeshFree::BoundingBox>();
-    periodic_boundingbox->init(
+    Core::Geo::MeshFree::BoundingBox periodic_boundingbox;
+    periodic_boundingbox.init(
         Global::Problem::instance()->binning_strategy_params());  // no setup() call needed here
 
     std::vector<double> disp_shift;
     int numdof = currele->num_dof_per_node(*(currele->nodes()[0]));
     disp_shift.resize(numdof * numNnodes);
     for (unsigned int i = 0; i < disp_shift.size(); ++i) disp_shift[i] = 0.0;
-    if (periodic_boundingbox->have_pbc())
-      currele->un_shift_node_position(disp_shift, *periodic_boundingbox);
+    if (periodic_boundingbox.have_pbc())
+      currele->un_shift_node_position(disp_shift, periodic_boundingbox);
 
     // getting element's nodal coordinates and treating them as reference configuration
     if (currele->nodes()[0] == nullptr || currele->nodes()[1] == nullptr)

@@ -217,7 +217,7 @@ namespace Discret
 
       /// Updates interior variables and calculates residual.
       void update_interior_variables_and_compute_residual(Teuchos::ParameterList& params,
-          Discret::ELEMENTS::Elemag& ele, const Teuchos::RCP<Core::Mat::Material>& mat,
+          Discret::ELEMENTS::Elemag& ele, Core::Mat::Material& mat,
           Core::LinAlg::SerialDenseVector& elevec, double dt, bool errormaps, bool updateonly);
 
       /// Reads from global vectors.

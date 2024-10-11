@@ -63,7 +63,7 @@ namespace Inpar
     };
 
     /// set the fpsi parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// set specific fpsi conditions
     void set_valid_conditions(

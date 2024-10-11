@@ -65,7 +65,7 @@ void Adapter::FBIConstraintBridge::create_pair(
 {
   // create a new beaminteratcion pair
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newinteractionpair =
-      FBI::PairFactory::create_pair(elements, get_params());
+      FBI::PairFactory::create_pair(elements, *get_params());
 
   // create the underlying geometrypair doing the integration (segment or gauss point projection
   // based)

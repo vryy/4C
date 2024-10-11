@@ -252,20 +252,19 @@ void ALE::Ale::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc
 
     // When using local systems, a rotated dispnp_ vector needs to be used as dbcval for
     // apply_dirichlet_to_system
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_local =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(zeros_));
-    locsys_manager()->rotate_global_to_local(*dispnp_local);
+    Core::LinAlg::Vector<double> dispnp_local(*(zeros_));
+    locsys_manager()->rotate_global_to_local(dispnp_local);
 
     if (get_loc_sys_trafo() != Teuchos::null)
     {
       Core::LinAlg::apply_dirichlet_to_system(
           *Core::LinAlg::cast_to_sparse_matrix_and_check_success(sysmat_), *disi_, *residual_,
-          *get_loc_sys_trafo(), *dispnp_local, *(dbcmaps_[dbc_type]->cond_map()));
+          *get_loc_sys_trafo(), dispnp_local, *(dbcmaps_[dbc_type]->cond_map()));
     }
     else
     {
       Core::LinAlg::apply_dirichlet_to_system(
-          *sysmat_, *disi_, *residual_, *dispnp_local, *(dbcmaps_[dbc_type]->cond_map()));
+          *sysmat_, *disi_, *residual_, dispnp_local, *(dbcmaps_[dbc_type]->cond_map()));
     }
   }
   else

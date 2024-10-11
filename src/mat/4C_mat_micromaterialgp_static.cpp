@@ -352,7 +352,7 @@ void Mat::MicroMaterialGP::output()
   // set displacements and EAS data of last step
   microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
       old_kaainv_, old_kda_);
-  microstatic->output(micro_output_, time_, step_, dt_);
+  microstatic->output(*micro_output_, time_, step_, dt_);
 
   // we don't need these containers anymore
   stress_ = Teuchos::null;

@@ -191,7 +191,7 @@ class BeamDiscretizationRuntimeOutputWriter
    *  \author eichinger
    *  \date 08/17 */
   void append_element_orientation_paramater(
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
+      const Core::LinAlg::Vector<double>& displacement_state_vector);
 
   /** \brief append sum of all element (node 0) internal energy cut in direction cut_dim
    *

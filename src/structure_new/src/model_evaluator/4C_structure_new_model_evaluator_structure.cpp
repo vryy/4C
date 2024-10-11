@@ -667,7 +667,7 @@ void Solid::ModelEvaluator::Structure::write_time_step_output_runtime_structure(
 
   auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
       visualization_params_, global_state().get_time_n(), global_state().get_step_n());
-  write_output_runtime_structure(disn_col, veln_col, output_step, output_time);
+  write_output_runtime_structure(*disn_col, *veln_col, output_step, output_time);
 }
 
 /*----------------------------------------------------------------------------*
@@ -688,15 +688,14 @@ void Solid::ModelEvaluator::Structure::write_iteration_output_runtime_structure(
   auto [output_time, output_step] =
       Core::IO::get_time_and_time_step_index_for_output(visualization_params_,
           global_state().get_time_n(), global_state().get_step_n(), eval_data().get_nln_iter());
-  write_output_runtime_structure(disnp_col, velnp_col, output_step, output_time);
+  write_output_runtime_structure(*disnp_col, *velnp_col, output_step, output_time);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& displacement_state_vector,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& velocity_state_vector, int timestep_number,
-    double time) const
+    Core::LinAlg::Vector<double>& displacement_state_vector,
+    Core::LinAlg::Vector<double>& velocity_state_vector, int timestep_number, double time) const
 {
   check_init_setup();
 
@@ -714,7 +713,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
   {
     std::vector<std::optional<std::string>> context(global_state().get_dim(), "displacement");
     vtu_writer_ptr_->append_result_data_vector_with_context(
-        *displacement_state_vector, Core::IO::OutputEntity::dof, context);
+        displacement_state_vector, Core::IO::OutputEntity::dof, context);
   }
 
   // append velocity if desired
@@ -722,7 +721,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
   {
     std::vector<std::optional<std::string>> context(global_state().get_dim(), "velocity");
     vtu_writer_ptr_->append_result_data_vector_with_context(
-        *velocity_state_vector, Core::IO::OutputEntity::dof, context);
+        velocity_state_vector, Core::IO::OutputEntity::dof, context);
   }
 
   // append element owner if desired
@@ -1147,7 +1146,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_beams(
 
   // append filament id and type if desired
   if (beam_output_params.is_write_orientation_paramter())
-    beam_vtu_writer_ptr_->append_element_orientation_paramater(displacement_state_vector);
+    beam_vtu_writer_ptr_->append_element_orientation_paramater(*displacement_state_vector);
 
   // append reference length if desired.
   if (beam_output_params.is_write_ref_length()) beam_vtu_writer_ptr_->append_ref_length();
@@ -1250,13 +1249,13 @@ void Solid::ModelEvaluator::Structure::evaluate_neumann(
 {
   Teuchos::ParameterList p;
   p.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
-  evaluate_neumann(p, eval_vec, eval_mat);
+  evaluate_neumann(p, *eval_vec, eval_mat);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::evaluate_neumann(Teuchos::ParameterList& p,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& eval_vec,
+    Core::LinAlg::Vector<double>& eval_vec,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& eval_mat)
 {
   if (p.numParams() > 1)
@@ -1268,7 +1267,7 @@ void Solid::ModelEvaluator::Structure::evaluate_neumann(Teuchos::ParameterList& 
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<Core::Elements::ParamsInterface>>(
           "interface"))
     FOUR_C_THROW("The given parameter has the wrong type!");
-  discret().evaluate_neumann(p, *eval_vec, eval_mat.get());
+  discret().evaluate_neumann(p, eval_vec, eval_mat.get());
   discret().clear_state();
 }
 

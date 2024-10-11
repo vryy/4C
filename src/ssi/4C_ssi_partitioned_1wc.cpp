@@ -85,9 +85,8 @@ void SSI::SSIPart1WC::do_scatra_step()
     int diffsteps = structure_field()->dt() / scatra_field()->dt();
     if (scatra_field()->step() % diffsteps == 0)
     {
-      Teuchos::RCP<Core::IO::DiscretizationReader> reader =
-          Teuchos::make_rcp<Core::IO::DiscretizationReader>(scatra_field()->discretization(),
-              Global::Problem::instance()->input_control_file(), scatra_field()->step());
+      Core::IO::DiscretizationReader reader(scatra_field()->discretization(),
+          Global::Problem::instance()->input_control_file(), scatra_field()->step());
 
       // check if this is a cardiac monodomain problem
       Teuchos::RCP<ScaTra::TimIntCardiacMonodomain> cardmono =
@@ -96,7 +95,7 @@ void SSI::SSIPart1WC::do_scatra_step()
       if (cardmono == Teuchos::null)
       {
         // read phinp from restart file
-        Teuchos::RCP<Epetra_MultiVector> phinptemp = reader->read_vector("phinp");
+        Teuchos::RCP<Epetra_MultiVector> phinptemp = reader.read_vector("phinp");
 
         // replace old scatra map with new map since ssi map has more dofs
         int err = phinptemp->ReplaceMap(*scatra_field()->dof_row_map());
@@ -112,7 +111,7 @@ void SSI::SSIPart1WC::do_scatra_step()
             Core::LinAlg::create_vector(*cardmono->discretization()->node_row_map());
 
         // read phinp from restart file
-        reader->read_vector(phinptemp, "phinp");
+        reader.read_vector(phinptemp, "phinp");
 
         // replace old scatra map with new map since ssi map has more dofs
         int err = phinptemp->ReplaceMap(*scatra_field()->dof_row_map());

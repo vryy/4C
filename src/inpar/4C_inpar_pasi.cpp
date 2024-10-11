@@ -19,12 +19,12 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | set valid parameters for pasi                                             |
  *---------------------------------------------------------------------------*/
-void Inpar::PaSI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::PaSI::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& pasidyn = list->sublist("PASI DYNAMIC", false,
+  Teuchos::ParameterList& pasidyn = list.sublist("PASI DYNAMIC", false,
       "general control parameters for particle structure interaction problems");
 
   // time loop control

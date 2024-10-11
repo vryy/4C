@@ -271,7 +271,7 @@ namespace ScaTra
     //! dimension. Thus, the dimension of each null space is decreased by one, and the corresponding
     //! zero null space vector is removed from the null space.
     void reduce_dimension_null_space_blocks(
-        Teuchos::RCP<Core::LinAlg::Solver> solver, int init_block_number) const;
+        Core::LinAlg::Solver& solver, int init_block_number) const;
 
     /*--- calculate and update -----------------------------------------------*/
 
@@ -304,8 +304,7 @@ namespace ScaTra
     //! \param systemmatrix  global system matrix
     //! \param rhs           global right-hand side vector
     void evaluate_electrode_boundary_kinetics_point_conditions(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs);
+        Core::LinAlg::SparseOperator& systemmatrix, Core::LinAlg::Vector<double>& rhs);
 
     //! Add Linearization for Nernst-BC
     void linearization_nernst_condition();
@@ -329,7 +328,7 @@ namespace ScaTra
 
     //! check for negative values of concentrations (ELCH)
     void check_concentration_values(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vec  //!< current phi vector to be checked
+        Core::LinAlg::Vector<double>& vec  //!< current phi vector to be checked
     );
 
     /*========================================================================*/

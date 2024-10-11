@@ -389,9 +389,9 @@ namespace FLD
     /// get a new state class
     virtual Teuchos::RCP<FLD::XFluidState> get_new_state();
 
-    void extract_node_vectors(Teuchos::RCP<XFEM::DiscretizationXFEM> dis,
+    void extract_node_vectors(XFEM::DiscretizationXFEM& dis,
         std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_col);
+        Core::LinAlg::Vector<double>& dispnp_col);
 
     /// call the loop over elements to assemble volume and interface integrals
     virtual void assemble_mat_and_rhs(int itnum  ///< iteration number
@@ -406,16 +406,14 @@ namespace FLD
         const Teuchos::RCP<Cut::CutWizard>& wizard, bool is_ghost_penalty_reconstruct = false);
 
     /// evaluate gradient penalty terms to reconstruct ghost values
-    void assemble_mat_and_rhs_gradient_penalty(
-        Teuchos::RCP<Core::LinAlg::MapExtractor> ghost_penaly_dbcmaps,
+    void assemble_mat_and_rhs_gradient_penalty(Core::LinAlg::MapExtractor& ghost_penaly_dbcmaps,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_gp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> residual_gp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vec);
+        Core::LinAlg::Vector<double>& residual_gp, Teuchos::RCP<Core::LinAlg::Vector<double>> vec);
 
     /// integrate the shape function and assemble into a vector for KrylovSpaceProjection
     void integrate_shape_function(Teuchos::ParameterList& eleparams,  ///< element parameters
-        Core::FE::Discretization& discret,              ///< background fluid discretization
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vec  ///< vector into which we assemble
+        Core::FE::Discretization& discret,  ///< background fluid discretization
+        Core::LinAlg::Vector<double>& vec   ///< vector into which we assemble
     );
 
     /*!
@@ -430,11 +428,10 @@ namespace FLD
 
     void set_old_part_of_righthandside() override;
 
-    void set_old_part_of_righthandside(const Teuchos::RCP<Core::LinAlg::Vector<double>>& veln,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnm,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& accn,
+    void set_old_part_of_righthandside(Core::LinAlg::Vector<double>& veln,
+        Core::LinAlg::Vector<double>& velnm, Core::LinAlg::Vector<double>& accn,
         const Inpar::FLUID::TimeIntegrationScheme timealgo, const double dta, const double theta,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& hist);
+        Core::LinAlg::Vector<double>& hist);
 
     void set_gamma(Teuchos::ParameterList& eleparams) override;
 
@@ -494,9 +491,9 @@ namespace FLD
         const bool screen_out, const bool firstcall_in_timestep);
 
     /// did the dofsets change?
-    bool x_timint_changed_dofsets(Teuchos::RCP<Core::FE::Discretization> dis,  ///< discretization
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset,                                 ///< first dofset
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset_other                            ///< other dofset
+    bool x_timint_changed_dofsets(Core::FE::Discretization& dis,  ///< discretization
+        XFEM::XFEMDofSet& dofset,                                 ///< first dofset
+        XFEM::XFEMDofSet& dofset_other                            ///< other dofset
     );
 
     /// transfer vectors between two time-steps or Newton steps
@@ -536,8 +533,8 @@ namespace FLD
 
     /// create DBC and free map and return their common extractor
     Teuchos::RCP<Core::LinAlg::MapExtractor> create_dbc_map_extractor(
-        const Teuchos::RCP<const std::set<int>> dbcgids,  ///< dbc global dof ids
-        const Epetra_Map* dofrowmap                       ///< dofrowmap
+        const std::set<int>& dbcgids,  ///< dbc global dof ids
+        const Epetra_Map* dofrowmap    ///< dofrowmap
     );
 
     /// create new dbc maps for ghost penalty reconstruction and reconstruct value which are not
@@ -638,9 +635,9 @@ namespace FLD
 
     void update_iter_incrementally(Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) override;
 
-    void compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_dom_norms,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_interf_norms,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_stab_norms);
+    void compute_error_norms(Core::LinAlg::SerialDenseVector& glob_dom_norms,
+        Core::LinAlg::SerialDenseVector& glob_interf_norms,
+        Core::LinAlg::SerialDenseVector& glob_stab_norms);
 
     /*!
       \brief compute values at intermediate time steps for gen.-alpha

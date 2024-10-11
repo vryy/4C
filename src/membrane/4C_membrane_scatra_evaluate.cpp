@@ -45,10 +45,9 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
         FOUR_C_THROW("can not get state vector %s", scalarfield.c_str());
 
       // extract local values of the global vectors
-      Teuchos::RCP<std::vector<double>> myscalar =
-          Teuchos::make_rcp<std::vector<double>>(la[1].lm_.size(), 0.0);
+      std::vector<double> myscalar(la[1].lm_.size(), 0.0);
 
-      Core::FE::extract_my_values(*scalarnp, *myscalar, la[1].lm_);
+      Core::FE::extract_my_values(*scalarnp, myscalar, la[1].lm_);
 
       // element vector for k-th scalar
       std::vector<Core::LinAlg::Matrix<Membrane<distype>::numnod_, 1>> elescalar(numscal);
@@ -56,7 +55,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
       {
         for (int i = 0; i < Membrane<distype>::numnod_; ++i)
         {
-          (elescalar.at(k))(i, 0) = myscalar->at(numscal * i + k);
+          (elescalar.at(k))(i, 0) = myscalar.at(numscal * i + k);
         }
       }
 

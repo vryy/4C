@@ -35,11 +35,11 @@ namespace Adapter
     StructureRedAirway(Teuchos::RCP<Structure> stru);
 
     /// set pressure calculated from reduced-d airway tree
-    void set_pressure(Teuchos::RCP<Core::LinAlg::Vector<double>> couppres);
+    void set_pressure(Core::LinAlg::Vector<double>& couppres);
 
     /// calculate outlet fluxes for reduced-d airway tree
-    void calc_flux(Teuchos::RCP<Core::LinAlg::Vector<double>> coupflux,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> coupvol, double dt);
+    void calc_flux(
+        Core::LinAlg::Vector<double>& coupflux, Core::LinAlg::Vector<double>& coupvol, double dt);
 
     /// calculate volume
     void calc_vol(std::map<int, double>& V);
