@@ -195,7 +195,7 @@ void Mat::add_kronecker_tensor_product(Core::LinAlg::Matrix<6, 6>& C, const doub
   C(2, 1) = scalar_this * C(2, 1) + scalar_AB * (A(2, 1) * B(2, 1));  // C3322
   C(2, 2) = scalar_this * C(2, 2) + scalar_AB * (A(2, 2) * B(2, 2));  // C3333
   C(2, 3) =
-      scalar_this * C(2, 3) + scalar_AB_half * (A(2, 1) * B(2, 1) + A(2, 1) * B(2, 0));  // C3312
+      scalar_this * C(2, 3) + scalar_AB_half * (A(2, 0) * B(2, 1) + A(2, 1) * B(2, 0));  // C3312
   C(2, 4) =
       scalar_this * C(2, 4) + scalar_AB_half * (A(2, 1) * B(2, 2) + A(2, 2) * B(2, 1));  // C3323
   C(2, 5) =
