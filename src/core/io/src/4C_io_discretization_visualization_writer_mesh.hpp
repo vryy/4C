@@ -56,11 +56,6 @@ namespace Core::IO
             [](const Core::Elements::Element*) { return true; });
 
     /**
-     * @brief Destructor
-     */
-    virtual ~DiscretizationVisualizationWriterMesh() = default;
-
-    /**
      * @brief Reset state depending if the maps changed or not
      */
     void reset();

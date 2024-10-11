@@ -76,7 +76,7 @@ namespace Core::IO
         Teuchos::RCP<Core::IO::InputControl> input, int step);
 
     /// destructor
-    virtual ~DiscretizationReader() = default;
+    ~DiscretizationReader() = default;
 
     /**
      * \brief read in and return vector
@@ -177,7 +177,7 @@ namespace Core::IO
     void find_result_group(int step, MAP* file);
 
     /// access the Epetra_Comm object
-    [[nodiscard]] virtual const Epetra_Comm& get_comm() const;
+    [[nodiscard]] const Epetra_Comm& get_comm() const;
 
     MAP* restart_step_map() { return restart_step_; }
 
@@ -243,7 +243,7 @@ namespace Core::IO
         const Teuchos::RCP<OutputControl>& control, enum CopyType type);
 
     /// cleanup, close hdf5 files
-    virtual ~DiscretizationWriter();
+    ~DiscretizationWriter();
 
     //!@name Output methods
     //@{
@@ -255,7 +255,7 @@ namespace Core::IO
       \param step : current time step
       \param time : current absolute time
     */
-    virtual void new_step(const int step, const double time);
+    void new_step(const int step, const double time);
 
     //! write a result double to control file
     /*!
@@ -265,7 +265,7 @@ namespace Core::IO
       \param name : control file entry name
       \param value  : the result data value
     */
-    virtual void write_double(const std::string name, const double value);
+    void write_double(const std::string name, const double value);
 
     //! write a result integer to constrol file
     /*!
@@ -275,7 +275,7 @@ namespace Core::IO
       \param name : control file entry name
       \param value  : the result data value
     */
-    virtual void write_int(const std::string name, const int value);
+    void write_int(const std::string name, const int value);
 
     //! write a result vector
     /*!
@@ -286,11 +286,11 @@ namespace Core::IO
       \param vec  : the result data vector
       \param vt   : vector type
     */
-    virtual void write_vector(const std::string name,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec, VectorType vt = dofvector);
+    void write_vector(const std::string name, Teuchos::RCP<const Core::LinAlg::Vector<double>> vec,
+        VectorType vt = dofvector);
 
-    virtual void write_multi_vector(const std::string name,
-        Teuchos::RCP<const Epetra_MultiVector> vec, VectorType vt = dofvector);
+    void write_multi_vector(const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec,
+        VectorType vt = dofvector);
 
 
 
@@ -304,39 +304,39 @@ namespace Core::IO
       \param elemap: element map of discretization
       \param vt   : vector type
     */
-    virtual void write_vector(const std::string name, const std::vector<char>& vec,
+    void write_vector(const std::string name, const std::vector<char>& vec,
         const Epetra_Map& elemap, VectorType vt = dofvector);
 
     //! write new mesh and result file next time it is possible
-    virtual void create_new_result_and_mesh_file()
+    void create_new_result_and_mesh_file()
     {
       resultfile_changed_ = -1;
       meshfile_changed_ = -1;
     };
 
-    virtual bool have_result_or_mesh_file_changed()
+    bool have_result_or_mesh_file_changed()
     {
       return resultfile_changed_ == -1 or meshfile_changed_ == -1;
     }
 
     //! write new "field" group to control file including node and element chunks
-    virtual void write_mesh(const int step, const double time);
+    void write_mesh(const int step, const double time);
 
     // for MLMC purposes do not write new meshfile but write name of base mesh file to controlfile
-    virtual void write_mesh(const int step, const double time, std::string name_base_file);
+    void write_mesh(const int step, const double time, std::string name_base_file);
 
     // for particle simulations: write only nodes in new "field" group to control file
-    virtual void write_only_nodes_in_new_field_group_to_control_file(
+    void write_only_nodes_in_new_field_group_to_control_file(
         const int step, const double time, const bool writerestart);
 
     //! write element data to file
-    virtual void write_element_data(bool writeowner);
+    void write_element_data(bool writeowner);
 
     //! write node data to file
-    virtual void write_node_data(bool writeowner);
+    void write_node_data(bool writeowner);
 
     //! write a non discretisation based vector of chars
-    virtual void write_char_data(const std::string name, Teuchos::RCP<std::vector<char>> charvec);
+    void write_char_data(const std::string name, Teuchos::RCP<std::vector<char>> charvec);
 
     //! write a non discretisation based vector of doubles
     /*!
@@ -344,7 +344,7 @@ namespace Core::IO
       which is present on all procs. It shall be read from proc0 again and then
       communicated to all present procs.
      */
-    virtual void write_redundant_double_vector(
+    void write_redundant_double_vector(
         const std::string name, Teuchos::RCP<std::vector<double>> doublevec);
 
     //! write a non discretisation based vector of integers
@@ -353,20 +353,20 @@ namespace Core::IO
       which is present on all procs. It shall be read from proc0 again and then
       communicated to all present procs.
      */
-    virtual void write_redundant_int_vector(
+    void write_redundant_int_vector(
         const std::string name, Teuchos::RCP<std::vector<int>> vectorint);
 
     /// overwrite result files
-    virtual void overwrite_result_file();
+    void overwrite_result_file();
 
     /// creating new result files
-    virtual void new_result_file(int numb_run);
+    void new_result_file(int numb_run);
 
     /// creating new result files for the mlmc
-    virtual void new_result_file(std::string name_appendix, int numb_run);
+    void new_result_file(std::string name_appendix, int numb_run);
 
     /// creating new result files using the provided name
-    virtual void new_result_file(std::string name);
+    void new_result_file(std::string name);
 
     //@}
 
@@ -374,15 +374,15 @@ namespace Core::IO
     //@{
 
     /// clear all stored map data
-    virtual void clear_map_cache();
+    void clear_map_cache();
 
     //@}
 
     /// get output control
-    [[nodiscard]] virtual Teuchos::RCP<OutputControl> output() const { return output_; }
+    [[nodiscard]] Teuchos::RCP<OutputControl> output() const { return output_; }
 
     /// set output control
-    virtual void set_output(Teuchos::RCP<OutputControl> output);
+    void set_output(Teuchos::RCP<OutputControl> output);
 
     /// access discretization
     [[nodiscard]] const Core::FE::Discretization& get_discretization() const;
@@ -392,7 +392,7 @@ namespace Core::IO
     DiscretizationWriter();
 
     /// access the Epetra_Comm object
-    [[nodiscard]] virtual const Epetra_Comm& get_comm() const;
+    [[nodiscard]] const Epetra_Comm& get_comm() const;
 
     /*!
       \brief write a knotvector for a nurbs discretisation
@@ -400,10 +400,10 @@ namespace Core::IO
     void write_knotvector() const;
 
     //! open new mesh file
-    virtual void create_mesh_file(const int step);
+    void create_mesh_file(const int step);
 
     //! open new result file
-    virtual void create_result_file(const int step);
+    void create_result_file(const int step);
 
     //! my discretization
     Teuchos::RCP<Core::FE::Discretization> dis_;
