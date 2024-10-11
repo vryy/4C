@@ -22,13 +22,13 @@ namespace Inpar
   {
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+    void set_valid_parameters(Teuchos::ParameterList& list)
     {
       using Teuchos::setStringToIntegralParameter;
       using Teuchos::tuple;
 
       // related sublist
-      Teuchos::ParameterList& sublist_IO = list->sublist("IO", false, "");
+      Teuchos::ParameterList& sublist_IO = list.sublist("IO", false, "");
       Teuchos::ParameterList& sublist_IO_monitor_structure_dbc =
           sublist_IO.sublist("MONITOR STRUCTURE DBC", false, "");
 

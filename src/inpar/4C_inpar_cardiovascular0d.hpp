@@ -57,7 +57,7 @@ namespace Inpar
     };
 
     /// set the 0Dcardiovascular parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// set specific 0Dcardiovascular conditions
     void set_valid_conditions(

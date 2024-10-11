@@ -16,13 +16,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Inpar::PROBLEMTYPE::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::PROBLEMTYPE::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& type = list->sublist("PROBLEM TYP", false, "");
+  Teuchos::ParameterList& type = list.sublist("PROBLEM TYP", false, "");
 
   {
     using IntegerType = Core::ProblemType;

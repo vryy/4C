@@ -256,7 +256,7 @@ namespace Solid
         const Teuchos::RCP<Core::LinAlg::Vector<double>> dis,   //!< old displacement state
         const Teuchos::RCP<Core::LinAlg::Vector<double>> disn,  //!< new displacement state
         const Teuchos::RCP<Core::LinAlg::Vector<double>> vel,   // velocity state
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& fext,       //!< external force
+        Core::LinAlg::Vector<double>& fext,                     //!< external force
         Teuchos::RCP<Core::LinAlg::SparseOperator>& fextlin     //!< linearization of external force
     );
 
@@ -327,15 +327,15 @@ namespace Solid
 
     //! Evaluate forces and stiffness due to beam contact
     void apply_force_stiff_beam_contact(
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff,  //!< stiffness is modified
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& fres,   //!< residual forces are modified
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& dis,    //!< current displacement state
-        bool predict                                        //!< flag indicating predictor step
+        Core::LinAlg::SparseOperator& stiff,  //!< stiffness is modified
+        Core::LinAlg::Vector<double>& fres,   //!< residual forces are modified
+        Core::LinAlg::Vector<double>& dis,    //!< current displacement state
+        bool predict                          //!< flag indicating predictor step
     );
 
     //! Check residual displacement and scale it if necessary
     void limit_stepsize_beam_contact(
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& disi  //!< residual displacement vector
+        Core::LinAlg::Vector<double>& disi  //!< residual displacement vector
     );
 
     //! Evaluate forces and stiffness due to spring dash-pot boundary condition
@@ -591,7 +591,7 @@ namespace Solid
 
     //! Create status test for non-linear solution with NOX
     Teuchos::RCP<::NOX::StatusTest::Combo> nox_create_status_test(
-        Teuchos::RCP<::NOX::Abstract::Group> grp  //!< NOX group
+        ::NOX::Abstract::Group& grp  //!< NOX group
     );
 
     //! Create solver parameters for  non-linear solution with NOX
@@ -606,15 +606,14 @@ namespace Solid
     Teuchos::RCP<::NOX::Epetra::LinearSystem> nox_create_linear_system(
         Teuchos::ParameterList& nlParams,  ///< parameter list
         ::NOX::Epetra::Vector& noxSoln,    ///< solution vector to operate on
-        Teuchos::RCP<::NOX::Utils> utils   ///< printing utilities
+        ::NOX::Utils& utils                ///< printing utilities
     );
 
     //! Do non-linear solve with NOX
     int nox_solve();
 
     //! check for success of nonlinear solve otherwise return error code
-    int nox_error_check(
-        ::NOX::StatusTest::StatusType status, Teuchos::RCP<::NOX::Solver::Generic> solver);
+    int nox_error_check(::NOX::StatusTest::StatusType status, ::NOX::Solver::Generic& solver);
     //@}
 
     //! @name Updates

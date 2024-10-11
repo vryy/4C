@@ -30,10 +30,9 @@ FOUR_C_NAMESPACE_OPEN
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter(double& dens_hat,
     double& temp_hat, double& dens_temp_hat, double& phi2_hat, double& phiexpression_hat,
-    Teuchos::RCP<std::vector<double>> vel_hat, Teuchos::RCP<std::vector<double>> densvel_hat,
-    Teuchos::RCP<std::vector<double>> densveltemp_hat,
-    Teuchos::RCP<std::vector<double>> densstraintemp_hat, Teuchos::RCP<std::vector<double>> phi_hat,
-    Teuchos::RCP<std::vector<std::vector<double>>> alphaijsc_hat, double& volume,
+    std::vector<double>& vel_hat, std::vector<double>& densvel_hat,
+    std::vector<double>& densveltemp_hat, std::vector<double>& densstraintemp_hat,
+    std::vector<double>& phi_hat, std::vector<std::vector<double>>& alphaijsc_hat, double& volume,
     const Core::Elements::Element* ele, Teuchos::ParameterList& params)
 {
   // do preparations first
@@ -79,21 +78,21 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter
     double tmp = convelint(rr) * volume;
 
     // add contribution to integral over velocities
-    (*vel_hat)[rr] += tmp;
+    (vel_hat)[rr] += tmp;
 
     // add contribution to integral over dens times velocity
-    (*densvel_hat)[rr] += densnp * tmp;
+    (densvel_hat)[rr] += densnp * tmp;
 
     // add contribution to integral over dens times temperature times velocity
-    (*densveltemp_hat)[rr] += densnp * phinp * tmp;
+    (densveltemp_hat)[rr] += densnp * phinp * tmp;
   }
 
   for (unsigned rr = 0; rr < nsd_; ++rr)
   {
     double tmp = gradphi(rr) * volume;
     // add contribution to integral over dens times rate of strain times phi gradient
-    (*densstraintemp_hat)[rr] += densnp * rateofstrain * tmp;
-    (*phi_hat)[rr] = tmp;
+    (densstraintemp_hat)[rr] += densnp * rateofstrain * tmp;
+    (phi_hat)[rr] = tmp;
     phi2_hat += tmp * gradphi(rr);
   }
 
@@ -121,29 +120,29 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter
           {
             vderxy(nn, rr) += derxy_(rr, mm) * evelnp_(nn, mm);
           }
-          (*alphaijsc_hat)[rr][nn] = vderxy(nn, rr);  // change indices to make compatible to paper
+          (alphaijsc_hat)[rr][nn] = vderxy(nn, rr);  // change indices to make compatible to paper
           alpha2 += vderxy(nn, rr) * vderxy(nn, rr);
         }
       }
 
-      beta00 = hk2 * (*alphaijsc_hat)[0][0] * (*alphaijsc_hat)[0][0] +
-               hk2 * (*alphaijsc_hat)[1][0] * (*alphaijsc_hat)[1][0] +
-               hk2 * (*alphaijsc_hat)[2][0] * (*alphaijsc_hat)[2][0];
-      beta11 = hk2 * (*alphaijsc_hat)[0][1] * (*alphaijsc_hat)[0][1] +
-               hk2 * (*alphaijsc_hat)[1][1] * (*alphaijsc_hat)[1][1] +
-               hk2 * (*alphaijsc_hat)[2][1] * (*alphaijsc_hat)[2][1];
-      beta22 = hk2 * (*alphaijsc_hat)[0][2] * (*alphaijsc_hat)[0][2] +
-               hk2 * (*alphaijsc_hat)[1][2] * (*alphaijsc_hat)[1][2] +
-               hk2 * (*alphaijsc_hat)[2][2] * (*alphaijsc_hat)[2][2];
-      beta01 = hk2 * (*alphaijsc_hat)[0][0] * (*alphaijsc_hat)[0][1] +
-               hk2 * (*alphaijsc_hat)[1][0] * (*alphaijsc_hat)[1][1] +
-               hk2 * (*alphaijsc_hat)[2][0] * (*alphaijsc_hat)[2][1];
-      beta02 = hk2 * (*alphaijsc_hat)[0][0] * (*alphaijsc_hat)[0][2] +
-               hk2 * (*alphaijsc_hat)[1][0] * (*alphaijsc_hat)[1][2] +
-               hk2 * (*alphaijsc_hat)[2][0] * (*alphaijsc_hat)[2][2];
-      beta12 = hk2 * (*alphaijsc_hat)[0][1] * (*alphaijsc_hat)[0][2] +
-               hk2 * (*alphaijsc_hat)[1][1] * (*alphaijsc_hat)[1][2] +
-               hk2 * (*alphaijsc_hat)[2][1] * (*alphaijsc_hat)[2][2];
+      beta00 = hk2 * (alphaijsc_hat)[0][0] * (alphaijsc_hat)[0][0] +
+               hk2 * (alphaijsc_hat)[1][0] * (alphaijsc_hat)[1][0] +
+               hk2 * (alphaijsc_hat)[2][0] * (alphaijsc_hat)[2][0];
+      beta11 = hk2 * (alphaijsc_hat)[0][1] * (alphaijsc_hat)[0][1] +
+               hk2 * (alphaijsc_hat)[1][1] * (alphaijsc_hat)[1][1] +
+               hk2 * (alphaijsc_hat)[2][1] * (alphaijsc_hat)[2][1];
+      beta22 = hk2 * (alphaijsc_hat)[0][2] * (alphaijsc_hat)[0][2] +
+               hk2 * (alphaijsc_hat)[1][2] * (alphaijsc_hat)[1][2] +
+               hk2 * (alphaijsc_hat)[2][2] * (alphaijsc_hat)[2][2];
+      beta01 = hk2 * (alphaijsc_hat)[0][0] * (alphaijsc_hat)[0][1] +
+               hk2 * (alphaijsc_hat)[1][0] * (alphaijsc_hat)[1][1] +
+               hk2 * (alphaijsc_hat)[2][0] * (alphaijsc_hat)[2][1];
+      beta02 = hk2 * (alphaijsc_hat)[0][0] * (alphaijsc_hat)[0][2] +
+               hk2 * (alphaijsc_hat)[1][0] * (alphaijsc_hat)[1][2] +
+               hk2 * (alphaijsc_hat)[2][0] * (alphaijsc_hat)[2][2];
+      beta12 = hk2 * (alphaijsc_hat)[0][1] * (alphaijsc_hat)[0][2] +
+               hk2 * (alphaijsc_hat)[1][1] * (alphaijsc_hat)[1][2] +
+               hk2 * (alphaijsc_hat)[2][1] * (alphaijsc_hat)[2][2];
 
       bbeta = beta00 * beta11 - beta01 * beta01 + beta00 * beta22 - beta02 * beta02 +
               beta11 * beta22 - beta12 * beta12;
@@ -156,7 +155,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter
       {
         for (unsigned rr = 0; rr < nsd_; ++rr)
         {
-          (*alphaijsc_hat)[rr][nn] *= volume;
+          (alphaijsc_hat)[rr][nn] *= volume;
         }
       }
     }

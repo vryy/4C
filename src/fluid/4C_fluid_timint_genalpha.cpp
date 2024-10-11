@@ -205,14 +205,13 @@ void FLD::TimIntGenAlpha::gen_alpha_update_acceleration()
     Teuchos::RCP<Core::LinAlg::Vector<double>> onlyvelnp =
         velpressplitter_->extract_other_vector(*velnp_);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccnp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(onlyaccn->Map());
+    Core::LinAlg::Vector<double> onlyaccnp(onlyaccn->Map());
 
-    onlyaccnp->Update(fact2, *onlyaccn, 0.0);
-    onlyaccnp->Update(fact1, *onlyvelnp, -fact1, *onlyveln, 1.0);
+    onlyaccnp.Update(fact2, *onlyaccn, 0.0);
+    onlyaccnp.Update(fact1, *onlyvelnp, -fact1, *onlyveln, 1.0);
 
     // copy back into global vector
-    Core::LinAlg::export_to(*onlyaccnp, *accnp_);
+    Core::LinAlg::export_to(onlyaccnp, *accnp_);
   }
 
 }  // TimIntGenAlpha::gen_alpha_update_acceleration
@@ -248,13 +247,12 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values()
     Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccnp =
         velpressplitter_->extract_other_vector(*accnp_);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccam =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(onlyaccnp->Map());
+    Core::LinAlg::Vector<double> onlyaccam(onlyaccnp->Map());
 
-    onlyaccam->Update((alphaM_), *onlyaccnp, (1.0 - alphaM_), *onlyaccn, 0.0);
+    onlyaccam.Update((alphaM_), *onlyaccnp, (1.0 - alphaM_), *onlyaccn, 0.0);
 
     // copy back into global vector
-    Core::LinAlg::export_to(*onlyaccam, *accam_);
+    Core::LinAlg::export_to(onlyaccam, *accam_);
   }
 
   // set intermediate values for velocity
@@ -293,13 +291,13 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values(
   //    vec         = alpha_F * vecnp     + (1-alpha_F) *  vecn
 
   // do stupid conversion into Epetra map
-  Teuchos::RCP<Epetra_Map> vecmap = Teuchos::make_rcp<Epetra_Map>(vecnp->Map().NumGlobalElements(),
-      vecnp->Map().NumMyElements(), vecnp->Map().MyGlobalElements(), 0, vecnp->Map().Comm());
+  Epetra_Map vecmap(vecnp->Map().NumGlobalElements(), vecnp->Map().NumMyElements(),
+      vecnp->Map().MyGlobalElements(), 0, vecnp->Map().Comm());
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vecam = Core::LinAlg::create_vector(*vecmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> vecam = Core::LinAlg::create_vector(vecmap, true);
   vecam->Update((alphaM_), *vecnp, (1.0 - alphaM_), *vecn, 0.0);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vecaf = Core::LinAlg::create_vector(*vecmap, true);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> vecaf = Core::LinAlg::create_vector(vecmap, true);
   vecaf->Update((alphaF_), *vecnp, (1.0 - alphaF_), *vecn, 0.0);
 
   // store computed intermediate values in given vectors

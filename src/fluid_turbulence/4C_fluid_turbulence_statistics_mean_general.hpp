@@ -92,8 +92,7 @@ namespace FLD
     \param vec (in) vector to add to time average
 
     */
-    void add_to_current_time_average(const double dt,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
+    void add_to_current_time_average(const double dt, Core::LinAlg::Vector<double>& vec,
         const Teuchos::RCP<Core::LinAlg::Vector<double>> scavec = Teuchos::null,
         const Teuchos::RCP<Core::LinAlg::Vector<double>> scatravec = Teuchos::null);
 
@@ -171,14 +170,14 @@ namespace FLD
 
     */
     void redistribute(Teuchos::RCP<const Core::DOFSets::DofSet> standarddofset,
-        Teuchos::RCP<Core::FE::Discretization> discret);
+        Core::FE::Discretization& discret);
 
     /*!
     \brief Add results from scalar transport field solver to statistics
 
     */
-    void add_scatra_results(Teuchos::RCP<Core::FE::Discretization> scatradis,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> myphinp);
+    void add_scatra_results(
+        Teuchos::RCP<Core::FE::Discretization> scatradis, Core::LinAlg::Vector<double>& myphinp);
 
     /*!
     \brief Do output of ScaTra mean field for visualization/restart

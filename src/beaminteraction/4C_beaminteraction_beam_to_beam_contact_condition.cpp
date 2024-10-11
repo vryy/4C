@@ -43,7 +43,7 @@ void BEAMINTERACTION::BeamToBeamContactCondition::build_id_sets(
 
   // Build the other line map.
   std::vector<int> line_ids;
-  condition_to_element_ids(condition_other_, line_ids);
+  condition_to_element_ids(*condition_other_, line_ids);
   other_line_ids_ = std::set<int>(line_ids.begin(), line_ids.end());
 }
 

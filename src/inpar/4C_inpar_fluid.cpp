@@ -21,13 +21,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::FLUID::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::FLUID::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& fdyn = list->sublist("FLUID DYNAMIC", false, "");
+  Teuchos::ParameterList& fdyn = list.sublist("FLUID DYNAMIC", false, "");
 
   // physical type of fluid flow (incompressible, varying density, loma, Boussinesq approximation,
   // temperature-dependent water)
@@ -1337,14 +1337,14 @@ void Inpar::FLUID::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> lis
 
 
 
-void Inpar::LowMach::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::LowMach::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& lomacontrol = list->sublist(
-      "LOMA CONTROL", false, "control parameters for low-Mach-number flow problems\n");
+  Teuchos::ParameterList& lomacontrol =
+      list.sublist("LOMA CONTROL", false, "control parameters for low-Mach-number flow problems\n");
 
   Core::UTILS::bool_parameter("MONOLITHIC", "no", "monolithic solver", &lomacontrol);
   Core::UTILS::int_parameter("NUMSTEP", 24, "Total number of time steps", &lomacontrol);

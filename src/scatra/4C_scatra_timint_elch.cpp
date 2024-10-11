@@ -587,7 +587,7 @@ void ScaTra::ScaTraTimIntElch::assemble_mat_and_rhs()
   check_is_setup();
 
   // check for zero or negative concentration values
-  check_concentration_values(phinp_);
+  check_concentration_values(*phinp_);
 
   // call base class routine
   ScaTraTimIntImpl::assemble_mat_and_rhs();
@@ -1372,13 +1372,13 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_info_interior()
       // fourth component = integral of velocity divergence (ALE only)
       // fifth component  = integral of concentration times velocity divergence (ALE only)
       // sixth component  = integral of velocity times concentration gradient (ALE only)
-      auto scalars = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(isale_ ? 6 : 3);
+      FourC::Core::LinAlg::SerialDenseVector scalars(isale_ ? 6 : 3);
 
       // evaluate current condition for electrode state of charge
-      discret_->evaluate_scalars(condparams, *scalars, "ElectrodeSOC", condid);
+      discret_->evaluate_scalars(condparams, scalars, "ElectrodeSOC", condid);
 
       // extract integral of domain
-      const double intdomain = (*scalars)(2);
+      const double intdomain = (scalars)(2);
 
       // store initial volume of current electrode
       if (isale_ and step_ == 0) electrodeinitvols_[condid] = intdomain;
@@ -1393,12 +1393,12 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_info_interior()
       const double one_hour = condition->parameters().get<double>("ONE_HOUR");
 
       // compute state of charge and C rate for current electrode
-      const double c_avg = (*scalars)(0) / intdomain;
+      const double c_avg = (scalars)(0) / intdomain;
       const double soc = (c_avg - c_0) * c_delta_inv;
-      double c_rate = (*scalars)(1);
+      double c_rate = (scalars)(1);
       if (isale_)  // ToDo: The ALE case is still doing some weird stuff (strong temporal
                    // oscillations of C rate), so one should have a closer look at that...
-        c_rate += (*scalars)(4) + (*scalars)(5) - c_avg * (*scalars)(3);
+        c_rate += (scalars)(4) + (scalars)(5) - c_avg * (scalars)(3);
       c_rate *= c_delta_inv * one_hour / intdomain;
 
       // update state of charge and C rate for current electrode
@@ -1488,15 +1488,14 @@ void ScaTra::ScaTraTimIntElch::evaluate_cell_voltage()
 
         // initialize result vector
         // first component = electric potential integral, second component = domain integral
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
-            Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(2);
+        Core::LinAlg::SerialDenseVector scalars(2);
 
         // evaluate current condition for electrode state of charge
-        discret_->evaluate_scalars(condparams, *scalars, "CellVoltage", condid);
+        discret_->evaluate_scalars(condparams, scalars, "CellVoltage", condid);
 
         // extract concentration and domain integrals
-        double intpotential = (*scalars)(0);
-        double intdomain = (*scalars)(1);
+        double intpotential = (scalars)(0);
+        double intdomain = (scalars)(1);
 
         // compute mean electric potential of current electrode
         electrodevoltage_[condid] = intpotential / intdomain;
@@ -1952,7 +1951,7 @@ void ScaTra::ScaTraTimIntElch::calc_initial_potential_field()
     iternum_++;
 
     // check for non-positive concentration values
-    check_concentration_values(phinp_);
+    check_concentration_values(*phinp_);
 
     // assemble global system matrix and residual vector
     assemble_mat_and_rhs();
@@ -2216,19 +2215,13 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
 
       // There are maximal two electrode conditions by definition
       // current flow i at electrodes
-      Teuchos::RCP<std::vector<double>> actualcurrent =
-          Teuchos::make_rcp<std::vector<double>>(2, 0.0);
+      std::vector<double> actualcurrent(2, 0.0);
       // residual at electrodes = i*timefac
-      Teuchos::RCP<std::vector<double>> currresidual =
-          Teuchos::make_rcp<std::vector<double>>(2, 0.0);
-      Teuchos::RCP<std::vector<double>> currtangent =
-          Teuchos::make_rcp<std::vector<double>>(2, 0.0);
-      Teuchos::RCP<std::vector<double>> electrodesurface =
-          Teuchos::make_rcp<std::vector<double>>(2, 0.0);
-      Teuchos::RCP<std::vector<double>> electrodepot =
-          Teuchos::make_rcp<std::vector<double>>(2, 0.0);
-      Teuchos::RCP<std::vector<double>> meanoverpot =
-          Teuchos::make_rcp<std::vector<double>>(2, 0.0);
+      std::vector<double> currresidual(2, 0.0);
+      std::vector<double> currtangent(2, 0.0);
+      std::vector<double> electrodesurface(2, 0.0);
+      std::vector<double> electrodepot(2, 0.0);
+      std::vector<double> meanoverpot(2, 0.0);
       double meanelectrodesurface(0.0);
       // Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first
       // residual is calculated
@@ -2279,21 +2272,21 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
         else
           scalars = evaluate_single_electrode_info_point(conditions[icond]);
 
-        post_process_single_electrode_info(*scalars, condid, false, (*actualcurrent)[condid],
-            (*currtangent)[condid], (*currresidual)[condid], (*electrodesurface)[condid],
-            (*electrodepot)[condid], (*meanoverpot)[condid]);
+        post_process_single_electrode_info(*scalars, condid, false, (actualcurrent)[condid],
+            (currtangent)[condid], (currresidual)[condid], (electrodesurface)[condid],
+            (electrodepot)[condid], (meanoverpot)[condid]);
 
         if (conditions.size() == 2)
         {
           // In the case the actual current is zero, we assume that the first electrode is the
           // cathode
-          if ((*actualcurrent)[condid] < 0.0 and condid_cathode != condid)
+          if ((actualcurrent)[condid] < 0.0 and condid_cathode != condid)
           {
             FOUR_C_THROW(
                 "The defined GSTATCONDID_CATHODE does not match the actual current flow "
                 "situation!!");
           }
-          else if ((*actualcurrent)[condid] > 0.0 and condid_anode != condid)
+          else if ((actualcurrent)[condid] > 0.0 and condid_anode != condid)
           {
             FOUR_C_THROW(
                 "The defined GSTATCONDID_ANODE does not match the actual current flow "
@@ -2329,29 +2322,29 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
       // U = V_A - V_C =  eta_A + delta phi_ohm - eta_C
       // -> delta phi_ohm  = V_A - V_C - eta_A + eta_C = V_A - eta_A - (V_C  - eta_C)
 
-      potdiffbulk = ((*electrodepot)[condid_anode] - (*meanoverpot)[condid_anode]) -
-                    ((*electrodepot)[condid_cathode] - (*meanoverpot)[condid_cathode]);
+      potdiffbulk = ((electrodepot)[condid_anode] - (meanoverpot)[condid_anode]) -
+                    ((electrodepot)[condid_cathode] - (meanoverpot)[condid_cathode]);
 
       // cell voltage loss = V_A - V_C
       // potdiffcell=(*electrodepot)[condid_anode]-(*electrodepot)[condid_cathode];
       // tanget at anode and cathode
-      currtangent_anode = (*currtangent)[condid_anode];
-      currtangent_cathode = (*currtangent)[condid_cathode];
+      currtangent_anode = (currtangent)[condid_anode];
+      currtangent_cathode = (currtangent)[condid_cathode];
 
       if (conditions.size() == 2)
       {
         // mean electrode surface of the cathode and anode
-        meanelectrodesurface = ((*electrodesurface)[0] + (*electrodesurface)[1]) / 2;
+        meanelectrodesurface = ((electrodesurface)[0] + (electrodesurface)[1]) / 2;
       }
       else
-        meanelectrodesurface = (*electrodesurface)[condid_cathode];
+        meanelectrodesurface = (electrodesurface)[condid_cathode];
 
       // The linearization of potential increment is always based on the cathode side!!
 
       // Assumption: Residual at BV1 is the negative of the value at BV2, therefore only the first
       // residual is calculated residual := (I - timefacrhs *I_target) I_target is alway negative,
       // since the reference electrode is the cathode
-      residual = (*currresidual)[condid_cathode] -
+      residual = (currresidual)[condid_cathode] -
                  (timefacrhs * targetcurrent);  // residual is stored only from cathode!
 
       // convergence test
@@ -2370,7 +2363,7 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
                     << gstatnumite_ << " / " << gstatitemax << "         |" << std::endl;
           std::cout << "| actual reaction current at cathode:            " << std::setprecision(6)
                     << std::scientific << std::setw(14) << std::right
-                    << (*actualcurrent)[condid_cathode] << "         |" << std::endl;
+                    << (actualcurrent)[condid_cathode] << "         |" << std::endl;
           std::cout << "| required total current at cathode:             " << std::setw(14)
                     << std::right << targetcurrent << "         |" << std::endl;
           std::cout << "| negative residual (rhs):                       " << std::setw(14)
@@ -2419,9 +2412,9 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
         }
 
         // safety check
-        if (abs((*currtangent)[condid_cathode]) < 1e-13)
+        if (abs((currtangent)[condid_cathode]) < 1e-13)
           FOUR_C_THROW(
-              "Tangent in galvanostatic control is near zero: %lf", (*currtangent)[condid_cathode]);
+              "Tangent in galvanostatic control is near zero: %lf", (currtangent)[condid_cathode]);
       }
 
       // calculate the cell potential increment due to ohmic resistance
@@ -2485,7 +2478,7 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
         // actual current < 0,  since the reference electrode is the cathode
         // potdiffbulk > 0,     always positive (see definition)
         // -1.0,                resistance has to be positive
-        resistance = -1.0 * (potdiffbulk / (*actualcurrent)[condid_cathode]);
+        resistance = -1.0 * (potdiffbulk / (actualcurrent)[condid_cathode]);
         // use of target current for the estimation of the resistance
         // resistance = -1.0*(potdiffbulk/(targetcurrent));
       }
@@ -2516,17 +2509,17 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
       potinc_ohm = -1.0 * resistance * residual / timefacrhs;
 
       // Do not update the cell potential for small currents
-      if (abs((*actualcurrent)[condid_cathode]) < 1e-10) potinc_ohm = 0.0;
+      if (abs((actualcurrent)[condid_cathode]) < 1e-10) potinc_ohm = 0.0;
 
       // the current flow at both electrodes has to be the same within the solution tolerances
-      if (abs((*actualcurrent)[condid_cathode] + (*actualcurrent)[condid_anode]) > 1e-8)
+      if (abs((actualcurrent)[condid_cathode] + (actualcurrent)[condid_anode]) > 1e-8)
       {
         if (myrank_ == 0)
         {
           std::cout << "| WARNING: The difference of the current flow at anode and cathode      |"
                     << std::endl;
           std::cout << "| is "
-                    << abs((*actualcurrent)[condid_cathode] + (*actualcurrent)[condid_anode])
+                    << abs((actualcurrent)[condid_cathode] + (actualcurrent)[condid_anode])
                     << " larger than " << 1e-8 << "!                             |" << std::endl;
           std::cout << "+-----------------------------------------------------------------------+"
                     << std::endl;
@@ -2655,8 +2648,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_kinetics_conditions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElch::evaluate_electrode_boundary_kinetics_point_conditions(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
+    Core::LinAlg::SparseOperator& systemmatrix, Core::LinAlg::Vector<double>& rhs)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ElchBoundaryKineticsPoint'");
@@ -2797,7 +2789,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_solution_depending_conditions(
 
   // evaluate point boundary conditions for electrode kinetics
   if (discret_->get_condition("ElchBoundaryKineticsPoint") != nullptr)
-    evaluate_electrode_boundary_kinetics_point_conditions(systemmatrix, rhs);
+    evaluate_electrode_boundary_kinetics_point_conditions(*systemmatrix, *rhs);
 
   // call base class routine
   ScaTraTimIntImpl::evaluate_solution_depending_conditions(systemmatrix, rhs);
@@ -2805,8 +2797,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_solution_depending_conditions(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntElch::check_concentration_values(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vec)
+void ScaTra::ScaTraTimIntElch::check_concentration_values(Core::LinAlg::Vector<double>& vec)
 {
   // action only for ELCH applications
 
@@ -2830,10 +2821,10 @@ void ScaTra::ScaTraTimIntElch::check_concentration_values(
     for (int k = 0; k < num_scal(); k++)
     {
       const int lid = discret_->dof_row_map()->LID(dofs[k]);
-      if (((*vec)[lid]) < 1e-13)
+      if (((vec)[lid]) < 1e-13)
       {
         numfound[k]++;
-        if (makepositive) ((*vec)[lid]) = 1e-13;
+        if (makepositive) ((vec)[lid]) = 1e-13;
       }
     }
   }
@@ -3220,13 +3211,13 @@ void ScaTra::ScaTraTimIntElch::build_block_null_spaces(
   ScaTra::ScaTraTimIntImpl::build_block_null_spaces(solver, init_block_number);
 
   if (matrix_type() == Core::LinAlg::MatrixType::block_condition_dof)
-    reduce_dimension_null_space_blocks(solver, init_block_number);
+    reduce_dimension_null_space_blocks(*solver, init_block_number);
 }
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElch::reduce_dimension_null_space_blocks(
-    Teuchos::RCP<Core::LinAlg::Solver> solver, int init_block_number) const
+    Core::LinAlg::Solver& solver, int init_block_number) const
 {
   // loop over blocks of global system matrix
   for (int iblock = 0; iblock < block_maps()->num_maps(); ++iblock)
@@ -3236,7 +3227,7 @@ void ScaTra::ScaTraTimIntElch::reduce_dimension_null_space_blocks(
 
     // access parameter sublist associated with smoother for current matrix block
     Teuchos::ParameterList& mueluparams =
-        solver->params().sublist("Inverse" + iblockstr.str()).sublist("MueLu Parameters");
+        solver.params().sublist("Inverse" + iblockstr.str()).sublist("MueLu Parameters");
 
     // extract already reduced null space associated with current matrix block
     Teuchos::RCP<Epetra_MultiVector> nspVector =

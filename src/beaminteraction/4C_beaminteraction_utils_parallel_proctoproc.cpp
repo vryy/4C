@@ -22,14 +22,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::UTILS::i_send_receive_any(Teuchos::RCP<Core::FE::Discretization> const& discret,
+void Discret::UTILS::i_send_receive_any(Core::FE::Discretization& discret,
     std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosenddata,
     std::vector<std::pair<int, std::vector<int>>>& recvdata)
 {
   // build exporter
-  Core::Communication::Exporter exporter(discret->get_comm());
-  int const numproc = discret->get_comm().NumProc();
-  int const myrank = discret->get_comm().MyPID();
+  Core::Communication::Exporter exporter(discret.get_comm());
+  int const numproc = discret.get_comm().NumProc();
+  int const myrank = discret.get_comm().MyPID();
 
   // -----------------------------------------------------------------------
   // send
@@ -67,7 +67,7 @@ void Discret::UTILS::i_send_receive_any(Teuchos::RCP<Core::FE::Discretization> c
   // -----------------------------------------------------------------------
   // ---- prepare receiving procs -----
   std::vector<int> summedtargets(numproc, 0);
-  discret->get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+  discret.get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
 
   // ---- receive ----
   for (int rec = 0; rec < summedtargets[myrank]; ++rec)
@@ -98,7 +98,7 @@ void Discret::UTILS::i_send_receive_any(Teuchos::RCP<Core::FE::Discretization> c
   for (int i = 0; i < length; ++i) exporter.wait(request[i]);
 
   // safety, should be a no time operation if everything works fine before
-  discret->get_comm().Barrier();
+  discret.get_comm().Barrier();
 }
 
 FOUR_C_NAMESPACE_CLOSE

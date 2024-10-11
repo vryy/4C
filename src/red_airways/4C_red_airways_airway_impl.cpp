@@ -670,7 +670,7 @@ int Discret::ELEMENTS::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
   // Routine for computing pextn and pextnp
   if (evaluation_data.compute_awacinter)
   {
-    compute_pext(ele, pn, pnp, params);
+    compute_pext(ele, *pn, *pnp, params);
     elem_params.p_extn = (*evaluation_data.p_extn)[ele->lid()];
     elem_params.p_extnp = (*evaluation_data.p_extnp)[ele->lid()];
   }
@@ -709,8 +709,8 @@ void Discret::ELEMENTS::AirwayImpl<distype>::initial(RedAirway* ele, Teuchos::Pa
   const auto airway_params = ele->get_airway_params();
 
   std::vector<int> lmstride;
-  Teuchos::RCP<std::vector<int>> lmowner = Teuchos::make_rcp<std::vector<int>>();
-  ele->location_vector(discretization, lm, *lmowner, lmstride);
+  std::vector<int> lmowner;
+  ele->location_vector(discretization, lm, lmowner, lmstride);
 
   // Calculate the length of airway element
   const double L = get_element_length<distype>(ele);
@@ -718,7 +718,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::initial(RedAirway* ele, Teuchos::Pa
   //--------------------------------------------------------------------
   // Initialize the pressure vectors
   //--------------------------------------------------------------------
-  if (myrank == (*lmowner)[0])
+  if (myrank == (lmowner)[0])
   {
     int gid = lm[0];
     double val = 0.0;
@@ -833,8 +833,8 @@ void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_collapse(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::AirwayImpl<distype>::compute_pext(RedAirway* ele,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> pn,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> pnp, Teuchos::ParameterList& params)
+    const Core::LinAlg::Vector<double>& pn, const Core::LinAlg::Vector<double>& pnp,
+    Teuchos::ParameterList& params)
 {
   Discret::ReducedLung::EvaluationData& evaluation_data =
       Discret::ReducedLung::EvaluationData::get();
@@ -843,8 +843,8 @@ void Discret::ELEMENTS::AirwayImpl<distype>::compute_pext(RedAirway* ele,
   int node_id = (*evaluation_data.airway_acinus_dep)[ele->lid()];
 
   // Set pextn and pextnp
-  double pextnp = (*pnp)[node_id];
-  double pextn = (*pn)[node_id];
+  double pextnp = (pnp)[node_id];
+  double pextn = (pn)[node_id];
 
 
   int gid = ele->id();

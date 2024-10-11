@@ -118,7 +118,7 @@ void fluid_ale_drt()
   }
   else  // filled ale discretization
   {
-    if (!FSI::UTILS::fluid_ale_nodes_disjoint(fluiddis, aledis))
+    if (!FSI::UTILS::fluid_ale_nodes_disjoint(*fluiddis, *aledis))
       FOUR_C_THROW(
           "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -173,7 +173,7 @@ void fluid_xfem_drt()
     }
     else  // filled ale discretization
     {
-      if (!FSI::UTILS::fluid_ale_nodes_disjoint(problem->get_dis("fluid"), aledis))
+      if (!FSI::UTILS::fluid_ale_nodes_disjoint(*problem->get_dis("fluid"), *aledis))
         FOUR_C_THROW(
             "Fluid and ALE nodes have the same node numbers. "
             "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -184,21 +184,20 @@ void fluid_xfem_drt()
   if (alefluid)
   {
     // create instance of fluid xfem algorithm, for moving interfaces
-    Teuchos::RCP<FSI::FluidXFEMAlgorithm> fluidalgo =
-        Teuchos::make_rcp<FSI::FluidXFEMAlgorithm>(comm);
+    FSI::FluidXFEMAlgorithm fluidalgo(comm);
 
     const int restart = Global::Problem::instance()->restart();
     if (restart)
     {
       // read the restart information, set vectors and variables
-      fluidalgo->read_restart(restart);
+      fluidalgo.read_restart(restart);
     }
 
     // run the simulation
-    fluidalgo->timeloop();
+    fluidalgo.timeloop();
 
     // perform result tests if required
-    problem->add_field_test(fluidalgo->mb_fluid_field()->create_field_test());
+    problem->add_field_test(fluidalgo.mb_fluid_field()->create_field_test());
     problem->test_all(comm);
   }
   else
@@ -207,8 +206,7 @@ void fluid_xfem_drt()
     // create instance of fluid basis algorithm
     const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
 
-    Teuchos::RCP<Adapter::FluidBaseAlgorithm> fluidalgo =
-        Teuchos::make_rcp<Adapter::FluidBaseAlgorithm>(fdyn, fdyn, "fluid", false);
+    Adapter::FluidBaseAlgorithm fluidalgo(fdyn, fdyn, "fluid", false);
 
     //--------------------------------------------------------------
     // restart the simulation
@@ -216,16 +214,16 @@ void fluid_xfem_drt()
     if (restart)
     {
       // read the restart information, set vectors and variables
-      fluidalgo->fluid_field()->read_restart(restart);
+      fluidalgo.fluid_field()->read_restart(restart);
     }
 
     //--------------------------------------------------------------
     // run the simulation
-    fluidalgo->fluid_field()->integrate();
+    fluidalgo.fluid_field()->integrate();
 
     //--------------------------------------------------------------
     // perform result tests if required
-    problem->add_field_test(fluidalgo->fluid_field()->create_field_test());
+    problem->add_field_test(fluidalgo.fluid_field()->create_field_test());
     problem->test_all(comm);
   }
 }
@@ -443,7 +441,7 @@ void fsi_ale_drt()
   }
   else  // filled ale discretization (i.e. read from input file)
   {
-    if (!FSI::UTILS::fluid_ale_nodes_disjoint(fluiddis, aledis))
+    if (!FSI::UTILS::fluid_ale_nodes_disjoint(*fluiddis, *aledis))
       FOUR_C_THROW(
           "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -470,11 +468,11 @@ void fsi_ale_drt()
         Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
             "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
-        auto binningstrategy = Teuchos::make_rcp<Core::Binstrategy::BinningStrategy>(binning_params,
+        Core::Binstrategy::BinningStrategy binningstrategy(binning_params,
             Global::Problem::instance()->output_control_file(), comm, comm.MyPID(), correct_node,
             determine_relevant_points, dis);
         binningstrategy
-            ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
+            .do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
                 dis, stdelecolmap, stdnodecolmap);
       }
     }
@@ -722,7 +720,7 @@ void xfsi_drt()
     }
     else  // ALE discretization already filled
     {
-      if (!FSI::UTILS::fluid_ale_nodes_disjoint(fluiddis, aledis))
+      if (!FSI::UTILS::fluid_ale_nodes_disjoint(*fluiddis, *aledis))
         FOUR_C_THROW(
             "Fluid and ALE nodes have the same node numbers. "
             "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -745,24 +743,24 @@ void xfsi_drt()
         FOUR_C_THROW("Only Newton-Krylov scheme with XFEM fluid");
 
       // create the MonolithicXFEM object that does the whole work
-      Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::make_rcp<FSI::MonolithicXFEM>(comm, fsidyn);
+      FSI::MonolithicXFEM fsi(comm, fsidyn);
 
       // read the restart information, set vectors and variables ---
       // be careful, dofmaps might be changed here in a redistribute() call
       const int restart = Global::Problem::instance()->restart();
       if (restart)
       {
-        fsi->read_restart(restart);
+        fsi.read_restart(restart);
       }
 
       // setup the system (block-DOF-row maps, systemmatrix etc.) for the monolithic XFEM system
-      fsi->setup_system();
+      fsi.setup_system();
 
       // here we go...
-      fsi->timeloop();
+      fsi.timeloop();
 
-      Global::Problem::instance()->add_field_test(fsi->fluid_field()->create_field_test());
-      fsi->structure_poro()->test_results(Global::Problem::instance());
+      Global::Problem::instance()->add_field_test(fsi.fluid_field()->create_field_test());
+      fsi.structure_poro()->test_results(Global::Problem::instance());
 
       //    // create FSI specific result test
       //    Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new
@@ -870,7 +868,7 @@ void xfpsi_drt()
     }
     else  // ALE discretization already filled
     {
-      if (!FSI::UTILS::fluid_ale_nodes_disjoint(fluiddis, aledis))
+      if (!FSI::UTILS::fluid_ale_nodes_disjoint(*fluiddis, *aledis))
         FOUR_C_THROW(
             "Fluid and ALE nodes have the same node numbers. "
             "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -896,8 +894,7 @@ void xfpsi_drt()
       if (linearsolverstrategy != Inpar::FSI::PreconditionedKrylov)
         FOUR_C_THROW("Only Newton-Krylov scheme with XFEM fluid");
 
-      Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::make_rcp<FSI::MonolithicXFEM>(
-          comm, fsidyn, Adapter::FieldWrapper::type_PoroField);
+      FSI::MonolithicXFEM fsi(comm, fsidyn, Adapter::FieldWrapper::type_PoroField);
 
       // read the restart information, set vectors and variables ---
 
@@ -907,10 +904,10 @@ void xfpsi_drt()
               ->restart();  // not adapated at the moment .... Todo check it .. ChrAg
       if (restart)
       {
-        fsi->read_restart(restart);
+        fsi.read_restart(restart);
       }
 
-      fsi->setup_system();
+      fsi.setup_system();
 
 
       // 3.2.- redistribute the FPSI interface
@@ -918,10 +915,10 @@ void xfpsi_drt()
       // (not included in this commit)
 
       // here we go...
-      fsi->timeloop();
+      fsi.timeloop();
 
-      Global::Problem::instance()->add_field_test(fsi->fluid_field()->create_field_test());
-      fsi->structure_poro()->test_results(Global::Problem::instance());
+      Global::Problem::instance()->add_field_test(fsi.fluid_field()->create_field_test());
+      fsi.structure_poro()->test_results(Global::Problem::instance());
 
       // do the actual testing
       Global::Problem::instance()->test_all(comm);

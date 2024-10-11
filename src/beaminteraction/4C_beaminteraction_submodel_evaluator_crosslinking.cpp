@@ -78,7 +78,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup()
   set_filament_types();
   // this includes temporary change in ghosting
   BEAMINTERACTION::UTILS::set_filament_binding_spot_positions(
-      discret_ptr(), crosslinking_params_ptr_);
+      discret_ptr(), *crosslinking_params_ptr_);
 
   // add crosslinker to bin discretization
   add_crosslinker_to_bin_discretization();
@@ -135,7 +135,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
       for (int unsigned k = 0; k < numbbspot; ++k)
       {
         BEAMINTERACTION::UTILS::get_pos_and_triad_of_binding_spot(
-            beamele_i, periodic_bounding_box_ptr(), iter.first, k, pos, triad, eledisp);
+            beamele_i, *periodic_bounding_box_ptr(), iter.first, k, pos, triad, eledisp);
 
         beam_data_[i]->set_b_spot_position(iter.first, k, pos);
         beam_data_[i]->set_b_spot_triad(iter.first, k, triad);
@@ -541,9 +541,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
 {
   // initialize a box within linker are spawned
   std::vector<bool> dummy(3, false);
-  Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> linker_init_box =
-      Teuchos::make_rcp<Core::Geo::MeshFree::BoundingBox>();
-  linker_init_box->init(
+  Core::Geo::MeshFree::BoundingBox linker_init_box;
+  linker_init_box.init(
       crosslinking_params_ptr_->linker_initialization_box(), dummy);  // no setup() call needed here
 
   // loop over bspotpairs and make decision
@@ -612,7 +611,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
               linkertype, iter.get_loc_bspot_id2()));
 
       // check if linker is within linker initialization box
-      if (not linker_init_box->within(clpos, dummy)) continue;
+      if (not linker_init_box.within(clpos, dummy)) continue;
 
       // set current binding spot status of crosslinker
       cldata->set_position(clpos);
@@ -709,9 +708,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::add_crosslinker_to_bin_di
 
   // initialize a box within linker are spawned
   std::vector<bool> dummy(3, false);
-  Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> linker_init_box =
-      Teuchos::make_rcp<Core::Geo::MeshFree::BoundingBox>();
-  linker_init_box->init(
+  Core::Geo::MeshFree::BoundingBox linker_init_box;
+  linker_init_box.init(
       crosslinking_params_ptr_->linker_initialization_box(), dummy);  // no setup() call needed here
 
   // loop over all linker types that should be added to simulation volume
@@ -729,7 +727,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::add_crosslinker_to_bin_di
       {
         // random reference position of crosslinker in bounding box
         Core::LinAlg::Matrix<3, 1> Xmat;
-        linker_init_box->random_pos_within(Xmat, Global::Problem::instance()->random());
+        linker_init_box.random_pos_within(Xmat, Global::Problem::instance()->random());
 
         std::vector<double> X(3);
         for (int dim = 0; dim < 3; ++dim) X[dim] = Xmat(dim);
@@ -854,8 +852,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force()
     // and get their discrete element force vectors
     BEAMINTERACTION::UTILS::apply_binding_spot_force_to_parent_elements<
         Discret::ELEMENTS::Beam3Base, Discret::ELEMENTS::Beam3Base>(discret(),
-        periodic_bounding_box_ptr(), beam_interaction_data_state_ptr()->get_dis_col_np(),
-        elepairptr, bspotforce, eleforce);
+        *periodic_bounding_box_ptr(), beam_interaction_data_state_ptr()->get_dis_col_np(),
+        *elepairptr, bspotforce, eleforce);
 
     // assemble the contributions into force vector class variable
     // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
@@ -908,7 +906,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_stiff()
     BEAMINTERACTION::UTILS::apply_binding_spot_stiff_to_parent_elements<
         Discret::ELEMENTS::Beam3Base, Discret::ELEMENTS::Beam3Base>(discret(),
         periodic_bounding_box_ptr(), beam_interaction_data_state_ptr()->get_dis_col_np(),
-        elepairptr, bspotstiff, elestiff);
+        *elepairptr, bspotstiff, elestiff);
 
     // assemble the contributions into stiffness matrix class variable
     // stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
@@ -966,7 +964,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force_stiff()
     BEAMINTERACTION::UTILS::apply_binding_spot_force_stiff_to_parent_elements<
         Discret::ELEMENTS::Beam3Base, Discret::ELEMENTS::Beam3Base>(discret(),
         periodic_bounding_box_ptr(), beam_interaction_data_state_ptr()->get_dis_col_np(),
-        elepairptr, bspotforce, bspotstiff, eleforce, elestiff);
+        *elepairptr, bspotforce, bspotstiff, eleforce, elestiff);
 
     // assemble the contributions into force and stiffness class variables
     // f_crosslink_np_ptr_, stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
@@ -1004,8 +1002,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_update_step_element(b
 
   linker_disnp_ =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*bin_discret().dof_row_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dis_increment =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*bin_discret().dof_row_map(), true);
+  Core::LinAlg::Vector<double> dis_increment(*bin_discret().dof_row_map(), true);
 
   Core::LinAlg::Matrix<3, 1> d;
   Core::LinAlg::Matrix<3, 1> ref;
@@ -1031,13 +1028,13 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::pre_update_step_element(b
     // unshift
     periodic_bounding_box().un_shift_3d(d, ref);
 
-    for (int dim = 0; dim < 3; ++dim) (*dis_increment)[doflid[dim]] = d(dim) - ref(dim);
+    for (int dim = 0; dim < 3; ++dim) (dis_increment)[doflid[dim]] = d(dim) - ref(dim);
   }
 
   // get maximal displacement increment since last redistribution over all procs
   std::array<double, 2> extrema = {0.0, 0.0};
-  dis_increment->MinValue(&extrema[0]);
-  dis_increment->MaxValue(&extrema[1]);
+  dis_increment.MinValue(&extrema[0]);
+  dis_increment.MaxValue(&extrema[1]);
   const double gmaxdisincr = std::max(-extrema[0], extrema[1]);
 
   // some screen output
@@ -1074,7 +1071,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_step_element(
   if (repartition_was_done)
   {
     // adapt map of vector to map after redistribution
-    BEAMINTERACTION::UTILS::update_dof_map_of_vector(bin_discret_ptr(), dis_at_last_redistr_);
+    BEAMINTERACTION::UTILS::update_dof_map_of_vector(*bin_discret_ptr(), dis_at_last_redistr_);
 
     // update double bonded linker
     update_my_double_bonds_after_redistribution();
@@ -1177,7 +1174,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_stru
   Teuchos::RCP<Core::LinAlg::Vector<double>> force =
       Core::LinAlg::create_vector(*bindis.dof_row_map(), true);
 
-  fill_state_data_vectors_for_output(dis, orientation, numbond, owner, force);
+  fill_state_data_vectors_for_output(*dis, *orientation, *numbond, *owner, *force);
 
   // append displacement vector if desired
   // append displacement if desired
@@ -1279,11 +1276,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_stru
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::fill_state_data_vectors_for_output(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> displacement,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> orientation,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> numberofbonds,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> owner,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> force) const
+    Core::LinAlg::Vector<double>& displacement, Core::LinAlg::Vector<double>& orientation,
+    Core::LinAlg::Vector<double>& numberofbonds, Core::LinAlg::Vector<double>& owner,
+    Core::LinAlg::Vector<double>& force) const
 {
   check_init_setup();
   Core::FE::Discretization const& bindis = bin_discret();
@@ -1310,24 +1305,24 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::fill_state_data_vectors_f
     // loop over all dofs
     for (unsigned int dim = 0; dim < num_spatial_dim; ++dim)
     {
-      int doflid = displacement->Map().LID(dofnode[dim]);
-      (*displacement)[doflid] = crosslinker_i->x()[dim];
+      int doflid = displacement.Map().LID(dofnode[dim]);
+      (displacement)[doflid] = crosslinker_i->x()[dim];
 
       if (numbonds == 2)
       {
-        (*orientation)[doflid] =
+        (orientation)[doflid] =
             beamlink->get_bind_spot_pos1()(dim) - beamlink->get_bind_spot_pos2()(dim);
-        (*force)[doflid] = bspotforce(dim);
+        (force)[doflid] = bspotforce(dim);
       }
       else
       {
-        (*orientation)[doflid] = 0.0;
-        (*force)[doflid] = 0.0;
+        (orientation)[doflid] = 0.0;
+        (force)[doflid] = 0.0;
       }
     }
 
-    (*numberofbonds)[i] = numbonds;
-    (*owner)[i] = crosslinker_i->owner();
+    (numberofbonds)[i] = numbonds;
+    (owner)[i] = crosslinker_i->owner();
   }
 }
 
@@ -1478,13 +1473,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::read_restart(
   }
 
   // build dummy map according to read data on myrank
-  Teuchos::RCP<Epetra_Map> dummy_cl_map = Teuchos::make_rcp<Epetra_Map>(
+  Epetra_Map dummy_cl_map(
       -1, read_node_ids.size(), read_node_ids.data(), 0, bin_discret().get_comm());
 
   // build exporter object
   Teuchos::RCP<Core::Communication::Exporter> exporter =
       Teuchos::make_rcp<Core::Communication::Exporter>(
-          *dummy_cl_map, *bin_discret().node_col_map(), bin_discret().get_comm());
+          dummy_cl_map, *bin_discret().node_col_map(), bin_discret().get_comm());
 
   // export
   exporter->do_export(cl_datapacks);
@@ -2183,7 +2178,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
         for (int unsigned k = 0; k < numbbspot; ++k)
         {
           BEAMINTERACTION::UTILS::get_pos_and_triad_of_binding_spot(
-              beamele_i, periodic_bounding_box_ptr(), iter.first, k, pos, triad, eledisp);
+              beamele_i, *periodic_bounding_box_ptr(), iter.first, k, pos, triad, eledisp);
 
           beam_data_i->set_b_spot_position(iter.first, k, pos);
           beam_data_i->set_b_spot_triad(iter.first, k, triad);
@@ -2416,7 +2411,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_if_sphere_prohibits
     // sphere current position
     std::vector<double> sphereeledisp;
     BEAMINTERACTION::UTILS::get_current_element_dis(
-        discret(), sphere_iter, beam_interaction_data_state().get_dis_col_np(), sphereeledisp);
+        discret(), sphere_iter, *beam_interaction_data_state().get_dis_col_np(), sphereeledisp);
 
     // note: sphere has just one node (with three translational dofs)
     for (unsigned int dim = 0; dim < 3; ++dim)
@@ -3329,7 +3324,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::un_bind_crosslinker()
         std::vector<double> p_unlink_db(2, 0.0);
         if (abs(linker->get_material()->delta_bell_eq()) > 1.0e-8)
           calc_bells_force_dependent_unbind_probability(
-              linker, doublebondcl_[linker->id()], p_unlink_db);
+              linker, *doublebondcl_[linker->id()], p_unlink_db);
         else
           p_unlink_db[0] = p_unlink_db[1] = p_unlink;
 
@@ -3373,8 +3368,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::un_bind_crosslinker()
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
     calc_bells_force_dependent_unbind_probability(CrossLinking::CrosslinkerNode* linker,
-        Teuchos::RCP<BEAMINTERACTION::BeamLink> const& elepairptr,
-        std::vector<double>& punlinkforcedependent) const
+        BEAMINTERACTION::BeamLink& elepairptr, std::vector<double>& punlinkforcedependent) const
 {
   check_init_setup();
 
@@ -3393,14 +3387,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
   // force and moment exerted on the two binding sites of crosslinker with clgid
   std::vector<Core::LinAlg::SerialDenseVector> bspotforce(2, Core::LinAlg::SerialDenseVector(6));
-  elepairptr->evaluate_force(bspotforce[0], bspotforce[1]);
+  elepairptr.evaluate_force(bspotforce[0], bspotforce[1]);
 
   // check if linker is stretched -> sgn+ or compressed -> sgn- by checking orientation of force
   // vector note: this works only if there are no other forces (like inertia, stochastic, damping)
   // acting on the cl
   Core::LinAlg::Matrix<3, 1> dist_vec(true);
   Core::LinAlg::Matrix<3, 1> bspotforceone(true);
-  dist_vec.update(1.0, elepairptr->get_bind_spot_pos1(), -1.0, elepairptr->get_bind_spot_pos2());
+  dist_vec.update(1.0, elepairptr.get_bind_spot_pos1(), -1.0, elepairptr.get_bind_spot_pos2());
   for (unsigned int j = 0; j < 3; ++j) bspotforceone(j) = bspotforce[0](j);
   double sgn = (dist_vec.dot(bspotforceone) < 0.0) ? -1.0 : 1.0;
 
@@ -4218,21 +4212,21 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::wait(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::print_and_check_bind_event_data(
-    Teuchos::RCP<BEAMINTERACTION::Data::BindEventData> bindeventdata) const
+    BEAMINTERACTION::Data::BindEventData& bindeventdata) const
 {
   check_init();
 
   // extract data
   std::cout << "\n Rank: " << g_state().get_my_rank() << std::endl;
-  std::cout << " crosslinker gid " << bindeventdata->get_cl_id() << std::endl;
-  std::cout << " element gid " << bindeventdata->get_ele_id() << std::endl;
-  std::cout << " bspot local number " << bindeventdata->get_b_spot_loc_n() << std::endl;
-  std::cout << " requesting proc " << bindeventdata->get_request_proc() << std::endl;
-  std::cout << " permission " << bindeventdata->get_permission() << std::endl;
+  std::cout << " crosslinker gid " << bindeventdata.get_cl_id() << std::endl;
+  std::cout << " element gid " << bindeventdata.get_ele_id() << std::endl;
+  std::cout << " bspot local number " << bindeventdata.get_b_spot_loc_n() << std::endl;
+  std::cout << " requesting proc " << bindeventdata.get_request_proc() << std::endl;
+  std::cout << " permission " << bindeventdata.get_permission() << std::endl;
 
-  if (bindeventdata->get_cl_id() < 0 or bindeventdata->get_ele_id() < 0 or
-      bindeventdata->get_b_spot_loc_n() < 0 or bindeventdata->get_request_proc() < 0 or
-      not(bindeventdata->get_permission() == 0 or bindeventdata->get_permission() == 1))
+  if (bindeventdata.get_cl_id() < 0 or bindeventdata.get_ele_id() < 0 or
+      bindeventdata.get_b_spot_loc_n() < 0 or bindeventdata.get_request_proc() < 0 or
+      not(bindeventdata.get_permission() == 0 or bindeventdata.get_permission() == 1))
     FOUR_C_THROW(" your bindevent does not make sense.");
 }
 

@@ -140,7 +140,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
 
   // build art net time integrator
   Teuchos::RCP<Adapter::ArtNet> artnettimint = Arteries::UTILS::create_algorithm(
-      timintscheme, actdis, linsolvernumber, artdyn, artdyn, output);
+      timintscheme, actdis, linsolvernumber, artdyn, artdyn, *output);
 
   // initialize
   artnettimint->init(artdyn, artdyn, scatra_disname);

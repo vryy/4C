@@ -132,8 +132,8 @@ namespace Discret
       void sysmat(RedAirBloodScatraLine3* ele, Core::LinAlg::SerialDenseVector& epnp,
           Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
           Core::LinAlg::SerialDenseMatrix& estif, Core::LinAlg::SerialDenseVector& eforce,
-          Teuchos::RCP<const Core::Mat::Material> material, Teuchos::ParameterList& params,
-          double time, double dt){};
+          const Core::Mat::Material& material, Teuchos::ParameterList& params, double time,
+          double dt){};
 
 
       void evaluate_terminal_bc(RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,

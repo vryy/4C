@@ -480,7 +480,7 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
         // get nurbs weight!
         if (nurbs)
         {
-          Mortar::UTILS::prepare_nurbs_node(node, mtnode);
+          Mortar::UTILS::prepare_nurbs_node(node, *mtnode);
         }
 
         // get edge and corner information:
@@ -552,7 +552,7 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
         {
-          Mortar::UTILS::prepare_nurbs_element(*discret_ptr_, ele, mtele, dim);
+          Mortar::UTILS::prepare_nurbs_element(*discret_ptr_, ele, *mtele, dim);
         }
 
         interface->add_mortar_element(mtele);
@@ -581,7 +581,7 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_str
   Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr = Teuchos::null;
 
   return build_strategy(stype, params, poroslave, poromaster, dof_offset, interfaces,
-      discret().dof_row_map(), discret().node_row_map(), n_dim(), comm_ptr(), data_ptr);
+      discret().dof_row_map(), discret().node_row_map(), n_dim(), comm_ptr(), *data_ptr);
 }
 
 /*----------------------------------------------------------------------------*
@@ -591,7 +591,7 @@ Teuchos::RCP<CONTACT::MtAbstractStrategy> Mortar::STRATEGY::FactoryMT::build_str
     const bool& poroslave, const bool& poromaster, const int& dof_offset,
     std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces, const Epetra_Map* dof_row_map,
     const Epetra_Map* node_row_map, const int dim, const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
-    Teuchos::RCP<Mortar::StratDataContainer> data_ptr)
+    Mortar::StratDataContainer& data_ptr)
 {
   Teuchos::RCP<CONTACT::MtAbstractStrategy> strategy_ptr = Teuchos::null;
 

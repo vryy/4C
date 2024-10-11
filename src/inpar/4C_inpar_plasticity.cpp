@@ -17,14 +17,14 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::Plasticity::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Plasticity::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   /*----------------------------------------------------------------------*/
   /* parameters for semi-smooth Newton plasticity algorithm */
-  Teuchos::ParameterList& iplast = list->sublist("SEMI-SMOOTH PLASTICITY", false, "");
+  Teuchos::ParameterList& iplast = list.sublist("SEMI-SMOOTH PLASTICITY", false, "");
 
   Core::UTILS::double_parameter(
       "SEMI_SMOOTH_CPL", 1.0, "Weighting factor cpl for semi-smooth PDASS", &iplast);

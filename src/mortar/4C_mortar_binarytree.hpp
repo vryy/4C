@@ -220,7 +220,7 @@ namespace Mortar
     \brief Print full tree
 
     */
-    void print_tree(Teuchos::RCP<BinaryTreeNode> treenode);
+    void print_tree(BinaryTreeNode& treenode);
 
     /*!
     \brief Print full tree out of map of treenodes
@@ -289,8 +289,8 @@ namespace Mortar
     */
     void update_tree_top_down()
     {
-      evaluate_update_tree_top_down(sroot_);
-      evaluate_update_tree_top_down(mroot_);
+      evaluate_update_tree_top_down(*sroot_);
+      evaluate_update_tree_top_down(*mroot_);
       return;
     }
 
@@ -298,7 +298,7 @@ namespace Mortar
     \brief Evaluate update of master and slave tree in a top down way
 
     */
-    void evaluate_update_tree_top_down(Teuchos::RCP<BinaryTreeNode> treenode);
+    void evaluate_update_tree_top_down(BinaryTreeNode& treenode);
 
     /*!
     \brief Updates master and slave tree in a bottom up way

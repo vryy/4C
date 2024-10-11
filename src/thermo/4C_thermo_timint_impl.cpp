@@ -201,7 +201,7 @@ void Thermo::TimIntImpl::predict()
   dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
 
   // build residual force norm
-  normfres_ = Thermo::Aux::calculate_vector_norm(iternorm_, fres_);
+  normfres_ = Thermo::Aux::calculate_vector_norm(iternorm_, *fres_);
 
   // determine characteristic norms
   // we set the minimum of calc_ref_norm_force() and #tolfres_, because
@@ -243,7 +243,7 @@ void Thermo::TimIntImpl::prepare_partition_step()
 
   // split norms
   // build residual force norm
-  normfres_ = Thermo::Aux::calculate_vector_norm(iternorm_, fres_);
+  normfres_ = Thermo::Aux::calculate_vector_norm(iternorm_, *fres_);
 
   // determine characteristic norms
   // we set the minumum of calc_ref_norm_force() and #tolfres_, because
@@ -343,7 +343,7 @@ void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
   solver_->reset();
 
   // build residual temperature norm
-  normtempi_ = Thermo::Aux::calculate_vector_norm(iternorm_, tempi_);
+  normtempi_ = Thermo::Aux::calculate_vector_norm(iternorm_, *tempi_);
 
   // set Dirichlet increments in temperature increments
   tempi_->Update(1.0, *dbcinc, 1.0);
@@ -534,7 +534,7 @@ Inpar::Thermo::ConvergenceStatus Thermo::TimIntImpl::newton_full()
     solver_->reset_tolerance();
 
     // recover condensed variables
-    if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_recover(tang_, tempi_);
+    if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_recover(*tang_, tempi_);
 
     // update end-point temperatures etc
     update_iter(iter_);
@@ -576,9 +576,9 @@ void Thermo::TimIntImpl::blank_dirichlet_and_calc_norms()
   if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_condensation(tang_, fres_);
 
   // build residual force norm
-  normfres_ = Thermo::Aux::calculate_vector_norm(iternorm_, fres_);
+  normfres_ = Thermo::Aux::calculate_vector_norm(iternorm_, *fres_);
   // build residual temperature norm
-  normtempi_ = Thermo::Aux::calculate_vector_norm(iternorm_, tempi_);
+  normtempi_ = Thermo::Aux::calculate_vector_norm(iternorm_, *tempi_);
 }
 
 
@@ -1049,17 +1049,14 @@ void Thermo::TimIntImpl::fd_check()
   disturbtempi->ReplaceGlobalValue(0, 0, delta);
 
   // initialise rhs
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_old =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->dof_row_map(), true);
-  rhs_old->Update(1.0, *fres_, 0.0);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_copy =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->dof_row_map(), true);
+  Core::LinAlg::Vector<double> rhs_old(*discret_->dof_row_map(), true);
+  rhs_old.Update(1.0, *fres_, 0.0);
+  Core::LinAlg::Vector<double> rhs_copy(*discret_->dof_row_map(), true);
 
   // initialise approximation of tangent
   Teuchos::RCP<Epetra_CrsMatrix> tang_approx = Core::LinAlg::create_matrix((tang_->row_map()), 81);
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> tang_copy =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(tang_->epetra_matrix(), Core::LinAlg::Copy);
+  Core::LinAlg::SparseMatrix tang_copy(tang_->epetra_matrix(), Core::LinAlg::Copy);
   std::cout << "\n****************** Thermo finite difference check ******************"
             << std::endl;
   std::cout << "thermo field has " << dofs << " DOFs" << std::endl;
@@ -1077,21 +1074,21 @@ void Thermo::TimIntImpl::fd_check()
     }
     // evaluate the element with disturb temperature increment
     evaluate(disturbtempi);
-    rhs_copy->Update(1.0, *fres_, 0.0);
+    rhs_copy.Update(1.0, *fres_, 0.0);
     tempi_->PutScalar(0.0);
     Core::LinAlg::apply_dirichlet_to_system(
-        *tang_copy, *disturbtempi, *rhs_copy, *zeros_, *(dbcmaps_->cond_map()));
+        tang_copy, *disturbtempi, rhs_copy, *zeros_, *(dbcmaps_->cond_map()));
     // finite difference approximation of partial derivative
     // rhs_copy = ( rhs_disturb - rhs_old ) . (-1)/delta with rhs_copy==rhs_disturb
-    rhs_copy->Update(-1.0, *rhs_old, 1.0);
-    rhs_copy->Scale(-1.0 / delta);
+    rhs_copy.Update(-1.0, rhs_old, 1.0);
+    rhs_copy.Scale(-1.0 / delta);
 
     int* index = &i;
     // loop over rows
     for (int j = 0; j < dofs; ++j)  // TSI: j=STR_DOFs+dofs
     {
       // insert approximate values using FD into tang_approx
-      double value = (*rhs_copy)[j];
+      double value = (rhs_copy)[j];
       tang_approx->InsertGlobalValues(j, 1, &value, index);
     }  // loop over rows
 
@@ -1108,14 +1105,13 @@ void Thermo::TimIntImpl::fd_check()
   evaluate(disturbtempi);
   tang_approx->FillComplete();
   // copy tang_approx
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> tang_approx_sparse =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(tang_approx, Core::LinAlg::Copy);
+  Core::LinAlg::SparseMatrix tang_approx_sparse(tang_approx, Core::LinAlg::Copy);
   // tang_approx_sparse = tang_approx_sparse - tang_copy
-  tang_approx_sparse->add(*tang_copy, false, -1.0, 1.0);
+  tang_approx_sparse.add(tang_copy, false, -1.0, 1.0);
 
   // initialise CRSMatrices for the two tangents
-  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = tang_copy->epetra_matrix();
-  Teuchos::RCP<Epetra_CrsMatrix> error_crs = tang_approx_sparse->epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = tang_copy.epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> error_crs = tang_approx_sparse.epetra_matrix();
   error_crs->FillComplete();
   sparse_crs->FillComplete();
 

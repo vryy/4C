@@ -50,8 +50,8 @@ namespace CONSTRAINTS
     virtual ~MPConstraint() { ; };
 
     /// Set state of the underlying constraint discretization
-    void set_constr_state(const std::string& state,         ///< name of state to set
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> V  ///< values to set
+    void set_constr_state(const std::string& state,  ///< name of state to set
+        const Core::LinAlg::Vector<double>& V        ///< values to set
     );
 
     /// initialization routine called by the manager ctor to get correct reference base values and

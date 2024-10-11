@@ -79,10 +79,10 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_cv(
   boxf_->apply_filter(velocity, scalar, thermpress, dirichtoggle);
 
   // get fitered fields
-  boxf_->get_filtered_vreman_strainrate(col_filtered_strainrate_);
-  boxf_->get_filtered_vreman_alphaij(col_filtered_alphaij_);
-  boxf_->get_expression(col_filtered_expression_);
-  boxf_->get_alpha2(col_filtered_alpha2_);
+  boxf_->get_filtered_vreman_strainrate(*col_filtered_strainrate_);
+  boxf_->get_filtered_vreman_alphaij(*col_filtered_alphaij_);
+  boxf_->get_expression(*col_filtered_expression_);
+  boxf_->get_alpha2(*col_filtered_alpha2_);
 
   // compute Cv
   Cv_ = dyn_vreman_compute_cv();
@@ -105,10 +105,10 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_dt(
 
   // perform filtering
   boxfsc_->apply_filter_scatra(scalar, thermpress, dirichtoggle, ndsvel);
-  boxfsc_->get_filtered_phi(col_filtered_phi_);
-  boxfsc_->get_filtered_phi2(col_filtered_phi2_);
-  boxfsc_->get_filtered_phiexpression(col_filtered_phiexpression_);
-  boxfsc_->get_filtered_vreman_alphaijsc(col_filtered_alphaijsc_);
+  boxfsc_->get_filtered_phi(*col_filtered_phi_);
+  boxfsc_->get_filtered_phi2(*col_filtered_phi2_);
+  boxfsc_->get_filtered_phiexpression(*col_filtered_phiexpression_);
+  boxfsc_->get_filtered_vreman_alphaijsc(*col_filtered_alphaijsc_);
   dyn_vreman_compute_dt(extraparams);
   return;
 }

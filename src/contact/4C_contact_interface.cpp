@@ -523,8 +523,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       Core::LinAlg::gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), get_comm());
 
       // build completely overlapping map of nodes (on ALL processors)
-      Teuchos::RCP<Epetra_Map> newnodecolmap =
-          Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+      Epetra_Map newnodecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
       sdata.clear();
       rdata.clear();
 
@@ -538,16 +537,15 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       Core::LinAlg::gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), get_comm());
 
       // build complete overlapping map of elements (on ALL processors)
-      Teuchos::RCP<Epetra_Map> newelecolmap =
-          Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+      Epetra_Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
       sdata.clear();
       rdata.clear();
       allproc.clear();
 
       // redistribute the discretization of the interface according to the
       // new column layout
-      discret().export_column_nodes(*newnodecolmap);
-      discret().export_column_elements(*newelecolmap);
+      discret().export_column_nodes(newnodecolmap);
+      discret().export_column_elements(newelecolmap);
 
       break;
     }
@@ -591,8 +589,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       }
 
       // build new node column map (on ALL processors)
-      Teuchos::RCP<Epetra_Map> newnodecolmap =
-          Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+      Epetra_Map newnodecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
       sdata.clear();
       rdata.clear();
 
@@ -624,16 +621,15 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       }
 
       // build new element column map (on ALL processors)
-      Teuchos::RCP<Epetra_Map> newelecolmap =
-          Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+      Epetra_Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
       sdata.clear();
       rdata.clear();
       allproc.clear();
 
       // redistribute the discretization of the interface according to the
       // new node / element column layout (i.e. master = full overlap)
-      discret().export_column_nodes(*newnodecolmap);
-      discret().export_column_elements(*newelecolmap);
+      discret().export_column_nodes(newnodecolmap);
+      discret().export_column_elements(newelecolmap);
 
       break;
     }
@@ -685,10 +681,9 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       }
 
       std::vector<int> colnodes(nodes.begin(), nodes.end());
-      Teuchos::RCP<Epetra_Map> nodecolmap =
-          Teuchos::make_rcp<Epetra_Map>(-1, (int)colnodes.size(), colnodes.data(), 0, get_comm());
+      Epetra_Map nodecolmap(-1, (int)colnodes.size(), colnodes.data(), 0, get_comm());
 
-      discret().export_column_nodes(*nodecolmap);
+      discret().export_column_nodes(nodecolmap);
       break;
     }
     default:
@@ -762,14 +757,13 @@ void CONTACT::Interface::redistribute()
   }
 
   // we need an arbitrary preliminary element row map
-  Teuchos::RCP<Epetra_Map> slaveCloseRowEles = Teuchos::make_rcp<Epetra_Map>(
-      -1, (int)closeele.size(), closeele.data(), 0, Interface::get_comm());
-  Teuchos::RCP<Epetra_Map> slaveNonCloseRowEles = Teuchos::make_rcp<Epetra_Map>(
+  Epetra_Map slaveCloseRowEles(-1, (int)closeele.size(), closeele.data(), 0, Interface::get_comm());
+  Epetra_Map slaveNonCloseRowEles(
       -1, (int)noncloseele.size(), noncloseele.data(), 0, Interface::get_comm());
   Teuchos::RCP<Epetra_Map> masterRowEles = Teuchos::make_rcp<Epetra_Map>(*master_row_elements());
 
   // check for consistency
-  if (slaveCloseRowEles->NumGlobalElements() == 0 && slaveNonCloseRowEles->NumGlobalElements() == 0)
+  if (slaveCloseRowEles.NumGlobalElements() == 0 && slaveNonCloseRowEles.NumGlobalElements() == 0)
     FOUR_C_THROW("CONTACT redistribute: Both slave sets (close/non-close) are empty");
 
   //**********************************************************************
@@ -778,8 +772,8 @@ void CONTACT::Interface::redistribute()
   // print element overview
   if (!myrank)
   {
-    int cl = slaveCloseRowEles->NumGlobalElements();
-    int ncl = slaveNonCloseRowEles->NumGlobalElements();
+    int cl = slaveCloseRowEles.NumGlobalElements();
+    int ncl = slaveNonCloseRowEles.NumGlobalElements();
     int ma = masterRowEles->NumGlobalElements();
     std::cout << "Element overview: " << cl << " / " << ncl << " / " << ma
               << "  (close-S / non-close-S / M)";
@@ -794,7 +788,7 @@ void CONTACT::Interface::redistribute()
 
   // use simple base class method if there are ONLY close or non-close elements
   // (return value TRUE, because redistribution performed)
-  if (slaveCloseRowEles->NumGlobalElements() == 0 || slaveNonCloseRowEles->NumGlobalElements() == 0)
+  if (slaveCloseRowEles.NumGlobalElements() == 0 || slaveNonCloseRowEles.NumGlobalElements() == 0)
   {
     Mortar::Interface::redistribute();
     return;
@@ -817,11 +811,11 @@ void CONTACT::Interface::redistribute()
   // calculate real number of procs to be used
   if (minele > 0)
   {
-    scproc = static_cast<int>((slaveCloseRowEles->NumGlobalElements()) / minele);
-    sncproc = static_cast<int>((slaveNonCloseRowEles->NumGlobalElements()) / minele);
+    scproc = static_cast<int>((slaveCloseRowEles.NumGlobalElements()) / minele);
+    sncproc = static_cast<int>((slaveNonCloseRowEles.NumGlobalElements()) / minele);
     mproc = static_cast<int>((masterRowEles->NumGlobalElements()) / minele);
-    if (slaveCloseRowEles->NumGlobalElements() < 2 * minele) scproc = 1;
-    if (slaveNonCloseRowEles->NumGlobalElements() < 2 * minele) sncproc = 1;
+    if (slaveCloseRowEles.NumGlobalElements() < 2 * minele) scproc = 1;
+    if (slaveNonCloseRowEles.NumGlobalElements() < 2 * minele) sncproc = 1;
     if (masterRowEles->NumGlobalElements() < 2 * minele) mproc = 1;
     if (scproc > numproc) scproc = numproc;
     if (sncproc > numproc) sncproc = numproc;
@@ -902,7 +896,7 @@ void CONTACT::Interface::redistribute()
   //**********************************************************************
   // call parallel redistribution
   Teuchos::RCP<const Epetra_CrsGraph> slaveCloseNodeGraph =
-      Core::Rebalance::build_graph(*idiscret_, *slaveCloseRowEles);
+      Core::Rebalance::build_graph(*idiscret_, slaveCloseRowEles);
 
   Teuchos::ParameterList slaveCloseRebalanceParams;
   slaveCloseRebalanceParams.set<std::string>("num parts", std::to_string(scproc));
@@ -929,7 +923,7 @@ void CONTACT::Interface::redistribute()
   //**********************************************************************
   // call parallel redistribution
   Teuchos::RCP<const Epetra_CrsGraph> slaveNonCloseNodeGraph =
-      Core::Rebalance::build_graph(*idiscret_, *slaveNonCloseRowEles);
+      Core::Rebalance::build_graph(*idiscret_, slaveNonCloseRowEles);
 
   Teuchos::ParameterList slaveNonCloseRebalanceParams;
   slaveNonCloseRebalanceParams.set<std::string>("num parts", std::to_string(sncproc));
@@ -945,7 +939,7 @@ void CONTACT::Interface::redistribute()
   Teuchos::RCP<Epetra_Map> mrownodes = Teuchos::null;
   Teuchos::RCP<Epetra_Map> mcolnodes = Teuchos::null;
 
-  redistribute_master_side(mrownodes, mcolnodes, masterRowEles, comm, mproc, imbalance_tol);
+  redistribute_master_side(mrownodes, mcolnodes, *masterRowEles, *comm, mproc, imbalance_tol);
 
   //**********************************************************************
   // (7) Merge global interface node row and column map
@@ -1154,9 +1148,8 @@ void CONTACT::Interface::create_search_tree()
     if (self_contact())
     {
       // set state in interface to intialize all kinds of quantities
-      Teuchos::RCP<Core::LinAlg::Vector<double>> zero =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*idiscret_->dof_row_map());
-      set_state(Mortar::state_new_displacement, *zero);
+      Core::LinAlg::Vector<double> zero(*idiscret_->dof_row_map());
+      set_state(Mortar::state_new_displacement, zero);
 
       // create fully overlapping map of all contact elements
       Teuchos::RCP<Epetra_Map> elefullmap =
@@ -1819,7 +1812,7 @@ void CONTACT::Interface::store_lt_svalues()
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_ltl_forces_friction(Teuchos::RCP<Epetra_FEVector> feff)
+void CONTACT::Interface::add_ltl_forces_friction(Epetra_FEVector& feff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
   const double penaltytan = interface_params().get<double>("PENALTYPARAMTAN");
@@ -1914,7 +1907,7 @@ void CONTACT::Interface::add_ltl_forces_friction(Teuchos::RCP<Epetra_FEVector> f
           {
             double value = (p.second) * ftan[dim];
             const int ltlid = csnode->dofs()[dim];
-            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
+            int err = feff.SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) FOUR_C_THROW("stop");
           }
         }
@@ -1941,7 +1934,7 @@ void CONTACT::Interface::add_ltl_forces_friction(Teuchos::RCP<Epetra_FEVector> f
           {
             double value = -(p.second) * ftan[dim];
             const int ltlid = csnode->dofs()[dim];
-            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
+            int err = feff.SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) FOUR_C_THROW("stop");
           }
         }
@@ -1959,7 +1952,7 @@ void CONTACT::Interface::add_ltl_forces_friction(Teuchos::RCP<Epetra_FEVector> f
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
+void CONTACT::Interface::add_ltl_stiffness_friction(Core::LinAlg::SparseMatrix& kteff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
   const double penaltytan = interface_params().get<double>("PENALTYPARAMTAN");
@@ -2149,7 +2142,7 @@ void CONTACT::Interface::add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::S
             double val = ftan[prodj] * (scolcurr->second);
             ++scolcurr;
 
-            kteff->fe_assemble(val, row, col);
+            kteff.fe_assemble(val, row, col);
           }
 
           // check for completeness of DerivD-Derivatives-iteration
@@ -2193,7 +2186,7 @@ void CONTACT::Interface::add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::S
             double val = ftan[prodj] * (mcolcurr->second);
             ++mcolcurr;
 
-            kteff->fe_assemble(-val, row, col);
+            kteff.fe_assemble(-val, row, col);
           }
 
           // check for completeness of DerivM-Derivatives-iteration
@@ -2226,7 +2219,7 @@ void CONTACT::Interface::add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::S
                    pp != cnode->data().get_deriv_jumpltl()[dim].end(); ++pp)
               {
                 double value = penaltytan * (p.second) * (pp->second);
-                kteff->fe_assemble(value, csnode->dofs()[dim], pp->first);
+                kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
               }
             }
           }
@@ -2254,7 +2247,7 @@ void CONTACT::Interface::add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::S
                    pp != cnode->data().get_deriv_jumpltl()[dim].end(); ++pp)
               {
                 double value = -penaltytan * (p.second) * (pp->second);
-                kteff->fe_assemble(value, csnode->dofs()[dim], pp->first);
+                kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
               }
             }
           }
@@ -2288,7 +2281,7 @@ void CONTACT::Interface::add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::S
                    pp != cnode->data().get_deriv_jumpltl()[dim].end(); ++pp)
               {
                 double value = penaltytan * coeff * (p.second) * (pp->second);
-                kteff->fe_assemble(value, csnode->dofs()[dim], pp->first);
+                kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
               }
             }
           }
@@ -2316,7 +2309,7 @@ void CONTACT::Interface::add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::S
               for (const auto& pp : coefflin)
               {
                 double value = -penaltytan * ftan[dim] * (p.second) * (pp.second);
-                kteff->fe_assemble(value, csnode->dofs()[dim], pp.first);
+                kteff.fe_assemble(value, csnode->dofs()[dim], pp.first);
               }
             }
           }
@@ -2345,7 +2338,7 @@ void CONTACT::Interface::add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::S
                    pp != cnode->data().get_deriv_jumpltl()[dim].end(); ++pp)
               {
                 double value = -penaltytan * coeff * (p.second) * (pp->second);
-                kteff->fe_assemble(value, csnode->dofs()[dim], pp->first);
+                kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
               }
             }
           }
@@ -2371,7 +2364,7 @@ void CONTACT::Interface::add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::S
               for (const auto& pp : coefflin)
               {
                 double value = penaltytan * ftan[dim] * (p.second) * (pp.second);
-                kteff->fe_assemble(value, csnode->dofs()[dim], pp.first);
+                kteff.fe_assemble(value, csnode->dofs()[dim], pp.first);
               }
             }
           }
@@ -2388,7 +2381,7 @@ void CONTACT::Interface::add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::S
 /*----------------------------------------------------------------------*
  |  Add nts penalty forces master                           farah 11/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_nts_forces_master(Teuchos::RCP<Epetra_FEVector> feff)
+void CONTACT::Interface::add_nts_forces_master(Epetra_FEVector& feff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
@@ -2424,7 +2417,7 @@ void CONTACT::Interface::add_nts_forces_master(Teuchos::RCP<Epetra_FEVector> fef
             double value =
                 penalty * (p.second) * cnode->data().getgnts() * cnode->mo_data().n()[dim];
             int ltlid = csnode->dofs()[dim];
-            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
+            int err = feff.SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) FOUR_C_THROW("stop");
           }
         }
@@ -2452,7 +2445,7 @@ void CONTACT::Interface::add_nts_forces_master(Teuchos::RCP<Epetra_FEVector> fef
             double value =
                 -penalty * (p.second) * cnode->data().getgnts() * cnode->mo_data().n()[dim];
             int ltlid = csnode->dofs()[dim];
-            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
+            int err = feff.SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) FOUR_C_THROW("stop");
           }
         }
@@ -2468,7 +2461,7 @@ void CONTACT::Interface::add_nts_forces_master(Teuchos::RCP<Epetra_FEVector> fef
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces master                  farah 11/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_lts_forces_master(Teuchos::RCP<Epetra_FEVector> feff)
+void CONTACT::Interface::add_lts_forces_master(Epetra_FEVector& feff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
@@ -2508,7 +2501,7 @@ void CONTACT::Interface::add_lts_forces_master(Teuchos::RCP<Epetra_FEVector> fef
             double value =
                 penaltyLts * (p.second) * cnode->data().getglts() * cnode->mo_data().n()[dim];
             int ltlid = csnode->dofs()[dim];
-            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
+            int err = feff.SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) FOUR_C_THROW("stop");
           }
         }
@@ -2536,7 +2529,7 @@ void CONTACT::Interface::add_lts_forces_master(Teuchos::RCP<Epetra_FEVector> fef
             double value =
                 -penaltyLts * (p.second) * cnode->data().getglts() * cnode->mo_data().n()[dim];
             int ltlid = csnode->dofs()[dim];
-            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
+            int err = feff.SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) FOUR_C_THROW("stop");
           }
         }
@@ -2552,7 +2545,7 @@ void CONTACT::Interface::add_lts_forces_master(Teuchos::RCP<Epetra_FEVector> fef
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_ltl_forces(Teuchos::RCP<Epetra_FEVector> feff)
+void CONTACT::Interface::add_ltl_forces(Epetra_FEVector& feff)
 {
   // gap = g_n * n
   // D/M = sval/mval
@@ -2587,7 +2580,7 @@ void CONTACT::Interface::add_ltl_forces(Teuchos::RCP<Epetra_FEVector> feff)
           {
             double value = penalty * (p.second) * cnode->data().getgltl()[dim];
             int ltlid = csnode->dofs()[dim];
-            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
+            int err = feff.SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) FOUR_C_THROW("stop");
           }
         }
@@ -2614,7 +2607,7 @@ void CONTACT::Interface::add_ltl_forces(Teuchos::RCP<Epetra_FEVector> feff)
           {
             double value = -penalty * (p.second) * cnode->data().getgltl()[dim];
             int ltlid = {csnode->dofs()[dim]};
-            int err = feff->SumIntoGlobalValues(1, &ltlid, &value);
+            int err = feff.SumIntoGlobalValues(1, &ltlid, &value);
             if (err < 0) FOUR_C_THROW("stop");
           }
         }
@@ -2630,7 +2623,7 @@ void CONTACT::Interface::add_ltl_forces(Teuchos::RCP<Epetra_FEVector> feff)
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 11/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_lts_stiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
+void CONTACT::Interface::add_lts_stiffness_master(Core::LinAlg::SparseMatrix& kteff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
@@ -2691,7 +2684,7 @@ void CONTACT::Interface::add_lts_stiffness_master(Teuchos::RCP<Core::LinAlg::Spa
             double val = lm[prodj] * (scolcurr->second);
             ++scolcurr;
 
-            kteff->fe_assemble(-val, row, col);
+            kteff.fe_assemble(-val, row, col);
           }
 
           // check for completeness of DerivD-Derivatives-iteration
@@ -2735,7 +2728,7 @@ void CONTACT::Interface::add_lts_stiffness_master(Teuchos::RCP<Core::LinAlg::Spa
             double val = lm[prodj] * (mcolcurr->second);
             ++mcolcurr;
 
-            kteff->fe_assemble(val, row, col);
+            kteff.fe_assemble(val, row, col);
           }
 
           // check for completeness of DerivM-Derivatives-iteration
@@ -2764,14 +2757,14 @@ void CONTACT::Interface::add_lts_stiffness_master(Teuchos::RCP<Core::LinAlg::Spa
                  pp != cnode->data().get_deriv_glts().end(); ++pp)
             {
               double value = -penaltyLts * (p.second) * (pp->second) * cnode->mo_data().n()[dim];
-              kteff->fe_assemble(value, csnode->dofs()[dim], pp->first);
+              kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
             }
             // normal linearization
             for (auto pp = cnode->data().get_deriv_n()[dim].begin();
                  pp != cnode->data().get_deriv_n()[dim].end(); ++pp)
             {
               double value = -penaltyLts * (p.second) * (pp->second) * cnode->data().getglts();
-              kteff->fe_assemble(value, csnode->dofs()[dim], pp->first);
+              kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
             }
           }
         }
@@ -2799,14 +2792,14 @@ void CONTACT::Interface::add_lts_stiffness_master(Teuchos::RCP<Core::LinAlg::Spa
                  pp != cnode->data().get_deriv_glts().end(); ++pp)
             {
               double value = penaltyLts * (p.second) * (pp->second) * cnode->mo_data().n()[dim];
-              kteff->fe_assemble(value, csnode->dofs()[dim], pp->first);
+              kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
             }
             // normal linearization
             for (auto pp = cnode->data().get_deriv_n()[dim].begin();
                  pp != cnode->data().get_deriv_n()[dim].end(); ++pp)
             {
               double value = penaltyLts * (p.second) * (pp->second) * cnode->data().getglts();
-              kteff->fe_assemble(value, csnode->dofs()[dim], pp->first);
+              kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
             }
           }
         }
@@ -2822,7 +2815,7 @@ void CONTACT::Interface::add_lts_stiffness_master(Teuchos::RCP<Core::LinAlg::Spa
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 11/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_nts_stiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
+void CONTACT::Interface::add_nts_stiffness_master(Core::LinAlg::SparseMatrix& kteff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
@@ -2880,7 +2873,7 @@ void CONTACT::Interface::add_nts_stiffness_master(Teuchos::RCP<Core::LinAlg::Spa
             double val = lm[prodj] * (mcolcurr->second);
             ++mcolcurr;
 
-            kteff->fe_assemble(val, row, col);
+            kteff.fe_assemble(val, row, col);
           }
 
           // check for completeness of DerivM-Derivatives-iteration
@@ -2909,14 +2902,14 @@ void CONTACT::Interface::add_nts_stiffness_master(Teuchos::RCP<Core::LinAlg::Spa
                  pp != cnode->data().get_deriv_gnts().end(); ++pp)
             {
               double value = -penalty * (p.second) * (pp->second) * cnode->mo_data().n()[dim];
-              kteff->fe_assemble(value, csnode->dofs()[dim], pp->first);
+              kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
             }
             // normal linearization
             for (auto pp = cnode->data().get_deriv_n()[dim].begin();
                  pp != cnode->data().get_deriv_n()[dim].end(); ++pp)
             {
               double value = -penalty * (p.second) * (pp->second) * cnode->data().getgnts();
-              kteff->fe_assemble(value, csnode->dofs()[dim], pp->first);
+              kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
             }
           }
         }
@@ -2944,14 +2937,14 @@ void CONTACT::Interface::add_nts_stiffness_master(Teuchos::RCP<Core::LinAlg::Spa
                  pp != cnode->data().get_deriv_gnts().end(); ++pp)
             {
               double value = penalty * (p.second) * (pp->second) * cnode->mo_data().n()[dim];
-              kteff->fe_assemble(value, csnode->dofs()[dim], pp->first);
+              kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
             }
             // normal linearization
             for (auto pp = cnode->data().get_deriv_n()[dim].begin();
                  pp != cnode->data().get_deriv_n()[dim].end(); ++pp)
             {
               double value = penalty * (p.second) * (pp->second) * cnode->data().getgnts();
-              kteff->fe_assemble(value, csnode->dofs()[dim], pp->first);
+              kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
             }
           }
         }
@@ -2967,7 +2960,7 @@ void CONTACT::Interface::add_nts_stiffness_master(Teuchos::RCP<Core::LinAlg::Spa
 /*----------------------------------------------------------------------*
  |  Add line to line penalty forces                         farah 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_ltl_stiffness(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff)
+void CONTACT::Interface::add_ltl_stiffness(Core::LinAlg::SparseMatrix& kteff)
 {
   const double penalty = interface_params().get<double>("PENALTYPARAM");
 
@@ -3022,7 +3015,7 @@ void CONTACT::Interface::add_ltl_stiffness(Teuchos::RCP<Core::LinAlg::SparseMatr
             double val = lm[prodj] * (scolcurr->second);
             ++scolcurr;
 
-            kteff->fe_assemble(-val, row, col);
+            kteff.fe_assemble(-val, row, col);
           }
 
           // check for completeness of DerivD-Derivatives-iteration
@@ -3066,7 +3059,7 @@ void CONTACT::Interface::add_ltl_stiffness(Teuchos::RCP<Core::LinAlg::SparseMatr
             double val = lm[prodj] * (mcolcurr->second);
             ++mcolcurr;
 
-            kteff->fe_assemble(val, row, col);
+            kteff.fe_assemble(val, row, col);
           }
 
           // check for completeness of DerivM-Derivatives-iteration
@@ -3094,7 +3087,7 @@ void CONTACT::Interface::add_ltl_stiffness(Teuchos::RCP<Core::LinAlg::SparseMatr
                  pp != cnode->data().get_deriv_gltl()[dim].end(); ++pp)
             {
               double value = -penalty * (p.second) * (pp->second);
-              kteff->fe_assemble(value, csnode->dofs()[dim], pp->first);
+              kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
             }
           }
         }
@@ -3122,7 +3115,7 @@ void CONTACT::Interface::add_ltl_stiffness(Teuchos::RCP<Core::LinAlg::SparseMatr
                  pp != cnode->data().get_deriv_gltl()[dim].end(); ++pp)
             {
               double value = penalty * (p.second) * (pp->second);
-              kteff->fe_assemble(value, csnode->dofs()[dim], pp->first);
+              kteff.fe_assemble(value, csnode->dofs()[dim], pp->first);
             }
           }
         }
@@ -4617,15 +4610,14 @@ double CONTACT::Interface::compute_cpp_normal_3d(Mortar::Node& mrtrnode,
           donebefore.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
-              j, mele->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
+          Mortar::Element lineEle(j, mele->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
           // get nodes
           Core::Nodes::Node* nodes[2] = {mele->nodes()[nodeLIds[0]], mele->nodes()[nodeLIds[1]]};
-          lineEle->build_nodal_pointers(nodes);
+          lineEle.build_nodal_pointers(nodes);
 
           // init data container for dual shapes
-          lineEle->initialize_data_container();
+          lineEle.initialize_data_container();
 
           // call cpp function for edge to edge
 
@@ -4634,7 +4626,7 @@ double CONTACT::Interface::compute_cpp_normal_3d(Mortar::Node& mrtrnode,
           std::vector<Core::Gen::Pairedvector<int, double>> auxlin(3, 100 + 1 + mele->num_node());
 
           // compute distance between node and edge
-          dist = compute_normal_node_to_edge(mrtrnode, *lineEle, auxnormal, auxlin);
+          dist = compute_normal_node_to_edge(mrtrnode, lineEle, auxnormal, auxlin);
 
           // angle between trajectory and normal
           if (pathdependent)
@@ -6093,8 +6085,7 @@ void CONTACT::Interface::evaluate_ltl()
 void CONTACT::Interface::evaluate_nts()
 {
   // create one interpolator instance which is valid for all nodes!
-  Teuchos::RCP<NTS::Interpolator> interpolator =
-      Teuchos::make_rcp<NTS::Interpolator>(interface_params(), n_dim());
+  NTS::Interpolator interpolator(interface_params(), n_dim());
 
   // loop over slave nodes
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -6118,7 +6109,7 @@ void CONTACT::Interface::evaluate_nts()
     if (meles.size() < 1) continue;
 
     // call interpolation functions
-    interpolator->interpolate(*mrtrnode, meles);
+    interpolator.interpolate(*mrtrnode, meles);
   }
 }
 
@@ -6253,7 +6244,7 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
 
       // create a CONTACT integrator instance with correct num_gp and Dim
       CONTACT::Integrator integrator(imortar_, sele.shape(), get_comm());
-      integrator.integrate_kappa_penalty(sele, sxia, sxib, gseg);
+      integrator.integrate_kappa_penalty(sele, sxia, sxib, *gseg);
 
       // do the assembly into the slave nodes
       integrator.assemble_g(get_comm(), sele, *gseg);
@@ -6271,7 +6262,7 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
 
         // create a CONTACT integrator instance with correct num_gp and Dim
         CONTACT::Integrator integrator(imortar_, sauxelement->shape(), get_comm());
-        integrator.integrate_kappa_penalty(sele, *sauxelement, sxia, sxib, gseg);
+        integrator.integrate_kappa_penalty(sele, *sauxelement, sxia, sxib, *gseg);
 
         // do the assembly into the slave nodes
         integrator.assemble_g(get_comm(), *sauxelement, *gseg);
@@ -6294,7 +6285,7 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
 
     // create a CONTACT integrator instance with correct num_gp and Dim
     CONTACT::Integrator integrator(imortar_, sele.shape(), get_comm());
-    integrator.integrate_kappa_penalty(sele, sxia, sxib, gseg);
+    integrator.integrate_kappa_penalty(sele, sxia, sxib, *gseg);
 
     // do the assembly into the slave nodes
     integrator.assemble_g(get_comm(), sele, *gseg);
@@ -6682,8 +6673,7 @@ void CONTACT::Interface::evaluate_distances(
     FOUR_C_THROW("fill_complete() not called on interface %", id_);
 
   // create an interpolator instance
-  Teuchos::RCP<NTS::Interpolator> interpolator =
-      Teuchos::make_rcp<NTS::Interpolator>(imortar_, n_dim());
+  NTS::Interpolator interpolator(imortar_, n_dim());
 
   // create normals
   pre_evaluate(-1, -1);  // dummy values
@@ -6912,8 +6902,8 @@ void CONTACT::Interface::evaluate_distances(
           std::vector<Core::Gen::Pairedvector<int, double>> dsxi(2, 0);
           std::vector<Core::Gen::Pairedvector<int, double>> dmxi(2, 4 * linsize + ncol * ndof);
 
-          (*interpolator).deriv_xi_gp_3d(*selement, *melement, sxi, mxi, dsxi, dmxi, projalpha);
-          (*interpolator).nw_gap_3d(*mynode, *melement, mval, mderiv, dmxi, gpn);
+          (interpolator).deriv_xi_gp_3d(*selement, *melement, sxi, mxi, dsxi, dmxi, projalpha);
+          (interpolator).nw_gap_3d(*mynode, *melement, mval, mderiv, dmxi, gpn);
 
           // store linearization for node
           std::map<int, double> dgap = mynode->data().get_deriv_gnts();  // (dof,value)
@@ -7778,14 +7768,13 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
 
   // Nodes: node-based vector with '0' at slave nodes and '1' at master nodes
   {
-    RCP<Core::LinAlg::Vector<double>> masterVec =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mnoderowmap_);
-    masterVec->PutScalar(1.0);
+    Core::LinAlg::Vector<double> masterVec(*mnoderowmap_);
+    masterVec.PutScalar(1.0);
 
     RCP<const Epetra_Map> nodeRowMap = Core::LinAlg::merge_map(snoderowmap_, mnoderowmap_, false);
     RCP<Core::LinAlg::Vector<double>> masterSlaveVec =
         Core::LinAlg::create_vector(*nodeRowMap, true);
-    Core::LinAlg::export_to(*masterVec, *masterSlaveVec);
+    Core::LinAlg::export_to(masterVec, *masterSlaveVec);
 
     writer->write_vector("slavemasternodes", masterSlaveVec, Core::IO::VectorType::nodevector);
   }
@@ -7793,39 +7782,35 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Write active set
   {
     // evaluate active set and slip set
-    RCP<Core::LinAlg::Vector<double>> activeset =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*activenodes_);
-    activeset->PutScalar(1.0);
+    Core::LinAlg::Vector<double> activeset(*activenodes_);
+    activeset.PutScalar(1.0);
 
     if (is_friction())
     {
-      RCP<Core::LinAlg::Vector<double>> slipset =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slipnodes_);
-      slipset->PutScalar(1.0);
-      RCP<Core::LinAlg::Vector<double>> slipsetexp =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*activenodes_);
-      Core::LinAlg::export_to(*slipset, *slipsetexp);
-      activeset->Update(1.0, *slipsetexp, 1.0);
+      Core::LinAlg::Vector<double> slipset(*slipnodes_);
+      slipset.PutScalar(1.0);
+      Core::LinAlg::Vector<double> slipsetexp(*activenodes_);
+      Core::LinAlg::export_to(slipset, slipsetexp);
+      activeset.Update(1.0, slipsetexp, 1.0);
     }
 
     // export to interface node row map
     RCP<Core::LinAlg::Vector<double>> activesetexp =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(idiscret_->node_row_map()));
-    Core::LinAlg::export_to(*activeset, *activesetexp);
+    Core::LinAlg::export_to(activeset, *activesetexp);
 
     writer->write_vector("activeset", activesetexp, Core::IO::VectorType::nodevector);
   }
 
   // Elements: element-based vector with '0' at slave elements and '1' at master elements
   {
-    RCP<Core::LinAlg::Vector<double>> masterVec =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*melerowmap_);
-    masterVec->PutScalar(1.0);
+    Core::LinAlg::Vector<double> masterVec(*melerowmap_);
+    masterVec.PutScalar(1.0);
 
     RCP<const Epetra_Map> eleRowMap = Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);
     RCP<Core::LinAlg::Vector<double>> masterSlaveVec =
         Core::LinAlg::create_vector(*eleRowMap, true);
-    Core::LinAlg::export_to(*masterVec, *masterSlaveVec);
+    Core::LinAlg::export_to(masterVec, *masterSlaveVec);
 
     writer->write_vector(
         "slavemasterelements", masterSlaveVec, Core::IO::VectorType::elementvector);

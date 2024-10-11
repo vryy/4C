@@ -19,14 +19,14 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::Cut::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Cut::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using namespace FourC::Cut;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& cut_general = list->sublist("CUT GENERAL", false, "");
+  Teuchos::ParameterList& cut_general = list.sublist("CUT GENERAL", false, "");
 
   // intersection precision (double or cln)
   setStringToIntegralParameter<FourC::Cut::CutFloatType>("KERNEL_INTERSECTION_FLOATTYPE", "double",

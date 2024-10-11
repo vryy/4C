@@ -69,9 +69,9 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble(
     const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   evaluate_and_assemble_positional_coupling(
-      discret, force_vector, stiffness_matrix, displacement_vector);
+      *discret, force_vector, stiffness_matrix, displacement_vector);
   evaluate_and_assemble_rotational_coupling(
-      discret, force_vector, stiffness_matrix, displacement_vector);
+      *discret, force_vector, stiffness_matrix, displacement_vector);
 }
 
 /**
@@ -79,8 +79,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble(
  */
 template <typename Beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_positional_coupling(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<Epetra_FEVector>& force_vector,
+    const Core::FE::Discretization& discret, const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector) const
 {
@@ -101,7 +100,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
   {
     // Get GIDs of the beams positional DOF.
     std::vector<int> lm_beam, lm_solid, lmowner, lmstride;
-    beam_ele[i_beam]->location_vector(*discret, lm_beam, lmowner, lmstride);
+    beam_ele[i_beam]->location_vector(discret, lm_beam, lmowner, lmstride);
     const std::array<int, 12> pos_dof_indices = {0, 1, 2, 6, 7, 8, 9, 10, 11, 15, 16, 17};
     for (unsigned int i = 0; i < Beam::n_dof_; i++)
       gid_pos[i_beam](i) = lm_beam[pos_dof_indices[i]];
@@ -111,7 +110,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
     std::vector<int> lm(Beam::n_dof_);
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++) lm[i_dof] = gid_pos[i_beam](i_dof);
     BEAMINTERACTION::UTILS::extract_pos_dof_vec_absolute_values(
-        *discret, beam_ele[i_beam], displacement_vector, element_posdofvec_absolutevalues);
+        discret, beam_ele[i_beam], displacement_vector, element_posdofvec_absolutevalues);
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
       beam_pos[i_beam].element_position_(i_dof) =
           Core::FADUtils::HigherOrderFadValue<scalar_type_pos>::apply(2 * Beam::n_dof_,
@@ -171,8 +170,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
  */
 template <typename Beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_rotational_coupling(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<Epetra_FEVector>& force_vector,
+    const Core::FE::Discretization& discret, const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector) const
 {
@@ -194,13 +192,13 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
   for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
   {
     // Get GIDs of the beams rotational DOF.
-    gid_rot[i_beam] = UTILS::get_element_rot_gid_indices(*discret, beam_ele[i_beam]);
+    gid_rot[i_beam] = UTILS::get_element_rot_gid_indices(discret, beam_ele[i_beam]);
 
     // Get the triad interpolation schemes for the two beams.
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double>
         ref_triad_interpolation_scheme;
-    BEAMINTERACTION::get_beam_triad_interpolation_scheme(*discret, displacement_vector,
+    BEAMINTERACTION::get_beam_triad_interpolation_scheme(discret, displacement_vector,
         beam_ele[i_beam], triad_interpolation_scheme, ref_triad_interpolation_scheme);
 
     // Calculate the rotation vector of the beam cross sections and its FAD representation.

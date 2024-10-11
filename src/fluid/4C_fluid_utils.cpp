@@ -100,10 +100,10 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_wall_s
       // nothing to do
       break;
     case Inpar::FLUID::wss_aggregation:
-      wss = aggreagte_stresses(wss);
+      wss = aggreagte_stresses(*wss);
       break;
     case Inpar::FLUID::wss_mean:
-      wss = time_average_wss(wss, dt);
+      wss = time_average_wss(*wss, dt);
       break;
     default:
       FOUR_C_THROW(
@@ -131,7 +131,7 @@ FLD::UTILS::StressManager::get_pre_calc_wall_shear_stresses(
       break;
     case Inpar::FLUID::wss_aggregation:
       wss = get_wall_shear_stresses_wo_agg(trueresidual);
-      wss = aggreagte_stresses(wss);
+      wss = aggreagte_stresses(*wss);
       break;
     case Inpar::FLUID::wss_mean:
       if (sum_dt_wss_ > 0.0)  // iff we have actually calculated some mean wss
@@ -155,7 +155,7 @@ FLD::UTILS::StressManager::get_wall_shear_stresses_wo_agg(
 {
   if (not isinit_) FOUR_C_THROW("StressManager not initialized");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> stresses = calc_stresses(trueresidual);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> stresses = calc_stresses(*trueresidual);
   // calculate wss from stresses
   Teuchos::RCP<Core::LinAlg::Vector<double>> wss = calc_wall_shear_stresses(stresses);
 
@@ -168,7 +168,7 @@ FLD::UTILS::StressManager::get_wall_shear_stresses_wo_agg(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_stresses_wo_agg(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> stresses = calc_stresses(trueresidual);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> stresses = calc_stresses(*trueresidual);
 
   return stresses;
 }  // FLD::UTILS::StressManager::GetStressesWOAgg()
@@ -187,10 +187,10 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_stress
       // nothing to do
       break;
     case Inpar::FLUID::wss_aggregation:
-      stresses = aggreagte_stresses(stresses);
+      stresses = aggreagte_stresses(*stresses);
       break;
     case Inpar::FLUID::wss_mean:
-      stresses = time_average_stresses(stresses, dt);
+      stresses = time_average_stresses(*stresses, dt);
       break;
     default:
       FOUR_C_THROW(
@@ -217,7 +217,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_pre_ca
       break;
     case Inpar::FLUID::wss_aggregation:
       stresses = get_stresses_wo_agg(trueresidual);
-      stresses = aggreagte_stresses(stresses);
+      stresses = aggreagte_stresses(*stresses);
       break;
     case Inpar::FLUID::wss_mean:
       if (sum_dt_stresses_ > 0.0)  // iff we have actually calculated some mean stresses
@@ -236,7 +236,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_pre_ca
  |  calculate traction vector at (Dirichlet) boundary (public) Thon/Krank 07/07|
  *-----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::calc_stresses(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual)
+    const Core::LinAlg::Vector<double>& trueresidual)
 {
   if (not isinit_) FOUR_C_THROW("StressManager not initialized");
   std::string condstring("FluidStressCalc");
@@ -251,7 +251,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::calc_stres
       // overwrite integratedshapefunc values with the calculated traction coefficients,
       // which are reconstructed out of the nodal forces (trueresidual_) using the
       // same shape functions on the boundary as for velocity and pressure.
-      (*integratedshapefunc)[i] = (*trueresidual)[i] / (*integratedshapefunc)[i];
+      (*integratedshapefunc)[i] = (trueresidual)[i] / (*integratedshapefunc)[i];
     }
   }
 
@@ -381,7 +381,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::calc_wall_
  | smooth stresses/wss via ML-aggregation              Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::aggreagte_stresses(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> wss)
+    Core::LinAlg::Vector<double>& wss)
 {
   if (sep_enr_ == Teuchos::null) FOUR_C_THROW("no scale separation matrix");
 
@@ -389,7 +389,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::aggreagte_
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
 
   // Do the actual aggregation
-  sep_enr_->multiply(false, *wss, *mean_wss);
+  sep_enr_->multiply(false, wss, *mean_wss);
 
   return mean_wss;
 }
@@ -398,9 +398,9 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::aggreagte_
  | time average stresses                                     Thon 03/15 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::time_average_stresses(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> stresses, const double dt)
+    const Core::LinAlg::Vector<double>& stresses, const double dt)
 {
-  sum_stresses_->Update(dt, *stresses, 1.0);  // weighted sum of all prior stresses
+  sum_stresses_->Update(dt, stresses, 1.0);  // weighted sum of all prior stresses
   sum_dt_stresses_ += dt;
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> mean_stresses =
@@ -414,9 +414,9 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::time_avera
  | time average wss                                          Thon 03/15 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::time_average_wss(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> wss, const double dt)
+    const Core::LinAlg::Vector<double>& wss, const double dt)
 {
-  sum_wss_->Update(dt, *wss, 1.0);  // weighted sum of all prior stresses
+  sum_wss_->Update(dt, wss, 1.0);  // weighted sum of all prior stresses
   sum_dt_wss_ += dt;
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> mean_wss =
@@ -609,7 +609,7 @@ void FLD::UTILS::setup_fluid_fluid_vel_pres_split(const Core::FE::Discretization
 // compute forces and moments                          rasthofer 08/13
 // -------------------------------------------------------------------
 void FLD::UTILS::lift_drag(const Teuchos::RCP<const Core::FE::Discretization> dis,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual,
+    const Core::LinAlg::Vector<double>& trueresidual,
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp, const int ndim,
     Teuchos::RCP<std::map<int, std::vector<double>>>& liftdragvals, bool alefluid)
 {
@@ -719,15 +719,15 @@ void FLD::UTILS::lift_drag(const Teuchos::RCP<const Core::FE::Discretization> di
       {
         const Core::LinAlg::Matrix<3, 1> x(
             (*actnode)->x().data(), false);  // pointer to nodal coordinates
-        const Epetra_BlockMap& rowdofmap = trueresidual->Map();
+        const Epetra_BlockMap& rowdofmap = trueresidual.Map();
         const std::vector<int> dof = dis->dof(*actnode);
 
         // get nodal forces
         Core::LinAlg::Matrix<3, 1> actforces(true);
         for (int idim = 0; idim < ndim; idim++)
         {
-          actforces(idim, 0) = (*trueresidual)[rowdofmap.LID(dof[idim])];
-          myforces[idim] += (*trueresidual)[rowdofmap.LID(dof[idim])];
+          actforces(idim, 0) = (trueresidual)[rowdofmap.LID(dof[idim])];
+          myforces[idim] += (trueresidual)[rowdofmap.LID(dof[idim])];
         }
         // z-component remains zero for ndim=2
 
@@ -782,8 +782,8 @@ void FLD::UTILS::lift_drag(const Teuchos::RCP<const Core::FE::Discretization> di
       }  // end: loop over nodes
 
       // care for the fact that we are (most likely) parallel
-      trueresidual->Comm().SumAll(myforces.data(), ((*liftdragvals)[label]).data(), 3);
-      trueresidual->Comm().SumAll(mymoments.data(), ((*liftdragvals)[label]).data() + 3, 3);
+      trueresidual.Comm().SumAll(myforces.data(), ((*liftdragvals)[label]).data(), 3);
+      trueresidual.Comm().SumAll(mymoments.data(), ((*liftdragvals)[label]).data() + 3, 3);
 
       // do the output
       if (myrank == 0)
@@ -1018,7 +1018,7 @@ void FLD::UTILS::project_gradient_and_set_param(Teuchos::RCP<Core::FE::Discretiz
 {
   // project gradient
   Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
-      FLD::UTILS::project_gradient(discret, vel, alefluid);
+      FLD::UTILS::project_gradient(*discret, vel, alefluid);
 
   // store multi vector in parameter list after export to col layout
   if (projected_velgrad != Teuchos::null)
@@ -1031,8 +1031,7 @@ void FLD::UTILS::project_gradient_and_set_param(Teuchos::RCP<Core::FE::Discretiz
 /*----------------------------------------------------------------------*|
  | Project velocity gradient                                    bk 05/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::project_gradient(
-    Teuchos::RCP<Core::FE::Discretization> discret,
+Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::project_gradient(Core::FE::Discretization& discret,
     Teuchos::RCP<const Core::LinAlg::Vector<double>> vel, bool alefluid)
 {
   // reconstruction of second derivatives for fluid residual
@@ -1045,7 +1044,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::project_gradient(
   Teuchos::RCP<Epetra_MultiVector> projected_velgrad = Teuchos::null;
 
   // dependent on the desired projection, just remove this line
-  if (not vel->Map().SameAs(*discret->dof_row_map()))
+  if (not vel->Map().SameAs(*discret.dof_row_map()))
     FOUR_C_THROW("input map is not a dof row map of the fluid");
 
   switch (recomethod)
@@ -1067,15 +1066,15 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::project_gradient(
       {
         case 3:
           projected_velgrad = Core::FE::compute_superconvergent_patch_recovery<3>(
-              *discret, *vel, "vel", numvec, params);
+              discret, *vel, "vel", numvec, params);
           break;
         case 2:
           projected_velgrad = Core::FE::compute_superconvergent_patch_recovery<2>(
-              *discret, *vel, "vel", numvec, params);
+              discret, *vel, "vel", numvec, params);
           break;
         case 1:
           projected_velgrad = Core::FE::compute_superconvergent_patch_recovery<1>(
-              *discret, *vel, "vel", numvec, params);
+              discret, *vel, "vel", numvec, params);
           break;
         default:
           FOUR_C_THROW("only 1/2/3D implementation available for superconvergent patch recovery");
@@ -1093,11 +1092,11 @@ Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::project_gradient(
       params.set<FLD::Action>("action", FLD::velgradient_projection);
 
       // set given state for element evaluation
-      discret->clear_state();
-      discret->set_state("vel", vel);
+      discret.clear_state();
+      discret.set_state("vel", vel);
 
       // project velocity gradient of fluid to nodal level via L2 projection
-      projected_velgrad = Core::FE::compute_nodal_l2_projection(*discret, "vel", numvec, params,
+      projected_velgrad = Core::FE::compute_nodal_l2_projection(discret, "vel", numvec, params,
           solverparams, Global::Problem::instance()->solver_params_callback());
     }
     break;

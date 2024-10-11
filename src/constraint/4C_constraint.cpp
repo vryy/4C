@@ -147,7 +147,7 @@ void CONSTRAINTS::Constraint::initialize(
       FOUR_C_THROW("Unknown constraint/monitor type to be evaluated in Constraint class!");
   }
   // start computing
-  initialize_constraint(params, systemvector3);
+  initialize_constraint(params, *systemvector3);
   return;
 }
 
@@ -362,7 +362,7 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::Constraint::initialize_constraint(
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector)
+    Teuchos::ParameterList& params, Core::LinAlg::Vector<double>& systemvector)
 {
   if (!(actdisc_->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -421,7 +421,7 @@ void CONSTRAINTS::Constraint::initialize_constraint(
         int offsetID = params.get<int>("OffsetID");
         constrlm.push_back(condID - offsetID);
         constrowner.push_back(curr->second->owner());
-        Core::LinAlg::assemble(*systemvector, elevector3, constrlm, constrowner);
+        Core::LinAlg::assemble(systemvector, elevector3, constrlm, constrowner);
       }
       // remember next time, that this condition is already initialized, i.e. active
       activecons_.find(condID)->second = true;

@@ -89,7 +89,7 @@ namespace Mat
     void read_restart();
 
     //! calculate derivative of determinate w.r.t. time according to macro time int scheme
-    void calculate_ddet_f_dt(Teuchos::RCP<ScaTra::TimIntOneStepTheta> microtimint);
+    void calculate_ddet_f_dt(ScaTra::TimIntOneStepTheta& microtimint);
 
     //! set time stepping data: time step size @p dt, current time @p time, and number of time step
     //! @p step

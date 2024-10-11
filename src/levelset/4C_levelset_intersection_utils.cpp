@@ -45,11 +45,9 @@ void ScaTra::LevelSet::Intersection::reset()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void ScaTra::LevelSet::Intersection::capture_zero_level_set(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& phi,
-    const Teuchos::RCP<const Core::FE::Discretization>& scatradis, double& volumedomainminus,
-    double& volumedomainplus, double& zerosurface,
-    std::map<int, Core::Geo::BoundaryIntCells>& elementBoundaryIntCells)
+void ScaTra::LevelSet::Intersection::capture_zero_level_set(const Core::LinAlg::Vector<double>& phi,
+    const Core::FE::Discretization& scatradis, double& volumedomainminus, double& volumedomainplus,
+    double& zerosurface, std::map<int, Core::Geo::BoundaryIntCells>& elementBoundaryIntCells)
 {
   // reset, just to be sure
   reset();
@@ -59,15 +57,15 @@ void ScaTra::LevelSet::Intersection::capture_zero_level_set(
   elementBoundaryIntCells.clear();
 
   // herein the actual capturing happens
-  get_zero_level_set(*phi, *scatradis, elementBoundaryIntCells);
+  get_zero_level_set(phi, scatradis, elementBoundaryIntCells);
 
   // collect contributions from all procs and store in respective variables
-  scatradis->get_comm().SumAll(&volume_plus(), &volumedomainplus, 1);
-  scatradis->get_comm().SumAll(&volume_minus(), &volumedomainminus, 1);
-  scatradis->get_comm().SumAll(&surface(), &zerosurface, 1);
+  scatradis.get_comm().SumAll(&volume_plus(), &volumedomainplus, 1);
+  scatradis.get_comm().SumAll(&volume_minus(), &volumedomainminus, 1);
+  scatradis.get_comm().SumAll(&surface(), &zerosurface, 1);
 
   // export also interface to all procs
-  export_interface(elementBoundaryIntCells, scatradis->get_comm());
+  export_interface(elementBoundaryIntCells, scatradis.get_comm());
 }
 
 /*----------------------------------------------------------------------------*
@@ -78,9 +76,8 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set(const Core::LinAlg::Vect
     bool cut_screenoutput)
 {
   // export phi from row to column map
-  const Teuchos::RCP<Core::LinAlg::Vector<double>> phicol =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*scatradis.dof_col_map());
-  Core::LinAlg::export_to(phi, *phicol);
+  Core::LinAlg::Vector<double> phicol(*scatradis.dof_col_map());
+  Core::LinAlg::export_to(phi, phicol);
 
   // remark: loop over row elements is sufficient
   for (int iele = 0; iele < scatradis.num_my_row_elements(); ++iele)
@@ -99,7 +96,7 @@ void ScaTra::LevelSet::Intersection::get_zero_level_set(const Core::LinAlg::Vect
     Core::LinAlg::SerialDenseMatrix xyze;
     std::vector<double> phi_nodes;
     std::vector<int> nids;
-    prepare_cut(ele, scatradis, *phicol, xyze, phi_nodes, nids);
+    prepare_cut(ele, scatradis, phicol, xyze, phi_nodes, nids);
 
     // check if this element is cut, according to its level-set values
     // -> add it to 'levelset'

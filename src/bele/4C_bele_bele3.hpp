@@ -235,7 +235,7 @@ namespace Discret
           const int numnode,                                            ///< number of nodes
           const int ndof,                                        ///< number of degrees of freedom
           double& V,                                             ///< volume
-          Teuchos::RCP<Core::LinAlg::SerialDenseVector> Vdiff,   ///< first derivative
+          Core::LinAlg::SerialDenseVector& Vdiff,                ///< first derivative
           Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Vdiff2,  ///< second derivative
           const int minind = 0,  ///< minimal index to compute enclosed volume with
           const int maxind = 2   ///< maximal index to compute enclosed volume with

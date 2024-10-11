@@ -59,10 +59,10 @@ namespace FS3I
     //! information transfer FSI -> ScaTra
     void set_fsi_solution();
 
-    void compute_interface_vectors(Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp_,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iveln_,
+    void compute_interface_vectors(Core::LinAlg::Vector<double>& idispnp_,
+        Core::LinAlg::Vector<double>& iveln_,
         Teuchos::RCP<Core::LinAlg::Vector<double>> struidispnp_,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> struiveln_);
+        Core::LinAlg::Vector<double>& struiveln_);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale(
         Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
@@ -96,8 +96,8 @@ namespace FS3I
 
     const Epetra_Comm& comm() { return comm_; }
 
-    void vec_to_scatravec(Teuchos::RCP<Core::FE::Discretization> scatradis,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vec, Teuchos::RCP<Epetra_MultiVector> scatravec);
+    void vec_to_scatravec(Core::FE::Discretization& scatradis, Core::LinAlg::Vector<double>& vec,
+        Epetra_MultiVector& scatravec);
 
     void struct_gmsh_output();
 

@@ -75,10 +75,9 @@ void Discret::ELEMENTS::Shell::pre_evaluate_scatra(Core::Elements::Element& ele,
         FOUR_C_THROW("can not get state vector %s", scalarfield.c_str());
 
       // extract local values of the global vectors
-      Teuchos::RCP<std::vector<double>> myscalar =
-          Teuchos::make_rcp<std::vector<double>>(dof_index_array[1].lm_.size(), 0.0);
+      std::vector<double> myscalar(dof_index_array[1].lm_.size(), 0.0);
 
-      Core::FE::extract_my_values(*scalarnp, *myscalar, dof_index_array[1].lm_);
+      Core::FE::extract_my_values(*scalarnp, myscalar, dof_index_array[1].lm_);
 
       // element vector for k-th scalar
       std::vector<Core::LinAlg::Matrix<Shell::Internal::num_node<distype>, 1>> elescalar(numscal);
@@ -86,7 +85,7 @@ void Discret::ELEMENTS::Shell::pre_evaluate_scatra(Core::Elements::Element& ele,
       {
         for (int i = 0; i < Shell::Internal::num_node<distype>; ++i)
         {
-          (elescalar.at(k))(i, 0) = myscalar->at(numscal * i + k);
+          (elescalar.at(k))(i, 0) = myscalar.at(numscal * i + k);
         }
       }
 

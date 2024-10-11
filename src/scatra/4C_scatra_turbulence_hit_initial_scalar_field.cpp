@@ -187,12 +187,9 @@ namespace ScaTra
   {
 #ifdef FOUR_C_WITH_FFTW
     // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> phi_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
-    Teuchos::RCP<Teuchos::Array<double>> phi =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> phi(nummodes_ * nummodes_ * nummodes_);
 
     //-------------------------------------------------
     // construction of initial field in spectral space
@@ -217,16 +214,16 @@ namespace ScaTra
           if (k_1 == (-nummodes_ / 2) or k_2 == (-nummodes_ / 2) or k_3 == (-nummodes_ / 2))
           {
             // odd-ball wave numbers are set to zero to ensure that solution is real function
-            ((*phi_hat)[pos]).real(0.0);
+            ((phi_hat)[pos]).real(0.0);
             // this is important to have here
-            ((*phi_hat)[pos]).imag(0.0);
+            ((phi_hat)[pos]).imag(0.0);
           }
           else if (k_1 == 0 and k_2 == 0 and k_3 == 0)
           {
             // likewise set to zero since there will not be any conjugate complex
-            ((*phi_hat)[pos]).real(0.0);
+            ((phi_hat)[pos]).real(0.0);
             // this is important to have here
-            ((*phi_hat)[pos]).imag(0.0);
+            ((phi_hat)[pos]).imag(0.0);
           }
           else
           {
@@ -287,11 +284,11 @@ namespace ScaTra
               // real part, imaginary part
               std::complex<double> alpha(
                   fac * cos(2 * M_PI * random_theta), fac * sin(2 * M_PI * random_theta));
-              (*phi_hat)[pos] = alpha;
+              (phi_hat)[pos] = alpha;
             }
             else
             {
-              (*phi_hat)[pos] = conj((*phi_hat)[pos_conj]);
+              (phi_hat)[pos] = conj((phi_hat)[pos_conj]);
             }
           }
         }
@@ -305,9 +302,7 @@ namespace ScaTra
     // k_3: [0,nummodes_/2]
     // using peridocity and conjugate symmetry allows for setting
     // the Fourier coefficients in the required interval
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat_fftw =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> phi_hat_fftw(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
     for (int fftw_k_1 = 0; fftw_k_1 <= (nummodes_ - 1); fftw_k_1++)
     {
@@ -366,11 +361,11 @@ namespace ScaTra
           // set value
           if (not conjugate)
           {
-            (*phi_hat_fftw)[pos] = (*phi_hat)[pos_cond];
+            (phi_hat_fftw)[pos] = (phi_hat)[pos_cond];
           }
           else
           {
-            (*phi_hat_fftw)[pos] = conj((*phi_hat)[pos_cond]);
+            (phi_hat_fftw)[pos] = conj((phi_hat)[pos_cond]);
           }
         }
       }
@@ -383,7 +378,7 @@ namespace ScaTra
 #ifdef FOUR_C_WITH_FFTW
     // set-up
     fftw_plan fft = fftw_plan_dft_c2r_3d(nummodes_, nummodes_, nummodes_,
-        (reinterpret_cast<fftw_complex*>(phi_hat_fftw->data())), phi->data(), FFTW_ESTIMATE);
+        (reinterpret_cast<fftw_complex*>(phi_hat_fftw.data())), phi.data(), FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
     // free memory
@@ -439,7 +434,7 @@ namespace ScaTra
       // get local dof id corresponding to the global id
       int lid = discret_->dof_row_map()->LID(dofs[0]);
       // set value
-      int err = phinp_->ReplaceMyValues(1, &((*phi)[pos]), &lid);
+      int err = phinp_->ReplaceMyValues(1, &((phi)[pos]), &lid);
 
       if (err > 0) FOUR_C_THROW("Could not set initial field!");
     }

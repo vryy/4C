@@ -19,33 +19,32 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BioFilm::UTILS::scatra_change_config(Teuchos::RCP<Core::FE::Discretization> scatradis,
-    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::LinAlg::Vector<double>> disp)
+void FS3I::BioFilm::UTILS::scatra_change_config(Core::FE::Discretization& scatradis,
+    Core::FE::Discretization& dis, Core::LinAlg::Vector<double>& disp)
 {
-  const int numnode = (scatradis->node_col_map())->NumMyElements();
+  const int numnode = (scatradis.node_col_map())->NumMyElements();
 
   // Create Vector which holds all col-displacments of processor
-  Teuchos::RCP<Core::LinAlg::Vector<double>> coldisp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(dis->dof_col_map()));
+  Core::LinAlg::Vector<double> coldisp(*(dis.dof_col_map()));
 
   // Export row-displacments to col-displacements
-  Core::LinAlg::export_to(*disp, *coldisp);
+  Core::LinAlg::export_to(disp, coldisp);
 
 
-  const Core::LinAlg::Vector<double>& gvector = *coldisp;
+  const Core::LinAlg::Vector<double>& gvector = coldisp;
 
   // loop over all nodes
   for (int index = 0; index < numnode; ++index)
   {
     // get current node
-    int gid = (scatradis->node_col_map())->GID(index);
-    Core::Nodes::Node* mynode = scatradis->g_node(gid);
+    int gid = (scatradis.node_col_map())->GID(index);
+    Core::Nodes::Node* mynode = scatradis.g_node(gid);
 
     // get local fluid/structure node with the same local node id
-    Core::Nodes::Node* lnode = dis->l_col_node(index);
+    Core::Nodes::Node* lnode = dis.l_col_node(index);
 
     // get degrees of freedom associated with this fluid/structure node
-    std::vector<int> nodedofs = dis->dof(0, lnode);
+    std::vector<int> nodedofs = dis.dof(0, lnode);
 
     // Since ChangePos requires vector of length 3, we use hardcoded length here
     // init with zero just to be sure

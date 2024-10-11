@@ -86,11 +86,10 @@ namespace XFEM
     /// Export Vector with initialdofrowmap (all nodes have one dofset) - to Vector with all active
     /// dofs
     void export_initialto_active_vector(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& initialvec,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& activevec);
+        const Core::LinAlg::Vector<double>& initialvec, Core::LinAlg::Vector<double>& activevec);
 
-    void export_activeto_initial_vector(Teuchos::RCP<const Core::LinAlg::Vector<double>> activevec,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> initialvec);
+    void export_activeto_initial_vector(
+        const Core::LinAlg::Vector<double>& activevec, Core::LinAlg::Vector<double>& initialvec);
 
 
 

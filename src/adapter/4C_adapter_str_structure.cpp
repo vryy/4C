@@ -117,17 +117,14 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   // get input parameter lists and copy them, because a few parameters are overwritten
   // const Teuchos::ParameterList& probtype
   //  = problem->ProblemTypeParams();
-  Teuchos::RCP<Teuchos::ParameterList> ioflags =
-      Teuchos::make_rcp<Teuchos::ParameterList>(problem->io_params());
-  Teuchos::RCP<Teuchos::ParameterList> tap =
-      Teuchos::make_rcp<Teuchos::ParameterList>(sdyn.sublist("TIMEADAPTIVITY"));
-  Teuchos::RCP<Teuchos::ParameterList> snox =
-      Teuchos::make_rcp<Teuchos::ParameterList>(problem->structural_nox_params());
+  Teuchos::ParameterList ioflags(problem->io_params());
+  Teuchos::ParameterList tap(sdyn.sublist("TIMEADAPTIVITY"));
+  Teuchos::ParameterList snox(problem->structural_nox_params());
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams = Teuchos::make_rcp<Teuchos::ParameterList>();
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
-  nox = *snox;
+  nox = snox;
 
   // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the .dat
   // file
@@ -151,7 +148,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   Teuchos::RCP<Core::LinAlg::Solver> contactsolver = Teuchos::null;
 
   if (onlymeshtying or onlycontact or meshtyingandcontact)
-    contactsolver = create_contact_meshtying_solver(actdis, sdyn);
+    contactsolver = create_contact_meshtying_solver(*actdis, sdyn);
 
   if (solver != Teuchos::null && (solver->params().isSublist("Belos Parameters")) &&
       solver->params().isSublist("ML Parameters")  // TODO what about MueLu?
@@ -168,18 +165,12 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
     // trans x, trans y, trans z, rot x, rot y, rot z
     // Note: We assume 3d here!
 
-    Teuchos::RCP<Epetra_Vector> nsv1 =
-        Teuchos::make_rcp<Epetra_Vector>(View, *(actdis->dof_row_map()), ns->data());
-    Teuchos::RCP<Epetra_Vector> nsv2 =
-        Teuchos::make_rcp<Epetra_Vector>(View, *(actdis->dof_row_map()), &ns->at(size));
-    Teuchos::RCP<Epetra_Vector> nsv3 =
-        Teuchos::make_rcp<Epetra_Vector>(View, *(actdis->dof_row_map()), &ns->at(2 * size));
-    Teuchos::RCP<Epetra_Vector> nsv4 =
-        Teuchos::make_rcp<Epetra_Vector>(View, *(actdis->dof_row_map()), &ns->at(3 * size));
-    Teuchos::RCP<Epetra_Vector> nsv5 =
-        Teuchos::make_rcp<Epetra_Vector>(View, *(actdis->dof_row_map()), &ns->at(4 * size));
-    Teuchos::RCP<Epetra_Vector> nsv6 =
-        Teuchos::make_rcp<Epetra_Vector>(View, *(actdis->dof_row_map()), &ns->at(5 * size));
+    Epetra_Vector nsv1(View, *(actdis->dof_row_map()), ns->data());
+    Epetra_Vector nsv2(View, *(actdis->dof_row_map()), &ns->at(size));
+    Epetra_Vector nsv3(View, *(actdis->dof_row_map()), &ns->at(2 * size));
+    Epetra_Vector nsv4(View, *(actdis->dof_row_map()), &ns->at(3 * size));
+    Epetra_Vector nsv5(View, *(actdis->dof_row_map()), &ns->at(4 * size));
+    Epetra_Vector nsv6(View, *(actdis->dof_row_map()), &ns->at(5 * size));
 
 
     // prepare matrix for scaled thickness business of thin shell structures
@@ -215,21 +206,20 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
       stcinv = Core::LinAlg::matrix_multiply(*stcinv, false, *tmpstcmat, false, false, false, true);
     }
 
-    Teuchos::RCP<Epetra_Vector> temp =
-        Teuchos::make_rcp<Epetra_Vector>(*(actdis->dof_row_map()), false);
+    Epetra_Vector temp(*(actdis->dof_row_map()), false);
 
-    stcinv->multiply(false, *nsv1, *temp);
-    nsv1->Update(1.0, *temp, 0.0);
-    stcinv->multiply(false, *nsv2, *temp);
-    nsv2->Update(1.0, *temp, 0.0);
-    stcinv->multiply(false, *nsv3, *temp);
-    nsv3->Update(1.0, *temp, 0.0);
-    stcinv->multiply(false, *nsv4, *temp);
-    nsv4->Update(1.0, *temp, 0.0);
-    stcinv->multiply(false, *nsv5, *temp);
-    nsv5->Update(1.0, *temp, 0.0);
-    stcinv->multiply(false, *nsv6, *temp);
-    nsv6->Update(1.0, *temp, 0.0);
+    stcinv->multiply(false, nsv1, temp);
+    nsv1.Update(1.0, temp, 0.0);
+    stcinv->multiply(false, nsv2, temp);
+    nsv2.Update(1.0, temp, 0.0);
+    stcinv->multiply(false, nsv3, temp);
+    nsv3.Update(1.0, temp, 0.0);
+    stcinv->multiply(false, nsv4, temp);
+    nsv4.Update(1.0, temp, 0.0);
+    stcinv->multiply(false, nsv5, temp);
+    nsv5.Update(1.0, temp, 0.0);
+    stcinv->multiply(false, nsv6, temp);
+    nsv6.Update(1.0, temp, 0.0);
   }
 
   // Checks in case of multi-scale simulations
@@ -255,14 +245,14 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
   // context for output and restart
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->writer();
-  if (ioflags->get<bool>("OUTPUT_BIN"))
+  if (ioflags.get<bool>("OUTPUT_BIN"))
   {
     output->write_mesh(0, 0.0);
   }
 
   // create marching time integrator
-  Teuchos::RCP<Solid::TimInt> tmpstr = Solid::tim_int_create(
-      prbdyn, *ioflags, sdyn, *xparams, actdis, solver, contactsolver, output);
+  Teuchos::RCP<Solid::TimInt> tmpstr =
+      Solid::tim_int_create(prbdyn, ioflags, sdyn, *xparams, actdis, solver, contactsolver, output);
   // initialize the time integrator
   tmpstr->init(prbdyn, sdyn, *xparams, actdis, solver);
 
@@ -302,14 +292,14 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
     if (fsiada.get<bool>("TIMEADAPTON"))
     {
       // overrule time step size adaptivity control parameters
-      if (tap->get<Inpar::Solid::TimAdaKind>("KIND") != Inpar::Solid::timada_kind_none)
+      if (tap.get<Inpar::Solid::TimAdaKind>("KIND") != Inpar::Solid::timada_kind_none)
       {
-        tap->set<int>("ADAPTSTEPMAX", fsiada.get<int>("ADAPTSTEPMAX"));
-        tap->set<double>("STEPSIZEMAX", fsiada.get<double>("DTMAX"));
-        tap->set<double>("STEPSIZEMIN", fsiada.get<double>("DTMIN"));
-        tap->set<double>("SIZERATIOMAX", fsiada.get<double>("SIZERATIOMAX"));
-        tap->set<double>("SIZERATIOMIN", fsiada.get<double>("SIZERATIOMIN"));
-        tap->set<double>("SIZERATIOSCALE", fsiada.get<double>("SAFETYFACTOR"));
+        tap.set<int>("ADAPTSTEPMAX", fsiada.get<int>("ADAPTSTEPMAX"));
+        tap.set<double>("STEPSIZEMAX", fsiada.get<double>("DTMAX"));
+        tap.set<double>("STEPSIZEMIN", fsiada.get<double>("DTMIN"));
+        tap.set<double>("SIZERATIOMAX", fsiada.get<double>("SIZERATIOMAX"));
+        tap.set<double>("SIZERATIOMIN", fsiada.get<double>("SIZERATIOMIN"));
+        tap.set<double>("SIZERATIOSCALE", fsiada.get<double>("SAFETYFACTOR"));
 
         if (actdis->get_comm().MyPID() == 0)
         {
@@ -328,7 +318,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
   // create auxiliary time integrator, can be seen as a wrapper for tmpstr
   Teuchos::RCP<Solid::TimAda> sta =
-      Solid::tim_ada_create(*ioflags, prbdyn, sdyn, *xparams, *tap, tmpstr);
+      Solid::tim_ada_create(ioflags, prbdyn, sdyn, *xparams, tap, tmpstr);
 
   if (sta != Teuchos::null and tmpstr != Teuchos::null)
   {
@@ -474,7 +464,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_linea
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_contact_meshtying_solver(
-    Teuchos::RCP<Core::FE::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
+    Core::FE::Discretization& actdis, const Teuchos::ParameterList& sdyn)
 {
   Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::null;
 
@@ -485,8 +475,8 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
   {
     std::vector<Core::Conditions::Condition*> mtcond(0);
     std::vector<Core::Conditions::Condition*> ccond(0);
-    actdis->get_condition("Mortar", mtcond);
-    actdis->get_condition("Contact", ccond);
+    actdis.get_condition("Mortar", mtcond);
+    actdis.get_condition("Contact", ccond);
     if (mtcond.size() != 0 and ccond.size() != 0) meshtyingandcontact = true;
     if (mtcond.size() != 0 and ccond.size() == 0) onlymeshtying = true;
     if (mtcond.size() == 0 and ccond.size() != 0) onlycontact = true;
@@ -531,12 +521,12 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
 
       // build meshtying/contact solver
       solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
-          Global::Problem::instance()->solver_params(linsolvernumber), actdis->get_comm(),
+          Global::Problem::instance()->solver_params(linsolvernumber), actdis.get_comm(),
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));
 
-      actdis->compute_null_space_if_necessary(solver->params());
+      actdis.compute_null_space_if_necessary(solver->params());
 
       // feed the solver object with additional information
       if (onlycontact or meshtyingandcontact)
@@ -564,7 +554,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
         // provide null space information
         if (prec == Core::LinearSolver::PreconditionerType::cheap_simple)
         {
-          actdis->compute_null_space_if_necessary(
+          actdis.compute_null_space_if_necessary(
               solver->params()
                   .sublist("CheapSIMPLE Parameters")
                   .sublist("Inverse1"));  // Inverse2 is created within blockpreconditioners.cpp
@@ -575,7 +565,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
         else if (prec == Core::LinearSolver::PreconditionerType::block_teko)
         {
           Core::LinearSolver::Parameters::compute_solver_parameters(
-              *actdis, solver->params().sublist("Inverse1"));
+              actdis, solver->params().sublist("Inverse1"));
         }
       }
     }
@@ -584,11 +574,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
     {
       // build meshtying solver
       solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
-          Global::Problem::instance()->solver_params(linsolvernumber), actdis->get_comm(),
+          Global::Problem::instance()->solver_params(linsolvernumber), actdis.get_comm(),
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
               Global::Problem::instance()->io_params(), "VERBOSITY"));
-      actdis->compute_null_space_if_necessary(solver->params());
+      actdis.compute_null_space_if_necessary(solver->params());
     }
     break;
   }

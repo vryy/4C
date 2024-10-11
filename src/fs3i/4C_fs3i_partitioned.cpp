@@ -862,7 +862,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::vol_mortar_mast
       return mastervector;
       break;
     case Inpar::FS3I::coupling_nonmatch:
-      return volume_coupling_objects_[i]->apply_vector_mapping21(mastervector);
+      return volume_coupling_objects_[i]->apply_vector_mapping21(*mastervector);
       break;
     default:
       FOUR_C_THROW("unknown field coupling type");
@@ -883,7 +883,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> FS3I::PartFS3I::vol_mortar_slav
       return slavevector;
       break;
     case Inpar::FS3I::coupling_nonmatch:
-      return volume_coupling_objects_[i]->apply_vector_mapping12(slavevector);
+      return volume_coupling_objects_[i]->apply_vector_mapping12(*slavevector);
       break;
     default:
       FOUR_C_THROW("unknown field coupling type");

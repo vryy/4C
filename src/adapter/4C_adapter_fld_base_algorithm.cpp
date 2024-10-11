@@ -279,7 +279,7 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
   }
 
   // create a second solver for SIMPLER preconditioner if chosen from input
-  create_second_solver(solver, fdyn);
+  create_second_solver(*solver, fdyn);
 
   // -------------------------------------------------------------------
   // set parameters in list
@@ -1172,7 +1172,7 @@ void Adapter::FluidBaseAlgorithm::setup_inflow_fluid(
   discret->compute_null_space_if_necessary(solver->params(), true);
 
   // create a second solver for SIMPLER preconditioner if chosen from input
-  create_second_solver(solver, fdyn);
+  create_second_solver(*solver, fdyn);
 
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
@@ -1477,7 +1477,7 @@ void Adapter::FluidBaseAlgorithm::set_general_parameters(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FluidBaseAlgorithm::create_second_solver(
-    const Teuchos::RCP<Core::LinAlg::Solver> solver, const Teuchos::ParameterList& fdyn)
+    Core::LinAlg::Solver& solver, const Teuchos::ParameterList& fdyn)
 {
   // The BLOCKMATRIX (yes,no) parameter only controls whether the fluid matrix is
   // assembled into a 2x2 blocked operator or a plain 1x1 block matrix
@@ -1500,13 +1500,13 @@ void Adapter::FluidBaseAlgorithm::create_second_solver(
         // subblock for the velocities. The pressure null space is trivial to be built using a
         // constant vector
         Teuchos::ParameterList& inv1 =
-            solver->params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
+            solver.params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
         inv1.sublist("nodal_block_information") =
-            solver->params().sublist("nodal_block_information");
+            solver.params().sublist("nodal_block_information");
 
         // CheapSIMPLE is somewhat hardwired here
-        solver->params().sublist("CheapSIMPLE Parameters").set("Prec Type", "CheapSIMPLE");
-        solver->params().set("FLUID", true);
+        solver.params().sublist("CheapSIMPLE Parameters").set("Prec Type", "CheapSIMPLE");
+        solver.params().set("FLUID", true);
       }
       break;
       default:

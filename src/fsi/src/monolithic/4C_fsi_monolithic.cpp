@@ -1033,12 +1033,10 @@ void FSI::Monolithic::setup_rhs(Core::LinAlg::Vector<double>& f, bool firstcall)
       Teuchos::null)  // ToDo: Remove if-"Abfrage" after 'dbcmaps_' has been introduced in lung fsi
   {
     // Finally, we take care of Dirichlet boundary conditions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(f);
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> zeros =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(f.Map(), true);
-    Core::LinAlg::apply_dirichlet_to_system(*rhs, *zeros, *(dbcmaps_->cond_map()));
-    f.Update(1.0, *rhs, 0.0);
+    Core::LinAlg::Vector<double> rhs(f);
+    const Core::LinAlg::Vector<double> zeros(f.Map(), true);
+    Core::LinAlg::apply_dirichlet_to_system(rhs, zeros, *(dbcmaps_->cond_map()));
+    f.Update(1.0, rhs, 0.0);
   }
 
   // NOX expects the 'positive' residual. The negative sign for the
@@ -1060,13 +1058,12 @@ void FSI::Monolithic::initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> i
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void FSI::Monolithic::combine_field_vectors(Core::LinAlg::Vector<double>& v,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fv,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> av)
+    const Core::LinAlg::Vector<double>& sv, const Core::LinAlg::Vector<double>& fv,
+    const Core::LinAlg::Vector<double>& av)
 {
-  extractor().add_vector(*sv, 0, v);
-  extractor().add_vector(*fv, 1, v);
-  extractor().add_vector(*av, 2, v);
+  extractor().add_vector(sv, 0, v);
+  extractor().add_vector(fv, 1, v);
+  extractor().add_vector(av, 2, v);
 }
 
 /*----------------------------------------------------------------------------*/

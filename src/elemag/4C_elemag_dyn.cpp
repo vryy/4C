@@ -349,7 +349,7 @@ void electromagnetics_drt()
             output->create_new_result_and_mesh_file();
 
             // Given the results of the scatra solver obtain the initial value of the electric field
-            elemagalgo->set_initial_electric_field(phi, scatradis);
+            elemagalgo->set_initial_electric_field(*phi, scatradis);
 
             // Once work is done change back to problem elemag
             problem->set_problem_type(Core::ProblemType::elemag);

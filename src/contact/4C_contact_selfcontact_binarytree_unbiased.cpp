@@ -281,7 +281,7 @@ void CONTACT::UnbiasedSelfBinaryTree::initialize_tree_bottom_up(
 
       // check if the new tree node includes whole self contact-surface in this case the tree node
       // has saved itself as adjacent edge
-      if (adjEdges[0] == contractedEdge)
+      if (*adjEdges[0] == *contractedEdge)
       {
         // save the tree node as root and continue the loop
         set_roots().push_back(newNode);
@@ -465,7 +465,7 @@ void CONTACT::UnbiasedSelfBinaryTree::search_contact()
   //**********************************************************************
   // STEP 3: search for self contact starting at root nodes
   //**********************************************************************
-  for (unsigned k = 0; k < myroots.size(); ++k) search_self_contact(roots()[myroots[k]]);
+  for (unsigned k = 0; k < myroots.size(); ++k) search_self_contact(*roots()[myroots[k]]);
 
   //**********************************************************************
   // STEP 4: search for two-body contact between different roots

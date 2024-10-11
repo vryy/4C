@@ -983,25 +983,25 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
         if (*projtype == "yz")
         {
           compute_vol_deriv(
-              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 0, 0);
+              xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2, 0, 0);
         }
         else if (*projtype == "xz")
         {
           compute_vol_deriv(
-              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 1, 1);
+              xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2, 1, 1);
         }
         else if (*projtype == "xy")
         {
           compute_vol_deriv(
-              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 2, 2);
+              xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2, 2, 2);
         }
         else
         {
-          compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2);
+          compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2);
         }
       }
       else
-        compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2);
+        compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2);
 
       // update rhs vector and corresponding column in "constraint" matrix
       elevector1 = *Vdiff1;
@@ -1190,7 +1190,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
           Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
 
       // call submethod
-      compute_area_deriv(xscurr, num_node(), numdim * num_node(), elearea, Adiff, Adiff2);
+      compute_area_deriv(xscurr, num_node(), numdim * num_node(), elearea, *Adiff, Adiff2);
       // store result
       elevector3[0] = elearea;
     }
@@ -1216,7 +1216,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
           Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
 
       // call submethod
-      compute_area_deriv(xscurr, num_node(), numdim * num_node(), elearea, Adiff, Adiff2);
+      compute_area_deriv(xscurr, num_node(), numdim * num_node(), elearea, *Adiff, Adiff2);
       // update elematrices and elevectors
       elevector1 = *Adiff;
       elevector1.scale(-1.0);
@@ -1436,7 +1436,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
 
         Immersed::interpolate_to_immersed_int_point<Core::FE::CellType::hex8,  // source
             Core::FE::CellType::quad4>                                         // target
-            (backgrddis, immerseddis, *this, bdryxi, bdryeledisp, action,
+            (*backgrddis, *immerseddis, *this, bdryxi, bdryeledisp, action,
                 interpolationresult  // result
             );
 
@@ -2098,7 +2098,7 @@ double Discret::ELEMENTS::StructuralSurface::compute_constr_vols(
  * ---------------------------------------------------------------------*/
 void Discret::ELEMENTS::StructuralSurface::compute_vol_deriv(
     const Core::LinAlg::SerialDenseMatrix& xc, const int numnode, const int ndof, double& V,
-    const Teuchos::RCP<Core::LinAlg::SerialDenseVector>& Vdiff1,
+    Core::LinAlg::SerialDenseVector& Vdiff1,
     const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& Vdiff2, const int minindex,
     const int maxindex)
 {
@@ -2108,7 +2108,7 @@ void Discret::ELEMENTS::StructuralSurface::compute_vol_deriv(
 
   // initialize
   V = 0.0;
-  Vdiff1->size(ndof);
+  Vdiff1.size(ndof);
   if (Vdiff2 != Teuchos::null) Vdiff2->shape(ndof, ndof);
 
   // Volume is calculated by evaluating the integral
@@ -2168,13 +2168,13 @@ void Discret::ELEMENTS::StructuralSurface::compute_vol_deriv(
       //-------- compute first derivative
       for (int i = 0; i < numnode; i++)
       {
-        (*Vdiff1)[3 * i + inda] +=
+        (Vdiff1)[3 * i + inda] +=
             invnumind * intpoints.qwgt[gpid] * dotprodc *
             (deriv(0, i) * metrictensor(1, indb) - metrictensor(0, indb) * deriv(1, i));
-        (*Vdiff1)[3 * i + indb] +=
+        (Vdiff1)[3 * i + indb] +=
             invnumind * intpoints.qwgt[gpid] * dotprodc *
             (deriv(1, i) * metrictensor(0, inda) - metrictensor(1, inda) * deriv(0, i));
-        (*Vdiff1)[3 * i + indc] += invnumind * intpoints.qwgt[gpid] * funct[i] * detA;
+        (Vdiff1)[3 * i + indc] += invnumind * intpoints.qwgt[gpid] * funct[i] * detA;
       }
 
       //-------- compute second derivative
@@ -2220,12 +2220,12 @@ void Discret::ELEMENTS::StructuralSurface::compute_vol_deriv(
  * ---------------------------------------------------------------------*/
 void Discret::ELEMENTS::StructuralSurface::compute_area_deriv(
     const Core::LinAlg::SerialDenseMatrix& x, const int numnode, const int ndof, double& A,
-    const Teuchos::RCP<Core::LinAlg::SerialDenseVector>& Adiff,
+    Core::LinAlg::SerialDenseVector& Adiff,
     const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& Adiff2)
 {
   // initialization
   A = 0.;
-  Adiff->size(ndof);
+  Adiff.size(ndof);
 
   if (Adiff2 != Teuchos::null) Adiff2->shape(ndof, ndof);
 
@@ -2287,7 +2287,7 @@ void Discret::ELEMENTS::StructuralSurface::compute_area_deriv(
      *----------------------------- with respect to the displacements */
     for (int i = 0; i < ndof; ++i)
     {
-      (*Adiff)[i] += jacobi_deriv(i) * intpoints.qwgt[gpid];
+      (Adiff)[i] += jacobi_deriv(i) * intpoints.qwgt[gpid];
     }
 
     if (Adiff2 != Teuchos::null)
@@ -2412,8 +2412,7 @@ void Discret::ELEMENTS::StructuralSurface::calculate_surface_porosity(
 
   const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
   const int ngp = intpoints.nquad;
-  Teuchos::RCP<Core::LinAlg::SerialDenseVector> poro =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(ngp);
+  Core::LinAlg::SerialDenseVector poro(ngp);
   const int numdim = 3;
   const int numnode = num_node();
   const int noddof = num_dof_per_node(*(nodes()[0]));

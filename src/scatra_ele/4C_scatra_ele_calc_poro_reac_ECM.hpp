@@ -70,8 +70,7 @@ namespace Discret
           ) override;
 
       //! compute_struct_chem_potential
-      double compute_struct_chem_potential(
-          Teuchos::RCP<Mat::StructPoroReactionECM>& structmat, const int gp);
+      double compute_struct_chem_potential(Mat::StructPoroReactionECM& structmat, const int gp);
     };
 
   }  // namespace ELEMENTS

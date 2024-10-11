@@ -143,8 +143,7 @@ namespace Adapter
     void gmsh_output(const std::string& name,  ///< name for output file
         const int step,                        ///< step number
         const int count,                       ///< counter for iterations within a global time step
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            vel,  ///< vector holding velocity and pressure dofs
+        Core::LinAlg::Vector<double>& vel,     ///< vector holding velocity and pressure dofs
         Teuchos::RCP<Core::LinAlg::Vector<double>> acc =
             Teuchos::null  ///< vector holding accelerations
     );

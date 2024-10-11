@@ -160,7 +160,7 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
       else
       {
         BEAMINTERACTION::UTILS::get_current_element_dis(
-            *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
+            *discretization_, ele, *displacement_state_vector, beamelement_displacement_vector);
       }
     }
 
@@ -292,7 +292,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_displacement_field(
     std::vector<double> beamelement_displacement_vector;
 
     BEAMINTERACTION::UTILS::get_current_element_dis(
-        *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
+        *discretization_, ele, *displacement_state_vector, beamelement_displacement_vector);
 
     /* loop over the chosen visualization points (equidistant distribution in the element
      * parameter space xi \in [-1,1] ) and determine its disp state */
@@ -388,7 +388,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_triad_field(
     std::vector<double> beamelement_displacement_vector;
 
     BEAMINTERACTION::UTILS::get_current_element_dis(
-        *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
+        *discretization_, ele, *displacement_state_vector, beamelement_displacement_vector);
 
 
     /* loop over the chosen visualization points (equidistant distribution in the element
@@ -736,7 +736,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_point_circular_cross_section_
     std::vector<double> beamelement_displacement_vector;
 
     BEAMINTERACTION::UTILS::get_current_element_dis(
-        *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
+        *discretization_, ele, *displacement_state_vector, beamelement_displacement_vector);
 
 
     /* loop over the chosen visualization points (equidistant distribution in the element
@@ -1329,7 +1329,7 @@ void BeamDiscretizationRuntimeOutputWriter::
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector)
+    const Core::LinAlg::Vector<double>& displacement_state_vector)
 {
   /*
    * see
@@ -1369,10 +1369,10 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater
     for (int dim = 0; dim < 3; ++dim)
     {
       pos[0] = ele->nodes()[0]->x()[dim] +
-               (*displacement_state_vector)[displacement_state_vector->Map().LID(
+               (displacement_state_vector)[displacement_state_vector.Map().LID(
                    discretization_->dof(ele->nodes()[0])[dim])];
       pos[1] = ele->nodes()[1]->x()[dim] +
-               (*displacement_state_vector)[displacement_state_vector->Map().LID(
+               (displacement_state_vector)[displacement_state_vector.Map().LID(
                    discretization_->dof(ele->nodes()[1])[dim])];
       dirvec(dim) = pos[1] - pos[0];
     }
@@ -1489,7 +1489,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
         dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     BEAMINTERACTION::UTILS::get_current_element_dis(
-        *discretization_, ele, displacement_state_vector, beamelement_shift_displacement_vector);
+        *discretization_, ele, *displacement_state_vector, beamelement_shift_displacement_vector);
     BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(*discretization_, ele,
         displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector);
 

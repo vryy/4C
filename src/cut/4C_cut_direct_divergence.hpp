@@ -58,7 +58,7 @@ namespace Cut
     output.
      */
     void divengence_cells_gmsh(
-        const Core::FE::GaussIntegration& gpv, Teuchos::RCP<Core::FE::GaussPoints>& gpmain);
+        const Core::FE::GaussIntegration& gpv, Core::FE::GaussPoints& gpmain);
 
    private:
     /*!

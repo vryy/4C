@@ -273,14 +273,13 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
 
       for (int idf = 0; idf < numdf; ++idf)
       {
-        Teuchos::RCP<Core::LinAlg::Vector<double>> column =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*ghostedData)(idf));
+        Core::LinAlg::Vector<double> column(*(*ghostedData)(idf));
 
         const int lid = ghostedData->Map().LID(gid);
 
         if (lid > -1)
         {
-          solution[inpos + idf] = (*column)[lid];
+          solution[inpos + idf] = (column)[lid];
         }
         else
         {
@@ -353,9 +352,8 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
     const int inpos = ncomponents * (eidmapping_.find(egid)->second);
     for (int d = 0; d < numdf; ++d)
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> column =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*importedData)(d + from));
-      solution[inpos + d] = (*column)[e];
+      Core::LinAlg::Vector<double> column(*(*importedData)(d + from));
+      solution[inpos + d] = (column)[e];
     }
   }
 

@@ -88,7 +88,7 @@ namespace FLD
 
     //! Applied Dirichlet values are adapted on the slave side of the internal interface
     //! in order to avoid an over-constraint problem setup
-    void check_overlapping_bc(Teuchos::RCP<Epetra_Map> map  ///> map of boundary condition
+    void check_overlapping_bc(Epetra_Map& map  ///> map of boundary condition
     );
 
     //! Old routine handling Dirichlet conditions on the master side of the internal interface
@@ -104,8 +104,8 @@ namespace FLD
 
     //! Preparation for including Dirichlet conditions in the condensation process
     void include_dirichlet_in_condensation(
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp,  ///> solution vector n+1
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& veln    ///> solution vector n
+        Core::LinAlg::Vector<double>& velnp,  ///> solution vector n+1
+        Core::LinAlg::Vector<double>& veln    ///> solution vector n
     );
 
     //! evaluation of matrix P with potential mesh relocation in ALE case
@@ -132,9 +132,9 @@ namespace FLD
 
     //! The residual has another length in case of bmat_merged --> residual has to be calculated in
     //! split form
-    void apply_pt_to_residual(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
+    void apply_pt_to_residual(Core::LinAlg::SparseOperator& sysmat,
         Teuchos::RCP<Core::LinAlg::Vector<double>> residual,
-        Teuchos::RCP<Core::LinAlg::KrylovProjector> projector);
+        Core::LinAlg::KrylovProjector& projector);
 
     //! Solve mesh-tying problem (including ALE case)
     void solve_meshtying(Core::LinAlg::Solver& solver,
@@ -152,8 +152,7 @@ namespace FLD
     void output_vector_split(Teuchos::RCP<Core::LinAlg::Vector<double>> vector);
 
     //! Analyze system matrix
-    void analyze_matrix(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sparsematrix);  ///> sparse matrix to analyze
+    void analyze_matrix(Core::LinAlg::SparseMatrix& sparsematrix);  ///> sparse matrix to analyze
 
     //! Replace matrix entries
     /// Replace computed identity matrix by a real identity matrix
@@ -194,7 +193,7 @@ namespace FLD
 
     //! Prepare condensation of the shape derivatives
     void condensation_operation_block_matrix_shape(
-        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& shapederivatives);
+        Core::LinAlg::BlockSparseMatrixBase& shapederivatives);
 
    private:
     //! Prepare condensation for sparse matrix (including ALE case)
@@ -220,26 +219,22 @@ namespace FLD
     );
 
     //! Split vector and save parts in a std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>> >
-    void split_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> vector,  ///> vector to split
+    void split_vector(Core::LinAlg::Vector<double>& vector,  ///> vector to split
         std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
             splitvector);  ///> container for the split vector
 
     //! Split vector and save parts in a std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>> >
     void split_vector_based_on3x3(Teuchos::RCP<Core::LinAlg::Vector<double>>
                                       orgvector,  ///> original vector based on 3x3 blockmatrix
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            vectorbasedon2x2);  ///> split vector based on 2x2 blockmatrix
+        Core::LinAlg::Vector<double>& vectorbasedon2x2);  ///> split vector based on 2x2 blockmatrix
 
     //! Condensation operation for a sparse matrix (including ALE case):
     /// the sysmat is manipulated via a second sparse matrix
     /// Assembling is slower, since the graph cannot be saved
     void condensation_operation_sparse_matrix(
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>&
-            sysmat,  ///> sysmat established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
-            residual,  ///> residual established by the element routine
-        const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>&
-            splitmatrix,  ///> container with split original sysmat
+        Core::LinAlg::SparseOperator& sysmat,    ///> sysmat established by the element routine
+        Core::LinAlg::Vector<double>& residual,  ///> residual established by the element routine
+        Core::LinAlg::BlockSparseMatrixBase& splitmatrix,  ///> container with split original sysmat
         const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
             splitres,  ///> container with split original residual
         const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
@@ -252,9 +247,8 @@ namespace FLD
     /// since finally a 2x2 block matrix is solved
     void condensation_operation_block_matrix(
         const Teuchos::RCP<Core::LinAlg::SparseOperator>&
-            sysmat,  ///> sysmat established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
-            residual,  ///> residual established by the element routine
+            sysmat,                              ///> sysmat established by the element routine
+        Core::LinAlg::Vector<double>& residual,  ///> residual established by the element routine
         const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
             splitres,  ///> container with split original residual
         const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&

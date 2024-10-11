@@ -96,9 +96,8 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     FOUR_C_THROW("old structural time integration no longer supported in tsi");
   else
   {
-    Teuchos::RCP<Thermo::BaseAlgorithm> thermo = Teuchos::make_rcp<Thermo::BaseAlgorithm>(
-        Global::Problem::instance()->tsi_dynamic_params(), thermodis);
-    thermo_ = thermo->thermo_fieldrcp();
+    Thermo::BaseAlgorithm thermo(Global::Problem::instance()->tsi_dynamic_params(), thermodis);
+    thermo_ = thermo.thermo_fieldrcp();
 
     //  // access structural dynamic params list which will be possibly modified while creating the
     //  time integrator
@@ -118,7 +117,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
         structdis->set_state(1, "temperature", thermo_field()->tempnp());
       else
         structdis->set_state(
-            1, "temperature", volcoupl_->apply_vector_mapping12(thermo_field()->tempnp()));
+            1, "temperature", volcoupl_->apply_vector_mapping12(*thermo_field()->tempnp()));
     }
 
     adapterbase_ptr->setup();
@@ -239,7 +238,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
   {
     if (matchinggrid_)
     {
-      output_deformation_in_thr(structure_field()->dispn(), structure_field()->discretization());
+      output_deformation_in_thr(structure_field()->dispn(), *structure_field()->discretization());
 
       thermo_field()->disc_writer()->write_multi_vector(
           "displacement", dispnp_, Core::IO::nodevector);
@@ -247,7 +246,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
     else
     {
       Teuchos::RCP<const Core::LinAlg::Vector<double>> dummy =
-          volcoupl_->apply_vector_mapping21(structure_field()->dispnp());
+          volcoupl_->apply_vector_mapping21(*structure_field()->dispnp());
 
       // determine number of space dimensions
       const int numdim = Global::Problem::instance()->n_dim();
@@ -304,7 +303,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
     {
       //************************************************************************************
       Teuchos::RCP<const Core::LinAlg::Vector<double>> dummy1 =
-          volcoupl_->apply_vector_mapping12(thermo_field()->tempnp());
+          volcoupl_->apply_vector_mapping12(*thermo_field()->tempnp());
 
       // loop over all local nodes of thermal discretisation
       for (int lnodeid = 0; lnodeid < (structure_field()->discretization()->num_my_row_nodes());
@@ -340,15 +339,14 @@ void TSI::Algorithm::output(bool forced_writerestart)
  | enable visualisation of thermal variables on deformed body           |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::output_deformation_in_thr(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp,
-    Teuchos::RCP<Core::FE::Discretization> structdis)
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp, Core::FE::Discretization& structdis)
 {
   if (dispnp == Teuchos::null) FOUR_C_THROW("Got null pointer for displacements");
 
   int err(0);
 
   // get dofrowmap of structural discretisation
-  const Epetra_Map* structdofrowmap = structdis->dof_row_map(0);
+  const Epetra_Map* structdofrowmap = structdis.dof_row_map(0);
 
   // loop over all local nodes of thermal discretisation
   for (int lnodeid = 0; lnodeid < (thermo_field()->discretization()->num_my_row_nodes()); lnodeid++)
@@ -359,9 +357,9 @@ void TSI::Algorithm::output_deformation_in_thr(
     // structural node!
 
     // get the processor's local structural node with the same lnodeid
-    Core::Nodes::Node* structlnode = structdis->l_row_node(lnodeid);
+    Core::Nodes::Node* structlnode = structdis.l_row_node(lnodeid);
     // get the degrees of freedom associated with this structural node
-    std::vector<int> structnodedofs = structdis->dof(0, structlnode);
+    std::vector<int> structnodedofs = structdis.dof(0, structlnode);
     // determine number of space dimensions
     const int numdim = Global::Problem::instance()->n_dim();
 
@@ -399,14 +397,14 @@ void TSI::Algorithm::output_deformation_in_thr(
  | like interface_velocity(disp) in FSI::DirichletNeumann                |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Core::LinAlg::Vector<double>> TSI::Algorithm::calc_velocity(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp)
+    const Core::LinAlg::Vector<double>& dispnp)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> vel = Teuchos::null;
   // copy D_n onto V_n+1
   vel = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(structure_field()->dispn()));
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
-  vel->Update(1. / dt(), *dispnp, -1. / dt());
+  vel->Update(1. / dt(), dispnp, -1. / dt());
 
   return vel;
 }  // calc_velocity()
@@ -430,7 +428,7 @@ void TSI::Algorithm::apply_thermo_coupling_state(
   {
     if (temp != Teuchos::null)
       structure_field()->discretization()->set_state(
-          1, "temperature", volcoupl_->apply_vector_mapping12(temp));
+          1, "temperature", volcoupl_->apply_vector_mapping12(*temp));
   }
 
   // set new temperatures to contact
@@ -460,10 +458,10 @@ void TSI::Algorithm::apply_struct_coupling_state(
   {
     if (disp != Teuchos::null)
       thermo_field()->discretization()->set_state(
-          1, "displacement", volcoupl_->apply_vector_mapping21(disp));
+          1, "displacement", volcoupl_->apply_vector_mapping21(*disp));
     if (vel != Teuchos::null)
       thermo_field()->discretization()->set_state(
-          1, "velocity", volcoupl_->apply_vector_mapping21(vel));
+          1, "velocity", volcoupl_->apply_vector_mapping21(*vel));
   }
 }  // apply_struct_coupling_state()
 
@@ -540,7 +538,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     factory.build_search_tree(interfaces);
 
     // print final screen output
-    factory.print(interfaces, contact_strategy_lagrange_, cparams);
+    factory.print(interfaces, *contact_strategy_lagrange_, cparams);
 
     // ---------------------------------------------------------------------
     // final touches to the contact strategy

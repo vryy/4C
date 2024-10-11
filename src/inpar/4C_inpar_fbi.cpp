@@ -19,12 +19,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::FBI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::FBI::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& fbi = list->sublist("FLUID BEAM INTERACTION", false, "");
+  Teuchos::ParameterList& fbi = list.sublist("FLUID BEAM INTERACTION", false, "");
 
   /*----------------------------------------------------------------------*/
   /* parameters for beam to fluid meshtying */

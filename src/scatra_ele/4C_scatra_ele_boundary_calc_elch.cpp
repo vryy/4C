@@ -433,7 +433,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype,
 
       // call utility class for element evaluation
       utils_->evaluate_elch_kinetics_at_integration_point(ele, emat, erhs, ephinp, ehist, timefac,
-          fac, my::funct_, cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, epsilon, k);
+          fac, my::funct_, *cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, epsilon, k);
     }  // loop over integration points
   }    // loop over all scalars
 
@@ -505,7 +505,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_el
       const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
 
       // call utility class for element evaluation
-      utils_->evaluate_electrode_status_at_integration_point(ele, scalars, params, cond, ephinp,
+      utils_->evaluate_electrode_status_at_integration_point(ele, scalars, params, *cond, ephinp,
           ephidtnp, my::funct_, zerocur, kinetics, stoich, nume, pot0, frt, timefac, fac, epsilon,
           k);
     }  // loop over integration points

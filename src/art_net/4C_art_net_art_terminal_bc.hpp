@@ -39,19 +39,19 @@ namespace Arteries
     /*
     \brief Standard solver for 1d artery inlet
     */
-    void solve_prescribed_terminal_bc(Teuchos::RCP<Core::FE::Discretization> actdis,
+    void solve_prescribed_terminal_bc(Core::FE::Discretization& actdis,
         const Core::Conditions::Condition* condition, Teuchos::ParameterList& params);
 
     /*
     \brief Standard solver for 1d artery reflective outlet
     */
-    void solve_reflective_terminal(Teuchos::RCP<Core::FE::Discretization> actdis,
+    void solve_reflective_terminal(Core::FE::Discretization& actdis,
         const Core::Conditions::Condition* condition, Teuchos::ParameterList& params);
 
     /*
     \brief Standard solver for 1d artery explicit windkessel BC outlet
     */
-    void solve_expl_windkessel_bc(Teuchos::RCP<Core::FE::Discretization> actdis,
+    void solve_expl_windkessel_bc(Core::FE::Discretization& actdis,
         const Core::Conditions::Condition* condition, Teuchos::ParameterList& params);
 
   }  // namespace UTILS

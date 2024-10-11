@@ -810,10 +810,9 @@ void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename
     if (!ele) FOUR_C_THROW("ERROR: Cannot find ele with gid %", gid);
     CONTACT::Element* cele = dynamic_cast<CONTACT::Element*>(ele);
 
-    Teuchos::RCP<CONTACT::Integrator> integrator = Teuchos::make_rcp<CONTACT::Integrator>(
-        interface_->interface_params(), cele->shape(), *comm_);
+    CONTACT::Integrator integrator(interface_->interface_params(), cele->shape(), *comm_);
 
-    integrator->integrate_d(*cele, *comm_, true);
+    integrator.integrate_d(*cele, *comm_, true);
   }
 
   // assemble routine
@@ -839,8 +838,8 @@ void Adapter::CouplingNonLinMortar::integrate_lin_d(const std::string& statename
       FOUR_C_THROW("ERROR: Dof maps based on initial parallel distribution are wrong!");
 
     // transform everything back to old distribution
-    D_ = Mortar::matrix_row_col_transform(D_, pslavedofrowmap_, pslavedofrowmap_);
-    DLin_ = Mortar::matrix_row_col_transform(DLin_, pslavedofrowmap_, pslavedofrowmap_);
+    D_ = Mortar::matrix_row_col_transform(*D_, *pslavedofrowmap_, *pslavedofrowmap_);
+    DLin_ = Mortar::matrix_row_col_transform(*DLin_, *pslavedofrowmap_, *pslavedofrowmap_);
   }
 
   return;
@@ -919,19 +918,19 @@ void Adapter::CouplingNonLinMortar::matrix_row_col_transform()
       FOUR_C_THROW("ERROR: Dof maps based on initial parallel distribution are wrong!");
 
     if (DLin_ != Teuchos::null)
-      DLin_ = Mortar::matrix_row_col_transform(DLin_, pslavedofrowmap_, psmdofrowmap_);
+      DLin_ = Mortar::matrix_row_col_transform(*DLin_, *pslavedofrowmap_, *psmdofrowmap_);
 
     if (MLin_ != Teuchos::null)
-      MLin_ = Mortar::matrix_row_col_transform(MLin_, pmasterdofrowmap_, psmdofrowmap_);
+      MLin_ = Mortar::matrix_row_col_transform(*MLin_, *pmasterdofrowmap_, *psmdofrowmap_);
 
     if (H_ != Teuchos::null)
-      H_ = Mortar::matrix_row_col_transform(H_, pslavedofrowmap_, pslavedofrowmap_);
+      H_ = Mortar::matrix_row_col_transform(*H_, *pslavedofrowmap_, *pslavedofrowmap_);
 
     if (T_ != Teuchos::null)
-      T_ = Mortar::matrix_row_col_transform(T_, pslavedofrowmap_, pslavedofrowmap_);
+      T_ = Mortar::matrix_row_col_transform(*T_, *pslavedofrowmap_, *pslavedofrowmap_);
 
     if (N_ != Teuchos::null)
-      N_ = Mortar::matrix_row_col_transform(N_, pslavedofrowmap_, psmdofrowmap_);
+      N_ = Mortar::matrix_row_col_transform(*N_, *pslavedofrowmap_, *psmdofrowmap_);
 
     // transform gap vector
     if (gap_ != Teuchos::null)

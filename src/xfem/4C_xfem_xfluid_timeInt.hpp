@@ -152,7 +152,7 @@ namespace XFEM
     std::string map_method_enum_to_string(const enum Inpar::XFEM::XFluidTimeInt term);
 
     /// all surrounding elements non-intersected?
-    bool non_intersected_elements(Core::Nodes::Node* n, const Teuchos::RCP<Cut::CutWizard> wizard);
+    bool non_intersected_elements(Core::Nodes::Node* n, Cut::CutWizard& wizard);
 
     /// find all ghost dofsets around this node and its std-dofset
     void find_surrounding_ghost_dofsets(

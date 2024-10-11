@@ -114,8 +114,7 @@ namespace FLD
      * in the merged fluid-fluid-dof-map
      * \param (in) condelements map of conditioned elements
      */
-    void prepare_shape_derivatives(
-        const Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> fsiextractor,
+    void prepare_shape_derivatives(const Core::LinAlg::MultiMapExtractor& fsiextractor,
         const Teuchos::RCP<std::set<int>> condelements);
 
     /*!

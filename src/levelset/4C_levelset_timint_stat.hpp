@@ -48,7 +48,7 @@ namespace ScaTra
     };
 
     /// redistribute the scatra discretization and vectors according to nodegraph
-    void redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph)
+    void redistribute(Epetra_CrsGraph& nodegraph)
     {
       FOUR_C_THROW("You should not need this function!");
       return;

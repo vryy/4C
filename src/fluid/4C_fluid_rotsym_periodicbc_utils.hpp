@@ -38,7 +38,7 @@ namespace FLD
 {
   //! return specific component of rotated global vector result
   double get_component_of_rotated_vector_field(const int idf,  ///< the component id 0,1 (and 2)
-      const Teuchos::RCP<const Core::LinAlg::Vector<double>> proc0data,  ///< the data vector
+      const Core::LinAlg::Vector<double>& proc0data,           ///< the data vector
       const int lid,         ///< local dof id (w.r.t proc0data) of component idf
       const double rotangle  ///< angle of rotation (RAD)
   );

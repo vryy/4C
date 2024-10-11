@@ -490,9 +490,8 @@ namespace ScaTra
 
     //! convert dof-based result vector into node-based multi-vector for postprocessing
     [[nodiscard]] Teuchos::RCP<Epetra_MultiVector> convert_dof_vector_to_componentwise_node_vector(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>&
-            dof_vector,  ///< dof-based result vector
-        const int nds    ///< number of dofset to convert
+        const Core::LinAlg::Vector<double>& dof_vector,  ///< dof-based result vector
+        const int nds                                    ///< number of dofset to convert
     ) const;
 
     //! return system matrix as sparse operator
@@ -743,8 +742,7 @@ namespace ScaTra
     void evaluate_macro_micro_coupling();
 
     //! iterative update of phinp
-    void update_iter(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc  //!< increment vector for phi
+    void update_iter(const Core::LinAlg::Vector<double>& inc  //!< increment vector for phi
     );
 
     /*--- query and output ---------------------------------------------------*/
@@ -1707,13 +1705,13 @@ namespace ScaTra
 
     //! return maximum number of dofs per node
     int num_dof_per_node_in_condition(const Core::Conditions::Condition& condition,
-        const Teuchos::RCP<const Core::FE::Discretization>& discret) const;
+        const Core::FE::Discretization& discret) const;
 
     //! return maximum number of transported scalars per node
     virtual int num_scal_in_condition(const Core::Conditions::Condition& condition,
         const Teuchos::RCP<const Core::FE::Discretization>& discret) const
     {
-      return num_dof_per_node_in_condition(condition, discret);
+      return num_dof_per_node_in_condition(condition, *discret);
     };
 
     //! return number of dofs per node

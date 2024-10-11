@@ -457,12 +457,11 @@ ScalarType BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam
 template <typename Beam, typename Surface, typename ScalarType>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 beam_to_solid_surface_contact_pair_mortar_factory_template_beam_surface(
-    const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceContactParams>
-        beam_to_surface_contact_params)
+    const BEAMINTERACTION::BeamToSolidSurfaceContactParams& beam_to_surface_contact_params)
 {
   using namespace GEOMETRYPAIR;
 
-  switch (beam_to_surface_contact_params->get_mortar_shape_function_type())
+  switch (beam_to_surface_contact_params.get_mortar_shape_function_type())
   {
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line2:
       return Teuchos::RCP(new BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam,
@@ -488,7 +487,7 @@ beam_to_solid_surface_contact_pair_mortar_factory_template_beam(
   {
     case Core::FE::CellType::quad4:
       return beam_to_solid_surface_contact_pair_mortar_factory_template_beam_surface<Beam, t_quad4,
-          line_to_surface_patch_scalar_type_1st_order>(beam_to_surface_contact_params);
+          line_to_surface_patch_scalar_type_1st_order>(*beam_to_surface_contact_params);
     default:
       FOUR_C_THROW("Got unexpected surface shape");
   }

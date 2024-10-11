@@ -148,7 +148,7 @@ void PaSI::PasiPartTwoWayCoup::outerloop()
     ++itnum;
 
     // reset increment states
-    reset_increment_states(intfdispnp_, intfforcenp_);
+    reset_increment_states(*intfdispnp_, *intfforcenp_);
 
     // reset particle states
     reset_particle_states();
@@ -196,11 +196,10 @@ void PaSI::PasiPartTwoWayCoup::output()
 }
 
 void PaSI::PasiPartTwoWayCoup::reset_increment_states(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> intfdispnp,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> intfforcenp)
+    const Core::LinAlg::Vector<double>& intfdispnp, const Core::LinAlg::Vector<double>& intfforcenp)
 {
-  intfdispincnp_->Update(1.0, *intfdispnp, 0.0);
-  intfforceincnp_->Update(1.0, *intfforcenp, 0.0);
+  intfdispincnp_->Update(1.0, intfdispnp, 0.0);
+  intfforceincnp_->Update(1.0, intfforcenp, 0.0);
 }
 
 void PaSI::PasiPartTwoWayCoup::build_increment_states()
@@ -523,7 +522,7 @@ void PaSI::PasiPartTwoWayCoupDispRelax::outerloop()
     ++itnum;
 
     // reset increment states
-    reset_increment_states(relaxintfdispnp_, intfforcenp_);
+    reset_increment_states(*relaxintfdispnp_, *intfforcenp_);
 
     // reset particle states
     reset_particle_states();

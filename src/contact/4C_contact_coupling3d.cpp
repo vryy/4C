@@ -1966,11 +1966,10 @@ void CONTACT::Coupling3dManager::find_feasible_master_elements(
   for (std::size_t m = 0; m < master_elements().size(); ++m)
   {
     // Build a instance of the Mortar::Coupling3d object (no linearization needed).
-    Teuchos::RCP<Mortar::Coupling3d> coup = Teuchos::make_rcp<Mortar::Coupling3d>(
-        idiscret_, dim_, false, imortar_, slave_element(), master_element(m));
+    Mortar::Coupling3d coup(idiscret_, dim_, false, imortar_, slave_element(), master_element(m));
 
     // Building the master element normals and check the angles.
-    if (coup->rough_check_orient())
+    if (coup.rough_check_orient())
     {
       feasible_ma_eles[fcount] = &master_element(m);
       ++fcount;

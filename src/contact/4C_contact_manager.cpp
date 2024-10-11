@@ -342,7 +342,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
                   discret.dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus);
           //-------------------
           // get nurbs weight!
-          if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, cnode);
+          if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, *cnode);
 
           // get edge and corner information:
           std::vector<Core::Conditions::Condition*> contactcornercond(0);
@@ -399,7 +399,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
           // get nurbs weight!
           if (nurbs)
           {
-            Mortar::UTILS::prepare_nurbs_node(node, cnode);
+            Mortar::UTILS::prepare_nurbs_node(node, *cnode);
           }
 
           // get edge and corner information:
@@ -482,7 +482,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
         if ((contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::poroelast ||
                 contactParams.get<int>("PROBTYPE") == Inpar::CONTACT::poroscatra) &&
             algo != Inpar::Mortar::algorithm_gpts)
-          set_poro_parent_element(slavetype, mastertype, cele, ele);
+          set_poro_parent_element(slavetype, mastertype, *cele, ele);
 
         if (algo == Inpar::Mortar::algorithm_gpts)
         {
@@ -499,7 +499,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
         {
-          Mortar::UTILS::prepare_nurbs_element(discret, ele, cele, dim);
+          Mortar::UTILS::prepare_nurbs_element(discret, ele, *cele, dim);
         }
 
         interface->add_element(cele);
@@ -1239,43 +1239,36 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   // *********************************************************************
 
   // evaluate active set and slip set
-  Teuchos::RCP<Core::LinAlg::Vector<double>> activeset =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_strategy().active_row_nodes());
-  activeset->PutScalar(1.0);
+  Core::LinAlg::Vector<double> activeset(*get_strategy().active_row_nodes());
+  activeset.PutScalar(1.0);
   if (get_strategy().is_friction())
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> slipset =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_strategy().slip_row_nodes());
-    slipset->PutScalar(1.0);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> slipsetexp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_strategy().active_row_nodes());
-    Core::LinAlg::export_to(*slipset, *slipsetexp);
-    activeset->Update(1.0, *slipsetexp, 1.0);
+    Core::LinAlg::Vector<double> slipset(*get_strategy().slip_row_nodes());
+    slipset.PutScalar(1.0);
+    Core::LinAlg::Vector<double> slipsetexp(*get_strategy().active_row_nodes());
+    Core::LinAlg::export_to(slipset, slipsetexp);
+    activeset.Update(1.0, slipsetexp, 1.0);
   }
 
   // export to problem node row map
   Teuchos::RCP<Epetra_Map> problemnodes = get_strategy().problem_nodes();
   Teuchos::RCP<Core::LinAlg::Vector<double>> activesetexp =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemnodes);
-  Core::LinAlg::export_to(*activeset, *activesetexp);
+  Core::LinAlg::export_to(activeset, *activesetexp);
 
   if (get_strategy().wear_both_discrete())
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mactiveset =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_strategy().master_active_nodes());
-    mactiveset->PutScalar(1.0);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> slipset =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_strategy().master_slip_nodes());
-    slipset->PutScalar(1.0);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> slipsetexp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_strategy().master_active_nodes());
-    Core::LinAlg::export_to(*slipset, *slipsetexp);
-    mactiveset->Update(1.0, *slipsetexp, 1.0);
+    Core::LinAlg::Vector<double> mactiveset(*get_strategy().master_active_nodes());
+    mactiveset.PutScalar(1.0);
+    Core::LinAlg::Vector<double> slipset(*get_strategy().master_slip_nodes());
+    slipset.PutScalar(1.0);
+    Core::LinAlg::Vector<double> slipsetexp(*get_strategy().master_active_nodes());
+    Core::LinAlg::export_to(slipset, slipsetexp);
+    mactiveset.Update(1.0, slipsetexp, 1.0);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mactivesetexp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*problemnodes);
-    Core::LinAlg::export_to(*mactiveset, *mactivesetexp);
-    activesetexp->Update(1.0, *mactivesetexp, 1.0);
+    Core::LinAlg::Vector<double> mactivesetexp(*problemnodes);
+    Core::LinAlg::export_to(mactiveset, mactivesetexp);
+    activesetexp->Update(1.0, mactivesetexp, 1.0);
   }
 
   output.write_vector("activeset", activesetexp);
@@ -1439,7 +1432,7 @@ void CONTACT::Manager::reconnect_parent_elements()
  |  Set Parent Elements for Poro Face Elements                ager 11/15|
  *----------------------------------------------------------------------*/
 void CONTACT::Manager::set_poro_parent_element(int& slavetype, int& mastertype,
-    Teuchos::RCP<CONTACT::Element>& cele, Teuchos::RCP<Core::Elements::Element>& ele)
+    CONTACT::Element& cele, Teuchos::RCP<Core::Elements::Element>& ele)
 {
   // ints to communicate decision over poro bools between processors on every interface
   // safety check - because there may not be mixed interfaces and structural slave elements
@@ -1448,10 +1441,10 @@ void CONTACT::Manager::set_poro_parent_element(int& slavetype, int& mastertype,
   Teuchos::RCP<Core::Elements::FaceElement> faceele =
       Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
   if (faceele == Teuchos::null) FOUR_C_THROW("Cast to FaceElement failed!");
-  cele->phys_type() = Mortar::Element::other;
+  cele.phys_type() = Mortar::Element::other;
   std::vector<Teuchos::RCP<Core::Conditions::Condition>> porocondvec;
   discret_.get_condition("PoroCoupling", porocondvec);
-  if (!cele->is_slave())  // treat an element as a master element if it is no slave element
+  if (!cele.is_slave())  // treat an element as a master element if it is no slave element
   {
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
@@ -1465,22 +1458,22 @@ void CONTACT::Manager::set_poro_parent_element(int& slavetype, int& mastertype,
             FOUR_C_THROW(
                 "struct and poro master elements on the same processor - no mixed interface "
                 "supported");
-          cele->phys_type() = Mortar::Element::poro;
+          cele.phys_type() = Mortar::Element::poro;
           mastertype = 1;
           break;
         }
       }
     }
-    if (cele->phys_type() == Mortar::Element::other)
+    if (cele.phys_type() == Mortar::Element::other)
     {
       if (mastertype == 1)
         FOUR_C_THROW(
             "struct and poro master elements on the same processor - no mixed interface supported");
-      cele->phys_type() = Mortar::Element::structure;
+      cele.phys_type() = Mortar::Element::structure;
       mastertype = 0;
     }
   }
-  else if (cele->is_slave())  // treat an element as slave element if it is one
+  else if (cele.is_slave())  // treat an element as slave element if it is one
   {
     for (unsigned int i = 0; i < porocondvec.size(); ++i)
     {
@@ -1494,24 +1487,24 @@ void CONTACT::Manager::set_poro_parent_element(int& slavetype, int& mastertype,
             FOUR_C_THROW(
                 "struct and poro master elements on the same processor - no mixed interface "
                 "supported");
-          cele->phys_type() = Mortar::Element::poro;
+          cele.phys_type() = Mortar::Element::poro;
           slavetype = 1;
           break;
         }
       }
     }
-    if (cele->phys_type() == Mortar::Element::other)
+    if (cele.phys_type() == Mortar::Element::other)
     {
       if (slavetype == 1)
         FOUR_C_THROW(
             "struct and poro master elements on the same processor - no mixed interface supported");
-      cele->phys_type() = Mortar::Element::structure;
+      cele.phys_type() = Mortar::Element::structure;
       slavetype = 0;
     }
   }
   // store information about parent for porous contact (required for calculation of deformation
   // gradient!) in every contact element although only really needed for phystype poro
-  cele->set_parent_master_element(faceele->parent_element(), faceele->face_parent_number());
+  cele.set_parent_master_element(faceele->parent_element(), faceele->face_parent_number());
   return;
 }
 

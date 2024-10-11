@@ -22,13 +22,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::XFEM::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::XFEM::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& xfem_general = list->sublist("XFEM GENERAL", false, "");
+  Teuchos::ParameterList& xfem_general = list.sublist("XFEM GENERAL", false, "");
 
   // OUTPUT options
   Core::UTILS::bool_parameter("GMSH_DEBUG_OUT", "No",
@@ -75,7 +75,7 @@ void Inpar::XFEM::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
       &xfem_general);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& xfluid_dyn = list->sublist("XFLUID DYNAMIC", false, "");
+  Teuchos::ParameterList& xfluid_dyn = list.sublist("XFLUID DYNAMIC", false, "");
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfluid_general = xfluid_dyn.sublist("GENERAL", false, "");

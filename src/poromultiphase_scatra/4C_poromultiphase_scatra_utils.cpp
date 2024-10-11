@@ -246,15 +246,15 @@ void PoroMultiPhaseScaTra::UTILS::assign_material_pointers(const std::string& st
   Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
   Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
 
-  PoroElast::UTILS::set_material_pointers_matching_grid(structdis, scatradis);
-  PoroElast::UTILS::set_material_pointers_matching_grid(fluiddis, scatradis);
+  PoroElast::UTILS::set_material_pointers_matching_grid(*structdis, *scatradis);
+  PoroElast::UTILS::set_material_pointers_matching_grid(*fluiddis, *scatradis);
 
   if (artery_coupl)
   {
     Teuchos::RCP<Core::FE::Discretization> arterydis = problem->get_dis("artery");
     Teuchos::RCP<Core::FE::Discretization> artscatradis = problem->get_dis("artery_scatra");
 
-    Arteries::UTILS::set_material_pointers_matching_grid(arterydis, artscatradis);
+    Arteries::UTILS::set_material_pointers_matching_grid(*arterydis, *artscatradis);
   }
 }
 
@@ -262,14 +262,14 @@ void PoroMultiPhaseScaTra::UTILS::assign_material_pointers(const std::string& st
  *----------------------------------------------------------------------*/
 double PoroMultiPhaseScaTra::UTILS::calculate_vector_norm(
     const enum Inpar::PoroMultiPhaseScaTra::VectorNorm norm,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> vect)
+    const Core::LinAlg::Vector<double>& vect)
 {
   // L1 norm
   // norm = sum_0^i vect[i]
   if (norm == Inpar::PoroMultiPhaseScaTra::norm_l1)
   {
     double vectnorm;
-    vect->Norm1(&vectnorm);
+    vect.Norm1(&vectnorm);
     return vectnorm;
   }
   // L2/Euclidian norm
@@ -277,7 +277,7 @@ double PoroMultiPhaseScaTra::UTILS::calculate_vector_norm(
   else if (norm == Inpar::PoroMultiPhaseScaTra::norm_l2)
   {
     double vectnorm;
-    vect->Norm2(&vectnorm);
+    vect.Norm2(&vectnorm);
     return vectnorm;
   }
   // RMS norm
@@ -285,23 +285,23 @@ double PoroMultiPhaseScaTra::UTILS::calculate_vector_norm(
   else if (norm == Inpar::PoroMultiPhaseScaTra::norm_rms)
   {
     double vectnorm;
-    vect->Norm2(&vectnorm);
-    return vectnorm / sqrt((double)vect->GlobalLength());
+    vect.Norm2(&vectnorm);
+    return vectnorm / sqrt((double)vect.GlobalLength());
   }
   // infinity/maximum norm
   // norm = max( vect[i] )
   else if (norm == Inpar::PoroMultiPhaseScaTra::norm_inf)
   {
     double vectnorm;
-    vect->NormInf(&vectnorm);
+    vect.NormInf(&vectnorm);
     return vectnorm;
   }
   // norm = sum_0^i vect[i]/length_vect
   else if (norm == Inpar::PoroMultiPhaseScaTra::norm_l1_scaled)
   {
     double vectnorm;
-    vect->Norm1(&vectnorm);
-    return vectnorm / ((double)vect->GlobalLength());
+    vect.Norm1(&vectnorm);
+    return vectnorm / ((double)vect.GlobalLength());
   }
   else
   {

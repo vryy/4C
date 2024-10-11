@@ -256,7 +256,7 @@ void UTILS::Cardiovascular0D4ElementWindkessel::evaluate(Teuchos::ParameterList&
   if (assmat3)
   {
     // offdiagonal stiffness block (0,1 block)
-    evaluate_d_struct_dp(params, sysmat3);
+    evaluate_d_struct_dp(params, *sysmat3);
   }
 }  // end of evaluate_condition
 

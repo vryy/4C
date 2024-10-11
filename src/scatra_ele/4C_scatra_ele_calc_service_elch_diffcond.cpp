@@ -478,7 +478,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_el
 
       // call utility class for element evaluation
       utils()->evaluate_elch_kinetics_at_integration_point(ele, emat, erhs, ephinp, ehist, timefac,
-          fac, my::funct_, cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, A_s, k);
+          fac, my::funct_, *cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, A_s, k);
     }  // end of loop over integration points gpid
   }    // end loop over scalars
 
@@ -574,7 +574,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_el
       if (frt <= 0.0) FOUR_C_THROW("A negative factor frt is not possible by definition");
 
       // call utility class for element evaluation
-      utils()->evaluate_electrode_status_at_integration_point(ele, scalars, params, cond, ephinp,
+      utils()->evaluate_electrode_status_at_integration_point(ele, scalars, params, *cond, ephinp,
           ephidtnp, my::funct_, zerocur, kinetics, stoich, nume, pot0, frt, timefac, fac, A_s, k);
     }  // loop over integration points
 

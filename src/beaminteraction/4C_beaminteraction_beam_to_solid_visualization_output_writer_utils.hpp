@@ -58,8 +58,8 @@ namespace BEAMINTERACTION
   void add_beam_interaction_nodal_forces(
       const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
       const Teuchos::RCP<const Core::FE::Discretization>& discret_ptr,
-      const Teuchos::RCP<const Epetra_MultiVector>& displacement,
-      const Teuchos::RCP<const Epetra_MultiVector>& force, const bool write_unique_ids = false);
+      const Teuchos::RCP<const Epetra_MultiVector>& displacement, const Epetra_MultiVector& force,
+      const bool write_unique_ids = false);
 
   /**
    * \brief Add the averaged normal fields to the output writer.
@@ -71,8 +71,7 @@ namespace BEAMINTERACTION
    * @param write_unique_ids (in) If unique IDs should be written.
    */
   void add_averaged_nodal_normals(
-      const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>&
-          output_writer_base_ptr,
+      BEAMINTERACTION::BeamToSolidOutputWriterVisualization& output_writer_base_ptr,
       const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements,
       const int condition_coupling_id, const bool write_unique_ids = false);
 

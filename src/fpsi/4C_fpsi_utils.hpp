@@ -47,16 +47,13 @@ namespace FPSI
         const Teuchos::ParameterList& poroelastdynparams);
 
     //! redistribute interface for parallel computations
-    void redistribute_interface(Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<const Core::FE::Discretization> slavedis, const std::string& condname,
+    void redistribute_interface(Core::FE::Discretization& masterdis, const std::string& condname,
         std::map<int, int>& interfacefacingelementmap);
 
     //! build map for fpsi interface
-    void setup_interface_map(const Epetra_Comm& comm,
-        Teuchos::RCP<Core::FE::Discretization> structdis,
+    void setup_interface_map(const Epetra_Comm& comm, Core::FE::Discretization& structdis,
         Teuchos::RCP<Core::FE::Discretization> porofluiddis,
-        Teuchos::RCP<Core::FE::Discretization> fluiddis,
-        Teuchos::RCP<Core::FE::Discretization> aledis);
+        Teuchos::RCP<Core::FE::Discretization> fluiddis, Core::FE::Discretization& aledis);
 
     //! Fills a map that matches the global id of an interface element on the slave side to the
     //! global id of the opposing bulk element. This is done processor locally. Works only for

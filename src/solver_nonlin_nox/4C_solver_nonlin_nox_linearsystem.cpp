@@ -456,9 +456,8 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   // ---------------------------------------------------------------------
   // first undo the modification of the jacobian
   // ---------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector<double>> v =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(scalingDiagOp);
-  v->Scale(ptcsolver.get_inverse_pseudo_time_step());
+  Core::LinAlg::Vector<double> v(scalingDiagOp);
+  v.Scale(ptcsolver.get_inverse_pseudo_time_step());
   Teuchos::RCP<Core::LinAlg::SparseMatrix> jac =
       Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(jacobian_ptr());
   if (jac.is_null())
@@ -467,7 +466,7 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   Teuchos::RCP<Core::LinAlg::Vector<double>> diag =
       Core::LinAlg::create_vector(jac->row_map(), false);
   jac->extract_diagonal_copy(*diag);
-  diag->Update(-1.0, *v, 1.0);
+  diag->Update(-1.0, v, 1.0);
   // Finally undo the changes
   jac->replace_diagonal_values(*diag);
 
@@ -479,18 +478,17 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   double stepSizeInv = 1.0 / stepSize;
   Teuchos::RCP<Core::LinAlg::Vector<double>> vec_1 =
       Core::LinAlg::create_vector(jac->row_map(), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vec_2 =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(rhs.getEpetraVector());
+  Core::LinAlg::Vector<double> vec_2(rhs.getEpetraVector());
   jac->multiply(false, dir.getEpetraVector(), *vec_1);
-  vec_2->Scale(stepSizeInv);
-  vec_1->Update(1.0, *vec_2, 1.0);
+  vec_2.Scale(stepSizeInv);
+  vec_1->Update(1.0, vec_2, 1.0);
   /* evaluate the second vector:              d^{T} V                   */
-  vec_2->Multiply(1.0, scalingDiagOp, dir.getEpetraVector(), 0.0);
+  vec_2.Multiply(1.0, scalingDiagOp, dir.getEpetraVector(), 0.0);
 
   // finally evaluate the scalar product
   double numerator = 0.0;
   double denominator = 0.0;
-  vec_2->Dot(*vec_1, &numerator);
+  vec_2.Dot(*vec_1, &numerator);
   vec_1->Dot(*vec_1, &denominator);
 
   // ---------------------------------------------------------------------
@@ -498,7 +496,7 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   // ---------------------------------------------------------------------
   Teuchos::RCP<Core::LinAlg::Vector<double>> vec_err =
       Core::LinAlg::create_vector(jac->row_map(), true);
-  vec_err->Update(delta, *vec_1, 1.0, *vec_2, 0.0);
+  vec_err->Update(delta, *vec_1, 1.0, vec_2, 0.0);
   double error_start = 0.0;
   vec_err->Norm2(&error_start);
 
@@ -507,7 +505,7 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   // ---------------------------------------------------------------------
   // show the actual remaining error (L2-norm)
   // ---------------------------------------------------------------------
-  vec_err->Update(delta, *vec_1, 1.0, *vec_2, 0.0);
+  vec_err->Update(delta, *vec_1, 1.0, vec_2, 0.0);
   double error_end = 0.0;
   vec_err->Norm2(&error_end);
   if (utils_.isPrintType(::NOX::Utils::Details))

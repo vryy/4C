@@ -82,7 +82,7 @@ Thermo::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& iop
   // external force vector F_{n+1} at new time
   fextn_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   // set initial external force vector
-  apply_force_external((*time_)[0], (*temp_)(0), fext_);
+  apply_force_external((*time_)[0], (*temp_)(0), *fext_);
   // set initial external force vector of convective heat transfer boundary
   // conditions
   apply_force_external_conv((*time_)[0], (*temp_)(0), (*temp_)(0), fext_, tang_);
@@ -142,7 +142,7 @@ void Thermo::TimIntOneStepTheta::evaluate_rhs_tang_residual()
   // --> use (*temp_)(0)
   apply_force_external_conv(timen_, (*temp_)(0), tempn_, fextn_, tang_);
 
-  apply_force_external(timen_, (*temp_)(0), fextn_);
+  apply_force_external(timen_, (*temp_)(0), *fextn_);
 
   // interface forces to external forces
   fextn_->Update(1.0, *fifc_, 1.0);
@@ -206,7 +206,7 @@ double Thermo::TimIntOneStepTheta::calc_ref_norm_temperature()
   // points within the timestep (end point, generalized midpoint).
 
   double charnormtemp = 0.0;
-  charnormtemp = Thermo::Aux::calculate_vector_norm(iternorm_, (*temp_)(0));
+  charnormtemp = Thermo::Aux::calculate_vector_norm(iternorm_, *(*temp_)(0));
 
   // rise your hat
   return charnormtemp;
@@ -228,19 +228,19 @@ double Thermo::TimIntOneStepTheta::calc_ref_norm_force()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = Thermo::Aux::calculate_vector_norm(iternorm_, fintn_);
+  fintnorm = Thermo::Aux::calculate_vector_norm(iternorm_, *fintn_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = Thermo::Aux::calculate_vector_norm(iternorm_, fextn_);
+  fextnorm = Thermo::Aux::calculate_vector_norm(iternorm_, *fextn_);
 
   // norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = Thermo::Aux::calculate_vector_norm(iternorm_, freact_);
+  freactnorm = Thermo::Aux::calculate_vector_norm(iternorm_, *freact_);
 
   // norm of stored forces
   double fcapnorm = 0.0;
-  fcapnorm = Thermo::Aux::calculate_vector_norm(iternorm_, fcap_);
+  fcapnorm = Thermo::Aux::calculate_vector_norm(iternorm_, *fcap_);
 
   // return char norm
   return std::max(fcapnorm, std::max(fintnorm, std::max(fextnorm, freactnorm)));

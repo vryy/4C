@@ -139,13 +139,12 @@ namespace UTILS
     void reset_step();
 
     /// Add a vector as residual increment to the cardiovascular0d dof vector
-    void update_cv0_d_dof(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddofincrement  ///< vector to add
+    void update_cv0_d_dof(Core::LinAlg::Vector<double>& cv0ddofincrement  ///< vector to add
     );
 
     ///
     void evaluate_neumann_cardiovascular0_d_coupling(
-        Teuchos::ParameterList params, const Teuchos::RCP<Core::LinAlg::Vector<double>> actpres,
+        Teuchos::ParameterList params, Core::LinAlg::Vector<double>& actpres,
         Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,  ///< structural rhs
         Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix   ///< structural stiffness matrix
     );
@@ -243,36 +242,32 @@ namespace UTILS
     Teuchos::RCP<Core::LinAlg::Solver>& get_solver() { return solver_; }
 
     /// Reset reference base values for restart computations
-    void set0_d_v_n(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> newval  ///< new reference base values
+    void set0_d_v_n(Core::LinAlg::Vector<double>& newval  ///< new reference base values
     )
     {
-      v_n_->Update(1.0, *newval, 0.0);
+      v_n_->Update(1.0, newval, 0.0);
     }
 
     /// set df_n, f_n
-    void set0_d_df_n(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> newval  ///< new Cardiovascular0D dofs
+    void set0_d_df_n(Core::LinAlg::Vector<double>& newval  ///< new Cardiovascular0D dofs
     )
     {
-      cardvasc0d_df_n_->Update(1.0, *newval, 0.0);
+      cardvasc0d_df_n_->Update(1.0, newval, 0.0);
       return;
     }
-    void set0_d_f_n(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> newval  ///< new Cardiovascular0D dofs
+    void set0_d_f_n(Core::LinAlg::Vector<double>& newval  ///< new Cardiovascular0D dofs
     )
     {
-      cardvasc0d_f_n_->Update(1.0, *newval, 0.0);
+      cardvasc0d_f_n_->Update(1.0, newval, 0.0);
       return;
     }
 
     /// Reset dofs
-    void set0_d_dof_n(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> newdof  ///< new Cardiovascular0D dofs
+    void set0_d_dof_n(Core::LinAlg::Vector<double>& newdof  ///< new Cardiovascular0D dofs
     )
     {
-      cv0ddof_np_->Update(1.0, *newdof, 0.0);
-      cv0ddof_n_->Update(1.0, *newdof, 0.0);
+      cv0ddof_np_->Update(1.0, newdof, 0.0);
+      cv0ddof_n_->Update(1.0, newdof, 0.0);
       return;
     }
 
@@ -289,9 +284,9 @@ namespace UTILS
 
 
     int solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,  ///< stiffness matrix
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc,  ///< displacement increment to compute
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsstruct,  ///< standard right hand side
-        const double k_ptc                                           ///< for 3D-0D PTC
+        Core::LinAlg::Vector<double>& dispinc,    ///< displacement increment to compute
+        Core::LinAlg::Vector<double>& rhsstruct,  ///< standard right hand side
+        const double k_ptc                        ///< for 3D-0D PTC
     );
 
     Teuchos::RCP<Cardiovascular0D> get_cardvasc0_d4_element_windkessel()

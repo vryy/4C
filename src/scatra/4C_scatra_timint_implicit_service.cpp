@@ -417,14 +417,13 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
           "action", ScaTra::BoundaryAction::calc_boundary_integral, params);
 
       // initialize one-component result vector for value of boundary integral
-      Teuchos::RCP<Core::LinAlg::SerialDenseVector> boundaryint_vector =
-          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(1);
+      Core::LinAlg::SerialDenseVector boundaryint_vector(1);
 
       // compute value of boundary integral
-      discret_->evaluate_scalars(params, *boundaryint_vector, "ScaTraFluxCalc", icond);
+      discret_->evaluate_scalars(params, boundaryint_vector, "ScaTraFluxCalc", icond);
 
       // extract value of boundary integral
-      boundaryint = (*boundaryint_vector)(0);
+      boundaryint = (boundaryint_vector)(0);
     }
 
     // maximal number of fluxes
@@ -1909,8 +1908,7 @@ void ScaTra::ScaTraTimIntImpl::fd_check()
     std::cout << std::endl << "FINITE DIFFERENCE CHECK FOR SCATRA SYSTEM MATRIX" << std::endl;
 
   // make a copy of state variables to undo perturbations later
-  Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_original =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*phinp_);
+  Core::LinAlg::Vector<double> phinp_original(*phinp_);
 
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
@@ -1932,8 +1930,7 @@ void ScaTra::ScaTraTimIntImpl::fd_check()
   sysmat_original->FillComplete();
 
   // make a copy of system right-hand side vector
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_original =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*residual_);
+  Core::LinAlg::Vector<double> rhs_original(*residual_);
 
   // initialize counter for system matrix entries with failing finite difference check
   int counter(0);
@@ -1951,7 +1948,7 @@ void ScaTra::ScaTraTimIntImpl::fd_check()
     if (maxcollid < 0) continue;
 
     // fill state vector with original state variables
-    phinp_->Update(1., *phinp_original, 0.);
+    phinp_->Update(1., phinp_original, 0.);
 
     // impose perturbation
     if (phinp_->Map().MyGID(colgid))
@@ -2001,7 +1998,7 @@ void ScaTra::ScaTraTimIntImpl::fd_check()
 
       // finite difference suggestion (first divide by epsilon and then add for better conditioning)
       const double fdval =
-          -(*residual_)[rowlid] / fdcheckeps_ + (*rhs_original)[rowlid] / fdcheckeps_;
+          -(*residual_)[rowlid] / fdcheckeps_ + (rhs_original)[rowlid] / fdcheckeps_;
 
       // confirm accuracy of first comparison
       if (abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
@@ -2032,7 +2029,7 @@ void ScaTra::ScaTraTimIntImpl::fd_check()
       else
       {
         // left-hand side in second comparison
-        const double left = entry - (*rhs_original)[rowlid] / fdcheckeps_;
+        const double left = entry - (rhs_original)[rowlid] / fdcheckeps_;
 
         // right-hand side in second comparison
         const double right = -(*residual_)[rowlid] / fdcheckeps_;
@@ -2092,7 +2089,7 @@ void ScaTra::ScaTraTimIntImpl::fd_check()
   }
 
   // undo perturbations of state variables
-  phinp_->Update(1., *phinp_original, 0.);
+  phinp_->Update(1., phinp_original, 0.);
   compute_intermediate_values();
 
   // recompute system matrix and right-hand side vector based on original state variables
@@ -2200,9 +2197,8 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
         discret_->set_state("phinp", phinp_);
 
         // get (squared) error values
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-            Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(4 * num_dof_per_node());
-        discret_->evaluate_scalars(eleparams, *errors, "ScatraRelError", condid);
+        Core::LinAlg::SerialDenseVector errors(4 * num_dof_per_node());
+        discret_->evaluate_scalars(eleparams, errors, "ScatraRelError", condid);
 
         // compute index offset
         const int offset = condid * num_dof_per_node() * 2;
@@ -2211,16 +2207,16 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
         for (int k = 0; k < num_dof_per_node(); ++k)
         {
           // compute relative L2 error
-          if (std::abs((*errors)[k * 4 + 2]) > 1e-14)
-            (*relerrors_)[offset + k * 2] = sqrt((*errors)[k * 4]) / sqrt((*errors)[k * 4 + 2]);
+          if (std::abs((errors)[k * 4 + 2]) > 1e-14)
+            (*relerrors_)[offset + k * 2] = sqrt((errors)[k * 4]) / sqrt((errors)[k * 4 + 2]);
           else
             FOUR_C_THROW("Can't compute relative L2 error due to numerical roundoff sensitivity!");
 
           // compute relative H1 error
-          if (std::abs((*errors)[k * 4 + 3]) > 1e-14)
+          if (std::abs((errors)[k * 4 + 3]) > 1e-14)
           {
             (*relerrors_)[offset + k * 2 + 1] =
-                sqrt((*errors)[k * 4 + 1]) / sqrt((*errors)[k * 4 + 3]);
+                sqrt((errors)[k * 4 + 1]) / sqrt((errors)[k * 4 + 3]);
           }
           else
             FOUR_C_THROW("Can't compute relative H1 error due to numerical roundoff sensitivity!");
@@ -2639,7 +2635,7 @@ void ScaTra::OutputScalarsStrategyCondition::init_strategy_specific(
 
     // determine the number of dofs on the current condition
     const int numdofpernode = scatratimint->scalarhandler_->num_dof_per_node_in_condition(
-        *condition, scatratimint->discret_);
+        *condition, *scatratimint->discret_);
     const int numscalpernode = scatratimint->scalarhandler_->num_scal();
 
     // save the number of dofs on the current condition
@@ -2833,18 +2829,17 @@ void ScaTra::OutputDomainIntegralStrategy::evaluate_integrals_and_print_results(
   for (int condid = 0; condid < static_cast<int>(conditions.size()); ++condid)
   {
     // initialize one-component result vector for value of current domain or boundary integral
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> integralvalue =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(1);
+    Core::LinAlg::SerialDenseVector integralvalue(1);
 
     // compute value of current domain or boundary integral
-    discret->evaluate_scalars(condparams, *integralvalue, condstring, condid);
+    discret->evaluate_scalars(condparams, integralvalue, condstring, condid);
 
     // output results to screen and file
     if (myrank == 0)
     {
       // print results to screen
       std::cout << "| " << std::setw(2) << condid << " |        " << std::setw(6) << std::scientific
-                << std::setprecision(3) << (*integralvalue)(0) << "        |" << std::endl;
+                << std::setprecision(3) << (integralvalue)(0) << "        |" << std::endl;
 
       // set file name
       const std::string filename(Global::Problem::instance()->output_control_file()->file_name() +
@@ -2862,16 +2857,16 @@ void ScaTra::OutputDomainIntegralStrategy::evaluate_integrals_and_print_results(
 
       // write value of current domain or boundary integral to file
       file << scatratimint->step() << "," << scatratimint->time() << "," << condid << ','
-           << std::scientific << std::setprecision(6) << (*integralvalue)(0) << std::endl;
+           << std::scientific << std::setprecision(6) << (integralvalue)(0) << std::endl;
 
       // close file
       file.close();
     }  // if(myrank_ == 0)
 
     if (condstring == "BoundaryIntegral")
-      boundaryintegralvalues_[condid] = (*integralvalue)(0);
+      boundaryintegralvalues_[condid] = (integralvalue)(0);
     else if (condstring == "DomainIntegral")
-      domainintegralvalues_[condid] = (*integralvalue)(0);
+      domainintegralvalues_[condid] = (integralvalue)(0);
     else
       FOUR_C_THROW("Invalid condition name!");
   }  // loop over all conditions
@@ -2905,31 +2900,31 @@ void ScaTra::OutputScalarsStrategyCondition::evaluate_integrals(
     // first components = scalar integrals, last component = domain integral
     const int num_active_scalars = output_mean_grad_ ? numscalpernode : 0;
     const int num_micro_dis = output_micro_dis_ ? 1 : 0;
-    auto scalars = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+    FourC::Core::LinAlg::SerialDenseVector scalars(
         numdofpernode + 1 + num_active_scalars + num_micro_dis);
 
     // perform integration
-    scatratimint->discret_->evaluate_scalars(eleparams, *scalars, "TotalAndMeanScalar", condid);
+    scatratimint->discret_->evaluate_scalars(eleparams, scalars, "TotalAndMeanScalar", condid);
 
     // extract domain integral
-    domainintegral_[condid] = (*scalars)[numdofpernode];
+    domainintegral_[condid] = (scalars)[numdofpernode];
 
     // compute results
     for (int k = 0; k < numdofpernode; ++k)
     {
-      totalscalars_[condid][k] = (*scalars)[k];
-      meanscalars_[condid][k] = (*scalars)[k] / domainintegral_[condid];
+      totalscalars_[condid][k] = (scalars)[k];
+      meanscalars_[condid][k] = (scalars)[k] / domainintegral_[condid];
     }
     if (output_mean_grad_)
     {
       for (int k = 0; k < numscalpercondition_[condid]; ++k)
       {
-        const double mean_gradient = (*scalars)[numdofpernode + 1 + k] / domainintegral_[condid];
+        const double mean_gradient = (scalars)[numdofpernode + 1 + k] / domainintegral_[condid];
         meangradients_[condid][k] = std::abs(mean_gradient) < 1.0e-10 ? 0.0 : mean_gradient;
       }
     }
     if (output_micro_dis_)
-      micromeanscalars_[condid][0] = (*scalars)[scalars->length() - 1] / domainintegral_[condid];
+      micromeanscalars_[condid][0] = (scalars)[scalars.length() - 1] / domainintegral_[condid];
   }
 }
 
@@ -3033,8 +3028,7 @@ int ScaTra::ScalarHandler::max_num_dof_per_node() const { return *(numdofpernode
 |  Determine number of DoFs per node in given condition       vuong   04/16|
  *-------------------------------------------------------------------------*/
 int ScaTra::ScalarHandler::num_dof_per_node_in_condition(
-    const Core::Conditions::Condition& condition,
-    const Teuchos::RCP<const Core::FE::Discretization>& discret) const
+    const Core::Conditions::Condition& condition, const Core::FE::Discretization& discret) const
 {
   check_is_setup();
 
@@ -3050,12 +3044,12 @@ int ScaTra::ScalarHandler::num_dof_per_node_in_condition(
   for (int nodegid : *nodegids)
   {
     // if on this proc
-    if (discret->node_row_map()->MyGID(nodegid))
+    if (discret.node_row_map()->MyGID(nodegid))
     {
       // get node
-      Core::Nodes::Node* curnode = discret->g_node(nodegid);
+      Core::Nodes::Node* curnode = discret.g_node(nodegid);
       // save number of dofs in set
-      mynumdofpernode.insert(discret->num_dof(0, curnode));
+      mynumdofpernode.insert(discret.num_dof(0, curnode));
     }
   }
 
@@ -3064,17 +3058,17 @@ int ScaTra::ScalarHandler::num_dof_per_node_in_condition(
   // number of different numbers of dofs on this procs
   int mysize = static_cast<int>(mynumdofpernode.size());
   // communicate
-  discret->get_comm().MaxAll(&mysize, &maxsize, 1);
+  discret.get_comm().MaxAll(&mysize, &maxsize, 1);
 
   // copy mynumdofpernode into std::vector for communication
   std::vector<int> vecmynumdofpernode(mynumdofpernode.begin(), mynumdofpernode.end());
   vecmynumdofpernode.resize(maxsize, 0);
 
   // initialize std::vector for communication
-  std::vector<int> vecnumdofpernode(maxsize * discret->get_comm().NumProc(), 0);
+  std::vector<int> vecnumdofpernode(maxsize * discret.get_comm().NumProc(), 0);
 
   // communicate
-  discret->get_comm().GatherAll(vecmynumdofpernode.data(), vecnumdofpernode.data(),
+  discret.get_comm().GatherAll(vecmynumdofpernode.data(), vecnumdofpernode.data(),
       static_cast<int>(vecmynumdofpernode.size()));
 
   // copy back into set

@@ -30,7 +30,7 @@ namespace Inpar
     namespace FLUID
     {
       /// set the valid parameters related to writing of output at runtime
-      void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+      void set_valid_parameters(Teuchos::ParameterList& list);
 
     }  // namespace FLUID
   }    // namespace IORuntimeOutput

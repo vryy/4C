@@ -93,7 +93,7 @@ void Solid::TimIntImpl::nox_setup(const Teuchos::ParameterList& noxparams)
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::StatusTest::Combo> Solid::TimIntImpl::nox_create_status_test(
-    Teuchos::RCP<::NOX::Abstract::Group> grp)
+    ::NOX::Abstract::Group& grp)
 {
   // type of norm
   ::NOX::Epetra::Vector::NormType norm = ::NOX::Epetra::Vector::TwoNorm;
@@ -156,7 +156,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> Solid::TimIntImpl::nox_create_status_test
   {
     // relative
     Teuchos::RCP<::NOX::StatusTest::NormF> statusTestNormFres =
-        Teuchos::make_rcp<::NOX::StatusTest::NormF>(*grp, tolfres_, norm, scalefres);
+        Teuchos::make_rcp<::NOX::StatusTest::NormF>(grp, tolfres_, norm, scalefres);
     combo2->addStatusTest(statusTestNormFres);
   }
   else if (normtypefres_ == Inpar::Solid::convnorm_mix)
@@ -171,7 +171,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> Solid::TimIntImpl::nox_create_status_test
     combo3->addStatusTest(statusTestNormFresAbs);
     // AND relative
     Teuchos::RCP<::NOX::StatusTest::NormF> statusTestNormFresRel =
-        Teuchos::make_rcp<::NOX::StatusTest::NormF>(*grp, tolfres_, norm, scalefres);
+        Teuchos::make_rcp<::NOX::StatusTest::NormF>(grp, tolfres_, norm, scalefres);
     combo3->addStatusTest(statusTestNormFresRel);
   }
   else
@@ -336,8 +336,7 @@ bool Solid::TimIntImpl::computePreconditioner(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::Epetra::LinearSystem> Solid::TimIntImpl::nox_create_linear_system(
-    Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln,
-    Teuchos::RCP<::NOX::Utils> utils)
+    Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln, ::NOX::Utils& utils)
 {
   Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys = Teuchos::null;
 
@@ -369,14 +368,14 @@ int Solid::TimIntImpl::nox_solve()
 
   // Linear system
   Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys =
-      nox_create_linear_system(nlParams, noxSoln, noxutils_);
+      nox_create_linear_system(nlParams, noxSoln, *noxutils_);
 
   // Create group
   Teuchos::RCP<NOX::Solid::Group> grp = Teuchos::make_rcp<NOX::Solid::Group>(
       *this, printParams, Teuchos::rcpFromRef(*this), noxSoln, linSys);
 
   // Create status test
-  noxstatustest_ = nox_create_status_test(grp);
+  noxstatustest_ = nox_create_status_test(*grp);
 
   // Create the solver
   Teuchos::RCP<::NOX::Solver::Generic> solver =
@@ -388,13 +387,13 @@ int Solid::TimIntImpl::nox_solve()
   noxstatustest_->print(std::cout);
 
   // error check
-  return nox_error_check(status, solver);
+  return nox_error_check(status, *solver);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 int Solid::TimIntImpl::nox_error_check(
-    ::NOX::StatusTest::StatusType status, Teuchos::RCP<::NOX::Solver::Generic> solver)
+    ::NOX::StatusTest::StatusType status, ::NOX::Solver::Generic& solver)
 {
   noxstatustest_->print(std::cout);
 
@@ -423,7 +422,7 @@ int Solid::TimIntImpl::nox_error_check(
   else  // everything is fine
   {
     // extract number of iteration steps
-    iter_ = solver->getNumIterations();
+    iter_ = solver.getNumIterations();
     return 0;
   }
 }

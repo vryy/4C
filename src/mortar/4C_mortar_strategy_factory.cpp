@@ -144,7 +144,7 @@ void Mortar::STRATEGY::Factory::check_dimension() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Mortar::STRATEGY::Factory::prepare_nurbs_element(const Core::FE::Discretization& discret,
-    Teuchos::RCP<Core::Elements::Element> ele, Teuchos::RCP<Mortar::Element> cele) const
+    Teuchos::RCP<Core::Elements::Element> ele, Mortar::Element& cele) const
 {
   const Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
       dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(&(discret));
@@ -163,9 +163,9 @@ void Mortar::STRATEGY::Factory::prepare_nurbs_element(const Core::FE::Discretiza
       faceele->parent_master_element()->id(), faceele->face_master_number());
 
   // store nurbs specific data to node
-  cele->zero_sized() = zero_size;
-  cele->knots() = mortarknots;
-  cele->normal_fac() = normalfac;
+  cele.zero_sized() = zero_size;
+  cele.knots() = mortarknots;
+  cele.normal_fac() = normalfac;
 
   return;
 }
@@ -173,12 +173,12 @@ void Mortar::STRATEGY::Factory::prepare_nurbs_element(const Core::FE::Discretiza
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Mortar::STRATEGY::Factory::prepare_nurbs_node(
-    const Core::Nodes::Node* node, Teuchos::RCP<Mortar::Node> mnode) const
+    const Core::Nodes::Node* node, Mortar::Node& mnode) const
 {
   const Core::FE::Nurbs::ControlPoint* cp =
       dynamic_cast<const Core::FE::Nurbs::ControlPoint*>(node);
 
-  mnode->nurbs_w() = cp->w();
+  mnode.nurbs_w() = cp->w();
 
   return;
 }

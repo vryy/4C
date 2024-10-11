@@ -116,7 +116,7 @@ void scatra_dyn(int restart)
       }
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      auto scatraonly = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(
+      FourC::Adapter::ScaTraBaseAlgorithm scatraonly(
           scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
@@ -124,7 +124,7 @@ void scatra_dyn(int restart)
           Global::Problem::instance()->n_dim() + 1, 0, 0, true);
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      scatraonly->scatra_field()->set_number_of_dof_set_velocity(1);
+      scatraonly.scatra_field()->set_number_of_dof_set_velocity(1);
 
       // allow TRANSPORT conditions, too
       // NOTE: we can not use the conditions given by 'conditions_to_copy =
@@ -143,7 +143,7 @@ void scatra_dyn(int restart)
 
       // now we can call init() on the base algo.
       // time integrator is initialized inside
-      scatraonly->init();
+      scatraonly.init();
 
       // redistribution between init(...) and setup()
       // redistribute scatra elements in case of heterogeneous reactions
@@ -166,26 +166,26 @@ void scatra_dyn(int restart)
       scatradis->fill_complete(true, false, true);
 
       // now we must call setup()
-      scatraonly->setup();
+      scatraonly.setup();
 
       // read the restart information, set vectors and variables
-      if (restart) scatraonly->scatra_field()->read_restart(restart);
+      if (restart) scatraonly.scatra_field()->read_restart(restart);
 
       // set initial velocity field
       // note: The order read_restart() before set_velocity_field() is important here!!
       // for time-dependent velocity fields, set_velocity_field() is additionally called in each
       // prepare_time_step()-call
-      scatraonly->scatra_field()->set_velocity_field();
+      scatraonly.scatra_field()->set_velocity_field();
 
       // set external force
-      if (scatraonly->scatra_field()->has_external_force())
-        scatraonly->scatra_field()->set_external_force();
+      if (scatraonly.scatra_field()->has_external_force())
+        scatraonly.scatra_field()->set_external_force();
 
       // enter time loop to solve problem with given convective velocity
-      scatraonly->scatra_field()->time_loop();
+      scatraonly.scatra_field()->time_loop();
 
       // perform the result test if required
-      scatraonly->scatra_field()->test_results();
+      scatraonly.scatra_field()->test_results();
       break;
     }
     case Inpar::ScaTra::velocity_Navier_Stokes:  // Navier_Stokes
@@ -224,7 +224,7 @@ void scatra_dyn(int restart)
       }
 
       // create a scalar transport algorithm instance
-      auto algo = Teuchos::make_rcp<ScaTra::ScaTraAlgorithm>(comm, scatradyn, fdyn, "scatra",
+      FourC::ScaTra::ScaTraAlgorithm algo(comm, scatradyn, fdyn, "scatra",
           Global::Problem::instance()->solver_params(linsolvernumber));
 
       // create scatra elements by cloning from fluid dis in matching case
@@ -233,7 +233,7 @@ void scatra_dyn(int restart)
         // add proxy of fluid transport degrees of freedom to scatra discretization
         if (scatradis->add_dof_set(fluiddis->get_dof_set_proxy()) != 1)
           FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-        algo->scatra_field()->set_number_of_dof_set_velocity(1);
+        algo.scatra_field()->set_number_of_dof_set_velocity(1);
       }
 
       // we create  the aux dofsets before init(...)
@@ -266,7 +266,7 @@ void scatra_dyn(int restart)
             ndofpernode_fluid, ndofperelement_fluid, 0, true);
         if (scatradis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in scatra field");
-        algo->scatra_field()->set_number_of_dof_set_velocity(1);
+        algo.scatra_field()->set_number_of_dof_set_velocity(1);
 
         // call assign_degrees_of_freedom also for auxiliary dofsets
         // note: the order of fill_complete() calls determines the gid numbering!
@@ -279,7 +279,7 @@ void scatra_dyn(int restart)
       }
 
       // init algo (init fluid time integrator and scatra time integrator inside)
-      algo->init();
+      algo.init();
 
       // redistribution between init(...) and setup()
       // redistribute scatra elements if the scatra discretization is not empty
@@ -306,7 +306,7 @@ void scatra_dyn(int restart)
 
       // setup algo
       //(setup fluid time integrator and scatra time integrator inside)
-      algo->setup();
+      algo.setup();
 
       // read restart information
       // in case a inflow generation in the inflow section has been performed, there are not any
@@ -315,9 +315,9 @@ void scatra_dyn(int restart)
       {
         if (fdyn.sublist("TURBULENT INFLOW").get<bool>("TURBULENTINFLOW") and
             restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP"))
-          algo->read_inflow_restart(restart);
+          algo.read_inflow_restart(restart);
         else
-          algo->read_restart(restart);
+          algo.read_restart(restart);
       }
       else if (fdyn.sublist("TURBULENT INFLOW").get<bool>("TURBULENTINFLOW"))
       {
@@ -327,13 +327,13 @@ void scatra_dyn(int restart)
       }
 
       // solve the whole scalar transport problem
-      algo->time_loop();
+      algo.time_loop();
 
       // summarize the performance measurements
       Teuchos::TimeMonitor::summarize();
 
       // perform the result test
-      algo->test_results();
+      algo.test_results();
 
       break;
     }

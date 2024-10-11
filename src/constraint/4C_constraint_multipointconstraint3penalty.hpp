@@ -104,13 +104,11 @@ namespace CONSTRAINTS
                    ///< assembly of element contributions
 
     //! Initialize constraint discretization and assemble the results to the refbasevector
-    void evaluate_error(
-        Teuchos::RCP<Core::FE::Discretization> disc,  ///< discretization to evaluate
+    void evaluate_error(Core::FE::Discretization& disc,  ///< discretization to evaluate
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            systemvector3,  ///< distributed vector that may be filled by
-                            ///< aasembly of element contributions
+        Core::LinAlg::Vector<double>& systemvector3,  ///< distributed vector that may be filled by
+                                                      ///< aasembly of element contributions
         bool init = false);
 
     //! creating a new discretization based on conditions containing constraint elements

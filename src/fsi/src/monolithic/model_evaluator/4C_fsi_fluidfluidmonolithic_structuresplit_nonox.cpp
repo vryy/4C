@@ -161,7 +161,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs(
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_rhs");
 
-  setup_vector(f, structure_field()->rhs(), fluid_field()->rhs(), ale_field()->rhs(),
+  setup_vector(f, *structure_field()->rhs(), *fluid_field()->rhs(), *ale_field()->rhs(),
       fluid_field()->residual_scaling());
 
   if (firstcall)
@@ -402,19 +402,18 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_system_matrix()
     systemmatrix_->matrix(1, 1).add(fmgg, false, 1. / timescale, 1.0);
     systemmatrix_->matrix(1, 1).add(fmig, false, 1. / timescale, 1.0);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> lfmgi =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(f->row_map(), 81, false);
+    Core::LinAlg::SparseMatrix lfmgi(f->row_map(), 81, false);
     (*fmgitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmgi, 1.,
         Coupling::Adapter::CouplingMasterConverter(coupfa),
         // systemmatrix_->Matrix(1,2),
-        *lfmgi, false, false);
+        lfmgi, false, false);
 
     (*fmiitransform_)(mmm->full_row_map(), mmm->full_col_map(), fmii, 1.,
-        Coupling::Adapter::CouplingMasterConverter(coupfa), *lfmgi, false, true);
+        Coupling::Adapter::CouplingMasterConverter(coupfa), lfmgi, false, true);
 
-    lfmgi->complete(aii.domain_map(), f->range_map());
+    lfmgi.complete(aii.domain_map(), f->range_map());
 
-    systemmatrix_->assign(1, 2, Core::LinAlg::View, *lfmgi);
+    systemmatrix_->assign(1, 2, Core::LinAlg::View, lfmgi);
   }
 
   f->complete();
@@ -433,8 +432,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::initial_guess(
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::FluidFluidMonolithicStructureSplitNoNOX::initial_guess");
 
-  setup_vector(*ig, structure_field()->initial_guess(), fluid_field()->initial_guess(),
-      ale_field()->initial_guess(), 0.0);
+  setup_vector(*ig, *structure_field()->initial_guess(), *fluid_field()->initial_guess(),
+      *ale_field()->initial_guess(), 0.0);
 }
 
 
@@ -569,9 +568,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::unscale_solution(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_vector(Core::LinAlg::Vector<double>& f,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fv,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> av, double fluidscale)
+    const Core::LinAlg::Vector<double>& sv, const Core::LinAlg::Vector<double>& fv,
+    const Core::LinAlg::Vector<double>& av, double fluidscale)
 {
   // get time integration parameters of structure an fluid time integrators
   // to enable consistent time integration among the fields
@@ -580,16 +578,16 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_vector(Core::LinAlg::Ve
 
   // structure inner
   Teuchos::RCP<Core::LinAlg::Vector<double>> sov =
-      structure_field()->interface()->extract_other_vector(*sv);
+      structure_field()->interface()->extract_other_vector(sv);
 
   // ale inner
   Teuchos::RCP<Core::LinAlg::Vector<double>> aov =
-      ale_field()->interface()->extract_other_vector(*av);
+      ale_field()->interface()->extract_other_vector(av);
 
   // add fluid interface values to structure vector
   // scv: structure fsi dofs
   Teuchos::RCP<Core::LinAlg::Vector<double>> scv =
-      structure_field()->interface()->extract_fsi_cond_vector(*sv);
+      structure_field()->interface()->extract_fsi_cond_vector(sv);
 
   if (fabs(fluidscale) > 1e-15)
   {
@@ -609,12 +607,12 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::setup_vector(Core::LinAlg::Ve
           *lambdaglobal, 1.0);
     }
 
-    modfv->Update(1.0, *fv, 1.0);
+    modfv->Update(1.0, fv, 1.0);
     extractor().insert_vector(*modfv, 1, f);
   }
   else
   {
-    extractor().insert_vector(*fv, 1, f);
+    extractor().insert_vector(fv, 1, f);
   }
 
   extractor().insert_vector(*sov, 0, f);

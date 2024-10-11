@@ -514,7 +514,7 @@ void XFEM::XFluidContactComm::get_penalty_param(Core::Elements::Element* fluidel
     if (fluidele->shape() != Core::FE::CellType::hex8) FOUR_C_THROW("Add hex8 shapes here!");
 
     h_k = XFEM::UTILS::compute_char_ele_length<Core::FE::CellType::hex8>(
-        fluidele, ele_xyze, condition_manager_, cells, bcells, bintpoints, visc_stab_hk_);
+        fluidele, ele_xyze, *condition_manager_, cells, bcells, bintpoints, visc_stab_hk_);
 
     inv_h_k = 1.0 / h_k;
     last_ele_h_ = std::pair<int, double>(fluidele->id(), h_k);

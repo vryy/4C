@@ -69,7 +69,7 @@ namespace PoroElast
 
         // set material pointers
         if (setmaterialpointers)
-          PoroElast::UTILS::set_material_pointers_matching_grid(structdis, fluiddis);
+          PoroElast::UTILS::set_material_pointers_matching_grid(*structdis, *fluiddis);
 
         // if one discretization is a subset of the other, they will differ in node number (and
         // element number) we assume matching grids for the overlapping part here

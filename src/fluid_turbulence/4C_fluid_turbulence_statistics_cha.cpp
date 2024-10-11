@@ -1355,14 +1355,13 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<Core::FE::Dis
 
  -----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::do_time_sample(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> force)
+    const Core::LinAlg::Vector<double>& velnp, const Core::LinAlg::Vector<double>& force)
 {
   // we have an additional sample
   numsamp_++;
 
   // meanvelnp is a refcount copy of velnp
-  meanvelnp_->Update(1.0, *velnp, 0.0);
+  meanvelnp_->Update(1.0, velnp, 0.0);
 
   //----------------------------------------------------------------------
   // loop planes and calculate integral means in each plane
@@ -1443,26 +1442,26 @@ void FLD::TurbulenceStatisticsCha::do_time_sample(
         }
 
         local_inc = 0.0;
-        for (int rr = 0; rr < force->MyLength(); ++rr)
+        for (int rr = 0; rr < force.MyLength(); ++rr)
         {
-          local_inc += (*force)[rr] * (*toggleu_)[rr];
+          local_inc += (force)[rr] * (*toggleu_)[rr];
         }
         discret_->get_comm().SumAll(&local_inc, &inc, 1);
         sumforceu_ += inc;
 
         local_inc = 0.0;
-        for (int rr = 0; rr < force->MyLength(); ++rr)
+        for (int rr = 0; rr < force.MyLength(); ++rr)
         {
-          local_inc += (*force)[rr] * (*togglev_)[rr];
+          local_inc += (force)[rr] * (*togglev_)[rr];
         }
         discret_->get_comm().SumAll(&local_inc, &inc, 1);
         sumforcev_ += inc;
 
 
         local_inc = 0.0;
-        for (int rr = 0; rr < force->MyLength(); ++rr)
+        for (int rr = 0; rr < force.MyLength(); ++rr)
         {
-          local_inc += (*force)[rr] * (*togglew_)[rr];
+          local_inc += (force)[rr] * (*togglew_)[rr];
         }
         discret_->get_comm().SumAll(&local_inc, &inc, 1);
         sumforcew_ += inc;
@@ -1499,18 +1498,17 @@ void FLD::TurbulenceStatisticsCha::do_time_sample(
                  moments for low-Mach-number flow.
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::do_loma_time_sample(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scanp,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> force, const double eosfac)
+void FLD::TurbulenceStatisticsCha::do_loma_time_sample(const Core::LinAlg::Vector<double>& velnp,
+    const Core::LinAlg::Vector<double>& scanp, const Core::LinAlg::Vector<double>& force,
+    const double eosfac)
 {
   // we have an additional sample
 
   numsamp_++;
 
   // meanvelnp and meanscanp are refcount copies
-  meanvelnp_->Update(1.0, *velnp, 0.0);
-  meanscanp_->Update(1.0, *scanp, 0.0);
+  meanvelnp_->Update(1.0, velnp, 0.0);
+  meanscanp_->Update(1.0, scanp, 0.0);
 
   //----------------------------------------------------------------------
   // loop planes and calculate pointwise means in each plane
@@ -1562,16 +1560,16 @@ void FLD::TurbulenceStatisticsCha::do_loma_time_sample(
       }
 
       double inc = 0.0;
-      force->Dot(*toggleu_, &inc);
+      force.Dot(*toggleu_, &inc);
       sumforcebu_ += inc;
       inc = 0.0;
-      force->Dot(*togglev_, &inc);
+      force.Dot(*togglev_, &inc);
       sumforcebv_ += inc;
       inc = 0.0;
-      force->Dot(*togglew_, &inc);
+      force.Dot(*togglew_, &inc);
       sumforcebw_ += inc;
       inc = 0.0;
-      force->Dot(*togglep_, &inc);
+      force.Dot(*togglep_, &inc);
       sumqwb_ += inc;
     }
 
@@ -1615,16 +1613,16 @@ void FLD::TurbulenceStatisticsCha::do_loma_time_sample(
       }
 
       double inc = 0.0;
-      force->Dot(*toggleu_, &inc);
+      force.Dot(*toggleu_, &inc);
       sumforcetu_ += inc;
       inc = 0.0;
-      force->Dot(*togglev_, &inc);
+      force.Dot(*togglev_, &inc);
       sumforcetv_ += inc;
       inc = 0.0;
-      force->Dot(*togglew_, &inc);
+      force.Dot(*togglew_, &inc);
       sumforcetw_ += inc;
       inc = 0.0;
-      force->Dot(*togglep_, &inc);
+      force.Dot(*togglep_, &inc);
       sumqwt_ += inc;
     }
   }
@@ -1659,18 +1657,16 @@ void FLD::TurbulenceStatisticsCha::do_loma_time_sample(
                             transport.
 
   ----------------------------------------------------------------------*/
-void FLD::TurbulenceStatisticsCha::do_scatra_time_sample(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scanp,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> force)
+void FLD::TurbulenceStatisticsCha::do_scatra_time_sample(const Core::LinAlg::Vector<double>& velnp,
+    const Core::LinAlg::Vector<double>& scanp, const Core::LinAlg::Vector<double>& force)
 {
   // we have an additional sample
 
   numsamp_++;
 
   // meanvelnp and meanscanp are refcount copies
-  meanvelnp_->Update(1.0, *velnp, 0.0);
-  meanscanp_->Update(1.0, *scanp, 0.0);
+  meanvelnp_->Update(1.0, velnp, 0.0);
+  meanscanp_->Update(1.0, scanp, 0.0);
 
   //----------------------------------------------------------------------
   // loop planes and calculate pointwise means in each plane
@@ -1722,16 +1718,16 @@ void FLD::TurbulenceStatisticsCha::do_scatra_time_sample(
       }
 
       double inc = 0.0;
-      force->Dot(*toggleu_, &inc);
+      force.Dot(*toggleu_, &inc);
       sumforcebu_ += inc;
       inc = 0.0;
-      force->Dot(*togglev_, &inc);
+      force.Dot(*togglev_, &inc);
       sumforcebv_ += inc;
       inc = 0.0;
-      force->Dot(*togglew_, &inc);
+      force.Dot(*togglew_, &inc);
       sumforcebw_ += inc;
       inc = 0.0;
-      force->Dot(*togglep_, &inc);
+      force.Dot(*togglep_, &inc);
       sumqwb_ += inc;
     }
 
@@ -1775,16 +1771,16 @@ void FLD::TurbulenceStatisticsCha::do_scatra_time_sample(
       }
 
       double inc = 0.0;
-      force->Dot(*toggleu_, &inc);
+      force.Dot(*toggleu_, &inc);
       sumforcetu_ += inc;
       inc = 0.0;
-      force->Dot(*togglev_, &inc);
+      force.Dot(*togglev_, &inc);
       sumforcetv_ += inc;
       inc = 0.0;
-      force->Dot(*togglew_, &inc);
+      force.Dot(*togglew_, &inc);
       sumforcetw_ += inc;
       inc = 0.0;
-      force->Dot(*togglep_, &inc);
+      force.Dot(*togglep_, &inc);
       sumqwt_ += inc;
     }
   }

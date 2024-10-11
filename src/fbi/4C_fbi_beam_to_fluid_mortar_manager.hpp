@@ -141,8 +141,8 @@ namespace BEAMINTERACTION
      * @param lambda_row (out) Standard vector with the global IDs of the Lagrange multipliers for
      * this pair.
      */
-    void location_vector(const Teuchos::RCP<const BEAMINTERACTION::BeamContactPair>& contact_pair,
-        std::vector<int>& lambda_row) const;
+    void location_vector(
+        const BEAMINTERACTION::BeamContactPair& contact_pair, std::vector<int>& lambda_row) const;
 
     /**
      * \brief Evaluate D and M on all pairs and assemble them into the global matrices.
@@ -163,7 +163,7 @@ namespace BEAMINTERACTION
      * @param[out] beam_force Global force vector acting on the beam
      */
     void add_global_force_stiffness_contributions(Teuchos::RCP<Epetra_FEVector> fluid_force,
-        Teuchos::RCP<Epetra_FEVector> beam_force, Teuchos::RCP<Core::LinAlg::SparseMatrix> kbb,
+        Epetra_FEVector& beam_force, Teuchos::RCP<Core::LinAlg::SparseMatrix> kbb,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> kbf, Teuchos::RCP<Core::LinAlg::SparseMatrix> kff,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> kfb,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> beam_vel,
@@ -175,7 +175,7 @@ namespace BEAMINTERACTION
      * @return Global vector of Lagrange multipliers.
      */
     Teuchos::RCP<Core::LinAlg::Vector<double>> get_global_lambda(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) const;
+        const Core::LinAlg::Vector<double>& vel) const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of

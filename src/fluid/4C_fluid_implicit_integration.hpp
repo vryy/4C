@@ -1070,9 +1070,8 @@ namespace FLD
     \brief For a given node, obtain local indices of dofs in a vector (like e.g. velnp)
 
     */
-    void get_dofs_vector_local_indicesfor_node(int nodeGid,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vec, bool withPressure,
-        std::vector<int>* dofsLocalInd);
+    void get_dofs_vector_local_indicesfor_node(int nodeGid, Core::LinAlg::Vector<double>& vec,
+        bool withPressure, std::vector<int>* dofsLocalInd);
 
     /*!
     \brief add mat and rhs of edge-based stabilization
@@ -1420,8 +1419,7 @@ namespace FLD
 
     /// prepares and evalutes egde-based internal face integrals
     void evaluate_fluid_edge_based(Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-        Teuchos::ParameterList edgebasedparams);
+        Core::LinAlg::Vector<double>& systemvector1, Teuchos::ParameterList edgebasedparams);
 
     /*! \brief Compute kinetic energy and write it to file
      *

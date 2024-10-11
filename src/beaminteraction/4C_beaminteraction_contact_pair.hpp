@@ -99,8 +99,7 @@ namespace BEAMINTERACTION
     //! return appropriate internal implementation class (acts as a simple factory)
     static Teuchos::RCP<BeamContactPair> create(
         std::vector<Core::Elements::Element const*> const& ele_ptrs,
-        const Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions>&
-            beam_interaction_conditions_ptr);
+        BEAMINTERACTION::BeamInteractionConditions& beam_interaction_conditions_ptr);
 
     /*
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both

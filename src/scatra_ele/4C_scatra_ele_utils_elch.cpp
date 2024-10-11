@@ -65,18 +65,18 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
     Core::LinAlg::SerialDenseVector& erhs,                     ///< element right-hand side vector
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
-        ehist,                                              ///< history variables at element nodes
-    const double timefac,                                   ///< time factor
-    const double fac,                                       ///< Gauss integration factor
-    const Core::LinAlg::Matrix<nen_, 1>& funct,             ///< shape functions at int. point
-    const Teuchos::RCP<Core::Conditions::Condition>& cond,  ///< condition
-    const int nume,                                         ///< number of transferred electrons
-    const std::vector<int>& stoich,                         ///< stoichiometry of the reaction
-    const double valence_k,                                 ///< valence of the single reactant
-    const int kinetics,                                     ///< desired electrode kinetics model
-    const double pot0,  ///< actual electrode potential on metal side
-    const double frt,   ///< factor F/RT
-    const double fns,   ///< factor fns = s_k / (nume * faraday * (-1))
+        ehist,                                   ///< history variables at element nodes
+    const double timefac,                        ///< time factor
+    const double fac,                            ///< Gauss integration factor
+    const Core::LinAlg::Matrix<nen_, 1>& funct,  ///< shape functions at int. point
+    Core::Conditions::Condition& cond,           ///< condition
+    const int nume,                              ///< number of transferred electrons
+    const std::vector<int>& stoich,              ///< stoichiometry of the reaction
+    const double valence_k,                      ///< valence of the single reactant
+    const int kinetics,                          ///< desired electrode kinetics model
+    const double pot0,                           ///< actual electrode potential on metal side
+    const double frt,                            ///< factor F/RT
+    const double fns,                            ///< factor fns = s_k / (nume * faraday * (-1))
     const double
         scalar,  ///< scaling factor for element matrix and right-hand side vector contributions
     const int k  ///< index of evaluated scalar
@@ -107,12 +107,12 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
     case Inpar::ElCh::butler_volmer_yang1997:
     {
       // read model-specific parameters
-      const auto alphaa = cond->parameters().get<double>("ALPHA_A");
-      const auto alphac = cond->parameters().get<double>("ALPHA_C");
-      const auto dlcap = cond->parameters().get<double>("DL_SPEC_CAP");
+      const auto alphaa = cond.parameters().get<double>("ALPHA_A");
+      const auto alphac = cond.parameters().get<double>("ALPHA_C");
+      const auto dlcap = cond.parameters().get<double>("DL_SPEC_CAP");
       double pot0hist = 0.0;
-      if (dlcap != 0.0) pot0hist = cond->parameters().get<double>("pot0hist");
-      auto i0 = cond->parameters().get<double>("I0");
+      if (dlcap != 0.0) pot0hist = cond.parameters().get<double>("pot0hist");
+      auto i0 = cond.parameters().get<double>("I0");
       if (i0 < -1e-14)
         FOUR_C_THROW(
             "i0 is negative, \n"
@@ -120,8 +120,8 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
             i0);
       // add time factor
       i0 *= timefac;
-      const auto gamma = cond->parameters().get<double>("GAMMA");
-      const auto refcon = cond->parameters().get<double>("REFCON");
+      const auto gamma = cond.parameters().get<double>("GAMMA");
+      const auto refcon = cond.parameters().get<double>("REFCON");
       if (refcon < 1e-12) FOUR_C_THROW("reference concentration is too small: %f", refcon);
 
       if (valence_k != nume)
@@ -255,13 +255,13 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
     case Inpar::ElCh::tafel:
     {
       // read model-specific parameter
-      const auto alpha = cond->parameters().get<double>("ALPHA");
-      auto i0 = cond->parameters().get<double>("I0");
+      const auto alpha = cond.parameters().get<double>("ALPHA");
+      auto i0 = cond.parameters().get<double>("I0");
       i0 *= timefac;
-      const auto gamma = cond->parameters().get<double>("GAMMA");
-      const auto refcon = cond->parameters().get<double>("REFCON");
+      const auto gamma = cond.parameters().get<double>("GAMMA");
+      const auto refcon = cond.parameters().get<double>("REFCON");
       if (refcon < 1e-12) FOUR_C_THROW("reference concentration is too small: %f", refcon);
-      const auto dlcap = cond->parameters().get<double>("DL_SPEC_CAP");
+      const auto dlcap = cond.parameters().get<double>("DL_SPEC_CAP");
       if (dlcap != 0.0)
         FOUR_C_THROW("double layer charging is not implemented for Tafel electrode kinetics");
 
@@ -332,19 +332,19 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
     case Inpar::ElCh::linear:
     {
       // read model-specific parameter
-      const auto alphaa = cond->parameters().get<double>("ALPHA");
-      auto i0 = cond->parameters().get<double>("I0");
-      const auto dlcap = cond->parameters().get<double>("DL_SPEC_CAP");
+      const auto alphaa = cond.parameters().get<double>("ALPHA");
+      auto i0 = cond.parameters().get<double>("I0");
+      const auto dlcap = cond.parameters().get<double>("DL_SPEC_CAP");
       double pot0hist = 0.0;
-      if (dlcap != 0.0) pot0hist = cond->parameters().get<double>("pot0hist");
+      if (dlcap != 0.0) pot0hist = cond.parameters().get<double>("pot0hist");
       i0 *= timefac;
       if (i0 < -1e-14)
         FOUR_C_THROW(
             "i0 is negative, \n"
             "a positive definition is necessary due to generalized reaction models: %f",
             i0);
-      const auto gamma = cond->parameters().get<double>("GAMMA");
-      const auto refcon = cond->parameters().get<double>("REFCON");
+      const auto gamma = cond.parameters().get<double>("GAMMA");
+      const auto refcon = cond.parameters().get<double>("REFCON");
       if (refcon < 1e-12) FOUR_C_THROW("reference concentration is too small: %f", refcon);
 
       if (valence_k != nume)
@@ -420,10 +420,10 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
       // n is one if charge transfer is involved, multiple electron transfers "being unlikely in
       // an elementary step
 
-      const auto k_a = cond->parameters().get<double>("k_a");
-      const auto k_c = cond->parameters().get<double>("k_c");
-      const auto beta = cond->parameters().get<double>("BETA");
-      const auto dlcap = cond->parameters().get<double>("DL_SPEC_CAP");
+      const auto k_a = cond.parameters().get<double>("k_a");
+      const auto k_c = cond.parameters().get<double>("k_c");
+      const auto beta = cond.parameters().get<double>("BETA");
+      const auto dlcap = cond.parameters().get<double>("DL_SPEC_CAP");
       if (dlcap != 0.0)
         FOUR_C_THROW(
             "double layer charging is not implemented for Butler-Volmer-Newman electrode kinetics");
@@ -537,12 +537,12 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
       // Bard and Faulkner, 2001, pp. 94 ff; pp. 99 eq. 3.4.10
       // reaction model for a one-step, one-electron process (elementar step)
       // O + e -> R
-      const auto e0 = cond->parameters().get<double>("e0");
-      const auto k0 = cond->parameters().get<double>("k0");
-      const auto beta = cond->parameters().get<double>("BETA");
-      const auto c_c0 = cond->parameters().get<double>("C_C0");
-      const auto c_a0 = cond->parameters().get<double>("C_A0");
-      const auto dlcap = cond->parameters().get<double>("DL_SPEC_CAP");
+      const auto e0 = cond.parameters().get<double>("e0");
+      const auto k0 = cond.parameters().get<double>("k0");
+      const auto beta = cond.parameters().get<double>("BETA");
+      const auto c_c0 = cond.parameters().get<double>("C_C0");
+      const auto c_a0 = cond.parameters().get<double>("C_A0");
+      const auto dlcap = cond.parameters().get<double>("DL_SPEC_CAP");
       if (dlcap != 0.0)
         FOUR_C_THROW(
             "double layer charging is not implemented for Butler-Volmer-Bard electrode kinetics");
@@ -677,10 +677,10 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
  *----------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_integration_point(
-    const Core::Elements::Element* ele,                     ///< current element
-    Core::LinAlg::SerialDenseVector& scalars,               ///< scalars to be computed
-    const Teuchos::ParameterList& params,                   ///< parameter list
-    const Teuchos::RCP<Core::Conditions::Condition>& cond,  ///< condition
+    const Core::Elements::Element* ele,        ///< current element
+    Core::LinAlg::SerialDenseVector& scalars,  ///< scalars to be computed
+    const Teuchos::ParameterList& params,      ///< parameter list
+    Core::Conditions::Condition& cond,         ///< condition
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
@@ -739,25 +739,25 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_a
     case Inpar::ElCh::butler_volmer_yang1997:
     {
       // read model-specific parameter
-      const auto alphaa = cond->parameters().get<double>("ALPHA_A");
-      const auto alphac = cond->parameters().get<double>("ALPHA_C");
-      double i0 = cond->parameters().get<double>("I0");
+      const auto alphaa = cond.parameters().get<double>("ALPHA_A");
+      const auto alphac = cond.parameters().get<double>("ALPHA_C");
+      double i0 = cond.parameters().get<double>("I0");
       if (i0 < -1e-14)
         FOUR_C_THROW(
             "i0 is negative, \n"
             "a positive definition is necessary due to generalized reaction models: %f",
             i0);
-      const auto gamma = cond->parameters().get<double>("GAMMA");
-      const auto refcon = cond->parameters().get<double>("REFCON");
+      const auto gamma = cond.parameters().get<double>("GAMMA");
+      const auto refcon = cond.parameters().get<double>("REFCON");
       if (refcon < 1e-12) FOUR_C_THROW("reference concentration is too small: %f", refcon);
 
-      const auto dlcap = cond->parameters().get<double>("DL_SPEC_CAP");
+      const auto dlcap = cond.parameters().get<double>("DL_SPEC_CAP");
       double pot0dtnp = 0.0;
       double pot0hist = 0.0;
       if (dlcap != 0.0)
       {
-        pot0dtnp = cond->parameters().get<double>("pot0dtnp");
-        pot0hist = cond->parameters().get<double>("pot0hist");
+        pot0dtnp = cond.parameters().get<double>("pot0dtnp");
+        pot0hist = cond.parameters().get<double>("pot0hist");
       }
 
       // opencircuit potential is assumed to be zero here
@@ -845,13 +845,13 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_a
     case Inpar::ElCh::tafel:
     {
       // read model-specific parameter
-      const auto alpha = cond->parameters().get<double>("ALPHA");
-      auto i0 = cond->parameters().get<double>("I0");
+      const auto alpha = cond.parameters().get<double>("ALPHA");
+      auto i0 = cond.parameters().get<double>("I0");
 
-      const auto gamma = cond->parameters().get<double>("GAMMA");
-      const auto refcon = cond->parameters().get<double>("REFCON");
+      const auto gamma = cond.parameters().get<double>("GAMMA");
+      const auto refcon = cond.parameters().get<double>("REFCON");
       if (refcon < 1e-12) FOUR_C_THROW("reference concentration is too small: %f", refcon);
-      const auto dlcap = cond->parameters().get<double>("DL_SPEC_CAP");
+      const auto dlcap = cond.parameters().get<double>("DL_SPEC_CAP");
       if (dlcap != 0.0)
         FOUR_C_THROW("double layer charging is not implemented for Tafel electrode kinetics");
 
@@ -902,23 +902,23 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_a
     case Inpar::ElCh::linear:
     {
       // read model-specific parameter
-      const auto alphaa = cond->parameters().get<double>("ALPHA");
-      auto i0 = cond->parameters().get<double>("I0");
+      const auto alphaa = cond.parameters().get<double>("ALPHA");
+      auto i0 = cond.parameters().get<double>("I0");
       if (i0 < -1e-14)
         FOUR_C_THROW(
             "i0 is negative, \n"
             "a positive definition is necessary due to generalized reaction models: %f",
             i0);
-      const auto gamma = cond->parameters().get<double>("GAMMA");
-      const auto refcon = cond->parameters().get<double>("REFCON");
+      const auto gamma = cond.parameters().get<double>("GAMMA");
+      const auto refcon = cond.parameters().get<double>("REFCON");
       if (refcon < 1e-12) FOUR_C_THROW("reference concentration is too small: %f", refcon);
-      const auto dlcap = cond->parameters().get<double>("DL_SPEC_CAP");
+      const auto dlcap = cond.parameters().get<double>("DL_SPEC_CAP");
       double pot0dtnp = 0.0;
       double pot0hist = 0.0;
       if (dlcap != 0.0)
       {
-        pot0dtnp = cond->parameters().get<double>("pot0dtnp");
-        pot0hist = cond->parameters().get<double>("pot0hist");
+        pot0dtnp = cond.parameters().get<double>("pot0dtnp");
+        pot0hist = cond.parameters().get<double>("pot0hist");
       }
 
       // opencircuit potential is assumed to be zero here
@@ -982,10 +982,10 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_a
       // n is one if charge transfer is involved, multiple electron transfers "being unlikely in
       // an elementary step
 
-      const auto k_a = cond->parameters().get<double>("k_a");
-      const auto k_c = cond->parameters().get<double>("k_c");
-      const auto beta = cond->parameters().get<double>("BETA");
-      const auto dlcap = cond->parameters().get<double>("DL_SPEC_CAP");
+      const auto k_a = cond.parameters().get<double>("k_a");
+      const auto k_c = cond.parameters().get<double>("k_c");
+      const auto beta = cond.parameters().get<double>("BETA");
+      const auto dlcap = cond.parameters().get<double>("DL_SPEC_CAP");
       if (dlcap != 0.0)
         FOUR_C_THROW(
             "double layer charging is not implemented for Butler-Volmer-Newman electrode kinetics");
@@ -1109,12 +1109,12 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_a
       // Bard and Faulkner, 2001, pp. 94 ff; pp. 99 eq. 3.4.10
       // reaction model for a one-step, one-electron process
       // O + e -> R
-      const auto e0 = cond->parameters().get<double>("e0");
-      const auto k0 = cond->parameters().get<double>("k0");
-      const auto beta = cond->parameters().get<double>("BETA");
-      const auto c_c0 = cond->parameters().get<double>("C_C0");
-      const auto c_a0 = cond->parameters().get<double>("C_A0");
-      const auto dlcap = cond->parameters().get<double>("DL_SPEC_CAP");
+      const auto e0 = cond.parameters().get<double>("e0");
+      const auto k0 = cond.parameters().get<double>("k0");
+      const auto beta = cond.parameters().get<double>("BETA");
+      const auto c_c0 = cond.parameters().get<double>("C_C0");
+      const auto c_a0 = cond.parameters().get<double>("C_A0");
+      const auto dlcap = cond.parameters().get<double>("DL_SPEC_CAP");
       if (dlcap != 0.0)
         FOUR_C_THROW(
             "double layer charging is not implemented for Butler-Volmer-Bard electrode kinetics");
@@ -1213,8 +1213,8 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_a
 
     case Inpar::ElCh::nernst:
     {
-      const auto e0 = cond->parameters().get<double>("e0");
-      const auto c0 = cond->parameters().get<double>("c0");
+      const auto e0 = cond.parameters().get<double>("e0");
+      const auto c0 = cond.parameters().get<double>("c0");
       if (zerocur != 0)
         FOUR_C_THROW(
             "The electrode kinetics flag zero_cur is not implemented for this specific kinetic "

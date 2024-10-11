@@ -129,8 +129,8 @@ namespace EleMag
     /*!
     \brief Import initial electric field from scatra solution
     */
-    void set_initial_electric_field(Teuchos::RCP<Core::LinAlg::Vector<double>> phi,
-        Teuchos::RCP<Core::FE::Discretization>& scatradis);
+    void set_initial_electric_field(
+        Core::LinAlg::Vector<double>& phi, Teuchos::RCP<Core::FE::Discretization>& scatradis);
 
     /*!
     \brief Compare the numerical solution to the analytical one.

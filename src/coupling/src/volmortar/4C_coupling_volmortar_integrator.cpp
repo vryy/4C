@@ -315,16 +315,16 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         case Core::FE::CellType::tri3:
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::tri3>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
-              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, *Adis,
+              *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
 
           break;
         }
         case Core::FE::CellType::tri6:
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::tri6>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
-              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, *Adis,
+              *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
 
           break;
         }
@@ -332,7 +332,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::quad4>(sele, Bele,
               foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+              *Adis, *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
 
           break;
         }
@@ -340,7 +340,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::quad8>(sele, Bele,
               foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+              *Adis, *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
 
           break;
         }
@@ -348,7 +348,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::quad9>(sele, Bele,
               foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+              *Adis, *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
           break;
         }
         //************************************************
@@ -357,8 +357,8 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         case Core::FE::CellType::hex8:
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::hex8>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
-              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, *Adis,
+              *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
 
           break;
         }
@@ -366,7 +366,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::hex20>(sele, Bele,
               foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+              *Adis, *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
 
           break;
         }
@@ -374,15 +374,15 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::hex27>(sele, Bele,
               foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+              *Adis, *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
 
           break;
         }
         case Core::FE::CellType::tet4:
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::tet4>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
-              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, *Adis,
+              *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
 
           break;
         }
@@ -390,7 +390,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::tet10>(sele, Bele,
               foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+              *Adis, *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
 
           break;
         }
@@ -398,7 +398,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::pyramid5>(sele, Bele,
               foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
+              *Adis, *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
 
           break;
         }
@@ -448,10 +448,8 @@ bool Coupling::VolMortar::vol_mortar_ele_based_gp(Core::Elements::Element& sele,
     Core::Elements::Element* mele, std::vector<int>& foundeles, int& found, int& gpid, double& jac,
     double& wgt, double& gpdist, double* Axi, double* AuxXi, double* globgp, DualQuad& dq,
     Shapefcn& shape, Core::LinAlg::SparseMatrix& D, Core::LinAlg::SparseMatrix& M,
-    Teuchos::RCP<const Core::FE::Discretization> Adis,
-    Teuchos::RCP<const Core::FE::Discretization> Bdis, int dofseta, int dofsetb,
-    const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
-    const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap)
+    const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int dofseta,
+    int dofsetb, const Epetra_Map& PAB_dofrowmap, const Epetra_Map& PAB_dofcolmap)
 {
   //! ns_: number of slave element nodes
   static const int ns_ = Core::FE::num_nodes<distype_s>;
@@ -492,7 +490,7 @@ bool Coupling::VolMortar::vol_mortar_ele_based_gp(Core::Elements::Element& sele,
     Bxi[0] = AuxXi[0];
     Bxi[1] = AuxXi[1];
     Bxi[2] = AuxXi[2];
-    mele = Bdis->g_element(gpid);
+    mele = Bdis.g_element(gpid);
   }
 
   // for "master" side
@@ -507,31 +505,31 @@ bool Coupling::VolMortar::vol_mortar_ele_based_gp(Core::Elements::Element& sele,
   for (int j = 0; j < ns_; ++j)
   {
     Core::Nodes::Node* cnode = sele.nodes()[j];
-    if (cnode->owner() != Adis->get_comm().MyPID()) continue;
+    if (cnode->owner() != Adis.get_comm().MyPID()) continue;
 
-    const int nsdof = Adis->num_dof(dofseta, cnode);
+    const int nsdof = Adis.num_dof(dofseta, cnode);
 
     if (shape == shape_std)
     {
       for (int j = 0; j < ns_; ++j)
       {
         Core::Nodes::Node* cnode = sele.nodes()[j];
-        int nsdof = Adis->num_dof(dofseta, cnode);
+        int nsdof = Adis.num_dof(dofseta, cnode);
 
         // loop over slave dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
-          int row = Adis->dof(dofseta, cnode, jdof);
+          int row = Adis.dof(dofseta, cnode, jdof);
 
           // integrate M
           for (int k = 0; k < nm_; ++k)
           {
             Core::Nodes::Node* mnode = mele->nodes()[k];
-            int nmdof = Bdis->num_dof(dofsetb, mnode);
+            int nmdof = Bdis.num_dof(dofsetb, mnode);
 
             for (int kdof = 0; kdof < nmdof; ++kdof)
             {
-              int col = Bdis->dof(dofsetb, mnode, kdof);
+              int col = Bdis.dof(dofsetb, mnode, kdof);
 
               // multiply the two shape functions
               double prod = sval_A(j) * mval_A(k) * jac * wgt;
@@ -548,7 +546,7 @@ bool Coupling::VolMortar::vol_mortar_ele_based_gp(Core::Elements::Element& sele,
           for (int k = 0; k < ns_; ++k)
           {
             Core::Nodes::Node* snode = sele.nodes()[k];
-            int nddof = Adis->num_dof(dofseta, snode);
+            int nddof = Adis.num_dof(dofseta, snode);
 
             for (int kdof = 0; kdof < nddof; ++kdof)
             {
@@ -570,9 +568,9 @@ bool Coupling::VolMortar::vol_mortar_ele_based_gp(Core::Elements::Element& sele,
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        const int row = Adis->dof(dofseta, cnode, jdof);
+        const int row = Adis.dof(dofseta, cnode, jdof);
 
-        if (not PAB_dofrowmap->MyGID(row)) continue;
+        if (not PAB_dofrowmap.MyGID(row)) continue;
 
         // integrate D
         const double prod2 = lmval_A(j) * sval_A(j) * jac * wgt;
@@ -582,9 +580,9 @@ bool Coupling::VolMortar::vol_mortar_ele_based_gp(Core::Elements::Element& sele,
         for (int k = 0; k < nm_; ++k)
         {
           Core::Nodes::Node* mnode = mele->nodes()[k];
-          const int col = Bdis->dof(dofsetb, mnode, jdof);
+          const int col = Bdis.dof(dofsetb, mnode, jdof);
 
-          if (not PAB_dofcolmap->MyGID(col)) continue;
+          if (not PAB_dofcolmap.MyGID(col)) continue;
 
           // multiply the two shape functions
           const double prod = lmval_A(j) * mval_A(k) * jac * wgt;
@@ -789,10 +787,10 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::initialize_
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells_2d(
-    Core::Elements::Element& sele, Core::Elements::Element& mele,
-    Teuchos::RCP<Mortar::IntCell> cell, Core::LinAlg::SparseMatrix& dmatrix,
-    Core::LinAlg::SparseMatrix& mmatrix, Teuchos::RCP<const Core::FE::Discretization> slavedis,
-    Teuchos::RCP<const Core::FE::Discretization> masterdis, int sdofset, int mdofset)
+    Core::Elements::Element& sele, Core::Elements::Element& mele, Mortar::IntCell& cell,
+    Core::LinAlg::SparseMatrix& dmatrix, Core::LinAlg::SparseMatrix& mmatrix,
+    const Core::FE::Discretization& slavedis, const Core::FE::Discretization& masterdis,
+    int sdofset, int mdofset)
 {
   // create empty vectors for shape fct. evaluation
   Core::LinAlg::Matrix<ns_, 1> sval;
@@ -810,7 +808,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
 
     // get global Gauss point coordinates
     double globgp[3] = {0.0, 0.0, 0.0};
-    cell->local_to_global(eta, globgp, 0);
+    cell.local_to_global(eta, globgp, 0);
 
     // map gp into slave and master para space
     double sxi[3] = {0.0, 0.0, 0.0};
@@ -830,7 +828,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
     UTILS::dual_shape_function<distype_s>(lmval, sxi, sele);
 
     // evaluate the integration cell Jacobian
-    double jac = cell->jacobian();
+    double jac = cell.jacobian();
 
     // compute segment D/M matrix ****************************************
     // standard shape functions
@@ -839,25 +837,25 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
       for (int j = 0; j < ns_; ++j)
       {
         Core::Nodes::Node* cnode = sele.nodes()[j];
-        int nsdof = slavedis->num_dof(sdofset, cnode);
+        int nsdof = slavedis.num_dof(sdofset, cnode);
 
-        if (cnode->owner() != slavedis->get_comm().MyPID()) continue;
+        if (cnode->owner() != slavedis.get_comm().MyPID()) continue;
 
         // loop over slave dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
-          int row = slavedis->dof(sdofset, cnode, jdof);
+          int row = slavedis.dof(sdofset, cnode, jdof);
 
           ////////////////////////////////////////
           // integrate M
           for (int k = 0; k < nm_; ++k)
           {
             Core::Nodes::Node* mnode = mele.nodes()[k];
-            int nmdof = masterdis->num_dof(mdofset, mnode);
+            int nmdof = masterdis.num_dof(mdofset, mnode);
 
             for (int kdof = 0; kdof < nmdof; ++kdof)
             {
-              int col = masterdis->dof(mdofset, mnode, kdof);
+              int col = masterdis.dof(mdofset, mnode, kdof);
 
               // multiply the two shape functions
               double prod = sval(j) * mval(k) * jac * wgt;
@@ -875,7 +873,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
           for (int k = 0; k < ns_; ++k)
           {
             Core::Nodes::Node* snode = sele.nodes()[k];
-            int nddof = slavedis->num_dof(sdofset, snode);
+            int nddof = slavedis.num_dof(sdofset, snode);
 
             for (int kdof = 0; kdof < nddof; ++kdof)
             {
@@ -900,25 +898,25 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
       {
         Core::Nodes::Node* cnode = sele.nodes()[j];
 
-        if (cnode->owner() != slavedis->get_comm().MyPID()) continue;
+        if (cnode->owner() != slavedis.get_comm().MyPID()) continue;
 
-        int nsdof = slavedis->num_dof(sdofset, cnode);
+        int nsdof = slavedis.num_dof(sdofset, cnode);
 
         // loop over slave dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
-          int row = slavedis->dof(sdofset, cnode, jdof);
+          int row = slavedis.dof(sdofset, cnode, jdof);
 
           ////////////////////////////////////////////////////////////////
           // integrate M and D
           for (int k = 0; k < nm_; ++k)
           {
             Core::Nodes::Node* mnode = mele.nodes()[k];
-            int nmdof = masterdis->num_dof(mdofset, mnode);
+            int nmdof = masterdis.num_dof(mdofset, mnode);
 
             for (int kdof = 0; kdof < nmdof; ++kdof)
             {
-              int col = masterdis->dof(mdofset, mnode, kdof);
+              int col = masterdis.dof(mdofset, mnode, kdof);
 
               // multiply the two shape functions
               double prod = lmval(j) * mval(k) * jac * wgt;
@@ -950,12 +948,11 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_cells_3d(
-    Core::Elements::Element& Aele, Core::Elements::Element& Bele,
-    Teuchos::RCP<Coupling::VolMortar::Cell> cell, Core::LinAlg::SparseMatrix& dmatrix_A,
-    Core::LinAlg::SparseMatrix& mmatrix_A, Core::LinAlg::SparseMatrix& dmatrix_B,
-    Core::LinAlg::SparseMatrix& mmatrix_B, Teuchos::RCP<const Core::FE::Discretization> Adis,
-    Teuchos::RCP<const Core::FE::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
-    int mdofset_B)
+    Core::Elements::Element& Aele, Core::Elements::Element& Bele, Coupling::VolMortar::Cell& cell,
+    Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
+    Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
+    const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int sdofset_A,
+    int mdofset_A, int sdofset_B, int mdofset_B)
 {
   if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
@@ -976,7 +973,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
 
     // get global Gauss point coordinates
     double globgp[3] = {0.0, 0.0, 0.0};
-    cell->local_to_global(eta, globgp);
+    cell.local_to_global(eta, globgp);
 
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
@@ -986,10 +983,10 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
 
     // evaluate the integration cell Jacobian
     double jac = 0.0;
-    if (cell->shape() == Core::FE::CellType::tet4)
-      jac = cell->vol();
-    else if (cell->shape() == Core::FE::CellType::hex8)
-      jac = cell->calc_jac(eta);
+    if (cell.shape() == Core::FE::CellType::tet4)
+      jac = cell.vol();
+    else if (cell.shape() == Core::FE::CellType::hex8)
+      jac = cell.calc_jac(eta);
     else
       FOUR_C_THROW("used shape not supported in volmortar integrator!");
 
@@ -1012,22 +1009,22 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
     for (int j = 0; j < ns_; ++j)
     {
       Core::Nodes::Node* cnode = Aele.nodes()[j];
-      int nsdof = Adis->num_dof(sdofset_A, cnode);
+      int nsdof = Adis.num_dof(sdofset_A, cnode);
 
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int row = Adis->dof(sdofset_A, cnode, jdof);
+        int row = Adis.dof(sdofset_A, cnode, jdof);
 
         // integrate M and D
         for (int k = 0; k < nm_; ++k)
         {
           Core::Nodes::Node* mnode = Bele.nodes()[k];
-          int nmdof = Bdis->num_dof(mdofset_A, mnode);
+          int nmdof = Bdis.num_dof(mdofset_A, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
           {
-            int col = Bdis->dof(mdofset_A, mnode, kdof);
+            int col = Bdis.dof(mdofset_A, mnode, kdof);
 
             // multiply the two shape functions
             double prod = lmval_A(j) * mval_A(k) * jac * wgt;
@@ -1048,22 +1045,22 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
     for (int j = 0; j < nm_; ++j)
     {
       Core::Nodes::Node* cnode = Bele.nodes()[j];
-      int nsdof = Bdis->num_dof(sdofset_B, cnode);
+      int nsdof = Bdis.num_dof(sdofset_B, cnode);
 
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int row = Bdis->dof(sdofset_B, cnode, jdof);
+        int row = Bdis.dof(sdofset_B, cnode, jdof);
 
         // integrate M and D
         for (int k = 0; k < ns_; ++k)
         {
           Core::Nodes::Node* mnode = Aele.nodes()[k];
-          int nmdof = Adis->num_dof(mdofset_B, mnode);
+          int nmdof = Adis.num_dof(mdofset_B, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
           {
-            int col = Adis->dof(mdofset_B, mnode, kdof);
+            int col = Adis.dof(mdofset_B, mnode, kdof);
 
             // multiply the two shape functions
             double prod = lmval_B(j) * sval_A(k) * jac * wgt;
@@ -1094,9 +1091,8 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s,
     Teuchos::RCP<Core::FE::GaussPoints> intpoints, bool switched_conf,
     Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
     Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
-    Teuchos::RCP<const Core::FE::Discretization> Adis,
-    Teuchos::RCP<const Core::FE::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
-    int mdofset_B)
+    const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int sdofset_A,
+    int mdofset_A, int sdofset_B, int mdofset_B)
 {
   if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
@@ -1159,22 +1155,22 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s,
     for (int j = 0; j < ns_; ++j)
     {
       Core::Nodes::Node* cnode = Aele.nodes()[j];
-      int nsdof = Adis->num_dof(sdofset_A, cnode);
+      int nsdof = Adis.num_dof(sdofset_A, cnode);
 
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int row = Adis->dof(sdofset_A, cnode, jdof);
+        int row = Adis.dof(sdofset_A, cnode, jdof);
 
         // integrate M and D
         for (int k = 0; k < nm_; ++k)
         {
           Core::Nodes::Node* mnode = Bele.nodes()[k];
-          int nmdof = Bdis->num_dof(mdofset_A, mnode);
+          int nmdof = Bdis.num_dof(mdofset_A, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
           {
-            int col = Bdis->dof(mdofset_A, mnode, kdof);
+            int col = Bdis.dof(mdofset_A, mnode, kdof);
 
             // multiply the two shape functions
             double prod = lmval_A(j) * mval_A(k) * jac * weight_out;
@@ -1196,22 +1192,22 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s,
     for (int j = 0; j < nm_; ++j)
     {
       Core::Nodes::Node* cnode = Bele.nodes()[j];
-      int nsdof = Bdis->num_dof(sdofset_B, cnode);
+      int nsdof = Bdis.num_dof(sdofset_B, cnode);
 
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int row = Bdis->dof(sdofset_B, cnode, jdof);
+        int row = Bdis.dof(sdofset_B, cnode, jdof);
 
         // integrate M and D
         for (int k = 0; k < ns_; ++k)
         {
           Core::Nodes::Node* mnode = Aele.nodes()[k];
-          int nmdof = Adis->num_dof(mdofset_B, mnode);
+          int nmdof = Adis.num_dof(mdofset_B, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
           {
-            int col = Adis->dof(sdofset_B, mnode, kdof);
+            int col = Adis.dof(sdofset_B, mnode, kdof);
 
             // multiply the two shape functions
             double prod = lmval_B(j) * sval_A(k) * jac * weight_out;
@@ -1241,8 +1237,8 @@ template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_based_3d_a_dis(
     Core::Elements::Element& Aele, std::vector<int>& foundeles,
     Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
-    Teuchos::RCP<const Core::FE::Discretization> Adis,
-    Teuchos::RCP<const Core::FE::Discretization> Bdis, int dofsetA, int dofsetB)
+    const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int dofsetA,
+    int dofsetB)
 {
   if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
@@ -1281,7 +1277,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     for (int found = 0; found < (int)foundeles.size(); ++found)
     {
       // get master element
-      Core::Elements::Element* Bele = Bdis->g_element(foundeles[found]);
+      Core::Elements::Element* Bele = Bdis.g_element(foundeles[found]);
       double Bxi[3] = {0.0, 0.0, 0.0};
 
       bool converged = true;
@@ -1310,7 +1306,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
         Bxi[0] = AuxXi[0];
         Bxi[1] = AuxXi[1];
         Bxi[2] = AuxXi[2];
-        Bele = Bdis->g_element(gpid);
+        Bele = Bdis.g_element(gpid);
       }
 
       // for "master" side
@@ -1325,14 +1321,14 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
       for (int j = 0; j < ns_; ++j)
       {
         Core::Nodes::Node* cnode = Aele.nodes()[j];
-        if (cnode->owner() != Adis->get_comm().MyPID()) continue;
+        if (cnode->owner() != Adis.get_comm().MyPID()) continue;
 
-        int nsdof = Adis->num_dof(dofsetA, cnode);
+        int nsdof = Adis.num_dof(dofsetA, cnode);
 
         // loop over slave dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
-          int row = Adis->dof(dofsetA, cnode, jdof);
+          int row = Adis.dof(dofsetA, cnode, jdof);
 
           // integrate D
           double prod2 = lmval_A(j) * sval_A(j) * jac * wgt;
@@ -1342,7 +1338,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
           for (int k = 0; k < nm_; ++k)
           {
             Core::Nodes::Node* mnode = Bele->nodes()[k];
-            int col = Bdis->dof(dofsetB, mnode, jdof);
+            int col = Bdis.dof(dofsetB, mnode, jdof);
 
             // multiply the two shape functions
             double prod = lmval_A(j) * mval_A(k) * jac * wgt;
@@ -1367,8 +1363,8 @@ template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_based_3d_b_dis(
     Core::Elements::Element& Bele, std::vector<int>& foundeles,
     Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
-    Teuchos::RCP<const Core::FE::Discretization> Adis,
-    Teuchos::RCP<const Core::FE::Discretization> Bdis, int dofsetA, int dofsetB)
+    const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int dofsetA,
+    int dofsetB)
 {
   if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
@@ -1407,7 +1403,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     for (int found = 0; found < (int)foundeles.size(); ++found)
     {
       // get master element
-      Core::Elements::Element* Aele = Adis->g_element(foundeles[found]);
+      Core::Elements::Element* Aele = Adis.g_element(foundeles[found]);
       double Axi[3] = {0.0, 0.0, 0.0};
 
       bool converged = true;
@@ -1436,7 +1432,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
         Axi[0] = AuxXi[0];
         Axi[1] = AuxXi[1];
         Axi[2] = AuxXi[2];
-        Aele = Adis->g_element(gpid);
+        Aele = Adis.g_element(gpid);
       }
 
       // evaluate trace space shape functions (on both elements)
@@ -1450,14 +1446,14 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
       for (int j = 0; j < nm_; ++j)
       {
         Core::Nodes::Node* cnode = Bele.nodes()[j];
-        if (cnode->owner() != Bdis->get_comm().MyPID()) continue;
+        if (cnode->owner() != Bdis.get_comm().MyPID()) continue;
 
-        int nsdof = Bdis->num_dof(dofsetB, cnode);
+        int nsdof = Bdis.num_dof(dofsetB, cnode);
 
         // loop over slave dofs
         for (int jdof = 0; jdof < nsdof; ++jdof)
         {
-          int row = Bdis->dof(dofsetB, cnode, jdof);
+          int row = Bdis.dof(dofsetB, cnode, jdof);
 
           // integrate D
           double prod2 = lmval_B(j) * sval_B(j) * jac * wgt;
@@ -1467,7 +1463,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
           for (int k = 0; k < ns_; ++k)
           {
             Core::Nodes::Node* mnode = Aele->nodes()[k];
-            int col = Adis->dof(dofsetA, mnode, jdof);
+            int col = Adis.dof(dofsetA, mnode, jdof);
 
             // multiply the two shape functions
             double prod = lmval_B(j) * mval_A(k) * jac * wgt;
@@ -1495,9 +1491,8 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     Core::Elements::Element& Aele, Core::Elements::Element& Bele,
     Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
     Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
-    Teuchos::RCP<const Core::FE::Discretization> Adis,
-    Teuchos::RCP<const Core::FE::Discretization> Bdis, int sdofset_A, int mdofset_A, int sdofset_B,
-    int mdofset_B)
+    const Core::FE::Discretization& Adis, const Core::FE::Discretization& Bdis, int sdofset_A,
+    int mdofset_A, int sdofset_B, int mdofset_B)
 {
   if (shape_ == shape_std) FOUR_C_THROW("ERORR: std. shape functions not supported");
 
@@ -1561,22 +1556,22 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     for (int j = 0; j < ns_; ++j)
     {
       Core::Nodes::Node* cnode = Aele.nodes()[j];
-      int nsdof = Adis->num_dof(sdofset_A, cnode);
+      int nsdof = Adis.num_dof(sdofset_A, cnode);
 
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int row = Adis->dof(sdofset_A, cnode, jdof);
+        int row = Adis.dof(sdofset_A, cnode, jdof);
 
         // integrate M and D
         for (int k = 0; k < nm_; ++k)
         {
           Core::Nodes::Node* mnode = Bele.nodes()[k];
-          int nmdof = Bdis->num_dof(mdofset_A, mnode);
+          int nmdof = Bdis.num_dof(mdofset_A, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
           {
-            int col = Bdis->dof(mdofset_A, mnode, kdof);
+            int col = Bdis.dof(mdofset_A, mnode, kdof);
 
             // multiply the two shape functions
             double prod = lmval_A(j) * mval_A(k) * jac * wgt;
@@ -1597,22 +1592,22 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     for (int j = 0; j < nm_; ++j)
     {
       Core::Nodes::Node* cnode = Bele.nodes()[j];
-      int nsdof = Bdis->num_dof(sdofset_B, cnode);
+      int nsdof = Bdis.num_dof(sdofset_B, cnode);
 
       // loop over slave dofs
       for (int jdof = 0; jdof < nsdof; ++jdof)
       {
-        int row = Bdis->dof(sdofset_B, cnode, jdof);
+        int row = Bdis.dof(sdofset_B, cnode, jdof);
 
         // integrate M and D
         for (int k = 0; k < ns_; ++k)
         {
           Core::Nodes::Node* mnode = Aele.nodes()[k];
-          int nmdof = Adis->num_dof(mdofset_B, mnode);
+          int nmdof = Adis.num_dof(mdofset_B, mnode);
 
           for (int kdof = 0; kdof < nmdof; ++kdof)
           {
-            int col = Adis->dof(mdofset_B, mnode, kdof);
+            int col = Adis.dof(mdofset_B, mnode, kdof);
 
             // multiply the two shape functions
             double prod = lmval_B(j) * sval_A(k) * jac * wgt;
@@ -1994,81 +1989,81 @@ void Coupling::VolMortar::ConsInterpolator::interpolate(Core::Nodes::Node* node,
       // 2D --------------------------------------------
       case Core::FE::CellType::tri3:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::tri3>(node, ele, pmatrix, nodediscret,
-            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
-            P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::tri3>(node, ele, pmatrix, *nodediscret,
+            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
+            *P_dofcolmap);
         break;
       }
       case Core::FE::CellType::tri6:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::tri6>(node, ele, pmatrix, nodediscret,
-            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
-            P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::tri6>(node, ele, pmatrix, *nodediscret,
+            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
+            *P_dofcolmap);
         break;
       }
       case Core::FE::CellType::quad4:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::quad4>(node, ele, pmatrix, nodediscret,
-            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
-            P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::quad4>(node, ele, pmatrix, *nodediscret,
+            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
+            *P_dofcolmap);
         break;
       }
       case Core::FE::CellType::quad8:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::quad8>(node, ele, pmatrix, nodediscret,
-            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
-            P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::quad8>(node, ele, pmatrix, *nodediscret,
+            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
+            *P_dofcolmap);
         break;
       }
       case Core::FE::CellType::quad9:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::quad9>(node, ele, pmatrix, nodediscret,
-            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
-            P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::quad9>(node, ele, pmatrix, *nodediscret,
+            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
+            *P_dofcolmap);
         break;
       }
 
       // 3D --------------------------------------------
       case Core::FE::CellType::hex8:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::hex8>(node, ele, pmatrix, nodediscret,
-            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
-            P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::hex8>(node, ele, pmatrix, *nodediscret,
+            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
+            *P_dofcolmap);
         break;
       }
       case Core::FE::CellType::hex20:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::hex20>(node, ele, pmatrix, nodediscret,
-            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
-            P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::hex20>(node, ele, pmatrix, *nodediscret,
+            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
+            *P_dofcolmap);
         break;
       }
       case Core::FE::CellType::hex27:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::hex27>(node, ele, pmatrix, nodediscret,
-            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
-            P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::hex27>(node, ele, pmatrix, *nodediscret,
+            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
+            *P_dofcolmap);
         break;
       }
       case Core::FE::CellType::tet4:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::tet4>(node, ele, pmatrix, nodediscret,
-            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
-            P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::tet4>(node, ele, pmatrix, *nodediscret,
+            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
+            *P_dofcolmap);
         break;
       }
       case Core::FE::CellType::tet10:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::tet10>(node, ele, pmatrix, nodediscret,
-            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
-            P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::tet10>(node, ele, pmatrix, *nodediscret,
+            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
+            *P_dofcolmap);
         break;
       }
       case Core::FE::CellType::pyramid5:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::pyramid5>(node, ele, pmatrix, nodediscret,
-            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
-            P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::pyramid5>(node, ele, pmatrix,
+            *nodediscret, *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset,
+            *P_dofrowmap, *P_dofcolmap);
         break;
       }
       default:
@@ -2096,11 +2091,10 @@ void Coupling::VolMortar::ConsInterpolator::interpolate(Core::Nodes::Node* node,
 template <Core::FE::CellType distype>
 bool Coupling::VolMortar::cons_interpolator_eval(Core::Nodes::Node* node,
     Core::Elements::Element* ele, Core::LinAlg::SparseMatrix& pmatrix,
-    Teuchos::RCP<const Core::FE::Discretization> nodediscret,
-    Teuchos::RCP<const Core::FE::Discretization> elediscret, std::vector<int>& foundeles,
-    int& found, int& eleid, double& dist, double* AuxXi, double* nodepos,
-    std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
-    const Teuchos::RCP<const Epetra_Map>& P_dofcolmap)
+    const Core::FE::Discretization& nodediscret, const Core::FE::Discretization& elediscret,
+    std::vector<int>& foundeles, int& found, int& eleid, double& dist, double* AuxXi,
+    double* nodepos, std::pair<int, int>& dofset, const Epetra_Map& P_dofrowmap,
+    const Epetra_Map& P_dofcolmap)
 {
   //! ns_: number of slave element nodes
   static const int n_ = Core::FE::num_nodes<distype>;
@@ -2137,28 +2131,28 @@ bool Coupling::VolMortar::cons_interpolator_eval(Core::Nodes::Node* node,
     xi[0] = AuxXi[0];
     xi[1] = AuxXi[1];
     xi[2] = AuxXi[2];
-    ele = elediscret->g_element(eleid);
+    ele = elediscret.g_element(eleid);
   }
 
   // get values
   Core::LinAlg::Matrix<n_, 1> val;
   UTILS::shape_function<distype>(val, xi);
 
-  int nsdof = nodediscret->num_dof(dofset.first, node);
+  int nsdof = nodediscret.num_dof(dofset.first, node);
 
   // loop over slave dofs
   for (int jdof = 0; jdof < nsdof; ++jdof)
   {
-    const int row = nodediscret->dof(dofset.first, node, jdof);
+    const int row = nodediscret.dof(dofset.first, node, jdof);
 
-    if (not P_dofrowmap->MyGID(row)) continue;
+    if (not P_dofrowmap.MyGID(row)) continue;
 
     for (int k = 0; k < ele->num_node(); ++k)
     {
       Core::Nodes::Node* bnode = ele->nodes()[k];
-      const int col = elediscret->dof(dofset.second, bnode, jdof);
+      const int col = elediscret.dof(dofset.second, bnode, jdof);
 
-      if (not P_dofcolmap->MyGID(col)) continue;
+      if (not P_dofcolmap.MyGID(col)) continue;
 
       const double val2 = val(k);
       // if (abs(val2)>VOLMORTARINTTOL)

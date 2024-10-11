@@ -15,12 +15,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::POROFLUIDMULTIPHASE::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::POROFLUIDMULTIPHASE::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& porofluidmultiphasedyn = list->sublist("POROFLUIDMULTIPHASE DYNAMIC",
+  Teuchos::ParameterList& porofluidmultiphasedyn = list.sublist("POROFLUIDMULTIPHASE DYNAMIC",
       false, "control parameters for porofluidmultiphase problems\n");
 
   Core::UTILS::double_parameter(

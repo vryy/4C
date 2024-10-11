@@ -20,13 +20,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::ScaTra::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& scatradyn = list->sublist(
+  Teuchos::ParameterList& scatradyn = list.sublist(
       "SCALAR TRANSPORT DYNAMIC", false, "control parameters for scalar transport problems\n");
 
   setStringToIntegralParameter<Inpar::ScaTra::SolverType>("SOLVERTYPE", "linear_full",

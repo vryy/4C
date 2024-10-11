@@ -176,7 +176,7 @@ void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::build_id_sets(
 
   // Build the volume map.
   std::vector<int> volume_ids;
-  condition_to_element_ids(condition_other_, volume_ids);
+  condition_to_element_ids(*condition_other_, volume_ids);
   volume_ids_ = std::set<int>(volume_ids.begin(), volume_ids.end());
 }
 

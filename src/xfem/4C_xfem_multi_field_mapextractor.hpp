@@ -240,13 +240,6 @@ namespace XFEM
     Teuchos::RCP<Epetra_MultiVector> extract_vector(const Epetra_MultiVector& full,
         enum FieldName field, enum MapType map_type = map_dofs) const;
 
-    inline void extract_vector(Teuchos::RCP<const Core::LinAlg::Vector<double>> full,
-        enum FieldName field, Teuchos::RCP<Core::LinAlg::Vector<double>> partial,
-        enum MapType map_type = map_dofs) const
-    {
-      extract_vector(*full, field, *partial, map_type);
-    }
-
     inline void extract_vector(const Epetra_MultiVector& full, enum FieldName field,
         Epetra_MultiVector& partial, enum MapType map_type = map_dofs) const
     {
@@ -295,11 +288,10 @@ namespace XFEM
      *  \param full   (out): vector to copy into
      *
      *  \author hiermeier \date 10/16 */
-    void insert_vector(Teuchos::RCP<const Core::LinAlg::Vector<double>> partial,
-        enum FieldName field, Teuchos::RCP<Core::LinAlg::Vector<double>> full,
-        enum MapType map_type = map_dofs) const
+    void insert_vector(const Core::LinAlg::Vector<double>& partial, enum FieldName field,
+        Core::LinAlg::Vector<double>& full, enum MapType map_type = map_dofs) const
     {
-      insert_vector(*partial, field, *full, map_type);
+      insert_vector(partial, field, full, map_type);
     }
 
     /** \brief Put a partial vector into a full vector (Epetra_MultiVector)
@@ -341,11 +333,10 @@ namespace XFEM
      *  \param scale   (in): scaling factor for partial vector
      *
      *  \author hiermeier \date 10/16 */
-    inline void add_vector(Teuchos::RCP<const Core::LinAlg::Vector<double>> partial,
-        enum FieldName field, Teuchos::RCP<Core::LinAlg::Vector<double>> full, double scale,
-        enum MapType map_type = map_dofs) const
+    inline void add_vector(const Core::LinAlg::Vector<double>& partial, enum FieldName field,
+        Core::LinAlg::Vector<double>& full, double scale, enum MapType map_type = map_dofs) const
     {
-      add_vector(*partial, slave_id(field), *full, scale, map_type);
+      add_vector(partial, slave_id(field), full, scale, map_type);
     }
 
     /** \brief Add a partial vector to a full vector (Epetra_MultiVector)

@@ -460,9 +460,8 @@ namespace FSI
      *  @param [in] av ALE DOfs
      */
     void combine_field_vectors(Core::LinAlg::Vector<double>& v,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> av);
+        const Core::LinAlg::Vector<double>& sv, const Core::LinAlg::Vector<double>& fv,
+        const Core::LinAlg::Vector<double>& av);
 
     /*! @brief Put three field vectors together to a monolithic vector
      *

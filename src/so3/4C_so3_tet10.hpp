@@ -368,9 +368,9 @@ namespace Discret
 
       //! Update history variables at the end of time step (fiber direction, inelastic deformation)
       //! (gebauer 07/19)
-      void update_element(std::vector<double>& disp,      // current displacements
-          Teuchos::ParameterList& params,                 // algorithmic parameters e.g. time
-          const Teuchos::RCP<Core::Mat::Material>& mat);  // material
+      void update_element(std::vector<double>& disp,  // current displacements
+          Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
+          Core::Mat::Material& mat);                  // material
 
       /// compute defgrd in all gp for given disp
       void def_gradient(const std::vector<double>& disp, Core::LinAlg::SerialDenseMatrix& gpdefgrd,

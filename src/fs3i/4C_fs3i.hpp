@@ -111,9 +111,9 @@ namespace FS3I
 
     //! set-up of global rhs of the monolithic ScaTra problem
     void setup_coupled_scatra_vector(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> globalvec,    //!< resulting global vector
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec1,  //!< vector in fluid ScaTra map
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec2   //!< vector in solid ScaTra map
+        Core::LinAlg::Vector<double>& globalvec,   //!< resulting global vector
+        const Core::LinAlg::Vector<double>& vec1,  //!< vector in fluid ScaTra map
+        const Core::LinAlg::Vector<double>& vec2   //!< vector in solid ScaTra map
     );
 
     //! set-up of global rhs of the monolithic ScaTra problem
@@ -136,7 +136,7 @@ namespace FS3I
 
     //! extraction of field-specific vectors from global ScaTra vector
     void extract_scatra_field_vectors(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> globalvec,  //!< global vector
+        const Core::LinAlg::Vector<double>& globalvec,  //!< global vector
         Teuchos::RCP<const Core::LinAlg::Vector<double>>&
             vec1,  //!< resulting vector in fluid ScaTra map
         Teuchos::RCP<const Core::LinAlg::Vector<double>>&

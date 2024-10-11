@@ -75,7 +75,7 @@ namespace FSI
     void output() override = 0;
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void evaluate(const Core::LinAlg::Vector<double>&
             step_increment  ///< increment between time step n and n+1
     );
 

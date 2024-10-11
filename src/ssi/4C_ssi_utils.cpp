@@ -232,19 +232,18 @@ SSI::UTILS::SSIMatrices::SSIMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi
   // fill maps related to scalar transport manifold if relevant
   if (is_scatra_manifold_) scatramanifold_dofrowmap_ = ssi_maps->scatra_manifold_dof_row_map();
 
-  initialize_system_matrix(ssi_maps, ssi_matrixtype);
+  initialize_system_matrix(*ssi_maps, ssi_matrixtype);
 
-  initialize_main_diag_matrices(ssi_maps);
+  initialize_main_diag_matrices(*ssi_maps);
 
-  initialize_off_diag_matrices(ssi_maps);
+  initialize_off_diag_matrices(*ssi_maps);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::initialize_main_diag_matrices(
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps)
+void SSI::UTILS::SSIMatrices::initialize_main_diag_matrices(const SSI::UTILS::SSIMaps& ssi_maps)
 {
-  structure_matrix_ = setup_sparse_matrix(structure_dofrowmap_);
+  structure_matrix_ = setup_sparse_matrix(*structure_dofrowmap_);
 
   switch (scatra_matrixtype_)
   {
@@ -252,19 +251,19 @@ void SSI::UTILS::SSIMatrices::initialize_main_diag_matrices(
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
       scatra_matrix_ =
-          setup_block_matrix(ssi_maps->block_map_scatra(), ssi_maps->block_map_scatra());
+          setup_block_matrix(*ssi_maps.block_map_scatra(), *ssi_maps.block_map_scatra());
       if (is_scatra_manifold_)
         manifold_matrix_ = setup_block_matrix(
-            ssi_maps->block_map_scatra_manifold(), ssi_maps->block_map_scatra_manifold());
+            *ssi_maps.block_map_scatra_manifold(), *ssi_maps.block_map_scatra_manifold());
 
       break;
     }
 
     case Core::LinAlg::MatrixType::sparse:
     {
-      scatra_matrix_ = setup_sparse_matrix(scatra_dofrowmap_);
+      scatra_matrix_ = setup_sparse_matrix(*scatra_dofrowmap_);
 
-      if (is_scatra_manifold_) manifold_matrix_ = setup_sparse_matrix(scatramanifold_dofrowmap_);
+      if (is_scatra_manifold_) manifold_matrix_ = setup_sparse_matrix(*scatramanifold_dofrowmap_);
 
       break;
     }
@@ -279,8 +278,7 @@ void SSI::UTILS::SSIMatrices::initialize_main_diag_matrices(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMatrices::initialize_off_diag_matrices(
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps)
+void SSI::UTILS::SSIMatrices::initialize_off_diag_matrices(const SSI::UTILS::SSIMaps& ssi_maps)
 {
   switch (scatra_matrixtype_)
   {
@@ -288,19 +286,19 @@ void SSI::UTILS::SSIMatrices::initialize_off_diag_matrices(
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
       scatra_structure_matrix_ =
-          setup_block_matrix(ssi_maps->block_map_scatra(), ssi_maps->block_map_structure());
+          setup_block_matrix(*ssi_maps.block_map_scatra(), *ssi_maps.block_map_structure());
 
       structure_scatra_matrix_ =
-          setup_block_matrix(ssi_maps->block_map_structure(), ssi_maps->block_map_scatra());
+          setup_block_matrix(*ssi_maps.block_map_structure(), *ssi_maps.block_map_scatra());
 
       if (is_scatra_manifold_)
       {
         scatramanifold_structure_matrix_ = setup_block_matrix(
-            ssi_maps->block_map_scatra_manifold(), ssi_maps->block_map_structure());
+            *ssi_maps.block_map_scatra_manifold(), *ssi_maps.block_map_structure());
         scatramanifold_scatra_matrix_ =
-            setup_block_matrix(ssi_maps->block_map_scatra_manifold(), ssi_maps->block_map_scatra());
+            setup_block_matrix(*ssi_maps.block_map_scatra_manifold(), *ssi_maps.block_map_scatra());
         scatra_scatramanifold_matrix_ =
-            setup_block_matrix(ssi_maps->block_map_scatra(), ssi_maps->block_map_scatra_manifold());
+            setup_block_matrix(*ssi_maps.block_map_scatra(), *ssi_maps.block_map_scatra_manifold());
       }
 
       break;
@@ -308,14 +306,14 @@ void SSI::UTILS::SSIMatrices::initialize_off_diag_matrices(
 
     case Core::LinAlg::MatrixType::sparse:
     {
-      scatra_structure_matrix_ = setup_sparse_matrix(scatra_dofrowmap_);
-      structure_scatra_matrix_ = setup_sparse_matrix(structure_dofrowmap_);
+      scatra_structure_matrix_ = setup_sparse_matrix(*scatra_dofrowmap_);
+      structure_scatra_matrix_ = setup_sparse_matrix(*structure_dofrowmap_);
 
       if (is_scatra_manifold_)
       {
-        scatramanifold_structure_matrix_ = setup_sparse_matrix(scatramanifold_dofrowmap_);
-        scatramanifold_scatra_matrix_ = setup_sparse_matrix(scatramanifold_dofrowmap_);
-        scatra_scatramanifold_matrix_ = setup_sparse_matrix(scatra_dofrowmap_);
+        scatramanifold_structure_matrix_ = setup_sparse_matrix(*scatramanifold_dofrowmap_);
+        scatramanifold_scatra_matrix_ = setup_sparse_matrix(*scatramanifold_dofrowmap_);
+        scatra_scatramanifold_matrix_ = setup_sparse_matrix(*scatra_dofrowmap_);
       }
 
       break;
@@ -476,20 +474,20 @@ void SSI::UTILS::SSIVectors::clear_residuals()
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 void SSI::UTILS::SSIMatrices::initialize_system_matrix(
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const Core::LinAlg::MatrixType ssi_matrixtype)
+    const SSI::UTILS::SSIMaps& ssi_maps, const Core::LinAlg::MatrixType ssi_matrixtype)
 {
   switch (ssi_matrixtype)
   {
     case Core::LinAlg::MatrixType::block_field:
     {
       system_matrix_ = setup_block_matrix(
-          ssi_maps->block_map_system_matrix(), ssi_maps->block_map_system_matrix());
+          *ssi_maps.block_map_system_matrix(), *ssi_maps.block_map_system_matrix());
       break;
     }
 
     case Core::LinAlg::MatrixType::sparse:
     {
-      system_matrix_ = setup_sparse_matrix(ssi_maps->map_system_matrix());
+      system_matrix_ = setup_sparse_matrix(*ssi_maps.map_system_matrix());
       break;
     }
 
@@ -504,8 +502,7 @@ void SSI::UTILS::SSIMatrices::initialize_system_matrix(
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SSI::UTILS::SSIMatrices::setup_block_matrix(
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> row_map,
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> col_map)
+    const Core::LinAlg::MultiMapExtractor& row_map, const Core::LinAlg::MultiMapExtractor& col_map)
 {
   const int expected_entries_per_row = 81;
   const bool explicitdirichlet = false;
@@ -513,20 +510,20 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> SSI::UTILS::SSIMatrices::setup
 
   return Teuchos::make_rcp<
       Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
-      *col_map, *row_map, expected_entries_per_row, explicitdirichlet, savegraph);
+      col_map, row_map, expected_entries_per_row, explicitdirichlet, savegraph);
 }
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> SSI::UTILS::SSIMatrices::setup_sparse_matrix(
-    const Teuchos::RCP<const Epetra_Map> row_map)
+    const Epetra_Map& row_map)
 {
   const int expected_entries_per_row = 27;
   const bool explicitdirichlet = false;
   const bool savegraph = true;
 
   return Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-      *row_map, expected_entries_per_row, explicitdirichlet, savegraph);
+      row_map, expected_entries_per_row, explicitdirichlet, savegraph);
 }
 
 /* ----------------------------------------------------------------------*
@@ -942,8 +939,8 @@ void SSI::UTILS::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<Core::FE::
     const std::string& name_meshtying_condition, const bool build_slave_slave_transformation,
     const bool check_over_constrained)
 {
-  auto timer = Teuchos::make_rcp<Teuchos::Time>("MeshtypingHandlers", true);
-  const double t0 = timer->wallTime();
+  Teuchos::Time timer("MeshtypingHandlers", true);
+  const double t0 = timer.wallTime();
 
   if (do_print_)
   {
@@ -953,7 +950,7 @@ void SSI::UTILS::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<Core::FE::
 
   // find pairwise matching nodes
   std::vector<std::pair<int, int>> coupling_pairs;
-  find_matching_node_pairs(dis, name_meshtying_condition, coupling_pairs);
+  find_matching_node_pairs(*dis, name_meshtying_condition, coupling_pairs);
 
   // all nodes on one geometrical point: outer vector defines geometric position, and inner vector
   // all nodes there
@@ -1039,7 +1036,7 @@ void SSI::UTILS::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<Core::FE::
       // (slave). Needed, to map the lineariaztion dphi/du at the interface to the correct dofs
       std::vector<int> all_coupled_original_slave_gids;
       find_slave_slave_transformation_nodes(
-          dis, name_meshtying_condition, inodegidvec_slave, all_coupled_original_slave_gids);
+          *dis, name_meshtying_condition, inodegidvec_slave, all_coupled_original_slave_gids);
 
       std::vector<int> my_coupled_original_slave_gids;
       for (const int& slave_gid : all_coupled_original_slave_gids)
@@ -1054,7 +1051,7 @@ void SSI::UTILS::SSIMeshTying::setup_mesh_tying_handlers(Teuchos::RCP<Core::FE::
         coupling_adapter, coupling_map_extractor, slave_slave_transformation));
   }
 
-  const double total_time = timer->wallTime() - t0;
+  const double total_time = timer.wallTime() - t0;
   if (do_print_)
   {
     std::cout << "|--------------------------------|" << std::endl;
@@ -1100,7 +1097,7 @@ int SSI::UTILS::SSIMeshTying::has_gid_partial(const int gid, const int start, co
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMeshTying::find_matching_node_pairs(Teuchos::RCP<Core::FE::Discretization> dis,
+void SSI::UTILS::SSIMeshTying::find_matching_node_pairs(Core::FE::Discretization& dis,
     const std::string& name_meshtying_condition,
     std::vector<std::pair<int, int>>& coupling_pairs) const
 {
@@ -1109,7 +1106,7 @@ void SSI::UTILS::SSIMeshTying::find_matching_node_pairs(Teuchos::RCP<Core::FE::D
 
   // get all mesh tying conditions
   std::vector<Core::Conditions::Condition*> meshtying_conditons(0, nullptr);
-  dis->get_condition(name_meshtying_condition, meshtying_conditons);
+  dis.get_condition(name_meshtying_condition, meshtying_conditons);
 
   // match nodes between all mesh tying conditons (named with "a" and "b")
   for (int a = 0; a < static_cast<int>(meshtying_conditons.size()); ++a)
@@ -1119,11 +1116,11 @@ void SSI::UTILS::SSIMeshTying::find_matching_node_pairs(Teuchos::RCP<Core::FE::D
     // nodes of meshtying_condition_a owned by this proc
     std::vector<int> inodegidvec_a;
     Core::Communication::add_owned_node_gid_from_list(
-        *dis, *meshtying_condition_a->get_nodes(), inodegidvec_a);
+        dis, *meshtying_condition_a->get_nodes(), inodegidvec_a);
 
     // init node matching octree with nodes from condition a
     auto tree = Core::GeometricSearch::NodeMatchingOctree();
-    tree.init(*dis, inodegidvec_a, 150, 1.0e-8);
+    tree.init(dis, inodegidvec_a, 150, 1.0e-8);
     tree.setup();
 
     // find nodes from condition b that match nodes from condition a
@@ -1134,11 +1131,11 @@ void SSI::UTILS::SSIMeshTying::find_matching_node_pairs(Teuchos::RCP<Core::FE::D
       // nodes of meshtying_condition_b owned by this proc
       std::vector<int> inodegidvec_b;
       Core::Communication::add_owned_node_gid_from_list(
-          *dis, *meshtying_condition_b->get_nodes(), inodegidvec_b);
+          dis, *meshtying_condition_b->get_nodes(), inodegidvec_b);
 
       // key: master node gid, value: slave node gid and distance
       std::map<int, std::pair<int, double>> coupled_gid_nodes;
-      tree.find_match(*dis, inodegidvec_b, coupled_gid_nodes);
+      tree.find_match(dis, inodegidvec_b, coupled_gid_nodes);
 
       // loop over all nodal couplings and find coupled nodes
       for (const auto& pair : coupled_gid_nodes)
@@ -1340,14 +1337,13 @@ void SSI::UTILS::SSIMeshTying::define_master_slave_pairing(
 
 /*---------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------*/
-void SSI::UTILS::SSIMeshTying::find_slave_slave_transformation_nodes(
-    Teuchos::RCP<Core::FE::Discretization> dis, const std::string& name_meshtying_condition,
-    const std::vector<int>& inodegidvec_slave,
+void SSI::UTILS::SSIMeshTying::find_slave_slave_transformation_nodes(Core::FE::Discretization& dis,
+    const std::string& name_meshtying_condition, const std::vector<int>& inodegidvec_slave,
     std::vector<int>& all_coupled_original_slave_gids) const
 {
   // store nodes that are slave nodes from the input
   std::vector<Core::Conditions::Condition*> meshtying_conditons(0, nullptr);
-  dis->get_condition(name_meshtying_condition, meshtying_conditons);
+  dis.get_condition(name_meshtying_condition, meshtying_conditons);
 
   std::vector<int> original_slave_gids;
   for (auto* meshtying_conditon : meshtying_conditons)
@@ -1355,15 +1351,15 @@ void SSI::UTILS::SSIMeshTying::find_slave_slave_transformation_nodes(
     if (meshtying_conditon->parameters().get<int>("interface side") == Inpar::S2I::side_slave)
     {
       Core::Communication::add_owned_node_gid_from_list(
-          *dis, *meshtying_conditon->get_nodes(), original_slave_gids);
+          dis, *meshtying_conditon->get_nodes(), original_slave_gids);
     }
   }
 
   auto tree = Core::GeometricSearch::NodeMatchingOctree();
-  tree.init(*dis, inodegidvec_slave, 150, 1.0e-8);
+  tree.init(dis, inodegidvec_slave, 150, 1.0e-8);
   tree.setup();
   std::map<int, std::pair<int, double>> coupled_gid_nodes;
-  tree.find_match(*dis, original_slave_gids, coupled_gid_nodes);
+  tree.find_match(dis, original_slave_gids, coupled_gid_nodes);
 
   // find matches if distance < 1.0e-16
   std::vector<int> my_coupled_original_slave_gids;

@@ -101,12 +101,11 @@ namespace Immersed
 
     /// get immersed nodes and determine their dofs
     void build_immersed_dirich_map(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Epetra_Map>& dirichmap,
-        const Teuchos::RCP<const Epetra_Map>& dirichmap_original);
+        Teuchos::RCP<Epetra_Map>& dirichmap, const Epetra_Map& dirichmap_original);
 
     /// add immersed dirichlet values from immersed dis to systemvector of background dis
-    void do_immersed_dirichlet_cond(Teuchos::RCP<Core::LinAlg::Vector<double>> statevector,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dirichvals, Teuchos::RCP<Epetra_Map> dbcmap);
+    void do_immersed_dirichlet_cond(Core::LinAlg::Vector<double>& statevector,
+        Core::LinAlg::Vector<double>& dirichvals, Epetra_Map& dbcmap);
 
     /// set state necessary state vectors
     virtual void set_states_fluid_op();

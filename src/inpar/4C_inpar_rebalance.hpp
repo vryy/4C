@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Inpar::Rebalance
 {
   //! set the parameters for the geometric search strategy
-  void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+  void set_valid_parameters(Teuchos::ParameterList& list);
 }  // namespace Inpar::Rebalance
 
 FOUR_C_NAMESPACE_CLOSE

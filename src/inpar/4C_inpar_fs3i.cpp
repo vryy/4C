@@ -20,13 +20,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::FS3I::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::FS3I::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   Teuchos::ParameterList& fs3idyn =
-      list->sublist("FS3I DYNAMIC", false, "control parameters for FS3I problems\n");
+      list.sublist("FS3I DYNAMIC", false, "control parameters for FS3I problems\n");
 
   Core::UTILS::double_parameter("TIMESTEP", 0.1, "Time increment dt", &fs3idyn);
   Core::UTILS::int_parameter("NUMSTEP", 20, "Total number of time steps", &fs3idyn);
@@ -119,7 +119,7 @@ void Inpar::FS3I::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list
   Teuchos::ParameterList& fs3idynstructscalstab = fs3idyn.sublist("STRUCTURE SCALAR STABILIZATION",
       false, "parameters for stabilization of the structure-scalar field");
 
-  Teuchos::ParameterList& scatradyn = list->sublist(
+  Teuchos::ParameterList& scatradyn = list.sublist(
       "SCALAR TRANSPORT DYNAMIC", true, "control parameters for scalar transport problems\n");
   fs3idynstructscalstab = scatradyn.sublist("STABILIZATION", true,
       "control parameters for the stabilization of scalar transport problems");

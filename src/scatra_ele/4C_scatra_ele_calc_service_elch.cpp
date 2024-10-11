@@ -553,7 +553,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_elch_bound
 
     // call utility class for evaluation of electrode boundary kinetics point condition
     utils_->evaluate_elch_kinetics_at_integration_point(ele, emat, erhs, ephinp, ehist, timefac, 1.,
-        my::funct_, cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, epsilon, k);
+        my::funct_, *cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, epsilon, k);
   }  // loop over all scalars
 }  // Discret::ELEMENTS::ScaTraEleCalcElch<distype>::evaluate_elch_boundary_kinetics_point
 
@@ -648,7 +648,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_electrode_
     statistics = true;
 
     // call utility class for element evaluation
-    utils_->evaluate_electrode_status_at_integration_point(ele, scalars, params, cond, ephinp,
+    utils_->evaluate_electrode_status_at_integration_point(ele, scalars, params, *cond, ephinp,
         ephidtnp, my::funct_, zerocur, kinetics, stoich, nume, pot0, frt, timefac, 1., epsilon, k);
 
     // stop loop over ionic species after one evaluation (see also comment above)

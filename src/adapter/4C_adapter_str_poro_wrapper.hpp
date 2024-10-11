@@ -132,7 +132,7 @@ namespace Adapter
 
     //! Insert FSI Condition Vector
     Teuchos::RCP<Core::LinAlg::Vector<double>> insert_fsi_cond_vector(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> cond);
+        const Core::LinAlg::Vector<double>& cond);
 
     //! Recover Lagrange Multiplier during iteration (does nothing for structure)
     void recover_lagrange_multiplier_after_newton_step(

@@ -170,8 +170,7 @@ namespace BEAMINTERACTION
      * @param params (in) Pointer beam contact parameters.
      */
     void set_beam_interaction_conditions(
-        const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const Teuchos::RCP<const BeamContactParams>& params_ptr);
+        const Core::FE::Discretization& discret, const BeamContactParams& params_ptr);
 
     /**
      * \brief Build the ID sets on all contained beam interaction conditions.
@@ -279,8 +278,8 @@ namespace BEAMINTERACTION
    * @param condition (in) A pointer to the condition.
    * @param element_ids (out) A vector with all global element IDs.
    */
-  void condition_to_element_ids(const Teuchos::RCP<const Core::Conditions::Condition>& condition,
-      std::vector<int>& element_ids);
+  void condition_to_element_ids(
+      const Core::Conditions::Condition& condition, std::vector<int>& element_ids);
 
 }  // namespace BEAMINTERACTION
 

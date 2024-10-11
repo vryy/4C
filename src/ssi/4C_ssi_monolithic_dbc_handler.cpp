@@ -89,10 +89,10 @@ void SSI::DBCHandlerBase::apply_dbc_to_rhs(Teuchos::RCP<Core::LinAlg::Vector<dou
   // apply Dirichlet boundary conditions to the scatra manifold part of the right hand side
   if (is_scatra_manifold())
   {
-    const auto zeros_scatramanifold = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+    Core::LinAlg::Vector<double> zeros_scatramanifold(
         *scatra_manifold_field()->dirich_maps()->cond_map());
     Core::LinAlg::apply_dirichlet_to_system(
-        *rhs, *zeros_scatramanifold, *scatra_manifold_field()->dirich_maps()->cond_map());
+        *rhs, zeros_scatramanifold, *scatra_manifold_field()->dirich_maps()->cond_map());
   }
 }
 

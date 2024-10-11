@@ -257,7 +257,7 @@ namespace Inpar
     };
 
     //! set the particle parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     //! set the particle conditions
     void set_valid_conditions(

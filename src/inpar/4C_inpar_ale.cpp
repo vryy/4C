@@ -19,13 +19,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::ALE::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::ALE::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& adyn = list->sublist("ALE DYNAMIC", false, "");
+  Teuchos::ParameterList& adyn = list.sublist("ALE DYNAMIC", false, "");
 
   Core::UTILS::double_parameter("TIMESTEP", 0.1, "time step size", &adyn);
   Core::UTILS::int_parameter("NUMSTEP", 41, "max number of time steps", &adyn);

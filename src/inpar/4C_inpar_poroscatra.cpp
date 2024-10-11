@@ -20,12 +20,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::PoroScaTra::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::PoroScaTra::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& poroscatradyn = list->sublist(
+  Teuchos::ParameterList& poroscatradyn = list.sublist(
       "POROSCATRA CONTROL", false, "Control paramters for scatra porous media coupling");
 
   // Output type

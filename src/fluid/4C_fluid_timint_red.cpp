@@ -322,7 +322,7 @@ void FLD::TimIntRedModels::setup_meshtying()
 
   if (vol_surf_flow_bc_maps_->NumGlobalElements() != 0)
   {
-    meshtying_->check_overlapping_bc(vol_surf_flow_bc_maps_);
+    meshtying_->check_overlapping_bc(*vol_surf_flow_bc_maps_);
     meshtying_->dirichlet_on_master(vol_surf_flow_bc_maps_);
   }
 }

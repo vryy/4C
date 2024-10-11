@@ -191,8 +191,8 @@ class EnsightWriter : public PostWriterBase
       nodes of elements displayed in paraview) are just the node
       coordinates of the nodes in the discretization.
     */
-  void write_coordinates_for_polynomial_shapefunctions(std::ofstream& geofile,
-      const Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map);
+  void write_coordinates_for_polynomial_shapefunctions(
+      std::ofstream& geofile, Core::FE::Discretization& dis, Teuchos::RCP<Epetra_Map>& proc0map);
 
   /*! \brief Write the coordinates for a Nurbs discretization
     The coordinates of the vizualisation points (i.e. the corner
@@ -200,8 +200,8 @@ class EnsightWriter : public PostWriterBase
     coordinates of the nodes in the discretization but the points the
     knot values are mapped to.
   */
-  void write_coordinates_for_nurbs_shapefunctions(std::ofstream& geofile,
-      const Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map);
+  void write_coordinates_for_nurbs_shapefunctions(
+      std::ofstream& geofile, Core::FE::Discretization& dis, Teuchos::RCP<Epetra_Map>& proc0map);
 
   virtual void write_cells(std::ofstream& geofile,  ///< filestream for the geometry
       const Teuchos::RCP<Core::FE::Discretization>
@@ -226,8 +226,7 @@ class EnsightWriter : public PostWriterBase
 
   */
   void write_nurbs_cell(const Core::FE::CellType distype, const int gid, std::ofstream& geofile,
-      std::vector<int>& nodevector, const Teuchos::RCP<Core::FE::Discretization> dis,
-      const Teuchos::RCP<Epetra_Map>& proc0map) const;
+      std::vector<int>& nodevector, Core::FE::Discretization& dis, Epetra_Map& proc0map) const;
 
   /*! \brief Quadratic nurbs split one nurbs27 element
     in knot space into eight(3d) cells. The global
@@ -273,9 +272,8 @@ class EnsightWriter : public PostWriterBase
   };
 
 
-  void write_node_connectivity_par(std::ofstream& geofile,
-      const Teuchos::RCP<Core::FE::Discretization> dis, const std::vector<int>& nodevector,
-      const Teuchos::RCP<Epetra_Map> proc0map) const;
+  void write_node_connectivity_par(std::ofstream& geofile, Core::FE::Discretization& dis,
+      const std::vector<int>& nodevector, Epetra_Map& proc0map) const;
   void write_dof_result_step(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from,
@@ -312,11 +310,10 @@ class EnsightWriter : public PostWriterBase
 
   */
   void write_dof_result_step_for_nurbs(std::ofstream& file, const int numdf,
-      const Teuchos::RCP<Core::LinAlg::Vector<double>> data, const std::string name,
-      const int offset) const;
+      Core::LinAlg::Vector<double>& data, const std::string name, const int offset) const;
 
   //! perform interpolation of result data to visualization points.
-  void interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_MultiVector> idata, const int dim,
+  void interpolate_nurbs_result_to_viz_points(Epetra_MultiVector& idata, const int dim,
       const int npatch, const std::vector<int>& vpoff, const std::vector<int>& ele_cart_id,
       const Core::Elements::Element* actele, Core::FE::Nurbs::NurbsDiscretization* nurbsdis,
       const std::vector<Core::LinAlg::SerialDenseVector>& eleknots,
@@ -324,7 +321,7 @@ class EnsightWriter : public PostWriterBase
       const std::vector<double>& my_data) const;
 
   void write_nodal_result_step_for_nurbs(std::ofstream& file, const int numdf,
-      const Teuchos::RCP<Epetra_MultiVector> data, const std::string name, const int offset) const;
+      Epetra_MultiVector& data, const std::string name, const int offset) const;
 
   void write_nodal_result_step(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
@@ -367,7 +364,7 @@ class EnsightWriter : public PostWriterBase
    * \brief estimate, how many elements of each distype will be written
    * \return map between distype and number of elements to be written
    */
-  NumElePerDisType get_num_ele_per_dis_type(const Teuchos::RCP<Core::FE::Discretization> dis) const;
+  NumElePerDisType get_num_ele_per_dis_type(Core::FE::Discretization& dis) const;
 
   std::string get_ensight_string(const Core::FE::CellType distype) const;
 
@@ -393,7 +390,7 @@ class EnsightWriter : public PostWriterBase
    * \return map between distype and vector containing the global ids of th corresponding elements
    */
   EleGidPerDisType get_ele_gid_per_dis_type(
-      const Teuchos::RCP<Core::FE::Discretization> dis, NumElePerDisType numeleperdistype) const;
+      Core::FE::Discretization& dis, NumElePerDisType numeleperdistype) const;
 
   //! create string for one TIME section in the case file
   std::string get_time_section_string(const int timeset,  ///< number of timeset to be written

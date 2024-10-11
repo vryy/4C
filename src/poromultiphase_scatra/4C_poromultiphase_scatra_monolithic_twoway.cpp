@@ -694,7 +694,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::update_fields_a
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::update_scatra(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> scatrainc)
 {
-  scatra_algo()->scatra_field()->update_iter(scatrainc);
+  scatra_algo()->scatra_field()->update_iter(*scatrainc);
 }
 
 /*----------------------------------------------------------------------*
@@ -819,7 +819,7 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::converged()
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_convergence_norms()
 {
   //------------------------------------------------------------ build residual force norms
-  normrhs_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_);
+  normrhs_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_st;
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fl;
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_sc;
@@ -828,9 +828,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_convergen
   extract_3d_field_vectors(rhs_, rhs_st, rhs_fl, rhs_sc);
 
   // build also norms for structure, fluid and scatra
-  normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_st);
-  normrhsfluid_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_fl);
-  normrhsscatra_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_sc);
+  normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_st);
+  normrhsfluid_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_fl);
+  normrhsscatra_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_sc);
 
   //------------------------------------------------------------- build residual increment norms
   // displacement and fluid velocity & pressure incremental vector
@@ -842,16 +842,16 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_convergen
   extract_3d_field_vectors(iterinc_, iterincst, iterincfl, iterincsc);
 
   // build also norms for fluid and structure
-  normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, iterincst);
-  normincfluid_ = UTILS::calculate_vector_norm(vectornorminc_, iterincfl);
-  normincscatra_ = UTILS::calculate_vector_norm(vectornorminc_, iterincsc);
+  normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, *iterincst);
+  normincfluid_ = UTILS::calculate_vector_norm(vectornorminc_, *iterincfl);
+  normincscatra_ = UTILS::calculate_vector_norm(vectornorminc_, *iterincsc);
 
   double dispnorm =
-      UTILS::calculate_vector_norm(vectornorminc_, poro_field()->structure_field()->dispnp());
+      UTILS::calculate_vector_norm(vectornorminc_, *poro_field()->structure_field()->dispnp());
   double fluidnorm =
-      UTILS::calculate_vector_norm(vectornorminc_, poro_field()->fluid_field()->phinp());
+      UTILS::calculate_vector_norm(vectornorminc_, *poro_field()->fluid_field()->phinp());
   double scatranorm =
-      UTILS::calculate_vector_norm(vectornorminc_, scatra_algo()->scatra_field()->phinp());
+      UTILS::calculate_vector_norm(vectornorminc_, *scatra_algo()->scatra_field()->phinp());
 
   // take care of very small norms
   if (dispnorm < 1.0e-6) dispnorm = 1.0;
@@ -1092,15 +1092,12 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::poro_multi_phas
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
   stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_old =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
-  rhs_old->Update(1.0, *rhs_, 0.0);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_copy =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
+  Core::LinAlg::Vector<double> rhs_old(*dof_row_map(), true);
+  rhs_old.Update(1.0, *rhs_, 0.0);
+  Core::LinAlg::Vector<double> rhs_copy(*dof_row_map(), true);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_copy =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*sparse, Core::LinAlg::Copy);
+  Core::LinAlg::SparseMatrix sparse_copy(*sparse, Core::LinAlg::Copy);
 
 
   const int zeilennr = -1;
@@ -1119,26 +1116,26 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::poro_multi_phas
     evaluate(iterinc);
     setup_rhs();
 
-    rhs_copy->Update(1.0, *rhs_, 0.0);
+    rhs_copy.Update(1.0, *rhs_, 0.0);
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
     Core::LinAlg::apply_dirichlet_to_system(
-        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *combined_dbc_map());
+        sparse_copy, *iterinc_, rhs_copy, *zeros_, *combined_dbc_map());
 
 
     if (i == spaltenr)
     {
-      std::cout << "rhs_: " << (*rhs_copy)[zeilennr] << std::endl;
-      std::cout << "rhs_old: " << (*rhs_old)[zeilennr] << std::endl;
+      std::cout << "rhs_: " << (rhs_copy)[zeilennr] << std::endl;
+      std::cout << "rhs_old: " << (rhs_old)[zeilennr] << std::endl;
     }
 
-    rhs_copy->Update(-1.0, *rhs_old, 1.0);
-    rhs_copy->Scale(-1.0 / delta);
+    rhs_copy.Update(-1.0, rhs_old, 1.0);
+    rhs_copy.Scale(-1.0 / delta);
 
     int* index = &i;
     for (int j = 0; j < dofs; ++j)
     {
-      double value = (*rhs_copy)[j];
+      double value = (rhs_copy)[j];
       stiff_approx->InsertGlobalValues(j, 1, &value, index);
 
       if ((j == zeilennr) and (i == spaltenr))
@@ -1189,9 +1186,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::poro_multi_phas
   stiff_approx_sparse =
       Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(stiff_approx, Core::LinAlg::Copy);
 
-  stiff_approx_sparse->add(*sparse_copy, false, -1.0, 1.0);
+  stiff_approx_sparse->add(sparse_copy, false, -1.0, 1.0);
 
-  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = sparse_copy->epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = sparse_copy.epetra_matrix();
 
   Teuchos::RCP<Epetra_CrsMatrix> error_crs = stiff_approx_sparse->epetra_matrix();
 
@@ -1415,7 +1412,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::u
     Teuchos::RCP<const Core::LinAlg::Vector<double>> scatrainc)
 {
   scatra_algo()->scatra_field()->update_iter(
-      blockrowdofmap_artscatra_->extract_vector(*scatrainc, 0));
+      *blockrowdofmap_artscatra_->extract_vector(*scatrainc, 0));
   scatramsht_->update_art_scatra_iter(scatrainc);
 }
 
@@ -1557,10 +1554,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
       extractor()->extract_vector(*iterinc_, struct_offset_ + 2);
 
   // build also norms for artery
-  normrhsart_ = UTILS::calculate_vector_norm(vectornormfres_, arteryrhs);
-  normincart_ = UTILS::calculate_vector_norm(vectornorminc_, arteryinc);
+  normrhsart_ = UTILS::calculate_vector_norm(vectornormfres_, *arteryrhs);
+  normincart_ = UTILS::calculate_vector_norm(vectornorminc_, *arteryinc);
   arterypressnorm_ = UTILS::calculate_vector_norm(
-      vectornorminc_, (poro_field()->fluid_field()->art_net_tim_int()->pressurenp()));
+      vectornorminc_, (*poro_field()->fluid_field()->art_net_tim_int()->pressurenp()));
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryscarhs =
       extractor()->extract_vector(*rhs_, struct_offset_ + 3);
@@ -1568,10 +1565,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
       extractor()->extract_vector(*iterinc_, struct_offset_ + 3);
 
   // build also norms for artery
-  normrhsartsca_ = UTILS::calculate_vector_norm(vectornormfres_, arteryscarhs);
-  normincartsca_ = UTILS::calculate_vector_norm(vectornorminc_, arteryscainc);
+  normrhsartsca_ = UTILS::calculate_vector_norm(vectornormfres_, *arteryscarhs);
+  normincartsca_ = UTILS::calculate_vector_norm(vectornorminc_, *arteryscainc);
   arteryscanorm_ =
-      UTILS::calculate_vector_norm(vectornorminc_, (scatramsht_->art_scatra_field()->phinp()));
+      UTILS::calculate_vector_norm(vectornorminc_, *(scatramsht_->art_scatra_field()->phinp()));
 
   // call base class
   PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_convergence_norms();

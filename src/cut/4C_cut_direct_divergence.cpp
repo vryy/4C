@@ -104,7 +104,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::DirectDivergence::vc_integration_rule(
     Facet* fe = *iter;
     FacetIntegration faee1(fe, elem1_, position_, false, false);
 
-    faee1.divergence_integration_rule_new(mesh_, cgp);
+    faee1.divergence_integration_rule_new(mesh_, *cgp);
   }
 
   return cgp;
@@ -310,7 +310,7 @@ void Cut::DirectDivergence::list_facets(std::vector<plain_facet_set::const_itera
                    Geometry of volumecell and main Gauss pts for visualization sudhakar 04/12
 *---------------------------------------------------------------------------------------------------------------*/
 void Cut::DirectDivergence::divengence_cells_gmsh(
-    const Core::FE::GaussIntegration& gpv, Teuchos::RCP<Core::FE::GaussPoints>& gpmain)
+    const Core::FE::GaussIntegration& gpv, Core::FE::GaussPoints& gpmain)
 {
 #ifdef LOCAL
   static int sideno = 0;

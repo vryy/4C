@@ -261,7 +261,7 @@ namespace Solid
     void apply_force_external(const double time,               //!< evaluation time
         const Teuchos::RCP<Core::LinAlg::Vector<double>> dis,  //!< displacement state
         const Teuchos::RCP<Core::LinAlg::Vector<double>> vel,  // velocity state
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& fext       //!< external force
+        Core::LinAlg::Vector<double>& fext                     //!< external force
     );
 
     /// has to be renamed either here or print_step()

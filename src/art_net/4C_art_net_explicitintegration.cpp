@@ -212,18 +212,18 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
     std::vector<int> lm;
     std::vector<int> lmstride;
     // vector<int> lmowner;
-    Teuchos::RCP<std::vector<int>> lmowner = Teuchos::make_rcp<std::vector<int>>();
-    ele->location_vector(*discret_, lm, *lmowner, lmstride);
+    std::vector<int> lmowner;
+    ele->location_vector(*discret_, lm, lmowner, lmstride);
 
     // loop all nodes of this element, add values to the global vectors
 
-    if (myrank_ == (*lmowner)[0])
+    if (myrank_ == (lmowner)[0])
     {
       int gid = lm[0];
       double val = gid;
       nodeIds_->ReplaceGlobalValues(1, &val, &gid);
     }
-    if (myrank_ == (*lmowner)[1])
+    if (myrank_ == (lmowner)[1])
     {
       int gid = lm[1];
       double val = gid;

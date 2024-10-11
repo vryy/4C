@@ -170,7 +170,7 @@ void Thermo::TimInt::determine_capa_consist_temp_rate()
   apply_dirichlet_bc((*time_)[0], (*temp_)(0), (*rate_)(0), false);
 
   // get external force
-  apply_force_external((*time_)[0], (*temp_)(0), fext);
+  apply_force_external((*time_)[0], (*temp_)(0), *fext);
   // apply_force_external_conv is applied in the derived classes!
 
   // initialise matrices
@@ -622,7 +622,7 @@ Teuchos::RCP<Core::UTILS::ResultTest> Thermo::TimInt::create_field_test()
  *----------------------------------------------------------------------*/
 void Thermo::TimInt::apply_force_external(const double time,  //!< evaluation time
     const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,    //!< temperature state
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& fext          //!< external force
+    Core::LinAlg::Vector<double>& fext                        //!< external force
 )
 {
   Teuchos::ParameterList p;
@@ -639,7 +639,7 @@ void Thermo::TimInt::apply_force_external(const double time,  //!< evaluation ti
   // set_state(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->set_state(0, "temperature", temp);
   // get load vector
-  discret_->evaluate_neumann(p, *fext);
+  discret_->evaluate_neumann(p, fext);
   discret_->clear_state();
 
   // go away
@@ -972,12 +972,11 @@ Teuchos::RCP<std::vector<double>> Thermo::TimInt::evaluate_error_compared_to_ana
           Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(4);
 
       // vector for output
-      Teuchos::RCP<Epetra_MultiVector> normvec =
-          Teuchos::make_rcp<Epetra_MultiVector>(*discret_->element_row_map(), 7);
+      Epetra_MultiVector normvec(*discret_->element_row_map(), 7);
 
       // call loop over elements (assemble nothing)
       discret_->evaluate_scalars(eleparams, errors);
-      discret_->evaluate_scalars(eleparams, *normvec);
+      discret_->evaluate_scalars(eleparams, normvec);
       discret_->clear_state();
 
       (*relerror)[0] = sqrt((*errors)[0]) / sqrt((*errors)[2]);

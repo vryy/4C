@@ -173,7 +173,7 @@ namespace Discret
        */
       int correct_immersed_bound_velocities(Teuchos::ParameterList& params,
           Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::RCP<Core::Mat::Material>& mat,
+          const std::vector<int>& lm, Core::Mat::Material& mat,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra);
 

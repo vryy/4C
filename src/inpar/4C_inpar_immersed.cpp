@@ -20,13 +20,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::Immersed::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Immersed::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
   Teuchos::ParameterList& immersedmethod =
-      list->sublist("IMMERSED METHOD", false, "General parameters for any immersed problem");
+      list.sublist("IMMERSED METHOD", false, "General parameters for any immersed problem");
 
   Teuchos::Tuple<std::string, 3> coupname;
   Teuchos::Tuple<Inpar::Immersed::PartitionedScheme, 3> couplabel;

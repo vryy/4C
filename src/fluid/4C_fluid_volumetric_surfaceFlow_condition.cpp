@@ -154,7 +154,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::evaluate_velocities(
       mapiter->second->FluidVolumetricSurfaceFlowBc::correct_flow_rate(
           eleparams, "VolumetricSurfaceFlowCond", FLD::calc_flowrate, time, false);
 
-      mapiter->second->FluidVolumetricSurfaceFlowBc::set_velocities(velocities);
+      mapiter->second->FluidVolumetricSurfaceFlowBc::set_velocities(*velocities);
     }
   }
 
@@ -863,7 +863,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::read_restart(
     // evaluate the new flowrates vector
     int nq_pos = 0;
     Teuchos::RCP<std::vector<double>> nq = Teuchos::make_rcp<std::vector<double>>(nQSize, 0.0);
-    this->interpolate(flowrates_, nq, flowratespos_, nq_pos, period_);
+    this->interpolate(*flowrates_, *nq, flowratespos_, nq_pos, period_);
 
     // store new values in class
     flowratespos_ = nq_pos;
@@ -911,8 +911,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_velocities(
   params->set<double>("area", area_);
 
 
-  this->velocities(discret_, cond_velocities_, cond_surfnoderowmap_, local_radii_, border_radii_,
-      vnormal_, params);
+  this->velocities(*discret_, *cond_velocities_, *cond_surfnoderowmap_, *local_radii_,
+      *border_radii_, *vnormal_, *params);
 
 }  // FLD::UTILS::FluidWomersleyBc::EvaluateVelocities
 
@@ -940,7 +940,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_traction_velocity_comp(
 
 
   // Export and set state
-  export_and_set_boundary_values(cond_velocities_, drt_velocities_, "velaf");
+  export_and_set_boundary_values(*cond_velocities_, drt_velocities_, "velaf");
 
   eleparams.set("flowrate", flowrate);
   eleparams.set("area", area_);
@@ -991,48 +991,46 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_flowrate(
 /*----------------------------------------------------------------------*
  |  Evaluates the Velocities (public)                       ismail 10/10|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::velocities(
-    Teuchos::RCP<Core::FE::Discretization> disc, Teuchos::RCP<Core::LinAlg::Vector<double>> bcdof,
-    Teuchos::RCP<Epetra_Map> cond_noderowmap,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> local_radii,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> border_radii,
-    Teuchos::RCP<std::vector<double>> normal, Teuchos::RCP<Teuchos::ParameterList> params)
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::velocities(Core::FE::Discretization& disc,
+    Core::LinAlg::Vector<double>& bcdof, Epetra_Map& cond_noderowmap,
+    Core::LinAlg::Vector<double>& local_radii, Core::LinAlg::Vector<double>& border_radii,
+    std::vector<double>& normal, Teuchos::ParameterList& params)
 
 
 {
   //--------------------------------------------------------------------
   // get the processor rank
   //--------------------------------------------------------------------
-  int myrank = disc->get_comm().MyPID();
+  int myrank = disc.get_comm().MyPID();
 
 
   // -------------------------------------------------------------------
   // Read in all of the parameters
   // -------------------------------------------------------------------
   // number of harmonics
-  int n_harmonics = params->get<int>("Number of Harmonics");
+  int n_harmonics = params.get<int>("Number of Harmonics");
 
   // condition id
-  int condid = params->get<int>("Condition ID");
+  int condid = params.get<int>("Condition ID");
   // history of avarage velocities at the outlet
   Teuchos::RCP<std::vector<double>> flowrates =
-      params->get<Teuchos::RCP<std::vector<double>>>("Flowrates");
+      params.get<Teuchos::RCP<std::vector<double>>>("Flowrates");
   Teuchos::RCP<std::vector<double>> velocities = Teuchos::make_rcp<std::vector<double>>(*flowrates);
 
   // the velocity position
-  int velocityposition = params->get<int>("Velocity Position");
+  int velocityposition = params.get<int>("Velocity Position");
 
   // the flow type
-  std::string flowType = params->get<std::string>("flowrate type");
+  std::string flowType = params.get<std::string>("flowrate type");
   // time
-  double time = params->get<double>("time");
+  double time = params.get<double>("time");
   // period of a cycle
-  double period = params->get<double>("period");
+  double period = params.get<double>("period");
   // polynomial order
-  int order = params->get<int>("polynomial order");
+  int order = params.get<int>("polynomial order");
 
   // surface area
-  double area = params->get<double>("area");
+  double area = params.get<double>("area");
 
   // -------------------------------------------------------------------
   // Get the volumetric flowrates Fourier coefficients
@@ -1084,14 +1082,14 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::velocities(
   // evaluate the avarage velocity and apply it to the design surface
   // -------------------------------------------------------------------
   // loop over all of the nodes
-  for (int lid = 0; lid < cond_noderowmap->NumMyElements(); lid++)
+  for (int lid = 0; lid < cond_noderowmap.NumMyElements(); lid++)
   {
-    int gid = cond_noderowmap->GID(lid);
+    int gid = cond_noderowmap.GID(lid);
 
     // check if the node exists on the current processor
-    if (disc->have_global_node(gid))
+    if (disc.have_global_node(gid))
     {
-      const Core::Nodes::Node* node = disc->g_node(gid);
+      const Core::Nodes::Node* node = disc.g_node(gid);
 
       // check if the node is not a gohst node
       if (node->owner() == myrank)
@@ -1099,7 +1097,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::velocities(
         // loop over the dof of a map
         // eval the velocity of a dof
         double velocity = 0.0;
-        double r = (*local_radii)[cond_noderowmap->LID(gid)];
+        double r = (local_radii)[cond_noderowmap.LID(gid)];
 
         //------------------------------------------------------------
         // Check for the velocity profile type
@@ -1121,7 +1119,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::velocities(
         // else check for Womersley type
         else if (flowType == "WOMERSLEY")
         {
-          double R = (*border_radii)[cond_noderowmap->LID(gid)];
+          double R = (border_radii)[cond_noderowmap.LID(gid)];
 
           // first calculate the parabolic profile of the 0th
           // harmonics
@@ -1157,17 +1155,17 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::velocities(
               flowType.c_str(), condid);
         }
         velocity *= flow_dir_;
-        for (unsigned int ldof = 0; ldof < normal->size(); ldof++)
+        for (unsigned int ldof = 0; ldof < normal.size(); ldof++)
         {
           // get the global dof from using the local one
-          int gdof = disc->dof(node, ldof);
+          int gdof = disc.dof(node, ldof);
 
           //------------------------------------------------------------
           // Apply the velocity in the normal direction
           //------------------------------------------------------------
-          double Vdof = velocity * (*normal)[ldof];
+          double Vdof = velocity * (normal)[ldof];
 
-          bcdof->ReplaceGlobalValues(1, &Vdof, &gdof);
+          bcdof.ReplaceGlobalValues(1, &Vdof, &gdof);
         }
       }
     }
@@ -1200,7 +1198,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
   // calculate flow rate
   // -------------------------------------------------------------------
   // Export and set state
-  export_and_set_boundary_values(cond_velocities_, drt_velocities_, "velaf");
+  export_and_set_boundary_values(*cond_velocities_, drt_velocities_, "velaf");
 
   double actflowrate = this->flow_rate_calculation(eleparams, time, ds_condname, action, condid_);
 
@@ -1252,11 +1250,11 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
   // surface area
   params->set<double>("area", area_);
 
-  this->velocities(discret_, correction_velnp, cond_surfnoderowmap_, local_radii_, border_radii_,
-      vnormal_, params);
+  this->velocities(*discret_, *correction_velnp, *cond_surfnoderowmap_, *local_radii_,
+      *border_radii_, *vnormal_, *params);
 
   // Export and set state
-  export_and_set_boundary_values(correction_velnp, drt_velocities_, "velaf");
+  export_and_set_boundary_values(*correction_velnp, drt_velocities_, "velaf");
 
   double corrective_flowrate =
       this->flow_rate_calculation(eleparams, time, ds_condname, action, condid_);
@@ -1303,14 +1301,14 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
  |  Apply velocities         (public)                       ismail 10/10|
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::set_velocities(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> velocities)
+    Core::LinAlg::Vector<double>& velocities)
 {
   for (int lid = 0; lid < cond_velocities_->MyLength(); lid++)
   {
     int gid = cond_velocities_->Map().GID(lid);
     double val = (*cond_velocities_)[lid];
 
-    velocities->ReplaceGlobalValues(1, &val, &gid);
+    velocities.ReplaceGlobalValues(1, &val, &gid);
   }
 }
 
@@ -1706,12 +1704,12 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::dft(Teuchos::RCP<std::vector<doub
  |  interpolations.                                                     |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate(Teuchos::RCP<std::vector<double>> V1,
-    Teuchos::RCP<std::vector<double>> V2, int index1, int& index2, double period)
+void FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate(
+    std::vector<double>& V1, std::vector<double>& V2, int index1, int& index2, double period)
 {
   // Get size of V1 and V2
-  int n1 = V1->size();
-  int n2 = V2->size();
+  int n1 = V1.size();
+  int n2 = V2.size();
 
   double TotalTime = period;
 
@@ -1731,8 +1729,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate(Teuchos::RCP<std::vec
     // -----------------------------------------------------------------
     // Get V1 values at T(i) and T(i+1)
     // -----------------------------------------------------------------
-    v1_1 = (*V1)[i];
-    v1_2 = (*V1)[i + 1];
+    v1_1 = (V1)[i];
+    v1_2 = (V1)[i + 1];
 
     // -----------------------------------------------------------------
     // Calculate T(i) and T(i+1)
@@ -1746,7 +1744,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate(Teuchos::RCP<std::vec
     while (t < t1_2)
     {
       // Evaluate value of V2 using Interpolation
-      (*V2)[k] = (t1_2 - t) / dt1 * v1_1 + (t - t1_1) / dt1 * v1_2;
+      (V2)[k] = (t1_2 - t) / dt1 * v1_1 + (t - t1_1) / dt1 * v1_2;
       // Increment k
       k++;
       // Increment t
@@ -1757,7 +1755,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate(Teuchos::RCP<std::vec
   // -------------------------------------------------------------------
   // Finally resolve the last step where V2(n2) = V1(n1)
   // -------------------------------------------------------------------
-  (*V2)[V2->size() - 1] = (*V1)[V1->size() - 1];
+  (V2)[V2.size() - 1] = (V1)[V1.size() - 1];
 
 
   // -------------------------------------------------------------------
@@ -1772,9 +1770,9 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate(Teuchos::RCP<std::vec
 }  // FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate
 
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::update_residual(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual)
+    Core::LinAlg::Vector<double>& residual)
 {
-  residual->Update(1.0, *cond_traction_vel_, 1.0);
+  residual.Update(1.0, *cond_traction_vel_, 1.0);
 }
 
 /*----------------------------------------------------------------------*
@@ -1907,7 +1905,7 @@ void FLD::UTILS::TotalTractionCorrector::update_residual(
 
   for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++)
   {
-    mapiter->second->FluidVolumetricSurfaceFlowBc::update_residual(residual);
+    mapiter->second->FluidVolumetricSurfaceFlowBc::update_residual(*residual);
   }
 }
 
@@ -1949,13 +1947,13 @@ void FLD::UTILS::TotalTractionCorrector::read_restart(Core::IO::DiscretizationRe
  |  Export boundary values and setstate                     ismail 07/14|
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidVolumetricSurfaceFlowBc::export_and_set_boundary_values(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> source,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> target, std::string name)
+    Core::LinAlg::Vector<double>& source, Teuchos::RCP<Core::LinAlg::Vector<double>> target,
+    std::string name)
 {
   // define the exporter
-  Epetra_Export exporter(source->Map(), target->Map());
+  Epetra_Export exporter(source.Map(), target->Map());
   // Export source vector to target vector
-  int err = target->Export(*source, exporter, Zero);
+  int err = target->Export(source, exporter, Zero);
   // check if the exporting was successful
   if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
   // Set state
@@ -1966,13 +1964,13 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::export_and_set_boundary_values(
  |  Export boundary values and setstate                     ismail 07/14|
  *----------------------------------------------------------------------*/
 void FLD::UTILS::TotalTractionCorrector::export_and_set_boundary_values(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> source,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> target, std::string name)
+    Core::LinAlg::Vector<double>& source, Teuchos::RCP<Core::LinAlg::Vector<double>> target,
+    std::string name)
 {
   // define the exporter
-  Epetra_Export exporter(source->Map(), target->Map());
+  Epetra_Export exporter(source.Map(), target->Map());
   // Export source vector to target vector
-  int err = target->Export(*source, exporter, Zero);
+  int err = target->Export(source, exporter, Zero);
   // check if the exporting was successful
   if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
   // Set state

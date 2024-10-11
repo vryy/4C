@@ -69,7 +69,7 @@ namespace Inpar::RveMpc
 
   };
   /// set the multi point constraint parameters
-  void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+  void set_valid_parameters(Teuchos::ParameterList& list);
 
   /// set multi point constraint specific conditions
   void set_valid_conditions(

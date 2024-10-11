@@ -23,7 +23,7 @@ namespace Inpar
   namespace Cut
   {
     /// set the cut parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
   }  // namespace Cut
 

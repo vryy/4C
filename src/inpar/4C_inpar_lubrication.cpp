@@ -15,13 +15,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::LUBRICATION::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::LUBRICATION::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   Teuchos::ParameterList& lubricationdyn =
-      list->sublist("LUBRICATION DYNAMIC", false, "control parameters for Lubrication problems\n");
+      list.sublist("LUBRICATION DYNAMIC", false, "control parameters for Lubrication problems\n");
 
   Core::UTILS::double_parameter("MAXTIME", 1000.0, "Total simulation time", &lubricationdyn);
   Core::UTILS::int_parameter("NUMSTEP", 20, "Total number of time steps", &lubricationdyn);

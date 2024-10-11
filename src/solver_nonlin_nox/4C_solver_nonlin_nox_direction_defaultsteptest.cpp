@@ -95,12 +95,12 @@ void NOX::Nln::Direction::Test::VolumeChange::compute_primal_direction_measures(
   NOX::Nln::Group& nln_grp = dynamic_cast<NOX::Nln::Group&>(grp);
 
   const ::NOX::Abstract::Group::ReturnType eval_status =
-      nln_grp.compute_element_volumes(ref_ele_vols_);
+      nln_grp.compute_element_volumes(*ref_ele_vols_);
 
   if (eval_status != ::NOX::Abstract::Group::Ok)
     FOUR_C_THROW("The evaluation of the reference volumes failed!");
 
-  return nln_grp.compute_trial_element_volumes(curr_ele_vols_, dir, 1.0);
+  return nln_grp.compute_trial_element_volumes(*curr_ele_vols_, dir, 1.0);
 }
 
 /*----------------------------------------------------------------------------*

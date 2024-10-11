@@ -20,13 +20,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::VolMortar::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::VolMortar::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   /* parameters for volmortar */
-  Teuchos::ParameterList& volmortar = list->sublist("VOLMORTAR COUPLING", false, "");
+  Teuchos::ParameterList& volmortar = list.sublist("VOLMORTAR COUPLING", false, "");
 
   setStringToIntegralParameter<Coupling::VolMortar::IntType>("INTTYPE", "Elements",
       "Type of numerical integration scheme",

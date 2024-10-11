@@ -244,7 +244,7 @@ namespace Discret
               LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
           const Core::LinAlg::Matrix<nsd_, 1>& x,       ///< global coordinates of Gaussian point
           const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
-          Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>>
+          Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>&
               si,                                       ///< side implementation for cutter element
           Core::LinAlg::Matrix<3, 1>& rst,              ///< local coordinates of GP for bg element
           double& kappa_m,                              ///< fluid sided weighting
@@ -259,14 +259,14 @@ namespace Discret
       //! previous time step
       void get_interface_jump_vectors_old_state(
           const XFEM::EleCoupCond& coupcond,  ///< coupling condition for given interface side
-          Teuchos::RCP<XFEM::CouplingBase> coupling,  ///< coupling object
+          XFEM::CouplingBase& coupling,       ///< coupling object
           Core::LinAlg::Matrix<nsd_, 1>&
               ivelintn_jump,  ///< prescribed interface jump vector for velocity
           Core::LinAlg::Matrix<nsd_, 1>&
               itractionn_jump,  ///< prescribed interface jump vector for traction
           const Core::LinAlg::Matrix<nsd_, 1>& x,       ///< global coordinates of Gaussian point
           const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
-          Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>>
+          Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>&
               si,                          ///< side implementation for cutter element
           const double& presn_m,           ///< coupling master pressure
           Core::LinAlg::Matrix<3, 1>& rst  ///< local coordinates of GP for bg element
@@ -295,8 +295,8 @@ namespace Discret
 
       //! prepare coupling matrices, that include contributions from convective stabilization
       void hybrid_lm_create_special_contribution_matrices(
-          const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          std::set<int>& begids,  ///< ids of intersecting boundary elements
+          XFEM::ConditionManager& cond_manager,  ///< XFEM condition manager
+          std::set<int>& begids,                 ///< ids of intersecting boundary elements
           std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>&
               side_coupling_extra  ///< contributions to coupling matrices from convective
                                    ///< stabilizations
@@ -318,10 +318,10 @@ namespace Discret
 
       //! assemble side's interface force
       void assemble_interface_force(
-          Teuchos::RCP<Core::LinAlg::Vector<double>> iforcecol,  ///< interface force column vector
-          Core::FE::Discretization& cutdis,                      ///< cut discretization
-          std::vector<int>& lm,                                  ///< local dof map
-          Core::LinAlg::SerialDenseVector& iforce                ///< interface force vector
+          Core::LinAlg::Vector<double>& iforcecol,  ///< interface force column vector
+          Core::FE::Discretization& cutdis,         ///< cut discretization
+          std::vector<int>& lm,                     ///< local dof map
+          Core::LinAlg::SerialDenseVector& iforce   ///< interface force vector
       );
 
       //! evaluate shape function and derivative at point with local coordinates rst
@@ -383,8 +383,7 @@ namespace Discret
 
       //! evaluate matrices from surface-based terms for Cauchy & viscous stress-based mixed/hybrid
       //! LM coupling at current Gauss-point \author kruse \date 06/14
-      void hybrid_lm_evaluate_surf_based(
-          Teuchos::RCP<Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>>& si,
+      void hybrid_lm_evaluate_surf_based(Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>& si,
           const Core::LinAlg::Matrix<nen_, nen_>& bK_ss,
           Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numstressdof_,
               numdofpernode_>& K_su,

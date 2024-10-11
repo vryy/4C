@@ -1252,7 +1252,7 @@ void SSTI::AssembleStrategySparse::apply_structural_dbc_system_matrix(
  *----------------------------------------------------------------------*/
 void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> RHS,
     Teuchos::RCP<const Core::LinAlg::Vector<double>> RHSscatra,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> RHSstructure,
+    const Core::LinAlg::Vector<double>& RHSstructure,
     Teuchos::RCP<const Core::LinAlg::Vector<double>> RHSthermo)
 {
   // zero out RHS
@@ -1270,7 +1270,7 @@ void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<
     // monolithic right-hand side vector
 
     // make copy of structural right-hand side vector
-    Core::LinAlg::Vector<double> residual_structure(*RHSstructure);
+    Core::LinAlg::Vector<double> residual_structure(RHSstructure);
 
     auto rhs_structure_master =
         Core::LinAlg::create_vector(*structure_field()->dof_row_map(), true);
@@ -1298,11 +1298,11 @@ void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<
 
     // apply pseudo Dirichlet conditions to transformed slave-side part of structural right-hand
     // side vector
-    auto zeros = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(residual_structure.Map());
+    Core::LinAlg::Vector<double> zeros(residual_structure.Map());
 
     if (locsysmanager_structure != Teuchos::null)
       locsysmanager_structure->rotate_global_to_local(*rhs_structure_master);
-    Core::LinAlg::apply_dirichlet_to_system(*rhs_structure_master, *zeros,
+    Core::LinAlg::apply_dirichlet_to_system(*rhs_structure_master, zeros,
         *ssti_mono_->structure_field()->get_dbc_map_extractor()->cond_map());
     if (locsysmanager_structure != Teuchos::null)
       locsysmanager_structure->rotate_local_to_global(*rhs_structure_master);
@@ -1317,7 +1317,7 @@ void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<
   else
   {
     all_maps()->maps_sub_problems()->add_vector(
-        *RHSstructure, ssti_mono_->get_problem_position(Subproblem::structure), *RHS, -1.0);
+        RHSstructure, ssti_mono_->get_problem_position(Subproblem::structure), *RHS, -1.0);
   }
 }
 

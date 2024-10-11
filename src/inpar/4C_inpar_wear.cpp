@@ -19,13 +19,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::Wear::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Wear::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   /* parameters for wear */
-  Teuchos::ParameterList& wear = list->sublist("WEAR", false, "");
+  Teuchos::ParameterList& wear = list.sublist("WEAR", false, "");
 
   setStringToIntegralParameter<WearLaw>("WEARLAW", "None", "Type of wear law",
       tuple<std::string>("None", "none", "Archard", "archard"),

@@ -104,8 +104,8 @@ namespace PaSI
      * \param[in] intfdispnp  interface displacement
      * \param[in] intfforcenp interface force
      */
-    void reset_increment_states(Teuchos::RCP<const Core::LinAlg::Vector<double>> intfdispnp,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> intfforcenp);
+    void reset_increment_states(const Core::LinAlg::Vector<double>& intfdispnp,
+        const Core::LinAlg::Vector<double>& intfforcenp);
 
     /*!
      * \brief build increment states

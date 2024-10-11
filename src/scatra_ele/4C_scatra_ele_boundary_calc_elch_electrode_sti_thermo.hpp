@@ -78,8 +78,7 @@ namespace Discret
        * \tparam distype_master  This method is templated on the master-side discretization type.
        */
       template <Core::FE::CellType distype_master>
-      static void evaluate_s2_i_coupling_od_at_integration_point(
-          const Teuchos::RCP<const Mat::Electrode>& matelectrode,
+      static void evaluate_s2_i_coupling_od_at_integration_point(const Mat::Electrode& matelectrode,
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
           const Core::LinAlg::Matrix<nen_, 1>& eslavetempnp,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& emastertempnp,

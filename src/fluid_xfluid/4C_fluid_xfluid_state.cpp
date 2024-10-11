@@ -64,9 +64,9 @@ void FLD::XFluidState::CouplingState::zero_coupling_matrices_and_rhs()
   if (!is_active_) return;
 
   // zero all coupling matrices and rhs vectors
-  XFEM::zero_matrix(C_xs_);
-  XFEM::zero_matrix(C_sx_);
-  XFEM::zero_matrix(C_ss_);
+  XFEM::zero_matrix(*C_xs_);
+  XFEM::zero_matrix(*C_sx_);
+  XFEM::zero_matrix(*C_ss_);
 
   rhC_s_->PutScalar(0.0);
   rhC_s_col_->PutScalar(0.0);
@@ -281,18 +281,17 @@ void FLD::XFluidState::init_coupling_matrices_and_rhs()
 /*----------------------------------------------------------------------*
  |  Initialize ALE state vectors                           schott 12/14 |
  *----------------------------------------------------------------------*/
-void FLD::XFluidState::init_ale_state_vectors(
-    const Teuchos::RCP<XFEM::DiscretizationXFEM>& xdiscret,
+void FLD::XFluidState::init_ale_state_vectors(XFEM::DiscretizationXFEM& xdiscret,
     Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_initmap,
     Teuchos::RCP<const Core::LinAlg::Vector<double>> gridvnp_initmap)
 {
   //! @name Ale Displacement at time n+1
   dispnp_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
-  xdiscret->export_initialto_active_vector(dispnp_initmap, dispnp_);
+  xdiscret.export_initialto_active_vector(*dispnp_initmap, *dispnp_);
 
   //! @name Grid Velocity at time n+1
   gridvnp_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
-  xdiscret->export_initialto_active_vector(gridvnp_initmap, gridvnp_);
+  xdiscret.export_initialto_active_vector(*gridvnp_initmap, *gridvnp_);
 }
 
 
@@ -312,7 +311,7 @@ void FLD::XFluidState::zero_coupling_matrices_and_rhs()
  *----------------------------------------------------------------------*/
 void FLD::XFluidState::complete_coupling_matrices_and_rhs()
 {
-  complete_coupling_matrices_and_rhs(xfluiddofrowmap_);
+  complete_coupling_matrices_and_rhs(*xfluiddofrowmap_);
 }
 
 
@@ -320,7 +319,7 @@ void FLD::XFluidState::complete_coupling_matrices_and_rhs()
  |  Complete coupling matrices and rhs vectors             schott 12/14 |
  *----------------------------------------------------------------------*/
 void FLD::XFluidState::complete_coupling_matrices_and_rhs(
-    const Teuchos::RCP<const Epetra_Map>& fluiddofrowmap  ///< fluid dof row map used for complete
+    const Epetra_Map& fluiddofrowmap  ///< fluid dof row map used for complete
 )
 {
   // loop all coupling objects
@@ -336,7 +335,7 @@ void FLD::XFluidState::complete_coupling_matrices_and_rhs(
       Teuchos::RCP<XFEM::CouplingBase> coupling =
           condition_manager_->get_coupling_by_idx(coupl_idx);
       cs->second->complete_coupling_matrices_and_rhs(
-          *fluiddofrowmap, *coupling->get_cond_dis()->dof_row_map());  // complete w.r.t
+          fluiddofrowmap, *coupling->get_cond_dis()->dof_row_map());  // complete w.r.t
     }
   }
 }
@@ -347,7 +346,7 @@ void FLD::XFluidState::complete_coupling_matrices_and_rhs(
  *----------------------------------------------------------------------*/
 void FLD::XFluidState::zero_system_matrix_and_rhs()
 {
-  XFEM::zero_matrix(sysmat_);
+  XFEM::zero_matrix(*sysmat_);
 
   // zero residual vectors
   residual_col_->PutScalar(0.0);

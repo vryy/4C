@@ -372,7 +372,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
     }
   }
 
-  redistribute(targetdis, targetnoderowvec, targetnodecolvec);
+  redistribute(*targetdis, targetnoderowvec, targetnodecolvec);
 
   // ------------------------------------------------------------------------
   // remove all nodes from the condnodecol and condnoderow sets, which also
@@ -443,7 +443,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
     sourcedis->replace_conditions(*conditername, src_conds);
   }
   // re-partioning
-  redistribute(sourcedis, othernoderowvec, othernodecolvec);
+  redistribute(*sourcedis, othernoderowvec, othernodecolvec);
 
 
   return;
@@ -452,37 +452,36 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::redistribute(
-    Teuchos::RCP<Core::FE::Discretization> dis, std::vector<int>& noderowvec,
-    std::vector<int>& nodecolvec) const
+    Core::FE::Discretization& dis, std::vector<int>& noderowvec, std::vector<int>& nodecolvec) const
 {
-  dis->check_filled_globally();
+  dis.check_filled_globally();
 
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(dis->get_comm().Clone());
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(dis.get_comm().Clone());
 
   Teuchos::RCP<Epetra_Map> noderowmap =
       Teuchos::make_rcp<Epetra_Map>(-1, noderowvec.size(), noderowvec.data(), 0, *comm);
 
   Teuchos::RCP<Epetra_Map> nodecolmap =
       Teuchos::make_rcp<Epetra_Map>(-1, nodecolvec.size(), nodecolvec.data(), 0, *comm);
-  if (!dis->filled()) dis->redistribute(*noderowmap, *nodecolmap);
+  if (!dis.filled()) dis.redistribute(*noderowmap, *nodecolmap);
 
-  Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::make_rcp<Epetra_Map>(*dis->element_row_map());
-  Teuchos::RCP<const Epetra_CrsGraph> nodegraph = Core::Rebalance::build_graph(*dis, *elerowmap);
+  Epetra_Map elerowmap(*dis.element_row_map());
+  Teuchos::RCP<const Epetra_CrsGraph> nodegraph = Core::Rebalance::build_graph(dis, elerowmap);
 
   Teuchos::ParameterList rebalanceParams;
   rebalanceParams.set("num parts", std::to_string(comm->NumProc()));
   std::tie(noderowmap, nodecolmap) =
       Core::Rebalance::rebalance_node_maps(*nodegraph, rebalanceParams);
 
-  auto const& [roweles, coleles] = dis->build_element_row_column(*noderowmap, *nodecolmap);
+  auto const& [roweles, coleles] = dis.build_element_row_column(*noderowmap, *nodecolmap);
 
-  dis->export_row_nodes(*noderowmap);
-  dis->export_row_elements(*roweles);
+  dis.export_row_nodes(*noderowmap);
+  dis.export_row_elements(*roweles);
 
-  dis->export_column_nodes(*nodecolmap);
-  dis->export_column_elements(*coleles);
+  dis.export_column_nodes(*nodecolmap);
+  dis.export_column_elements(*coleles);
 
-  dis->fill_complete();
+  dis.fill_complete();
 }
 
 /*----------------------------------------------------------------------------*

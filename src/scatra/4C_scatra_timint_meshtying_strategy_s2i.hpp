@@ -151,7 +151,7 @@ namespace ScaTra
      * @param extendedresidual      global residual vector
      */
     void fd_check(const Core::LinAlg::BlockSparseMatrixBase& extendedsystemmatrix,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& extendedresidual) const;
+        Core::LinAlg::Vector<double>& extendedresidual) const;
 
     //! return state vector of discrete scatra-scatra interface layer thicknesses at time n
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& growth_var_n() const { return growthn_; };

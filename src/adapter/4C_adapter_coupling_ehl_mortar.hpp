@@ -90,7 +90,7 @@ namespace Adapter
         Teuchos::RCP<Core::LinAlg::Vector<double>> tinc);
 
     void evaluate_rel_mov();
-    void store_dirichlet_status(Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps);
+    void store_dirichlet_status(const Core::LinAlg::MapExtractor& dbcmaps);
 
     /// check whether this displacement state has already been evaluated
     virtual bool already_evaluated(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp);
@@ -105,7 +105,7 @@ namespace Adapter
 
     /// Assemble linearization G_{ij,k}*x_i
     Teuchos::RCP<Core::LinAlg::SparseMatrix> assemble_surf_grad_deriv(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> x);
+        const Core::LinAlg::Vector<double>& x);
 
     virtual void write_restart(Core::IO::DiscretizationWriter& output);
     virtual void read_restart(Core::IO::DiscretizationReader& reader);

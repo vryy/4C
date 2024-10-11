@@ -98,9 +98,8 @@ void scatra_cardiac_monodomain_dyn(int restart)
       }
 
       // create instance of scalar transport basis algorithm (empty fluid discretization)
-      Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatraonly =
-          Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(
-              scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber));
+      Adapter::ScaTraBaseAlgorithm scatraonly(
+          scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
       Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
@@ -108,7 +107,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
               Global::Problem::instance()->n_dim() + 1, 0, 0, true);
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      scatraonly->scatra_field()->set_number_of_dof_set_velocity(1);
+      scatraonly.scatra_field()->set_number_of_dof_set_velocity(1);
 
       // allow TRANSPORT conditions, too
       // NOTE: we can not use the conditions given by 'conditions_to_copy =
@@ -164,28 +163,28 @@ void scatra_cardiac_monodomain_dyn(int restart)
 
       // now we can call init() on the base algo.
       // time integrator is constructed and initialized inside
-      scatraonly->init();
+      scatraonly.init();
 
       // NOTE : At this point we may redistribute and/or
       //        ghost our discretizations at will.
 
       // now we must call setup()
-      scatraonly->setup();
+      scatraonly.setup();
 
       // read the restart information, set vectors and variables
-      if (restart) scatraonly->scatra_field()->read_restart(restart);
+      if (restart) scatraonly.scatra_field()->read_restart(restart);
 
       // set initial velocity field
       // note: The order read_restart() before set_velocity_field() is important here!!
       // for time-dependent velocity fields, set_velocity_field() is additionally called in each
       // prepare_time_step()-call
-      (scatraonly->scatra_field())->set_velocity_field();
+      (scatraonly.scatra_field())->set_velocity_field();
 
       // enter time loop to solve problem with given convective velocity
-      (scatraonly->scatra_field())->time_loop();
+      (scatraonly.scatra_field())->time_loop();
 
       // perform the result test if required
-      Global::Problem::instance()->add_field_test(scatraonly->create_scatra_field_test());
+      Global::Problem::instance()->add_field_test(scatraonly.create_scatra_field_test());
       Global::Problem::instance()->test_all(comm);
 
       break;

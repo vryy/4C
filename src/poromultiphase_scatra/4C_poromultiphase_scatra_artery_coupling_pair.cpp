@@ -490,7 +490,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   if (diam_funct_active_) initialize_function(*artdiam_funct_);
 
   // set time fac for right hand side evaluation of coupling
-  set_time_fac_rhs(arterydens, contscatramat, timefacrhs_art, timefacrhs_cont);
+  set_time_fac_rhs(arterydens, *contscatramat, timefacrhs_art, timefacrhs_cont);
 }
 
 /*----------------------------------------------------------------------*
@@ -508,7 +508,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   else
   {
     if (evaluate_on_lateral_surface_)
-      pre_evaluate_lateral_surface_coupling(gp_vector);
+      pre_evaluate_lateral_surface_coupling(*gp_vector);
     else
       pre_evaluate_centerline_coupling();
   }
@@ -521,7 +521,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::pre_evaluate_lateral_surface_coupling(Teuchos::RCP<Epetra_MultiVector> gp_vector)
+    dim>::pre_evaluate_lateral_surface_coupling(Epetra_MultiVector& gp_vector)
 {
   const int pid = Global::Problem::instance()->get_dis("artery")->get_comm().MyPID();
   const int mylid = element1_->lid();
@@ -607,12 +607,12 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
         eta_[gpid] = eta;
         xi_[gpid] = xi;
         // projection is valid and GP is so far unclaimed by other pair
-        if (projection_valid && ((*gp_vector)[gpid])[mylid] < 0.5)
+        if (projection_valid && ((gp_vector)[gpid])[mylid] < 0.5)
         {
           isactive_ = true;
           // include jacobian
           wgp_[gpid] = gaussPointsperPatch.qwgt[i_gp] * patch_size / 4.0;
-          gp_vector->SumIntoMyValue(mylid, gpid, 1.0);
+          gp_vector.SumIntoMyValue(mylid, gpid, 1.0);
         }
         else
           wgp_[gpid] = 0.0;
@@ -805,7 +805,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
           *artdis->get_state("one_d_artery_pressure"), artelephinp_, la_art[0].lm_);
 
       // extract velocity of solid phase
-      extract_solid_vel(contdis);
+      extract_solid_vel(*contdis);
 
       // extract values of artery-scatra discretization
       if (numscalart_ > 0)
@@ -2009,7 +2009,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::set_time_fac_rhs(const double& arterydensity, Teuchos::RCP<Mat::MatList> contscatramat,
+    dim>::set_time_fac_rhs(const double& arterydensity, Mat::MatList& contscatramat,
     const double& timefacrhs_art, const double& timefacrhs_cont)
 {
   // set
@@ -2049,8 +2049,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
       // continuous
       for (int idof = 0; idof < numdof_cont_; idof++)
       {
-        const int matid = contscatramat->mat_id(idof);
-        Teuchos::RCP<Core::Mat::Material> singlemat = contscatramat->material_by_id(matid);
+        const int matid = contscatramat.mat_id(idof);
+        Teuchos::RCP<Core::Mat::Material> singlemat = contscatramat.material_by_id(matid);
         int phaseid = -1;
         if (singlemat->material_type() == Core::Materials::m_scatra_multiporo_fluid)
         {
@@ -2084,15 +2084,15 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::extract_solid_vel(Teuchos::RCP<Core::FE::Discretization> contdis)
+    dim>::extract_solid_vel(Core::FE::Discretization& contdis)
 {
   // no need for this
   if (evaluate_in_ref_config_) return;
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> velocity =
-      contdis->get_state(1, "velocity field");
-  Core::Elements::LocationArray la(contdis->num_dof_sets());
-  element2_->location_vector(*contdis, la, false);
+      contdis.get_state(1, "velocity field");
+  Core::Elements::LocationArray la(contdis.num_dof_sets());
+  element2_->location_vector(contdis, la, false);
 
   // construct location vector for displacement related dofs
   std::vector<int> lmdisp(numdim_ * numnodescont_, -1);

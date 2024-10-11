@@ -96,7 +96,7 @@ namespace SSTI
 
     //! return block map with dofs on slave side of interface
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> maps_interface_blocks_slave(
-        Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtyingstrategy,
+        const ScaTra::MeshtyingStrategyS2I& meshtyingstrategy,
         Core::LinAlg::MatrixType scatramatrixtype, unsigned nummaps) const;
 
    private:
@@ -199,11 +199,10 @@ namespace SSTI
 
    private:
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> setup_block_matrix(
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> row_map,
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> col_map);
+        const Core::LinAlg::MultiMapExtractor& row_map,
+        const Core::LinAlg::MultiMapExtractor& col_map);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> setup_sparse_matrix(
-        const Teuchos::RCP<const Epetra_Map> row_map);
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> setup_sparse_matrix(const Epetra_Map& row_map);
 
     //! scalar transport matrix type
     const Core::LinAlg::MatrixType matrixtype_scatra_;

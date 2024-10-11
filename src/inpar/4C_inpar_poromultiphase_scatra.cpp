@@ -15,7 +15,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::PoroMultiPhaseScaTra::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::PoroMultiPhaseScaTra::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
@@ -23,7 +23,7 @@ void Inpar::PoroMultiPhaseScaTra::set_valid_parameters(Teuchos::RCP<Teuchos::Par
 
   // ----------------------------------------------------------------------
   // (1) general control parameters
-  Teuchos::ParameterList& poromultiphasescatradyn = list->sublist("POROMULTIPHASESCATRA DYNAMIC",
+  Teuchos::ParameterList& poromultiphasescatradyn = list.sublist("POROMULTIPHASESCATRA DYNAMIC",
       false, "Control paramters for scatra porous multiphase media coupling");
 
   // Output type

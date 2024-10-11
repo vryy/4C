@@ -25,22 +25,6 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-
-/*----------------------------------------------------------------------*
- |  evaluate Neumann conditions (public)                    schott 08/11|
- *----------------------------------------------------------------------*/
-void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::FE::Discretization> discret,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix)
-{
-  if (systemmatrix == Teuchos::null)
-    evaluate_neumann(params, discret, *systemvector);
-  else
-    evaluate_neumann(params, discret, *systemvector, systemmatrix.get());
-}
-
-
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
@@ -109,7 +93,7 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
 
   // evaluate standard Neumann conditions
   evaluate_neumann_standard(
-      condition, time, assemblemat, params, discret, systemvector, systemmatrix);
+      condition, time, assemblemat, params, *discret, systemvector, systemmatrix);
 }
 
 
@@ -119,9 +103,8 @@ void XFEM::evaluate_neumann(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 void XFEM::evaluate_neumann_standard(
     std::multimap<std::string, Core::Conditions::Condition*>& condition, const double time,
-    bool assemblemat, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::FE::Discretization> discret, Core::LinAlg::Vector<double>& systemvector,
-    Core::LinAlg::SparseOperator* systemmatrix)
+    bool assemblemat, Teuchos::ParameterList& params, Core::FE::Discretization& discret,
+    Core::LinAlg::Vector<double>& systemvector, Core::LinAlg::SparseOperator* systemmatrix)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumannStandard" );
 
@@ -155,11 +138,11 @@ void XFEM::evaluate_neumann_standard(
     for (int i = 0; i < nnode; ++i)
     {
       // do only nodes in my row map
-      if (!discret->node_row_map()->MyGID((*nodeids)[i])) continue;
-      Core::Nodes::Node* actnode = discret->g_node((*nodeids)[i]);
+      if (!discret.node_row_map()->MyGID((*nodeids)[i])) continue;
+      Core::Nodes::Node* actnode = discret.g_node((*nodeids)[i]);
       if (!actnode) FOUR_C_THROW("Cannot find global node %d", (*nodeids)[i]);
       // call explicitly the main dofset, i.e. the first column
-      std::vector<int> dofs = discret->dof(0, actnode);
+      std::vector<int> dofs = discret.dof(0, actnode);
       const unsigned numdf = dofs.size();
       for (unsigned j = 0; j < numdf; ++j)
       {
@@ -192,11 +175,11 @@ void XFEM::evaluate_neumann_standard(
         std::vector<int> lm;
         std::vector<int> lmowner;
         std::vector<int> lmstride;
-        curr->second->location_vector(*discret, lm, lmowner, lmstride);
+        curr->second->location_vector(discret, lm, lmowner, lmstride);
         elevector.size((int)lm.size());
         if (!assemblemat)
         {
-          curr->second->evaluate_neumann(params, *discret, cond, lm, elevector);
+          curr->second->evaluate_neumann(params, discret, cond, lm, elevector);
           Core::LinAlg::assemble(systemvector, elevector, lm, lmowner);
         }
         else
@@ -206,7 +189,7 @@ void XFEM::evaluate_neumann_standard(
             elematrix.shape(size, size);
           else
             elematrix.putScalar(0.0);
-          curr->second->evaluate_neumann(params, *discret, cond, lm, elevector, &elematrix);
+          curr->second->evaluate_neumann(params, discret, cond, lm, elevector, &elematrix);
           Core::LinAlg::assemble(systemvector, elevector, lm, lmowner);
           systemmatrix->assemble(curr->second->id(), lmstride, elematrix, lm, lmowner);
         }

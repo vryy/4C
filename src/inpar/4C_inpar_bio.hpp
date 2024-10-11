@@ -78,7 +78,7 @@ namespace Inpar
     };
 
     /// set the arterial dynamic parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
   }  // namespace ArtDyn
 
   namespace ArteryNetwork
@@ -109,7 +109,7 @@ namespace Inpar
     };
 
     /// set the artnet parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// set specific artnet conditions
     void set_valid_conditions(
@@ -120,7 +120,7 @@ namespace Inpar
   namespace BioFilm
   {
     /// set the biofilm parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// set specific biofilm conditions
     void set_valid_conditions(
@@ -130,7 +130,7 @@ namespace Inpar
   namespace ReducedLung
   {
     /// set the reduced airways parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// set specific reduced airways conditions
     void set_valid_conditions(

@@ -152,17 +152,16 @@ int Discret::ELEMENTS::Beam3kType::initialize(Core::FE::Discretization& dis)
 
     // the next section is needed in case of periodic boundary conditions and a shifted
     // configuration (i.e. elements cut by the periodic boundary) in the input file
-    Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox =
-        Teuchos::make_rcp<Core::Geo::MeshFree::BoundingBox>();
-    periodic_boundingbox->init(
+    Core::Geo::MeshFree::BoundingBox periodic_boundingbox;
+    periodic_boundingbox.init(
         Global::Problem::instance()->binning_strategy_params());  // no setup() call needed here
 
     std::vector<double> disp_shift;
     int numdof = currele->num_dof_per_node(*(currele->nodes()[0]));
     disp_shift.resize(numdof * nnode);
     for (unsigned int i = 0; i < disp_shift.size(); ++i) disp_shift[i] = 0.0;
-    if (periodic_boundingbox->have_pbc())
-      currele->un_shift_node_position(disp_shift, *periodic_boundingbox);
+    if (periodic_boundingbox.have_pbc())
+      currele->un_shift_node_position(disp_shift, periodic_boundingbox);
 
     // getting element's nodal coordinates and treating them as reference configuration
     if (currele->nodes()[0] == nullptr || currele->nodes()[1] == nullptr)
@@ -1047,16 +1046,12 @@ void Discret::ELEMENTS::Beam3k::get_triad_at_xi(
       Qref_dummy);  // Todo @grill split/adapt method and avoid dummy variables
 
   // create object of triad interpolation scheme
-  Teuchos::RCP<
-      LargeRotations::TriadInterpolationLocalRotationVectors<BEAM3K_COLLOCATION_POINTS, double>>
-      triad_interpolation_scheme_ptr =
-          Teuchos::make_rcp<LargeRotations::TriadInterpolationLocalRotationVectors<
-              BEAM3K_COLLOCATION_POINTS, double>>();
+  LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme_ptr;
 
   // reset scheme with nodal triads
-  triad_interpolation_scheme_ptr->reset(triad_mat_cp);
+  triad_interpolation_scheme_ptr.reset(triad_mat_cp);
 
-  triad_interpolation_scheme_ptr->get_interpolated_triad_at_xi(triad, xi);
+  triad_interpolation_scheme_ptr.get_interpolated_triad_at_xi(triad, xi);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -1545,17 +1540,13 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_increments_
       BEAM3K_COLLOCATION_POINTS, Core::LinAlg::Matrix<3, 3, double>(true));
 
   // create object of triad interpolation scheme
-  Teuchos::RCP<
-      LargeRotations::TriadInterpolationLocalRotationVectors<BEAM3K_COLLOCATION_POINTS, double>>
-      triad_interpolation_scheme_ptr =
-          Teuchos::make_rcp<LargeRotations::TriadInterpolationLocalRotationVectors<
-              BEAM3K_COLLOCATION_POINTS, double>>();
+  LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme_ptr;
 
   // reset scheme with nodal triads
-  triad_interpolation_scheme_ptr->reset(triad_mat_cp);
+  triad_interpolation_scheme_ptr.reset(triad_mat_cp);
 
   // compute Itilde matrices required for re-interpolation of CP values of lin_theta
-  triad_interpolation_scheme_ptr->get_nodal_generalized_rotation_interpolation_matrices_at_xi(
+  triad_interpolation_scheme_ptr.get_nodal_generalized_rotation_interpolation_matrices_at_xi(
       Itilde, xi);
 
 

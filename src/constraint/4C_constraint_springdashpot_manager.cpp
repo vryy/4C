@@ -61,7 +61,7 @@ void CONSTRAINTS::SpringDashpotManager::stiffness_and_internal_forces(
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
       springs_[i]->evaluate_robin(stiff, fint, disn, veln, parlist);
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
-      springs_[i]->evaluate_force_stiff(*stiff, *fint, disn, veln, parlist);
+      springs_[i]->evaluate_force_stiff(*stiff, *fint, disn, *veln, parlist);
   }
 
   return;
@@ -79,13 +79,13 @@ void CONSTRAINTS::SpringDashpotManager::reset_prestress(
     Teuchos::RCP<Core::LinAlg::Vector<double>> dis)
 {
   // loop over all spring dashpot conditions and reset them
-  for (int i = 0; i < n_conds_; ++i) springs_[i]->reset_prestress(dis);
+  for (int i = 0; i < n_conds_; ++i) springs_[i]->reset_prestress(*dis);
 
   return;
 }
 
-void CONSTRAINTS::SpringDashpotManager::output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
-    Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Core::LinAlg::Vector<double>> disp)
+void CONSTRAINTS::SpringDashpotManager::output(Core::IO::DiscretizationWriter& output,
+    Core::FE::Discretization& discret, Core::LinAlg::Vector<double>& disp)
 {
   // row maps for export
   Teuchos::RCP<Core::LinAlg::Vector<double>> gap =
@@ -99,7 +99,7 @@ void CONSTRAINTS::SpringDashpotManager::output(Teuchos::RCP<Core::IO::Discretiza
   bool found_cursurfnormal = false;
   for (int i = 0; i < n_conds_; ++i)
   {
-    springs_[i]->output_gap_normal(gap, normals, springstress);
+    springs_[i]->output_gap_normal(*gap, *normals, *springstress);
 
     // get spring type from current condition
     const CONSTRAINTS::SpringDashpot::SpringType stype = springs_[i]->get_spring_type();
@@ -109,13 +109,13 @@ void CONSTRAINTS::SpringDashpotManager::output(Teuchos::RCP<Core::IO::Discretiza
   // write vectors to output
   if (found_cursurfnormal)
   {
-    output->write_vector("gap", gap);
-    output->write_multi_vector("curnormals", normals);
+    output.write_vector("gap", gap);
+    output.write_multi_vector("curnormals", normals);
   }
 
   // write spring stress if defined in io-flag
   if (Global::Problem::instance()->io_params().get<bool>("OUTPUT_SPRING"))
-    output->write_multi_vector("springstress", springstress);
+    output.write_multi_vector("springstress", springstress);
 
   return;
 }
@@ -138,9 +138,9 @@ void CONSTRAINTS::SpringDashpotManager::output_restart(
 
     if (stype == CONSTRAINTS::SpringDashpot::xyz or
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
-      springs_[i]->output_prestr_offset(springoffsetprestr);
+      springs_[i]->output_prestr_offset(*springoffsetprestr);
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
-      springs_[i]->output_prestr_offset_old(springoffsetprestr_old);
+      springs_[i]->output_prestr_offset_old(*springoffsetprestr_old);
   }
 
   // write vector to output for restart
@@ -149,7 +149,7 @@ void CONSTRAINTS::SpringDashpotManager::output_restart(
   output_restart->write_multi_vector("springoffsetprestr_old", springoffsetprestr_old);
 
   // normal output as well
-  output(output_restart, discret, disp);
+  output(*output_restart, *discret, *disp);
 
   return;
 }
@@ -178,9 +178,9 @@ void CONSTRAINTS::SpringDashpotManager::read_restart(
 
     if (stype == CONSTRAINTS::SpringDashpot::xyz or
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
-      springs_[i]->set_restart(tempvec);
+      springs_[i]->set_restart(*tempvec);
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
-      springs_[i]->set_restart_old(tempvecold);
+      springs_[i]->set_restart_old(*tempvecold);
   }
 
   return;

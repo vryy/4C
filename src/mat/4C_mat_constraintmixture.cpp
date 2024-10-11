@@ -3105,7 +3105,7 @@ bool Mat::ConstraintMixture::vis_data(
  just works with strtimint!
  don't forget to include constraintmixture.H */
 void Mat::constraint_mixture_output_to_gmsh(
-    const Teuchos::RCP<Core::FE::Discretization> dis, const int timestep, const int iter)
+    Core::FE::Discretization& dis, const int timestep, const int iter)
 {
   const std::string filebase = Global::Problem::instance()->output_control_file()->file_name();
   // file for stress
@@ -3127,16 +3127,16 @@ void Mat::constraint_mixture_output_to_gmsh(
   gmshfilecontent_pre.precision(10);
 
 
-  for (int iele = 0; iele < dis->num_my_col_elements(); ++iele)
+  for (int iele = 0; iele < dis.num_my_col_elements(); ++iele)
   {
-    const Core::Elements::Element* actele = dis->l_col_element(iele);
+    const Core::Elements::Element* actele = dis.l_col_element(iele);
 
     // build current configuration
     std::vector<int> lm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
-    actele->location_vector(*dis, lm, lmowner, lmstride);
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = dis->get_state("displacement");
+    actele->location_vector(dis, lm, lmowner, lmstride);
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = dis.get_state("displacement");
     std::vector<double> mydisp(lm.size(), 0);
     Core::FE::extract_my_values(*disp, mydisp, lm);
 

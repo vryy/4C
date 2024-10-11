@@ -125,10 +125,9 @@ namespace FSI
 
    private:
     /// build block vector from field vectors
-    void setup_vector(Core::LinAlg::Vector<double>& f,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fv,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> av, double fluidscale);
+    void setup_vector(Core::LinAlg::Vector<double>& f, const Core::LinAlg::Vector<double>& sv,
+        const Core::LinAlg::Vector<double>& fv, const Core::LinAlg::Vector<double>& av,
+        double fluidscale);
 
     /// access type-cast pointer to problem-specific fluid-wrapper
     const Teuchos::RCP<Adapter::FluidFluidFSI>& fluid_field() { return MonolithicNoNOX::fluid_; }

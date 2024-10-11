@@ -582,8 +582,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
     const Teuchos::RCP<const Solid::ModelEvaluatorManager>& modeleval) const
 {
   check_init();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> xvec_ptr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(global_problem_map(), true);
+  Core::LinAlg::Vector<double> xvec_ptr(global_problem_map(), true);
 
   // switch between the different vector initialization options
   switch (vecinittype)
@@ -602,7 +601,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
             modeleval->evaluator(ci->first).get_last_time_step_solution_ptr();
         // if there is a partial solution, we insert it into the full vector
         if (not model_sol_ptr.is_null())
-          block_extractor().insert_vector(*model_sol_ptr, ci->second, *xvec_ptr);
+          block_extractor().insert_vector(*model_sol_ptr, ci->second, xvec_ptr);
         model_sol_ptr = Teuchos::null;
       }
       break;
@@ -621,7 +620,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
             modeleval->evaluator(ci->first).get_current_solution_ptr();
         // if there is a partial solution, we insert it into the full vector
         if (not model_sol_ptr.is_null())
-          block_extractor().insert_vector(*model_sol_ptr, ci->second, *xvec_ptr);
+          block_extractor().insert_vector(*model_sol_ptr, ci->second, xvec_ptr);
       }
       break;
     }
@@ -636,7 +635,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_
 
   // wrap and return
   return Teuchos::make_rcp<::NOX::Epetra::Vector>(
-      xvec_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+      xvec_ptr.get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 }
 
 /*----------------------------------------------------------------------------*

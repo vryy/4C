@@ -138,7 +138,7 @@ namespace Solid
      *
      *  \note Works only for Core::LinAlg::SparseMatrices.
      **/
-    bool rotate_global_to_local(const Teuchos::RCP<Core::LinAlg::SparseOperator>& A) const;
+    bool rotate_global_to_local(Core::LinAlg::SparseOperator& A) const;
 
     /*! \brief Rotate the rhs vector from the global to the local coordinate system
      *
@@ -155,8 +155,7 @@ namespace Solid
      *  \param[in] v Vector to be rotated
      *  \param[in] offset ??
      */
-    bool rotate_global_to_local(
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& v, bool offset) const;
+    bool rotate_global_to_local(Core::LinAlg::Vector<double>& v, bool offset) const;
 
     /*! \brief Rotate a vector from the local to the global coordinate system
      *
@@ -173,8 +172,7 @@ namespace Solid
      *  \param[in] v Vector to be rotated
      *  \param[in] offset ??
      */
-    bool rotate_local_to_global(
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& v, bool offset) const;
+    bool rotate_local_to_global(Core::LinAlg::Vector<double>& v, bool offset) const;
 
    protected:
     //! Returns the initialization status
@@ -209,7 +207,7 @@ namespace Solid
      *
      *  \param b ??
      */
-    void extract_freact(Teuchos::RCP<Core::LinAlg::Vector<double>>& b) const;
+    void extract_freact(Core::LinAlg::Vector<double>& b) const;
 
     /*! Apply the DBC to the right hand side in the local coordinate system and
      *  do not rotate it back to the global coordinate system. */

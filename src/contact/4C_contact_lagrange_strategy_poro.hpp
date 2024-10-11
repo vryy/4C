@@ -69,8 +69,8 @@ namespace CONTACT
     //Todo to be updated the global derivative matrices S and P and Tresca friction matrix L +
     vector r.
     */
-    void poro_initialize(Coupling::Adapter::Coupling& coupfs,
-        Teuchos::RCP<const Epetra_Map> fluiddofs, bool fullinit = true);
+    void poro_initialize(
+        Coupling::Adapter::Coupling& coupfs, const Epetra_Map& fluiddofs, bool fullinit = true);
 
     /*!
     \brief as D and M Matrices are initialized here
@@ -142,7 +142,7 @@ namespace CONTACT
     void recover_poro_no_pen(Teuchos::RCP<Core::LinAlg::Vector<double>> disi,
         Teuchos::RCP<Core::LinAlg::Vector<double>> inc);
 
-    void recover_poro_no_pen(Teuchos::RCP<Core::LinAlg::Vector<double>> disi,
+    void recover_poro_no_pen(Core::LinAlg::Vector<double>& disi,
         std::map<int, Teuchos::RCP<Core::LinAlg::Vector<double>>> inc);
 
 

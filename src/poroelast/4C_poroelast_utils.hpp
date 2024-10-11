@@ -63,8 +63,7 @@ namespace PoroElast
     //! check if element is a poro-p1-element
     bool is_poro_p1_element(const Core::Elements::Element* actele);
 
-    Teuchos::RCP<Core::LinAlg::MapExtractor> build_poro_splitter(
-        Teuchos::RCP<Core::FE::Discretization> dis);
+    Teuchos::RCP<Core::LinAlg::MapExtractor> build_poro_splitter(Core::FE::Discretization& dis);
 
     //! create solution algorithm depending on input file
     Teuchos::RCP<PoroElast::PoroBase> create_poro_algorithm(
@@ -77,8 +76,8 @@ namespace PoroElast
     );
 
     //! reset Material pointers after redistribution
-    void set_material_pointers_matching_grid(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
-        Teuchos::RCP<const Core::FE::Discretization> targetdis);
+    void set_material_pointers_matching_grid(
+        const Core::FE::Discretization& sourcedis, const Core::FE::Discretization& targetdis);
 
     /*!
      Create volume ghosting:
@@ -99,7 +98,7 @@ namespace PoroElast
 
     //! Determine norm of vector
     double calculate_vector_norm(const enum Inpar::PoroElast::VectorNorm norm,  //!< norm to use
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> vect  //!< the vector of interest
+        const Core::LinAlg::Vector<double>& vect  //!< the vector of interest
     );
 
     //! Set the slave and master elements of the face element

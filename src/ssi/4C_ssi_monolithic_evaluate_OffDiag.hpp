@@ -66,7 +66,7 @@ namespace SSI
     //! evaluate interface contributions to  off-diagonal scatra-structure block of global system
     //! matrix
     void evaluate_off_diag_block_scatra_structure_interface(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> scatrastructureinterface);
+        Core::LinAlg::SparseOperator& scatrastructureinterface);
 
     //! evaluate domain contributions to off-diagonal structure-scatra block of global system matrix
     virtual void evaluate_off_diag_block_structure_scatra_domain(

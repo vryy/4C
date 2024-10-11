@@ -148,7 +148,7 @@ namespace Inpar
     };
 
     /// set the mortar parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// set specific mortar conditions
     void set_valid_conditions(

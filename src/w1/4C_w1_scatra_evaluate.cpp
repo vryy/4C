@@ -43,14 +43,13 @@ void Discret::ELEMENTS::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params
       if (phinp == Teuchos::null) FOUR_C_THROW("pre_evaluate: Cannot get state vector 'phinp' ");
 
       // extract local values of the global vectors
-      Teuchos::RCP<std::vector<double>> myphi =
-          Teuchos::make_rcp<std::vector<double>>(la[1].lm_.size());
-      Core::FE::extract_my_values(*phinp, *myphi, la[1].lm_);
+      std::vector<double> myphi(la[1].lm_.size());
+      Core::FE::extract_my_values(*phinp, myphi, la[1].lm_);
 
       double meanphi = 0.0;
       for (int i = 0; i < numnode; ++i)
       {
-        meanphi += (*myphi)[i] / numnode;
+        meanphi += (myphi)[i] / numnode;
       }
       params.set<double>("scalar", meanphi);
     }

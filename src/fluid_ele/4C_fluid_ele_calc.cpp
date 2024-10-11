@@ -5902,7 +5902,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_service(
     {
       // correct immersed velocities for fluid boundary elements
       return correct_immersed_bound_velocities(
-          params, ele, discretization, lm, mat, elevec1, elevec2);
+          params, ele, discretization, lm, *mat, elevec1, elevec2);
     }
     break;
     case FLD::interpolate_velocity_to_given_point:
@@ -9084,8 +9084,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
       Immersed::interpolate_to_backgrd_point<Core::FE::CellType::hex8,  // source/structure
           Core::FE::CellType::hex8>                                     // target/fluid
           (curr_subset_of_structdis,
-              immerseddis,  // source/structure
-              backgrddis,   // target/fluid
+              *immerseddis,  // source/structure
+              *backgrddis,   // target/fluid
               *ele, backgrdxi, targeteledisp, action,
               vel,  // result
               match, vel_calculation,
@@ -9191,8 +9191,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
           Immersed::interpolate_to_backgrd_point<Core::FE::CellType::hex8,  // source/structure
               Core::FE::CellType::hex8>                                     // target/fluid
               (curr_subset_of_structdis,
-                  immerseddis,  // source/structure
-                  backgrddis,   // target/fluid
+                  *immerseddis,  // source/structure
+                  *backgrddis,   // target/fluid
                   *ele, backgrdxi, targeteledisp, action,
                   div,  // result (in dof 3)
                   match, vel_calculation,
@@ -9233,7 +9233,7 @@ template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType e
 int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_velocities(
     Teuchos::ParameterList& params, Discret::ELEMENTS::Fluid* ele,
     Core::FE::Discretization& discretization,  // fluid
-    const std::vector<int>& lm, Teuchos::RCP<Core::Mat::Material>& mat,
+    const std::vector<int>& lm, Core::Mat::Material& mat,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,  // vectofill
     Core::LinAlg::SerialDenseVector& elevec2_epetra)
 {
@@ -9386,8 +9386,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_ve
       Immersed::find_closest_structure_surface_point<Core::FE::CellType::quad4,  // structure
           Core::FE::CellType::hex8>                                              // fluid
           (curr_subset_of_structdis,  // relevant struct elements
-              struct_dis,             // structure discretization
-              fluid_dis,              // fluid discretization
+              *struct_dis,            // structure discretization
+              *fluid_dis,             // fluid discretization
               *ele,                   // fluid element
               backgrdfluidxi,         // space coordinate of node
               targeteledisp,          // fluid displacements (zero)

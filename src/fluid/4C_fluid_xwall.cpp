@@ -643,11 +643,11 @@ void FLD::XWall::setup_x_wall_dis()
   if (parallel)
   {
     // redistribute
-    Teuchos::RCP<Epetra_Map> elemap = Teuchos::make_rcp<Epetra_Map>(*xwdiscret_->element_row_map());
+    Epetra_Map elemap(*xwdiscret_->element_row_map());
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(discret_->get_comm().Clone());
 
     Teuchos::RCP<const Epetra_CrsGraph> nodegraph =
-        Core::Rebalance::build_graph(*xwdiscret_, *elemap);
+        Core::Rebalance::build_graph(*xwdiscret_, elemap);
 
     Teuchos::ParameterList rebalanceParams;
     rebalanceParams.set<std::string>("num parts", std::to_string(comm->NumProc()));
@@ -878,8 +878,7 @@ void FLD::XWall::update_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double
 
   transfer_and_save_tauw();
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> newtauw =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xwallrownodemap_, true);
+  Core::LinAlg::Vector<double> newtauw(*xwallrownodemap_, true);
   // calculate wall stress
   Teuchos::RCP<Core::LinAlg::Vector<double>> wss;
   if (restart_wss_ != Teuchos::null)
@@ -891,7 +890,7 @@ void FLD::XWall::update_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double
   {
     if (mystressmanager_ == Teuchos::null) FOUR_C_THROW("wssmanager not available in xwall");
     // fix nodal forces on dirichlet inflow surfaces if desired
-    wss = mystressmanager_->get_pre_calc_wall_shear_stresses(fix_dirichlet_inflow(trueresidual));
+    wss = mystressmanager_->get_pre_calc_wall_shear_stresses(fix_dirichlet_inflow(*trueresidual));
   }
   switch (tauwtype_)
   {
@@ -907,7 +906,7 @@ void FLD::XWall::update_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double
       inctauw_->PutScalar(0.0);
 
       if (itnum == 0)  // in between steps
-        calc_tau_w(step, velnp, wss);
+        calc_tau_w(step, *velnp, *wss);
       else
         return;
     }
@@ -917,21 +916,21 @@ void FLD::XWall::update_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double
       break;
   }
 
-  Core::LinAlg::export_to(*tauw_, *newtauw);
+  Core::LinAlg::export_to(*tauw_, newtauw);
 
   double actmean = -1.0;
-  newtauw->MeanValue(&actmean);
+  newtauw.MeanValue(&actmean);
 
   double min = -1.0;
-  newtauw->MinValue(&min);
+  newtauw.MinValue(&min);
   if (min < 1e-10) FOUR_C_THROW("tauw is zero");
   double max = -1.0;
-  newtauw->MaxValue(&max);
+  newtauw.MaxValue(&max);
 
   // convergence check, works only if we don't take the mean
-  newtauw->PutScalar(0.0);
-  Core::LinAlg::export_to(*inctauw_, *newtauw);
-  newtauw->Norm2(&inctauwnorm_);
+  newtauw.PutScalar(0.0);
+  Core::LinAlg::export_to(*inctauw_, newtauw);
+  newtauw.Norm2(&inctauwnorm_);
   // rescale inctauw to full increment
   if (fac_ > 1.0e-8) inctauwnorm_ /= fac_;
 
@@ -947,13 +946,13 @@ void FLD::XWall::update_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double
     if (myrank_ == 0) std::cout << "  L2-project... ";
     if (tauwtype_ == Inpar::FLUID::between_steps)
     {
-      l2_project_vector(veln, Teuchos::null, accn);
+      l2_project_vector(*veln, Teuchos::null, accn);
 
       // at the beginning of this time step they are equal -> calculate only one of them
       velnp->Update(1.0, *veln, 0.0);
     }
     else
-      l2_project_vector(veln, velnp, accn);
+      l2_project_vector(*veln, velnp, accn);
 
     if (myrank_ == 0) std::cout << "done!" << std::endl;
   }
@@ -971,15 +970,12 @@ void FLD::XWall::update_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double
 /*----------------------------------------------------------------------*
  |  Routines to calculate Tauw                                 bk 07/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::calc_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> wss)
+void FLD::XWall::calc_tau_w(
+    int step, Core::LinAlg::Vector<double>& velnp, Core::LinAlg::Vector<double>& wss)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> newtauw =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xwallrownodemap_, true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> newtauw2 =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xwallrownodemap_, true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tauw =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->node_col_map()), true);
+  Core::LinAlg::Vector<double> newtauw(*xwallrownodemap_, true);
+  Core::LinAlg::Vector<double> newtauw2(*xwallrownodemap_, true);
+  Core::LinAlg::Vector<double> tauw(*(discret_->node_col_map()), true);
 
   if (tauwcalctype_ == Inpar::FLUID::gradient_to_residual && switch_step_ == step && myrank_ == 0)
     std::cout << "\n switching from gradient to residual \n" << std::endl;
@@ -998,12 +994,12 @@ void FLD::XWall::calc_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double>>
         if (!node) FOUR_C_THROW("ERROR: Cannot find off wall node with gid %", gid);
 
         int firstglobaldofid = discret_->dof(0, node, 0);
-        int firstlocaldofid = wss->Map().LID(firstglobaldofid);
+        int firstlocaldofid = wss.Map().LID(firstglobaldofid);
 
         if (firstlocaldofid < 0) FOUR_C_THROW("localdofid not found in map for given globaldofid");
-        double forcex = (*wss)[firstlocaldofid];
-        double forcey = (*wss)[firstlocaldofid + 1];
-        double forcez = (*wss)[firstlocaldofid + 2];
+        double forcex = (wss)[firstlocaldofid];
+        double forcey = (wss)[firstlocaldofid + 1];
+        double forcez = (wss)[firstlocaldofid + 2];
 
         double tauw = sqrt(forcex * forcex + forcey * forcey + forcez * forcez);
 
@@ -1011,7 +1007,7 @@ void FLD::XWall::calc_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double>>
         // also, the shape functions become singular, if tauw==0
         if (tauw < min_tauw_) tauw = min_tauw_;
         // store in vector
-        int err = newtauw->ReplaceGlobalValue(gid, 0, tauw);
+        int err = newtauw.ReplaceGlobalValue(gid, 0, tauw);
         if (err != 0) FOUR_C_THROW("something went wrong during replacemyvalue");
       }
     }
@@ -1023,14 +1019,12 @@ void FLD::XWall::calc_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double>>
     // equal)
     Teuchos::RCP<Core::LinAlg::Vector<double>> statevel =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(xwdiscret_->dof_row_map()), true);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> newtauwxwdis =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(xwdiscret_->node_row_map()), true);
-    Core::LinAlg::export_to(*velnp, *statevel);
+    Core::LinAlg::Vector<double> newtauwxwdis(*(xwdiscret_->node_row_map()), true);
+    Core::LinAlg::export_to(velnp, *statevel);
 
     xwdiscret_->set_state("vel", statevel);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> timesvec =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(xwdiscret_->node_row_map()), true);
+    Core::LinAlg::Vector<double> timesvec(*(xwdiscret_->node_row_map()), true);
 
     std::vector<int> lm;
     std::vector<int> lmowner;
@@ -1083,8 +1077,8 @@ void FLD::XWall::calc_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double>>
       }
 
       // assembling into node maps
-      Core::LinAlg::assemble(*newtauwxwdis, elevector1, lm, lmowner);
-      Core::LinAlg::assemble(*timesvec, elevector2, lm, lmowner);
+      Core::LinAlg::assemble(newtauwxwdis, elevector1, lm, lmowner);
+      Core::LinAlg::assemble(timesvec, elevector2, lm, lmowner);
     }  // end element loop
 
     xwdiscret_->clear_state();
@@ -1092,8 +1086,8 @@ void FLD::XWall::calc_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double>>
     // scale with times:
     for (int l = 0; l < (xwdiscret_->node_row_map())->NumMyElements(); l++)
     {
-      double sumnewtauw = (*newtauwxwdis)[l];
-      double timesfac = (*timesvec)[l];
+      double sumnewtauw = (newtauwxwdis)[l];
+      double timesfac = (timesvec)[l];
       double newtauwsc = 1.0;
       // we only have to do something, if we assembled at least once the same value
       if (timesfac > 0.5)
@@ -1101,36 +1095,36 @@ void FLD::XWall::calc_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double>>
         newtauwsc = sumnewtauw / timesfac;
 
         if (newtauwsc < min_tauw_) newtauwsc = min_tauw_;
-        int err = newtauwxwdis->ReplaceMyValue(l, 0, newtauwsc);
+        int err = newtauwxwdis.ReplaceMyValue(l, 0, newtauwsc);
         if (err != 0) FOUR_C_THROW("something went wrong during replacemyvalue");
       }
     }
-    Core::LinAlg::export_to(*newtauwxwdis, *newtauw);
+    Core::LinAlg::export_to(newtauwxwdis, newtauw);
   }
   else
     FOUR_C_THROW("unknown tauwcalctype_");
 
-  tauw->Update(1.0, *tauw_, 0.0);
+  tauw.Update(1.0, *tauw_, 0.0);
 
 
-  inctauw_->Update(1.0, *tauw, 0.0);
-  tauw->PutScalar(0.0);
+  inctauw_->Update(1.0, tauw, 0.0);
+  tauw.PutScalar(0.0);
 
-  tauwcouplingmattrans_->multiply(true, *newtauw, *newtauw2);
+  tauwcouplingmattrans_->multiply(true, newtauw, newtauw2);
   double meansp = 0.0;
-  newtauw2->MeanValue(&meansp);
+  newtauw2.MeanValue(&meansp);
 
-  Core::LinAlg::export_to(*newtauw2, *tauw);
-  inctauw_->Update(fac_, *tauw, -fac_);  // now this is the increment (new-old)
+  Core::LinAlg::export_to(newtauw2, tauw);
+  inctauw_->Update(fac_, tauw, -fac_);  // now this is the increment (new-old)
 
   tauw_->Update(1.0, *inctauw_, 1.0);
 
   overwrite_transferred_values();
 
-  Core::LinAlg::export_to(*inctauw_, *newtauw2);
-  Core::LinAlg::export_to(*newtauw2, *inctauwxwdis_);
-  Core::LinAlg::export_to(*tauw_, *newtauw2);
-  Core::LinAlg::export_to(*newtauw2, *tauwxwdis_);
+  Core::LinAlg::export_to(*inctauw_, newtauw2);
+  Core::LinAlg::export_to(newtauw2, *inctauwxwdis_);
+  Core::LinAlg::export_to(*tauw_, newtauw2);
+  Core::LinAlg::export_to(newtauw2, *tauwxwdis_);
 
   if (meansp < 2.0e-9)
     FOUR_C_THROW(
@@ -1145,11 +1139,11 @@ void FLD::XWall::calc_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double>>
 /*----------------------------------------------------------------------*
  |  L2-project enriched dofs of vector                         bk 07/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::l2_project_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
+void FLD::XWall::l2_project_vector(Core::LinAlg::Vector<double>& veln,
     Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
     Teuchos::RCP<Core::LinAlg::Vector<double>> accn)
 {
-  if (not veln->Map().SameAs(*discret_->dof_row_map()))
+  if (not veln.Map().SameAs(*discret_->dof_row_map()))
     FOUR_C_THROW("input map is not the dof row map of the fluid discretization");
 
   massmatrix_->zero();
@@ -1158,7 +1152,7 @@ void FLD::XWall::l2_project_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> ve
   if (accn != Teuchos::null) incaccn_->PutScalar(0.0);
   if (velnp != Teuchos::null) incvelnp_->PutScalar(0.0);
 
-  Core::LinAlg::export_to(*veln, *stateveln_);
+  Core::LinAlg::export_to(veln, *stateveln_);
   if (accn != Teuchos::null) Core::LinAlg::export_to(*accn, *stateaccn_);
   if (velnp != Teuchos::null) Core::LinAlg::export_to(*velnp, *statevelnp_);
 
@@ -1272,7 +1266,7 @@ void FLD::XWall::l2_project_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> ve
   if (numberofrhs > 1) Core::LinAlg::export_to(*((*resultvec)(1)), *incaccn_);
   if (numberofrhs > 2) Core::LinAlg::export_to(*((*resultvec)(2)), *incvelnp_);
 
-  veln->Update(1.0, *incveln_, 1.0);
+  veln.Update(1.0, *incveln_, 1.0);
   if (accn != Teuchos::null) accn->Update(1.0, *incaccn_, 1.0);
   if (velnp != Teuchos::null) velnp->Update(1.0, *incvelnp_, 1.0);
 
@@ -1283,10 +1277,10 @@ void FLD::XWall::l2_project_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> ve
 /*----------------------------------------------------------------------*
  |  Adapt ML Nullspace for MFS aggregation                     bk 09/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::adapt_ml_nullspace(const Teuchos::RCP<Core::LinAlg::Solver>& solver)
+void FLD::XWall::adapt_ml_nullspace(Core::LinAlg::Solver& solver)
 {
   // extract the ML parameters:
-  Teuchos::ParameterList& mlparams = solver->params().sublist("ML Parameters");
+  Teuchos::ParameterList& mlparams = solver.params().sublist("ML Parameters");
 
   // get nullspace parameters
   double* nullspace = mlparams.get("null space: vectors", (double*)nullptr);
@@ -1324,8 +1318,7 @@ void FLD::XWall::adapt_ml_nullspace(const Teuchos::RCP<Core::LinAlg::Solver>& so
  *----------------------------------------------------------------------*/
 void FLD::XWall::calc_mk()
 {
-  Teuchos::RCP<Epetra_MultiVector> mkxw =
-      Teuchos::make_rcp<Epetra_MultiVector>(*(xwdiscret_->element_row_map()), 1, true);
+  Epetra_MultiVector mkxw(*(xwdiscret_->element_row_map()), 1, true);
 
   // create the parameters for the discretization
   Teuchos::ParameterList eleparams;
@@ -1335,19 +1328,17 @@ void FLD::XWall::calc_mk()
 
   set_x_wall_params_xw_dis(eleparams);
 
-  xwdiscret_->evaluate_scalars(eleparams, *mkxw);
+  xwdiscret_->evaluate_scalars(eleparams, mkxw);
 
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> mkxwv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(xwdiscret_->element_row_map()), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> mkv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->element_row_map()), true);
+  Core::LinAlg::Vector<double> mkxwv(*(xwdiscret_->element_row_map()), true);
+  Core::LinAlg::Vector<double> mkv(*(discret_->element_row_map()), true);
 
   // export
-  Core::LinAlg::export_to(*((*mkxw)(0)), *mkxwv);
-  Core::LinAlg::export_to(*mkxwv, *mkxwstate_);
-  Core::LinAlg::export_to(*mkxwv, *mkv);
-  Core::LinAlg::export_to(*mkv, *mkstate_);
+  Core::LinAlg::export_to(*((mkxw)(0)), mkxwv);
+  Core::LinAlg::export_to(mkxwv, *mkxwstate_);
+  Core::LinAlg::export_to(mkxwv, mkv);
+  Core::LinAlg::export_to(mkv, *mkstate_);
 
 
   return;
@@ -1357,7 +1348,7 @@ void FLD::XWall::calc_mk()
  |  Write enriched dofs in standard dofs for output            bk 09/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XWall::get_output_vector(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vel)
+    Core::LinAlg::Vector<double>& vel)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> velenr =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
@@ -1370,10 +1361,10 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XWall::get_output_vector(
     int firstglobaldofid = discret_->dof(xwallnode, 0);
     int firstlocaldofid = discret_->dof_row_map()->LID(firstglobaldofid);
 
-    int err = velenr->ReplaceMyValue(firstlocaldofid, 0, (*vel)[firstlocaldofid + 4]);
-    err += velenr->ReplaceMyValue(firstlocaldofid + 1, 0, (*vel)[firstlocaldofid + 5]);
-    err += velenr->ReplaceMyValue(firstlocaldofid + 2, 0, (*vel)[firstlocaldofid + 6]);
-    err += velenr->ReplaceMyValue(firstlocaldofid + 3, 0, (*vel)[firstlocaldofid + 7]);
+    int err = velenr->ReplaceMyValue(firstlocaldofid, 0, (vel)[firstlocaldofid + 4]);
+    err += velenr->ReplaceMyValue(firstlocaldofid + 1, 0, (vel)[firstlocaldofid + 5]);
+    err += velenr->ReplaceMyValue(firstlocaldofid + 2, 0, (vel)[firstlocaldofid + 6]);
+    err += velenr->ReplaceMyValue(firstlocaldofid + 3, 0, (vel)[firstlocaldofid + 7]);
     if (err != 0) FOUR_C_THROW("error during replacemyvalue");
   }
   return velenr;
@@ -1406,12 +1397,10 @@ void FLD::XWall::overwrite_transferred_values()
 {
   if (turbulent_inflow_condition_->is_active())
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> inctauwtmp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->node_row_map()), true);
-    Core::LinAlg::export_to(*inctauw_, *inctauwtmp);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tauwtmp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->node_row_map()), true);
-    Core::LinAlg::export_to(*tauw_, *tauwtmp);
+    Core::LinAlg::Vector<double> inctauwtmp(*(discret_->node_row_map()), true);
+    Core::LinAlg::export_to(*inctauw_, inctauwtmp);
+    Core::LinAlg::Vector<double> tauwtmp(*(discret_->node_row_map()), true);
+    Core::LinAlg::export_to(*tauw_, tauwtmp);
 
     for (int i = 0; i < discret_->node_row_map()->NumMyElements(); ++i)
     {
@@ -1430,15 +1419,15 @@ void FLD::XWall::overwrite_transferred_values()
           const std::string& mytoggle = (*cond)->parameters().get<std::string>("toggle");
           if (mytoggle == "slave")
           {
-            inctauwtmp->ReplaceMyValue(i, 0, (*oldinctauw_)[i]);
-            tauwtmp->ReplaceMyValue(i, 0, (*oldtauw_)[i]);
+            inctauwtmp.ReplaceMyValue(i, 0, (*oldinctauw_)[i]);
+            tauwtmp.ReplaceMyValue(i, 0, (*oldtauw_)[i]);
           }
         }
       }
     }
 
-    Core::LinAlg::export_to(*inctauwtmp, *inctauw_);
-    Core::LinAlg::export_to(*tauwtmp, *tauw_);
+    Core::LinAlg::export_to(inctauwtmp, *inctauw_);
+    Core::LinAlg::export_to(tauwtmp, *tauw_);
   }
   return;
 }
@@ -1465,19 +1454,18 @@ void FLD::XWall::read_restart(Core::IO::DiscretizationReader& reader)
  |  treat Dirichlet inflow                                     bk 04/15 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XWall::fix_dirichlet_inflow(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> trueresidual)
+    Core::LinAlg::Vector<double>& trueresidual)
 {
   // copy for safety reasons
   Teuchos::RCP<Core::LinAlg::Vector<double>> fixedtrueresidual =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
-  fixedtrueresidual->Update(1.0, *trueresidual, 0.0);
+  fixedtrueresidual->Update(1.0, trueresidual, 0.0);
 
   // fix nodal forces on dirichlet inflow surfaces
   if (fix_residual_on_inflow_)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> res =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_col_map()), true);
-    Core::LinAlg::export_to(*trueresidual, *res);
+    Core::LinAlg::Vector<double> res(*(discret_->dof_col_map()), true);
+    Core::LinAlg::export_to(trueresidual, res);
     for (int j = 0; j < xwallrownodemap_->NumMyElements(); ++j)
     {
       int xwallgid = xwallrownodemap_->GID(j);
@@ -1594,9 +1582,9 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XWall::fix_dirichlet_inflow(
 
               int firstlocaldofidnewvalue = discret_->dof_col_map()->LID(firstglobaldofidnewvalue);
               // half because the area is half on a boundary node compared to an inner node
-              double newvalue1 = 0.5 * (*res)[firstlocaldofidnewvalue];
-              double newvalue2 = 0.5 * (*res)[firstlocaldofidnewvalue + 1];
-              double newvalue3 = 0.5 * (*res)[firstlocaldofidnewvalue + 2];
+              double newvalue1 = 0.5 * (res)[firstlocaldofidnewvalue];
+              double newvalue2 = 0.5 * (res)[firstlocaldofidnewvalue + 1];
+              double newvalue3 = 0.5 * (res)[firstlocaldofidnewvalue + 2];
 
               int err =
                   fixedtrueresidual->ReplaceGlobalValues(1, &newvalue1, &firstglobaldofidtoreplace);
@@ -1636,12 +1624,9 @@ void FLD::XWallAleFSI::update_w_dist_wale()
   // save old one for projection
   incwdistxwdis_->Update(1.0, *wdistxwdis_, 0.0);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> x =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xwallrownodemap_, true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> y =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xwallrownodemap_, true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> z =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xwallrownodemap_, true);
+  Core::LinAlg::Vector<double> x(*xwallrownodemap_, true);
+  Core::LinAlg::Vector<double> y(*xwallrownodemap_, true);
+  Core::LinAlg::Vector<double> z(*xwallrownodemap_, true);
 
   // fill vectors with coords
   for (int j = 0; j < xwallrownodemap_->NumMyElements(); ++j)
@@ -1656,28 +1641,25 @@ void FLD::XWallAleFSI::update_w_dist_wale()
     int firstglobaldofid = discret_->dof(xwallnode, 0);
     int firstlocaldofid = discret_->dof_row_map()->LID(firstglobaldofid);
 
-    int err = x->ReplaceMyValue(j, 0, (xwallnode->x())[0] + (*mydispnp_)[firstlocaldofid]);
-    err += y->ReplaceMyValue(j, 0, (xwallnode->x())[1] + (*mydispnp_)[firstlocaldofid + 1]);
-    err += z->ReplaceMyValue(j, 0, (xwallnode->x())[2] + (*mydispnp_)[firstlocaldofid + 2]);
+    int err = x.ReplaceMyValue(j, 0, (xwallnode->x())[0] + (*mydispnp_)[firstlocaldofid]);
+    err += y.ReplaceMyValue(j, 0, (xwallnode->x())[1] + (*mydispnp_)[firstlocaldofid + 1]);
+    err += z.ReplaceMyValue(j, 0, (xwallnode->x())[2] + (*mydispnp_)[firstlocaldofid + 2]);
     if (err > 0) FOUR_C_THROW("something wrong");
   }
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wdistx =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xwallrownodemap_, true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wdisty =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xwallrownodemap_, true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wdistz =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xwallrownodemap_, true);
+  Core::LinAlg::Vector<double> wdistx(*xwallrownodemap_, true);
+  Core::LinAlg::Vector<double> wdisty(*xwallrownodemap_, true);
+  Core::LinAlg::Vector<double> wdistz(*xwallrownodemap_, true);
 
   // project coordinates of the closest wall node to the node itself
-  tauwcouplingmattrans_->multiply(true, *x, *wdistx);
-  tauwcouplingmattrans_->multiply(true, *y, *wdisty);
-  tauwcouplingmattrans_->multiply(true, *z, *wdistz);
+  tauwcouplingmattrans_->multiply(true, x, wdistx);
+  tauwcouplingmattrans_->multiply(true, y, wdisty);
+  tauwcouplingmattrans_->multiply(true, z, wdistz);
 
   // get delta
-  wdistx->Update(-1.0, *x, 1.0);
-  wdisty->Update(-1.0, *y, 1.0);
-  wdistz->Update(-1.0, *z, 1.0);
+  wdistx.Update(-1.0, x, 1.0);
+  wdisty.Update(-1.0, y, 1.0);
+  wdistz.Update(-1.0, z, 1.0);
 
   // fill vectors with coords
   for (int j = 0; j < xwallrownodemap_->NumMyElements(); ++j)
@@ -1688,9 +1670,9 @@ void FLD::XWallAleFSI::update_w_dist_wale()
       FOUR_C_THROW("not on proc");
     Core::Nodes::Node* xwallnode = discret_->g_node(xwallgid);
     if (!xwallnode) FOUR_C_THROW("Cannot find node");
-    double x = (*wdistx)[j];
-    double y = (*wdisty)[j];
-    double z = (*wdistz)[j];
+    double x = (wdistx)[j];
+    double y = (wdisty)[j];
+    double z = (wdistz)[j];
     double newwdist = sqrt(x * x + y * y + z * z);
     int err = walldist_->ReplaceMyValue(j, 0, newwdist);
     if (err > 0) FOUR_C_THROW("something wrong");
@@ -1758,7 +1740,7 @@ void FLD::XWallAleFSI::update_tau_w(int step,
     {
       if (myrank_ == 0) std::cout << "  L2-project... ";
 
-      l2_project_vector(veln, Teuchos::null, accn);
+      l2_project_vector(*veln, Teuchos::null, accn);
 
       // at the beginning of this time step they are equal -> calculate only one of them
       velnp->Update(1.0, *veln, 0.0);

@@ -54,7 +54,7 @@ Thermo::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& ioparams,
   apply_force_external_conv((*time_)[0], (*temp_)(0), (*temp_)(0), fext_, tang_);
 
   //! set initial external force vector
-  apply_force_external((*time_)[0], (*temp_)(0), fext_);
+  apply_force_external((*time_)[0], (*temp_)(0), *fext_);
 
   //! have a nice day
   return;
@@ -97,7 +97,7 @@ void Thermo::TimIntStatics::evaluate_rhs_tang_residual()
   // --> always use T_n+1 for statics!
   apply_force_external_conv(timen_, (*temp_)(0), tempn_, fextn_, tang_);
 
-  apply_force_external(timen_, (*temp_)(0), fextn_);
+  apply_force_external(timen_, (*temp_)(0), *fextn_);
 
   //! initialise internal forces
   fintn_->PutScalar(0.0);
@@ -133,7 +133,7 @@ double Thermo::TimIntStatics::calc_ref_norm_temperature()
   //! points within the timestep (end point, generalized midpoint).
 
   double charnormtemp = 0.0;
-  charnormtemp = Thermo::Aux::calculate_vector_norm(iternorm_, (*temp_)(0));
+  charnormtemp = Thermo::Aux::calculate_vector_norm(iternorm_, *(*temp_)(0));
 
   //! rise your hat
   return charnormtemp;
@@ -154,15 +154,15 @@ double Thermo::TimIntStatics::calc_ref_norm_force()
 
   //! norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = Thermo::Aux::calculate_vector_norm(iternorm_, fintn_);
+  fintnorm = Thermo::Aux::calculate_vector_norm(iternorm_, *fintn_);
 
   //! norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = Thermo::Aux::calculate_vector_norm(iternorm_, fextn_);
+  fextnorm = Thermo::Aux::calculate_vector_norm(iternorm_, *fextn_);
 
   //! norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = Thermo::Aux::calculate_vector_norm(iternorm_, freact_);
+  freactnorm = Thermo::Aux::calculate_vector_norm(iternorm_, *freact_);
 
   //! return char norm
   return std::max(fintnorm, std::max(fextnorm, freactnorm));

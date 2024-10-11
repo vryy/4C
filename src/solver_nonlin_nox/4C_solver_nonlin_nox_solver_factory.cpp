@@ -38,10 +38,10 @@ Teuchos::RCP<::NOX::Solver::Generic> NOX::Nln::Solver::Factory::build_solver(
     const Teuchos::RCP<::NOX::Abstract::Group>& grp,
     const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
     const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests,
-    const Teuchos::RCP<NOX::Nln::GlobalData>& nlnGlobalData)
+    NOX::Nln::GlobalData& nlnGlobalData)
 {
   Teuchos::RCP<::NOX::Solver::Generic> solver;
-  Teuchos::RCP<Teuchos::ParameterList> params = nlnGlobalData->get_nln_parameter_list_ptr();
+  Teuchos::RCP<Teuchos::ParameterList> params = nlnGlobalData.get_nln_parameter_list_ptr();
 
   std::string method = params->get<std::string>("Nonlinear Solver", "Line Search Based");
 
@@ -59,7 +59,7 @@ Teuchos::RCP<::NOX::Solver::Generic> NOX::Nln::Solver::Factory::build_solver(
   {
     solver = Teuchos::make_rcp<NOX::Nln::Solver::SingleStep>(grp, innerTests, params);
   }
-  else if (not nlnGlobalData->is_constrained())
+  else if (not nlnGlobalData.is_constrained())
   {
     // unconstrained problems are able to call the standard nox factory
     solver = ::NOX::Solver::buildSolver(grp, outerTests, params);
@@ -86,7 +86,7 @@ Teuchos::RCP<::NOX::Solver::Generic> NOX::Nln::Solver::build_solver(
     const Teuchos::RCP<NOX::Nln::GlobalData>& nlnGlobalData)
 {
   Factory factory;
-  return factory.build_solver(grp, outerTests, innerTests, nlnGlobalData);
+  return factory.build_solver(grp, outerTests, innerTests, *nlnGlobalData);
 }
 
 FOUR_C_NAMESPACE_CLOSE

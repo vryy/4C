@@ -53,13 +53,13 @@ void Inpar::BeamToSolid::beam_to_solid_interaction_get_string(
 /**
  *
  */
-void Inpar::BeamToSolid::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::BeamToSolid::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& beaminteraction = list->sublist("BEAM INTERACTION", false, "");
+  Teuchos::ParameterList& beaminteraction = list.sublist("BEAM INTERACTION", false, "");
 
   // Beam to solid volume mesh tying parameters.
   Teuchos::ParameterList& beam_to_solid_volume_mestying =

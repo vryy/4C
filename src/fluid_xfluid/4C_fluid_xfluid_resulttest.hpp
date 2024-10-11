@@ -54,8 +54,8 @@ namespace FLD
    private:
     /// nodal value test (one can specify discretization and corresponding solution here!)
     void test_node(const Core::IO::InputParameterContainer& container, int& nerr, int& test_count,
-        int node, const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& velnp);
+        int node, const Core::FE::Discretization& discret,
+        const Core::LinAlg::Vector<double>& velnp);
 
     /// XFEM discretization
     Teuchos::RCP<const Core::FE::Discretization> discret_;

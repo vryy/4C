@@ -152,8 +152,8 @@ namespace Discret
         \param epn              (i) nodal pressure at n
         \param dt               (i) timestep
         */
-      void compute_pext(RedAirway* ele, Teuchos::RCP<const Core::LinAlg::Vector<double>> pn,
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> pnp, Teuchos::ParameterList& params);
+      void compute_pext(RedAirway* ele, const Core::LinAlg::Vector<double>& pn,
+          const Core::LinAlg::Vector<double>& pnp, Teuchos::ParameterList& params);
 
 
       void evaluate_terminal_bc(RedAirway* ele, Teuchos::ParameterList& params,

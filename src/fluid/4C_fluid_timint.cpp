@@ -53,16 +53,15 @@ FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
       kspsplitter_(Teuchos::null)
 {
   // check for special fluid output which is to be handled by an own writer object
-  Teuchos::RCP<const Teuchos::ParameterList> fluid_runtime_output_list =
-      Teuchos::make_rcp<Teuchos::ParameterList>(
-          Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT").sublist("FLUID"));
+  const Teuchos::ParameterList fluid_runtime_output_list(
+      Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT").sublist("FLUID"));
 
-  bool output_fluid = fluid_runtime_output_list->get<bool>("OUTPUT_FLUID");
+  bool output_fluid = fluid_runtime_output_list.get<bool>("OUTPUT_FLUID");
 
   // create and initialize parameter container object for fluid specific runtime output
   if (output_fluid)
   {
-    runtime_output_params_.init(*fluid_runtime_output_list);
+    runtime_output_params_.init(fluid_runtime_output_list);
     runtime_output_params_.setup();
 
     // TODO This does not work for restarted simulations as the time_ is not yet correctly set.

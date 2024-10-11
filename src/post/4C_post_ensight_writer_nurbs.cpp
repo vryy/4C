@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
     knot values are mapped to.
 */
 /*----------------------------------------------------------------------*/
-void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& geofile,
-    const Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Epetra_Map>& proc0map)
+void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(
+    std::ofstream& geofile, Core::FE::Discretization& dis, Teuchos::RCP<Epetra_Map>& proc0map)
 {
   using namespace FourC;
 
@@ -50,7 +50,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
 
   // cast dis to NurbsDiscretisation
   Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*dis));
+      dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(dis));
 
   if (nurbsdis == nullptr)
   {
@@ -1366,9 +1366,8 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map, *vispointmap_);
-  Teuchos::RCP<Epetra_MultiVector> allnodecoords =
-      Teuchos::make_rcp<Epetra_MultiVector>(*proc0map, 3);
-  int err = allnodecoords->Import(*nodecoords, proc0importer, Insert);
+  Epetra_MultiVector allnodecoords(*proc0map, 3);
+  int err = allnodecoords.Import(*nodecoords, proc0importer, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
   // write the node coordinates (only proc 0)
@@ -1376,8 +1375,8 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
   // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
   if (myrank_ == 0)
   {
-    double* coords = allnodecoords->Values();
-    int numentries = (3 * (allnodecoords->GlobalLength()));
+    double* coords = allnodecoords.Values();
+    int numentries = (3 * (allnodecoords.GlobalLength()));
 
     if (nodeidgiven_)
     {
@@ -1407,15 +1406,14 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
          the patch offset.                             (gammi)
 ----------------------------------------------------------------------*/
 void EnsightWriter::write_nurbs_cell(const Core::FE::CellType distype, const int gid,
-    std::ofstream& geofile, std::vector<int>& nodevector,
-    const Teuchos::RCP<Core::FE::Discretization> dis,
-    const Teuchos::RCP<Epetra_Map>& proc0map) const
+    std::ofstream& geofile, std::vector<int>& nodevector, Core::FE::Discretization& dis,
+    Epetra_Map& proc0map) const
 {
   using namespace FourC;
 
   // cast dis to NurbsDiscretisation
   Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
-      dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*dis));
+      dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(dis));
 
   if (nurbsdis == nullptr)
   {
@@ -1480,10 +1478,10 @@ void EnsightWriter::write_nurbs_cell(const Core::FE::CellType distype, const int
       // append 4 elements
       if (myrank_ == 0)  // proc0 can write its elements immediately
       {
-        write(geofile, proc0map->LID(((ele_cart_id[1]) * (nvpu) + ele_cart_id[0])) + 1);
-        write(geofile, proc0map->LID(((ele_cart_id[1]) * (nvpu) + ele_cart_id[0] + 1)) + 1);
-        write(geofile, proc0map->LID(((ele_cart_id[1] + 1) * (nvpu) + ele_cart_id[0] + 1)) + 1);
-        write(geofile, proc0map->LID(((ele_cart_id[1] + 1) * (nvpu) + ele_cart_id[0])) + 1);
+        write(geofile, proc0map.LID(((ele_cart_id[1]) * (nvpu) + ele_cart_id[0])) + 1);
+        write(geofile, proc0map.LID(((ele_cart_id[1]) * (nvpu) + ele_cart_id[0] + 1)) + 1);
+        write(geofile, proc0map.LID(((ele_cart_id[1] + 1) * (nvpu) + ele_cart_id[0] + 1)) + 1);
+        write(geofile, proc0map.LID(((ele_cart_id[1] + 1) * (nvpu) + ele_cart_id[0])) + 1);
       }
       else  // elements on other procs have to store their global node ids
       {
@@ -1521,55 +1519,54 @@ void EnsightWriter::write_nurbs_cell(const Core::FE::CellType distype, const int
       if (myrank_ == 0)  // proc0 can write its elements immediately
       {
         write(geofile,
-            proc0map->LID(vpoff[npatch] + ((2 * ele_cart_id[1]) * (nvpu) + 2 * ele_cart_id[0])) +
+            proc0map.LID(vpoff[npatch] + ((2 * ele_cart_id[1]) * (nvpu) + 2 * ele_cart_id[0])) + 1);
+        write(geofile,
+            proc0map.LID(vpoff[npatch] + ((2 * ele_cart_id[1]) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
                 1);
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1]) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
+        write(geofile, proc0map.LID(vpoff[npatch] +
+                                    ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
                            1);
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
+        write(geofile,
+            proc0map.LID(vpoff[npatch] + ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0])) +
+                1);
+
+        write(geofile,
+            proc0map.LID(vpoff[npatch] + ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0])) +
+                1);
+        write(geofile, proc0map.LID(vpoff[npatch] +
+                                    ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
                            1);
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0])) +
+        write(geofile, proc0map.LID(vpoff[npatch] +
+                                    ((2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
+                           1);
+        write(geofile,
+            proc0map.LID(vpoff[npatch] + ((2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0])) +
+                1);
+
+        write(geofile,
+            proc0map.LID(vpoff[npatch] + ((2 * ele_cart_id[1]) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
+                1);
+        write(geofile,
+            proc0map.LID(vpoff[npatch] + ((2 * ele_cart_id[1]) * (nvpu) + 2 * ele_cart_id[0] + 2)) +
+                1);
+        write(geofile, proc0map.LID(vpoff[npatch] +
+                                    ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 2)) +
+                           1);
+        write(geofile, proc0map.LID(vpoff[npatch] +
+                                    ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
                            1);
 
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0])) +
+        write(geofile, proc0map.LID(vpoff[npatch] +
+                                    ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
                            1);
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
+        write(geofile, proc0map.LID(vpoff[npatch] +
+                                    ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 2)) +
                            1);
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
+        write(geofile, proc0map.LID(vpoff[npatch] +
+                                    ((2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0] + 2)) +
                            1);
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0])) +
-                           1);
-
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1]) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
-                           1);
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1]) * (nvpu) + 2 * ele_cart_id[0] + 2)) +
-                           1);
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 2)) +
-                           1);
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
-                           1);
-
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
-                           1);
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 2)) +
-                           1);
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0] + 2)) +
-                           1);
-        write(geofile, proc0map->LID(vpoff[npatch] +
-                                     ((2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
+        write(geofile, proc0map.LID(vpoff[npatch] +
+                                    ((2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0] + 1)) +
                            1);
       }
       else  // elements on other procs have to store their global node ids
@@ -1672,7 +1669,7 @@ void EnsightWriter::write_nurbs_cell(const Core::FE::CellType distype, const int
       {
         for (unsigned id = 0; id < cellnodes.size(); ++id)
         {
-          write(geofile, proc0map->LID(vpoff[npatch] + cellnodes[id]) + 1);
+          write(geofile, proc0map.LID(vpoff[npatch] + cellnodes[id]) + 1);
         }
       }
       else  // elements on other procs have to store their global node ids
@@ -1717,8 +1714,7 @@ void EnsightWriter::write_nurbs_cell(const Core::FE::CellType distype, const int
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const int numdf,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> data, const std::string name,
-    const int offset) const
+    Core::LinAlg::Vector<double>& data, const std::string name, const int offset) const
 {
   using namespace FourC;
 
@@ -1908,17 +1904,15 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   coldofmapvec.reserve(coldofset.size());
   coldofmapvec.assign(coldofset.begin(), coldofset.end());
   coldofset.clear();
-  Teuchos::RCP<Epetra_Map> coldofmap = Teuchos::make_rcp<Epetra_Map>(
-      -1, coldofmapvec.size(), coldofmapvec.data(), 0, nurbsdis->get_comm());
+  Epetra_Map coldofmap(-1, coldofmapvec.size(), coldofmapvec.data(), 0, nurbsdis->get_comm());
   coldofmapvec.clear();
 
-  const Epetra_Map* fulldofmap = &(*coldofmap);
-  const Teuchos::RCP<Core::LinAlg::Vector<double>> coldata =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fulldofmap, true);
+  const Epetra_Map* fulldofmap = &(coldofmap);
+  Core::LinAlg::Vector<double> coldata(*fulldofmap, true);
 
   // create an importer and import the data
-  Epetra_Import importer((*coldata).Map(), (*data).Map());
-  int imerr = (*coldata).Import((*data), importer, Insert);
+  Epetra_Import importer((coldata).Map(), (data).Map());
+  int imerr = (coldata).Import((data), importer, Insert);
   if (imerr)
   {
     FOUR_C_THROW("import failed\n");
@@ -1998,7 +1992,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
         for (int rr = 0; rr < dim; ++rr)
         {
           my_data[dim * inode + rr] =
-              (*coldata)[(*coldata).Map().LID(lm[inode * (dim + 1) + rr] + offset)];
+              (coldata)[(coldata).Map().LID(lm[inode * (dim + 1) + rr] + offset)];
         }
       }
     }
@@ -2010,8 +2004,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
       {
         for (int rr = 0; rr < dim; ++rr)
         {
-          my_data[dim * inode + rr] =
-              (*coldata)[(*coldata).Map().LID(lm[inode * dim + rr] + offset)];
+          my_data[dim * inode + rr] = (coldata)[(coldata).Map().LID(lm[inode * dim + rr] + offset)];
         }
       }
     }
@@ -2022,8 +2015,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
       for (int inode = 0; inode < numnp; ++inode)
       {
         // offset should be equal to dim for pressure case!
-        my_data[inode] =
-            (*coldata)[(*coldata).Map().LID(lm[inode * (dim + 1) + dim] + offset - dim)];
+        my_data[inode] = (coldata)[(coldata).Map().LID(lm[inode * (dim + 1) + dim] + offset - dim)];
       }
     }
     else if (name == "averaged_scalar_field")
@@ -2033,7 +2025,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
       for (int inode = 0; inode < numnp; ++inode)
       {
         // offset should be equal to dim for pressure case!
-        my_data[inode] = (*coldata)[(*coldata).Map().LID(lm[inode * (dim + 1) + dim] + offset)];
+        my_data[inode] = (coldata)[(coldata).Map().LID(lm[inode * (dim + 1) + dim] + offset)];
       }
     }
     else if ((name == "phi") or (name == "averaged_phi"))
@@ -2045,9 +2037,9 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
         Core::Nodes::Node* n = nurbsdis->l_row_node(inode);
         int numdofpernode = actele->num_dof_per_node(*n);
         if (numdofpernode == 1)  // one passive scalar (Scalar_Transport problem)
-          my_data[inode] = (*coldata)[(*coldata).Map().LID(lm[inode * numdofpernode] + offset)];
+          my_data[inode] = (coldata)[(coldata).Map().LID(lm[inode * numdofpernode] + offset)];
         else  // result for electric potential (ELCH problem)
-          my_data[inode] = (*coldata)[(*coldata).Map().LID(
+          my_data[inode] = (coldata)[(coldata).Map().LID(
               lm[inode * numdofpernode + (numdofpernode - 1)] + offset)];
       }
     }
@@ -2072,7 +2064,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
       {
         Core::Nodes::Node* n = nurbsdis->l_row_node(inode);
         int numdofpernode = actele->num_dof_per_node(*n);
-        my_data[inode] = (*coldata)[(*coldata).Map().LID(lm[inode * numdofpernode + k] + offset)];
+        my_data[inode] = (coldata)[(coldata).Map().LID(lm[inode * numdofpernode + k] + offset)];
       }
     }
     else if (name == "normalflux")
@@ -2083,7 +2075,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
       {
         // Core::Nodes::Node* n = nurbsdis->lRowNode(inode);
         int numdofpernode = 1;  // actele->NumDofPerNode(*n);
-        my_data[inode] = (*coldata)[(*coldata).Map().LID(lm[inode * numdofpernode] + offset)];
+        my_data[inode] = (coldata)[(coldata).Map().LID(lm[inode * numdofpernode] + offset)];
       }
     }
     //---------------------------------------------------
@@ -2100,31 +2092,29 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
       {
         for (int rr = 0; rr < dim; ++rr)
         {
-          my_data[dim * inode + rr] =
-              (*coldata)[(*coldata).Map().LID(lm[inode * dim + rr] + offset)];
+          my_data[dim * inode + rr] = (coldata)[(coldata).Map().LID(lm[inode * dim + rr] + offset)];
         }
       }
     }
     else if (name == "temperature")
     {
       for (int inode = 0; inode < numnp; ++inode)
-        my_data[inode] = (*coldata)[(*coldata).Map().LID(lm[inode] + offset)];
+        my_data[inode] = (coldata)[(coldata).Map().LID(lm[inode] + offset)];
     }
     else
     {
       FOUR_C_THROW("Up to now, I'm not able to write a field named %s\n", name.c_str());
     }
 
-    interpolate_nurbs_result_to_viz_points(idata, dim, npatch, vpoff, ele_cart_id, actele, nurbsdis,
-        eleknots, weights, numdf, my_data);
+    interpolate_nurbs_result_to_viz_points(*idata, dim, npatch, vpoff, ele_cart_id, actele,
+        nurbsdis, eleknots, weights, numdf, my_data);
 
   }  // loop over available elements
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map_, *vispointmap_);
-  Teuchos::RCP<Epetra_MultiVector> allsols =
-      Teuchos::make_rcp<Epetra_MultiVector>(*proc0map_, numdf);
-  int err = allsols->Import(*idata, proc0importer, Insert);
+  Epetra_MultiVector allsols(*proc0map_, numdf);
+  int err = allsols.Import(*idata, proc0importer, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
   // write the node results (only proc 0)
@@ -2132,8 +2122,8 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
   if (myrank_ == 0)
   {
-    double* solvals = allsols->Values();
-    int numentries = (numdf * (allsols->GlobalLength()));
+    double* solvals = allsols.Values();
+    int numentries = (numdf * (allsols.GlobalLength()));
 
     // now write the solution
     for (int i = 0; i < numentries; ++i)
@@ -2162,10 +2152,9 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
     my_data acoordingly.
 */
 /*----------------------------------------------------------------------*/
-void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_MultiVector> idata,
-    const int dim, const int npatch, const std::vector<int>& vpoff,
-    const std::vector<int>& ele_cart_id, const Core::Elements::Element* actele,
-    Core::FE::Nurbs::NurbsDiscretization* nurbsdis,
+void EnsightWriter::interpolate_nurbs_result_to_viz_points(Epetra_MultiVector& idata, const int dim,
+    const int npatch, const std::vector<int>& vpoff, const std::vector<int>& ele_cart_id,
+    const Core::Elements::Element* actele, Core::FE::Nurbs::NurbsDiscretization* nurbsdis,
     const std::vector<Core::LinAlg::SerialDenseVector>& eleknots,
     const Core::LinAlg::SerialDenseVector& weights, const int numdf,
     const std::vector<double>& my_data) const
@@ -2217,7 +2206,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID((ele_cart_id[1]) * (nvpu) + ele_cart_id[0]);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 2
@@ -2233,7 +2222,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID((ele_cart_id[1]) * (nvpu) + ele_cart_id[0] + 1);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
 
@@ -2250,7 +2239,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID((ele_cart_id[1] + 1) * (nvpu) + ele_cart_id[0]);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 4
@@ -2266,7 +2255,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID((ele_cart_id[1] + 1) * (nvpu) + ele_cart_id[0] + 1);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
       }
       break;
@@ -2308,7 +2297,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 2
@@ -2327,7 +2316,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idv + idu);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
 
@@ -2347,7 +2336,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 4
@@ -2366,7 +2355,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
       }
       // top line
@@ -2400,7 +2389,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
           int lid =
               (*vispointmap_)
                   .LID(vpoff[npatch] + (2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0]);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 6
@@ -2418,7 +2407,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
           int lid =
               (*vispointmap_)
                   .LID(vpoff[npatch] + (2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0] + 1);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
       }
 
@@ -2451,7 +2440,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
           int lid =
               (*vispointmap_)
                   .LID(vpoff[npatch] + (2 * ele_cart_id[1]) * (nvpu) + 2 * ele_cart_id[0] + 2);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 6
@@ -2469,7 +2458,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
           int lid =
               (*vispointmap_)
                   .LID(vpoff[npatch] + (2 * ele_cart_id[1] + 1) * (nvpu) + 2 * ele_cart_id[0] + 2);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
       }
 
@@ -2502,7 +2491,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
           int lid =
               (*vispointmap_)
                   .LID(vpoff[npatch] + (2 * ele_cart_id[1] + 2) * (nvpu) + 2 * ele_cart_id[0] + 2);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
       }
       break;
@@ -2559,7 +2548,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 2
@@ -2582,7 +2571,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 3
@@ -2605,7 +2594,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 4
@@ -2628,7 +2617,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 5
@@ -2651,7 +2640,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 6
@@ -2674,7 +2663,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 7
@@ -2697,7 +2686,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 8
@@ -2720,7 +2709,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
       }
 
@@ -2765,7 +2754,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 2
@@ -2788,7 +2777,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 3
@@ -2811,7 +2800,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 4
@@ -2834,7 +2823,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
       }
 
@@ -2880,7 +2869,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
 
@@ -2904,7 +2893,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 3
@@ -2927,7 +2916,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 4
@@ -2950,7 +2939,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
       }
 
@@ -2996,7 +2985,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 2
@@ -3019,7 +3008,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
       }
 
@@ -3067,7 +3056,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 2
@@ -3090,7 +3079,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 3
@@ -3113,7 +3102,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 4
@@ -3136,7 +3125,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
       }
 
@@ -3185,7 +3174,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 2
@@ -3208,7 +3197,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
       }
 
@@ -3256,7 +3245,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
 
         // point 2
@@ -3279,7 +3268,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
       }
 
@@ -3327,7 +3316,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
             val += my_data[numdf * inode + isd] * nurbs_shape_funct(inode);
           }
           int lid = (*vispointmap_).LID(vpoff[npatch] + idu + idv + idw);
-          (idata)->ReplaceMyValue(lid, isd, val);
+          (idata).ReplaceMyValue(lid, isd, val);
         }
       }
 
@@ -3343,7 +3332,7 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Teuchos::RCP<Epetra_M
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const int numdf,
-    const Teuchos::RCP<Epetra_MultiVector> data, const std::string name, const int offset) const
+    Epetra_MultiVector& data, const std::string name, const int offset) const
 {
   using namespace FourC;
 
@@ -3431,17 +3420,15 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   colnodemapvec.reserve(colnodeset.size());
   colnodemapvec.assign(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
-  Teuchos::RCP<Epetra_Map> colnodemap = Teuchos::make_rcp<Epetra_Map>(
-      -1, colnodemapvec.size(), colnodemapvec.data(), 0, nurbsdis->get_comm());
+  Epetra_Map colnodemap(-1, colnodemapvec.size(), colnodemapvec.data(), 0, nurbsdis->get_comm());
   colnodemapvec.clear();
 
-  const Epetra_Map* fullnodemap = &(*colnodemap);
-  const Teuchos::RCP<Epetra_MultiVector> coldata =
-      Teuchos::make_rcp<Epetra_MultiVector>(*fullnodemap, numdf, true);  // numdf important!!!
+  const Epetra_Map* fullnodemap = &(colnodemap);
+  Epetra_MultiVector coldata(*fullnodemap, numdf, true);  // numdf important!!!
 
   // create an importer and import the data
-  Epetra_Import importer((*coldata).Map(), (*data).Map());
-  int imerr = (*coldata).Import((*data), importer, Insert);
+  Epetra_Import importer((coldata).Map(), (data).Map());
+  int imerr = (coldata).Import((data), importer, Insert);
   if (imerr)
   {
     FOUR_C_THROW("import failed\n");
@@ -3511,21 +3498,20 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
       for (int rr = 0; rr < numdf; ++rr)
       {
         // value of nodemap-based column rr
-        my_data[numdf * inode + rr] = (*((*coldata)(rr)))[(*coldata).Map().LID(nodeids[inode])];
+        my_data[numdf * inode + rr] = (*((coldata)(rr)))[(coldata).Map().LID(nodeids[inode])];
       }
     }
 
     // intoplate solution to desired visualization points
-    interpolate_nurbs_result_to_viz_points(idata, dim, npatch, vpoff, ele_cart_id, actele, nurbsdis,
-        eleknots, weights, numdf, my_data);
+    interpolate_nurbs_result_to_viz_points(*idata, dim, npatch, vpoff, ele_cart_id, actele,
+        nurbsdis, eleknots, weights, numdf, my_data);
 
   }  // loop over available elements
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map_, *vispointmap_);
-  Teuchos::RCP<Epetra_MultiVector> allsols =
-      Teuchos::make_rcp<Epetra_MultiVector>(*proc0map_, numdf);
-  int err = allsols->Import(*idata, proc0importer, Insert);
+  Epetra_MultiVector allsols(*proc0map_, numdf);
+  int err = allsols.Import(*idata, proc0importer, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
   //---------------
@@ -3538,13 +3524,12 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   {
     for (int idf = 0; idf < numdf; ++idf)
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> column =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*allsols)(idf));
+      Core::LinAlg::Vector<double> column(*(allsols)(idf));
       for (int inode = 0; inode < finalnumnode;
            inode++)  // inode == lid of node because we use proc0map_
       {
         //        Write(file, static_cast<float>(idf));
-        write(file, static_cast<float>((*column)[inode]));
+        write(file, static_cast<float>((column)[inode]));
       }
     }
   }  // if (myrank_==0)

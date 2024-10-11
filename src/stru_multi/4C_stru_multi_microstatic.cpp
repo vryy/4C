@@ -293,7 +293,7 @@ void MultiScale::MicroStatic::predict_const_dis(Core::LinAlg::Matrix<3, 3>* defg
   // gradient is evaluated at the mid-point!
   {
     // disn then also holds prescribed new dirichlet displacements
-    evaluate_micro_bc(defgrd, disn_);
+    evaluate_micro_bc(defgrd, *disn_);
     discret_->clear_state();
   }
 
@@ -370,7 +370,7 @@ void MultiScale::MicroStatic::predict_tang_dis(Core::LinAlg::Matrix<3, 3>* defgr
   // gradient is evaluated at the mid-point!
   {
     // dbcinc then also holds prescribed new dirichlet displacements
-    evaluate_micro_bc(defgrd, dbcinc);
+    evaluate_micro_bc(defgrd, *dbcinc);
     discret_->clear_state();
   }
 
@@ -656,21 +656,20 @@ void MultiScale::MicroStatic::prepare_output()
 /*----------------------------------------------------------------------*
  |  write output (public)                                       lw 02/08|
  *----------------------------------------------------------------------*/
-void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
-    const double time, const int step, const double dt)
+void MultiScale::MicroStatic::output(
+    Core::IO::DiscretizationWriter& output, const double time, const int step, const double dt)
 {
   bool isdatawritten = false;
 
   //------------------------------------------------- write restart step
   if (restartevry_ and step % restartevry_ == 0)
   {
-    output->write_mesh(step, time);
-    output->new_step(step, time);
-    output->write_vector("displacement", dis_);
+    output.write_mesh(step, time);
+    output.new_step(step, time);
+    output.write_vector("displacement", dis_);
     isdatawritten = true;
 
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> emptyalpha =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(1, 1);
+    Core::LinAlg::SerialDenseMatrix emptyalpha(1, 1);
 
     Core::Communication::PackBuffer data;
 
@@ -682,24 +681,24 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
       }
       else
       {
-        add_to_pack(data, *emptyalpha);
+        add_to_pack(data, emptyalpha);
       }
     }
-    output->write_vector("alpha", data(), *discret_->element_col_map());
+    output.write_vector("alpha", data(), *discret_->element_col_map());
   }
 
   //----------------------------------------------------- output results
   if (iodisp_ && resevrydisp_ && step % resevrydisp_ == 0 && !isdatawritten)
   {
-    output->new_step(step, time);
-    output->write_vector("displacement", dis_);
+    output.new_step(step, time);
+    output.write_vector("displacement", dis_);
     isdatawritten = true;
   }
 
   //------------------------------------- stress/strain output
   if (resevrystrs_ and !(step % resevrystrs_) and iostress_ != Inpar::Solid::stress_none)
   {
-    if (!isdatawritten) output->new_step(step, time);
+    if (!isdatawritten) output.new_step(step, time);
     isdatawritten = true;
 
     if (stress_ == Teuchos::null or strain_ == Teuchos::null or plstrain_ == Teuchos::null)
@@ -708,10 +707,10 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
     switch (iostress_)
     {
       case Inpar::Solid::stress_cauchy:
-        output->write_vector("gauss_cauchy_stresses_xyz", *stress_, *discret_->element_row_map());
+        output.write_vector("gauss_cauchy_stresses_xyz", *stress_, *discret_->element_row_map());
         break;
       case Inpar::Solid::stress_2pk:
-        output->write_vector("gauss_2PK_stresses_xyz", *stress_, *discret_->element_row_map());
+        output.write_vector("gauss_2PK_stresses_xyz", *stress_, *discret_->element_row_map());
         break;
       case Inpar::Solid::stress_none:
         break;
@@ -722,10 +721,10 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
     switch (iostrain_)
     {
       case Inpar::Solid::strain_ea:
-        output->write_vector("gauss_EA_strains_xyz", *strain_, *discret_->element_row_map());
+        output.write_vector("gauss_EA_strains_xyz", *strain_, *discret_->element_row_map());
         break;
       case Inpar::Solid::strain_gl:
-        output->write_vector("gauss_GL_strains_xyz", *strain_, *discret_->element_row_map());
+        output.write_vector("gauss_GL_strains_xyz", *strain_, *discret_->element_row_map());
         break;
       case Inpar::Solid::strain_none:
         break;
@@ -736,10 +735,10 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
     switch (ioplstrain_)
     {
       case Inpar::Solid::strain_ea:
-        output->write_vector("gauss_pl_EA_strains_xyz", *plstrain_, *discret_->element_row_map());
+        output.write_vector("gauss_pl_EA_strains_xyz", *plstrain_, *discret_->element_row_map());
         break;
       case Inpar::Solid::strain_gl:
-        output->write_vector("gauss_pl_GL_strains_xyz", *plstrain_, *discret_->element_row_map());
+        output.write_vector("gauss_pl_GL_strains_xyz", *plstrain_, *discret_->element_row_map());
         break;
       case Inpar::Solid::strain_none:
         break;
@@ -781,7 +780,7 @@ void MultiScale::MicroStatic::read_restart(int step, Teuchos::RCP<Core::LinAlg::
 
 
 void MultiScale::MicroStatic::evaluate_micro_bc(
-    Core::LinAlg::Matrix<3, 3>* defgrd, Teuchos::RCP<Core::LinAlg::Vector<double>> disp)
+    Core::LinAlg::Matrix<3, 3>* defgrd, Core::LinAlg::Vector<double>& disp)
 {
   std::vector<Core::Conditions::Condition*> conds;
   discret_->get_condition("MicroBoundary", conds);
@@ -827,9 +826,9 @@ void MultiScale::MicroStatic::evaluate_micro_bc(
       {
         const int gid = dofs[l];
 
-        const int lid = disp->Map().LID(gid);
+        const int lid = disp.Map().LID(gid);
         if (lid < 0) FOUR_C_THROW("Global id %d not on this proc in system vector", gid);
-        (*disp)[lid] = disp_prescribed[l];
+        (disp)[lid] = disp_prescribed[l];
       }
     }
   }
@@ -1017,13 +1016,13 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
         Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
     // create solver
-    Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
-        solverparams, discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
+    Core::LinAlg::Solver solver(solverparams, discret_->get_comm(),
+        Global::Problem::instance()->solver_params_callback(),
         Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY"));
 
     // prescribe rigid body modes
-    discret_->compute_null_space_if_necessary(solver->params());
+    discret_->compute_null_space_if_necessary(solver.params());
 
     Teuchos::RCP<Epetra_MultiVector> iterinc = Teuchos::make_rcp<Epetra_MultiVector>(*dofrowmap, 9);
     iterinc->PutScalar(0.0);
@@ -1036,7 +1035,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
         Core::LinAlg::SolverParams solver_params;
         solver_params.refactor = true;
         solver_params.reset = true;
-        solver->solve_with_multi_vector(stiff_->epetra_operator(), iterinc, rhs_, solver_params);
+        solver.solve_with_multi_vector(stiff_->epetra_operator(), iterinc, rhs_, solver_params);
         break;
       }
       case Core::LinearSolver::SolverType::superlu:
@@ -1048,7 +1047,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
           Core::LinAlg::SolverParams solver_params;
           solver_params.refactor = true;
           solver_params.reset = true;
-          solver->solve_with_multi_vector(stiff_->epetra_operator(),
+          solver.solve_with_multi_vector(stiff_->epetra_operator(),
               Teuchos::rcpFromRef(*((*iterinc)(i))), Teuchos::rcpFromRef(*((*rhs_)(i))),
               solver_params);
         }
@@ -1060,11 +1059,11 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
       }
     }
 
-    Teuchos::RCP<Epetra_MultiVector> temp = Teuchos::make_rcp<Epetra_MultiVector>(*dofrowmap, 9);
-    stiff_dirich_->multiply(false, *iterinc, *temp);
+    Epetra_MultiVector temp(*dofrowmap, 9);
+    stiff_dirich_->multiply(false, *iterinc, temp);
 
     Epetra_MultiVector fexp(*pdof_, 9);
-    int err = fexp.Import(*temp, *importp_, Insert);
+    int err = fexp.Import(temp, *importp_, Insert);
     if (err) FOUR_C_THROW("Export of boundary 'forces' failed with err=%d", err);
 
     // multiply manually D_ and fexp because D_ is not distributed as usual Epetra_MultiVectors and,

@@ -123,7 +123,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
      *
      */
     void add_global_force_stiffness_penalty_contributions(
-        const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& data_state,
+        Solid::TimeInt::BaseDataGlobalState& data_state,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
         Teuchos::RCP<Core::LinAlg::Vector<double>> force) const;
 

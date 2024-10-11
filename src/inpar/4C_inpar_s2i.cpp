@@ -18,14 +18,14 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------*
  | set valid parameters for scatra-scatra interface coupling   fang 01/16 |
  *------------------------------------------------------------------------*/
-void Inpar::S2I::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::S2I::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   Teuchos::ParameterList& s2icoupling =
-      list->sublist("SCALAR TRANSPORT DYNAMIC", true)
+      list.sublist("SCALAR TRANSPORT DYNAMIC", true)
           .sublist(
               "S2I COUPLING", false, "control parameters for scatra-scatra interface coupling");
 

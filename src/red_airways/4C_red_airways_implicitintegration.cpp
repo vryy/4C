@@ -116,21 +116,20 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
 
     // Get elements and nodes that need to be ghosted to have correct neighbor search
     // independent of number of procs
-    compute_nearest_acinus(discret_, &elecolset, &nodecolset, Teuchos::null);
+    compute_nearest_acinus(*discret_, &elecolset, &nodecolset, Teuchos::null);
 
     // extended ghosting for elements (also revert fully overlapping here)
     std::vector<int> coleles(elecolset.begin(), elecolset.end());
-    Teuchos::RCP<const Epetra_Map> extendedelecolmap =
-        Teuchos::make_rcp<Epetra_Map>(-1, coleles.size(), coleles.data(), 0, discret_->get_comm());
+    const Epetra_Map extendedelecolmap(-1, coleles.size(), coleles.data(), 0, discret_->get_comm());
 
-    discret_->export_column_elements(*extendedelecolmap);
+    discret_->export_column_elements(extendedelecolmap);
 
     // extended ghosting for nodes
     std::vector<int> colnodes(nodecolset.begin(), nodecolset.end());
-    Teuchos::RCP<const Epetra_Map> extendednodecolmap = Teuchos::make_rcp<Epetra_Map>(
+    const Epetra_Map extendednodecolmap(
         -1, colnodes.size(), colnodes.data(), 0, discret_->get_comm());
 
-    discret_->export_column_nodes(*extendednodecolmap);
+    discret_->export_column_nodes(extendednodecolmap);
 
     // fill and inform user (not fully overlapping anymore at this point
     discret_->fill_complete();
@@ -138,7 +137,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
 
     // Neighbouring acinus
     airway_acinus_dep_ = Core::LinAlg::create_vector(*discret_->element_col_map(), true);
-    compute_nearest_acinus(discret_, nullptr, nullptr, airway_acinus_dep_);
+    compute_nearest_acinus(*discret_, nullptr, nullptr, airway_acinus_dep_);
   }
 
   // -------------------------------------------------------------------
@@ -352,18 +351,18 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
     std::vector<int> lm;
     std::vector<int> lmstride;
     // vector<int> lmowner;
-    Teuchos::RCP<std::vector<int>> lmowner = Teuchos::make_rcp<std::vector<int>>();
-    ele->location_vector(*discret_, lm, *lmowner, lmstride);
+    std::vector<int> lmowner;
+    ele->location_vector(*discret_, lm, lmowner, lmstride);
 
     // loop all nodes of this element, add values to the global vectors
 
-    if (myrank_ == (*lmowner)[0])
+    if (myrank_ == (lmowner)[0])
     {
       int gid = lm[0];
       double val = gid;
       nodeIds_->ReplaceGlobalValues(1, &val, &gid);
     }
-    if (myrank_ == (*lmowner)[1])
+    if (myrank_ == (lmowner)[1])
     {
       int gid = lm[1];
       double val = gid;
@@ -535,18 +534,18 @@ void Airway::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
  |                                                                roth 02/2016 |
  *-----------------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
-    Teuchos::RCP<Core::FE::Discretization const> search_discret, std::set<int>* elecolset,
+    const Core::FE::Discretization& search_discret, std::set<int>* elecolset,
     std::set<int>* nodecolset, Teuchos::RCP<Core::LinAlg::Vector<double>> airway_acinus_dep)
 {
   // Loop over all airways contained on this proc
-  for (int j = 0; j < (search_discret->num_my_col_elements()); j++)
+  for (int j = 0; j < (search_discret.num_my_col_elements()); j++)
   {
     // global element ID airway
-    int GID1 = search_discret->element_col_map()->GID(j);
+    int GID1 = search_discret.element_col_map()->GID(j);
 
     // check if element is airway element
     Discret::ELEMENTS::RedAirway* ele_aw =
-        dynamic_cast<Discret::ELEMENTS::RedAirway*>(search_discret->g_element(GID1));
+        dynamic_cast<Discret::ELEMENTS::RedAirway*>(search_discret.g_element(GID1));
 
     // check if element j is an airway
     if (ele_aw != nullptr)
@@ -571,13 +570,13 @@ void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
       for (int p = 0; p < 3; p++) node_coords_center[p] = (node_coords1[p] + node_coords2[p]) / 2;
 
       // Loop over all acinus elements (on processor)
-      for (int i = 0; i < (search_discret->num_my_col_elements()); i++)
+      for (int i = 0; i < (search_discret.num_my_col_elements()); i++)
       {
         // global acinus element ID
-        int GID2 = search_discret->element_col_map()->GID(i);
+        int GID2 = search_discret.element_col_map()->GID(i);
 
         Discret::ELEMENTS::RedAcinus* ele_ac =
-            dynamic_cast<Discret::ELEMENTS::RedAcinus*>(search_discret->g_element(GID2));
+            dynamic_cast<Discret::ELEMENTS::RedAcinus*>(search_discret.g_element(GID2));
 
         // Check if element is an acinus
         if (ele_ac != nullptr)
@@ -604,11 +603,11 @@ void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
       }
 
       // global element ID
-      int GID3 = search_discret->element_col_map()->GID(min_index);
+      int GID3 = search_discret.element_col_map()->GID(min_index);
 
       // why cast
       Discret::ELEMENTS::RedAcinus* ele_acinus =
-          dynamic_cast<Discret::ELEMENTS::RedAcinus*>(search_discret->g_element(GID3));
+          dynamic_cast<Discret::ELEMENTS::RedAcinus*>(search_discret.g_element(GID3));
 
       // extend ele and node col map
       if (elecolset != nullptr and nodecolset != nullptr)
@@ -717,7 +716,7 @@ void Airway::RedAirwayImplicitTimeInt::time_step(
   // Solve scatra if required
   if (solveScatra_)
   {
-    this->solve_scatra(CouplingTo3DParams);
+    this->solve_scatra(*CouplingTo3DParams);
   }
 
   // Update solution: current solution becomes old solution of next timestep
@@ -799,7 +798,7 @@ void Airway::RedAirwayImplicitTimeInt::non_lin_solve(
 
   // Evaluate total acinar volume
   double acinar_volume_np = 0.0;
-  bool err1 = this->sum_all_col_elem_val(acini_e_volumenp_, acini_bc_, acinar_volume_np);
+  bool err1 = this->sum_all_col_elem_val(*acini_e_volumenp_, *acini_bc_, acinar_volume_np);
   if (err1)
   {
     FOUR_C_THROW("Error in summing acinar volumes");
@@ -807,7 +806,7 @@ void Airway::RedAirwayImplicitTimeInt::non_lin_solve(
 
   // Evaluate total airway volume
   double airway_volume_np = 0.0;
-  bool err2 = this->sum_all_col_elem_val(elemVolumenp_, open_, airway_volume_np);
+  bool err2 = this->sum_all_col_elem_val(*elemVolumenp_, *open_, airway_volume_np);
   if (err2)
   {
     FOUR_C_THROW("Error in summing airway volumes");
@@ -861,17 +860,15 @@ void Airway::RedAirwayImplicitTimeInt::non_lin_solve(
     double maxP = 0.0;
     double minQ = 0.0;
     double minP = 0.0;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qabs =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*qin_np_);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pabs =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pnp_);
-    qabs->Abs(*qin_np_);
-    pabs->Abs(*pnp_);
+    Core::LinAlg::Vector<double> qabs(*qin_np_);
+    Core::LinAlg::Vector<double> pabs(*pnp_);
+    qabs.Abs(*qin_np_);
+    pabs.Abs(*pnp_);
 
-    qabs->MaxValue(&maxQ);
-    pabs->MaxValue(&maxP);
-    qabs->MinValue(&minQ);
-    pabs->MinValue(&minP);
+    qabs.MaxValue(&maxQ);
+    pabs.MaxValue(&maxP);
+    qabs.MinValue(&minQ);
+    pabs.MinValue(&minP);
     if (!myrank_)
     {
       printf(" |Pressure|_max: %10.3E \t\t\t |Q|_max: %10.3E\n", maxP, maxQ);
@@ -955,21 +952,21 @@ void Airway::RedAirwayImplicitTimeInt::solve(
 
     // Evaluate Lung volumes nm, n, np and set to eleparams
     double lung_volume_np = 0.0;
-    bool err = this->sum_all_col_elem_val(acini_e_volumenp_, acini_bc_, lung_volume_np);
+    bool err = this->sum_all_col_elem_val(*acini_e_volumenp_, *acini_bc_, lung_volume_np);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
     }
 
     double lung_volume_n = 0.0;
-    err = this->sum_all_col_elem_val(acini_e_volumen_, acini_bc_, lung_volume_n);
+    err = this->sum_all_col_elem_val(*acini_e_volumen_, *acini_bc_, lung_volume_n);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
     }
 
     double lung_volume_nm = 0.0;
-    err = this->sum_all_col_elem_val(acini_e_volumenm_, acini_bc_, lung_volume_nm);
+    err = this->sum_all_col_elem_val(*acini_e_volumenm_, *acini_bc_, lung_volume_nm);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
@@ -1032,13 +1029,13 @@ void Airway::RedAirwayImplicitTimeInt::solve(
 
     // Evaluate Lung volumes n, np and set to eleparams
     double lung_volume_np = 0.0;
-    bool err = this->sum_all_col_elem_val(acini_e_volumenp_, acini_bc_, lung_volume_np);
+    bool err = this->sum_all_col_elem_val(*acini_e_volumenp_, *acini_bc_, lung_volume_np);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
     }
     double lung_volume_n = 0.0;
-    err = this->sum_all_col_elem_val(acini_e_volumen_, acini_bc_, lung_volume_n);
+    err = this->sum_all_col_elem_val(*acini_e_volumen_, *acini_bc_, lung_volume_n);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
@@ -1251,8 +1248,7 @@ void Airway::RedAirwayImplicitTimeInt::solve(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Airway::RedAirwayImplicitTimeInt::solve_scatra(
-    Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
+void Airway::RedAirwayImplicitTimeInt::solve_scatra(Teuchos::ParameterList& CouplingTo3DParams)
 {
   //---------------------------------------------------------------------
   // Get the largest CFL number in the airways to scale down
@@ -2324,21 +2320,21 @@ void Airway::RedAirwayImplicitTimeInt::eval_residual(
 
     // get lung volume
     double lung_volume_np = 0.0;
-    bool err = this->sum_all_col_elem_val(acini_e_volumenp_, acini_bc_, lung_volume_np);
+    bool err = this->sum_all_col_elem_val(*acini_e_volumenp_, *acini_bc_, lung_volume_np);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
     }
 
     double lung_volume_n = 0.0;
-    err = this->sum_all_col_elem_val(acini_e_volumen_, acini_bc_, lung_volume_n);
+    err = this->sum_all_col_elem_val(*acini_e_volumen_, *acini_bc_, lung_volume_n);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
     }
 
     double lung_volume_nm = 0.0;
-    err = this->sum_all_col_elem_val(acini_e_volumenm_, acini_bc_, lung_volume_nm);
+    err = this->sum_all_col_elem_val(*acini_e_volumenm_, *acini_bc_, lung_volume_nm);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
@@ -2399,13 +2395,13 @@ void Airway::RedAirwayImplicitTimeInt::eval_residual(
 
     // get lung volume
     double lung_volume_np = 0.0;
-    bool err = this->sum_all_col_elem_val(acini_e_volumenp_, acini_bc_, lung_volume_np);
+    bool err = this->sum_all_col_elem_val(*acini_e_volumenp_, *acini_bc_, lung_volume_np);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
     }
     double lung_volume_n = 0.0;
-    err = this->sum_all_col_elem_val(acini_e_volumen_, acini_bc_, lung_volume_n);
+    err = this->sum_all_col_elem_val(*acini_e_volumen_, *acini_bc_, lung_volume_n);
     if (err)
     {
       FOUR_C_THROW("Error by summing all acinar volumes");
@@ -2435,16 +2431,16 @@ void Airway::RedAirwayImplicitTimeInt::eval_residual(
  |                                                                      |
  *----------------------------------------------------------------------*/
 void Airway::RedAirwayImplicitTimeInt::set_airway_flux_from_tissue(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> coupflux)
+    Core::LinAlg::Vector<double>& coupflux)
 {
-  const Epetra_BlockMap& condmap = coupflux->Map();
+  const Epetra_BlockMap& condmap = coupflux.Map();
 
   for (int i = 0; i < condmap.NumMyElements(); ++i)
   {
     int condID = condmap.GID(i);
     Core::Conditions::Condition* cond = coupcond_[condID];
     std::vector<double> newval(1, 0.0);
-    newval[0] = (*coupflux)[i];
+    newval[0] = (coupflux)[i];
     cond->parameters().add("VAL", newval);
   }
 }
@@ -2482,8 +2478,7 @@ void Airway::RedAirwayImplicitTimeInt::setup_for_coupling()
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void Airway::RedAirwayImplicitTimeInt::extract_pressure(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> couppres)
+void Airway::RedAirwayImplicitTimeInt::extract_pressure(Core::LinAlg::Vector<double>& couppres)
 {
   for (int i = 0; i < coupmap_->NumMyElements(); i++)
   {
@@ -2507,7 +2502,7 @@ void Airway::RedAirwayImplicitTimeInt::extract_pressure(
     }
     double parpres = 0.;
     discret_->get_comm().SumAll(&pressure, &parpres, 1);
-    (*couppres)[i] = parpres;
+    (couppres)[i] = parpres;
   }
 }
 
@@ -2517,12 +2512,11 @@ void Airway::RedAirwayImplicitTimeInt::extract_pressure(
  |                                                          ismail 11/12|
  *----------------------------------------------------------------------*/
 bool Airway::RedAirwayImplicitTimeInt::sum_all_col_elem_val(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sumCond, double& sum)
+    Core::LinAlg::Vector<double>& vec, Core::LinAlg::Vector<double>& sumCond, double& sum)
 {
   // Check if the vector is a ColElement vector
   const Epetra_Map* elementcolmap = discret_->element_col_map();
-  if (!vec->Map().SameAs(*elementcolmap) && !sumCond->Map().SameAs(*elementcolmap))
+  if (!vec.Map().SameAs(*elementcolmap) && !sumCond.Map().SameAs(*elementcolmap))
   {
     return true;
   }
@@ -2531,14 +2525,14 @@ bool Airway::RedAirwayImplicitTimeInt::sum_all_col_elem_val(
   // it to a RowMap and eliminate the ghosted values
   {
     // define epetra exporter
-    Epetra_Export exporter(vec->Map(), qexp_->Map());
+    Epetra_Export exporter(vec.Map(), qexp_->Map());
     // export from ColMap to RowMap
-    int err = qexp_->Export(*vec, exporter, Zero);
+    int err = qexp_->Export(vec, exporter, Zero);
     if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
 
-    Epetra_Export exporter2(sumCond->Map(), qexp2_->Map());
+    Epetra_Export exporter2(sumCond.Map(), qexp2_->Map());
     // export from ColMap to RowMap
-    err = qexp2_->Export(*sumCond, exporter2, Zero);
+    err = qexp2_->Export(sumCond, exporter2, Zero);
     if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
   }
 

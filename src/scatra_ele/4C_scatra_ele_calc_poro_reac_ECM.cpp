@@ -123,7 +123,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::get_material_params(
         Teuchos::RCP<Mat::StructPoroReactionECM> structmat =
             Teuchos::rcp_dynamic_cast<Mat::StructPoroReactionECM>(my::ele_->material(1));
         if (structmat == Teuchos::null) FOUR_C_THROW("cast to Mat::StructPoroReactionECM failed!");
-        double structpot = compute_struct_chem_potential(structmat, iquad);
+        double structpot = compute_struct_chem_potential(*structmat, iquad);
 
         scatramat->compute_reac_coeff(structpot);
       }
@@ -141,7 +141,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::get_material_params(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 double Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::compute_struct_chem_potential(
-    Teuchos::RCP<Mat::StructPoroReactionECM>& structmat, const int gp)
+    Mat::StructPoroReactionECM& structmat, const int gp)
 {
   // gauss point displacements
   Core::LinAlg::Matrix<nsd_, 1> dispint(false);
@@ -209,7 +209,7 @@ double Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::compute_struct_chem
 
   double pot = 0.0;
 
-  structmat->chem_potential(
+  structmat.chem_potential(
       glstrain, poro::diff_manager()->get_porosity(0), pres, J, my::eid_, pot, gp);
 
   return pot;

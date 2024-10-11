@@ -2841,7 +2841,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
                                                           ele,  //!< transport element
     Teuchos::ParameterList& params,                             //!< parameter list
     Core::FE::Discretization& discretization,                   //!< discretization
-    Teuchos::RCP<const Core::Mat::Material> material,           //!< material
+    const Core::Mat::Material& material,                        //!< material
     Core::LinAlg::SerialDenseMatrix& elemat_epetra,             //!< ele sysmat
     Core::LinAlg::SerialDenseVector& elevec_epetra              //!< ele rhs
 )

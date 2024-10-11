@@ -252,11 +252,10 @@ void Solid::Integrator::equilibrate_initial_state()
   NOX::Nln::Aux::set_printing_parameters(p_nox, global_state().get_comm());
 
   // create a copy of the initial displacement vector
-  Teuchos::RCP<Core::LinAlg::Vector<double>> soln_ptr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
+  Core::LinAlg::Vector<double> soln_ptr(*global_state().dof_row_map_view(), true);
   // wrap the soln_ptr in a nox_epetra_Vector
   Teuchos::RCP<::NOX::Epetra::Vector> nox_soln_ptr = Teuchos::make_rcp<::NOX::Epetra::Vector>(
-      soln_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+      soln_ptr.get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
 
   // Check if we are using a Newton direction
   std::string dir_str = p_nox.sublist("Direction").get<std::string>("Method");
@@ -317,8 +316,7 @@ bool Solid::Integrator::current_state_is_equilibrium(const double& tol)
   check_init();
 
   // temporary right-hand-side
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_ptr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
+  Core::LinAlg::Vector<double> rhs_ptr(*global_state().dof_row_map_view(), true);
 
   // overwrite initial state vectors with Dirichlet BCs
   const double& timen = (*global_state().get_multi_time())[0];
@@ -333,15 +331,15 @@ bool Solid::Integrator::current_state_is_equilibrium(const double& tol)
   eval_data().set_total_time(gstate_ptr_->get_time_n());
 
   // build the entire right-hand-side
-  model_eval().apply_initial_force(*disnp_ptr, *rhs_ptr);
+  model_eval().apply_initial_force(*disnp_ptr, rhs_ptr);
 
   // add viscous contributions to rhs
-  rhs_ptr->Update(1.0, *global_state().get_fvisco_np(), 1.0);
+  rhs_ptr.Update(1.0, *global_state().get_fvisco_np(), 1.0);
   // add inertial contributions to rhs
-  rhs_ptr->Update(1.0, *global_state().get_finertial_np(), 1.0);
+  rhs_ptr.Update(1.0, *global_state().get_finertial_np(), 1.0);
 
   double resnorm = 0.0;
-  rhs_ptr->NormInf(&resnorm);
+  rhs_ptr.NormInf(&resnorm);
 
   return (resnorm < tol ? true : false);
 }

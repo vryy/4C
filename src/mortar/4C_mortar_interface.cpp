@@ -1113,7 +1113,7 @@ void Mortar::Interface::redistribute()
   for (int i = 0; i < numproc; ++i) allproc[i] = i;
 
   // we need an arbitrary preliminary element row map
-  Teuchos::RCP<Epetra_Map> sroweles = Teuchos::make_rcp<Epetra_Map>(*slave_row_elements());
+  Epetra_Map sroweles(*slave_row_elements());
   Teuchos::RCP<Epetra_Map> mroweles = Teuchos::make_rcp<Epetra_Map>(*master_row_elements());
 
   //**********************************************************************
@@ -1132,9 +1132,9 @@ void Mortar::Interface::redistribute()
   // calculate real number of procs to be used
   if (minele > 0)
   {
-    sproc = static_cast<int>((sroweles->NumGlobalElements()) / minele);
+    sproc = static_cast<int>((sroweles.NumGlobalElements()) / minele);
     mproc = static_cast<int>((mroweles->NumGlobalElements()) / minele);
-    if (sroweles->NumGlobalElements() < 2 * minele) sproc = 1;
+    if (sroweles.NumGlobalElements() < 2 * minele) sproc = 1;
     if (mroweles->NumGlobalElements() < 2 * minele) mproc = 1;
     if (sproc > numproc) sproc = numproc;
     if (mproc > numproc) mproc = numproc;
@@ -1159,7 +1159,7 @@ void Mortar::Interface::redistribute()
     TEUCHOS_FUNC_TIME_MONITOR(ss_slave.str());
 
     Teuchos::RCP<const Epetra_CrsGraph> snodegraph =
-        Core::Rebalance::build_graph(*idiscret_, *sroweles);
+        Core::Rebalance::build_graph(*idiscret_, sroweles);
 
     Teuchos::ParameterList rebalanceParams;
     rebalanceParams.set<std::string>("num parts", std::to_string(sproc));
@@ -1180,7 +1180,7 @@ void Mortar::Interface::redistribute()
     ss_master << "Mortar::Interface::redistribute of '" << discret().name() << "' (master)";
     TEUCHOS_FUNC_TIME_MONITOR(ss_master.str());
 
-    redistribute_master_side(mrownodes, mcolnodes, mroweles, comm, mproc, imbalance_tol);
+    redistribute_master_side(mrownodes, mcolnodes, *mroweles, *comm, mproc, imbalance_tol);
   }
 
   //**********************************************************************
@@ -1215,12 +1215,11 @@ void Mortar::Interface::redistribute()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Mortar::Interface::redistribute_master_side(Teuchos::RCP<Epetra_Map>& rownodes,
-    Teuchos::RCP<Epetra_Map>& colnodes, const Teuchos::RCP<Epetra_Map>& roweles,
-    const Teuchos::RCP<Epetra_Comm>& comm, const int parts, const double imbalance) const
+    Teuchos::RCP<Epetra_Map>& colnodes, Epetra_Map& roweles, Epetra_Comm& comm, const int parts,
+    const double imbalance) const
 {
   // call parallel redistribution
-  Teuchos::RCP<const Epetra_CrsGraph> nodegraph =
-      Core::Rebalance::build_graph(*idiscret_, *roweles);
+  Teuchos::RCP<const Epetra_CrsGraph> nodegraph = Core::Rebalance::build_graph(*idiscret_, roweles);
 
   Teuchos::ParameterList rebalanceParams;
   rebalanceParams.set<std::string>("num parts", std::to_string(parts));
@@ -1292,8 +1291,7 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     Core::LinAlg::gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), get_comm());
 
     // build completely overlapping map of nodes (on ALL processors)
-    Teuchos::RCP<Epetra_Map> newnodecolmap =
-        Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+    Epetra_Map newnodecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
     sdata.clear();
     rdata.clear();
 
@@ -1307,16 +1305,15 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     Core::LinAlg::gather<int>(sdata, rdata, (int)allproc.size(), allproc.data(), get_comm());
 
     // build complete overlapping map of elements (on ALL processors)
-    Teuchos::RCP<Epetra_Map> newelecolmap =
-        Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+    Epetra_Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
     sdata.clear();
     rdata.clear();
     allproc.clear();
 
     // redistribute the discretization of the interface according to the
     // new column layout
-    discret().export_column_nodes(*newnodecolmap);
-    discret().export_column_elements(*newelecolmap);
+    discret().export_column_nodes(newnodecolmap);
+    discret().export_column_elements(newelecolmap);
   }
 
   //*****ONLY REDUNDANT MASTER STORAGE*****
@@ -1379,8 +1376,7 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     }
 
     // build new node column map (on ALL processors)
-    Teuchos::RCP<Epetra_Map> newnodecolmap =
-        Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+    Epetra_Map newnodecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
     sdata.clear();
     rdata.clear();
 
@@ -1412,16 +1408,15 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     }
 
     // build new element column map (on ALL processors)
-    Teuchos::RCP<Epetra_Map> newelecolmap =
-        Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+    Epetra_Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
     sdata.clear();
     rdata.clear();
     allproc.clear();
 
     // redistribute the discretization of the interface according to the
     // new node / element column layout (i.e. master = full overlap)
-    discret().export_column_nodes(*newnodecolmap);
-    discret().export_column_elements(*newelecolmap);
+    discret().export_column_nodes(newnodecolmap);
+    discret().export_column_elements(newelecolmap);
   }
 
   //*****NON-REDUNDANT STORAGE*****
@@ -1464,8 +1459,7 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
     }
 
     // re-build node column map (now formally on ALL processors)
-    Teuchos::RCP<Epetra_Map> newnodecolmap =
-        Teuchos::make_rcp<Epetra_Map>(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
+    Epetra_Map newnodecolmap(-1, (int)rdata.size(), rdata.data(), 0, get_comm());
     rdata.clear();
 
     // fill my own slave and master column element ids (non-redundant)
@@ -1483,7 +1477,7 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
 
     // redistribute the discretization of the interface according to the
     // new (=old) node / element column layout
-    discret().export_column_nodes(*newnodecolmap);
+    discret().export_column_nodes(newnodecolmap);
     discret().export_column_elements(*newelecolmap);
 
     if (interface_data_->get_extend_ghosting() == Inpar::Mortar::ExtendGhosting::binning)
@@ -1493,7 +1487,7 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
        * the column map as row map.
        */
       update_master_slave_element_maps(*newelecolmap, *newelecolmap);
-      update_master_slave_node_maps(*newnodecolmap, *newnodecolmap);
+      update_master_slave_node_maps(newnodecolmap, newnodecolmap);
 
       /* Ask the discretization to initialize the elements. We need this, since the setup of the
        * binning strategy relies on some element information.
@@ -1541,11 +1535,10 @@ void Mortar::Interface::extend_interface_ghosting(const bool isFinalParallelDist
       }
 
       std::vector<int> colnodes(nodes.begin(), nodes.end());
-      Teuchos::RCP<Epetra_Map> nodecolmap =
-          Teuchos::make_rcp<Epetra_Map>(-1, (int)colnodes.size(), colnodes.data(), 0, get_comm());
+      Epetra_Map nodecolmap(-1, (int)colnodes.size(), colnodes.data(), 0, get_comm());
 
       // now ghost the nodes
-      discret().export_column_nodes(*nodecolmap);
+      discret().export_column_nodes(nodecolmap);
     }
   }
 
@@ -2053,9 +2046,8 @@ void Mortar::Interface::set_state(
     case state_lagrange_multiplier:
     {
       // alternative method to get vec to full overlap
-      Teuchos::RCP<Core::LinAlg::Vector<double>> global =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*idiscret_->dof_col_map(), false);
-      Core::LinAlg::export_to(vec, *global);
+      Core::LinAlg::Vector<double> global(*idiscret_->dof_col_map(), false);
+      Core::LinAlg::export_to(vec, global);
 
       // loop over all nodes to set current displacement
       // (use fully overlapping column map)
@@ -2068,7 +2060,7 @@ void Mortar::Interface::set_state(
 
         for (int j = 0; j < numdof; ++j) lm[j] = node->dofs()[j];
 
-        Core::FE::extract_my_values(*global, mydisp, lm);
+        Core::FE::extract_my_values(global, mydisp, lm);
 
         // add mydisp[2]=0 for 2D problems
         if (mydisp.size() < 3) mydisp.resize(3);
@@ -4123,8 +4115,7 @@ void Mortar::Interface::detect_tied_slave_nodes(int& founduntied)
   // STEP 1: Build tying info for slave node row map (locally+globally)
   //**********************************************************************
   // global vector for tying info
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rowtied =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*snoderowmap_);
+  Core::LinAlg::Vector<double> rowtied(*snoderowmap_);
 
   // loop over proc's slave row nodes of the interface for detection
   for (int i = 0; i < snoderowmap_->NumMyElements(); ++i)
@@ -4150,7 +4141,7 @@ void Mortar::Interface::detect_tied_slave_nodes(int& founduntied)
       mrtrnode->set_tied_slave() = false;
 
       // set vector entry (tiedtoggle)
-      (*rowtied)[i] = 1.0;
+      (rowtied)[i] = 1.0;
     }
 
     // found tied node
@@ -4170,9 +4161,8 @@ void Mortar::Interface::detect_tied_slave_nodes(int& founduntied)
   // STEP 2: Communicate tying info to slave node column map (globally)
   //**********************************************************************
   // communicate tying information to standard column map
-  Teuchos::RCP<Core::LinAlg::Vector<double>> coltied =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*snodecolmap_);
-  Core::LinAlg::export_to(*rowtied, *coltied);
+  Core::LinAlg::Vector<double> coltied(*snodecolmap_);
+  Core::LinAlg::export_to(rowtied, coltied);
 
   //**********************************************************************
   // STEP 3: Extract tying info for slave node column map (locally)
@@ -4186,7 +4176,7 @@ void Mortar::Interface::detect_tied_slave_nodes(int& founduntied)
     auto* mrtrnode = dynamic_cast<Node*>(node);
 
     // check if this node is untied
-    if ((*coltied)[i] == 1.0) mrtrnode->set_tied_slave() = false;
+    if ((coltied)[i] == 1.0) mrtrnode->set_tied_slave() = false;
   }
 }
 
@@ -4392,28 +4382,26 @@ void Mortar::Interface::postprocess_quantities(const Teuchos::ParameterList& out
 
   // Nodes: node-based vector with '0' at slave nodes and '1' at master nodes
   {
-    RCP<Core::LinAlg::Vector<double>> masterVec =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mnoderowmap_);
-    masterVec->PutScalar(1.0);
+    Core::LinAlg::Vector<double> masterVec(*mnoderowmap_);
+    masterVec.PutScalar(1.0);
 
     RCP<const Epetra_Map> nodeRowMap = Core::LinAlg::merge_map(snoderowmap_, mnoderowmap_, false);
     RCP<Core::LinAlg::Vector<double>> masterSlaveVec =
         Core::LinAlg::create_vector(*nodeRowMap, true);
-    Core::LinAlg::export_to(*masterVec, *masterSlaveVec);
+    Core::LinAlg::export_to(masterVec, *masterSlaveVec);
 
     writer->write_vector("slavemasternodes", masterSlaveVec, Core::IO::VectorType::nodevector);
   }
 
   // Elements: element-based vector with '0' at slave elements and '1' at master elements
   {
-    RCP<Core::LinAlg::Vector<double>> masterVec =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*melerowmap_);
-    masterVec->PutScalar(1.0);
+    Core::LinAlg::Vector<double> masterVec(*melerowmap_);
+    masterVec.PutScalar(1.0);
 
     RCP<const Epetra_Map> eleRowMap = Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);
     RCP<Core::LinAlg::Vector<double>> masterSlaveVec =
         Core::LinAlg::create_vector(*eleRowMap, true);
-    Core::LinAlg::export_to(*masterVec, *masterSlaveVec);
+    Core::LinAlg::export_to(masterVec, *masterSlaveVec);
 
     writer->write_vector(
         "slavemasterelements", masterSlaveVec, Core::IO::VectorType::elementvector);

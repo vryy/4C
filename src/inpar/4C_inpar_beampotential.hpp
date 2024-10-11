@@ -71,7 +71,7 @@ namespace Inpar
     };
 
     /// set the beam potential parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// set beam potential specific conditions
     void set_valid_conditions(

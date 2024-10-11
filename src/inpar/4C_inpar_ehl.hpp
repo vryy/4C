@@ -99,7 +99,7 @@ namespace Inpar
 
 
     /// set the ehl parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// set specific ehl conditions
     void set_valid_conditions(

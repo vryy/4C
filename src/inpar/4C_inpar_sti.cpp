@@ -19,13 +19,13 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------*
  | set valid parameters for scatra-thermo interaction          fang 10/16 |
  *------------------------------------------------------------------------*/
-void Inpar::STI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::STI::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& stidyn = list->sublist(
+  Teuchos::ParameterList& stidyn = list.sublist(
       "STI DYNAMIC", false, "general control parameters for scatra-thermo interaction problems");
 
   // type of scalar transport time integration

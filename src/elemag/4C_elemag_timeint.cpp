@@ -355,8 +355,7 @@ void EleMag::ElemagTimeInt::set_initial_field(
  |  Set initial field by scatra solution (public)      berardocco 05/20 |
  *----------------------------------------------------------------------*/
 void EleMag::ElemagTimeInt::set_initial_electric_field(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phi,
-    Teuchos::RCP<Core::FE::Discretization> &scatradis)
+    Core::LinAlg::Vector<double> &phi, Teuchos::RCP<Core::FE::Discretization> &scatradis)
 {
   // we have to call an init for the elements first!
   Teuchos::ParameterList initParams;
@@ -379,7 +378,7 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
   else
     phicol = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(scatradis->dof_col_map()));
 
-  Core::LinAlg::export_to(*phi, *phicol);
+  Core::LinAlg::export_to(phi, *phicol);
 
   // Loop MyColElements
   for (int el = 0; el < discret_->num_my_col_elements(); ++el)
@@ -835,9 +834,8 @@ namespace
       const Teuchos::RCP<Core::LinAlg::Vector<double>> &traceValues, const int ndim,
       Teuchos::RCP<Epetra_MultiVector> &electric, Teuchos::RCP<Epetra_MultiVector> &electric_post,
       Teuchos::RCP<Epetra_MultiVector> &magnetic, Teuchos::RCP<Epetra_MultiVector> &trace,
-      Teuchos::RCP<Core::LinAlg::Vector<double>> &conductivity,
-      Teuchos::RCP<Core::LinAlg::Vector<double>> &permittivity,
-      Teuchos::RCP<Core::LinAlg::Vector<double>> &permeability)
+      Core::LinAlg::Vector<double> &conductivity, Core::LinAlg::Vector<double> &permittivity,
+      Core::LinAlg::Vector<double> &permeability)
   {
     // create dofsets for electric and pressure at nodes
     // if there is no pressure vector it means that the vectors have not yet
@@ -936,9 +934,8 @@ namespace
   |  Reads material properties from element for output   berardocco 03/18 |
   *----------------------------------------------------------------------*/
   void get_element_material_properties(Core::FE::Discretization &dis,
-      Teuchos::RCP<Core::LinAlg::Vector<double>> &conductivity,
-      Teuchos::RCP<Core::LinAlg::Vector<double>> &permittivity,
-      Teuchos::RCP<Core::LinAlg::Vector<double>> &permeability)
+      Core::LinAlg::Vector<double> &conductivity, Core::LinAlg::Vector<double> &permittivity,
+      Core::LinAlg::Vector<double> &permeability)
   {
     // For every element of the processor
     for (int el = 0; el < dis.num_my_row_elements(); ++el)
@@ -948,9 +945,9 @@ namespace
 
       const Mat::ElectromagneticMat *elemagmat =
           static_cast<const Mat::ElectromagneticMat *>(ele->material().get());
-      (*conductivity)[dis.element_row_map()->LID(ele->id())] = elemagmat->sigma(ele->id());
-      (*permittivity)[dis.element_row_map()->LID(ele->id())] = elemagmat->epsilon(ele->id());
-      (*permeability)[dis.element_row_map()->LID(ele->id())] = elemagmat->mu(ele->id());
+      (conductivity)[dis.element_row_map()->LID(ele->id())] = elemagmat->sigma(ele->id());
+      (permittivity)[dis.element_row_map()->LID(ele->id())] = elemagmat->epsilon(ele->id());
+      (permeability)[dis.element_row_map()->LID(ele->id())] = elemagmat->mu(ele->id());
     }
 
     return;
@@ -971,14 +968,14 @@ void EleMag::ElemagTimeInt::output()
 
   // Get the results from the discretization vectors to the output ones
   get_node_vectors_hdg(*discret_, trace_, numdim_, electric, electric_post, magnetic, trace,
-      conductivity, permittivity, permeability);
+      *conductivity, *permittivity, *permeability);
 
   // Create the new step
   output_->new_step(step_, time_);
 
   if (step_ == 0)
   {
-    get_element_material_properties(*discret_, conductivity, permittivity, permeability);
+    get_element_material_properties(*discret_, *conductivity, *permittivity, *permeability);
     output_->write_vector("conductivity", conductivity);
     output_->write_vector("permittivity", permittivity);
     output_->write_vector("permeability", permeability);

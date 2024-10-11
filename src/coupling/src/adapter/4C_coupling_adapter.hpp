@@ -417,10 +417,10 @@ namespace Coupling::Adapter
     void fill_slave_to_master_map(std::map<int, int>& rowmap) const;
 
     /// fill partial mastermap with gid of partial slavemap
-    Teuchos::RCP<Epetra_Map> slave_to_master_map(Teuchos::RCP<Epetra_Map> slave);
+    Teuchos::RCP<Epetra_Map> slave_to_master_map(Epetra_Map& slave);
 
     /// fill partial slavemap with gid of partial mastermap
-    Teuchos::RCP<Epetra_Map> master_to_slave_map(Teuchos::RCP<Epetra_Map> master);
+    Teuchos::RCP<Epetra_Map> master_to_slave_map(Epetra_Map& master);
 
     /// redistribute crsmatrix from master row map to permuted master row map
     Teuchos::RCP<Core::LinAlg::SparseMatrix> master_to_perm_master(
@@ -494,8 +494,8 @@ namespace Coupling::Adapter
       \note It is assumed that the first numdof dofs of each
       node as specified in vector coupled_dofs are of interest.
      */
-    void build_dof_maps(const Core::FE::Discretization& dis, Teuchos::RCP<const Epetra_Map> nodemap,
-        Teuchos::RCP<const Epetra_Map> permnodemap, Teuchos::RCP<const Epetra_Map>& dofmap,
+    void build_dof_maps(const Core::FE::Discretization& dis, const Epetra_Map& nodemap,
+        const Epetra_Map& permnodemap, Teuchos::RCP<const Epetra_Map>& dofmap,
         Teuchos::RCP<const Epetra_Map>& permdofmap, Teuchos::RCP<Epetra_Export>& exporter,
         const std::vector<int>& coupled_dofs, const int nds = 0) const;
 

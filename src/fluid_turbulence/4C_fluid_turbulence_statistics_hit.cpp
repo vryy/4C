@@ -360,29 +360,17 @@ namespace FLD
     //-------------------------------------------------------------------------------------------------
 
     // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u1_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u2_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u3_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
-    Teuchos::RCP<Teuchos::Array<double>> local_u1 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> local_u2 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> local_u3 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> local_u1(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> local_u2(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> local_u3(nummodes_ * nummodes_ * nummodes_);
 
-    Teuchos::RCP<Teuchos::Array<double>> global_u1 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> global_u2 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> global_u3 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> global_u1(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> global_u2(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> global_u3(nummodes_ * nummodes_ * nummodes_);
 
     //-----------------------------------
     // prepare Fourier transformation
@@ -430,22 +418,22 @@ namespace FLD
       // get local dof id corresponding to the global id
       int lid = discret_->dof_row_map()->LID(dofs[0]);
       // set value
-      (*local_u1)[pos] = (*velnp)[lid];
+      (local_u1)[pos] = (*velnp)[lid];
       // analogously for remaining directions
       lid = discret_->dof_row_map()->LID(dofs[1]);
-      (*local_u2)[pos] = (*velnp)[lid];
+      (local_u2)[pos] = (*velnp)[lid];
       lid = discret_->dof_row_map()->LID(dofs[2]);
-      (*local_u3)[pos] = (*velnp)[lid];
+      (local_u3)[pos] = (*velnp)[lid];
     }
 
     // get values form all processors
     // number of nodes without slave nodes
     const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-    discret_->get_comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u1.data(), global_u1.data(), countallnodes);
 
-    discret_->get_comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u2.data(), global_u2.data(), countallnodes);
 
-    discret_->get_comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u3.data(), global_u3.data(), countallnodes);
 
     //----------------------------------------
     // fast Fourier transformation using FFTW
@@ -456,21 +444,21 @@ namespace FLD
 
 #ifdef FOUR_C_WITH_FFTW
     // set-up
-    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
-        (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
+    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1.data(),
+        (reinterpret_cast<fftw_complex*>(u1_hat.data())), FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
     // free memory
     fftw_destroy_plan(fft);
 
     // analogously for remaining directions
-    fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u2->data(),
-        (reinterpret_cast<fftw_complex*>(u2_hat->data())), FFTW_ESTIMATE);
+    fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u2.data(),
+        (reinterpret_cast<fftw_complex*>(u2_hat.data())), FFTW_ESTIMATE);
     fftw_execute(fft_2);
     // free memory
     fftw_destroy_plan(fft_2);
-    fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u3->data(),
-        (reinterpret_cast<fftw_complex*>(u3_hat->data())), FFTW_ESTIMATE);
+    fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u3.data(),
+        (reinterpret_cast<fftw_complex*>(u3_hat.data())), FFTW_ESTIMATE);
     fftw_execute(fft_3);
     // free memory
     fftw_destroy_plan(fft_3);
@@ -480,11 +468,11 @@ namespace FLD
 #endif
 
     // scale solution (not done in the fftw routine)
-    for (int i = 0; i < u1_hat->size(); i++)
+    for (int i = 0; i < u1_hat.size(); i++)
     {
-      (*u1_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
-      (*u2_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
-      (*u3_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
+      (u1_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
+      (u2_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
+      (u3_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
     }
 
     //----------------------------------------
@@ -607,7 +595,7 @@ namespace FLD
           //                                          + (*u3_hat)[pos] * conj((*u3_hat)[pos]));
           // instead
           const double energy =
-              0.5 * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
+              0.5 * (norm((u1_hat)[pos]) + norm((u2_hat)[pos]) + norm((u3_hat)[pos]));
 
           // insert into sampling vector
           // find position via k
@@ -720,37 +708,21 @@ namespace FLD
     //-------------------------------------------------------------------------------------------------
 
     // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u1_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u2_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u3_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
-    Teuchos::RCP<Teuchos::Array<double>> local_u1 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> local_u2 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> local_u3 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> local_u1(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> local_u2(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> local_u3(nummodes_ * nummodes_ * nummodes_);
 
-    Teuchos::RCP<Teuchos::Array<double>> global_u1 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> global_u2 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> global_u3 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> global_u1(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> global_u2(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> global_u3(nummodes_ * nummodes_ * nummodes_);
 
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> phi_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<double>> local_phi =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> global_phi =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<std::complex<double>> phi_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<double> local_phi(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> global_phi(nummodes_ * nummodes_ * nummodes_);
 
     //-----------------------------------
     // prepare Fourier transformation
@@ -798,12 +770,12 @@ namespace FLD
       // get local dof id corresponding to the global id
       int lid = discret_->dof_row_map()->LID(dofs[0]);
       // set value
-      (*local_u1)[pos] = (*velnp)[lid];
+      (local_u1)[pos] = (*velnp)[lid];
       // analogously for remaining directions
       lid = discret_->dof_row_map()->LID(dofs[1]);
-      (*local_u2)[pos] = (*velnp)[lid];
+      (local_u2)[pos] = (*velnp)[lid];
       lid = discret_->dof_row_map()->LID(dofs[2]);
-      (*local_u3)[pos] = (*velnp)[lid];
+      (local_u3)[pos] = (*velnp)[lid];
     }
 
     // set also solution of scalar field
@@ -849,19 +821,19 @@ namespace FLD
       // get local dof id corresponding to the global id
       int lid = scatradiscret_->dof_row_map()->LID(dofs[0]);
       // set value
-      (*local_phi)[pos] = (*phinp)[lid];
+      (local_phi)[pos] = (*phinp)[lid];
     }
 
     // get values form all processors
     // number of nodes without slave nodes
     const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-    discret_->get_comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u1.data(), global_u1.data(), countallnodes);
 
-    discret_->get_comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u2.data(), global_u2.data(), countallnodes);
 
-    discret_->get_comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u3.data(), global_u3.data(), countallnodes);
 
-    discret_->get_comm().SumAll(local_phi->data(), global_phi->data(), countallnodes);
+    discret_->get_comm().SumAll(local_phi.data(), global_phi.data(), countallnodes);
 
     //----------------------------------------
     // fast Fourier transformation using FFTW
@@ -872,28 +844,28 @@ namespace FLD
 
 #ifdef FOUR_C_WITH_FFTW
     // set-up
-    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
-        (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
+    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1.data(),
+        (reinterpret_cast<fftw_complex*>(u1_hat.data())), FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
     // free memory
     fftw_destroy_plan(fft);
 
     // analogously for remaining directions
-    fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u2->data(),
-        (reinterpret_cast<fftw_complex*>(u2_hat->data())), FFTW_ESTIMATE);
+    fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u2.data(),
+        (reinterpret_cast<fftw_complex*>(u2_hat.data())), FFTW_ESTIMATE);
     fftw_execute(fft_2);
     // free memory
     fftw_destroy_plan(fft_2);
-    fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u3->data(),
-        (reinterpret_cast<fftw_complex*>(u3_hat->data())), FFTW_ESTIMATE);
+    fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u3.data(),
+        (reinterpret_cast<fftw_complex*>(u3_hat.data())), FFTW_ESTIMATE);
     fftw_execute(fft_3);
     // free memory
     fftw_destroy_plan(fft_3);
 
     // as well as phi
-    fftw_plan fft_4 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_phi->data(),
-        (reinterpret_cast<fftw_complex*>(phi_hat->data())), FFTW_ESTIMATE);
+    fftw_plan fft_4 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_phi.data(),
+        (reinterpret_cast<fftw_complex*>(phi_hat.data())), FFTW_ESTIMATE);
     fftw_execute(fft_4);
     // free memory
     fftw_destroy_plan(fft_4);
@@ -903,12 +875,12 @@ namespace FLD
 #endif
 
     // scale solution (not done in the fftw routine)
-    for (int i = 0; i < u1_hat->size(); i++)
+    for (int i = 0; i < u1_hat.size(); i++)
     {
-      (*u1_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
-      (*u2_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
-      (*u3_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
-      (*phi_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
+      (u1_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
+      (u2_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
+      (u3_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
+      (phi_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
     }
 
     //----------------------------------------
@@ -1032,8 +1004,8 @@ namespace FLD
           //                                          + (*u3_hat)[pos] * conj((*u3_hat)[pos]));
           // instead
           const double energy =
-              0.5 * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
-          const double variance = 0.5 * norm((*phi_hat)[pos]);
+              0.5 * (norm((u1_hat)[pos]) + norm((u2_hat)[pos]) + norm((u3_hat)[pos]));
+          const double variance = 0.5 * norm((phi_hat)[pos]);
 
           // insert into sampling vector
           // find position via k
@@ -1747,23 +1719,23 @@ namespace FLD
 
     // push coordinates in vector
     {
-      Teuchos::RCP<std::vector<double>> copycoordinates = Teuchos::make_rcp<std::vector<double>>();
+      std::vector<double> copycoordinates;
 
       for (std::vector<double>::iterator coord1 = coordinates_->begin();
            coord1 != coordinates_->end(); ++coord1)
       {
-        copycoordinates->push_back(*coord1);
+        copycoordinates.push_back(*coord1);
       }
 
       coordinates_->clear();
 
-      double elesize = abs(copycoordinates->at(1) - copycoordinates->at(0));
+      double elesize = abs(copycoordinates.at(1) - copycoordinates.at(0));
       // use 5 sampling locations in each element in each direction
       std::array<const double, 5> localcoords = {0.9, 0.7, 0.5, 0.3, 0.1};
-      for (std::vector<double>::iterator coord1 = copycoordinates->begin();
-           coord1 != copycoordinates->end(); ++coord1)
+      for (std::vector<double>::iterator coord1 = copycoordinates.begin();
+           coord1 != copycoordinates.end(); ++coord1)
       {
-        if (coord1 != copycoordinates->begin())
+        if (coord1 != copycoordinates.begin())
           for (int i = 0; i < 5; i++) coordinates_->push_back(*coord1 - elesize * localcoords[i]);
       }
     }
@@ -1842,29 +1814,17 @@ namespace FLD
     //-------------------------------------------------------------------------------------------------
 
     // set and initialize working arrays
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u1_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u2_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
-    Teuchos::RCP<Teuchos::Array<std::complex<double>>> u3_hat =
-        Teuchos::make_rcp<Teuchos::Array<std::complex<double>>>(
-            nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u1_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u2_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
+    Teuchos::Array<std::complex<double>> u3_hat(nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
-    Teuchos::RCP<Teuchos::Array<double>> local_u1 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> local_u2 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> local_u3 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> local_u1(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> local_u2(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> local_u3(nummodes_ * nummodes_ * nummodes_);
 
-    Teuchos::RCP<Teuchos::Array<double>> global_u1 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> global_u2 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
-    Teuchos::RCP<Teuchos::Array<double>> global_u3 =
-        Teuchos::make_rcp<Teuchos::Array<double>>(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> global_u1(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> global_u2(nummodes_ * nummodes_ * nummodes_);
+    Teuchos::Array<double> global_u3(nummodes_ * nummodes_ * nummodes_);
 
     //-----------------------------------
     // prepare Fourier transformation
@@ -1932,20 +1892,20 @@ namespace FLD
         const int pos = loc[2] + nummodes_ * (loc[1] + nummodes_ * loc[0]);
 
         // set value
-        (*local_u1)[pos] = interpolVec(i * 6 + 0);
-        (*local_u2)[pos] = interpolVec(i * 6 + 1);
-        (*local_u3)[pos] = interpolVec(i * 6 + 2);
+        (local_u1)[pos] = interpolVec(i * 6 + 0);
+        (local_u2)[pos] = interpolVec(i * 6 + 1);
+        (local_u3)[pos] = interpolVec(i * 6 + 2);
       }
     }
 
     // get values form all processors
     // number of nodes without slave nodes
     const int countallnodes = nummodes_ * nummodes_ * nummodes_;
-    discret_->get_comm().SumAll(local_u1->data(), global_u1->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u1.data(), global_u1.data(), countallnodes);
 
-    discret_->get_comm().SumAll(local_u2->data(), global_u2->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u2.data(), global_u2.data(), countallnodes);
 
-    discret_->get_comm().SumAll(local_u3->data(), global_u3->data(), countallnodes);
+    discret_->get_comm().SumAll(local_u3.data(), global_u3.data(), countallnodes);
 
     //----------------------------------------
     // fast Fourier transformation using FFTW
@@ -1956,21 +1916,21 @@ namespace FLD
 
 #ifdef FOUR_C_WITH_FFTW
     // set-up
-    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1->data(),
-        (reinterpret_cast<fftw_complex*>(u1_hat->data())), FFTW_ESTIMATE);
+    fftw_plan fft = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u1.data(),
+        (reinterpret_cast<fftw_complex*>(u1_hat.data())), FFTW_ESTIMATE);
     // fft
     fftw_execute(fft);
     // free memory
     fftw_destroy_plan(fft);
 
     // analogously for remaining directions
-    fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u2->data(),
-        (reinterpret_cast<fftw_complex*>(u2_hat->data())), FFTW_ESTIMATE);
+    fftw_plan fft_2 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u2.data(),
+        (reinterpret_cast<fftw_complex*>(u2_hat.data())), FFTW_ESTIMATE);
     fftw_execute(fft_2);
     // free memory
     fftw_destroy_plan(fft_2);
-    fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u3->data(),
-        (reinterpret_cast<fftw_complex*>(u3_hat->data())), FFTW_ESTIMATE);
+    fftw_plan fft_3 = fftw_plan_dft_r2c_3d(nummodes_, nummodes_, nummodes_, global_u3.data(),
+        (reinterpret_cast<fftw_complex*>(u3_hat.data())), FFTW_ESTIMATE);
     fftw_execute(fft_3);
     // free memory
     fftw_destroy_plan(fft_3);
@@ -1980,11 +1940,11 @@ namespace FLD
 #endif
 
     // scale solution (not done in the fftw routine)
-    for (int i = 0; i < u1_hat->size(); i++)
+    for (int i = 0; i < u1_hat.size(); i++)
     {
-      (*u1_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
-      (*u2_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
-      (*u3_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
+      (u1_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
+      (u2_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
+      (u3_hat)[i] /= nummodes_ * nummodes_ * nummodes_;
     }
 
     //----------------------------------------
@@ -2101,7 +2061,7 @@ namespace FLD
 
           // calculate energy
           const double energy =
-              0.5 * (norm((*u1_hat)[pos]) + norm((*u2_hat)[pos]) + norm((*u3_hat)[pos]));
+              0.5 * (norm((u1_hat)[pos]) + norm((u2_hat)[pos]) + norm((u3_hat)[pos]));
 
           // insert into sampling vector
           // find position via k

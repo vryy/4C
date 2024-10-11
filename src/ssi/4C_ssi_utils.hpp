@@ -149,8 +149,8 @@ namespace SSI
        * @return pointer to block matrix
        */
       static Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> setup_block_matrix(
-          Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> row_map,
-          Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> col_map);
+          const Core::LinAlg::MultiMapExtractor& row_map,
+          const Core::LinAlg::MultiMapExtractor& col_map);
 
       /*!
        * @brief set up a pointer to a sparse matrix
@@ -159,7 +159,7 @@ namespace SSI
        * @return pointer to sparse matrix
        */
       static Teuchos::RCP<Core::LinAlg::SparseMatrix> setup_sparse_matrix(
-          const Teuchos::RCP<const Epetra_Map> row_map);
+          const Epetra_Map& row_map);
 
      private:
       /*!
@@ -167,14 +167,14 @@ namespace SSI
        *
        * @param[in] ssi_maps            pointer to the ssi maps object containing all relevant maps
        */
-      void initialize_main_diag_matrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
+      void initialize_main_diag_matrices(const SSI::UTILS::SSIMaps& ssi_maps);
 
       /*!
        * @brief initialize the scatra-structure interaction off-diagonal matrices
        *
        * @param[in] ssi_maps            pointer to the ssi maps object containing all relevant maps
        */
-      void initialize_off_diag_matrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps);
+      void initialize_off_diag_matrices(const SSI::UTILS::SSIMaps& ssi_maps);
 
       /*!
        * @brief initialize the system matrix
@@ -182,8 +182,8 @@ namespace SSI
        * @param[in] ssi_maps         pointer to the ssi maps object containing all relevant maps
        * @param[in] ssi_matrixtype   the ssi matrix type
        */
-      void initialize_system_matrix(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps,
-          Core::LinAlg::MatrixType ssi_matrixtype);
+      void initialize_system_matrix(
+          const SSI::UTILS::SSIMaps& ssi_maps, Core::LinAlg::MatrixType ssi_matrixtype);
 
       //! flag indicating if we have a scatra manifold
       const bool is_scatra_manifold_;
@@ -442,7 +442,7 @@ namespace SSI
       //! \param dis                 [in] discretization
       //! \param name_meshtying_condition   [in] name of meshtying condition
       //! \param coupling_pairs         [out] vector of pairs of matching nodes
-      void find_matching_node_pairs(Teuchos::RCP<Core::FE::Discretization> dis,
+      void find_matching_node_pairs(Core::FE::Discretization& dis,
           const std::string& name_meshtying_condition,
           std::vector<std::pair<int, int>>& coupling_pairs) const;
 
@@ -451,7 +451,7 @@ namespace SSI
       //! \param name_meshtying_condition          [in] name of meshtying condition
       //! \param inodegidvec_slave                 [in] new slave nodes on this proc
       //! \param all_coupled_original_slave_gids   [out] old slave nodes that match new slave nodes
-      void find_slave_slave_transformation_nodes(Teuchos::RCP<Core::FE::Discretization> dis,
+      void find_slave_slave_transformation_nodes(Core::FE::Discretization& dis,
           const std::string& name_meshtying_condition, const std::vector<int>& inodegidvec_slave,
           std::vector<int>& all_coupled_original_slave_gids) const;
 

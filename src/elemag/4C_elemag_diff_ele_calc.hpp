@@ -121,9 +121,8 @@ namespace Discret
         /// Add terms corresponding to the absorbing boundary condition.
         void compute_absorbing_bc(Core::FE::Discretization& discretization,
             Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
-            Teuchos::RCP<Core::Mat::Material>& mat, int face,
-            Core::LinAlg::SerialDenseMatrix& elemat, int indexstart,
-            Core::LinAlg::SerialDenseVector& elevec1);
+            Core::Mat::Material& mat, int face, Core::LinAlg::SerialDenseMatrix& elemat,
+            int indexstart, Core::LinAlg::SerialDenseVector& elevec1);
 
         /// Add terms corresponding to the absorbing boundary condition.
         void compute_boundary_integral(
@@ -256,7 +255,7 @@ namespace Discret
 
       /// Updates interior variables and calculates residual.
       void update_interior_variables_and_compute_residual(Teuchos::ParameterList& params,
-          Discret::ELEMENTS::ElemagDiff& ele, const Teuchos::RCP<Core::Mat::Material>& mat,
+          Discret::ELEMENTS::ElemagDiff& ele, Core::Mat::Material& mat,
           Core::LinAlg::SerialDenseVector& elevec, double dt, bool errormaps, bool updateonly);
 
       /// Reads from global vectors.

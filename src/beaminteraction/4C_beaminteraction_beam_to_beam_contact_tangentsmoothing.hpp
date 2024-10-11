@@ -68,7 +68,7 @@ namespace BEAMINTERACTION
     Core::LinAlg::Matrix<3 * numnodes, 1> calculate_nodal_tangents(
         std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
         Core::LinAlg::Matrix<3 * numnodes, 1> ele1pos_linalg, Core::Elements::Element* ele1,
-        Teuchos::RCP<B3CNeighbor> neighbors1)
+        B3CNeighbor& neighbors1)
     {
       Core::LinAlg::Matrix<3 * numnodes, 1> node_tangent1(
           true);  // = vector of element1's node tangents
@@ -104,17 +104,17 @@ namespace BEAMINTERACTION
       }
 
       // contribution of left neighbor of element
-      if (neighbors1->get_left_neighbor() != nullptr)
+      if (neighbors1.get_left_neighbor() != nullptr)
       {
-        const Core::FE::CellType distype_ele1l = neighbors1->get_left_neighbor()->shape();
-        const int numnode_ele1l = neighbors1->get_left_neighbor()->num_node();
-        const int node_ele1l = neighbors1->get_left_con_node() + 1;
+        const Core::FE::CellType distype_ele1l = neighbors1.get_left_neighbor()->shape();
+        const int numnode_ele1l = neighbors1.get_left_neighbor()->num_node();
+        const int node_ele1l = neighbors1.get_left_con_node() + 1;
 
         Core::LinAlg::SerialDenseMatrix temppos(3, numnode_ele1l);
 
         for (int j = 0; j < numnode_ele1l; j++)
         {
-          const int tempGID = (neighbors1->get_left_neighbor()->node_ids())[j];
+          const int tempGID = (neighbors1.get_left_neighbor()->node_ids())[j];
           Core::LinAlg::Matrix<3, 1> tempposvector = currentpositions[tempGID];
           for (int i = 0; i < 3; i++) temppos(i, j) = tempposvector(i);
         }
@@ -127,7 +127,7 @@ namespace BEAMINTERACTION
 
         for (int j = 0; j < numnode_ele1l; j++)
         {
-          const int tempGID = (neighbors1->get_left_neighbor()->node_ids())[j];
+          const int tempGID = (neighbors1.get_left_neighbor()->node_ids())[j];
           Core::LinAlg::Matrix<3, 1> tempposvector = currentpositions[tempGID];
 
           for (int k = 0; k < 3; k++)
@@ -138,17 +138,17 @@ namespace BEAMINTERACTION
       }
 
       // contribution of right neighbor of element
-      if (neighbors1->get_right_neighbor() != nullptr)
+      if (neighbors1.get_right_neighbor() != nullptr)
       {
-        const Core::FE::CellType distype_ele1r = neighbors1->get_right_neighbor()->shape();
-        const int numnode_ele1r = neighbors1->get_right_neighbor()->num_node();
-        const int node_ele1r = neighbors1->get_right_con_node() + 1;
+        const Core::FE::CellType distype_ele1r = neighbors1.get_right_neighbor()->shape();
+        const int numnode_ele1r = neighbors1.get_right_neighbor()->num_node();
+        const int node_ele1r = neighbors1.get_right_con_node() + 1;
 
         Core::LinAlg::SerialDenseMatrix temppos(3, numnode_ele1r);
 
         for (int j = 0; j < numnode_ele1r; j++)
         {
-          const int tempGID = (neighbors1->get_right_neighbor()->node_ids())[j];
+          const int tempGID = (neighbors1.get_right_neighbor()->node_ids())[j];
           Core::LinAlg::Matrix<3, 1> tempposvector = currentpositions[tempGID];
           for (int i = 0; i < 3; i++) temppos(i, j) = tempposvector(i);
         }
@@ -161,7 +161,7 @@ namespace BEAMINTERACTION
 
         for (int j = 0; j < numnode_ele1r; j++)
         {
-          const int tempGID = (neighbors1->get_right_neighbor()->node_ids())[j];
+          const int tempGID = (neighbors1.get_right_neighbor()->node_ids())[j];
           Core::LinAlg::Matrix<3, 1> tempposvector = currentpositions[tempGID];
 
           for (int k = 0; k < 3; k++)

@@ -205,7 +205,7 @@ namespace Inpar
     /**
     \brief Set the beam-to-solid parameters
     */
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /**
      * \brief Set beam beam-to-solid specific conditions.

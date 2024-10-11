@@ -110,7 +110,7 @@ namespace PoroMultiPhaseScaTra
     //! set-up of global matrix of coupled problem
     void setup_matrix(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art);
+        Core::LinAlg::SparseMatrix& sysmat_art);
 
     /*!
      * @brief setup map extractor for artery mesh tying
@@ -123,8 +123,8 @@ namespace PoroMultiPhaseScaTra
      * @param[in]   dis discretization
      * @param[in]   coupleddofs vector with DOFs to couple
      */
-    void setup_map_extractor(Teuchos::RCP<Core::LinAlg::MultiMapExtractor> mapextractor,
-        Teuchos::RCP<Core::FE::Discretization> dis, const std::vector<int>& coupleddofs);
+    void setup_map_extractor(Core::LinAlg::MultiMapExtractor& mapextractor,
+        Core::FE::Discretization& dis, const std::vector<int>& coupleddofs);
 
     /*!
      * @brief check if dirichlet BC is defined on coupled dofs, which is not possible
@@ -132,8 +132,8 @@ namespace PoroMultiPhaseScaTra
      * @param[in]   dis discretizatiom
      * @param[in]   coupleddofmap map with coupled DOFs
      */
-    void check_dbc_on_coupled_dofs(Teuchos::RCP<Core::FE::Discretization> dis,
-        const Teuchos::RCP<const Epetra_Map>& coupleddofmap);
+    void check_dbc_on_coupled_dofs(
+        Core::FE::Discretization& dis, const Teuchos::RCP<const Epetra_Map>& coupleddofmap);
 
     //! name of the condition
     const std::string condname_;

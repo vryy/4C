@@ -65,7 +65,7 @@ namespace Inpar
     };
 
     /// set the ssi parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// set specific ssi conditions
     void set_valid_conditions(

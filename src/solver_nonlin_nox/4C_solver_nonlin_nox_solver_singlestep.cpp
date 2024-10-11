@@ -37,13 +37,12 @@ NOX::Nln::Solver::SingleStep::SingleStep(const Teuchos::RCP<::NOX::Abstract::Gro
     : ::NOX::Solver::SingleStep(grp, params)
 {
   // call own init() after base init() was called.
-  init(innerTests);
+  init(*innerTests);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::Solver::SingleStep::init(
-    const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests)
+void NOX::Nln::Solver::SingleStep::init(NOX::Nln::Inner::StatusTest::Generic& innerTests)
 {
   nIter = 0;
   status = ::NOX::StatusTest::Unconverged;

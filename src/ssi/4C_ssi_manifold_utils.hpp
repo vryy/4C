@@ -234,22 +234,19 @@ namespace SSI
     void evaluate_bulk_side(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! Evaluate integral on scatra manifold over 1.0
-    void evaluate_scatra_manifold_domain_integral(
-        Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+    void evaluate_scatra_manifold_domain_integral(ManifoldScaTraCoupling& scatra_manifold_coupling);
 
     //! Evaluate integral on scatra manifold over positive fluxes
-    void evaluate_scatra_manifold_inflow_integral(
-        Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+    void evaluate_scatra_manifold_inflow_integral(ManifoldScaTraCoupling& scatra_manifold_coupling);
 
     //! prepare evaluation of coupling condition: set elemental data
-    void pre_evaluate(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+    void pre_evaluate(ManifoldScaTraCoupling& scatra_manifold_coupling);
 
     //! uncomplete all global matrices if any matrices holding the condition contributions have
     //! updated graphs (i.e. zeros become non-zeros or vice versa). In this case the graph of the
     //! global matrices needs to be updated as well to be able to add the local matrices to the
     //! global matrices
-    void un_complete_matrices_if_necessary(
-        Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+    void un_complete_matrices_if_necessary(ManifoldScaTraCoupling& scatra_manifold_coupling);
 
     //! map extractor associated with all degrees of freedom inside scatra field
     Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_scatra_;
@@ -346,7 +343,7 @@ namespace SSI
         Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 
     //! apply mesh tying to right hand side
-    void apply_mesh_tying_to_manifold_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_manifold);
+    void apply_mesh_tying_to_manifold_rhs(Core::LinAlg::Vector<double>& rhs_manifold);
 
     //! apply mesh tying to manifold system matrix
     virtual void apply_meshtying_to_manifold_matrix(
@@ -451,9 +448,9 @@ namespace SSI
     //! corresponding dof in @p intersecting map intersects wirh @p block_map. Returns both in a
     //! tuple.
     std::tuple<Teuchos::RCP<const Epetra_Map>, Teuchos::RCP<const Epetra_Map>>
-    intersect_coupling_maps_block_map(Teuchos::RCP<const Epetra_Map> block_map,
-        Teuchos::RCP<const Epetra_Map> intersecting_map,
-        Teuchos::RCP<const Epetra_Map> permuted_map, const Epetra_Comm& comm);
+    intersect_coupling_maps_block_map(const Epetra_Map& block_map,
+        const Epetra_Map& intersecting_map, const Epetra_Map& permuted_map,
+        const Epetra_Comm& comm);
 
     //! all interior and master dofs split into blocks
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> condensed_block_dof_map_;

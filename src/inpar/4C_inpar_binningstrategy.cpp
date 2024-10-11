@@ -19,12 +19,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::BINSTRATEGY::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::BINSTRATEGY::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& binningstrategy = list->sublist("BINNING STRATEGY", false, "");
+  Teuchos::ParameterList& binningstrategy = list.sublist("BINNING STRATEGY", false, "");
 
 
   Core::UTILS::double_parameter("BIN_SIZE_LOWER_BOUND", -1.0,

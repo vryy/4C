@@ -809,7 +809,7 @@ void LowMach::Algorithm::iter_update()
   // add incremental fluid and scatra solution vectors to
   // respective solution vectors from last iteration step
   fluid_field()->iter_update(incfluid);
-  scatra_field()->update_iter(incscatra);
+  scatra_field()->update_iter(*incscatra);
 }
 
 

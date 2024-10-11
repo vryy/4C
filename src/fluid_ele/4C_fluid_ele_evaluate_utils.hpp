@@ -861,13 +861,12 @@ namespace FLD
   template <int iel>
   void f3_apply_box_filter(Discret::ELEMENTS::Fluid* ele,
       Discret::ELEMENTS::FluidEleParameterStd* fldpara, std::vector<double>& myvel,
-      std::vector<double>& mytemp, const double thermpress,
-      Teuchos::RCP<std::vector<double>> vel_hat, Teuchos::RCP<std::vector<double>> densvel_hat,
-      Teuchos::RCP<std::vector<std::vector<double>>> reynoldsstress_hat,
-      Teuchos::RCP<std::vector<std::vector<double>>> modeled_subgrid_stress, double& volume,
-      double& dens_hat, double& dens_strainrate_hat, double& expression_hat, double& alpha2_hat,
-      Teuchos::RCP<std::vector<std::vector<double>>> strainrate_hat,
-      Teuchos::RCP<std::vector<std::vector<double>>> alphaij_hat)
+      std::vector<double>& mytemp, const double thermpress, std::vector<double>& vel_hat,
+      std::vector<double>& densvel_hat, std::vector<std::vector<double>>& reynoldsstress_hat,
+      std::vector<std::vector<double>>& modeled_subgrid_stress, double& volume, double& dens_hat,
+      double& dens_strainrate_hat, double& expression_hat, double& alpha2_hat,
+      std::vector<std::vector<double>>& strainrate_hat,
+      std::vector<std::vector<double>>& alphaij_hat)
   {
     // number of spatial dimensions is always 3
     const int NSD = 3;
@@ -1134,16 +1133,16 @@ namespace FLD
         double tmp = velint(rr) * volume;
 
         // add contribution to integral over velocities
-        (*vel_hat)[rr] += tmp;
+        (vel_hat)[rr] += tmp;
         // add contribution to integral over dens times velocity
         if (fldpara->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky and
             fldpara->physical_type() == Inpar::FLUID::loma)
-          (*densvel_hat)[rr] += dens * tmp;
+          (densvel_hat)[rr] += dens * tmp;
 
         // add contribution to integral over reynolds stresses
         for (int nn = 0; nn < NSD; ++nn)
         {
-          (*reynoldsstress_hat)[rr][nn] += dens * tmp * velint(nn);
+          (reynoldsstress_hat)[rr][nn] += dens * tmp * velint(nn);
         }
       }
     }
@@ -1158,9 +1157,9 @@ namespace FLD
       {
         for (int nn = 0; nn < NSD; ++nn)
         {
-          (*modeled_subgrid_stress)[rr][nn] += rateofstrain_volume * epsilon(rr, nn);
+          (modeled_subgrid_stress)[rr][nn] += rateofstrain_volume * epsilon(rr, nn);
           if (fldpara->physical_type() == Inpar::FLUID::loma and nn == rr)
-            (*modeled_subgrid_stress)[rr][nn] -= 1.0 / 3.0 * rateofstrain_volume * vdiv;
+            (modeled_subgrid_stress)[rr][nn] -= 1.0 / 3.0 * rateofstrain_volume * vdiv;
         }
       }
 
@@ -1200,7 +1199,7 @@ namespace FLD
           {
             vderxy(nn, rr) += derxy(rr, mm) * evel(nn, mm);
           }
-          (*alphaij_hat)[rr][nn] = vderxy(nn, rr);
+          (alphaij_hat)[rr][nn] = vderxy(nn, rr);
         }
       }
 
@@ -1210,7 +1209,7 @@ namespace FLD
         for (int rr = 0; rr < NSD; ++rr)
         {
           epsilon(nn, rr) = 0.5 * (vderxy(nn, rr) + vderxy(rr, nn));
-          (*strainrate_hat)[nn][rr] = epsilon(nn, rr);  // symmetric
+          (strainrate_hat)[nn][rr] = epsilon(nn, rr);  // symmetric
         }
       }
 
@@ -1222,29 +1221,29 @@ namespace FLD
         {
           //(*alphaij_hat)[rr][nn] *= volume;//not here, but at the end
           //(*strainrate_hat)[rr][nn] *= volume;
-          alpha2_hat += (*alphaij_hat)[rr][nn] * (*alphaij_hat)[rr][nn];
-          strainrateproduct += (*strainrate_hat)[rr][nn] * (*strainrate_hat)[rr][nn];
+          alpha2_hat += (alphaij_hat)[rr][nn] * (alphaij_hat)[rr][nn];
+          strainrateproduct += (strainrate_hat)[rr][nn] * (strainrate_hat)[rr][nn];
         }
       }
 
-      beta00 = hk2 * (*alphaij_hat)[0][0] * (*alphaij_hat)[0][0] +
-               hk2 * (*alphaij_hat)[1][0] * (*alphaij_hat)[1][0] +
-               hk2 * (*alphaij_hat)[2][0] * (*alphaij_hat)[2][0];
-      beta11 = hk2 * (*alphaij_hat)[0][1] * (*alphaij_hat)[0][1] +
-               hk2 * (*alphaij_hat)[1][1] * (*alphaij_hat)[1][1] +
-               hk2 * (*alphaij_hat)[2][1] * (*alphaij_hat)[2][1];
-      beta22 = hk2 * (*alphaij_hat)[0][2] * (*alphaij_hat)[0][2] +
-               hk2 * (*alphaij_hat)[1][2] * (*alphaij_hat)[1][2] +
-               hk2 * (*alphaij_hat)[2][2] * (*alphaij_hat)[2][2];
-      beta01 = hk2 * (*alphaij_hat)[0][0] * (*alphaij_hat)[0][1] +
-               hk2 * (*alphaij_hat)[1][0] * (*alphaij_hat)[1][1] +
-               hk2 * (*alphaij_hat)[2][0] * (*alphaij_hat)[2][1];
-      beta02 = hk2 * (*alphaij_hat)[0][0] * (*alphaij_hat)[0][2] +
-               hk2 * (*alphaij_hat)[1][0] * (*alphaij_hat)[1][2] +
-               hk2 * (*alphaij_hat)[2][0] * (*alphaij_hat)[2][2];
-      beta12 = hk2 * (*alphaij_hat)[0][1] * (*alphaij_hat)[0][2] +
-               hk2 * (*alphaij_hat)[1][1] * (*alphaij_hat)[1][2] +
-               hk2 * (*alphaij_hat)[2][1] * (*alphaij_hat)[2][2];
+      beta00 = hk2 * (alphaij_hat)[0][0] * (alphaij_hat)[0][0] +
+               hk2 * (alphaij_hat)[1][0] * (alphaij_hat)[1][0] +
+               hk2 * (alphaij_hat)[2][0] * (alphaij_hat)[2][0];
+      beta11 = hk2 * (alphaij_hat)[0][1] * (alphaij_hat)[0][1] +
+               hk2 * (alphaij_hat)[1][1] * (alphaij_hat)[1][1] +
+               hk2 * (alphaij_hat)[2][1] * (alphaij_hat)[2][1];
+      beta22 = hk2 * (alphaij_hat)[0][2] * (alphaij_hat)[0][2] +
+               hk2 * (alphaij_hat)[1][2] * (alphaij_hat)[1][2] +
+               hk2 * (alphaij_hat)[2][2] * (alphaij_hat)[2][2];
+      beta01 = hk2 * (alphaij_hat)[0][0] * (alphaij_hat)[0][1] +
+               hk2 * (alphaij_hat)[1][0] * (alphaij_hat)[1][1] +
+               hk2 * (alphaij_hat)[2][0] * (alphaij_hat)[2][1];
+      beta02 = hk2 * (alphaij_hat)[0][0] * (alphaij_hat)[0][2] +
+               hk2 * (alphaij_hat)[1][0] * (alphaij_hat)[1][2] +
+               hk2 * (alphaij_hat)[2][0] * (alphaij_hat)[2][2];
+      beta12 = hk2 * (alphaij_hat)[0][1] * (alphaij_hat)[0][2] +
+               hk2 * (alphaij_hat)[1][1] * (alphaij_hat)[1][2] +
+               hk2 * (alphaij_hat)[2][1] * (alphaij_hat)[2][2];
 
       bbeta = beta00 * beta11 - beta01 * beta01 + beta00 * beta22 - beta02 * beta02 +
               beta11 * beta22 - beta12 * beta12;
@@ -1260,8 +1259,8 @@ namespace FLD
       {
         for (int nn = 0; nn < NSD; ++nn)
         {
-          (*alphaij_hat)[rr][nn] *= volume;
-          (*strainrate_hat)[rr][nn] *= volume;
+          (alphaij_hat)[rr][nn] *= volume;
+          (strainrate_hat)[rr][nn] *= volume;
         }
       }
     }
@@ -1329,15 +1328,13 @@ namespace FLD
    */
   template <int iel>
   void f3_calc_smag_const_lij_mij_and_mij_mij(Discret::ELEMENTS::Fluid* ele,
-      Discret::ELEMENTS::FluidEleParameterStd* fldpara,
-      Teuchos::RCP<Epetra_MultiVector>& col_filtered_vel,
-      Teuchos::RCP<Epetra_MultiVector>& col_filtered_reynoldsstress,
-      Teuchos::RCP<Epetra_MultiVector>& col_filtered_modeled_subgrid_stress,
-      Teuchos::RCP<Epetra_MultiVector>& col_filtered_dens_vel,
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_dens,
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_dens_strainrate, double& LijMij,
-      double& MijMij, double& CI_numerator, double& CI_denominator, double& xcenter,
-      double& ycenter, double& zcenter)
+      Discret::ELEMENTS::FluidEleParameterStd* fldpara, Epetra_MultiVector& col_filtered_vel,
+      Epetra_MultiVector& col_filtered_reynoldsstress,
+      Epetra_MultiVector& col_filtered_modeled_subgrid_stress,
+      Epetra_MultiVector& col_filtered_dens_vel, Core::LinAlg::Vector<double>& col_filtered_dens,
+      Core::LinAlg::Vector<double>& col_filtered_dens_strainrate, double& LijMij, double& MijMij,
+      double& CI_numerator, double& CI_denominator, double& xcenter, double& ycenter,
+      double& zcenter)
   {
     Core::LinAlg::Matrix<3, iel> evel_hat;
     Core::LinAlg::Matrix<9, iel> ereynoldsstress_hat;
@@ -1353,16 +1350,16 @@ namespace FLD
 
       for (int dimi = 0; dimi < 3; ++dimi)
       {
-        evel_hat(dimi, nn) = (*((*col_filtered_vel)(dimi)))[lid];
+        evel_hat(dimi, nn) = (*((col_filtered_vel)(dimi)))[lid];
 
         for (int dimj = 0; dimj < 3; ++dimj)
         {
           int index = 3 * dimi + dimj;
 
-          ereynoldsstress_hat(index, nn) = (*((*col_filtered_reynoldsstress)(index)))[lid];
+          ereynoldsstress_hat(index, nn) = (*((col_filtered_reynoldsstress)(index)))[lid];
 
           efiltered_modeled_subgrid_stress_hat(index, nn) =
-              (*((*col_filtered_modeled_subgrid_stress)(index)))[lid];
+              (*((col_filtered_modeled_subgrid_stress)(index)))[lid];
         }
       }
     }
@@ -1373,12 +1370,12 @@ namespace FLD
       {
         int lid = (ele->nodes()[nn])->lid();
 
-        edens_hat(0, nn) = (*col_filtered_dens)[lid];
-        edensstrainrate_hat(0, nn) = (*col_filtered_dens_strainrate)[lid];
+        edens_hat(0, nn) = (col_filtered_dens)[lid];
+        edensstrainrate_hat(0, nn) = (col_filtered_dens_strainrate)[lid];
 
         for (int dimi = 0; dimi < 3; ++dimi)
         {
-          edensvel_hat(dimi, nn) = (*((*col_filtered_dens_vel)(dimi)))[lid];
+          edensvel_hat(dimi, nn) = (*((col_filtered_dens_vel)(dimi)))[lid];
         }
       }
     }
@@ -1800,10 +1797,9 @@ namespace FLD
 
   template <int iel>
   void f3_calc_vreman_const(Discret::ELEMENTS::Fluid* ele,
-      Teuchos::RCP<Epetra_MultiVector>& col_filtered_strainrate,
-      Teuchos::RCP<Epetra_MultiVector>& col_filtered_alphaij,
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_expression,
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_alpha2, double& cv_numerator,
+      Epetra_MultiVector& col_filtered_strainrate, Epetra_MultiVector& col_filtered_alphaij,
+      Core::LinAlg::Vector<double>& col_filtered_expression,
+      Core::LinAlg::Vector<double>& col_filtered_alpha2, double& cv_numerator,
       double& cv_denominator, double& volume)
   {
     Core::LinAlg::Matrix<9, iel> estrainrate_hat(true);
@@ -1826,9 +1822,9 @@ namespace FLD
         {
           int index = 3 * dimi + dimj;
 
-          estrainrate_hat(index, nn) = (*((*col_filtered_strainrate)(index)))[lid];
+          estrainrate_hat(index, nn) = (*((col_filtered_strainrate)(index)))[lid];
 
-          ealphaij_hat(index, nn) = (*((*col_filtered_alphaij)(index)))[lid];
+          ealphaij_hat(index, nn) = (*((col_filtered_alphaij)(index)))[lid];
         }
       }
     }
@@ -1837,8 +1833,8 @@ namespace FLD
     {
       int lid = (ele->nodes()[nn])->lid();
 
-      eexpression_hat(0, nn) = (*col_filtered_expression)[lid];
-      ealpha2_hat(0, nn) = (*col_filtered_alpha2)[lid];
+      eexpression_hat(0, nn) = (col_filtered_expression)[lid];
+      ealpha2_hat(0, nn) = (col_filtered_alpha2)[lid];
     }
 
     // number of spatial dimensions is always 3

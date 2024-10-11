@@ -131,8 +131,8 @@ namespace PoroMultiPhaseScaTra
      * @returns dbcmap, also containing additional boundary condition for collapsed eles
      */
     Teuchos::RCP<Epetra_Map> get_additional_dbc_for_collapsed_eles(
-        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_art_with_collapsed);
+        const Core::LinAlg::MapExtractor& dbcmap_art,
+        Core::LinAlg::Vector<double>& rhs_art_with_collapsed);
 
     //! FE-assemble into global force and stiffness
     void fe_assemble_ele_force_stiff_into_system_vector_matrix(const int& ele1gid,
@@ -149,8 +149,7 @@ namespace PoroMultiPhaseScaTra
     bool is_duplicate_segment(
         const std::vector<Teuchos::RCP<
             PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
-        const Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>
-            possible_duplicate);
+        PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase& possible_duplicate);
 
     //! check for identical segment
     bool is_identical_segment(

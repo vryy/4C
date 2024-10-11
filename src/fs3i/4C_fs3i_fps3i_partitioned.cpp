@@ -390,9 +390,9 @@ void FS3I::PartFPS3I::redistribute_interface()
         FPSI_UTILS->get_poro_fluid_fluid_interface_map();
 
     FPSI_UTILS->redistribute_interface(
-        problem->get_dis("scatra1"), Teuchos::null, "", *PoroFluid_Fluid_InterfaceMap);
+        *problem->get_dis("scatra1"), "", *PoroFluid_Fluid_InterfaceMap);
     FPSI_UTILS->redistribute_interface(
-        problem->get_dis("scatra2"), Teuchos::null, "", *Fluid_PoroFluid_InterfaceMap);
+        *problem->get_dis("scatra2"), "", *Fluid_PoroFluid_InterfaceMap);
   }
 
   Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
@@ -400,7 +400,7 @@ void FS3I::PartFPS3I::redistribute_interface()
 
   // after redistributing the interface we have to fix the material pointers of the structure-scatra
   // discretisation
-  PoroElast::UTILS::set_material_pointers_matching_grid(structdis, structscatradis);
+  PoroElast::UTILS::set_material_pointers_matching_grid(*structdis, *structscatradis);
 }
 
 /*----------------------------------------------------------------------*

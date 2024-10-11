@@ -90,11 +90,10 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
   // clean up as soon as old time integration is unused!
   if (oldstructimint_)
   {
-    Teuchos::RCP<Adapter::StructureBaseAlgorithm> structure =
-        Teuchos::make_rcp<Adapter::StructureBaseAlgorithm>(
-            timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+    Adapter::StructureBaseAlgorithm structure(
+        timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     structure_ =
-        Teuchos::rcp_dynamic_cast<Adapter::FPSIStructureWrapper>(structure->structure_field());
+        Teuchos::rcp_dynamic_cast<Adapter::FPSIStructureWrapper>(structure.structure_field());
     structure_->setup();
   }
   else
@@ -279,7 +278,7 @@ void PoroElast::PoroBase::read_restart(const int step)
     if (matchinggrid_)
     {
       PoroElast::UTILS::set_material_pointers_matching_grid(
-          structure_field()->discretization(), fluid_field()->discretization());
+          *structure_field()->discretization(), *fluid_field()->discretization());
     }
     else
     {
@@ -356,7 +355,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> PoroElast::PoroBase::structure_to_flu
   }
   else
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> mv = volcoupl_->apply_vector_mapping21(iv);
+    Teuchos::RCP<const Core::LinAlg::Vector<double>> mv = volcoupl_->apply_vector_mapping21(*iv);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> sv =
         Core::LinAlg::create_vector(*(fluid_field()->vel_pres_splitter()->other_map()));
@@ -399,7 +398,7 @@ void PoroElast::PoroBase::set_fluid_solution()
   else
   {
     structure_field()->discretization()->set_state(
-        1, "fluidvel", volcoupl_->apply_vector_mapping12(fluid_field()->velnp()));
+        1, "fluidvel", volcoupl_->apply_vector_mapping12(*fluid_field()->velnp()));
   }
 }
 
@@ -454,7 +453,7 @@ void PoroElast::PoroBase::setup_coupling()
     if (porosity_splitter_.is_null())
     {
       porosity_splitter_ =
-          PoroElast::UTILS::build_poro_splitter(structure_field()->discretization());
+          PoroElast::UTILS::build_poro_splitter(*structure_field()->discretization());
     }
   }
 
@@ -568,13 +567,12 @@ void PoroElast::NoPenetrationConditionHandle::buid_no_penetration_map(
 }
 
 void PoroElast::NoPenetrationConditionHandle::apply_cond_rhs(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
+    Core::LinAlg::Vector<double>& iterinc, Core::LinAlg::Vector<double>& rhs)
 {
   if (has_cond_)
   {
     const Teuchos::RCP<const Epetra_Map>& nopenetrationmap = nopenetration_->Map(1);
-    Core::LinAlg::apply_dirichlet_to_system(*iterinc, *rhs, *cond_rhs_, *nopenetrationmap);
+    Core::LinAlg::apply_dirichlet_to_system(iterinc, rhs, *cond_rhs_, *nopenetrationmap);
   }
 }
 
@@ -605,11 +603,11 @@ void PoroElast::NoPenetrationConditionHandle::clear(PoroElast::Coupltype couplty
 }
 
 void PoroElast::NoPenetrationConditionHandle::setup(
-    Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid)
+    const Epetra_Map& dofRowMap, const Epetra_Map* dofRowMapFluid)
 {
   if (has_cond_)
   {
-    cond_rhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofRowMap, true);
+    cond_rhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dofRowMap, true);
 
     cond_dofs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofRowMapFluid, true);
 

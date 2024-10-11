@@ -182,17 +182,17 @@ namespace XFEM
    *
    *  \author schott
    *  \date 01/15 */
-  inline void zero_matrix(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& mat)
+  inline void zero_matrix(Core::LinAlg::SparseMatrix& mat)
   {
-    if (mat->explicit_dirichlet())
+    if (mat.explicit_dirichlet())
     {
-      mat->zero();  // matrix could have been changed due to Dirichlet conditions, go back to
-                    // original Graph if savegraph == true
+      mat.zero();  // matrix could have been changed due to Dirichlet conditions, go back to
+                   // original Graph if savegraph == true
     }
     else
     {
       // do not create a new matrix via Zero() but zero entries
-      mat->put_scalar(0.0);
+      mat.put_scalar(0.0);
     }
   }
 

@@ -466,7 +466,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_large_angl
     compute_normal(r1, r2, r1_xi, r2_xi, cpvariables_[numcp], 0);
 
     // call function to compute penalty force
-    calc_penalty_law(cpvariables_[numcp]);
+    calc_penalty_law(*cpvariables_[numcp]);
 
     // get shift angles from input file
     double perpshiftangle1 = bcparams_.get<double>("BEAMS_PERPSHIFTANGLE1") / 180.0 * M_PI;
@@ -474,7 +474,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_large_angl
 
     // call function to compute scale factor of penalty parameter
     calc_perp_penalty_scale_fac(
-        cpvariables_[numcp], r1_xi, r2_xi, perpshiftangle1, perpshiftangle2);
+        *cpvariables_[numcp], r1_xi, r2_xi, perpshiftangle1, perpshiftangle2);
 
     // In case of large-angle-contact, the length specific energy and the 'real' energy are
     // identical
@@ -495,11 +495,11 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_large_angl
 
     // call function to compute contact contribution to residual vector
     evaluate_fc_contact(&fint, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi,
-        cpvariables_[numcp], 1.0, true, false, false, false);
+        *cpvariables_[numcp], 1.0, true, false, false, false);
 
     // call function to compute contact contribution to stiffness matrix
     evaluate_stiffc_contact(stiffmatrix, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi,
-        N2_xi, N1_xixi, N2_xixi, cpvariables_[numcp], 1.0, true, false, false, false);
+        N2_xi, N1_xixi, N2_xixi, *cpvariables_[numcp], 1.0, true, false, false, false);
   }
 }
 /*----------------------------------------------------------------------*
@@ -967,7 +967,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_small_angl
     compute_normal(r1, r2, r1_xi, r2_xi, gpvariables_[numgptot], 1);
 
     // call function to compute penalty force
-    calc_penalty_law(gpvariables_[numgptot]);
+    calc_penalty_law(*gpvariables_[numgptot]);
 
     // get shift angles from input file
     double parshiftangle1 = bcparams_.get<double>("BEAMS_PARSHIFTANGLE1") / 180.0 * M_PI;
@@ -975,7 +975,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_small_angl
 
     // call function to compute scale factor of penalty parameter
     calc_par_penalty_scale_fac(
-        gpvariables_[numgptot], r1_xi, r2_xi, parshiftangle1, parshiftangle2);
+        *gpvariables_[numgptot], r1_xi, r2_xi, parshiftangle1, parshiftangle2);
 
     //    std::cout << "gpvariables_[numgp]->GetNormal(): " << gpvariables_[numgp]->GetNormal() <<
     //    std::endl; std::cout << "numgptot: " << numgptot << std::endl; std::cout << "xi: " <<
@@ -1015,12 +1015,12 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_small_angl
 
     // call function to compute contact contribution to residual vector
     evaluate_fc_contact(&fint, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi,
-        gpvariables_[numgptot], intfac, false, true, false, false);
+        *gpvariables_[numgptot], intfac, false, true, false, false);
 
 #ifndef ENDPOINTSEGMENTATION
     // call function to compute contact contribution to stiffness matrix
     evaluate_stiffc_contact(stiffmatrix, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi,
-        N2_xi, N1_xixi, N2_xixi, gpvariables_[numgptot], intfac, false, true, false, false);
+        N2_xi, N1_xixi, N2_xixi, *gpvariables_[numgptot], intfac, false, true, false, false);
 #else
     TYPE jacobi_interval = jacobi / get_jacobi(element1_);
     // In case of segment-based integration, we apply a special FAD linearization technique
@@ -1374,7 +1374,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_end_point_
     compute_normal(r1, r2, r1_xi, r2_xi, epvariables_[numep], 2);
 
     // call function to compute penalty force
-    calc_penalty_law(epvariables_[numep]);
+    calc_penalty_law(*epvariables_[numep]);
 
     epvariables_[numep]->set_p_pfac(1.0);
     epvariables_[numep]->set_dp_pfac(0.0);
@@ -1400,11 +1400,11 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_end_point_
 
     // call function to compute contact contribution to residual vector
     evaluate_fc_contact(&fint, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi,
-        epvariables_[numep], 1.0, false, false, fixedendpointxi, fixedendpointeta);
+        *epvariables_[numep], 1.0, false, false, fixedendpointxi, fixedendpointeta);
 
     // call function to compute contact contribution to stiffness matrix
     evaluate_stiffc_contact(stiffmatrix, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi,
-        N2_xi, N1_xixi, N2_xixi, epvariables_[numep], 1.0, false, false, fixedendpointxi,
+        N2_xi, N1_xixi, N2_xixi, *epvariables_[numep], 1.0, false, false, fixedendpointxi,
         fixedendpointeta);
   }
 }
@@ -1417,15 +1417,15 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_active_end_point_
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_penalty_law(
-    Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues>> variables)
+    Beam3contactvariables<numnodes, numnodalvalues>& variables)
 {
   // First parameter for contact force regularization
   double g0 = bcparams_.get<double>("BEAMS_PENREGPARAM_G0", -1.0);
   TYPE fp = 0.0;
   TYPE dfp = 0.0;
   TYPE e = 0.0;
-  double pp = variables->get_pp();
-  TYPE gap = variables->get_gap();
+  double pp = variables.get_pp();
+  TYPE gap = variables.get_gap();
 
   if (!check_contact_status(Core::FADUtils::cast_to_double(gap))) return;
 
@@ -1613,9 +1613,9 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_penalty_law(
     }
   }
 
-  variables->setfp(fp);
-  variables->setdfp(dfp);
-  variables->set_energy(e);
+  variables.setfp(fp);
+  variables.setdfp(dfp);
+  variables.set_energy(e);
 
   return;
 }
@@ -1628,7 +1628,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_penalty_law(
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_perp_penalty_scale_fac(
-    Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues>> cpvariables,
+    Beam3contactvariables<numnodes, numnodalvalues>& cpvariables,
     Core::LinAlg::Matrix<3, 1, TYPE>& r1_xi, Core::LinAlg::Matrix<3, 1, TYPE>& r2_xi,
     const double shiftangle1, const double shiftangle2)
 {
@@ -1682,8 +1682,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_perp_penalty_scale_fa
   }
 
   // set class variable
-  cpvariables->set_p_pfac(ppfac);
-  cpvariables->set_dp_pfac(dppfac);
+  cpvariables.set_p_pfac(ppfac);
+  cpvariables.set_dp_pfac(dppfac);
 
   return;
 }
@@ -1696,7 +1696,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_perp_penalty_scale_fa
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_par_penalty_scale_fac(
-    Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues>> gpvariables,
+    Beam3contactvariables<numnodes, numnodalvalues>& gpvariables,
     Core::LinAlg::Matrix<3, 1, TYPE>& r1_xi, Core::LinAlg::Matrix<3, 1, TYPE>& r2_xi,
     const double shiftangle1, const double shiftangle2)
 {
@@ -1739,8 +1739,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::calc_par_penalty_scale_fac
   }
 
   // set class variable
-  gpvariables->set_p_pfac(ppfac);
-  gpvariables->set_dp_pfac(dppfac);
+  gpvariables.set_p_pfac(ppfac);
+  gpvariables.set_dp_pfac(dppfac);
 
   return;
 }
@@ -2987,8 +2987,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_fc_contact(
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
-    Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues>> variables, const double& intfac,
-    bool cpp, bool gp, bool fixedendpointxi, bool fixedendpointeta,
+    Beam3contactvariables<numnodes, numnodalvalues>& variables, const double& intfac, bool cpp,
+    bool gp, bool fixedendpointxi, bool fixedendpointeta,
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD,
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD)
 {
@@ -3050,12 +3050,12 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_fc_contact(
     }
   }
 
-  TYPE gap = variables->get_gap();
-  Core::LinAlg::Matrix<3, 1, TYPE> normal = variables->get_normal();
-  TYPE fp = variables->getfp();
+  TYPE gap = variables.get_gap();
+  Core::LinAlg::Matrix<3, 1, TYPE> normal = variables.get_normal();
+  TYPE fp = variables.getfp();
   // The factor ppfac reduces the penalty parameter for the large-angle and small-angle formulation
   // in dependence of the current contact angle
-  TYPE ppfac = variables->get_p_pfac();
+  TYPE ppfac = variables.get_p_pfac();
 
   //**********************************************************************
   // evaluate contact forces for active pairs
@@ -3224,8 +3224,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_stiffc_contact(
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi,
-    Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues>> variables, const double& intfac,
-    bool cpp, bool gp, bool fixedendpointxi, bool fixedendpointeta)
+    Beam3contactvariables<numnodes, numnodalvalues>& variables, const double& intfac, bool cpp,
+    bool gp, bool fixedendpointxi, bool fixedendpointeta)
 {
   // get dimensions for vectors fc1 and fc2
   const int dim1 = 3 * numnodes * numnodalvalues;
@@ -3247,11 +3247,11 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_stiffc_contact(
 
   // flag indicating assembly
   bool DoNotAssemble = true;
-  TYPE gap = variables->get_gap();
+  TYPE gap = variables.get_gap();
   // The factor ppfac reduces the penalty parameter for the large-angle and small-angle formulation
   // in dependence of the current contact angle
-  TYPE ppfac = variables->get_p_pfac();
-  TYPE dppfac = variables->get_dp_pfac();
+  TYPE ppfac = variables.get_p_pfac();
+  TYPE dppfac = variables.get_dp_pfac();
 
   // In order to accelerate convergence, we only apply the basic stiffness part in case of very
   // large gaps!
@@ -3359,9 +3359,9 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_stiffc_contact(
 
     Core::LinAlg::Matrix<3, 1, TYPE> delta_r = Core::FADUtils::diff_vector(r1, r2);
     TYPE norm_delta_r = Core::FADUtils::vector_norm<3>(delta_r);
-    Core::LinAlg::Matrix<3, 1, TYPE> normal = variables->get_normal();
-    TYPE fp = variables->getfp();
-    TYPE dfp = variables->getdfp();
+    Core::LinAlg::Matrix<3, 1, TYPE> normal = variables.get_normal();
+    TYPE fp = variables.getfp();
+    TYPE dfp = variables.getdfp();
 
     //********************************************************************
     // evaluate linearizations and distance
@@ -3818,7 +3818,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_stiffc_contact_in
     Core::LinAlg::Matrix<dim1, 1, TYPE> fc1_FAD(true);
     Core::LinAlg::Matrix<dim2, 1, TYPE> fc2_FAD(true);
     evaluate_fc_contact(nullptr, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi,
-        cpvariables, intfac, false, true, false, false, &fc1_FAD, &fc2_FAD);
+        *cpvariables, intfac, false, true, false, false, &fc1_FAD, &fc2_FAD);
 
 #ifdef AUTOMATICDIFF
     TYPE fac1(0.0);
@@ -5237,7 +5237,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::update_ele_smooth_tangents
 
   nodaltangentssmooth1_ =
       BEAMINTERACTION::Beam3TangentSmoothing::calculate_nodal_tangents<numnodes>(
-          currentpositions, elepos_aux, element1_, neighbors1_);
+          currentpositions, elepos_aux, element1_, *neighbors1_);
 
   elepos_aux.clear();
   // Tangent smoothing only possible with data type double (not with Sacado FAD)
@@ -5246,7 +5246,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::update_ele_smooth_tangents
 
   nodaltangentssmooth2_ =
       BEAMINTERACTION::Beam3TangentSmoothing::calculate_nodal_tangents<numnodes>(
-          currentpositions, elepos_aux, element2_, neighbors2_);
+          currentpositions, elepos_aux, element2_, *neighbors2_);
 }
 /*----------------------------------------------------------------------*
  |  end: Update nodal coordinates (public)

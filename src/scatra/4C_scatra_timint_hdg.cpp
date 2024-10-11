@@ -689,8 +689,7 @@ void ScaTra::TimIntHDG::update_interior_variables(
 void ScaTra::TimIntHDG::fd_check()
 {
   // make a copy of state variables to undo perturbations later
-  Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_original =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*phinp_);
+  Core::LinAlg::Vector<double> phinp_original(*phinp_);
 
   discret_->clear_state(true);
 
@@ -707,7 +706,7 @@ void ScaTra::TimIntHDG::fd_check()
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
 
   // fill state vector with original state variables
-  phinp_->Update(1., *phinp_original, 0.);
+  phinp_->Update(1., phinp_original, 0.);
 
   // make temporary vector for interior variables for the update of the last step and use this
   // vector for the calculation of the original residual the temporary vector is necessary because
@@ -756,8 +755,7 @@ void ScaTra::TimIntHDG::fd_check()
   sysmatcopy->FillComplete();
 
   // make a copy of system right-hand side vector
-  Teuchos::RCP<Core::LinAlg::Vector<double>> residualVec =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*systemvector1);
+  Core::LinAlg::Vector<double> residualVec(*systemvector1);
   Teuchos::RCP<Core::LinAlg::Vector<double>> fdvec = Core::LinAlg::create_vector(*dofrowmap, true);
 
   for (int k = 0; k < 16; ++k)
@@ -781,7 +779,7 @@ void ScaTra::TimIntHDG::fd_check()
       strategy.zero();
 
       // fill state vector with original state variables
-      phinp_->Update(1., *phinp_original, 0.);
+      phinp_->Update(1., phinp_original, 0.);
 
       // impose perturbation and update interior variables
       if (phinp_->Map().MyGID(colgid))
@@ -823,7 +821,7 @@ void ScaTra::TimIntHDG::fd_check()
       // finite difference suggestion (first divide by epsilon and then subtract for better
       // conditioning)
       for (int j = 0; j < phinp_->MyLength(); ++j)
-        (*fdvec)[j] = -(*systemvector1)[j] / eps + (*residualVec)[j] / eps;
+        (*fdvec)[j] = -(*systemvector1)[j] / eps + (residualVec)[j] / eps;
 
       for (int rowlid = 0; rowlid < discret_->dof_row_map()->NumMyElements(); ++rowlid)
       {
@@ -1089,9 +1087,8 @@ void ScaTra::TimIntHDG::adapt_degree()
   std::vector<Core::Elements::LocationArray> la_old;
 
   // copy the old face dof map and the old interior element dof map
-  Teuchos::RCP<Epetra_Map> facedofs_old = Teuchos::make_rcp<Epetra_Map>(*discret_->dof_col_map(0));
-  Teuchos::RCP<Epetra_Map> eledofs_old =
-      Teuchos::make_rcp<Epetra_Map>(*discret_->dof_col_map(nds_intvar_));
+  Epetra_Map facedofs_old(*discret_->dof_col_map(0));
+  Epetra_Map eledofs_old(*discret_->dof_col_map(nds_intvar_));
 
   // set action
   Teuchos::ParameterList eleparams;
@@ -1214,11 +1211,11 @@ void ScaTra::TimIntHDG::adapt_degree()
   // copy old values of the state vectors phi and intphi into vectors, which are then used for the
   // projection
   Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_old =
-      Core::LinAlg::create_vector(*facedofs_old, true);
+      Core::LinAlg::create_vector(facedofs_old, true);
   Core::LinAlg::export_to(*phinp_, *phinp_old);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> intphinp_old =
-      Core::LinAlg::create_vector(*eledofs_old, true);
+      Core::LinAlg::create_vector(eledofs_old, true);
   Core::LinAlg::export_to(*intphinp_, *intphinp_old);
 
   // reset the residual, increment and sysmat to the size of the adapted new dofset

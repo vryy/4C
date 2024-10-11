@@ -22,13 +22,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::Thermo::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Thermo::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC", false, "");
+  Teuchos::ParameterList& tdyn = list.sublist("THERMAL DYNAMIC", false, "");
 
   setStringToIntegralParameter<DynamicType>("DYNAMICTYP", "OneStepTheta",
       "type of time integration control",

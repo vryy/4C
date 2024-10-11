@@ -660,7 +660,7 @@ double XFEM::UTILS::eval_element_volume(Core::LinAlg::Matrix<3, Core::FE::num_no
 template <Core::FE::CellType distype>
 double XFEM::UTILS::compute_char_ele_length(Core::Elements::Element *ele,  ///< fluid element
     Core::LinAlg::SerialDenseMatrix &ele_xyze,                             ///< element coordinates
-    const Teuchos::RCP<XFEM::ConditionManager> &cond_manager,  ///< XFEM condition manager
+    XFEM::ConditionManager &cond_manager,    ///< XFEM condition manager
     const Cut::plain_volumecell_set &vcSet,  ///< volumecell sets for volume integration
     const std::map<int, std::vector<Cut::BoundaryCell *>>
         &bcells,  ///< bcells for boundary cell integration
@@ -678,7 +678,7 @@ double XFEM::UTILS::compute_char_ele_length(Core::Elements::Element *ele,  ///< 
   Core::LinAlg::Matrix<3, Core::FE::num_nodes<distype>> xyze(ele_xyze, true);
   const int coup_sid = bintpoints.begin()->first;
   const Inpar::XFEM::AveragingStrategy averaging_strategy =
-      cond_manager->get_averaging_strategy(coup_sid, ele->id());
+      cond_manager.get_averaging_strategy(coup_sid, ele->id());
   if (emb == Teuchos::null and averaging_strategy == Inpar::XFEM::Embedded_Sided)
     FOUR_C_THROW("no coupling interface available, however Embedded_Sided coupling is activated!");
 
@@ -1110,51 +1110,44 @@ template double XFEM::UTILS::eval_element_volume<Core::FE::CellType::wedge15>(
     std::vector<Core::LinAlg::SerialDenseVector> *);
 
 template double XFEM::UTILS::compute_char_ele_length<Core::FE::CellType::hex8>(
-    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &,
-    const Teuchos::RCP<XFEM::ConditionManager> &, const Cut::plain_volumecell_set &,
-    const std::map<int, std::vector<Cut::BoundaryCell *>> &,
+    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &, XFEM::ConditionManager &,
+    const Cut::plain_volumecell_set &, const std::map<int, std::vector<Cut::BoundaryCell *>> &,
     const std::map<int, std::vector<Core::FE::GaussIntegration>> &, const Inpar::XFEM::ViscStabHk,
     Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::hex8>>,
     Core::Elements::Element *);
 template double XFEM::UTILS::compute_char_ele_length<Core::FE::CellType::hex20>(
-    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &,
-    const Teuchos::RCP<XFEM::ConditionManager> &, const Cut::plain_volumecell_set &,
-    const std::map<int, std::vector<Cut::BoundaryCell *>> &,
+    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &, XFEM::ConditionManager &,
+    const Cut::plain_volumecell_set &, const std::map<int, std::vector<Cut::BoundaryCell *>> &,
     const std::map<int, std::vector<Core::FE::GaussIntegration>> &, const Inpar::XFEM::ViscStabHk,
     Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::hex20>>,
     Core::Elements::Element *);
 template double XFEM::UTILS::compute_char_ele_length<Core::FE::CellType::hex27>(
-    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &,
-    const Teuchos::RCP<XFEM::ConditionManager> &, const Cut::plain_volumecell_set &,
-    const std::map<int, std::vector<Cut::BoundaryCell *>> &,
+    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &, XFEM::ConditionManager &,
+    const Cut::plain_volumecell_set &, const std::map<int, std::vector<Cut::BoundaryCell *>> &,
     const std::map<int, std::vector<Core::FE::GaussIntegration>> &, const Inpar::XFEM::ViscStabHk,
     Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::hex27>>,
     Core::Elements::Element *);
 template double XFEM::UTILS::compute_char_ele_length<Core::FE::CellType::tet4>(
-    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &,
-    const Teuchos::RCP<XFEM::ConditionManager> &, const Cut::plain_volumecell_set &,
-    const std::map<int, std::vector<Cut::BoundaryCell *>> &,
+    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &, XFEM::ConditionManager &,
+    const Cut::plain_volumecell_set &, const std::map<int, std::vector<Cut::BoundaryCell *>> &,
     const std::map<int, std::vector<Core::FE::GaussIntegration>> &, const Inpar::XFEM::ViscStabHk,
     Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::tet4>>,
     Core::Elements::Element *);
 template double XFEM::UTILS::compute_char_ele_length<Core::FE::CellType::tet10>(
-    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &,
-    const Teuchos::RCP<XFEM::ConditionManager> &, const Cut::plain_volumecell_set &,
-    const std::map<int, std::vector<Cut::BoundaryCell *>> &,
+    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &, XFEM::ConditionManager &,
+    const Cut::plain_volumecell_set &, const std::map<int, std::vector<Cut::BoundaryCell *>> &,
     const std::map<int, std::vector<Core::FE::GaussIntegration>> &, const Inpar::XFEM::ViscStabHk,
     Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::tet10>>,
     Core::Elements::Element *);
 template double XFEM::UTILS::compute_char_ele_length<Core::FE::CellType::wedge6>(
-    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &,
-    const Teuchos::RCP<XFEM::ConditionManager> &, const Cut::plain_volumecell_set &,
-    const std::map<int, std::vector<Cut::BoundaryCell *>> &,
+    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &, XFEM::ConditionManager &,
+    const Cut::plain_volumecell_set &, const std::map<int, std::vector<Cut::BoundaryCell *>> &,
     const std::map<int, std::vector<Core::FE::GaussIntegration>> &, const Inpar::XFEM::ViscStabHk,
     Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::wedge6>>,
     Core::Elements::Element *);
 template double XFEM::UTILS::compute_char_ele_length<Core::FE::CellType::wedge15>(
-    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &,
-    const Teuchos::RCP<XFEM::ConditionManager> &, const Cut::plain_volumecell_set &,
-    const std::map<int, std::vector<Cut::BoundaryCell *>> &,
+    Core::Elements::Element *, Core::LinAlg::SerialDenseMatrix &, XFEM::ConditionManager &,
+    const Cut::plain_volumecell_set &, const std::map<int, std::vector<Cut::BoundaryCell *>> &,
     const std::map<int, std::vector<Core::FE::GaussIntegration>> &, const Inpar::XFEM::ViscStabHk,
     Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::wedge15>>,
     Core::Elements::Element *);

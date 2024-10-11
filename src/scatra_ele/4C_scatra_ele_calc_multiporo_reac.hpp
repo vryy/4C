@@ -338,9 +338,8 @@ namespace Discret
 
       //! fill coupling vector and add variables to reaction in order to compute reaction values and
       //! derivatives
-      void fill_coupling_vector_and_add_variables(const int k,
-          const Teuchos::RCP<Mat::MatListReactions> matreaclist,
-          const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager);
+      void fill_coupling_vector_and_add_variables(
+          const int k, Mat::MatListReactions& matreaclist, ScaTraEleReaManagerAdvReac& remanager);
 
       //! Get right hand side including reaction bodyforce term
       void get_rhs_int(double& rhsint,  //!< rhs containing bodyforce at Gauss point

@@ -16,12 +16,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Inpar::Geo::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::Geo::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& search_tree = list->sublist("SEARCH TREE", false, "");
+  Teuchos::ParameterList& search_tree = list.sublist("SEARCH TREE", false, "");
 
   setStringToIntegralParameter<Inpar::Geo::TreeType>("TREE_TYPE", "notree", "set tree type",
       tuple<std::string>("notree", "octree3d", "quadtree3d", "quadtree2d"),

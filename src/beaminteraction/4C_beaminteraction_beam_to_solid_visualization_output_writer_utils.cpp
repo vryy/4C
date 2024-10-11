@@ -27,12 +27,12 @@ FOUR_C_NAMESPACE_OPEN
 void BEAMINTERACTION::add_beam_interaction_nodal_forces(
     const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
     const Teuchos::RCP<const Core::FE::Discretization>& discret_ptr,
-    const Teuchos::RCP<const Epetra_MultiVector>& displacement,
-    const Teuchos::RCP<const Epetra_MultiVector>& force, const bool write_unique_ids)
+    const Teuchos::RCP<const Epetra_MultiVector>& displacement, const Epetra_MultiVector& force,
+    const bool write_unique_ids)
 {
   // Add the reference geometry and displacement to the visualization.
   visualization->add_discretization_nodal_reference_position(discret_ptr);
-  visualization->add_discretization_nodal_data_from_multivector("displacement", displacement);
+  visualization->add_discretization_nodal_data_from_multivector("displacement", *displacement);
 
   // Create maps with the GIDs of beam and solid nodes.
   std::vector<int> gid_beam_dof;
@@ -55,10 +55,10 @@ void BEAMINTERACTION::add_beam_interaction_nodal_forces(
   // Extract the forces and add them to the discretization.
   Teuchos::RCP<Core::LinAlg::Vector<double>> force_beam =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(beam_dof_map, true);
-  Core::LinAlg::export_to(*force, *force_beam);
+  Core::LinAlg::export_to(force, *force_beam);
   Teuchos::RCP<Core::LinAlg::Vector<double>> force_solid =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(solid_dof_map, true);
-  Core::LinAlg::export_to(*force, *force_solid);
+  Core::LinAlg::export_to(force, *force_solid);
   visualization->add_discretization_nodal_data("force_beam", force_beam);
   visualization->add_discretization_nodal_data("force_solid", force_solid);
 
@@ -75,13 +75,12 @@ void BEAMINTERACTION::add_beam_interaction_nodal_forces(
  *
  */
 void BEAMINTERACTION::add_averaged_nodal_normals(
-    const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>&
-        output_writer_base_ptr,
+    BEAMINTERACTION::BeamToSolidOutputWriterVisualization& output_writer_base_ptr,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements,
     const int condition_coupling_id, const bool write_unique_ids)
 {
   // Get the visualization vectors.
-  auto& visualization_data = output_writer_base_ptr->get_visualization_data();
+  auto& visualization_data = output_writer_base_ptr.get_visualization_data();
   std::vector<double>& point_coordinates = visualization_data.get_point_coordinates();
   std::vector<double>& displacement = visualization_data.get_point_data<double>("displacement");
   std::vector<double>& normal_averaged =

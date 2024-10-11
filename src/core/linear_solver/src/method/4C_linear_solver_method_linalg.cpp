@@ -202,7 +202,7 @@ void Core::LinAlg::Solver::setup(Teuchos::RCP<Epetra_Operator> matrix,
 
 int Core::LinAlg::Solver::solve_with_multi_vector(Teuchos::RCP<Epetra_Operator> matrix,
     Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b,
-    const FourC::Core::LinAlg::SolverParams &params)
+    const Core::LinAlg::SolverParams &params)
 {
   setup(matrix, x, b, params);
 

@@ -1309,49 +1309,49 @@ namespace CONTACT
     \brief Add line to line penalty forces
 
     */
-    void add_ltl_forces(Teuchos::RCP<Epetra_FEVector> feff);
+    void add_ltl_forces(Epetra_FEVector& feff);
 
     /*!
     \brief Add line to line penalty forces
 
     */
-    void add_lts_forces_master(Teuchos::RCP<Epetra_FEVector> feff);
+    void add_lts_forces_master(Epetra_FEVector& feff);
 
     /*!
     \brief Add line to line penalty forces
 
     */
-    void add_nts_forces_master(Teuchos::RCP<Epetra_FEVector> feff);
+    void add_nts_forces_master(Epetra_FEVector& feff);
 
     /*!
     \brief Add line to line penalty forces - friction
 
     */
-    void add_ltl_forces_friction(Teuchos::RCP<Epetra_FEVector> feff);
+    void add_ltl_forces_friction(Epetra_FEVector& feff);
 
     /*!
     \brief Add line to line penalty stiffness contribution
 
     */
-    void add_ltl_stiffness(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
+    void add_ltl_stiffness(Core::LinAlg::SparseMatrix& kteff);
 
     /*!
     \brief Add line to segment penalty stiffness contribution master side
 
     */
-    void add_lts_stiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
+    void add_lts_stiffness_master(Core::LinAlg::SparseMatrix& kteff);
 
     /*!
     \brief Add node to segment penalty stiffness contribution master side
 
     */
-    void add_nts_stiffness_master(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
+    void add_nts_stiffness_master(Core::LinAlg::SparseMatrix& kteff);
 
     /*!
     \brief Add line to line penalty stiffness contribution
 
     */
-    void add_ltl_stiffness_friction(Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff);
+    void add_ltl_stiffness_friction(Core::LinAlg::SparseMatrix& kteff);
 
     [[nodiscard]] inline bool is_friction() const { return friction_; }
 

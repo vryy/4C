@@ -87,15 +87,6 @@ namespace PoroMultiPhaseScaTra
 
     //! print out the coupling method
     void print_out_coupling_method() const override;
-
-    /*!
-     * @brief check if pair is not active
-     * @param[in] coupling_pair: the coupling pair which is checked
-     * @return true if pair is not active, false otherwise
-     */
-    static bool is_not_active(
-        const Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>
-            coupling_pair);
   };
 }  // namespace PoroMultiPhaseScaTra
 

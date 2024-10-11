@@ -100,7 +100,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     structure_field()->discretization()->set_state(1, "temperature", thermo_field()->tempnp());
   else
     structure_field()->discretization()->set_state(
-        1, "temperature", volcoupl_->apply_vector_mapping12(thermo_field()->tempnp()));
+        1, "temperature", volcoupl_->apply_vector_mapping12(*thermo_field()->tempnp()));
 
   // setup structural time integrator with initial temperature
   structure_->setup();
@@ -127,10 +127,10 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
     const Teuchos::ParameterList& tsisolverparams =
         Global::Problem::instance()->solver_params(linsolvernumber);
 
-    Teuchos::RCP<Teuchos::ParameterList> solverparams = Teuchos::make_rcp<Teuchos::ParameterList>();
-    *solverparams = tsisolverparams;
+    Teuchos::ParameterList solverparams;
+    solverparams = tsisolverparams;
 
-    solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(*solverparams, get_comm(),
+    solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(solverparams, get_comm(),
         Global::Problem::instance()->solver_params_callback(),
         Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY"));
@@ -198,7 +198,7 @@ void TSI::Monolithic::read_restart(int step)
   // They need to be reset.
   if (matchinggrid_)
     TSI::UTILS::set_material_pointers_matching_grid(
-        structure_field()->discretization(), thermo_field()->discretization());
+        *structure_field()->discretization(), *thermo_field()->discretization());
   else
   {
     Teuchos::RCP<TSI::UTILS::TSIMaterialStrategy> strategy =
@@ -494,11 +494,11 @@ void TSI::Monolithic::newton_full()
   apply_dbc();
 
   // initialize with predictor values
-  normrhsiter0_ = normrhs_ = calculate_vector_norm(iternorm_, rhs_);
+  normrhsiter0_ = normrhs_ = calculate_vector_norm(iternorm_, *rhs_);
   normstrrhsiter0_ = normstrrhs_ = last_iter_res_.first =
-      calculate_vector_norm(iternormstr_, structure_field()->rhs());
+      calculate_vector_norm(iternormstr_, *structure_field()->rhs());
   normthrrhsiter0_ = normthrrhs_ = last_iter_res_.second =
-      calculate_vector_norm(iternormthr_, thermo_field()->rhs());
+      calculate_vector_norm(iternormthr_, *thermo_field()->rhs());
   ls_step_length_ = 1.;
   normdisi_ = normtempi_ = norminc_ = 0.;
   normstrrhsiter0_ = normstrrhs_;
@@ -583,8 +583,8 @@ void TSI::Monolithic::newton_full()
       case Inpar::TSI::LS_and:
       case Inpar::TSI::LS_or:
       {
-        normstrrhs_ = calculate_vector_norm(iternormstr_, structure_field()->rhs());
-        normthrrhs_ = calculate_vector_norm(iternormthr_, thermo_field()->rhs());
+        normstrrhs_ = calculate_vector_norm(iternormstr_, *structure_field()->rhs());
+        normthrrhs_ = calculate_vector_norm(iternormthr_, *thermo_field()->rhs());
         iterinc_->Scale(-1.);
 
         while (ls_step_length_ > 1.e-8 && !l_sadmissible())
@@ -592,12 +592,12 @@ void TSI::Monolithic::newton_full()
           iterinc_->Scale(.5);
           ls_step_length_ *= .5;
           evaluate(iterinc_);
-          normstrrhs_ = calculate_vector_norm(iternormstr_, structure_field()->rhs());
-          normthrrhs_ = calculate_vector_norm(iternormthr_, thermo_field()->rhs());
+          normstrrhs_ = calculate_vector_norm(iternormstr_, *structure_field()->rhs());
+          normthrrhs_ = calculate_vector_norm(iternormthr_, *thermo_field()->rhs());
         }
 
-        last_iter_res_.first = calculate_vector_norm(iternormstr_, structure_field()->rhs());
-        last_iter_res_.second = calculate_vector_norm(iternormthr_, thermo_field()->rhs());
+        last_iter_res_.first = calculate_vector_norm(iternormstr_, *structure_field()->rhs());
+        last_iter_res_.second = calculate_vector_norm(iternormthr_, *thermo_field()->rhs());
 
         if (ls_step_length_ < 1.)
         {
@@ -613,14 +613,14 @@ void TSI::Monolithic::newton_full()
 
     // --------------------------------------------- build residual norms
     // include all stuff here related with convergence test
-    normrhs_ = calculate_vector_norm(iternorm_, rhs_);
+    normrhs_ = calculate_vector_norm(iternorm_, *rhs_);
     // vector of displacement and temperature residual
     Teuchos::RCP<Core::LinAlg::Vector<double>> strrhs;
     Teuchos::RCP<Core::LinAlg::Vector<double>> thrrhs;
     // extract field vectors
     extract_field_vectors(rhs_, strrhs, thrrhs);
-    normstrrhs_ = calculate_vector_norm(iternormstr_, strrhs);
-    normthrrhs_ = calculate_vector_norm(iternormthr_, thrrhs);
+    normstrrhs_ = calculate_vector_norm(iternormstr_, *strrhs);
+    normthrrhs_ = calculate_vector_norm(iternormthr_, *thrrhs);
 
     // --------------------------------- build residual incremental norms
     // vector of displacement and temperature increments
@@ -628,9 +628,9 @@ void TSI::Monolithic::newton_full()
     Teuchos::RCP<Core::LinAlg::Vector<double>> tx;
     // extract field vectors
     extract_field_vectors(iterinc_, sx, tx);
-    norminc_ = calculate_vector_norm(iternorm_, iterinc_);
-    normdisi_ = calculate_vector_norm(iternormstr_, sx);
-    normtempi_ = calculate_vector_norm(iternormthr_, tx);
+    norminc_ = calculate_vector_norm(iternorm_, *iterinc_);
+    normdisi_ = calculate_vector_norm(iternormstr_, *sx);
+    normtempi_ = calculate_vector_norm(iternormthr_, *tx);
 
     // in case of 'Mix'-convergence criterion: save the norm of the 1st
     // iteration in (norm . iter0_)
@@ -734,11 +734,11 @@ void TSI::Monolithic::ptc()
   apply_dbc();
 
   // initialize with predictor values
-  normrhsiter0_ = normrhs_ = calculate_vector_norm(iternorm_, rhs_);
+  normrhsiter0_ = normrhs_ = calculate_vector_norm(iternorm_, *rhs_);
   normrhsiter0_ = normstrrhs_ = last_iter_res_.first =
-      calculate_vector_norm(iternormstr_, structure_field()->rhs());
+      calculate_vector_norm(iternormstr_, *structure_field()->rhs());
   normthrrhsiter0_ = normthrrhs_ = last_iter_res_.second =
-      calculate_vector_norm(iternormthr_, thermo_field()->rhs());
+      calculate_vector_norm(iternormthr_, *thermo_field()->rhs());
   ls_step_length_ = 1.;
   normdisi_ = normtempi_ = norminc_ = 0.;
   normstrrhsiter0_ = normstrrhs_;
@@ -755,7 +755,7 @@ void TSI::Monolithic::ptc()
   // residual here
   // here the new convergence test stuff has to be included
 
-  normrhs_ = calculate_vector_norm(iternorm_, rhs_);
+  normrhs_ = calculate_vector_norm(iternorm_, *rhs_);
   rhs_->NormInf(&nc);
   // define the pseudo time step delta^{-1}
   double dti = 1 / ptcdt;
@@ -841,14 +841,14 @@ void TSI::Monolithic::ptc()
 
     // --------------------------------------------- build residual norms
     // include all stuff here related with convergence test
-    normrhs_ = calculate_vector_norm(iternorm_, rhs_);
+    normrhs_ = calculate_vector_norm(iternorm_, *rhs_);
     // vector of displacement and temperature residual
     Teuchos::RCP<Core::LinAlg::Vector<double>> strrhs;
     Teuchos::RCP<Core::LinAlg::Vector<double>> thrrhs;
     // extract field vectors
     extract_field_vectors(rhs_, strrhs, thrrhs);
-    normstrrhs_ = calculate_vector_norm(iternormstr_, strrhs);
-    normthrrhs_ = calculate_vector_norm(iternormthr_, thrrhs);
+    normstrrhs_ = calculate_vector_norm(iternormstr_, *strrhs);
+    normthrrhs_ = calculate_vector_norm(iternormthr_, *thrrhs);
 
     // --------------------------------- build residual incremental norms
     // vector of displacement and temperature increments
@@ -856,9 +856,9 @@ void TSI::Monolithic::ptc()
     Teuchos::RCP<Core::LinAlg::Vector<double>> tx;
     // extract field vectors
     extract_field_vectors(iterinc_, sx, tx);
-    norminc_ = calculate_vector_norm(iternorm_, iterinc_);
-    normdisi_ = calculate_vector_norm(iternormstr_, sx);
-    normtempi_ = calculate_vector_norm(iternormthr_, tx);
+    norminc_ = calculate_vector_norm(iternorm_, *iterinc_);
+    normdisi_ = calculate_vector_norm(iternormstr_, *sx);
+    normtempi_ = calculate_vector_norm(iternormthr_, *tx);
 
     // in case of 'Mix'-convergence criterion: save the norm of the 1st
     // iteration in norm*iter0_
@@ -1026,7 +1026,7 @@ void TSI::Monolithic::evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> stepin
   if (strmethodname_ == Inpar::Solid::dyna_statics)
   {
     // calculate velocity V_n+1^k = (D_n+1^k-D_n)/Dt()
-    vel_ = calc_velocity(structure_field()->dispnp());
+    vel_ = calc_velocity(*structure_field()->dispnp());
   }
   // else: use velnp
   else
@@ -1183,7 +1183,7 @@ void TSI::Monolithic::setup_system_matrix()
   k_st_->complete(*(structure_field()->discretization()->dof_row_map(1)),
       *(structure_field()->discretization()->dof_row_map(0)));
 
-  if (!matchinggrid_) k_st_ = volcoupl_->apply_matrix_mapping12(k_st_);
+  if (!matchinggrid_) k_st_ = volcoupl_->apply_matrix_mapping12(*k_st_);
 
   k_st_->un_complete();
 
@@ -1218,7 +1218,7 @@ void TSI::Monolithic::setup_system_matrix()
   k_ts_->complete(*(thermo_field()->discretization()->dof_row_map(1)),
       *(thermo_field()->discretization()->dof_row_map(0)));
 
-  if (!matchinggrid_) k_ts_ = volcoupl_->apply_matrix_mapping21(k_ts_);
+  if (!matchinggrid_) k_ts_ = volcoupl_->apply_matrix_mapping21(*k_ts_);
 
   systemmatrix_->assign(1, 0, Core::LinAlg::View, *k_ts_);
 
@@ -2332,15 +2332,15 @@ void TSI::Monolithic::unscale_solution(Core::LinAlg::BlockSparseMatrixBase& mat,
 /*----------------------------------------------------------------------*
  | calculate vector norm                                     dano 04/13 |
  *----------------------------------------------------------------------*/
-double TSI::Monolithic::calculate_vector_norm(const enum Inpar::TSI::VectorNorm norm,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> vect)
+double TSI::Monolithic::calculate_vector_norm(
+    const enum Inpar::TSI::VectorNorm norm, const Core::LinAlg::Vector<double>& vect)
 {
   // L1 norm
   // norm = sum_0^i vect[i]
   if (norm == Inpar::TSI::norm_l1)
   {
     double vectnorm;
-    vect->Norm1(&vectnorm);
+    vect.Norm1(&vectnorm);
     return vectnorm;
   }
   // L2/Euclidian norm
@@ -2348,7 +2348,7 @@ double TSI::Monolithic::calculate_vector_norm(const enum Inpar::TSI::VectorNorm 
   else if (norm == Inpar::TSI::norm_l2)
   {
     double vectnorm;
-    vect->Norm2(&vectnorm);
+    vect.Norm2(&vectnorm);
     return vectnorm;
   }
   // RMS norm
@@ -2356,23 +2356,23 @@ double TSI::Monolithic::calculate_vector_norm(const enum Inpar::TSI::VectorNorm 
   else if (norm == Inpar::TSI::norm_rms)
   {
     double vectnorm;
-    vect->Norm2(&vectnorm);
-    return vectnorm / sqrt((double)vect->GlobalLength());
+    vect.Norm2(&vectnorm);
+    return vectnorm / sqrt((double)vect.GlobalLength());
   }
   // infinity/maximum norm
   // norm = max( vect[i] )
   else if (norm == Inpar::TSI::norm_inf)
   {
     double vectnorm;
-    vect->NormInf(&vectnorm);
+    vect.NormInf(&vectnorm);
     return vectnorm;
   }
   // norm = sum_0^i vect[i]/length_vect
   else if (norm == Inpar::TSI::norm_l1_scaled)
   {
     double vectnorm;
-    vect->Norm1(&vectnorm);
-    return vectnorm / ((double)vect->GlobalLength());
+    vect.Norm1(&vectnorm);
+    return vectnorm / ((double)vect.GlobalLength());
   }
   else
   {
@@ -2625,7 +2625,7 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   }      // loop over all STRUCTURAL DBC conditions
 
   // map containing all z-displacement DOFs which have a DBC
-  Teuchos::RCP<Epetra_Map> newdofmap = Teuchos::make_rcp<Epetra_Map>(
+  Epetra_Map newdofmap(
       -1, (int)sdata.size(), sdata.data(), 0, structure_field()->discretization()->get_comm());
 
   //---------------------------------------------------------------------------
@@ -2635,8 +2635,8 @@ void TSI::Monolithic::calculate_necking_tsi_results()
   // ---------------------------------------------------------------- top force
   // nodal reaction force at outer edge for whole support area
   Teuchos::RCP<Core::LinAlg::Vector<double>> tension =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*newdofmap,  // map containing
-                                                                   // all DOFs at top surf with DBC
+      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(newdofmap,  // map containing
+                                                                  // all DOFs at top surf with DBC
           false);
   // copy the structural reaction force to tension
   Core::LinAlg::export_to(*(structure_field()->freact()), *tension);
@@ -2851,10 +2851,10 @@ void TSI::Monolithic::apply_struct_coupling_state(
   {
     if (disp != Teuchos::null)
       thermo_field()->discretization()->set_state(
-          1, "displacement", volcoupl_->apply_vector_mapping21(disp));
+          1, "displacement", volcoupl_->apply_vector_mapping21(*disp));
     if (vel != Teuchos::null)
       thermo_field()->discretization()->set_state(
-          1, "velocity", volcoupl_->apply_vector_mapping21(vel));
+          1, "velocity", volcoupl_->apply_vector_mapping21(*vel));
   }
 }  // apply_struct_coupling_state()
 

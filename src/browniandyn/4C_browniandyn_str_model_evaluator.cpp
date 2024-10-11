@@ -412,6 +412,9 @@ void Solid::ModelEvaluator::BrownianDyn::evaluate_neumann_brownian_dyn(
     Teuchos::RCP<Core::LinAlg::Vector<double>> eval_vec,
     Teuchos::RCP<Core::LinAlg::SparseOperator> eval_mat)
 {
+  (void)eval_vec;
+  (void)eval_mat;
+
   check_init_setup();
   // -------------------------------------------------------------------------
   // get interface pointer

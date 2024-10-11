@@ -77,7 +77,7 @@ namespace Inpar
     };
 
     /// set the beam interaction parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// set beam interaction specific conditions
     void set_valid_conditions(

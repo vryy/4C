@@ -14,10 +14,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::GeometricSearch::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::GeometricSearch::set_valid_parameters(Teuchos::ParameterList& list)
 {
   Teuchos::ParameterList& boundingvolumestrategy =
-      list->sublist("BOUNDINGVOLUME STRATEGY", false, "");
+      list.sublist("BOUNDINGVOLUME STRATEGY", false, "");
 
   Core::UTILS::double_parameter("BEAM_RADIUS_EXTENSION_FACTOR", 2.0,
       "Beams radius is multiplied with the factor and then the bounding volume only depending on "

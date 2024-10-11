@@ -171,7 +171,7 @@ void Inpar::BEAMINTERACTION::set_valid_parameters(Teuchos::RCP<Teuchos::Paramete
 
   /*----------------------------------------------------------------------*/
   /* parameters for beam to solid contact */
-  BeamToSolid::set_valid_parameters(list);
+  BeamToSolid::set_valid_parameters(*list);
 }
 
 void Inpar::BEAMINTERACTION::set_valid_conditions(

@@ -526,12 +526,12 @@ namespace Discret
       template <Core::FE::CellType bdistype,
           Core::FE::CellType pdistype>
       void reinit_characteristic_galerkin_boundary(
-          Core::Elements::FaceElement* ele,                  //!< transport element
-          Teuchos::ParameterList& params,                    //!< parameter list
-          Core::FE::Discretization& discretization,          //!< discretization
-          Teuchos::RCP<const Core::Mat::Material> material,  //!< material
-          Core::LinAlg::SerialDenseMatrix& elemat_epetra,    //!< ele sysmat
-          Core::LinAlg::SerialDenseVector& elevec_epetra     //!< ele rhs
+          Core::Elements::FaceElement* ele,                //!< transport element
+          Teuchos::ParameterList& params,                  //!< parameter list
+          Core::FE::Discretization& discretization,        //!< discretization
+          const Core::Mat::Material& material,             //!< material
+          Core::LinAlg::SerialDenseMatrix& elemat_epetra,  //!< ele sysmat
+          Core::LinAlg::SerialDenseVector& elevec_epetra   //!< ele rhs
       );
 
       //! evaluate Robin boundary condition

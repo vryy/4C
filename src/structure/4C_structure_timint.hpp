@@ -510,7 +510,7 @@ namespace Solid
         const Teuchos::RCP<Core::LinAlg::Vector<double>> dis,   //!< old displacement state
         const Teuchos::RCP<Core::LinAlg::Vector<double>> disn,  //!< new displacement state
         const Teuchos::RCP<Core::LinAlg::Vector<double>> vel,   // velocity state
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& fext        //!< external force
+        Core::LinAlg::Vector<double>& fext                      //!< external force
     );
 
     /*! \brief Evaluate ordinary internal force

@@ -56,7 +56,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannDisp::fluid_op(
     // normal fluid solve
 
     // the displacement -> velocity conversion at the interface
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = interface_velocity(idisp);
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = interface_velocity(*idisp);
 
     // A rather simple hack. We need something better!
     const int itemax = mb_fluid_field()->itemax();

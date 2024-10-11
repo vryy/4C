@@ -617,8 +617,7 @@ namespace CONTACT
     \param vec (in/out)):  empty global vetcor to be assembled to
 
     */
-    void assemble_coords(
-        const std::string& sidename, bool ref, Teuchos::RCP<Core::LinAlg::Vector<double>> vec);
+    void assemble_coords(const std::string& sidename, bool ref, Core::LinAlg::Vector<double>& vec);
 
     /*!
     \brief Do mesh initialization for rotational invariance

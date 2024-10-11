@@ -60,7 +60,7 @@ void ScaTra::MeshtyingStrategyFluid::evaluate_meshtying()
  *----------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyFluid::include_dirichlet_in_condensation() const
 {
-  meshtying_->include_dirichlet_in_condensation(scatratimint_->phinp(), scatratimint_->phin());
+  meshtying_->include_dirichlet_in_condensation(*scatratimint_->phinp(), *scatratimint_->phin());
 
   return;
 }  // ScaTra::MeshtyingStrategyFluid::include_dirichlet_in_condensation()

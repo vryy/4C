@@ -747,7 +747,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::print_header()
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::build_convergence_norms()
 {
   //------------------------------------------------------------ build residual force norms
-  normrhs_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_);
+  normrhs_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_s;
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_f;
 
@@ -755,8 +755,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::build_convergence_norms()
   extract_structure_and_fluid_vectors(rhs_, rhs_s, rhs_f);
 
   // build also norms for fluid and structure
-  normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_s);
-  normrhsfluid_ = UTILS::calculate_vector_norm(vectornormfres_, rhs_f);
+  normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_s);
+  normrhsfluid_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_f);
 
   //------------------------------------------------------------- build residual increment norms
   // displacement and fluid velocity & pressure incremental vector
@@ -767,11 +767,11 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::build_convergence_norms()
   extract_structure_and_fluid_vectors(iterinc_, iterincs, iterincf);
 
   // build also norms for fluid and structure
-  normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, iterincs);
-  normincfluid_ = UTILS::calculate_vector_norm(vectornorminc_, iterincf);
+  normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, *iterincs);
+  normincfluid_ = UTILS::calculate_vector_norm(vectornorminc_, *iterincf);
 
-  double dispnorm = UTILS::calculate_vector_norm(vectornorminc_, (structure_field()->dispnp()));
-  double fluidnorm = UTILS::calculate_vector_norm(vectornorminc_, (fluid_field()->phinp()));
+  double dispnorm = UTILS::calculate_vector_norm(vectornorminc_, (*structure_field()->dispnp()));
+  double fluidnorm = UTILS::calculate_vector_norm(vectornorminc_, (*fluid_field()->phinp()));
 
   // take care of very small norms
   if (dispnorm < 1.0e-6) dispnorm = 1.0;
@@ -1055,15 +1055,12 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
   stiff_approx = Core::LinAlg::create_matrix(*dof_row_map(), 81);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_old =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
-  rhs_old->Update(1.0, *rhs_, 0.0);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_copy =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
+  Core::LinAlg::Vector<double> rhs_old(*dof_row_map(), true);
+  rhs_old.Update(1.0, *rhs_, 0.0);
+  Core::LinAlg::Vector<double> rhs_copy(*dof_row_map(), true);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_copy =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(sparse->epetra_matrix(), Core::LinAlg::Copy);
+  Core::LinAlg::SparseMatrix sparse_copy(sparse->epetra_matrix(), Core::LinAlg::Copy);
 
 
   const int zeilennr = -1;
@@ -1082,12 +1079,12 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
 
     evaluate(iterinc);
 
-    rhs_copy->Update(1.0, *rhs_, 0.0);
+    rhs_copy.Update(1.0, *rhs_, 0.0);
 
     iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
     Core::LinAlg::apply_dirichlet_to_system(
-        *sparse_copy, *iterinc_, *rhs_copy, *zeros_, *combined_dbc_map());
-    Teuchos::RCP<Epetra_CrsMatrix> test_crs = sparse_copy->epetra_matrix();
+        sparse_copy, *iterinc_, rhs_copy, *zeros_, *combined_dbc_map());
+    Teuchos::RCP<Epetra_CrsMatrix> test_crs = sparse_copy.epetra_matrix();
     int sparsenumentries;
     int sparselength = test_crs->NumGlobalEntries(i);
     std::vector<double> sparsevalues(sparselength);
@@ -1099,23 +1096,23 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
 
     if (i == spaltenr)
     {
-      std::cout << "rhs_: " << (*rhs_copy)[zeilennr] << std::endl;
-      std::cout << "rhs_old: " << (*rhs_old)[zeilennr] << std::endl;
+      std::cout << "rhs_: " << (rhs_copy)[zeilennr] << std::endl;
+      std::cout << "rhs_old: " << (rhs_old)[zeilennr] << std::endl;
     }
     // rhs_copy = ( rhs_disturb - rhs_old ) . (-1)/delta with rhs_copy==rhs_disturb
-    rhs_copy->Update(-1.0, *rhs_old, 1.0);
-    rhs_copy->Scale(-1.0 / delta);
+    rhs_copy.Update(-1.0, rhs_old, 1.0);
+    rhs_copy.Scale(-1.0 / delta);
 
     if (i == spaltenr)
     {
       std::cout << "( rhs_disturb - rhs_old )               "
-                << (*rhs_copy)[zeilennr] * (-1.0) * delta << std::endl;
-      std::cout << "( rhs_disturb - rhs_old ) . (-1)/delta: " << (*rhs_copy)[zeilennr] << std::endl;
+                << (rhs_copy)[zeilennr] * (-1.0) * delta << std::endl;
+      std::cout << "( rhs_disturb - rhs_old ) . (-1)/delta: " << (rhs_copy)[zeilennr] << std::endl;
     }
     int* index = &i;
     for (int j = 0; j < dofs; ++j)
     {
-      double value = (*rhs_copy)[j];
+      double value = (rhs_copy)[j];
       stiff_approx->InsertGlobalValues(j, 1, &value, index);
 
       if ((j == zeilennr) and (i == spaltenr))
@@ -1154,9 +1151,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::poro_fd_check()
   stiff_approx_sparse =
       Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(stiff_approx, Core::LinAlg::Copy);
 
-  stiff_approx_sparse->add(*sparse_copy, false, -1.0, 1.0);
+  stiff_approx_sparse->add(sparse_copy, false, -1.0, 1.0);
 
-  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = sparse_copy->epetra_matrix();
+  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = sparse_copy.epetra_matrix();
 
   Teuchos::RCP<Epetra_CrsMatrix> error_crs = stiff_approx_sparse->epetra_matrix();
 
@@ -1339,10 +1336,10 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::build_converg
       extractor()->extract_vector(*iterinc_, 2);
 
   // build also norms for artery
-  normrhsart_ = UTILS::calculate_vector_norm(vectornormfres_, arteryrhs);
-  normincart_ = UTILS::calculate_vector_norm(vectornorminc_, arteryinc);
+  normrhsart_ = UTILS::calculate_vector_norm(vectornormfres_, *arteryrhs);
+  normincart_ = UTILS::calculate_vector_norm(vectornorminc_, *arteryinc);
   arterypressnorm_ = UTILS::calculate_vector_norm(
-      vectornorminc_, (fluid_field()->art_net_tim_int()->pressurenp()));
+      vectornorminc_, (*fluid_field()->art_net_tim_int()->pressurenp()));
 
   // call base class
   PoroMultiPhaseMonolithicTwoWay::build_convergence_norms();

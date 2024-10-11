@@ -114,37 +114,34 @@ void PARTICLEWALL::WallDataState::update_maps_of_state_vectors()
   if (vel_col_ != Teuchos::null)
   {
     // export old column to old row map based vector (no communication)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*curr_dof_row_map_);
-    Core::LinAlg::export_to(*vel_col_, *temp);
+    Core::LinAlg::Vector<double> temp(*curr_dof_row_map_);
+    Core::LinAlg::export_to(*vel_col_, temp);
     // export old row map based vector to new column map based vector
     vel_col_ =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*walldiscretization_->dof_col_map(), true);
-    Core::LinAlg::export_to(*temp, *vel_col_);
+    Core::LinAlg::export_to(temp, *vel_col_);
   }
 
   if (acc_col_ != Teuchos::null)
   {
     // export old column to old row map based vector (no communication)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*curr_dof_row_map_);
-    Core::LinAlg::export_to(*acc_col_, *temp);
+    Core::LinAlg::Vector<double> temp(*curr_dof_row_map_);
+    Core::LinAlg::export_to(*acc_col_, temp);
     // export old row map based vector to new column map based vector
     acc_col_ =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*walldiscretization_->dof_col_map(), true);
-    Core::LinAlg::export_to(*temp, *acc_col_);
+    Core::LinAlg::export_to(temp, *acc_col_);
   }
 
   if (force_col_ != Teuchos::null)
   {
     // export old column to old row map based vector (no communication)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*curr_dof_row_map_);
-    Core::LinAlg::export_to(*force_col_, *temp);
+    Core::LinAlg::Vector<double> temp(*curr_dof_row_map_);
+    Core::LinAlg::export_to(*force_col_, temp);
     // export old row map based vector to new column map based vector
     force_col_ =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*walldiscretization_->dof_col_map(), true);
-    Core::LinAlg::export_to(*temp, *force_col_);
+    Core::LinAlg::export_to(temp, *force_col_);
   }
 
   // set new dof row map

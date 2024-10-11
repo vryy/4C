@@ -81,7 +81,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
   lubrication_ = Teuchos::make_rcp<LUBRICATION::LubricationBaseAlgorithm>();
   lubrication_->setup(*lubricationtimeparams, lubricationparams,
       problem->solver_params(linsolvernumber), lubrication_disname, isale);
-  mortaradapter_->store_dirichlet_status(structure_field()->get_dbc_map_extractor());
+  mortaradapter_->store_dirichlet_status(*structure_field()->get_dbc_map_extractor());
 
   // Structure displacement at the lubricated interface
   Teuchos::RCP<Core::LinAlg::Vector<double>> disp =
@@ -122,14 +122,14 @@ void EHL::Base::read_restart(int restart)
  | calculate velocities by a FD approximation               wirtz 12/15 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> EHL::Base::calc_velocity(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp)
+    const Core::LinAlg::Vector<double>& dispnp)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> vel = Teuchos::null;
   // copy D_n onto V_n+1
   vel = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(structure_->dispn()));
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
-  vel->Update(1. / dt(), *dispnp, -1. / dt());
+  vel->Update(1. / dt(), dispnp, -1. / dt());
 
   return vel;
 }  // calc_velocity()
@@ -209,7 +209,7 @@ void EHL::Base::set_struct_solution(Teuchos::RCP<const Core::LinAlg::Vector<doub
   mortaradapter_->integrate(disp, dt());
 
   // Displace the mesh of the lubrication field in accordance with the slave-side interface
-  set_mesh_disp(disp);
+  set_mesh_disp(*disp);
 
   // Calculate the average tangential fractions of the structure velocities at the interface and
   // provide them to the lubrication field
@@ -235,7 +235,7 @@ void EHL::Base::set_struct_solution(Teuchos::RCP<const Core::LinAlg::Vector<doub
  | calc tractions, resulting from fluid (pressure and viscous) seitz 01/18 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> EHL::Base::evaluate_fluid_force(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> pressure)
+    const Core::LinAlg::Vector<double>& pressure)
 {
   // safety: unprojectable nodes to zero pressure
   if (inf_gap_toggle_lub_ != Teuchos::null)
@@ -261,11 +261,11 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> EHL::Base::evaluate_fluid_force(
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ada_strDisp_to_lubDisp_->master_dof_map());
 
   // add pressure force
-  add_pressure_force(slaveiforce, masteriforce);
+  add_pressure_force(*slaveiforce, *masteriforce);
   // add poiseuille flow force
-  add_poiseuille_force(slaveiforce, masteriforce);
+  add_poiseuille_force(*slaveiforce, *masteriforce);
   // add couette flow force
-  add_couette_force(slaveiforce, masteriforce);
+  add_couette_force(*slaveiforce, *masteriforce);
 
   // External force vector (global)
   Teuchos::RCP<Core::LinAlg::Vector<double>> strforce =
@@ -286,11 +286,11 @@ void EHL::Base::set_lubrication_solution(Teuchos::RCP<const Core::LinAlg::Vector
   // Provide the structure field with the force vector
   // Note that the mid-point values (gen-alpha) of the interface forces are evaluated in
   // Solid::TimIntGenAlpha::evaluate_force_residual()
-  structure_->set_force_interface(evaluate_fluid_force(pressure)->get_ptr_of_Epetra_MultiVector());
+  structure_->set_force_interface(evaluate_fluid_force(*pressure)->get_ptr_of_Epetra_MultiVector());
 }
 
-void EHL::Base::add_pressure_force(Teuchos::RCP<Core::LinAlg::Vector<double>> slaveiforce,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> masteriforce)
+void EHL::Base::add_pressure_force(
+    Core::LinAlg::Vector<double>& slaveiforce, Core::LinAlg::Vector<double>& masteriforce)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> stritraction;
 
@@ -310,80 +310,70 @@ void EHL::Base::add_pressure_force(Teuchos::RCP<Core::LinAlg::Vector<double>> sl
   const Teuchos::RCP<Core::LinAlg::SparseMatrix> mortarm = mortaradapter_->get_mortar_matrix_m();
 
   // f_slave = D^T*t
-  int err = mortard->multiply(true, *stritraction, *slaveiforce);
+  int err = mortard->multiply(true, *stritraction, slaveiforce);
   if (err != 0) FOUR_C_THROW("error while calculating slave side interface force");
   if (stritraction_D_->Update(1., *stritraction, 1.)) FOUR_C_THROW("Update failed");
 
   // f_master = -M^T*t
-  err = mortarm->multiply(true, *stritraction, *masteriforce);
+  err = mortarm->multiply(true, *stritraction, masteriforce);
   if (err != 0) FOUR_C_THROW("error while calculating master side interface force");
-  masteriforce->Scale(-1.0);
+  masteriforce.Scale(-1.0);
   if (stritraction_M_->Update(-1., *stritraction, 1.)) FOUR_C_THROW("update failed");
 }
 
-void EHL::Base::add_poiseuille_force(Teuchos::RCP<Core::LinAlg::Vector<double>> slaveiforce,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> masteriforce)
+void EHL::Base::add_poiseuille_force(
+    Core::LinAlg::Vector<double>& slaveiforce, Core::LinAlg::Vector<double>& masteriforce)
 {
   // poiseuille flow forces
   Teuchos::RCP<Core::LinAlg::Vector<double>> p_int =
       ada_strDisp_to_lubPres_->slave_to_master(lubrication_->lubrication_field()->prenp());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> p_int_full =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  Core::LinAlg::export_to(*p_int, *p_int_full);
+  Core::LinAlg::Vector<double> p_int_full(*mortaradapter_->slave_dof_map());
+  Core::LinAlg::export_to(*p_int, p_int_full);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> nodal_gap =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  if (slavemaptransform_->multiply(false, *mortaradapter_->nodal_gap(), *nodal_gap))
+  Core::LinAlg::Vector<double> nodal_gap(*mortaradapter_->slave_dof_map());
+  if (slavemaptransform_->multiply(false, *mortaradapter_->nodal_gap(), nodal_gap))
     FOUR_C_THROW("multiply failed");
 
   Core::LinAlg::SparseMatrix m(*mortaradapter_->surf_grad_matrix());
 
-  m.left_scale(*nodal_gap);
+  m.left_scale(nodal_gap);
   m.scale(-.5);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> poiseuille_force =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  m.Apply(*p_int_full, *poiseuille_force);
+  Core::LinAlg::Vector<double> poiseuille_force(*mortaradapter_->slave_dof_map());
+  m.Apply(p_int_full, poiseuille_force);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> slave_psl =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          mortaradapter_->get_mortar_matrix_d()->domain_map());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> master_psl =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          mortaradapter_->get_mortar_matrix_m()->domain_map());
+  Core::LinAlg::Vector<double> slave_psl(mortaradapter_->get_mortar_matrix_d()->domain_map());
+  Core::LinAlg::Vector<double> master_psl(mortaradapter_->get_mortar_matrix_m()->domain_map());
 
   // f_slave = D^T*t
-  if (mortaradapter_->get_mortar_matrix_d()->multiply(true, *poiseuille_force, *slave_psl))
+  if (mortaradapter_->get_mortar_matrix_d()->multiply(true, poiseuille_force, slave_psl))
     FOUR_C_THROW("Multiply failed");
-  if (stritraction_D_->Update(1., *poiseuille_force, 1.)) FOUR_C_THROW("Update failed");
+  if (stritraction_D_->Update(1., poiseuille_force, 1.)) FOUR_C_THROW("Update failed");
 
   // f_master = +M^T*t // attention: no minus sign here: poiseuille points in same direction on
   // slave and master side
-  if (mortaradapter_->get_mortar_matrix_m()->multiply(true, *poiseuille_force, *master_psl))
+  if (mortaradapter_->get_mortar_matrix_m()->multiply(true, poiseuille_force, master_psl))
     FOUR_C_THROW("Multiply failed");
-  if (stritraction_M_->Update(1., *poiseuille_force, 1.)) FOUR_C_THROW("update failed");
+  if (stritraction_M_->Update(1., poiseuille_force, 1.)) FOUR_C_THROW("update failed");
 
   // add the contribution
-  if (slaveiforce->Update(1., *slave_psl, 1.)) FOUR_C_THROW("Update failed");
-  if (masteriforce->Update(1., *master_psl, 1.)) FOUR_C_THROW("Update failed");
+  if (slaveiforce.Update(1., slave_psl, 1.)) FOUR_C_THROW("Update failed");
+  if (masteriforce.Update(1., master_psl, 1.)) FOUR_C_THROW("Update failed");
 }
 
 
-void EHL::Base::add_couette_force(Teuchos::RCP<Core::LinAlg::Vector<double>> slaveiforce,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> masteriforce)
+void EHL::Base::add_couette_force(
+    Core::LinAlg::Vector<double>& slaveiforce, Core::LinAlg::Vector<double>& masteriforce)
 {
   const int ndim = Global::Problem::instance()->n_dim();
   const Teuchos::RCP<const Core::LinAlg::Vector<double>> relVel = mortaradapter_->rel_tang_vel();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> height =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  if (slavemaptransform_->multiply(false, *mortaradapter_->nodal_gap(), *height))
+  Core::LinAlg::Vector<double> height(*mortaradapter_->slave_dof_map());
+  if (slavemaptransform_->multiply(false, *mortaradapter_->nodal_gap(), height))
     FOUR_C_THROW("multiply failed");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> h_inv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  if (h_inv->Reciprocal(*height)) FOUR_C_THROW("Reciprocal failed");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> hinv_relV =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  hinv_relV->Multiply(1., *h_inv, *relVel, 0.);
+  Core::LinAlg::Vector<double> h_inv(*mortaradapter_->slave_dof_map());
+  if (h_inv.Reciprocal(height)) FOUR_C_THROW("Reciprocal failed");
+  Core::LinAlg::Vector<double> hinv_relV(*mortaradapter_->slave_dof_map());
+  hinv_relV.Multiply(1., h_inv, *relVel, 0.);
 
   Core::FE::Discretization& lub_dis = *lubrication_->lubrication_field()->discretization();
   Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec =
@@ -406,29 +396,24 @@ void EHL::Base::add_couette_force(Teuchos::RCP<Core::LinAlg::Vector<double>> sla
   }
   Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec_str =
       ada_strDisp_to_lubDisp_->slave_to_master(visc_vec);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> couette_force =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  couette_force->Multiply(-1., *visc_vec_str, *hinv_relV, 0.);
+  Core::LinAlg::Vector<double> couette_force(*mortaradapter_->slave_dof_map());
+  couette_force.Multiply(-1., *visc_vec_str, hinv_relV, 0.);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> slave_cou =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          mortaradapter_->get_mortar_matrix_d()->domain_map());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> master_cou =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          mortaradapter_->get_mortar_matrix_m()->domain_map());
+  Core::LinAlg::Vector<double> slave_cou(mortaradapter_->get_mortar_matrix_d()->domain_map());
+  Core::LinAlg::Vector<double> master_cou(mortaradapter_->get_mortar_matrix_m()->domain_map());
   // f_slave = D^T*t
-  if (mortaradapter_->get_mortar_matrix_d()->multiply(true, *couette_force, *slave_cou))
+  if (mortaradapter_->get_mortar_matrix_d()->multiply(true, couette_force, slave_cou))
     FOUR_C_THROW("Multiply failed");
-  if (stritraction_D_->Update(1., *couette_force, 1.)) FOUR_C_THROW("Update failed");
+  if (stritraction_D_->Update(1., couette_force, 1.)) FOUR_C_THROW("Update failed");
 
   // f_master = -M^T*t
-  if (mortaradapter_->get_mortar_matrix_m()->multiply(true, *couette_force, *master_cou))
+  if (mortaradapter_->get_mortar_matrix_m()->multiply(true, couette_force, master_cou))
     FOUR_C_THROW("Multiply failed");
-  if (stritraction_M_->Update(-1., *couette_force, 1.)) FOUR_C_THROW("update failed");
+  if (stritraction_M_->Update(-1., couette_force, 1.)) FOUR_C_THROW("update failed");
 
   // add the contribution
-  if (slaveiforce->Update(1., *slave_cou, 1.)) FOUR_C_THROW("Update failed");
-  if (masteriforce->Update(-1., *master_cou, 1.)) FOUR_C_THROW("Update failed");
+  if (slaveiforce.Update(1., slave_cou, 1.)) FOUR_C_THROW("Update failed");
+  if (masteriforce.Update(-1., master_cou, 1.)) FOUR_C_THROW("Update failed");
 }
 
 /*----------------------------------------------------------------------*
@@ -478,17 +463,16 @@ void EHL::Base::set_height_field()
  *----------------------------------------------------------------------*/
 void EHL::Base::set_height_dot()
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> heightdot =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(mortaradapter_->nodal_gap()));
+  Core::LinAlg::Vector<double> heightdot(*(mortaradapter_->nodal_gap()));
   Teuchos::RCP<const Core::LinAlg::Vector<double>> heightnp = mortaradapter_->nodal_gap();
 
-  heightdot->Update(-1.0 / dt(), *heightold_, 1.0 / dt());
+  heightdot.Update(-1.0 / dt(), *heightold_, 1.0 / dt());
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> discretegap =
       Core::LinAlg::create_vector(*(slaverowmapextr_->Map(0)), true);
   // get the weighted heightdot and store it in slave dof map (for each node, the scalar value is
   // stored in the 0th dof)
-  int err = slavemaptransform_->multiply(false, *heightdot, *discretegap);
+  int err = slavemaptransform_->multiply(false, heightdot, *discretegap);
   if (err != 0) FOUR_C_THROW("error while transforming map of weighted gap");
   // store discrete heightDot in lubrication disp dof map (its the film height time derivative)
   Teuchos::RCP<Core::LinAlg::Vector<double>> heightdotSet =
@@ -501,12 +485,12 @@ void EHL::Base::set_height_dot()
 /*----------------------------------------------------------------------*
  | set structure mesh displacement on lubrication field     wirtz 03/15 |
  *----------------------------------------------------------------------*/
-void EHL::Base::set_mesh_disp(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
+void EHL::Base::set_mesh_disp(const Core::LinAlg::Vector<double>& disp)
 {
   // Extract the structure displacement at the slave-side interface
   Teuchos::RCP<Core::LinAlg::Vector<double>> slaveidisp = Core::LinAlg::create_vector(
       *(slaverowmapextr_->Map(0)), true);  // Structure displacement at the lubricated interface
-  slaverowmapextr_->extract_vector(*disp, 0, *slaveidisp);
+  slaverowmapextr_->extract_vector(disp, 0, *slaveidisp);
 
   // Transfer the displacement vector onto the lubrication field
   Teuchos::RCP<Core::LinAlg::Vector<double>> lubridisp =
@@ -525,8 +509,7 @@ void EHL::Base::setup_unprojectable_dbc()
   if (not Global::Problem::instance()->elasto_hydro_dynamic_params().get<bool>("UNPROJ_ZERO_DBC"))
     return;
 
-  Teuchos::RCP<Epetra_FEVector> inf_gap_toggle =
-      Teuchos::make_rcp<Epetra_FEVector>(*mortaradapter_->slave_dof_map(), true);
+  Epetra_FEVector inf_gap_toggle(*mortaradapter_->slave_dof_map(), true);
   for (int i = 0; i < mortaradapter_->interface()->slave_row_nodes()->NumMyElements(); ++i)
   {
     Core::Nodes::Node* node = mortaradapter_->interface()->discret().g_node(
@@ -547,21 +530,20 @@ void EHL::Base::setup_unprojectable_dbc()
           {
             const int row = cnn->dofs()[j];
             const double one = 1.;
-            inf_gap_toggle->SumIntoGlobalValues(1, &row, &one, 0);
+            inf_gap_toggle.SumIntoGlobalValues(1, &row, &one, 0);
           }
         }
       }
     }
   }
-  if (inf_gap_toggle->GlobalAssemble(Epetra_Max, false) != 0)
-    FOUR_C_THROW("global_assemble failed");
-  for (int i = 0; i < inf_gap_toggle->Map().NumMyElements(); ++i)
-    if (inf_gap_toggle->operator()(0)->operator[](i) > 0.5)
-      inf_gap_toggle->operator()(0)->operator[](i) = 1.;
+  if (inf_gap_toggle.GlobalAssemble(Epetra_Max, false) != 0) FOUR_C_THROW("global_assemble failed");
+  for (int i = 0; i < inf_gap_toggle.Map().NumMyElements(); ++i)
+    if (inf_gap_toggle.operator()(0)->operator[](i) > 0.5)
+      inf_gap_toggle.operator()(0)->operator[](i) = 1.;
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> exp =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ada_strDisp_to_lubPres_->master_dof_map());
-  Core::LinAlg::export_to(*inf_gap_toggle, *exp);
+  Core::LinAlg::export_to(inf_gap_toggle, *exp);
   inf_gap_toggle_lub_ = ada_strDisp_to_lubPres_->master_to_slave(exp);
 
   static Teuchos::RCP<Core::LinAlg::Vector<double>> old_toggle = Teuchos::null;
@@ -740,7 +722,7 @@ void EHL::Base::output(bool forced_writerestart)
 
   // Additional output on structure field
   structure_field()->disc_writer()->write_vector("fluid_force",
-      evaluate_fluid_force(lubrication_->lubrication_field()->prenp()), Core::IO::dofvector);
+      evaluate_fluid_force(*lubrication_->lubrication_field()->prenp()), Core::IO::dofvector);
 
   if (dry_contact_)
   {
@@ -776,7 +758,7 @@ void EHL::Base::output(bool forced_writerestart)
   //=============================
   // output for lubricationfield:
   //=============================
-  set_mesh_disp(structure_field()->dispnp());
+  set_mesh_disp(*structure_field()->dispnp());
   lubrication_->lubrication_field()->output(forced_writerestart);
 
   // ============================
@@ -813,9 +795,7 @@ void EHL::Base::output(bool forced_writerestart)
     // output for viscosity
 
     const int ndim = Global::Problem::instance()->n_dim();
-    Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-            *lubrication_->lubrication_field()->dof_row_map(1));
+    Core::LinAlg::Vector<double> visc_vec(*lubrication_->lubrication_field()->dof_row_map(1));
     for (int i = 0;
          i < lubrication_->lubrication_field()->discretization()->node_row_map()->NumMyElements();
          ++i)
@@ -832,14 +812,14 @@ void EHL::Base::output(bool forced_writerestart)
       const double visc = lmat->compute_viscosity(p);
 
       for (int d = 0; d < ndim; ++d)
-        visc_vec->ReplaceGlobalValue(
+        visc_vec.ReplaceGlobalValue(
             lubrication_->lubrication_field()->discretization()->dof(1, lnode, d), 0, visc);
     }
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec_ex =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ada_lubPres_to_lubDisp_->slave_dof_map());
 
-    Core::LinAlg::export_to(*visc_vec, *visc_vec_ex);
+    Core::LinAlg::export_to(visc_vec, *visc_vec_ex);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> v1 =
         ada_lubPres_to_lubDisp_->slave_to_master(visc_vec_ex);

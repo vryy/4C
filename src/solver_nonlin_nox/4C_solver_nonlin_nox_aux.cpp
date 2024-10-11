@@ -173,30 +173,28 @@ NOX::Nln::LinSystem::LinearSystemType NOX::Nln::Aux::get_linear_system_type(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::Nln::Aux::root_mean_square_norm(const double& atol, const double& rtol,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> xnew,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> xincr, const bool& disable_implicit_weighting)
+    const Core::LinAlg::Vector<double>& xnew, const Core::LinAlg::Vector<double>& xincr,
+    const bool& disable_implicit_weighting)
 {
   double rval = 0.0;
 
   // calculate the old iterate (k-1)
-  Teuchos::RCP<Core::LinAlg::Vector<double>> v =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xnew);
-  v->Update(-1.0, *xincr, 1.0);
+  Core::LinAlg::Vector<double> v(xnew);
+  v.Update(-1.0, xincr, 1.0);
 
   // new auxiliary vector
-  Teuchos::RCP<Core::LinAlg::Vector<double>> u =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(xnew->Map(), false);
+  Core::LinAlg::Vector<double> u(xnew.Map(), false);
 
   // create the weighting factor u = RTOL |x^(k-1)| + ATOL
-  u->PutScalar(1.0);
-  u->Update(rtol, *v, atol);
+  u.PutScalar(1.0);
+  u.Update(rtol, v, atol);
 
   // v = xincr/u (elementwise)
-  v->ReciprocalMultiply(1.0, *u, *xincr, 0);
+  v.ReciprocalMultiply(1.0, u, xincr, 0);
 
   // rval = sqrt (v * v / N)
-  v->Norm2(&rval);
-  rval /= std::sqrt(static_cast<double>(v->GlobalLength()));
+  v.Norm2(&rval);
+  rval /= std::sqrt(static_cast<double>(v.GlobalLength()));
 
   return rval;
 }

@@ -318,7 +318,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_robin(Teuchos::RCP<Core::LinAlg::Spars
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::evaluate_force(Core::LinAlg::Vector<double>& fint,
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> vel, const Teuchos::ParameterList& p)
+    const Core::LinAlg::Vector<double>& vel, const Teuchos::ParameterList& p)
 {
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot find displacement state in discretization");
 
@@ -433,7 +433,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_force(Core::LinAlg::Vector<double>& fi
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::evaluate_force_stiff(Core::LinAlg::SparseMatrix& stiff,
     Core::LinAlg::Vector<double>& fint, const Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> vel, Teuchos::ParameterList p)
+    const Core::LinAlg::Vector<double>& vel, Teuchos::ParameterList p)
 {
   if (disp == Teuchos::null) FOUR_C_THROW("Cannot find displacement state in discretization");
 
@@ -597,11 +597,10 @@ void CONSTRAINTS::SpringDashpot::reset_newton()
 /*----------------------------------------------------------------------*
  |                                                             mhv 12/15|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::reset_prestress(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dis)
+void CONSTRAINTS::SpringDashpot::reset_prestress(const Core::LinAlg::Vector<double>& dis)
 {
   // this should be sufficient, no need to loop over nodes anymore
-  offset_prestr_new_->Update(1.0, *dis, 1.0);
+  offset_prestr_new_->Update(1.0, dis, 1.0);
 
   // loop over all nodes only necessary for cursurfnormal which does not use consistent integration
   if (springtype_ == cursurfnormal)
@@ -630,15 +629,15 @@ void CONSTRAINTS::SpringDashpot::reset_prestress(
 /*----------------------------------------------------------------------*
  |                                                             mhv 12/15|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::set_restart(Teuchos::RCP<Core::LinAlg::Vector<double>> vec)
+void CONSTRAINTS::SpringDashpot::set_restart(Core::LinAlg::Vector<double>& vec)
 {
-  offset_prestr_new_->Update(1.0, *vec, 0.0);
+  offset_prestr_new_->Update(1.0, vec, 0.0);
 }
 
 /*----------------------------------------------------------------------*
  |                                                             mhv 12/15|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::set_restart_old(Teuchos::RCP<Epetra_MultiVector> vec)
+void CONSTRAINTS::SpringDashpot::set_restart_old(Epetra_MultiVector& vec)
 {
   // loop nodes of current condition
   for (int node_gid : *nodes_)
@@ -660,14 +659,14 @@ void CONSTRAINTS::SpringDashpot::set_restart_old(Teuchos::RCP<Epetra_MultiVector
         for (auto& i : offset_prestr_)
         {
           // global id -> local id
-          const int lid = vec->Map().LID(i.first);
+          const int lid = vec.Map().LID(i.first);
           // local id on processor
           if (lid >= 0)
           {
             // copy all components of spring offset length vector
-            (i.second)[0] = (*(*vec)(0))[lid];
-            (i.second)[1] = (*(*vec)(1))[lid];
-            (i.second)[2] = (*(*vec)(2))[lid];
+            (i.second)[0] = (*(vec)(0))[lid];
+            (i.second)[1] = (*(vec)(1))[lid];
+            (i.second)[2] = (*(vec)(2))[lid];
           }
         }
       }
@@ -679,30 +678,30 @@ void CONSTRAINTS::SpringDashpot::set_restart_old(Teuchos::RCP<Epetra_MultiVector
 /*----------------------------------------------------------------------*
  |                                                         pfaller Jan14|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::output_gap_normal(Teuchos::RCP<Core::LinAlg::Vector<double>>& gap,
-    Teuchos::RCP<Epetra_MultiVector>& normals, Teuchos::RCP<Epetra_MultiVector>& stress) const
+void CONSTRAINTS::SpringDashpot::output_gap_normal(Core::LinAlg::Vector<double>& gap,
+    Epetra_MultiVector& normals, Epetra_MultiVector& stress) const
 {
   // export gap function
   for (const auto& i : gap_)
   {
     // global id -> local id
-    const int lid = gap->Map().LID(i.first);
+    const int lid = gap.Map().LID(i.first);
     // local id on processor
-    if (lid >= 0) (*gap)[lid] += i.second;
+    if (lid >= 0) (gap)[lid] += i.second;
   }
 
   // export normal
   for (const auto& normal : normals_)
   {
     // global id -> local id
-    const int lid = normals->Map().LID(normal.first);
+    const int lid = normals.Map().LID(normal.first);
     // local id on processor
     if (lid >= 0)
     {
       // copy all components of normal vector
-      (*(*normals)(0))[lid] += (normal.second).at(0);
-      (*(*normals)(1))[lid] += (normal.second).at(1);
-      (*(*normals)(2))[lid] += (normal.second).at(2);
+      (*(normals)(0))[lid] += (normal.second).at(0);
+      (*(normals)(1))[lid] += (normal.second).at(1);
+      (*(normals)(2))[lid] += (normal.second).at(2);
     }
   }
 
@@ -710,14 +709,14 @@ void CONSTRAINTS::SpringDashpot::output_gap_normal(Teuchos::RCP<Core::LinAlg::Ve
   for (const auto& i : springstress_)
   {
     // global id -> local id
-    const int lid = stress->Map().LID(i.first);
+    const int lid = stress.Map().LID(i.first);
     // local id on processor
     if (lid >= 0)
     {
       // copy all components of normal vector
-      (*(*stress)(0))[lid] += (i.second).at(0);
-      (*(*stress)(1))[lid] += (i.second).at(1);
-      (*(*stress)(2))[lid] += (i.second).at(2);
+      (*(stress)(0))[lid] += (i.second).at(0);
+      (*(stress)(1))[lid] += (i.second).at(1);
+      (*(stress)(2))[lid] += (i.second).at(2);
     }
   }
 }
@@ -726,29 +725,29 @@ void CONSTRAINTS::SpringDashpot::output_gap_normal(Teuchos::RCP<Core::LinAlg::Ve
  |                                                             mhv Dec15|
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::output_prestr_offset(
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& springprestroffset) const
+    Core::LinAlg::Vector<double>& springprestroffset) const
 {
-  springprestroffset->Update(1.0, *offset_prestr_new_, 0.0);
+  springprestroffset.Update(1.0, *offset_prestr_new_, 0.0);
 }
 
 /*----------------------------------------------------------------------*
  |                                                             mhv Dec15|
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::output_prestr_offset_old(
-    Teuchos::RCP<Epetra_MultiVector>& springprestroffset) const
+    Epetra_MultiVector& springprestroffset) const
 {
   // export spring offset length
   for (const auto& i : offset_prestr_)
   {
     // global id -> local id
-    const int lid = springprestroffset->Map().LID(i.first);
+    const int lid = springprestroffset.Map().LID(i.first);
     // local id on processor
     if (lid >= 0)
     {
       // copy all components of spring offset length vector
-      (*(*springprestroffset)(0))[lid] = (i.second)[0];
-      (*(*springprestroffset)(1))[lid] = (i.second)[1];
-      (*(*springprestroffset)(2))[lid] = (i.second)[2];
+      (*(springprestroffset)(0))[lid] = (i.second)[0];
+      (*(springprestroffset)(1))[lid] = (i.second)[1];
+      (*(springprestroffset)(2))[lid] = (i.second)[2];
     }
   }
 }

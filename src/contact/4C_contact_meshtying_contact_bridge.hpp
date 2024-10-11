@@ -121,7 +121,7 @@ namespace CONTACT
 
     \param[in] output Output writer of structure discretization to write results to disk
     */
-    void postprocess_quantities(Teuchos::RCP<Core::IO::DiscretizationWriter>& output);
+    void postprocess_quantities(Core::IO::DiscretizationWriter& output);
 
     /*!
     \brief Write results for visualization separately for each meshtying/contact interface
@@ -149,7 +149,7 @@ namespace CONTACT
     \brief set state vector
 
     */
-    void set_state(Teuchos::RCP<Core::LinAlg::Vector<double>> zeros);
+    void set_state(Core::LinAlg::Vector<double>& zeros);
 
     /*!
     \brief store dirichlet status
@@ -176,8 +176,7 @@ namespace CONTACT
     @oaram[in] forcedrestart Force to write restart data
 
     */
-    void write_restart(
-        Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool forcedrestart = false);
+    void write_restart(Core::IO::DiscretizationWriter& output, bool forcedrestart = false);
 
    private:
     //! don't want cctor (= operator impossible anyway for abstract class)

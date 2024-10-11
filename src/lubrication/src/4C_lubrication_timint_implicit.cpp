@@ -256,7 +256,7 @@ void LUBRICATION::TimIntImpl::prepare_time_step()
   // TODO: Dirichlet auch im Fall von genalpha prenp
   // Neumann(n + alpha_f)
   apply_dirichlet_bc(time_, prenp_, Teuchos::null);
-  apply_neumann_bc(neumann_loads_);
+  apply_neumann_bc(*neumann_loads_);
 
   return;
 }  // TimIntImpl::prepare_time_step
@@ -568,11 +568,11 @@ void LUBRICATION::TimIntImpl::scaling_and_neumann()
  | evaluate Neumann boundary conditions                     wirtz 11/15 |
  *----------------------------------------------------------------------*/
 void LUBRICATION::TimIntImpl::apply_neumann_bc(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& neumann_loads  //!< Neumann loads
+    Core::LinAlg::Vector<double>& neumann_loads  //!< Neumann loads
 )
 {
   // prepare load vector
-  neumann_loads->PutScalar(0.0);
+  neumann_loads.PutScalar(0.0);
 
   // create parameter list
   Teuchos::ParameterList condparams;
@@ -589,7 +589,7 @@ void LUBRICATION::TimIntImpl::apply_neumann_bc(
 
   // evaluate Neumann boundary conditions at time t_{n+alpha_F} (generalized alpha) or time t_{n+1}
   // (otherwise)
-  discret_->evaluate_neumann(condparams, *neumann_loads);
+  discret_->evaluate_neumann(condparams, neumann_loads);
   discret_->clear_state();
 
   return;
@@ -1091,16 +1091,16 @@ void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
   // std::vector containing
   // [0]: relative L2 pressure error
   // [1]: relative H1 pressure error
-  Teuchos::RCP<std::vector<double>> relerror = Teuchos::make_rcp<std::vector<double>>(2);
+  std::vector<double> relerror(2);
 
   if (std::abs((*errors)[2]) > 1e-14)
-    (*relerror)[0] = sqrt((*errors)[0]) / sqrt((*errors)[2]);
+    (relerror)[0] = sqrt((*errors)[0]) / sqrt((*errors)[2]);
   else
-    (*relerror)[0] = sqrt((*errors)[0]);
+    (relerror)[0] = sqrt((*errors)[0]);
   if (std::abs((*errors)[2]) > 1e-14)
-    (*relerror)[1] = sqrt((*errors)[1]) / sqrt((*errors)[3]);
+    (relerror)[1] = sqrt((*errors)[1]) / sqrt((*errors)[3]);
   else
-    (*relerror)[1] = sqrt((*errors)[1]);
+    (relerror)[1] = sqrt((*errors)[1]);
 
   if (myrank_ == 0)
   {
@@ -1115,8 +1115,8 @@ void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
       f.open(fname.c_str());
       f << "#| Step | Time | rel. L2-error  | rel. H1-error  |\n";
       f << std::setprecision(10) << step_ << " " << std::setw(1) << std::setprecision(5) << time_
-        << std::setw(1) << std::setprecision(6) << " " << (*relerror)[0] << std::setw(1)
-        << std::setprecision(6) << " " << (*relerror)[1] << "\n";
+        << std::setw(1) << std::setprecision(6) << " " << (relerror)[0] << std::setw(1)
+        << std::setprecision(6) << " " << (relerror)[1] << "\n";
 
       f.flush();
       f.close();
@@ -1126,8 +1126,8 @@ void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
       std::ofstream f;
       f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
       f << std::setprecision(10) << step_ << " " << std::setw(3) << std::setprecision(5) << time_
-        << std::setw(1) << std::setprecision(6) << " " << (*relerror)[0] << std::setw(1)
-        << std::setprecision(6) << " " << (*relerror)[1] << "\n";
+        << std::setw(1) << std::setprecision(6) << " " << (relerror)[0] << std::setw(1)
+        << std::setprecision(6) << " " << (relerror)[1] << "\n";
 
       f.flush();
       f.close();

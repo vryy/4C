@@ -258,13 +258,12 @@ namespace CONTACT
     // relational operators for binary tree nodes
 
     //! operator <
-    friend bool operator<(
-        const Teuchos::RCP<SelfBinaryTreeNode> node1, const Teuchos::RCP<SelfBinaryTreeNode> node2)
+    friend bool operator<(SelfBinaryTreeNode& node1, SelfBinaryTreeNode& node2)
     {
-      if (node1->elelist().size() < node2->elelist().size())
+      if (node1.elelist().size() < node2.elelist().size())
         return true;
-      else if (node1->elelist().size() == node2->elelist().size() and
-               node1->elelist()[0] < node2->elelist()[0])
+      else if (node1.elelist().size() == node2.elelist().size() and
+               node1.elelist()[0] < node2.elelist()[0])
         return true;
       else
         return false;
@@ -274,7 +273,7 @@ namespace CONTACT
     friend bool operator>(
         const Teuchos::RCP<SelfBinaryTreeNode> node1, const Teuchos::RCP<SelfBinaryTreeNode> node2)
     {
-      return operator<(node2, node1);
+      return operator<(*node2, *node1);
     }
 
     //! operator <=
@@ -288,16 +287,15 @@ namespace CONTACT
     friend bool operator>=(
         const Teuchos::RCP<SelfBinaryTreeNode> node1, const Teuchos::RCP<SelfBinaryTreeNode> node2)
     {
-      return !operator<(node1, node2);
+      return !operator<(*node1, *node2);
     }
 
     //! operator ==
-    friend bool operator==(
-        const Teuchos::RCP<SelfBinaryTreeNode> node1, const Teuchos::RCP<SelfBinaryTreeNode> node2)
+    friend bool operator==(SelfBinaryTreeNode& node1, SelfBinaryTreeNode& node2)
     {
-      if (node1->elelist().size() != node2->elelist().size())
+      if (node1.elelist().size() != node2.elelist().size())
         return false;
-      else if (node1->elelist()[0] == node2->elelist()[0])
+      else if (node1.elelist()[0] == node2.elelist()[0])
         return true;
       else
         return false;
@@ -307,7 +305,7 @@ namespace CONTACT
     friend bool operator!=(
         const Teuchos::RCP<SelfBinaryTreeNode> node1, const Teuchos::RCP<SelfBinaryTreeNode> node2)
     {
-      return !operator==(node1, node2);
+      return !operator==(*node1, *node2);
     }
 
   };  // class SelfBinaryTreeNode
@@ -325,12 +323,11 @@ namespace CONTACT
     // relational operators for dual edges
 
     //! operator ==
-    friend bool operator==(
-        const Teuchos::RCP<SelfDualEdge> edge1, const Teuchos::RCP<SelfDualEdge> edge2)
+    friend bool operator==(SelfDualEdge& edge1, SelfDualEdge& edge2)
     {
-      if ((edge1->node1_ == edge2->node1_) and (edge1->node2_ == edge2->node2_))
+      if ((*edge1.node1_ == *edge2.node1_) and (*edge1.node2_ == *edge2.node2_))
         return true;
-      else if ((edge1->node2_ == edge2->node1_) and (edge1->node1_ == edge2->node2_))
+      else if ((*edge1.node2_ == *edge2.node1_) and (*edge1.node1_ == *edge2.node2_))
         return true;
       else
         return false;
@@ -340,7 +337,7 @@ namespace CONTACT
     friend bool operator!=(
         const Teuchos::RCP<SelfDualEdge> edge1, const Teuchos::RCP<SelfDualEdge> edge2)
     {
-      return !operator==(edge1, edge2);
+      return !operator==(*edge1, *edge2);
     }
 
     //! operator <
@@ -353,11 +350,11 @@ namespace CONTACT
         return false;
       else if (edge1 != edge2)
       {
-        if (edge1->greater_node() < edge2->greater_node())
+        if (*edge1->greater_node() < *edge2->greater_node())
           return true;
-        else if (edge1->greater_node() == edge2->greater_node())
+        else if (*edge1->greater_node() == *edge2->greater_node())
         {
-          if (edge1->lesser_node() < edge2->lesser_node())
+          if (*edge1->lesser_node() < *edge2->lesser_node())
             return true;
           else
             return false;
@@ -425,14 +422,14 @@ namespace CONTACT
     \brief Return common tree node of two dual edges
 
     */
-    Teuchos::RCP<SelfBinaryTreeNode> common_node(Teuchos::RCP<SelfDualEdge> treenode)
+    Teuchos::RCP<SelfBinaryTreeNode> common_node(SelfDualEdge& treenode)
     {
-      Teuchos::RCP<SelfBinaryTreeNode> node1 = treenode->get_node1();
-      Teuchos::RCP<SelfBinaryTreeNode> node2 = treenode->get_node2();
+      Teuchos::RCP<SelfBinaryTreeNode> node1 = treenode.get_node1();
+      Teuchos::RCP<SelfBinaryTreeNode> node2 = treenode.get_node2();
 
-      if (get_node1() == node1 or get_node2() == node1)
+      if (*get_node1() == *node1 or *get_node2() == *node1)
         return node1;
-      else if (get_node1() == node2 or get_node2() == node2)
+      else if (*get_node1() == *node2 or *get_node2() == *node2)
         return node2;
       else
         return Teuchos::null;
@@ -687,7 +684,7 @@ namespace CONTACT
     \brief Evaluate Binary search tree for self contact search
 
     */
-    void search_self_contact(Teuchos::RCP<SelfBinaryTreeNode> treenode);
+    void search_self_contact(SelfBinaryTreeNode& treenode);
 
     /*!
     \brief Evaluate Binary search tree for contact search between separate roots
@@ -742,8 +739,7 @@ namespace CONTACT
     \param [in] treenode2:  self binary tree node
 
      */
-    int calculate_slabs_intercepts(
-        Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2);
+    int calculate_slabs_intercepts(SelfBinaryTreeNode& treenode1, SelfBinaryTreeNode& treenode2);
 
     /*!
     \brief Initialize Tree in a bottom up way based on dual graph
@@ -775,8 +771,7 @@ namespace CONTACT
     \brief Test for adjacency (2D)
 
     */
-    bool test_adjacent_2d(
-        Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2);
+    bool test_adjacent_2d(SelfBinaryTreeNode& treenode1, SelfBinaryTreeNode& treenode2);
 
     /*!
     \brief Test for adjacency (2D)

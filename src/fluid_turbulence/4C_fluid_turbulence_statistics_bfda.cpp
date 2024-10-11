@@ -429,7 +429,7 @@ FLD::TurbulenceStatisticsBfda::TurbulenceStatisticsBfda(
 
 
 
-void FLD::TurbulenceStatisticsBfda::do_time_sample(Teuchos::RCP<Core::LinAlg::Vector<double>> velnp)
+void FLD::TurbulenceStatisticsBfda::do_time_sample(Core::LinAlg::Vector<double>& velnp)
 {
   //----------------------------------------------------------------------
   // increase sample counter
@@ -491,9 +491,9 @@ void FLD::TurbulenceStatisticsBfda::do_time_sample(Teuchos::RCP<Core::LinAlg::Ve
       // get values for velocity derivative and pressure
       //----------------------------------------------------------------------
       double w;
-      velnp->Dot(*togglew_, &w);
+      velnp.Dot(*togglew_, &w);
       double p;
-      velnp->Dot(*togglep_, &p);
+      velnp.Dot(*togglep_, &p);
 
       //----------------------------------------------------------------------
       // add spatial mean values to statistical sample
@@ -582,9 +582,9 @@ void FLD::TurbulenceStatisticsBfda::do_time_sample(Teuchos::RCP<Core::LinAlg::Ve
       {
         // Get sum of values of 4 nodes at specific radius and evaluation plane
         double w;
-        velnp->Dot(*togglew_, &w);
+        velnp.Dot(*togglew_, &w);
         double p;
-        velnp->Dot(*togglep_, &p);
+        velnp.Dot(*togglep_, &p);
 
         // Calculate mean value
         double wsm = w / countnodesonallprocs;

@@ -804,9 +804,9 @@ void Solid::TimIntImpl::update_krylov_space_projection()
   // get number of modes and their ids
   std::vector<int> modeids = projector_->modes();
 
-  Teuchos::RCP<Epetra_Map> nullspaceMap = Teuchos::make_rcp<Epetra_Map>(*discret_->dof_row_map());
+  Epetra_Map nullspaceMap(*discret_->dof_row_map());
   Teuchos::RCP<Epetra_MultiVector> nullspace =
-      Core::FE::compute_null_space(*discret_, 3, 6, *nullspaceMap);
+      Core::FE::compute_null_space(*discret_, 3, 6, nullspaceMap);
   if (nullspace == Teuchos::null) FOUR_C_THROW("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_
@@ -831,7 +831,7 @@ void Solid::TimIntImpl::apply_force_stiff_external(const double time,  //!< eval
     const Teuchos::RCP<Core::LinAlg::Vector<double>> dis,              //!< old displacement state
     const Teuchos::RCP<Core::LinAlg::Vector<double>> disn,             //!< new displacement state
     const Teuchos::RCP<Core::LinAlg::Vector<double>> vel,              //!< velocity state
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& fext,                  //!< external force
+    Core::LinAlg::Vector<double>& fext,                                //!< external force
     Teuchos::RCP<Core::LinAlg::SparseOperator>& fextlin  //!< linearization of external force
 )
 {
@@ -851,11 +851,11 @@ void Solid::TimIntImpl::apply_force_stiff_external(const double time,  //!< eval
   bool loadlin = (sdyn.get<bool>("LOADLIN"));
 
   if (!loadlin)
-    discret_->evaluate_neumann(p, *fext);
+    discret_->evaluate_neumann(p, fext);
   else
   {
     discret_->set_state(0, "displacement new", disn);
-    discret_->evaluate_neumann(p, *fext, fextlin.get());
+    discret_->evaluate_neumann(p, fext, fextlin.get());
   }
 
   // go away
@@ -1033,9 +1033,8 @@ void Solid::TimIntImpl::apply_force_stiff_contact_meshtying(
       if (cmtbridge_->contact_manager()->get_strategy().has_poro_no_penetration())
       {
         // set structural velocity for poro normal no penetration
-        Teuchos::RCP<Core::LinAlg::Vector<double>> svel =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*velnp());
-        cmtbridge_->contact_manager()->get_strategy().set_state(Mortar::state_svelocity, *svel);
+        Core::LinAlg::Vector<double> svel(*velnp());
+        cmtbridge_->contact_manager()->get_strategy().set_state(Mortar::state_svelocity, svel);
       }
     }
 
@@ -1072,10 +1071,8 @@ void Solid::TimIntImpl::apply_force_stiff_contact_meshtying(
 
 /*----------------------------------------------------------------------*/
 /* evaluate forces and stiffness due to beam contact */
-void Solid::TimIntImpl::apply_force_stiff_beam_contact(
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& fresm,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& dis, bool predict)
+void Solid::TimIntImpl::apply_force_stiff_beam_contact(Core::LinAlg::SparseOperator& stiff,
+    Core::LinAlg::Vector<double>& fresm, Core::LinAlg::Vector<double>& dis, bool predict)
 {
   if (have_beam_contact())
   {
@@ -1084,7 +1081,7 @@ void Solid::TimIntImpl::apply_force_stiff_beam_contact(
     // *********** time measurement ***********
 
     // contact / meshtying modifications need -fres
-    fresm->Scale(-1.0);
+    fresm.Scale(-1.0);
 
     // create empty parameter list
     Teuchos::ParameterList beamcontactparams;
@@ -1096,10 +1093,10 @@ void Solid::TimIntImpl::apply_force_stiff_beam_contact(
     // (set boolean flag 'newsti' to true, which activates
     // sclaing of contact stiffness with appropriate scaling
     // factor, e.g. (1.0-alphaf), internally)
-    beamcman_->evaluate(*system_matrix(), *fresm, *dis, beamcontactparams, true, timen_);
+    beamcman_->evaluate(*system_matrix(), fresm, dis, beamcontactparams, true, timen_);
 
     // scaling back
-    fresm->Scale(-1.0);
+    fresm.Scale(-1.0);
 
     // *********** time measurement ***********
     dtcmt_ = timer_->wallTime() - dtcpu;
@@ -1117,8 +1114,7 @@ void Solid::TimIntImpl::apply_force_stiff_beam_contact(
 
 /*----------------------------------------------------------------------*/
 /* Check residual displacement and limit it if necessary*/
-void Solid::TimIntImpl::limit_stepsize_beam_contact(
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& disi)
+void Solid::TimIntImpl::limit_stepsize_beam_contact(Core::LinAlg::Vector<double>& disi)
 {
   if (have_beam_contact())
   {
@@ -1128,7 +1124,7 @@ void Solid::TimIntImpl::limit_stepsize_beam_contact(
     if (maxdisiscalefac > 0)
     {
       double disi_infnorm = 0.0;
-      disi->NormInf(&disi_infnorm);
+      disi.NormInf(&disi_infnorm);
 
       while (disi_infnorm > maxdisiscalefac * minimal_radius)
       {
@@ -1136,8 +1132,8 @@ void Solid::TimIntImpl::limit_stepsize_beam_contact(
           std::cout << "      Residual displacement scaled! (Minimal element radius: "
                     << minimal_radius << ")" << std::endl;
 
-        disi->Scale(0.5);
-        disi->NormInf(&disi_infnorm);
+        disi.Scale(0.5);
+        disi.NormInf(&disi_infnorm);
       }
     }
   }
@@ -1548,7 +1544,7 @@ int Solid::TimIntImpl::newton_full()
 
     // In beam contact applications it can be necessary to limit the Newton step size (scaled
     // residual displacements)
-    limit_stepsize_beam_contact(disi_);
+    limit_stepsize_beam_contact(*disi_);
 
     // recover standard displacements
     recover_stc_solution();
@@ -1882,12 +1878,9 @@ int Solid::TimIntImpl::newton_ls()
   std::vector<double> merit_fct(2);
 
   // Temporal copies of different vectors. Necessary for the sufficient decrease check.
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tdisn =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*disn_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tveln =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*veln_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> taccn =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*accn_);
+  Core::LinAlg::Vector<double> tdisn(*disn_);
+  Core::LinAlg::Vector<double> tveln(*veln_);
+  Core::LinAlg::Vector<double> taccn(*accn_);
 
   // equilibrium iteration loop (outer full Newton loop)
   while (
@@ -1903,9 +1896,9 @@ int Solid::TimIntImpl::newton_ls()
 
     // It's necessary to save a temporal copy of the end-point displacements,
     // before any update is performed (because of the pseudo energy norm):
-    tdisn->Update(1.0, *disn_, 0.0);  // copy of the displ vector
-    tveln->Update(1.0, *veln_, 0.0);  // copy of the velocity vector
-    taccn->Update(1.0, *accn_, 0.0);  // copy of the acceleration vector
+    tdisn.Update(1.0, *disn_, 0.0);  // copy of the displ vector
+    tveln.Update(1.0, *veln_, 0.0);  // copy of the velocity vector
+    taccn.Update(1.0, *accn_, 0.0);  // copy of the acceleration vector
 
     /**************************************************************
     ***                       Solver Call                       ***
@@ -2021,11 +2014,11 @@ int Solid::TimIntImpl::newton_ls()
       // scale displ. increment
       disi_->Scale(alpha_ls_);
       // load old displ. vector
-      disn_->Update(1.0, *tdisn, 0.0);
+      disn_->Update(1.0, tdisn, 0.0);
       // load old vel. vector
-      veln_->Update(1.0, *tveln, 0.0);
+      veln_->Update(1.0, tveln, 0.0);
       // load old acc. vector
-      accn_->Update(1.0, *taccn, 0.0);
+      accn_->Update(1.0, taccn, 0.0);
 
       // Update nodal displ., vel., acc., etc.
       update_iter(iter_);
@@ -2143,7 +2136,7 @@ int Solid::TimIntImpl::ls_solve_newton_step()
 
   // In beam contact applications it can be necessary to limit the Newton step size (scaled residual
   // displacements)
-  limit_stepsize_beam_contact(disi_);
+  limit_stepsize_beam_contact(*disi_);
 
   solver_->reset_tolerance();
 
@@ -2465,7 +2458,7 @@ void Solid::TimIntImpl::update_iter_incr_constr(
     Teuchos::RCP<Core::LinAlg::Vector<double>> lagrincr  ///< Lagrange multiplier increment
 )
 {
-  conman_->update_lagr_mult(lagrincr);
+  conman_->update_lagr_mult(*lagrincr);
 }
 
 /*----------------------------------------------------------------------*/
@@ -2474,7 +2467,7 @@ void Solid::TimIntImpl::update_iter_incr_cardiovascular0_d(
     Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddofincr  ///< wk dof increment
 )
 {
-  cardvasc0dman_->update_cv0_d_dof(cv0ddofincr);
+  cardvasc0dman_->update_cv0_d_dof(*cv0ddofincr);
 }
 
 /*----------------------------------------------------------------------*/
@@ -2578,7 +2571,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*disi_);
 
       // update Lagrange multiplier
-      conman_->update_lagr_mult(lagrincr);
+      conman_->update_lagr_mult(*lagrincr);
       // update end-point displacements etc
       update_iter(iter_);
 
@@ -2740,7 +2733,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       else
       {
         // Call Cardiovascular0D solver to solve system
-        linsolve_error = cardvasc0dman_->solve(system_matrix(), disi_, fres_, dti);
+        linsolve_error = cardvasc0dman_->solve(system_matrix(), *disi_, *fres_, dti);
       }
 
       // check for problems in linear solver
@@ -2818,11 +2811,11 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
         if (mor_->have_mor())
         {
           // build residual force norm with reduced force residual
-          Teuchos::RCP<Core::LinAlg::Vector<double>> fres_r = mor_->reduce_residual(fres_);
+          Teuchos::RCP<Core::LinAlg::Vector<double>> fres_r = mor_->reduce_residual(*fres_);
           normfresr_ = Solid::calculate_vector_norm(iternorm_, *fres_r);
 
           // build residual displacement norm with reduced residual displacements
-          Teuchos::RCP<Core::LinAlg::Vector<double>> disi_r = mor_->reduce_residual(disi_);
+          Teuchos::RCP<Core::LinAlg::Vector<double>> disi_r = mor_->reduce_residual(*disi_);
           normdisir_ = Solid::calculate_vector_norm(iternorm_, *disi_r);
         }
 
@@ -4554,7 +4547,7 @@ int Solid::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
   else
   {
     // solve with Cardiovascular0D solver
-    linsolve_error = cardvasc0dman_->solve(system_matrix(), disi_, fres_, k_ptc);
+    linsolve_error = cardvasc0dman_->solve(system_matrix(), *disi_, *fres_, k_ptc);
   }
 
   return linsolve_error;

@@ -84,9 +84,8 @@ void loma_dyn(int restart)
             "TRANSPORT DYNAMIC to a valid number!");
 
       // create instance of scalar transport basis algorithm (no fluid discretization)
-      Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatraonly =
-          Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(
-              lomacontrol, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber));
+      Adapter::ScaTraBaseAlgorithm scatraonly(
+          lomacontrol, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
       Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
@@ -94,31 +93,31 @@ void loma_dyn(int restart)
               Global::Problem::instance()->n_dim() + 1, 0, 0, true);
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      scatraonly->scatra_field()->set_number_of_dof_set_velocity(1);
+      scatraonly.scatra_field()->set_number_of_dof_set_velocity(1);
 
       // now we can call init() on base algo
-      scatraonly->init();
+      scatraonly.init();
 
       // only now we must call setup() on the scatra time integrator.
       // all objects relying on the parallel distribution are
       // created and pointers are set.
       // calls setup() on the time integrator inside
-      scatraonly->setup();
+      scatraonly.setup();
 
       // read restart information
-      if (restart) (scatraonly->scatra_field())->read_restart(restart);
+      if (restart) (scatraonly.scatra_field())->read_restart(restart);
 
       // set initial velocity field
       // note: The order read_restart() before set_velocity_field() is important here!!
       // for time-dependent velocity fields, set_velocity_field() is additionally called in each
       // prepare_time_step()-call
-      (scatraonly->scatra_field())->set_velocity_field();
+      (scatraonly.scatra_field())->set_velocity_field();
 
       // enter time loop to solve problem with given convective velocity field
-      (scatraonly->scatra_field())->time_loop();
+      (scatraonly.scatra_field())->time_loop();
 
       // perform result test if required
-      problem->add_field_test(scatraonly->create_scatra_field_test());
+      problem->add_field_test(scatraonly.create_scatra_field_test());
       problem->test_all(comm);
 
       break;
@@ -164,17 +163,17 @@ void loma_dyn(int restart)
             "TRANSPORT DYNAMIC to a valid number!");
 
       // create a LowMach::Algorithm instance
-      Teuchos::RCP<LowMach::Algorithm> loma = Teuchos::make_rcp<LowMach::Algorithm>(
+      LowMach::Algorithm loma(
           comm, lomacontrol, Global::Problem::instance()->solver_params(linsolvernumber));
 
       // add proxy of fluid transport degrees of freedom to scatra discretization
       if (scatradis->add_dof_set(fluiddis->get_dof_set_proxy()) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
-      loma->scatra_field()->set_number_of_dof_set_velocity(1);
+      loma.scatra_field()->set_number_of_dof_set_velocity(1);
 
-      loma->init();
+      loma.init();
 
-      loma->setup();
+      loma.setup();
 
       // read restart information
       // in case a inflow generation in the inflow section has been performed, there are not any
@@ -183,20 +182,20 @@ void loma_dyn(int restart)
       {
         if ((fdyn.sublist("TURBULENT INFLOW").get<bool>("TURBULENTINFLOW")) and
             (restart == fdyn.sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")))
-          loma->read_inflow_restart(restart);
+          loma.read_inflow_restart(restart);
         else
-          loma->read_restart(restart);
+          loma.read_restart(restart);
       }
 
       // enter LOMA algorithm
-      loma->time_loop();
+      loma.time_loop();
 
       // summarize performance measurements
       Teuchos::TimeMonitor::summarize();
 
       // perform result test if required
-      problem->add_field_test(loma->fluid_field()->create_field_test());
-      problem->add_field_test(loma->create_scatra_field_test());
+      problem->add_field_test(loma.fluid_field()->create_field_test());
+      problem->add_field_test(loma.create_scatra_field_test());
       problem->test_all(comm);
 
       break;

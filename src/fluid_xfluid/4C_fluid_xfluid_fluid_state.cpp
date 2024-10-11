@@ -89,11 +89,11 @@ void FLD::XFluidFluidState::complete_coupling_matrices_and_rhs()
 
   if (sysmat_block == Teuchos::null)  // merged matrix
   {
-    XFluidState::complete_coupling_matrices_and_rhs(xffluiddofrowmap_);
+    XFluidState::complete_coupling_matrices_and_rhs(*xffluiddofrowmap_);
   }
   else  // block matrix
   {
-    XFluidState::complete_coupling_matrices_and_rhs(xfluiddofrowmap_);
+    XFluidState::complete_coupling_matrices_and_rhs(*xfluiddofrowmap_);
   }
 }
 
@@ -101,19 +101,19 @@ void FLD::XFluidFluidState::complete_coupling_matrices_and_rhs()
  |  Create merged DBC map extractor                         kruse 01/15 |
  *----------------------------------------------------------------------*/
 void FLD::XFluidFluidState::create_merged_dbc_map_extractor(
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> embfluiddbcmaps)
+    const Core::LinAlg::MapExtractor& embfluiddbcmaps)
 {
   // create merged dbc map from both fluids
   std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;
   dbcmaps.push_back(XFluidState::dbcmaps_->cond_map());
-  dbcmaps.push_back(embfluiddbcmaps->cond_map());
+  dbcmaps.push_back(embfluiddbcmaps.cond_map());
 
   Teuchos::RCP<const Epetra_Map> xffluiddbcmap =
       Core::LinAlg::MultiMapExtractor::merge_maps(dbcmaps);
 
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
   othermaps.push_back(XFluidState::dbcmaps_->other_map());
-  othermaps.push_back(embfluiddbcmaps->other_map());
+  othermaps.push_back(embfluiddbcmaps.other_map());
   Teuchos::RCP<const Epetra_Map> xffluidothermap =
       Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
 

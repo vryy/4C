@@ -20,13 +20,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::PoroElast::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::PoroElast::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   Teuchos::ParameterList& poroelastdyn =
-      list->sublist("POROELASTICITY DYNAMIC", false, "Poroelasticity");
+      list.sublist("POROELASTICITY DYNAMIC", false, "Poroelasticity");
 
   // Coupling strategy for (monolithic) porous media solvers
   setStringToIntegralParameter<Inpar::PoroElast::SolutionSchemeOverFields>("COUPALGO",

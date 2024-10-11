@@ -50,7 +50,7 @@ namespace CONTACT
     additionally. This is not needed for solving the problem in pure elast-poroelast meshtying
     cases. It is needed for postprocessing though.*/
 
-    void recover_coupling_matrix_partof_lmp(Teuchos::RCP<Core::LinAlg::Vector<double>> veli);
+    void recover_coupling_matrix_partof_lmp(Core::LinAlg::Vector<double>& veli);
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> cs_;  // slave matrix block row (needed for LM)
 

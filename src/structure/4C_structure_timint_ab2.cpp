@@ -147,7 +147,7 @@ int Solid::TimIntAB2::integrate_step()
 
   // build new external forces
   fextn_->PutScalar(0.0);
-  apply_force_external(timen_, disn_, veln_, fextn_);
+  apply_force_external(timen_, disn_, veln_, *fextn_);
 
   // TIMING
   // double dtcpu = timer_->wallTime();

@@ -128,7 +128,7 @@ namespace PoroElast
     void clear_poro_iterinc();
 
     //! replaces the iterinc with poroinc
-    void update_poro_iterinc(Teuchos::RCP<const Core::LinAlg::Vector<double>> poroinc);
+    void update_poro_iterinc(const Core::LinAlg::Vector<double>& poroinc);
 
     //! iter_ += 1
     void increment_poro_iter();
@@ -223,7 +223,7 @@ namespace PoroElast
     [[maybe_unused]] void poro_fd_check();
 
     //! Evaluate no penetration condition
-    void evaluate_condition(Teuchos::RCP<Core::LinAlg::SparseOperator> Sysmat,
+    void evaluate_condition(Core::LinAlg::SparseOperator& Sysmat,
         PoroElast::Coupltype coupltype = PoroElast::fluidfluid);
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time

@@ -291,7 +291,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
-      update_element(mydisp, params, material());
+      update_element(mydisp, params, *material());
     }
     break;
 
@@ -1595,8 +1595,8 @@ void Discret::ELEMENTS::SoHex8fbar::update_jacobian_mapping(
 /*----------------------------------------------------------------------*
  |  Update inelastic deformation (G&R)                       braeu 07/16|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
-    Teuchos::ParameterList& params, const Teuchos::RCP<Core::Mat::Material>& mat)
+void Discret::ELEMENTS::SoHex8fbar::update_element(
+    std::vector<double>& disp, Teuchos::ParameterList& params, Core::Mat::Material& mat)
 {
   if (solid_material()->uses_extended_update())
   {

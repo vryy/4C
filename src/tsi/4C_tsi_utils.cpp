@@ -201,7 +201,7 @@ void TSI::UTILS::setup_tsi(const Epetra_Comm& comm)
     structdis->fill_complete(true, true, true);
     thermdis->fill_complete(true, true, true);
 
-    TSI::UTILS::set_material_pointers_matching_grid(structdis, thermdis);
+    TSI::UTILS::set_material_pointers_matching_grid(*structdis, *thermdis);
   }
   else
   {
@@ -246,17 +246,16 @@ void TSI::UTILS::setup_tsi(const Epetra_Comm& comm)
  | print TSI-logo                                            dano 03/10 |
  *----------------------------------------------------------------------*/
 void TSI::UTILS::set_material_pointers_matching_grid(
-    Teuchos::RCP<const Core::FE::Discretization> sourcedis,
-    Teuchos::RCP<const Core::FE::Discretization> targetdis)
+    const Core::FE::Discretization& sourcedis, const Core::FE::Discretization& targetdis)
 {
-  const int numelements = targetdis->num_my_col_elements();
+  const int numelements = targetdis.num_my_col_elements();
 
   for (int i = 0; i < numelements; ++i)
   {
-    Core::Elements::Element* targetele = targetdis->l_col_element(i);
+    Core::Elements::Element* targetele = targetdis.l_col_element(i);
     const int gid = targetele->id();
 
-    Core::Elements::Element* sourceele = sourcedis->g_element(gid);
+    Core::Elements::Element* sourceele = sourcedis.g_element(gid);
 
     // for coupling we add the source material to the target element and vice versa
     targetele->add_material(sourceele->material());

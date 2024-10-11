@@ -134,40 +134,39 @@ Teuchos::RCP<PoroElast::PoroBase> PoroElast::UTILS::create_poro_algorithm(
 
 
 Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElast::UTILS::build_poro_splitter(
-    Teuchos::RCP<Core::FE::Discretization> dis)
+    Core::FE::Discretization& dis)
 {
   Teuchos::RCP<Core::LinAlg::MapExtractor> porositysplitter = Teuchos::null;
 
   // Loop through all elements on processor
   int locporop1 = std::count_if(
-      dis->my_col_element_range().begin(), dis->my_col_element_range().end(), is_poro_p1_element);
+      dis.my_col_element_range().begin(), dis.my_col_element_range().end(), is_poro_p1_element);
 
   // Was at least one PoroP1 found on one processor?
   int glonumporop1 = 0;
-  dis->get_comm().MaxAll(&locporop1, &glonumporop1, 1);
+  dis.get_comm().MaxAll(&locporop1, &glonumporop1, 1);
   // Yes, it was. Go ahead for all processors (even if they do not carry any PoroP1 elements)
   if (glonumporop1 > 0)
   {
     porositysplitter = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
     const int ndim = Global::Problem::instance()->n_dim();
-    Core::LinAlg::create_map_extractor_from_discretization(*dis, ndim, *porositysplitter);
+    Core::LinAlg::create_map_extractor_from_discretization(dis, ndim, *porositysplitter);
   }
 
   return porositysplitter;
 }
 
 void PoroElast::UTILS::set_material_pointers_matching_grid(
-    Teuchos::RCP<const Core::FE::Discretization> sourcedis,
-    Teuchos::RCP<const Core::FE::Discretization> targetdis)
+    const Core::FE::Discretization& sourcedis, const Core::FE::Discretization& targetdis)
 {
-  const int numelements = targetdis->num_my_col_elements();
+  const int numelements = targetdis.num_my_col_elements();
 
   for (int i = 0; i < numelements; ++i)
   {
-    Core::Elements::Element* targetele = targetdis->l_col_element(i);
+    Core::Elements::Element* targetele = targetdis.l_col_element(i);
     const int gid = targetele->id();
 
-    Core::Elements::Element* sourceele = sourcedis->g_element(gid);
+    Core::Elements::Element* sourceele = sourcedis.g_element(gid);
 
     // for coupling we add the source material to the target element and vice versa
     targetele->add_material(sourceele->material());
@@ -236,17 +235,16 @@ void PoroElast::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret
     }
 
     // re-build element column map
-    Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::make_rcp<Epetra_Map>(
-        -1, static_cast<int>(rdata.size()), rdata.data(), 0, voldi->get_comm());
+    Epetra_Map newelecolmap(-1, static_cast<int>(rdata.size()), rdata.data(), 0, voldi->get_comm());
     rdata.clear();
 
     // redistribute the volume discretization according to the
     // new (=old) element column layout & and ghost also nodes!
-    voldi->extended_ghosting(*newelecolmap, true, true, true, false);  // no check!!!
+    voldi->extended_ghosting(newelecolmap, true, true, true, false);  // no check!!!
   }
 
   // 2 Material pointers need to be reset after redistribution.
-  PoroElast::UTILS::set_material_pointers_matching_grid(voldis[0], voldis[1]);
+  PoroElast::UTILS::set_material_pointers_matching_grid(*voldis[0], *voldis[1]);
 
   // 3 Reconnect Face Element -- Porostructural Parent Element Pointers!
   PoroElast::UTILS::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));
@@ -330,15 +328,15 @@ void PoroElast::print_logo()
   std::cout << "             (_.--__) (_.--__) " << std::endl;
 }
 
-double PoroElast::UTILS::calculate_vector_norm(const enum Inpar::PoroElast::VectorNorm norm,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> vect)
+double PoroElast::UTILS::calculate_vector_norm(
+    const enum Inpar::PoroElast::VectorNorm norm, const Core::LinAlg::Vector<double>& vect)
 {
   // L1 norm
   // norm = sum_0^i vect[i]
   if (norm == Inpar::PoroElast::norm_l1)
   {
     double vectnorm;
-    vect->Norm1(&vectnorm);
+    vect.Norm1(&vectnorm);
     return vectnorm;
   }
   // L2/Euclidian norm
@@ -346,7 +344,7 @@ double PoroElast::UTILS::calculate_vector_norm(const enum Inpar::PoroElast::Vect
   else if (norm == Inpar::PoroElast::norm_l2)
   {
     double vectnorm;
-    vect->Norm2(&vectnorm);
+    vect.Norm2(&vectnorm);
     return vectnorm;
   }
   // RMS norm
@@ -354,23 +352,23 @@ double PoroElast::UTILS::calculate_vector_norm(const enum Inpar::PoroElast::Vect
   else if (norm == Inpar::PoroElast::norm_rms)
   {
     double vectnorm;
-    vect->Norm2(&vectnorm);
-    return vectnorm / sqrt((double)vect->GlobalLength());
+    vect.Norm2(&vectnorm);
+    return vectnorm / sqrt((double)vect.GlobalLength());
   }
   // infinity/maximum norm
   // norm = max( vect[i] )
   else if (norm == Inpar::PoroElast::norm_inf)
   {
     double vectnorm;
-    vect->NormInf(&vectnorm);
+    vect.NormInf(&vectnorm);
     return vectnorm;
   }
   // norm = sum_0^i vect[i]/length_vect
   else if (norm == Inpar::PoroElast::norm_l1_scaled)
   {
     double vectnorm;
-    vect->Norm1(&vectnorm);
-    return vectnorm / ((double)vect->GlobalLength());
+    vect.Norm1(&vectnorm);
+    return vectnorm / ((double)vect.GlobalLength());
   }
   else
   {

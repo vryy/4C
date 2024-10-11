@@ -640,24 +640,24 @@ void Mortar::BinaryTree::set_enlarge()
 /*----------------------------------------------------------------------*
  | Print tree (public)                                        popp 10/08|
  *----------------------------------------------------------------------*/
-void Mortar::BinaryTree::print_tree(Teuchos::RCP<BinaryTreeNode> treenode)
+void Mortar::BinaryTree::print_tree(BinaryTreeNode& treenode)
 {
   // if treenode has no elements (NOSLAVE_ELEMENTS,NOMASTER_ELEMENTS)
-  if (treenode->type() == NOSLAVE_ELEMENTS || treenode->type() == NOMASTER_ELEMENTS)
+  if (treenode.type() == NOSLAVE_ELEMENTS || treenode.type() == NOMASTER_ELEMENTS)
   {
     std::cout << "\n" << get_comm().MyPID() << " Tree has no element to print";
     return;
   }
   std::cout << "\n"
-            << get_comm().MyPID() << " Tree at layer: " << treenode->get_layer() << " Elements: ";
-  for (int i = 0; i < (int)(treenode->elelist().size()); i++)
-    std::cout << " " << treenode->elelist()[i];
+            << get_comm().MyPID() << " Tree at layer: " << treenode.get_layer() << " Elements: ";
+  for (int i = 0; i < (int)(treenode.elelist().size()); i++)
+    std::cout << " " << treenode.elelist()[i];
 
   // while treenode is inner node
-  if (treenode->type() == SLAVE_INNER || treenode->type() == MASTER_INNER)
+  if (treenode.type() == SLAVE_INNER || treenode.type() == MASTER_INNER)
   {
-    print_tree(treenode->leftchild());
-    print_tree(treenode->rightchild());
+    print_tree(*treenode.leftchild());
+    print_tree(*treenode.rightchild());
   }
 
   return;
@@ -691,18 +691,18 @@ void Mortar::BinaryTree::print_tree_of_map(
 /*----------------------------------------------------------------------*
  | Update tree topdown (public)                               popp 10/08|
  *----------------------------------------------------------------------*/
-void Mortar::BinaryTree::evaluate_update_tree_top_down(Teuchos::RCP<BinaryTreeNode> treenode)
+void Mortar::BinaryTree::evaluate_update_tree_top_down(BinaryTreeNode& treenode)
 {
   // if no slave element on proc-->return
-  if (treenode->elelist().size() == 0) return;
+  if (treenode.elelist().size() == 0) return;
 
-  treenode->calculate_slabs_dop();
-  treenode->enlarge_geometry(enlarge());
+  treenode.calculate_slabs_dop();
+  treenode.enlarge_geometry(enlarge());
 
-  if (treenode->type() == SLAVE_INNER || treenode->type() == MASTER_INNER)
+  if (treenode.type() == SLAVE_INNER || treenode.type() == MASTER_INNER)
   {
-    evaluate_update_tree_top_down(treenode->leftchild());
-    evaluate_update_tree_top_down(treenode->rightchild());
+    evaluate_update_tree_top_down(*treenode.leftchild());
+    evaluate_update_tree_top_down(*treenode.rightchild());
   }
 
   return;

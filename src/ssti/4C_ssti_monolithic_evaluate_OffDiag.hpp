@@ -67,7 +67,7 @@ namespace SSTI
 
     //! derivative of thermo residuals w.r.t. structure dofs on interface
     void evaluate_off_diag_block_thermo_structure_interface(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> thermostructureinterface);
+        Core::LinAlg::SparseOperator& thermostructureinterface);
 
    private:
     void copy_slave_to_master_thermo_structure_interface(

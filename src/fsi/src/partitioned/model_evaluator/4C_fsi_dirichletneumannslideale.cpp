@@ -75,7 +75,7 @@ void FSI::DirichletNeumannSlideale::remeshing()
 
   // Evaluate solid/fluid Mortar coupling
   slideale_->evaluate_mortar(
-      structure_field()->extract_interface_dispnp(), islave_, structure_fluid_coupling_mortar());
+      *structure_field()->extract_interface_dispnp(), *islave_, structure_fluid_coupling_mortar());
   // Evaluate solid/ale Mortar coupling
   slideale_->evaluate_fluid_mortar(idisptotal, islave_);
 
@@ -103,7 +103,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannSlideale::fluid_
     // normal fluid solve
 
     // the displacement -> velocity conversion at the interface
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = interface_velocity(idispcurr);
+    const Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = interface_velocity(*idispcurr);
 
     // A rather simple hack. We need something better!
     const int itemax = mb_fluid_field()->itemax();

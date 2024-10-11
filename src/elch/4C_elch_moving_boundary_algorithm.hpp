@@ -64,8 +64,8 @@ namespace ElCh
     void solve_scatra();
 
     /// compute interface displacement and velocity
-    void compute_interface_vectors(Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp_,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iveln_);
+    void compute_interface_vectors(
+        Core::LinAlg::Vector<double>& idispnp_, Core::LinAlg::Vector<double>& iveln_);
 
     /// take current results for converged and save for next time step
     void update() override;

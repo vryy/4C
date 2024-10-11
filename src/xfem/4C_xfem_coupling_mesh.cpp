@@ -151,7 +151,7 @@ void XFEM::MeshCoupling::gmsh_output_discretization(std::ostream& gmshfileconten
   std::map<int, Core::LinAlg::Matrix<3, 1>> currinterfacepositions;
 
   // output of cutting discretization
-  XFEM::UTILS::extract_node_vectors(cutter_dis_, currinterfacepositions, idispnp_);
+  XFEM::UTILS::extract_node_vectors(*cutter_dis_, currinterfacepositions, idispnp_);
   XFEM::UTILS::print_discretization_to_stream(cutter_dis_, cutter_dis_->name(), true, true, true,
       true, false, false, gmshfilecontent, &currinterfacepositions);
 }
@@ -423,14 +423,14 @@ void XFEM::MeshVolCoupling::redistribute_embedded_discretization()
     std::vector<int> full_nodes(full_ele_nodes_col.begin(), full_ele_nodes_col.end());
     std::vector<int> full_eles(full_eles_col.begin(), full_eles_col.end());
 
-    Teuchos::RCP<const Epetra_Map> full_nodecolmap = Teuchos::make_rcp<Epetra_Map>(
+    const Epetra_Map full_nodecolmap(
         -1, full_nodes.size(), full_nodes.data(), 0, cond_dis_->get_comm());
-    Teuchos::RCP<const Epetra_Map> full_elecolmap = Teuchos::make_rcp<Epetra_Map>(
+    const Epetra_Map full_elecolmap(
         -1, full_eles.size(), full_eles.data(), 0, cond_dis_->get_comm());
 
     // redistribute nodes and elements to column (ghost) map
-    cond_dis_->export_column_nodes(*full_nodecolmap);
-    cond_dis_->export_column_elements(*full_elecolmap);
+    cond_dis_->export_column_nodes(full_nodecolmap);
+    cond_dis_->export_column_elements(full_elecolmap);
 
     cond_dis_->fill_complete(true, true, true);
   }
@@ -1703,7 +1703,7 @@ void XFEM::MeshCouplingFSI::gmsh_output(const std::string& filename_base, const 
 
   // compute the current boundary position
   std::map<int, Core::LinAlg::Matrix<3, 1>> currinterfacepositions;
-  XFEM::UTILS::extract_node_vectors(cutter_dis_, currinterfacepositions, idispnp_);
+  XFEM::UTILS::extract_node_vectors(*cutter_dis_, currinterfacepositions, idispnp_);
 
 
   const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
@@ -1759,7 +1759,7 @@ void XFEM::MeshCouplingFSI::gmsh_output_discretization(std::ostream& gmshfilecon
   Teuchos::RCP<Core::LinAlg::Vector<double>> solid_dispnp =
       Core::LinAlg::create_vector(*cond_dis_->dof_row_map(), true);
 
-  XFEM::UTILS::extract_node_vectors(cond_dis_, currsolidpositions, solid_dispnp);
+  XFEM::UTILS::extract_node_vectors(*cond_dis_, currsolidpositions, solid_dispnp);
 
   XFEM::UTILS::print_discretization_to_stream(cond_dis_, cond_dis_->name(), true, false, true,
       false, false, false, gmshfilecontent, &currsolidpositions);

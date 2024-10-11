@@ -152,9 +152,8 @@ namespace NTS
     void nw_slip_2d(CONTACT::Node& mynode, Mortar::Element& mele,
         Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& mderiv,
         Core::LinAlg::SerialDenseMatrix& scoord, Core::LinAlg::SerialDenseMatrix& mcoord,
-        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> scoordold,
-        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> mcoordold, int& snodes, int& linsize,
-        Core::Gen::Pairedvector<int, double>& dmxi);
+        Core::LinAlg::SerialDenseMatrix& scoordold, Core::LinAlg::SerialDenseMatrix& mcoordold,
+        int& snodes, int& linsize, Core::Gen::Pairedvector<int, double>& dmxi);
 
     /*!
      \brief node-wise wear calculation (internal state var.)
@@ -163,10 +162,9 @@ namespace NTS
     void nw_wear_2d(CONTACT::Node& mynode, Mortar::Element& mele,
         Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& mderiv,
         Core::LinAlg::SerialDenseMatrix& scoord, Core::LinAlg::SerialDenseMatrix& mcoord,
-        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> scoordold,
-        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> mcoordold,
-        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult, int& snodes, int& linsize,
-        double& jumpval, double& area, double* gpn, Core::Gen::Pairedvector<int, double>& dmxi,
+        Core::LinAlg::SerialDenseMatrix& scoordold, Core::LinAlg::SerialDenseMatrix& mcoordold,
+        Core::LinAlg::SerialDenseMatrix& lagmult, int& snodes, int& linsize, double& jumpval,
+        double& area, double* gpn, Core::Gen::Pairedvector<int, double>& dmxi,
         Core::Gen::Pairedvector<int, double>& dslipmatrix,
         Core::Gen::Pairedvector<int, double>& dwear);
 

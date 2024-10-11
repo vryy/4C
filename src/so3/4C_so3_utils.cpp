@@ -145,7 +145,7 @@ void Discret::ELEMENTS::UTILS::compute_deformation_gradient(
 
   if (prestressType == Inpar::Solid::PreStress::mulf)
   {
-    compute_deformation_gradient_mulf<distype>(defgrd, xdisp, derivs, mulfHistory, gp);
+    compute_deformation_gradient_mulf<distype>(defgrd, xdisp, derivs, *mulfHistory, gp);
     return;
   }
 
@@ -158,11 +158,11 @@ void Discret::ELEMENTS::UTILS::compute_deformation_gradient_mulf(
     Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& defgrd,
     const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Core::FE::dim<distype>>& xdisp,
     const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
-    const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, const int gp)
+    Discret::ELEMENTS::PreStress& mulfHistory, const int gp)
 {
   // get Jacobian mapping wrt to the stored configuration
   Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>> invJdef;
-  mulfHistory->storageto_matrix(gp, invJdef, mulfHistory->j_history());
+  mulfHistory.storageto_matrix(gp, invJdef, mulfHistory.j_history());
 
   // get derivatives wrt to last spatial configuration
   Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>> N_xyz;
@@ -178,7 +178,7 @@ void Discret::ELEMENTS::UTILS::compute_deformation_gradient_mulf(
 
   // get stored old incremental F
   Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>> Fhist;
-  mulfHistory->storageto_matrix(gp, Fhist, mulfHistory->f_history());
+  mulfHistory.storageto_matrix(gp, Fhist, mulfHistory.f_history());
 
   // build total defgrd = delta F * F_old
   defgrd.multiply(Finc, Fhist);
@@ -317,17 +317,17 @@ template void Discret::ELEMENTS::UTILS::compute_deformation_gradient<Core::FE::C
 
 template void Discret::ELEMENTS::UTILS::compute_deformation_gradient_mulf<Core::FE::CellType::hex8>(
     Core::LinAlg::Matrix<3, 3>& defgrd, const Core::LinAlg::Matrix<8, 3>& xdisp,
-    const Core::LinAlg::Matrix<3, 8>& derivs,
-    const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, const int gp);
+    const Core::LinAlg::Matrix<3, 8>& derivs, Discret::ELEMENTS::PreStress& mulfHistory,
+    const int gp);
 template void Discret::ELEMENTS::UTILS::compute_deformation_gradient_mulf<Core::FE::CellType::tet4>(
     Core::LinAlg::Matrix<3, 3>& defgrd, const Core::LinAlg::Matrix<4, 3>& xdisp,
-    const Core::LinAlg::Matrix<3, 4>& derivs,
-    const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, const int gp);
+    const Core::LinAlg::Matrix<3, 4>& derivs, Discret::ELEMENTS::PreStress& mulfHistory,
+    const int gp);
 template void
 Discret::ELEMENTS::UTILS::compute_deformation_gradient_mulf<Core::FE::CellType::tet10>(
     Core::LinAlg::Matrix<3, 3>& defgrd, const Core::LinAlg::Matrix<10, 3>& xdisp,
-    const Core::LinAlg::Matrix<3, 10>& derivs,
-    const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, const int gp);
+    const Core::LinAlg::Matrix<3, 10>& derivs, Discret::ELEMENTS::PreStress& mulfHistory,
+    const int gp);
 
 template void
 Discret::ELEMENTS::UTILS::compute_deformation_gradient_standard<Core::FE::CellType::hex8, 3>(

@@ -177,7 +177,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
       read_global_vectors(hdgele, discretization, lm);
       if (!params.isParameter("nodeindices"))
         local_solver_->compute_absorbing_bc(
-            discretization, hdgele, params, mat, face, elemat1, sumindex, elevec1);
+            discretization, hdgele, params, *mat, face, elemat1, sumindex, elevec1);
       else
         FOUR_C_THROW("why would you set an absorbing LINE in THREE dimensions?");
 
@@ -255,7 +255,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
       */
 
       update_interior_variables_and_compute_residual(
-          params, *hdgele, mat, elevec1, dt, errormaps, updateonly);
+          params, *hdgele, *mat, elevec1, dt, errormaps, updateonly);
 
       break;
     }
@@ -1653,9 +1653,8 @@ Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::LocalSolver(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::update_interior_variables_and_compute_residual(
-    Teuchos::ParameterList& params, Discret::ELEMENTS::ElemagDiff& ele,
-    const Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec,
-    double dt, bool errormaps, bool updateonly)
+    Teuchos::ParameterList& params, Discret::ELEMENTS::ElemagDiff& ele, Core::Mat::Material& mat,
+    Core::LinAlg::SerialDenseVector& elevec, double dt, bool errormaps, bool updateonly)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
       "Discret::ELEMENTS::ElemagDiffEleCalc::update_interior_variables_and_compute_residual");
@@ -1793,7 +1792,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::update_interior_variables_an
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_absorbing_bc(
     Core::FE::Discretization& discretization, Discret::ELEMENTS::ElemagDiff* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat, int face,
+    Teuchos::ParameterList& params, Core::Mat::Material& mat, int face,
     Core::LinAlg::SerialDenseMatrix& elemat, int indexstart,
     Core::LinAlg::SerialDenseVector& elevec1)
 {

@@ -200,7 +200,7 @@ namespace TSI
 
     //! Determine norm of force residual
     double calculate_vector_norm(const enum Inpar::TSI::VectorNorm norm,  //!< norm to use
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> vect  //!< the vector of interest
+        const Core::LinAlg::Vector<double>& vect  //!< the vector of interest
     );
 
     //@}

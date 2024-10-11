@@ -182,7 +182,8 @@ void Coupling::Adapter::CouplingMortar::setup(
     // as elch, scatra, etc., having less coupling degrees of freedom than spatial
     // dimensions.
     Teuchos::RCP<Core::LinAlg::Vector<double>> idisp(Teuchos::null);
-    mesh_relocation(slavedis, aledis, masterdofrowmap_, slavedofrowmap_, idisp, comm, slavewithale);
+    mesh_relocation(
+        *slavedis, aledis, masterdofrowmap_, slavedofrowmap_, idisp, comm, slavewithale);
   }
 
   // matrix transformation to initial parallel distribution
@@ -356,7 +357,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
     Teuchos::RCP<Mortar::Node> mrtrnode =
         Teuchos::make_rcp<Mortar::Node>(node->id(), node->x(), node->owner(), dofids, false);
 
-    if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, mrtrnode);
+    if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, *mrtrnode);
     interface_->add_mortar_node(mrtrnode);
   }
 
@@ -381,7 +382,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
     Teuchos::RCP<Mortar::Node> mrtrnode = Teuchos::make_rcp<Mortar::Node>(
         node->id() + nodeoffset, node->x(), node->owner(), dofids, true);
 
-    if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, mrtrnode);
+    if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, *mrtrnode);
     interface_->add_mortar_node(mrtrnode);
   }
 
@@ -409,7 +410,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
     Teuchos::RCP<Mortar::Element> mrtrele = Teuchos::make_rcp<Mortar::Element>(
         ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), false, nurbs);
 
-    if (nurbs) Mortar::UTILS::prepare_nurbs_element(*masterdis, ele, mrtrele, spatial_dimension_);
+    if (nurbs) Mortar::UTILS::prepare_nurbs_element(*masterdis, ele, *mrtrele, spatial_dimension_);
     interface_->add_mortar_element(mrtrele);
   }
 
@@ -427,7 +428,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
           Teuchos::make_rcp<Mortar::Element>(ele->id() + eleoffset, ele->owner(), ele->shape(),
               ele->num_node(), ele->node_ids(), true, nurbs);
 
-      if (nurbs) Mortar::UTILS::prepare_nurbs_element(*slavedis, ele, mrtrele, spatial_dimension_);
+      if (nurbs) Mortar::UTILS::prepare_nurbs_element(*slavedis, ele, *mrtrele, spatial_dimension_);
       interface_->add_mortar_element(mrtrele);
     }
     else
@@ -505,9 +506,9 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Coupling::Adapter::CouplingMortar::mesh_relocation(
-    Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::RCP<Core::FE::Discretization> aledis,
-    Teuchos::RCP<const Epetra_Map> masterdofrowmap, Teuchos::RCP<const Epetra_Map> slavedofrowmap,
+void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization& slavedis,
+    Teuchos::RCP<Core::FE::Discretization> aledis, Teuchos::RCP<const Epetra_Map> masterdofrowmap,
+    Teuchos::RCP<const Epetra_Map> slavedofrowmap,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& idisp, const Epetra_Comm& comm, bool slavewithale)
 {
   // safety check
@@ -744,12 +745,12 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
     // ... AND standard node in underlying slave discret
     // (check if the node is available on this processor)
     bool isinproblemcolmap = false;
-    int lid = slavedis->node_col_map()->LID(gid);
+    int lid = slavedis.node_col_map()->LID(gid);
     if (lid >= 0) isinproblemcolmap = true;
     Core::Nodes::Node* pnode = nullptr;
     if (isinproblemcolmap)
     {
-      pnode = slavedis->g_node(gid);
+      pnode = slavedis.g_node(gid);
       if (!pnode) FOUR_C_THROW("Cannot find node with gid %", gid);
     }
 
@@ -989,7 +990,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(
   // if slave=fluid, we are lucky because fluid elements do not
   // need any re-relocation (unlike structural elements)
   // fluid elements: empty implementation (return 0)
-  Core::Communication::ParObjectFactory::instance().initialize_elements(*slavedis);
+  Core::Communication::ParObjectFactory::instance().initialize_elements(slavedis);
 
   // print message
   if (comm.MyPID() == 0)
@@ -1097,19 +1098,17 @@ void Coupling::Adapter::CouplingMortar::evaluate(Teuchos::RCP<Core::LinAlg::Vect
 
   Teuchos::RCP<Epetra_Map> dofrowmap =
       Core::LinAlg::merge_map(*pmasterdofrowmap_, *pslavedofrowmap_, false);
-  Teuchos::RCP<Epetra_Import> master_importer =
-      Teuchos::make_rcp<Epetra_Import>(*dofrowmap, *pmasterdofrowmap_);
-  Teuchos::RCP<Epetra_Import> slaveImporter =
-      Teuchos::make_rcp<Epetra_Import>(*dofrowmap, *pslavedofrowmap_);
+  Epetra_Import master_importer(*dofrowmap, *pmasterdofrowmap_);
+  Epetra_Import slaveImporter(*dofrowmap, *pslavedofrowmap_);
 
   // Import master and slave displacements into a single vector
   int err = 0;
   Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_master_slave =
       Core::LinAlg::create_vector(*dofrowmap, true);
-  err = idisp_master_slave->Import(*idispma, *master_importer, Add);
+  err = idisp_master_slave->Import(*idispma, master_importer, Add);
   if (err != 0)
     FOUR_C_THROW("Import failed with error code %d. See Epetra source code for details.", err);
-  err = idisp_master_slave->Import(*idispsl, *slaveImporter, Add);
+  err = idisp_master_slave->Import(*idispsl, slaveImporter, Add);
   if (err != 0)
     FOUR_C_THROW("Import failed with error code %d. See Epetra source code for details.", err);
 
@@ -1197,10 +1196,10 @@ void Coupling::Adapter::CouplingMortar::matrix_row_col_transform()
       FOUR_C_THROW("Dof maps based on initial parallel distribution are wrong!");
 
     // transform everything back to old distribution
-    D_ = Mortar::matrix_row_col_transform(D_, pslavedofrowmap_, pslavedofrowmap_);
-    M_ = Mortar::matrix_row_col_transform(M_, pslavedofrowmap_, pmasterdofrowmap_);
-    Dinv_ = Mortar::matrix_row_col_transform(Dinv_, pslavedofrowmap_, pslavedofrowmap_);
-    P_ = Mortar::matrix_row_col_transform(P_, pslavedofrowmap_, pmasterdofrowmap_);
+    D_ = Mortar::matrix_row_col_transform(*D_, *pslavedofrowmap_, *pslavedofrowmap_);
+    M_ = Mortar::matrix_row_col_transform(*M_, *pslavedofrowmap_, *pmasterdofrowmap_);
+    Dinv_ = Mortar::matrix_row_col_transform(*Dinv_, *pslavedofrowmap_, *pslavedofrowmap_);
+    P_ = Mortar::matrix_row_col_transform(*P_, *pslavedofrowmap_, *pmasterdofrowmap_);
   }
 }
 
@@ -1264,7 +1263,8 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
   // (P should be "unity matrix")!
   if (Teuchos::getIntegralValue<Inpar::Mortar::MeshRelocation>(
           mortar_coupling_params_, "MESH_RELOCATION") == Inpar::Mortar::relocation_timestep)
-    mesh_relocation(slavedis, aledis, masterdofrowmap_, slavedofrowmap_, idisp, comm, slavewithale);
+    mesh_relocation(
+        *slavedis, aledis, masterdofrowmap_, slavedofrowmap_, idisp, comm, slavewithale);
 
   // only for parallel redistribution case
   matrix_row_col_transform();
@@ -1408,13 +1408,11 @@ void Coupling::Adapter::CouplingMortar::slave_to_master(
   Core::LinAlg::Vector<double> tmp = Core::LinAlg::Vector<double>(M_->range_map());
   std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tempm =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pmasterdofrowmap_);
-  if (M_->multiply(true, tmp, *tempm)) FOUR_C_THROW("M^{T}*sv multiplication failed");
+  Core::LinAlg::Vector<double> tempm(*pmasterdofrowmap_);
+  if (M_->multiply(true, tmp, tempm)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   // copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
-  std::copy(
-      tempm->Values(), tempm->Values() + (tempm->MyLength() * tempm->NumVectors()), mv->Values());
+  std::copy(tempm.Values(), tempm.Values() + (tempm.MyLength() * tempm.NumVectors()), mv->Values());
 
   // in contrast to the Adapter::Coupling class we do not need to export here, as
   // the mortar interface itself has (or should have) guaranteed the same distribution of master and
@@ -1501,7 +1499,7 @@ void Coupling::Adapter::CouplingMortar::mortar_condensation(
     Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs) const
 {
   Mortar::UTILS::mortar_matrix_condensation(k, P_, P_);
-  Mortar::UTILS::mortar_rhs_condensation(rhs, P_);
+  Mortar::UTILS::mortar_rhs_condensation(*rhs, *P_);
 
   return;
 }
@@ -1509,10 +1507,10 @@ void Coupling::Adapter::CouplingMortar::mortar_condensation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Coupling::Adapter::CouplingMortar::mortar_recover(Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& inc) const
+void Coupling::Adapter::CouplingMortar::mortar_recover(
+    Core::LinAlg::SparseMatrix& k, Teuchos::RCP<Core::LinAlg::Vector<double>>& inc) const
 {
-  Mortar::UTILS::mortar_recover(inc, P_);
+  Mortar::UTILS::mortar_recover(*inc, *P_);
   return;
 }
 

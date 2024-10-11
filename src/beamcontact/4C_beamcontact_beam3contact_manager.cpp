@@ -5117,16 +5117,6 @@ void CONTACT::Beam3cmanager::read_restart(Core::IO::DiscretizationReader& reader
 /*----------------------------------------------------------------------*
  | write contact force for restart  meier 02/15|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::write_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
-{
-  write_restart(*output);
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | write contact force for restart  meier 02/15|
- *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::write_restart(Core::IO::DiscretizationWriter& output)
 {
   output.write_vector("fcold", fcold_);

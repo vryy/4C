@@ -73,19 +73,18 @@ namespace XFEM
       fullpres_ = pres;
     }
 
-    void initialize_struc_pres_map(
-        Teuchos::RCP<const Epetra_Map> pfmap, Teuchos::RCP<const Epetra_Map> psmap)
+    void initialize_struc_pres_map(const Epetra_Map& pfmap, const Epetra_Map& psmap)
     {
       // We need to identify cutter dis dofs and pressure dofs on all processors for the whole
       // cutter_dis, as long as we don't have another ghosting strategy for the cutter_dis ...
 
-      if (pfmap->NumMyElements() != psmap->NumMyElements())
+      if (pfmap.NumMyElements() != psmap.NumMyElements())
         FOUR_C_THROW(
             "initialize_struc_pres_map: (pfmap->NumGlobalElements() != "
             "psmap->NumGlobalElements())!");
 
-      Teuchos::RCP<Epetra_Map> fullpfmap = Core::LinAlg::allreduce_e_map(*pfmap);
-      Teuchos::RCP<Epetra_Map> fullpsmap = Core::LinAlg::allreduce_e_map(*psmap);
+      Teuchos::RCP<Epetra_Map> fullpfmap = Core::LinAlg::allreduce_e_map(pfmap);
+      Teuchos::RCP<Epetra_Map> fullpsmap = Core::LinAlg::allreduce_e_map(psmap);
 
       if (fullpfmap->NumMyElements() != fullpsmap->NumMyElements())
         FOUR_C_THROW(

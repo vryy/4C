@@ -278,7 +278,7 @@ void Mat::ScatraMultiScaleGP::evaluate(const std::vector<double>& phinp_macro, d
     det_fnp_ = detFnp;
 
     // calculate time derivative and pass to micro time integration as reaction coefficient
-    calculate_ddet_f_dt(microtimint);
+    calculate_ddet_f_dt(*microtimint);
     microtimint->set_macro_micro_rea_coeff(ddet_fdtnp_);
   }
 
@@ -591,16 +591,15 @@ void Mat::ScatraMultiScaleGP::read_restart()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::ScatraMultiScaleGP::calculate_ddet_f_dt(
-    Teuchos::RCP<ScaTra::TimIntOneStepTheta> microtimint)
+void Mat::ScatraMultiScaleGP::calculate_ddet_f_dt(ScaTra::TimIntOneStepTheta& microtimint)
 {
-  const double dt = microtimint->dt();
+  const double dt = microtimint.dt();
 
-  switch (microtimint->method_name())
+  switch (microtimint.method_name())
   {
     case Inpar::ScaTra::TimeIntegrationScheme::timeint_one_step_theta:
     {
-      const double theta = microtimint->scatra_parameter_list()->get<double>("THETA");
+      const double theta = microtimint.scatra_parameter_list()->get<double>("THETA");
 
       const double part1 = (det_fnp_ - det_fn_) / dt;
       const double part2 = (1.0 - theta) * ddet_fdtn_;

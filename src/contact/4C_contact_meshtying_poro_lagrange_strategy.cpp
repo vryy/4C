@@ -128,13 +128,12 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
     // cn: nothing to do
 
     // cm: add T(mbar)*cs
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> cmmod =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofrowmap_, 100);
-    cmmod->add(*cm, false, 1.0, 1.0);
+    Core::LinAlg::SparseMatrix cmmod(*gmdofrowmap_, 100);
+    cmmod.add(*cm, false, 1.0, 1.0);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> cmadd =
         Core::LinAlg::matrix_multiply(*get_m_hat(), true, *cs, false, false, false, true);
-    cmmod->add(*cmadd, false, 1.0, 1.0);
-    cmmod->complete(cm->domain_map(), cm->row_map());
+    cmmod.add(*cmadd, false, 1.0, 1.0);
+    cmmod.complete(cm->domain_map(), cm->row_map());
 
     // cs: nothing to do as it remains zero
 
@@ -149,7 +148,7 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
     kteffoffdiagnew->add(*cn, false, 1.0, 1.0);
 
     // add m matrix row
-    kteffoffdiagnew->add(*cmmod, false, 1.0, 1.0);
+    kteffoffdiagnew->add(cmmod, false, 1.0, 1.0);
 
     // s matrix row remains zero (thats what it was all about)
 
@@ -168,16 +167,15 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
  | Poro Recovery method for structural displacement LM  h.Willmann  2015|
  *----------------------------------------------------------------------*/
 void CONTACT::PoroMtLagrangeStrategy::recover_coupling_matrix_partof_lmp(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> veli)
+    Core::LinAlg::Vector<double>& veli)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> zfluid =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(z_->Map(), true);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> mod =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
+  Core::LinAlg::Vector<double> mod(*gsdofrowmap_);
 
-  cs_->multiply(false, *veli, *mod);
-  zfluid->Update(-1.0, *mod, 1.0);
+  cs_->multiply(false, veli, mod);
+  zfluid->Update(-1.0, mod, 1.0);
   Teuchos::RCP<Core::LinAlg::Vector<double>> zcopy =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*zfluid);
   get_d_inverse()->multiply(true, *zcopy, *zfluid);

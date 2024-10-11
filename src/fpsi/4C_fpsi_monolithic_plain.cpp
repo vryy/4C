@@ -234,9 +234,9 @@ void FPSI::MonolithicPlain::setup_rhs(bool firstcall)
 
   poro_field()->setup_rhs(firstcall_);
 
-  setup_vector(*rhs_, poro_field()->extractor()->extract_vector(*poro_field()->rhs(), 0),
-      poro_field()->extractor()->extract_vector(*poro_field()->rhs(), 1), fluid_field()->rhs(),
-      ale_field()->rhs(), fluid_field()->residual_scaling());
+  setup_vector(*rhs_, *poro_field()->extractor()->extract_vector(*poro_field()->rhs(), 0),
+      *poro_field()->extractor()->extract_vector(*poro_field()->rhs(), 1), *fluid_field()->rhs(),
+      *ale_field()->rhs(), fluid_field()->residual_scaling());
 
   if (FSI_Interface_exists_)
   {
@@ -564,10 +564,9 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FPSI::MonolithicPlain::setup_vector(Core::LinAlg::Vector<double>& f,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> pfv,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fv,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> av, double fluidscale)
+    const Core::LinAlg::Vector<double>& sv, const Core::LinAlg::Vector<double>& pfv,
+    const Core::LinAlg::Vector<double>& fv, const Core::LinAlg::Vector<double>& av,
+    double fluidscale)
 {
   // Get fluid_field Block Matrix
   const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> fbm =
@@ -580,13 +579,13 @@ void FPSI::MonolithicPlain::setup_vector(Core::LinAlg::Vector<double>& f,
   const double stiparam = poro_field()->structure_field()->tim_int_param();
   const double ftiparam = fluid_field()->tim_int_param();
 
-  extractor().insert_vector(*fv, fluid_block_, f);  // add fluid contributions to 'f'
+  extractor().insert_vector(fv, fluid_block_, f);  // add fluid contributions to 'f'
 
   if (FSI_Interface_exists_)  // in case FSI interface exists, add term from condensation to RHS
   {
     // add fluid interface values to structure vector
     Teuchos::RCP<Core::LinAlg::Vector<double>> fcvgfsi =
-        fluid_field()->interface()->extract_fsi_cond_vector(*fv);
+        fluid_field()->interface()->extract_fsi_cond_vector(fv);
     fcvgfsi->Update(1.0,
         *(fluid_field()->interface()->extract_fsi_cond_vector(*fpsi_coupl()->rhs_f())),
         1.0);  // add rhs contribution of fpsi coupling rhs
@@ -595,19 +594,19 @@ void FPSI::MonolithicPlain::setup_vector(Core::LinAlg::Vector<double>& f,
         poro_field()->structure_field()->interface()->insert_fsi_cond_vector(
             *fluid_to_struct_fsi(fcvgfsi));  //(fvg)fg -> (fvg)sg -> (fvg)s
 
-    modsv->Update(1.0, *sv, (1.0 - stiparam) / (1.0 - ftiparam) * fluidscale);
+    modsv->Update(1.0, sv, (1.0 - stiparam) / (1.0 - ftiparam) * fluidscale);
 
     extractor().insert_vector(*modsv, structure_block_, f);  // add poroelast contributions to 'f'
-    extractor().insert_vector(*pfv, porofluid_block_, f);
+    extractor().insert_vector(pfv, porofluid_block_, f);
   }
   else
   {
-    extractor().insert_vector(*sv, structure_block_, f);  // add poroelast contributions to 'f'
-    extractor().insert_vector(*pfv, porofluid_block_, f);
+    extractor().insert_vector(sv, structure_block_, f);  // add poroelast contributions to 'f'
+    extractor().insert_vector(pfv, porofluid_block_, f);
   }
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> aov =
-      ale_field()->interface()->extract_other_vector(*av);
+      ale_field()->interface()->extract_other_vector(av);
   extractor().insert_vector(*aov, ale_i_block_, f);  // add ALE contributions to 'f'
 
   extractor().add_vector(*fpsi_coupl()->rhs_s(), structure_block_, f, 1.0);
@@ -1064,10 +1063,9 @@ void FPSI::MonolithicPlain::recover_lagrange_multiplier()
 
     // ---------Addressing term (6)
     auxvec = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fgiprev_->range_map(), true);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(fgiprev_->domain_map(), true);
-    Core::LinAlg::export_to(*duiinc_, *tmp);
-    fgiprev_->Apply(*tmp, *auxvec);
+    Core::LinAlg::Vector<double> tmp(fgiprev_->domain_map(), true);
+    Core::LinAlg::export_to(*duiinc_, tmp);
+    fgiprev_->Apply(tmp, *auxvec);
     tmpvec->Update(1.0, *auxvec, 1.0);
     // ---------End of term (6)
 

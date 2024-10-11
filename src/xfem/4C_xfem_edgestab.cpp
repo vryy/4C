@@ -172,7 +172,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
         p_master->shape() == Core::FE::CellType::wedge6 or
         p_master->shape() == Core::FE::CellType::pyramid5)
     {
-      Cut::SideHandle* side = get_face(faceele, wizard);
+      Cut::SideHandle* side = get_face(faceele, *wizard);
 
       //-------------------------------- loop facets of this side -----------------------------
       // facet of current side
@@ -322,7 +322,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
              p_master->shape() == Core::FE::CellType::tet10 or
              p_master->shape() == Core::FE::CellType::wedge15)
     {
-      Cut::SideHandle* side = get_face(faceele, wizard);  // the side of the quadratic element
+      Cut::SideHandle* side = get_face(faceele, *wizard);  // the side of the quadratic element
       //-------------------------------- loop facets of this side -----------------------------
       // facet of current side
       std::vector<Cut::Facet*> facets;
@@ -474,7 +474,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
         p_master->shape() == Core::FE::CellType::tet10 or
         p_master->shape() == Core::FE::CellType::wedge15)
     {
-      Cut::SideHandle* side = get_face(faceele, wizard);
+      Cut::SideHandle* side = get_face(faceele, *wizard);
 
       // facet of current side
       std::vector<Cut::Facet*> facets;
@@ -633,7 +633,7 @@ void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
  | node ids                                                schott 04/12 |
  *----------------------------------------------------------------------*/
 Cut::SideHandle* XFEM::XfemEdgeStab::get_face(
-    Core::Elements::Element* faceele, Teuchos::RCP<Cut::CutWizard> wizard)
+    Core::Elements::Element* faceele, Cut::CutWizard& wizard)
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: get_face");
 
@@ -648,7 +648,7 @@ Cut::SideHandle* XFEM::XfemEdgeStab::get_face(
 
   std::sort(nodeids.begin(), nodeids.end());
 
-  return wizard->get_side(nodeids);
+  return wizard.get_side(nodeids);
 }
 
 /*----------------------------------------------------------------------*
@@ -721,7 +721,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_std(
 void XFEM::XfemEdgeStab::evaluate_edge_stab_boundary_gp(
     Teuchos::ParameterList& eleparams,               ///< element parameter list
     Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
-    Teuchos::RCP<Core::FE::Discretization>
+    Core::FE::Discretization&
         boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
     Discret::ELEMENTS::FluidIntFace* faceele,                ///< face element
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
@@ -766,8 +766,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_boundary_gp(
   //--------------------------------------------------------------------------------------------
   // leave, if neither slave nor master element of this face contributes to the fluid-fluid
   // interface
-  if (!(boundarydiscret->have_global_element(p_master->id()) ||
-          boundarydiscret->have_global_element(p_slave->id())))
+  if (!(boundarydiscret.have_global_element(p_master->id()) ||
+          boundarydiscret.have_global_element(p_slave->id())))
     return;
 
   // Provide material at both sides:

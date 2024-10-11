@@ -125,14 +125,14 @@ namespace Airway
     \brief solve the scalar transport
 
     */
-    void solve_scatra(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    void solve_scatra(Teuchos::ParameterList& CouplingTo3DParams);
 
     /*!
       \brief build linear system matrix and rhs
 
       \param vel new guess at velocity, cross-sectional area, and pressure
     */
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> vel){};
+    void evaluate(const Core::LinAlg::Vector<double>& vel){};
 
     /*!
     \brief Update the solution after convergence of the linear
@@ -182,7 +182,7 @@ namespace Airway
     \brief Assembling AIRWAY_ACINUS_DEP Vector for getting pext of nearest acinus
 
     */
-    void compute_nearest_acinus(Teuchos::RCP<Core::FE::Discretization const> search_discret,
+    void compute_nearest_acinus(const Core::FE::Discretization& search_discret,
         std::set<int>* elecolset, std::set<int>* nodecolset,
         Teuchos::RCP<Core::LinAlg::Vector<double>> airway_acinus_dep);
 
@@ -204,8 +204,8 @@ namespace Airway
            We use this to find the total lung volume by summing up
            the acinar volumes
     */
-    bool sum_all_col_elem_val(Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sumCond, double& sum);
+    bool sum_all_col_elem_val(
+        Core::LinAlg::Vector<double>& vec, Core::LinAlg::Vector<double>& sumCond, double& sum);
 
 
     /*!
@@ -275,8 +275,8 @@ namespace Airway
     //! @name methods related to coupling with 3D tissue models
 
     void setup_for_coupling();
-    void set_airway_flux_from_tissue(Teuchos::RCP<Core::LinAlg::Vector<double>> coupflux);
-    void extract_pressure(Teuchos::RCP<Core::LinAlg::Vector<double>> couppres);
+    void set_airway_flux_from_tissue(Core::LinAlg::Vector<double>& coupflux);
+    void extract_pressure(Core::LinAlg::Vector<double>& couppres);
 
     /// Hand over outputwriter to redairway_tissue
     Core::IO::DiscretizationWriter& get_output_writer() { return output_; }

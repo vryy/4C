@@ -359,7 +359,7 @@ void STI::Monolithic::fd_check()
   sysmat_original->FillComplete();
 
   // make a copy of system right-hand side vector
-  auto rhs_original = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*residual_);
+  Core::LinAlg::Vector<double> rhs_original(*residual_);
 
   // initialize counter for system matrix entries with failing finite difference check
   int counter(0);
@@ -430,7 +430,7 @@ void STI::Monolithic::fd_check()
 
       // finite difference suggestion (first divide by epsilon and then add for better conditioning)
       const double fdval = -(*residual_)[rowlid] / scatra_field()->fd_check_eps() +
-                           (*rhs_original)[rowlid] / scatra_field()->fd_check_eps();
+                           (rhs_original)[rowlid] / scatra_field()->fd_check_eps();
 
       // confirm accuracy of first comparison
       if (abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
@@ -461,7 +461,7 @@ void STI::Monolithic::fd_check()
       else
       {
         // left-hand side in second comparison
-        const double left = entry - (*rhs_original)[rowlid] / scatra_field()->fd_check_eps();
+        const double left = entry - (rhs_original)[rowlid] / scatra_field()->fd_check_eps();
 
         // right-hand side in second comparison
         const double right = -(*residual_)[rowlid] / scatra_field()->fd_check_eps();
@@ -1248,14 +1248,13 @@ void STI::Monolithic::compute_null_space_if_necessary(Teuchos::ParameterList& so
     const int dimns = numdofpernode_scatra + numdofpernode_thermo;
 
     // allocate vector for null space information
-    const auto ns =
-        Teuchos::make_rcp<std::vector<double>>(dimns * dof_row_map()->NumMyElements(), 0.);
+    std::vector<double> ns(dimns * dof_row_map()->NumMyElements(), 0.);
 
     // compute null space modes associated with scatra field
     const Core::FE::Discretization& scatradis = *scatra_field()->discretization();
     std::vector<double*> modes_scatra(numdofpernode_scatra);
     for (int i = 0; i < numdofpernode_scatra; ++i)
-      modes_scatra[i] = &((*ns)[i * dof_row_map()->NumMyElements()]);
+      modes_scatra[i] = &((ns)[i * dof_row_map()->NumMyElements()]);
     for (int i = 0; i < scatradis.num_my_row_nodes(); ++i)
     {
       const int lid = dof_row_map()->LID(scatradis.dof(0, scatradis.l_row_node(i), 0));
@@ -1267,7 +1266,7 @@ void STI::Monolithic::compute_null_space_if_necessary(Teuchos::ParameterList& so
     const Core::FE::Discretization& thermodis = *thermo_field()->discretization();
     std::vector<double*> modes_thermo(numdofpernode_thermo);
     for (int i = 0; i < numdofpernode_thermo; ++i)
-      modes_thermo[i] = &((*ns)[(numdofpernode_scatra + i) * dof_row_map()->NumMyElements()]);
+      modes_thermo[i] = &((ns)[(numdofpernode_scatra + i) * dof_row_map()->NumMyElements()]);
     for (int i = 0; i < thermodis.num_my_row_nodes(); ++i)
     {
       const int lid = dof_row_map()->LID(thermodis.dof(0, thermodis.l_row_node(i), 0));
@@ -1283,7 +1282,7 @@ void STI::Monolithic::compute_null_space_if_necessary(Teuchos::ParameterList& so
 
     Teuchos::RCP<Epetra_MultiVector> nullspace =
         Teuchos::make_rcp<Epetra_MultiVector>(dof_row_map().operator*(), dimns, true);
-    Core::LinAlg::std_vector_to_epetra_multi_vector(*ns, *nullspace, dimns);
+    Core::LinAlg::std_vector_to_epetra_multi_vector(ns, *nullspace, dimns);
 
     mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
     mllist.set("null space: vectors", nullspace->Values());
@@ -1576,7 +1575,7 @@ void STI::Monolithic::solve()
           residual_->Map().NumGlobalElements());
 
     // update scatra field
-    scatra_field()->update_iter(maps_->extract_vector(*increment_, 0));
+    scatra_field()->update_iter(*maps_->extract_vector(*increment_, 0));
     scatra_field()->compute_intermediate_values();
 
     // update thermo field
@@ -1615,7 +1614,7 @@ void STI::Monolithic::solve()
     {
       thermoincrement = maps_->extract_vector(*increment_, 1);
     }
-    thermo_field()->update_iter(thermoincrement);
+    thermo_field()->update_iter(*thermoincrement);
     thermo_field()->compute_intermediate_values();
   }  // Newton-Raphson iteration
 }  // STI::Monolithic::Solve

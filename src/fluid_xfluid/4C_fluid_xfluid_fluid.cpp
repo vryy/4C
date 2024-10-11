@@ -343,7 +343,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluidFluid::get_new_state()
   stepinc_ = Core::LinAlg::create_vector(*state->xffluiddofrowmap_, true);
 
   // build a merged map from fluid-fluid dbc-maps
-  state->create_merged_dbc_map_extractor(embedded_fluid_->get_dbc_map_extractor());
+  state->create_merged_dbc_map_extractor(*embedded_fluid_->get_dbc_map_extractor());
 
   return state;
 }
@@ -459,7 +459,7 @@ void FLD::XFluidFluid::assemble_mat_and_rhs(int itnum  ///< iteration number
 }
 
 void FLD::XFluidFluid::prepare_shape_derivatives(
-    const Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> fsiextractor,
+    const Core::LinAlg::MultiMapExtractor& fsiextractor,
     const Teuchos::RCP<std::set<int>> condelements)
 {
   if (!active_shapederivatives_) return;
@@ -470,7 +470,7 @@ void FLD::XFluidFluid::prepare_shape_derivatives(
   // background fluid entries, that are set to zero
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat =
       Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>(
-          *fsiextractor, *fsiextractor, 108, false, true);
+          fsiextractor, fsiextractor, 108, false, true);
   mat->set_cond_elements(condelements);
   extended_shapederivatives_ = mat;
 }
@@ -537,7 +537,7 @@ void FLD::XFluidFluid::add_eos_pres_stab_to_emb_layer()
     Discret::ELEMENTS::FluidIntFace* ele = dynamic_cast<Discret::ELEMENTS::FluidIntFace*>(actface);
     if (ele == nullptr) FOUR_C_THROW("expect FluidIntFace element");
     edgestab_->evaluate_edge_stab_boundary_gp(faceparams, xdiscret,
-        mc_xff_->get_auxiliary_discretization(), ele, sysmat_linalg, residual_col);
+        *mc_xff_->get_auxiliary_discretization(), ele, sysmat_linalg, residual_col);
   }
 
   //------------------------------------------------------------
@@ -642,9 +642,9 @@ void FLD::XFluidFluid::update_monolithic_fluid_solution(
       Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*(embedded_fluid_->dof_row_map()), condmerged);
 
   // DBC map-extractor containing FSI-dof
-  xff_state_->create_merged_dbc_map_extractor(fsidbcmapex);
+  xff_state_->create_merged_dbc_map_extractor(*fsidbcmapex);
   solve();
-  xff_state_->create_merged_dbc_map_extractor(embedded_fluid_->get_dbc_map_extractor());
+  xff_state_->create_merged_dbc_map_extractor(*embedded_fluid_->get_dbc_map_extractor());
 }
 
 /*----------------------------------------------------------------------*/
@@ -822,7 +822,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
 
   // evaluate domain error norms and interface/boundary error norms at XFEM-interface
   // loop row elements of background fluid
-  XFluid::compute_error_norms(glob_dom_norms_bg, glob_interf_norms, glob_stab_norms);
+  XFluid::compute_error_norms(*glob_dom_norms_bg, *glob_interf_norms, *glob_stab_norms);
 
   //-----------------------------------------------
   // Embedded discretization

@@ -90,16 +90,16 @@ template <Core::FE::CellType distype>
 void sysmat(Discret::ELEMENTS::RedAcinus* ele, Core::LinAlg::SerialDenseVector& epnp,
     Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
     Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
-    Teuchos::RCP<const Core::Mat::Material> material, Discret::ReducedLung::ElemParams& params,
-    double time, double dt)
+    const Core::Mat::Material& material, Discret::ReducedLung::ElemParams& params, double time,
+    double dt)
 {
   const auto acinus_params = ele->get_acinus_params();
 
   // Decide which acinus material should be used
-  if ((material->material_type() == Core::Materials::m_0d_maxwell_acinus_neohookean) ||
-      (material->material_type() == Core::Materials::m_0d_maxwell_acinus_exponential) ||
-      (material->material_type() == Core::Materials::m_0d_maxwell_acinus_doubleexponential) ||
-      (material->material_type() == Core::Materials::m_0d_maxwell_acinus_ogden))
+  if ((material.material_type() == Core::Materials::m_0d_maxwell_acinus_neohookean) ||
+      (material.material_type() == Core::Materials::m_0d_maxwell_acinus_exponential) ||
+      (material.material_type() == Core::Materials::m_0d_maxwell_acinus_doubleexponential) ||
+      (material.material_type() == Core::Materials::m_0d_maxwell_acinus_ogden))
   {
     const double VolAcinus = acinus_params.volume_relaxed;
     const double volAlvDuct = acinus_params.alveolar_duct_volume;
@@ -208,7 +208,8 @@ int Discret::ELEMENTS::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::Pa
   elem_params.lungVolume_nm = evaluation_data.lungVolume_nm;
 
   // Call routine for calculating element matrix and right hand side
-  sysmat<distype>(ele, epnp, epn, epnm, elemat1_epetra, elevec1_epetra, mat, elem_params, time, dt);
+  sysmat<distype>(
+      ele, epnp, epn, epnm, elemat1_epetra, elevec1_epetra, *mat, elem_params, time, dt);
 
   // Put zeros on second line of matrix and rhs in case of interacinar linker
   if (myial[1] > 0.0)
@@ -237,11 +238,11 @@ void Discret::ELEMENTS::AcinusImpl<distype>::initial(RedAcinus* ele, Teuchos::Pa
   const auto acinus_params = ele->get_acinus_params();
 
   std::vector<int> lmstride;
-  Teuchos::RCP<std::vector<int>> lmowner = Teuchos::make_rcp<std::vector<int>>();
-  ele->location_vector(discretization, lm, *lmowner, lmstride);
+  std::vector<int> lmowner;
+  ele->location_vector(discretization, lm, lmowner, lmstride);
 
   // Initialize the pressure vectors
-  if (myrank == (*lmowner)[0])
+  if (myrank == (lmowner)[0])
   {
     int gid = lm[0];
     double val = 0.0;
@@ -771,7 +772,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
   Core::LinAlg::SerialDenseVector rhs(elemVecdim);
 
   // Call routine for calculating element matrix and right hand side
-  sysmat<distype>(ele, epnp, epn, epnm, system_matrix, rhs, material, elem_params, time, dt);
+  sysmat<distype>(ele, epnp, epn, epnm, system_matrix, rhs, *material, elem_params, time, dt);
 
   double qn = (*evaluation_data.qin_n)[ele->lid()];
   double qnp = -1.0 * (system_matrix(0, 0) * epnp(0) + system_matrix(0, 1) * epnp(1) - rhs(0));

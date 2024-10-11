@@ -43,12 +43,10 @@ namespace Cut
 
    private:
     void form_matrix_system(Core::FE::GaussPointsComposite& gin,
-        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs);
+        Core::LinAlg::SerialDenseMatrix& mat, Core::LinAlg::SerialDenseVector& rhs);
 
     void teuchos_gels(Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol);
+        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs, Core::LinAlg::SerialDenseVector& sol);
 
     /*!
     \brief Solve the under/over determined system by performing QR decomposition, achived using
@@ -63,8 +61,7 @@ namespace Cut
     LAPACK
      */
     void qr_decomposition_lapack(Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol);
+        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs, Core::LinAlg::SerialDenseVector& sol);
 
     bool compress_leja_points(Core::FE::GaussPointsComposite& gin,
         Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
@@ -72,17 +69,16 @@ namespace Cut
         Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol);
 
     void compute_and_print_error(Core::FE::GaussPointsComposite& gin,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol, std::vector<int>& work, int& na);
+        Core::LinAlg::SerialDenseVector& rhs, Core::LinAlg::SerialDenseVector& sol,
+        std::vector<int>& work, int& na);
 
-    void get_pivotal_rows(
-        Teuchos::RCP<Core::LinAlg::IntSerialDenseVector>& work_temp, std::vector<int>& work);
+    void get_pivotal_rows(Core::LinAlg::IntSerialDenseVector& work_temp, std::vector<int>& work);
 
     bool is_this_value_already_in_dense_vector(
         int& input, std::vector<int>& vec, int upper_range, int& index);
 
     Teuchos::RCP<Core::FE::GaussPoints> form_new_quadrature_rule(
-        Core::FE::GaussPointsComposite& gin, Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol,
+        Core::FE::GaussPointsComposite& gin, Core::LinAlg::SerialDenseVector& sol,
         std::vector<int>& work, int& na);
     int get_correct_index(int& input, std::vector<int>& vec, int upper_range);
 

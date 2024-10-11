@@ -79,8 +79,7 @@ namespace FLD
     void prepare_output();
 
     /// standard output routine
-    void output(int step, double time, bool write_restart_data,
-        Teuchos::RCP<const FLD::XFluidState> state,
+    void output(int step, double time, bool write_restart_data, const FLD::XFluidState& state,
         Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp = Teuchos::null,
         Teuchos::RCP<Core::LinAlg::Vector<double>> gridvnp = Teuchos::null);
 
@@ -235,14 +234,13 @@ namespace FLD
    private:
     /// Gmsh output function for elements without an Cut::ElementHandle
     void gmsh_output_element(
-        Core::FE::Discretization& discret,  ///< background fluid discretization
-        std::ofstream& vel_f,               ///< output file stream for velocity
-        std::ofstream& press_f,             ///< output file stream for pressure
-        std::ofstream& acc_f,               ///< output file stream for acceleration
-        Core::Elements::Element* actele,    ///< element
-        std::vector<int>& nds,              ///< vector holding the nodal dofsets
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
-            vel,  ///< vector holding velocity and pressure dofs
+        Core::FE::Discretization& discret,        ///< background fluid discretization
+        std::ofstream& vel_f,                     ///< output file stream for velocity
+        std::ofstream& press_f,                   ///< output file stream for pressure
+        std::ofstream& acc_f,                     ///< output file stream for acceleration
+        Core::Elements::Element* actele,          ///< element
+        std::vector<int>& nds,                    ///< vector holding the nodal dofsets
+        const Core::LinAlg::Vector<double>& vel,  ///< vector holding velocity and pressure dofs
         Teuchos::RCP<const Core::LinAlg::Vector<double>> acc =
             Teuchos::null,  ///< vector holding acceleration
         Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
@@ -251,26 +249,25 @@ namespace FLD
 
     /// Gmsh output function for volumecells
     void gmsh_output_volume_cell(
-        Core::FE::Discretization& discret,  ///< background fluid discretization
-        std::ofstream& vel_f,               ///< output file stream for velocity
-        std::ofstream& press_f,             ///< output file stream for pressure
-        std::ofstream& acc_f,               ///< output file stream for acceleration
-        Core::Elements::Element* actele,    ///< element
-        Cut::ElementHandle* e,              ///< elementhandle
-        Cut::VolumeCell* vc,                ///< volumecell
-        const std::vector<int>& nds,        ///< vector holding the nodal dofsets
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
-            velvec,  ///< vector holding velocity and pressure dofs
+        Core::FE::Discretization& discret,           ///< background fluid discretization
+        std::ofstream& vel_f,                        ///< output file stream for velocity
+        std::ofstream& press_f,                      ///< output file stream for pressure
+        std::ofstream& acc_f,                        ///< output file stream for acceleration
+        Core::Elements::Element* actele,             ///< element
+        Cut::ElementHandle* e,                       ///< elementhandle
+        Cut::VolumeCell* vc,                         ///< volumecell
+        const std::vector<int>& nds,                 ///< vector holding the nodal dofsets
+        const Core::LinAlg::Vector<double>& velvec,  ///< vector holding velocity and pressure dofs
         Teuchos::RCP<const Core::LinAlg::Vector<double>> accvec =
             Teuchos::null  ///< vector holding acceleration
     );
 
     /// Gmsh output function for boundarycells
     void gmsh_output_boundary_cell(
-        Core::FE::Discretization& discret,          ///< background fluid discretization
-        std::ofstream& bound_f,                     ///< output file stream for boundary mesh
-        Cut::VolumeCell* vc,                        ///< volumecell
-        const Teuchos::RCP<Cut::CutWizard>& wizard  ///< cut wizard
+        Core::FE::Discretization& discret,  ///< background fluid discretization
+        std::ofstream& bound_f,             ///< output file stream for boundary mesh
+        Cut::VolumeCell* vc,                ///< volumecell
+        Cut::CutWizard& wizard              ///< cut wizard
     );
 
     //! @name flags for detailed gmsh output

@@ -43,11 +43,11 @@ CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::SolidToSolidMortarManager(
       cutwizard, discret_, embedded_mesh_coupling_params_);
 
   // Get the coupling pairs and cut elements
-  get_coupling_pairs_and_background_elements(cutwizard, embedded_mesh_coupling_params_, discret_,
+  get_coupling_pairs_and_background_elements(cutwizard, embedded_mesh_coupling_params_, *discret_,
       embedded_mesh_solid_pairs_, cut_elements_vector_);
 
   // Change integration rule of elements if they are cut
-  CONSTRAINTS::EMBEDDEDMESH::change_gauss_rule_of_cut_elements(cut_elements_vector_, cutwizard);
+  CONSTRAINTS::EMBEDDEDMESH::change_gauss_rule_of_cut_elements(cut_elements_vector_, *cutwizard);
 
   // Get the number of Lagrange multiplier DOF on a solid node and on a solid element
   unsigned int n_lambda_node_temp = 0;
@@ -140,15 +140,14 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::setup(
   // We need to be able to get the global ids for a Lagrange multiplier DOF from the global id
   // of a node. To do so, we 'abuse' the Epetra_MultiVector as map between the
   // global node ids and the global Lagrange multiplier DOF ids.
-  Teuchos::RCP<Epetra_Map> node_gid_rowmap =
-      Teuchos::make_rcp<Epetra_Map>(-1, n_nodes, &my_nodes_gid[0], 0, discret_->get_comm());
+  Epetra_Map node_gid_rowmap(-1, n_nodes, &my_nodes_gid[0], 0, discret_->get_comm());
 
   // Map from global node ids to global lagrange multiplier ids. Only create the
   // multivector if it has one or more columns.
   node_gid_to_lambda_gid_ = Teuchos::null;
   if (n_lambda_node_ > 0)
     node_gid_to_lambda_gid_ =
-        Teuchos::make_rcp<Epetra_MultiVector>(*node_gid_rowmap, n_lambda_node_, true);
+        Teuchos::make_rcp<Epetra_MultiVector>(node_gid_rowmap, n_lambda_node_, true);
 
   // Fill in the entries in the node global id to Lagrange multiplier global id vector.
   int error_code = 0;
@@ -263,14 +262,14 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_local_maps(
   node_gid_needed.resize(std::distance(node_gid_needed.begin(), it));
 
   // Create the maps for the extraction of the values.
-  Teuchos::RCP<Epetra_Map> node_gid_needed_rowmap = Teuchos::make_rcp<Epetra_Map>(
+  Epetra_Map node_gid_needed_rowmap(
       -1, node_gid_needed.size(), &node_gid_needed[0], 0, discret_->get_comm());
 
   // Create the Multivectors that will be filled with all values needed on this rank.
   Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_copy = Teuchos::null;
   if (node_gid_to_lambda_gid_ != Teuchos::null)
     node_gid_to_lambda_gid_copy =
-        Teuchos::make_rcp<Epetra_MultiVector>(*node_gid_needed_rowmap, n_lambda_node_, true);
+        Teuchos::make_rcp<Epetra_MultiVector>(node_gid_needed_rowmap, n_lambda_node_, true);
 
   // Export values from the global multi vector to the ones needed on this rank.
   if (node_gid_to_lambda_gid_ != Teuchos::null)
@@ -283,11 +282,11 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_local_maps(
   if (node_gid_to_lambda_gid_ != Teuchos::null)
   {
     std::vector<int> temp_node(n_lambda_node_);
-    for (int i_node = 0; i_node < node_gid_needed_rowmap->NumMyElements(); i_node++)
+    for (int i_node = 0; i_node < node_gid_needed_rowmap.NumMyElements(); i_node++)
     {
       for (unsigned int i_temp = 0; i_temp < n_lambda_node_; i_temp++)
         temp_node[i_temp] = (int)((*(*node_gid_to_lambda_gid_copy)(i_temp))[i_node]);
-      node_gid_to_lambda_gid_map_[node_gid_needed_rowmap->GID(i_node)] = temp_node;
+      node_gid_to_lambda_gid_map_[node_gid_needed_rowmap.GID(i_node)] = temp_node;
       lambda_gid_for_col_map.insert(
           std::end(lambda_gid_for_col_map), std::begin(temp_node), std::end(temp_node));
     }
@@ -372,7 +371,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::evaluate_global_coupl
 
 void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::
     add_global_force_stiffness_penalty_contributions(
-        const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& data_state,
+        Solid::TimeInt::BaseDataGlobalState& data_state,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
         Teuchos::RCP<Core::LinAlg::Vector<double>> force) const
 {
@@ -385,14 +384,13 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::
   {
     // Scale the linearizations of the constraint equations.
     Teuchos::RCP<Core::LinAlg::Vector<double>> global_penalty_kappa_inv = penalty_invert_kappa();
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> penalty_kappa_inv_mat =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*global_penalty_kappa_inv);
-    penalty_kappa_inv_mat->complete();
+    Core::LinAlg::SparseMatrix penalty_kappa_inv_mat(*global_penalty_kappa_inv);
+    penalty_kappa_inv_mat.complete();
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> global_G_BL_scaled = Core::LinAlg::matrix_multiply(
-        *penalty_kappa_inv_mat, false, *global_g_bl_, false, false, false, true);
+        penalty_kappa_inv_mat, false, *global_g_bl_, false, false, false, true);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> global_G_BG_scaled = Core::LinAlg::matrix_multiply(
-        *penalty_kappa_inv_mat, false, *global_g_bg_, false, false, false, true);
+        penalty_kappa_inv_mat, false, *global_g_bg_, false, false, false, true);
 
     // Calculate the needed submatrices.
     Teuchos::RCP<Core::LinAlg::SparseMatrix> FBL_L_times_G_BL = Core::LinAlg::matrix_multiply(
@@ -422,23 +420,21 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::
 
     // Multiply the lambda vector with FBL_L and FBG_L to get the forces on the boundary layer and
     // background, respectively.
-    Teuchos::RCP<Core::LinAlg::Vector<double>> boundary_layer_interface_force =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*boundary_layer_interface_dof_rowmap_);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> background_force =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*background_dof_rowmap_);
-    boundary_layer_interface_force->PutScalar(0.);
-    background_force->PutScalar(0.);
-    linalg_error = global_fbl_l_->multiply(false, *lambda, *boundary_layer_interface_force);
+    Core::LinAlg::Vector<double> boundary_layer_interface_force(
+        *boundary_layer_interface_dof_rowmap_);
+    Core::LinAlg::Vector<double> background_force(*background_dof_rowmap_);
+    boundary_layer_interface_force.PutScalar(0.);
+    background_force.PutScalar(0.);
+    linalg_error = global_fbl_l_->multiply(false, *lambda, boundary_layer_interface_force);
     if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
-    linalg_error = global_fbg_l_->multiply(false, *lambda, *background_force);
+    linalg_error = global_fbg_l_->multiply(false, *lambda, background_force);
     if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
-    Teuchos::RCP<Core::LinAlg::Vector<double>> global_temp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->dof_row_map());
-    Core::LinAlg::export_to(*boundary_layer_interface_force, *global_temp);
-    Core::LinAlg::export_to(*background_force, *global_temp);
+    Core::LinAlg::Vector<double> global_temp(*discret_->dof_row_map());
+    Core::LinAlg::export_to(boundary_layer_interface_force, global_temp);
+    Core::LinAlg::export_to(background_force, global_temp);
 
     // Add force contributions to global vector.
-    linalg_error = force->Update(rhs_factor, *global_temp, 1.0);
+    linalg_error = force->Update(rhs_factor, global_temp, 1.0);
     if (linalg_error != 0) FOUR_C_THROW("Error in Update");
   }
 }
@@ -454,15 +450,14 @@ CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::get_global_lambda() const
 
   // Get the inverted kappa matrix.
   Teuchos::RCP<Core::LinAlg::Vector<double>> penalty_global_kappa_inv = penalty_invert_kappa();
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> penalty_kappa_inv_mat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*penalty_global_kappa_inv);
-  penalty_kappa_inv_mat->complete();
+  Core::LinAlg::SparseMatrix penalty_kappa_inv_mat(*penalty_global_kappa_inv);
+  penalty_kappa_inv_mat.complete();
 
   // Multiply the inverted kappa matrix with the constraint equations and scale them with the
   // penalty parameter.
   Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);
-  int linalg_error = penalty_kappa_inv_mat->multiply(false, *global_constraint_, *lambda);
+  int linalg_error = penalty_kappa_inv_mat.multiply(false, *global_constraint_, *lambda);
   if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
 
   return lambda;

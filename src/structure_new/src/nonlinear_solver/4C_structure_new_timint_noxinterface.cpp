@@ -255,14 +255,14 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetr
     case NOX::Nln::StatusTest::quantity_cardiovascular0d:
     {
       // export the displacement solution if necessary
-      Teuchos::RCP<Epetra_Vector> model_incr_ptr = Teuchos::make_rcp<Epetra_Vector>(
+      Epetra_Vector model_incr_ptr(
           *gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xold)));
       auto model_xnew_ptr =
           gstate_ptr_->extract_model_entries(mt, Core::LinAlg::Vector<double>(xnew));
 
-      model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
-      rms = NOX::Nln::Aux::root_mean_square_norm(atol, rtol, model_xnew_ptr,
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*model_incr_ptr),
+      model_incr_ptr.Update(1.0, *model_xnew_ptr, -1.0);
+      rms = NOX::Nln::Aux::root_mean_square_norm(atol, rtol, *model_xnew_ptr,
+          *Teuchos::make_rcp<Core::LinAlg::Vector<double>>(model_incr_ptr),
           disable_implicit_weighting);
 
       break;
@@ -277,7 +277,7 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetr
 
       model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
       rms = NOX::Nln::Aux::root_mean_square_norm(
-          atol, rtol, model_xnew_ptr, model_incr_ptr, disable_implicit_weighting);
+          atol, rtol, *model_xnew_ptr, *model_incr_ptr, disable_implicit_weighting);
       break;
     }
     case NOX::Nln::StatusTest::quantity_eas:
@@ -424,12 +424,11 @@ double Solid::TimeInt::NoxInterface::get_previous_primary_solution_norms(const E
 double Solid::TimeInt::NoxInterface::calculate_norm(Teuchos::RCP<Epetra_Vector> quantity,
     const ::NOX::Abstract::Vector::NormType type, const bool isscaled) const
 {
-  Teuchos::RCP<const ::NOX::Epetra::Vector> quantity_nox =
-      Teuchos::make_rcp<::NOX::Epetra::Vector>(quantity, ::NOX::Epetra::Vector::CreateView);
+  const ::NOX::Epetra::Vector quantity_nox(quantity, ::NOX::Epetra::Vector::CreateView);
 
-  double norm = quantity_nox->norm(type);
+  double norm = quantity_nox.norm(type);
   // do the scaling if desired
-  if (isscaled) norm /= static_cast<double>(quantity_nox->length());
+  if (isscaled) norm /= static_cast<double>(quantity_nox.length());
 
   return norm;
 }

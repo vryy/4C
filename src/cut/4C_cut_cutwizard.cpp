@@ -184,7 +184,7 @@ void Cut::CutWizard::add_cutter_state(const int mc_idx,
  *--------------------------------------------------------------*/
 void Cut::CutWizard::set_marked_condition_sides(
     // const int mc_idx,                                       //Not needed (for now?)
-    Teuchos::RCP<Core::FE::Discretization> cutter_dis,
+    Core::FE::Discretization& cutter_dis,
     // Teuchos::RCP<const Core::LinAlg::Vector<double>> cutter_disp_col,      //Not needed (for
     // now?)
     const int start_ele_gid)
@@ -194,9 +194,9 @@ void Cut::CutWizard::set_marked_condition_sides(
   //  -- Loop over the surface elements and find (if it exists) a corresponding side loaded into the
   //  cut
   //  ## WARNING: Not sure what happens if it doesn't find a surface?
-  for (int lid = 0; lid < cutter_dis->num_my_row_elements(); ++lid)
+  for (int lid = 0; lid < cutter_dis.num_my_row_elements(); ++lid)
   {
-    Core::Elements::Element* cutter_dis_ele = cutter_dis->l_row_element(lid);
+    Core::Elements::Element* cutter_dis_ele = cutter_dis.l_row_element(lid);
 
     const int numnode = cutter_dis_ele->num_node();
     const int* nodeids = cutter_dis_ele->node_ids();
@@ -367,7 +367,7 @@ void Cut::CutWizard::add_mesh_cutting_side()
 void evaluate_position_on_nurbs9(Core::Elements::Element* element,
     Core::LinAlg::SerialDenseMatrix& element_current_position,
     Teuchos::RCP<Core::FE::Discretization>& cutterdis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& cutter_disp_col)
+    const Core::LinAlg::Vector<double>& cutter_disp_col)
 {
   // Initialize the information needed for NURBS elements
   Core::LinAlg::Matrix<9, 1, double> weights(true);
@@ -412,7 +412,7 @@ void evaluate_position_on_nurbs9(Core::Elements::Element* element,
     lm.clear();
     mydisp.clear();
     cutterdis->dof(controlpoint, lm);
-    Core::FE::extract_my_values(*cutter_disp_col, mydisp, lm);
+    Core::FE::extract_my_values(cutter_disp_col, mydisp, lm);
 
     // Obtain the displacements on control points
     for (int i_dim = 0; i_dim < prob_dim; ++i_dim)
@@ -448,8 +448,7 @@ void evaluate_position_on_nurbs9(Core::Elements::Element* element,
  * Helper function to evaluate the position of a classic Lagrange element
  */
 void evaluate_position_on_lagrange_element(Core::Elements::Element* element,
-    Core::LinAlg::SerialDenseMatrix& element_current_position,
-    Teuchos::RCP<Core::FE::Discretization>& cutterdis,
+    Core::LinAlg::SerialDenseMatrix& element_current_position, Core::FE::Discretization& cutterdis,
     Teuchos::RCP<const Core::LinAlg::Vector<double>>& cutter_disp_col)
 {
   std::vector<int> lm;
@@ -463,7 +462,7 @@ void evaluate_position_on_lagrange_element(Core::Elements::Element* element,
 
     lm.clear();
     mydisp.clear();
-    cutterdis->dof(&node, lm);
+    cutterdis.dof(&node, lm);
 
     // Initialize the current nodal position with its reference position
     Core::LinAlg::Matrix<3, 1> current_nodal_position(node.x().data());
@@ -524,13 +523,13 @@ void Cut::CutWizard::add_mesh_cutting_side(Teuchos::RCP<Core::FE::Discretization
 
     // obtain the current position of the cutting element depending on its cell type
     if (element->shape() == Core::FE::CellType::nurbs9)
-      evaluate_position_on_nurbs9(element, element_current_position, cutterdis, cutter_disp_col);
+      evaluate_position_on_nurbs9(element, element_current_position, cutterdis, *cutter_disp_col);
     else if (element->shape() == Core::FE::CellType::nurbs4)
       FOUR_C_THROW(
           "This type of NURBS element is not implemented to be used as a cutter discretization.");
     else
       evaluate_position_on_lagrange_element(
-          element, element_current_position, cutterdis, cutter_disp_col);
+          element, element_current_position, *cutterdis, cutter_disp_col);
 
     // Determine the cutting side id. For embedded mesh cases, we use the id of the parent element
     // of the cutter discretization. Otherwise, we use directly the id of the cutter discretization

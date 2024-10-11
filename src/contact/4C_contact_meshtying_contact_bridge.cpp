@@ -79,12 +79,12 @@ void CONTACT::MeshtyingContactBridge::store_dirichlet_status(
 /*----------------------------------------------------------------------*
  |  Set displacement state                                   farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::set_state(Teuchos::RCP<Core::LinAlg::Vector<double>> zeros)
+void CONTACT::MeshtyingContactBridge::set_state(Core::LinAlg::Vector<double>& zeros)
 {
   if (have_meshtying())
-    mt_manager()->get_strategy().set_state(Mortar::state_new_displacement, *zeros);
+    mt_manager()->get_strategy().set_state(Mortar::state_new_displacement, zeros);
   if (have_contact())
-    contact_manager()->get_strategy().set_state(Mortar::state_new_displacement, *zeros);
+    contact_manager()->get_strategy().set_state(Mortar::state_new_displacement, zeros);
 }
 
 /*----------------------------------------------------------------------*
@@ -103,14 +103,13 @@ Mortar::StrategyBase& CONTACT::MeshtyingContactBridge::get_strategy() const
 /*----------------------------------------------------------------------*
  |  PostprocessTractions                                     farah 06/14|
  *----------------------------------------------------------------------*/
-void CONTACT::MeshtyingContactBridge::postprocess_quantities(
-    Teuchos::RCP<Core::IO::DiscretizationWriter>& output)
+void CONTACT::MeshtyingContactBridge::postprocess_quantities(Core::IO::DiscretizationWriter& output)
 {
   // contact
-  if (have_contact()) contact_manager()->postprocess_quantities(*output);
+  if (have_contact()) contact_manager()->postprocess_quantities(output);
 
   // meshtying
-  if (have_meshtying()) mt_manager()->postprocess_quantities(*output);
+  if (have_meshtying()) mt_manager()->postprocess_quantities(output);
 }
 
 /*----------------------------------------------------------------------*
@@ -159,13 +158,13 @@ void CONTACT::MeshtyingContactBridge::read_restart(Core::IO::DiscretizationReade
  |  Write restart                                            farah 06/14|
  *----------------------------------------------------------------------*/
 void CONTACT::MeshtyingContactBridge::write_restart(
-    Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool forcedrestart)
+    Core::IO::DiscretizationWriter& output, bool forcedrestart)
 {
   // contact
-  if (have_contact()) contact_manager()->write_restart(*output, forcedrestart);
+  if (have_contact()) contact_manager()->write_restart(output, forcedrestart);
 
   // meshtying
-  if (have_meshtying()) mt_manager()->write_restart(*output, forcedrestart);
+  if (have_meshtying()) mt_manager()->write_restart(output, forcedrestart);
 }
 
 /*----------------------------------------------------------------------*

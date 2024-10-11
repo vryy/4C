@@ -118,18 +118,18 @@ namespace Coupling::Adapter
 
     */
     Teuchos::RCP<const Core::LinAlg::Vector<double>> apply_vector_mapping12(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec) const;
+        const Core::LinAlg::Vector<double>& vec) const;
     Teuchos::RCP<const Core::LinAlg::Vector<double>> apply_vector_mapping21(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec) const;
+        const Core::LinAlg::Vector<double>& vec) const;
 
     /*!
     \brief Mortar mapping for 1 to 2 and 2 to 1 - for matrices
 
     */
     Teuchos::RCP<Core::LinAlg::SparseMatrix> apply_matrix_mapping12(
-        Teuchos::RCP<const Core::LinAlg::SparseMatrix> mat) const;
+        const Core::LinAlg::SparseMatrix& mat) const;
     Teuchos::RCP<Core::LinAlg::SparseMatrix> apply_matrix_mapping21(
-        Teuchos::RCP<const Core::LinAlg::SparseMatrix> mat) const;
+        const Core::LinAlg::SparseMatrix& mat) const;
 
     //@}
 
@@ -215,9 +215,8 @@ namespace Coupling::Adapter
     \brief Create auxiliary dofsets for multiphysics if necessary
 
     */
-    void create_aux_dofsets(Teuchos::RCP<Core::FE::Discretization> dis1,
-        Teuchos::RCP<Core::FE::Discretization> dis2, std::vector<int>* coupleddof12,
-        std::vector<int>* coupleddof21);
+    void create_aux_dofsets(Core::FE::Discretization& dis1, Core::FE::Discretization& dis2,
+        std::vector<int>* coupleddof12, std::vector<int>* coupleddof21);
 
     /// check setup call
     const bool& is_setup() const { return issetup_; };

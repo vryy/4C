@@ -252,7 +252,7 @@ void ScaTra::MeshtyingStrategyArtery::solve(
   // update the scatra increment, update iter is performed outside
   increment->Update(1.0, *(myinc), 1.0);
   // update the artery-scatra field
-  artscatratimint_->update_iter(artscatrainc);
+  artscatratimint_->update_iter(*artscatrainc);
 
   return;
 }
@@ -291,7 +291,7 @@ void ScaTra::MeshtyingStrategyArtery::update_art_scatra_iter(
   Teuchos::RCP<const Core::LinAlg::Vector<double>> myinc;
   extract_single_field_vectors(combined_inc, myinc, artscatrainc);
 
-  artscatratimint_->update_iter(artscatrainc);
+  artscatratimint_->update_iter(*artscatrainc);
 
   return;
 }

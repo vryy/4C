@@ -230,8 +230,7 @@ namespace Solid
        *
        *  \date 08/15
        *  \author hiermeier */
-      void evaluate_neumann(Teuchos::ParameterList& p,
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>& eval_vec,
+      void evaluate_neumann(Teuchos::ParameterList& p, Core::LinAlg::Vector<double>& eval_vec,
           const Teuchos::RCP<Core::LinAlg::SparseOperator>& eval_mat);
 
       //! Set the params_interface in the parameter list and call the other evaluate_internal
@@ -401,10 +400,9 @@ namespace Solid
        *
        *  \date 10/17
        *  \author grill */
-      void write_output_runtime_structure(
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>& displacement_state_vector,
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>& velocity_state_vector,
-          int timestep_number, double time) const;
+      void write_output_runtime_structure(Core::LinAlg::Vector<double>& displacement_state_vector,
+          Core::LinAlg::Vector<double>& velocity_state_vector, int timestep_number,
+          double time) const;
 
       /**
        * \brief Calculate the stress and / or strains for runtime output.

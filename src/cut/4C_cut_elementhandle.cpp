@@ -82,12 +82,12 @@ void Cut::ElementHandle::volume_cell_gauss_points(
     {
       case EleIntType_Tessellation:
       {
-        append_volume_cell_gauss_points_tessellation(gpc, vc);
+        append_volume_cell_gauss_points_tessellation(*gpc, vc);
         break;
       }
       case EleIntType_MomentFitting:
       {
-        append_volume_cell_gauss_points_moment_fitting(gpc, vc);
+        append_volume_cell_gauss_points_moment_fitting(*gpc, vc);
         break;
       }
       case EleIntType_DirectDivergence:
@@ -131,7 +131,7 @@ void Cut::ElementHandle::volume_cell_gauss_points(
 
 
 void Cut::ElementHandle::append_volume_cell_gauss_points_tessellation(
-    Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Cut::VolumeCell* vc)
+    Core::FE::GaussPointsComposite& gpc, Cut::VolumeCell* vc)
 {
   //---------------
   // For tessellation, we have Gauss points calculated at local coordinates of each integrationcells
@@ -152,42 +152,42 @@ void Cut::ElementHandle::append_volume_cell_gauss_points_tessellation(
       {
         Teuchos::RCP<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::tri3>(cpoints, gp_ic);
-        gpc->append(gp);
+        gpc.append(gp);
         break;
       }
       case Core::FE::CellType::quad4:
       {
         Teuchos::RCP<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::quad4>(cpoints, gp_ic);
-        gpc->append(gp);
+        gpc.append(gp);
         break;
       }
       case Core::FE::CellType::hex8:
       {
         Teuchos::RCP<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::hex8>(cpoints, gp_ic);
-        gpc->append(gp);
+        gpc.append(gp);
         break;
       }
       case Core::FE::CellType::tet4:
       {
         Teuchos::RCP<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::tet4>(cpoints, gp_ic);
-        gpc->append(gp);
+        gpc.append(gp);
         break;
       }
       case Core::FE::CellType::wedge6:
       {
         Teuchos::RCP<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::wedge6>(cpoints, gp_ic);
-        gpc->append(gp);
+        gpc.append(gp);
         break;
       }
       case Core::FE::CellType::pyramid5:
       {
         Teuchos::RCP<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::pyramid5>(cpoints, gp_ic);
-        gpc->append(gp);
+        gpc.append(gp);
         break;
       }
       default:
@@ -199,7 +199,7 @@ void Cut::ElementHandle::append_volume_cell_gauss_points_tessellation(
 }
 
 void Cut::ElementHandle::append_volume_cell_gauss_points_moment_fitting(
-    Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Cut::VolumeCell* vc)
+    Core::FE::GaussPointsComposite& gpc, Cut::VolumeCell* vc)
 {
   //-------------------
   // For MomentFitting, we have Gauss points that are calculated w.r to local coordinates of linear
@@ -219,7 +219,7 @@ void Cut::ElementHandle::append_volume_cell_gauss_points_moment_fitting(
     case Core::FE::CellType::wedge6:
     case Core::FE::CellType::pyramid5:
     {
-      gpc->append(gp_ic);
+      gpc.append(gp_ic);
       break;
     }
 
@@ -228,14 +228,14 @@ void Cut::ElementHandle::append_volume_cell_gauss_points_moment_fitting(
     {
       Teuchos::RCP<Core::FE::GaussPoints> gp =
           create_projected<Core::FE::CellType::hex8>(cpoints, gp_ic);
-      gpc->append(gp);
+      gpc.append(gp);
       break;
     }
     case Core::FE::CellType::tet10:
     {
       Teuchos::RCP<Core::FE::GaussPoints> gp =
           create_projected<Core::FE::CellType::tet4>(cpoints, gp_ic);
-      gpc->append(gp);
+      gpc.append(gp);
       break;
     }
     default:

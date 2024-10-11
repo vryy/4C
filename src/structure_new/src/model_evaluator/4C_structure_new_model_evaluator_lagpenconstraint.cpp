@@ -246,7 +246,7 @@ void Solid::ModelEvaluator::LagPenConstraint::run_post_compute_x(
 
   Core::LinAlg::export_to(dir, *lagmult_incr);
 
-  constrman_->update_lagr_mult(lagmult_incr);
+  constrman_->update_lagr_mult(*lagmult_incr);
 }
 
 /*----------------------------------------------------------------------*

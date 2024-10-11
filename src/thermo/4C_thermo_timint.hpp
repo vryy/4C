@@ -288,7 +288,7 @@ namespace Thermo
     //! Apply external force
     void apply_force_external(const double time,                //!< evaluation time
         const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,  //!< temperature state
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& fext        //!< external force
+        Core::LinAlg::Vector<double>& fext                      //!< external force
     );
 
     //! Apply convective boundary conditions force

@@ -361,7 +361,7 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::valid_parameters()
   Core::UTILS::int_parameter("MATERIALS", 0, "number of materials", &size);
   Core::UTILS::int_parameter("NUMDF", 3, "maximum number of degrees of freedom", &size);
 
-  Inpar::PROBLEMTYPE::set_valid_parameters(list);
+  Inpar::PROBLEMTYPE::set_valid_parameters(*list);
 
   /*----------------------------------------------------------------------*/
 
@@ -382,76 +382,76 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::valid_parameters()
   /* Finally call the problem-specific SetValidParameter functions        */
   /*----------------------------------------------------------------------*/
 
-  Inpar::Solid::set_valid_parameters(list);
-  Inpar::IO::set_valid_parameters(list);
-  Inpar::IOMonitorStructureDBC::set_valid_parameters(list);
-  Inpar::IORuntimeOutput::set_valid_parameters(list);
-  Inpar::IORuntimeVTPStructure::set_valid_parameters(list);
-  Inpar::Mortar::set_valid_parameters(list);
-  Inpar::CONTACT::set_valid_parameters(list);
-  Inpar::VolMortar::set_valid_parameters(list);
-  Inpar::Wear::set_valid_parameters(list);
-  Inpar::IORuntimeOutput::FLUID::set_valid_parameters(list);
-  Inpar::IORuntimeOutput::Solid::set_valid_parameters(list);
-  Inpar::IORuntimeOutput::BEAMS::set_valid_parameters(list);
-  Inpar::BEAMCONTACT::set_valid_parameters(list);
-  Inpar::BEAMPOTENTIAL::set_valid_parameters(list);
+  Inpar::Solid::set_valid_parameters(*list);
+  Inpar::IO::set_valid_parameters(*list);
+  Inpar::IOMonitorStructureDBC::set_valid_parameters(*list);
+  Inpar::IORuntimeOutput::set_valid_parameters(*list);
+  Inpar::IORuntimeVTPStructure::set_valid_parameters(*list);
+  Inpar::Mortar::set_valid_parameters(*list);
+  Inpar::CONTACT::set_valid_parameters(*list);
+  Inpar::VolMortar::set_valid_parameters(*list);
+  Inpar::Wear::set_valid_parameters(*list);
+  Inpar::IORuntimeOutput::FLUID::set_valid_parameters(*list);
+  Inpar::IORuntimeOutput::Solid::set_valid_parameters(*list);
+  Inpar::IORuntimeOutput::BEAMS::set_valid_parameters(*list);
+  Inpar::BEAMCONTACT::set_valid_parameters(*list);
+  Inpar::BEAMPOTENTIAL::set_valid_parameters(*list);
   Inpar::BEAMINTERACTION::set_valid_parameters(list);
-  Inpar::RveMpc::set_valid_parameters(list);
-  Inpar::BrownianDynamics::set_valid_parameters(list);
+  Inpar::RveMpc::set_valid_parameters(*list);
+  Inpar::BrownianDynamics::set_valid_parameters(*list);
 
-  Inpar::Plasticity::set_valid_parameters(list);
+  Inpar::Plasticity::set_valid_parameters(*list);
 
-  Inpar::Thermo::set_valid_parameters(list);
-  Inpar::TSI::set_valid_parameters(list);
+  Inpar::Thermo::set_valid_parameters(*list);
+  Inpar::TSI::set_valid_parameters(*list);
 
-  Inpar::FLUID::set_valid_parameters(list);
-  Inpar::LowMach::set_valid_parameters(list);
-  Inpar::Cut::set_valid_parameters(list);
-  Inpar::XFEM::set_valid_parameters(list);
-  Inpar::CONSTRAINTS::set_valid_parameters(list);
+  Inpar::FLUID::set_valid_parameters(*list);
+  Inpar::LowMach::set_valid_parameters(*list);
+  Inpar::Cut::set_valid_parameters(*list);
+  Inpar::XFEM::set_valid_parameters(*list);
+  Inpar::CONSTRAINTS::set_valid_parameters(*list);
 
-  Inpar::LUBRICATION::set_valid_parameters(list);
-  Inpar::ScaTra::set_valid_parameters(list);
-  Inpar::LevelSet::set_valid_parameters(list);
-  Inpar::ElCh::set_valid_parameters(list);
-  Inpar::ElectroPhysiology::set_valid_parameters(list);
-  Inpar::STI::set_valid_parameters(list);
+  Inpar::LUBRICATION::set_valid_parameters(*list);
+  Inpar::ScaTra::set_valid_parameters(*list);
+  Inpar::LevelSet::set_valid_parameters(*list);
+  Inpar::ElCh::set_valid_parameters(*list);
+  Inpar::ElectroPhysiology::set_valid_parameters(*list);
+  Inpar::STI::set_valid_parameters(*list);
 
-  Inpar::S2I::set_valid_parameters(list);
-  Inpar::FS3I::set_valid_parameters(list);
-  Inpar::PoroElast::set_valid_parameters(list);
-  Inpar::PoroScaTra::set_valid_parameters(list);
-  Inpar::POROMULTIPHASE::set_valid_parameters(list);
-  Inpar::PoroMultiPhaseScaTra::set_valid_parameters(list);
-  Inpar::POROFLUIDMULTIPHASE::set_valid_parameters(list);
-  Inpar::EHL::set_valid_parameters(list);
-  Inpar::SSI::set_valid_parameters(list);
-  Inpar::SSTI::set_valid_parameters(list);
-  Inpar::ALE::set_valid_parameters(list);
-  Inpar::FSI::set_valid_parameters(list);
+  Inpar::S2I::set_valid_parameters(*list);
+  Inpar::FS3I::set_valid_parameters(*list);
+  Inpar::PoroElast::set_valid_parameters(*list);
+  Inpar::PoroScaTra::set_valid_parameters(*list);
+  Inpar::POROMULTIPHASE::set_valid_parameters(*list);
+  Inpar::PoroMultiPhaseScaTra::set_valid_parameters(*list);
+  Inpar::POROFLUIDMULTIPHASE::set_valid_parameters(*list);
+  Inpar::EHL::set_valid_parameters(*list);
+  Inpar::SSI::set_valid_parameters(*list);
+  Inpar::SSTI::set_valid_parameters(*list);
+  Inpar::ALE::set_valid_parameters(*list);
+  Inpar::FSI::set_valid_parameters(*list);
 
-  Inpar::ArtDyn::set_valid_parameters(list);
-  Inpar::ArteryNetwork::set_valid_parameters(list);
-  Inpar::BioFilm::set_valid_parameters(list);
-  Inpar::ReducedLung::set_valid_parameters(list);
-  Inpar::Cardiovascular0D::set_valid_parameters(list);
-  Inpar::Immersed::set_valid_parameters(list);
-  Inpar::FPSI::set_valid_parameters(list);
-  Inpar::FBI::set_valid_parameters(list);
+  Inpar::ArtDyn::set_valid_parameters(*list);
+  Inpar::ArteryNetwork::set_valid_parameters(*list);
+  Inpar::BioFilm::set_valid_parameters(*list);
+  Inpar::ReducedLung::set_valid_parameters(*list);
+  Inpar::Cardiovascular0D::set_valid_parameters(*list);
+  Inpar::Immersed::set_valid_parameters(*list);
+  Inpar::FPSI::set_valid_parameters(*list);
+  Inpar::FBI::set_valid_parameters(*list);
 
-  Inpar::PARTICLE::set_valid_parameters(list);
+  Inpar::PARTICLE::set_valid_parameters(*list);
 
-  Inpar::EleMag::set_valid_parameters(list);
+  Inpar::EleMag::set_valid_parameters(*list);
 
-  Inpar::Geo::set_valid_parameters(list);
-  Inpar::BINSTRATEGY::set_valid_parameters(list);
-  Inpar::GeometricSearch::set_valid_parameters(list);
-  Inpar::PaSI::set_valid_parameters(list);
+  Inpar::Geo::set_valid_parameters(*list);
+  Inpar::BINSTRATEGY::set_valid_parameters(*list);
+  Inpar::GeometricSearch::set_valid_parameters(*list);
+  Inpar::PaSI::set_valid_parameters(*list);
 
-  Inpar::Rebalance::set_valid_parameters(list);
-  Inpar::SOLVER::set_valid_parameters(list);
-  Inpar::NlnSol::set_valid_parameters(list);
+  Inpar::Rebalance::set_valid_parameters(*list);
+  Inpar::SOLVER::set_valid_parameters(*list);
+  Inpar::NlnSol::set_valid_parameters(*list);
 
   return list;
 }

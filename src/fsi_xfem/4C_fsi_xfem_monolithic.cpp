@@ -613,7 +613,7 @@ void FSI::MonolithicXFEM::setup_rhs_residual(Core::LinAlg::Vector<double>& f)
   fv->Scale(scaling_F);  // scale with fluid_field()->residual_scaling()
 
   // put the single field residuals together
-  combine_field_vectors(f, sv, fv);
+  combine_field_vectors(f, *sv, *fv);
 }
 
 /*----------------------------------------------------------------------*/
@@ -635,7 +635,7 @@ void FSI::MonolithicXFEM::apply_dbc()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> ig)
+void FSI::MonolithicXFEM::initial_guess(Core::LinAlg::Vector<double>& ig)
 {
   // TODO: what to do with this function???
   //  TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::initial_guess");
@@ -716,13 +716,13 @@ void FSI::MonolithicXFEM::set_dof_row_maps(const std::vector<Teuchos::RCP<const 
  | Put two field vectors together to a monolithic vector
  *----------------------------------------------------------------------*/
 void FSI::MonolithicXFEM::combine_field_vectors(
-    Core::LinAlg::Vector<double>& v,  ///< composed vector containing all field vectors
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv,  ///< structuralporo DOFs
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fv   ///< fluid DOFs
+    Core::LinAlg::Vector<double>& v,         ///< composed vector containing all field vectors
+    const Core::LinAlg::Vector<double>& sv,  ///< structuralporo DOFs
+    const Core::LinAlg::Vector<double>& fv   ///< fluid DOFs
 )
 {
-  extractor_merged_poro().add_vector(*sv, structp_block_, v);
-  extractor_merged_poro().add_vector(*fv, fluid_block_, v);
+  extractor_merged_poro().add_vector(sv, structp_block_, v);
+  extractor_merged_poro().add_vector(fv, fluid_block_, v);
 }
 
 
@@ -1501,12 +1501,11 @@ bool FSI::MonolithicXFEM::evaluate()
     // ------------------------------------------------------------------
     if (have_ale() && ax != Teuchos::null)  // we should move this into the ALE Field!
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> DispnpAle =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ale_field()->dof_row_map());
-      DispnpAle->Update(1.0, *ale_field()->interface()->insert_other_vector(*ax), 1.0,
+      Core::LinAlg::Vector<double> DispnpAle(*ale_field()->dof_row_map());
+      DispnpAle.Update(1.0, *ale_field()->interface()->insert_other_vector(*ax), 1.0,
           *ale_field()->dispn(), 0.0);  // update ale disp here...
       ale_field()->get_dbc_map_extractor()->insert_other_vector(
-          *ale_field()->get_dbc_map_extractor()->extract_other_vector(*DispnpAle),
+          *ale_field()->get_dbc_map_extractor()->extract_other_vector(DispnpAle),
           *ale_field()->write_access_dispnp());  // just update displacements which are not on dbc
                                                  // condition
     }
@@ -1534,7 +1533,7 @@ bool FSI::MonolithicXFEM::evaluate()
   {
     fx_permuted = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fx);
 
-    permute_fluid_dofs_forward(fx_permuted);
+    permute_fluid_dofs_forward(*fx_permuted);
   }
 
 
@@ -1903,7 +1902,7 @@ void FSI::MonolithicXFEM::build_fluid_permutation()
  | forward to a vector (based on dofsets) w.r.t. new interface position|
  |                                                        schott 08/14 |
  ----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::permute_fluid_dofs_forward(Teuchos::RCP<Core::LinAlg::Vector<double>>& fx)
+void FSI::MonolithicXFEM::permute_fluid_dofs_forward(Core::LinAlg::Vector<double>& fx)
 {
   //---------------------------------
   // forward permutation of dofsets
@@ -1934,15 +1933,14 @@ void FSI::MonolithicXFEM::permute_fluid_dofs_forward(Teuchos::RCP<Core::LinAlg::
     {
       if (key + 1 != p_cycle.end())  // standard during the cycle
       {
-        tmp_value =
-            (*fx)[fx->Map().LID(*(key + 1))];  // save the value before it will be overwritten
-        (*fx)[fx->Map().LID(*(key + 1))] =
-            (*fx)[fx->Map().LID(*(key))];  // set current value to next position
+        tmp_value = (fx)[fx.Map().LID(*(key + 1))];  // save the value before it will be overwritten
+        (fx)[fx.Map().LID(*(key + 1))] =
+            (fx)[fx.Map().LID(*(key))];  // set current value to next position
         // std::cout << "copy value from gid " << *(key) << " to " << *(key+1) << std::endl;
       }
       else  // last value in cycle reached
       {
-        (*fx)[fx->Map().LID(*p_cycle.begin())] = tmp_value;
+        (fx)[fx.Map().LID(*p_cycle.begin())] = tmp_value;
         // std::cout << "copy value from tmp to " << *p_cycle.begin() << std::endl;
       }
     }
@@ -1956,8 +1954,7 @@ void FSI::MonolithicXFEM::permute_fluid_dofs_forward(Teuchos::RCP<Core::LinAlg::
  | backward to a vector (based on dofsets) w.r.t. new interface        |
  | position                                               schott 08/14 |
  ----------------------------------------------------------------------*/
-void FSI::MonolithicXFEM::permute_fluid_dofs_backward(
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& fx)
+void FSI::MonolithicXFEM::permute_fluid_dofs_backward(Core::LinAlg::Vector<double>& fx)
 {
   //---------------------------------
   // backward permutation of dofsets
@@ -1989,16 +1986,16 @@ void FSI::MonolithicXFEM::permute_fluid_dofs_backward(
     {
       if (key_reverse != p_cycle.begin())  // standard during the cycle
       {
-        tmp_value = (*fx)[fx->Map().LID(
-            *(key_reverse - 1))];  // save the value before it will be overwritten
-        (*fx)[fx->Map().LID(*(key_reverse - 1))] =
-            (*fx)[fx->Map().LID(*(key_reverse))];  // set current value to position before
+        tmp_value =
+            (fx)[fx.Map().LID(*(key_reverse - 1))];  // save the value before it will be overwritten
+        (fx)[fx.Map().LID(*(key_reverse - 1))] =
+            (fx)[fx.Map().LID(*(key_reverse))];  // set current value to position before
         // std::cout << "copy value from gid " << *(key_reverse) << " to " << *(key_reverse-1) <<
         // std::endl;
       }
       else
       {
-        (*fx)[fx->Map().LID(*(p_cycle.end() - 1))] = tmp_value;
+        (fx)[fx.Map().LID(*(p_cycle.end() - 1))] = tmp_value;
         // std::cout << "copy value from tmp to " << *(p_cycle.end()-1) << std::endl;
       }
     }
@@ -2422,12 +2419,12 @@ void FSI::MonolithicXFEM::linear_solve()
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> f_iterinc_permuted =
       extractor().extract_vector(*iterinc_, 1);
-  permute_fluid_dofs_backward(f_iterinc_permuted);
+  permute_fluid_dofs_backward(*f_iterinc_permuted);
   extractor().insert_vector(*f_iterinc_permuted, 1, *iterinc_);
 
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> f_rhs_permuted = extractor().extract_vector(*rhs_, 1);
-  permute_fluid_dofs_backward(f_rhs_permuted);
+  permute_fluid_dofs_backward(*f_rhs_permuted);
   extractor().insert_vector(*f_rhs_permuted, 1, *rhs_);
 
   //---------------------------------------------

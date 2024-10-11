@@ -309,14 +309,13 @@ namespace BEAMINTERACTION
     /*!
     \brief Calculate scalar contact force
     */
-    void calc_penalty_law(
-        Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>> variables);
+    void calc_penalty_law(BeamToBeamContactVariables<numnodes, numnodalvalues>& variables);
 
     /*!
     \brief Calculate angle-dependent penalty scale factor for large-angle-contact
     */
     void calc_perp_penalty_scale_fac(
-        Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>> cpvariables,
+        BeamToBeamContactVariables<numnodes, numnodalvalues>& cpvariables,
         Core::LinAlg::Matrix<3, 1, TYPE>& r1_xi, Core::LinAlg::Matrix<3, 1, TYPE>& r2_xi,
         const double shiftangle1, const double shiftangle2);
 
@@ -325,7 +324,7 @@ namespace BEAMINTERACTION
     \brief Calculate angle-dependent penalty scale factor for small-angle-contact
     */
     void calc_par_penalty_scale_fac(
-        Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>> gpvariables,
+        BeamToBeamContactVariables<numnodes, numnodalvalues>& gpvariables,
         Core::LinAlg::Matrix<3, 1, TYPE>& r1_xi, Core::LinAlg::Matrix<3, 1, TYPE>& r2_xi,
         const double shiftangle1, const double shiftangle2);
 
@@ -342,8 +341,8 @@ namespace BEAMINTERACTION
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
-        Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>> variables,
-        const double& intfac, bool cpp, bool gp, bool fixedendpointxi, bool fixedendpointeta,
+        BeamToBeamContactVariables<numnodes, numnodalvalues>& variables, const double& intfac,
+        bool cpp, bool gp, bool fixedendpointxi, bool fixedendpointeta,
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = nullptr,
         Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD = nullptr);
 
@@ -363,8 +362,8 @@ namespace BEAMINTERACTION
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xixi,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xixi,
-        Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>> variables,
-        const double& intfac, bool cpp, bool gp, bool fixedendpointxi, bool fixedendpointeta);
+        BeamToBeamContactVariables<numnodes, numnodalvalues>& variables, const double& intfac,
+        bool cpp, bool gp, bool fixedendpointxi, bool fixedendpointeta);
 
 #ifdef ENDPOINTSEGMENTATION
     /*!

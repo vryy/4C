@@ -65,9 +65,8 @@ namespace CONSTRAINTS
     void update();
 
     //! output of gap, normal, and nodal stiffness
-    void output(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
-        Teuchos::RCP<Core::FE::Discretization> discret,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> disp);
+    void output(Core::IO::DiscretizationWriter& output, Core::FE::Discretization& discret,
+        Core::LinAlg::Vector<double>& disp);
 
     //! output of prestressing offset for restart
     void output_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output_restart,

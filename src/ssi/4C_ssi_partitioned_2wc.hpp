@@ -123,7 +123,7 @@ namespace SSI
 
     /// velocity calculation given the displacements
     Teuchos::RCP<Core::LinAlg::Vector<double>> calc_velocity(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp);
+        const Core::LinAlg::Vector<double>& dispnp);
 
     //! scalar increment of the outer loop
     Teuchos::RCP<Core::LinAlg::Vector<double>> scaincnp_;

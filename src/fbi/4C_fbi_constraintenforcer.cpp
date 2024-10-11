@@ -312,7 +312,7 @@ void Adapter::FBIConstraintenforcer::extract_current_element_dofs(
 
   // extract current fluid velocities
   BEAMINTERACTION::UTILS::get_current_element_dis(
-      *(fluid_->discretization()), elements[1], column_fluid_velocity_, vel_tmp);
+      *(fluid_->discretization()), elements[1], *column_fluid_velocity_, vel_tmp);
 
   // todo This is a very crude way to separate the pressure from the velocity dofs.. maybe just
   // use an extractor?

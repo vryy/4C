@@ -103,7 +103,7 @@ void Solid::TimIntExpl::setup()
 void Solid::TimIntExpl::apply_force_external(const double time,  //!< evaluation time
     const Teuchos::RCP<Core::LinAlg::Vector<double>> dis,        //!< displacement state
     const Teuchos::RCP<Core::LinAlg::Vector<double>> vel,        //!< velocity state
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& fext             //!< external force
+    Core::LinAlg::Vector<double>& fext                           //!< external force
 )
 {
   Teuchos::ParameterList p;
@@ -117,7 +117,7 @@ void Solid::TimIntExpl::apply_force_external(const double time,  //!< evaluation
 
   if (damping_ == Inpar::Solid::damp_material) discret_->set_state(0, "velocity", vel);
   // get load vector
-  discret_->evaluate_neumann(p, *fext);
+  discret_->evaluate_neumann(p, fext);
 
   // go away
   return;

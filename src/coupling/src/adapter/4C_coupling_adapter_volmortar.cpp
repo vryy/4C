@@ -85,7 +85,7 @@ void Coupling::Adapter::MortarVolCoupl::init(int spatial_dimension,
     if (coupleddof12 == nullptr or coupleddof21 == nullptr)
       FOUR_C_THROW("ERROR: No coupling dofs for volmortar algorithm specified!");
 
-    create_aux_dofsets(dis1, dis2, coupleddof12, coupleddof21);
+    create_aux_dofsets(*dis1, *dis2, coupleddof12, coupleddof21);
   }
 
   // set flag
@@ -166,24 +166,23 @@ void Coupling::Adapter::MortarVolCoupl::redistribute(const Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  |  Create Auxiliary dofsets for multiphysics                farah 06/15|
  *----------------------------------------------------------------------*/
-void Coupling::Adapter::MortarVolCoupl::create_aux_dofsets(
-    Teuchos::RCP<Core::FE::Discretization> dis1, Teuchos::RCP<Core::FE::Discretization> dis2,
-    std::vector<int>* coupleddof12, std::vector<int>* coupleddof21)
+void Coupling::Adapter::MortarVolCoupl::create_aux_dofsets(Core::FE::Discretization& dis1,
+    Core::FE::Discretization& dis2, std::vector<int>* coupleddof12, std::vector<int>* coupleddof21)
 {
   // first call fill_complete for single discretizations.
   // This way the physical dofs are numbered successively
-  dis1->fill_complete();
-  dis2->fill_complete();
+  dis1.fill_complete();
+  dis2.fill_complete();
 
   // build auxiliary dofsets, i.e. pseudo dofs on each discretization
   // add proxy of velocity related degrees of freedom to scatra discretization
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
   dofsetaux =
       Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(coupleddof21->size(), 0, 0, true);
-  if (dis2->add_dof_set(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
+  if (dis2.add_dof_set(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in fluid field");
   dofsetaux =
       Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(coupleddof12->size(), 0, 0, true);
-  if (dis1->add_dof_set(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in structure field");
+  if (dis1.add_dof_set(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in structure field");
 
   // call assign_degrees_of_freedom also for auxiliary dofsets
   // note: the order of fill_complete() calls determines the gid numbering!
@@ -191,8 +190,8 @@ void Coupling::Adapter::MortarVolCoupl::create_aux_dofsets(
   // 2. dofs 2
   // 3. auxiliary dofs 1
   // 4. auxiliary dofs 2
-  dis1->fill_complete(true, false, false);
-  dis2->fill_complete(true, false, false);
+  dis1.fill_complete(true, false, false);
+  dis2.fill_complete(true, false, false);
 }
 
 /*----------------------------------------------------------------------*
@@ -207,12 +206,11 @@ void Coupling::Adapter::MortarVolCoupl::assign_materials(
     materialstrategy =
         Teuchos::make_rcp<FourC::Coupling::VolMortar::UTILS::DefaultMaterialStrategy>();
   // create coupling instance
-  Teuchos::RCP<FourC::Coupling::VolMortar::VolMortarCoupl> coupdis =
-      Teuchos::make_rcp<FourC::Coupling::VolMortar::VolMortarCoupl>(spatial_dimension_, dis1, dis2,
-          volmortar_params, cut_params, nullptr, nullptr, nullptr, nullptr, materialstrategy);
+  FourC::Coupling::VolMortar::VolMortarCoupl coupdis(spatial_dimension_, dis1, dis2,
+      volmortar_params, cut_params, nullptr, nullptr, nullptr, nullptr, materialstrategy);
 
   // assign materials from one discretization to the other
-  coupdis->assign_materials();
+  coupdis.assign_materials();
 }
 
 /*----------------------------------------------------------------------*
@@ -220,7 +218,7 @@ void Coupling::Adapter::MortarVolCoupl::assign_materials(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Coupling::Adapter::MortarVolCoupl::apply_vector_mapping12(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vec) const
+    const Core::LinAlg::Vector<double>& vec) const
 {
   // safety check
   check_setup();
@@ -228,7 +226,7 @@ Coupling::Adapter::MortarVolCoupl::apply_vector_mapping12(
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> mapvec =
       Core::LinAlg::create_vector(p12_->row_map(), true);
-  int err = p12_->multiply(false, *vec, *mapvec);
+  int err = p12_->multiply(false, vec, *mapvec);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   return mapvec;
@@ -239,7 +237,7 @@ Coupling::Adapter::MortarVolCoupl::apply_vector_mapping12(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Core::LinAlg::Vector<double>>
 Coupling::Adapter::MortarVolCoupl::apply_vector_mapping21(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vec) const
+    const Core::LinAlg::Vector<double>& vec) const
 {
   // safety check
   check_setup();
@@ -247,7 +245,7 @@ Coupling::Adapter::MortarVolCoupl::apply_vector_mapping21(
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> mapvec =
       Core::LinAlg::create_vector(p21_->row_map(), true);
-  int err = p21_->multiply(false, *vec, *mapvec);
+  int err = p21_->multiply(false, vec, *mapvec);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   return mapvec;
@@ -257,26 +255,26 @@ Coupling::Adapter::MortarVolCoupl::apply_vector_mapping21(
  |  ApplyMapping from Omega_2 --> Omega_1                    farah 01/14|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Coupling::Adapter::MortarVolCoupl::apply_matrix_mapping12(
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> mat) const
+    const Core::LinAlg::SparseMatrix& mat) const
 {
   // safety check
   check_setup();
   check_init();
 
-  return Core::LinAlg::matrix_multiply(*mat, false, *p12_, false, false, false, true);
+  return Core::LinAlg::matrix_multiply(mat, false, *p12_, false, false, false, true);
 }
 
 /*----------------------------------------------------------------------*
  |  ApplyMapping from Omega_1 --> Omega_2                    farah 01/14|
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix> Coupling::Adapter::MortarVolCoupl::apply_matrix_mapping21(
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> mat) const
+    const Core::LinAlg::SparseMatrix& mat) const
 {
   // safety check
   check_setup();
   check_init();
 
-  return Core::LinAlg::matrix_multiply(*mat, false, *p21_, false, false, false, true);
+  return Core::LinAlg::matrix_multiply(mat, false, *p21_, false, false, false, true);
 }
 
 /*----------------------------------------------------------------------*/

@@ -219,7 +219,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
           beam_to_surface_condition->get_other_condition()->parameters().get<int>("COUPLING_ID");
 
       // Create the output for the averaged normal field.
-      add_averaged_nodal_normals(visualization_averaged_normals,
+      add_averaged_nodal_normals(*visualization_averaged_normals,
           surface_evaluation_data->get_face_elements(), coupling_id,
           output_params_ptr_->get_write_unique_i_ds_flag());
     }
@@ -233,7 +233,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
   if (nodal_force_visualization != Teuchos::null)
     add_beam_interaction_nodal_forces(nodal_force_visualization, beam_contact->discret_ptr(),
         beam_contact->beam_interaction_data_state().get_dis_np()->get_ptr_of_const_Epetra_Vector(),
-        beam_contact->beam_interaction_data_state().get_force_np(),
+        *beam_contact->beam_interaction_data_state().get_force_np(),
         output_params_ptr_->get_write_unique_i_ds_flag());
 
 

@@ -58,7 +58,7 @@ namespace FBI
      */
     static Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_pair(
         std::vector<Core::Elements::Element const*> const& ele_ptrs,
-        const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr);
+        FBI::BeamToFluidMeshtyingParams& params_ptr);
   };
 }  // namespace FBI
 

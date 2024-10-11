@@ -542,7 +542,7 @@ void Cut::FacetIntegration::boundary_facet_integration(
       directly to generate Gauss integration rule for the facet
 *--------------------------------------------------------------------------------------------------*/
 void Cut::FacetIntegration::divergence_integration_rule(
-    Mesh &mesh, Teuchos::RCP<Core::FE::CollectedGaussPoints> &cgp)
+    Mesh &mesh, Core::FE::CollectedGaussPoints &cgp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Cut::FacetIntegration::divergence_integration_rule");
 
@@ -630,7 +630,7 @@ void Cut::FacetIntegration::divergence_integration_rule(
       }
       double wei = iquad.weight() * drs * normalX;
 
-      cgp->append(x_gp_loc, wei);
+      cgp.append(x_gp_loc, wei);
     }
   }
 #ifdef DIRECTDIV_EXTENDED_DEBUG_OUTPUT
@@ -753,7 +753,7 @@ void Cut::FacetIntegration::temporary_quad4(
       directly to generate Gauss integration rule for the facet
 *--------------------------------------------------------------------------------------------------*/
 void Cut::FacetIntegration::divergence_integration_rule_new(
-    Mesh &mesh, Teuchos::RCP<Core::FE::CollectedGaussPoints> &cgp)
+    Mesh &mesh, Core::FE::CollectedGaussPoints &cgp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Cut::FacetIntegration::divergence_integration_rule");
 
@@ -918,7 +918,7 @@ void Cut::FacetIntegration::divergence_integration_rule_new(
       }
       double wei = iquad.weight() * drs * normalX;
 
-      cgp->append(x_gp_loc, wei);
+      cgp.append(x_gp_loc, wei);
     }
     zz++;  // Iterator of divCells.
   }

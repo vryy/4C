@@ -422,7 +422,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::prepare_time_step()
   // TODO: Dirichlet auch im Fall von genalpha prenp
   // Neumann(n + alpha_f)
   apply_dirichlet_bc(time_, phinp_, Teuchos::null);
-  apply_neumann_bc(neumann_loads_);
+  apply_neumann_bc(*neumann_loads_);
 
   // volume fraction pressure specific stuff
   evaluate_valid_volume_frac_press_and_spec();
@@ -711,11 +711,11 @@ void POROFLUIDMULTIPHASE::TimIntImpl::scaling_and_neumann()
  | evaluate Neumann boundary conditions                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 void POROFLUIDMULTIPHASE::TimIntImpl::apply_neumann_bc(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& neumann_loads  //!< Neumann loads
+    Core::LinAlg::Vector<double>& neumann_loads  //!< Neumann loads
 )
 {
   // prepare load vector
-  neumann_loads->PutScalar(0.0);
+  neumann_loads.PutScalar(0.0);
 
   // create parameter list
   Teuchos::ParameterList condparams;
@@ -730,7 +730,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_neumann_bc(
 
   // evaluate Neumann boundary conditions at time t_{n+alpha_F} (generalized alpha) or time t_{n+1}
   // (otherwise)
-  discret_->evaluate_neumann(condparams, *neumann_loads);
+  discret_->evaluate_neumann(condparams, neumann_loads);
   discret_->clear_state();
 
   return;
@@ -1796,16 +1796,16 @@ void POROFLUIDMULTIPHASE::TimIntImpl::evaluate_error_compared_to_analytical_sol(
   // std::vector containing
   // [0]: relative L2 pressure error
   // [1]: relative H1 pressure error
-  Teuchos::RCP<std::vector<double>> relerror = Teuchos::make_rcp<std::vector<double>>(2);
+  std::vector<double> relerror(2);
 
   if (std::abs((*errors)[2]) > 1e-14)
-    (*relerror)[0] = sqrt((*errors)[0]) / sqrt((*errors)[2]);
+    (relerror)[0] = sqrt((*errors)[0]) / sqrt((*errors)[2]);
   else
-    (*relerror)[0] = sqrt((*errors)[0]);
+    (relerror)[0] = sqrt((*errors)[0]);
   if (std::abs((*errors)[2]) > 1e-14)
-    (*relerror)[1] = sqrt((*errors)[1]) / sqrt((*errors)[3]);
+    (relerror)[1] = sqrt((*errors)[1]) / sqrt((*errors)[3]);
   else
-    (*relerror)[1] = sqrt((*errors)[1]);
+    (relerror)[1] = sqrt((*errors)[1]);
 
   if (myrank_ == 0)
   {
@@ -1820,8 +1820,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::evaluate_error_compared_to_analytical_sol(
       f.open(fname.c_str());
       f << "#| Step | Time | rel. L2-error  | rel. H1-error  |\n";
       f << std::setprecision(10) << step_ << " " << std::setw(1) << std::setprecision(5) << time_
-        << std::setw(1) << std::setprecision(6) << " " << (*relerror)[0] << std::setw(1)
-        << std::setprecision(6) << " " << (*relerror)[1] << "\n";
+        << std::setw(1) << std::setprecision(6) << " " << (relerror)[0] << std::setw(1)
+        << std::setprecision(6) << " " << (relerror)[1] << "\n";
 
       f.flush();
       f.close();
@@ -1831,8 +1831,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::evaluate_error_compared_to_analytical_sol(
       std::ofstream f;
       f.open(fname.c_str(), std::fstream::ate | std::fstream::app);
       f << std::setprecision(10) << step_ << " " << std::setw(3) << std::setprecision(5) << time_
-        << std::setw(1) << std::setprecision(6) << " " << (*relerror)[0] << std::setw(1)
-        << std::setprecision(6) << " " << (*relerror)[1] << "\n";
+        << std::setw(1) << std::setprecision(6) << " " << (relerror)[0] << std::setw(1)
+        << std::setprecision(6) << " " << (relerror)[1] << "\n";
 
       f.flush();
       f.close();
@@ -2091,7 +2091,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::calc_initial_time_derivative()
   // consistent with initial field
   apply_dirichlet_bc(time_, phinp_, Teuchos::null);
   compute_intermediate_values();
-  apply_neumann_bc(neumann_loads_);
+  apply_neumann_bc(*neumann_loads_);
 
   // create and fill parameter list for elements
   Teuchos::ParameterList eleparams;
@@ -2161,8 +2161,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::fd_check()
     std::cout << std::endl << "FINITE DIFFERENCE CHECK FOR SYSTEM MATRIX" << std::endl;
 
   // make a copy of state variables to undo perturbations later
-  Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_original =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*phinp_);
+  Core::LinAlg::Vector<double> phinp_original(*phinp_);
 
   // make a copy of system matrix as Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> sysmat_original = Teuchos::null;
@@ -2180,8 +2179,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::fd_check()
   sysmat_original->FillComplete();
 
   // make a copy of system right-hand side vector
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_original =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*residual_);
+  Core::LinAlg::Vector<double> rhs_original(*residual_);
 
   // initialize counter for system matrix entries with failing finite difference check
   int counter(0);
@@ -2199,7 +2197,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::fd_check()
     if (maxcollid < 0) continue;
 
     // fill state vector with original state variables
-    phinp_->Update(1., *phinp_original, 0.);
+    phinp_->Update(1., phinp_original, 0.);
 
     // impose perturbation
     if (phinp_->Map().MyGID(colgid))
@@ -2250,7 +2248,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::fd_check()
 
       // finite difference suggestion (first divide by epsilon and then add for better conditioning)
       const double fdval =
-          -(*residual_)[rowlid] / fdcheckeps_ + (*rhs_original)[rowlid] / fdcheckeps_;
+          -(*residual_)[rowlid] / fdcheckeps_ + (rhs_original)[rowlid] / fdcheckeps_;
 
       // confirm accuracy of first comparison
       if (abs(fdval) > 1.e-17 and abs(fdval) < 1.e-15)
@@ -2281,7 +2279,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::fd_check()
       else
       {
         // left-hand side in second comparison
-        const double left = entry - (*rhs_original)[rowlid] / fdcheckeps_;
+        const double left = entry - (rhs_original)[rowlid] / fdcheckeps_;
 
         // right-hand side in second comparison
         const double right = -(*residual_)[rowlid] / fdcheckeps_;
@@ -2339,7 +2337,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::fd_check()
   }
 
   // undo perturbations of state variables
-  phinp_->Update(1., *phinp_original, 0.);
+  phinp_->Update(1., phinp_original, 0.);
   compute_intermediate_values();
   compute_time_derivative();
 

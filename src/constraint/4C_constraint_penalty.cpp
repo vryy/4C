@@ -71,7 +71,7 @@ CONSTRAINTS::ConstraintPenalty::ConstraintPenalty(
 }
 
 void CONSTRAINTS::ConstraintPenalty::initialize(
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+    Teuchos::ParameterList& params, Core::LinAlg::Vector<double>& systemvector3)
 {
   FOUR_C_THROW("method not used for penalty formulation!");
 }
@@ -98,7 +98,7 @@ void CONSTRAINTS::ConstraintPenalty::initialize(Teuchos::ParameterList& params)
       FOUR_C_THROW("Unknown constraint/monitor type to be evaluated in Constraint class!");
   }
   // start computing
-  evaluate_error(params, initerror_);
+  evaluate_error(params, *initerror_);
 }
 
 /*------------------------------------------------------------------------*
@@ -151,7 +151,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate(Teuchos::ParameterList& params,
   }
   // start computing
   acterror_->PutScalar(0.0);
-  evaluate_error(params, acterror_);
+  evaluate_error(params, *acterror_);
 
   switch (constrtype_)
   {
@@ -170,7 +170,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate(Teuchos::ParameterList& params,
       FOUR_C_THROW("Wrong constraint type to evaluate systemvector!");
   }
   evaluate_constraint(
-      params, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
+      params, systemmatrix1, *systemmatrix2, systemvector1, *systemvector2, *systemvector3);
   return;
 }
 
@@ -178,10 +178,9 @@ void CONSTRAINTS::ConstraintPenalty::evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
+    Core::LinAlg::SparseOperator& systemmatrix2,
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+    Core::LinAlg::Vector<double>& systemvector2, Core::LinAlg::Vector<double>& systemvector3)
 {
   if (!(actdisc_->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -309,7 +308,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::ConstraintPenalty::evaluate_error(
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector)
+    Teuchos::ParameterList& params, Core::LinAlg::Vector<double>& systemvector)
 {
   if (!(actdisc_->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -367,7 +366,7 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_error(
         std::vector<int> constrowner;
         constrlm.push_back(condID - 1);
         constrowner.push_back(curr->second->owner());
-        Core::LinAlg::assemble(*systemvector, elevector3, constrlm, constrowner);
+        Core::LinAlg::assemble(systemvector, elevector3, constrlm, constrowner);
       }
 
       if (actdisc_->get_comm().MyPID() == 0 && (!(activecons_.find(condID)->second)))
@@ -380,10 +379,9 @@ void CONSTRAINTS::ConstraintPenalty::evaluate_error(
       activecons_.find(condID)->second = true;
     }
   }
-  Teuchos::RCP<Core::LinAlg::Vector<double>> acterrdist =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*errormap_);
-  acterrdist->Export(*systemvector, *errorexport_, Add);
-  systemvector->Import(*acterrdist, *errorimport_, Insert);
+  Core::LinAlg::Vector<double> acterrdist(*errormap_);
+  acterrdist.Export(systemvector, *errorexport_, Add);
+  systemvector.Import(acterrdist, *errorimport_, Insert);
 }  // end of evaluate_error
 
 FOUR_C_NAMESPACE_CLOSE

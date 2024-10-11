@@ -662,7 +662,7 @@ Teuchos::RCP<FLD::XFluidState> FLD::XFluid::get_new_state()
       std::map<int, Core::LinAlg::Matrix<3, 1>> currinterfacepositions;
 
       // compute the current boundary position
-      extract_node_vectors(xdiscret_, currinterfacepositions, dispnpcol);
+      extract_node_vectors(*xdiscret_, currinterfacepositions, *dispnpcol);
       output_service_->gmsh_output_discretization(eval_eos_, step_, &currinterfacepositions);
     }
     else
@@ -695,23 +695,22 @@ void FLD::XFluid::update_ale_state_vectors(Teuchos::RCP<FLD::XFluidState> state)
   if (alefluid_)
   {
     std::cout << "InitALEStateVectors" << std::endl;
-    state_tmp->init_ale_state_vectors(xdiscret_, dispnp_, gridvnp_);
+    state_tmp->init_ale_state_vectors(*xdiscret_, dispnp_, gridvnp_);
   }
 }
 
-void FLD::XFluid::extract_node_vectors(Teuchos::RCP<XFEM::DiscretizationXFEM> dis,
-    std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_col)
+void FLD::XFluid::extract_node_vectors(XFEM::DiscretizationXFEM& dis,
+    std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap, Core::LinAlg::Vector<double>& dispnp_col)
 {
   nodevecmap.clear();
 
-  for (int lid = 0; lid < dis->num_my_col_nodes(); ++lid)
+  for (int lid = 0; lid < dis.num_my_col_nodes(); ++lid)
   {
-    const Core::Nodes::Node* node = dis->l_col_node(lid);
+    const Core::Nodes::Node* node = dis.l_col_node(lid);
     std::vector<int> lm;
-    dis->initial_dof(node, lm);  // initial dofs!
+    dis.initial_dof(node, lm);  // initial dofs!
     std::vector<double> mydisp;
-    Core::FE::extract_my_values(*dispnp_col, mydisp, lm);
+    Core::FE::extract_my_values(dispnp_col, mydisp, lm);
     if (mydisp.size() < 3) FOUR_C_THROW("we need at least 3 dofs here");
 
     Core::LinAlg::Matrix<3, 1> currpos;
@@ -1336,7 +1335,7 @@ void FLD::XFluid::assemble_mat_and_rhs_face_terms(
  | integrate shape functions over domain                   schott 12/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
-    Core::FE::Discretization& discret, Teuchos::RCP<Core::LinAlg::Vector<double>> vec)
+    Core::FE::Discretization& discret, Core::LinAlg::Vector<double>& vec)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::integrate_shape_function");
 
@@ -1520,11 +1519,11 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
 
   //-------------------------------------------------------------------------------
   // need to export residual_col to systemvector1 (residual_)
-  Core::LinAlg::Vector<double> vec_tmp(vec->Map(), false);
+  Core::LinAlg::Vector<double> vec_tmp(vec.Map(), false);
   Epetra_Export exporter(strategy.systemvector1()->Map(), vec_tmp.Map());
   int err2 = vec_tmp.Export(*strategy.systemvector1(), exporter, Add);
   if (err2) FOUR_C_THROW("Export using exporter returned err=%d", err2);
-  vec->Scale(1.0, vec_tmp);
+  vec.Scale(1.0, vec_tmp);
 }
 
 
@@ -1532,9 +1531,8 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
  |  evaluate gradient penalty terms to reconstruct ghost values  schott 03/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
-    Teuchos::RCP<Core::LinAlg::MapExtractor> ghost_penaly_dbcmaps,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_gp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_gp,
+    Core::LinAlg::MapExtractor& ghost_penaly_dbcmaps,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_gp, Core::LinAlg::Vector<double>& residual_gp,
     Teuchos::RCP<Core::LinAlg::Vector<double>> vec)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::assemble_mat_and_rhs_gradient_penalty");
@@ -1546,7 +1544,7 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
   // TODO: check if this is necessary or worse!
   //  sysmat_gp->Zero()
 
-  residual_gp->PutScalar(0.0);
+  residual_gp.PutScalar(0.0);
   Teuchos::RCP<Core::LinAlg::Vector<double>> residual_gp_col =
       Core::LinAlg::create_vector(*state_->xfluiddofcolmap_, true);
 
@@ -1582,7 +1580,7 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
   // for which not ghost-penalty term has been assembled
   // for these rows we later have to assemble ones, as we solve for the whole vector
 
-  const Epetra_Map& dbctoggle = *(ghost_penaly_dbcmaps->cond_map());
+  const Epetra_Map& dbctoggle = *(ghost_penaly_dbcmaps.cond_map());
 
   bool diagonalblock = true;
 
@@ -1608,11 +1606,11 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
 
   //-------------------------------------------------------------------------------
   // need to export residual_col to systemvector1 (residual_)
-  Core::LinAlg::Vector<double> res_tmp(residual_gp->Map(), false);
+  Core::LinAlg::Vector<double> res_tmp(residual_gp.Map(), false);
   Epetra_Export exporter(residual_gp_col->Map(), res_tmp.Map());
   int err2 = res_tmp.Export(*residual_gp_col, exporter, Add);
   if (err2) FOUR_C_THROW("Export using exporter returned err=%d", err2);
-  residual_gp->Update(1.0, res_tmp, 1.0);
+  residual_gp.Update(1.0, res_tmp, 1.0);
 
   //-------------------------------------------------------------------------------
   // finalize the complete matrix
@@ -1723,7 +1721,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_analyt
     Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_stab_norms =
         Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_stab_norms);
 
-    compute_error_norms(glob_dom_norms, glob_interf_norms, glob_stab_norms);
+    compute_error_norms(*glob_dom_norms, *glob_interf_norms, *glob_stab_norms);
 
     // standard domain errors
     double dom_err_vel_L2 =
@@ -1933,14 +1931,14 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_analyt
   return Teuchos::null;
 }
 
-void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_dom_norms,
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_interf_norms,
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_stab_norms)
+void FLD::XFluid::compute_error_norms(Core::LinAlg::SerialDenseVector& glob_dom_norms,
+    Core::LinAlg::SerialDenseVector& glob_interf_norms,
+    Core::LinAlg::SerialDenseVector& glob_stab_norms)
 {
   // number of norms that have to be calculated
-  const int num_dom_norms = glob_dom_norms->length();
-  const int num_interf_norms = glob_interf_norms->length();
-  const int num_stab_norms = glob_stab_norms->length();
+  const int num_dom_norms = glob_dom_norms.length();
+  const int num_interf_norms = glob_interf_norms.length();
+  const int num_stab_norms = glob_stab_norms.length();
 
   Core::LinAlg::SerialDenseVector cpu_dom_norms(num_dom_norms);
   Core::LinAlg::SerialDenseVector cpu_interf_norms(num_interf_norms);
@@ -2085,12 +2083,12 @@ void FLD::XFluid::compute_error_norms(Teuchos::RCP<Core::LinAlg::SerialDenseVect
 
   //--------------------------------------------------------
   // reduce and sum over all procs
-  for (int i = 0; i < num_dom_norms; ++i) (*glob_dom_norms)(i) = 0.0;
-  discret_->get_comm().SumAll(cpu_dom_norms.values(), glob_dom_norms->values(), num_dom_norms);
+  for (int i = 0; i < num_dom_norms; ++i) (glob_dom_norms)(i) = 0.0;
+  discret_->get_comm().SumAll(cpu_dom_norms.values(), glob_dom_norms.values(), num_dom_norms);
 
-  for (int i = 0; i < num_interf_norms; ++i) (*glob_interf_norms)(i) = 0.0;
+  for (int i = 0; i < num_interf_norms; ++i) (glob_interf_norms)(i) = 0.0;
   discret_->get_comm().SumAll(
-      cpu_interf_norms.values(), glob_interf_norms->values(), num_interf_norms);
+      cpu_interf_norms.values(), glob_interf_norms.values(), num_interf_norms);
 
 
   //--------------------------------------------------------
@@ -2884,7 +2882,7 @@ void FLD::XFluid::update_krylov_space_projection()
       */
 
       // compute w_ by evaluating the integrals of all pressure basis functions
-      integrate_shape_function(mode_params, *discret_, w0_view.get_non_owning_rcp_ref());
+      integrate_shape_function(mode_params, *discret_, *w0_view.get_non_owning_rcp_ref());
     }
     else
     {
@@ -3444,7 +3442,7 @@ bool FLD::XFluid::x_timint_check_for_monolithic_newton_restart(
 
   //---------------
   // check if the dofsets changed
-  const bool dofsets_changed = x_timint_changed_dofsets(dis, dofset_i, dofset_ip);
+  const bool dofsets_changed = x_timint_changed_dofsets(*dis, *dofset_i, *dofset_ip);
 
   if (myrank_ == 0 and screen_out)
   {
@@ -3486,22 +3484,21 @@ bool FLD::XFluid::x_timint_check_for_monolithic_newton_restart(
 /*----------------------------------------------------------------------*
  |  did the dofsets change?                                schott 08/14 |
  *----------------------------------------------------------------------*/
-bool FLD::XFluid::x_timint_changed_dofsets(
-    Teuchos::RCP<Core::FE::Discretization> dis,  ///< discretization
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset,       ///< first dofset
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_other  ///< other dofset
+bool FLD::XFluid::x_timint_changed_dofsets(Core::FE::Discretization& dis,  ///< discretization
+    XFEM::XFEMDofSet& dofset,                                              ///< first dofset
+    XFEM::XFEMDofSet& dofset_other                                         ///< other dofset
 )
 {
   //---------------
   // changed dofsets on this proc?
   // Use overloaded == operator for XFEM::XFEMDofset, comparison based on number of dofsets per node
-  int changed_dofsets_proc_count = (int)(*dofset != *dofset_other);
+  int changed_dofsets_proc_count = (int)(dofset != dofset_other);
 
   // assume changed dofsets
   int changed_dofsets_glob_max = 0;
 
   // check if at least one proc has changed dofsets? (maximum or sum of counts > 0)
-  dis->get_comm().MaxAll(&changed_dofsets_proc_count, &changed_dofsets_glob_max, 1);
+  dis.get_comm().MaxAll(&changed_dofsets_proc_count, &changed_dofsets_glob_max, 1);
   const bool changed_dofsets_glob = (changed_dofsets_glob_max > 0);
 
   return changed_dofsets_glob;
@@ -3656,15 +3653,11 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
 
     if (alefluid_)
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dispnpcol =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-              *discretisation_xfem()->initial_dof_col_map());
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dispncol =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-              *discretisation_xfem()->initial_dof_col_map());
+      Core::LinAlg::Vector<double> dispnpcol(*discretisation_xfem()->initial_dof_col_map());
+      Core::LinAlg::Vector<double> dispncol(*discretisation_xfem()->initial_dof_col_map());
 
-      Core::LinAlg::export_to(*dispnp_, *dispnpcol);  // dispnp row->col
-      Core::LinAlg::export_to(*dispn_, *dispncol);    // dispn row->col
+      Core::LinAlg::export_to(*dispnp_, dispnpcol);  // dispnp row->col
+      Core::LinAlg::export_to(*dispn_, dispncol);    // dispn row->col
     }
 
     x_timint_semi_lagrangean(newRowStateVectors,  ///< vectors to be reconstructed
@@ -3865,15 +3858,11 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
 
       if (alefluid_)
       {
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispnpcol =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-                *discretisation_xfem()->initial_dof_col_map());
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispncol =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-                *discretisation_xfem()->initial_dof_col_map());
+        Core::LinAlg::Vector<double> dispnpcol(*discretisation_xfem()->initial_dof_col_map());
+        Core::LinAlg::Vector<double> dispncol(*discretisation_xfem()->initial_dof_col_map());
 
-        Core::LinAlg::export_to(*dispnp_, *dispnpcol);  // dispnp row->col
-        Core::LinAlg::export_to(*dispn_, *dispncol);    // dispn row->col
+        Core::LinAlg::export_to(*dispnp_, dispnpcol);  // dispnp row->col
+        Core::LinAlg::export_to(*dispn_, dispncol);    // dispn row->col
       }
 
       x_timint_semi_lagrangean(rowStateVectors_npip,  ///< vectors to be reconstructed
@@ -4067,8 +4056,8 @@ void FLD::XFluid::x_timint_get_reconstruct_status(
  |                                                         schott 08/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::MapExtractor> FLD::XFluid::create_dbc_map_extractor(
-    const Teuchos::RCP<const std::set<int>> dbcgids,  ///< dbc global dof ids
-    const Epetra_Map* dofrowmap                       ///< dofrowmap
+    const std::set<int>& dbcgids,  ///< dbc global dof ids
+    const Epetra_Map* dofrowmap    ///< dofrowmap
 )
 {
   // create DBC and free map and build their common extractor
@@ -4077,10 +4066,10 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> FLD::XFluid::create_dbc_map_extractor(
   int nummyelements = 0;
   int* myglobalelements = nullptr;
   std::vector<int> dbcgidsv;
-  if (dbcgids->size() > 0)
+  if (dbcgids.size() > 0)
   {
-    dbcgidsv.reserve(dbcgids->size());
-    dbcgidsv.assign(dbcgids->begin(), dbcgids->end());
+    dbcgidsv.reserve(dbcgids.size());
+    dbcgidsv.assign(dbcgids.begin(), dbcgids.end());
     nummyelements = dbcgidsv.size();
     myglobalelements = dbcgidsv.data();
   }
@@ -4111,7 +4100,7 @@ void FLD::XFluid::x_timint_ghost_penalty(std::vector<Teuchos::RCP<Core::LinAlg::
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs
   // which will not be modified by the ghost-penalty reconstruction
   Teuchos::RCP<Core::LinAlg::MapExtractor> ghost_penaly_dbcmaps =
-      create_dbc_map_extractor(dbcgids, dofrowmap);
+      create_dbc_map_extractor(*dbcgids, dofrowmap);
 
   //----------------------------------------
   // perform ghost-penalty reconstruction for all vectors
@@ -4155,8 +4144,8 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
   solverlist.set<int>("reuse", 0);
   solverparams.sublist("IFPACK Parameters");
 
-  Teuchos::RCP<Core::LinAlg::Solver> solver_gp = Teuchos::make_rcp<Core::LinAlg::Solver>(
-      solverparams, discret_->get_comm(), Global::Problem::instance()->solver_params_callback(),
+  Core::LinAlg::Solver solver_gp(solverparams, discret_->get_comm(),
+      Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"),
       false);
@@ -4219,7 +4208,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
     const double tcpu = Teuchos::Time::wallTime();
 
     // evaluate routine
-    assemble_mat_and_rhs_gradient_penalty(ghost_penaly_dbcmaps, sysmat_gp, residual_gp, vec);
+    assemble_mat_and_rhs_gradient_penalty(*ghost_penaly_dbcmaps, sysmat_gp, *residual_gp, vec);
 
     // end time measurement for element
     dtele_ = Teuchos::Time::wallTime() - tcpu;
@@ -4268,7 +4257,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
     Core::LinAlg::SolverParams solver_params;
     solver_params.refactor = true;
     solver_params.reset = true;
-    solver_gp->solve(sysmat_gp->epetra_operator(), incvel_gp, residual_gp, solver_params);
+    solver_gp.solve(sysmat_gp->epetra_operator(), incvel_gp, residual_gp, solver_params);
 
     // end time measurement for solver
     dtsolve_ = Teuchos::Time::wallTime() - tcpusolve;
@@ -4453,7 +4442,7 @@ void FLD::XFluid::output()
 
   if (step_ % upres_ == 0)
   {
-    output_service_->output(step_, time_, write_restart_data, state_, dispnp_, gridvnp_);
+    output_service_->output(step_, time_, write_restart_data, *state_, dispnp_, gridvnp_);
   }
 
 
@@ -4821,7 +4810,7 @@ void FLD::XFluid::set_dirichlet_neumann_bc()
   state_->neumann_loads_->PutScalar(0.0);
   discret_->set_state("scaaf", state_->scaaf_);
 
-  XFEM::evaluate_neumann(eleparams, discret_, state_->neumann_loads_);
+  XFEM::evaluate_neumann(eleparams, discret_, *state_->neumann_loads_);
 
   discret_->clear_state();
 }
@@ -5247,13 +5236,12 @@ void FLD::XFluid::gen_alpha_intermediate_values()
     Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccnp =
         state_->velpressplitter_->extract_other_vector(*state_->accnp_);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccam =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(onlyaccnp->Map());
+    Core::LinAlg::Vector<double> onlyaccam(onlyaccnp->Map());
 
-    onlyaccam->Update((alphaM_), *onlyaccnp, (1.0 - alphaM_), *onlyaccn, 0.0);
+    onlyaccam.Update((alphaM_), *onlyaccnp, (1.0 - alphaM_), *onlyaccn, 0.0);
 
     // copy back into global vector
-    Core::LinAlg::export_to(*onlyaccam, *state_->accam_);
+    Core::LinAlg::export_to(onlyaccam, *state_->accam_);
   }
 
   // set intermediate values for velocity
@@ -5293,16 +5281,15 @@ void FLD::XFluid::gen_alpha_update_acceleration()
   Teuchos::RCP<Core::LinAlg::Vector<double>> onlyvelnp =
       state_->velpressplitter_->extract_other_vector(*state_->velnp_);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccnp =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(onlyaccn->Map());
+  Core::LinAlg::Vector<double> onlyaccnp(onlyaccn->Map());
 
   const double fact1 = 1.0 / (gamma_ * dta_);
   const double fact2 = 1.0 - (1.0 / gamma_);
-  onlyaccnp->Update(fact2, *onlyaccn, 0.0);
-  onlyaccnp->Update(fact1, *onlyvelnp, -fact1, *onlyveln, 1.0);
+  onlyaccnp.Update(fact2, *onlyaccn, 0.0);
+  onlyaccnp.Update(fact1, *onlyvelnp, -fact1, *onlyveln, 1.0);
 
   // copy back into global vector
-  Core::LinAlg::export_to(*onlyaccnp, *state_->accnp_);
+  Core::LinAlg::export_to(onlyaccnp, *state_->accnp_);
 }
 
 
@@ -5316,8 +5303,7 @@ void FLD::XFluid::update_gridv()
       Global::Problem::instance()->fluid_dynamic_params();
   const auto order = Teuchos::getIntegralValue<Inpar::FLUID::Gridvel>(fluiddynparams, "GRIDVEL");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gridv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dispnp_->Map(), true);
+  Core::LinAlg::Vector<double> gridv(dispnp_->Map(), true);
 
   switch (order)
   {
@@ -5372,17 +5358,15 @@ void FLD::XFluid::update_by_increment()
 void FLD::XFluid::set_old_part_of_righthandside()
 {
   set_old_part_of_righthandside(
-      state_->veln_, state_->velnm_, state_->accn_, timealgo_, dta_, theta_, state_->hist_);
+      *state_->veln_, *state_->velnm_, *state_->accn_, timealgo_, dta_, theta_, *state_->hist_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::XFluid::set_old_part_of_righthandside(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& veln,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnm,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& accn,
+void FLD::XFluid::set_old_part_of_righthandside(Core::LinAlg::Vector<double>& veln,
+    Core::LinAlg::Vector<double>& velnm, Core::LinAlg::Vector<double>& accn,
     const Inpar::FLUID::TimeIntegrationScheme timealgo, const double dta, const double theta,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& hist)
+    Core::LinAlg::Vector<double>& hist)
 {
   /*!
     \brief Set the part of the righthandside belonging to the last
@@ -5413,15 +5397,15 @@ void FLD::XFluid::set_old_part_of_righthandside(
     case Inpar::FLUID::timeint_stationary: /* Stationary algorithm */
     case Inpar::FLUID::timeint_afgenalpha: /* Af-generalized-alpha time integration */
     case Inpar::FLUID::timeint_npgenalpha:
-      hist->PutScalar(0.0);
+      hist.PutScalar(0.0);
       break;
 
     case Inpar::FLUID::timeint_one_step_theta: /* One step Theta time integration */
-      hist->Update(1.0, *veln, dta * (1.0 - theta), *accn, 0.0);
+      hist.Update(1.0, veln, dta * (1.0 - theta), accn, 0.0);
       break;
 
     case Inpar::FLUID::timeint_bdf2: /* 2nd order backward differencing BDF2 */
-      hist->Update(4. / 3., *veln, -1. / 3., *velnm, 0.0);
+      hist.Update(4. / 3., veln, -1. / 3., velnm, 0.0);
       break;
 
     default:

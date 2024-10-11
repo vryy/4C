@@ -20,13 +20,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::SSTI::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::SSTI::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& sstidyn = list->sublist(
+  Teuchos::ParameterList& sstidyn = list.sublist(
       "SSTI CONTROL", false, "Control paramters for scatra structure thermo interaction");
 
   Core::UTILS::double_parameter(

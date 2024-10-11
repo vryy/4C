@@ -236,9 +236,9 @@ namespace Discret
           const Inpar::Solid::StrainType ioplstrain);  ///< strain output option
 
       //! Update history variables at the end of time step (inelastic deformation) (braeu 07/16)
-      void update_element(std::vector<double>& disp,      // current displacements
-          Teuchos::ParameterList& params,                 // algorithmic parameters e.g. time
-          const Teuchos::RCP<Core::Mat::Material>& mat);  // material
+      void update_element(std::vector<double>& disp,  // current displacements
+          Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
+          Core::Mat::Material& mat);                  // material
 
       //! init the inverse of the jacobian and its determinant in the material configuration
       void init_jacobian_mapping() override;

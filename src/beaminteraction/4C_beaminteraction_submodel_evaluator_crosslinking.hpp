@@ -265,12 +265,9 @@ namespace BEAMINTERACTION
           BEAMINTERACTION::Data::CrosslinkerData* cldata, int stayoccpotid);
 
       /// fill epetar vectors to write vtp output
-      void fill_state_data_vectors_for_output(
-          Teuchos::RCP<Core::LinAlg::Vector<double>> displacement,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> orientation,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> numberofbonds,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> owner,
-          Teuchos::RCP<Core::LinAlg::Vector<double>> force) const;
+      void fill_state_data_vectors_for_output(Core::LinAlg::Vector<double>& displacement,
+          Core::LinAlg::Vector<double>& orientation, Core::LinAlg::Vector<double>& numberofbonds,
+          Core::LinAlg::Vector<double>& owner, Core::LinAlg::Vector<double>& force) const;
 
       /// update maps
       void store_maps_prior_redistribution();
@@ -432,8 +429,7 @@ namespace BEAMINTERACTION
       /// calclulate force dependent unbind probability for double bonded crosslinker
       /// according to Bell's equation (Howard, eq 5.10, p.89)
       void calc_bells_force_dependent_unbind_probability(CrossLinking::CrosslinkerNode* linker,
-          Teuchos::RCP<BEAMINTERACTION::BeamLink> const& elepairptr,
-          std::vector<double>& punlinkforcedependent) const;
+          BEAMINTERACTION::BeamLink& elepairptr, std::vector<double>& punlinkforcedependent) const;
 
       /// communicate crosslinker unbinding event data
       void communicate_crosslinker_unbinding(
@@ -495,7 +491,7 @@ namespace BEAMINTERACTION
 
       /// debug feature to check bindevent structs
       void print_and_check_bind_event_data(
-          Teuchos::RCP<BEAMINTERACTION::Data::BindEventData> bindeventdata) const;
+          BEAMINTERACTION::Data::BindEventData& bindeventdata) const;
 
       //! @}
 

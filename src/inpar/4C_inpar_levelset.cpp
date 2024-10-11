@@ -19,14 +19,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Inpar::LevelSet::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::LevelSet::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   Teuchos::ParameterList& levelsetcontrol =
-      list->sublist("LEVEL-SET CONTROL", false, "control parameters for level-set problems\n");
+      list.sublist("LEVEL-SET CONTROL", false, "control parameters for level-set problems\n");
 
   Core::UTILS::int_parameter("NUMSTEP", 24, "Total number of time steps", &levelsetcontrol);
   Core::UTILS::double_parameter("TIMESTEP", 0.1, "Time increment dt", &levelsetcontrol);

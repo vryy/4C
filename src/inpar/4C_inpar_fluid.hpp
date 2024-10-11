@@ -398,7 +398,7 @@ namespace Inpar
     };
 
     /// set the fluid parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// set fluid-specific conditions
     void set_valid_conditions(
@@ -409,7 +409,7 @@ namespace Inpar
   namespace LowMach
   {
     /// set the low mach number parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
   }  // namespace LowMach
 
 }  // namespace Inpar

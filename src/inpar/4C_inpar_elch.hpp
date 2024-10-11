@@ -88,7 +88,7 @@ namespace Inpar
     const double epsilon_const = 1.e-4;
 
     /// set the elch parameters
-    void set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list);
+    void set_valid_parameters(Teuchos::ParameterList& list);
 
     /// set specific elch conditions
     void set_valid_conditions(

@@ -235,7 +235,6 @@ namespace CONTACT
     /*!
     \brief Write restart
     */
-    void write_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output);
     void write_restart(Core::IO::DiscretizationWriter& output);
 
     //@}

@@ -4129,7 +4129,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_quad(Mortar::Element
       //*******************************
       // std. wear for all wear-algorithm types
       if (wear)
-        gp_3d_wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, gpn, jac, wgt,
+        gp_3d_wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, *lagmult, gpn, jac, wgt,
             jumpval, &wearval, dsliptmatrixgp, dweargp, dsxigp, dmxigp, dnmap_unit, dualmap);
 
       // integrate T and E matrix for discr. wear
@@ -4679,8 +4679,8 @@ void CONTACT::Integrator::integrate_kappa_penalty_lts(Mortar::Element& ele)
 /*----------------------------------------------------------------------*
  |  Compute penalty scaling factor kappa                      popp 11/09|
  *----------------------------------------------------------------------*/
-void CONTACT::Integrator::integrate_kappa_penalty(Mortar::Element& sele, double* sxia, double* sxib,
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> gseg)
+void CONTACT::Integrator::integrate_kappa_penalty(
+    Mortar::Element& sele, double* sxia, double* sxib, Core::LinAlg::SerialDenseVector& gseg)
 {
   // explicitly defined shape function type needed
   if (shape_fcn() == Inpar::Mortar::shape_undefined)
@@ -4740,7 +4740,7 @@ void CONTACT::Integrator::integrate_kappa_penalty(Mortar::Element& sele, double*
     for (int j = 0; j < nrow; ++j)
     {
       // add current Gauss point's contribution to gseg
-      (*gseg)(j) += val[j] * jac * wgt;
+      (gseg)(j) += val[j] * jac * wgt;
     }
     // compute cell gap vector *******************************************
   }
@@ -4750,8 +4750,7 @@ void CONTACT::Integrator::integrate_kappa_penalty(Mortar::Element& sele, double*
  |  Compute penalty scaling factor kappa (3D piecewise lin)   popp 11/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_kappa_penalty(Mortar::Element& sele,
-    Mortar::IntElement& sintele, double* sxia, double* sxib,
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> gseg)
+    Mortar::IntElement& sintele, double* sxia, double* sxib, Core::LinAlg::SerialDenseVector& gseg)
 {
   // get LMtype
   Inpar::Mortar::LagMultQuad lmtype = lag_mult_quad();
@@ -4814,7 +4813,7 @@ void CONTACT::Integrator::integrate_kappa_penalty(Mortar::Element& sele,
       for (int j = 0; j < nintrow; ++j)
       {
         // add current Gauss point's contribution to gseg
-        (*gseg)(j) += intval[j] * jac * wgt;
+        (gseg)(j) += intval[j] * jac * wgt;
       }
     }
     else
@@ -5788,7 +5787,7 @@ void CONTACT::Integrator::integrate_gp_3d(Mortar::Element& sele, Mortar::Element
             Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, sele.num_node());
         sele.get_nodal_lag_mult(*lagmult);
 
-        gp_3d_wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, normal, jac,
+        gp_3d_wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, *lagmult, normal, jac,
             wgt, jumpval, &wearval, dsliptmatrixgp, dweargp, derivsxi, derivmxi, dnmap_unit,
             dualmap);
 
@@ -5986,7 +5985,7 @@ void CONTACT::Integrator::integrate_gp_2d(Mortar::Element& sele, Mortar::Element
             linsize + n_dim() * mele.num_node());  // wear lin without weighting and jac
 
         // std. wear for all wear-algorithm types
-        gp_2d_wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, normal, jac,
+        gp_2d_wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, *lagmult, normal, jac,
             wgt, &jumpval, &wearval, dsliptmatrixgp, dweargp, derivsxi, derivmxi, dnmap_unit,
             dualmap);
 
@@ -9613,7 +9612,7 @@ void inline CONTACT::Integrator::gp_2d_wear(Mortar::Element& sele, Mortar::Eleme
     Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseMatrix& sderiv,
     Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& mderiv,
     Core::LinAlg::SerialDenseVector& lmval, Core::LinAlg::SerialDenseMatrix& lmderiv,
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult, double* gpn, double& jac, double& wgt,
+    Core::LinAlg::SerialDenseMatrix& lagmult, double* gpn, double& jac, double& wgt,
     double* jumpval, double* wearval, Core::Gen::Pairedvector<int, double>& dsliptmatrixgp,
     Core::Gen::Pairedvector<int, double>& dweargp,
     const std::vector<Core::Gen::Pairedvector<int, double>>& dsxigp,
@@ -9668,8 +9667,8 @@ void inline CONTACT::Integrator::gp_2d_wear(Mortar::Element& sele, Mortar::Eleme
     sgpjump[1] += sval[i] * (sele.get_nodal_coords(1, i) - (sele.get_nodal_coords_old(1, i)));
 
     // LM interpolation
-    gplm[0] += lmval[i] * ((*lagmult)(0, i));
-    gplm[1] += lmval[i] * ((*lagmult)(1, i));
+    gplm[0] += lmval[i] * ((lagmult)(0, i));
+    gplm[1] += lmval[i] * ((lagmult)(1, i));
   }
 
   // normalize interpolated GP tangent back to length 1.0 !!!
@@ -9764,8 +9763,8 @@ void inline CONTACT::Integrator::gp_2d_wear(Mortar::Element& sele, Mortar::Eleme
                  dualmap.begin();
              p != dualmap.end(); ++p)
         {
-          ddualgp_x[p->first] += ((*lagmult)(0, m)) * sval[m] * (p->second)(i, m);
-          ddualgp_y[p->first] += ((*lagmult)(1, m)) * sval[m] * (p->second)(i, m);
+          ddualgp_x[p->first] += ((lagmult)(0, m)) * sval[m] * (p->second)(i, m);
+          ddualgp_y[p->first] += ((lagmult)(1, m)) * sval[m] * (p->second)(i, m);
         }
       }
     }
@@ -9779,8 +9778,8 @@ void inline CONTACT::Integrator::gp_2d_wear(Mortar::Element& sele, Mortar::Eleme
     {
       for (_CI p = dsxigp[0].begin(); p != dsxigp[0].end(); ++p)
       {
-        ddualgp_x_sxi[p->first] += ((*lagmult)(0, i)) * lmderiv(i, 0) * (p->second);
-        ddualgp_y_sxi[p->first] += ((*lagmult)(1, i)) * lmderiv(i, 0) * (p->second);
+        ddualgp_x_sxi[p->first] += ((lagmult)(0, i)) * lmderiv(i, 0) * (p->second);
+        ddualgp_y_sxi[p->first] += ((lagmult)(1, i)) * lmderiv(i, 0) * (p->second);
       }
     }
     for (_CI p = ddualgp_x_sxi.begin(); p != ddualgp_x_sxi.end(); ++p)
@@ -9948,7 +9947,7 @@ void inline CONTACT::Integrator::gp_3d_wear(Mortar::Element& sele, Mortar::Eleme
     Core::LinAlg::SerialDenseVector& sval, Core::LinAlg::SerialDenseMatrix& sderiv,
     Core::LinAlg::SerialDenseVector& mval, Core::LinAlg::SerialDenseMatrix& mderiv,
     Core::LinAlg::SerialDenseVector& lmval, Core::LinAlg::SerialDenseMatrix& lmderiv,
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult, double* gpn, double& jac, double& wgt,
+    Core::LinAlg::SerialDenseMatrix& lagmult, double* gpn, double& jac, double& wgt,
     double* jumpval, double* wearval, Core::Gen::Pairedvector<int, double>& dsliptmatrixgp,
     Core::Gen::Pairedvector<int, double>& dweargp,
     const std::vector<Core::Gen::Pairedvector<int, double>>& dsxigp,
@@ -10022,9 +10021,9 @@ void inline CONTACT::Integrator::gp_3d_wear(Mortar::Element& sele, Mortar::Eleme
   // build lagrange multiplier at current GP
   for (int i = 0; i < nrow; ++i)
   {
-    lm(0, 0) += lmval[i] * (*lagmult)(0, i);
-    lm(1, 0) += lmval[i] * (*lagmult)(1, i);
-    lm(2, 0) += lmval[i] * (*lagmult)(2, i);
+    lm(0, 0) += lmval[i] * (lagmult)(0, i);
+    lm(1, 0) += lmval[i] * (lagmult)(1, i);
+    lm(2, 0) += lmval[i] * (lagmult)(2, i);
   }
 
   // build tangential jump
@@ -10122,9 +10121,9 @@ void inline CONTACT::Integrator::gp_3d_wear(Mortar::Element& sele, Mortar::Eleme
                  dualmap.begin();
              p != dualmap.end(); ++p)
         {
-          ddualgp_x[p->first] += (*lagmult)(0, m) * sval[m] * (p->second)(i, m);
-          ddualgp_y[p->first] += (*lagmult)(1, m) * sval[m] * (p->second)(i, m);
-          ddualgp_z[p->first] += (*lagmult)(2, m) * sval[m] * (p->second)(i, m);
+          ddualgp_x[p->first] += (lagmult)(0, m) * sval[m] * (p->second)(i, m);
+          ddualgp_y[p->first] += (lagmult)(1, m) * sval[m] * (p->second)(i, m);
+          ddualgp_z[p->first] += (lagmult)(2, m) * sval[m] * (p->second)(i, m);
         }
       }
     }
@@ -10140,15 +10139,15 @@ void inline CONTACT::Integrator::gp_3d_wear(Mortar::Element& sele, Mortar::Eleme
     {
       for (_CI p = dsxigp[0].begin(); p != dsxigp[0].end(); ++p)
       {
-        ddualgp_x_sxi[p->first] += (*lagmult)(0, i) * lmderiv(i, 0) * (p->second);
-        ddualgp_y_sxi[p->first] += (*lagmult)(1, i) * lmderiv(i, 0) * (p->second);
-        ddualgp_z_sxi[p->first] += (*lagmult)(2, i) * lmderiv(i, 0) * (p->second);
+        ddualgp_x_sxi[p->first] += (lagmult)(0, i) * lmderiv(i, 0) * (p->second);
+        ddualgp_y_sxi[p->first] += (lagmult)(1, i) * lmderiv(i, 0) * (p->second);
+        ddualgp_z_sxi[p->first] += (lagmult)(2, i) * lmderiv(i, 0) * (p->second);
       }
       for (_CI p = dsxigp[1].begin(); p != dsxigp[1].end(); ++p)
       {
-        ddualgp_x_sxi[p->first] += (*lagmult)(0, i) * lmderiv(i, 1) * (p->second);
-        ddualgp_y_sxi[p->first] += (*lagmult)(1, i) * lmderiv(i, 1) * (p->second);
-        ddualgp_z_sxi[p->first] += (*lagmult)(2, i) * lmderiv(i, 1) * (p->second);
+        ddualgp_x_sxi[p->first] += (lagmult)(0, i) * lmderiv(i, 1) * (p->second);
+        ddualgp_y_sxi[p->first] += (lagmult)(1, i) * lmderiv(i, 1) * (p->second);
+        ddualgp_z_sxi[p->first] += (lagmult)(2, i) * lmderiv(i, 1) * (p->second);
       }
     }
     for (_CI p = ddualgp_x_sxi.begin(); p != ddualgp_x_sxi.end(); ++p)

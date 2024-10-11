@@ -256,11 +256,11 @@ namespace PoroMultiPhaseScaTra
     static constexpr unsigned numdim_ = Core::FE::dim<distype_cont>;
 
     //! set time factor needed for evaluation of right hand side (function coupling) terms
-    void set_time_fac_rhs(const double& arterydensity, Teuchos::RCP<Mat::MatList> contscatramat,
+    void set_time_fac_rhs(const double& arterydensity, Mat::MatList& contscatramat,
         const double& timefacrhs_art, const double& timefacrhs_cont);
 
     //! pre-evaluate for lateral surface coupling
-    void pre_evaluate_lateral_surface_coupling(Teuchos::RCP<Epetra_MultiVector> gp_vector);
+    void pre_evaluate_lateral_surface_coupling(Epetra_MultiVector& gp_vector);
 
     //! pre-evaluate for centerline coupling
     void pre_evaluate_centerline_coupling();
@@ -269,7 +269,7 @@ namespace PoroMultiPhaseScaTra
     void pre_evaluate_node_to_point_coupling();
 
     //! extract velocity of solid phase
-    void extract_solid_vel(Teuchos::RCP<Core::FE::Discretization> contdis);
+    void extract_solid_vel(Core::FE::Discretization& contdis);
 
     //! recompute if deformable arteries are assumed
     void recompute_eta_and_xi_in_deformed_configuration(const std::vector<double>& segmentlengths,

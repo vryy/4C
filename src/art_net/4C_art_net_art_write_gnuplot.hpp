@@ -106,7 +106,7 @@ namespace Arteries
       /*!
       \Solve the write the results of an artery
       */
-      void write(Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::ParameterList& params,
+      void write(Core::FE::Discretization& discret, Teuchos::ParameterList& params,
           const std::vector<int>* nodes);
 
 

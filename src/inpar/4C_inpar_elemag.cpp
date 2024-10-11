@@ -16,13 +16,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::EleMag::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::EleMag::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& electromagneticdyn = list->sublist(
+  Teuchos::ParameterList& electromagneticdyn = list.sublist(
       "ELECTROMAGNETIC DYNAMIC", false, "control parameters for electromagnetic problems\n");
 
   // general settings for time-integration scheme

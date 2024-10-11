@@ -150,9 +150,8 @@ namespace FLD
         to elements
       */
       void calculate_impedance_tractions_and_update_residual_and_sysmat(
-          Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-          Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat, const double dta, const double time,
-          const int condid);
+          Core::LinAlg::Vector<double>& residual, Core::LinAlg::SparseOperator& sysmat,
+          const double dta, const double time, const int condid);
 
       /*!
         \brief Update flowrate and pressure vector
