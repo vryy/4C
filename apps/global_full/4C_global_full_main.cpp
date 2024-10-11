@@ -23,8 +23,7 @@
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io_dat_file_utils.hpp"
 #include "4C_utils_exceptions.hpp"
-#include "4C_utils_function.hpp"
-#include "4C_utils_result_test.hpp"
+#include "4C_utils_singleton_owner.hpp"
 
 #include <Epetra_MpiComm.h>
 #include <Kokkos_Core.hpp>
@@ -32,7 +31,6 @@
 
 #include <csignal>
 #include <iostream>
-#include <stdexcept>
 
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
 #include <cfenv>
@@ -214,10 +212,11 @@ void ntam(int argc, char *argv[]);
  */
 int main(int argc, char *argv[])
 {
+  using namespace FourC;
+
+  Core::UTILS::SingletonOwnerRegistry::initialize();
   MPI_Init(&argc, &argv);
   Kokkos::ScopeGuard kokkos_guard(argc, argv);
-
-  using namespace FourC;
 
   Teuchos::RCP<Core::Communication::Communicators> communicators =
       Core::Communication::create_comm(std::vector<std::string>(argv, argv + argc));
@@ -378,6 +377,8 @@ int main(int argc, char *argv[])
     gcomm->Barrier();
     printf("processor %d finished normally\n", lcomm->MyPID());
   }
+
+  Core::UTILS::SingletonOwnerRegistry::finalize();
 
   Global::Problem::done();
 

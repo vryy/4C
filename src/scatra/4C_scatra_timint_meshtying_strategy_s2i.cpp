@@ -4169,24 +4169,17 @@ ScaTra::MortarCellCalc<distype_s, distype_m>::instance(const Inpar::S2I::Couplin
     const Inpar::S2I::InterfaceSides& lmside, const int& numdofpernode_slave,
     const int& numdofpernode_master, const std::string& disname)
 {
-  // static map assigning mortar discretization names to class instances
-  static std::map<std::string, Core::UTILS::SingletonOwner<MortarCellCalc<distype_s, distype_m>>>
-      owners;
+  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
+      [](const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
+          const int& numdofpernode_slave, const int& numdofpernode_master)
+      {
+        return std::unique_ptr<MortarCellCalc<distype_s, distype_m>>(
+            new MortarCellCalc<distype_s, distype_m>(
+                couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
+      });
 
-  // add an owner for the given disname if not already present
-  if (owners.find(disname) == owners.end())
-  {
-    owners.template emplace(
-        disname, Core::UTILS::SingletonOwner<MortarCellCalc<distype_s, distype_m>>(
-                     [&]()
-                     {
-                       return std::unique_ptr<MortarCellCalc<distype_s, distype_m>>(
-                           new MortarCellCalc<distype_s, distype_m>(
-                               couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
-                     }));
-  }
-
-  return owners.find(disname)->second.instance(Core::UTILS::SingletonAction::create);
+  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, couplingtype, lmside,
+      numdofpernode_slave, numdofpernode_master);
 }
 
 /*----------------------------------------------------------------------*
