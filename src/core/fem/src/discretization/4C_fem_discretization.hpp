@@ -1756,36 +1756,6 @@ namespace Core::FE
 
     virtual void evaluate(const std::function<void(Core::Elements::Element&)>& element_action);
 
-    /** \brief Evaluate Neumann boundary conditions
-     *
-     *  Loop all Neumann conditions attached to the discretization and evaluate them.
-     *  This method considers all conditions in condition_ with the names
-     *  "PointNeumann", LineNeumann", "SurfaceNeumann" and "VolumeNeumann".
-     *  It takes a current time from the parameter list params named "total time"
-     *  and evaluates the appropiate time curves at that time for each
-     *  Neumann condition separately. If "total time" is not included
-     *  in the parameters, no time curves are used.
-     *  Parameters recognized by this method:
-     *  \code
-     *  params.set("total time",acttime); // current total time
-     *  \endcode
-     *
-     *  \param params        (in): List of parameters
-     *  \param systemvector (out): Vector to assemble Neumann BCs to.
-     *                             The vector is NOT initialized to zero by
-     *                             this method.
-     *  \param systemvector (out): Optional matrix to assemble linearization
-     *                             of Neumann BCs to. */
-    void evaluate_neumann(Teuchos::ParameterList& params,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix = Teuchos::null)
-    {
-      if (systemmatrix.is_null())
-        evaluate_neumann(params, *systemvector);
-      else
-        evaluate_neumann(params, *systemvector, systemmatrix.get());
-    }
-
     /*!
     \brief Evaluate Neumann boundary conditions
 
@@ -1968,7 +1938,7 @@ namespace Core::FE
      * \author fang \date 02/15
      */
     void evaluate_scalars(Teuchos::ParameterList& params,  //! (in) parameter list
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector>
+        Core::LinAlg::SerialDenseVector&
             scalars,                    //! (out) result vector for scalar quantities to be computed
         const std::string& condstring,  //! (in) name of condition to be evaluated
         const int condid = -1           //! (in) condition ID (optional)
@@ -1987,7 +1957,7 @@ namespace Core::FE
      * \author gee \date 05/11
      */
     void evaluate_scalars(Teuchos::ParameterList& params, /*!< parameters */
-        Teuchos::RCP<Epetra_MultiVector> scalars /*!< output element-wise scalar quantities */
+        Epetra_MultiVector& scalars /*!< output element-wise scalar quantities */
     );
 
     /*!
@@ -2005,7 +1975,7 @@ namespace Core::FE
 
     */
     void evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
-        const std::string& fieldstring, Teuchos::RCP<Core::LinAlg::Vector<double>> fieldvector,
+        const std::string& fieldstring, Core::LinAlg::Vector<double>& fieldvector,
         const std::vector<int>& locids) const;
 
     //@}
@@ -2042,7 +2012,7 @@ namespace Core::FE
 
       \note Sets Filled()=false
      */
-    void unpack_my_elements(Teuchos::RCP<std::vector<char>> e);
+    void unpack_my_elements(std::vector<char>& e);
 
     /*!
       \brief Unpack nodal buffer and create local nodes.
@@ -2054,7 +2024,7 @@ namespace Core::FE
 
       \note Sets Filled()=false
      */
-    void unpack_my_nodes(Teuchos::RCP<std::vector<char>> e);
+    void unpack_my_nodes(std::vector<char>& e);
 
     //@}
 
@@ -2146,8 +2116,8 @@ namespace Core::FE
     volume coupling condition -> this is special since an associated volume
     conditions also needs to be considered
     */
-    void find_associated_ele_i_ds(Teuchos::RCP<Core::Conditions::Condition> cond,
-        std::set<int>& VolEleIDs, const std::string& name);
+    void find_associated_ele_i_ds(
+        Core::Conditions::Condition& cond, std::set<int>& VolEleIDs, const std::string& name);
 
    protected:
     /*!

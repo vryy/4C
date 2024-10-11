@@ -57,7 +57,7 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
     for (discriter = constraintdis_.begin(); discriter != constraintdis_.end(); discriter++)
     {
       Teuchos::RCP<Epetra_Map> newcolnodemap =
-          Core::Rebalance::compute_node_col_map(actdisc_, discriter->second);
+          Core::Rebalance::compute_node_col_map(*actdisc_, *discriter->second);
       actdisc_->redistribute(*(actdisc_->node_row_map()), *newcolnodemap);
       Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
           Teuchos::make_rcp<Core::DOFSets::TransparentDofSet>(actdisc_);

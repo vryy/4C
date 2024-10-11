@@ -56,40 +56,6 @@ namespace Core::LinAlg
       Epetra_CrsMatrix& B, const double scalarB);
 
   /*!
-   \brief Add a (transposed) Epetra_CrsMatrix to another: B = B*scalarB + A(^T)*scalarA
-
-   Add one matrix to another.
-
-   The matrix B may or may not be completed. If B is completed, no new elements can be
-   inserted and the addition only succeeds in case the sparsity pattern of B is a superset of
-   the sparsity pattern of A (otherwise: FOUR_C_THROW).
-
-   Performance characterization: If B is filled (completed), this function is pretty fast,
-   typically on the order of two to four matrix-vector products with B. The case where B is
-   un-filled runs much slower (on the order of up to 100 matrix-vector products).
-
-   Sparsity patterns of A and B need not match and A and B can be
-   nonsymmetric in value and pattern.
-
-   Row map of A has to be a processor-local subset of the row map of B.
-
-
-   Note that this is a true parallel add, even in the transposed case!
-   This is the Teuchos::RCP wrapper of the above method.
-
-   \param A          (in)     : Matrix to add to B (must have Filled()==true)
-   \param transposeA (in)     : flag indicating whether transposed of A should be used
-   \param scalarA    (in)     : scaling factor for A
-   \param B          (in/out) : Matrix to be added to (must have Filled()==false)
-   \param scalarB    (in)     : scaling factor for B
-   */
-  inline void add(const Teuchos::RCP<Epetra_CrsMatrix> A, const bool transposeA,
-      const double scalarA, Teuchos::RCP<Epetra_CrsMatrix> B, const double scalarB)
-  {
-    Core::LinAlg::add(*A, transposeA, scalarA, *B, scalarB);
-  }
-
-  /*!
    \brief Add a (transposed) Epetra_CrsMatrix to a Core::LinAlg::SparseMatrix: B = B*scalarB +
    A(^T)*scalarA
 

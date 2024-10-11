@@ -172,8 +172,7 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
       static_cast<const Core::FE::Nurbs::NurbsDiscretization&>(discret);
 
   // create map extractor to always (re)build dbcmapextractor which is needed later
-  Teuchos::RCP<Core::LinAlg::MapExtractor> auxdbcmapextractor =
-      Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+  Core::LinAlg::MapExtractor auxdbcmapextractor;
   {
     // build map of Dirichlet DOFs
     int nummyelements = 0;
@@ -189,7 +188,7 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
     Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::make_rcp<Epetra_Map>(-1, nummyelements,
         myglobalelements, discret.dof_row_map()->IndexBase(), discret.dof_row_map()->Comm());
     // build the map extractor of Dirichlet-conditioned and free DOFs
-    *auxdbcmapextractor = Core::LinAlg::MapExtractor(*(discret.dof_row_map()), dbcmap);
+    auxdbcmapextractor = Core::LinAlg::MapExtractor(*(discret.dof_row_map()), dbcmap);
   }
 
   // column map of all DOFs subjected to a least squares Dirichlet condition
@@ -215,7 +214,7 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   // vectors and matrices
   //                 local <-> global dof numbering
   // -------------------------------------------------------------------
-  const Teuchos::RCP<const Epetra_Map> dofrowmap = auxdbcmapextractor->cond_map();
+  const Teuchos::RCP<const Epetra_Map> dofrowmap = auxdbcmapextractor.cond_map();
 
   if (dofrowmap->NumGlobalElements() == 0) return;  // no dbc gids ->leave
 
@@ -388,32 +387,32 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
       if (isboundary) switch (distype)
         {
           case Core::FE::CellType::nurbs2:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs2>(actele,
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs2>(*actele,
                 &eleknots, lm, funct, val, deg, time, elemass, elerhs,
                 *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs3:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs3>(actele,
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs3>(*actele,
                 &eleknots, lm, funct, val, deg, time, elemass, elerhs,
                 *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs4:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs4>(actele,
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs4>(*actele,
                 &eleknots, lm, funct, val, deg, time, elemass, elerhs,
                 *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs9:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs9>(actele,
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs9>(*actele,
                 &eleknots, lm, funct, val, deg, time, elemass, elerhs,
                 *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs8:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs8>(actele,
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs8>(*actele,
                 &eleknots, lm, funct, val, deg, time, elemass, elerhs,
                 *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs27:
-            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs27>(actele,
+            fill_matrix_and_rhs_for_ls_dirichlet_boundary<Core::FE::CellType::nurbs27>(*actele,
                 &eleknots, lm, funct, val, deg, time, elemass, elerhs,
                 *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
@@ -426,32 +425,32 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
         switch (distype)
         {
           case Core::FE::CellType::nurbs2:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs2>(actele,
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs2>(*actele,
                 &eleknots, lm, funct, val, deg, time, elemass, elerhs,
                 *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs3:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs3>(actele,
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs3>(*actele,
                 &eleknots, lm, funct, val, deg, time, elemass, elerhs,
                 *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs4:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs4>(actele,
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs4>(*actele,
                 &eleknots, lm, funct, val, deg, time, elemass, elerhs,
                 *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs9:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs9>(actele,
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs9>(*actele,
                 &eleknots, lm, funct, val, deg, time, elemass, elerhs,
                 *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs8:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs8>(actele,
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs8>(*actele,
                 &eleknots, lm, funct, val, deg, time, elemass, elerhs,
                 *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
           case Core::FE::CellType::nurbs27:
-            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs27>(actele,
+            fill_matrix_and_rhs_for_ls_dirichlet_domain<Core::FE::CellType::nurbs27>(*actele,
                 &eleknots, lm, funct, val, deg, time, elemass, elerhs,
                 *params.get<const Core::UTILS::FunctionManager*>("function_manager"));
             break;
@@ -503,9 +502,9 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
   massmatrix->reset();
 
   // insert nodal values to sysvec
-  auxdbcmapextractor->insert_cond_vector(*dbcvector, *systemvectors[0]);
-  if (assemblevecd) auxdbcmapextractor->insert_cond_vector(*dbcvectord, *systemvectors[1]);
-  if (assemblevecdd) auxdbcmapextractor->insert_cond_vector(*dbcvectordd, *systemvectors[2]);
+  auxdbcmapextractor.insert_cond_vector(*dbcvector, *systemvectors[0]);
+  if (assemblevecd) auxdbcmapextractor.insert_cond_vector(*dbcvectord, *systemvectors[1]);
+  if (assemblevecdd) auxdbcmapextractor.insert_cond_vector(*dbcvectordd, *systemvectors[2]);
 
   if (myrank == 0) std::cout << timer.totalElapsedTime(true) << " seconds \n\n";
 
@@ -517,10 +516,9 @@ void Core::FE::UTILS::DbcNurbs::do_dirichlet_condition(const Teuchos::ParameterL
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Core::FE::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
-    Teuchos::RCP<Core::Elements::Element> actele,
-    const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
-    const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
-    const double time, Core::LinAlg::SerialDenseMatrix& elemass,
+    Core::Elements::Element& actele, const std::vector<Core::LinAlg::SerialDenseVector>* knots,
+    const std::vector<int>& lm, const std::vector<int>* funct, const std::vector<double>* val,
+    const unsigned deg, const double time, Core::LinAlg::SerialDenseMatrix& elemass,
     std::vector<Core::LinAlg::SerialDenseVector>& elerhs,
     const Core::UTILS::FunctionManager& function_manager) const
 {
@@ -539,7 +537,7 @@ void Core::FE::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
 
   // get node coordinates of element
   Core::LinAlg::Matrix<dim + 1, nen> xyze;
-  Core::Nodes::Node** nodes = actele->nodes();
+  Core::Nodes::Node** nodes = actele.nodes();
 
   for (int inode = 0; inode < nen; inode++)
   {
@@ -660,10 +658,9 @@ void Core::FE::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Core::FE::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
-    Teuchos::RCP<Core::Elements::Element> actele,
-    const std::vector<Core::LinAlg::SerialDenseVector>* knots, const std::vector<int>& lm,
-    const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
-    const double time, Core::LinAlg::SerialDenseMatrix& elemass,
+    Core::Elements::Element& actele, const std::vector<Core::LinAlg::SerialDenseVector>* knots,
+    const std::vector<int>& lm, const std::vector<int>* funct, const std::vector<double>* val,
+    const unsigned deg, const double time, Core::LinAlg::SerialDenseMatrix& elemass,
     std::vector<Core::LinAlg::SerialDenseVector>& elerhs,
     const Core::UTILS::FunctionManager& function_manager) const
 {
@@ -681,7 +678,7 @@ void Core::FE::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
 
   // get node coordinates of element
   Core::LinAlg::Matrix<dim, nen> xyze;
-  Core::Nodes::Node** nodes = actele->nodes();
+  Core::Nodes::Node** nodes = actele.nodes();
 
   for (int inode = 0; inode < nen; inode++)
   {
@@ -735,7 +732,7 @@ void Core::FE::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
 
     if (det < 1E-16)
       FOUR_C_THROW(
-          "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", actele->id(), det);
+          "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", actele.id(), det);
 
     // compute integration factor
     double fac = intpoints.ip().qwgt[iquad] * det;

@@ -327,7 +327,7 @@ void XFEM::LevelSetCoupling::gmsh_output(const std::string& filename_base, const
                     << "SOLcutter-phi \" {" << std::endl;
     // draw vector field 'force' for every node
     Core::IO::Gmsh::scalar_field_dof_based_to_gmsh(
-        cutter_dis_, cutter_phinp_, cutter_nds_phi_, gmshfilecontent);
+        *cutter_dis_, cutter_phinp_, cutter_nds_phi_, gmshfilecontent);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -336,7 +336,7 @@ void XFEM::LevelSetCoupling::gmsh_output(const std::string& filename_base, const
     gmshfilecontent << "View \" "
                     << "SOLcutter-smoothedgradphi \" {" << std::endl;
     Core::IO::Gmsh::vector_field_multi_vector_dof_based_to_gmsh(
-        cutter_dis_, gradphinp_smoothed_node_, gmshfilecontent, cutter_nds_phi_);
+        *cutter_dis_, *gradphinp_smoothed_node_, gmshfilecontent, cutter_nds_phi_);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -495,7 +495,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
       // Lives on NodeRow-map!!!
       const auto& solverparams = Global::Problem::instance()->solver_params(l2_proj_num);
       Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode =
-          Core::FE::compute_nodal_l2_projection(cutter_dis_, "pres", 3, eleparams, solverparams,
+          Core::FE::compute_nodal_l2_projection(*cutter_dis_, "pres", 3, eleparams, solverparams,
               Global::Problem::instance()->solver_params_callback());
       if (gradphinp_smoothed_rownode == Teuchos::null)
         FOUR_C_THROW("A smoothed grad phi is required, but an empty one is provided!");

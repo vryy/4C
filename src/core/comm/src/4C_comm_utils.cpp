@@ -334,7 +334,7 @@ namespace Core::Communication
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   bool are_distributed_vectors_identical(const Communicators& communicators,
-      Teuchos::RCP<const Epetra_MultiVector> vec, const char* name, double tol /*= 1.0e-14*/
+      const Epetra_MultiVector& vec, const char* name, double tol /*= 1.0e-14*/
   )
   {
     Teuchos::RCP<Epetra_Comm> lcomm = communicators.local_comm();
@@ -352,21 +352,20 @@ namespace Core::Communication
     }
 
     // do stupid conversion from Epetra_BlockMap to Epetra_Map
-    const Epetra_BlockMap& vecblockmap = vec->Map();
-    Teuchos::RCP<Epetra_Map> vecmap = Teuchos::make_rcp<Epetra_Map>(vecblockmap.NumGlobalElements(),
-        vecblockmap.NumMyElements(), vecblockmap.MyGlobalElements(), 0, vec->Comm());
+    const Epetra_BlockMap& vecblockmap = vec.Map();
+    Epetra_Map vecmap(vecblockmap.NumGlobalElements(), vecblockmap.NumMyElements(),
+        vecblockmap.MyGlobalElements(), 0, vec.Comm());
 
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
     Teuchos::RCP<Epetra_Map> proc0map;
     if (lcomm->MyPID() == gcomm->MyPID())
-      proc0map = Core::LinAlg::allreduce_overlapping_e_map(*vecmap, 0);
+      proc0map = Core::LinAlg::allreduce_overlapping_e_map(vecmap, 0);
     else
-      proc0map = Core::LinAlg::allreduce_overlapping_e_map(*vecmap, lcomm->NumProc() - 1);
+      proc0map = Core::LinAlg::allreduce_overlapping_e_map(vecmap, lcomm->NumProc() - 1);
 
     // export full vectors to the two desired processors
-    Teuchos::RCP<Epetra_MultiVector> fullvec =
-        Teuchos::make_rcp<Epetra_MultiVector>(*proc0map, vec->NumVectors(), true);
-    Core::LinAlg::export_to(*vec, *fullvec);
+    Epetra_MultiVector fullvec(*proc0map, vec.NumVectors(), true);
+    Core::LinAlg::export_to(vec, fullvec);
 
     const int myglobalrank = gcomm->MyPID();
     double maxdiff = 0.0;
@@ -401,7 +400,7 @@ namespace Core::Communication
       tag = 1337;
       MPI_Recv(&lengthRecv, 1, MPI_INT, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
       // also enable comparison of empty vectors
-      if (lengthRecv == 0 && fullvec->MyLength() != lengthRecv)
+      if (lengthRecv == 0 && fullvec.MyLength() != lengthRecv)
         FOUR_C_THROW("Length of data received from second run is incorrect.");
 
       // second: receive data
@@ -411,20 +410,20 @@ namespace Core::Communication
           receivebuf.data(), lengthRecv, MPI_DOUBLE, gcomm->NumProc() - 1, tag, mpi_gcomm, &status);
 
       // start comparison
-      int mylength = fullvec->MyLength() * vec->NumVectors();
+      int mylength = fullvec.MyLength() * vec.NumVectors();
       if (mylength != lengthRecv)
         FOUR_C_THROW(
             "length of received data (%i) does not match own data (%i)", lengthRecv, mylength);
 
       for (int i = 0; i < mylength; ++i)
       {
-        double difference = std::abs(fullvec->Values()[i] - receivebuf[i]);
+        double difference = std::abs(fullvec.Values()[i] - receivebuf[i]);
         if (difference > tol)
         {
           std::stringstream diff;
           diff << std::scientific << std::setprecision(16) << maxdiff;
           std::cout << "vectors " << name << " do not match, difference in row "
-                    << fullvec->Map().GID(i) << " between entries is: " << diff.str().c_str()
+                    << fullvec.Map().GID(i) << " between entries is: " << diff.str().c_str()
                     << std::endl;
         }
         maxdiff = std::max(maxdiff, difference);
@@ -450,14 +449,14 @@ namespace Core::Communication
       MPI_Send(const_cast<char*>(name), lengthSend, MPI_CHAR, 0, tag, mpi_gcomm);
 
       // compare data
-      lengthSend = fullvec->MyLength() * vec->NumVectors();
+      lengthSend = fullvec.MyLength() * vec.NumVectors();
       // first: send length of data
       tag = 1337;
       MPI_Send(&lengthSend, 1, MPI_INT, 0, tag, mpi_gcomm);
 
       // second: send data
       tag = 2674;
-      MPI_Send(fullvec->Values(), lengthSend, MPI_DOUBLE, 0, tag, mpi_gcomm);
+      MPI_Send(fullvec.Values(), lengthSend, MPI_DOUBLE, 0, tag, mpi_gcomm);
     }
 
     // force all procs to stay here until proc 0 has checked the vectors
@@ -476,7 +475,7 @@ namespace Core::Communication
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   bool are_distributed_sparse_matrices_identical(const Communicators& communicators,
-      Teuchos::RCP<Epetra_CrsMatrix> matrix, const char* name, double tol /*= 1.0e-14*/
+      Epetra_CrsMatrix& matrix, const char* name, double tol /*= 1.0e-14*/
   )
   {
     Teuchos::RCP<Epetra_Comm> lcomm = communicators.local_comm();
@@ -494,8 +493,8 @@ namespace Core::Communication
       return false;
     }
 
-    const Epetra_Map& rowmap = matrix->RowMap();
-    const Epetra_Map& domainmap = matrix->DomainMap();
+    const Epetra_Map& rowmap = matrix.RowMap();
+    const Epetra_Map& domainmap = matrix.DomainMap();
 
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
     Teuchos::RCP<Epetra_Map> serialrowmap;
@@ -511,18 +510,16 @@ namespace Core::Communication
       serialdomainmap = Core::LinAlg::allreduce_overlapping_e_map(domainmap, lcomm->NumProc() - 1);
 
     // export full matrices to the two desired processors
-    Teuchos::RCP<Epetra_Import> serialimporter =
-        Teuchos::make_rcp<Epetra_Import>(*serialrowmap, rowmap);
-    Teuchos::RCP<Epetra_CrsMatrix> serialCrsMatrix =
-        Teuchos::make_rcp<Epetra_CrsMatrix>(Copy, *serialrowmap, 0);
-    serialCrsMatrix->Import(*matrix, *serialimporter, Insert);
-    serialCrsMatrix->FillComplete(*serialdomainmap, *serialrowmap);
+    Epetra_Import serialimporter(*serialrowmap, rowmap);
+    Epetra_CrsMatrix serialCrsMatrix(Copy, *serialrowmap, 0);
+    serialCrsMatrix.Import(matrix, serialimporter, Insert);
+    serialCrsMatrix.FillComplete(*serialdomainmap, *serialrowmap);
 
     // fill data of matrices to container which can be easily communicated via MPI
     std::vector<int> data_indices;
-    data_indices.reserve(serialCrsMatrix->NumMyNonzeros() * 2);
+    data_indices.reserve(serialCrsMatrix.NumMyNonzeros() * 2);
     std::vector<double> data_values;
-    data_values.reserve(serialCrsMatrix->NumMyNonzeros());
+    data_values.reserve(serialCrsMatrix.NumMyNonzeros());
     if (myglobalrank == 0 || myglobalrank == gcomm->NumProc() - 1)
     {
       for (int i = 0; i < serialrowmap->NumMyElements(); ++i)
@@ -531,7 +528,7 @@ namespace Core::Communication
         int NumEntries;
         double* Values;
         int* Indices;
-        int err = serialCrsMatrix->ExtractMyRowView(i, NumEntries, Values, Indices);
+        int err = serialCrsMatrix.ExtractMyRowView(i, NumEntries, Values, Indices);
         if (err != 0) FOUR_C_THROW("ExtractMyRowView error: %d", err);
 
         for (int j = 0; j < NumEntries; ++j)

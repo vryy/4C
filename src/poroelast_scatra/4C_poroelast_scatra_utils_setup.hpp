@@ -61,7 +61,7 @@ namespace PoroElastScaTra
       {
         // fill scatra discretization by cloning structure discretization
         Core::FE::clone_discretization<PoroScatraCloneStrategy>(
-            structdis, scatradis, Global::Problem::instance()->cloning_material_map());
+            *structdis, *scatradis, Global::Problem::instance()->cloning_material_map());
         scatradis->fill_complete();
 
         // assign materials. Order is important here!

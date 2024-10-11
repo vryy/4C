@@ -150,8 +150,7 @@ void Core::LinearSolver::AMGNxN::BlockedMatrix::apply(
 
     Teuchos::RCP<Epetra_MultiVector> Yi = out.get_vector(i);
     Yi->PutScalar(0.0);
-    Teuchos::RCP<Epetra_MultiVector> Yitmp =
-        Teuchos::make_rcp<Epetra_MultiVector>(Yi->Map(), Yi->NumVectors(), true);
+    Epetra_MultiVector Yitmp(Yi->Map(), Yi->NumVectors(), true);
 
     for (int j = 0; j < get_num_cols(); j++)
     {
@@ -160,8 +159,8 @@ void Core::LinearSolver::AMGNxN::BlockedMatrix::apply(
       Teuchos::RCP<Epetra_MultiVector> Xj = in.get_vector(j);
       if (get_matrix(i, j) == Teuchos::null) FOUR_C_THROW("Have you set all the blocks?");
 
-      get_matrix(i, j)->Apply(*Xj, *Yitmp);
-      Yi->Update(1.0, *Yitmp, 1.0);
+      get_matrix(i, j)->Apply(*Xj, Yitmp);
+      Yi->Update(1.0, Yitmp, 1.0);
     }
   }
 
@@ -199,23 +198,21 @@ Core::LinearSolver::AMGNxN::BlockedMatrix::get_block_sparse_matrix(Core::LinAlg:
     domain_maps[i] = Teuchos::make_rcp<Epetra_Map>(matrices_[0 * cols + i]->domain_map());
   Teuchos::RCP<Epetra_Map> fullmap_domain =
       Core::LinAlg::MultiMapExtractor::merge_maps(domain_maps);
-  Teuchos::RCP<Core::LinAlg::MultiMapExtractor> domainmaps =
-      Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>(*fullmap_domain, domain_maps);
+  Core::LinAlg::MultiMapExtractor domainmaps(*fullmap_domain, domain_maps);
 
   // build the partial and full range maps
   std::vector<Teuchos::RCP<const Epetra_Map>> range_maps(rows, Teuchos::null);
   for (int i = 0; i < rows; i++)
     range_maps[i] = Teuchos::make_rcp<Epetra_Map>(matrices_[i * cols + 0]->range_map());
   Teuchos::RCP<Epetra_Map> fullmap_range = Core::LinAlg::MultiMapExtractor::merge_maps(range_maps);
-  Teuchos::RCP<Core::LinAlg::MultiMapExtractor> rangemaps =
-      Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>(*fullmap_range, range_maps);
+  Core::LinAlg::MultiMapExtractor rangemaps(*fullmap_range, range_maps);
 
   // Create the concrete matrix
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
       the_matrix = Teuchos::make_rcp<
           Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
 
-          *domainmaps, *rangemaps, npr, true, false);
+          domainmaps, rangemaps, npr, true, false);
 
   // Assign the blocks
   for (int i = 0; i < rows; i++)

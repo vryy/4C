@@ -99,7 +99,7 @@ void FS3I::PartFS3I::init()
   if (aledis->num_global_nodes() == 0)
   {
     Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
-        fluiddis, aledis, Global::Problem::instance()->cloning_material_map());
+        *fluiddis, *aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
     Teuchos::ParameterList params;
@@ -134,7 +134,7 @@ void FS3I::PartFS3I::init()
 
     // fill fluid-based scatra discretization by cloning fluid discretization
     Core::FE::clone_discretization<ScaTra::ScatraFluidCloneStrategy>(
-        fluiddis, fluidscatradis, Global::Problem::instance()->cloning_material_map());
+        *fluiddis, *fluidscatradis, Global::Problem::instance()->cloning_material_map());
     fluidscatradis->fill_complete();
     // set implementation type of cloned scatra elements to advanced reactions
     for (int i = 0; i < fluidscatradis->num_my_col_elements(); ++i)
@@ -188,7 +188,7 @@ void FS3I::PartFS3I::init()
 
     // fill structure-based scatra discretization by cloning structure discretization
     Core::FE::clone_discretization<SSI::ScatraStructureCloneStrategy>(
-        structdis, structscatradis, Global::Problem::instance()->cloning_material_map());
+        *structdis, *structscatradis, Global::Problem::instance()->cloning_material_map());
     structscatradis->fill_complete();
 
     volume_coupling_objects_.push_back(Teuchos::null);

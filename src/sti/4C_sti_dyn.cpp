@@ -77,7 +77,7 @@ void sti_dyn(const int& restartstep  //! time step for restart
   // clone thermo discretization from scatra discretization, using clone strategy for scatra-thermo
   // interaction
   Core::FE::clone_discretization<STI::ScatraThermoCloneStrategy>(
-      scatradis, thermodis, Global::Problem::instance()->cloning_material_map());
+      *scatradis, *thermodis, Global::Problem::instance()->cloning_material_map());
   thermodis->fill_complete(false, true, true);
 
   // add proxy of scalar transport degrees of freedom to thermo discretization and vice versa

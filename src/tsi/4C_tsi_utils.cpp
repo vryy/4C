@@ -163,7 +163,7 @@ void TSI::UTILS::setup_tsi(const Epetra_Comm& comm)
           "empty!");
 
     Core::FE::clone_discretization<TSI::UTILS::ThermoStructureCloneStrategy>(
-        structdis, thermdis, Global::Problem::instance()->cloning_material_map());
+        *structdis, *thermdis, Global::Problem::instance()->cloning_material_map());
     thermdis->fill_complete();
 
     // connect degrees of freedom for periodic boundary conditions

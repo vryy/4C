@@ -1026,7 +1026,7 @@ ScaTra::ScaTraTimIntElch::evaluate_single_electrode_info(
       Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(11);
 
   // evaluate relevant boundary integrals
-  discret_->evaluate_scalars(eleparams, scalars, condstring, condid);
+  discret_->evaluate_scalars(eleparams, *scalars, condstring, condid);
 
   return scalars;
 }
@@ -1375,7 +1375,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_info_interior()
       auto scalars = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(isale_ ? 6 : 3);
 
       // evaluate current condition for electrode state of charge
-      discret_->evaluate_scalars(condparams, scalars, "ElectrodeSOC", condid);
+      discret_->evaluate_scalars(condparams, *scalars, "ElectrodeSOC", condid);
 
       // extract integral of domain
       const double intdomain = (*scalars)(2);
@@ -1492,7 +1492,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_cell_voltage()
             Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(2);
 
         // evaluate current condition for electrode state of charge
-        discret_->evaluate_scalars(condparams, scalars, "CellVoltage", condid);
+        discret_->evaluate_scalars(condparams, *scalars, "CellVoltage", condid);
 
         // extract concentration and domain integrals
         double intpotential = (*scalars)(0);
@@ -3244,7 +3244,7 @@ void ScaTra::ScaTraTimIntElch::reduce_dimension_null_space_blocks(
 
     const int dimns = mueluparams.get<int>("null space: dimension");
     std::vector<double> nullspace(nspVector->MyLength() * nspVector->NumVectors());
-    Core::LinAlg::epetra_multi_vector_to_std_vector(nspVector, nullspace, dimns);
+    Core::LinAlg::epetra_multi_vector_to_std_vector(*nspVector, nullspace, dimns);
 
     // null space associated with concentration dofs
     if (iblock % 2 == 0)
@@ -3272,7 +3272,7 @@ void ScaTra::ScaTraTimIntElch::reduce_dimension_null_space_blocks(
     const int dimnsnew = mueluparams.get<int>("null space: dimension");
     Teuchos::RCP<Epetra_MultiVector> nspVectornew =
         Teuchos::make_rcp<Epetra_MultiVector>(*(block_maps()->Map(iblock)), dimnsnew, true);
-    Core::LinAlg::std_vector_to_epetra_multi_vector(nullspace, nspVectornew, dimnsnew);
+    Core::LinAlg::std_vector_to_epetra_multi_vector(nullspace, *nspVectornew, dimnsnew);
 
     mueluparams.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nspVectornew);
   }

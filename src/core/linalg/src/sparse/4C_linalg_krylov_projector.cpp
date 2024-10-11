@@ -91,24 +91,23 @@ Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::KrylovProjector::get_non_const_we
   return w_;
 }
 
-void Core::LinAlg::KrylovProjector::set_cw(Teuchos::RCP<Epetra_MultiVector> c0,
-    Teuchos::RCP<Epetra_MultiVector> w0, const Epetra_BlockMap* newmap)
+void Core::LinAlg::KrylovProjector::set_cw(
+    Epetra_MultiVector& c0, Epetra_MultiVector& w0, const Epetra_BlockMap* newmap)
 {
   c_ = Teuchos::null;
   w_ = Teuchos::null;
 
   c_ = Teuchos::make_rcp<Epetra_MultiVector>(*newmap, nsdim_, false);
   w_ = Teuchos::make_rcp<Epetra_MultiVector>(*newmap, nsdim_, false);
-  *c_ = *c0;
-  *w_ = *w0;
+  *c_ = c0;
+  *w_ = w0;
   return;
 }
 
-void Core::LinAlg::KrylovProjector::set_cw(
-    Teuchos::RCP<Epetra_MultiVector> c0, Teuchos::RCP<Epetra_MultiVector> w0)
+void Core::LinAlg::KrylovProjector::set_cw(Epetra_MultiVector& c0, Epetra_MultiVector& w0)
 {
-  *c_ = *c0;
-  *w_ = *w0;
+  *c_ = c0;
+  *w_ = w0;
   return;
 }
 
@@ -262,7 +261,7 @@ int Core::LinAlg::KrylovProjector::apply_p(Epetra_MultiVector& Y) const
     FOUR_C_THROW(
         "Krylov space projector is not complete. Call fill_complete() after changing c_ or w_.");
 
-  return apply_projector(Y, w_, c_, invw_tc_);
+  return apply_projector(Y, *w_, *c_, *invw_tc_);
 }
 
 int Core::LinAlg::KrylovProjector::apply_pt(Epetra_MultiVector& Y) const
@@ -279,9 +278,8 @@ int Core::LinAlg::KrylovProjector::apply_pt(Epetra_MultiVector& Y) const
     FOUR_C_THROW(
         "Krylov space projector is not complete. Call fill_complete() after changing c_ or w_.");
 
-  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> invwTcT =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(*invw_tc_, Teuchos::TRANS);
-  return apply_projector(Y, c_, w_, invwTcT);
+  Core::LinAlg::SerialDenseMatrix invwTcT(*invw_tc_, Teuchos::TRANS);
+  return apply_projector(Y, *c_, *w_, invwTcT);
 }
 
 /* --------------------------------------------------------------------
@@ -406,9 +404,8 @@ void Core::LinAlg::KrylovProjector::create_projector(Teuchos::RCP<Core::LinAlg::
 /* --------------------------------------------------------------------
                   Apply projector P(T) (for iterative solvers)
    -------------------------------------------------------------------- */
-int Core::LinAlg::KrylovProjector::apply_projector(Epetra_MultiVector& Y,
-    const Teuchos::RCP<Epetra_MultiVector>& v1, const Teuchos::RCP<Epetra_MultiVector>& v2,
-    const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& inv_v1Tv2) const
+int Core::LinAlg::KrylovProjector::apply_projector(Epetra_MultiVector& Y, Epetra_MultiVector& v1,
+    Epetra_MultiVector& v2, Core::LinAlg::SerialDenseMatrix& inv_v1Tv2) const
 {
   if (!complete_) FOUR_C_THROW("Krylov space projector is not complete. Call fill_complete().");
 
@@ -438,18 +435,18 @@ int Core::LinAlg::KrylovProjector::apply_projector(Epetra_MultiVector& Y,
   Core::LinAlg::SerialDenseVector temp1(nsdim_);
   for (int rr = 0; rr < nsdim_; ++rr)
   {
-    (Y(0))->Dot(*((*v1)(rr)), &(temp1(rr)));
+    (Y(0))->Dot(*((v1)(rr)), &(temp1(rr)));
   }
 
   // compute temp2 from matrix-vector-product:
   // temp2 = (v1^T v2)^(-1) * temp1
   Core::LinAlg::SerialDenseVector temp2(nsdim_);
-  Core::LinAlg::multiply(temp2, *inv_v1Tv2, temp1);
+  Core::LinAlg::multiply(temp2, inv_v1Tv2, temp1);
 
   // loop
   for (int rr = 0; rr < nsdim_; ++rr)
   {
-    (Y(0))->Update(-temp2(rr), *((*v2)(rr)), 1.0);
+    (Y(0))->Update(-temp2(rr), *((v2)(rr)), 1.0);
   }
 
   return (ierr);
@@ -517,11 +514,11 @@ Core::LinAlg::KrylovProjector::multiply_multi_vecter_multi_vector(
   prod.Comm().SumAll(&numnonzero, &glob_numnonzero, 1);
 
   // do stupid conversion into Epetra map
-  Teuchos::RCP<Epetra_Map> mv1map = Teuchos::make_rcp<Epetra_Map>(mv1->Map().NumGlobalElements(),
-      mv1->Map().NumMyElements(), mv1->Map().MyGlobalElements(), 0, mv1->Map().Comm());
+  Epetra_Map mv1map(mv1->Map().NumGlobalElements(), mv1->Map().NumMyElements(),
+      mv1->Map().MyGlobalElements(), 0, mv1->Map().Comm());
   // initialization of mat with map of mv1
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*mv1map, glob_numnonzero, false);
+      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(mv1map, glob_numnonzero, false);
 
   //-------------------------------
   // make mv2 redundant on all procs:
@@ -531,11 +528,11 @@ Core::LinAlg::KrylovProjector::multiply_multi_vecter_multi_vector(
   const int numvals = mv2->GlobalLength();
 
   // do stupid conversion into Epetra map
-  Teuchos::RCP<Epetra_Map> mv2map = Teuchos::make_rcp<Epetra_Map>(mv2->Map().NumGlobalElements(),
-      mv2->Map().NumMyElements(), mv2->Map().MyGlobalElements(), 0, mv2->Map().Comm());
+  Epetra_Map mv2map(mv2->Map().NumGlobalElements(), mv2->Map().NumMyElements(),
+      mv2->Map().MyGlobalElements(), 0, mv2->Map().Comm());
 
   // fully redundant/overlapping map
-  Teuchos::RCP<Epetra_Map> redundant_map = Core::LinAlg::allreduce_e_map(*mv2map);
+  Teuchos::RCP<Epetra_Map> redundant_map = Core::LinAlg::allreduce_e_map(mv2map);
   // initialize global mv2 without setting to 0
   Epetra_MultiVector mv2glob(*redundant_map, nsdim_);
   // create importer with redundant target map and distributed source map

@@ -293,7 +293,7 @@ namespace Core::FE
 
       GaussIntegration intpoints(gp);
 
-      project_gauss_points_local_to_global<distype>(xie, intpoints, cgp);
+      project_gauss_points_local_to_global<distype>(xie, intpoints, *cgp);
 
       return cgp;
     }
@@ -303,7 +303,7 @@ namespace Core::FE
     template <Core::FE::CellType distype>
     static void project_gauss_points_local_to_global(
         const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& xie,
-        GaussIntegration& intpoints, Teuchos::RCP<CollectedGaussPoints>& cgp)
+        GaussIntegration& intpoints, CollectedGaussPoints& cgp)
     {
       const int nsd = Core::FE::dim<distype>;
       const int nen = Core::FE::num_nodes<distype>;
@@ -332,7 +332,7 @@ namespace Core::FE
 
         double det = xjm.determinant();
 
-        cgp->append(xi, iquad.weight() * det);
+        cgp.append(xi, iquad.weight() * det);
       }
     }
 

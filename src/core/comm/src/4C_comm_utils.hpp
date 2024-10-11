@@ -59,7 +59,7 @@ namespace Core::Communication
    * \return boolean to indicate if compared vectors are identical
    */
   bool are_distributed_vectors_identical(const Communicators& communicators,
-      Teuchos::RCP<const Epetra_MultiVector> vec, const char* name, double tol = 1.0e-14);
+      const Epetra_MultiVector& vec, const char* name, double tol = 1.0e-14);
 
   /*! \brief debug routine to compare sparse matrices from different parallel 4C runs
    *
@@ -85,7 +85,7 @@ namespace Core::Communication
    * \return boolean to indicate if compared vectors are identical
    */
   bool are_distributed_sparse_matrices_identical(const Communicators& communicators,
-      Teuchos::RCP<Epetra_CrsMatrix> matrix, const char* name, double tol = 1.0e-14);
+      Epetra_CrsMatrix& matrix, const char* name, double tol = 1.0e-14);
 
   //! transform Epetra_Comm to Teuchos::Comm, Teuchos::RCP version
   template <class Datatype>

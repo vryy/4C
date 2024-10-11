@@ -2043,7 +2043,7 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
         localdofs[i] = i;
       }
       discret_->evaluate_initial_field(
-          Global::Problem::instance()->function_manager(), field, phin_, localdofs);
+          Global::Problem::instance()->function_manager(), field, *phin_, localdofs);
 
       // initialize also the solution vector. These values are a pretty good guess for the
       // solution after the first time step (much better than starting with a zero vector)

@@ -146,7 +146,7 @@ namespace Core::FE
     */
     void evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
         const Core::FE::Discretization& discret, const std::string& fieldstring,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fieldvector, const std::vector<int>& locids);
+        Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids);
 
 
     /*!
@@ -442,7 +442,7 @@ namespace Core::FE
       /** \brief Create a Dbc map extractor, if desired
        */
       void build_dbc_map_extractor(const Core::FE::Discretization& discret,
-          const Teuchos::RCP<const std::set<int>>& dbcrowgids,
+          const std::set<int>& dbcrowgids,
           const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const;
 
     };  // class Dbc

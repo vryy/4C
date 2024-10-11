@@ -1283,7 +1283,7 @@ void STI::Monolithic::compute_null_space_if_necessary(Teuchos::ParameterList& so
 
     Teuchos::RCP<Epetra_MultiVector> nullspace =
         Teuchos::make_rcp<Epetra_MultiVector>(dof_row_map().operator*(), dimns, true);
-    Core::LinAlg::std_vector_to_epetra_multi_vector(*ns, nullspace, dimns);
+    Core::LinAlg::std_vector_to_epetra_multi_vector(*ns, *nullspace, dimns);
 
     mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
     mllist.set("null space: vectors", nullspace->Values());

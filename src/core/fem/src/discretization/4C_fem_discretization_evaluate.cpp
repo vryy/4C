@@ -531,7 +531,7 @@ void Core::FE::Discretization::evaluate_scalars(
  *-----------------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate_scalars(
     Teuchos::ParameterList& params,  //! (in) parameter list
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector>
+    Core::LinAlg::SerialDenseVector&
         scalars,                    //! (out) result vector for scalar quantities to be computed
     const std::string& condstring,  //! (in) name of condition to be evaluated
     const int condid                //! (in) condition ID (optional)
@@ -543,7 +543,7 @@ void Core::FE::Discretization::evaluate_scalars(
     FOUR_C_THROW("assign_degrees_of_freedom() has not been called on discretization!");
 
   // determine number of scalar quantities to be computed
-  const int numscalars = scalars->length();
+  const int numscalars = scalars.length();
 
   // safety check
   if (numscalars <= 0)
@@ -607,7 +607,7 @@ void Core::FE::Discretization::evaluate_scalars(
   }          // loop over conditions
 
   // communicate results across all processors
-  get_comm().SumAll(cpuscalars.values(), scalars->values(), numscalars);
+  get_comm().SumAll(cpuscalars.values(), scalars.values(), numscalars);
 }  // Core::FE::Discretization::EvaluateScalars
 
 
@@ -615,15 +615,15 @@ void Core::FE::Discretization::evaluate_scalars(
  |  evaluate/assemble scalars across elements (public)         gee 05/11|
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate_scalars(
-    Teuchos::ParameterList& params, Teuchos::RCP<Epetra_MultiVector> scalars)
+    Teuchos::ParameterList& params, Epetra_MultiVector& scalars)
 {
   if (!filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
-  Epetra_MultiVector& sca = *(scalars.get());
+  Epetra_MultiVector& sca = scalars;
 
   // number of scalars
-  const int numscalars = scalars->NumVectors();
+  const int numscalars = scalars.NumVectors();
   if (numscalars <= 0) FOUR_C_THROW("scalars vector of interest has size <=0");
 
   // define element matrices and vectors
@@ -640,7 +640,7 @@ void Core::FE::Discretization::evaluate_scalars(
     // pointer to current element
     Core::Elements::Element* actele = l_row_element(i);
 
-    if (!scalars->Map().MyGID(actele->id()))
+    if (!scalars.Map().MyGID(actele->id()))
       FOUR_C_THROW("Proc does not have global element %d", actele->id());
 
     // get element location vector
@@ -672,7 +672,7 @@ void Core::FE::Discretization::evaluate_scalars(
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate_initial_field(
     const Core::UTILS::FunctionManager& function_manager, const std::string& fieldstring,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fieldvector, const std::vector<int>& locids) const
+    Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids) const
 {
   Core::FE::UTILS::evaluate_initial_field(
       function_manager, *this, fieldstring, fieldvector, locids);

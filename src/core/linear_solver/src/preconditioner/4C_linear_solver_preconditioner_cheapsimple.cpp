@@ -290,7 +290,7 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::simpler(Core::LinAlg::A
 
   *vwork2_ = diagAinv * A01 * (inverse(S, *psolver_, false) * (A10 * vx));
 
-  vx -= vwork2_;
+  vx -= *vwork2_;
 }
 
 
@@ -317,13 +317,13 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::simple(Core::LinAlg::An
 
   *vwork1_ = inverse(A00, *vsolver_, false) * vb;
 
-  px = inverse(S, *psolver_, false) * (pb - A10 * vwork1_);
+  px = inverse(S, *psolver_, false) * (pb - A10 * *vwork1_);
 
   //------------------------------------------------------------ U-solve
 
   if (alpha_ != 1.0) px *= alpha_;
 
-  vx = vwork1_ - diagAinv * (A01 * px);
+  vx = *vwork1_ - diagAinv * (A01 * px);
 }
 
 
@@ -349,7 +349,7 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::cheap_simple(Core::LinA
 
   ppredict_->ApplyInverse(vb, *vwork1_);
 
-  *pwork1_ = pb - A10 * vwork1_;
+  *pwork1_ = pb - A10 * *vwork1_;
 
 
   pschur_->ApplyInverse(*pwork1_, px);
@@ -358,7 +358,7 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::cheap_simple(Core::LinA
 
   if (alpha_ != 1.0) px *= alpha_;
 
-  vx = vwork1_ - diagAinv * (A01 * px);
+  vx = *vwork1_ - diagAinv * (A01 * px);
 }
 
 FOUR_C_NAMESPACE_CLOSE

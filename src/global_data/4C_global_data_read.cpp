@@ -1485,7 +1485,7 @@ void Global::read_micro_fields(Global::Problem& problem, Core::IO::DatFileReader
     Teuchos::RCP<const Epetra_CrsGraph> nodeGraph = macro_dis->build_node_graph();
     const auto& [nodeWeights, edgeWeights] = Core::Rebalance::build_weights(*macro_dis);
     const auto& [rownodes, colnodes] =
-        Core::Rebalance::rebalance_node_maps(nodeGraph, rebalanceParams, nodeWeights, edgeWeights);
+        Core::Rebalance::rebalance_node_maps(*nodeGraph, rebalanceParams, nodeWeights, edgeWeights);
 
     // rebuild the discretization with new maps
     macro_dis->redistribute(*rownodes, *colnodes, true, true, true);

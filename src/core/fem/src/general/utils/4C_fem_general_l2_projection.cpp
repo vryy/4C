@@ -33,9 +33,9 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projectio
     const Epetra_Map &fullnoderowmap, const std::map<int, int> &slavetomastercolnodesmap)
 {
   // create empty matrix
-  auto massmatrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(noderowmap, 108, false, true);
+  Core::LinAlg::SparseMatrix massmatrix(noderowmap, 108, false, true);
   // create empty right hand side
-  auto rhs = Teuchos::make_rcp<Epetra_MultiVector>(noderowmap, numvec);
+  Epetra_MultiVector rhs(noderowmap, numvec);
 
   std::vector<int> lm;
   std::vector<int> lmowner;
@@ -95,7 +95,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projectio
     }
 
     // mass matrix assembling into node map
-    massmatrix->assemble(actele->id(), elematrix1, lm, lmowner);
+    massmatrix.assemble(actele->id(), elematrix1, lm, lmowner);
 
     // assemble numvec entries sequentially
     for (int n = 0; n < numvec; ++n)
@@ -103,26 +103,26 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::evaluate_and_solve_nodal_l2_projectio
       // copy results into Serial_DenseVector for assembling
       for (int inode = 0; inode < numnode; ++inode) elevector1(inode) = elematrix2(inode, n);
       // assemble into nth vector of MultiVector
-      Core::LinAlg::assemble(*rhs, n, elevector1, lm, lmowner);
+      Core::LinAlg::assemble(rhs, n, elevector1, lm, lmowner);
     }
   }  // end element loop
 
   // finalize the matrix
-  massmatrix->complete();
+  massmatrix.complete();
 
-  return solve_nodal_l2_projection(*massmatrix, *rhs, dis.get_comm(), numvec, solverparams,
+  return solve_nodal_l2_projection(massmatrix, rhs, dis.get_comm(), numvec, solverparams,
       get_solver_params, noderowmap, fullnoderowmap, slavetomastercolnodesmap);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_nodal_l2_projection(
-    Teuchos::RCP<Core::FE::Discretization> dis, const std::string &statename, const int &numvec,
+    Core::FE::Discretization &dis, const std::string &statename, const int &numvec,
     Teuchos::ParameterList &params, const Teuchos::ParameterList &solverparams,
     const std::function<const Teuchos::ParameterList &(int)> get_solver_params)
 {
   // check if the statename has been set
-  if (!dis->has_state(statename))
+  if (!dis.has_state(statename))
   {
     FOUR_C_THROW(
         "The discretization does not know about this statename. Please "
@@ -137,7 +137,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_nodal_l2_projection(
   // build inverse map from slave to master nodes
   std::map<int, int> slavetomastercolnodesmap;
 
-  std::map<int, std::vector<int>> *allcoupledcolnodes = dis->get_all_pbc_coupled_col_nodes();
+  std::map<int, std::vector<int>> *allcoupledcolnodes = dis.get_all_pbc_coupled_col_nodes();
   if (allcoupledcolnodes)
   {
     for (auto [master_gid, slave_gids] : *allcoupledcolnodes)
@@ -150,7 +150,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_nodal_l2_projection(
   }
 
   // get reduced node row map of fluid field --> will be used for setting up linear system
-  const auto *fullnoderowmap = dis->node_row_map();
+  const auto *fullnoderowmap = dis.node_row_map();
   // remove pbc slave nodes from full noderowmap
   std::vector<int> reducednoderowmap;
   // a little more memory than necessary is possibly reserved here
@@ -169,7 +169,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_nodal_l2_projection(
   Epetra_Map noderowmap(-1, static_cast<int>(reducednoderowmap.size()), reducednoderowmap.data(), 0,
       fullnoderowmap->Comm());
 
-  auto nodevec = evaluate_and_solve_nodal_l2_projection(*dis, noderowmap, statename, numvec, params,
+  auto nodevec = evaluate_and_solve_nodal_l2_projection(dis, noderowmap, statename, numvec, params,
       solverparams, get_solver_params, *fullnoderowmap, slavetomastercolnodesmap);
 
   // if no pbc are involved leave here
@@ -214,7 +214,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
   const auto solvertype =
       Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
-  auto solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+  Core::LinAlg::Solver solver(
       solverparams, comm, get_solver_params, Core::IO::Verbositylevel::standard);
 
   // skip setup of preconditioner in case of a direct solver
@@ -233,9 +233,9 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
         // switch here between ML and MueLu cases
         if (prectyp == Core::LinearSolver::PreconditionerType::multigrid_ml or
             prectyp == Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2)
-          preclist_ptr = &((solver->params()).sublist("ML Parameters"));
+          preclist_ptr = &((solver.params()).sublist("ML Parameters"));
         else if (prectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu)
-          preclist_ptr = &((solver->params()).sublist("MueLu Parameters"));
+          preclist_ptr = &((solver.params()).sublist("MueLu Parameters"));
         else
           FOUR_C_THROW("please add correct parameter list");
 
@@ -274,7 +274,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
       Core::LinAlg::SolverParams solver_params;
       solver_params.refactor = true;
       solver_params.reset = true;
-      solver->solve_with_multi_vector(
+      solver.solve_with_multi_vector(
           massmatrix.epetra_operator(), nodevec, Teuchos::rcpFromRef(rhs), solver_params);
       break;
     }
@@ -292,7 +292,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
         Core::LinAlg::SolverParams solver_params;
         solver_params.refactor = true;
         solver_params.reset = true;
-        solver->solve_with_multi_vector(massmatrix.epetra_operator(),
+        solver.solve_with_multi_vector(massmatrix.epetra_operator(),
             Teuchos::rcpFromRef(*((*nodevec)(i))), Teuchos::rcpFromRef(*(rhs(i))), solver_params);
       }
       break;

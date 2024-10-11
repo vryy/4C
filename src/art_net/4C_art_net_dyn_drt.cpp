@@ -107,7 +107,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
     Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
     // fill scatra discretization by cloning artery discretization
     Core::FE::clone_discretization<Arteries::ArteryScatraCloneStrategy>(
-        actdis, scatradis, Global::Problem::instance()->cloning_material_map());
+        *actdis, *scatradis, Global::Problem::instance()->cloning_material_map());
     scatradis->fill_complete();
 
     // the problem is one way coupled, scatra needs only artery

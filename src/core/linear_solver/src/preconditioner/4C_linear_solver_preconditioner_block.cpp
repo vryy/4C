@@ -139,19 +139,18 @@ void Core::LinearSolver::SimplePreconditioner::setup(
         inv1.sublist("ML Parameters").set("null space: dimension", nv);
 
         const int vlength = A->matrix(0, 0).row_map().NumMyElements();
-        Teuchos::RCP<std::vector<double>> vnewns =
-            Teuchos::make_rcp<std::vector<double>>(nv * vlength, 0.0);
+        std::vector<double> vnewns(nv * vlength, 0.0);
 
         for (int i = 0; i < nlnode; ++i)
         {
-          (*vnewns)[i * nv] = 1.0;
-          (*vnewns)[vlength + i * nv + 1] = 1.0;
-          if (nv > 2) (*vnewns)[2 * vlength + i * nv + 2] = 1.0;
+          (vnewns)[i * nv] = 1.0;
+          (vnewns)[vlength + i * nv + 1] = 1.0;
+          if (nv > 2) (vnewns)[2 * vlength + i * nv + 2] = 1.0;
         }
 
         Teuchos::RCP<Epetra_MultiVector> nullspace =
             Teuchos::make_rcp<Epetra_MultiVector>(A->matrix(0, 0).row_map(), nv, true);
-        Core::LinAlg::std_vector_to_epetra_multi_vector(*vnewns, nullspace, nv);
+        Core::LinAlg::std_vector_to_epetra_multi_vector(vnewns, *nullspace, nv);
 
         inv1.sublist("ML Parameters").set("null space: vectors", nullspace->Values());
         inv1.sublist("ML Parameters").remove("nullspace", false);  // necessary??

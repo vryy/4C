@@ -296,10 +296,10 @@ POROFLUIDMULTIPHASE::UTILS::create_fully_overlapping_artery_discretization(
   Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discloner =
       Teuchos::make_rcp<Core::FE::DiscretizationCreatorBase>();
   Teuchos::RCP<Core::FE::Discretization> artsearchdis =
-      discloner->create_matching_discretization(artdis, disname, false, false, false, false);
+      discloner->create_matching_discretization(*artdis, disname, false, false, false, false);
 
   // ghost on all procs.
-  Core::Rebalance::ghost_discretization_on_all_procs(artsearchdis);
+  Core::Rebalance::ghost_discretization_on_all_procs(*artsearchdis);
   artsearchdis->fill_complete(false, false, doboundaryconditions);
 
   return artsearchdis;

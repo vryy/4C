@@ -55,8 +55,7 @@ namespace Core::Rebalance
   @return Node row map and node column map after rebalancing with weights
   */
   std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> rebalance_node_maps(
-      Teuchos::RCP<const Epetra_CrsGraph> initialGraph,
-      const Teuchos::ParameterList& rebalanceParams,
+      const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams,
       const Teuchos::RCP<Core::LinAlg::Vector<double>>& initialNodeWeights = Teuchos::null,
       const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights = Teuchos::null,
       const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates = Teuchos::null);
@@ -122,7 +121,7 @@ namespace Core::Rebalance
   @return Uncompleted node graph of input discretization
   */
   Teuchos::RCP<const Epetra_CrsGraph> build_graph(
-      Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles);
+      Core::FE::Discretization& dis, const Epetra_Map& roweles);
 
   /*!
   \brief Build monolithic node graph of a given discretization

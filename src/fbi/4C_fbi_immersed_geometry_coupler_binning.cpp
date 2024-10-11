@@ -84,11 +84,11 @@ void FBI::FBIBinningGeometryCoupler::partition_geometry(
 
 
   // extend ghosting of bin discretization
-  binstrategy_->extend_ghosting_of_binning_discretization(binrowmap_, colbins, true);
+  binstrategy_->extend_ghosting_of_binning_discretization(*binrowmap_, colbins, true);
 
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
-  binstrategy_->assign_eles_to_bins(discretizations[0], bintoelemap_,
+  binstrategy_->assign_eles_to_bins(*discretizations[0], bintoelemap_,
       BEAMINTERACTION::UTILS::convert_element_to_bin_content_type);
 }
 /*----------------------------------------------------------------------*/
@@ -103,7 +103,7 @@ void FBI::FBIBinningGeometryCoupler::update_binning(
 
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
-  binstrategy_->assign_eles_to_bins(structure_discretization, bintoelemap_,
+  binstrategy_->assign_eles_to_bins(*structure_discretization, bintoelemap_,
       BEAMINTERACTION::UTILS::convert_element_to_bin_content_type);
 }
 /*----------------------------------------------------------------------*/

@@ -242,7 +242,7 @@ void Solid::TimeInt::BaseDataGlobalState::set_initial_fields()
   localdofs.push_back(2);
 
   Core::FE::UTILS::evaluate_initial_field(
-      Global::Problem::instance()->function_manager(), *discret_, field, velnp_, localdofs);
+      Global::Problem::instance()->function_manager(), *discret_, field, *velnp_, localdofs);
 
   // set initial porosity field if existing
   const std::string porosityfield = "Porosity";
@@ -250,7 +250,7 @@ void Solid::TimeInt::BaseDataGlobalState::set_initial_fields()
   porositylocaldofs.push_back(Global::Problem::instance()->n_dim());
 
   Core::FE::UTILS::evaluate_initial_field(Global::Problem::instance()->function_manager(),
-      *discret_, porosityfield, (*dis_)(0), porositylocaldofs);
+      *discret_, porosityfield, *(*dis_)(0), porositylocaldofs);
 }
 
 /*----------------------------------------------------------------------------*

@@ -647,13 +647,13 @@ void FLD::XWall::setup_x_wall_dis()
     Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(discret_->get_comm().Clone());
 
     Teuchos::RCP<const Epetra_CrsGraph> nodegraph =
-        Core::Rebalance::build_graph(xwdiscret_, elemap);
+        Core::Rebalance::build_graph(*xwdiscret_, *elemap);
 
     Teuchos::ParameterList rebalanceParams;
     rebalanceParams.set<std::string>("num parts", std::to_string(comm->NumProc()));
 
     const auto& [rownodes, colnodes] =
-        Core::Rebalance::rebalance_node_maps(nodegraph, rebalanceParams);
+        Core::Rebalance::rebalance_node_maps(*nodegraph, rebalanceParams);
 
     // rebuild of the system with new maps
     xwdiscret_->redistribute(*rownodes, *colnodes, false, false);
@@ -1335,7 +1335,7 @@ void FLD::XWall::calc_mk()
 
   set_x_wall_params_xw_dis(eleparams);
 
-  xwdiscret_->evaluate_scalars(eleparams, mkxw);
+  xwdiscret_->evaluate_scalars(eleparams, *mkxw);
 
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> mkxwv =

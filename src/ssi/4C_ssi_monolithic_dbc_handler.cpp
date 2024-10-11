@@ -71,11 +71,11 @@ void SSI::DBCHandlerBase::apply_dbc_to_rhs(Teuchos::RCP<Core::LinAlg::Vector<dou
       *structure_field()->get_dbc_map_extractor()->cond_map());
 
   if (locsysmanager_structure != Teuchos::null)
-    locsysmanager_structure->rotate_global_to_local(rhs_struct);
+    locsysmanager_structure->rotate_global_to_local(*rhs_struct);
   Core::LinAlg::apply_dirichlet_to_system(
       *rhs_struct, *zeros_struct, *structure_field()->get_dbc_map_extractor()->cond_map());
   if (locsysmanager_structure != Teuchos::null)
-    locsysmanager_structure->rotate_local_to_global(rhs_struct);
+    locsysmanager_structure->rotate_local_to_global(*rhs_struct);
 
   ssi_maps()->maps_sub_problems()->insert_vector(
       *rhs_struct, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::structure), *rhs);
@@ -155,7 +155,7 @@ void SSI::DBCHandlerSparse::apply_structure_dbc_with_loc_sys_rotation_to_system_
   locsysmanager_structure->rotate_global_to_local(systemmatrix_structure);
   systemmatrix_structure->apply_dirichlet_with_trafo(
       *locsysmanager_structure->trafo(), *dbcmap_structure);
-  locsysmanager_structure->rotate_local_to_global(systemmatrix_structure);
+  locsysmanager_structure->rotate_local_to_global(*systemmatrix_structure);
 
   // assemble structure rows of global system matrix back into global system matrix
   Core::LinAlg::matrix_put(*systemmatrix_structure, 1.0, dofrowmap_structure, *systemmatrix_sparse);
@@ -180,7 +180,7 @@ void SSI::DBCHandlerBlock::apply_structure_dbc_with_loc_sys_rotation_to_system_m
         .apply_dirichlet_with_trafo(
             *locsysmanager_structure->trafo(), *dbcmap_structure, (iblock == position_structure()));
     locsysmanager_structure->rotate_local_to_global(
-        Teuchos::rcpFromRef(systemmatrix_block->matrix(position_structure(), iblock)));
+        *Teuchos::rcpFromRef(systemmatrix_block->matrix(position_structure(), iblock)));
   }
 }
 

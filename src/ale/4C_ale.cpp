@@ -248,13 +248,13 @@ void ALE::Ale::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc
   {
     // Transform system matrix and rhs to local coordinate systems
     locsys_manager()->rotate_global_to_local(
-        Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_), residual_);
+        Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_), *residual_);
 
     // When using local systems, a rotated dispnp_ vector needs to be used as dbcval for
     // apply_dirichlet_to_system
     Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_local =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(zeros_));
-    locsys_manager()->rotate_global_to_local(dispnp_local);
+    locsys_manager()->rotate_global_to_local(*dispnp_local);
 
     if (get_loc_sys_trafo() != Teuchos::null)
     {
@@ -696,9 +696,9 @@ void ALE::Ale::apply_dirichlet_bc(Teuchos::ParameterList& params,
   // ---------------------------------------------------------------------------
   if (locsysman_ != Teuchos::null)
   {
-    if (systemvector != Teuchos::null) locsysman_->rotate_global_to_local(systemvector);
-    if (systemvectord != Teuchos::null) locsysman_->rotate_global_to_local(systemvectord);
-    if (systemvectordd != Teuchos::null) locsysman_->rotate_global_to_local(systemvectordd);
+    if (systemvector != Teuchos::null) locsysman_->rotate_global_to_local(*systemvector);
+    if (systemvectord != Teuchos::null) locsysman_->rotate_global_to_local(*systemvectord);
+    if (systemvectordd != Teuchos::null) locsysman_->rotate_global_to_local(*systemvectordd);
   }
 
   // Apply DBCs
@@ -720,9 +720,9 @@ void ALE::Ale::apply_dirichlet_bc(Teuchos::ParameterList& params,
   // ---------------------------------------------------------------------------
   if (locsysman_ != Teuchos::null)
   {
-    if (systemvector != Teuchos::null) locsysman_->rotate_local_to_global(systemvector);
-    if (systemvectord != Teuchos::null) locsysman_->rotate_local_to_global(systemvectord);
-    if (systemvectordd != Teuchos::null) locsysman_->rotate_local_to_global(systemvectordd);
+    if (systemvector != Teuchos::null) locsysman_->rotate_local_to_global(*systemvector);
+    if (systemvectord != Teuchos::null) locsysman_->rotate_local_to_global(*systemvectord);
+    if (systemvectordd != Teuchos::null) locsysman_->rotate_local_to_global(*systemvectordd);
   }
 
   return;

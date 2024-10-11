@@ -31,7 +31,7 @@ namespace Core::IO
 {
   /// forward declarations
   void broadcast_input_data_to_all_procs(
-      Teuchos::RCP<Epetra_Comm> comm, Core::IO::GridGenerator::RectangularCuboidInputs& inputData);
+      Epetra_Comm& comm, Core::IO::GridGenerator::RectangularCuboidInputs& inputData);
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
@@ -155,7 +155,7 @@ namespace Core::IO
     // broadcast if necessary
     if (comm_->NumProc() > 1)
     {
-      IO::broadcast_input_data_to_all_procs(comm_, inputData);
+      IO::broadcast_input_data_to_all_procs(*comm_, inputData);
     }
 
     return inputData;
@@ -164,9 +164,9 @@ namespace Core::IO
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void broadcast_input_data_to_all_procs(
-      Teuchos::RCP<Epetra_Comm> comm, Core::IO::GridGenerator::RectangularCuboidInputs& inputData)
+      Epetra_Comm& comm, Core::IO::GridGenerator::RectangularCuboidInputs& inputData)
   {
-    const int myrank = comm->MyPID();
+    const int myrank = comm.MyPID();
 
     std::vector<char> data;
     if (myrank == 0)
@@ -184,9 +184,9 @@ namespace Core::IO
     }
 
     ssize_t data_size = data.size();
-    comm->Broadcast(&data_size, 1, 0);
+    comm.Broadcast(&data_size, 1, 0);
     if (myrank != 0) data.resize(data_size, 0);
-    comm->Broadcast(data.data(), data.size(), 0);
+    comm.Broadcast(data.data(), data.size(), 0);
 
     Communication::UnpackBuffer buffer(data);
     if (myrank != 0)

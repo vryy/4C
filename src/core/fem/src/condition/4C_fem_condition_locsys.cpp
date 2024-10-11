@@ -484,8 +484,7 @@ inline const Epetra_Comm& Core::Conditions::LocsysManager::get_comm() const
  |  Transform system global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::rotate_global_to_local(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs) const
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat, Core::LinAlg::Vector<double>& rhs) const
 {
   // transform rhs vector
   rotate_global_to_local(rhs);
@@ -516,20 +515,18 @@ void Core::Conditions::LocsysManager::rotate_global_to_local(
  |  Transform vector global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::rotate_global_to_local(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vec, bool offset) const
+    Core::LinAlg::Vector<double>& vec, bool offset) const
 {
   // y = trafo_ . x  with x = vec
-  Core::LinAlg::Vector<double> tmp(*vec);
-  trafo_->multiply(false, tmp, *vec);
+  Core::LinAlg::Vector<double> tmp(vec);
+  trafo_->multiply(false, tmp, vec);
 }
 
 /*----------------------------------------------------------------------*
  |  Transform result + system local -> global (public)        popp 09/08|
  *----------------------------------------------------------------------*/
-void Core::Conditions::LocsysManager::rotate_local_to_global(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> result,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs) const
+void Core::Conditions::LocsysManager::rotate_local_to_global(Core::LinAlg::Vector<double>& result,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat, Core::LinAlg::Vector<double>& rhs) const
 {
   // transform result
   rotate_local_to_global(result);
@@ -557,20 +554,20 @@ void Core::Conditions::LocsysManager::rotate_local_to_global(
  |  Transform vector local -> global (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::rotate_local_to_global(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vec, bool offset) const
+    Core::LinAlg::Vector<double>& vec, bool offset) const
 {
-  Core::LinAlg::Vector<double> tmp(*vec);
-  trafo_->multiply(true, tmp, *vec);
+  Core::LinAlg::Vector<double> tmp(vec);
+  trafo_->multiply(true, tmp, vec);
 }
 /*----------------------------------------------------------------------*
  |  Transform matrix local -> global (public)              mueller 05/10|
  *----------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::rotate_local_to_global(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const
+    Core::LinAlg::SparseMatrix& sysmat) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 = Core::LinAlg::matrix_multiply(
-      *trafo_, true, *sysmat, false, false, sysmat->save_graph(), true);
-  *sysmat = *temp2;
+  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
+      Core::LinAlg::matrix_multiply(*trafo_, true, sysmat, false, false, sysmat.save_graph(), true);
+  sysmat = *temp2;
 }
 
 

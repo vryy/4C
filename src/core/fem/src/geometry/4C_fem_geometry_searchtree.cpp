@@ -1109,9 +1109,9 @@ std::vector<int> Core::Geo::SearchTree::TreeNode::classify_element(
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions) const
 {
   const Core::LinAlg::SerialDenseMatrix xyze(
-      Core::Geo::get_current_nodal_positions(element, currentpositions));
+      Core::Geo::get_current_nodal_positions(*element, currentpositions));
   Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
-  Core::Geo::check_rough_geo_type(element, xyze, eleGeoType);
+  Core::Geo::check_rough_geo_type(*element, xyze, eleGeoType);
   const Core::LinAlg::Matrix<3, 2> elemXAABB(
       Core::Geo::compute_fast_xaabb(element->shape(), xyze, eleGeoType));
   return classify_xaabb(elemXAABB);

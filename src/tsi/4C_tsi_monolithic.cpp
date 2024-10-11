@@ -2928,13 +2928,13 @@ void TSI::Monolithic::apply_dbc()
       locsysman_->rotate_global_to_local(k_ss);
       k_ss->apply_dirichlet_with_trafo(
           *locsysman_->trafo(), *structure_field()->get_dbc_map_extractor()->cond_map(), true);
-      locsysman_->rotate_local_to_global(k_ss);
+      locsysman_->rotate_local_to_global(*k_ss);
     }
     {
       locsysman_->rotate_global_to_local(k_st);
       k_st->apply_dirichlet_with_trafo(
           *locsysman_->trafo(), *structure_field()->get_dbc_map_extractor()->cond_map(), false);
-      locsysman_->rotate_local_to_global(k_st);
+      locsysman_->rotate_local_to_global(*k_st);
     }
   }
   else
@@ -2958,10 +2958,10 @@ void TSI::Monolithic::apply_dbc()
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> s_rhs, t_rhs;
     extract_field_vectors(rhs_, s_rhs, t_rhs);
-    locsysman_->rotate_global_to_local(s_rhs);
+    locsysman_->rotate_global_to_local(*s_rhs);
     Core::LinAlg::apply_dirichlet_to_system(
         *s_rhs, *zeros_, *structure_field()->get_dbc_map_extractor()->cond_map());
-    locsysman_->rotate_local_to_global(s_rhs);
+    locsysman_->rotate_local_to_global(*s_rhs);
 
     Core::LinAlg::apply_dirichlet_to_system(
         *t_rhs, *zeros_, *thermo_field()->get_dbc_map_extractor()->cond_map());

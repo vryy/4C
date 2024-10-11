@@ -574,10 +574,10 @@ bool FLD::XFluidFluid::x_timint_project_from_embedded_discretization(
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> velncol =
       Core::Rebalance::get_col_version_of_row_vector(
-          embedded_fluid_->discretization(), embedded_fluid_->veln());
+          *embedded_fluid_->discretization(), embedded_fluid_->veln());
   Teuchos::RCP<const Core::LinAlg::Vector<double>> accncol =
       Core::Rebalance::get_col_version_of_row_vector(
-          embedded_fluid_->discretization(), embedded_fluid_->accn());
+          *embedded_fluid_->discretization(), embedded_fluid_->accn());
   oldStateVectors.push_back(velncol);
   oldStateVectors.push_back(accncol);
 
@@ -587,7 +587,7 @@ bool FLD::XFluidFluid::x_timint_project_from_embedded_discretization(
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
       Core::Rebalance::get_col_version_of_row_vector(
-          embedded_fluid_->discretization(), dispnpoldstate_);
+          *embedded_fluid_->discretization(), dispnpoldstate_);
   projector_->set_source_position_vector(disp);
   projector_->set_source_state_vectors(oldStateVectors);
 
@@ -662,22 +662,22 @@ void FLD::XFluidFluid::interpolate_embedded_state_vectors()
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> velncol =
       Core::Rebalance::get_col_version_of_row_vector(
-          embedded_fluid_->discretization(), embedded_fluid_->velnp());
+          *embedded_fluid_->discretization(), embedded_fluid_->velnp());
   Teuchos::RCP<const Core::LinAlg::Vector<double>> accncol =
       Core::Rebalance::get_col_version_of_row_vector(
-          embedded_fluid_->discretization(), embedded_fluid_->accnp());
+          *embedded_fluid_->discretization(), embedded_fluid_->accnp());
   oldStateVectors.push_back(velncol);
   oldStateVectors.push_back(accncol);
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> srcdisp =
       Core::Rebalance::get_col_version_of_row_vector(
-          embedded_fluid_->discretization(), dispnpoldstate_);
+          *embedded_fluid_->discretization(), dispnpoldstate_);
   embedded_projector.set_source_position_vector(srcdisp);
   embedded_projector.set_source_state_vectors(oldStateVectors);
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> tardisp =
       Core::Rebalance::get_col_version_of_row_vector(
-          embedded_fluid_->discretization(), embedded_fluid_->dispnp());
+          *embedded_fluid_->discretization(), embedded_fluid_->dispnp());
 
   embedded_projector.project_in_full_target_discretization(newRowStateVectors, tardisp);
 

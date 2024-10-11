@@ -415,7 +415,7 @@ void Solid::TimInt::set_initial_fields()
   localdofs.push_back(1);
   localdofs.push_back(2);
   discret_->evaluate_initial_field(
-      Global::Problem::instance()->function_manager(), field, (*vel_)(0), localdofs);
+      Global::Problem::instance()->function_manager(), field, *(*vel_)(0), localdofs);
 
   // set initial porosity field if existing
   const std::string porosityfield = "Porosity";
@@ -423,7 +423,7 @@ void Solid::TimInt::set_initial_fields()
   porositylocaldofs.push_back(Global::Problem::instance()->n_dim());
 
   discret_->evaluate_initial_field(Global::Problem::instance()->function_manager(), porosityfield,
-      (*dis_)(0), porositylocaldofs);
+      *(*dis_)(0), porositylocaldofs);
 }
 
 /*----------------------------------------------------------------------*/
@@ -1174,9 +1174,9 @@ void Solid::TimInt::apply_dirichlet_bc(const double time,
   // --------------------------------------------------------------------------------
   if (locsysman_ != Teuchos::null)
   {
-    if (dis != Teuchos::null) locsysman_->rotate_global_to_local(dis, true);
-    if (vel != Teuchos::null) locsysman_->rotate_global_to_local(vel);
-    if (acc != Teuchos::null) locsysman_->rotate_global_to_local(acc);
+    if (dis != Teuchos::null) locsysman_->rotate_global_to_local(*dis, true);
+    if (vel != Teuchos::null) locsysman_->rotate_global_to_local(*vel);
+    if (acc != Teuchos::null) locsysman_->rotate_global_to_local(*acc);
   }
 
   // Apply DBCs
@@ -1230,9 +1230,9 @@ void Solid::TimInt::apply_dirichlet_bc(const double time,
   // --------------------------------------------------------------------------------
   if (locsysman_ != Teuchos::null)
   {
-    if (dis != Teuchos::null) locsysman_->rotate_local_to_global(dis, true);
-    if (vel != Teuchos::null) locsysman_->rotate_local_to_global(vel);
-    if (acc != Teuchos::null) locsysman_->rotate_local_to_global(acc);
+    if (dis != Teuchos::null) locsysman_->rotate_local_to_global(*dis, true);
+    if (vel != Teuchos::null) locsysman_->rotate_local_to_global(*vel);
+    if (acc != Teuchos::null) locsysman_->rotate_local_to_global(*acc);
   }
 }
 
@@ -1834,8 +1834,8 @@ void Solid::TimInt::set_restart_state(Teuchos::RCP<Core::LinAlg::Vector<double>>
 
   // unpack nodes and elements
   // so everything should be OK
-  discret_->unpack_my_nodes(nodedata);
-  discret_->unpack_my_elements(elementdata);
+  discret_->unpack_my_nodes(*nodedata);
+  discret_->unpack_my_elements(*elementdata);
   discret_->redistribute(*noderowmap, *nodecolmap);
 }
 /*----------------------------------------------------------------------*/
@@ -2110,7 +2110,7 @@ void Solid::TimInt::write_gmsh_struc_output_step()
   gmshfilecontent << "View \" "
                   << "struct displacement \" {" << std::endl;
   // draw vector field 'struct displacement' for every element
-  Core::IO::Gmsh::vector_field_dof_based_to_gmsh(discret_, dispn(), gmshfilecontent, 0, true);
+  Core::IO::Gmsh::vector_field_dof_based_to_gmsh(*discret_, dispn(), gmshfilecontent, 0, true);
   gmshfilecontent << "};" << std::endl;
 }
 

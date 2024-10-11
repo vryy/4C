@@ -56,7 +56,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::ElementHandle::create_projected(
       Teuchos::make_rcp<Core::FE::CollectedGaussPoints>(gp_ic->num_points());
 
   // Perform actual mapping to correct local coordinates
-  Core::FE::GaussIntegration::project_gauss_points_local_to_global<distype>(xie, intpoints, cgp);
+  Core::FE::GaussIntegration::project_gauss_points_local_to_global<distype>(xie, intpoints, *cgp);
   return cgp;
 }
 

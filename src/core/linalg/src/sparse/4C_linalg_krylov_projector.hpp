@@ -60,9 +60,8 @@ namespace Core::LinAlg
     //! give out Teuchos::RCP to w_ for change
     Teuchos::RCP<Epetra_MultiVector> get_non_const_weights();
     // set c_ and w_ from outside
-    void set_cw(Teuchos::RCP<Epetra_MultiVector> c0, Teuchos::RCP<Epetra_MultiVector> w0,
-        const Epetra_BlockMap* newmap);
-    void set_cw(Teuchos::RCP<Epetra_MultiVector> c0, Teuchos::RCP<Epetra_MultiVector> w0);
+    void set_cw(Epetra_MultiVector& c0, Epetra_MultiVector& w0, const Epetra_BlockMap* newmap);
+    void set_cw(Epetra_MultiVector& c0, Epetra_MultiVector& w0);
     //! compute (w^T c)^(-1) and completes projector for use
     void fill_complete();
 
@@ -97,9 +96,8 @@ namespace Core::LinAlg
         const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& inv_v1Tv2);
 
     //! applies projector (or its transpose) to vector for iterative solver
-    int apply_projector(Epetra_MultiVector& Y, const Teuchos::RCP<Epetra_MultiVector>& v1,
-        const Teuchos::RCP<Epetra_MultiVector>& v2,
-        const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& inv_v1Tv2) const;
+    int apply_projector(Epetra_MultiVector& Y, Epetra_MultiVector& v1, Epetra_MultiVector& v2,
+        Core::LinAlg::SerialDenseMatrix& inv_v1Tv2) const;
 
     //! multiplies Epetra_MultiVector times Core::LinAlg::SerialDenseMatrix
     Teuchos::RCP<Epetra_MultiVector> multiply_multi_vecter_dense_matrix(

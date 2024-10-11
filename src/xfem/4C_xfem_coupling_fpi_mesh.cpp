@@ -649,7 +649,7 @@ void XFEM::MeshCouplingFPI::gmsh_output(const std::string& filename_base, const 
                     << "iforce \" {" << std::endl;
     // draw vector field 'force' for every node
     Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
-        cutter_dis_, itrueresidual_, currinterfacepositions, gmshfilecontent, 3, 3);
+        *cutter_dis_, itrueresidual_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -659,7 +659,7 @@ void XFEM::MeshCouplingFPI::gmsh_output(const std::string& filename_base, const 
                     << "idispnp \" {" << std::endl;
     // draw vector field 'idispnp' for every node
     Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
-        cutter_dis_, idispnp_, currinterfacepositions, gmshfilecontent, 3, 3);
+        *cutter_dis_, idispnp_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -669,7 +669,7 @@ void XFEM::MeshCouplingFPI::gmsh_output(const std::string& filename_base, const 
                     << "ivelnp \" {" << std::endl;
     // draw vector field 'ivelnp' for every node
     Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(
-        cutter_dis_, ivelnp_, currinterfacepositions, gmshfilecontent, 3, 3);
+        *cutter_dis_, ivelnp_, currinterfacepositions, gmshfilecontent, 3, 3);
     gmshfilecontent << "};" << std::endl;
   }
 
@@ -836,7 +836,7 @@ void XFEM::MeshCouplingFPI::lift_drag(const int step, const double time) const
   // get forces on all procs
   // create interface DOF vectors using the fluid parallel distribution
   Teuchos::RCP<const Core::LinAlg::Vector<double>> iforcecol =
-      Core::Rebalance::get_col_version_of_row_vector(cutter_dis_, itrueresidual_);
+      Core::Rebalance::get_col_version_of_row_vector(*cutter_dis_, itrueresidual_);
 
   if (myrank_ == 0)
   {

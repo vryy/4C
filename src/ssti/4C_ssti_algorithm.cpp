@@ -236,10 +236,10 @@ void SSTI::SSTIAlgorithm::clone_discretizations(const Epetra_Comm& comm)
   if (scatradis->num_global_nodes() == 0)
   {
     Core::FE::clone_discretization<SSTI::SSTIScatraStructureCloneStrategy>(
-        structdis, scatradis, Global::Problem::instance()->cloning_material_map());
+        *structdis, *scatradis, Global::Problem::instance()->cloning_material_map());
     scatradis->fill_complete();
     Core::FE::clone_discretization<SSTI::SSTIScatraThermoCloneStrategy>(
-        scatradis, thermodis, Global::Problem::instance()->cloning_material_map());
+        *scatradis, *thermodis, Global::Problem::instance()->cloning_material_map());
     thermodis->fill_complete();
   }
   else

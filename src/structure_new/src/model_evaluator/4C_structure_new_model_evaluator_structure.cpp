@@ -1268,7 +1268,7 @@ void Solid::ModelEvaluator::Structure::evaluate_neumann(Teuchos::ParameterList& 
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<Core::Elements::ParamsInterface>>(
           "interface"))
     FOUR_C_THROW("The given parameter has the wrong type!");
-  discret().evaluate_neumann(p, eval_vec, eval_mat);
+  discret().evaluate_neumann(p, *eval_vec, eval_mat.get());
   discret().clear_state();
 }
 

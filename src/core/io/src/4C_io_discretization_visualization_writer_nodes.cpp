@@ -75,17 +75,17 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterNodes::append_dof_based_result_data_vector(
-      const Teuchos::RCP<Core::LinAlg::Vector<double>>& result_data_dofbased,
-      unsigned int result_num_dofs_per_node, const std::string& resultname)
+      Core::LinAlg::Vector<double>& result_data_dofbased, unsigned int result_num_dofs_per_node,
+      const std::string& resultname)
   {
     /* the idea is to transform the given data to a 'point data vector' and append it to the
      * collected solution data vectors by calling AppendVisualizationPointDataVector() */
 
     std::vector<double> point_result_data;
-    point_result_data.reserve(result_data_dofbased->MyLength());
+    point_result_data.reserve(result_data_dofbased.MyLength());
 
-    for (int lid = 0; lid < result_data_dofbased->MyLength(); ++lid)
-      point_result_data.push_back((*result_data_dofbased)[lid]);
+    for (int lid = 0; lid < result_data_dofbased.MyLength(); ++lid)
+      point_result_data.push_back((result_data_dofbased)[lid]);
 
     visualization_manager_->get_visualization_data().set_point_data_vector<double>(
         resultname, point_result_data, result_num_dofs_per_node);
@@ -94,22 +94,22 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterNodes::append_node_based_result_data_vector(
-      const Teuchos::RCP<Epetra_MultiVector>& result_data_nodebased,
-      unsigned int result_num_components_per_node, const std::string& resultname)
+      Epetra_MultiVector& result_data_nodebased, unsigned int result_num_components_per_node,
+      const std::string& resultname)
   {
     /*  the idea is to transform the given data to a 'point data vector' and append it to the
      *  collected solution data vectors by calling append_visualization_point_data_vector()
      */
 
     // count number of nodes for each processor
-    const unsigned int num_row_nodes = (unsigned int)result_data_nodebased->Map().NumMyElements();
+    const unsigned int num_row_nodes = (unsigned int)result_data_nodebased.Map().NumMyElements();
 
     // safety check
-    if ((unsigned int)result_data_nodebased->NumVectors() != result_num_components_per_node)
+    if ((unsigned int)result_data_nodebased.NumVectors() != result_num_components_per_node)
       FOUR_C_THROW(
           "DiscretizationVisualizationWriterNodes: expected Epetra_MultiVector with %d columns but "
           "got %d",
-          result_num_components_per_node, result_data_nodebased->NumVectors());
+          result_num_components_per_node, result_data_nodebased.NumVectors());
 
 
     std::vector<double> point_result_data;
@@ -119,7 +119,7 @@ namespace Core::IO
     {
       for (unsigned int idf = 0; idf < result_num_components_per_node; ++idf)
       {
-        auto* column = (*result_data_nodebased)(idf);
+        auto* column = (result_data_nodebased)(idf);
         point_result_data.push_back((*column)[lid]);
       }
     }

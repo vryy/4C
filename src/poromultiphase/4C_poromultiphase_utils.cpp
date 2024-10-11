@@ -99,7 +99,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::setup_discretizations_and_fi
   {
     // fill poro fluid discretization by cloning structure discretization
     Core::FE::clone_discretization<POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy>(
-        structdis, fluiddis, Global::Problem::instance()->cloning_material_map());
+        *structdis, *fluiddis, Global::Problem::instance()->cloning_material_map());
   }
   else
   {

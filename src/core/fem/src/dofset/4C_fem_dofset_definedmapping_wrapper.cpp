@@ -150,20 +150,16 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
   }
 
   // Epetra maps
-  Teuchos::RCP<Epetra_Map> targetnodemap = Teuchos::make_rcp<Epetra_Map>(
-      -1, patchedtargetnodes.size(), patchedtargetnodes.data(), 0, *com);
+  Epetra_Map targetnodemap(-1, patchedtargetnodes.size(), patchedtargetnodes.data(), 0, *com);
 
-  Teuchos::RCP<Epetra_Map> permsourcenodemap =
-      Teuchos::make_rcp<Epetra_Map>(-1, permsourcenodes.size(), permsourcenodes.data(), 0, *com);
+  Epetra_Map permsourcenodemap(-1, permsourcenodes.size(), permsourcenodes.data(), 0, *com);
 
   // we expect to get maps of exactly the same shape
-  if (not targetnodemap->PointSameAs(*permsourcenodemap))
+  if (not targetnodemap.PointSameAs(permsourcenodemap))
     FOUR_C_THROW("target and permuted source node maps do not match");
 
   // export target nodes to source node distribution
-  Teuchos::RCP<Core::LinAlg::Vector<int>> permsourcenodevec =
-      Teuchos::make_rcp<Core::LinAlg::Vector<int>>(
-          *targetnodemap, permsourcenodemap->MyGlobalElements());
+  Core::LinAlg::Vector<int> permsourcenodevec(targetnodemap, permsourcenodemap.MyGlobalElements());
 
   // initialize the final mapping
   targetlidtosourcegidmapping_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
@@ -172,7 +168,7 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
   targetlidtosourcegidmapping_->PutValue(-1);
 
   // export to column map
-  Core::LinAlg::export_to(*permsourcenodevec, *targetlidtosourcegidmapping_);
+  Core::LinAlg::export_to(permsourcenodevec, *targetlidtosourcegidmapping_);
 
   // filled.
   filled_ = true;

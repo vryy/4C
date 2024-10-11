@@ -260,7 +260,7 @@ void SSI::SSIBase::init_discretizations(const Epetra_Comm& comm, const std::stri
 
     // fill scatra discretization by cloning structure discretization
     Core::FE::clone_discretization<SSI::ScatraStructureCloneStrategy>(
-        structdis, scatradis, Global::Problem::instance()->cloning_material_map());
+        *structdis, *scatradis, Global::Problem::instance()->cloning_material_map());
     scatradis->fill_complete();
 
     // create discretization for scatra manifold based on SSISurfaceManifold condition

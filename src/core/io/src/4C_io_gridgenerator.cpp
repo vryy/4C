@@ -231,18 +231,18 @@ namespace Core::IO::GridGenerator
     if (inputData.autopartition_)
     {
       Teuchos::RCP<const Epetra_CrsGraph> nodeGraph =
-          Core::Rebalance::build_graph(Teuchos::rcpFromRef(dis), elementRowMap);
+          Core::Rebalance::build_graph(*Teuchos::rcpFromRef(dis), *elementRowMap);
 
       Teuchos::ParameterList rebalanceParams;
       rebalanceParams.set<std::string>("num parts", std::to_string(comm.NumProc()));
 
       std::tie(nodeRowMap, nodeColMap) =
-          Core::Rebalance::rebalance_node_maps(nodeGraph, rebalanceParams);
+          Core::Rebalance::rebalance_node_maps(*nodeGraph, rebalanceParams);
     }
     else  // do not destroy our manual partitioning
     {
       Teuchos::RCP<const Epetra_CrsGraph> graph =
-          Core::Rebalance::build_graph(Teuchos::rcpFromRef(dis), elementRowMap);
+          Core::Rebalance::build_graph(*Teuchos::rcpFromRef(dis), *elementRowMap);
       nodeRowMap = Teuchos::make_rcp<Epetra_Map>(
           -1, graph->RowMap().NumMyElements(), graph->RowMap().MyGlobalElements(), 0, comm);
       nodeColMap = Teuchos::make_rcp<Epetra_Map>(

@@ -701,9 +701,9 @@ Teuchos::RCP<std::vector<char>> Core::FE::Discretization::pack_my_nodes() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::unpack_my_elements(Teuchos::RCP<std::vector<char>> e)
+void Core::FE::Discretization::unpack_my_elements(std::vector<char>& e)
 {
-  Communication::UnpackBuffer buffer(*e);
+  Communication::UnpackBuffer buffer(e);
   while (!buffer.at_end())
   {
     std::vector<char> data;
@@ -722,9 +722,9 @@ void Core::FE::Discretization::unpack_my_elements(Teuchos::RCP<std::vector<char>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::unpack_my_nodes(Teuchos::RCP<std::vector<char>> e)
+void Core::FE::Discretization::unpack_my_nodes(std::vector<char>& e)
 {
-  Communication::UnpackBuffer buffer(*e);
+  Communication::UnpackBuffer buffer(e);
   while (!buffer.at_end())
   {
     std::vector<char> data;

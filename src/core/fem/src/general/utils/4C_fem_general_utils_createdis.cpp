@@ -129,27 +129,27 @@ void Core::FE::DiscretizationCreatorBase::copy_conditions(const Core::FE::Discre
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::FE::Discretization>
 Core::FE::DiscretizationCreatorBase::create_matching_discretization(
-    const Teuchos::RCP<Core::FE::Discretization>& sourcedis, const std::string& targetdisname,
-    bool clonedofs, bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions) const
+    Core::FE::Discretization& sourcedis, const std::string& targetdisname, bool clonedofs,
+    bool assigndegreesoffreedom, bool initelements, bool doboundaryconditions) const
 {
   // initialize identical clone discretization
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(sourcedis->get_comm().Clone());
+  Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(sourcedis.get_comm().Clone());
   Teuchos::RCP<Core::FE::Discretization> targetdis =
-      Teuchos::make_rcp<Core::FE::Discretization>(targetdisname, comm, sourcedis->n_dim());
+      Teuchos::make_rcp<Core::FE::Discretization>(targetdisname, comm, sourcedis.n_dim());
 
   // clone nodes
-  for (int i = 0; i < sourcedis->node_col_map()->NumMyElements(); ++i)
+  for (int i = 0; i < sourcedis.node_col_map()->NumMyElements(); ++i)
   {
-    Core::Nodes::Node* node = sourcedis->l_col_node(i);
+    Core::Nodes::Node* node = sourcedis.l_col_node(i);
     if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
     Teuchos::RCP<Core::Nodes::Node> newnode = Teuchos::RCP(node->clone());
     targetdis->add_node(newnode);
   }
 
   // clone elements
-  for (int i = 0; i < sourcedis->element_col_map()->NumMyElements(); ++i)
+  for (int i = 0; i < sourcedis.element_col_map()->NumMyElements(); ++i)
   {
-    Core::Elements::Element* ele = sourcedis->l_col_element(i);
+    Core::Elements::Element* ele = sourcedis.l_col_element(i);
     if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
     Teuchos::RCP<Core::Elements::Element> newele = Teuchos::RCP(ele->clone());
     targetdis->add_element(newele);
@@ -157,13 +157,13 @@ Core::FE::DiscretizationCreatorBase::create_matching_discretization(
 
   // clone conditions (prescribed in input file)
   std::vector<std::string> allcond;
-  sourcedis->get_condition_names(allcond);
+  sourcedis.get_condition_names(allcond);
   // loop all conditions types
   for (unsigned numcond = 0; numcond < allcond.size(); ++numcond)
   {
     // get condition
     std::vector<Core::Conditions::Condition*> actcond;
-    sourcedis->get_condition(allcond[numcond], actcond);
+    sourcedis.get_condition(allcond[numcond], actcond);
 
     // loop all condition of the current type
     for (unsigned numactcond = 0; numactcond < actcond.size(); ++numactcond)
@@ -177,19 +177,19 @@ Core::FE::DiscretizationCreatorBase::create_matching_discretization(
 
   // at the end, we do several checks to ensure that we really have generated
   // an identical discretization
-  if (not sourcedis->node_row_map()->SameAs(*(targetdis->node_row_map())))
+  if (not sourcedis.node_row_map()->SameAs(*(targetdis->node_row_map())))
     FOUR_C_THROW("NodeRowMaps of source and target discretization are different!");
-  if (not sourcedis->node_col_map()->SameAs(*(targetdis->node_col_map())))
+  if (not sourcedis.node_col_map()->SameAs(*(targetdis->node_col_map())))
     FOUR_C_THROW("NodeColMaps of source and target discretization are different!");
-  if (not sourcedis->element_row_map()->SameAs(*(targetdis->element_row_map())))
+  if (not sourcedis.element_row_map()->SameAs(*(targetdis->element_row_map())))
     FOUR_C_THROW("ElementRowMaps of source and target discretization are different!");
-  if (not sourcedis->element_col_map()->SameAs(*(targetdis->element_col_map())))
+  if (not sourcedis.element_col_map()->SameAs(*(targetdis->element_col_map())))
     FOUR_C_THROW("ElementColMaps of source and target discretization are different!");
   if (clonedofs)
   {
-    if (not sourcedis->dof_row_map()->SameAs(*(targetdis->dof_row_map())))
+    if (not sourcedis.dof_row_map()->SameAs(*(targetdis->dof_row_map())))
       FOUR_C_THROW("DofRowMaps of source and target discretization are different!");
-    if (not sourcedis->dof_col_map()->SameAs(*(targetdis->dof_col_map())))
+    if (not sourcedis.dof_col_map()->SameAs(*(targetdis->dof_col_map())))
       FOUR_C_THROW("DofColMaps of source and target discretization are different!");
   }
 

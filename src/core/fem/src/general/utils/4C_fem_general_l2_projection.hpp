@@ -48,9 +48,9 @@ namespace Core::FE
     \date 06/14
    */
   Teuchos::RCP<Epetra_MultiVector> compute_nodal_l2_projection(
-      Teuchos::RCP<Core::FE::Discretization> dis,  ///< underlying discretization
-      const std::string& statename,                ///< name of state which will be set
-      const int& numvec,                           ///< number of entries per node to project
+      Core::FE::Discretization& dis,   ///< underlying discretization
+      const std::string& statename,    ///< name of state which will be set
+      const int& numvec,               ///< number of entries per node to project
       Teuchos::ParameterList& params,  ///< parameter list that contains the element action
       const Teuchos::ParameterList&
           solverparams,  ///< solver parameters for solving the resulting global system;

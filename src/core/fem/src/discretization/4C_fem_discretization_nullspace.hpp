@@ -29,7 +29,7 @@ namespace Core::FE
      \param map (in): nullspace map
       */
   Teuchos::RCP<Epetra_MultiVector> compute_null_space(const Core::FE::Discretization& dis,
-      const int numdf, const int dimns, const Teuchos::RCP<Epetra_Map> dofmap);
+      const int numdf, const int dimns, const Epetra_Map& dofmap);
 }  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE

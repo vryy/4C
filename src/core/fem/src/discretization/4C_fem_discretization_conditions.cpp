@@ -348,11 +348,11 @@ bool Core::FE::Discretization::build_surfacesin_condition(
   {
     if ((cond->parameters().get<std::string>("field")) == "structure")
     {
-      find_associated_ele_i_ds(cond, VolEleIDs, "StructFluidVolCoupling");
+      find_associated_ele_i_ds(*cond, VolEleIDs, "StructFluidVolCoupling");
     }
   }
   else if (cond->type() == Core::Conditions::RedAirwayTissue)
-    find_associated_ele_i_ds(cond, VolEleIDs, "StructFluidVolCoupling");
+    find_associated_ele_i_ds(*cond, VolEleIDs, "StructFluidVolCoupling");
 
   /* First: Create the surface objects that belong to the condition. */
 
@@ -614,11 +614,10 @@ bool Core::FE::Discretization::build_volumesin_condition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::find_associated_ele_i_ds(
-    Teuchos::RCP<Core::Conditions::Condition> cond, std::set<int>& VolEleIDs,
-    const std::string& name)
+    Core::Conditions::Condition& cond, std::set<int>& VolEleIDs, const std::string& name)
 {
   // determine constraint number
-  int condID = cond->parameters().get<int>("coupling id");
+  int condID = cond.parameters().get<int>("coupling id");
 
   std::vector<Core::Conditions::Condition*> volconds;
   get_condition(name, volconds);

@@ -129,7 +129,7 @@ void Core::IO::MeshReader::rebalance()
     // We want to be able to read empty fields. If we have such a beast
     // just skip the building of the node  graph and do a proper initialization
     if (numnodes)
-      graph_[i] = Core::Rebalance::build_graph(discret, element_readers_[i].get_row_elements());
+      graph_[i] = Core::Rebalance::build_graph(*discret, *element_readers_[i].get_row_elements());
     else
       graph_[i] = Teuchos::null;
 
@@ -137,9 +137,8 @@ void Core::IO::MeshReader::rebalance()
     const double imbalance_tol =
         parameters_.mesh_paritioning_parameters.get<double>("IMBALANCE_TOL");
 
-    Teuchos::RCP<Teuchos::ParameterList> rebalanceParams =
-        Teuchos::make_rcp<Teuchos::ParameterList>();
-    rebalanceParams->set<std::string>("imbalance tol", std::to_string(imbalance_tol));
+    Teuchos::ParameterList rebalanceParams;
+    rebalanceParams.set<std::string>("imbalance tol", std::to_string(imbalance_tol));
 
     const auto rebalanceMethod = Teuchos::getIntegralValue<Core::Rebalance::RebalanceType>(
         parameters_.mesh_paritioning_parameters, "METHOD");
@@ -152,17 +151,17 @@ void Core::IO::MeshReader::rebalance()
       {
         case Core::Rebalance::RebalanceType::hypergraph:
         {
-          rebalanceParams->set("partitioning method", "HYPERGRAPH");
+          rebalanceParams.set("partitioning method", "HYPERGRAPH");
 
           // here we can reuse the graph, which was calculated before, this saves us some time
           std::tie(rowmap, colmap) =
-              Core::Rebalance::rebalance_node_maps(graph_[i], *rebalanceParams);
+              Core::Rebalance::rebalance_node_maps(*graph_[i], rebalanceParams);
 
           break;
         }
         case Core::Rebalance::RebalanceType::recursive_coordinate_bisection:
         {
-          rebalanceParams->set("partitioning method", "RCB");
+          rebalanceParams.set("partitioning method", "RCB");
 
           // here we can reuse the graph, which was calculated before, this saves us some time and
           // in addition calculate geometric information based on the coordinates of the
@@ -177,13 +176,13 @@ void Core::IO::MeshReader::rebalance()
           Teuchos::RCP<Epetra_MultiVector> coordinates = discret->build_node_coordinates();
 
           std::tie(rowmap, colmap) = Core::Rebalance::rebalance_node_maps(
-              graph_[i], *rebalanceParams, Teuchos::null, Teuchos::null, coordinates);
+              *graph_[i], rebalanceParams, Teuchos::null, Teuchos::null, coordinates);
 
           break;
         }
         case Core::Rebalance::RebalanceType::monolithic:
         {
-          rebalanceParams->set("partitioning method", "HYPERGRAPH");
+          rebalanceParams.set("partitioning method", "HYPERGRAPH");
 
           rowmap = Teuchos::make_rcp<Epetra_Map>(-1, graph_[i]->RowMap().NumMyElements(),
               graph_[i]->RowMap().MyGlobalElements(), 0, *comm_);
@@ -198,7 +197,7 @@ void Core::IO::MeshReader::rebalance()
                       parameters_.geometric_search_parameters, parameters_.io_parameters));
 
           std::tie(rowmap, colmap) =
-              Core::Rebalance::rebalance_node_maps(enriched_graph, *rebalanceParams);
+              Core::Rebalance::rebalance_node_maps(*enriched_graph, rebalanceParams);
 
           break;
         }

@@ -902,14 +902,14 @@ void CONTACT::Interface::redistribute()
   //**********************************************************************
   // call parallel redistribution
   Teuchos::RCP<const Epetra_CrsGraph> slaveCloseNodeGraph =
-      Core::Rebalance::build_graph(idiscret_, slaveCloseRowEles);
+      Core::Rebalance::build_graph(*idiscret_, *slaveCloseRowEles);
 
   Teuchos::ParameterList slaveCloseRebalanceParams;
   slaveCloseRebalanceParams.set<std::string>("num parts", std::to_string(scproc));
   slaveCloseRebalanceParams.set<std::string>("imbalance tol", std::to_string(imbalance_tol));
 
   const auto& [slaveCloseRowNodes, slaveCloseColNodes] =
-      Core::Rebalance::rebalance_node_maps(slaveCloseNodeGraph, slaveCloseRebalanceParams);
+      Core::Rebalance::rebalance_node_maps(*slaveCloseNodeGraph, slaveCloseRebalanceParams);
   //**********************************************************************
 
   //**********************************************************************
@@ -929,14 +929,14 @@ void CONTACT::Interface::redistribute()
   //**********************************************************************
   // call parallel redistribution
   Teuchos::RCP<const Epetra_CrsGraph> slaveNonCloseNodeGraph =
-      Core::Rebalance::build_graph(idiscret_, slaveNonCloseRowEles);
+      Core::Rebalance::build_graph(*idiscret_, *slaveNonCloseRowEles);
 
   Teuchos::ParameterList slaveNonCloseRebalanceParams;
   slaveNonCloseRebalanceParams.set<std::string>("num parts", std::to_string(sncproc));
   slaveNonCloseRebalanceParams.set<std::string>("imbalance tol", std::to_string(imbalance_tol));
 
   const auto& [slaveNonCloseRowNodes, snccolnodes] =
-      Core::Rebalance::rebalance_node_maps(slaveNonCloseNodeGraph, slaveNonCloseRebalanceParams);
+      Core::Rebalance::rebalance_node_maps(*slaveNonCloseNodeGraph, slaveNonCloseRebalanceParams);
   //**********************************************************************
 
   //**********************************************************************

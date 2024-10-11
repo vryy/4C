@@ -133,7 +133,7 @@ void CONSTRAINTS::ConstraintSolver::solve_uzawa(Teuchos::RCP<Core::LinAlg::Spars
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)
-    dbcmaps_ = Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(dirichtoggle_);
+    dbcmaps_ = Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(*dirichtoggle_);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(rhsstand->Map(), true);
@@ -283,7 +283,7 @@ void CONSTRAINTS::ConstraintSolver::solve_direct(Teuchos::RCP<Core::LinAlg::Spar
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)
-    dbcmaps_ = Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(dirichtoggle_);
+    dbcmaps_ = Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(*dirichtoggle_);
   // fill merged matrix using Add
   mergedmatrix->add(*stiff, false, 1.0, 1.0);
   mergedmatrix->add(*constr, false, 1.0, 1.0);
@@ -336,7 +336,7 @@ void CONSTRAINTS::ConstraintSolver::solve_simple(Teuchos::RCP<Core::LinAlg::Spar
   // ONLY compatability
   // dirichtoggle_ changed and we need to rebuild associated DBC maps
   if (dirichtoggle_ != Teuchos::null)
-    dbcmaps_ = Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(dirichtoggle_);
+    dbcmaps_ = Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(*dirichtoggle_);
 
   // stuff needed for Dirichlet BCs
   Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =

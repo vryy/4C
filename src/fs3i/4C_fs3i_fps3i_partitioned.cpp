@@ -162,7 +162,7 @@ void FS3I::PartFPS3I::init()
   {
     // fill fluid-based scatra discretization by cloning fluid discretization
     Core::FE::clone_discretization<ScaTra::ScatraFluidCloneStrategy>(
-        fluiddis, fluidscatradis, Global::Problem::instance()->cloning_material_map());
+        *fluiddis, *fluidscatradis, Global::Problem::instance()->cloning_material_map());
     fluidscatradis->fill_complete();
 
     // set implementation type of cloned scatra elements to advanced reactions
@@ -190,7 +190,7 @@ void FS3I::PartFPS3I::init()
   {
     // fill poro-based scatra discretization by cloning structure discretization
     Core::FE::clone_discretization<PoroElastScaTra::UTILS::PoroScatraCloneStrategy>(
-        structdis, structscatradis, Global::Problem::instance()->cloning_material_map());
+        *structdis, *structscatradis, Global::Problem::instance()->cloning_material_map());
   }
   else
     FOUR_C_THROW("Structure AND ScaTra discretization present. This is not supported.");

@@ -2086,7 +2086,7 @@ namespace FLD
 
     // optional: elementwise defined div u may be written to standard output file (not implemented
     // yet)
-    discret_->evaluate_scalars(eleparams, massflvec);
+    discret_->evaluate_scalars(eleparams, *massflvec);
 
     discret_->clear_state();
 

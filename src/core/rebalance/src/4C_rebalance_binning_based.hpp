@@ -55,8 +55,7 @@ namespace Core::Rebalance
     this method
 
     \return void */
-  void ghost_discretization_on_all_procs(
-      const Teuchos::RCP<Core::FE::Discretization> distobeghosted);
+  void ghost_discretization_on_all_procs(Core::FE::Discretization& distobeghosted);
 
   /*! \brief Rebalance elements matching to another discretization.
    *
@@ -107,16 +106,14 @@ namespace Core::Rebalance
   \param name (in): discretization
   \param state (in): vector of some data  */
   Teuchos::RCP<const Core::LinAlg::Vector<double>> get_col_version_of_row_vector(
-      const Teuchos::RCP<const Core::FE::Discretization> dis,
+      const Core::FE::Discretization& dis,
       const Teuchos::RCP<const Core::LinAlg::Vector<double>> state, const int nds = 0);
 
 
   /// recompute nodecolmap of standard discretization to include all nodes as of subdicretization
   Teuchos::RCP<Epetra_Map> compute_node_col_map(
-      const Teuchos::RCP<Core::FE::Discretization>
-          sourcedis,  ///< standard discretization we want to rebalance
-      const Teuchos::RCP<Core::FE::Discretization>
-          subdis  ///< subdiscretization prescribing ghosting
+      const Core::FE::Discretization& sourcedis,  ///< standard discretization we want to rebalance
+      const Core::FE::Discretization& subdis      ///< subdiscretization prescribing ghosting
   );
 
   /*! \brief Fill processor local row and col vectors with element ids fitting the desired

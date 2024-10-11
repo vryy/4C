@@ -783,11 +783,10 @@ void Core::FE::Discretization::extended_ghosting(const Epetra_Map& elecolmap,
   if (have_pbc) pbcdofset->set_coupled_nodes(pbcmapvec);
 
   std::vector<int> colnodes(nodes.begin(), nodes.end());
-  Teuchos::RCP<Epetra_Map> nodecolmap =
-      Teuchos::make_rcp<Epetra_Map>(-1, (int)colnodes.size(), colnodes.data(), 0, get_comm());
+  Epetra_Map nodecolmap(-1, (int)colnodes.size(), colnodes.data(), 0, get_comm());
 
   // now ghost the nodes
-  export_column_nodes(*nodecolmap);
+  export_column_nodes(nodecolmap);
 
   // these exports have set Filled()=false as all maps are invalid now
   int err = fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
@@ -871,17 +870,16 @@ void Core::FE::Discretization::setup_ghosting(
   // do stupid conversion from Epetra_BlockMap to Epetra_Map
   const Epetra_BlockMap& brow = graph->RowMap();
   const Epetra_BlockMap& bcol = graph->ColMap();
-  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::make_rcp<Epetra_Map>(
+  Epetra_Map noderowmap(
       brow.NumGlobalElements(), brow.NumMyElements(), brow.MyGlobalElements(), 0, *comm_);
-  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::make_rcp<Epetra_Map>(
+  Epetra_Map nodecolmap(
       bcol.NumGlobalElements(), bcol.NumMyElements(), bcol.MyGlobalElements(), 0, *comm_);
 
   graph = Teuchos::null;
 
   // Redistribute discretization to match the new maps.
 
-  redistribute(
-      *noderowmap, *nodecolmap, assigndegreesoffreedom, initelements, doboundaryconditions);
+  redistribute(noderowmap, nodecolmap, assigndegreesoffreedom, initelements, doboundaryconditions);
 }
 
 FOUR_C_NAMESPACE_CLOSE

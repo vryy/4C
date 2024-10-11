@@ -384,7 +384,7 @@ namespace BEAMINTERACTION
 
       // temporarily extend ghosting
       Core::Binstrategy::Utils::extend_discretization_ghosting(
-          discret, newelecolmap, true, false, true);
+          *discret, *newelecolmap, true, false, true);
     }
 
     /*-----------------------------------------------------------------------------*

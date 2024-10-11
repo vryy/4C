@@ -120,8 +120,7 @@ namespace Core::LinAlg
      * @param[out] invcolsums  inverse sums of absolute values of column entries in matrix
      */
     void compute_inv_col_sums(const Core::LinAlg::SparseMatrix& matrix,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> invcolsums,
-        const EquilibrationMethod method) const;
+        Core::LinAlg::Vector<double>& invcolsums, const EquilibrationMethod method) const;
 
     /*!
      * @brief compute inverse sums of absolute values of matrix row entries
@@ -130,8 +129,7 @@ namespace Core::LinAlg
      * @param[out] invrowsums  inverse sums of absolute values of row entries in matrix
      */
     void compute_inv_row_sums(const Core::LinAlg::SparseMatrix& matrix,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> invrowsums,
-        const EquilibrationMethod method) const;
+        Core::LinAlg::Vector<double>& invrowsums, const EquilibrationMethod method) const;
 
     /*!
      * @brief compute scaling of matrix to keep symmetry
@@ -141,8 +139,8 @@ namespace Core::LinAlg
      * @param[in]  matrix      symmetric matrix A
      * @param[out] invsymmetry scale vector to keep symmetry in matrix d
      */
-    void compute_inv_symmetry(const Core::LinAlg::SparseMatrix& matrix,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> invsymmetry) const;
+    void compute_inv_symmetry(
+        const Core::LinAlg::SparseMatrix& matrix, Core::LinAlg::Vector<double>& invsymmetry) const;
 
     /*!
      * @brief equilibrate matrix columns
@@ -150,8 +148,8 @@ namespace Core::LinAlg
      * @param[in,out] matrix      matrix
      * @param[in]     invcolsums  sums of absolute values of column entries in matrix
      */
-    void equilibrate_matrix_columns(Core::LinAlg::SparseMatrix& matrix,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> invcolsums) const;
+    void equilibrate_matrix_columns(
+        Core::LinAlg::SparseMatrix& matrix, const Core::LinAlg::Vector<double>& invcolsums) const;
 
     /*!
      * @brief equilibrate matrix rows
@@ -159,8 +157,8 @@ namespace Core::LinAlg
      * @param[in,out] matrix      matrix
      * @param[in]     invrowsums  sums of absolute values of row entries in matrix
      */
-    void equilibrate_matrix_rows(Core::LinAlg::SparseMatrix& matrix,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> invrowsums) const;
+    void equilibrate_matrix_rows(
+        Core::LinAlg::SparseMatrix& matrix, const Core::LinAlg::Vector<double>& invrowsums) const;
 
     //! inverse sums of absolute values of column entries in global system matrix
     Teuchos::RCP<Core::LinAlg::Vector<double>> invcolsums_;

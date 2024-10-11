@@ -23,43 +23,42 @@ namespace Core::Binstrategy::Utils
 {
   /*-----------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------*/
-  void extend_discretization_ghosting(Teuchos::RCP<Core::FE::Discretization> discret,
-      Teuchos::RCP<Epetra_Map> const& extendedelecolmap, bool assigndegreesoffreedom,
-      bool initelements, bool doboundaryconditions)
+  void extend_discretization_ghosting(Core::FE::Discretization& discret,
+      Epetra_Map& extendedelecolmap, bool assigndegreesoffreedom, bool initelements,
+      bool doboundaryconditions)
   {
     // make sure that all procs are either filled or unfilled
     // oldmap in export_column_elements must be reset() on every proc or nowhere
-    discret->check_filled_globally();
+    discret.check_filled_globally();
 
     // adapt layout to extended ghosting in discret
     // first export the elements according to the processor local element column maps
-    discret->export_column_elements(*extendedelecolmap);
+    discret.export_column_elements(extendedelecolmap);
 
     // get the node ids of the elements that are to be ghosted
     // and create a proper node column map for their export
     std::set<int> nodes;
-    for (int lid = 0; lid < extendedelecolmap->NumMyElements(); ++lid)
+    for (int lid = 0; lid < extendedelecolmap.NumMyElements(); ++lid)
     {
-      Core::Elements::Element* ele = discret->g_element(extendedelecolmap->GID(lid));
+      Core::Elements::Element* ele = discret.g_element(extendedelecolmap.GID(lid));
       const int* nodeids = ele->node_ids();
       for (int inode = 0; inode < ele->num_node(); ++inode) nodes.insert(nodeids[inode]);
     }
 
     std::vector<int> colnodes(nodes.begin(), nodes.end());
-    Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::make_rcp<Epetra_Map>(
-        -1, (int)colnodes.size(), colnodes.data(), 0, discret->get_comm());
+    Epetra_Map nodecolmap(-1, (int)colnodes.size(), colnodes.data(), 0, discret.get_comm());
 
     // now ghost the nodes
-    discret->export_column_nodes(*nodecolmap);
+    discret.export_column_nodes(nodecolmap);
 
     // fillcomplete discret with extended ghosting
-    discret->fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
+    discret.fill_complete(assigndegreesoffreedom, initelements, doboundaryconditions);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // print distribution after standard ghosting
-    if (discret->get_comm().MyPID() == 0)
+    if (discret.get_comm().MyPID() == 0)
       std::cout << "parallel distribution with extended ghosting" << std::endl;
-    Core::Rebalance::UTILS::print_parallel_distribution(*discret);
+    Core::Rebalance::UTILS::print_parallel_distribution(discret);
 #endif
 
     return;
@@ -67,12 +66,12 @@ namespace Core::Binstrategy::Utils
 
   /*-----------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------*/
-  void communicate_elements(Teuchos::RCP<Core::FE::Discretization>& discret,
+  void communicate_elements(Core::FE::Discretization& discret,
       std::map<int, std::vector<Core::Elements::Element*>> const& toranktosendeles)
   {
     // build exporter
-    Core::Communication::Exporter exporter(discret->get_comm());
-    int const numproc = discret->get_comm().NumProc();
+    Core::Communication::Exporter exporter(discret.get_comm());
+    int const numproc = discret.get_comm().NumProc();
 
     // -----------------------------------------------------------------------
     // send
@@ -99,7 +98,7 @@ namespace Core::Binstrategy::Utils
     int tag = 0;
     for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end(); ++p)
     {
-      exporter.i_send(discret->get_comm().MyPID(), p->first, (p->second).data(),
+      exporter.i_send(discret.get_comm().MyPID(), p->first, (p->second).data(),
           (int)(p->second).size(), 1234, request[tag]);
       ++tag;
     }
@@ -110,10 +109,10 @@ namespace Core::Binstrategy::Utils
     // -----------------------------------------------------------------------
     // ---- prepare receiving procs -----
     std::vector<int> summedtargets(numproc, 0);
-    discret->get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+    discret.get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
 
     // ---- receive ----
-    for (int rec = 0; rec < summedtargets[discret->get_comm().MyPID()]; ++rec)
+    for (int rec = 0; rec < summedtargets[discret.get_comm().MyPID()]; ++rec)
     {
       std::vector<char> rdata;
       int length = 0;
@@ -122,7 +121,7 @@ namespace Core::Binstrategy::Utils
       exporter.receive_any(from, tag, rdata, length);
       if (tag != 1234)
         FOUR_C_THROW("Received on proc %i data with wrong tag from proc %i",
-            discret->get_comm().MyPID(), from);
+            discret.get_comm().MyPID(), from);
 
       // ---- unpack ----
       {
@@ -141,16 +140,16 @@ namespace Core::Binstrategy::Utils
           if (element == Teuchos::null) FOUR_C_THROW("Received object is not a element");
 
           // safety check
-          if (discret->have_global_element(element->id()) != true)
+          if (discret.have_global_element(element->id()) != true)
             FOUR_C_THROW(
                 "%i is getting owner of element %i without having it ghosted before, "
                 "this is not intended.",
-                discret->get_comm().MyPID(), element->id());
+                discret.get_comm().MyPID(), element->id());
 
           // delete already existing element (as it has wrong internal variables)
-          discret->delete_element(element->id());
+          discret.delete_element(element->id());
           // add node (ownership already adapted on sending proc)
-          discret->add_element(element);
+          discret.add_element(element);
         }
       }
     }
@@ -158,19 +157,18 @@ namespace Core::Binstrategy::Utils
     // wait for all communications to finish
     for (int i = 0; i < length; ++i) exporter.wait(request[i]);
     // safety, should be a no time operation if everything works fine before
-    discret->get_comm().Barrier();
+    discret.get_comm().Barrier();
   }
 
   /*-----------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------*/
-  void communicate_distribution_of_transferred_elements_to_bins(
-      Teuchos::RCP<Core::FE::Discretization>& discret,
+  void communicate_distribution_of_transferred_elements_to_bins(Core::FE::Discretization& discret,
       std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosendbinids,
       std::map<int, std::set<int>>& bintorowelemap)
   {
     // build exporter
-    Core::Communication::Exporter exporter(discret->get_comm());
-    int const numproc = discret->get_comm().NumProc();
+    Core::Communication::Exporter exporter(discret.get_comm());
+    int const numproc = discret.get_comm().NumProc();
 
     // -----------------------------------------------------------------------
     // send
@@ -197,7 +195,7 @@ namespace Core::Binstrategy::Utils
     int tag = 0;
     for (std::map<int, std::vector<char>>::const_iterator p = sdata.begin(); p != sdata.end(); ++p)
     {
-      exporter.i_send(discret->get_comm().MyPID(), p->first, (p->second).data(),
+      exporter.i_send(discret.get_comm().MyPID(), p->first, (p->second).data(),
           (int)(p->second).size(), 1234, request[tag]);
       ++tag;
     }
@@ -208,10 +206,10 @@ namespace Core::Binstrategy::Utils
     // -----------------------------------------------------------------------
     // ---- prepare receiving procs -----
     std::vector<int> summedtargets(numproc, 0);
-    discret->get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
+    discret.get_comm().SumAll(targetprocs.data(), summedtargets.data(), numproc);
 
     // ---- receive ----
-    for (int rec = 0; rec < summedtargets[discret->get_comm().MyPID()]; ++rec)
+    for (int rec = 0; rec < summedtargets[discret.get_comm().MyPID()]; ++rec)
     {
       std::vector<char> rdata;
       int length = 0;
@@ -220,7 +218,7 @@ namespace Core::Binstrategy::Utils
       exporter.receive_any(from, tag, rdata, length);
       if (tag != 1234)
         FOUR_C_THROW("Received on proc %i data with wrong tag from proc %i",
-            discret->get_comm().MyPID(), from);
+            discret.get_comm().MyPID(), from);
 
       // ---- unpack ----
       {
@@ -240,7 +238,7 @@ namespace Core::Binstrategy::Utils
     // wait for all communications to finish
     for (int i = 0; i < length; ++i) exporter.wait(request[i]);
     // safety, should be a no time operation if everything works fine before
-    discret->get_comm().Barrier();
+    discret.get_comm().Barrier();
   }
 
   /*----------------------------------------------------------------------*/
