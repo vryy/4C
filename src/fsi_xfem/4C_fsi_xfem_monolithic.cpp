@@ -601,19 +601,17 @@ void FSI::MonolithicXFEM::setup_rhs_residual(Core::LinAlg::Vector<double>& f)
 
   /*----------------------------------------------------------------------*/
   // get single field residuals
-  Teuchos::RCP<Core::LinAlg::Vector<double>> sv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*structure_poro()->rhs());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluid_field()->rhs());
+  Core::LinAlg::Vector<double> sv(*structure_poro()->rhs());
+  Core::LinAlg::Vector<double> fv(*fluid_field()->rhs());
 
   // scale the structural rhs
-  sv->Scale(scaling_S);
+  sv.Scale(scaling_S);
 
   // scale the fluid rhs
-  fv->Scale(scaling_F);  // scale with fluid_field()->residual_scaling()
+  fv.Scale(scaling_F);  // scale with fluid_field()->residual_scaling()
 
   // put the single field residuals together
-  combine_field_vectors(f, *sv, *fv);
+  combine_field_vectors(f, sv, fv);
 }
 
 /*----------------------------------------------------------------------*/

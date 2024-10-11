@@ -2218,7 +2218,7 @@ void Solid::TimInt::output_restart(bool& datawritten)
   }
 
   // springdashpot output
-  if (springman_->have_spring_dashpot()) springman_->output_restart(output_, discret_, disn_);
+  if (springman_->have_spring_dashpot()) springman_->output_restart(output_, *discret_, *disn_);
 
   // info dedicated to user's eyes staring at standard out
   if ((myrank_ == 0) and printscreen_ and (step_old() % printscreen_ == 0))
@@ -2326,7 +2326,7 @@ void Solid::TimInt::add_restart_to_output_state()
   }
 
   // springdashpot output
-  if (springman_->have_spring_dashpot()) springman_->output_restart(output_, discret_, disn_);
+  if (springman_->have_spring_dashpot()) springman_->output_restart(output_, *discret_, *disn_);
 
   // contact/meshtying
   if (have_contact_meshtying()) cmtbridge_->write_restart(*output_, true);

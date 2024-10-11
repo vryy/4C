@@ -226,7 +226,7 @@ void FSI::UTILS::SlideAleUtils::remeshing(Adapter::FSIStructureWrapper& structur
   const int dim = Global::Problem::instance()->n_dim();
 
   // project sliding fluid nodes onto struct interface surface
-  slide_projection(structure, *fluiddis, idispale, *iprojdispale, coupsf, comm);
+  slide_projection(structure, *fluiddis, *idispale, *iprojdispale, coupsf, comm);
 
   // For the NON sliding ALE Nodes, use standard ALE displacements
 
@@ -440,7 +440,7 @@ std::map<int, Core::LinAlg::Matrix<3, 1>> FSI::UTILS::SlideAleUtils::current_str
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::SlideAleUtils::slide_projection(
     Adapter::FSIStructureWrapper& structure, Core::FE::Discretization& fluiddis,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idispale, Core::LinAlg::Vector<double>& iprojdispale,
+    Core::LinAlg::Vector<double>& idispale, Core::LinAlg::Vector<double>& iprojdispale,
     Coupling::Adapter::CouplingMortar& coupsf, const Epetra_Comm& comm
 
 )
@@ -469,7 +469,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
   if (aletype_ == Inpar::FSI::ALEprojection_rot_z ||
       aletype_ == Inpar::FSI::ALEprojection_rot_zsphere)
   {
-    rotation(coupsf.interface()->discret(), *idispale, comm, rotrat, *frotfull);
+    rotation(coupsf.interface()->discret(), idispale, comm, rotrat, *frotfull);
   }
 
 
@@ -524,7 +524,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
         // current coord of ale node = ref + centerdisp
         for (int p = 0; p < dim; p++)
         {
-          alenodecurr(p, 0) = node->x()[p] + (*idispale)[(lids[p])] -
+          alenodecurr(p, 0) = node->x()[p] + (idispale)[(lids[p])] -
                               1.0 * rotrat[mnit->first] * (*frotfull)[(lids[p])];
         }
       }

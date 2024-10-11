@@ -181,9 +181,8 @@ class EnsightWriter : public PostWriterBase
       const std::string name);
 
   Teuchos::RCP<Epetra_Map> write_coordinates(
-      std::ofstream& geofile,  ///< filestream for the geometry
-      const Teuchos::RCP<Core::FE::Discretization>
-          dis  ///< discretization where the nodal positions are take from
+      std::ofstream& geofile,        ///< filestream for the geometry
+      Core::FE::Discretization& dis  ///< discretization where the nodal positions are take from
   );
 
   /*! \brief Write the coordinates for a Polynomial discretization

@@ -188,7 +188,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::reset()
     {
       // extract the Dof values of this element from displacement vector
       BEAMINTERACTION::UTILS::extract_pos_dof_vec_absolute_values(discret(), element_ptr[ielement],
-          beam_interaction_data_state_ptr()->get_dis_col_np(),
+          *beam_interaction_data_state_ptr()->get_dis_col_np(),
           element_posdofvec_absolutevalues[ielement]);
     }
 

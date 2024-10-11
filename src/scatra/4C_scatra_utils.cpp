@@ -147,7 +147,7 @@ void ScaTra::ScaTraUtils::check_consistency_with_s2_i_kinetics_condition(
  *----------------------------------------------------------------------*/
 template <const int dim>
 Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average(
-    Teuchos::RCP<Core::FE::Discretization> discret, const Core::LinAlg::Vector<double>& state,
+    Core::FE::Discretization& discret, const Core::LinAlg::Vector<double>& state,
     const int scatra_dofid)
 {
   // number space dimensions
@@ -158,16 +158,15 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
     FOUR_C_THROW("Only implemented for 3D elements. Should be simple enough to extend...");
 
   // DOF-COL-MAP
-  const Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_col =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret->dof_col_map());
+  Core::LinAlg::Vector<double> phinp_col(*discret.dof_col_map());
   // export dof_row_map to DofColMap phinp
-  Core::LinAlg::export_to(state, *phinp_col);
+  Core::LinAlg::export_to(state, phinp_col);
 
   // ---------------------------------------------------------------
 
   // before we can export to NodeColMap we need reconstruction with a NodeRowMap
   const Teuchos::RCP<Epetra_MultiVector> gradphirow =
-      Teuchos::make_rcp<Epetra_MultiVector>(*discret->dof_row_map(), nsd);
+      Teuchos::make_rcp<Epetra_MultiVector>(*discret.dof_row_map(), nsd);
   gradphirow->PutScalar(0.0);
 
   // map of pointers to nodes which must be reconstructed by this processor <local id, node>
@@ -178,10 +177,10 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
   // PART I:  loop over all elements in column map to find all nodes which must be reconstructed
   // remark: intersected elements at processor boundary must be seen by all processors
   //--------------------------------------------------------------------------------------------
-  for (int iele = 0; iele < discret->num_my_col_elements(); iele++)
+  for (int iele = 0; iele < discret.num_my_col_elements(); iele++)
   {
     // get element from fluid discretization
-    const Core::Elements::Element* actele = discret->l_col_element(iele);
+    const Core::Elements::Element* actele = discret.l_col_element(iele);
 
     // get number of nodes of this element (number of vertices)
     const int numberOfNodes = actele->num_node();
@@ -194,7 +193,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
       // get owner of the node to compare with my_rank
       int node_owner = (ele_vecOfPtsToNode[vec_it])->owner();
       // check wheather this node is a row node, compare with actual processor id
-      if (node_owner == discret->get_comm().MyPID())
+      if (node_owner == discret.get_comm().MyPID())
       {
         // insert in map (overwrite existing entry)
         int lid = ele_vecOfPtsToNode[vec_it]->lid();
@@ -244,7 +243,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
     bool pbcnode = false;
     std::set<int> coupnodegid;
     // loop all nodes with periodic boundary conditions (master nodes)
-    std::map<int, std::vector<int>>* pbccolmap = discret->get_all_pbc_coupled_col_nodes();
+    std::map<int, std::vector<int>>* pbccolmap = discret.get_all_pbc_coupled_col_nodes();
 
     if (pbcnode)
     {
@@ -284,7 +283,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
       for (int icoupnode : coupnodegid)
       {
         // get coupled pbc node (master or slave)
-        const Core::Nodes::Node* ptToCoupNode = discret->g_node(icoupnode);
+        const Core::Nodes::Node* ptToCoupNode = discret.g_node(icoupnode);
         // get adjacent elements of this node
         const Core::Elements::Element* const* pbcelements = ptToCoupNode->elements();
         // add elements to list
@@ -303,13 +302,13 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
     {
       node_gradphi_smoothed =
           do_mean_value_averaging_of_element_gradient_node<nsd, Core::FE::CellType::hex8>(
-              *discret, elements, *phinp_col, nodegid, scatra_dofid);
+              discret, elements, phinp_col, nodegid, scatra_dofid);
     }
     else if (DISTYPE == Core::FE::CellType::hex27)
     {
       node_gradphi_smoothed =
           do_mean_value_averaging_of_element_gradient_node<nsd, Core::FE::CellType::hex27>(
-              *discret, elements, *phinp_col, nodegid, scatra_dofid);
+              discret, elements, phinp_col, nodegid, scatra_dofid);
     }
     else
       FOUR_C_THROW("Element type not supported yet!");
@@ -319,7 +318,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
     // row map
     //----------------------------------------------------------------------------------------------------
 
-    const std::vector<int> lm = discret->dof(scatra_dofid, (it_node.second));
+    const std::vector<int> lm = discret.dof(scatra_dofid, (it_node.second));
     if (lm.size() != 1) FOUR_C_THROW("assume a unique level-set dof in ScaTra DoFset");
 
     int GID = lm[0];  // Global ID of DoF Map
@@ -348,9 +347,8 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
 }
 
 template Teuchos::RCP<Epetra_MultiVector>
-ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average<3>(
-    Teuchos::RCP<Core::FE::Discretization> discret, const Core::LinAlg::Vector<double>& state,
-    const int scatra_dofid);
+ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average<3>(Core::FE::Discretization& discret,
+    const Core::LinAlg::Vector<double>& state, const int scatra_dofid);
 
 
 

@@ -150,17 +150,17 @@ void FLD::TimIntRedModels::do_problem_specific_boundary_conditions()
   // Check if one-dimensional artery network problem exist
   if (ART_timeInt_ != Teuchos::null)
   {
-    coupled3D_redDbc_art_->evaluate_dirichlet(velnp_, *(dbcmaps_->cond_map()), time_);
+    coupled3D_redDbc_art_->evaluate_dirichlet(*velnp_, *(dbcmaps_->cond_map()), time_);
   }
   // update the 3D-to-reduced_D coupling data
   // Check if one-dimensional artery network problem exist
   if (airway_imp_timeInt_ != Teuchos::null)
   {
-    coupled3D_redDbc_airways_->evaluate_dirichlet(velnp_, *(dbcmaps_->cond_map()), time_);
+    coupled3D_redDbc_airways_->evaluate_dirichlet(*velnp_, *(dbcmaps_->cond_map()), time_);
   }
 
   // Evaluate the womersley velocities
-  vol_surf_flow_bc_->evaluate_velocities(velnp_, time_);
+  vol_surf_flow_bc_->evaluate_velocities(*velnp_, time_);
 }
 
 /*----------------------------------------------------------------------*
@@ -187,7 +187,7 @@ void FLD::TimIntRedModels::update_3d_to_reduced_mat_and_rhs()
       coupled3D_redDbc_art_->flow_rate_calculation(time_, dta_);
       coupled3D_redDbc_art_->apply_boundary_conditions(time_, dta_, theta_);
     }
-    coupled3D_redDbc_art_->update_residual(residual_);
+    coupled3D_redDbc_art_->update_residual(*residual_);
   }
   // update the 3D-to-reduced_D coupling data
   // Check if one-dimensional artery network problem exist
@@ -199,7 +199,7 @@ void FLD::TimIntRedModels::update_3d_to_reduced_mat_and_rhs()
       coupled3D_redDbc_airways_->flow_rate_calculation(time_, dta_);
       coupled3D_redDbc_airways_->apply_boundary_conditions(time_, dta_, theta_);
     }
-    coupled3D_redDbc_airways_->update_residual(residual_);
+    coupled3D_redDbc_airways_->update_residual(*residual_);
   }
 
   //----------------------------------------------------------------------
@@ -207,7 +207,7 @@ void FLD::TimIntRedModels::update_3d_to_reduced_mat_and_rhs()
   //----------------------------------------------------------------------
 
   traction_vel_comp_adder_bc_->evaluate_velocities(velnp_, time_, theta_, dta_);
-  traction_vel_comp_adder_bc_->update_residual(residual_);
+  traction_vel_comp_adder_bc_->update_residual(*residual_);
 
   discret_->clear_state();
 }

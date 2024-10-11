@@ -88,8 +88,8 @@ namespace Discret
           const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>&
               inverseJacobian,
           const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
-          const Inpar::Solid::PreStress prestressType,
-          const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, int gp);
+          const Inpar::Solid::PreStress prestressType, Discret::ELEMENTS::PreStress& mulfHistory,
+          int gp);
 
       /*!
        * \brief Compute the deformation gradient in the case of MULF

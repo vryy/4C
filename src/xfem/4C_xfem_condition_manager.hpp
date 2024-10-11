@@ -738,7 +738,7 @@ namespace XFEM
     /// combine two levelset fields via boolean type set operations and set result into vec1
     void combine_level_set_field(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
         Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
-        Teuchos::RCP<Core::LinAlg::Vector<int>>& node_lsc_coup_idx,
+        Core::LinAlg::Vector<int>& node_lsc_coup_idx,
         XFEM::CouplingBase::LevelSetBooleanType ls_boolean_type);
 
     /// check if the vector maps are equal
@@ -747,25 +747,22 @@ namespace XFEM
 
     /// combine two levelset fields via boolean type "union" set operation and put result into
     /// vec1
-    void set_minimum(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
-        Core::LinAlg::Vector<int>& node_lsc_coup_idx);
+    void set_minimum(Core::LinAlg::Vector<double>& vec1, Core::LinAlg::Vector<double>& vec2,
+        const int lsc_index_2, Core::LinAlg::Vector<int>& node_lsc_coup_idx);
 
     /// combine two levelset fields via boolean type "cut" set operation and put result into vec1
-    void set_maximum(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
-        Core::LinAlg::Vector<int>& node_lsc_coup_idx);
+    void set_maximum(Core::LinAlg::Vector<double>& vec1, Core::LinAlg::Vector<double>& vec2,
+        const int lsc_index_2, Core::LinAlg::Vector<int>& node_lsc_coup_idx);
 
     /// combine two levelset fields via boolean type "difference" set operation and put result
     /// into vec1
-    void set_difference(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
-        Core::LinAlg::Vector<int>& node_lsc_coup_idx);
+    void set_difference(Core::LinAlg::Vector<double>& vec1, Core::LinAlg::Vector<double>& vec2,
+        const int lsc_index_2, Core::LinAlg::Vector<int>& node_lsc_coup_idx);
 
     /// combine two levelset fields via boolean type "sym_difference" set operation and put result
     /// into vec1
-    void set_symmetric_difference(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
+    void set_symmetric_difference(Core::LinAlg::Vector<double>& vec1,
+        Core::LinAlg::Vector<double>& vec2, const int lsc_index_2,
         Core::LinAlg::Vector<int>& node_lsc_coup_idx);
 
     void build_complementary_level_set(Core::LinAlg::Vector<double>& vec1);

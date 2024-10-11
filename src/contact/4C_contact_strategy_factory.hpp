@@ -68,7 +68,7 @@ namespace CONTACT
        *  \author hiermeier \date 03/17 */
       static Teuchos::RCP<CONTACT::Interface> create_interface(const int id,
           const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
-          const bool selfcontact, const Teuchos::RCP<const Core::FE::Discretization>& parent_dis,
+          const bool selfcontact,
           Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr = Teuchos::null,
           const int contactconstitutivelaw_id = -1);
 
@@ -78,7 +78,6 @@ namespace CONTACT
       static Teuchos::RCP<CONTACT::Interface> create_interface(
           const enum Inpar::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
           const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-          const Core::FE::Discretization& parent_dis,
           Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_ptr,
           const int contactconstitutivelaw_id = -1);
 

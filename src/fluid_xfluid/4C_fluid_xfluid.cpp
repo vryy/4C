@@ -695,7 +695,7 @@ void FLD::XFluid::update_ale_state_vectors(Teuchos::RCP<FLD::XFluidState> state)
   if (alefluid_)
   {
     std::cout << "InitALEStateVectors" << std::endl;
-    state_tmp->init_ale_state_vectors(*xdiscret_, dispnp_, gridvnp_);
+    state_tmp->init_ale_state_vectors(*xdiscret_, *dispnp_, *gridvnp_);
   }
 }
 
@@ -1325,7 +1325,7 @@ void FLD::XFluid::assemble_mat_and_rhs_face_terms(
 
       const bool gmsh_EOS_out(params_->sublist("XFEM").get<bool>("GMSH_EOS_OUT"));
       edgestab_->evaluate_edge_stab_ghost_penalty(faceparams, discret_, face_ele, sysmat,
-          residual_col, wizard, include_inner_, ghost_penalty_add_inner_faces_, gmsh_EOS_out);
+          residual_col, *wizard, include_inner_, ghost_penalty_add_inner_faces_, gmsh_EOS_out);
     }
   }
 }
@@ -1714,14 +1714,11 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_analyt
     const int num_dom_norms = 10;
     const int num_interf_norms = 8;
     const int num_stab_norms = 3;
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_dom_norms =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_dom_norms);
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_interf_norms =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_interf_norms);
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_stab_norms =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_stab_norms);
+    Core::LinAlg::SerialDenseVector glob_dom_norms(num_dom_norms);
+    Core::LinAlg::SerialDenseVector glob_interf_norms(num_interf_norms);
+    Core::LinAlg::SerialDenseVector glob_stab_norms(num_stab_norms);
 
-    compute_error_norms(*glob_dom_norms, *glob_interf_norms, *glob_stab_norms);
+    compute_error_norms(glob_dom_norms, glob_interf_norms, glob_stab_norms);
 
     // standard domain errors
     double dom_err_vel_L2 =
@@ -1762,23 +1759,23 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::evaluate_error_compared_to_analyt
               //  conservation coupling condition
 
 
-    dom_err_vel_L2 = sqrt((*glob_dom_norms)[0]);
-    dom_err_vel_H1_semi = sqrt((*glob_dom_norms)[1]);
-    dom_err_vel_H1 = sqrt((*glob_dom_norms)[2]);
-    dom_err_pre_L2 = sqrt((*glob_dom_norms)[3]);
+    dom_err_vel_L2 = sqrt((glob_dom_norms)[0]);
+    dom_err_vel_H1_semi = sqrt((glob_dom_norms)[1]);
+    dom_err_vel_H1 = sqrt((glob_dom_norms)[2]);
+    dom_err_pre_L2 = sqrt((glob_dom_norms)[3]);
 
-    dom_err_vel_H1_semi_nu_scaled = sqrt((*glob_dom_norms)[4]);
-    dom_err_pre_L2_nu_scaled = sqrt((*glob_dom_norms)[5]);
-    dom_err_vel_L2_sigma_scaled = sqrt((*glob_dom_norms)[6]);
-    dom_err_pre_L2_Phi_scaled = sqrt((*glob_dom_norms)[7]);
+    dom_err_vel_H1_semi_nu_scaled = sqrt((glob_dom_norms)[4]);
+    dom_err_pre_L2_nu_scaled = sqrt((glob_dom_norms)[5]);
+    dom_err_vel_L2_sigma_scaled = sqrt((glob_dom_norms)[6]);
+    dom_err_pre_L2_Phi_scaled = sqrt((glob_dom_norms)[7]);
 
-    functional = (*glob_dom_norms)[8];
+    functional = (glob_dom_norms)[8];
 
-    interf_err_Honehalf = sqrt((*glob_interf_norms)[0]);
-    interf_err_Hmonehalf_u = sqrt((*glob_interf_norms)[1]);
-    interf_err_Hmonehalf_p = sqrt((*glob_interf_norms)[2]);
-    interf_err_inflow = sqrt((*glob_interf_norms)[3]);
-    interf_err_mass_cons = sqrt((*glob_interf_norms)[4]);
+    interf_err_Honehalf = sqrt((glob_interf_norms)[0]);
+    interf_err_Hmonehalf_u = sqrt((glob_interf_norms)[1]);
+    interf_err_Hmonehalf_p = sqrt((glob_interf_norms)[2]);
+    interf_err_inflow = sqrt((glob_interf_norms)[3]);
+    interf_err_mass_cons = sqrt((glob_interf_norms)[4]);
 
     if (myrank_ == 0)
     {
@@ -3416,10 +3413,10 @@ bool FLD::XFluid::x_timint_check_for_monolithic_newton_restart(
                                         ///< reconstruction techniques
     const bool timint_semi_lagrangean,  ///< dofs have to be reconstructed via semi-Lagrangean
                                         ///< reconstruction techniques
-    Teuchos::RCP<Core::FE::Discretization> dis,  ///< discretization
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_i,     ///< dofset last iteration
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_ip,    ///< dofset current iteration
-    const bool screen_out                        ///< screen output?
+    Core::FE::Discretization& dis,      ///< discretization
+    XFEM::XFEMDofSet& dofset_i,         ///< dofset last iteration
+    XFEM::XFEMDofSet& dofset_ip,        ///< dofset current iteration
+    const bool screen_out               ///< screen output?
 )
 {
   discret_->get_comm().Barrier();
@@ -3442,7 +3439,7 @@ bool FLD::XFluid::x_timint_check_for_monolithic_newton_restart(
 
   //---------------
   // check if the dofsets changed
-  const bool dofsets_changed = x_timint_changed_dofsets(*dis, *dofset_i, *dofset_ip);
+  const bool dofsets_changed = x_timint_changed_dofsets(dis, dofset_i, dofset_ip);
 
   if (myrank_ == 0 and screen_out)
   {
@@ -3682,7 +3679,7 @@ void FLD::XFluid::x_timint_do_time_step_transfer(const bool screen_out)
   {
     x_timint_ghost_penalty(newRowStateVectors,  ///< vectors to be reconstructed
         newdofrowmap,                           ///< dofrowmap
-        dbcgids,                                ///< dbc global ids
+        *dbcgids,                               ///< dbc global ids
         screen_out                              ///< screen output?
     );
   }
@@ -3906,7 +3903,7 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
   {
     x_timint_ghost_penalty(rowStateVectors_npip,  ///< vectors to be reconstructed
         newdofrowmap,                             ///< dofrowmap
-        dbcgids,                                  ///< dbc global ids
+        *dbcgids,                                 ///< dbc global ids
         screen_out                                ///< screen output?
     );
   }
@@ -3926,9 +3923,9 @@ bool FLD::XFluid::x_timint_do_increment_step_transfer(
                                  ///< techniques
         timint_semi_lagrangean,  ///< dofs have to be reconstructed via semi-Lagrangean
                                  ///< reconstruction techniques
-        discret_,                ///< discretization
-        dofset_Intnpi_,          ///< dofset last iteration
-        state_->dof_set(),       ///< dofset current iteration
+        *discret_,               ///< discretization
+        *dofset_Intnpi_,         ///< dofset last iteration
+        *state_->dof_set(),      ///< dofset current iteration
         screen_out               ///< screen output?
     );
   }
@@ -4089,7 +4086,7 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> FLD::XFluid::create_dbc_map_extractor(
 void FLD::XFluid::x_timint_ghost_penalty(std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
                                              rowVectors,  ///< vectors to be reconstructed
     const Epetra_Map* dofrowmap,                          ///< dofrowmap
-    const Teuchos::RCP<const std::set<int>> dbcgids,      ///< dbc global ids
+    const std::set<int>& dbcgids,                         ///< dbc global ids
     const bool screen_out                                 ///< screen output?
 )
 {
@@ -4100,7 +4097,7 @@ void FLD::XFluid::x_timint_ghost_penalty(std::vector<Teuchos::RCP<Core::LinAlg::
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs
   // which will not be modified by the ghost-penalty reconstruction
   Teuchos::RCP<Core::LinAlg::MapExtractor> ghost_penaly_dbcmaps =
-      create_dbc_map_extractor(*dbcgids, dofrowmap);
+      create_dbc_map_extractor(dbcgids, dofrowmap);
 
   //----------------------------------------
   // perform ghost-penalty reconstruction for all vectors
@@ -4109,7 +4106,7 @@ void FLD::XFluid::x_timint_ghost_penalty(std::vector<Teuchos::RCP<Core::LinAlg::
        vecs_it != rowVectors.end(); vecs_it++)
   {
     // reconstruct values using ghost penalty approach
-    x_timint_reconstruct_ghost_values(*vecs_it, ghost_penaly_dbcmaps, screen_out);
+    x_timint_reconstruct_ghost_values(*vecs_it, *ghost_penaly_dbcmaps, screen_out);
   }
 
 
@@ -4123,7 +4120,7 @@ void FLD::XFluid::x_timint_ghost_penalty(std::vector<Teuchos::RCP<Core::LinAlg::
  *----------------------------------------------------------------------*/
 void FLD::XFluid::x_timint_reconstruct_ghost_values(
     Teuchos::RCP<Core::LinAlg::Vector<double>> vec,  ///< vector to be reconstructed
-    Teuchos::RCP<Core::LinAlg::MapExtractor>
+    Core::LinAlg::MapExtractor&
         ghost_penaly_dbcmaps,  ///< which dofs are fixed during the ghost-penalty reconstruction?
     const bool screen_out      ///< screen output?
 )
@@ -4163,7 +4160,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
   std::vector<int> numentries(state_->xfluiddofrowmap_->NumMyElements());
 
   const Epetra_Map& rowmap = *state_->xfluiddofrowmap_;
-  const Epetra_Map& condmap = *(ghost_penaly_dbcmaps->cond_map());
+  const Epetra_Map& condmap = *(ghost_penaly_dbcmaps.cond_map());
 
   for (unsigned i = 0; i < numentries.size(); ++i)
   {
@@ -4208,7 +4205,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
     const double tcpu = Teuchos::Time::wallTime();
 
     // evaluate routine
-    assemble_mat_and_rhs_gradient_penalty(*ghost_penaly_dbcmaps, sysmat_gp, *residual_gp, vec);
+    assemble_mat_and_rhs_gradient_penalty(ghost_penaly_dbcmaps, sysmat_gp, *residual_gp, vec);
 
     // end time measurement for element
     dtele_ = Teuchos::Time::wallTime() - tcpu;
@@ -4227,8 +4224,8 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
     TEUCHOS_FUNC_TIME_MONITOR(
         "FLD::XFluid::x_timint_reconstruct_ghost_values::ghost_penaly_dbcmaps->insert_cond_vector");
 
-    ghost_penaly_dbcmaps->insert_cond_vector(
-        *ghost_penaly_dbcmaps->extract_cond_vector(*zeros_gp), *residual_gp);
+    ghost_penaly_dbcmaps.insert_cond_vector(
+        *ghost_penaly_dbcmaps.extract_cond_vector(*zeros_gp), *residual_gp);
   }
 
   //--------- Apply Dirichlet boundary conditions to system of equations
@@ -4242,7 +4239,7 @@ void FLD::XFluid::x_timint_reconstruct_ghost_values(
         "FLD::XFluid::x_timint_reconstruct_ghost_values::apply_dirichlet_to_system");
 
     Core::LinAlg::apply_dirichlet_to_system(
-        *sysmat_gp, *incvel_gp, *residual_gp, *zeros_gp, *(ghost_penaly_dbcmaps->cond_map()));
+        *sysmat_gp, *incvel_gp, *residual_gp, *zeros_gp, *(ghost_penaly_dbcmaps.cond_map()));
   }
 
   //-------solve for residual displacements to correct incremental displacements
@@ -4752,7 +4749,7 @@ void FLD::XFluid::set_initial_flow_field(
 
     x_timint_ghost_penalty(rowStateVectors_npip,  ///< vectors to be reconstructed
         dofrowmap,                                ///< dofrowmap
-        dbcgids,                                  ///< dbc global ids
+        *dbcgids,                                 ///< dbc global ids
         true                                      ///< screen output?
     );
 

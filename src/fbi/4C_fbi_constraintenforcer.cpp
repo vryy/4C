@@ -288,12 +288,12 @@ void Adapter::FBIConstraintenforcer::extract_current_element_dofs(
 
   // extract the current position of the beam element from the displacement vector
   BEAMINTERACTION::UTILS::extract_pos_dof_vec_absolute_values(*(structure_->discretization()),
-      elements[0], column_structure_displacement_,
+      elements[0], *column_structure_displacement_,
       beam_dofvec);  // todo get "interface" displacements only for beam
                      // elements
   // extract velocity of the beam element
   BEAMINTERACTION::UTILS::extract_pos_dof_vec_values(
-      *(structure_->discretization()), elements[0], column_structure_velocity_, vel_tmp);
+      *(structure_->discretization()), elements[0], *column_structure_velocity_, vel_tmp);
 
   for (double val : vel_tmp) beam_dofvec.push_back(val);
 

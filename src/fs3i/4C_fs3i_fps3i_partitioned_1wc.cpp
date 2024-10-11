@@ -227,14 +227,13 @@ bool FS3I::PartFpS3I1Wc::scatra_convergence_check(const int itnum)
 
       double connorm(0.0);
       // set up vector of absolute concentrations
-      Teuchos::RCP<Core::LinAlg::Vector<double>> con =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(scatraincrement_->Map());
+      Core::LinAlg::Vector<double> con(scatraincrement_->Map());
       Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra1 =
           scatravec_[0]->scatra_field()->phinp();
       Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra2 =
           scatravec_[1]->scatra_field()->phinp();
-      setup_coupled_scatra_vector(*con, *scatra1, *scatra2);
-      con->Norm2(&connorm);
+      setup_coupled_scatra_vector(con, *scatra1, *scatra2);
+      con.Norm2(&connorm);
 
       // care for the case that nothing really happens in the concentration field
       if (connorm < 1e-5) connorm = 1.0;

@@ -284,7 +284,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::reset()
     {
       // extract the Dof values of this element from displacement vector
       BEAMINTERACTION::UTILS::extract_pos_dof_vec_absolute_values(discret(), element_ptr[ielement],
-          beam_interaction_data_state_ptr()->get_dis_col_np(),
+          *beam_interaction_data_state_ptr()->get_dis_col_np(),
           element_posdofvec_absolutevalues[ielement]);
     }
 
@@ -1075,7 +1075,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::set_restart_displacement_i
       {
         // Extract the Dof values of this element from the restart vector
         BEAMINTERACTION::UTILS::extract_pos_dof_vec_values(discret(), pair->get_element(i_element),
-            beam_interaction_data_state_ptr()->get_dis_restart_col(),
+            *beam_interaction_data_state_ptr()->get_dis_restart_col(),
             element_restart_dispalcement_[i_element]);
       }
 

@@ -3251,14 +3251,13 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     Teuchos::RCP<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
 
     // build constraint matrix kdz
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kdz =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gdisprowmap_, 100, false, true);
-    kdz->add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
-    kdz->add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
-    kdz->complete(*gsdofrowmap_, *gdisprowmap_);
+    Core::LinAlg::SparseMatrix kdz(*gdisprowmap_, 100, false, true);
+    kdz.add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
+    kdz.add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
+    kdz.complete(*gsdofrowmap_, *gdisprowmap_);
 
     // transform constraint matrix kzd to lmdofmap (matrix_col_transform)
-    trkdz = Mortar::matrix_col_transform_gids(*kdz, *glmdofrowmap_);
+    trkdz = Mortar::matrix_col_transform_gids(kdz, *glmdofrowmap_);
 
     // transform parallel row distribution of constraint matrix kdz
     // (only necessary in the parallel redistribution case)
@@ -3266,15 +3265,14 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
       trkdz = Mortar::matrix_row_transform(*trkdz, *problem_dofs());
 
     // build constraint matrix kzd
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kzd =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, false, true);
-    if (gactiven_->NumGlobalElements()) kzd->add(*smatrix_, false, 1.0, 1.0);
-    if (gstickt->NumGlobalElements()) kzd->add(*linstickDIS_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzd->add(*linslipDIS_, false, 1.0, 1.0);
-    kzd->complete(*gdisprowmap_, *gsdofrowmap_);
+    Core::LinAlg::SparseMatrix kzd(*gsdofrowmap_, 100, false, true);
+    if (gactiven_->NumGlobalElements()) kzd.add(*smatrix_, false, 1.0, 1.0);
+    if (gstickt->NumGlobalElements()) kzd.add(*linstickDIS_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzd.add(*linslipDIS_, false, 1.0, 1.0);
+    kzd.complete(*gdisprowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkzd = Mortar::matrix_row_transform_gids(*kzd, *glmdofrowmap_);
+    trkzd = Mortar::matrix_row_transform_gids(kzd, *glmdofrowmap_);
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
@@ -3289,26 +3287,25 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     onesdiag.complete();
 
     // build constraint matrix kzz
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kzz =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, false, true);
-    if (gidofs->NumGlobalElements()) kzz->add(onesdiag, false, 1.0, 1.0);
-    if (gstickt->NumGlobalElements()) kzz->add(*linstickLM_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzz->add(*linslipLM_, false, 1.0, 1.0);
+    Core::LinAlg::SparseMatrix kzz(*gsdofrowmap_, 100, false, true);
+    if (gidofs->NumGlobalElements()) kzz.add(onesdiag, false, 1.0, 1.0);
+    if (gstickt->NumGlobalElements()) kzz.add(*linstickLM_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzz.add(*linslipLM_, false, 1.0, 1.0);
 
     if (wearimpl_)
     {
       // add C-fnc. derivatives w.r.t. lm-values to kzz
-      if (gactiven_->NumGlobalElements()) kzz->add(*wlinmatrix_, false, 1.0, 1.0);
-      if (gslipt_->NumGlobalElements()) kzz->add(*wlinmatrixsl_, false, 1.0, 1.0);
+      if (gactiven_->NumGlobalElements()) kzz.add(*wlinmatrix_, false, 1.0, 1.0);
+      if (gslipt_->NumGlobalElements()) kzz.add(*wlinmatrixsl_, false, 1.0, 1.0);
 
 #ifdef CONSISTENTSTICK
       if (gstickt->NumGlobalElements()) kzz->Add(*wlinmatrixst_, false, 1.0, 1.0);
 #endif
     }
-    kzz->complete(*gsdofrowmap_, *gsdofrowmap_);
+    kzz.complete(*gsdofrowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzz to lmdofmap (matrix_row_col_transform)
-    trkzz = Mortar::matrix_row_col_transform_gids(*kzz, *glmdofrowmap_, *glmdofrowmap_);
+    trkzz = Mortar::matrix_row_col_transform_gids(kzz, *glmdofrowmap_, *glmdofrowmap_);
 
     /****************************************************************************************
      ***                RIGHT-HAND SIDE                   ***
@@ -3363,14 +3360,13 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     Teuchos::RCP<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
 
     // build constraint matrix kdz
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kdz =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gdisprowmap_, 100, false, true);
-    kdz->add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
-    kdz->add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
-    kdz->complete(*gsdofrowmap_, *gdisprowmap_);
+    Core::LinAlg::SparseMatrix kdz(*gdisprowmap_, 100, false, true);
+    kdz.add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
+    kdz.add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
+    kdz.complete(*gsdofrowmap_, *gdisprowmap_);
 
     // transform constraint matrix kzd to lmdofmap (matrix_col_transform)
-    trkdz = Mortar::matrix_col_transform_gids(*kdz, *glmdofrowmap_);
+    trkdz = Mortar::matrix_col_transform_gids(kdz, *glmdofrowmap_);
 
     // transform parallel row distribution of constraint matrix kdz
     // (only necessary in the parallel redistribution case)
@@ -3378,15 +3374,14 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
       trkdz = Mortar::matrix_row_transform(*trkdz, *problem_dofs());
 
     // build constraint matrix kzd
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kzd =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, false, true);
-    if (gactiven_->NumGlobalElements()) kzd->add(*smatrix_, false, 1.0, 1.0);
-    if (gstickt->NumGlobalElements()) kzd->add(*linstickDIS_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzd->add(*linslipDIS_, false, 1.0, 1.0);
-    kzd->complete(*gdisprowmap_, *gsdofrowmap_);
+    Core::LinAlg::SparseMatrix kzd(*gsdofrowmap_, 100, false, true);
+    if (gactiven_->NumGlobalElements()) kzd.add(*smatrix_, false, 1.0, 1.0);
+    if (gstickt->NumGlobalElements()) kzd.add(*linstickDIS_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzd.add(*linslipDIS_, false, 1.0, 1.0);
+    kzd.complete(*gdisprowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkzd = Mortar::matrix_row_transform_gids(*kzd, *glmdofrowmap_);
+    trkzd = Mortar::matrix_row_transform_gids(kzd, *glmdofrowmap_);
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
@@ -3401,39 +3396,37 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     onesdiag.complete();
 
     // build constraint matrix kzz
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kzz =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, false, true);
-    if (gidofs->NumGlobalElements()) kzz->add(onesdiag, false, 1.0, 1.0);
-    if (gstickt->NumGlobalElements()) kzz->add(*linstickLM_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzz->add(*linslipLM_, false, 1.0, 1.0);
+    Core::LinAlg::SparseMatrix kzz(*gsdofrowmap_, 100, false, true);
+    if (gidofs->NumGlobalElements()) kzz.add(onesdiag, false, 1.0, 1.0);
+    if (gstickt->NumGlobalElements()) kzz.add(*linstickLM_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzz.add(*linslipLM_, false, 1.0, 1.0);
 
-    kzz->complete(*gsdofrowmap_, *gsdofrowmap_);
+    kzz.complete(*gsdofrowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzz to lmdofmap (matrix_row_col_transform)
-    trkzz = Mortar::matrix_row_col_transform_gids(*kzz, *glmdofrowmap_, *glmdofrowmap_);
+    trkzz = Mortar::matrix_row_col_transform_gids(kzz, *glmdofrowmap_, *glmdofrowmap_);
 
 
     // ***************************************************************************************************
     // additional wear
     // ***************************************************************************************************
     // build wear matrix kwd
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kwd =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofnrowmap_, 100, false, true);
+    Core::LinAlg::SparseMatrix kwd(*gsdofnrowmap_, 100, false, true);
     if (sswear_)
     {
-      if (gactiven_->NumGlobalElements()) kwd->add(*lintdis_, false, -wcoeff, 1.0);
-      if (gactiven_->NumGlobalElements()) kwd->add(*linedis_, false, 1.0, 1.0);
-      if (gactiven_->NumGlobalElements()) kwd->complete(*gdisprowmap_, *gsdofnrowmap_);
+      if (gactiven_->NumGlobalElements()) kwd.add(*lintdis_, false, -wcoeff, 1.0);
+      if (gactiven_->NumGlobalElements()) kwd.add(*linedis_, false, 1.0, 1.0);
+      if (gactiven_->NumGlobalElements()) kwd.complete(*gdisprowmap_, *gsdofnrowmap_);
     }
     else
     {
-      if (gslipn_->NumGlobalElements()) kwd->add(*lintdis_, false, -wcoeff, 1.0);
-      if (gslipn_->NumGlobalElements()) kwd->add(*linedis_, false, 1.0, 1.0);
-      if (gslipn_->NumGlobalElements()) kwd->complete(*gdisprowmap_, *gsdofnrowmap_);
+      if (gslipn_->NumGlobalElements()) kwd.add(*lintdis_, false, -wcoeff, 1.0);
+      if (gslipn_->NumGlobalElements()) kwd.add(*linedis_, false, 1.0, 1.0);
+      if (gslipn_->NumGlobalElements()) kwd.complete(*gdisprowmap_, *gsdofnrowmap_);
     }
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkwd = Mortar::matrix_row_transform_gids(*kwd, *gwdofrowmap_);
+    trkwd = Mortar::matrix_row_transform_gids(kwd, *gwdofrowmap_);
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
@@ -3442,33 +3435,31 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
 
     // *********************************
     // build wear matrix kwz
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kwz =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofnrowmap_, 100, false, true);
+    Core::LinAlg::SparseMatrix kwz(*gsdofnrowmap_, 100, false, true);
     if (sswear_)
     {
-      if (gactiven_->NumGlobalElements()) kwz->add(*lintlm_, false, -wcoeff, 1.0);
+      if (gactiven_->NumGlobalElements()) kwz.add(*lintlm_, false, -wcoeff, 1.0);
     }
     else
     {
-      if (gslipn_->NumGlobalElements()) kwz->add(*lintlm_, false, -wcoeff, 1.0);
+      if (gslipn_->NumGlobalElements()) kwz.add(*lintlm_, false, -wcoeff, 1.0);
     }
 
-    kwz->complete(*gsdofrowmap_, *gsdofnrowmap_);
+    kwz.complete(*gsdofrowmap_, *gsdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkwz = Mortar::matrix_row_col_transform_gids(*kwz, *gwdofrowmap_, *glmdofrowmap_);
+    trkwz = Mortar::matrix_row_col_transform_gids(kwz, *gwdofrowmap_, *glmdofrowmap_);
 
     // *********************************
     // build wear matrix kww
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kww =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofnrowmap_, 100, false, true);
+    Core::LinAlg::SparseMatrix kww(*gsdofnrowmap_, 100, false, true);
     if (sswear_)
     {
-      if (gactiven_->NumGlobalElements()) kww->add(*ematrix_, false, 1.0, 1.0);
+      if (gactiven_->NumGlobalElements()) kww.add(*ematrix_, false, 1.0, 1.0);
     }
     else
     {
-      if (gslipn_->NumGlobalElements()) kww->add(*ematrix_, false, 1.0, 1.0);
+      if (gslipn_->NumGlobalElements()) kww.add(*ematrix_, false, 1.0, 1.0);
     }
 
     // build unity matrix for inactive dofs
@@ -3477,23 +3468,22 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     Core::LinAlg::SparseMatrix onesdiagw(onesw);
     onesdiagw.complete();
     // build constraint matrix kzz
-    if (gwinact_->NumGlobalElements()) kww->add(onesdiagw, false, 1.0, 1.0);
+    if (gwinact_->NumGlobalElements()) kww.add(onesdiagw, false, 1.0, 1.0);
 
-    kww->complete(*gsdofnrowmap_, *gsdofnrowmap_);
+    kww.complete(*gsdofnrowmap_, *gsdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkww = Mortar::matrix_row_col_transform_gids(*kww, *gwdofrowmap_, *gwdofrowmap_);
+    trkww = Mortar::matrix_row_col_transform_gids(kww, *gwdofrowmap_, *gwdofrowmap_);
 
     // *********************************
     // build wear matrix kzw
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kzw =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, false, true);
-    if (gactiven_->NumGlobalElements()) kzw->add(*smatrixW_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzw->add(*linslip_w_, false, 1.0, 1.0);
-    kzw->complete(*gsdofnrowmap_, *gsdofrowmap_);
+    Core::LinAlg::SparseMatrix kzw(*gsdofrowmap_, 100, false, true);
+    if (gactiven_->NumGlobalElements()) kzw.add(*smatrixW_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzw.add(*linslip_w_, false, 1.0, 1.0);
+    kzw.complete(*gsdofnrowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkzw = Mortar::matrix_row_col_transform_gids(*kzw, *glmdofrowmap_, *gwdofrowmap_);
+    trkzw = Mortar::matrix_row_col_transform_gids(kzw, *glmdofrowmap_, *gwdofrowmap_);
 
     /****************************************************************************************
      ***                RIGHT-HAND SIDE                   ***
@@ -3566,14 +3556,13 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     Teuchos::RCP<Epetra_Map> gstickt = Core::LinAlg::split_map(*gactivet_, *gslipt_);
 
     // build constraint matrix kdz
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kdz =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gdisprowmap_, 100, false, true);
-    kdz->add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
-    kdz->add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
-    kdz->complete(*gsdofrowmap_, *gdisprowmap_);
+    Core::LinAlg::SparseMatrix kdz(*gdisprowmap_, 100, false, true);
+    kdz.add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
+    kdz.add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
+    kdz.complete(*gsdofrowmap_, *gdisprowmap_);
 
     // transform constraint matrix kzd to lmdofmap (matrix_col_transform)
-    trkdz = Mortar::matrix_col_transform_gids(*kdz, *glmdofrowmap_);
+    trkdz = Mortar::matrix_col_transform_gids(kdz, *glmdofrowmap_);
 
     // transform parallel row distribution of constraint matrix kdz
     // (only necessary in the parallel redistribution case)
@@ -3581,15 +3570,14 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
       trkdz = Mortar::matrix_row_transform(*trkdz, *problem_dofs());
 
     // build constraint matrix kzd
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kzd =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, false, true);
-    if (gactiven_->NumGlobalElements()) kzd->add(*smatrix_, false, 1.0, 1.0);
-    if (gstickt->NumGlobalElements()) kzd->add(*linstickDIS_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzd->add(*linslipDIS_, false, 1.0, 1.0);
-    kzd->complete(*gdisprowmap_, *gsdofrowmap_);
+    Core::LinAlg::SparseMatrix kzd(*gsdofrowmap_, 100, false, true);
+    if (gactiven_->NumGlobalElements()) kzd.add(*smatrix_, false, 1.0, 1.0);
+    if (gstickt->NumGlobalElements()) kzd.add(*linstickDIS_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzd.add(*linslipDIS_, false, 1.0, 1.0);
+    kzd.complete(*gdisprowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkzd = Mortar::matrix_row_transform_gids(*kzd, *glmdofrowmap_);
+    trkzd = Mortar::matrix_row_transform_gids(kzd, *glmdofrowmap_);
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
@@ -3604,30 +3592,28 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     onesdiag.complete();
 
     // build constraint matrix kzz
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kzz =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, false, true);
-    if (gidofs->NumGlobalElements()) kzz->add(onesdiag, false, 1.0, 1.0);
-    if (gstickt->NumGlobalElements()) kzz->add(*linstickLM_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzz->add(*linslipLM_, false, 1.0, 1.0);
+    Core::LinAlg::SparseMatrix kzz(*gsdofrowmap_, 100, false, true);
+    if (gidofs->NumGlobalElements()) kzz.add(onesdiag, false, 1.0, 1.0);
+    if (gstickt->NumGlobalElements()) kzz.add(*linstickLM_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzz.add(*linslipLM_, false, 1.0, 1.0);
 
-    kzz->complete(*gsdofrowmap_, *gsdofrowmap_);
+    kzz.complete(*gsdofrowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzz to lmdofmap (matrix_row_col_transform)
-    trkzz = Mortar::matrix_row_col_transform_gids(*kzz, *glmdofrowmap_, *glmdofrowmap_);
+    trkzz = Mortar::matrix_row_col_transform_gids(kzz, *glmdofrowmap_, *glmdofrowmap_);
 
 
     // ***************************************************************************************************
     // additional wear SLAVE
     // ***************************************************************************************************
     // build wear matrix kwd
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kwd =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofnrowmap_, 100, false, true);
-    if (gslipn_->NumGlobalElements()) kwd->add(*lintdis_, false, -wcoeff, 1.0);
-    if (gslipn_->NumGlobalElements()) kwd->add(*linedis_, false, 1.0, 1.0);
-    if (gslipn_->NumGlobalElements()) kwd->complete(*gdisprowmap_, *gsdofnrowmap_);
+    Core::LinAlg::SparseMatrix kwd(*gsdofnrowmap_, 100, false, true);
+    if (gslipn_->NumGlobalElements()) kwd.add(*lintdis_, false, -wcoeff, 1.0);
+    if (gslipn_->NumGlobalElements()) kwd.add(*linedis_, false, 1.0, 1.0);
+    if (gslipn_->NumGlobalElements()) kwd.complete(*gdisprowmap_, *gsdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkwd = Mortar::matrix_row_transform_gids(*kwd, *gwdofrowmap_);
+    trkwd = Mortar::matrix_row_transform_gids(kwd, *gwdofrowmap_);
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
@@ -3636,19 +3622,17 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
 
     // *********************************
     // build wear matrix kwz
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kwz =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofnrowmap_, 100, false, true);
-    if (gslipn_->NumGlobalElements()) kwz->add(*lintlm_, false, -wcoeff, 1.0);
-    kwz->complete(*gsdofrowmap_, *gsdofnrowmap_);
+    Core::LinAlg::SparseMatrix kwz(*gsdofnrowmap_, 100, false, true);
+    if (gslipn_->NumGlobalElements()) kwz.add(*lintlm_, false, -wcoeff, 1.0);
+    kwz.complete(*gsdofrowmap_, *gsdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkwz = Mortar::matrix_row_col_transform_gids(*kwz, *gwdofrowmap_, *glmdofrowmap_);
+    trkwz = Mortar::matrix_row_col_transform_gids(kwz, *gwdofrowmap_, *glmdofrowmap_);
 
     // *********************************
     // build wear matrix kww
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kww =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofnrowmap_, 100, false, true);
-    if (gslipn_->NumGlobalElements()) kww->add(*ematrix_, false, 1.0, 1.0);
+    Core::LinAlg::SparseMatrix kww(*gsdofnrowmap_, 100, false, true);
+    if (gslipn_->NumGlobalElements()) kww.add(*ematrix_, false, 1.0, 1.0);
 
     // build unity matrix for inactive dofs
     Core::LinAlg::Vector<double> onesw(*gwinact_);
@@ -3656,37 +3640,35 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     Core::LinAlg::SparseMatrix onesdiagw(onesw);
     onesdiagw.complete();
     // build constraint matrix kzz
-    if (gwinact_->NumGlobalElements()) kww->add(onesdiagw, false, 1.0, 1.0);
+    if (gwinact_->NumGlobalElements()) kww.add(onesdiagw, false, 1.0, 1.0);
 
-    kww->complete(*gsdofnrowmap_, *gsdofnrowmap_);
+    kww.complete(*gsdofnrowmap_, *gsdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkww = Mortar::matrix_row_col_transform_gids(*kww, *gwdofrowmap_, *gwdofrowmap_);
+    trkww = Mortar::matrix_row_col_transform_gids(kww, *gwdofrowmap_, *gwdofrowmap_);
 
     // FOR SLAVE AND MASTER
     // ********************************* S+M
     // build wear matrix kzw
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kzw =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, false, true);
-    if (gactiven_->NumGlobalElements()) kzw->add(*smatrixW_, false, 1.0, 1.0);
-    if (gslipt_->NumGlobalElements()) kzw->add(*linslip_w_, false, 1.0, 1.0);
-    kzw->complete(*galldofnrowmap_, *gsdofrowmap_);
+    Core::LinAlg::SparseMatrix kzw(*gsdofrowmap_, 100, false, true);
+    if (gactiven_->NumGlobalElements()) kzw.add(*smatrixW_, false, 1.0, 1.0);
+    if (gslipt_->NumGlobalElements()) kzw.add(*linslip_w_, false, 1.0, 1.0);
+    kzw.complete(*galldofnrowmap_, *gsdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkzw = Mortar::matrix_row_col_transform_gids(*kzw, *glmdofrowmap_, *gwalldofrowmap_);
+    trkzw = Mortar::matrix_row_col_transform_gids(kzw, *glmdofrowmap_, *gwalldofrowmap_);
 
     // ***************************************************************************************************
     // additional wear MASTER
     // ***************************************************************************************************
     // build wear matrix kwmd
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kwmd =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofnrowmap_, 100, false, true);
-    if (gmslipn_->NumGlobalElements()) kwmd->add(*lintdis_m_, false, -wcoeffM, 1.0);
-    if (gmslipn_->NumGlobalElements()) kwmd->add(*linedis_m_, false, 1.0, 1.0);
-    if (gmslipn_->NumGlobalElements()) kwmd->complete(*gdisprowmap_, *gmdofnrowmap_);
+    Core::LinAlg::SparseMatrix kwmd(*gmdofnrowmap_, 100, false, true);
+    if (gmslipn_->NumGlobalElements()) kwmd.add(*lintdis_m_, false, -wcoeffM, 1.0);
+    if (gmslipn_->NumGlobalElements()) kwmd.add(*linedis_m_, false, 1.0, 1.0);
+    if (gmslipn_->NumGlobalElements()) kwmd.complete(*gdisprowmap_, *gmdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkwmd = Mortar::matrix_row_transform_gids(*kwmd, *gwmdofrowmap_);
+    trkwmd = Mortar::matrix_row_transform_gids(kwmd, *gwmdofrowmap_);
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
@@ -3695,19 +3677,17 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
 
     // *********************************
     // build wear matrix kwmz
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kwmz =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofnrowmap_, 100, false, true);
-    if (gmslipn_->NumGlobalElements()) kwmz->add(*lintlm_m_, false, -wcoeffM, 1.0);
-    kwmz->complete(*gsdofrowmap_, *gmdofnrowmap_);
+    Core::LinAlg::SparseMatrix kwmz(*gmdofnrowmap_, 100, false, true);
+    if (gmslipn_->NumGlobalElements()) kwmz.add(*lintlm_m_, false, -wcoeffM, 1.0);
+    kwmz.complete(*gsdofrowmap_, *gmdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkwmz = Mortar::matrix_row_col_transform_gids(*kwmz, *gwmdofrowmap_, *glmdofrowmap_);
+    trkwmz = Mortar::matrix_row_col_transform_gids(kwmz, *gwmdofrowmap_, *glmdofrowmap_);
 
     // *********************************
     // build wear matrix kwmwm
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kwmwm =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gmdofnrowmap_, 100, false, true);
-    if (gmslipn_->NumGlobalElements()) kwmwm->add(*ematrix_m_, false, 1.0, 1.0);
+    Core::LinAlg::SparseMatrix kwmwm(*gmdofnrowmap_, 100, false, true);
+    if (gmslipn_->NumGlobalElements()) kwmwm.add(*ematrix_m_, false, 1.0, 1.0);
 
     // build unity matrix for inactive dofs
     Core::LinAlg::Vector<double> oneswm(*gwminact_);
@@ -3715,12 +3695,12 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     Core::LinAlg::SparseMatrix onesdiagwm(oneswm);
     onesdiagwm.complete();
     // build constraint matrix kzz
-    if (gwminact_->NumGlobalElements()) kwmwm->add(onesdiagwm, false, 1.0, 1.0);
+    if (gwminact_->NumGlobalElements()) kwmwm.add(onesdiagwm, false, 1.0, 1.0);
 
-    kwmwm->complete(*gmdofnrowmap_, *gmdofnrowmap_);
+    kwmwm.complete(*gmdofnrowmap_, *gmdofnrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkwmwm = Mortar::matrix_row_col_transform_gids(*kwmwm, *gwmdofrowmap_, *gwmdofrowmap_);
+    trkwmwm = Mortar::matrix_row_col_transform_gids(kwmwm, *gwmdofrowmap_, *gwmdofrowmap_);
 
     /****************************************************************************************
     ***                                   RIGHT-HAND SIDE                                 ***

@@ -251,7 +251,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::extended_ghosting_arter
       });
 
   // search with the fully overlapping discretization
-  std::map<int, std::set<int>> nearbyelepairs = oct_tree_search(contdis, artdis, *artsearchdis,
+  std::map<int, std::set<int>> nearbyelepairs = oct_tree_search(*contdis, *artdis, *artsearchdis,
       evaluate_on_lateral_surface, artEleGIDs, elecolset, nodecolset);
 
   // extended ghosting for elements
@@ -304,7 +304,7 @@ POROFLUIDMULTIPHASE::UTILS::create_fully_overlapping_artery_discretization(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::oct_tree_search(
-    Teuchos::RCP<Core::FE::Discretization> contdis, Teuchos::RCP<Core::FE::Discretization> artdis,
+    Core::FE::Discretization& contdis, Core::FE::Discretization& artdis,
     Core::FE::Discretization& artsearchdis, const bool evaluate_on_lateral_surface,
     const std::vector<int> artEleGIDs, std::set<int>& elecolset, std::set<int>& nodecolset)
 {
@@ -316,17 +316,17 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::oct_tree_search(
 
   // nodal positions of 2D/3D-discretization
   std::map<int, Core::LinAlg::Matrix<3, 1>> my_positions_cont =
-      get_nodal_positions(*contdis, contdis->node_col_map());
+      get_nodal_positions(contdis, contdis.node_col_map());
   // axis-aligned bounding boxes of all elements of 2D/3D discretization
   std::map<int, Core::LinAlg::Matrix<3, 2>> aabb_cont =
-      Core::Geo::get_current_xaab_bs(*contdis, my_positions_cont);
+      Core::Geo::get_current_xaab_bs(contdis, my_positions_cont);
 
   // find the bounding box of the 2D/3D discretization
-  const Core::LinAlg::Matrix<3, 2> sourceEleBox = Core::Geo::get_xaab_bof_dis(*contdis);
-  searchTree.initialize_tree(sourceEleBox, *contdis, Core::Geo::TreeType(Core::Geo::OCTTREE));
+  const Core::LinAlg::Matrix<3, 2> sourceEleBox = Core::Geo::get_xaab_bof_dis(contdis);
+  searchTree.initialize_tree(sourceEleBox, contdis, Core::Geo::TreeType(Core::Geo::OCTTREE));
 
   // user info and timer
-  if (contdis->get_comm().MyPID() == 0)
+  if (contdis.get_comm().MyPID() == 0)
     std::cout << "Starting with OctTree search for coupling ... " << std::endl;
   Teuchos::Time timersearch("OctTree_search", true);
   // *********** time measurement ***********
@@ -337,13 +337,13 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::oct_tree_search(
   std::map<int, Core::LinAlg::Matrix<3, 1>> positions_artery;
   // nodal positions of artery-discretization (row-map format)
   std::map<int, Core::LinAlg::Matrix<3, 1>> my_positions_artery =
-      get_nodal_positions(*artdis, artdis->node_row_map());
+      get_nodal_positions(artdis, artdis.node_row_map());
 
   // gather
-  std::vector<int> procs(contdis->get_comm().NumProc());
-  for (int i = 0; i < contdis->get_comm().NumProc(); i++) procs[i] = i;
+  std::vector<int> procs(contdis.get_comm().NumProc());
+  for (int i = 0; i < contdis.get_comm().NumProc(); i++) procs[i] = i;
   Core::LinAlg::gather<int, Core::LinAlg::Matrix<3, 1>>(my_positions_artery, positions_artery,
-      contdis->get_comm().NumProc(), procs.data(), contdis->get_comm());
+      contdis.get_comm().NumProc(), procs.data(), contdis.get_comm());
 
   // do the actual search on fully overlapping artery discretization
   for (unsigned int iart = 0; iart < artEleGIDs.size(); ++iart)
@@ -365,7 +365,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::oct_tree_search(
       nearbyelepairs[artelegid] = closeeles;
 
       // add elements and nodes for extended ghosting of artery discretization
-      if (not artdis->have_global_element(artelegid))
+      if (not artdis.have_global_element(artelegid))
       {
         elecolset.insert(artelegid);
         const int* nodeids = artele->node_ids();
@@ -379,8 +379,8 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::oct_tree_search(
     {
       double mydtsearch = timersearch.wallTime() - dtcpu;
       double maxdtsearch = 0.0;
-      contdis->get_comm().MaxAll(&mydtsearch, &maxdtsearch, 1);
-      if (contdis->get_comm().MyPID() == 0)
+      contdis.get_comm().MaxAll(&mydtsearch, &maxdtsearch, 1);
+      if (contdis.get_comm().MyPID() == 0)
         std::cout << "Estimated duration: " << 20.0 * (maxdtsearch) << "s" << std::endl;
     }
   }
@@ -388,9 +388,9 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::oct_tree_search(
   // *********** time measurement ***********
   double mydtsearch = timersearch.wallTime() - dtcpu;
   double maxdtsearch = 0.0;
-  contdis->get_comm().MaxAll(&mydtsearch, &maxdtsearch, 1);
+  contdis.get_comm().MaxAll(&mydtsearch, &maxdtsearch, 1);
   // *********** time measurement ***********
-  if (contdis->get_comm().MyPID() == 0)
+  if (contdis.get_comm().MyPID() == 0)
     std::cout << "Completed in " << maxdtsearch << "s" << std::endl;
 
   return nearbyelepairs;

@@ -2982,12 +2982,9 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
   Core::LinAlg::export_to(temp, dirichtoggle);
 
   // Initialize constraint matrices
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kzz =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, true, true);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kzd =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gsdofrowmap_, 100, false, true);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kdz =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gdisprowmap_, 100, false, true);
+  Core::LinAlg::SparseMatrix kzz(*gsdofrowmap_, 100, true, true);
+  Core::LinAlg::SparseMatrix kzd(*gsdofrowmap_, 100, false, true);
+  Core::LinAlg::SparseMatrix kdz(*gdisprowmap_, 100, false, true);
 
   // Declare transformed constraint matrices
   Teuchos::RCP<Core::LinAlg::SparseMatrix> trkdz = Teuchos::null;
@@ -2998,9 +2995,9 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
   // build matrix and vector blocks
   //**********************************************************************
   // build constraint matrix kdz
-  kdz->add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
-  kdz->add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
-  kdz->complete(*gsdofrowmap_, *gdisprowmap_);
+  kdz.add(*dmatrix_, true, 1.0 - alphaf_, 1.0);
+  kdz.add(*mmatrix_, true, -(1.0 - alphaf_), 1.0);
+  kdz.complete(*gsdofrowmap_, *gdisprowmap_);
 
   // *** CASE 1: FRICTIONLESS CONTACT ************************************
   if (!friction_)
@@ -3010,16 +3007,16 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
     {
       if (gactivedofs_->NumGlobalElements())
       {
-        kzd->add(*smatrix_, false, 1.0, 1.0);
-        kzd->add(*tderivmatrix_, false, 1.0, 1.0);
+        kzd.add(*smatrix_, false, 1.0, 1.0);
+        kzd.add(*tderivmatrix_, false, 1.0, 1.0);
       }
     }
     else
     {
-      if (gactiven_->NumGlobalElements()) kzd->add(*smatrix_, false, 1.0, 1.0);
-      if (gactivet_->NumGlobalElements()) kzd->add(*tderivmatrix_, false, 1.0, 1.0);
+      if (gactiven_->NumGlobalElements()) kzd.add(*smatrix_, false, 1.0, 1.0);
+      if (gactivet_->NumGlobalElements()) kzd.add(*tderivmatrix_, false, 1.0, 1.0);
     }
-    kzd->complete(*gdisprowmap_, *gsdofrowmap_);
+    kzd.complete(*gdisprowmap_, *gsdofrowmap_);
 
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::split_map(*gsdofrowmap_, *gactivedofs_);
@@ -3029,9 +3026,9 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
     onesdiag.complete();
 
     // build constraint matrix kzz
-    if (gidofs->NumGlobalElements()) kzz->add(onesdiag, false, 1.0, 1.0);
-    if (gactivet_->NumGlobalElements()) kzz->add(*tmatrix_, false, 1.0, 1.0);
-    kzz->complete(*gsdofrowmap_, *gsdofrowmap_);
+    if (gidofs->NumGlobalElements()) kzz.add(onesdiag, false, 1.0, 1.0);
+    if (gactivet_->NumGlobalElements()) kzz.add(*tmatrix_, false, 1.0, 1.0);
+    kzz.complete(*gsdofrowmap_, *gsdofrowmap_);
   }
 
   //**********************************************************************
@@ -3047,17 +3044,17 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
     // build constraint matrix kzd
     if (constr_direction_ == Inpar::CONTACT::constr_xyz)
     {
-      if (gactivedofs_->NumGlobalElements()) kzd->add(*smatrix_, false, 1.0, 1.0);
-      if (gstickdofs->NumGlobalElements()) kzd->add(*linstickDIS_, false, 1.0, 1.0);
-      if (gslipdofs_->NumGlobalElements()) kzd->add(*linslipDIS_, false, 1.0, 1.0);
+      if (gactivedofs_->NumGlobalElements()) kzd.add(*smatrix_, false, 1.0, 1.0);
+      if (gstickdofs->NumGlobalElements()) kzd.add(*linstickDIS_, false, 1.0, 1.0);
+      if (gslipdofs_->NumGlobalElements()) kzd.add(*linslipDIS_, false, 1.0, 1.0);
     }
     else
     {
-      if (gactiven_->NumGlobalElements()) kzd->add(*smatrix_, false, 1.0, 1.0);
-      if (gstickt->NumGlobalElements()) kzd->add(*linstickDIS_, false, 1.0, 1.0);
-      if (gslipt_->NumGlobalElements()) kzd->add(*linslipDIS_, false, 1.0, 1.0);
+      if (gactiven_->NumGlobalElements()) kzd.add(*smatrix_, false, 1.0, 1.0);
+      if (gstickt->NumGlobalElements()) kzd.add(*linstickDIS_, false, 1.0, 1.0);
+      if (gslipt_->NumGlobalElements()) kzd.add(*linslipDIS_, false, 1.0, 1.0);
     }
-    kzd->complete(*gdisprowmap_, *gsdofrowmap_);
+    kzd.complete(*gdisprowmap_, *gsdofrowmap_);
 
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::split_map(*gsdofrowmap_, *gactivedofs_);
@@ -3069,17 +3066,17 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
     // build constraint matrix kzz
     if (constr_direction_ == Inpar::CONTACT::constr_xyz)
     {
-      if (gidofs->NumGlobalElements()) kzz->add(onesdiag, false, 1.0, 1.0);
-      if (gstickdofs->NumGlobalElements()) kzz->add(*linstickLM_, false, 1.0, 1.0);
-      if (gslipdofs_->NumGlobalElements()) kzz->add(*linslipLM_, false, 1.0, 1.0);
+      if (gidofs->NumGlobalElements()) kzz.add(onesdiag, false, 1.0, 1.0);
+      if (gstickdofs->NumGlobalElements()) kzz.add(*linstickLM_, false, 1.0, 1.0);
+      if (gslipdofs_->NumGlobalElements()) kzz.add(*linslipLM_, false, 1.0, 1.0);
     }
     else
     {
-      if (gidofs->NumGlobalElements()) kzz->add(onesdiag, false, 1.0, 1.0);
-      if (gstickt->NumGlobalElements()) kzz->add(*linstickLM_, false, 1.0, 1.0);
-      if (gslipt_->NumGlobalElements()) kzz->add(*linslipLM_, false, 1.0, 1.0);
+      if (gidofs->NumGlobalElements()) kzz.add(onesdiag, false, 1.0, 1.0);
+      if (gstickt->NumGlobalElements()) kzz.add(*linstickLM_, false, 1.0, 1.0);
+      if (gslipt_->NumGlobalElements()) kzz.add(*linslipLM_, false, 1.0, 1.0);
     }
-    kzz->complete(*gsdofrowmap_, *gsdofrowmap_);
+    kzz.complete(*gsdofrowmap_, *gsdofrowmap_);
   }
 
   /* Step 1: Transform matrix blocks to current Lagrange multiplier dof_row_map
@@ -3089,13 +3086,13 @@ void CONTACT::LagrangeStrategy::build_saddle_point_system(
    */
   {
     // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-    trkzd = Mortar::matrix_row_transform_gids(*kzd, *glmdofrowmap_);
+    trkzd = Mortar::matrix_row_transform_gids(kzd, *glmdofrowmap_);
 
     // transform constraint matrix kzz to lmdofmap (matrix_row_col_transform)
-    trkzz = Mortar::matrix_row_col_transform_gids(*kzz, *glmdofrowmap_, *glmdofrowmap_);
+    trkzz = Mortar::matrix_row_col_transform_gids(kzz, *glmdofrowmap_, *glmdofrowmap_);
 
     // transform constraint matrix kzd to lmdofmap (matrix_col_transform)
-    trkdz = Mortar::matrix_col_transform_gids(*kdz, *glmdofrowmap_);
+    trkdz = Mortar::matrix_col_transform_gids(kdz, *glmdofrowmap_);
   }
 
   /* Step 2: Transform matrix blocks back to original dof_row_map as it was prior to the
@@ -4180,15 +4177,14 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::LagrangeStrategy::get_matrix_b
     case CONTACT::MatBlockType::displ_lm:
     {
       // build constraint matrix kdz
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> kdz_ptr =
-          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gdisprowmap_, 100, false, true);
+      Core::LinAlg::SparseMatrix kdz_ptr(*gdisprowmap_, 100, false, true);
 
-      kdz_ptr->add(*dmatrix_, true, 1.0, 1.0);
-      kdz_ptr->add(*mmatrix_, true, -1.0, 1.0);
-      kdz_ptr->complete(*gsdofrowmap_, *gdisprowmap_);
+      kdz_ptr.add(*dmatrix_, true, 1.0, 1.0);
+      kdz_ptr.add(*mmatrix_, true, -1.0, 1.0);
+      kdz_ptr.complete(*gsdofrowmap_, *gdisprowmap_);
 
       // transform constraint matrix kzd to lmdofmap (matrix_col_transform)
-      mat_ptr = Mortar::matrix_col_transform_gids(*kdz_ptr, *lm_dof_row_map_ptr(true));
+      mat_ptr = Mortar::matrix_col_transform_gids(kdz_ptr, *lm_dof_row_map_ptr(true));
 
       // transform parallel row/column distribution of matrix kdz
       // (only necessary in the parallel redistribution case)
@@ -4201,30 +4197,29 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::LagrangeStrategy::get_matrix_b
     case CONTACT::MatBlockType::lm_displ:
     {
       // build constraint matrix kzd
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> kzd_ptr =
-          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(slave_dof_row_map(true), 100, false, true);
+      Core::LinAlg::SparseMatrix kzd_ptr(slave_dof_row_map(true), 100, false, true);
 
       // build constraint matrix kzd
       if (gactiven_->NumGlobalElements())
       {
-        kzd_ptr->add(*smatrix_, false, 1.0, 1.0);
+        kzd_ptr.add(*smatrix_, false, 1.0, 1.0);
 
         // frictionless contact
-        if (!is_friction()) kzd_ptr->add(*tderivmatrix_, false, 1.0, 1.0);
+        if (!is_friction()) kzd_ptr.add(*tderivmatrix_, false, 1.0, 1.0);
 
         // frictional contact
         else
         {
           //          if (gslipnodes_->NumGlobalElements())
-          kzd_ptr->add(*linslipDIS_, false, 1.0, 1.0);
+          kzd_ptr.add(*linslipDIS_, false, 1.0, 1.0);
           //          if (gslipnodes_->NumGlobalElements()!=gactivenodes_->NumGlobalElements())
-          kzd_ptr->add(*linstickDIS_, false, 1.0, 1.0);
+          kzd_ptr.add(*linstickDIS_, false, 1.0, 1.0);
         }
       }
-      kzd_ptr->complete(*gdisprowmap_, *gsdofrowmap_);
+      kzd_ptr.complete(*gdisprowmap_, *gsdofrowmap_);
 
       // transform constraint matrix kzd to lmdofmap (MatrixRowTransform)
-      mat_ptr = Mortar::matrix_row_transform_gids(*kzd_ptr, *lm_dof_row_map_ptr(true));
+      mat_ptr = Mortar::matrix_row_transform_gids(kzd_ptr, *lm_dof_row_map_ptr(true));
 
       // transform parallel row/column distribution of matrix kzd
       // (only necessary in the parallel redistribution case)
@@ -6716,48 +6711,48 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   /* (10) Global setup of kteffnew (including contact)                  */
   /**********************************************************************/
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  Core::LinAlg::SparseMatrix kteffnew(
       *problem_dofs(), 81, true, false, kteffmatrix->get_matrixtype());
   Teuchos::RCP<Core::LinAlg::Vector<double>> feffnew = Core::LinAlg::create_vector(*problem_dofs());
 
   // Add all additional contributions from regularized contact to kteffnew and feffnew!
   if (regularized_)
-    do_regularization_scaling(aset, iset, *invda, *kan, *kam, *kai, *kaa, *fa, *kteffnew, *feffnew);
+    do_regularization_scaling(aset, iset, *invda, *kan, *kam, *kai, *kaa, *fa, kteffnew, *feffnew);
 
   //----------------------------------------------------------- FIRST LINE
   // add n submatrices to kteffnew
-  kteffnew->add(*knn, false, 1.0, 1.0);
-  kteffnew->add(*knm, false, 1.0, 1.0);
-  if (sset) kteffnew->add(*kns, false, 1.0, 1.0);
+  kteffnew.add(*knn, false, 1.0, 1.0);
+  kteffnew.add(*knm, false, 1.0, 1.0);
+  if (sset) kteffnew.add(*kns, false, 1.0, 1.0);
 
   //---------------------------------------------------------- SECOND LINE
   // add m submatrices to kteffnew
-  kteffnew->add(*kmnmod, false, 1.0, 1.0);
-  kteffnew->add(*kmmmod, false, 1.0, 1.0);
-  if (iset) kteffnew->add(*kmimod, false, 1.0, 1.0);
-  if (aset) kteffnew->add(*kmamod, false, 1.0, 1.0);
+  kteffnew.add(*kmnmod, false, 1.0, 1.0);
+  kteffnew.add(*kmmmod, false, 1.0, 1.0);
+  if (iset) kteffnew.add(*kmimod, false, 1.0, 1.0);
+  if (aset) kteffnew.add(*kmamod, false, 1.0, 1.0);
 
   //----------------------------------------------------------- THIRD LINE
   // add i submatrices to kteffnew
-  if (iset) kteffnew->add(*kinmod, false, 1.0, 1.0);
-  if (iset) kteffnew->add(*kimmod, false, 1.0, 1.0);
-  if (iset) kteffnew->add(*kiimod, false, 1.0, 1.0);
-  if (iset && aset) kteffnew->add(*kiamod, false, 1.0, 1.0);
+  if (iset) kteffnew.add(*kinmod, false, 1.0, 1.0);
+  if (iset) kteffnew.add(*kimmod, false, 1.0, 1.0);
+  if (iset) kteffnew.add(*kiimod, false, 1.0, 1.0);
+  if (iset && aset) kteffnew.add(*kiamod, false, 1.0, 1.0);
 
   //---------------------------------------------------------- FOURTH LINE
   // add a submatrices to kteffnew
-  if (aset) kteffnew->add(*smatrix_, false, 1.0, 1.0);
+  if (aset) kteffnew.add(*smatrix_, false, 1.0, 1.0);
 
   //----------------------------------------------------------- FIFTH LINE
   // add a submatrices to kteffnew
-  if (aset) kteffnew->add(*kanmod, false, 1.0, 1.0);
-  if (aset) kteffnew->add(*kammod, false, 1.0, 1.0);
-  if (aset && iset) kteffnew->add(*kaimod, false, 1.0, 1.0);
-  if (aset) kteffnew->add(*kaamod, false, 1.0, 1.0);
-  if (aset) kteffnew->add(*tderivmatrix_, false, -1.0, 1.0);
+  if (aset) kteffnew.add(*kanmod, false, 1.0, 1.0);
+  if (aset) kteffnew.add(*kammod, false, 1.0, 1.0);
+  if (aset && iset) kteffnew.add(*kaimod, false, 1.0, 1.0);
+  if (aset) kteffnew.add(*kaamod, false, 1.0, 1.0);
+  if (aset) kteffnew.add(*tderivmatrix_, false, -1.0, 1.0);
 
   // fill_complete kteffnew (square)
-  kteffnew->complete();
+  kteffnew.complete();
 
   /**********************************************************************/
   /* (11) Global setup of feffnew (including contact)                   */
@@ -6806,7 +6801,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
   }
 
   // finally do the replacement
-  *kteff = *kteffnew;
+  *kteff = kteffnew;
   *feff = *feffnew;
 
 

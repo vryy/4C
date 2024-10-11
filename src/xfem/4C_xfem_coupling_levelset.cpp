@@ -521,7 +521,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
 
   // map the cutterdis-based phinp to the bgdis-noderowmap based phinp
   map_cutter_to_bg_vector(
-      cutter_dis_, *cutter_phinp_, cutter_nds_phi_, bg_dis_, *phinp_, bg_nds_phi_);
+      *cutter_dis_, *cutter_phinp_, cutter_nds_phi_, *bg_dis_, *phinp_, bg_nds_phi_);
 
   // check if boundary position changed from the last step
 
@@ -537,28 +537,27 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
 // TODO: generalization in Discret::UTILS???
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-void XFEM::LevelSetCoupling::map_cutter_to_bg_vector(
-    const Teuchos::RCP<Core::FE::Discretization>& source_dis,
+void XFEM::LevelSetCoupling::map_cutter_to_bg_vector(Core::FE::Discretization& source_dis,
     Core::LinAlg::Vector<double>& source_vec_dofbased, const int source_nds,
-    const Teuchos::RCP<Core::FE::Discretization>& target_dis,
-    Core::LinAlg::Vector<double>& target_vec_dofbased, const int target_nds)
+    Core::FE::Discretization& target_dis, Core::LinAlg::Vector<double>& target_vec_dofbased,
+    const int target_nds)
 {
-  if (have_matching_nodes(*source_dis, *target_dis))  // check for equal node positions
+  if (have_matching_nodes(source_dis, target_dis))  // check for equal node positions
   {
     // here we assume that source_dis and target_dis are equal!
 
     // loop the nodes
-    for (int lnodeid = 0; lnodeid < target_dis->num_my_row_nodes(); ++lnodeid)
+    for (int lnodeid = 0; lnodeid < target_dis.num_my_row_nodes(); ++lnodeid)
     {
-      Core::Nodes::Node* node_source = source_dis->l_row_node(lnodeid);
-      Core::Nodes::Node* node_target = target_dis->l_row_node(lnodeid);
+      Core::Nodes::Node* node_source = source_dis.l_row_node(lnodeid);
+      Core::Nodes::Node* node_target = target_dis.l_row_node(lnodeid);
 
       // get the set of source dof IDs for this node
       std::vector<int> lm_source;
-      source_dis->dof(source_nds, node_source, lm_source);
+      source_dis.dof(source_nds, node_source, lm_source);
 
       std::vector<int> lm_target;
-      target_dis->dof(target_nds, node_target, lm_target);
+      target_dis.dof(target_nds, node_target, lm_target);
 
       if (static_cast<int>(lm_source.size()) != 1)
         FOUR_C_THROW("we expect a unique dof per node here!");

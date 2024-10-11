@@ -294,7 +294,7 @@ void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
         if (state->first == "velaf")
         {
           FLD::UTILS::project_gradient_and_set_param(
-              discret_, eleparams_, state->second, "velafgrad", false);
+              *discret_, eleparams_, state->second, "velafgrad", false);
           break;
         }
       }

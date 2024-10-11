@@ -35,12 +35,12 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 template <typename ScalarType>
-ScalarType BEAMINTERACTION::penalty_force(const ScalarType& gap,
-    const Teuchos::RCP<const BeamToSolidSurfaceContactParams>& contact_params)
+ScalarType BEAMINTERACTION::penalty_force(
+    const ScalarType& gap, const BeamToSolidSurfaceContactParams& contact_params)
 {
   const Inpar::BeamToSolid::BeamToSolidSurfaceContactPenaltyLaw penalty_law =
-      contact_params->get_penalty_law();
-  const double penalty_parameter = contact_params->get_penalty_parameter();
+      contact_params.get_penalty_law();
+  const double penalty_parameter = contact_params.get_penalty_parameter();
 
   ScalarType penalty_force = 0.0;
 
@@ -56,7 +56,7 @@ ScalarType BEAMINTERACTION::penalty_force(const ScalarType& gap,
     }
     case Inpar::BeamToSolid::BeamToSolidSurfaceContactPenaltyLaw::linear_quadratic:
     {
-      const double penalty_parameter_g0 = contact_params->get_penalty_parameter_g0();
+      const double penalty_parameter_g0 = contact_params.get_penalty_parameter_g0();
 
       if (gap < 0.0)
       {
@@ -81,12 +81,12 @@ ScalarType BEAMINTERACTION::penalty_force(const ScalarType& gap,
  *
  */
 template <typename ScalarType>
-ScalarType BEAMINTERACTION::penalty_potential(const ScalarType& gap,
-    const Teuchos::RCP<const BeamToSolidSurfaceContactParams>& contact_params)
+ScalarType BEAMINTERACTION::penalty_potential(
+    const ScalarType& gap, const BeamToSolidSurfaceContactParams& contact_params)
 {
   const Inpar::BeamToSolid::BeamToSolidSurfaceContactPenaltyLaw penalty_law =
-      contact_params->get_penalty_law();
-  const double penalty_parameter = contact_params->get_penalty_parameter();
+      contact_params.get_penalty_law();
+  const double penalty_parameter = contact_params.get_penalty_parameter();
 
   ScalarType penalty_potential = 0.0;
 
@@ -102,7 +102,7 @@ ScalarType BEAMINTERACTION::penalty_potential(const ScalarType& gap,
     }
     case Inpar::BeamToSolid::BeamToSolidSurfaceContactPenaltyLaw::linear_quadratic:
     {
-      const double penalty_parameter_g0 = contact_params->get_penalty_parameter_g0();
+      const double penalty_parameter_g0 = contact_params.get_penalty_parameter_g0();
 
       if (gap < 0.0)
       {
@@ -168,8 +168,7 @@ BEAMINTERACTION::mortar_shape_functions_to_number_of_lagrange_values(
  *
  */
 void BEAMINTERACTION::get_beam_triad_interpolation_scheme(const Core::FE::Discretization& discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector,
-    const Core::Elements::Element* ele,
+    const Core::LinAlg::Vector<double>& displacement_vector, const Core::Elements::Element* ele,
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double>& triad_interpolation_scheme,
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&
         ref_triad_interpolation_scheme)
@@ -182,7 +181,7 @@ void BEAMINTERACTION::get_beam_triad_interpolation_scheme(const Core::FE::Discre
   // Get the rotations of the beam rotation nodes.
   std::vector<double> beam_displacement_vector_full_double;
   BEAMINTERACTION::UTILS::get_current_element_dis(
-      discret, beam_ele, *displacement_vector, beam_displacement_vector_full_double);
+      discret, beam_ele, displacement_vector, beam_displacement_vector_full_double);
 
   // Create object for triad interpolation schemes.
   std::vector<Core::LinAlg::Matrix<4, 1, double>> nodal_quaternions(3);
@@ -828,11 +827,11 @@ namespace BEAMINTERACTION
   using line_to_surface_patch_scalar_type_fixed_size_hermite_nurbs_9 =
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>;
 
-#define initialize_template_penalty(scalar_type)                                       \
-  template scalar_type penalty_force<scalar_type>(                                     \
-      const scalar_type&, const Teuchos::RCP<const BeamToSolidSurfaceContactParams>&); \
-  template scalar_type penalty_potential<scalar_type>(                                 \
-      const scalar_type&, const Teuchos::RCP<const BeamToSolidSurfaceContactParams>&);
+#define initialize_template_penalty(scalar_type)                   \
+  template scalar_type penalty_force<scalar_type>(                 \
+      const scalar_type&, const BeamToSolidSurfaceContactParams&); \
+  template scalar_type penalty_potential<scalar_type>(             \
+      const scalar_type&, const BeamToSolidSurfaceContactParams&);
 
   initialize_template_penalty(double);
   initialize_template_penalty(fad_type_1st_order_2_variables);

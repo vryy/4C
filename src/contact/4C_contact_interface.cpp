@@ -760,7 +760,7 @@ void CONTACT::Interface::redistribute()
   Epetra_Map slaveCloseRowEles(-1, (int)closeele.size(), closeele.data(), 0, Interface::get_comm());
   Epetra_Map slaveNonCloseRowEles(
       -1, (int)noncloseele.size(), noncloseele.data(), 0, Interface::get_comm());
-  Teuchos::RCP<Epetra_Map> masterRowEles = Teuchos::make_rcp<Epetra_Map>(*master_row_elements());
+  Epetra_Map masterRowEles(*master_row_elements());
 
   // check for consistency
   if (slaveCloseRowEles.NumGlobalElements() == 0 && slaveNonCloseRowEles.NumGlobalElements() == 0)
@@ -774,7 +774,7 @@ void CONTACT::Interface::redistribute()
   {
     int cl = slaveCloseRowEles.NumGlobalElements();
     int ncl = slaveNonCloseRowEles.NumGlobalElements();
-    int ma = masterRowEles->NumGlobalElements();
+    int ma = masterRowEles.NumGlobalElements();
     std::cout << "Element overview: " << cl << " / " << ncl << " / " << ma
               << "  (close-S / non-close-S / M)";
   }
@@ -813,10 +813,10 @@ void CONTACT::Interface::redistribute()
   {
     scproc = static_cast<int>((slaveCloseRowEles.NumGlobalElements()) / minele);
     sncproc = static_cast<int>((slaveNonCloseRowEles.NumGlobalElements()) / minele);
-    mproc = static_cast<int>((masterRowEles->NumGlobalElements()) / minele);
+    mproc = static_cast<int>((masterRowEles.NumGlobalElements()) / minele);
     if (slaveCloseRowEles.NumGlobalElements() < 2 * minele) scproc = 1;
     if (slaveNonCloseRowEles.NumGlobalElements() < 2 * minele) sncproc = 1;
-    if (masterRowEles->NumGlobalElements() < 2 * minele) mproc = 1;
+    if (masterRowEles.NumGlobalElements() < 2 * minele) mproc = 1;
     if (scproc > numproc) scproc = numproc;
     if (sncproc > numproc) sncproc = numproc;
     if (mproc > numproc) mproc = numproc;
@@ -939,7 +939,7 @@ void CONTACT::Interface::redistribute()
   Teuchos::RCP<Epetra_Map> mrownodes = Teuchos::null;
   Teuchos::RCP<Epetra_Map> mcolnodes = Teuchos::null;
 
-  redistribute_master_side(mrownodes, mcolnodes, *masterRowEles, *comm, mproc, imbalance_tol);
+  redistribute_master_side(mrownodes, mcolnodes, masterRowEles, *comm, mproc, imbalance_tol);
 
   //**********************************************************************
   // (7) Merge global interface node row and column map
@@ -6239,15 +6239,14 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
     {
       // do the element integration of kappa and store into gap
       int nrow = sele.num_node();
-      Teuchos::RCP<Core::LinAlg::SerialDenseVector> gseg =
-          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(nrow);
+      Core::LinAlg::SerialDenseVector gseg(nrow);
 
       // create a CONTACT integrator instance with correct num_gp and Dim
       CONTACT::Integrator integrator(imortar_, sele.shape(), get_comm());
-      integrator.integrate_kappa_penalty(sele, sxia, sxib, *gseg);
+      integrator.integrate_kappa_penalty(sele, sxia, sxib, gseg);
 
       // do the assembly into the slave nodes
-      integrator.assemble_g(get_comm(), sele, *gseg);
+      integrator.assemble_g(get_comm(), sele, gseg);
     }
 
     else if (lmtype == Inpar::Mortar::lagmult_pwlin)
@@ -6257,15 +6256,14 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
       {
         // do the int element integration of kappa and store into gap
         int nrow = sauxelement->num_node();
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector> gseg =
-            Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(nrow);
+        Core::LinAlg::SerialDenseVector gseg(nrow);
 
         // create a CONTACT integrator instance with correct num_gp and Dim
         CONTACT::Integrator integrator(imortar_, sauxelement->shape(), get_comm());
-        integrator.integrate_kappa_penalty(sele, *sauxelement, sxia, sxib, *gseg);
+        integrator.integrate_kappa_penalty(sele, *sauxelement, sxia, sxib, gseg);
 
         // do the assembly into the slave nodes
-        integrator.assemble_g(get_comm(), *sauxelement, *gseg);
+        integrator.assemble_g(get_comm(), *sauxelement, gseg);
       }
     }
 
@@ -6280,15 +6278,14 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
   {
     // do the element integration of kappa and store into gap
     int nrow = sele.num_node();
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> gseg =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(nrow);
+    Core::LinAlg::SerialDenseVector gseg(nrow);
 
     // create a CONTACT integrator instance with correct num_gp and Dim
     CONTACT::Integrator integrator(imortar_, sele.shape(), get_comm());
-    integrator.integrate_kappa_penalty(sele, sxia, sxib, *gseg);
+    integrator.integrate_kappa_penalty(sele, sxia, sxib, gseg);
 
     // do the assembly into the slave nodes
-    integrator.assemble_g(get_comm(), sele, *gseg);
+    integrator.assemble_g(get_comm(), sele, gseg);
   }
 
   return true;

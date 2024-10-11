@@ -3711,7 +3711,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_stiffc_contact_in
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
     const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
-    Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues>> cpvariables, const double& intfac,
+    Beam3contactvariables<numnodes, numnodalvalues>& cpvariables, const double& intfac,
     const double& d_xi_ele_d_xi_bound, TYPE signed_jacobi_interval)
 {
 #ifndef AUTOMATICDIFF
@@ -3736,7 +3736,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_stiffc_contact_in
 
   // flag indicating assembly
   bool DoNotAssemble = true;
-  TYPE gap = cpvariables->get_gap();
+  TYPE gap = cpvariables.get_gap();
 
   //**********************************************************************
   // evaluate contact stiffness for active pairs
@@ -3818,7 +3818,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::evaluate_stiffc_contact_in
     Core::LinAlg::Matrix<dim1, 1, TYPE> fc1_FAD(true);
     Core::LinAlg::Matrix<dim2, 1, TYPE> fc2_FAD(true);
     evaluate_fc_contact(nullptr, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi,
-        *cpvariables, intfac, false, true, false, false, &fc1_FAD, &fc2_FAD);
+        cpvariables, intfac, false, true, false, false, &fc1_FAD, &fc2_FAD);
 
 #ifdef AUTOMATICDIFF
     TYPE fac1(0.0);

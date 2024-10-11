@@ -60,16 +60,14 @@ namespace CONSTRAINTS
     /*!
       \brief Solve constraint linear system
     */
-    void solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,  ///< stiffness matrix
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>
-            constr,  ///< constraint matrix with Dirichlet zeros
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    void solve(Core::LinAlg::SparseMatrix& stiff,  ///< stiffness matrix
+        Core::LinAlg::SparseMatrix& constr,        ///< constraint matrix with Dirichlet zeros
+        Core::LinAlg::SparseMatrix&
             constrT,  ///< transpose of constraint matrix without Dirichlet zeros
         Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc,  ///< displacement increment to compute
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            lagrinc,  ///< lagrange multiplier increment to compute
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsstandard,  ///< standard right hand side
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsconstr     ///< constraint errors
+        Core::LinAlg::Vector<double>& lagrinc,      ///< lagrange multiplier increment to compute
+        Core::LinAlg::Vector<double>& rhsstandard,  ///< standard right hand side
+        Core::LinAlg::Vector<double>& rhsconstr     ///< constraint errors
     );
 
     /*!

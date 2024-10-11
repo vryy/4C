@@ -282,9 +282,8 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
       FOUR_C_THROW("Manager: Self contact requires fully redundant slave and master storage");
 
     // Use factory to create an empty interface and store it in this Manager.
-    Teuchos::RCP<CONTACT::Interface> newinterface =
-        STRATEGY::Factory::create_interface(groupid1, get_comm(), dim, icparams, isself[0],
-            Teuchos::null, Teuchos::null, contactconstitutivelawid);
+    Teuchos::RCP<CONTACT::Interface> newinterface = STRATEGY::Factory::create_interface(
+        groupid1, get_comm(), dim, icparams, isself[0], Teuchos::null, contactconstitutivelawid);
     interfaces.push_back(newinterface);
 
     // Get the RCP to the last created interface

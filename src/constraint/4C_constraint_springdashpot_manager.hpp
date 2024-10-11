@@ -70,8 +70,7 @@ namespace CONSTRAINTS
 
     //! output of prestressing offset for restart
     void output_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output_restart,
-        Teuchos::RCP<Core::FE::Discretization> discret,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> disp);
+        Core::FE::Discretization& discret, Core::LinAlg::Vector<double>& disp);
 
     /*!
      \brief Read restart information
@@ -79,7 +78,7 @@ namespace CONSTRAINTS
     void read_restart(Core::IO::DiscretizationReader& reader, const double& time);
 
     //! reset spring after having done a MULF prestressing update (mhv 12/2015)
-    void reset_prestress(Teuchos::RCP<Core::LinAlg::Vector<double>> disold);
+    void reset_prestress(Core::LinAlg::Vector<double>& disold);
 
    private:
     Teuchos::RCP<Core::FE::Discretization> actdisc_;    ///< standard discretization

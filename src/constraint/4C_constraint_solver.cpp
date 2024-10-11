@@ -71,24 +71,21 @@ void CONSTRAINTS::ConstraintSolver::setup(Core::FE::Discretization& discr,
 |(public)                                                               |
 |Solve linear constrained system                                        |
 *-----------------------------------------------------------------------*/
-void CONSTRAINTS::ConstraintSolver::solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> constr,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> constrT,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lagrinc,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsstand,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> rhsconstr)
+void CONSTRAINTS::ConstraintSolver::solve(Core::LinAlg::SparseMatrix& stiff,
+    Core::LinAlg::SparseMatrix& constr, Core::LinAlg::SparseMatrix& constrT,
+    Teuchos::RCP<Core::LinAlg::Vector<double>> dispinc, Core::LinAlg::Vector<double>& lagrinc,
+    Core::LinAlg::Vector<double>& rhsstand, Core::LinAlg::Vector<double>& rhsconstr)
 {
   switch (algochoice_)
   {
     case Inpar::Solid::consolve_uzawa:
-      solve_uzawa(*stiff, *constr, *constrT, dispinc, *lagrinc, *rhsstand, *rhsconstr);
+      solve_uzawa(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
       break;
     case Inpar::Solid::consolve_direct:
-      solve_direct(*stiff, *constr, *constrT, *dispinc, *lagrinc, *rhsstand, *rhsconstr);
+      solve_direct(stiff, constr, constrT, *dispinc, lagrinc, rhsstand, rhsconstr);
       break;
     case Inpar::Solid::consolve_simple:
-      solve_simple(*stiff, *constr, *constrT, *dispinc, *lagrinc, *rhsstand, *rhsconstr);
+      solve_simple(stiff, constr, constrT, *dispinc, lagrinc, rhsstand, rhsconstr);
       break;
     default:
       FOUR_C_THROW("Unknown constraint solution technique!");

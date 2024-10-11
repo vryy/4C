@@ -5783,11 +5783,10 @@ void CONTACT::Integrator::integrate_gp_3d(Mortar::Element& sele, Mortar::Element
             (mele.num_node() * n_dim()) + linsize);  // deriv. of slip for wear
         Core::Gen::Pairedvector<int, double> dweargp(
             (mele.num_node() * n_dim()) + linsize);  // wear lin. without lm and jac.
-        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult =
-            Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, sele.num_node());
-        sele.get_nodal_lag_mult(*lagmult);
+        Core::LinAlg::SerialDenseMatrix lagmult(3, sele.num_node());
+        sele.get_nodal_lag_mult(lagmult);
 
-        gp_3d_wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, *lagmult, normal, jac,
+        gp_3d_wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, normal, jac,
             wgt, jumpval, &wearval, dsliptmatrixgp, dweargp, derivsxi, derivmxi, dnmap_unit,
             dualmap);
 
@@ -5968,9 +5967,8 @@ void CONTACT::Integrator::integrate_gp_2d(Mortar::Element& sele, Mortar::Element
       if (wearlaw_ != Inpar::Wear::wear_none)
       {
         // nodal Lagrange mulitplier
-        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult =
-            Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, sele.num_node());
-        sele.get_nodal_lag_mult(*lagmult);
+        Core::LinAlg::SerialDenseMatrix lagmult(3, sele.num_node());
+        sele.get_nodal_lag_mult(lagmult);
 
         int linsize = 0;
         for (int i = 0; i < sele.num_node(); ++i)
@@ -5985,7 +5983,7 @@ void CONTACT::Integrator::integrate_gp_2d(Mortar::Element& sele, Mortar::Element
             linsize + n_dim() * mele.num_node());  // wear lin without weighting and jac
 
         // std. wear for all wear-algorithm types
-        gp_2d_wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, *lagmult, normal, jac,
+        gp_2d_wear(sele, mele, sval, sderiv, mval, mderiv, lmval, lmderiv, lagmult, normal, jac,
             wgt, &jumpval, &wearval, dsliptmatrixgp, dweargp, derivsxi, derivmxi, dnmap_unit,
             dualmap);
 

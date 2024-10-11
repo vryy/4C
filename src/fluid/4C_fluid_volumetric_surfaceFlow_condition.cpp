@@ -136,7 +136,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::read_restart(
  | extractor of boundary condition                                      |
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::evaluate_velocities(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> velocities, const double time)
+    Core::LinAlg::Vector<double>& velocities, const double time)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
@@ -154,7 +154,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::evaluate_velocities(
       mapiter->second->FluidVolumetricSurfaceFlowBc::correct_flow_rate(
           eleparams, "VolumetricSurfaceFlowCond", FLD::calc_flowrate, time, false);
 
-      mapiter->second->FluidVolumetricSurfaceFlowBc::set_velocities(*velocities);
+      mapiter->second->FluidVolumetricSurfaceFlowBc::set_velocities(velocities);
     }
   }
 
@@ -1898,14 +1898,13 @@ void FLD::UTILS::TotalTractionCorrector::evaluate_velocities(
 /*----------------------------------------------------------------------*
  | Update residual                                         ismail 04/11 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::TotalTractionCorrector::update_residual(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual)
+void FLD::UTILS::TotalTractionCorrector::update_residual(Core::LinAlg::Vector<double>& residual)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
   for (mapiter = fvsf_map_.begin(); mapiter != fvsf_map_.end(); mapiter++)
   {
-    mapiter->second->FluidVolumetricSurfaceFlowBc::update_residual(*residual);
+    mapiter->second->FluidVolumetricSurfaceFlowBc::update_residual(residual);
   }
 }
 

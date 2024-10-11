@@ -512,7 +512,7 @@ double Solid::MonitorDbc::get_reaction_force(
     Core::LinAlg::Matrix<DIM, 1>& rforce_xyz, const Teuchos::RCP<Epetra_Map>* react_maps) const
 {
   Core::LinAlg::Vector<double> complete_freact(*gstate_ptr_->get_freact_np());
-  dbc_ptr_->rotate_global_to_local(Teuchos::rcpFromRef(complete_freact));
+  dbc_ptr_->rotate_global_to_local(*Teuchos::rcpFromRef(complete_freact));
 
   Core::LinAlg::Matrix<DIM, 1> lrforce_xyz(true);
   for (unsigned d = 0; d < DIM; ++d)
@@ -537,7 +537,7 @@ double Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmom
   Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn = gstate_ptr_->get_dis_np();
 
   Core::LinAlg::Vector<double> complete_freact(*gstate_ptr_->get_freact_np());
-  dbc_ptr_->rotate_global_to_local(Teuchos::rcpFromRef(complete_freact));
+  dbc_ptr_->rotate_global_to_local(*Teuchos::rcpFromRef(complete_freact));
 
   Core::LinAlg::Matrix<DIM, 1> lrmoment_xyz(true);
   Core::LinAlg::Matrix<DIM, 1> node_reaction_force(true);

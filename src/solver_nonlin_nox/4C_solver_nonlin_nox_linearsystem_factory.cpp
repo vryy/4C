@@ -138,14 +138,13 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::build_li
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::build_linear_system(
     const NOX::Nln::LinSystem::LinearSystemType& linsystype, NOX::Nln::GlobalData& noxNlnGlobalData,
-    const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac,
-    const Teuchos::RCP<::NOX::Epetra::Vector>& cloneVector,
+    const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac, ::NOX::Epetra::Vector& cloneVector,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& precMat,
     const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject)
 {
   Factory factory;
   return factory.build_linear_system(
-      linsystype, noxNlnGlobalData, jac, *cloneVector, precMat, scalingObject);
+      linsystype, noxNlnGlobalData, jac, cloneVector, precMat, scalingObject);
 }
 
 FOUR_C_NAMESPACE_CLOSE

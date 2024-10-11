@@ -473,10 +473,10 @@ namespace FLD
                                             ///< reconstruction techniques
         const bool timint_semi_lagrangean,  ///< dofs have to be reconstructed via semi-Lagrangean
                                             ///< reconstruction techniques
-        Teuchos::RCP<Core::FE::Discretization> dis,  ///< discretization
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset_i,     ///< dofset last iteration
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset_ip,    ///< dofset current iteration
-        const bool screen_out                        ///< screen output?
+        Core::FE::Discretization& dis,      ///< discretization
+        XFEM::XFEMDofSet& dofset_i,         ///< dofset last iteration
+        XFEM::XFEMDofSet& dofset_ip,        ///< dofset current iteration
+        const bool screen_out               ///< screen output?
     );
 
     /// Transfer vectors from old time-step t^n w.r.t dofset and interface position
@@ -540,19 +540,18 @@ namespace FLD
     /// create new dbc maps for ghost penalty reconstruction and reconstruct value which are not
     /// fixed by DBCs
     void x_timint_ghost_penalty(std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
-                                    rowVectors,           ///< vectors to be reconstructed
-        const Epetra_Map* dofrowmap,                      ///< dofrowmap
-        const Teuchos::RCP<const std::set<int>> dbcgids,  ///< dbc global ids
-        const bool screen_out                             ///< screen output?
+                                    rowVectors,  ///< vectors to be reconstructed
+        const Epetra_Map* dofrowmap,             ///< dofrowmap
+        const std::set<int>& dbcgids,            ///< dbc global ids
+        const bool screen_out                    ///< screen output?
     );
 
     /// reconstruct ghost values using ghost penalty approach
     void x_timint_reconstruct_ghost_values(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vec,  ///< vector to be reconstructed
-        Teuchos::RCP<Core::LinAlg::MapExtractor>
-            ghost_penaly_dbcmaps,  ///< which dofs are fixed during the ghost-penalty
-                                   ///< reconstruction?
-        const bool screen_out      ///< screen output?
+        Teuchos::RCP<Core::LinAlg::Vector<double>> vec,    ///< vector to be reconstructed
+        Core::LinAlg::MapExtractor& ghost_penaly_dbcmaps,  ///< which dofs are fixed during the
+                                                           ///< ghost-penalty reconstruction?
+        const bool screen_out                              ///< screen output?
     );
 
     /// reconstruct standard values using semi-Lagrangean method

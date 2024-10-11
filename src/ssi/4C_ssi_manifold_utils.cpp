@@ -367,7 +367,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate()
     rhs_manifold_cond_->PutScalar(0.0);
     rhs_scatra_cond_->PutScalar(0.0);
 
-    evaluate_bulk_side(scatra_manifold_coupling);
+    evaluate_bulk_side(*scatra_manifold_coupling);
 
     copy_scatra_scatra_manifold_side(scatra_manifold_coupling);
 
@@ -382,10 +382,10 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_bulk_side(
-    Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling)
+    ManifoldScaTraCoupling& scatra_manifold_coupling)
 {
   // First: Set parameters to elements
-  pre_evaluate(*scatra_manifold_coupling);
+  pre_evaluate(scatra_manifold_coupling);
 
   scatra_->scatra_field()->discretization()->set_state("phinp", scatra_->scatra_field()->phinp());
 
@@ -413,7 +413,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_bulk_side(
           Teuchos::null);
 
       scatra_->scatra_field()->discretization()->evaluate_condition(condparams, strategyscatra,
-          "SSISurfaceManifoldKinetics", scatra_manifold_coupling->kinetics_condition_id());
+          "SSISurfaceManifoldKinetics", scatra_manifold_coupling.kinetics_condition_id());
 
       systemmatrix_scatra_cond_->complete();
       matrix_scatra_manifold_cond_on_scatra_side->complete();
@@ -421,7 +421,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_bulk_side(
       // dscatra_dmanifold (on scatra side) -> dscatra_dmanifold
       Coupling::Adapter::MatrixLogicalSplitAndTransform()(
           *matrix_scatra_manifold_cond_on_scatra_side, *full_map_scatra_, *full_map_scatra_, 1.0,
-          nullptr, &*scatra_manifold_coupling->master_converter(), *matrix_scatra_manifold_cond_,
+          nullptr, &*scatra_manifold_coupling.master_converter(), *matrix_scatra_manifold_cond_,
           true, true);
       matrix_scatra_manifold_cond_->complete(*full_map_manifold_, *full_map_scatra_);
     }
@@ -443,7 +443,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::evaluate_bulk_side(
           Teuchos::null, Teuchos::null);
 
       scatra_->scatra_field()->discretization()->evaluate_condition(condparams, strategyscatra,
-          "SSISurfaceManifoldKinetics", scatra_manifold_coupling->kinetics_condition_id());
+          "SSISurfaceManifoldKinetics", scatra_manifold_coupling.kinetics_condition_id());
 
       matrix_scatra_structure_cond_slave_side_disp_evaluate->complete(
           *full_map_structure_, *full_map_scatra_);

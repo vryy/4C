@@ -401,7 +401,7 @@ void FLD::Meshtying::project_master_to_slave_for_overlapping_bc(
     // std::cout << "BEFORE projection from master to slave side" << std::endl;
     // OutputVectorSplit(velnp);
 
-    update_slave_dof(velnp, velnp);
+    update_slave_dof(*velnp, *velnp);
 
     // std::cout << "AFTER projection from master to slave side" << std::endl;
     // OutputVectorSplit(velnp);
@@ -513,10 +513,10 @@ void FLD::Meshtying::prepare_meshtying_system(
   {
     case Inpar::FLUID::condensed_bmat:
     case Inpar::FLUID::condensed_bmat_merged:
-      condensation_block_matrix(sysmat, residual, velnp);
+      condensation_block_matrix(sysmat, *residual, *velnp);
       break;
     case Inpar::FLUID::condensed_smat:
-      condensation_sparse_matrix(sysmat, residual, velnp);
+      condensation_sparse_matrix(sysmat, *residual, *velnp);
       break;
     default:
       FOUR_C_THROW("Meshtying algorithm not recognized!");
@@ -534,7 +534,7 @@ void FLD::Meshtying::apply_pt_to_residual(Core::LinAlg::SparseOperator& sysmat,
   Teuchos::RCP<Core::LinAlg::Vector<double>> res = Core::LinAlg::create_vector(*mergedmap_, true);
 
   // split original residual vector
-  split_vector_based_on3x3(residual, *res);
+  split_vector_based_on3x3(*residual, *res);
 
   // apply projector
   projector.apply_pt(*res);
@@ -564,7 +564,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::Meshtying::adapt_krylov_projecto
       {
         Teuchos::RCP<Core::LinAlg::Vector<double>> vec_mesht =
             Core::LinAlg::create_vector(*mergedmap_, true);
-        split_vector_based_on3x3(vec, *vec_mesht);
+        split_vector_based_on3x3(*vec, *vec_mesht);
         vec = vec_mesht;
       }
       break;
@@ -612,7 +612,7 @@ void FLD::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
       {
         TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.1)   - Preparation");
 
-        split_vector_based_on3x3(residual, *res);
+        split_vector_based_on3x3(*residual, *res);
         // assign blocks to the solution matrix
         sysmatsolve->assign(0, 0, Core::LinAlg::View, sysmatnew->matrix(0, 0));
         sysmatsolve->assign(0, 1, Core::LinAlg::View, sysmatnew->matrix(0, 1));
@@ -634,7 +634,7 @@ void FLD::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
         Core::LinAlg::export_to(*res, *residual);
 
         // compute and update slave dof's
-        update_slave_dof(incvel, velnp);
+        update_slave_dof(*incvel, *velnp);
       }
     }
     break;
@@ -657,7 +657,7 @@ void FLD::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
 
       {
         TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.1)   - Preparation");
-        split_vector_based_on3x3(residual, *res);
+        split_vector_based_on3x3(*residual, *res);
 
 
         // assign blocks to the solution matrix
@@ -678,7 +678,7 @@ void FLD::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
         Core::LinAlg::export_to(*inc, *incvel);
         Core::LinAlg::export_to(*res, *residual);
         // compute and update slave dof's
-        update_slave_dof(incvel, velnp);
+        update_slave_dof(*incvel, *velnp);
       }
     }
     break;
@@ -692,7 +692,7 @@ void FLD::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
       {
         TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.3)   - Update");
         // compute and update slave dof's
-        update_slave_dof(incvel, velnp);
+        update_slave_dof(*incvel, *velnp);
       }
     }
     break;
@@ -709,8 +709,7 @@ void FLD::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
 /*-------------------------------------------------------*/
 void FLD::Meshtying::condensation_sparse_matrix(
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp)
+    Core::LinAlg::Vector<double>& residual, Core::LinAlg::Vector<double>& velnp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2)   Condensation sparse matrix");
 
@@ -724,14 +723,14 @@ void FLD::Meshtying::condensation_sparse_matrix(
   std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> splitvel(3);
 
   split_matrix(sysmat, splitmatrix);
-  split_vector(*residual, splitres);
-  split_vector(*velnp, splitvel);
+  split_vector(residual, splitres);
+  split_vector(velnp, splitvel);
 
   /**********************************************************************/
   /* Condensate sparse matrix                                           */
   /**********************************************************************/
 
-  condensation_operation_sparse_matrix(*sysmat, *residual, *splitmatrix, splitres, splitvel);
+  condensation_operation_sparse_matrix(*sysmat, residual, *splitmatrix, splitres, splitvel);
 }
 
 
@@ -741,8 +740,7 @@ void FLD::Meshtying::condensation_sparse_matrix(
 /*-------------------------------------------------------*/
 void FLD::Meshtying::condensation_block_matrix(
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp)
+    Core::LinAlg::Vector<double>& residual, Core::LinAlg::Vector<double>& velnp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  2)   Condensation block matrix");
 
@@ -753,14 +751,14 @@ void FLD::Meshtying::condensation_block_matrix(
   // container for split residual vector
   std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> splitres(3);
   std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> splitvel(3);
-  split_vector(*residual, splitres);
-  split_vector(*velnp, splitvel);
+  split_vector(residual, splitres);
+  split_vector(velnp, splitvel);
 
   /**********************************************************************/
   /* Condensate blockmatrix                                             */
   /**********************************************************************/
 
-  condensation_operation_block_matrix(sysmat, *residual, splitres, splitvel);
+  condensation_operation_block_matrix(sysmat, residual, splitres, splitvel);
 }
 
 
@@ -839,13 +837,13 @@ void FLD::Meshtying::split_vector(Core::LinAlg::Vector<double>& vector,
 
 /*-------------------------------------------------------*/
 /*-------------------------------------------------------*/
-void FLD::Meshtying::split_vector_based_on3x3(Teuchos::RCP<Core::LinAlg::Vector<double>> orgvector,
-    Core::LinAlg::Vector<double>& vectorbasedon2x2)
+void FLD::Meshtying::split_vector_based_on3x3(
+    Core::LinAlg::Vector<double>& orgvector, Core::LinAlg::Vector<double>& vectorbasedon2x2)
 {
   // container for split residual vector
   std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> splitvector(3);
 
-  split_vector(*orgvector, splitvector);
+  split_vector(orgvector, splitvector);
   // build up the reduced residual
   Core::LinAlg::export_to(*(splitvector[0]), vectorbasedon2x2);
   Core::LinAlg::export_to(*(splitvector[1]), vectorbasedon2x2);
@@ -1364,8 +1362,8 @@ void FLD::Meshtying::condensation_operation_block_matrix(
 /*  Compute and update Slave DOF's          ehrl (04/11) */
 /* (including ALE case   vg 01/14)                       */
 /*-------------------------------------------------------*/
-void FLD::Meshtying::update_slave_dof(const Teuchos::RCP<Core::LinAlg::Vector<double>>& inc,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp)
+void FLD::Meshtying::update_slave_dof(
+    Core::LinAlg::Vector<double>& inc, Core::LinAlg::Vector<double>& velnp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.4)   - Update slave DOF");
 
@@ -1375,8 +1373,8 @@ void FLD::Meshtying::update_slave_dof(const Teuchos::RCP<Core::LinAlg::Vector<do
   // split incremental and velocity-pressure vector
   std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> splitinc(3);
   std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> splitvel(3);
-  split_vector(*inc, splitinc);
-  split_vector(*velnp, splitvel);
+  split_vector(inc, splitinc);
+  split_vector(velnp, splitvel);
 
   // Dirichlet or Dirichlet-like condition on the master side of the internal interface:
   // First time step:
@@ -1434,16 +1432,16 @@ void FLD::Meshtying::update_slave_dof(const Teuchos::RCP<Core::LinAlg::Vector<do
   if (dconmaster_ and firstnonliniter_) firstnonliniter_ = false;
 
   // define incremental vector to new incremental vector
-  inc->Update(1.0, *incnew, 0.0);
+  inc.Update(1.0, *incnew, 0.0);
 }
 
 /*-------------------------------------------------------*/
 /*  Output: vector                         ehrl (04/11)  */
 /*-------------------------------------------------------*/
-void FLD::Meshtying::output_vector_split(Teuchos::RCP<Core::LinAlg::Vector<double>> vector)
+void FLD::Meshtying::output_vector_split(Core::LinAlg::Vector<double>& vector)
 {
   std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> splitvector(3);
-  split_vector(*vector, splitvector);
+  split_vector(vector, splitvector);
 
   // std::cout << "vector " << std::endl << *vector << std::endl << std::endl;
 

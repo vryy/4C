@@ -463,7 +463,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
       if (timefac < 0.) FOUR_C_THROW("time factor is negative.");
     }
 
-    evaluate_electrode_status_point(ele, elevec1_epetra, params, cond, ephinp, ephidtnp, kinetics,
+    evaluate_electrode_status_point(ele, elevec1_epetra, params, *cond, ephinp, ephidtnp, kinetics,
         *stoich, nume, pot0, frt, timefac, scalar);
   }
 }  // Discret::ELEMENTS::ScaTraEleCalcElch<distype>::calc_elch_boundary_kinetics_point
@@ -566,7 +566,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_electrode_
     const Core::Elements::Element* ele,                        ///< current element
     Core::LinAlg::SerialDenseVector& scalars,                  ///< scalars to be integrated
     Teuchos::ParameterList& params,                            ///< parameter list
-    Teuchos::RCP<Core::Conditions::Condition> cond,            ///< condition
+    Core::Conditions::Condition& cond,                         ///< condition
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
     const int kinetics,             ///< desired electrode kinetics model
@@ -589,10 +589,10 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_electrode_
 
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neumann
   // condition) but the electrode status is evaluated
-  const int zerocur = cond->parameters().get<int>("ZERO_CUR");
+  const int zerocur = cond.parameters().get<int>("ZERO_CUR");
 
   // get boundary porosity from condition if available, or set equal to volume porosity otherwise
-  double epsilon = cond->parameters().get<double>("EPSILON");
+  double epsilon = cond.parameters().get<double>("EPSILON");
   if (epsilon == -1)
     epsilon = scalar;
   else if (epsilon <= 0 or epsilon > 1)
@@ -601,7 +601,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_electrode_
   bool statistics = false;
 
   // extract nodal cloud of current condition
-  const std::vector<int>* nodeids = cond->get_nodes();
+  const std::vector<int>* nodeids = cond.get_nodes();
 
   // safety checks
   if (!nodeids)
@@ -648,7 +648,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::evaluate_electrode_
     statistics = true;
 
     // call utility class for element evaluation
-    utils_->evaluate_electrode_status_at_integration_point(ele, scalars, params, *cond, ephinp,
+    utils_->evaluate_electrode_status_at_integration_point(ele, scalars, params, cond, ephinp,
         ephidtnp, my::funct_, zerocur, kinetics, stoich, nume, pot0, frt, timefac, 1., epsilon, k);
 
     // stop loop over ionic species after one evaluation (see also comment above)

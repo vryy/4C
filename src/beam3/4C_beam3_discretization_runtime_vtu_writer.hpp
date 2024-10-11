@@ -87,15 +87,13 @@ class BeamDiscretizationRuntimeOutputWriter
    *
    *  \author grill
    *  \date 03/17 */
-  void append_triad_field(
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
+  void append_triad_field(const Core::LinAlg::Vector<double>& displacement_state_vector);
 
   /** \brief append discplacement state
    *
    *  \author grill
    *  \date 03/17 */
-  void append_displacement_field(
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
+  void append_displacement_field(const Core::LinAlg::Vector<double>& displacement_state_vector);
 
   /** \brief append tangent vector field determined from given displacement state to output data
    *
@@ -151,7 +149,7 @@ class BeamDiscretizationRuntimeOutputWriter
    *  \author grill
    *  \date 03/17 */
   void append_point_circular_cross_section_information_vector(
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
+      const Core::LinAlg::Vector<double>& displacement_state_vector);
 
   /** \brief append material cross-section strain resultant values at Gauss points to output data
    *

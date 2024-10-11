@@ -206,11 +206,10 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void get_current_unshifted_element_dis(Core::FE::Discretization const& discret,
-        Core::Elements::Element const* ele,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> const& ia_discolnp,
+        Core::Elements::Element const* ele, const Core::LinAlg::Vector<double>& ia_discolnp,
         Core::Geo::MeshFree::BoundingBox const& pbb, std::vector<double>& eledisp)
     {
-      get_current_element_dis(discret, ele, *ia_discolnp, eledisp);
+      get_current_element_dis(discret, ele, ia_discolnp, eledisp);
 
       // cast to beambase element
       Discret::ELEMENTS::Beam3Base const* beamele =
@@ -234,7 +233,7 @@ namespace BEAMINTERACTION
       // temporarily extend ghosting, should be reverted somewhere later on as it is needed
       // in this fashion only here
       std::set<int> relevantfilaments;
-      extend_ghosting_for_filament_bspot_setup(relevantfilaments, discret);
+      extend_ghosting_for_filament_bspot_setup(relevantfilaments, *discret);
 
       // get pointers to all filament number conditions set
       std::vector<Core::Conditions::Condition*> filamentconditions(0);
@@ -325,31 +324,31 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void extend_ghosting_for_filament_bspot_setup(
-        std::set<int>& relevantfilaments, Teuchos::RCP<Core::FE::Discretization> discret)
+        std::set<int>& relevantfilaments, Core::FE::Discretization& discret)
     {
       std::set<int> setofnodegidswithrequiredelecloud;
       determine_off_my_rank_nodes_with_relevant_ele_cloud_for_filament_bspot_setup(
-          relevantfilaments, setofnodegidswithrequiredelecloud, *discret);
+          relevantfilaments, setofnodegidswithrequiredelecloud, discret);
 
       // collect element gids that need to be ghosted so that each proc ghosts all
       // elements of a filament containing at least one node of myrank
       // do communication to gather all elements to temporarily extend ghosting
       std::set<int> coleleset;
-      for (int iproc = 0; iproc < discret->get_comm().NumProc(); ++iproc)
+      for (int iproc = 0; iproc < discret.get_comm().NumProc(); ++iproc)
       {
         // myrank == iproc: copy set to vector in order to broadcast data
         std::vector<int> requirednodes(0);
-        if (iproc == discret->get_comm().MyPID())
+        if (iproc == discret.get_comm().MyPID())
           requirednodes.insert(requirednodes.begin(), setofnodegidswithrequiredelecloud.begin(),
               setofnodegidswithrequiredelecloud.end());
 
         // proc i tells all procs how many nodegids it has
         int numnodes = requirednodes.size();
-        discret->get_comm().Broadcast(&numnodes, 1, iproc);
+        discret.get_comm().Broadcast(&numnodes, 1, iproc);
 
         // proc i actually sends nodegids
         requirednodes.resize(numnodes);
-        discret->get_comm().Broadcast(requirednodes.data(), numnodes, iproc);
+        discret.get_comm().Broadcast(requirednodes.data(), numnodes, iproc);
 
         std::set<int> sdata;
         std::set<int> rdata;
@@ -358,31 +357,31 @@ namespace BEAMINTERACTION
         for (int i = 0; i < numnodes; ++i)
         {
           // only if myrank is owner of requested node
-          if (discret->node_row_map()->LID(requirednodes[i]) < 0) continue;
+          if (discret.node_row_map()->LID(requirednodes[i]) < 0) continue;
 
           // insert element cloud of current node
-          Core::Nodes::Node* currnode = discret->g_node(requirednodes[i]);
+          Core::Nodes::Node* currnode = discret.g_node(requirednodes[i]);
           for (int j = 0; j < currnode->num_element(); ++j)
             sdata.insert(currnode->elements()[j]->id());
         }
 
         // gather and store information on iproc
-        Core::LinAlg::gather<int>(sdata, rdata, 1, &iproc, discret->get_comm());
-        if (iproc == discret->get_comm().MyPID()) coleleset = rdata;
+        Core::LinAlg::gather<int>(sdata, rdata, 1, &iproc, discret.get_comm());
+        if (iproc == discret.get_comm().MyPID()) coleleset = rdata;
       }
 
       // insert previous ghosting
-      for (int lid = 0; lid < discret->num_my_col_elements(); ++lid)
-        coleleset.insert(discret->element_col_map()->GID(lid));
+      for (int lid = 0; lid < discret.num_my_col_elements(); ++lid)
+        coleleset.insert(discret.element_col_map()->GID(lid));
       std::vector<int> colgids(coleleset.begin(), coleleset.end());
 
       // create new ele col map
       Epetra_Map newelecolmap(
-          -1, static_cast<int>(colgids.size()), colgids.data(), 0, discret->get_comm());
+          -1, static_cast<int>(colgids.size()), colgids.data(), 0, discret.get_comm());
 
       // temporarily extend ghosting
       Core::Binstrategy::Utils::extend_discretization_ghosting(
-          *discret, newelecolmap, true, false, true);
+          discret, newelecolmap, true, false, true);
     }
 
     /*-----------------------------------------------------------------------------*
@@ -531,7 +530,7 @@ namespace BEAMINTERACTION
         Core::LinAlg::Matrix<3, 1>& bspotpos, Core::LinAlg::Matrix<3, 3>& bspottriad)
     {
       std::vector<double> eledisp;
-      get_current_unshifted_element_dis(discret, ele, ia_discolnp, *pbb, eledisp);
+      get_current_unshifted_element_dis(discret, ele, *ia_discolnp, *pbb, eledisp);
 
       get_pos_and_triad_of_binding_spot(
           ele, *pbb, linkertype, locbspotnum, bspotpos, bspottriad, eledisp);
@@ -861,14 +860,13 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void extract_pos_dof_vec_absolute_values(Core::FE::Discretization const& discret,
-        Core::Elements::Element const* ele,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> const& ia_discolnp,
+        Core::Elements::Element const* ele, const Core::LinAlg::Vector<double>& ia_discolnp,
         std::vector<double>& element_posdofvec_absolutevalues)
     {
       std::vector<double> eledispvec;
 
       // extract the Dof values of this element from displacement vector
-      get_current_element_dis(discret, ele, *ia_discolnp, eledispvec);
+      get_current_element_dis(discret, ele, ia_discolnp, eledispvec);
 
       Discret::ELEMENTS::Beam3Base const* beam_element_ptr =
           dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
@@ -892,14 +890,13 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void extract_pos_dof_vec_values(Core::FE::Discretization const& discret,
-        Core::Elements::Element const* ele,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> const& ia_discolnp,
+        Core::Elements::Element const* ele, const Core::LinAlg::Vector<double>& ia_discolnp,
         std::vector<double>& element_posdofvec_values)
     {
       std::vector<double> eledispvec;
 
       // extract the Dof values of this element from displacement vector
-      get_current_element_dis(discret, ele, *ia_discolnp, eledispvec);
+      get_current_element_dis(discret, ele, ia_discolnp, eledispvec);
 
       Discret::ELEMENTS::Beam3Base const* beam_element_ptr =
           dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
@@ -938,7 +935,7 @@ namespace BEAMINTERACTION
         // get current element displacements
         std::vector<double> eledisp;
         get_current_unshifted_element_dis(
-            discret, discret.g_element(elepairptr.get_ele_gid(elei)), disp_np_col, pbb, eledisp);
+            discret, discret.g_element(elepairptr.get_ele_gid(elei)), *disp_np_col, pbb, eledisp);
         const int numdof_ele = eledisp.size();
 
         // zero out and set correct size of transformation matrix
@@ -984,11 +981,11 @@ namespace BEAMINTERACTION
 
       // get current element displacements
       std::vector<double> ele1disp;
-      get_current_unshifted_element_dis(discret, ele1, disp_np_col, *pbb, ele1disp);
+      get_current_unshifted_element_dis(discret, ele1, *disp_np_col, *pbb, ele1disp);
       const int numdof_ele1 = ele1disp.size();
 
       std::vector<double> ele2disp;
-      get_current_unshifted_element_dis(discret, ele2, disp_np_col, *pbb, ele2disp);
+      get_current_unshifted_element_dis(discret, ele2, *disp_np_col, *pbb, ele2disp);
       const int numdof_ele2 = ele2disp.size();
 
       // transformation matrix, will be resized and reused for various needs
@@ -1102,11 +1099,11 @@ namespace BEAMINTERACTION
 
       // get current element displacements
       std::vector<double> ele1disp;
-      get_current_unshifted_element_dis(discret, ele1, disp_np_col, *pbb, ele1disp);
+      get_current_unshifted_element_dis(discret, ele1, *disp_np_col, *pbb, ele1disp);
       const int numdof_ele1 = ele1disp.size();
 
       std::vector<double> ele2disp;
-      get_current_unshifted_element_dis(discret, ele2, disp_np_col, *pbb, ele2disp);
+      get_current_unshifted_element_dis(discret, ele2, *disp_np_col, *pbb, ele2disp);
       const int numdof_ele2 = ele2disp.size();
 
       // transformation matrix, will be resized and reused for various needs

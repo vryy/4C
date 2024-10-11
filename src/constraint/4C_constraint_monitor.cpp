@@ -72,7 +72,7 @@ CONSTRAINTS::Monitor::MoniType CONSTRAINTS::Monitor::get_moni_type(const std::st
 |Evaluate Monitors, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void CONSTRAINTS::Monitor::evaluate(
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector)
+    Teuchos::ParameterList& params, Core::LinAlg::Vector<double>& systemvector)
 {
   switch (montype_)
   {
@@ -90,7 +90,7 @@ void CONSTRAINTS::Monitor::evaluate(
     default:
       FOUR_C_THROW("Unknown monitor type to be evaluated in Monitor class!");
   }
-  evaluate_monitor(params, *systemvector);
+  evaluate_monitor(params, systemvector);
 }
 
 

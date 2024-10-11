@@ -501,7 +501,7 @@ Inpar::Thermo::ConvergenceStatus Thermo::TimIntImpl::newton_full()
   timer_.reset();
 
   // Do mortar condensation
-  if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_condensation(tang_, fres_);
+  if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_condensation(tang_, *fres_);
 
   // equilibrium iteration loop
   while (((not converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
@@ -534,7 +534,7 @@ Inpar::Thermo::ConvergenceStatus Thermo::TimIntImpl::newton_full()
     solver_->reset_tolerance();
 
     // recover condensed variables
-    if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_recover(*tang_, tempi_);
+    if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_recover(*tang_, *tempi_);
 
     // update end-point temperatures etc
     update_iter(iter_);
@@ -573,7 +573,7 @@ void Thermo::TimIntImpl::blank_dirichlet_and_calc_norms()
   dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
 
   // do mortar condensation
-  if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_condensation(tang_, fres_);
+  if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_condensation(tang_, *fres_);
 
   // build residual force norm
   normfres_ = Thermo::Aux::calculate_vector_norm(iternorm_, *fres_);

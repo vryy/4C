@@ -300,7 +300,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output(
 
   // no counter for standard solution output : -1
   const std::string prefix("SOL");
-  gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_vel, output_col_acc,
+  gmsh_output(filename_base, prefix, step, count, *state->wizard(), *output_col_vel, output_col_acc,
       dispnp_col);
   cond_manager_->gmsh_output(filename_base, step, gmsh_step_diff_, gmsh_debug_out_screen_);
 }
@@ -330,7 +330,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_previous(
 
 
   const std::string prefix("ref_SOL");
-  gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_vel, output_col_acc,
+  gmsh_output(filename_base, prefix, step, count, *state->wizard(), *output_col_vel, output_col_acc,
       dispnp_col);
 }
 
@@ -351,7 +351,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_debug(
   Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_vel =
       Core::Rebalance::get_col_version_of_row_vector(*discret_, state->velnp());
   const std::string prefix("SOL");
-  gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_vel, Teuchos::null,
+  gmsh_output(filename_base, prefix, step, count, *state->wizard(), *output_col_vel, Teuchos::null,
       dispnp_col);
 }
 
@@ -373,7 +373,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_residual_output_debug(
   Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_residual =
       Core::Rebalance::get_col_version_of_row_vector(*discret_, state->residual());
   const std::string prefix("RES");
-  gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_residual,
+  gmsh_output(filename_base, prefix, step, count, *state->wizard(), *output_col_residual,
       Teuchos::null, dispnp_col);
 }
 
@@ -394,18 +394,17 @@ void FLD::XFluidOutputServiceGmsh::gmsh_increment_output_debug(
   Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_incvel =
       Core::Rebalance::get_col_version_of_row_vector(*discret_, state->inc_vel());
   const std::string prefix("INC");
-  gmsh_output(filename_base, prefix, step, count, state->wizard(), output_col_incvel, Teuchos::null,
-      dispnp_col);
+  gmsh_output(filename_base, prefix, step, count, *state->wizard(), *output_col_incvel,
+      Teuchos::null, dispnp_col);
 }
 
 void FLD::XFluidOutputServiceGmsh::gmsh_output(
-    const std::string& filename_base,  ///< name for output file
-    const std::string& prefix,         ///< data prefix
-    int step,                          ///< step number
-    int count,                         ///< counter for iterations within a global time step
-    const Teuchos::RCP<Cut::CutWizard>& wizard,  ///< cut wizard
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>
-        vel,  ///< vector holding velocity and pressure dofs
+    const std::string& filename_base,         ///< name for output file
+    const std::string& prefix,                ///< data prefix
+    int step,                                 ///< step number
+    int count,                                ///< counter for iterations within a global time step
+    Cut::CutWizard& wizard,                   ///< cut wizard
+    const Core::LinAlg::Vector<double>& vel,  ///< vector holding velocity and pressure dofs
     Teuchos::RCP<const Core::LinAlg::Vector<double>> acc,    ///< vector holding acceleration
     Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp  ///< vector holding acceleration
 )
@@ -537,7 +536,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
   for (int i = 0; i < numrowele; ++i)
   {
     Core::Elements::Element* actele = (discret_)->l_row_element(i);
-    Cut::ElementHandle* e = wizard->get_element(actele);
+    Cut::ElementHandle* e = wizard.get_element(actele);
 
     if (e != nullptr)
     {
@@ -566,20 +565,20 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
             if (e->is_cut())
             {
               gmsh_output_volume_cell(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
-                  gmshfilecontent_acc, actele, e, vc, nds, *vel, acc);
+                  gmshfilecontent_acc, actele, e, vc, nds, vel, acc);
               if (vc->position() == Cut::Point::outside)
               {
                 if (cond_manager_->has_mesh_coupling())
-                  gmsh_output_boundary_cell(*discret_, gmshfilecontent_bound, vc, *wizard);
+                  gmsh_output_boundary_cell(*discret_, gmshfilecontent_bound, vc, wizard);
               }
             }
             else
             {
               gmsh_output_element(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
-                  gmshfilecontent_acc, actele, nds, *vel, acc, dispnp);
+                  gmshfilecontent_acc, actele, nds, vel, acc, dispnp);
             }
             gmsh_output_element(*discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost,
-                gmshfilecontent_acc_ghost, actele, nds, *vel, acc, dispnp);
+                gmshfilecontent_acc_ghost, actele, nds, vel, acc, dispnp);
           }
           set_counter += 1;
         }
@@ -590,7 +589,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
 
         // one standard uncut physical element
         gmsh_output_element(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
-            gmshfilecontent_acc, actele, nds, *vel, acc, dispnp);
+            gmshfilecontent_acc, actele, nds, vel, acc, dispnp);
       }
       else
       {
@@ -601,9 +600,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
     {
       std::vector<int> nds;  // empty vector
       gmsh_output_element(*discret_, gmshfilecontent_vel, gmshfilecontent_press,
-          gmshfilecontent_acc, actele, nds, *vel, acc, dispnp);
+          gmshfilecontent_acc, actele, nds, vel, acc, dispnp);
       gmsh_output_element(*discret_, gmshfilecontent_vel_ghost, gmshfilecontent_press_ghost,
-          gmshfilecontent_acc_ghost, actele, nds, *vel, acc, dispnp);
+          gmshfilecontent_acc_ghost, actele, nds, vel, acc, dispnp);
     }
   }  // loop elements
 

@@ -272,13 +272,13 @@ void ALE::Meshtying::split_vector(Core::LinAlg::Vector<double>& vector,
 
 /*-------------------------------------------------------*/
 /*-------------------------------------------------------*/
-void ALE::Meshtying::split_vector_based_on3x3(Teuchos::RCP<Core::LinAlg::Vector<double>> orgvector,
-    Core::LinAlg::Vector<double>& vectorbasedon2x2)
+void ALE::Meshtying::split_vector_based_on3x3(
+    Core::LinAlg::Vector<double>& orgvector, Core::LinAlg::Vector<double>& vectorbasedon2x2)
 {
   // container for split residual vector
   std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> splitvector(3);
 
-  split_vector(*orgvector, splitvector);
+  split_vector(orgvector, splitvector);
   // build up the reduced residual
   Core::LinAlg::export_to(*(splitvector[0]), vectorbasedon2x2);
   Core::LinAlg::export_to(*(splitvector[1]), vectorbasedon2x2);
@@ -707,7 +707,7 @@ int ALE::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
 
   {
     TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.1)   - Preparation");
-    split_vector_based_on3x3(residual, *res);
+    split_vector_based_on3x3(*residual, *res);
 
     // assign blocks to the solution matrix
     sysmatsolve->assign(0, 0, Core::LinAlg::View, sysmatnew->matrix(0, 0));

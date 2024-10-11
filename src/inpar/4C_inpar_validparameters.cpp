@@ -396,7 +396,7 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::valid_parameters()
   Inpar::IORuntimeOutput::BEAMS::set_valid_parameters(*list);
   Inpar::BEAMCONTACT::set_valid_parameters(*list);
   Inpar::BEAMPOTENTIAL::set_valid_parameters(*list);
-  Inpar::BEAMINTERACTION::set_valid_parameters(list);
+  Inpar::BEAMINTERACTION::set_valid_parameters(*list);
   Inpar::RveMpc::set_valid_parameters(*list);
   Inpar::BrownianDynamics::set_valid_parameters(*list);
 

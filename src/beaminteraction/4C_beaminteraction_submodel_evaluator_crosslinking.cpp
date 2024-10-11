@@ -119,7 +119,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
 
     std::vector<double> eledisp;
     BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), beamele_i,
-        beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
+        *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
 
     beam_data_[i] = Teuchos::make_rcp<BEAMINTERACTION::Data::BeamData>();
     beam_data_[i]->set_id(beamele_i->id());
@@ -1760,7 +1760,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
         Core::LinAlg::Matrix<3, 1> bbspotpos;
         std::vector<double> eledisp;
         BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), ele,
-            beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
+            *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
         ele->get_pos_of_binding_spot(bbspotpos, eledisp,
             crosslinker_i->get_material()->linker_type(),
             cldata_i->get_b_spots()[occbspotid].second, periodic_bounding_box());
@@ -1812,7 +1812,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
         Core::LinAlg::Matrix<3, 1> bbspotposone;
         std::vector<double> eledisp;
         BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), ele,
-            beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
+            *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
         ele->get_pos_of_binding_spot(bbspotposone, eledisp,
             crosslinker_i->get_material()->linker_type(), cldata_i->get_b_spots()[0].second,
             periodic_bounding_box());
@@ -1848,7 +1848,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
         // get current position of filament binding spot
         Core::LinAlg::Matrix<3, 1> bbspotpostwo;
         BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), ele,
-            beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
+            *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
         ele->get_pos_of_binding_spot(bbspotpostwo, eledisp,
             crosslinker_i->get_material()->linker_type(), cldata_i->get_b_spots()[1].second,
             periodic_bounding_box());
@@ -2166,7 +2166,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
 
       std::vector<double> eledisp;
       BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), beamele_i,
-          beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
+          *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
 
       // loop over binding spot types of current element
       for (auto const& iter : beamele_i->get_binding_spots())

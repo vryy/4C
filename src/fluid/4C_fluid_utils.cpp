@@ -92,7 +92,7 @@ void FLD::UTILS::StressManager::init_aggr(Teuchos::RCP<Core::LinAlg::SparseOpera
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_wall_shear_stresses(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual, const double dt)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wss = get_wall_shear_stresses_wo_agg(trueresidual);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> wss = get_wall_shear_stresses_wo_agg(*trueresidual);
 
   switch (wss_type_)
   {
@@ -127,10 +127,10 @@ FLD::UTILS::StressManager::get_pre_calc_wall_shear_stresses(
   switch (wss_type_)
   {
     case Inpar::FLUID::wss_standard:
-      wss = get_wall_shear_stresses_wo_agg(trueresidual);
+      wss = get_wall_shear_stresses_wo_agg(*trueresidual);
       break;
     case Inpar::FLUID::wss_aggregation:
-      wss = get_wall_shear_stresses_wo_agg(trueresidual);
+      wss = get_wall_shear_stresses_wo_agg(*trueresidual);
       wss = aggreagte_stresses(*wss);
       break;
     case Inpar::FLUID::wss_mean:
@@ -151,11 +151,11 @@ FLD::UTILS::StressManager::get_pre_calc_wall_shear_stresses(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>>
 FLD::UTILS::StressManager::get_wall_shear_stresses_wo_agg(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual)
+    const Core::LinAlg::Vector<double>& trueresidual)
 {
   if (not isinit_) FOUR_C_THROW("StressManager not initialized");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> stresses = calc_stresses(*trueresidual);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> stresses = calc_stresses(trueresidual);
   // calculate wss from stresses
   Teuchos::RCP<Core::LinAlg::Vector<double>> wss = calc_wall_shear_stresses(stresses);
 
@@ -166,9 +166,9 @@ FLD::UTILS::StressManager::get_wall_shear_stresses_wo_agg(
  |  calculate traction vector at (Dirichlet) boundary (public) Thon/Krank 07/07|
  *-----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_stresses_wo_agg(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual)
+    const Core::LinAlg::Vector<double>& trueresidual)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> stresses = calc_stresses(*trueresidual);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> stresses = calc_stresses(trueresidual);
 
   return stresses;
 }  // FLD::UTILS::StressManager::GetStressesWOAgg()
@@ -179,7 +179,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_stress
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_stresses(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual, const double dt)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> stresses = get_stresses_wo_agg(trueresidual);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> stresses = get_stresses_wo_agg(*trueresidual);
 
   switch (wss_type_)
   {
@@ -213,10 +213,10 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_pre_ca
   switch (wss_type_)
   {
     case Inpar::FLUID::wss_standard:
-      stresses = get_stresses_wo_agg(trueresidual);
+      stresses = get_stresses_wo_agg(*trueresidual);
       break;
     case Inpar::FLUID::wss_aggregation:
-      stresses = get_stresses_wo_agg(trueresidual);
+      stresses = get_stresses_wo_agg(*trueresidual);
       stresses = aggreagte_stresses(*stresses);
       break;
     case Inpar::FLUID::wss_mean:
@@ -1012,17 +1012,17 @@ void FLD::UTILS::write_doubles_to_file(
 /*----------------------------------------------------------------------*|
  | project vel gradient and store it in given param list        bk 05/15 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::project_gradient_and_set_param(Teuchos::RCP<Core::FE::Discretization> discret,
+void FLD::UTILS::project_gradient_and_set_param(Core::FE::Discretization& discret,
     Teuchos::ParameterList& eleparams, Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,
     const std::string paraname, bool alefluid)
 {
   // project gradient
   Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
-      FLD::UTILS::project_gradient(*discret, vel, alefluid);
+      FLD::UTILS::project_gradient(discret, vel, alefluid);
 
   // store multi vector in parameter list after export to col layout
   if (projected_velgrad != Teuchos::null)
-    discret->add_multi_vector_to_parameter_list(eleparams, paraname, projected_velgrad);
+    discret.add_multi_vector_to_parameter_list(eleparams, paraname, projected_velgrad);
 
   return;
 }

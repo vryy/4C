@@ -324,7 +324,7 @@ void EnsightWriter::write_geo_file_one_time_step(std::ofstream& file,
   }
 
   // write the grid information
-  Teuchos::RCP<Epetra_Map> proc0map = write_coordinates(file, field_->discretization());
+  Teuchos::RCP<Epetra_Map> proc0map = write_coordinates(file, *field_->discretization());
   proc0map_ = proc0map;  // update the internal map
   write_cells(file, field_->discretization(), proc0map);
 
@@ -336,7 +336,7 @@ void EnsightWriter::write_geo_file_one_time_step(std::ofstream& file,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> EnsightWriter::write_coordinates(
-    std::ofstream& geofile, const Teuchos::RCP<Core::FE::Discretization> dis)
+    std::ofstream& geofile, Core::FE::Discretization& dis)
 {
   using namespace FourC;
 
@@ -357,16 +357,16 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::write_coordinates(
     case Core::FE::ShapeFunctionType::polynomial:
     case Core::FE::ShapeFunctionType::hdg:
     {
-      write_coordinates_for_polynomial_shapefunctions(geofile, *dis, proc0map);
+      write_coordinates_for_polynomial_shapefunctions(geofile, dis, proc0map);
       break;
     }
     case Core::FE::ShapeFunctionType::nurbs:
     {
       // write real geometry coordinates
-      if (!writecp_) write_coordinates_for_nurbs_shapefunctions(geofile, *dis, proc0map);
+      if (!writecp_) write_coordinates_for_nurbs_shapefunctions(geofile, dis, proc0map);
       // write control point coordinates
       else
-        write_coordinates_for_polynomial_shapefunctions(geofile, *dis, proc0map);
+        write_coordinates_for_polynomial_shapefunctions(geofile, dis, proc0map);
       break;
     }
     default:
@@ -1563,12 +1563,11 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
 
     // contract result values on proc0 (proc0 gets everything, other procs empty)
     Epetra_Import proc0dataimporter(*proc0datamap, *epetradatamap);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> proc0data =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*proc0datamap);
-    int err = proc0data->Import(*data, proc0dataimporter, Insert);
+    Core::LinAlg::Vector<double> proc0data(*proc0datamap);
+    int err = proc0data.Import(*data, proc0dataimporter, Insert);
     if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
-    const Epetra_BlockMap& finaldatamap = proc0data->Map();
+    const Epetra_BlockMap& finaldatamap = proc0data.Map();
 
     //------------------------------------------------------------------
     // each processor provides its dof global id information for proc 0
@@ -1639,13 +1638,13 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
             {
               // this is the desired component of the rotated vector field result
               double value =
-                  FLD::get_component_of_rotated_vector_field(idf, *proc0data, lid, iter->second);
+                  FLD::get_component_of_rotated_vector_field(idf, proc0data, lid, iter->second);
               write(file, static_cast<float>(value));
             }
             else
             {
               // the standard case
-              write(file, static_cast<float>((*proc0data)[lid]));
+              write(file, static_cast<float>((proc0data)[lid]));
             }
           }
           else

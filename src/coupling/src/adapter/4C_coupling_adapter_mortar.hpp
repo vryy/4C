@@ -300,17 +300,16 @@ namespace Coupling::Adapter
 
     /// do condensation of Lagrange multiplier and slave-sided dofs
     void mortar_condensation(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,     ///< in:  tangent matrix w/o condensation
-                                                         ///< out: tangent matrix w/  condensation
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs  ///< in:  rhs vector     w/o condensation
-                                                         ///< out: rhs vector     w/  condensation
+        Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,  ///< in:  tangent matrix w/o condensation
+                                                      ///< out: tangent matrix w/  condensation
+        Core::LinAlg::Vector<double>& rhs             ///< in:  rhs vector     w/o condensation
+                                                      ///< out: rhs vector     w/  condensation
     ) const;
 
     /// recover slave-sided dofs
     void mortar_recover(Core::LinAlg::SparseMatrix& k,  ///< in: tangent matrix
-        Teuchos::RCP<Core::LinAlg::Vector<double>>&
-            inc  ///< in:  solution vector     w/o condensation
-                 ///< out: solution vector     w/  condensation
+        Core::LinAlg::Vector<double>& inc  ///< in:  solution vector     w/o condensation
+                                           ///< out: solution vector     w/  condensation
     ) const;
 
     //@}

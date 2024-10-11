@@ -154,8 +154,7 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void get_current_unshifted_element_dis(Core::FE::Discretization const& discret,
-        Core::Elements::Element const* ele,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> const& ia_discolnp,
+        Core::Elements::Element const* ele, const Core::LinAlg::Vector<double>& ia_discolnp,
         Core::Geo::MeshFree::BoundingBox const& pbb, std::vector<double>& eledisp);
 
     /*-----------------------------------------------------------------------------*
@@ -167,7 +166,7 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void extend_ghosting_for_filament_bspot_setup(
-        std::set<int>& relevantfilaments, Teuchos::RCP<Core::FE::Discretization> discret);
+        std::set<int>& relevantfilaments, Core::FE::Discretization& discret);
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
@@ -303,14 +302,12 @@ namespace BEAMINTERACTION
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     void extract_pos_dof_vec_absolute_values(Core::FE::Discretization const& discret,
-        Core::Elements::Element const* ele,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> const& ia_discolnp,
+        Core::Elements::Element const* ele, const Core::LinAlg::Vector<double>& ia_discolnp,
         std::vector<double>& element_posdofvec_absolutevalues);
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     void extract_pos_dof_vec_values(Core::FE::Discretization const& discret,
-        Core::Elements::Element const* ele,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> const& ia_discolnp,
+        Core::Elements::Element const* ele, const Core::LinAlg::Vector<double>& ia_discolnp,
         std::vector<double>& element_posdofvec_values);
 
     /*----------------------------------------------------------------------------*

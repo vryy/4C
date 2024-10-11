@@ -149,7 +149,7 @@ namespace FLD
         Teuchos::RCP<Core::LinAlg::Vector<double>> vec);
 
     //! Output: split vector
-    void output_vector_split(Teuchos::RCP<Core::LinAlg::Vector<double>> vector);
+    void output_vector_split(Core::LinAlg::Vector<double>& vector);
 
     //! Analyze system matrix
     void analyze_matrix(Core::LinAlg::SparseMatrix& sparsematrix);  ///> sparse matrix to analyze
@@ -160,8 +160,7 @@ namespace FLD
         Teuchos::RCP<Core::LinAlg::SparseMatrix> sparsematrix);  ///> sparse matrix to analyze
 
     //! Compute and update the increments of the slave node (including ALE case)
-    void update_slave_dof(const Teuchos::RCP<Core::LinAlg::Vector<double>>& inc,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp);
+    void update_slave_dof(Core::LinAlg::Vector<double>& inc, Core::LinAlg::Vector<double>& velnp);
 
     //! Set the flag for multifield problems
     void is_multifield(Teuchos::RCP<std::set<int>> condelements,  ///< conditioned elements of fluid
@@ -199,16 +198,14 @@ namespace FLD
     //! Prepare condensation for sparse matrix (including ALE case)
     void condensation_sparse_matrix(const Teuchos::RCP<Core::LinAlg::SparseOperator>&
                                         sysmat,  ///> sysmat established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
-            residual,  ///> residual established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp);
+        Core::LinAlg::Vector<double>& residual,  ///> residual established by the element routine
+        Core::LinAlg::Vector<double>& velnp);
 
     //! Prepare condensation for a block matrix (including ALE case)
     void condensation_block_matrix(const Teuchos::RCP<Core::LinAlg::SparseOperator>&
-                                       sysmat,  ///> sysmat established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
-            residual,  ///> residual established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp);  ///> current velocity vector
+                                       sysmat,   ///> sysmat established by the element routine
+        Core::LinAlg::Vector<double>& residual,  ///> residual established by the element routine
+        Core::LinAlg::Vector<double>& velnp);    ///> current velocity vector
 
     //! split sparse global system matrix into 3x3 block sparse matrix associated with interior,
     //! master, and slave dofs
@@ -224,8 +221,8 @@ namespace FLD
             splitvector);  ///> container for the split vector
 
     //! Split vector and save parts in a std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>> >
-    void split_vector_based_on3x3(Teuchos::RCP<Core::LinAlg::Vector<double>>
-                                      orgvector,  ///> original vector based on 3x3 blockmatrix
+    void split_vector_based_on3x3(
+        Core::LinAlg::Vector<double>& orgvector,  ///> original vector based on 3x3 blockmatrix
         Core::LinAlg::Vector<double>& vectorbasedon2x2);  ///> split vector based on 2x2 blockmatrix
 
     //! Condensation operation for a sparse matrix (including ALE case):

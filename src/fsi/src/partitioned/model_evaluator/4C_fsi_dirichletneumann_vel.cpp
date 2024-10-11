@@ -189,7 +189,7 @@ void FSI::DirichletNeumannVel::output()
 {
   FSI::DirichletNeumann::output();
   constraint_manager_->output(time(), step());
-  visualization_output_writer_->write_output_runtime(constraint_manager_, step(), time());
+  visualization_output_writer_->write_output_runtime(*constraint_manager_, step(), time());
   structure_field()->discretization()->writer()->clear_map_cache();
   mb_fluid_field()->discretization()->writer()->clear_map_cache();
 }

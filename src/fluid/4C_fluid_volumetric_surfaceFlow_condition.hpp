@@ -62,8 +62,7 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::EvaluateVelocities
       */
-      void evaluate_velocities(
-          const Teuchos::RCP<Core::LinAlg::Vector<double>> velocities, const double time);
+      void evaluate_velocities(Core::LinAlg::Vector<double>& velocities, const double time);
 
 
       void insert_cond_vector(
@@ -130,7 +129,7 @@ namespace FLD
       /*!
       \brief Wrapper for FluidVolumetricSurfaceFlowBc::update_residual
       */
-      void update_residual(Teuchos::RCP<Core::LinAlg::Vector<double>> residual);
+      void update_residual(Core::LinAlg::Vector<double>& residual);
 
 
       /*!

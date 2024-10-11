@@ -1597,7 +1597,7 @@ void Discret::ELEMENTS::SoTet10::update_element(
       so_tet10_derivs<Core::FE::GaussRule3D::tet_4point>(derivs, gp);
 
       UTILS::compute_deformation_gradient<Core::FE::CellType::tet10>(
-          defgrd, kintype_, xdisp, xcurr, invJ_[gp], derivs, pstype_, prestress_, gp);
+          defgrd, kintype_, xdisp, xcurr, invJ_[gp], derivs, pstype_, *prestress_, gp);
 
 
       // call material update if material = m_growthremodel_elasthyper (calculate and update

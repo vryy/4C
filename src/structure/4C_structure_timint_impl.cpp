@@ -2558,7 +2558,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
         }
       }
       // Call constraint solver to solve system with zeros on diagonal
-      consolv_->solve(system_matrix(), constr, constrT, disi_, lagrincr, fres_, conrhs);
+      consolv_->solve(*system_matrix(), *constr, *constrT, disi_, *lagrincr, *fres_, *conrhs);
 
       // recover unscaled solution
       recover_stc_solution();
@@ -2733,7 +2733,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       else
       {
         // Call Cardiovascular0D solver to solve system
-        linsolve_error = cardvasc0dman_->solve(system_matrix(), *disi_, *fres_, dti);
+        linsolve_error = cardvasc0dman_->solve(*system_matrix(), *disi_, *fres_, dti);
       }
 
       // check for problems in linear solver
@@ -4547,7 +4547,7 @@ int Solid::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
   else
   {
     // solve with Cardiovascular0D solver
-    linsolve_error = cardvasc0dman_->solve(system_matrix(), *disi_, *fres_, k_ptc);
+    linsolve_error = cardvasc0dman_->solve(*system_matrix(), *disi_, *fres_, k_ptc);
   }
 
   return linsolve_error;

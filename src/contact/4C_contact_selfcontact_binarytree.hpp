@@ -270,24 +270,22 @@ namespace CONTACT
     }
 
     //! operator >
-    friend bool operator>(
-        const Teuchos::RCP<SelfBinaryTreeNode> node1, const Teuchos::RCP<SelfBinaryTreeNode> node2)
+    friend bool operator>(SelfBinaryTreeNode& node1, SelfBinaryTreeNode& node2)
     {
-      return operator<(*node2, *node1);
+      return operator<(node2, node1);
     }
 
     //! operator <=
     friend bool operator<=(
         const Teuchos::RCP<SelfBinaryTreeNode> node1, const Teuchos::RCP<SelfBinaryTreeNode> node2)
     {
-      return !operator>(node1, node2);
+      return !operator>(*node1, *node2);
     }
 
     //! operator >=
-    friend bool operator>=(
-        const Teuchos::RCP<SelfBinaryTreeNode> node1, const Teuchos::RCP<SelfBinaryTreeNode> node2)
+    friend bool operator>=(SelfBinaryTreeNode& node1, SelfBinaryTreeNode& node2)
     {
-      return !operator<(*node1, *node2);
+      return !operator<(node1, node2);
     }
 
     //! operator ==
@@ -302,10 +300,9 @@ namespace CONTACT
     }
 
     //! operator !=
-    friend bool operator!=(
-        const Teuchos::RCP<SelfBinaryTreeNode> node1, const Teuchos::RCP<SelfBinaryTreeNode> node2)
+    friend bool operator!=(SelfBinaryTreeNode& node1, SelfBinaryTreeNode& node2)
     {
-      return !operator==(*node1, *node2);
+      return !operator==(node1, node2);
     }
 
   };  // class SelfBinaryTreeNode
@@ -334,10 +331,9 @@ namespace CONTACT
     }
 
     //! operator !=
-    friend bool operator!=(
-        const Teuchos::RCP<SelfDualEdge> edge1, const Teuchos::RCP<SelfDualEdge> edge2)
+    friend bool operator!=(SelfDualEdge& edge1, SelfDualEdge& edge2)
     {
-      return !operator==(*edge1, *edge2);
+      return !operator==(edge1, edge2);
     }
 
     //! operator <
@@ -348,7 +344,7 @@ namespace CONTACT
         return true;
       else if (edge1->costs_ > edge2->costs_)
         return false;
-      else if (edge1 != edge2)
+      else if (*edge1 != *edge2)
       {
         if (*edge1->greater_node() < *edge2->greater_node())
           return true;
@@ -448,9 +444,9 @@ namespace CONTACT
     */
     Teuchos::RCP<SelfBinaryTreeNode> greater_node()
     {
-      if (node1_ > node2_)
+      if (*node1_ > *node2_)
         return node1_;
-      else if (node2_ > node1_)
+      else if (*node2_ > *node1_)
         return node2_;
       else
         return node1_;
@@ -458,9 +454,9 @@ namespace CONTACT
 
     Teuchos::RCP<SelfBinaryTreeNode> lesser_node()
     {
-      if (node1_ > node2_)
+      if (*node1_ > *node2_)
         return node2_;
-      else if (node2_ > node1_)
+      else if (*node2_ > *node1_)
         return node1_;
       else
         return node1_;

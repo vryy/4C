@@ -146,7 +146,7 @@ namespace Solid
      *
      *  \param[in] v Vector to be rotated
      */
-    bool rotate_global_to_local(const Teuchos::RCP<Core::LinAlg::Vector<double>>& v) const;
+    bool rotate_global_to_local(Core::LinAlg::Vector<double>& v) const;
 
     /*! \brief Rotate the rhs vector from the global to the local coordinate system
      *
@@ -163,7 +163,7 @@ namespace Solid
      *
      *  \param[in] v Vector to be rotated
      */
-    bool rotate_local_to_global(const Teuchos::RCP<Core::LinAlg::Vector<double>>& v) const;
+    bool rotate_local_to_global(Core::LinAlg::Vector<double>& v) const;
 
     /*! \brief Rotate a vector from the local to the global coordinate system
      *
@@ -219,7 +219,7 @@ namespace Solid
      *
      *  \param[in/out] A Jacobian matrix
      */
-    void apply_dirichlet_to_local_jacobian(Teuchos::RCP<Core::LinAlg::SparseOperator> A) const;
+    void apply_dirichlet_to_local_jacobian(Core::LinAlg::SparseOperator& A) const;
 
    protected:
     //! Flag indicating the initialization status.

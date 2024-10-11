@@ -1291,7 +1291,7 @@ void FLD::FluidImplicitTimeInt::apply_nonlinear_boundary_conditions()
     if (alefluid_) discret_->set_state(ndsale_, "dispnp", dispnp_);
 
     // update residual and sysmat with impedance boundary conditions
-    impedancebc_->add_impedance_bc_to_residual_and_sysmat(dta_, time_, residual_, sysmat_);
+    impedancebc_->add_impedance_bc_to_residual_and_sysmat(dta_, time_, *residual_, *sysmat_);
 
     discret_->clear_state();
   }
@@ -4293,8 +4293,8 @@ void FLD::FluidImplicitTimeInt::set_initial_flow_field(
       // otherwise due to the non-linear terms in the matrix.
       if (msht_ != Inpar::FLUID::no_meshtying)
       {
-        meshtying_->update_slave_dof(velnp_, velnp_);
-        meshtying_->update_slave_dof(veln_, veln_);
+        meshtying_->update_slave_dof(*velnp_, *velnp_);
+        meshtying_->update_slave_dof(*veln_, *veln_);
       }
     }
   }
@@ -6800,7 +6800,7 @@ void FLD::FluidImplicitTimeInt::update_slave_dof(Teuchos::RCP<Core::LinAlg::Vect
 {
   if (msht_ != Inpar::FLUID::no_meshtying)
   {
-    meshtying_->update_slave_dof(f, velnp_);
+    meshtying_->update_slave_dof(*f, *velnp_);
   }
 }
 /*----------------------------------------------------------------------*|

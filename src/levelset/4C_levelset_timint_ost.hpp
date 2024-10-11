@@ -43,7 +43,7 @@ namespace ScaTra
         const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
 
     /// redistribute the scatra discretization and vectors according to nodegraph
-    void redistribute(const Teuchos::RCP<Epetra_CrsGraph>& nodegraph);
+    void redistribute(Epetra_CrsGraph& nodegraph);
 
     /// interpolate phi to intermediate time n+theta with 0<theta<1
     Teuchos::RCP<Core::LinAlg::Vector<double>> phinptheta(const double theta_inter);

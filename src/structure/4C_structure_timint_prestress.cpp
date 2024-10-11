@@ -101,7 +101,7 @@ void Solid::TimIntPrestress::update_step_element()
     // in material law (mhv 12/2015) pass current displacement state to spring at end of MULF step
     if (springman_->have_spring_dashpot())
     {
-      springman_->reset_prestress(disn_);
+      springman_->reset_prestress(*disn_);
     }
     // only for MULF prestressing mode:
     dis_->update_steps(*zeros_);

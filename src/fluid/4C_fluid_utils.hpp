@@ -334,7 +334,7 @@ namespace FLD
 
       /// return WSS vector always without aggregation, even if scale separation matrix exists
       Teuchos::RCP<Core::LinAlg::Vector<double>> get_wall_shear_stresses_wo_agg(
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual);
+          const Core::LinAlg::Vector<double>& trueresidual);
 
       /// update and return stress vector
       Teuchos::RCP<Core::LinAlg::Vector<double>> get_stresses(
@@ -346,7 +346,7 @@ namespace FLD
 
       /// return stress vector always without aggregation, even if scale separation matrix exists
       Teuchos::RCP<Core::LinAlg::Vector<double>> get_stresses_wo_agg(
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual);
+          const Core::LinAlg::Vector<double>& trueresidual);
 
       /// return flag if StressManager has already been initialized
       bool is_init() { return isinit_; };
@@ -537,7 +537,7 @@ namespace FLD
     \brief Project gradient and store vector in param list
 
     */
-    void project_gradient_and_set_param(Teuchos::RCP<Core::FE::Discretization> discret,
+    void project_gradient_and_set_param(Core::FE::Discretization& discret,
         Teuchos::ParameterList& eleparams, Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,
         const std::string paraname, bool alefluid);
 

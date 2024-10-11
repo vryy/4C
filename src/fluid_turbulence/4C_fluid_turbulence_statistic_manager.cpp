@@ -645,7 +645,7 @@ namespace FLD
                 "need statistics_bfs_ to do a time sample for a flow over a backward-facing step");
 
           statistics_bfs_->do_time_sample(
-              *myvelnp_, *mystressmanager_->get_stresses_wo_agg(myforce_));
+              *myvelnp_, *mystressmanager_->get_stresses_wo_agg(*myforce_));
 
           // do time sample for inflow channel flow
           if (inflow_)
@@ -665,7 +665,7 @@ namespace FLD
                 "need statistics_ph_ to do a time sample for a flow over a backward-facing step");
 
           statistics_ph_->do_time_sample(
-              *myvelnp_, *mystressmanager_->get_wall_shear_stresses_wo_agg(myforce_));
+              *myvelnp_, *mystressmanager_->get_wall_shear_stresses_wo_agg(*myforce_));
           break;
         }
         case loma_backward_facing_step:
@@ -681,7 +681,7 @@ namespace FLD
             if (not withscatra_)
             {
               statistics_bfs_->do_time_sample(
-                  *myvelnp_, *mystressmanager_->get_stresses_wo_agg(myforce_));
+                  *myvelnp_, *mystressmanager_->get_stresses_wo_agg(*myforce_));
 
               // do time sample for inflow channel flow
               if (inflow_)
@@ -1043,9 +1043,9 @@ namespace FLD
     Include current quantities in the time averaging procedure
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::do_time_sample(int step,
-      Teuchos::RCP<Core::LinAlg::Vector<double>> velnp, Core::LinAlg::Vector<double>& force,
-      Core::LinAlg::Vector<double>& phi, const Core::DOFSets::DofSet& stddofset)
+  void TurbulenceStatisticManager::do_time_sample(int step, Core::LinAlg::Vector<double>& velnp,
+      Core::LinAlg::Vector<double>& force, Core::LinAlg::Vector<double>& phi,
+      const Core::DOFSets::DofSet& stddofset)
   {
     // sampling takes place only in the sampling period
     if (step >= samstart_ && step <= samstop_ && flow_ != no_special_flow)
@@ -1067,7 +1067,7 @@ namespace FLD
       // add vector(s) to general mean value computation
       // scatra vectors may be Teuchos::null
       if (statistics_general_mean_ != Teuchos::null)
-        statistics_general_mean_->add_to_current_time_average(dt_, *velnp, myscaaf_, myphinp_);
+        statistics_general_mean_->add_to_current_time_average(dt_, velnp, myscaaf_, myphinp_);
 
       if (discret_->get_comm().MyPID() == 0)
       {

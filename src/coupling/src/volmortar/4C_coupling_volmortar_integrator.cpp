@@ -264,10 +264,9 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::initialize_gp(
 template <Core::FE::CellType distype_s>
 void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_based_3d(
     Core::Elements::Element& sele, std::vector<int>& foundeles, Core::LinAlg::SparseMatrix& D,
-    Core::LinAlg::SparseMatrix& M, Teuchos::RCP<const Core::FE::Discretization> Adis,
-    Teuchos::RCP<const Core::FE::Discretization> Bdis, int dofseta, int dofsetb,
-    const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
-    const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap)
+    Core::LinAlg::SparseMatrix& M, const Core::FE::Discretization& Adis,
+    const Core::FE::Discretization& Bdis, int dofseta, int dofsetb, const Epetra_Map& PAB_dofrowmap,
+    const Epetra_Map& PAB_dofcolmap)
 {
   //**********************************************************************
   // loop over all Gauss points for integration
@@ -302,7 +301,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
     for (int found = 0; found < (int)foundeles.size(); ++found)
     {
       // get master element
-      Core::Elements::Element* Bele = Bdis->g_element(foundeles[found]);
+      Core::Elements::Element* Bele = Bdis.g_element(foundeles[found]);
       Core::FE::CellType shape = Bele->shape();
 
       bool proj = false;
@@ -315,16 +314,16 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         case Core::FE::CellType::tri3:
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::tri3>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, *Adis,
-              *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
         case Core::FE::CellType::tri6:
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::tri6>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, *Adis,
-              *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
@@ -332,7 +331,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::quad4>(sele, Bele,
               foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              *Adis, *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
+              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
@@ -340,7 +339,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::quad8>(sele, Bele,
               foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              *Adis, *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
+              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
@@ -348,7 +347,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::quad9>(sele, Bele,
               foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              *Adis, *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
+              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
           break;
         }
         //************************************************
@@ -357,8 +356,8 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         case Core::FE::CellType::hex8:
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::hex8>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, *Adis,
-              *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
@@ -366,7 +365,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::hex20>(sele, Bele,
               foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              *Adis, *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
+              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
@@ -374,15 +373,15 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::hex27>(sele, Bele,
               foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              *Adis, *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
+              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
         case Core::FE::CellType::tet4:
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::tet4>(sele, Bele, foundeles,
-              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, *Adis,
-              *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
+              found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
+              Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
@@ -390,7 +389,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::tet10>(sele, Bele,
               foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              *Adis, *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
+              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
@@ -398,7 +397,7 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
         {
           proj = vol_mortar_ele_based_gp<distype_s, Core::FE::CellType::pyramid5>(sele, Bele,
               foundeles, found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M,
-              *Adis, *Bdis, dofseta, dofsetb, *PAB_dofrowmap, *PAB_dofcolmap);
+              Adis, Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
           break;
         }
@@ -1962,13 +1961,12 @@ Coupling::VolMortar::ConsInterpolator::ConsInterpolator()
  |  interpolate (public)                                     farah 06/14|
  *----------------------------------------------------------------------*/
 void Coupling::VolMortar::ConsInterpolator::interpolate(Core::Nodes::Node* node,
-    Core::LinAlg::SparseMatrix& pmatrix, Teuchos::RCP<const Core::FE::Discretization> nodediscret,
-    Teuchos::RCP<const Core::FE::Discretization> elediscret, std::vector<int>& foundeles,
-    std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
-    const Teuchos::RCP<const Epetra_Map>& P_dofcolmap)
+    Core::LinAlg::SparseMatrix& pmatrix, const Core::FE::Discretization& nodediscret,
+    const Core::FE::Discretization& elediscret, std::vector<int>& foundeles,
+    std::pair<int, int>& dofset, const Epetra_Map& P_dofrowmap, const Epetra_Map& P_dofcolmap)
 {
   // check ownership
-  if (node->owner() != nodediscret->get_comm().MyPID()) return;
+  if (node->owner() != nodediscret.get_comm().MyPID()) return;
 
   // map gp into A and B para space
   double nodepos[3] = {node->x()[0], node->x()[1], node->x()[2]};
@@ -1982,88 +1980,88 @@ void Coupling::VolMortar::ConsInterpolator::interpolate(Core::Nodes::Node* node,
     bool proj = false;
 
     // get master element
-    Core::Elements::Element* ele = elediscret->g_element(foundeles[found]);
+    Core::Elements::Element* ele = elediscret.g_element(foundeles[found]);
 
     switch (ele->shape())
     {
       // 2D --------------------------------------------
       case Core::FE::CellType::tri3:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::tri3>(node, ele, pmatrix, *nodediscret,
-            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
-            *P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::tri3>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
       case Core::FE::CellType::tri6:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::tri6>(node, ele, pmatrix, *nodediscret,
-            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
-            *P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::tri6>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
       case Core::FE::CellType::quad4:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::quad4>(node, ele, pmatrix, *nodediscret,
-            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
-            *P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::quad4>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
       case Core::FE::CellType::quad8:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::quad8>(node, ele, pmatrix, *nodediscret,
-            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
-            *P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::quad8>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
       case Core::FE::CellType::quad9:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::quad9>(node, ele, pmatrix, *nodediscret,
-            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
-            *P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::quad9>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
 
       // 3D --------------------------------------------
       case Core::FE::CellType::hex8:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::hex8>(node, ele, pmatrix, *nodediscret,
-            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
-            *P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::hex8>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
       case Core::FE::CellType::hex20:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::hex20>(node, ele, pmatrix, *nodediscret,
-            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
-            *P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::hex20>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
       case Core::FE::CellType::hex27:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::hex27>(node, ele, pmatrix, *nodediscret,
-            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
-            *P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::hex27>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
       case Core::FE::CellType::tet4:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::tet4>(node, ele, pmatrix, *nodediscret,
-            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
-            *P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::tet4>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
       case Core::FE::CellType::tet10:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::tet10>(node, ele, pmatrix, *nodediscret,
-            *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, *P_dofrowmap,
-            *P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::tet10>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
       case Core::FE::CellType::pyramid5:
       {
-        proj = cons_interpolator_eval<Core::FE::CellType::pyramid5>(node, ele, pmatrix,
-            *nodediscret, *elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset,
-            *P_dofrowmap, *P_dofcolmap);
+        proj = cons_interpolator_eval<Core::FE::CellType::pyramid5>(node, ele, pmatrix, nodediscret,
+            elediscret, foundeles, found, eleid, dist, AuxXi, nodepos, dofset, P_dofrowmap,
+            P_dofcolmap);
         break;
       }
       default:

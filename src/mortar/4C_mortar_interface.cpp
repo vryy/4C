@@ -1114,7 +1114,7 @@ void Mortar::Interface::redistribute()
 
   // we need an arbitrary preliminary element row map
   Epetra_Map sroweles(*slave_row_elements());
-  Teuchos::RCP<Epetra_Map> mroweles = Teuchos::make_rcp<Epetra_Map>(*master_row_elements());
+  Epetra_Map mroweles(*master_row_elements());
 
   //**********************************************************************
   // (1) PREPARATIONS decide how many procs are used
@@ -1133,9 +1133,9 @@ void Mortar::Interface::redistribute()
   if (minele > 0)
   {
     sproc = static_cast<int>((sroweles.NumGlobalElements()) / minele);
-    mproc = static_cast<int>((mroweles->NumGlobalElements()) / minele);
+    mproc = static_cast<int>((mroweles.NumGlobalElements()) / minele);
     if (sroweles.NumGlobalElements() < 2 * minele) sproc = 1;
-    if (mroweles->NumGlobalElements() < 2 * minele) mproc = 1;
+    if (mroweles.NumGlobalElements() < 2 * minele) mproc = 1;
     if (sproc > numproc) sproc = numproc;
     if (mproc > numproc) mproc = numproc;
   }
@@ -1180,7 +1180,7 @@ void Mortar::Interface::redistribute()
     ss_master << "Mortar::Interface::redistribute of '" << discret().name() << "' (master)";
     TEUCHOS_FUNC_TIME_MONITOR(ss_master.str());
 
-    redistribute_master_side(mrownodes, mcolnodes, *mroweles, *comm, mproc, imbalance_tol);
+    redistribute_master_side(mrownodes, mcolnodes, mroweles, *comm, mproc, imbalance_tol);
   }
 
   //**********************************************************************

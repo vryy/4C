@@ -94,16 +94,15 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix>
 Cardiovascular0D::ProperOrthogonalDecomposition::reduce_diagnoal(Core::LinAlg::SparseMatrix& M)
 {
   // right multiply M * V
-  Teuchos::RCP<Epetra_MultiVector> M_tmp =
-      Teuchos::make_rcp<Epetra_MultiVector>(M.row_map(), projmatrix_->NumVectors(), true);
-  int err = M.multiply(false, *projmatrix_, *M_tmp);
+  Epetra_MultiVector M_tmp(M.row_map(), projmatrix_->NumVectors(), true);
+  int err = M.multiply(false, *projmatrix_, M_tmp);
   if (err) FOUR_C_THROW("Multiplication M * V failed.");
 
   // left multiply V^T * (M * V)
   Teuchos::RCP<Epetra_MultiVector> M_red_mvec =
-      Teuchos::make_rcp<Epetra_MultiVector>(*structmapr_, M_tmp->NumVectors(), true);
+      Teuchos::make_rcp<Epetra_MultiVector>(*structmapr_, M_tmp.NumVectors(), true);
   multiply_epetra_multi_vectors(
-      *projmatrix_, 'T', *M_tmp, 'N', *redstructmapr_, *structrimpo_, *M_red_mvec);
+      *projmatrix_, 'T', M_tmp, 'N', *redstructmapr_, *structrimpo_, *M_red_mvec);
 
   // convert Epetra_MultiVector to Core::LinAlg::SparseMatrix
   Teuchos::RCP<Core::LinAlg::SparseMatrix> M_red =
@@ -136,10 +135,10 @@ Cardiovascular0D::ProperOrthogonalDecomposition::reduce_off_diagonal(Core::LinAl
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> Cardiovascular0D::ProperOrthogonalDecomposition::reduce_rhs(
-    Teuchos::RCP<Epetra_MultiVector> v)
+    Epetra_MultiVector& v)
 {
   Teuchos::RCP<Epetra_MultiVector> v_red = Teuchos::make_rcp<Epetra_Vector>(*structmapr_, true);
-  multiply_epetra_multi_vectors(*projmatrix_, 'T', *v, 'N', *redstructmapr_, *structrimpo_, *v_red);
+  multiply_epetra_multi_vectors(*projmatrix_, 'T', v, 'N', *redstructmapr_, *structrimpo_, *v_red);
 
   return v_red;
 }

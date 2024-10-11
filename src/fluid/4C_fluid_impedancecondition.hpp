@@ -70,8 +70,7 @@ namespace FLD
       \brief Calculate impedance tractions and add it to fluid residual and linearisation
       */
       void add_impedance_bc_to_residual_and_sysmat(const double dta, const double time,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-          Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat);
+          Core::LinAlg::Vector<double>& residual, Core::LinAlg::SparseOperator& sysmat);
 
       /*!
       \brief Wrap for time update of impedance conditions

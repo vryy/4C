@@ -190,9 +190,9 @@ namespace Coupling::Adapter
     /*!
       Internal method.
      */
-    void internal_add(Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
+    void internal_add(Epetra_CrsMatrix& esrc, const Epetra_Map& logical_range_map,
         const Epetra_Map& logical_domain_map, const Epetra_Map& matching_dst_rows,
-        Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch, double scale);
+        Epetra_CrsMatrix& edst, bool exactmatch, double scale);
 
     /// fast method that adds into filled matrices
     /*!
