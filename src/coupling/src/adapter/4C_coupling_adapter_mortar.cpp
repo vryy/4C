@@ -1495,11 +1495,10 @@ Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::CouplingMortar::slave_to_mas
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::mortar_condensation(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs) const
+    Teuchos::RCP<Core::LinAlg::SparseMatrix>& k, Core::LinAlg::Vector<double>& rhs) const
 {
   Mortar::UTILS::mortar_matrix_condensation(k, P_, P_);
-  Mortar::UTILS::mortar_rhs_condensation(*rhs, *P_);
+  Mortar::UTILS::mortar_rhs_condensation(rhs, *P_);
 
   return;
 }
@@ -1508,9 +1507,9 @@ void Coupling::Adapter::CouplingMortar::mortar_condensation(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::mortar_recover(
-    Core::LinAlg::SparseMatrix& k, Teuchos::RCP<Core::LinAlg::Vector<double>>& inc) const
+    Core::LinAlg::SparseMatrix& k, Core::LinAlg::Vector<double>& inc) const
 {
-  Mortar::UTILS::mortar_recover(*inc, *P_);
+  Mortar::UTILS::mortar_recover(inc, *P_);
   return;
 }
 

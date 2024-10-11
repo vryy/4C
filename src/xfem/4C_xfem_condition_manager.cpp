@@ -485,7 +485,7 @@ void XFEM::ConditionManager::update_level_set_field()
       // need to live here
       Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
           coupling->get_level_set_field_as_node_row_vector();
-      combine_level_set_field(bg_phinp_, tmp, lsc, node_lsc_coup_idx, ls_boolean_type);
+      combine_level_set_field(bg_phinp_, tmp, lsc, *node_lsc_coup_idx, ls_boolean_type);
     }
 
     if (coupling->apply_complementary_operator()) build_complementary_level_set(*bg_phinp_);
@@ -535,22 +535,22 @@ void XFEM::ConditionManager::update_level_set_field()
 void XFEM::ConditionManager::combine_level_set_field(
     Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
-    Teuchos::RCP<Core::LinAlg::Vector<int>>& node_lsc_coup_idx,
+    Core::LinAlg::Vector<int>& node_lsc_coup_idx,
     XFEM::CouplingBase::LevelSetBooleanType ls_boolean_type)
 {
   switch (ls_boolean_type)
   {
     case XFEM::CouplingBase::ls_cut:
-      set_maximum(vec1, vec2, lsc_index_2, *node_lsc_coup_idx);
+      set_maximum(*vec1, *vec2, lsc_index_2, node_lsc_coup_idx);
       break;
     case XFEM::CouplingBase::ls_union:
-      set_minimum(vec1, vec2, lsc_index_2, *node_lsc_coup_idx);
+      set_minimum(*vec1, *vec2, lsc_index_2, node_lsc_coup_idx);
       break;
     case XFEM::CouplingBase::ls_difference:
-      set_difference(vec1, vec2, lsc_index_2, *node_lsc_coup_idx);
+      set_difference(*vec1, *vec2, lsc_index_2, node_lsc_coup_idx);
       break;
     case XFEM::CouplingBase::ls_sym_difference:
-      set_symmetric_difference(vec1, vec2, lsc_index_2, *node_lsc_coup_idx);
+      set_symmetric_difference(*vec1, *vec2, lsc_index_2, node_lsc_coup_idx);
       break;
     default:
       FOUR_C_THROW("unsupported type of boolean operation between two level-sets");
@@ -566,19 +566,19 @@ void XFEM::ConditionManager::check_for_equal_maps(
 }
 
 
-void XFEM::ConditionManager::set_minimum(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
+void XFEM::ConditionManager::set_minimum(Core::LinAlg::Vector<double>& vec1,
+    Core::LinAlg::Vector<double>& vec2, const int lsc_index_2,
     Core::LinAlg::Vector<int>& node_lsc_coup_idx)
 {
   int err = -1;
 
-  check_for_equal_maps(*vec1, *vec2);
+  check_for_equal_maps(vec1, vec2);
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < bg_dis_->num_my_row_nodes(); lnodeid++)
   {
-    double val1 = (*vec1)[lnodeid];
-    double val2 = (*vec2)[lnodeid];
+    double val1 = (vec1)[lnodeid];
+    double val2 = (vec2)[lnodeid];
 
 
     // std::min(val1, val2);
@@ -588,25 +588,25 @@ void XFEM::ConditionManager::set_minimum(Teuchos::RCP<Core::LinAlg::Vector<doubl
     if (arg == 2) (node_lsc_coup_idx)[lnodeid] = lsc_index_2;  // else keep the old lsc coupling
 
     // now copy the values
-    err = vec1->ReplaceMyValue(lnodeid, 0, final_val);
+    err = vec1.ReplaceMyValue(lnodeid, 0, final_val);
     if (err != 0) FOUR_C_THROW("error while inserting value into phinp_");
   }
 }
 
 
-void XFEM::ConditionManager::set_maximum(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
+void XFEM::ConditionManager::set_maximum(Core::LinAlg::Vector<double>& vec1,
+    Core::LinAlg::Vector<double>& vec2, const int lsc_index_2,
     Core::LinAlg::Vector<int>& node_lsc_coup_idx)
 {
   int err = -1;
 
-  check_for_equal_maps(*vec1, *vec2);
+  check_for_equal_maps(vec1, vec2);
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < bg_dis_->num_my_row_nodes(); lnodeid++)
   {
-    double val1 = (*vec1)[lnodeid];
-    double val2 = (*vec2)[lnodeid];
+    double val1 = (vec1)[lnodeid];
+    double val2 = (vec2)[lnodeid];
 
     // std::max(val1, val2);
     int arg = -1;
@@ -615,25 +615,25 @@ void XFEM::ConditionManager::set_maximum(Teuchos::RCP<Core::LinAlg::Vector<doubl
     if (arg == 2) (node_lsc_coup_idx)[lnodeid] = lsc_index_2;  // else keep the old lsc coupling
 
     // now copy the values
-    err = vec1->ReplaceMyValue(lnodeid, 0, final_val);
+    err = vec1.ReplaceMyValue(lnodeid, 0, final_val);
     if (err != 0) FOUR_C_THROW("error while inserting value into phinp_");
   }
 }
 
 
-void XFEM::ConditionManager::set_difference(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
+void XFEM::ConditionManager::set_difference(Core::LinAlg::Vector<double>& vec1,
+    Core::LinAlg::Vector<double>& vec2, const int lsc_index_2,
     Core::LinAlg::Vector<int>& node_lsc_coup_idx)
 {
   int err = -1;
 
-  check_for_equal_maps(*vec1, *vec2);
+  check_for_equal_maps(vec1, vec2);
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < bg_dis_->num_my_row_nodes(); lnodeid++)
   {
-    double val1 = (*vec1)[lnodeid];
-    double val2 = (*vec2)[lnodeid];
+    double val1 = (vec1)[lnodeid];
+    double val2 = (vec2)[lnodeid];
 
     // std::max(val1, -val2);
     int arg = -1;
@@ -642,25 +642,24 @@ void XFEM::ConditionManager::set_difference(Teuchos::RCP<Core::LinAlg::Vector<do
     if (arg == 2) (node_lsc_coup_idx)[lnodeid] = lsc_index_2;  // else keep the old lsc coupling
 
     // now copy the values
-    err = vec1->ReplaceMyValue(lnodeid, 0, final_val);
+    err = vec1.ReplaceMyValue(lnodeid, 0, final_val);
     if (err != 0) FOUR_C_THROW("error while inserting value into phinp_");
   }
 }
 
-void XFEM::ConditionManager::set_symmetric_difference(
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
+void XFEM::ConditionManager::set_symmetric_difference(Core::LinAlg::Vector<double>& vec1,
+    Core::LinAlg::Vector<double>& vec2, const int lsc_index_2,
     Core::LinAlg::Vector<int>& node_lsc_coup_idx)
 {
   int err = -1;
 
-  check_for_equal_maps(*vec1, *vec2);
+  check_for_equal_maps(vec1, vec2);
 
   // loop all nodes on the processor
   for (int lnodeid = 0; lnodeid < bg_dis_->num_my_row_nodes(); lnodeid++)
   {
-    double val1 = (*vec1)[lnodeid];
-    double val2 = (*vec2)[lnodeid];
+    double val1 = (vec1)[lnodeid];
+    double val2 = (vec2)[lnodeid];
 
     int arg_tmp1 = -1;
     int arg_tmp2 = -1;
@@ -680,7 +679,7 @@ void XFEM::ConditionManager::set_symmetric_difference(
 
 
     // now copy the values
-    err = vec1->ReplaceMyValue(lnodeid, 0, final_val);
+    err = vec1.ReplaceMyValue(lnodeid, 0, final_val);
     if (err != 0) FOUR_C_THROW("error while inserting value into phinp_");
   }
 }

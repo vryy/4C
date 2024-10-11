@@ -219,7 +219,7 @@ namespace Solid
           Core::LinAlg::Vector<double>& fextnp, Core::LinAlg::SparseMatrix& stiff) const;
 
       //! Set the params_interface in the parameter list and call the other evaluate_neumann routine
-      void evaluate_neumann(const Teuchos::RCP<Core::LinAlg::Vector<double>>& eval_vec,
+      void evaluate_neumann(Core::LinAlg::Vector<double>& eval_vec,
           const Teuchos::RCP<Core::LinAlg::SparseOperator>& eval_mat);
 
       /*! \brief Check if the given parameter list is valid and call the

@@ -127,7 +127,7 @@ CONSTRAINTS::Constraint::ConstrType CONSTRAINTS::Constraint::get_constr_type(
 |Initialization routine computes ref base values and activates conditions |
 *------------------------------------------------------------------------*/
 void CONSTRAINTS::Constraint::initialize(
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+    Teuchos::ParameterList& params, Core::LinAlg::Vector<double>& systemvector3)
 {
   // choose action
   switch (constrtype_)
@@ -147,7 +147,7 @@ void CONSTRAINTS::Constraint::initialize(
       FOUR_C_THROW("Unknown constraint/monitor type to be evaluated in Constraint class!");
   }
   // start computing
-  initialize_constraint(params, *systemvector3);
+  initialize_constraint(params, systemvector3);
   return;
 }
 
@@ -252,7 +252,7 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
         Teuchos::RCP<Core::LinAlg::Vector<double>> displast =
             params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("old disp");
         actdisc_->set_state("displacement", displast);
-        initialize(params, systemvector2);
+        initialize(params, *systemvector2);
         Teuchos::RCP<Core::LinAlg::Vector<double>> disp =
             params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("new disp");
         actdisc_->set_state("displacement", disp);

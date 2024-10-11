@@ -147,7 +147,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::reset()
       // beam bspot pos
       std::vector<double> beameledisp;
       BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), beamele,
-          beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
+          *beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
       beamele->get_pos_of_binding_spot(pos[1], beameledisp,
           spherebeamlinking_params_ptr_->get_linker_material()->linker_type(),
           elepairptr->get_loc_b_spot_num(1), periodic_bounding_box());
@@ -678,7 +678,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_output_runtime
       // beam bspot pos
       std::vector<double> beameledisp;
       BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), beamele,
-          beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
+          *beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
       beamele->get_pos_of_binding_spot(pos[1], beameledisp,
           spherebeamlinking_params_ptr_->get_linker_material()->linker_type(),
           elepairptr->get_loc_b_spot_num(1), periodic_bounding_box());
@@ -809,7 +809,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
 
     std::vector<double> beameledisp;
     BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), beamele,
-        beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
+        *beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
 
     Core::LinAlg::Matrix<3, 1> bspotpos(true);
     Core::LinAlg::Matrix<3, 3> bspottriad(true);
@@ -963,7 +963,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_spher
       // beam bspot pos
       std::vector<double> beameledisp;
       BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), beamele,
-          beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
+          *beam_interaction_data_state().get_dis_col_np(), periodic_bounding_box(), beameledisp);
       beamele->get_pos_of_binding_spot(pos[1], beameledisp,
           spherebeamlinking_params_ptr_->get_linker_material()->linker_type(), bspotiter.second,
           periodic_bounding_box());

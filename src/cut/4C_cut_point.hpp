@@ -528,6 +528,8 @@ namespace Cut
 
     bool operator()(const Teuchos::RCP<T> p1, const Teuchos::RCP<T> p2) const
     {
+      (void)p1;
+      (void)p2;
       return entity_id(*p1) < entity_id(*p2);
     }
   };

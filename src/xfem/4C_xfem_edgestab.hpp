@@ -86,7 +86,7 @@ namespace XFEM
         Discret::ELEMENTS::FluidIntFace* faceele,                 ///< face element
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,    ///< systemmatrix
         Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,  ///< systemvector
-        Teuchos::RCP<Cut::CutWizard> wizard,                      ///< cut wizard
+        Cut::CutWizard& wizard,                                   ///< cut wizard
         bool include_inner,        ///< stabilize also facets with inside position
         bool include_inner_faces,  ///< stabilize also faces with inside position if possible
         bool gmsh_eos_out = true   ///< stabilization gmsh output

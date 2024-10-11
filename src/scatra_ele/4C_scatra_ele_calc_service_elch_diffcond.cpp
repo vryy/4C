@@ -340,7 +340,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
     if (zerocur == 0)
     {
       evaluate_elch_domain_kinetics(ele, elemat1_epetra, elevec1_epetra, ephinp, ehist, timefac,
-          cond, nume, *stoich, kinetics, pot0);
+          *cond, nume, *stoich, kinetics, pot0);
     }
 
     // realize correct scaling of rhs contribution for gen.alpha case
@@ -368,7 +368,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_elch_d
       if (timefac < 0.) FOUR_C_THROW("time factor is negative.");
     }
 
-    evaluate_electrode_status(ele, elevec1_epetra, params, cond, ephinp, ephidtnp, kinetics,
+    evaluate_electrode_status(ele, elevec1_epetra, params, *cond, ephinp, ephidtnp, kinetics,
         *stoich, nume, pot0, timefac);
   }
 }
@@ -433,7 +433,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_el
     const Core::Elements::Element* ele, Core::LinAlg::SerialDenseMatrix& emat,
     Core::LinAlg::SerialDenseVector& erhs, const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ehist, double timefac,
-    Teuchos::RCP<Core::Conditions::Condition> cond, const int nume, const std::vector<int> stoich,
+    Core::Conditions::Condition& cond, const int nume, const std::vector<int> stoich,
     const int kinetics, const double pot0)
 {
   // for pre-multiplication of i0 with 1/(F z_k)
@@ -474,11 +474,11 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_el
       const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, gpid);
 
       // extract specific electrode surface area A_s from condition
-      double A_s = cond->parameters().get<double>("A_S");
+      double A_s = cond.parameters().get<double>("A_S");
 
       // call utility class for element evaluation
       utils()->evaluate_elch_kinetics_at_integration_point(ele, emat, erhs, ephinp, ehist, timefac,
-          fac, my::funct_, *cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, A_s, k);
+          fac, my::funct_, cond, nume, stoich, valence_k, kinetics, pot0, frt, fns, A_s, k);
     }  // end of loop over integration points gpid
   }    // end loop over scalars
 
@@ -525,7 +525,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_el
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_electrode_status(
     const Core::Elements::Element* ele, Core::LinAlg::SerialDenseVector& scalars,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Conditions::Condition> cond,
+    Teuchos::ParameterList& params, Core::Conditions::Condition& cond,
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephidtnp, const int kinetics,
     const std::vector<int> stoich, const int nume, const double pot0, const double timefac)
@@ -541,10 +541,10 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_el
 
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neuman
   // condition) but the electrode status is evaluated
-  const int zerocur = cond->parameters().get<int>("ZERO_CUR");
+  const int zerocur = cond.parameters().get<int>("ZERO_CUR");
 
   // extract volumetric electrode surface area A_s from condition
-  double A_s = cond->parameters().get<double>("A_S");
+  double A_s = cond.parameters().get<double>("A_S");
 
   // integration points and weights
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -574,7 +574,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::evaluate_el
       if (frt <= 0.0) FOUR_C_THROW("A negative factor frt is not possible by definition");
 
       // call utility class for element evaluation
-      utils()->evaluate_electrode_status_at_integration_point(ele, scalars, params, *cond, ephinp,
+      utils()->evaluate_electrode_status_at_integration_point(ele, scalars, params, cond, ephinp,
           ephidtnp, my::funct_, zerocur, kinetics, stoich, nume, pot0, frt, timefac, fac, A_s, k);
     }  // loop over integration points
 

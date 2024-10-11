@@ -216,10 +216,9 @@ namespace FLD
     void gmsh_output(const std::string& filename_base,  ///< name for output file
         const std::string& prefix,                      ///< data prefix (e.g. "SOL")
         int step,                                       ///< step number
-        int count,  ///< counter for iterations within a global time step
-        const Teuchos::RCP<Cut::CutWizard>& wizard,  ///< cut wizard
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
-            vel,  ///< vector holding velocity and pressure dofs
+        int count,               ///< counter for iterations within a global time step
+        Cut::CutWizard& wizard,  ///< cut wizard
+        const Core::LinAlg::Vector<double>& vel,  ///< vector holding velocity and pressure dofs
         Teuchos::RCP<const Core::LinAlg::Vector<double>> acc =
             Teuchos::null,  ///< vector holding acceleration
         Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =

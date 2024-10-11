@@ -130,8 +130,8 @@ void Discret::ELEMENTS::UTILS::compute_deformation_gradient(
     const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Core::FE::dim<distype>>& xcurr,
     const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& inverseJacobian,
     const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
-    const Inpar::Solid::PreStress prestressType,
-    const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, const int gp)
+    const Inpar::Solid::PreStress prestressType, Discret::ELEMENTS::PreStress& mulfHistory,
+    const int gp)
 {
   if (kinemType == Inpar::Solid::KinemType::linear)
   {
@@ -145,7 +145,7 @@ void Discret::ELEMENTS::UTILS::compute_deformation_gradient(
 
   if (prestressType == Inpar::Solid::PreStress::mulf)
   {
-    compute_deformation_gradient_mulf<distype>(defgrd, xdisp, derivs, *mulfHistory, gp);
+    compute_deformation_gradient_mulf<distype>(defgrd, xdisp, derivs, mulfHistory, gp);
     return;
   }
 
@@ -300,20 +300,20 @@ template void Discret::ELEMENTS::UTILS::compute_deformation_gradient<Core::FE::C
     Core::LinAlg::Matrix<3, 3>& defgrd, const Inpar::Solid::KinemType kinemType,
     const Core::LinAlg::Matrix<8, 3>& xdisp, const Core::LinAlg::Matrix<8, 3>& xcurr,
     const Core::LinAlg::Matrix<3, 3>& inverseJacobian, const Core::LinAlg::Matrix<3, 8>& derivs,
-    const Inpar::Solid::PreStress prestressType,
-    const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, const int gp);
+    const Inpar::Solid::PreStress prestressType, Discret::ELEMENTS::PreStress& mulfHistory,
+    const int gp);
 template void Discret::ELEMENTS::UTILS::compute_deformation_gradient<Core::FE::CellType::tet4>(
     Core::LinAlg::Matrix<3, 3>& defgrd, const Inpar::Solid::KinemType kinemType,
     const Core::LinAlg::Matrix<4, 3>& xdisp, const Core::LinAlg::Matrix<4, 3>& xcurr,
     const Core::LinAlg::Matrix<3, 3>& inverseJacobian, const Core::LinAlg::Matrix<3, 4>& derivs,
-    const Inpar::Solid::PreStress prestressType,
-    const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, const int gp);
+    const Inpar::Solid::PreStress prestressType, Discret::ELEMENTS::PreStress& mulfHistory,
+    const int gp);
 template void Discret::ELEMENTS::UTILS::compute_deformation_gradient<Core::FE::CellType::tet10>(
     Core::LinAlg::Matrix<3, 3>& defgrd, const Inpar::Solid::KinemType kinemType,
     const Core::LinAlg::Matrix<10, 3>& xdisp, const Core::LinAlg::Matrix<10, 3>& xcurr,
     const Core::LinAlg::Matrix<3, 3>& inverseJacobian, const Core::LinAlg::Matrix<3, 10>& derivs,
-    const Inpar::Solid::PreStress prestressType,
-    const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, const int gp);
+    const Inpar::Solid::PreStress prestressType, Discret::ELEMENTS::PreStress& mulfHistory,
+    const int gp);
 
 template void Discret::ELEMENTS::UTILS::compute_deformation_gradient_mulf<Core::FE::CellType::hex8>(
     Core::LinAlg::Matrix<3, 3>& defgrd, const Core::LinAlg::Matrix<8, 3>& xdisp,

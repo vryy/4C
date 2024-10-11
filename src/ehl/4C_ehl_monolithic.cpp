@@ -1660,12 +1660,10 @@ void EHL::Monolithic::lin_poiseuille_force_disp(
   if (derivH_gradP.left_scale(grad_p)) FOUR_C_THROW("leftscale failed");
   deriv_Poiseuille->add(derivH_gradP, false, -.5, 1.);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> p_int_full_col =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *mortaradapter_->interface()->slave_col_dofs());
-  Core::LinAlg::export_to(p_int_full, *p_int_full_col);
+  Core::LinAlg::Vector<double> p_int_full_col(*mortaradapter_->interface()->slave_col_dofs());
+  Core::LinAlg::export_to(p_int_full, p_int_full_col);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> h_derivGrad_nodalP =
-      mortaradapter_->assemble_surf_grad_deriv(*p_int_full_col);
+      mortaradapter_->assemble_surf_grad_deriv(p_int_full_col);
   if (h_derivGrad_nodalP->left_scale(nodal_gap)) FOUR_C_THROW("leftscale failed");
   deriv_Poiseuille->add(*h_derivGrad_nodalP, false, -.5, 1.);
 

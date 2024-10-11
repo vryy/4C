@@ -193,8 +193,8 @@ void Solid::Dbc::apply_dirichlet_bc(const double& time,
   // We have to rotate forward ...
   // ---------------------------------------------------------------------------
   if (!dis.is_null()) rotate_global_to_local(*dis, true);
-  if (!vel.is_null()) rotate_global_to_local(vel);
-  if (!acc.is_null()) rotate_global_to_local(acc);
+  if (!vel.is_null()) rotate_global_to_local(*vel);
+  if (!acc.is_null()) rotate_global_to_local(*acc);
 
   // Apply DBCs
   // ---------------------------------------------------------------------------
@@ -216,8 +216,8 @@ void Solid::Dbc::apply_dirichlet_bc(const double& time,
   // We have to rotate back into global Cartesian frame
   // ---------------------------------------------------------------------------
   if (dis != Teuchos::null) rotate_local_to_global(*dis, true);
-  if (vel != Teuchos::null) rotate_local_to_global(vel);
-  if (acc != Teuchos::null) rotate_local_to_global(acc);
+  if (vel != Teuchos::null) rotate_local_to_global(*vel);
+  if (acc != Teuchos::null) rotate_local_to_global(*acc);
 }
 
 /*----------------------------------------------------------------------------*
@@ -227,7 +227,7 @@ void Solid::Dbc::apply_dirichlet_to_local_system(Teuchos::RCP<Core::LinAlg::Spar
 {
   check_init_setup();
   apply_dirichlet_to_local_rhs(b);
-  apply_dirichlet_to_local_jacobian(A);
+  apply_dirichlet_to_local_jacobian(*A);
 }
 
 /*----------------------------------------------------------------------------*
@@ -236,11 +236,11 @@ void Solid::Dbc::apply_dirichlet_to_vector(Teuchos::RCP<Core::LinAlg::Vector<dou
 {
   check_init_setup();
   // rotate the coordinate system if desired
-  rotate_global_to_local(vec);
+  rotate_global_to_local(*vec);
   // apply the dbc
   Core::LinAlg::apply_dirichlet_to_system(*vec, *zeros_ptr_, *(dbcmap_ptr_->cond_map()));
   // rotate back
-  rotate_local_to_global(vec);
+  rotate_local_to_global(*vec);
 }
 
 /*----------------------------------------------------------------------------*
@@ -250,7 +250,7 @@ void Solid::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Core::LinAlg::Vector<
   check_init_setup();
 
   // rotate the coordinate system: global --> local
-  rotate_global_to_local(b);
+  rotate_global_to_local(*b);
 
   extract_freact(*b);
   Core::LinAlg::apply_dirichlet_to_system(*b, *zeros_ptr_, *(dbcmap_ptr_->cond_map()));
@@ -265,13 +265,12 @@ void Solid::Dbc::apply_dirichlet_to_rhs(Teuchos::RCP<Core::LinAlg::Vector<double
   apply_dirichlet_to_local_rhs(b);
 
   // rotate back: local --> global
-  rotate_local_to_global(b);
+  rotate_local_to_global(*b);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::apply_dirichlet_to_local_jacobian(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> A) const
+void Solid::Dbc::apply_dirichlet_to_local_jacobian(Core::LinAlg::SparseOperator& A) const
 {
   check_init_setup();
   // don't do it twice...
@@ -279,12 +278,12 @@ void Solid::Dbc::apply_dirichlet_to_local_jacobian(
    * behavior during the usage of locsys. Furthermore, the consideration of
    * DBCs in an explicit way is a pretty expensive operation.
    *                                                          hiermeier 01/18 */
-  if (A->is_dbc_applied(*dbcmap_ptr_->cond_map(), true, get_loc_sys_trafo().get())) return;
+  if (A.is_dbc_applied(*dbcmap_ptr_->cond_map(), true, get_loc_sys_trafo().get())) return;
 
-  if (rotate_global_to_local(*A))
+  if (rotate_global_to_local(A))
   {
     Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> mats =
-        g_state().extract_displ_row_of_blocks(*A);
+        g_state().extract_displ_row_of_blocks(A);
 
     for (unsigned i = 0; i < mats->size(); ++i)
     {
@@ -294,18 +293,18 @@ void Solid::Dbc::apply_dirichlet_to_local_jacobian(
           *get_loc_sys_trafo(), *(dbcmap_ptr_->cond_map()), (i == 0), false);
     }
 
-    if (not A->filled()) A->complete();
+    if (not A.filled()) A.complete();
   }
   else
-    A->apply_dirichlet(*(dbcmap_ptr_->cond_map()));
+    A.apply_dirichlet(*(dbcmap_ptr_->cond_map()));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Dbc::rotate_global_to_local(const Teuchos::RCP<Core::LinAlg::Vector<double>>& v) const
+bool Solid::Dbc::rotate_global_to_local(Core::LinAlg::Vector<double>& v) const
 {
   check_init_setup();
-  return rotate_global_to_local(*v, false);
+  return rotate_global_to_local(v, false);
 }
 
 /*----------------------------------------------------------------------------*
@@ -350,10 +349,10 @@ bool Solid::Dbc::rotate_global_to_local(Core::LinAlg::SparseOperator& A) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::Dbc::rotate_local_to_global(const Teuchos::RCP<Core::LinAlg::Vector<double>>& v) const
+bool Solid::Dbc::rotate_local_to_global(Core::LinAlg::Vector<double>& v) const
 {
   check_init_setup();
-  return rotate_local_to_global(*v, false);
+  return rotate_local_to_global(v, false);
 }
 
 /*----------------------------------------------------------------------------*
@@ -402,7 +401,7 @@ void Solid::Dbc::extract_freact(Core::LinAlg::Vector<double>& b) const
   insert_vector_in_non_dbc_dofs(zeros_ptr_, Teuchos::rcpFromRef(freact()));
 
   // turn the reaction forces back to the global coordinate system if necessary
-  rotate_local_to_global(Teuchos::rcpFromRef(freact()));
+  rotate_local_to_global(*Teuchos::rcpFromRef(freact()));
 }
 
 /*----------------------------------------------------------------------------*

@@ -82,12 +82,11 @@ BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::BeamToFluidMeshtyingVtkOut
  *
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_runtime(
-    const Teuchos::RCP<Adapter::FBIConstraintenforcer>& couplingenforcer, int i_step,
-    double time) const
+    Adapter::FBIConstraintenforcer& couplingenforcer, int i_step, double time) const
 {
   auto [output_time, output_step] =
       Core::IO::get_time_and_time_step_index_for_output(visualization_params_, time, i_step);
-  write_output_beam_to_fluid_mesh_tying(*couplingenforcer, output_step, output_time);
+  write_output_beam_to_fluid_mesh_tying(couplingenforcer, output_step, output_time);
 }
 
 /**

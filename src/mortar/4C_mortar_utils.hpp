@@ -232,12 +232,12 @@ namespace Mortar
 
     void mortar_rhs_condensation(Core::LinAlg::Vector<double>& rhs, Core::LinAlg::SparseMatrix& p);
 
-    void mortar_rhs_condensation(Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs,
+    void mortar_rhs_condensation(Core::LinAlg::Vector<double>& rhs,
         const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p);
 
     void mortar_recover(Core::LinAlg::Vector<double>& inc, Core::LinAlg::SparseMatrix& p);
 
-    void mortar_recover(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc,
+    void mortar_recover(Core::LinAlg::Vector<double>& inc,
         const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p);
   }  // namespace UTILS
 }  // namespace Mortar

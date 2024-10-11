@@ -1051,7 +1051,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tnodes()
         for (int k = 0; k < (int)adjofleftchild.size(); ++k)
         {
           // check if the parent of the adjacent node of the child has already been saved
-          if (adjofleftchild[k] != treenodes_[i][j]->rightchild())
+          if (*adjofleftchild[k] != *treenodes_[i][j]->rightchild())
           {
             bool issaved = false;
             for (int l = 0; l < (int)adjtnodes.size(); ++l)
@@ -1072,7 +1072,7 @@ void CONTACT::SelfBinaryTree::calculate_adjacent_tnodes()
         for (int k = 0; k < (int)adjofrightchild.size(); ++k)
         {
           // check if the parent of the adjacent node of the child has already been saved
-          if (adjofrightchild[k] != treenodes_[i][j]->leftchild())
+          if (*adjofrightchild[k] != *treenodes_[i][j]->leftchild())
           {
             bool issaved = false;
             for (int m = 0; m < (int)adjtnodes.size(); ++m)
@@ -1647,10 +1647,10 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
     // define new edge
     Teuchos::RCP<SelfDualEdge> newEdge(Teuchos::null);
 
-    if (adjEdges[j]->get_node1() != node1 && adjEdges[j]->get_node1() != node2)
+    if (*adjEdges[j]->get_node1() != *node1 && *adjEdges[j]->get_node1() != *node2)
       newEdge = Teuchos::make_rcp<SelfDualEdge>(newNode, adjEdges[j]->get_node1(), n_dim());
 
-    else if (adjEdges[j]->get_node2() != node1 && adjEdges[j]->get_node2() != node2)
+    else if (*adjEdges[j]->get_node2() != *node1 && *adjEdges[j]->get_node2() != *node2)
       newEdge = Teuchos::make_rcp<SelfDualEdge>(newNode, adjEdges[j]->get_node2(), n_dim());
 
     else
@@ -1675,7 +1675,7 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
         newAdjEdges.push_back(newEdge);
         for (unsigned k = 0; k < adjEdgesOfNeighbor.size(); ++k)
         {
-          if (adjEdgesOfNeighbor[k] != contractedEdge)
+          if (*adjEdgesOfNeighbor[k] != *contractedEdge)
           {
             // save the neighbors of the old edge as neighbors of the new one
             (*dualgraph)[newEdge].push_back(adjEdgesOfNeighbor[k]);
@@ -1724,8 +1724,8 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
         {
           // check if the current edge is not the contracted edge or a neighbor of the contracted
           // edge (we do not need to update these edges now)
-          if (adjEdgesOfNeighbor[k] != contractedEdge &&
-              adjEdges[j]->common_node(*adjEdgesOfNeighbor[k]) != commonnode)
+          if (*adjEdgesOfNeighbor[k] != *contractedEdge &&
+              *adjEdges[j]->common_node(*adjEdgesOfNeighbor[k]) != *commonnode)
           {
             // if the current edge (=neighbor of the new and old edge) is not a neighbor of the
             // contracted edge, they do not have a common node
@@ -1835,7 +1835,7 @@ void CONTACT::SelfBinaryTree::update_dual_graph(Teuchos::RCP<SelfDualEdge>& cont
   // now all new adjacent edges have been created. Save all adjacent edges as neighbor, respectively
   for (unsigned l = 0; l < newAdjEdges.size(); ++l)
     for (unsigned m = 0; m < newAdjEdges.size(); ++m)
-      if (l != m && newAdjEdges[l] != newAdjEdges[m])
+      if (l != m && *newAdjEdges[l] != *newAdjEdges[m])
         (*dualgraph)[newAdjEdges[l]].push_back(newAdjEdges[m]);
 
   // delete the contracted edge

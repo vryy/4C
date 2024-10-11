@@ -116,8 +116,7 @@ int Discret::ELEMENTS::Bele3::evaluate(Teuchos::ParameterList& params,
       spatial_configuration(xscurr, mydisp);
       double volumeele;
       // first partial derivatives
-      Teuchos::RCP<Core::LinAlg::SerialDenseVector> Vdiff1 =
-          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
+      Core::LinAlg::SerialDenseVector Vdiff1;
       // second partial derivatives
       Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Vdiff2 =
           Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
@@ -133,29 +132,29 @@ int Discret::ELEMENTS::Bele3::evaluate(Teuchos::ParameterList& params,
         if (*projtype == "yz")
         {
           compute_vol_deriv(
-              xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2, 0, 0);
+              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 0, 0);
         }
         else if (*projtype == "xz")
         {
           compute_vol_deriv(
-              xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2, 1, 1);
+              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 1, 1);
         }
         else if (*projtype == "xy")
         {
           compute_vol_deriv(
-              xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2, 2, 2);
+              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 2, 2);
         }
         else
         {
-          compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2);
+          compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2);
         }
       }
       else
-        compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2);
+        compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2);
 
       // update rhs vector and corresponding column in "constraint" matrix
-      elevec1 = *Vdiff1;
-      elevec2 = *Vdiff1;
+      elevec1 = Vdiff1;
+      elevec2 = Vdiff1;
       elemat1 = *Vdiff2;
       // call submethod for volume evaluation and store result in third systemvector
       elevec3[0] = volumeele;

@@ -197,9 +197,9 @@ namespace Discret
 
       //! evaluate status information on point electrode
       void evaluate_electrode_status_point(const Core::Elements::Element* ele,  ///< current element
-          Core::LinAlg::SerialDenseVector& scalars,        ///< scalars to be integrated
-          Teuchos::ParameterList& params,                  ///< parameter list
-          Teuchos::RCP<Core::Conditions::Condition> cond,  ///< condition
+          Core::LinAlg::SerialDenseVector& scalars,  ///< scalars to be integrated
+          Teuchos::ParameterList& params,            ///< parameter list
+          Core::Conditions::Condition& cond,         ///< condition
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ephinp,  ///< state variables at element nodes
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>&

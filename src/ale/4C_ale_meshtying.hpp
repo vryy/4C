@@ -168,8 +168,8 @@ namespace ALE
 
    private:
     //! Split vector and save parts in a std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>> >
-    void split_vector_based_on3x3(Teuchos::RCP<Core::LinAlg::Vector<double>>
-                                      orgvector,  ///> original vector based on 3x3 blockmatrix
+    void split_vector_based_on3x3(
+        Core::LinAlg::Vector<double>& orgvector,  ///> original vector based on 3x3 blockmatrix
         Core::LinAlg::Vector<double>& vectorbasedon2x2);  ///> split vector based on 2x2 blockmatrix
 
    private:

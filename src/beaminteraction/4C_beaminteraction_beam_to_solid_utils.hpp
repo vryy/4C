@@ -80,8 +80,8 @@ namespace BEAMINTERACTION
    * @return Penalty force.
    */
   template <typename ScalarType>
-  ScalarType penalty_force(const ScalarType& gap,
-      const Teuchos::RCP<const BeamToSolidSurfaceContactParams>& contact_params);
+  ScalarType penalty_force(
+      const ScalarType& gap, const BeamToSolidSurfaceContactParams& contact_params);
 
   /**
    * \brief Evaluate the penalty potential depending on the gap function.
@@ -89,8 +89,8 @@ namespace BEAMINTERACTION
    * @return Penalty potential.
    */
   template <typename ScalarType>
-  ScalarType penalty_potential(const ScalarType& gap,
-      const Teuchos::RCP<const BeamToSolidSurfaceContactParams>& contact_params);
+  ScalarType penalty_potential(
+      const ScalarType& gap, const BeamToSolidSurfaceContactParams& contact_params);
 
   /**
    * \brief Get the number of Lagrange multiplicator values corresponding to the beam nodes and beam
@@ -115,8 +115,7 @@ namespace BEAMINTERACTION
    * @param ref_triad_interpolation_scheme (out) Interpolation of reference triad field.
    */
   void get_beam_triad_interpolation_scheme(const Core::FE::Discretization& discret,
-      const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector,
-      const Core::Elements::Element* ele,
+      const Core::LinAlg::Vector<double>& displacement_vector, const Core::Elements::Element* ele,
       LargeRotations::TriadInterpolationLocalRotationVectors<3, double>& triad_interpolation_scheme,
       LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&
           ref_triad_interpolation_scheme);

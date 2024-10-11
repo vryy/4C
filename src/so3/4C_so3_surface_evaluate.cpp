@@ -966,8 +966,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
       spatial_configuration(xscurr, mydisp);
       double volumeele;
       // first partial derivatives
-      Teuchos::RCP<Core::LinAlg::SerialDenseVector> Vdiff1 =
-          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
+      Core::LinAlg::SerialDenseVector Vdiff1;
       // second partial derivatives
       Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Vdiff2 =
           Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
@@ -983,29 +982,29 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
         if (*projtype == "yz")
         {
           compute_vol_deriv(
-              xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2, 0, 0);
+              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 0, 0);
         }
         else if (*projtype == "xz")
         {
           compute_vol_deriv(
-              xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2, 1, 1);
+              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 1, 1);
         }
         else if (*projtype == "xy")
         {
           compute_vol_deriv(
-              xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2, 2, 2);
+              xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2, 2, 2);
         }
         else
         {
-          compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2);
+          compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2);
         }
       }
       else
-        compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, *Vdiff1, Vdiff2);
+        compute_vol_deriv(xscurr, num_node(), numdim * num_node(), volumeele, Vdiff1, Vdiff2);
 
       // update rhs vector and corresponding column in "constraint" matrix
-      elevector1 = *Vdiff1;
-      elevector2 = *Vdiff1;
+      elevector1 = Vdiff1;
+      elevector2 = Vdiff1;
       elematrix1 = *Vdiff2;
       // call submethod for volume evaluation and store result in third systemvector
       elevector3[0] = volumeele;
@@ -1183,14 +1182,13 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
       // initialize variables
       double elearea;
       // first partial derivatives
-      Teuchos::RCP<Core::LinAlg::SerialDenseVector> Adiff =
-          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
+      Core::LinAlg::SerialDenseVector Adiff;
       // second partial derivatives
       Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Adiff2 =
           Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
 
       // call submethod
-      compute_area_deriv(xscurr, num_node(), numdim * num_node(), elearea, *Adiff, Adiff2);
+      compute_area_deriv(xscurr, num_node(), numdim * num_node(), elearea, Adiff, Adiff2);
       // store result
       elevector3[0] = elearea;
     }
@@ -1209,16 +1207,15 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
       // initialize variables
       double elearea;
       // first partial derivatives
-      Teuchos::RCP<Core::LinAlg::SerialDenseVector> Adiff =
-          Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
+      Core::LinAlg::SerialDenseVector Adiff;
       // second partial derivatives
       Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Adiff2 =
           Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
 
       // call submethod
-      compute_area_deriv(xscurr, num_node(), numdim * num_node(), elearea, *Adiff, Adiff2);
+      compute_area_deriv(xscurr, num_node(), numdim * num_node(), elearea, Adiff, Adiff2);
       // update elematrices and elevectors
-      elevector1 = *Adiff;
+      elevector1 = Adiff;
       elevector1.scale(-1.0);
       elevector2 = elevector1;
       elematrix1 = *Adiff2;

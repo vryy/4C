@@ -1030,19 +1030,19 @@ void Mortar::UTILS::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::BlockS
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::mortar_rhs_condensation(Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs,
+void Mortar::UTILS::mortar_rhs_condensation(Core::LinAlg::Vector<double>& rhs,
     const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p)
 {
-  for (unsigned i = 0; i < p.size(); mortar_rhs_condensation(*rhs, *p[i++]))
+  for (unsigned i = 0; i < p.size(); mortar_rhs_condensation(rhs, *p[i++]))
     ;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::mortar_recover(Teuchos::RCP<Core::LinAlg::Vector<double>>& inc,
+void Mortar::UTILS::mortar_recover(Core::LinAlg::Vector<double>& inc,
     const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p)
 {
-  for (unsigned i = 0; i < p.size(); mortar_recover(*inc, *p[i++]))
+  for (unsigned i = 0; i < p.size(); mortar_recover(inc, *p[i++]))
     ;
 }
 

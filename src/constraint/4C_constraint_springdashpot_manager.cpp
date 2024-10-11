@@ -75,11 +75,10 @@ void CONSTRAINTS::SpringDashpotManager::update()
   return;
 }
 
-void CONSTRAINTS::SpringDashpotManager::reset_prestress(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dis)
+void CONSTRAINTS::SpringDashpotManager::reset_prestress(Core::LinAlg::Vector<double>& dis)
 {
   // loop over all spring dashpot conditions and reset them
-  for (int i = 0; i < n_conds_; ++i) springs_[i]->reset_prestress(*dis);
+  for (int i = 0; i < n_conds_; ++i) springs_[i]->reset_prestress(dis);
 
   return;
 }
@@ -121,8 +120,8 @@ void CONSTRAINTS::SpringDashpotManager::output(Core::IO::DiscretizationWriter& o
 }
 
 void CONSTRAINTS::SpringDashpotManager::output_restart(
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output_restart,
-    Teuchos::RCP<Core::FE::Discretization> discret, Teuchos::RCP<Core::LinAlg::Vector<double>> disp)
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output_restart, Core::FE::Discretization& discret,
+    Core::LinAlg::Vector<double>& disp)
 {
   // row maps for export
   Teuchos::RCP<Core::LinAlg::Vector<double>> springoffsetprestr =
@@ -149,7 +148,7 @@ void CONSTRAINTS::SpringDashpotManager::output_restart(
   output_restart->write_multi_vector("springoffsetprestr_old", springoffsetprestr_old);
 
   // normal output as well
-  output(*output_restart, *discret, *disp);
+  output(*output_restart, discret, disp);
 
   return;
 }

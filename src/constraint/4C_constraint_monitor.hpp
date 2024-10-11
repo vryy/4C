@@ -72,9 +72,8 @@ namespace CONSTRAINTS
     void evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            systemvector1  ///< distributed vector that may be filled
-                           ///< by assembly of element contributions
+        Core::LinAlg::Vector<double>& systemvector1  ///< distributed vector that may be filled
+                                                     ///< by assembly of element contributions
     );
 
 

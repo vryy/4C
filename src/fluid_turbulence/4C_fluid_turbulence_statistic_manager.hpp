@@ -134,7 +134,7 @@ namespace FLD
     \brief ???
 
     */
-    void do_time_sample(int step, Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
+    void do_time_sample(int step, Core::LinAlg::Vector<double>& velnp,
         Core::LinAlg::Vector<double>& force, Core::LinAlg::Vector<double>& phi,
         const Core::DOFSets::DofSet& stddofset);
 

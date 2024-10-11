@@ -293,8 +293,8 @@ namespace FLD
      @param dispnp and grivnp vectors w.r.t initial full dofrowmap
      */
     void init_ale_state_vectors(XFEM::DiscretizationXFEM& xdiscret,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_initmap,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> gridvnp_initmap);
+        const Core::LinAlg::Vector<double>& dispnp_initmap,
+        const Core::LinAlg::Vector<double>& gridvnp_initmap);
 
     /// XFEM dofset
     Teuchos::RCP<XFEM::XFEMDofSet> dofset_;

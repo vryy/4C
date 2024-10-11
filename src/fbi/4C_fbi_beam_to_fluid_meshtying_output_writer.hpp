@@ -66,8 +66,8 @@ namespace BEAMINTERACTION
      * pointer since this function is called from within the sub model evaluator, which does not
      * (and probably can not) have a RCP to itself.
      */
-    void write_output_runtime(const Teuchos::RCP<Adapter::FBIConstraintenforcer>& couplingenforcer,
-        int i_step, double time) const;
+    void write_output_runtime(
+        Adapter::FBIConstraintenforcer& couplingenforcer, int i_step, double time) const;
 
     /**
      * \brief Setup post iteration output creation, and call WriteOutputData.

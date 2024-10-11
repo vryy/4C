@@ -917,7 +917,7 @@ void UTILS::Cardiovascular0DManager::solver_setup(
 
 
 
-int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_structstiff,
+int UTILS::Cardiovascular0DManager::solve(Core::LinAlg::SparseMatrix& mat_structstiff,
     Core::LinAlg::Vector<double>& dispinc, Core::LinAlg::Vector<double>& rhsstruct,
     const double k_ptc)
 {
@@ -929,8 +929,7 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
 
   // allocate additional vectors and matrices
   Core::LinAlg::Vector<double> rhscardvasc0d(*(get_cardiovascular0_drhs()));
-  Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddofincr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(get_cardiovascular0_d_map()));
+  Core::LinAlg::Vector<double> cv0ddofincr(*(get_cardiovascular0_d_map()));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_cardvasc0dstiff =
       (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(get_cardiovascular0_d_stiffness()));
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_dcardvasc0d_dd =
@@ -939,7 +938,7 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
       (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(get_mat_dstruct_dcv0ddof()));
 
   // prepare residual cv0ddof
-  cv0ddofincr->PutScalar(0.0);
+  cv0ddofincr.PutScalar(0.0);
 
 
   // apply DBC to additional offdiagonal coupling matrices
@@ -947,7 +946,7 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   mat_dstruct_dcv0ddof->apply_dirichlet(*(dbcmaps_->cond_map()), false);
 
   // define maps of standard dofs and additional pressures
-  Teuchos::RCP<Epetra_Map> standrowmap = Teuchos::make_rcp<Epetra_Map>(mat_structstiff->row_map());
+  Teuchos::RCP<Epetra_Map> standrowmap = Teuchos::make_rcp<Epetra_Map>(mat_structstiff.row_map());
   Teuchos::RCP<Epetra_Map> cardvasc0drowmap =
       Teuchos::make_rcp<Epetra_Map>(*cardiovascular0dmap_full_);
 
@@ -956,13 +955,13 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   {
     // PTC on structural matrix
     Teuchos::RCP<Core::LinAlg::Vector<double>> tmp3D =
-        Core::LinAlg::create_vector(mat_structstiff->row_map(), false);
+        Core::LinAlg::create_vector(mat_structstiff.row_map(), false);
     tmp3D->PutScalar(k_ptc);
     Teuchos::RCP<Core::LinAlg::Vector<double>> diag3D =
-        Core::LinAlg::create_vector(mat_structstiff->row_map(), false);
-    mat_structstiff->extract_diagonal_copy(*diag3D);
+        Core::LinAlg::create_vector(mat_structstiff.row_map(), false);
+    mat_structstiff.extract_diagonal_copy(*diag3D);
     diag3D->Update(1.0, *tmp3D, 1.0);
-    mat_structstiff->replace_diagonal_values(*diag3D);
+    mat_structstiff.replace_diagonal_values(*diag3D);
   }
 
   // merge maps to one large map
@@ -987,13 +986,13 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   {
     // reduce linear system
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_structstiff_R =
-        mor_->reduce_diagnoal(*mat_structstiff);
+        mor_->reduce_diagnoal(mat_structstiff);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_dcardvasc0d_dd_R =
         mor_->reduce_off_diagonal(*mat_dcardvasc0d_dd);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_dstruct_dcv0ddof_R =
         mor_->reduce_off_diagonal(*mat_dstruct_dcv0ddof);
     Teuchos::RCP<Epetra_MultiVector> rhsstruct_R =
-        mor_->reduce_rhs(rhsstruct.get_ptr_of_Epetra_MultiVector());
+        mor_->reduce_rhs(*rhsstruct.get_ptr_of_Epetra_MultiVector());
 
     // define maps of reduced standard dofs and additional pressures
     Epetra_Map structmap_R(mor_->get_red_dim(), 0, actdisc_->get_comm());
@@ -1043,7 +1042,7 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     mergedsol = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mergedmap);
 
     // use BlockMatrix
-    blockmat->assign(0, 0, Core::LinAlg::View, *mat_structstiff);
+    blockmat->assign(0, 0, Core::LinAlg::View, mat_structstiff);
     blockmat->assign(
         1, 0, Core::LinAlg::View, *Core::LinAlg::matrix_transpose(*mat_dcardvasc0d_dd));
     blockmat->assign(0, 1, Core::LinAlg::View, *mat_dstruct_dcv0ddof);
@@ -1130,9 +1129,8 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
   if (have_mor_)
   {
     // initialize and write vector with reduced displacement dofs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disp_R =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mapext_R.Map(0));
-    mapext_R.extract_vector(*mergedsol, 0, *disp_R);
+    Core::LinAlg::Vector<double> disp_R(*mapext_R.Map(0));
+    mapext_R.extract_vector(*mergedsol, 0, disp_R);
 
     // initialize and write vector with pressure dofs, replace row map
     Core::LinAlg::Vector<double> cv0ddof(*mapext_R.Map(1));
@@ -1140,7 +1138,7 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
     cv0ddof.ReplaceMap(*cardvasc0drowmap);
 
     // extend reduced displacement dofs to high dimension
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disp_full = mor_->extend_solution(*disp_R);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> disp_full = mor_->extend_solution(disp_R);
 
     // assemble displacement and pressure dofs
     mergedsol_full = mapext.insert_vector(*disp_full, 0);
@@ -1151,14 +1149,14 @@ int UTILS::Cardiovascular0DManager::solve(Teuchos::RCP<Core::LinAlg::SparseMatri
 
   // store results in smaller vectors
   mapext.extract_vector(*mergedsol_full, 0, dispinc);
-  mapext.extract_vector(*mergedsol_full, 1, *cv0ddofincr);
+  mapext.extract_vector(*mergedsol_full, 1, cv0ddofincr);
 
-  cv0ddofincrement_->Update(1., *cv0ddofincr, 0.);
+  cv0ddofincrement_->Update(1., cv0ddofincr, 0.);
 
   counter_++;
 
   // update 0D cardiovascular dofs
-  update_cv0_d_dof(*cv0ddofincr);
+  update_cv0_d_dof(cv0ddofincr);
 
   return linsolveerror_;
 }

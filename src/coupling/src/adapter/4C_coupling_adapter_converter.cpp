@@ -156,9 +156,9 @@ bool Coupling::Adapter::MatrixLogicalSplitAndTransform::operator()(
 
   if (!addmatrix) dst.zero();
 
-  internal_add(esrc, *final_range_map,
+  internal_add(*esrc, *final_range_map,
       col_converter ? *col_converter->src_map() : logical_domain_map, *matching_dst_rows,
-      dst.epetra_matrix(), exactmatch, scale);
+      *dst.epetra_matrix(), exactmatch, scale);
 
   return true;
 }
@@ -188,31 +188,30 @@ void Coupling::Adapter::MatrixLogicalSplitAndTransform::setup_gid_map(const Epet
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Coupling::Adapter::MatrixLogicalSplitAndTransform::internal_add(
-    Teuchos::RCP<Epetra_CrsMatrix> esrc, const Epetra_Map& logical_range_map,
-    const Epetra_Map& logical_domain_map, const Epetra_Map& matching_dst_rows,
-    Teuchos::RCP<Epetra_CrsMatrix> edst, bool exactmatch, double scale)
+void Coupling::Adapter::MatrixLogicalSplitAndTransform::internal_add(Epetra_CrsMatrix& esrc,
+    const Epetra_Map& logical_range_map, const Epetra_Map& logical_domain_map,
+    const Epetra_Map& matching_dst_rows, Epetra_CrsMatrix& edst, bool exactmatch, double scale)
 {
-  if (not esrc->Filled()) FOUR_C_THROW("filled source matrix expected");
+  if (not esrc.Filled()) FOUR_C_THROW("filled source matrix expected");
 
-  Core::LinAlg::Vector<double> dselector(esrc->DomainMap());
+  Core::LinAlg::Vector<double> dselector(esrc.DomainMap());
   for (int i = 0; i < dselector.MyLength(); ++i)
   {
-    const int gid = esrc->DomainMap().GID(i);
+    const int gid = esrc.DomainMap().GID(i);
     if (logical_domain_map.MyGID(gid))
       dselector[i] = 1.;
     else
       dselector[i] = 0.;
   }
-  Core::LinAlg::Vector<double> selector(esrc->ColMap());
+  Core::LinAlg::Vector<double> selector(esrc.ColMap());
   Core::LinAlg::export_to(dselector, selector);
 
-  if (edst->Filled())
-    add_into_filled(*esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows,
-        *edst, exactmatch, scale);
+  if (edst.Filled())
+    add_into_filled(esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows, edst,
+        exactmatch, scale);
   else
-    add_into_unfilled(*esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows,
-        *edst, exactmatch, scale);
+    add_into_unfilled(esrc, logical_range_map, logical_domain_map, selector, matching_dst_rows,
+        edst, exactmatch, scale);
 }
 
 

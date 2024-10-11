@@ -31,13 +31,13 @@ void Inpar::BEAMINTERACTION::beam_interaction_conditions_get_all(
       Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact};
 }
 
-void Inpar::BEAMINTERACTION::set_valid_parameters(Teuchos::RCP<Teuchos::ParameterList> list)
+void Inpar::BEAMINTERACTION::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using namespace Input;
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
-  Teuchos::ParameterList& beaminteraction = list->sublist("BEAM INTERACTION", false, "");
+  Teuchos::ParameterList& beaminteraction = list.sublist("BEAM INTERACTION", false, "");
 
   setStringToIntegralParameter<Inpar::BEAMINTERACTION::RepartitionStrategy>("REPARTITIONSTRATEGY",
       "Adaptive", "Type of employed repartitioning strategy",
@@ -171,7 +171,7 @@ void Inpar::BEAMINTERACTION::set_valid_parameters(Teuchos::RCP<Teuchos::Paramete
 
   /*----------------------------------------------------------------------*/
   /* parameters for beam to solid contact */
-  BeamToSolid::set_valid_parameters(*list);
+  BeamToSolid::set_valid_parameters(list);
 }
 
 void Inpar::BEAMINTERACTION::set_valid_conditions(

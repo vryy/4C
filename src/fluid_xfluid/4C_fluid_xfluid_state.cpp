@@ -282,16 +282,16 @@ void FLD::XFluidState::init_coupling_matrices_and_rhs()
  |  Initialize ALE state vectors                           schott 12/14 |
  *----------------------------------------------------------------------*/
 void FLD::XFluidState::init_ale_state_vectors(XFEM::DiscretizationXFEM& xdiscret,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_initmap,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> gridvnp_initmap)
+    const Core::LinAlg::Vector<double>& dispnp_initmap,
+    const Core::LinAlg::Vector<double>& gridvnp_initmap)
 {
   //! @name Ale Displacement at time n+1
   dispnp_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
-  xdiscret.export_initialto_active_vector(*dispnp_initmap, *dispnp_);
+  xdiscret.export_initialto_active_vector(dispnp_initmap, *dispnp_);
 
   //! @name Grid Velocity at time n+1
   gridvnp_ = Core::LinAlg::create_vector(*xfluiddofrowmap_, true);
-  xdiscret.export_initialto_active_vector(*gridvnp_initmap, *gridvnp_);
+  xdiscret.export_initialto_active_vector(gridvnp_initmap, *gridvnp_);
 }
 
 

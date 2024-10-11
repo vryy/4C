@@ -101,7 +101,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::Problem::create_linear_syste
 
   // build the linear system --> factory call
   return NOX::Nln::LinSystem::build_linear_system(
-      linsystype, *noxNlnGlobalData_, *jac_, *xVector_, precMat_, scalingObject);
+      linsystype, *noxNlnGlobalData_, *jac_, **xVector_, precMat_, scalingObject);
 }
 
 /*----------------------------------------------------------------------------*

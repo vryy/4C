@@ -120,8 +120,8 @@ namespace POROFLUIDMULTIPHASE
      * @return                  set of nearby element pairs as seen from the artery discretization,
      *                          each artery element with a vector of close 3D elements
      */
-    std::map<int, std::set<int>> oct_tree_search(Teuchos::RCP<Core::FE::Discretization> contdis,
-        Teuchos::RCP<Core::FE::Discretization> artdis, Core::FE::Discretization& artsearchdis,
+    std::map<int, std::set<int>> oct_tree_search(Core::FE::Discretization& contdis,
+        Core::FE::Discretization& artdis, Core::FE::Discretization& artsearchdis,
         const bool evaluate_on_lateral_surface, const std::vector<int> artEleGIDs,
         std::set<int>& elecolset, std::set<int>& nodecolset);
 

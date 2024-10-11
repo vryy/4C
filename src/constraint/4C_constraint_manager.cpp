@@ -140,9 +140,9 @@ void CONSTRAINTS::ConstrManager::setup(
     p.set("OffsetID", offset_id_);
     p.set("total time", time);
     actdisc_->set_state("displacement", disp);
-    volconstr3d_->initialize(p, refbaseredundant);
-    areaconstr3d_->initialize(p, refbaseredundant);
-    areaconstr2d_->initialize(p, refbaseredundant);
+    volconstr3d_->initialize(p, *refbaseredundant);
+    areaconstr3d_->initialize(p, *refbaseredundant);
+    areaconstr2d_->initialize(p, *refbaseredundant);
     volconstr3dpen_->initialize(p);
     areaconstr3dpen_->initialize(p);
 
@@ -203,9 +203,9 @@ void CONSTRAINTS::ConstrManager::setup(
     Teuchos::RCP<Core::LinAlg::Vector<double>> initialmonredundant =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redmonmap_);
     p1.set("OffsetID", min_monitor_id_);
-    volmonitor3d_->evaluate(p1, initialmonredundant);
-    areamonitor3d_->evaluate(p1, initialmonredundant);
-    areamonitor2d_->evaluate(p1, initialmonredundant);
+    volmonitor3d_->evaluate(p1, *initialmonredundant);
+    areamonitor3d_->evaluate(p1, *initialmonredundant);
+    areamonitor2d_->evaluate(p1, *initialmonredundant);
 
     // Export redundant vector into distributed one
     initialmonvalues_->Export(*initialmonredundant, *monimpo_, Add);
@@ -424,9 +424,9 @@ void CONSTRAINTS::ConstrManager::compute_monitor_values(
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redmonmap_);
   p.set("OffsetID", min_monitor_id_);
 
-  volmonitor3d_->evaluate(p, actmonredundant);
-  areamonitor3d_->evaluate(p, actmonredundant);
-  areamonitor2d_->evaluate(p, actmonredundant);
+  volmonitor3d_->evaluate(p, *actmonredundant);
+  areamonitor3d_->evaluate(p, *actmonredundant);
+  areamonitor2d_->evaluate(p, *actmonredundant);
 
   Epetra_Import monimpo(*monitormap_, *redmonmap_);
   monitorvalues_->Export(*actmonredundant, *monimpo_, Add);
@@ -457,9 +457,9 @@ void CONSTRAINTS::ConstrManager::compute_monitor_values(
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*redmonmap_);
   p.set("OffsetID", min_monitor_id_);
 
-  volmonitor3d_->evaluate(p, actmonredundant);
-  areamonitor3d_->evaluate(p, actmonredundant);
-  areamonitor2d_->evaluate(p, actmonredundant);
+  volmonitor3d_->evaluate(p, *actmonredundant);
+  areamonitor3d_->evaluate(p, *actmonredundant);
+  areamonitor2d_->evaluate(p, *actmonredundant);
 
   Epetra_Import monimpo(*monitormap_, *redmonmap_);
   monitorvalues_->Export(*actmonredundant, *monimpo_, Add);
@@ -499,7 +499,7 @@ void CONSTRAINTS::ConstrManager::build_moni_type()
   p1.set("OffsetID", min_monitor_id_);
 
   // do the volumes
-  volmonitor3d_->evaluate(p1, dummymonredundant);
+  volmonitor3d_->evaluate(p1, *dummymonredundant);
   // Export redundant vector into distributed one
   dummymondist.Export(*dummymonredundant, *monimpo_, Add);
   // Now export back
@@ -512,7 +512,7 @@ void CONSTRAINTS::ConstrManager::build_moni_type()
   // do the area in 3D
   dummymonredundant->PutScalar(0.0);
   dummymondist.PutScalar(0.0);
-  areamonitor3d_->evaluate(p1, dummymonredundant);
+  areamonitor3d_->evaluate(p1, *dummymonredundant);
   // Export redundant vector into distributed one
   dummymondist.Export(*dummymonredundant, *monimpo_, Add);
   // Now export back
@@ -525,7 +525,7 @@ void CONSTRAINTS::ConstrManager::build_moni_type()
   // do the area in 2D
   dummymonredundant->PutScalar(0.0);
   dummymondist.PutScalar(0.0);
-  areamonitor2d_->evaluate(p1, dummymonredundant);
+  areamonitor2d_->evaluate(p1, *dummymonredundant);
   // Export redundant vector into distributed one
   dummymondist.Export(*dummymonredundant, *monimpo_, Add);
   // Now export back

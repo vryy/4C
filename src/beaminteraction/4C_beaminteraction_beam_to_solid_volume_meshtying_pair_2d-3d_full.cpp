@@ -291,7 +291,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::reset
     const Core::FE::Discretization& discret,
     const Teuchos::RCP<const Core::LinAlg::Vector<double>>& ia_discolnp)
 {
-  get_beam_triad_interpolation_scheme(discret, ia_discolnp, this->element1(),
+  get_beam_triad_interpolation_scheme(discret, *ia_discolnp, this->element1(),
       triad_interpolation_scheme_, this->triad_interpolation_scheme_ref_);
 }
 

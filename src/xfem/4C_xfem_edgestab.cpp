@@ -43,7 +43,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
     Discret::ELEMENTS::FluidIntFace* faceele,                 ///< face element
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,    ///< systemmatrix
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,  ///< systemvector
-    Teuchos::RCP<Cut::CutWizard> wizard,                      ///< cut wizard
+    Cut::CutWizard& wizard,                                   ///< cut wizard
     bool include_inner,        ///< stabilize also facets with inside position
     bool include_inner_faces,  ///< stabilize also faces with inside position if possible
     bool gmsh_eos_out          ///< stabilization gmsh output
@@ -103,8 +103,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
   Discret::ELEMENTS::Fluid* p_slave = faceele->parent_slave_element();
 
   // get corresponding element handles if available
-  Cut::ElementHandle* p_master_handle = wizard->get_element(p_master);
-  Cut::ElementHandle* p_slave_handle = wizard->get_element(p_slave);
+  Cut::ElementHandle* p_master_handle = wizard.get_element(p_master);
+  Cut::ElementHandle* p_slave_handle = wizard.get_element(p_slave);
 
   size_t p_master_numnode = p_master->num_node();
   size_t p_slave_numnode = p_slave->num_node();
@@ -172,7 +172,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
         p_master->shape() == Core::FE::CellType::wedge6 or
         p_master->shape() == Core::FE::CellType::pyramid5)
     {
-      Cut::SideHandle* side = get_face(faceele, *wizard);
+      Cut::SideHandle* side = get_face(faceele, wizard);
 
       //-------------------------------- loop facets of this side -----------------------------
       // facet of current side
@@ -322,7 +322,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
              p_master->shape() == Core::FE::CellType::tet10 or
              p_master->shape() == Core::FE::CellType::wedge15)
     {
-      Cut::SideHandle* side = get_face(faceele, *wizard);  // the side of the quadratic element
+      Cut::SideHandle* side = get_face(faceele, wizard);  // the side of the quadratic element
       //-------------------------------- loop facets of this side -----------------------------
       // facet of current side
       std::vector<Cut::Facet*> facets;
@@ -474,7 +474,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
         p_master->shape() == Core::FE::CellType::tet10 or
         p_master->shape() == Core::FE::CellType::wedge15)
     {
-      Cut::SideHandle* side = get_face(faceele, *wizard);
+      Cut::SideHandle* side = get_face(faceele, wizard);
 
       // facet of current side
       std::vector<Cut::Facet*> facets;

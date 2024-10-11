@@ -209,7 +209,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam, Solid>::eva
   // Get the beam triad interpolation schemes.
   LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;
   LargeRotations::TriadInterpolationLocalRotationVectors<3, double> ref_triad_interpolation_scheme;
-  get_beam_triad_interpolation_scheme(*discret, displacement_vector, this->element1(),
+  get_beam_triad_interpolation_scheme(*discret, *displacement_vector, this->element1(),
       triad_interpolation_scheme, ref_triad_interpolation_scheme);
 
   // Set the FAD variables for the solid DOFs.

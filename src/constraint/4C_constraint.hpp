@@ -87,9 +87,8 @@ namespace CONSTRAINTS
     void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            systemvector3  ///< distributed vector that may be filled
-                           ///< by assembly of element contributions
+        Core::LinAlg::Vector<double>& systemvector3  ///< distributed vector that may be filled
+                                                     ///< by assembly of element contributions
     );
 
     /// initialization routine called at restart to activate the right conditions

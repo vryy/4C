@@ -31,7 +31,7 @@ namespace ScaTra::ScaTraUtils
   //! Calculate the reconstructed nodal gradient at a node by means of mean value averaging
   template <const int dim>
   Teuchos::RCP<Epetra_MultiVector> compute_gradient_at_nodes_mean_average(
-      Teuchos::RCP<Core::FE::Discretization> discret, const Core::LinAlg::Vector<double>& state,
+      Core::FE::Discretization& discret, const Core::LinAlg::Vector<double>& state,
       const int scatra_dofid);
 
   //! Calculate the reconstructed nodal gradient at a node by means of mean value averaging

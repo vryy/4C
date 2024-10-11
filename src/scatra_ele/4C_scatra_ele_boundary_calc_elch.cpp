@@ -207,7 +207,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_elch_b
       if (timefac < 0.) FOUR_C_THROW("time factor is negative.");
     }
 
-    evaluate_electrode_status(ele, elevec1_epetra, params, cond, my::ephinp_, ephidtnp, kinetics,
+    evaluate_electrode_status(ele, elevec1_epetra, params, *cond, my::ephinp_, ephidtnp, kinetics,
         *stoich, nume, pot0, frt, timefac, scalar);
   }
 
@@ -447,10 +447,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_electrode_status(
-    const Core::Elements::Element* ele,              ///< current element
-    Core::LinAlg::SerialDenseVector& scalars,        ///< scalars to be integrated
-    Teuchos::ParameterList& params,                  ///< parameter list
-    Teuchos::RCP<Core::Conditions::Condition> cond,  ///< condition
+    const Core::Elements::Element* ele,        ///< current element
+    Core::LinAlg::SerialDenseVector& scalars,  ///< scalars to be integrated
+    Teuchos::ParameterList& params,            ///< parameter list
+    Core::Conditions::Condition& cond,         ///< condition
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
         ephinp,  ///< nodal values of concentration and electric potential
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephidtnp,  ///< nodal time derivative vector
@@ -474,10 +474,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_el
 
   // if zero=1=true, the current flow across the electrode is zero (comparable to do-nothing Neumann
   // condition) but the electrode status is evaluated
-  const int zerocur = cond->parameters().get<int>("ZERO_CUR");
+  const int zerocur = cond.parameters().get<int>("ZERO_CUR");
 
   // get boundary porosity from condition if available, or set equal to volume porosity otherwise
-  auto epsilon = cond->parameters().get<double>("EPSILON");
+  auto epsilon = cond.parameters().get<double>("EPSILON");
   if (epsilon == -1)
     epsilon = scalar;
   else if (epsilon <= 0 or epsilon > 1)
@@ -505,7 +505,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::evaluate_el
       const double fac = my::eval_shape_func_and_int_fac(intpoints, gpid);
 
       // call utility class for element evaluation
-      utils_->evaluate_electrode_status_at_integration_point(ele, scalars, params, *cond, ephinp,
+      utils_->evaluate_electrode_status_at_integration_point(ele, scalars, params, cond, ephinp,
           ephidtnp, my::funct_, zerocur, kinetics, stoich, nume, pot0, frt, timefac, fac, epsilon,
           k);
     }  // loop over integration points

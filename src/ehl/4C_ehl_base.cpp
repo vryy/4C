@@ -248,12 +248,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> EHL::Base::evaluate_fluid_force(
     }
 
   // Forces on the interfaces due to the fluid traction
-  Teuchos::RCP<Core::LinAlg::Vector<double>> slaveiforce =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          mortaradapter_->get_mortar_matrix_d()->domain_map());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> masteriforce =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          mortaradapter_->get_mortar_matrix_m()->domain_map());
+  Core::LinAlg::Vector<double> slaveiforce(mortaradapter_->get_mortar_matrix_d()->domain_map());
+  Core::LinAlg::Vector<double> masteriforce(mortaradapter_->get_mortar_matrix_m()->domain_map());
 
   stritraction_D_ =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ada_strDisp_to_lubDisp_->master_dof_map());
@@ -261,19 +257,19 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> EHL::Base::evaluate_fluid_force(
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ada_strDisp_to_lubDisp_->master_dof_map());
 
   // add pressure force
-  add_pressure_force(*slaveiforce, *masteriforce);
+  add_pressure_force(slaveiforce, masteriforce);
   // add poiseuille flow force
-  add_poiseuille_force(*slaveiforce, *masteriforce);
+  add_poiseuille_force(slaveiforce, masteriforce);
   // add couette flow force
-  add_couette_force(*slaveiforce, *masteriforce);
+  add_couette_force(slaveiforce, masteriforce);
 
   // External force vector (global)
   Teuchos::RCP<Core::LinAlg::Vector<double>> strforce =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(structure_->dof_row_map()));
 
   // Insert both interface forces into the global force vector
-  slaverowmapextr_->insert_vector(*slaveiforce, 0, *strforce);
-  masterrowmapextr_->insert_vector(*masteriforce, 0, *strforce);
+  slaverowmapextr_->insert_vector(slaveiforce, 0, *strforce);
+  masterrowmapextr_->insert_vector(masteriforce, 0, *strforce);
 
   return strforce;
 }

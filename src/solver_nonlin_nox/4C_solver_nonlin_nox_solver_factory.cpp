@@ -83,10 +83,10 @@ Teuchos::RCP<::NOX::Solver::Generic> NOX::Nln::Solver::build_solver(
     const Teuchos::RCP<::NOX::Abstract::Group>& grp,
     const Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
     const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests,
-    const Teuchos::RCP<NOX::Nln::GlobalData>& nlnGlobalData)
+    NOX::Nln::GlobalData& nlnGlobalData)
 {
   Factory factory;
-  return factory.build_solver(grp, outerTests, innerTests, *nlnGlobalData);
+  return factory.build_solver(grp, outerTests, innerTests, nlnGlobalData);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -52,10 +52,10 @@ namespace XFEM
 
     bool have_matching_nodes(Core::FE::Discretization& dis_A, Core::FE::Discretization& dis_B);
 
-    void map_cutter_to_bg_vector(const Teuchos::RCP<Core::FE::Discretization>& source_dis,
+    void map_cutter_to_bg_vector(Core::FE::Discretization& source_dis,
         Core::LinAlg::Vector<double>& source_vec_dofbased, const int source_nds,
-        const Teuchos::RCP<Core::FE::Discretization>& target_dis,
-        Core::LinAlg::Vector<double>& target_vec_dofbased, const int target_nds);
+        Core::FE::Discretization& target_dis, Core::LinAlg::Vector<double>& target_vec_dofbased,
+        const int target_nds);
 
     // TODO: sort the functions...
 

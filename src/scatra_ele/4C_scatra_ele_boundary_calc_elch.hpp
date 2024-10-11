@@ -94,9 +94,9 @@ namespace Discret
 
       //! evaluate electrode kinetics status information
       void evaluate_electrode_status(const Core::Elements::Element* ele,  ///< current element
-          Core::LinAlg::SerialDenseVector& scalars,        ///< scalars to be integrated
-          Teuchos::ParameterList& params,                  ///< parameter list
-          Teuchos::RCP<Core::Conditions::Condition> cond,  ///< condition
+          Core::LinAlg::SerialDenseVector& scalars,  ///< scalars to be integrated
+          Teuchos::ParameterList& params,            ///< parameter list
+          Core::Conditions::Condition& cond,         ///< condition
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>&
               ephinp,  ///< nodal values of concentration and electric potential
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>&

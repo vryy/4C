@@ -79,12 +79,12 @@ namespace FLD
       /*!
       \brief Wrapper for FluidCouplingWrapper::update_residual
       */
-      void update_residual(Teuchos::RCP<Core::LinAlg::Vector<double>> residual);
+      void update_residual(Core::LinAlg::Vector<double>& residual);
 
 
 
       void evaluate_dirichlet(
-          Teuchos::RCP<Core::LinAlg::Vector<double>> velnp, const Epetra_Map& condmap, double time);
+          Core::LinAlg::Vector<double>& velnp, const Epetra_Map& condmap, double time);
 
       /*!
       \brief Wrapper for FluidCouplingWrapper::write_restart

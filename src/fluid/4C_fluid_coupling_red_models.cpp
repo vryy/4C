@@ -539,8 +539,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::apply_boundary_conditions(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidCouplingWrapperBase::update_residual(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual)
+void FLD::UTILS::FluidCouplingWrapperBase::update_residual(Core::LinAlg::Vector<double>& residual)
 {
   std::map<const int, Teuchos::RCP<class FluidCouplingBc>>::iterator mapiter;
 
@@ -549,7 +548,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::update_residual(
 
   for (mapiter = coup_map_3d_.begin(); mapiter != coup_map_3d_.end(); mapiter++)
   {
-    mapiter->second->FluidCouplingBc::update_residual(*residual);
+    mapiter->second->FluidCouplingBc::update_residual(residual);
   }
 
   return;
@@ -566,7 +565,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::update_residual(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidCouplingWrapperBase::evaluate_dirichlet(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp, const Epetra_Map& condmap, double time)
+    Core::LinAlg::Vector<double>& velnp, const Epetra_Map& condmap, double time)
 {
   std::map<const int, Teuchos::RCP<class FluidCouplingBc>>::iterator mapiter;
 
@@ -575,7 +574,7 @@ void FLD::UTILS::FluidCouplingWrapperBase::evaluate_dirichlet(
 
   for (mapiter = coup_map_3d_.begin(); mapiter != coup_map_3d_.end(); mapiter++)
   {
-    mapiter->second->FluidCouplingBc::evaluate_dirichlet(*velnp, condmap, time);
+    mapiter->second->FluidCouplingBc::evaluate_dirichlet(velnp, condmap, time);
   }
 
   return;

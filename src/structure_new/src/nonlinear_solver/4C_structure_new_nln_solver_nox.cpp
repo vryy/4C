@@ -139,7 +139,7 @@ void Solid::Nln::SOLVER::Nox::reset()
   // -------------------------------------------------------------------------
   // Create NOX non-linear solver
   // -------------------------------------------------------------------------
-  nlnsolver_ = NOX::Nln::Solver::build_solver(group_ptr(), ostatus_, istatus_, nlnglobaldata_);
+  nlnsolver_ = NOX::Nln::Solver::build_solver(group_ptr(), ostatus_, istatus_, *nlnglobaldata_);
 }
 
 

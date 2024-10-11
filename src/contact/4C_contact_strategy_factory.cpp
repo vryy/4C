@@ -825,7 +825,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
         Teuchos::RCP<const Core::FE::Discretization>(&discret(), false);
 
     Teuchos::RCP<CONTACT::Interface> newinterface = create_interface(groupid1, get_comm(), n_dim(),
-        icparams, isself[0], non_owning_discret, Teuchos::null, contactconstitutivelaw_id);
+        icparams, isself[0], Teuchos::null, contactconstitutivelaw_id);
     interfaces.push_back(newinterface);
 
     // get it again
@@ -1263,14 +1263,13 @@ int CONTACT::STRATEGY::Factory::identify_full_subset(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(const int id,
     const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
-    const bool selfcontact, const Teuchos::RCP<const Core::FE::Discretization>& parent_dis,
-    Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
+    const bool selfcontact, Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
     const int contactconstitutivelaw_id)
 {
   auto stype = Teuchos::getIntegralValue<Inpar::CONTACT::SolvingStrategy>(icparams, "STRATEGY");
 
-  return create_interface(stype, id, comm, dim, icparams, selfcontact, *parent_dis,
-      interfaceData_ptr, contactconstitutivelaw_id);
+  return create_interface(
+      stype, id, comm, dim, icparams, selfcontact, interfaceData_ptr, contactconstitutivelaw_id);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1278,7 +1277,6 @@ Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(co
 Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::create_interface(
     const enum Inpar::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
     const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-    const Core::FE::Discretization& parent_dis,
     Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_ptr,
     const int contactconstitutivelaw_id)
 {

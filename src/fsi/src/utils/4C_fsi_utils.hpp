@@ -140,8 +140,7 @@ namespace FSI
       /// project ALE nodes onto the structure surface
       void slide_projection(Adapter::FSIStructureWrapper& structure,  ///< structure adapter
           Core::FE::Discretization& fluiddis,                         ///< fluid discretization
-          Teuchos::RCP<Core::LinAlg::Vector<double>>
-              idispale,                                ///< standard ALE interface displacement
+          Core::LinAlg::Vector<double>& idispale,      ///< standard ALE interface displacement
           Core::LinAlg::Vector<double>& iprojdispale,  ///< projected ALE interface displacement
           Coupling::Adapter::CouplingMortar& coupsf,   ///< mortar adapter
           const Epetra_Comm& comm                      ///< communicator

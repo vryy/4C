@@ -60,8 +60,7 @@ namespace NOX
       Teuchos::RCP<::NOX::Epetra::LinearSystem> build_linear_system(
           const NOX::Nln::LinSystem::LinearSystemType& linsystype,
           NOX::Nln::GlobalData& noxNlnGlobalData,
-          const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac,
-          const Teuchos::RCP<::NOX::Epetra::Vector>& cloneVector,
+          const Teuchos::RCP<Core::LinAlg::SparseOperator>& jac, ::NOX::Epetra::Vector& cloneVector,
           const Teuchos::RCP<Core::LinAlg::SparseOperator>& precMat,
           const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject);
     }  // namespace LinSystem

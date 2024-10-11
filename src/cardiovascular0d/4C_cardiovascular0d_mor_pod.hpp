@@ -48,7 +48,7 @@ namespace Cardiovascular0D
     Teuchos::RCP<Core::LinAlg::SparseMatrix> reduce_off_diagonal(Core::LinAlg::SparseMatrix& M);
 
     //! v_red = V^T * v
-    Teuchos::RCP<Epetra_MultiVector> reduce_rhs(Teuchos::RCP<Epetra_MultiVector> v);
+    Teuchos::RCP<Epetra_MultiVector> reduce_rhs(Epetra_MultiVector& v);
 
     //! v_red = V^T * v
     Teuchos::RCP<Core::LinAlg::Vector<double>> reduce_residual(Core::LinAlg::Vector<double>& v);

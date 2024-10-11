@@ -103,8 +103,7 @@ void FLD::UTILS::FluidImpedanceWrapper::use_block_matrix(Teuchos::RCP<std::set<i
  |  Wrap update of residual                                  Thon 07/16 |
  *----------------------------------------------------------------------*/
 void FLD::UTILS::FluidImpedanceWrapper::add_impedance_bc_to_residual_and_sysmat(const double dta,
-    const double time, Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat)
+    const double time, Core::LinAlg::Vector<double>& residual, Core::LinAlg::SparseOperator& sysmat)
 {
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
 
@@ -114,7 +113,7 @@ void FLD::UTILS::FluidImpedanceWrapper::add_impedance_bc_to_residual_and_sysmat(
     mapiter->second->FluidImpedanceBc::flow_rate_calculation(mapiter->first);
     // calc pressure and traction vector and appliy to fluid residual and sysmat
     mapiter->second->FluidImpedanceBc::calculate_impedance_tractions_and_update_residual_and_sysmat(
-        *residual, *sysmat, dta, time, mapiter->first);
+        residual, sysmat, dta, time, mapiter->first);
   }
   return;
 }

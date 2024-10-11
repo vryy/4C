@@ -241,12 +241,11 @@ void Solid::ModelEvaluator::LagPenConstraint::run_post_compute_x(
 {
   check_init_setup();
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> lagmult_incr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_block_dof_row_map_ptr());
+  Core::LinAlg::Vector<double> lagmult_incr(*get_block_dof_row_map_ptr());
 
-  Core::LinAlg::export_to(dir, *lagmult_incr);
+  Core::LinAlg::export_to(dir, lagmult_incr);
 
-  constrman_->update_lagr_mult(*lagmult_incr);
+  constrman_->update_lagr_mult(lagmult_incr);
 }
 
 /*----------------------------------------------------------------------*

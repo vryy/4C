@@ -298,24 +298,23 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
       *sourcedis, sourcenodes, sourcegnodes, sourceelements, conditions);
 
   split_discretization(
-      sourcedis, targetdis, sourcenodes, sourcegnodes, sourceelements, conditions_to_copy);
+      *sourcedis, *targetdis, sourcenodes, sourcegnodes, sourceelements, conditions_to_copy);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
-    Teuchos::RCP<Core::FE::Discretization> sourcedis,
-    Teuchos::RCP<Core::FE::Discretization> targetdis,
+    Core::FE::Discretization& sourcedis, Core::FE::Discretization& targetdis,
     const std::map<int, Core::Nodes::Node*>& sourcenodes,
     const std::map<int, Core::Nodes::Node*>& sourcegnodes,
     const std::map<int, Teuchos::RCP<Core::Elements::Element>>& sourceelements,
     const std::vector<std::string>& conditions_to_copy) const
 {
-  if (!sourcedis->filled()) FOUR_C_THROW("sourcedis is not filled");
-  const int myrank = targetdis->get_comm().MyPID();
+  if (!sourcedis.filled()) FOUR_C_THROW("sourcedis is not filled");
+  const int myrank = targetdis.get_comm().MyPID();
 
-  const int numothernoderow = sourcedis->num_my_row_nodes();
-  const int numothernodecol = sourcedis->num_my_col_nodes();
+  const int numothernoderow = sourcedis.num_my_row_nodes();
+  const int numothernodecol = sourcedis.num_my_col_nodes();
 
   // add the conditioned elements
   for (std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator sourceele_iter =
@@ -324,7 +323,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
   {
     if (sourceele_iter->second->owner() == myrank)
     {
-      targetdis->add_element(Teuchos::rcpFromRef(*sourceele_iter->second->clone()));
+      targetdis.add_element(Teuchos::rcpFromRef(*sourceele_iter->second->clone()));
     }
   }
 
@@ -348,7 +347,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
     {
       Teuchos::RCP<Core::Nodes::Node> sourcegnode =
           Teuchos::make_rcp<Core::Nodes::Node>(nid, sourcegnode_iter->second->x(), myrank);
-      targetdis->add_node(sourcegnode);
+      targetdis.add_node(sourcegnode);
       condnoderowset.insert(nid);
       targetnoderowvec.push_back(nid);
     }
@@ -363,27 +362,27 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
        conditername != conditions_to_copy.end(); ++conditername)
   {
     std::vector<Core::Conditions::Condition*> conds;
-    sourcedis->get_condition(*conditername, conds);
+    sourcedis.get_condition(*conditername, conds);
     for (unsigned i = 0; i < conds.size(); ++i)
     {
       Teuchos::RCP<Core::Conditions::Condition> cond_to_copy =
-          split_condition(conds[i], targetnodecolvec, targetdis->get_comm());
-      if (not cond_to_copy.is_null()) targetdis->set_condition(*conditername, cond_to_copy);
+          split_condition(conds[i], targetnodecolvec, targetdis.get_comm());
+      if (not cond_to_copy.is_null()) targetdis.set_condition(*conditername, cond_to_copy);
     }
   }
 
-  redistribute(*targetdis, targetnoderowvec, targetnodecolvec);
+  redistribute(targetdis, targetnoderowvec, targetnodecolvec);
 
   // ------------------------------------------------------------------------
   // remove all nodes from the condnodecol and condnoderow sets, which also
   // belong to a not deleted source element
   // ------------------------------------------------------------------------
-  for (unsigned j = 0; j < static_cast<unsigned>(sourcedis->num_my_col_elements()); ++j)
+  for (unsigned j = 0; j < static_cast<unsigned>(sourcedis.num_my_col_elements()); ++j)
   {
-    int source_ele_gid = sourcedis->element_col_map()->GID(j);
+    int source_ele_gid = sourcedis.element_col_map()->GID(j);
     // continue, if we are going to delete this element
     if (sourceelements.find(source_ele_gid) != sourceelements.end()) continue;
-    Core::Elements::Element* source_ele = sourcedis->g_element(source_ele_gid);
+    Core::Elements::Element* source_ele = sourcedis.g_element(source_ele_gid);
     const int* nid = source_ele->node_ids();
     for (unsigned i = 0; i < static_cast<unsigned>(source_ele->num_node()); ++i)
     {
@@ -404,46 +403,46 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
   othernodecolvec.reserve(numothernodecol - condnodecolset.size());
 
   // determine non-conditioned nodes
-  for (int lid = 0; lid < sourcedis->node_col_map()->NumMyElements(); ++lid)
+  for (int lid = 0; lid < sourcedis.node_col_map()->NumMyElements(); ++lid)
   {
-    const int nid = sourcedis->node_col_map()->GID(lid);
+    const int nid = sourcedis.node_col_map()->GID(lid);
 
     // if we erase this node, we do not add it and just go on
     if (condnodecolset.find(nid) != condnodecolset.end()) continue;
 
     othernodecolvec.push_back(nid);
 
-    if (sourcedis->node_row_map()->LID(nid) > -1) othernoderowvec.push_back(nid);
+    if (sourcedis.node_row_map()->LID(nid) > -1) othernoderowvec.push_back(nid);
   }
   // delete conditioned nodes, which are not connected to any unconditioned elements
   for (std::set<int>::iterator it = condnodecolset.begin(); it != condnodecolset.end(); ++it)
-    if (not sourcedis->delete_node(*it)) FOUR_C_THROW("Node %d could not be deleted!", *it);
+    if (not sourcedis.delete_node(*it)) FOUR_C_THROW("Node %d could not be deleted!", *it);
 
   // delete conditioned elements from source discretization
   for (std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator sourceele_iter =
            sourceelements.begin();
        sourceele_iter != sourceelements.end(); ++sourceele_iter)
   {
-    sourcedis->delete_element(sourceele_iter->first);
+    sourcedis.delete_element(sourceele_iter->first);
   }
 
   // ------------------------------------------------------------------------
   // validate the source conditions
   // ------------------------------------------------------------------------
   std::vector<std::string> src_conditions;
-  sourcedis->get_condition_names(src_conditions);
+  sourcedis.get_condition_names(src_conditions);
   for (std::vector<std::string>::const_iterator conditername = src_conditions.begin();
        conditername != src_conditions.end(); ++conditername)
   {
     std::vector<Core::Conditions::Condition*> conds;
-    sourcedis->get_condition(*conditername, conds);
+    sourcedis.get_condition(*conditername, conds);
     std::vector<Teuchos::RCP<Core::Conditions::Condition>> src_conds(conds.size(), Teuchos::null);
     for (unsigned i = 0; i < conds.size(); ++i)
-      src_conds[i] = split_condition(conds[i], othernodecolvec, sourcedis->get_comm());
-    sourcedis->replace_conditions(*conditername, src_conds);
+      src_conds[i] = split_condition(conds[i], othernodecolvec, sourcedis.get_comm());
+    sourcedis.replace_conditions(*conditername, src_conds);
   }
   // re-partioning
-  redistribute(*sourcedis, othernoderowvec, othernodecolvec);
+  redistribute(sourcedis, othernoderowvec, othernodecolvec);
 
 
   return;
@@ -538,7 +537,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_co
   }
 
   split_discretization(
-      sourcedis, targetdis, src_my_gnodes, src_gnodes, src_elements, conditions_to_copy);
+      *sourcedis, *targetdis, src_my_gnodes, src_gnodes, src_elements, conditions_to_copy);
 }
 
 

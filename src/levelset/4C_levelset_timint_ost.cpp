@@ -232,11 +232,10 @@ void ScaTra::LevelSetTimIntOneStepTheta::update_reinit()
  | Redistribute the scatra discretization and vectors according to nodegraph  rasthofer 07/11 |
  |                                                                            DA wichmann     |
  *--------------------------------------------------------------------------------------------*/
-void ScaTra::LevelSetTimIntOneStepTheta::redistribute(
-    const Teuchos::RCP<Epetra_CrsGraph>& nodegraph)
+void ScaTra::LevelSetTimIntOneStepTheta::redistribute(Epetra_CrsGraph& nodegraph)
 {
   // let the base class do the basic redistribution and transfer of the base class members
-  LevelSetAlgorithm::redistribute(*nodegraph);
+  LevelSetAlgorithm::redistribute(nodegraph);
 
   // now do all the ost specfic steps
   const Epetra_Map* newdofrowmap = discret_->dof_row_map();

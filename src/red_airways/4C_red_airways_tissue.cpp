@@ -356,43 +356,39 @@ void Airway::RedAirwayTissue::do_structure_step()
  */
 bool Airway::RedAirwayTissue::not_converged(int iter)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> pres_inc =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*couppres_ip_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> scaled_pres_inc =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*couppres_ip_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> flux_inc =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*coupflux_ip_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> scaled_flux_inc =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*coupflux_ip_);
+  Core::LinAlg::Vector<double> pres_inc(*couppres_ip_);
+  Core::LinAlg::Vector<double> scaled_pres_inc(*couppres_ip_);
+  Core::LinAlg::Vector<double> flux_inc(*coupflux_ip_);
+  Core::LinAlg::Vector<double> scaled_flux_inc(*coupflux_ip_);
 
   // Calculate Pressure Norm
   for (int i = 0; i < couppres_ip_->Map().NumMyElements(); ++i)
   {
     // Calculate pressure increment
-    (*pres_inc)[i] = abs((*couppres_ip_)[i] - (*couppres_im_)[i]);
+    (pres_inc)[i] = abs((*couppres_ip_)[i] - (*couppres_im_)[i]);
 
     // Calculate scaled pressure increment
     if (abs((*couppres_ip_)[i]) > 1e-05)
-      (*scaled_pres_inc)[i] = (*pres_inc)[i] / abs((*couppres_ip_)[i]);
+      (scaled_pres_inc)[i] = (pres_inc)[i] / abs((*couppres_ip_)[i]);
     else
-      (*scaled_pres_inc)[i] = (*pres_inc)[i];
+      (scaled_pres_inc)[i] = (pres_inc)[i];
   }
 
   // Calculate Flux Norm
   for (int i = 0; i < coupflux_ip_->Map().NumMyElements(); ++i)
   {
     // Calculate flux increment
-    (*flux_inc)[i] = abs((*coupflux_ip_)[i] - (*coupflux_im_)[i]);
+    (flux_inc)[i] = abs((*coupflux_ip_)[i] - (*coupflux_im_)[i]);
 
     // Calculate scaled flux increment
     if (abs((*coupflux_ip_)[i]) > 1e-05)
-      (*scaled_flux_inc)[i] = (*flux_inc)[i] / abs((*coupflux_ip_)[i]);
+      (scaled_flux_inc)[i] = (flux_inc)[i] / abs((*coupflux_ip_)[i]);
     else
-      (*scaled_flux_inc)[i] = (*flux_inc)[i];
+      (scaled_flux_inc)[i] = (flux_inc)[i];
   }
 
   // Output
-  output_iteration(*pres_inc, *scaled_pres_inc, *flux_inc, *scaled_flux_inc, iter);
+  output_iteration(pres_inc, scaled_pres_inc, flux_inc, scaled_flux_inc, iter);
 
   // Update values
   couppres_il_->Update(1.0, *couppres_im_, 0.0);
@@ -402,8 +398,8 @@ bool Airway::RedAirwayTissue::not_converged(int iter)
   coupvol_im_->Update(1.0, *coupvol_ip_, 0.0);
 
   double pres_max, flux_max;
-  scaled_pres_inc->NormInf(&pres_max);
-  scaled_flux_inc->NormInf(&flux_max);
+  scaled_pres_inc.NormInf(&pres_max);
+  scaled_flux_inc.NormInf(&flux_max);
 
   if (pres_max < tolp_ and flux_max < tolq_ and iter > 1) return false;
 

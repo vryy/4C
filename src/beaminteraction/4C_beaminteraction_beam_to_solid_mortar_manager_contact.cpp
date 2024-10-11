@@ -69,7 +69,7 @@ BEAMINTERACTION::BeamToSolidMortarManagerContact::get_penalty_regularization(
 
       // The -1 here is due to the way the lagrange multipliers are defined in the coupling
       // constraints.
-      const fad_type local_lambda = -1.0 * penalty_force(scaled_gap, beam_to_solid_conact_params);
+      const fad_type local_lambda = -1.0 * penalty_force(scaled_gap, *beam_to_solid_conact_params);
       lambda->ReplaceMyValue(lid, 0, Core::FADUtils::cast_to_double(local_lambda));
       lambda_lin_constraint->ReplaceMyValue(lid, 0, local_lambda.dx(0));
       lambda_lin_kappa->ReplaceMyValue(lid, 0, local_lambda.dx(1));

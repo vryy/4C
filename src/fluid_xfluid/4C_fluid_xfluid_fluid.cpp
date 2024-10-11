@@ -638,11 +638,10 @@ void FLD::XFluidFluid::update_monolithic_fluid_solution(
   condmaps.push_back(fsidofmap);
   Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
 
-  Teuchos::RCP<Core::LinAlg::MapExtractor> fsidbcmapex =
-      Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*(embedded_fluid_->dof_row_map()), condmerged);
+  Core::LinAlg::MapExtractor fsidbcmapex(*(embedded_fluid_->dof_row_map()), condmerged);
 
   // DBC map-extractor containing FSI-dof
-  xff_state_->create_merged_dbc_map_extractor(*fsidbcmapex);
+  xff_state_->create_merged_dbc_map_extractor(fsidbcmapex);
   solve();
   xff_state_->create_merged_dbc_map_extractor(*embedded_fluid_->get_dbc_map_extractor());
 }
@@ -801,14 +800,11 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
   Core::LinAlg::SerialDenseVector cpu_interf_norms(num_interf_norms);
   Core::LinAlg::SerialDenseVector cpu_stab_norms(num_stab_norms);
 
-  Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_dom_norms_bg =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_dom_norms);
+  Core::LinAlg::SerialDenseVector glob_dom_norms_bg(num_dom_norms);
   Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_dom_norms_emb =
       Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_dom_norms);
-  Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_interf_norms =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_interf_norms);
-  Teuchos::RCP<Core::LinAlg::SerialDenseVector> glob_stab_norms =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_stab_norms);
+  Core::LinAlg::SerialDenseVector glob_interf_norms(num_interf_norms);
+  Core::LinAlg::SerialDenseVector glob_stab_norms(num_stab_norms);
 
   // set vector values needed by elements
   discret_->clear_state();
@@ -822,7 +818,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
 
   // evaluate domain error norms and interface/boundary error norms at XFEM-interface
   // loop row elements of background fluid
-  XFluid::compute_error_norms(*glob_dom_norms_bg, *glob_interf_norms, *glob_stab_norms);
+  XFluid::compute_error_norms(glob_dom_norms_bg, glob_interf_norms, glob_stab_norms);
 
   //-----------------------------------------------
   // Embedded discretization
@@ -931,17 +927,17 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
   double functional_bg = 0.0;
   double functional_emb = 0.0;
 
-  dom_bg_err_vel_L2 = sqrt((*glob_dom_norms_bg)[0]);
-  dom_bg_err_vel_H1_semi = sqrt((*glob_dom_norms_bg)[1]);
-  dom_bg_err_vel_H1 = sqrt((*glob_dom_norms_bg)[2]);
-  dom_bg_err_pre_L2 = sqrt((*glob_dom_norms_bg)[3]);
+  dom_bg_err_vel_L2 = sqrt((glob_dom_norms_bg)[0]);
+  dom_bg_err_vel_H1_semi = sqrt((glob_dom_norms_bg)[1]);
+  dom_bg_err_vel_H1 = sqrt((glob_dom_norms_bg)[2]);
+  dom_bg_err_pre_L2 = sqrt((glob_dom_norms_bg)[3]);
 
-  dom_bg_err_vel_H1_semi_nu_scaled = sqrt((*glob_dom_norms_bg)[4]);
-  dom_bg_err_pre_L2_nu_scaled = sqrt((*glob_dom_norms_bg)[5]);
-  dom_bg_err_vel_L2_sigma_scaled = sqrt((*glob_dom_norms_bg)[6]);
-  dom_bg_err_pre_L2_Phi_scaled = sqrt((*glob_dom_norms_bg)[7]);
+  dom_bg_err_vel_H1_semi_nu_scaled = sqrt((glob_dom_norms_bg)[4]);
+  dom_bg_err_pre_L2_nu_scaled = sqrt((glob_dom_norms_bg)[5]);
+  dom_bg_err_vel_L2_sigma_scaled = sqrt((glob_dom_norms_bg)[6]);
+  dom_bg_err_pre_L2_Phi_scaled = sqrt((glob_dom_norms_bg)[7]);
 
-  functional_bg = (*glob_dom_norms_bg)[8];
+  functional_bg = (glob_dom_norms_bg)[8];
 
   dom_emb_err_vel_L2 = sqrt((*glob_dom_norms_emb)[0]);
   dom_emb_err_vel_H1_semi = sqrt((*glob_dom_norms_emb)[1]);
@@ -956,11 +952,11 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
   functional_emb = (*glob_dom_norms_emb)[8];
 
 
-  interf_err_Honehalf = sqrt((*glob_interf_norms)[0]);
-  interf_err_Hmonehalf_u = sqrt((*glob_interf_norms)[1]);
-  interf_err_Hmonehalf_p = sqrt((*glob_interf_norms)[2]);
-  interf_err_inflow = sqrt((*glob_interf_norms)[3]);
-  interf_err_mass_cons = sqrt((*glob_interf_norms)[4]);
+  interf_err_Honehalf = sqrt((glob_interf_norms)[0]);
+  interf_err_Hmonehalf_u = sqrt((glob_interf_norms)[1]);
+  interf_err_Hmonehalf_p = sqrt((glob_interf_norms)[2]);
+  interf_err_inflow = sqrt((glob_interf_norms)[3]);
+  interf_err_mass_cons = sqrt((glob_interf_norms)[4]);
 
   if (myrank_ == 0)
   {

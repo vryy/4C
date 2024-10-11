@@ -182,10 +182,8 @@ namespace Coupling::VolMortar
     */
     void integrate_ele_based_3d(Core::Elements::Element& sele, std::vector<int>& foundeles,
         Core::LinAlg::SparseMatrix& dmatrixA, Core::LinAlg::SparseMatrix& mmatrixA,
-        Teuchos::RCP<const Core::FE::Discretization> Adiscret,
-        Teuchos::RCP<const Core::FE::Discretization> Bdiscret, int dofseta, int dofsetb,
-        const Teuchos::RCP<const Epetra_Map>& PAB_dofrowmap,
-        const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap);
+        const Core::FE::Discretization& Adiscret, const Core::FE::Discretization& Bdiscret,
+        int dofseta, int dofsetb, const Epetra_Map& PAB_dofrowmap, const Epetra_Map& PAB_dofcolmap);
 
    protected:
     /*!
@@ -394,10 +392,9 @@ namespace Coupling::VolMortar
 
     */
     void interpolate(Core::Nodes::Node* node, Core::LinAlg::SparseMatrix& pmatrix_,
-        Teuchos::RCP<const Core::FE::Discretization> nodediscret,
-        Teuchos::RCP<const Core::FE::Discretization> elediscret, std::vector<int>& foundeles,
-        std::pair<int, int>& dofset, const Teuchos::RCP<const Epetra_Map>& P_dofrowmap,
-        const Teuchos::RCP<const Epetra_Map>& P_dofcolmap);
+        const Core::FE::Discretization& nodediscret, const Core::FE::Discretization& elediscret,
+        std::vector<int>& foundeles, std::pair<int, int>& dofset, const Epetra_Map& P_dofrowmap,
+        const Epetra_Map& P_dofcolmap);
   };
 
 }  // namespace Coupling::VolMortar

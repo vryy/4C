@@ -2771,7 +2771,7 @@ void Discret::ELEMENTS::SoHex8::update_element(
 
       // Compute deformation gradient
       UTILS::compute_deformation_gradient<Core::FE::CellType::hex8>(
-          defgrd, kintype_, xdisp, xcurr, invJ_[gp], derivs, pstype_, prestress_, gp);
+          defgrd, kintype_, xdisp, xcurr, invJ_[gp], derivs, pstype_, *prestress_, gp);
 
       // call material update if material = m_growthremodel_elasthyper (calculate and update
       // inelastic deformation gradient)

@@ -791,8 +791,8 @@ namespace CONTACT
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1_xi,
         const Core::LinAlg::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
-        Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues>> cpvariables,
-        const double& intfac, const double& d_xi_ele_d_xi_bound, TYPE signed_jacobi_interval);
+        Beam3contactvariables<numnodes, numnodalvalues>& cpvariables, const double& intfac,
+        const double& d_xi_ele_d_xi_bound, TYPE signed_jacobi_interval);
 
     /*!
     \brief Linearizations of contact point

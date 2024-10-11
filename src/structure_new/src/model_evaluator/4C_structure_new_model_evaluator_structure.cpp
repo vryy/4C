@@ -356,7 +356,7 @@ bool Solid::ModelEvaluator::Structure::apply_force_external()
   if (eval_data().get_damping_type() == Inpar::Solid::damp_material)
     discret().set_state(0, "velocity", global_state().get_vel_n());
   discret().set_state(0, "displacement new", global_state().get_dis_np());
-  evaluate_neumann(global_state().get_fext_np(), Teuchos::null);
+  evaluate_neumann(*global_state().get_fext_np(), Teuchos::null);
 
   return eval_error_check();
 }
@@ -378,13 +378,13 @@ bool Solid::ModelEvaluator::Structure::apply_force_stiff_external()
 
   // get load vector
   if (!tim_int().get_data_sdyn().get_load_lin())
-    evaluate_neumann(global_state().get_fext_np(), Teuchos::null);
+    evaluate_neumann(*global_state().get_fext_np(), Teuchos::null);
   else
   {
     discret().set_state(0, "displacement new", global_state().get_dis_np());
     /* Add the linearization of the external force to the stiffness
      * matrix. */
-    evaluate_neumann(global_state().get_fext_np(), Teuchos::rcpFromRef(*stiff_ptr_));
+    evaluate_neumann(*global_state().get_fext_np(), Teuchos::rcpFromRef(*stiff_ptr_));
   }
 
   return eval_error_check();
@@ -1118,11 +1118,11 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_beams(
 
   // append displacement if desired
   if (beam_output_params.output_displacement_state())
-    beam_vtu_writer_ptr_->append_displacement_field(displacement_state_vector);
+    beam_vtu_writer_ptr_->append_displacement_field(*displacement_state_vector);
 
   // append triads if desired
   if (beam_output_params.is_write_triad_visualization_points())
-    beam_vtu_writer_ptr_->append_triad_field(displacement_state_vector);
+    beam_vtu_writer_ptr_->append_triad_field(*displacement_state_vector);
 
   // append material cross-section strain resultants if desired
   if (beam_output_params.is_write_material_strains_gauss_points())
@@ -1243,13 +1243,12 @@ void Solid::ModelEvaluator::Structure::evaluate_internal_specified_elements(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Structure::evaluate_neumann(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& eval_vec,
+void Solid::ModelEvaluator::Structure::evaluate_neumann(Core::LinAlg::Vector<double>& eval_vec,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& eval_mat)
 {
   Teuchos::ParameterList p;
   p.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
-  evaluate_neumann(p, *eval_vec, eval_mat);
+  evaluate_neumann(p, eval_vec, eval_mat);
 }
 
 /*----------------------------------------------------------------------------*

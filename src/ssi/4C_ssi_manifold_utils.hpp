@@ -231,7 +231,7 @@ namespace SSI
         Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
 
     //! Evaluate flux and linearizations on bulk side
-    void evaluate_bulk_side(Teuchos::RCP<ManifoldScaTraCoupling> scatra_manifold_coupling);
+    void evaluate_bulk_side(ManifoldScaTraCoupling& scatra_manifold_coupling);
 
     //! Evaluate integral on scatra manifold over 1.0
     void evaluate_scatra_manifold_domain_integral(ManifoldScaTraCoupling& scatra_manifold_coupling);

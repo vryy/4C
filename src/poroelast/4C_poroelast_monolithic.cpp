@@ -1769,11 +1769,10 @@ void PoroElast::Monolithic::recover_lagrange_multiplier_after_newton_step(
         Teuchos::RCP<const Core::LinAlg::Vector<double>> f_iterinc;
         extract_field_vectors(iterinc, s_iterinc, f_iterinc);
 
-        Teuchos::RCP<Core::LinAlg::Vector<double>> tmpfx =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*f_iterinc);
+        Core::LinAlg::Vector<double> tmpfx(*f_iterinc);
 
         // Recover part of LM stemming from offdiagonal coupling matrix
-        costrategy.recover_coupling_matrix_partof_lmp(*tmpfx);
+        costrategy.recover_coupling_matrix_partof_lmp(tmpfx);
       }
     }
   }

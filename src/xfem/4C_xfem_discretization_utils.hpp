@@ -134,9 +134,8 @@ namespace XFEM
 
       /*! split the discretization by removing the given elements and nodes in
        *  the source discretization and adding them to the target discretization */
-      void split_discretization(Teuchos::RCP<Core::FE::Discretization> sourcedis,
-          Teuchos::RCP<Core::FE::Discretization> targetdis,
-          const std::map<int, Core::Nodes::Node*>& sourcenodes,
+      void split_discretization(Core::FE::Discretization& sourcedis,
+          Core::FE::Discretization& targetdis, const std::map<int, Core::Nodes::Node*>& sourcenodes,
           const std::map<int, Core::Nodes::Node*>& sourcegnodes,
           const std::map<int, Teuchos::RCP<Core::Elements::Element>>& sourceelements,
           const std::vector<std::string>& conditions_to_copy) const;

@@ -283,7 +283,7 @@ namespace UTILS
     void solver_setup(Core::LinAlg::Solver& solver, Teuchos::ParameterList params);
 
 
-    int solve(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,  ///< stiffness matrix
+    int solve(Core::LinAlg::SparseMatrix& stiff,  ///< stiffness matrix
         Core::LinAlg::Vector<double>& dispinc,    ///< displacement increment to compute
         Core::LinAlg::Vector<double>& rhsstruct,  ///< standard right hand side
         const double k_ptc                        ///< for 3D-0D PTC
