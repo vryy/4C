@@ -647,7 +647,7 @@ void FPSI::Monolithic::create_linear_solver()
   // plausibility check
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::multigrid_nxn:
+    case Core::LinearSolver::PreconditionerType::block_teko:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
@@ -695,14 +695,14 @@ void FPSI::Monolithic::create_linear_solver()
           Global::Problem::instance()->io_params(), "VERBOSITY"));
 
   // prescribe rigid body modes
-  poro_field()->structure_field()->discretization()->compute_null_space_if_necessary(
-      solver_->params().sublist("Inverse1"));
-  poro_field()->fluid_field()->discretization()->compute_null_space_if_necessary(
-      solver_->params().sublist("Inverse2"));
-  fluid_field()->discretization()->compute_null_space_if_necessary(
-      solver_->params().sublist("Inverse3"));
-  ale_field()->write_access_discretization()->compute_null_space_if_necessary(
-      solver_->params().sublist("Inverse4"));
+  Core::LinearSolver::Parameters::compute_solver_parameters(
+      *poro_field()->structure_field()->discretization(), solver_->params().sublist("Inverse1"));
+  Core::LinearSolver::Parameters::compute_solver_parameters(
+      *poro_field()->fluid_field()->discretization(), solver_->params().sublist("Inverse2"));
+  Core::LinearSolver::Parameters::compute_solver_parameters(
+      *fluid_field()->discretization(), solver_->params().sublist("Inverse3"));
+  Core::LinearSolver::Parameters::compute_solver_parameters(
+      *ale_field()->write_access_discretization(), solver_->params().sublist("Inverse4"));
 
   // fixing length of Inverse1 nullspace (solver/preconditioner ML)
   {
