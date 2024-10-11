@@ -11,7 +11,6 @@ electrochemistry
 #include "4C_contact_nitsche_integrator_ssi_elch.hpp"
 
 #include "4C_contact_nitsche_utils.hpp"
-#include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 #include "4C_mat_electrode.hpp"
 #include "4C_scatra_ele_boundary_calc_elch_electrode_utils.hpp"
@@ -666,12 +665,17 @@ void CONTACT::IntegratorNitscheSsiElch::assign_electrode_and_electrolyte_quantit
         Teuchos::rcp_dynamic_cast<const Mat::Electrode>(master_ele.parent_element()->material(1));
 
     // safety check
-    if (electrode_material == Teuchos::null)
-    {
-      FOUR_C_THROW(
-          "Something went wrong, neither slave nor master side is electrode material. This is a "
-          "fatal error!");
-    }
+    FOUR_C_THROW_UNLESS(electrode_material != Teuchos::null,
+        "Something went wrong, neither slave nor master side is electrode material. This is a "
+        "fatal error!");
+  }
+  else
+  {
+    auto master_also_electrode =
+        Teuchos::rcp_dynamic_cast<const Mat::Electrode>(master_ele.parent_element()->material(1));
+
+    FOUR_C_THROW_UNLESS(master_also_electrode == Teuchos::null,
+        "Both, slave and master side are electrode materials, this should not be the case!");
   }
 
   if (slave_is_electrode)

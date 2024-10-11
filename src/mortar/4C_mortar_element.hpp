@@ -1050,7 +1050,7 @@ namespace Mortar
     dimensions. Hence, we check for the number of spatial dimensions and throw an error if the
     problem at hand is not 3D.
       */
-    void estimate_nitsche_trace_max_eigenvalue_combined();
+    void estimate_nitsche_trace_max_eigenvalue();
 
     /*!
     \brief Estimated mesh size and stiffness parameter h/E via Eigenvalues of the trace inequality.

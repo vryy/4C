@@ -627,12 +627,6 @@ void SSI::SSIBase::check_ssi_flags() const
           "is not reasonable!");
     }
   }
-
-  const bool is_nitsche_penalty_adaptive(
-      Global::Problem::instance()->contact_dynamic_params().get<bool>("NITSCHE_PENALTY_ADAPTIVE"));
-
-  if (ssi_interface_contact() and is_nitsche_penalty_adaptive)
-    FOUR_C_THROW("Adaptive nitsche penalty parameter currently not supported!");
 }
 
 /*----------------------------------------------------------------------*/

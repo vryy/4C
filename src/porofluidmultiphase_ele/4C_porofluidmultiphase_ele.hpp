@@ -466,7 +466,7 @@ namespace Discret
       }
 
       //! Return a pointer to the parent element of this boundary element
-      virtual Discret::ELEMENTS::PoroFluidMultiPhase* parent_element() const
+      Discret::ELEMENTS::PoroFluidMultiPhase* parent_element() const override
       {
         Core::Elements::Element* parent = Core::Elements::FaceElement::parent_element();
         // make sure the static cast below is really valid

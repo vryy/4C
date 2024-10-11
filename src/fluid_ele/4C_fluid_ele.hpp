@@ -635,7 +635,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
-      Discret::ELEMENTS::Fluid* parent_element() const
+      Discret::ELEMENTS::Fluid* parent_element() const override
       {
         Core::Elements::Element* parent = this->Core::Elements::FaceElement::parent_element();
         // make sure the static cast below is really valid

@@ -19,69 +19,78 @@
 #include "4C_mat_fourieriso.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_mat_so3_material.hpp"
+#include "4C_so3_element_service.hpp"
 #include "4C_so3_surface.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*
- |                                                           seitz 11/16|
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_combined(
-    std::vector<double>& parent_disp)
+double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue(
+    const std::vector<double>& parent_disp)
+{
+  // call the implementation that is dependent on scalars with an empty scalar vector
+  return estimate_nitsche_trace_max_eigenvalue(parent_disp, {});
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue(
+    const std::vector<double>& parent_disp, const std::vector<double>& parent_scalar)
 {
   switch (parent_element()->shape())
   {
     case Core::FE::CellType::hex8:
       if (shape() == Core::FE::CellType::quad4)
-        return estimate_nitsche_trace_max_eigenvalue_combined<Core::FE::CellType::hex8,
-            Core::FE::CellType::quad4>(parent_disp);
+      {
+        return estimate_nitsche_trace_max_eigenvalue<Core::FE::CellType::hex8,
+            Core::FE::CellType::quad4>(parent_disp, parent_scalar);
+      }
       else
-        FOUR_C_THROW("how can an hex8 element have a surface that is not quad4 ???");
-      break;
+      {
+        FOUR_C_THROW("how can an hex8 element have a surface that is not quad4?");
+      }
     case Core::FE::CellType::hex27:
-      return estimate_nitsche_trace_max_eigenvalue_combined<Core::FE::CellType::hex27,
-          Core::FE::CellType::quad9>(parent_disp);
-      break;
+      return estimate_nitsche_trace_max_eigenvalue<Core::FE::CellType::hex27,
+          Core::FE::CellType::quad9>(parent_disp, parent_scalar);
     case Core::FE::CellType::tet4:
-      return estimate_nitsche_trace_max_eigenvalue_combined<Core::FE::CellType::tet4,
-          Core::FE::CellType::tri3>(parent_disp);
-      break;
+      return estimate_nitsche_trace_max_eigenvalue<Core::FE::CellType::tet4,
+          Core::FE::CellType::tri3>(parent_disp, parent_scalar);
     case Core::FE::CellType::nurbs27:
-      return estimate_nitsche_trace_max_eigenvalue_combined<Core::FE::CellType::nurbs27,
-          Core::FE::CellType::nurbs9>(parent_disp);
-      break;
+      return estimate_nitsche_trace_max_eigenvalue<Core::FE::CellType::nurbs27,
+          Core::FE::CellType::nurbs9>(parent_disp, parent_scalar);
     default:
       FOUR_C_THROW("parent shape not implemented");
   }
-
-  return 0;
 }
 
 
 template <Core::FE::CellType dt_vol, Core::FE::CellType dt_surf>
-double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_combined(
-    std::vector<double>& parent_disp)
+double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue(
+    const std::vector<double>& parent_disp, const std::vector<double>& parent_scalar)
 {
   const int dim = Core::FE::dim<dt_vol>;
   const int num_dof = Core::FE::num_nodes<dt_vol> * Core::FE::dim<dt_vol>;
   const int dim_image = Core::FE::num_nodes<dt_vol> * Core::FE::dim<dt_vol> -
                         Core::FE::dim<dt_vol> * (Core::FE::dim<dt_vol> + 1) / 2;
 
-  Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3> xrefe;
-  Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3> xcurr;
+  Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3> xrefe, xcurr;
 
   for (int i = 0; i < parent_element()->num_node(); ++i)
+  {
     for (int d = 0; d < dim; ++d)
     {
       xrefe(i, d) = parent_element()->nodes()[i]->x()[d];
       xcurr(i, d) = xrefe(i, d) + parent_disp[i * dim + d];
     }
+  }
 
   Core::LinAlg::Matrix<num_dof, num_dof> vol, surf;
 
-  trace_estimate_vol_matrix<dt_vol>(xrefe, xcurr, vol);
-  trace_estimate_surf_matrix<dt_vol, dt_surf>(xrefe, xcurr, surf);
+  trace_estimate_vol_matrix<dt_vol>(xrefe, xcurr, parent_scalar, vol);
+  trace_estimate_surf_matrix<dt_vol, dt_surf>(xrefe, xcurr, parent_scalar, surf);
 
   Core::LinAlg::Matrix<num_dof, dim_image> proj, tmp;
   subspace_projector<dt_vol>(xcurr, proj);
@@ -101,17 +110,18 @@ double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenval
   return Core::LinAlg::generalized_eigen(surf_red_sd, vol_red_sd);
 }
 
+
 template <Core::FE::CellType dt_vol>
 void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix(
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xrefe,
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
+    const std::vector<double>& parent_scalar,
     Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, Core::FE::num_nodes<dt_vol> * 3>& vol)
 {
   const int dim = Core::FE::dim<dt_vol>;
 
   double jac;
-  Core::LinAlg::Matrix<3, 3> defgrd;
-  Core::LinAlg::Matrix<3, 3> rcg;
+  Core::LinAlg::Matrix<3, 3> defgrd, rcg;
   Core::LinAlg::Matrix<6, 1> glstrain;
   Core::LinAlg::Matrix<6, Core::FE::num_nodes<dt_vol> * 3> bop;
   Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, 6> bc;
@@ -127,13 +137,20 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix(
     Core::LinAlg::Matrix<6, 6> cmat(true);
     Core::LinAlg::Matrix<6, 1> stress(true);
     Teuchos::ParameterList params;
+    if (not parent_scalar.empty())
+    {
+      // as long as we need the parameter list to pass the information, we need to wrap it into a
+      // Teuchos::RCP<> as the values of a Teuchos::ParameterList have to be printable
+      auto scalar_values_at_xi = Teuchos::make_rcp<std::vector<double>>();
+      *scalar_values_at_xi =
+          Discret::ELEMENTS::project_nodal_quantity_to_xi<dt_vol>(xi, parent_scalar);
+      params.set("scalars", scalar_values_at_xi);
+    }
     Teuchos::rcp_dynamic_cast<Mat::So3Material>(parent_element()->material())
         ->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, parent_element()->id());
     bc.multiply_tn(bop, cmat);
     vol.multiply(ip.ip().qwgt[gp] * jac, bc, bop, 1.);
   }
-
-  return;
 }
 
 
@@ -141,24 +158,22 @@ template <Core::FE::CellType dt_vol, Core::FE::CellType dt_surf>
 void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xrefe,
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
+    const std::vector<double>& parent_scalar,
     Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, Core::FE::num_nodes<dt_vol> * 3>& surf)
 {
   const int dim = Core::FE::dim<dt_vol>;
 
   Core::LinAlg::Matrix<6, 6> id4;
-  for (int i = 0; i < 3; ++i) id4(i, i) = 1.;
-  for (int i = 3; i < 6; ++i) id4(i, i) = 2.;
+  for (int i = 0; i < 3; ++i) id4(i, i) = 1.0;
+  for (int i = 3; i < 6; ++i) id4(i, i) = 2.0;
 
   Core::LinAlg::SerialDenseMatrix xrefe_surf(Core::FE::num_nodes<dt_surf>, dim);
   material_configuration(xrefe_surf);
 
   std::vector<double> n(3);
   Core::LinAlg::Matrix<3, 1> n_v(n.data(), true);
-  Core::LinAlg::Matrix<3, 3> nn;
-  double detA;
-  double jac;
-  Core::LinAlg::Matrix<3, 3> defgrd;
-  Core::LinAlg::Matrix<3, 3> rcg;
+  double detA, jac;
+  Core::LinAlg::Matrix<3, 3> defgrd, rcg, nn;
   Core::LinAlg::Matrix<6, 1> glstrain;
   Core::LinAlg::Matrix<6, Core::FE::num_nodes<dt_vol> * 3> bop;
   Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, 6> bc;
@@ -188,10 +203,19 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
     Core::LinAlg::Matrix<6, 6> cmat(true);
     Core::LinAlg::Matrix<6, 1> stress(true);
     Teuchos::ParameterList params;
+    if (not parent_scalar.empty())
+    {
+      // as long as we need the parameter list to pass the information, we need to wrap it into a
+      // Teuchos::RCP<> as the values of a Teuchos::ParameterList have to be printable
+      auto scalar_values_at_xi = Teuchos::make_rcp<std::vector<double>>();
+      *scalar_values_at_xi =
+          Discret::ELEMENTS::project_nodal_quantity_to_xi<dt_vol>(xi, parent_scalar);
+      params.set("scalars", scalar_values_at_xi);
+    }
     Teuchos::rcp_dynamic_cast<Mat::So3Material>(parent_element()->material())
         ->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, parent_element()->id());
 
-    double normalfac = 1.;
+    double normalfac = 1.0;
     if (shape() == Core::FE::CellType::nurbs9)
     {
       std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
@@ -213,16 +237,18 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
           shapefcn, deriv_surf, xi_surf, boundaryknots, weights, dt_surf);
     }
     else
+    {
       Core::FE::shape_function_2d_deriv1(
           deriv_surf, ip.ip().qxg[gp][0], ip.ip().qxg[gp][1], shape());
+    }
 
     surface_integration(detA, n, xrefe_surf, deriv_surf);
     n_v.scale(normalfac);
-    n_v.scale(1. / n_v.norm2());
+    n_v.scale(1.0 / n_v.norm2());
     nn.multiply_nt(n_v, n_v);
 
     Core::LinAlg::Matrix<6, 6> cn;
-    Mat::add_symmetric_holzapfel_product(cn, rcg, nn, .25);
+    Mat::add_symmetric_holzapfel_product(cn, rcg, nn, 0.25);
 
     Core::LinAlg::Matrix<6, 6> tmp1, tmp2;
     tmp1.multiply(cmat, id4);
@@ -233,11 +259,10 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
     Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, 6> tmp3;
     tmp3.multiply_tn(bop, tmp2);
 
-    surf.multiply(detA * ip.ip().qwgt[gp], tmp3, bop, 1.);
+    surf.multiply(detA * ip.ip().qwgt[gp], tmp3, bop, 1.0);
   }
-
-  return;
 }
+
 
 template <Core::FE::CellType dt_vol>
 void Discret::ELEMENTS::StructuralSurface::strains(
@@ -268,7 +293,9 @@ void Discret::ELEMENTS::StructuralSurface::strains(
     Core::FE::Nurbs::nurbs_get_3d_funct_deriv(shapefcn, deriv, xi, knots, weights, dt_vol);
   }
   else
+  {
     Core::FE::shape_function_deriv1<dt_vol>(xi, deriv);
+  }
 
   Core::LinAlg::Matrix<dim, dim> invJ;
   invJ.multiply(deriv, xrefe);
@@ -306,8 +333,6 @@ void Discret::ELEMENTS::StructuralSurface::strains(
     bop(5, dim * i + 1) = defgrd(1, 2) * N_XYZ(0, i) + defgrd(1, 0) * N_XYZ(2, i);
     bop(5, dim * i + 2) = defgrd(2, 2) * N_XYZ(0, i) + defgrd(2, 0) * N_XYZ(2, i);
   }
-
-  return;
 }
 
 
@@ -393,8 +418,6 @@ void Discret::ELEMENTS::StructuralSurface::subspace_projector(
   for (int i = 0; i < dim * num_node; ++i)
     for (int j = 6; j < dim * num_node; ++j) proj(i, j - 6) = basis[j](i);
 }
-
-
 
 /*----------------------------------------------------------------------*
  |                                                           seitz 11/16|
