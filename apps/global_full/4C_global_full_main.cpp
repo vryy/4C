@@ -215,7 +215,7 @@ void ntam(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
   MPI_Init(&argc, &argv);
-  Kokkos::ScopeGuard kokkos_guard(argc, argv);
+  Kokkos::ScopeGuard kokkos_guard{};
 
   using namespace FourC;
 
