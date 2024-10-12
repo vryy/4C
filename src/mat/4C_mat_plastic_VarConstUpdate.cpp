@@ -12,6 +12,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
+#include "4C_linalg_utils_densematrix_exp_log.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
@@ -424,10 +425,8 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
     // Get exp, Dexp and DDexp
     Core::LinAlg::Matrix<3, 3> input_dLp(dLp);
     input_dLp.scale(-1.);
-    Core::LinAlg::Matrix<3, 3> expOut(input_dLp);
-    Core::LinAlg::Matrix<6, 6> dexpOut_mat;
-    matrix_exponential_derivative_sym3x3(input_dLp, dexpOut_mat);
-    matrix_exponential3x3(expOut);
+    Core::LinAlg::Matrix<3, 3> expOut = Core::LinAlg::matrix_exp(input_dLp);
+    Core::LinAlg::Matrix<6, 6> dexpOut_mat = Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(input_dLp);
 
     plastic_defgrd_inverse_[gp].multiply(last_plastic_defgrd_inverse_[gp], expOut);
     delta_alpha_i_[gp] = sqrt(2. / 3.) * dLp.norm2();
@@ -636,215 +635,6 @@ bool Mat::PlasticElastHyperVCU::vis_data(
 }  // vis_data()
 
 
-// 2nd matrix exponential derivatives with 6 parameters
-void Mat::PlasticElastHyperVCU::matrix_exponential_second_derivative_sym3x3x6(
-    const Core::LinAlg::Matrix<3, 3> MatrixIn, Core::LinAlg::Matrix<3, 3>& exp,
-    Core::LinAlg::Matrix<6, 6>& dexp_mat, Core::LinAlg::Matrix<6, 6>* MatrixExp2ndDerivVoigt)
-{
-  Core::LinAlg::Matrix<3, 3> MatrixExp1stDeriv[6];
-  Core::LinAlg::Matrix<3, 3> MatrixExp2ndDeriv[6][6];
-
-  // temporary matrices
-  Core::LinAlg::Matrix<3, 3> akm(true);
-  Core::LinAlg::Matrix<3, 3> ak(true);
-  Core::LinAlg::Matrix<3, 3> akmd[6];
-  Core::LinAlg::Matrix<3, 3> akd[6];
-  Core::LinAlg::Matrix<3, 3> akmdd[6][6];
-  Core::LinAlg::Matrix<3, 3> akdd[6][6];
-
-  // derivatives of A w.r.t. beta's
-  Core::LinAlg::Matrix<3, 3> da[6];
-  da[0](0, 0) = 1.;
-  da[1](1, 1) = 1.;
-  da[2](2, 2) = 1.;
-  da[3](0, 1) = da[3](1, 0) = 0.5;
-  da[4](1, 2) = da[4](2, 1) = 0.5;
-  da[5](0, 2) = da[5](2, 0) = 0.5;
-
-  // prepare
-  exp.clear();
-
-  // start with first entry
-  int k = 0;
-  int kmax = 200;
-  for (int i = 0; i < 3; i++) exp(i, i) = 1.;
-
-  // increment
-  ++k;
-  akm = exp;
-  ak.multiply(1. / (double)k, akm, MatrixIn);
-  akd[0](0, 0) = 1.;
-  akd[1](1, 1) = 1.;
-  akd[2](2, 2) = 1.;
-  akd[3](0, 1) = akd[3](1, 0) = 0.5;
-  akd[4](1, 2) = akd[4](2, 1) = 0.5;
-  akd[5](0, 2) = akd[5](2, 0) = 0.5;
-
-  do
-  {
-    // add summand
-    exp.update(1., ak, 1.);
-
-    // increment
-    ++k;
-    akm.update(ak);
-    ak.multiply(1. / (double)k, akm, MatrixIn);
-
-    // 1st derivatives
-    for (int i = 0; i < 6; i++)
-    {
-      MatrixExp1stDeriv[i].update(1., akd[i], 1.);
-      // increment
-      akmd[i].update(akd[i]);
-      akd[i].multiply(1. / (double)k, akm, da[i]);
-      akd[i].multiply(1. / (double)k, akmd[i], MatrixIn, 1.);
-    }
-
-    // 2nd derivatives
-    for (int i = 0; i < 6; i++)
-      for (int j = i; j < 6; j++) MatrixExp2ndDeriv[i][j].update(1., akdd[i][j], 1.);
-
-    for (int i = 0; i < 6; i++)
-      for (int j = i; j < 6; j++)
-      {
-        // increment
-        akmdd[i][j] = akdd[i][j];
-        akdd[i][j].multiply(1. / ((double)k), akmd[i], da[j]);
-        akdd[i][j].multiply(1. / ((double)k), akmd[j], da[i], 1.);
-        akdd[i][j].multiply(1. / ((double)k), akmdd[i][j], MatrixIn, 1.);
-      }
-
-  } while (k < kmax && ak.norm2() > 1.e-16);
-
-  if (k == kmax)
-  {
-    std::cout << "matrixIn: " << MatrixIn;
-    FOUR_C_THROW("Matrix exponential unconverged with %i summands", k);
-  }
-
-  // Zusatz: 1. Map MatExpFirstDer from [6](3,3) to (6,6)
-  for (int i = 0; i < 6; i++)
-    for (int j = 0; j < 3; j++)
-      for (int k = j; k < 3; k++)
-        dexp_mat(i, vmap::non_symmetric_tensor_to_voigt9_index(j, k)) += MatrixExp1stDeriv[i](j, k);
-
-
-  // 2. Map MatExp2ndDeriv from [6][6]3x3 to [6]6x6
-  for (int I = 0; I < 6; I++)
-    for (int J = I; J < 6; J++)
-      for (int k = 0; k < 3; k++)
-        for (int l = k; l < 3; l++)
-        {
-          MatrixExp2ndDerivVoigt[I](J, vmap::non_symmetric_tensor_to_voigt9_index(k, l)) =
-              MatrixExp2ndDeriv[I][J](k, l);
-          MatrixExp2ndDerivVoigt[J](I, vmap::non_symmetric_tensor_to_voigt9_index(k, l)) =
-              MatrixExp2ndDeriv[I][J](k, l);
-        }
-
-  return;
-}
-
-
-/*---------------------------------------------------------------------------*
- | Calculate second derivative of matrix exponential via polar decomposition |
- | following Ortiz et.al. 2001                                   seitz 02/14 |
- *---------------------------------------------------------------------------*/
-void Mat::PlasticElastHyperVCU::matrix_exponential_second_derivative_sym3x3(
-    const Core::LinAlg::Matrix<3, 3> MatrixIn, Core::LinAlg::Matrix<3, 3>& exp,
-    std::vector<Core::LinAlg::Matrix<3, 3>>& MatrixExp1stDeriv,
-    std::vector<std::vector<Core::LinAlg::Matrix<3, 3>>>& MatrixExp2ndDeriv)
-{
-  // temporary matrices
-  const Core::LinAlg::Matrix<3, 3> zeros(true);
-  Core::LinAlg::Matrix<3, 3> akm(true);
-  Core::LinAlg::Matrix<3, 3> ak(true);
-  std::vector<Core::LinAlg::Matrix<3, 3>> akmd(5, zeros);
-  std::vector<Core::LinAlg::Matrix<3, 3>> akd(5, zeros);
-  std::vector<std::vector<Core::LinAlg::Matrix<3, 3>>> akmdd;
-  std::vector<std::vector<Core::LinAlg::Matrix<3, 3>>> akdd;
-
-  // derivatives of A w.r.t. beta's
-  std::vector<Core::LinAlg::Matrix<3, 3>> da(5, ak);
-  da[0](0, 0) = 1.;
-  da[0](2, 2) = -1.;
-  da[1](1, 1) = 1.;
-  da[1](2, 2) = -1.;
-  da[2](0, 1) = 1.;
-  da[2](1, 0) = 1.;
-  da[3](1, 2) = 1.;
-  da[3](2, 1) = 1.;
-  da[4](0, 2) = 1.;
-  da[4](2, 0) = 1.;
-
-  // prepare
-  exp.clear();
-  MatrixExp1stDeriv.resize(5, zeros);
-  MatrixExp2ndDeriv.resize(5);
-  akmdd.resize(5);
-  akdd.resize(5);
-  for (int i = 0; i < 5; i++)
-  {
-    MatrixExp2ndDeriv[i].resize(5, zeros);
-    akmdd[i].resize(5, zeros);
-    akdd[i].resize(5, zeros);
-  }
-
-  // start with first entry
-  int k = 0;
-  int kmax = 200;
-  for (int i = 0; i < 3; i++) exp(i, i) = 1.;
-
-  // increment
-  ++k;
-  akm = exp;
-  ak.multiply(1. / (double)k, akm, MatrixIn);
-  akd = da;
-
-  do
-  {
-    // add summand
-    exp.update(1., ak, 1.);
-
-    // increment
-    ++k;
-    akm.update(ak);
-    ak.multiply(1. / (double)k, akm, MatrixIn);
-
-    // 1st derivatives
-    for (int i = 0; i < 5; i++)
-    {
-      MatrixExp1stDeriv[i].update(1., akd[i], 1.);
-      // increment
-      akmd[i].update(akd[i]);
-      akd[i].multiply(1. / (double)k, akm, da[i]);
-      akd[i].multiply(1. / (double)k, akmd[i], MatrixIn, 1.);
-    }
-
-    // 2nd derivatives
-    for (int i = 0; i < 5; i++)
-      for (int j = 0; j < 5; j++) MatrixExp2ndDeriv[i][j].update(1., akdd[i][j], 1.);
-
-    for (int i = 0; i < 5; i++)
-      for (int j = 0; j < 5; j++)
-      {
-        // increment
-        akmdd[i][j] = akdd[i][j];
-        akdd[i][j].multiply(1. / ((double)k), akmd[i], da[j]);
-        akdd[i][j].multiply(1. / ((double)k), akmd[j], da[i], 1.);
-        akdd[i][j].multiply(1. / ((double)k), akmdd[i][j], MatrixIn, 1.);
-      }
-
-  } while (k < kmax && ak.norm2() > 1.e-16);
-
-  if (k == kmax)
-  {
-    std::cout << "matrixIn: " << MatrixIn;
-    FOUR_C_THROW("Matrix exponential unconverged with %i summands", k);
-  }
-  return;
-}
-
-
 void Mat::PlasticElastHyperVCU::evaluate_rhs(const int gp, const Core::LinAlg::Matrix<3, 3> dLp,
     const Core::LinAlg::Matrix<3, 3> defgrd, Core::LinAlg::Matrix<6, 1>& eeOut,
     Core::LinAlg::Matrix<5, 1>& rhs, Core::LinAlg::Matrix<5, 1>& rhsElast,
@@ -859,16 +649,12 @@ void Mat::PlasticElastHyperVCU::evaluate_rhs(const int gp, const Core::LinAlg::M
   // Get exp, Dexp and DDexp
   Core::LinAlg::Matrix<3, 3> dLpIn(dLp);
   dLpIn.scale(-1.);
-  Core::LinAlg::Matrix<3, 3> expOut(dLpIn);
-  matrix_exponential3x3(expOut);
-  Core::LinAlg::Matrix<6, 6> dexpOut_mat;
-  matrix_exponential_derivative_sym3x3(dLpIn, dexpOut_mat);
+  Core::LinAlg::Matrix<3, 3> expOut = Core::LinAlg::matrix_exp(dLpIn);
+  Core::LinAlg::Matrix<6, 6> dexpOut_mat = Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(dLpIn);
 
   Core::LinAlg::Matrix<3, 3> fpi_incr(dLp);
   fpi_incr.scale(-1.);
-  Core::LinAlg::Matrix<6, 6> derivExpMinusLP;
-  matrix_exponential_derivative_sym3x3(fpi_incr, derivExpMinusLP);
-  matrix_exponential3x3(fpi_incr);
+  Core::LinAlg::Matrix<6, 6> derivExpMinusLP = Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(fpi_incr);
 
   Core::LinAlg::Matrix<3, 3> fetrial;
   fetrial.multiply(defgrd, last_plastic_defgrd_inverse_[gp]);
@@ -1111,7 +897,7 @@ void Mat::PlasticElastHyperVCU::ce2nd_deriv(const Core::LinAlg::Matrix<3, 3>* de
   Core::LinAlg::Matrix<3, 3> exp_dLp;
   Core::LinAlg::Matrix<6, 6> Dexp_dLp_mat;
   Core::LinAlg::Matrix<6, 6> D2exp_VOIGT[6];
-  matrix_exponential_second_derivative_sym3x3x6(minus_dLp, exp_dLp, Dexp_dLp_mat, D2exp_VOIGT);
+  Core::LinAlg::sym_matrix_3x3_exp_2nd_deriv_voigt(minus_dLp, exp_dLp, Dexp_dLp_mat, D2exp_VOIGT);
 
   Core::LinAlg::Matrix<3, 3> exp_dLp_cetrial;
   exp_dLp_cetrial.multiply(exp_dLp, cetrial);

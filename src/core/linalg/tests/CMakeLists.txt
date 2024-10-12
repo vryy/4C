@@ -11,6 +11,7 @@ set(SOURCE_LIST
     # cmake-format: sortable
     4C_linalg_utils_densematrix_determinant_test.cpp
     4C_linalg_utils_densematrix_eigen_test.cpp
+    4C_linalg_utils_densematrix_exp_log_test.cpp
     4C_linalg_utils_densematrix_inverse_test.cpp
     4C_linalg_utils_densematrix_svd_test.cpp
     4C_linalg_utils_fixedsizematrix_test.cpp

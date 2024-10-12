@@ -46,6 +46,31 @@ namespace
     }
   }
 
+  template <unsigned int size, size_t length>
+  void assert_eigen_values(
+      const Core::LinAlg::Matrix<size, size, std::complex<double>>& eigenvalues,
+      const std::array<std::complex<double>, length>& eig_compare)
+  {
+    for (unsigned i = 0; i < size; ++i)
+    {
+      for (unsigned j = 0; j < size; ++j)
+      {
+        if (i == j)
+        {
+          EXPECT_NEAR(eigenvalues(i, j).real(), eig_compare[i].real(), 1e-9)
+              << " (real part) for i=" << i << ", j=" << j;
+          EXPECT_NEAR(eigenvalues(i, j).imag(), eig_compare[i].imag(), 1e-9)
+              << " (imaginary part) for i=" << i << ", j=" << j;
+        }
+        else
+        {
+          EXPECT_NEAR(eigenvalues(i, j).real(), 0.0, 1e-9) << "for i=" << i << ", j=" << j;
+          EXPECT_NEAR(eigenvalues(i, j).imag(), 0.0, 1e-9) << "for i=" << i << ", j=" << j;
+        }
+      }
+    }
+  }
+
   template <size_t length>
   void assert_eigen_problem(const Core::LinAlg::SerialDenseMatrix& A,
       const Core::LinAlg::SerialDenseVector& eigenvalues,
@@ -90,6 +115,32 @@ namespace
     FOUR_C_EXPECT_NEAR(A, A_result, 1e-9);
   }
 
+  template <unsigned int size, size_t length>
+  void assert_eigen_problem(const Core::LinAlg::Matrix<size, size>& A,
+      const Core::LinAlg::Matrix<size, size, std::complex<double>>& eigenvalues,
+      const Core::LinAlg::Matrix<size, size, std::complex<double>>& eigenvectors,
+      const std::array<std::complex<double>, length>& eig_compare)
+  {
+    assert_eigen_values(eigenvalues, eig_compare);
+
+    Core::LinAlg::Matrix<size, size> A_result(true);
+    Core::LinAlg::Matrix<size, size, std::complex<double>> inv_eigenvectors(true);
+    Core::LinAlg::Matrix<size, size, std::complex<double>> temp(eigenvectors);
+    inv_eigenvectors.invert(temp);
+    Core::LinAlg::Matrix<size, size, std::complex<double>> output_complex(true);
+    temp.multiply_nn(eigenvectors, eigenvalues);
+    output_complex.multiply_nn(temp, inv_eigenvectors);
+    // restore complex to real form (guaranteed for a real input matrix)
+    for (unsigned int i = 0; i < size; ++i)
+    {
+      for (unsigned int j = 0; j < size; ++j)
+      {
+        A_result(i, j) = output_complex(i, j).real();
+      }
+    }
+
+    FOUR_C_EXPECT_NEAR(A, A_result, 1e-9);
+  }
 
   /*
    * \note The values for the matrix used in tests below are generated with python/numpy
@@ -173,6 +224,23 @@ namespace
     Core::LinAlg::Matrix<2, 2> V(false);
     Core::LinAlg::Matrix<2, 2> S(false);
     Core::LinAlg::syev(A, S, V);
+
+    assert_eigen_problem(A, S, V, eigenvalues);
+  }
+
+  TEST(LinalgDenseMatrixEigenTest, 2x2GEEV)
+  {
+    Core::LinAlg::Matrix<2, 2> A(false);
+    A(0, 0) = 0.9964456203546112;
+    A(0, 1) = -0.490484665405466;
+    A(1, 0) = 0.2345123987123478;
+    A(1, 1) = 0.5611378979071144;
+
+    std::array eigenvalues{std::complex<double>(0.77879176, 0.260099081),
+        std::complex<double>(0.77879176, -0.260099081)};
+    Core::LinAlg::Matrix<2, 2, std::complex<double>> V(false);
+    Core::LinAlg::Matrix<2, 2, std::complex<double>> S(false);
+    Core::LinAlg::geev(A, S, V);
 
     assert_eigen_problem(A, S, V, eigenvalues);
   }
@@ -284,6 +352,30 @@ namespace
 
     assert_eigen_problem(A, S, V, eigenvalues);
   }
+
+  TEST(LinalgDenseMatrixEigenTest, 3x3GEEV)
+  {
+    Core::LinAlg::Matrix<3, 3> A(false);
+    A(0, 0) = 0.9876543212345678;
+    A(0, 1) = 1.2345678901234567;
+    A(0, 2) = 2.3456789012345678;
+    A(1, 0) = -1.2345678901234567;
+    A(1, 1) = 0.8765432109876543;
+    A(1, 2) = 3.4567890123456789;
+    A(2, 0) = 1.6789012345678901;
+    A(2, 1) = 3.4567890123456789;
+    A(2, 2) = 2.3456789012345678;
+
+    std::array eigenvalues{std::complex<double>(-2.262778181431353, 0.0),
+        std::complex<double>(1.010906471515987, 0.0), std::complex<double>(5.461748143372156, 0.0)};
+
+    Core::LinAlg::Matrix<3, 3, std::complex<double>> V(false);
+    Core::LinAlg::Matrix<3, 3, std::complex<double>> S(false);
+    Core::LinAlg::geev(A, S, V);
+
+    assert_eigen_problem(A, S, V, eigenvalues);
+  }
+
 
   TEST(LinalgDenseMatrixEigenTest, 4x4SymmetricEigenValues)
   {
@@ -432,6 +524,7 @@ namespace
 
     assert_eigen_problem(A, S, V, eigenvalues);
   }
+
 }  // namespace
 
 FOUR_C_NAMESPACE_CLOSE
