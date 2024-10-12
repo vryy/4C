@@ -281,19 +281,6 @@ namespace XFEM
     Teuchos::RCP<Epetra_MultiVector> insert_vector(const Epetra_MultiVector& partial,
         enum FieldName field, enum MapType map_type = map_dofs) const;
 
-    /** \brief Put a partial vector into a full vector (Core::LinAlg::Vector<double>)
-     *
-     *  \param partial (in): vector to copy into full vector
-     *  \param field   (in): field name enumerator of the partial vector
-     *  \param full   (out): vector to copy into
-     *
-     *  \author hiermeier \date 10/16 */
-    void insert_vector(const Core::LinAlg::Vector<double>& partial, enum FieldName field,
-        Core::LinAlg::Vector<double>& full, enum MapType map_type = map_dofs) const
-    {
-      insert_vector(partial, field, full, map_type);
-    }
-
     /** \brief Put a partial vector into a full vector (Epetra_MultiVector)
      *
      *  \param partial (in): vector to copy into full vector

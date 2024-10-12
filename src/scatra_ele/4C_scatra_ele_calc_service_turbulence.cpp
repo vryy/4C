@@ -229,17 +229,17 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_
   Core::LinAlg::Matrix<1, nen_> edens_hat;
   Core::LinAlg::Matrix<1, nen_> edenstemp_hat;
   // extract required (node-based) filtered quantities
-  Core::FE::extract_my_node_based_values(ele, evel_hat, col_filtered_vel, nsd_);
-  Core::FE::extract_my_node_based_values(ele, edensvel_hat, col_filtered_dens_vel, nsd_);
-  Core::FE::extract_my_node_based_values(ele, edensveltemp_hat, col_filtered_dens_vel_temp, nsd_);
+  Core::FE::extract_my_node_based_values(ele, evel_hat, *col_filtered_vel, nsd_);
+  Core::FE::extract_my_node_based_values(ele, edensvel_hat, *col_filtered_dens_vel, nsd_);
+  Core::FE::extract_my_node_based_values(ele, edensveltemp_hat, *col_filtered_dens_vel_temp, nsd_);
   Core::FE::extract_my_node_based_values(
-      ele, edensstraintemp_hat, col_filtered_dens_rateofstrain_temp, nsd_);
+      ele, edensstraintemp_hat, *col_filtered_dens_rateofstrain_temp, nsd_);
   Core::FE::extract_my_node_based_values(
-      ele, etemp_hat, col_filtered_temp->get_ptr_of_Epetra_MultiVector(), 1);
+      ele, etemp_hat, *col_filtered_temp->get_ptr_of_Epetra_MultiVector(), 1);
   Core::FE::extract_my_node_based_values(
-      ele, edens_hat, col_filtered_dens->get_ptr_of_Epetra_MultiVector(), 1);
+      ele, edens_hat, *col_filtered_dens->get_ptr_of_Epetra_MultiVector(), 1);
   Core::FE::extract_my_node_based_values(
-      ele, edenstemp_hat, col_filtered_dens_temp->get_ptr_of_Epetra_MultiVector(), 1);
+      ele, edenstemp_hat, *col_filtered_dens_temp->get_ptr_of_Epetra_MultiVector(), 1);
 
   // get center coordinates of element
   xcenter = 0.0;
@@ -382,12 +382,12 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
   Core::LinAlg::Matrix<1, 1> phi2_hat(true);
   Core::LinAlg::Matrix<1, 1> phiexpression_hat(true);
 
-  Core::FE::extract_my_node_based_values(ele, ephi_hat, col_filtered_phi, nsd_);
+  Core::FE::extract_my_node_based_values(ele, ephi_hat, *col_filtered_phi, nsd_);
   Core::FE::extract_my_node_based_values(
-      ele, ephi2_hat, col_filtered_phi2->get_ptr_of_Epetra_MultiVector(), 1);
+      ele, ephi2_hat, *col_filtered_phi2->get_ptr_of_Epetra_MultiVector(), 1);
   Core::FE::extract_my_node_based_values(
-      ele, ephiexpression_hat, col_filtered_phiexpression->get_ptr_of_Epetra_MultiVector(), 1);
-  Core::FE::extract_my_node_based_values(ele, ealphaijsc_hat, col_filtered_alphaijsc, nsd_ * nsd_);
+      ele, ephiexpression_hat, *col_filtered_phiexpression->get_ptr_of_Epetra_MultiVector(), 1);
+  Core::FE::extract_my_node_based_values(ele, ealphaijsc_hat, *col_filtered_alphaijsc, nsd_ * nsd_);
   // use one-point Gauss rule to do calculations at the element center
   Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToStabGaussRule<distype>::rule);
   double volume = eval_shape_func_and_derivs_at_int_point(intpoints, 0);

@@ -452,13 +452,13 @@ namespace RTD
 
     for (auto &condition : condlist)
     {
-      write_single_condition_read_the_docs(stream, condition);
+      write_single_condition_read_the_docs(stream, *condition);
     }
   }
 
 
   void write_single_condition_read_the_docs(
-      std::ostream &stream, const Teuchos::RCP<Core::Conditions::ConditionDefinition> condition)
+      std::ostream &stream, Core::Conditions::ConditionDefinition &condition)
   {
     /* Each entry consists of a number of fields:
     - Part 1: link target and header
@@ -470,7 +470,7 @@ namespace RTD
       or the complex ConditionComponentBundleSelectors
     */
 
-    std::string sectionname = condition->section_name();
+    std::string sectionname = condition.section_name();
     const std::string sectionlinktarget =
         Teuchos::StrUtils::removeAllSpaces(Core::UTILS::to_lower(sectionname));
     //
@@ -488,7 +488,7 @@ namespace RTD
      * boundary condition description string
      */
     std::string descriptionline =
-        (condition->description() == "") ? "no description yet" : condition->description();
+        (condition.description() == "") ? "no description yet" : condition.description();
     write_paragraph(stream, descriptionline);
 
     /*------ PART 3 -------------------------
@@ -501,7 +501,7 @@ namespace RTD
         "--" + std::string(std::max<int>(65 - l, 0), '-') + sectionname};
     // second line: geometry type
     std::string name;
-    switch (condition->geometry_type())
+    switch (condition.geometry_type())
     {
       case Core::Conditions::geometry_type_point:
         conditioncode.push_back("DPOINT  0");
@@ -533,7 +533,7 @@ namespace RTD
     std::vector<std::string> condCompStrings;
     std::string condCompName("");
     parametertable.add_row(tablerow);
-    for (auto &condparameter : condition->inputline())
+    for (auto &condparameter : condition.inputline())
     {
       // newline after some 60 characters, but no newline after a separator condition
       if (isNewlinePossible)

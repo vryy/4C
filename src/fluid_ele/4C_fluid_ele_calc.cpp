@@ -363,12 +363,12 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Discret::ELEMENT
     // extract gradient projection for consistent residual
     const Teuchos::RCP<Epetra_MultiVector> velafgrad =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("velafgrad");
-    Core::FE::extract_my_node_based_values(ele, evelafgrad_, velafgrad, nsd_ * nsd_);
+    Core::FE::extract_my_node_based_values(ele, evelafgrad_, *velafgrad, nsd_ * nsd_);
     if (fldparatimint_->is_new_ost_implementation())
     {
       const Teuchos::RCP<Epetra_MultiVector> velngrad =
           params.get<Teuchos::RCP<Epetra_MultiVector>>("velngrad");
-      Core::FE::extract_my_node_based_values(ele, evelngrad_, velngrad, nsd_ * nsd_);
+      Core::FE::extract_my_node_based_values(ele, evelngrad_, *velngrad, nsd_ * nsd_);
     }
   }
 
@@ -7207,7 +7207,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
   {
     const Teuchos::RCP<Epetra_MultiVector> velafgrad =
         params.get<Teuchos::RCP<Epetra_MultiVector>>("velafgrad");
-    Core::FE::extract_my_node_based_values(ele, evelafgrad_, velafgrad, nsd_ * nsd_);
+    Core::FE::extract_my_node_based_values(ele, evelafgrad_, *velafgrad, nsd_ * nsd_);
   }
 
   // get additional state vectors for ALE case: grid displacement and vel.

@@ -65,8 +65,7 @@ namespace XFEM
 
       //! setup xfem discretization and embedded discretization
       void setup_xfem_discretization(const Teuchos::ParameterList& xgen_params,
-          Teuchos::RCP<Core::FE::Discretization> dis,
-          Teuchos::RCP<Core::FE::Discretization> embedded_dis,
+          Teuchos::RCP<Core::FE::Discretization> dis, Core::FE::Discretization& embedded_dis,
           const std::string& embedded_cond_name, int numdof = 4) const;
 
       /*! \brief Setup xfem discretization and embedded discretization

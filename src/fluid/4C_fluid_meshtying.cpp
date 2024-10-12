@@ -486,11 +486,10 @@ void FLD::Meshtying::evaluate_with_mesh_relocation(
 /*  Prepare Meshtying                    wirtz 02/16 */
 /*---------------------------------------------------*/
 void FLD::Meshtying::prepare_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp,
+    Core::LinAlg::Vector<double>& residual, Core::LinAlg::Vector<double>& velnp,
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& shapederivatives)
 {
-  prepare_meshtying_system(sysmat, *residual, *velnp);
+  prepare_meshtying_system(sysmat, residual, velnp);
   multifield_split(sysmat);
 
   if (shapederivatives != Teuchos::null)

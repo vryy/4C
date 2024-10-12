@@ -89,16 +89,14 @@ void CONSTRAINTS::SpringDashpotManager::output(Core::IO::DiscretizationWriter& o
   // row maps for export
   Teuchos::RCP<Core::LinAlg::Vector<double>> gap =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(actdisc_->node_row_map()), true);
-  Teuchos::RCP<Epetra_MultiVector> normals =
-      Teuchos::make_rcp<Epetra_MultiVector>(*(actdisc_->node_row_map()), 3, true);
-  Teuchos::RCP<Epetra_MultiVector> springstress =
-      Teuchos::make_rcp<Epetra_MultiVector>(*(actdisc_->node_row_map()), 3, true);
+  Epetra_MultiVector normals(*(actdisc_->node_row_map()), 3, true);
+  Epetra_MultiVector springstress(*(actdisc_->node_row_map()), 3, true);
 
   // collect outputs from all spring dashpot conditions
   bool found_cursurfnormal = false;
   for (int i = 0; i < n_conds_; ++i)
   {
-    springs_[i]->output_gap_normal(*gap, *normals, *springstress);
+    springs_[i]->output_gap_normal(*gap, normals, springstress);
 
     // get spring type from current condition
     const CONSTRAINTS::SpringDashpot::SpringType stype = springs_[i]->get_spring_type();
@@ -109,12 +107,12 @@ void CONSTRAINTS::SpringDashpotManager::output(Core::IO::DiscretizationWriter& o
   if (found_cursurfnormal)
   {
     output.write_vector("gap", gap);
-    output.write_multi_vector("curnormals", *normals);
+    output.write_multi_vector("curnormals", normals);
   }
 
   // write spring stress if defined in io-flag
   if (Global::Problem::instance()->io_params().get<bool>("OUTPUT_SPRING"))
-    output.write_multi_vector("springstress", *springstress);
+    output.write_multi_vector("springstress", springstress);
 
   return;
 }

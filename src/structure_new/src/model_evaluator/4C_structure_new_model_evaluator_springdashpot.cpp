@@ -315,16 +315,14 @@ void Solid::ModelEvaluator::SpringDashpot::output_step_state(
   // row maps for export
   Teuchos::RCP<Core::LinAlg::Vector<double>> gap =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret().node_row_map()), true);
-  Teuchos::RCP<Epetra_MultiVector> normals =
-      Teuchos::make_rcp<Epetra_MultiVector>(*(discret().node_row_map()), 3, true);
-  Teuchos::RCP<Epetra_MultiVector> springstress =
-      Teuchos::make_rcp<Epetra_MultiVector>(*(discret().node_row_map()), 3, true);
+  Epetra_MultiVector normals(*(discret().node_row_map()), 3, true);
+  Epetra_MultiVector springstress(*(discret().node_row_map()), 3, true);
 
   // collect outputs from all spring dashpot conditions
   bool found_cursurfnormal = false;
   for (const auto& spring : springs_)
   {
-    spring->output_gap_normal(*gap, *normals, *springstress);
+    spring->output_gap_normal(*gap, normals, springstress);
 
     // get spring type from current condition
     const CONSTRAINTS::SpringDashpot::SpringType stype = spring->get_spring_type();
@@ -335,12 +333,12 @@ void Solid::ModelEvaluator::SpringDashpot::output_step_state(
   if (found_cursurfnormal)
   {
     iowriter.write_vector("gap", gap);
-    iowriter.write_multi_vector("curnormals", *normals);
+    iowriter.write_multi_vector("curnormals", normals);
   }
 
   // write spring stress if defined in io-flag
   if (Global::Problem::instance()->io_params().get<bool>("OUTPUT_SPRING"))
-    iowriter.write_multi_vector("springstress", *springstress);
+    iowriter.write_multi_vector("springstress", springstress);
 }
 
 /*----------------------------------------------------------------------*

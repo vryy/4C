@@ -149,7 +149,7 @@ Solid::ModelEvaluator::PartitionedFSI::solve_relaxation_linear(
 
   // overwrite F with boundary force
   interface_force_np_ptr_->Scale(-(ti_impl->tim_int_param()));
-  ti_impl->dbc_ptr()->apply_dirichlet_to_rhs(interface_force_np_ptr_);
+  ti_impl->dbc_ptr()->apply_dirichlet_to_rhs(*interface_force_np_ptr_);
   Teuchos::RCP<::NOX::Epetra::Vector> nox_force =
       Teuchos::make_rcp<::NOX::Epetra::Vector>(interface_force_np_ptr_->get_ptr_of_Epetra_Vector());
   grp_ptr->set_f(nox_force);

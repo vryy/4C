@@ -56,8 +56,8 @@ namespace EXODUS
       const std::vector<EXODUS::ElemDef>& eledefs, const EXODUS::Mesh& mymesh, std::ostream& dat);
 
   //! Elements from eblock
-  void dat_eles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::ElemDef& acte,
-      int& startele, std::ostream& dat, const int eb_id);
+  void dat_eles(const EXODUS::ElementBlock& eb, const EXODUS::ElemDef& acte, int& startele,
+      std::ostream& dat, const int eb_id);
 
   inline std::string cond_geom_type_to_string(const EXODUS::CondDef& def)
   {

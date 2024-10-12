@@ -505,7 +505,7 @@ void Core::IO::Gmsh::vector_field_node_based_to_gmsh(const Core::FE::Discretizat
 
     // extract local values from the global vector
     Core::LinAlg::SerialDenseMatrix myvectorfield(nsd, numnode);
-    Core::FE::extract_my_node_based_values(ele, myvectorfield, vectorfield, nsd);
+    Core::FE::extract_my_node_based_values(ele, myvectorfield, *vectorfield, nsd);
 
     // write vector field to Gmsh stream
     vector_field_to_stream(myvectorfield, distype, s);
@@ -555,7 +555,7 @@ void Core::IO::Gmsh::scalar_field_node_based_to_gmsh(const Core::FE::Discretizat
     // extract local values from the global vector
     Core::LinAlg::SerialDenseVector myscalarfield(numnode);
     Core::FE::extract_my_node_based_values(
-        ele, myscalarfield, scalarfield.get_ptr_of_Epetra_MultiVector(), 1);
+        ele, myscalarfield, *scalarfield.get_ptr_of_Epetra_MultiVector(), 1);
 
     // write vector field to Gmsh stream
     scalar_field_to_stream(myscalarfield, distype, s);

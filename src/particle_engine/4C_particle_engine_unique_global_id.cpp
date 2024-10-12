@@ -48,14 +48,14 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::write_restart(
 
   // write reusable global ids
   {
-    Teuchos::RCP<std::vector<char>> buffer = Teuchos::make_rcp<std::vector<char>>();
+    std::vector<char> buffer;
 
     Core::Communication::PackBuffer data;
     add_to_pack(data, reusableglobalids_);
 
-    buffer->insert(buffer->end(), data().begin(), data().end());
+    buffer.insert(buffer.end(), data().begin(), data().end());
 
-    writer->write_char_data(objectname_ + "reusableglobalids", *buffer);
+    writer->write_char_data(objectname_ + "reusableglobalids", buffer);
   }
 }
 

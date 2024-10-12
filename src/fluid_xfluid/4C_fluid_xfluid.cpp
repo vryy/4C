@@ -321,7 +321,7 @@ void FLD::XFluid::setup_fluid_discretization()
         "fluid");  // fluid dis is here the embedded mesh (required for XFFSI)
     xfluiddis = Global::Problem::instance()->get_dis("xfluid");  // xfluid dis is here the cut mesh
     xdisbuilder.setup_xfem_discretization(
-        Global::Problem::instance()->xfem_general_params(), xfluiddis, fluiddis, "FluidMesh");
+        Global::Problem::instance()->xfem_general_params(), xfluiddis, *fluiddis, "FluidMesh");
   }
   else  // standard xfluid case
   {

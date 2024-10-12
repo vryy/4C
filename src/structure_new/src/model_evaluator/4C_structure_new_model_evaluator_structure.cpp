@@ -1066,7 +1066,7 @@ void Solid::ModelEvaluator::Structure::write_time_step_output_runtime_beams() co
 
   auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
       visualization_params_, global_state().get_time_n(), global_state().get_step_n());
-  write_output_runtime_beams(disn_col, output_step, output_time);
+  write_output_runtime_beams(*disn_col, output_step, output_time);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1084,14 +1084,13 @@ void Solid::ModelEvaluator::Structure::write_iteration_output_runtime_beams() co
   auto [output_time, output_step] =
       Core::IO::get_time_and_time_step_index_for_output(visualization_params_,
           global_state().get_time_n(), global_state().get_step_n(), eval_data().get_nln_iter());
-  write_output_runtime_beams(disnp_col, output_step, output_time);
+  write_output_runtime_beams(*disnp_col, output_step, output_time);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::write_output_runtime_beams(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& displacement_state_vector,
-    int timestep_number, double time) const
+    Core::LinAlg::Vector<double>& displacement_state_vector, int timestep_number, double time) const
 {
   check_init_setup();
 
@@ -1100,7 +1099,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_beams(
       *global_in_output().get_runtime_output_params()->get_beam_params();
 
   // set geometry
-  beam_vtu_writer_ptr_->set_geometry_from_beam_discretization(*displacement_state_vector);
+  beam_vtu_writer_ptr_->set_geometry_from_beam_discretization(displacement_state_vector);
 
   // append all desired output data to the writer object's storage
   beam_vtu_writer_ptr_->append_element_owning_processor();
@@ -1118,11 +1117,11 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_beams(
 
   // append displacement if desired
   if (beam_output_params.output_displacement_state())
-    beam_vtu_writer_ptr_->append_displacement_field(*displacement_state_vector);
+    beam_vtu_writer_ptr_->append_displacement_field(displacement_state_vector);
 
   // append triads if desired
   if (beam_output_params.is_write_triad_visualization_points())
-    beam_vtu_writer_ptr_->append_triad_field(*displacement_state_vector);
+    beam_vtu_writer_ptr_->append_triad_field(displacement_state_vector);
 
   // append material cross-section strain resultants if desired
   if (beam_output_params.is_write_material_strains_gauss_points())
@@ -1146,14 +1145,14 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_beams(
 
   // append filament id and type if desired
   if (beam_output_params.is_write_orientation_paramter())
-    beam_vtu_writer_ptr_->append_element_orientation_paramater(*displacement_state_vector);
+    beam_vtu_writer_ptr_->append_element_orientation_paramater(displacement_state_vector);
 
   // append reference length if desired.
   if (beam_output_params.is_write_ref_length()) beam_vtu_writer_ptr_->append_ref_length();
 
   // export displacement state to column format
   if (beam_output_params.is_write_rve_crosssection_forces())
-    beam_vtu_writer_ptr_->append_rve_crosssection_forces(*displacement_state_vector);
+    beam_vtu_writer_ptr_->append_rve_crosssection_forces(displacement_state_vector);
 
   // export beam element IDs
   if (beam_output_params.is_write_element_gid()) beam_vtu_writer_ptr_->append_element_gid();

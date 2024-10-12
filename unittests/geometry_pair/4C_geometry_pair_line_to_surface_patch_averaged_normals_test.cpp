@@ -46,7 +46,7 @@ namespace
     template <typename A>
     std::map<int, GEOMETRYPAIR::ConnectedFace>& get_connected_faces(A& face_element)
     {
-      return face_element->connected_faces_;
+      return face_element.connected_faces_;
     }
 
     /**
@@ -55,7 +55,7 @@ namespace
     template <typename A>
     unsigned int get_n_other_dof(A& face_element)
     {
-      return face_element->n_dof_other_element_;
+      return face_element.n_dof_other_element_;
     }
 
     //! Pointer to the discretization object that holds the geometry for the tests.
@@ -79,7 +79,7 @@ namespace
 
     // Fill the discretization object with the geometry.
     std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>> face_elements_map;
-    xtest_surface_patch_quad4<face_element_type>(discret_, face_elements_map);
+    xtest_surface_patch_quad4<face_element_type>(*discret_, face_elements_map);
 
     // Load the result vectors.
     std::vector<double> reference_normals, current_normals, position;
@@ -96,7 +96,7 @@ namespace
         face_elements_map[investigated_face_element_volume_id]);
 
     // Offset in the derivatives for the beam dof.
-    const unsigned int dof_offset = get_n_other_dof(face_element);
+    const unsigned int dof_offset = get_n_other_dof(*face_element);
 
     // Setup all face elements and get the patch information.
     for (auto& face_element_map_iterator : face_elements_map)
@@ -111,33 +111,33 @@ namespace
         EXPECT_EQ(face_element->get_patch_gid()[i], patch_dof_gid_reference[i]);
 
       // Check if the local node ID map of the connected faces to the main face could be found.
-      EXPECT_EQ(get_connected_faces(face_element).size(), 3);
+      EXPECT_EQ(get_connected_faces(*face_element).size(), 3);
 
-      EXPECT_EQ(get_connected_faces(face_element)[10].node_lid_map_.size(), 1);
-      EXPECT_EQ(get_connected_faces(face_element)[10].node_lid_map_[3], 1);
-      EXPECT_EQ(get_connected_faces(face_element)[10].my_node_patch_lid_.size(), 4);
-      EXPECT_EQ(get_connected_faces(face_element)[10].my_node_patch_lid_[0], 5);
-      EXPECT_EQ(get_connected_faces(face_element)[10].my_node_patch_lid_[1], 6);
-      EXPECT_EQ(get_connected_faces(face_element)[10].my_node_patch_lid_[2], 7);
-      EXPECT_EQ(get_connected_faces(face_element)[10].my_node_patch_lid_[3], 1);
+      EXPECT_EQ(get_connected_faces(*face_element)[10].node_lid_map_.size(), 1);
+      EXPECT_EQ(get_connected_faces(*face_element)[10].node_lid_map_[3], 1);
+      EXPECT_EQ(get_connected_faces(*face_element)[10].my_node_patch_lid_.size(), 4);
+      EXPECT_EQ(get_connected_faces(*face_element)[10].my_node_patch_lid_[0], 5);
+      EXPECT_EQ(get_connected_faces(*face_element)[10].my_node_patch_lid_[1], 6);
+      EXPECT_EQ(get_connected_faces(*face_element)[10].my_node_patch_lid_[2], 7);
+      EXPECT_EQ(get_connected_faces(*face_element)[10].my_node_patch_lid_[3], 1);
 
-      EXPECT_EQ(get_connected_faces(face_element)[11].node_lid_map_.size(), 2);
-      EXPECT_EQ(get_connected_faces(face_element)[11].node_lid_map_[0], 1);
-      EXPECT_EQ(get_connected_faces(face_element)[11].node_lid_map_[3], 2);
-      EXPECT_EQ(get_connected_faces(face_element)[11].my_node_patch_lid_.size(), 4);
-      EXPECT_EQ(get_connected_faces(face_element)[11].my_node_patch_lid_[0], 1);
-      EXPECT_EQ(get_connected_faces(face_element)[11].my_node_patch_lid_[1], 7);
-      EXPECT_EQ(get_connected_faces(face_element)[11].my_node_patch_lid_[2], 8);
-      EXPECT_EQ(get_connected_faces(face_element)[11].my_node_patch_lid_[3], 2);
+      EXPECT_EQ(get_connected_faces(*face_element)[11].node_lid_map_.size(), 2);
+      EXPECT_EQ(get_connected_faces(*face_element)[11].node_lid_map_[0], 1);
+      EXPECT_EQ(get_connected_faces(*face_element)[11].node_lid_map_[3], 2);
+      EXPECT_EQ(get_connected_faces(*face_element)[11].my_node_patch_lid_.size(), 4);
+      EXPECT_EQ(get_connected_faces(*face_element)[11].my_node_patch_lid_[0], 1);
+      EXPECT_EQ(get_connected_faces(*face_element)[11].my_node_patch_lid_[1], 7);
+      EXPECT_EQ(get_connected_faces(*face_element)[11].my_node_patch_lid_[2], 8);
+      EXPECT_EQ(get_connected_faces(*face_element)[11].my_node_patch_lid_[3], 2);
 
-      EXPECT_EQ(get_connected_faces(face_element)[13].node_lid_map_.size(), 2);
-      EXPECT_EQ(get_connected_faces(face_element)[13].node_lid_map_[2], 1);
-      EXPECT_EQ(get_connected_faces(face_element)[13].node_lid_map_[3], 0);
-      EXPECT_EQ(get_connected_faces(face_element)[13].my_node_patch_lid_.size(), 4);
-      EXPECT_EQ(get_connected_faces(face_element)[13].my_node_patch_lid_[0], 4);
-      EXPECT_EQ(get_connected_faces(face_element)[13].my_node_patch_lid_[1], 5);
-      EXPECT_EQ(get_connected_faces(face_element)[13].my_node_patch_lid_[2], 1);
-      EXPECT_EQ(get_connected_faces(face_element)[13].my_node_patch_lid_[3], 0);
+      EXPECT_EQ(get_connected_faces(*face_element)[13].node_lid_map_.size(), 2);
+      EXPECT_EQ(get_connected_faces(*face_element)[13].node_lid_map_[2], 1);
+      EXPECT_EQ(get_connected_faces(*face_element)[13].node_lid_map_[3], 0);
+      EXPECT_EQ(get_connected_faces(*face_element)[13].my_node_patch_lid_.size(), 4);
+      EXPECT_EQ(get_connected_faces(*face_element)[13].my_node_patch_lid_[0], 4);
+      EXPECT_EQ(get_connected_faces(*face_element)[13].my_node_patch_lid_[1], 5);
+      EXPECT_EQ(get_connected_faces(*face_element)[13].my_node_patch_lid_[2], 1);
+      EXPECT_EQ(get_connected_faces(*face_element)[13].my_node_patch_lid_[3], 0);
     }
 
     // Calculate the averaged reference normals on the face.
@@ -149,9 +149,9 @@ namespace
     }
 
     // Set the state in the face element, here also the FAD variables for each patch are set.
-    auto gid_map = Teuchos::make_rcp<Epetra_Map>(discret_->num_global_nodes() * 3,
-        discret_->num_global_nodes() * 3, 0, discret_->get_comm());
-    auto displacement_vector = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gid_map);
+    Epetra_Map gid_map(discret_->num_global_nodes() * 3, discret_->num_global_nodes() * 3, 0,
+        discret_->get_comm());
+    auto displacement_vector = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(gid_map);
     for (int i = 0; i < displacement_vector->GlobalLength(); i++)
       (*displacement_vector)[i] = i * 0.01;
     face_element->set_state(displacement_vector, face_elements_map);

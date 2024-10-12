@@ -433,8 +433,7 @@ namespace Solid
        *
        *  \date 10/17
        *  \author grill */
-      void write_output_runtime_beams(
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>& displacement_state_vector,
+      void write_output_runtime_beams(Core::LinAlg::Vector<double>& displacement_state_vector,
           int timestep_number, double time) const;
 
       /*! \brief Write the parameters from the Solid::ModelEvaluator::Data

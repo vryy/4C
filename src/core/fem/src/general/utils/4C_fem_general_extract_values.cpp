@@ -122,12 +122,10 @@ void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
-    Core::LinAlg::SerialDenseVector& local, const Teuchos::RCP<Epetra_MultiVector>& global,
-    const int nsd)
+    Core::LinAlg::SerialDenseVector& local, Epetra_MultiVector& global, const int nsd)
 {
-  if (global == Teuchos::null) FOUR_C_THROW("received a TEUCHOS::null pointer");
-  if (nsd > global->NumVectors())
-    FOUR_C_THROW("Requested %d of %d available columns", nsd, global->NumVectors());
+  if (nsd > global.NumVectors())
+    FOUR_C_THROW("Requested %d of %d available columns", nsd, global.NumVectors());
   const int iel = ele->num_node();  // number of nodes
   if (local.length() != (iel * nsd)) FOUR_C_THROW("vector size mismatch.");
 
@@ -135,15 +133,15 @@ void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
   for (int i = 0; i < nsd; i++)
   {
     // access actual component column of multi-vector
-    double* globalcolumn = (*global)[i];
+    double* globalcolumn = (global)[i];
     // loop over the element nodes
     for (int j = 0; j < iel; j++)
     {
       const int nodegid = (ele->nodes()[j])->id();
-      const int lid = global->Map().LID(nodegid);
+      const int lid = global.Map().LID(nodegid);
       if (lid < 0)
         FOUR_C_THROW(
-            "Proc %d: Cannot find gid=%d in Epetra_MultiVector", global->Comm().MyPID(), nodegid);
+            "Proc %d: Cannot find gid=%d in Epetra_MultiVector", global.Comm().MyPID(), nodegid);
       local(i + (nsd * j)) = globalcolumn[lid];
     }
   }
@@ -153,21 +151,19 @@ void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::extract_my_node_based_values(const Core::Nodes::Node* node,
-    Core::LinAlg::SerialDenseVector& local, const Teuchos::RCP<Epetra_MultiVector>& global,
-    const int nsd)
+    Core::LinAlg::SerialDenseVector& local, Epetra_MultiVector& global, const int nsd)
 {
-  if (global == Teuchos::null) FOUR_C_THROW("received a TEUCHOS::null pointer");
-  if (nsd > global->NumVectors())
-    FOUR_C_THROW("Requested %d of %d available columns", nsd, global->NumVectors());
+  if (nsd > global.NumVectors())
+    FOUR_C_THROW("Requested %d of %d available columns", nsd, global.NumVectors());
   if (local.length() != nsd) FOUR_C_THROW("vector size mismatch.");
 
   const int nodegid = node->id();
-  const int lid = global->Map().LID(nodegid);
+  const int lid = global.Map().LID(nodegid);
 
   for (int i = 0; i < nsd; i++)
   {
     // access actual component column of multi-vector
-    double* globalcolumn = (*global)[i];
+    double* globalcolumn = (global)[i];
 
     local(i + nsd) = globalcolumn[lid];
   }

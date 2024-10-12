@@ -1681,23 +1681,22 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
     const Epetra_Map* noderowmap = discret_->node_row_map();
     for (int k = 0; k < numdof; k++)
     {
-      Teuchos::RCP<Epetra_MultiVector> flux_k =
-          Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, 3, true);
+      Epetra_MultiVector flux_k(*noderowmap, 3, true);
 
       std::ostringstream temp;
       temp << k + 1;
       std::string name = "flux_" + temp.str();
-      for (int i = 0; i < flux_k->MyLength(); ++i)
+      for (int i = 0; i < flux_k.MyLength(); ++i)
       {
         // get value for each component of flux vector
         for (int idim = 0; idim < dim; idim++)
         {
           double value = ((*flux_)[k * dim + idim])[i];
-          int err = flux_k->ReplaceMyValue(i, idim, value);
+          int err = flux_k.ReplaceMyValue(i, idim, value);
           if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
         }
       }
-      output_->write_multi_vector(name, *flux_k, Core::IO::nodevector);
+      output_->write_multi_vector(name, flux_k, Core::IO::nodevector);
     }
   }
 
@@ -1710,21 +1709,20 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
 
     for (int k = 0; k < num_poro_dof; k++)
     {
-      Teuchos::RCP<Epetra_MultiVector> velocity_k =
-          Teuchos::make_rcp<Epetra_MultiVector>(*element_row_map, num_dim, true);
+      Epetra_MultiVector velocity_k(*element_row_map, num_dim, true);
 
-      for (int i = 0; i < velocity_k->MyLength(); ++i)
+      for (int i = 0; i < velocity_k.MyLength(); ++i)
       {
         for (int idim = 0; idim < num_dim; idim++)
         {
           double value = ((*phase_velocities_)[k * num_dim + idim])[i];
-          int err = velocity_k->ReplaceMyValue(i, idim, value);
+          int err = velocity_k.ReplaceMyValue(i, idim, value);
           if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
         }
       }
 
       std::string output_name = "velocity_" + std::to_string(k + 1);
-      output_->write_multi_vector(output_name, *velocity_k, Core::IO::elementvector);
+      output_->write_multi_vector(output_name, velocity_k, Core::IO::elementvector);
     }
   }
 

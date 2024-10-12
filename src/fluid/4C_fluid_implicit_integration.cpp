@@ -972,7 +972,7 @@ void FLD::FluidImplicitTimeInt::prepare_solve()
 
   // prepare meshtying system
   if (msht_ != Inpar::FLUID::no_meshtying)
-    meshtying_->prepare_meshtying(sysmat_, residual_, velnp_, shapederivatives_);
+    meshtying_->prepare_meshtying(sysmat_, *residual_, *velnp_, shapederivatives_);
 
   // update local coordinate systems for ALE fluid case
   // (which may be time and displacement dependent)

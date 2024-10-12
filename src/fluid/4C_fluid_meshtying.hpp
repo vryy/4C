@@ -114,11 +114,9 @@ namespace FLD
 
     //! Prepare matrix, shapederivatives and residual for meshtying
     void prepare_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>&
-                               sysmat,  ///> sysmat established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
-            residual,  ///> residual established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
-            velnp,  ///> current ALE displacement vector
+                               sysmat,           ///> sysmat established by the element routine
+        Core::LinAlg::Vector<double>& residual,  ///> residual established by the element routine
+        Core::LinAlg::Vector<double>& velnp,     ///> current ALE displacement vector
         Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>&
             shapederivatives);  ///> shapederivatives established by the element routine
 

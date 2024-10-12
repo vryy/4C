@@ -216,10 +216,9 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
     const Teuchos::ParameterList& xgen_params, Teuchos::RCP<Core::FE::Discretization> dis,
-    Teuchos::RCP<Core::FE::Discretization> embedded_dis, const std::string& embedded_cond_name,
-    int numdof) const
+    Core::FE::Discretization& embedded_dis, const std::string& embedded_cond_name, int numdof) const
 {
-  if (!embedded_dis->filled()) embedded_dis->fill_complete();
+  if (!embedded_dis.filled()) embedded_dis.fill_complete();
 
   Teuchos::RCP<XFEM::DiscretizationXFEM> xdis =
       Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(dis, true);
@@ -232,12 +231,12 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
   std::vector<std::string> conditions_to_copy;
   xdis->get_condition_names(conditions_to_copy);
 
-  split_discretization_by_condition(*xdis, *embedded_dis, conditions, conditions_to_copy);
+  split_discretization_by_condition(*xdis, embedded_dis, conditions, conditions_to_copy);
 
   setup_xfem_discretization(xgen_params, xdis, numdof);
 
   Core::Rebalance::UTILS::print_parallel_distribution(*dis);
-  Core::Rebalance::UTILS::print_parallel_distribution(*embedded_dis);
+  Core::Rebalance::UTILS::print_parallel_distribution(embedded_dis);
 
   return;
 }

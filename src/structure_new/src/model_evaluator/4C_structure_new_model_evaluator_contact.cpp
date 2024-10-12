@@ -841,7 +841,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Contact::assem
   Teuchos::RCP<Core::LinAlg::Vector<double>> force =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(force_nox->getEpetraVector());
 
-  if (apply_dbc) tim_int().get_dbc().apply_dirichlet_to_rhs(force);
+  if (apply_dbc) tim_int().get_dbc().apply_dirichlet_to_rhs(*force);
 
   return force;
 }

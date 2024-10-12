@@ -31,7 +31,7 @@ namespace
    * \brief Fill a discretization with the geometry for the unit test.
    */
   template <typename FaceElementType>
-  void xtest_surface_patch_quad4(const Teuchos::RCP<Core::FE::Discretization>& discret,
+  void xtest_surface_patch_quad4(Core::FE::Discretization& discret,
       std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements_map)
   {
     using namespace FourC;
@@ -97,7 +97,7 @@ namespace
           coordinates[i_dim] = points[i_node + n_nodes_problem * i_dim];
 
         new_node = Teuchos::make_rcp<Core::Nodes::Node>(i_node, coordinates, 0);
-        discret->add_node(new_node);
+        discret.add_node(new_node);
       }
     }
 
@@ -111,9 +111,9 @@ namespace
           node_ids[i_node] = connectivity_volumes[i_node + n_nodes_volume * i_el] - 1;
         new_element = Teuchos::RCP<Core::Elements::Element>(new Discret::ELEMENTS::SoHex8(i_el, 0));
         new_element->set_node_ids(n_nodes_volume, node_ids.data());
-        discret->add_element(new_element);
+        discret.add_element(new_element);
       }
-      discret->fill_complete(true, true, false);
+      discret.fill_complete(true, true, false);
     }
 
     // Create the face elements.
@@ -127,7 +127,7 @@ namespace
         {
           node_index = connectivity_faces[i_node + n_nodes_face * i_el] - 1;
           node_ids[i_node] = node_index;
-          element_nodes[i_node] = discret->g_node(node_index);
+          element_nodes[i_node] = discret.g_node(node_index);
         }
 
         // Find the volume element for this face element.
@@ -137,7 +137,7 @@ namespace
           int n_common_nodes = 0;
           for (unsigned int i_node_volume = 0; i_node_volume < n_nodes_volume; i_node_volume++)
           {
-            int volume_node_id = discret->g_element(i_el_volume)->node_ids()[i_node_volume];
+            int volume_node_id = discret.g_element(i_el_volume)->node_ids()[i_node_volume];
             if (std::find(node_ids.begin(), node_ids.end(), volume_node_id) != node_ids.end())
               n_common_nodes += 1;
           }
@@ -150,7 +150,7 @@ namespace
 
         // Create the Core::Elements::FaceElement.
         auto face_element = Teuchos::make_rcp<Discret::ELEMENTS::StructuralSurface>(i_el, 0,
-            n_nodes_face, node_ids.data(), element_nodes.data(), discret->g_element(parent_id), 0);
+            n_nodes_face, node_ids.data(), element_nodes.data(), discret.g_element(parent_id), 0);
 
         // Create the geometry pair face element.
         face_elements_map[parent_id] = Teuchos::make_rcp<FaceElementType>(face_element, true);

@@ -222,7 +222,7 @@ namespace RTD
    *  @param[in] condition Single prescribed condition to be written to that file
    */
   void write_single_condition_read_the_docs(
-      std::ostream& stream, const Teuchos::RCP<Core::Conditions::ConditionDefinition> condition);
+      std::ostream& stream, Core::Conditions::ConditionDefinition& condition);
 
   /*!
    *  write a single contact law including explanations (if available) to a .rst file for
