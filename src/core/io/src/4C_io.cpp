@@ -824,17 +824,17 @@ void Core::IO::DiscretizationWriter::write_int(const std::string name, const int
 void Core::IO::DiscretizationWriter::write_vector(
     const std::string name, Teuchos::RCP<const Core::LinAlg::Vector<double>> vec, IO::VectorType vt)
 {
-  write_multi_vector(name, vec->get_ptr_of_const_Epetra_Vector(), vt);
+  write_multi_vector(name, *vec, vt);
 }
 
 void Core::IO::DiscretizationWriter::write_multi_vector(
-    const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec, IO::VectorType vt)
+    const std::string name, const Epetra_MultiVector& vec, IO::VectorType vt)
 {
   if (binio_)
   {
     std::string valuename = name + ".values";
-    double* data = vec->Values();
-    const hsize_t size = vec->MyLength() * vec->NumVectors();
+    double* data = vec.Values();
+    const hsize_t size = vec.MyLength() * vec.NumVectors();
     if (size != 0)
     {
       const herr_t make_status =
@@ -864,7 +864,7 @@ void Core::IO::DiscretizationWriter::write_multi_vector(
 
     valuename = groupname.str() + valuename;
 
-    const Epetra_BlockMapData* mapdata = vec->Map().DataPtr();
+    const Epetra_BlockMapData* mapdata = vec.Map().DataPtr();
     std::map<const Epetra_BlockMapData*, std::string>::const_iterator m = mapcache_.find(mapdata);
     if (m != mapcache_.end())
     {
@@ -873,9 +873,9 @@ void Core::IO::DiscretizationWriter::write_multi_vector(
     }
     else
     {
-      const hsize_t mapsize = vec->MyLength();
+      const hsize_t mapsize = vec.MyLength();
       idname = name + ".ids";
-      int* ids = vec->Map().MyGlobalElements();
+      int* ids = vec.Map().MyGlobalElements();
       if (size != 0)
       {
         const herr_t make_status =
@@ -897,7 +897,7 @@ void Core::IO::DiscretizationWriter::write_multi_vector(
       /* Make a copy of the map. This is a Teuchos::RCP copy internally. We
        * just make sure here the map stays alive as long as we keep our cache.
        * Otherwise subtle errors could occur. */
-      mapstack_.push_back(vec->Map());
+      mapstack_.push_back(vec.Map());
       /* BUT: If a problem relies on fill_complete()-calls in every time step,
        * new maps are created in every time step. Storing all old maps in
        * mapstack_ leads to an unbounded increase in memory consumption which
@@ -933,7 +933,7 @@ void Core::IO::DiscretizationWriter::write_multi_vector(
       }
       output_->control_file() << "    " << name << ":\n"
                               << "        type = \"" << vectortype << "\"\n"
-                              << "        columns = " << vec->NumVectors() << "\n"
+                              << "        columns = " << vec.NumVectors() << "\n"
                               << "        values = \"" << valuename.c_str() << "\"\n"
                               << "        ids = \"" << idname.c_str()
                               << "\"\n\n"  // different names + other informations?
@@ -1352,7 +1352,7 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
         ele_counter++;
       }
 
-      write_multi_vector(name, Teuchos::rcpFromRef(sysdata), elementvector);
+      write_multi_vector(name, *Teuchos::rcpFromRef(sysdata), elementvector);
     }
   }
 }
@@ -1414,7 +1414,7 @@ void Core::IO::DiscretizationWriter::write_node_data(bool writeowner)
         for (int j = 0; j < dimension; ++j) (*sysdata(j))[i] = nodedata[j];
       }
 
-      write_multi_vector(fool->first, Teuchos::rcpFromRef(sysdata), Core::IO::nodevector);
+      write_multi_vector(fool->first, *Teuchos::rcpFromRef(sysdata), Core::IO::nodevector);
 
     }  // for (fool = names.begin(); fool!= names.end(); ++fool)
   }
@@ -1462,25 +1462,25 @@ void Core::IO::DiscretizationWriter::write_knotvector() const
 /* write a stl vector of chars                                          */
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationWriter::write_char_data(
-    const std::string name, Teuchos::RCP<std::vector<char>> charvec)
+    const std::string name, std::vector<char>& charvec)
 {
   if (binio_)
   {
     // only proc0 writes the vector entities to the binary data
     // an appropriate name has to be provided
     std::string valuename = name + ".values";
-    const hsize_t size = charvec->size();
+    const hsize_t size = charvec.size();
     if (size != 0)
     {
       const herr_t make_status =
-          H5LTmake_dataset_char(resultgroup_, valuename.c_str(), 1, &size, charvec->data());
+          H5LTmake_dataset_char(resultgroup_, valuename.c_str(), 1, &size, charvec.data());
       if (make_status < 0)
         FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
     }
     else
     {
       const herr_t make_status =
-          H5LTmake_dataset_char(resultgroup_, valuename.c_str(), 0, &size, charvec->data());
+          H5LTmake_dataset_char(resultgroup_, valuename.c_str(), 0, &size, charvec.data());
       if (make_status < 0)
         FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
     }
@@ -1510,7 +1510,7 @@ void Core::IO::DiscretizationWriter::write_char_data(
 /* write a stl vector of doubles from proc0                             */
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationWriter::write_redundant_double_vector(
-    const std::string name, Teuchos::RCP<std::vector<double>> doublevec)
+    const std::string name, std::vector<double>& doublevec)
 {
   if (binio_)
   {
@@ -1519,18 +1519,18 @@ void Core::IO::DiscretizationWriter::write_redundant_double_vector(
       // only proc0 writes the vector entities to the binary data
       // an appropriate name has to be provided
       std::string valuename = name + ".values";
-      const hsize_t size = doublevec->size();
+      const hsize_t size = doublevec.size();
       if (size != 0)
       {
         const herr_t make_status =
-            H5LTmake_dataset_double(resultgroup_, valuename.c_str(), 1, &size, doublevec->data());
+            H5LTmake_dataset_double(resultgroup_, valuename.c_str(), 1, &size, doublevec.data());
         if (make_status < 0)
           FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }
       else
       {
         const herr_t make_status =
-            H5LTmake_dataset_double(resultgroup_, valuename.c_str(), 0, &size, doublevec->data());
+            H5LTmake_dataset_double(resultgroup_, valuename.c_str(), 0, &size, doublevec.data());
         if (make_status < 0)
           FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }
@@ -1557,7 +1557,7 @@ void Core::IO::DiscretizationWriter::write_redundant_double_vector(
 /* write a stl set of integers from proc0                             */
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationWriter::write_redundant_int_vector(
-    const std::string name, Teuchos::RCP<std::vector<int>> vectorint)
+    const std::string name, std::vector<int>& vectorint)
 {
   if (binio_)
   {
@@ -1566,18 +1566,18 @@ void Core::IO::DiscretizationWriter::write_redundant_int_vector(
       // only proc0 writes the entities to the binary data
       // an appropriate name has to be provided
       std::string valuename = name + ".values";
-      const hsize_t size = vectorint->size();
+      const hsize_t size = vectorint.size();
       if (size != 0)
       {
         const herr_t make_status =
-            H5LTmake_dataset_int(resultgroup_, valuename.c_str(), 1, &size, vectorint->data());
+            H5LTmake_dataset_int(resultgroup_, valuename.c_str(), 1, &size, vectorint.data());
         if (make_status < 0)
           FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }
       else
       {
         const herr_t make_status =
-            H5LTmake_dataset_int(resultgroup_, valuename.c_str(), 0, &size, vectorint->data());
+            H5LTmake_dataset_int(resultgroup_, valuename.c_str(), 0, &size, vectorint.data());
         if (make_status < 0)
           FOUR_C_THROW("Failed to create dataset in HDF-resultfile. status=%d", make_status);
       }

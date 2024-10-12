@@ -289,8 +289,8 @@ namespace Core::IO
     void write_vector(const std::string name, Teuchos::RCP<const Core::LinAlg::Vector<double>> vec,
         VectorType vt = dofvector);
 
-    void write_multi_vector(const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec,
-        VectorType vt = dofvector);
+    void write_multi_vector(
+        const std::string name, const Epetra_MultiVector& vec, VectorType vt = dofvector);
 
 
 
@@ -336,7 +336,7 @@ namespace Core::IO
     void write_node_data(bool writeowner);
 
     //! write a non discretisation based vector of chars
-    void write_char_data(const std::string name, Teuchos::RCP<std::vector<char>> charvec);
+    void write_char_data(const std::string name, std::vector<char>& charvec);
 
     //! write a non discretisation based vector of doubles
     /*!
@@ -344,8 +344,7 @@ namespace Core::IO
       which is present on all procs. It shall be read from proc0 again and then
       communicated to all present procs.
      */
-    void write_redundant_double_vector(
-        const std::string name, Teuchos::RCP<std::vector<double>> doublevec);
+    void write_redundant_double_vector(const std::string name, std::vector<double>& doublevec);
 
     //! write a non discretisation based vector of integers
     /*!
@@ -353,8 +352,7 @@ namespace Core::IO
       which is present on all procs. It shall be read from proc0 again and then
       communicated to all present procs.
      */
-    void write_redundant_int_vector(
-        const std::string name, Teuchos::RCP<std::vector<int>> vectorint);
+    void write_redundant_int_vector(const std::string name, std::vector<int>& vectorint);
 
     /// overwrite result files
     void overwrite_result_file();

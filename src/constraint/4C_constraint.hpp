@@ -153,11 +153,10 @@ namespace CONSTRAINTS
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
         Teuchos::RCP<Core::LinAlg::Vector<double>>
-            systemvector1,  ///< distributed vector that may be filled by
-                            ///< aasembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            systemvector2,  ///< distributed vector that may be filled by
-                            ///< aasembly of element contributions
+            systemvector1,                            ///< distributed vector that may be filled by
+                                                      ///< aasembly of element contributions
+        Core::LinAlg::Vector<double>& systemvector2,  ///< distributed vector that may be filled by
+                                                      ///< aasembly of element contributions
         Teuchos::RCP<Core::LinAlg::Vector<double>>
             systemvector3  ///< distributed vector that may be filled
                            ///< by aasembly of element contributions

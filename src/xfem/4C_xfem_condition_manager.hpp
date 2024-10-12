@@ -736,8 +736,8 @@ namespace XFEM
     void update_level_set_field();
 
     /// combine two levelset fields via boolean type set operations and set result into vec1
-    void combine_level_set_field(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
+    void combine_level_set_field(Core::LinAlg::Vector<double>& vec1,
+        Core::LinAlg::Vector<double>& vec2, const int lsc_index_2,
         Core::LinAlg::Vector<int>& node_lsc_coup_idx,
         XFEM::CouplingBase::LevelSetBooleanType ls_boolean_type);
 

@@ -80,7 +80,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::setup_discretizations_and_fi
       {
         // perform extended ghosting on artery discretization
         nearbyelepairs = POROFLUIDMULTIPHASE::UTILS::extended_ghosting_artery_discretization(
-            structdis, arterydis, evaluate_on_lateral_surface, arterycoupl);
+            *structdis, arterydis, evaluate_on_lateral_surface, arterycoupl);
         break;
       }
       default:

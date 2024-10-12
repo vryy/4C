@@ -181,7 +181,7 @@ namespace BEAMINTERACTION
     void evaluate_and_assemble_positional_coupling(const Core::FE::Discretization& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector) const;
+        const Core::LinAlg::Vector<double>& displacement_vector) const;
 
     /**
      * \brief Evaluate the rotational coupling terms and directly assemble them into the global
@@ -195,7 +195,7 @@ namespace BEAMINTERACTION
     void evaluate_and_assemble_rotational_coupling(const Core::FE::Discretization& discret,
         const Teuchos::RCP<Epetra_FEVector>& force_vector,
         const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector) const;
+        const Core::LinAlg::Vector<double>& displacement_vector) const;
 
    private:
     //! Number of rotational DOF for the SR beams;

@@ -1573,8 +1573,8 @@ void ScaTra::ScaTraTimIntElch::write_restart() const
         conditionid_vec->push_back(electrodeinitvol.first);
         electrodeinitvol_vec->push_back(electrodeinitvol.second);
       }
-      output_->write_redundant_int_vector("electrodeconditionids", conditionid_vec);
-      output_->write_redundant_double_vector("electrodeinitvols", electrodeinitvol_vec);
+      output_->write_redundant_int_vector("electrodeconditionids", *conditionid_vec);
+      output_->write_redundant_double_vector("electrodeinitvols", *electrodeinitvol_vec);
     }
   }
 

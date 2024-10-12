@@ -823,6 +823,11 @@ int Cut::Node::get_standard_nodal_dof_set(Point::PointPosition pos)
 bool Cut::NodalDofSetCmp::operator()(
     Teuchos::RCP<NodalDofSet> nodaldofset1, Teuchos::RCP<NodalDofSet> nodaldofset2)
 {
+  // Use the RCPs to avoid auto-removing them. Since this function is used for sorting a vector
+  // of RCPs, the signature needs to stay like this.
+  (void)nodaldofset1;
+  (void)nodaldofset2;
+
   //==============================================
   // classical sorting of dofsets with:
   // - possible positions: outside/inside

@@ -109,12 +109,12 @@ void CONSTRAINTS::SpringDashpotManager::output(Core::IO::DiscretizationWriter& o
   if (found_cursurfnormal)
   {
     output.write_vector("gap", gap);
-    output.write_multi_vector("curnormals", normals);
+    output.write_multi_vector("curnormals", *normals);
   }
 
   // write spring stress if defined in io-flag
   if (Global::Problem::instance()->io_params().get<bool>("OUTPUT_SPRING"))
-    output.write_multi_vector("springstress", springstress);
+    output.write_multi_vector("springstress", *springstress);
 
   return;
 }
@@ -145,7 +145,7 @@ void CONSTRAINTS::SpringDashpotManager::output_restart(
   // write vector to output for restart
   output_restart->write_vector("springoffsetprestr", springoffsetprestr);
   // write vector to output for restart
-  output_restart->write_multi_vector("springoffsetprestr_old", springoffsetprestr_old);
+  output_restart->write_multi_vector("springoffsetprestr_old", *springoffsetprestr_old);
 
   // normal output as well
   output(*output_restart, discret, disp);

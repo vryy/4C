@@ -787,7 +787,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::reset()
       Core::Elements::Element* ele = discret_ptr()->g_element(elegid);
 
       BEAMINTERACTION::UTILS::get_pos_and_triad_of_binding_spot(discret(), ele,
-          beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box_ptr(),
+          *beam_interaction_data_state_ptr()->get_dis_col_np(), *periodic_bounding_box_ptr(),
           elepairptr->get_linker_type(), locbspotnum, pos[i], triad[i]);
     }
 
@@ -852,7 +852,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force()
     // and get their discrete element force vectors
     BEAMINTERACTION::UTILS::apply_binding_spot_force_to_parent_elements<
         Discret::ELEMENTS::Beam3Base, Discret::ELEMENTS::Beam3Base>(discret(),
-        *periodic_bounding_box_ptr(), beam_interaction_data_state_ptr()->get_dis_col_np(),
+        *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
         *elepairptr, bspotforce, eleforce);
 
     // assemble the contributions into force vector class variable
@@ -905,7 +905,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_stiff()
     // apply linearizations to parent elements and get their discrete element stiffness matrices
     BEAMINTERACTION::UTILS::apply_binding_spot_stiff_to_parent_elements<
         Discret::ELEMENTS::Beam3Base, Discret::ELEMENTS::Beam3Base>(discret(),
-        periodic_bounding_box_ptr(), beam_interaction_data_state_ptr()->get_dis_col_np(),
+        *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
         *elepairptr, bspotstiff, elestiff);
 
     // assemble the contributions into stiffness matrix class variable
@@ -963,7 +963,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force_stiff()
     // and get their discrete element force vectors and stiffness matrices
     BEAMINTERACTION::UTILS::apply_binding_spot_force_stiff_to_parent_elements<
         Discret::ELEMENTS::Beam3Base, Discret::ELEMENTS::Beam3Base>(discret(),
-        periodic_bounding_box_ptr(), beam_interaction_data_state_ptr()->get_dis_col_np(),
+        *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
         *elepairptr, bspotforce, bspotstiff, eleforce, elestiff);
 
     // assemble the contributions into force and stiffness class variables
@@ -1392,9 +1392,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_restart(
   // -------------------------------------------------------------------------
   // write data
   // -------------------------------------------------------------------------
-  bin_writer.write_char_data("Linker", db_linker);
-  bin_writer.write_char_data("ClData", cldata);
-  bin_writer.write_char_data("BeamData", beamdata);
+  bin_writer.write_char_data("Linker", *db_linker);
+  bin_writer.write_char_data("ClData", *cldata);
+  bin_writer.write_char_data("BeamData", *beamdata);
 }
 
 /*----------------------------------------------------------------------------*

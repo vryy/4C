@@ -1100,7 +1100,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_beams(
       *global_in_output().get_runtime_output_params()->get_beam_params();
 
   // set geometry
-  beam_vtu_writer_ptr_->set_geometry_from_beam_discretization(displacement_state_vector);
+  beam_vtu_writer_ptr_->set_geometry_from_beam_discretization(*displacement_state_vector);
 
   // append all desired output data to the writer object's storage
   beam_vtu_writer_ptr_->append_element_owning_processor();
@@ -1153,7 +1153,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_beams(
 
   // export displacement state to column format
   if (beam_output_params.is_write_rve_crosssection_forces())
-    beam_vtu_writer_ptr_->append_rve_crosssection_forces(displacement_state_vector);
+    beam_vtu_writer_ptr_->append_rve_crosssection_forces(*displacement_state_vector);
 
   // export beam element IDs
   if (beam_output_params.is_write_element_gid()) beam_vtu_writer_ptr_->append_element_gid();

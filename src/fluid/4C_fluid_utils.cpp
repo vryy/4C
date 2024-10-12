@@ -90,9 +90,9 @@ void FLD::UTILS::StressManager::init_aggr(Teuchos::RCP<Core::LinAlg::SparseOpera
  | update and return WSS vector                        Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_wall_shear_stresses(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual, const double dt)
+    const Core::LinAlg::Vector<double>& trueresidual, const double dt)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wss = get_wall_shear_stresses_wo_agg(*trueresidual);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> wss = get_wall_shear_stresses_wo_agg(trueresidual);
 
   switch (wss_type_)
   {
@@ -119,7 +119,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_wall_s
  *--------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>>
 FLD::UTILS::StressManager::get_pre_calc_wall_shear_stresses(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual)
+    const Core::LinAlg::Vector<double>& trueresidual)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> wss =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
@@ -127,10 +127,10 @@ FLD::UTILS::StressManager::get_pre_calc_wall_shear_stresses(
   switch (wss_type_)
   {
     case Inpar::FLUID::wss_standard:
-      wss = get_wall_shear_stresses_wo_agg(*trueresidual);
+      wss = get_wall_shear_stresses_wo_agg(trueresidual);
       break;
     case Inpar::FLUID::wss_aggregation:
-      wss = get_wall_shear_stresses_wo_agg(*trueresidual);
+      wss = get_wall_shear_stresses_wo_agg(trueresidual);
       wss = aggreagte_stresses(*wss);
       break;
     case Inpar::FLUID::wss_mean:
@@ -177,9 +177,9 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_stress
  |  update and return stress vector                            Thon/Krank 07/07|
  *-----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_stresses(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual, const double dt)
+    const Core::LinAlg::Vector<double>& trueresidual, const double dt)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> stresses = get_stresses_wo_agg(*trueresidual);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> stresses = get_stresses_wo_agg(trueresidual);
 
   switch (wss_type_)
   {
@@ -205,7 +205,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_stress
  | return stress vector (without updating the mean stress vector)   Thon 03/15 |
  *-----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_pre_calc_stresses(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual)
+    const Core::LinAlg::Vector<double>& trueresidual)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> stresses =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
@@ -213,10 +213,10 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_pre_ca
   switch (wss_type_)
   {
     case Inpar::FLUID::wss_standard:
-      stresses = get_stresses_wo_agg(*trueresidual);
+      stresses = get_stresses_wo_agg(trueresidual);
       break;
     case Inpar::FLUID::wss_aggregation:
-      stresses = get_stresses_wo_agg(*trueresidual);
+      stresses = get_stresses_wo_agg(trueresidual);
       stresses = aggreagte_stresses(*stresses);
       break;
     case Inpar::FLUID::wss_mean:

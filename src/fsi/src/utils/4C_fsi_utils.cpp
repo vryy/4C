@@ -217,16 +217,15 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::UTILS::SlideAleUtils::remeshing(Adapter::FSIStructureWrapper& structure,
-    Teuchos::RCP<Core::FE::Discretization> fluiddis,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idispale,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iprojdispale,
-    Coupling::Adapter::CouplingMortar& coupsf, const Epetra_Comm& comm)
+    Core::FE::Discretization& fluiddis, Core::LinAlg::Vector<double>& idispale,
+    Core::LinAlg::Vector<double>& iprojdispale, Coupling::Adapter::CouplingMortar& coupsf,
+    const Epetra_Comm& comm)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> idisptotal = structure.extract_interface_dispnp();
   const int dim = Global::Problem::instance()->n_dim();
 
   // project sliding fluid nodes onto struct interface surface
-  slide_projection(structure, *fluiddis, *idispale, *iprojdispale, coupsf, comm);
+  slide_projection(structure, fluiddis, idispale, iprojdispale, coupsf, comm);
 
   // For the NON sliding ALE Nodes, use standard ALE displacements
 
@@ -237,14 +236,14 @@ void FSI::UTILS::SlideAleUtils::remeshing(Adapter::FSIStructureWrapper& structur
     std::vector<int> lids(dim);
     for (int p = 0; p < dim; p++)
       // lids of gids of node
-      lids[p] = fluiddofrowmap_->LID((fluiddis->dof(node))[p]);
+      lids[p] = fluiddofrowmap_->LID((fluiddis.dof(node))[p]);
 
     // current coord of ale node = ref coord + ifluid_
     std::vector<double> finaldxyz(dim);
 
-    for (int p = 0; p < dim; p++) finaldxyz[p] = (*idispale)[(lids[p])];
+    for (int p = 0; p < dim; p++) finaldxyz[p] = (idispale)[(lids[p])];
 
-    int err = iprojdispale->ReplaceMyValues(dim, finaldxyz.data(), lids.data());
+    int err = iprojdispale.ReplaceMyValues(dim, finaldxyz.data(), lids.data());
     if (err == 1) FOUR_C_THROW("error while replacing values");
   }
 
@@ -257,9 +256,9 @@ void FSI::UTILS::SlideAleUtils::remeshing(Adapter::FSIStructureWrapper& structur
   Epetra_Import slimpo(*dofrowmap, *fluiddofrowmap_);
 
   idispms_->Import(*idisptotal, msimpo, Add);
-  idispms_->Import(*iprojdispale, slimpo, Add);
+  idispms_->Import(iprojdispale, slimpo, Add);
 
-  iprojhist_->Update(1.0, *iprojdispale, 0.0);
+  iprojhist_->Update(1.0, iprojdispale, 0.0);
 
   return;
 }

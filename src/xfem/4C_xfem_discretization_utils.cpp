@@ -232,7 +232,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
   std::vector<std::string> conditions_to_copy;
   xdis->get_condition_names(conditions_to_copy);
 
-  split_discretization_by_condition(xdis, embedded_dis, conditions, conditions_to_copy);
+  split_discretization_by_condition(*xdis, *embedded_dis, conditions, conditions_to_copy);
 
   setup_xfem_discretization(xgen_params, xdis, numdof);
 
@@ -262,7 +262,7 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
   src_dis->get_condition_names(conditions_to_copy);
 
   split_discretization_by_boundary_condition(
-      src_dis, target_dis, boundary_conds, conditions_to_copy);
+      *src_dis, *target_dis, boundary_conds, conditions_to_copy);
 
   if (!Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(src_dis).is_null())
     setup_xfem_discretization(xgen_params, src_dis, num_dof_per_node);
@@ -279,8 +279,7 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
-    Teuchos::RCP<Core::FE::Discretization> sourcedis,
-    Teuchos::RCP<Core::FE::Discretization> targetdis,
+    Core::FE::Discretization& sourcedis, Core::FE::Discretization& targetdis,
     std::vector<Core::Conditions::Condition*>& conditions,
     const std::vector<std::string>& conditions_to_copy) const
 {
@@ -295,10 +294,10 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
 
   // find conditioned nodes (owned and ghosted) and elements
   Core::Conditions::find_condition_objects(
-      *sourcedis, sourcenodes, sourcegnodes, sourceelements, conditions);
+      sourcedis, sourcenodes, sourcegnodes, sourceelements, conditions);
 
   split_discretization(
-      *sourcedis, *targetdis, sourcenodes, sourcegnodes, sourceelements, conditions_to_copy);
+      sourcedis, targetdis, sourcenodes, sourcegnodes, sourceelements, conditions_to_copy);
 }
 
 /*----------------------------------------------------------------------------*
@@ -486,13 +485,12 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::redistribute(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_condition(
-    const Teuchos::RCP<Core::FE::Discretization>& sourcedis,
-    const Teuchos::RCP<Core::FE::Discretization>& targetdis,
+    Core::FE::Discretization& sourcedis, Core::FE::Discretization& targetdis,
     const std::vector<Core::Conditions::Condition*>& boundary_conds,
     const std::vector<std::string>& conditions_to_copy) const
 {
-  if (not sourcedis->filled()) FOUR_C_THROW("sourcedis is not filled");
-  const int myrank = targetdis->get_comm().MyPID();
+  if (not sourcedis.filled()) FOUR_C_THROW("sourcedis is not filled");
+  const int myrank = targetdis.get_comm().MyPID();
 
   // element map
   std::map<int, Teuchos::RCP<Core::Elements::Element>> src_cond_elements;
@@ -524,9 +522,9 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_co
     for (unsigned i = 0; i < static_cast<unsigned>(src_ele->num_node()); ++i)
     {
       const int gid = n[i];
-      if (sourcedis->have_global_node(gid))
+      if (sourcedis.have_global_node(gid))
       {
-        Core::Nodes::Node* node = sourcedis->g_node(gid);
+        Core::Nodes::Node* node = sourcedis.g_node(gid);
         src_gnodes[gid] = node;
 
         if (node->owner() == myrank) src_my_gnodes[gid] = node;
@@ -537,7 +535,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_co
   }
 
   split_discretization(
-      *sourcedis, *targetdis, src_my_gnodes, src_gnodes, src_elements, conditions_to_copy);
+      sourcedis, targetdis, src_my_gnodes, src_gnodes, src_elements, conditions_to_copy);
 }
 
 

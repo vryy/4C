@@ -2483,8 +2483,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
     Teuchos::RCP<Core::LinAlg::Vector<double>> conrhs =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(conman_->get_error()));
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lagrincr =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(conman_->get_constraint_map()));
+    Core::LinAlg::Vector<double> lagrincr(*(conman_->get_constraint_map()));
 
     // check whether we have a sanely filled stiffness matrix
     if (not stiff_->filled())
@@ -2528,7 +2527,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       }
 
       // prepare residual Lagrange multiplier
-      lagrincr->PutScalar(0.0);
+      lagrincr.PutScalar(0.0);
 
       // *********** time measurement ***********
       double dtcpu = timer_->wallTime();
@@ -2558,7 +2557,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
         }
       }
       // Call constraint solver to solve system with zeros on diagonal
-      consolv_->solve(*system_matrix(), *constr, *constrT, disi_, *lagrincr, *fres_, *conrhs);
+      consolv_->solve(*system_matrix(), *constr, *constrT, disi_, lagrincr, *fres_, *conrhs);
 
       // recover unscaled solution
       recover_stc_solution();
@@ -2571,7 +2570,7 @@ int Solid::TimIntImpl::uzawa_linear_newton_full()
       if (locsysman_ != Teuchos::null) locsysman_->rotate_local_to_global(*disi_);
 
       // update Lagrange multiplier
-      conman_->update_lagr_mult(*lagrincr);
+      conman_->update_lagr_mult(lagrincr);
       // update end-point displacements etc
       update_iter(iter_);
 

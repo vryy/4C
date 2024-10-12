@@ -1447,8 +1447,8 @@ void FSI::SlidingMonolithicFluidSplit::update()
     Teuchos::RCP<Core::LinAlg::Vector<double>> idispale = ale_to_fluid_interface(
         ale_field()->interface()->extract_fsi_cond_vector(*ale_field()->dispnp()));
 
-    slideale_->remeshing(*structure_field(), fluid_field()->discretization(), idispale, iprojdisp_,
-        *coupsfm_, get_comm());
+    slideale_->remeshing(*structure_field(), *fluid_field()->discretization(), *idispale,
+        *iprojdisp_, *coupsfm_, get_comm());
 
     iprojdispinc_->Update(-1.0, *iprojdisp_, 1.0, *idispale, 0.0);
 

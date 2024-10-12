@@ -252,7 +252,7 @@ void Solid::ModelEvaluator::SpringDashpot::write_restart(
   // write vector to output for restart
   iowriter.write_vector("springoffsetprestr", springoffsetprestr);
   // write vector to output for restart
-  iowriter.write_multi_vector("springoffsetprestr_old", springoffsetprestr_old);
+  iowriter.write_multi_vector("springoffsetprestr_old", *springoffsetprestr_old);
 }
 
 /*----------------------------------------------------------------------*
@@ -335,12 +335,12 @@ void Solid::ModelEvaluator::SpringDashpot::output_step_state(
   if (found_cursurfnormal)
   {
     iowriter.write_vector("gap", gap);
-    iowriter.write_multi_vector("curnormals", normals);
+    iowriter.write_multi_vector("curnormals", *normals);
   }
 
   // write spring stress if defined in io-flag
   if (Global::Problem::instance()->io_params().get<bool>("OUTPUT_SPRING"))
-    iowriter.write_multi_vector("springstress", springstress);
+    iowriter.write_multi_vector("springstress", *springstress);
 }
 
 /*----------------------------------------------------------------------*

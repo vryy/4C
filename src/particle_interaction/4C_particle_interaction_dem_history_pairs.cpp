@@ -55,7 +55,7 @@ void ParticleInteraction::DEMHistoryPairs::write_restart() const
     if (not particletangentialhistorydata_.empty())
       pack_all_history_pairs(*buffer, particletangentialhistorydata_);
 
-    binwriter->write_char_data("ParticleTangentialHistoryData", buffer);
+    binwriter->write_char_data("ParticleTangentialHistoryData", *buffer);
   }
 
   // particle-wall tangential history pair data
@@ -65,7 +65,7 @@ void ParticleInteraction::DEMHistoryPairs::write_restart() const
     if (not particlewalltangentialhistorydata_.empty())
       pack_all_history_pairs(*buffer, particlewalltangentialhistorydata_);
 
-    binwriter->write_char_data("ParticleWallTangentialHistoryData", buffer);
+    binwriter->write_char_data("ParticleWallTangentialHistoryData", *buffer);
   }
 
   // particle rolling history data
@@ -75,7 +75,7 @@ void ParticleInteraction::DEMHistoryPairs::write_restart() const
     if (not particlerollinghistorydata_.empty())
       pack_all_history_pairs(*buffer, particlerollinghistorydata_);
 
-    binwriter->write_char_data("ParticleRollingHistoryData", buffer);
+    binwriter->write_char_data("ParticleRollingHistoryData", *buffer);
   }
 
   // particle-wall rolling history pair data
@@ -85,7 +85,7 @@ void ParticleInteraction::DEMHistoryPairs::write_restart() const
     if (not particlewallrollinghistorydata_.empty())
       pack_all_history_pairs(*buffer, particlewallrollinghistorydata_);
 
-    binwriter->write_char_data("ParticleWallRollingHistoryData", buffer);
+    binwriter->write_char_data("ParticleWallRollingHistoryData", *buffer);
   }
 
   // particle adhesion history data
@@ -95,7 +95,7 @@ void ParticleInteraction::DEMHistoryPairs::write_restart() const
     if (not particleadhesionhistorydata_.empty())
       pack_all_history_pairs(*buffer, particleadhesionhistorydata_);
 
-    binwriter->write_char_data("ParticleAdhesionHistoryData", buffer);
+    binwriter->write_char_data("ParticleAdhesionHistoryData", *buffer);
   }
 
   // particle-wall adhesion history pair data
@@ -105,7 +105,7 @@ void ParticleInteraction::DEMHistoryPairs::write_restart() const
     if (not particlewalladhesionhistorydata_.empty())
       pack_all_history_pairs(*buffer, particlewalladhesionhistorydata_);
 
-    binwriter->write_char_data("ParticleWallAdhesionHistoryData", buffer);
+    binwriter->write_char_data("ParticleWallAdhesionHistoryData", *buffer);
   }
 }
 

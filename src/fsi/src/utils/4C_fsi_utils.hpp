@@ -78,13 +78,11 @@ namespace FSI
       virtual ~SlideAleUtils() = default;
       /// remesh ALE corresponding
       void remeshing(Adapter::FSIStructureWrapper& structure,  ///< structure adapter
-          Teuchos::RCP<Core::FE::Discretization> fluiddis,     ///< fluid discretization
-          Teuchos::RCP<Core::LinAlg::Vector<double>>
-              idispale,  ///< standard ALE interface displacement
-          Teuchos::RCP<Core::LinAlg::Vector<double>>
-              iprojdispale,                           ///< projected ALE interface displacement
-          Coupling::Adapter::CouplingMortar& coupsf,  ///< mortar adapter
-          const Epetra_Comm& comm                     ///< communicator
+          Core::FE::Discretization& fluiddis,                  ///< fluid discretization
+          Core::LinAlg::Vector<double>& idispale,      ///< standard ALE interface displacement
+          Core::LinAlg::Vector<double>& iprojdispale,  ///< projected ALE interface displacement
+          Coupling::Adapter::CouplingMortar& coupsf,   ///< mortar adapter
+          const Epetra_Comm& comm                      ///< communicator
       );
 
       /// Compute new coupling matrices D and M for solid/fluid

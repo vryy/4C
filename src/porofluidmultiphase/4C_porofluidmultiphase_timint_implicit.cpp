@@ -1651,7 +1651,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
         POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *solidpressure_, nds_solidpressure_, 1);
 
-    output_->write_multi_vector("solidpressure", solidpressure_multi, Core::IO::nodevector);
+    output_->write_multi_vector("solidpressure", *solidpressure_multi, Core::IO::nodevector);
   }
 
   // displacement field
@@ -1667,7 +1667,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
         POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *dispnp, nds_disp_, nsd_);
 
-    output_->write_multi_vector("dispnp", dispnp_multi, Core::IO::nodevector);
+    output_->write_multi_vector("dispnp", *dispnp_multi, Core::IO::nodevector);
   }
   // fluxes
   if (flux_ != Teuchos::null)
@@ -1697,7 +1697,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
           if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
         }
       }
-      output_->write_multi_vector(name, flux_k, Core::IO::nodevector);
+      output_->write_multi_vector(name, *flux_k, Core::IO::nodevector);
     }
   }
 
@@ -1724,7 +1724,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
       }
 
       std::string output_name = "velocity_" + std::to_string(k + 1);
-      output_->write_multi_vector(output_name, velocity_k, Core::IO::elementvector);
+      output_->write_multi_vector(output_name, *velocity_k, Core::IO::elementvector);
     }
   }
 
@@ -1736,7 +1736,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
         POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *porosity_, nds_solidpressure_, 1);
 
-    output_->write_multi_vector("porosity", porosity_multi, Core::IO::nodevector);
+    output_->write_multi_vector("porosity", *porosity_multi, Core::IO::nodevector);
   }
 
   return;

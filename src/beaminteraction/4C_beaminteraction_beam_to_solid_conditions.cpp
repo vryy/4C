@@ -790,7 +790,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
         case Inpar::BeamToSolid::BeamToSolidContactDiscretization::mortar:
         {
           return beam_to_solid_surface_contact_pair_mortar_factory(
-              beam_to_surface_contact_params, shape, beam_is_hermite);
+              *beam_to_surface_contact_params, shape, beam_is_hermite);
         }
         default:
           FOUR_C_THROW("Wrong contact discretization.");

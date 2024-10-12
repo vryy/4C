@@ -94,8 +94,8 @@ namespace FLD
     //! Old routine handling Dirichlet conditions on the master side of the internal interface
     /// During prepare_time_step() DC are projected from the master to the slave
     void project_master_to_slave_for_overlapping_bc(
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp,  ///> solution vector n+1
-        Teuchos::RCP<const Epetra_Map> bmaps                ///> map of boundary condition
+        Core::LinAlg::Vector<double>& velnp,  ///> solution vector n+1
+        Teuchos::RCP<const Epetra_Map> bmaps  ///> map of boundary condition
     );
 
     //! Check whether Dirichlet BC are defined on the master
@@ -124,24 +124,21 @@ namespace FLD
 
     //! Prepare matrix and residual for meshtying
     void prepare_meshtying_system(const Teuchos::RCP<Core::LinAlg::SparseOperator>&
-                                      sysmat,  ///> sysmat established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
-            residual,  ///> residual established by the element routine
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>&
-            velnp);  ///> current ALE displacement vector
+                                      sysmat,    ///> sysmat established by the element routine
+        Core::LinAlg::Vector<double>& residual,  ///> residual established by the element routine
+        Core::LinAlg::Vector<double>& velnp);    ///> current ALE displacement vector
 
     //! The residual has another length in case of bmat_merged --> residual has to be calculated in
     //! split form
     void apply_pt_to_residual(Core::LinAlg::SparseOperator& sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> residual,
-        Core::LinAlg::KrylovProjector& projector);
+        Core::LinAlg::Vector<double>& residual, Core::LinAlg::KrylovProjector& projector);
 
     //! Solve mesh-tying problem (including ALE case)
     void solve_meshtying(Core::LinAlg::Solver& solver,
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
         const Teuchos::RCP<Core::LinAlg::Vector<double>>& incvel,
         const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp, const int itnum,
+        Core::LinAlg::Vector<double>& velnp, const int itnum,
         Core::LinAlg::SolverParams& solver_params);
 
     //! Adjust null-space for Krylov projector (slave node are in-active)

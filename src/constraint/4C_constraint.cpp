@@ -203,7 +203,7 @@ void CONSTRAINTS::Constraint::evaluate(Teuchos::ParameterList& params,
       FOUR_C_THROW("Wrong constraint type to evaluate systemvector!");
   }
   evaluate_constraint(
-      params, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
+      params, systemmatrix1, systemmatrix2, systemvector1, *systemvector2, systemvector3);
   return;
 }
 
@@ -216,7 +216,7 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
+    Core::LinAlg::Vector<double>& systemvector2,
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
 {
   if (!(actdisc_->filled())) FOUR_C_THROW("fill_complete() was not called");
@@ -252,7 +252,7 @@ void CONSTRAINTS::Constraint::evaluate_constraint(Teuchos::ParameterList& params
         Teuchos::RCP<Core::LinAlg::Vector<double>> displast =
             params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("old disp");
         actdisc_->set_state("displacement", displast);
-        initialize(params, *systemvector2);
+        initialize(params, systemvector2);
         Teuchos::RCP<Core::LinAlg::Vector<double>> disp =
             params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("new disp");
         actdisc_->set_state("displacement", disp);

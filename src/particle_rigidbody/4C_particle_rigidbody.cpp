@@ -106,7 +106,7 @@ void ParticleRigidBody::RigidBodyHandler::write_restart() const
   get_packed_rigid_body_states(*buffer);
 
   // write rigid body state data
-  binwriter->write_char_data("RigidBodyStateData", buffer);
+  binwriter->write_char_data("RigidBodyStateData", *buffer);
 }
 
 void ParticleRigidBody::RigidBodyHandler::read_restart(

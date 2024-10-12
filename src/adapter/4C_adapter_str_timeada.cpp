@@ -396,7 +396,7 @@ void Adapter::StructureTimeAda::evaluate_local_error_dis()
   }
 
   // blank Dirichlet DOFs since they always carry the exact solution
-  sti.get_dbc().apply_dirichlet_to_vector(locerrdisn_);
+  sti.get_dbc().apply_dirichlet_to_vector(*locerrdisn_);
 }
 
 /*----------------------------------------------------------------------*/

@@ -497,7 +497,7 @@ beam_to_solid_surface_contact_pair_mortar_factory_template_beam(
  */
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::beam_to_solid_surface_contact_pair_mortar_factory(
-    const Teuchos::RCP<const BeamToSolidSurfaceContactParams> beam_to_surface_contact_params,
+    const BeamToSolidSurfaceContactParams& beam_to_surface_contact_params,
     const Core::FE::CellType& surface_type, const bool beam_is_hermite)
 {
   using namespace GEOMETRYPAIR;
@@ -505,7 +505,7 @@ BEAMINTERACTION::beam_to_solid_surface_contact_pair_mortar_factory(
   if (beam_is_hermite)
   {
     return beam_to_solid_surface_contact_pair_mortar_factory_template_beam<t_hermite>(
-        *beam_to_surface_contact_params, surface_type);
+        beam_to_surface_contact_params, surface_type);
   }
   else
   {

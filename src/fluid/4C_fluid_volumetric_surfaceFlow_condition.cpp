@@ -800,7 +800,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::output(
 
   // write the flowrates of the previous period
   stream1 << ds_condname << "_flowrates" << condnum;
-  output.write_redundant_double_vector(stream1.str(), flowrates_);
+  output.write_redundant_double_vector(stream1.str(), *flowrates_);
 
   // write the time step
   stream2 << ds_condname << "_dt" << condnum;

@@ -450,8 +450,7 @@ void XFEM::ConditionManager::update_level_set_field()
   // -> 2nd: based on nodal information, we decide which coupling condition has to be evaluated on
   // an element for which the conditions are not unique
 
-  Teuchos::RCP<Core::LinAlg::Vector<int>> node_lsc_coup_idx =
-      Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*bg_dis_->node_row_map(), true);
+  Core::LinAlg::Vector<int> node_lsc_coup_idx(*bg_dis_->node_row_map(), true);
   Core::LinAlg::Vector<int> node_lsc_coup_idx_col(*bg_dis_->node_col_map(), true);
   Core::LinAlg::Vector<int> ele_lsc_coup_idx(*bg_dis_->element_row_map(), true);
 
@@ -485,14 +484,14 @@ void XFEM::ConditionManager::update_level_set_field()
       // need to live here
       Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
           coupling->get_level_set_field_as_node_row_vector();
-      combine_level_set_field(bg_phinp_, tmp, lsc, *node_lsc_coup_idx, ls_boolean_type);
+      combine_level_set_field(*bg_phinp_, *tmp, lsc, node_lsc_coup_idx, ls_boolean_type);
     }
 
     if (coupling->apply_complementary_operator()) build_complementary_level_set(*bg_phinp_);
   }
 
   // export to column vector
-  Core::LinAlg::export_to(*node_lsc_coup_idx, node_lsc_coup_idx_col);
+  Core::LinAlg::export_to(node_lsc_coup_idx, node_lsc_coup_idx_col);
 
   // set the levelset coupling index for all row elements
   const Epetra_Map* elerowmap = bg_dis_->element_row_map();
@@ -532,25 +531,24 @@ void XFEM::ConditionManager::update_level_set_field()
   is_levelset_uptodate_ = true;
 }
 
-void XFEM::ConditionManager::combine_level_set_field(
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& vec2, const int lsc_index_2,
+void XFEM::ConditionManager::combine_level_set_field(Core::LinAlg::Vector<double>& vec1,
+    Core::LinAlg::Vector<double>& vec2, const int lsc_index_2,
     Core::LinAlg::Vector<int>& node_lsc_coup_idx,
     XFEM::CouplingBase::LevelSetBooleanType ls_boolean_type)
 {
   switch (ls_boolean_type)
   {
     case XFEM::CouplingBase::ls_cut:
-      set_maximum(*vec1, *vec2, lsc_index_2, node_lsc_coup_idx);
+      set_maximum(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
       break;
     case XFEM::CouplingBase::ls_union:
-      set_minimum(*vec1, *vec2, lsc_index_2, node_lsc_coup_idx);
+      set_minimum(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
       break;
     case XFEM::CouplingBase::ls_difference:
-      set_difference(*vec1, *vec2, lsc_index_2, node_lsc_coup_idx);
+      set_difference(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
       break;
     case XFEM::CouplingBase::ls_sym_difference:
-      set_symmetric_difference(*vec1, *vec2, lsc_index_2, node_lsc_coup_idx);
+      set_symmetric_difference(vec1, vec2, lsc_index_2, node_lsc_coup_idx);
       break;
     default:
       FOUR_C_THROW("unsupported type of boolean operation between two level-sets");

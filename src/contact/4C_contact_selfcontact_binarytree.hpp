@@ -276,10 +276,9 @@ namespace CONTACT
     }
 
     //! operator <=
-    friend bool operator<=(
-        const Teuchos::RCP<SelfBinaryTreeNode> node1, const Teuchos::RCP<SelfBinaryTreeNode> node2)
+    friend bool operator<=(SelfBinaryTreeNode& node1, SelfBinaryTreeNode& node2)
     {
-      return !operator>(*node1, *node2);
+      return !operator>(node1, node2);
     }
 
     //! operator >=
@@ -340,6 +339,11 @@ namespace CONTACT
     friend bool operator<(
         const Teuchos::RCP<SelfDualEdge> edge1, const Teuchos::RCP<SelfDualEdge> edge2)
     {
+      // Use the RCPs to avoid auto-removing them. Since this function is used for sorting a vector
+      // of RCPs, the signature needs to stay like this.
+      (void)edge1;
+      (void)edge2;
+
       if (edge1->costs_ < edge2->costs_)
         return true;
       else if (edge1->costs_ > edge2->costs_)

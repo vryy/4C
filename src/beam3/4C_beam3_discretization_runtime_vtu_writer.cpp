@@ -57,7 +57,7 @@ void BeamDiscretizationRuntimeOutputWriter::initialize(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretization(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector)
+    const Core::LinAlg::Vector<double>& displacement_state_vector)
 {
   /*  Note:
    *
@@ -154,13 +154,13 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
       if (periodic_boundingbox_ != Teuchos::null)
       {
         BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(*discretization_, ele,
-            *displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector);
+            displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector);
       }
       // this is needed in case your input file does not contain shifted/cut elements
       else
       {
         BEAMINTERACTION::UTILS::get_current_element_dis(
-            *discretization_, ele, *displacement_state_vector, beamelement_displacement_vector);
+            *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
       }
     }
 
@@ -1438,7 +1438,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector)
+    const Core::LinAlg::Vector<double>& displacement_state_vector)
 {
   // NOTE: so far force in node 0 is written
   // determine number of row BEAM elements for each processor
@@ -1489,9 +1489,9 @@ void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
         dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
     BEAMINTERACTION::UTILS::get_current_element_dis(
-        *discretization_, ele, *displacement_state_vector, beamelement_shift_displacement_vector);
+        *discretization_, ele, displacement_state_vector, beamelement_shift_displacement_vector);
     BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(*discretization_, ele,
-        *displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector);
+        displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector);
 
     beamele->get_pos_at_xi(pos_node_1, -1.0, beamelement_displacement_vector);
     beamele->get_pos_at_xi(pos_node_2, 1.0, beamelement_displacement_vector);

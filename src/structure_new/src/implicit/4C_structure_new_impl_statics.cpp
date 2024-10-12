@@ -268,7 +268,7 @@ bool Solid::IMPLICIT::Statics::predict_const_vel_consist_acc(Core::LinAlg::Vecto
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
   disp_inc->Update((*global_state().get_delta_time())[0], *global_state().get_vel_n(), 0.);
   // apply the dbc on the auxiliary vector
-  tim_int().get_dbc().apply_dirichlet_to_vector(disp_inc);
+  tim_int().get_dbc().apply_dirichlet_to_vector(*disp_inc);
   // update the solution variables
   disnp.Update(1.0, *global_state().get_dis_n(), 0.0);
   disnp.Update(1.0, *disp_inc, 1.0);
@@ -295,7 +295,7 @@ bool Solid::IMPLICIT::Statics::predict_const_acc(Core::LinAlg::Vector<double>& d
   disp_inc->Update(dt, *global_state().get_vel_n(), 0.);
   disp_inc->Update(0.5 * dt * dt, *global_state().get_acc_n(), 1.0);
   // apply the dbc on the auxiliary vector
-  tim_int().get_dbc().apply_dirichlet_to_vector(disp_inc);
+  tim_int().get_dbc().apply_dirichlet_to_vector(*disp_inc);
   // update the solution variables
   disnp.Update(1.0, *global_state().get_dis_n(), 0.0);
   disnp.Update(1., *disp_inc, 1.);

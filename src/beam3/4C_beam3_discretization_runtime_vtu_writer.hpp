@@ -196,7 +196,7 @@ class BeamDiscretizationRuntimeOutputWriter
    *  \author eichinger
    *  \date 08/17 */
   void append_rve_crosssection_forces(
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
+      const Core::LinAlg::Vector<double>& displacement_state_vector);
 
   /** \brief append current internal energy of the elements to output data
    *
@@ -219,7 +219,7 @@ class BeamDiscretizationRuntimeOutputWriter
    *  \author grill
    *  \date 03/17 */
   void set_geometry_from_beam_discretization(
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> const& displacement_state_vector);
+      const Core::LinAlg::Vector<double>& displacement_state_vector);
 
  private:
   /** \brief insert all values of a given std::vector at the end of another given std::vector

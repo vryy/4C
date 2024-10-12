@@ -1025,7 +1025,7 @@ void LUBRICATION::TimIntImpl::output_state()
             (*dispnp)[dispnp->Map().LID(discret_->dof(nds_disp_, node, idim))];
     }
 
-    output_->write_multi_vector("dispnp", dispnp_multi, Core::IO::nodevector);
+    output_->write_multi_vector("dispnp", *dispnp_multi, Core::IO::nodevector);
   }
 
   return;

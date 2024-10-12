@@ -890,7 +890,7 @@ void FLD::XWall::update_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double
   {
     if (mystressmanager_ == Teuchos::null) FOUR_C_THROW("wssmanager not available in xwall");
     // fix nodal forces on dirichlet inflow surfaces if desired
-    wss = mystressmanager_->get_pre_calc_wall_shear_stresses(fix_dirichlet_inflow(*trueresidual));
+    wss = mystressmanager_->get_pre_calc_wall_shear_stresses(*fix_dirichlet_inflow(*trueresidual));
   }
   switch (tauwtype_)
   {

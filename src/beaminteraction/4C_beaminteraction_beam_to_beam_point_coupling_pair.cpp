@@ -69,9 +69,9 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble(
     const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   evaluate_and_assemble_positional_coupling(
-      *discret, force_vector, stiffness_matrix, displacement_vector);
+      *discret, force_vector, stiffness_matrix, *displacement_vector);
   evaluate_and_assemble_rotational_coupling(
-      *discret, force_vector, stiffness_matrix, displacement_vector);
+      *discret, force_vector, stiffness_matrix, *displacement_vector);
 }
 
 /**
@@ -81,7 +81,7 @@ template <typename Beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_positional_coupling(
     const Core::FE::Discretization& discret, const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector) const
+    const Core::LinAlg::Vector<double>& displacement_vector) const
 {
   const std::array<const Core::Elements::Element*, 2> beam_ele = {
       this->element1(), this->element2()};
@@ -110,7 +110,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
     std::vector<int> lm(Beam::n_dof_);
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++) lm[i_dof] = gid_pos[i_beam](i_dof);
     BEAMINTERACTION::UTILS::extract_pos_dof_vec_absolute_values(
-        discret, beam_ele[i_beam], *displacement_vector, element_posdofvec_absolutevalues);
+        discret, beam_ele[i_beam], displacement_vector, element_posdofvec_absolutevalues);
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
       beam_pos[i_beam].element_position_(i_dof) =
           Core::FADUtils::HigherOrderFadValue<scalar_type_pos>::apply(2 * Beam::n_dof_,
@@ -172,7 +172,7 @@ template <typename Beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_rotational_coupling(
     const Core::FE::Discretization& discret, const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector) const
+    const Core::LinAlg::Vector<double>& displacement_vector) const
 {
   const std::array<const Core::Elements::Element*, 2> beam_ele = {
       this->element1(), this->element2()};
@@ -198,7 +198,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double>
         ref_triad_interpolation_scheme;
-    BEAMINTERACTION::get_beam_triad_interpolation_scheme(discret, *displacement_vector,
+    BEAMINTERACTION::get_beam_triad_interpolation_scheme(discret, displacement_vector,
         beam_ele[i_beam], triad_interpolation_scheme, ref_triad_interpolation_scheme);
 
     // Calculate the rotation vector of the beam cross sections and its FAD representation.

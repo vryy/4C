@@ -55,7 +55,7 @@ void PARTICLEENGINE::UniqueGlobalIdHandler::write_restart(
 
     buffer->insert(buffer->end(), data().begin(), data().end());
 
-    writer->write_char_data(objectname_ + "reusableglobalids", buffer);
+    writer->write_char_data(objectname_ + "reusableglobalids", *buffer);
   }
 }
 
