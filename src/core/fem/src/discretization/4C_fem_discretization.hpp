@@ -1496,7 +1496,7 @@ namespace Core::FE
                submap of the full node rowmap returned from NodeRowMap())
     @return Vector containing the coordinates of all nodes which are present in the given noderowmap
      */
-    Teuchos::RCP<Epetra_MultiVector> build_node_coordinates(
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> build_node_coordinates(
         Teuchos::RCP<const Epetra_Map> noderowmap = Teuchos::null) const;
 
     //@}
@@ -1629,7 +1629,7 @@ namespace Core::FE
 
 
     /*!
-    \brief Export a node based Epetra_MultiVector to column layout
+    \brief Export a node based Core::LinAlg::MultiVector<double> to column layout
            and store it in the given ParameterList
 
     Using this method, the node based vector is exported to column
@@ -1643,7 +1643,7 @@ namespace Core::FE
 
     */
     virtual void add_multi_vector_to_parameter_list(Teuchos::ParameterList& p,
-        const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec);
+        const std::string name, Teuchos::RCP<const Core::LinAlg::MultiVector<double>> vec);
 
     /*!
     \brief Call elements to evaluate
@@ -1957,7 +1957,7 @@ namespace Core::FE
      * \author gee \date 05/11
      */
     void evaluate_scalars(Teuchos::ParameterList& params, /*!< parameters */
-        Epetra_MultiVector& scalars /*!< output element-wise scalar quantities */
+        Core::LinAlg::MultiVector<double>& scalars /*!< output element-wise scalar quantities */
     );
 
     /*!

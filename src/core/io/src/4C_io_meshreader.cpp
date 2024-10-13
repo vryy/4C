@@ -173,7 +173,8 @@ void Core::IO::MeshReader::rebalance()
 
           discret->redistribute(*rowmap, *colmap, false, false, false);
 
-          Teuchos::RCP<Epetra_MultiVector> coordinates = discret->build_node_coordinates();
+          Teuchos::RCP<Core::LinAlg::MultiVector<double>> coordinates =
+              discret->build_node_coordinates();
 
           std::tie(rowmap, colmap) = Core::Rebalance::rebalance_node_maps(
               *graph_[i], rebalanceParams, Teuchos::null, Teuchos::null, coordinates);

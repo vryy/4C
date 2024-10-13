@@ -1185,8 +1185,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_stru
 
   // append owner if desired
   if (g_in_output().get_runtime_vtp_output_params()->output_owner())
-    visualization_output_writer_ptr_->append_node_based_result_data_vector(
-        *owner->get_ptr_of_Epetra_MultiVector(), 1, "owner");
+    visualization_output_writer_ptr_->append_node_based_result_data_vector(*owner, 1, "owner");
 
   // append orientation vector if desired
   if (g_in_output().get_runtime_vtp_output_params()->output_orientation_and_length())
@@ -1196,7 +1195,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::write_output_runtime_stru
   // append number of bonds if desired
   if (g_in_output().get_runtime_vtp_output_params()->output_number_of_bonds())
     visualization_output_writer_ptr_->append_node_based_result_data_vector(
-        *numbond->get_ptr_of_Epetra_MultiVector(), 1, "numberofbonds");
+        *numbond, 1, "numberofbonds");
 
   // append number of bonds if desired
   if (g_in_output().get_runtime_vtp_output_params()->output_linking_force())

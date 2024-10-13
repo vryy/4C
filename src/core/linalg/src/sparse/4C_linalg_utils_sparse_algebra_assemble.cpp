@@ -119,11 +119,11 @@ void Core::LinAlg::assemble_my_vector(double scalar_target, Core::LinAlg::Vector
 /*----------------------------------------------------------------------*
  |  assemble a vector into MultiVector (public)              mwgee 01/08|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::assemble(Epetra_MultiVector& V, const int n,
+void Core::LinAlg::assemble(Core::LinAlg::MultiVector<double>& V, const int n,
     const Core::LinAlg::SerialDenseVector& Vele, const std::vector<int>& lm,
     const std::vector<int>& lmowner)
 {
-  Core::LinAlg::assemble(*(V(n)), Vele, lm, lmowner);
+  Core::LinAlg::assemble(V(n), Vele, lm, lmowner);
 }
 
 /*----------------------------------------------------------------------*

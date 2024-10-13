@@ -135,9 +135,9 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   // initialise displacement field needed for output()
   // (get noderowmap of discretisation for creating this multivector)
   // TODO: why nds 0 and not 1????
-  dispnp_ = Teuchos::make_rcp<Epetra_MultiVector>(
+  dispnp_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
       *(thermo_field()->discretization()->node_row_map()), 3, true);
-  tempnp_ = Teuchos::make_rcp<Epetra_MultiVector>(
+  tempnp_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
       *(structure_field()->discretization()->node_row_map()), 1, true);
 
   // setup coupling object for matching discretization

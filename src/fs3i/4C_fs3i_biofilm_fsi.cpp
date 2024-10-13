@@ -221,9 +221,9 @@ void FS3I::BiofilmFSI::setup()
 
   struct_growth_disp_ = ale_to_struct_field(ale_->write_access_dispnp());
   fluid_growth_disp_ = ale_to_fluid_field(fsi_->ale_field()->write_access_dispnp());
-  scatra_struct_growth_disp_ = Teuchos::make_rcp<Epetra_MultiVector>(
+  scatra_struct_growth_disp_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
       *(scatravec_[1]->scatra_field()->discretization())->node_row_map(), 3, true);
-  scatra_fluid_growth_disp_ = Teuchos::make_rcp<Epetra_MultiVector>(
+  scatra_fluid_growth_disp_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
       *(scatravec_[0]->scatra_field()->discretization())->node_row_map(), 3, true);
 
   idispn_->PutScalar(0.0);
@@ -418,7 +418,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
 
     // calculation of the flux at the interface based on normal influx values before time shift of
     // results is performed in Update
-    Teuchos::RCP<Epetra_MultiVector> strufluxn =
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> strufluxn =
         scatravec_[1]->scatra_field()->calc_flux_at_boundary(false);
 
     update_scatra_fields();
@@ -472,7 +472,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
 
     const Epetra_Map* dofrowmap = strudis->dof_row_map();
     const Epetra_Map* noderowmap = strudis->node_row_map();
-    Epetra_MultiVector lambdanode(*noderowmap, 3, true);
+    Core::LinAlg::MultiVector<double> lambdanode(*noderowmap, 3, true);
 
     // lagrange multipliers defined on a nodemap are necessary
     for (int lnodeid = 0; lnodeid < strudis->num_my_row_nodes(); lnodeid++)
@@ -495,7 +495,7 @@ void FS3I::BiofilmFSI::inner_timeloop()
 
         double lambdai = (*lambdafull)[lid];
         int lnodeid = noderowmap->LID(lnode->id());
-        ((lambdanode)(index))->ReplaceMyValues(1, &lambdai, &lnodeid);
+        (lambdanode)(index).ReplaceMyValues(1, &lambdai, &lnodeid);
       }
     }
     // loop over all local interface nodes of structure discretization
@@ -588,13 +588,13 @@ void FS3I::BiofilmFSI::inner_timeloop()
       double temptangtractwo = 0.0;
       for (int index = 0; index < numdim; ++index)
       {
-        double fluxcomp = (*((*strufluxn)(index)))[lnodeid];
+        double fluxcomp = (*strufluxn)(index)[lnodeid];
         tempflux += fluxcomp * unitnormal[index];
         // for the calculation of the growth and erosion both the tangential and the normal
         // components of the forces acting on the interface are important.
         // Since probably they will have a different effect on the biofilm growth,
         // they are calculated separately and different coefficients can be used.
-        double traccomp = (*((lambdanode)(index)))[lnodeid];
+        double traccomp = lambdanode(index)[lnodeid];
         tempnormtrac += traccomp * unitnormal[index];
         temptangtracone += traccomp * unittangentone[index];
         temptangtractwo += traccomp * unittangenttwo[index];
@@ -897,7 +897,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::struct_to_ale(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::vec_to_scatravec(Core::FE::Discretization& scatradis,
-    Core::LinAlg::Vector<double>& vec, Epetra_MultiVector& scatravec)
+    Core::LinAlg::Vector<double>& vec, Core::LinAlg::MultiVector<double>& scatravec)
 {
   // define error variable
   int err(0);

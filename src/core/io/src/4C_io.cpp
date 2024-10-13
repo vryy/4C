@@ -59,7 +59,8 @@ int Core::IO::DiscretizationReader::has_int(std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::IO::DiscretizationReader::read_vector(std::string name)
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::IO::DiscretizationReader::read_vector(
+    std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
   int columns;
@@ -76,12 +77,12 @@ Teuchos::RCP<Epetra_MultiVector> Core::IO::DiscretizationReader::read_vector(std
 void Core::IO::DiscretizationReader::read_vector(
     Teuchos::RCP<Core::LinAlg::Vector<double>> vec, std::string name)
 {
-  read_vector(vec->get_ptr_of_Epetra_MultiVector(), name);
+  read_vector(vec->get_ptr_of_MultiVector(), name);
 }
 
 
 void Core::IO::DiscretizationReader::read_vector(
-    Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> vec, std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
   int columns;
@@ -95,7 +96,7 @@ void Core::IO::DiscretizationReader::read_vector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::IO::DiscretizationReader::read_multi_vector(
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::IO::DiscretizationReader::read_multi_vector(
     const std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());
@@ -113,7 +114,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::IO::DiscretizationReader::read_multi_vect
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::IO::DiscretizationReader::read_multi_vector(
-    Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> vec, std::string name)
 {
   // check if vec is a null pointer
   if (vec == Teuchos::null)
@@ -121,7 +122,7 @@ void Core::IO::DiscretizationReader::read_multi_vector(
     FOUR_C_THROW("vec is a null pointer. You need to allocate memory before calling this function");
   }
 
-  Teuchos::RCP<Epetra_MultiVector> nv = read_multi_vector(name);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> nv = read_multi_vector(name);
 
   if (nv->GlobalLength() > vec->GlobalLength())
     FOUR_C_THROW(
@@ -828,7 +829,7 @@ void Core::IO::DiscretizationWriter::write_vector(
 }
 
 void Core::IO::DiscretizationWriter::write_multi_vector(
-    const std::string name, const Epetra_MultiVector& vec, IO::VectorType vt)
+    const std::string name, const Core::LinAlg::MultiVector<double>& vec, IO::VectorType vt)
 {
   if (binio_)
   {
@@ -1335,7 +1336,7 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
       std::vector<double> eledata(dimension);
 
       // MultiVector stuff from the elements is put in
-      Epetra_MultiVector sysdata(*dis_->element_row_map(), dimension, true);
+      Core::LinAlg::MultiVector<double> sysdata(*dis_->element_row_map(), dimension, true);
 
       int ele_counter = 0;
       for (auto* ele : dis_->my_row_element_range())
@@ -1347,7 +1348,7 @@ void Core::IO::DiscretizationWriter::write_element_data(bool writeowner)
 
         FOUR_C_THROW_UNLESS(
             (int)eledata.size() == dimension, "element manipulated size of visualization data");
-        for (int j = 0; j < dimension; ++j) (*sysdata(j))[ele_counter] = eledata[j];
+        for (int j = 0; j < dimension; ++j) sysdata(j)[ele_counter] = eledata[j];
 
         ele_counter++;
       }
@@ -1399,7 +1400,7 @@ void Core::IO::DiscretizationWriter::write_node_data(bool writeowner)
       std::vector<double> nodedata(dimension);
 
       // MultiVector stuff from the nodes is put in
-      Epetra_MultiVector sysdata(*noderowmap, dimension, true);
+      Core::LinAlg::MultiVector<double> sysdata(*noderowmap, dimension, true);
 
       for (int i = 0; i < noderowmap->NumMyElements(); ++i)
       {
@@ -1411,7 +1412,7 @@ void Core::IO::DiscretizationWriter::write_node_data(bool writeowner)
         if ((int)nodedata.size() != dimension)
           FOUR_C_THROW("element manipulated size of visualization data");
 
-        for (int j = 0; j < dimension; ++j) (*sysdata(j))[i] = nodedata[j];
+        for (int j = 0; j < dimension; ++j) sysdata(j)[i] = nodedata[j];
       }
 
       write_multi_vector(fool->first, *Teuchos::rcpFromRef(sysdata), Core::IO::nodevector);

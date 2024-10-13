@@ -43,8 +43,8 @@ namespace Core::FE
   void extract_my_values(const Core::LinAlg::Vector<double>& global,
       Core::LinAlg::SerialDenseVector& local, const std::vector<int>& lm);
 
-  void extract_my_values(
-      const Epetra_MultiVector& global, std::vector<double>& local, const std::vector<int>& lm);
+  void extract_my_values(const Core::LinAlg::MultiVector<double>& global,
+      std::vector<double>& local, const std::vector<int>& lm);
 
   template <class Matrix>
   void extract_my_values(const Core::LinAlg::Vector<double>& global, std::vector<Matrix>& local,
@@ -106,50 +106,54 @@ namespace Core::FE
     }
   }
 
-  /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
+  /// Locally extract a subset of values from a (column)-nodemap-based
+  /// Core::LinAlg::MultiVector<double>
   /*  \author henke
    *  \date 06/09
    */
   void extract_my_node_based_values(
-      const Core::Elements::Element* ele,  ///< pointer to current element
-      std::vector<double>& local,          ///< local vector on element-level
-      const Epetra_MultiVector& global     ///< global (multi) vector
+      const Core::Elements::Element* ele,              ///< pointer to current element
+      std::vector<double>& local,                      ///< local vector on element-level
+      const Core::LinAlg::MultiVector<double>& global  ///< global (multi) vector
   );
 
 
-  /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
+  /// Locally extract a subset of values from a (column)-nodemap-based
+  /// Core::LinAlg::MultiVector<double>
   /*  \author g.bau
    *  \date 08/08
    */
   void extract_my_node_based_values(
-      const Core::Elements::Element* ele,      ///< pointer to current element
-      Core::LinAlg::SerialDenseVector& local,  ///< local vector on element-level
-      Epetra_MultiVector& global,              ///< global vector
-      const int nsd                            ///< number of space dimensions
+      const Core::Elements::Element* ele,         ///< pointer to current element
+      Core::LinAlg::SerialDenseVector& local,     ///< local vector on element-level
+      Core::LinAlg::MultiVector<double>& global,  ///< global vector
+      const int nsd                               ///< number of space dimensions
   );
 
-  /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
+  /// Locally extract a subset of values from a (column)-nodemap-based
+  /// Core::LinAlg::MultiVector<double>
   /*  \author schott
    *  \date 12/16
    */
   void extract_my_node_based_values(const Core::Nodes::Node* node,  ///< pointer to current element
       Core::LinAlg::SerialDenseVector& local,                       ///< local vector on node-level
-      Epetra_MultiVector& global,                                   ///< global vector
+      Core::LinAlg::MultiVector<double>& global,                    ///< global vector
       const int nsd                                                 ///< number of space dimensions
   );
 
 
-  /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
-  /// and fill a local matrix that has implemented the (.,.) operator
+  /// Locally extract a subset of values from a (column)-nodemap-based
+  /// Core::LinAlg::MultiVector<double> and fill a local matrix that has implemented the (.,.)
+  /// operator
   /*  \author g.bau
    *  \date 04/09
    */
   template <class M>
   void extract_my_node_based_values(
-      const Core::Elements::Element* ele,  ///< pointer to current element
-      M& localmatrix,                      ///< local matrix on element-level
-      Epetra_MultiVector& global,          ///< global vector
-      const int nsd                        ///< number of space dimensions
+      const Core::Elements::Element* ele,         ///< pointer to current element
+      M& localmatrix,                             ///< local matrix on element-level
+      Core::LinAlg::MultiVector<double>& global,  ///< global vector
+      const int nsd                               ///< number of space dimensions
   )
   {
     if (nsd > global.NumVectors())
@@ -161,8 +165,6 @@ namespace Core::FE
 
     for (int i = 0; i < nsd; i++)
     {
-      // access actual component column of multi-vector
-      double* globalcolumn = (global)[i];
       // loop over the element nodes
       for (int j = 0; j < iel; j++)
       {
@@ -171,7 +173,7 @@ namespace Core::FE
         if (lid < 0)
           FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
               (global).Comm().MyPID(), nodegid);
-        localmatrix(i, j) = globalcolumn[lid];
+        localmatrix(i, j) = global(i)[lid];
       }
     }
   }
@@ -185,7 +187,7 @@ namespace Core::FE
  */
   template <class M>
   void extract_my_node_based_values(
-      const Core::Elements::Element* ele, M& local, const Epetra_MultiVector& global)
+      const Core::Elements::Element* ele, M& local, const Core::LinAlg::MultiVector<double>& global)
   {
     const int numnode = ele->num_node();
     const int numcol = global.NumVectors();
@@ -204,8 +206,7 @@ namespace Core::FE
       // loop over multi vector columns (numcol=1 for Core::LinAlg::Vector<double>)
       for (int col = 0; col < numcol; col++)
       {
-        double* globalcolumn = (global)[col];
-        local((col + (numcol * i)), 0) = globalcolumn[lid];
+        local((col + (numcol * i)), 0) = global(col)[lid];
       }
     }
   }

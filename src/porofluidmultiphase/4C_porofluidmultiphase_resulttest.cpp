@@ -234,8 +234,9 @@ double POROFLUIDMULTIPHASE::ResultTest::result_element(
     else if (!quantity.compare(14, 15, "z"))
       idx_dim = 2;
 
-    result = ((*porotimint_.phase_velocity())[idx_poro_dof * num_dim + idx_dim])
-        [porotimint_.discretization()->element_row_map()->LID(element->id())];
+    result = ((*porotimint_.phase_velocity())(
+        idx_poro_dof * num_dim +
+        idx_dim))[porotimint_.discretization()->element_row_map()->LID(element->id())];
   }
   // catch unknown quantity strings
   else

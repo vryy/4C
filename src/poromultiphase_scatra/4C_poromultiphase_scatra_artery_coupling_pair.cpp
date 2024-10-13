@@ -24,7 +24,6 @@
 #include "4C_utils_fad.hpp"
 #include "4C_utils_function.hpp"
 
-#include <Epetra_MultiVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -497,7 +496,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::pre_evaluate(Teuchos::RCP<Epetra_MultiVector> gp_vector)
+    dim>::pre_evaluate(Teuchos::RCP<Core::LinAlg::MultiVector<double>> gp_vector)
 {
   if (!isinit_) FOUR_C_THROW("MeshTying Pair has not yet been initialized");
 
@@ -521,7 +520,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::pre_evaluate_lateral_surface_coupling(Epetra_MultiVector& gp_vector)
+    dim>::pre_evaluate_lateral_surface_coupling(Core::LinAlg::MultiVector<double>& gp_vector)
 {
   const int pid = Global::Problem::instance()->get_dis("artery")->get_comm().MyPID();
   const int mylid = element1_->lid();
@@ -607,7 +606,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
         eta_[gpid] = eta;
         xi_[gpid] = xi;
         // projection is valid and GP is so far unclaimed by other pair
-        if (projection_valid && ((gp_vector)[gpid])[mylid] < 0.5)
+        if (projection_valid && ((gp_vector)(gpid))[mylid] < 0.5)
         {
           isactive_ = true;
           // include jacobian
@@ -740,7 +739,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::delete_unnecessary_gps(Teuchos::RCP<Epetra_MultiVector> gp_vector)
+    dim>::delete_unnecessary_gps(Teuchos::RCP<Core::LinAlg::MultiVector<double>> gp_vector)
 {
   const int mylid = element1_->lid();
   n_gp_ = 0;
@@ -756,7 +755,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   {
     if (wgp_[igp] > 1e-12)
     {
-      const double scale = 1.0 / ((*gp_vector)[igp])[mylid];
+      const double scale = 1.0 / ((*gp_vector)(igp))[mylid];
       eta[mygp] = eta_[igp];
       xi[mygp] = xi_[igp];
       wgp[mygp] = wgp_[igp] * scale;

@@ -502,7 +502,7 @@ void NOX::Nln::LinSystem::PrePostOp::Dbc::run_pre_apply_jacobian_inverse(
   Core::LinAlg::VectorView rhs_view(rhs_epetra.getEpetraVector());
   Teuchos::RCP<Core::LinAlg::SparseOperator> jac_ptr = Teuchos::rcpFromRef(jac);
   // apply the dirichlet condition and rotate the system if desired
-  dbc_ptr_->apply_dirichlet_to_local_system(*jac_ptr, *rhs_view.get_non_owning_rcp_ref());
+  dbc_ptr_->apply_dirichlet_to_local_system(*jac_ptr, rhs_view);
 }
 
 FOUR_C_NAMESPACE_CLOSE

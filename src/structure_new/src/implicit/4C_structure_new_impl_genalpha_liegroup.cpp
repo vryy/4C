@@ -116,12 +116,12 @@ void Solid::IMPLICIT::GenAlphaLieGroup::set_state(const Core::LinAlg::Vector<dou
   // new end-point velocities
   // ---------------------------------------------------------------------------
   global_state().get_vel_np()->Update(
-      1.0, *(*const_vel_acc_update_ptr_)(0), gamma_ / (beta_ * dt), *disnp_ptr, 0.0);
+      1.0, (*const_vel_acc_update_ptr_)(0), gamma_ / (beta_ * dt), *disnp_ptr, 0.0);
 
   // ---------------------------------------------------------------------------
   // new end-point accelerations
   // ---------------------------------------------------------------------------
-  global_state().get_acc_np()->Update(1.0, *(*const_vel_acc_update_ptr_)(1),
+  global_state().get_acc_np()->Update(1.0, (*const_vel_acc_update_ptr_)(1),
       (1.0 - alpham_) / (beta_ * dt * dt * (1.0 - alphaf_)), *disnp_ptr, 0.0);
 }
 
@@ -179,20 +179,20 @@ void Solid::IMPLICIT::GenAlphaLieGroup::update_constant_state_contributions()
   // ---------------------------------------------------------------------------
   // velocity
   // ---------------------------------------------------------------------------
-  (*const_vel_acc_update_ptr_)(0)->Scale((1.0 - gamma_ / (2.0 * beta_)) * dt, *accn_mod_);
-  (*const_vel_acc_update_ptr_)(0)->Update(1.0 - gamma_ / beta_, *global_state().get_vel_n(), 1.0);
-  (*const_vel_acc_update_ptr_)(0)->Update(-gamma_ / (beta_ * dt), *global_state().get_dis_n(), 1.0);
+  (*const_vel_acc_update_ptr_)(0).Scale((1.0 - gamma_ / (2.0 * beta_)) * dt, *accn_mod_);
+  (*const_vel_acc_update_ptr_)(0).Update(1.0 - gamma_ / beta_, *global_state().get_vel_n(), 1.0);
+  (*const_vel_acc_update_ptr_)(0).Update(-gamma_ / (beta_ * dt), *global_state().get_dis_n(), 1.0);
 
   // ---------------------------------------------------------------------------
   // acceleration
   // ---------------------------------------------------------------------------
-  (*const_vel_acc_update_ptr_)(1)->Scale(alphaf_ / (alphaf_ - 1.0), *global_state().get_acc_n());
-  (*const_vel_acc_update_ptr_)(1)->Update(
+  (*const_vel_acc_update_ptr_)(1).Scale(alphaf_ / (alphaf_ - 1.0), *global_state().get_acc_n());
+  (*const_vel_acc_update_ptr_)(1).Update(
       alpham_ / (1.0 - alphaf_) - (1.0 - alpham_) * (0.5 - beta_) / (beta_ * (1.0 - alphaf_)),
       *accn_mod_, 1.0);
-  (*const_vel_acc_update_ptr_)(1)->Update(
+  (*const_vel_acc_update_ptr_)(1).Update(
       -(1.0 - alpham_) / (beta_ * dt * (1.0 - alphaf_)), *global_state().get_vel_n(), 1.0);
-  (*const_vel_acc_update_ptr_)(1)->Update(
+  (*const_vel_acc_update_ptr_)(1).Update(
       -(1.0 - alpham_) / (beta_ * dt * dt * (1.0 - alphaf_)), *global_state().get_dis_n(), 1.0);
 }
 
@@ -270,8 +270,6 @@ bool Solid::IMPLICIT::GenAlphaLieGroup::predict_const_vel_consist_acc(
   FOUR_C_THROW(
       "Predictor ConstVelConsistAcc is not supported in Lie group GenAlpha so"
       " far! Use ConstDisConsistVelAcc!");
-
-  return true;
 }
 
 /*----------------------------------------------------------------------------*

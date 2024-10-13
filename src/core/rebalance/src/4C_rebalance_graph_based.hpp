@@ -14,11 +14,11 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_geometric_search_params.hpp"
+#include "4C_linalg_multi_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
-#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -58,7 +58,8 @@ namespace Core::Rebalance
       const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams,
       const Teuchos::RCP<Core::LinAlg::Vector<double>>& initialNodeWeights = Teuchos::null,
       const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights = Teuchos::null,
-      const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates = Teuchos::null);
+      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& initialNodeCoordinates =
+          Teuchos::null);
 
   /*!
   \brief Rebalance graph using node and edge weights based on the initial graph
@@ -82,7 +83,8 @@ namespace Core::Rebalance
       const Teuchos::ParameterList& rebalanceParams,
       const Teuchos::RCP<Core::LinAlg::Vector<double>>& initialNodeWeights = Teuchos::null,
       const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights = Teuchos::null,
-      const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates = Teuchos::null);
+      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& initialNodeCoordinates =
+          Teuchos::null);
 
   /*!
   \brief Rebalance coordinates using weights based on the initial coordinates
@@ -96,9 +98,11 @@ namespace Core::Rebalance
 
   @return Rebalanced coordinates
   */
-  std::pair<Teuchos::RCP<Epetra_MultiVector>, Teuchos::RCP<Epetra_MultiVector>>
-  rebalance_coordinates(const Epetra_MultiVector& initialCoordinates,
-      const Teuchos::ParameterList& rebalanceParams, const Epetra_MultiVector& initialWeights);
+  std::pair<Teuchos::RCP<Core::LinAlg::MultiVector<double>>,
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>>>
+  rebalance_coordinates(const Core::LinAlg::MultiVector<double>& initialCoordinates,
+      const Teuchos::ParameterList& rebalanceParams,
+      const Core::LinAlg::MultiVector<double>& initialWeights);
 
   /*!
   \brief Create node and edge weights based on element connectivity

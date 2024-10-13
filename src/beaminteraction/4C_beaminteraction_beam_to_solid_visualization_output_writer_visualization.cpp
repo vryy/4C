@@ -94,7 +94,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
  */
 void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
     add_discretization_nodal_data_from_multivector(
-        const std::string& data_name, const Epetra_MultiVector& vector)
+        const std::string& data_name, const Core::LinAlg::MultiVector<double>& vector)
 {
   if (discret_ == Teuchos::null || node_gid_map_ == Teuchos::null)
     FOUR_C_THROW("discretization or node GID map is not set!");
@@ -114,8 +114,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
 void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::add_discretization_nodal_data(
     const std::string& data_name, const Teuchos::RCP<const Core::LinAlg::Vector<double>>& vector)
 {
-  add_discretization_nodal_data_from_multivector(
-      data_name, *vector->get_ptr_of_const_Epetra_Vector());
+  add_discretization_nodal_data_from_multivector(data_name, *vector);
 }
 
 /**

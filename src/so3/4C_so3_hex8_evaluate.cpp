@@ -47,7 +47,6 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
 
-#include <Epetra_MultiVector.h>
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
@@ -505,7 +504,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
             case Inpar::Solid::GaussPointDataOutputType::element_center:
             {
               // compute average of the quantities
-              Teuchos::RCP<Epetra_MultiVector> global_data =
+              Teuchos::RCP<Core::LinAlg::MultiVector<double>> global_data =
                   str_params_interface()
                       .gauss_point_data_output_manager_ptr()
                       ->get_element_center_data()
@@ -515,7 +514,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
             }
             case Inpar::Solid::GaussPointDataOutputType::nodes:
             {
-              Teuchos::RCP<Epetra_MultiVector> global_data =
+              Teuchos::RCP<Core::LinAlg::MultiVector<double>> global_data =
                   str_params_interface().gauss_point_data_output_manager_ptr()->get_nodal_data().at(
                       quantity_name);
 
@@ -534,7 +533,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
             }
             case Inpar::Solid::GaussPointDataOutputType::gauss_points:
             {
-              std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
+              std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>& global_data =
                   str_params_interface()
                       .gauss_point_data_output_manager_ptr()
                       ->get_gauss_point_data()

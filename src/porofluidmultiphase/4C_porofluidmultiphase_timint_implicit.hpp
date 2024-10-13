@@ -22,7 +22,6 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_MultiVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -281,10 +280,13 @@ namespace POROFLUIDMULTIPHASE
     }
 
     //! return phase flux field at time n+1
-    Teuchos::RCP<const Epetra_MultiVector> flux() const override { return flux_; }
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> flux() const override { return flux_; }
 
     //! return phase velocity at time n+1
-    Teuchos::RCP<const Epetra_MultiVector> phase_velocity() const { return phase_velocities_; }
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> phase_velocity() const
+    {
+      return phase_velocities_;
+    }
 
     //! return number of dof set associated with solid pressure
     int get_dof_set_number_of_solid_pressure() const override { return nds_solidpressure_; };
@@ -636,10 +638,10 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<Core::LinAlg::Vector<double>> valid_volfracspec_dofs_;
 
     //! flux of each phase at time n+1 (post-processed from pressure solution)
-    Teuchos::RCP<Epetra_MultiVector> flux_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> flux_;
 
     //! velocity of each phase at time n+1 (post-processed from pressure solution)
-    Teuchos::RCP<Epetra_MultiVector> phase_velocities_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> phase_velocities_;
 
     //! number of dofset associated with displacement dofs
     int nds_disp_;

@@ -21,7 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  export a Core::LinAlg::Vector<double>                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::export_to(const Epetra_MultiVector& source, Epetra_MultiVector& target)
+void Core::LinAlg::export_to(
+    const Core::LinAlg::MultiVector<double>& source, Core::LinAlg::MultiVector<double>& target)
 {
   try
   {
@@ -42,7 +43,7 @@ void Core::LinAlg::export_to(const Epetra_MultiVector& source, Epetra_MultiVecto
           const int lid = source.Map().LID(gid);
           if (lid < 0) continue;
           // FOUR_C_THROW("No source for target");
-          (*target(k))[i] = (*source(k))[lid];
+          target(k)[i] = source(k)[lid];
         }
       return;
     }
@@ -74,8 +75,7 @@ void Core::LinAlg::export_to(const Epetra_MultiVector& source, Epetra_MultiVecto
           FOUR_C_THROW(
               "Export of non-unique source failed. Source data not available on target proc");
 
-        for (int k = 0; k < source.NumVectors(); ++k)
-          (*target(k))[targetlid] = (*source(k))[sourcelid];
+        for (int k = 0; k < source.NumVectors(); ++k) target(k)[targetlid] = source(k)[sourcelid];
       }
       return;
     }
@@ -778,8 +778,8 @@ bool Core::LinAlg::split_vector(const Epetra_Map& xmap, const Core::LinAlg::Vect
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::std_vector_to_epetra_multi_vector(
-    const std::vector<double>& stdVector, Epetra_MultiVector& epetraMultiVector, int blockSize)
+void Core::LinAlg::std_vector_to_epetra_multi_vector(const std::vector<double>& stdVector,
+    Core::LinAlg::MultiVector<double>& epetraMultiVector, int blockSize)
 {
   for (size_t dim = 0; dim < Teuchos::as<size_t>(blockSize); ++dim)
   {
@@ -801,7 +801,8 @@ void Core::LinAlg::std_vector_to_epetra_multi_vector(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::LinAlg::epetra_multi_vector_to_std_vector(
-    const Epetra_MultiVector& epetraMultiVector, std::vector<double>& stdVector, int blockSize)
+    const Core::LinAlg::MultiVector<double>& epetraMultiVector, std::vector<double>& stdVector,
+    int blockSize)
 {
   for (size_t dim = 0; dim < Teuchos::as<size_t>(blockSize); ++dim)
   {

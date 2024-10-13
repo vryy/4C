@@ -465,18 +465,18 @@ namespace
   void get_node_vectors_hdg(Core::FE::Discretization& dis,
       const Teuchos::RCP<Core::LinAlg::Vector<double>>& interiorValues,
       const Teuchos::RCP<Core::LinAlg::Vector<double>>& traceValues, const int ndim,
-      Teuchos::RCP<Epetra_MultiVector>& velocity,
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>>& velocity,
       Teuchos::RCP<Core::LinAlg::Vector<double>>& pressure,
-      Teuchos::RCP<Epetra_MultiVector>& tracevel,
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>>& tracevel,
       Teuchos::RCP<Core::LinAlg::Vector<double>>& cellPres)
   {
     // create dofsets for velocity and pressure at nodes
     if (pressure.get() == nullptr || pressure->GlobalLength() != dis.num_global_nodes())
     {
-      velocity = Teuchos::make_rcp<Epetra_MultiVector>(*dis.node_row_map(), ndim);
+      velocity = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
       pressure = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis.node_row_map());
     }
-    tracevel = Teuchos::make_rcp<Epetra_MultiVector>(velocity->Map(), ndim);
+    tracevel = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(velocity->Map(), ndim);
     cellPres = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis.element_row_map());
 
     // call element routine for interpolate HDG to elements
@@ -506,10 +506,10 @@ namespace
         if (localIndex < 0) continue;
         touchCount[localIndex]++;
         for (int d = 0; d < ndim; ++d)
-          (*velocity)[d][localIndex] += interpolVec(i + d * ele->num_node());
+          (*velocity)(d)[localIndex] += interpolVec(i + d * ele->num_node());
         (*pressure)[localIndex] += interpolVec(i + ndim * ele->num_node());
         for (int d = 0; d < ndim; ++d)
-          (*tracevel)[d][localIndex] += interpolVec(i + (ndim + 1 + d) * ele->num_node());
+          (*tracevel)(d)[localIndex] += interpolVec(i + (ndim + 1 + d) * ele->num_node());
       }
       const int eleIndex = dis.element_row_map()->LID(ele->id());
       if (eleIndex >= 0) (*cellPres)[eleIndex] += interpolVec((2 * ndim + 1) * ele->num_node());
@@ -518,8 +518,8 @@ namespace
     for (int i = 0; i < pressure->MyLength(); ++i)
     {
       (*pressure)[i] /= touchCount[i];
-      for (int d = 0; d < ndim; ++d) (*velocity)[d][i] /= touchCount[i];
-      for (int d = 0; d < ndim; ++d) (*tracevel)[d][i] /= touchCount[i];
+      for (int d = 0; d < ndim; ++d) (*velocity)(d)[i] /= touchCount[i];
+      for (int d = 0; d < ndim; ++d) (*tracevel)(d)[i] /= touchCount[i];
     }
     dis.clear_state();
   }
@@ -539,7 +539,7 @@ void FLD::TimIntHDG::output()
     output_->new_step(step_, time_);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> cellPres;
-    Teuchos::RCP<Epetra_MultiVector> traceVel;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> traceVel;
     get_node_vectors_hdg(*discret_, intvelnp_, velnp_,
         params_->get<int>("number of velocity degrees of freedom"), interpolatedVelocity_,
         interpolatedPressure_, traceVel, cellPres);

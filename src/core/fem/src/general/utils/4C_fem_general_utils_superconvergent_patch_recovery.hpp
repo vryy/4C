@@ -34,11 +34,11 @@ namespace Core::FE
   /*!
     \brief reconstruct nodal values via superconvergent patch recovery
 
-    \return an Epetra_MultiVector based on the discret's node row map containing numvec vectors
-            with the reconstruced state
+    \return an Core::LinAlg::MultiVector<double> based on the discret's node row map containing
+    numvec vectors with the reconstruced state
    */
   template <int dim>
-  Teuchos::RCP<Epetra_MultiVector> compute_superconvergent_patch_recovery(
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> compute_superconvergent_patch_recovery(
       Core::FE::Discretization& dis,              ///< underlying discretization
       const Core::LinAlg::Vector<double>& state,  ///< state vector needed on element level
       const std::string& statename,               ///< name of state which will be set

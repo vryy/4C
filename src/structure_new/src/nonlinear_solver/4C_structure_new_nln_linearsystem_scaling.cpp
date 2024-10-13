@@ -121,7 +121,8 @@ void Solid::Nln::LinSystem::StcScaling::unscaleLinearSystem(Epetra_LinearProblem
       Core::LinAlg::create_vector(problem.GetLHS()->Map(), true);
   Epetra_MultiVector* disi = problem.GetLHS();
 
-  stcmat_->multiply(false, *disi, *disisdc);
+  Core::LinAlg::VectorView disi_view(*disi);
+  stcmat_->multiply(false, disi_view, *disisdc);
   disi->Update(1.0, *disisdc, 0.0);
 }
 

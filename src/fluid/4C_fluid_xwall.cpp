@@ -1177,8 +1177,8 @@ void FLD::XWall::l2_project_vector(Core::LinAlg::Vector<double>& veln,
   params.set<FLD::Action>("action", FLD::xwall_l2_projection);
 
   // create empty right hand side
-  Teuchos::RCP<Epetra_MultiVector> rhsassemble =
-      Teuchos::make_rcp<Epetra_MultiVector>(*enrdofrowmap_, numberofrhs);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> rhsassemble =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*enrdofrowmap_, numberofrhs);
 
   std::vector<int> lm;
   std::vector<int> lmowner;
@@ -1251,8 +1251,8 @@ void FLD::XWall::l2_project_vector(Core::LinAlg::Vector<double>& veln,
   massmatrix_->complete();
 
   // solution vector
-  Teuchos::RCP<Epetra_MultiVector> resultvec =
-      Teuchos::make_rcp<Epetra_MultiVector>(*enrdofrowmap_, numberofrhs);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> resultvec =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*enrdofrowmap_, numberofrhs);
 
   // solve for 1, 2 or 3 right hand sides at the same time --> thanks to Belos
   Core::LinAlg::SolverParams solver_params;
@@ -1262,9 +1262,9 @@ void FLD::XWall::l2_project_vector(Core::LinAlg::Vector<double>& veln,
       massmatrix_->epetra_operator(), resultvec, rhsassemble, solver_params);
 
   // now copy result in original vector: the result is an increment of the velocity/ acceleration
-  Core::LinAlg::export_to(*((*resultvec)(0)), *incveln_);
-  if (numberofrhs > 1) Core::LinAlg::export_to(*((*resultvec)(1)), *incaccn_);
-  if (numberofrhs > 2) Core::LinAlg::export_to(*((*resultvec)(2)), *incvelnp_);
+  Core::LinAlg::export_to(((*resultvec)(0)), *incveln_);
+  if (numberofrhs > 1) Core::LinAlg::export_to(((*resultvec)(1)), *incaccn_);
+  if (numberofrhs > 2) Core::LinAlg::export_to(((*resultvec)(2)), *incvelnp_);
 
   veln.Update(1.0, *incveln_, 1.0);
   if (accn != Teuchos::null) accn->Update(1.0, *incaccn_, 1.0);
@@ -1318,7 +1318,7 @@ void FLD::XWall::adapt_ml_nullspace(Core::LinAlg::Solver& solver)
  *----------------------------------------------------------------------*/
 void FLD::XWall::calc_mk()
 {
-  Epetra_MultiVector mkxw(*(xwdiscret_->element_row_map()), 1, true);
+  Core::LinAlg::MultiVector<double> mkxw(*(xwdiscret_->element_row_map()), 1, true);
 
   // create the parameters for the discretization
   Teuchos::ParameterList eleparams;
@@ -1335,7 +1335,7 @@ void FLD::XWall::calc_mk()
   Core::LinAlg::Vector<double> mkv(*(discret_->element_row_map()), true);
 
   // export
-  Core::LinAlg::export_to(*((mkxw)(0)), mkxwv);
+  Core::LinAlg::export_to(mkxw(0), mkxwv);
   Core::LinAlg::export_to(mkxwv, *mkxwstate_);
   Core::LinAlg::export_to(mkxwv, mkv);
   Core::LinAlg::export_to(mkv, *mkstate_);

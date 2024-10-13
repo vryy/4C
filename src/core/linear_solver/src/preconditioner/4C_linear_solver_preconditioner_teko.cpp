@@ -36,8 +36,8 @@ Core::LinearSolver::TekoPreconditioner::TekoPreconditioner(Teuchos::ParameterLis
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::TekoPreconditioner::setup(
-    bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
+void Core::LinearSolver::TekoPreconditioner::setup(bool create, Epetra_Operator* matrix,
+    Core::LinAlg::MultiVector<double>* x, Core::LinAlg::MultiVector<double>* b)
 {
   using EpetraMultiVector = Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>;
   using XpetraMultiVector = Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>;
@@ -114,10 +114,12 @@ void Core::LinearSolver::TekoPreconditioner::setup(
             const int number_of_equations = inverseList.get<int>("PDE equations");
 
             Teuchos::RCP<XpetraMultiVector> nullspace = Teuchos::make_rcp<EpetraMultiVector>(
-                inverseList.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace"));
+                inverseList.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace")
+                    ->get_ptr_of_Epetra_MultiVector());
 
             Teuchos::RCP<XpetraMultiVector> coordinates = Teuchos::make_rcp<EpetraMultiVector>(
-                inverseList.get<Teuchos::RCP<Epetra_MultiVector>>("Coordinates"));
+                inverseList.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("Coordinates")
+                    ->get_ptr_of_Epetra_MultiVector());
 
             tekoParams->sublist("Inverse Factory Library")
                 .sublist(inverse)

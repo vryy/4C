@@ -25,7 +25,6 @@ algorithms
 #include "4C_lubrication_timint_implicit.hpp"
 #include "4C_mat_lubrication_mat.hpp"
 
-#include <Epetra_MultiVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -282,7 +281,7 @@ void EHL::Base::set_lubrication_solution(Teuchos::RCP<const Core::LinAlg::Vector
   // Provide the structure field with the force vector
   // Note that the mid-point values (gen-alpha) of the interface forces are evaluated in
   // Solid::TimIntGenAlpha::evaluate_force_residual()
-  structure_->set_force_interface(evaluate_fluid_force(*pressure)->get_ptr_of_Epetra_MultiVector());
+  structure_->set_force_interface(evaluate_fluid_force(*pressure)->get_ptr_of_MultiVector());
 }
 
 void EHL::Base::add_pressure_force(
@@ -539,7 +538,7 @@ void EHL::Base::setup_unprojectable_dbc()
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> exp =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ada_strDisp_to_lubPres_->master_dof_map());
-  Core::LinAlg::export_to(inf_gap_toggle, *exp);
+  Core::LinAlg::export_to(Core::LinAlg::Vector<double>(inf_gap_toggle), *exp);
   inf_gap_toggle_lub_ = ada_strDisp_to_lubPres_->master_to_slave(exp);
 
   static Teuchos::RCP<Core::LinAlg::Vector<double>> old_toggle = Teuchos::null;

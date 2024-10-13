@@ -2015,7 +2015,7 @@ namespace FLD
     discret_->set_state("velnp", velnp_);
 
     const Epetra_Map* elementrowmap = discret_->element_row_map();
-    Epetra_MultiVector massflvec(*elementrowmap, 1, true);
+    Core::LinAlg::MultiVector<double> massflvec(*elementrowmap, 1, true);
 
     // optional: elementwise defined div u may be written to standard output file (not implemented
     // yet)
@@ -2023,16 +2023,16 @@ namespace FLD
 
     discret_->clear_state();
 
-    Epetra_MultiVector massflvecneg(*elementrowmap, 1, true);
+    Core::LinAlg::MultiVector<double> massflvecneg(*elementrowmap, 1, true);
 
     // take into account negative mass flux at the inflow
     for (int i = 0; i < discret_->element_row_map()->NumMyElements(); ++i)
     {
-      double locflow = (*((massflvec)(0)))[i];
+      double locflow = ((massflvec)(0))[i];
       if (locflow < -1.0e-9)
       {
-        (*((massflvec)(0)))[i] = 0.0;
-        (*((massflvecneg)(0)))[i] = locflow;
+        ((massflvec)(0))[i] = 0.0;
+        ((massflvecneg)(0))[i] = locflow;
       }
     }
 

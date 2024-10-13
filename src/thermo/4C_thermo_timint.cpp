@@ -972,7 +972,7 @@ Teuchos::RCP<std::vector<double>> Thermo::TimInt::evaluate_error_compared_to_ana
           Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(4);
 
       // vector for output
-      Epetra_MultiVector normvec(*discret_->element_row_map(), 7);
+      Core::LinAlg::MultiVector<double> normvec(*discret_->element_row_map(), 7);
 
       // call loop over elements (assemble nothing)
       discret_->evaluate_scalars(eleparams, errors);

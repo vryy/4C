@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery(
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconvergent_patch_recovery(
     Core::FE::Discretization& dis, const Core::LinAlg::Vector<double>& state,
     const std::string& statename, const int numvec, Teuchos::ParameterList& params)
 {
@@ -96,8 +96,8 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   dis.set_state(statename, Teuchos::rcpFromRef(state));
 
   const Epetra_Map* elementrowmap = dis.element_row_map();
-  Epetra_MultiVector elevec_toberecovered(*elementrowmap, numvec, true);
-  Epetra_MultiVector centercoords(*elementrowmap, dim, true);
+  Core::LinAlg::MultiVector<double> elevec_toberecovered(*elementrowmap, numvec, true);
+  Core::LinAlg::MultiVector<double> centercoords(*elementrowmap, dim, true);
 
   std::vector<int> lm;
   std::vector<int> lmowner;
@@ -148,9 +148,10 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
     }
   }  // end element loop
 
-  Epetra_MultiVector elevec_toberecovered_col(*(dis.element_col_map()), numvec, true);
+  Core::LinAlg::MultiVector<double> elevec_toberecovered_col(
+      *(dis.element_col_map()), numvec, true);
   Core::LinAlg::export_to(elevec_toberecovered, elevec_toberecovered_col);
-  Epetra_MultiVector centercoords_col(*(dis.element_col_map()), dim, true);
+  Core::LinAlg::MultiVector<double> centercoords_col(*(dis.element_col_map()), dim, true);
   Core::LinAlg::export_to(centercoords, centercoords_col);
 
   // step 2: use precalculated (velocity) gradient for patch-recovery of gradient
@@ -208,12 +209,12 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           {
             const int elelid = elevec_toberecovered_col.Map().LID(adjacentele[k]->id());
             for (int d = 0; d < dim; ++d)
-              p(d + 1) = (*(centercoords_col)(d))[elelid] - node->x()[d] /* + ALE_DISP*/;
+              p(d + 1) = centercoords_col(d)[elelid] - node->x()[d] /* + ALE_DISP*/;
 
             // compute outer product of p x p and add to A
             A.multiply_nt(1.0, p, p, 1.0);
 
-            b.update((*(elevec_toberecovered_col)(j))[elelid], p, 1.0);
+            b.update((elevec_toberecovered_col(j))[elelid], p, 1.0);
           }
 
           // solve for coefficients of interpolation
@@ -277,13 +278,13 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
             {
               const int elelid = elevec_toberecovered_col.Map().LID(adjacenteles[s][k]->id());
               for (int d = 0; d < dim; ++d)
-                p(d + 1) = (*(centercoords_col)(d))[elelid] + eleoffsets[s][d] -
-                           node->x()[d] /* + ALE_DISP*/;
+                p(d + 1) =
+                    (centercoords_col(d))[elelid] + eleoffsets[s][d] - node->x()[d] /* + ALE_DISP*/;
 
               // compute outer product of p x p and add to A
               A.multiply_nt(1.0, p, p, 1.0);
 
-              b.update((*(elevec_toberecovered_col)(j))[elelid], p, 1.0);
+              b.update((elevec_toberecovered_col(j))[elelid], p, 1.0);
             }
           }
 
@@ -368,12 +369,12 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
           {
             const int elelid = elevec_toberecovered_col.Map().LID(closestnodeadjacentele[k]->id());
             for (int d = 0; d < dim; ++d)
-              p(d + 1) = (*(centercoords_col)(d))[elelid] - closestnode->x()[d]; /* + ALE_DISP*/
+              p(d + 1) = (centercoords_col(d))[elelid] - closestnode->x()[d]; /* + ALE_DISP*/
 
             // compute outer product of p x p and add to A
             A.multiply_nt(1.0, p, p, 1.0);
 
-            b.update((*(elevec_toberecovered_col)(j))[elelid], p, 1.0);
+            b.update((elevec_toberecovered_col(j))[elelid], p, 1.0);
           }
 
           // solve for coefficients of interpolation
@@ -508,13 +509,13 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
               const int elelid =
                   elevec_toberecovered_col.Map().LID(closestnodeadjacenteles[s][k]->id());
               for (int d = 0; d < dim; ++d)
-                p(d + 1) = (*(centercoords_col)(d))[elelid] + eleoffsets[s][d] -
+                p(d + 1) = (centercoords_col(d))[elelid] + eleoffsets[s][d] -
                            closestnode->x()[d]; /* + ALE_DISP*/
 
               // compute outer product of p x p and add to A
               A.multiply_nt(1.0, p, p, 1.0);
 
-              b.update((*(elevec_toberecovered_col)(j))[elelid], p, 1.0);
+              b.update((elevec_toberecovered_col(j))[elelid], p, 1.0);
             }
           }
 
@@ -543,12 +544,13 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   if (err < 0) FOUR_C_THROW("global assemble into nodevec failed");
 
   // if no pbc are involved leave here
-  if (noderowmap.PointSameAs(*fullnoderowmap)) return nodevec;
+  if (noderowmap.PointSameAs(*fullnoderowmap))
+    return Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodevec);
 
   // solution vector based on full row map in which the solution of the master node is inserted into
   // slave nodes
-  Teuchos::RCP<Epetra_MultiVector> fullnodevec =
-      Teuchos::make_rcp<Epetra_MultiVector>(*fullnoderowmap, numvec);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> fullnodevec =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*fullnoderowmap, numvec);
 
   for (int i = 0; i < fullnoderowmap->NumMyElements(); ++i)
   {
@@ -572,14 +574,14 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
   return fullnodevec;
 }
 
-template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<1>(
-    Core::FE::Discretization&, const Core::LinAlg::Vector<double>&, const std::string&, const int,
-    Teuchos::ParameterList&);
-template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<2>(
-    Core::FE::Discretization&, const Core::LinAlg::Vector<double>&, const std::string&, const int,
-    Teuchos::ParameterList&);
-template Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recovery<3>(
-    Core::FE::Discretization&, const Core::LinAlg::Vector<double>&, const std::string&, const int,
-    Teuchos::ParameterList&);
+template Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+Core::FE::compute_superconvergent_patch_recovery<1>(Core::FE::Discretization&,
+    const Core::LinAlg::Vector<double>&, const std::string&, const int, Teuchos::ParameterList&);
+template Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+Core::FE::compute_superconvergent_patch_recovery<2>(Core::FE::Discretization&,
+    const Core::LinAlg::Vector<double>&, const std::string&, const int, Teuchos::ParameterList&);
+template Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+Core::FE::compute_superconvergent_patch_recovery<3>(Core::FE::Discretization&,
+    const Core::LinAlg::Vector<double>&, const std::string&, const int, Teuchos::ParameterList&);
 
 FOUR_C_NAMESPACE_CLOSE

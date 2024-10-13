@@ -2812,11 +2812,10 @@ void FLD::XFluid::setup_krylov_space_projection(Core::Conditions::Condition* ksp
 void FLD::XFluid::update_krylov_space_projection()
 {
   // get Teuchos::RCP to kernel vector of projector
-  Teuchos::RCP<Epetra_MultiVector> c = projector_->get_non_const_kernel();
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> c = projector_->get_non_const_kernel();
   // Modify c within this scope
   {
-    Core::LinAlg::VectorView c0_view(*(*c)(0));
-    Core::LinAlg::Vector<double>& c0(c0_view);
+    auto& c0 = (*c)(0);
     c0.PutScalar(0.0);
 
     // extract vector of pressure-dofs
@@ -2849,10 +2848,9 @@ void FLD::XFluid::update_krylov_space_projection()
     else if (*weighttype == "integration")
     {
       // get Teuchos::RCP to weight vector of projector
-      Teuchos::RCP<Epetra_MultiVector> w = projector_->get_non_const_weights();
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> w = projector_->get_non_const_weights();
 
-      Core::LinAlg::VectorView w0_view(*((*w)(0)));
-      Core::LinAlg::Vector<double>& w0(w0_view);
+      auto& w0 = (*w)(0);
       w0.PutScalar(0.0);
 
       // create parameter list for condition evaluate and ...
@@ -2879,7 +2877,7 @@ void FLD::XFluid::update_krylov_space_projection()
       */
 
       // compute w_ by evaluating the integrals of all pressure basis functions
-      integrate_shape_function(mode_params, *discret_, *w0_view.get_non_owning_rcp_ref());
+      integrate_shape_function(mode_params, *discret_, w0);
     }
     else
     {
@@ -2910,7 +2908,7 @@ void FLD::XFluid::check_matrix_nullspace()
   // Note: this check is expensive and should only be used in the debug mode
   if (projector_ != Teuchos::null)
   {
-    Teuchos::RCP<Epetra_MultiVector> c = projector_->get_non_const_kernel();
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> c = projector_->get_non_const_kernel();
     projector_->fill_complete();
     int nsdim = c->NumVectors();
     if (nsdim != 1) FOUR_C_THROW("Only one mode, namely the constant pressure mode, expected.");

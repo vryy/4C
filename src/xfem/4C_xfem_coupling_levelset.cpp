@@ -493,7 +493,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
 
       // Lives on NodeRow-map!!!
       const auto& solverparams = Global::Problem::instance()->solver_params(l2_proj_num);
-      Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode =
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> gradphinp_smoothed_rownode =
           Core::FE::compute_nodal_l2_projection(*cutter_dis_, "pres", 3, eleparams, solverparams,
               Global::Problem::instance()->solver_params_callback());
       if (gradphinp_smoothed_rownode == Teuchos::null)
@@ -505,10 +505,10 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
         // identical ordering
         for (int ivec = 0; ivec < gradphinp_smoothed_rownode->NumVectors(); ivec++)
         {
-          auto* itemp = (*gradphinp_smoothed_rownode)(ivec);
-          for (int jlength = 0; jlength < itemp->MyLength(); jlength++)
+          auto& itemp = (*gradphinp_smoothed_rownode)(ivec);
+          for (int jlength = 0; jlength < itemp.MyLength(); jlength++)
           {
-            gradphinp_smoothed_node_->ReplaceMyValue(jlength, ivec, itemp->operator[](jlength));
+            gradphinp_smoothed_node_->ReplaceMyValue(jlength, ivec, itemp[jlength]);
           }
         }
         // Bring dof_row_map to DofColMap layout (Attention: name is node but lives on dof)

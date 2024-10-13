@@ -1790,12 +1790,12 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
     if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
-    auto convel_multi = Epetra_MultiVector(*discret_->node_row_map(), nsd_, true);
+    auto convel_multi = Core::LinAlg::MultiVector<double>(*discret_->node_row_map(), nsd_, true);
     for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
     {
       Core::Nodes::Node* node = discret_->l_row_node(inode);
       for (int idim = 0; idim < nsd_; ++idim)
-        (convel_multi)[idim][inode] =
+        (convel_multi)(idim)[inode] =
             (*convel)[convel->Map().LID(discret_->dof(nds_vel(), node, idim))];
     }
 
@@ -1813,12 +1813,12 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
       FOUR_C_THROW("Cannot extract displacement field from discretization");
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
-    auto dispnp_multi = Epetra_MultiVector(*discret_->node_row_map(), nsd_, true);
+    auto dispnp_multi = Core::LinAlg::MultiVector<double>(*discret_->node_row_map(), nsd_, true);
     for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
     {
       Core::Nodes::Node* node = discret_->l_row_node(inode);
       for (int idim = 0; idim < nsd_; ++idim)
-        (dispnp_multi)[idim][inode] =
+        (dispnp_multi)(idim)[inode] =
             (*dispnp)[dispnp->Map().LID(discret_->dof(nds_disp(), node, idim))];
     }
 
@@ -1832,10 +1832,10 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
   if (nds_micro() != -1)
   {
     // convert vector to multi vector
-    auto micro_conc_multi = Epetra_MultiVector(*discret_->node_row_map(), 1, true);
+    auto micro_conc_multi = Core::LinAlg::MultiVector<double>(*discret_->node_row_map(), 1, true);
 
     for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
-      (micro_conc_multi)[0][inode] = (*phinp_micro_)[inode];
+      (micro_conc_multi)(0)[inode] = (*phinp_micro_)[inode];
 
     visualization_writer_->append_result_data_vector_with_context(
         micro_conc_multi, Core::IO::OutputEntity::node, {"micro_conc"});
@@ -2417,7 +2417,7 @@ void ScaTra::ScaTraTimIntImpl::update_krylov_space_projection()
   // free! :)
 
   // get Teuchos::RCP to kernel vector of projector
-  Teuchos::RCP<Epetra_MultiVector> c = projector_->get_non_const_kernel();
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> c = projector_->get_non_const_kernel();
   c->PutScalar(0.0);
 
   const std::string* weighttype = projector_->weight_type();
@@ -2429,7 +2429,7 @@ void ScaTra::ScaTraTimIntImpl::update_krylov_space_projection()
   else if (*weighttype == "integration")
   {
     // get Teuchos::RCP to weight vector of projector
-    Teuchos::RCP<Epetra_MultiVector> w = projector_->get_non_const_weights();
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> w = projector_->get_non_const_weights();
     w->PutScalar(0.0);
 
     // get number of modes and their ids
@@ -2471,11 +2471,11 @@ void ScaTra::ScaTraTimIntImpl::update_krylov_space_projection()
       */
 
       // get an Teuchos::RCP of the current column Core::LinAlg::Vector<double> of the MultiVector
-      auto wi = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*w)(imode));
+      auto wi = Teuchos::make_rcp<Core::LinAlg::Vector<double>>((*w)(imode));
       // compute integral of shape functions
       discret_->evaluate_condition(mode_params, Teuchos::null, Teuchos::null, wi, Teuchos::null,
           Teuchos::null, "KrylovSpaceProjection");
-      *(*w)(imode) = wi->get_ref_of_Epetra_Vector();
+      (*w)(imode) = *wi;
 
       // deactivate dof of current mode
       (*dofids)[modeids[imode]] = -1;
@@ -3175,17 +3175,17 @@ std::string ScaTra::ScaTraTimIntImpl::map_tim_int_enum_to_string(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector>
+Teuchos::RCP<Core::LinAlg::MultiVector<double>>
 ScaTra::ScaTraTimIntImpl::convert_dof_vector_to_componentwise_node_vector(
     const Core::LinAlg::Vector<double>& dof_vector, const int nds) const
 {
-  Teuchos::RCP<Epetra_MultiVector> componentwise_node_vector =
-      Teuchos::make_rcp<Epetra_MultiVector>(*discret_->node_row_map(), nsd_, true);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> componentwise_node_vector =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), nsd_, true);
   for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
   {
     Core::Nodes::Node* node = discret_->l_row_node(inode);
     for (int idim = 0; idim < nsd_; ++idim)
-      (*componentwise_node_vector)[idim][inode] =
+      (*componentwise_node_vector)(idim)[inode] =
           (dof_vector)[dof_vector.Map().LID(discret_->dof(nds, node, idim))];
   }
   return componentwise_node_vector;

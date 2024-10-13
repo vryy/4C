@@ -146,9 +146,9 @@ void ScaTra::ScaTraUtils::check_consistency_with_s2_i_kinetics_condition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <const int dim>
-Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average(
-    Core::FE::Discretization& discret, const Core::LinAlg::Vector<double>& state,
-    const int scatra_dofid)
+Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average(Core::FE::Discretization& discret,
+    const Core::LinAlg::Vector<double>& state, const int scatra_dofid)
 {
   // number space dimensions
   const size_t nsd = dim;
@@ -165,8 +165,8 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
   // ---------------------------------------------------------------
 
   // before we can export to NodeColMap we need reconstruction with a NodeRowMap
-  const Teuchos::RCP<Epetra_MultiVector> gradphirow =
-      Teuchos::make_rcp<Epetra_MultiVector>(*discret.dof_row_map(), nsd);
+  const Teuchos::RCP<Core::LinAlg::MultiVector<double>> gradphirow =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret.dof_row_map(), nsd);
   gradphirow->PutScalar(0.0);
 
   // map of pointers to nodes which must be reconstructed by this processor <local id, node>
@@ -330,23 +330,21 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::compute_gradient_at_nodes_
 
     const int numcol = (*gradphirow).NumVectors();
     if (numcol != (int)nsd)
-      FOUR_C_THROW("number of columns in Epetra_MultiVector is not identically to nsd");
+      FOUR_C_THROW(
+          "number of columns in Core::LinAlg::MultiVector<double> is not identically to nsd");
 
     // loop over dimensions (= number of columns in multivector)
     for (int col = 0; col < numcol; col++)
     {
-      // get columns vector of multivector
-      double* globalcolumn = (*gradphirow)[col];
-
       // set smoothed gradient entry of phi into column of global multivector
-      globalcolumn[lid] = node_gradphi_smoothed(col, 0);
+      (*gradphirow)(col)[lid] = node_gradphi_smoothed(col, 0);
     }
   }  // end loop over nodes
 
   return gradphirow;
 }
 
-template Teuchos::RCP<Epetra_MultiVector>
+template Teuchos::RCP<Core::LinAlg::MultiVector<double>>
 ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average<3>(Core::FE::Discretization& discret,
     const Core::LinAlg::Vector<double>& state, const int scatra_dofid);
 

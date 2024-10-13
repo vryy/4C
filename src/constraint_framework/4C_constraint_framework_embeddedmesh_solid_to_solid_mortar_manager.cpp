@@ -18,7 +18,6 @@
 #include "4C_linalg_vector.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Epetra_MultiVector.h>
 
 #include <unordered_set>
 
@@ -138,7 +137,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::setup(
       -1, my_lambda_gid.size(), my_lambda_gid.data(), 0, discret_->get_comm());
 
   // We need to be able to get the global ids for a Lagrange multiplier DOF from the global id
-  // of a node. To do so, we 'abuse' the Epetra_MultiVector as map between the
+  // of a node. To do so, we 'abuse' the Core::LinAlg::MultiVector<double> as map between the
   // global node ids and the global Lagrange multiplier DOF ids.
   Epetra_Map node_gid_rowmap(-1, n_nodes, &my_nodes_gid[0], 0, discret_->get_comm());
 
@@ -147,7 +146,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::setup(
   node_gid_to_lambda_gid_ = Teuchos::null;
   if (n_lambda_node_ > 0)
     node_gid_to_lambda_gid_ =
-        Teuchos::make_rcp<Epetra_MultiVector>(node_gid_rowmap, n_lambda_node_, true);
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(node_gid_rowmap, n_lambda_node_, true);
 
   // Fill in the entries in the node global id to Lagrange multiplier global id vector.
   int error_code = 0;
@@ -266,10 +265,10 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_local_maps(
       -1, node_gid_needed.size(), &node_gid_needed[0], 0, discret_->get_comm());
 
   // Create the Multivectors that will be filled with all values needed on this rank.
-  Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_copy = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> node_gid_to_lambda_gid_copy = Teuchos::null;
   if (node_gid_to_lambda_gid_ != Teuchos::null)
-    node_gid_to_lambda_gid_copy =
-        Teuchos::make_rcp<Epetra_MultiVector>(node_gid_needed_rowmap, n_lambda_node_, true);
+    node_gid_to_lambda_gid_copy = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+        node_gid_needed_rowmap, n_lambda_node_, true);
 
   // Export values from the global multi vector to the ones needed on this rank.
   if (node_gid_to_lambda_gid_ != Teuchos::null)
@@ -285,7 +284,7 @@ void CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::set_local_maps(
     for (int i_node = 0; i_node < node_gid_needed_rowmap.NumMyElements(); i_node++)
     {
       for (unsigned int i_temp = 0; i_temp < n_lambda_node_; i_temp++)
-        temp_node[i_temp] = (int)((*(*node_gid_to_lambda_gid_copy)(i_temp))[i_node]);
+        temp_node[i_temp] = (int)((*node_gid_to_lambda_gid_copy)(i_temp)[i_node]);
       node_gid_to_lambda_gid_map_[node_gid_needed_rowmap.GID(i_node)] = temp_node;
       lambda_gid_for_col_map.insert(
           std::end(lambda_gid_for_col_map), std::begin(temp_node), std::end(temp_node));
@@ -457,7 +456,8 @@ CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager::get_global_lambda() const
   // penalty parameter.
   Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lambda_dof_rowmap_);
-  int linalg_error = penalty_kappa_inv_mat.multiply(false, *global_constraint_, *lambda);
+  int linalg_error = penalty_kappa_inv_mat.multiply(
+      false, Core::LinAlg::Vector<double>(*global_constraint_), *lambda);
   if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
 
   return lambda;

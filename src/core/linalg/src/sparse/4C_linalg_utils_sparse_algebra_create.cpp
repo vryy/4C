@@ -71,10 +71,10 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Core::LinAlg::create_vector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::create_multi_vector(
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::LinAlg::create_multi_vector(
     const Epetra_BlockMap& rowmap, const int numrows, const bool init)
 {
-  return Teuchos::make_rcp<Epetra_MultiVector>(rowmap, numrows, init);
+  return Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(rowmap, numrows, init);
 }
 
 /*----------------------------------------------------------------------*

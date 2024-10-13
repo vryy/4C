@@ -81,8 +81,9 @@ namespace Core::IO
      * @param context (in)        context vector of size number components per node or element
      *                            defining the output name of the i-th component
      */
-    void append_result_data_vector_with_context(const Epetra_MultiVector& result_data,
-        const OutputEntity output_entity, const std::vector<std::optional<std::string>>& context);
+    void append_result_data_vector_with_context(
+        const Core::LinAlg::MultiVector<double>& result_data, const OutputEntity output_entity,
+        const std::vector<std::optional<std::string>>& context);
 
    private:
     /**
@@ -119,7 +120,8 @@ namespace Core::IO
      * @param result_num_components_per_node (in) Number of scalar values per node
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void append_node_based_result_data_vector(const Epetra_MultiVector& result_data_nodebased,
+    void append_node_based_result_data_vector(
+        const Core::LinAlg::MultiVector<double>& result_data_nodebased,
         unsigned int result_num_components_per_node, const std::string& resultname);
 
     /**
@@ -133,7 +135,8 @@ namespace Core::IO
      * @param result_num_components_per_element (in) Number of scalar values per element
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void append_element_based_result_data_vector(const Epetra_MultiVector& result_data_elementbased,
+    void append_element_based_result_data_vector(
+        const Core::LinAlg::MultiVector<double>& result_data_elementbased,
         unsigned int result_num_components_per_element, const std::string& resultname);
 
    public:

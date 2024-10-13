@@ -35,6 +35,7 @@ template <typename T>
 Core::LinAlg::Vector<T>::Vector(const Epetra_FEVector& Source)
     : vector_(Teuchos::make_rcp<Epetra_Vector>(Epetra_DataAccess::Copy, Source, 0))
 {
+  FOUR_C_ASSERT(Source.NumVectors() == 1, "Can only convert a FE vector with a single column.");
 }
 
 template <typename T>

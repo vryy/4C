@@ -79,12 +79,14 @@ class PostVtiWriter : public PostVtkWriter
       const bool fillzeros) override;
 
   //! Write a single result step
-  void write_nodal_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
+  void write_nodal_result_step(std::ofstream& file,
+      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf) override;
 
   //! Write a single result step
-  void write_element_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
+  void write_element_result_step(std::ofstream& file,
+      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf,
       const int from) override;

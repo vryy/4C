@@ -21,7 +21,6 @@
 #include <Teuchos_RCP.hpp>
 
 // forward declarations
-class Epetra_MultiVector;
 
 FOUR_C_NAMESPACE_OPEN
 

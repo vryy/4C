@@ -1027,7 +1027,7 @@ void ScaTra::LevelSetAlgorithm::redistribute(Epetra_CrsGraph& nodegraph)
 
   // solutions at time n+1 and n
   Teuchos::RCP<Core::LinAlg::Vector<double>> old;
-  Teuchos::RCP<Epetra_MultiVector> oldMulti;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> oldMulti;
 
   if (phinp_ != Teuchos::null)
   {

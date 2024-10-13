@@ -798,26 +798,26 @@ void Solid::TimIntImpl::update_krylov_space_projection()
 
   // get Teuchos::RCP to kernel vector of projector
   // since we are in 'pointvalue' mode, weights are changed implicitly
-  Teuchos::RCP<Epetra_MultiVector> c = projector_->get_non_const_kernel();
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> c = projector_->get_non_const_kernel();
   c->PutScalar(0.0);
 
   // get number of modes and their ids
   std::vector<int> modeids = projector_->modes();
 
   Epetra_Map nullspaceMap(*discret_->dof_row_map());
-  Teuchos::RCP<Epetra_MultiVector> nullspace =
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> nullspace =
       Core::FE::compute_null_space(*discret_, 3, 6, nullspaceMap);
   if (nullspace == Teuchos::null) FOUR_C_THROW("nullspace not successfully computed");
 
   // sort vector of nullspace data into kernel vector c_
   for (size_t i = 0; i < Teuchos::as<size_t>(modeids.size()); i++)
   {
-    auto* ci = (*c)(i);
-    auto* ni = (*nullspace)(modeids[i]);
-    const size_t myLength = ci->MyLength();
+    auto& ci = (*c)(i);
+    auto& ni = (*nullspace)(modeids[i]);
+    const size_t myLength = ci.MyLength();
     for (size_t j = 0; j < myLength; j++)
     {
-      (*ci)[j] = (*ni)[j];
+      ci[j] = ni[j];
     }
   }
 

@@ -1647,7 +1647,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
   if (output_solidpress_)
   {
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
-    Teuchos::RCP<Epetra_MultiVector> solidpressure_multi =
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> solidpressure_multi =
         POROFLUIDMULTIPHASE::Utils::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *solidpressure_, nds_solidpressure_, 1);
 
@@ -1663,7 +1663,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
       FOUR_C_THROW("Cannot extract displacement field from discretization");
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
-    Teuchos::RCP<Epetra_MultiVector> dispnp_multi =
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> dispnp_multi =
         POROFLUIDMULTIPHASE::Utils::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *dispnp, nds_disp_, nsd_);
 
@@ -1681,7 +1681,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
     const Epetra_Map* noderowmap = discret_->node_row_map();
     for (int k = 0; k < numdof; k++)
     {
-      Epetra_MultiVector flux_k(*noderowmap, 3, true);
+      Core::LinAlg::MultiVector<double> flux_k(*noderowmap, 3, true);
 
       std::ostringstream temp;
       temp << k + 1;
@@ -1691,7 +1691,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
         // get value for each component of flux vector
         for (int idim = 0; idim < dim; idim++)
         {
-          double value = ((*flux_)[k * dim + idim])[i];
+          double value = ((*flux_)(k * dim + idim))[i];
           int err = flux_k.ReplaceMyValue(i, idim, value);
           if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
         }
@@ -1709,13 +1709,13 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
 
     for (int k = 0; k < num_poro_dof; k++)
     {
-      Epetra_MultiVector velocity_k(*element_row_map, num_dim, true);
+      Core::LinAlg::MultiVector<double> velocity_k(*element_row_map, num_dim, true);
 
       for (int i = 0; i < velocity_k.MyLength(); ++i)
       {
         for (int idim = 0; idim < num_dim; idim++)
         {
-          double value = ((*phase_velocities_)[k * num_dim + idim])[i];
+          double value = ((*phase_velocities_)(k * num_dim + idim))[i];
           int err = velocity_k.ReplaceMyValue(i, idim, value);
           if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
         }
@@ -1730,7 +1730,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
   if (output_porosity_)
   {
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
-    Teuchos::RCP<Epetra_MultiVector> porosity_multi =
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> porosity_multi =
         POROFLUIDMULTIPHASE::Utils::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *porosity_, nds_solidpressure_, 1);
 

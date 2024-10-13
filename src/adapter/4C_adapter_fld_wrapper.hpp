@@ -135,7 +135,7 @@ namespace Adapter
     {
       return fluid_->set_initial_porosity_field(initfield, startfuncno);
     };
-    void apply_external_forces(Teuchos::RCP<Epetra_MultiVector> fext) override
+    void apply_external_forces(Teuchos::RCP<Core::LinAlg::MultiVector<double>> fext) override
     {
       return fluid_->apply_external_forces(fext);
     };

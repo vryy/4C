@@ -348,7 +348,7 @@ Teuchos::RCP<std::vector<double>> Core::IO::HDFReader::read_double_data(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::IO::HDFReader::read_result_data(
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::IO::HDFReader::read_result_data(
     std::string id_path, std::string value_path, int columns, const Epetra_Comm& Comm) const
 {
   int new_proc_num = Comm.NumProc();
@@ -361,11 +361,8 @@ Teuchos::RCP<Epetra_MultiVector> Core::IO::HDFReader::read_result_data(
   Teuchos::RCP<std::vector<int>> ids = read_int_data(id_path, start, end);
   Epetra_Map map(-1, static_cast<int>(ids->size()), ids->data(), 0, Comm);
 
-  Teuchos::RCP<Epetra_MultiVector> res;
-  if (columns == 1)
-    res = Teuchos::make_rcp<Epetra_Vector>(map, false);
-  else
-    res = Teuchos::make_rcp<Epetra_MultiVector>(map, columns, false);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> res =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(map, columns, false);
 
   std::vector<int> lengths;
   Teuchos::RCP<std::vector<double>> values = read_double_data(value_path, start, end, lengths);

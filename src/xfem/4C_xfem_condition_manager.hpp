@@ -611,7 +611,8 @@ namespace XFEM
     void set_level_set_field(const double time);
 
     void write_access_geometric_quantities(Core::LinAlg::Vector<double>& scalaraf,
-        Epetra_MultiVector& smoothed_gradphiaf, Core::LinAlg::Vector<double>& curvatureaf);
+        Core::LinAlg::MultiVector<double>& smoothed_gradphiaf,
+        Core::LinAlg::Vector<double>& curvatureaf);
 
     void export_geometric_quantities();
 

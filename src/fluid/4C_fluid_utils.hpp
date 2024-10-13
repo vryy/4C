@@ -545,8 +545,9 @@ namespace FLD
     \brief Project velocity gradient, depends on time integrator used
 
     */
-    Teuchos::RCP<Epetra_MultiVector> project_gradient(Core::FE::Discretization& discret,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel, bool alefluid);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> project_gradient(
+        Core::FE::Discretization& discret, Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,
+        bool alefluid);
 
   }  // namespace Utils
 }  // namespace FLD

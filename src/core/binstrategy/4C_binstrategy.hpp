@@ -383,7 +383,8 @@ namespace Core::Binstrategy
      * \param[in] binrowmap bin row map
      * \param[out] bincenters centers of all row bins
      */
-    void get_all_bin_centers(Epetra_Map& binrowmap, Epetra_MultiVector& bincenters) const;
+    void get_all_bin_centers(
+        Epetra_Map& binrowmap, Core::LinAlg::MultiVector<double>& bincenters) const;
 
     /*!
      * \brief centroid position for given bin id
@@ -450,8 +451,8 @@ namespace Core::Binstrategy
      * \param[in] binweights weights that is assigned to each bin
      */
     void distribute_bins_recurs_coord_bisection(Teuchos::RCP<Epetra_Map>& binrowmap,
-        Teuchos::RCP<Epetra_MultiVector>& bincenters,
-        Teuchos::RCP<Epetra_MultiVector>& binweights) const;
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>>& bincenters,
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>>& binweights) const;
 
     /*!
      * \brief fill bins into bin discretization

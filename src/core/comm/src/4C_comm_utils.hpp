@@ -12,10 +12,10 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_multi_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Epetra_MultiVector.h>
 #include <Teuchos_DefaultMpiComm.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -59,7 +59,7 @@ namespace Core::Communication
    * \return boolean to indicate if compared vectors are identical
    */
   bool are_distributed_vectors_identical(const Communicators& communicators,
-      const Epetra_MultiVector& vec, const char* name, double tol = 1.0e-14);
+      const Core::LinAlg::MultiVector<double>& vec, const char* name, double tol = 1.0e-14);
 
   /*! \brief debug routine to compare sparse matrices from different parallel 4C runs
    *

@@ -43,7 +43,7 @@ void ScaTra::ScaTraTimIntPoroMulti::init() { return; }
  | set solution fields on given dof sets                    vuong  08/16 |
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
-    Teuchos::RCP<const Epetra_MultiVector> multiflux)
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> multiflux)
 {
   // set L2-projection to true
   L2_projection_ = true;
@@ -89,7 +89,7 @@ void ScaTra::ScaTraTimIntPoroMulti::set_l2_flux_of_multi_fluid(
         const int lid = phaseflux->Map().LID(gid);
         if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
 
-        const double value = (*(*multiflux)(curphase * nsd_ + index))[lnodeid];
+        const double value = ((*multiflux)(curphase * nsd_ + index))[lnodeid];
 
         int err = phaseflux->ReplaceMyValue(lid, 0, value);
         if (err != 0) FOUR_C_THROW("error while inserting a value into convel");
@@ -145,12 +145,12 @@ void ScaTra::ScaTraTimIntPoroMulti::collect_runtime_output_data()
       FOUR_C_THROW("Cannot extract displacement field from discretization");
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
-    auto dispnp_multi = Epetra_MultiVector(*discret_->node_row_map(), nsd_, true);
+    auto dispnp_multi = Core::LinAlg::MultiVector<double>(*discret_->node_row_map(), nsd_, true);
     for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
     {
       Core::Nodes::Node* node = discret_->l_row_node(inode);
       for (int idim = 0; idim < nsd_; ++idim)
-        (dispnp_multi)[idim][inode] =
+        (dispnp_multi)(idim)[inode] =
             (*dispnp)[dispnp->Map().LID(discret_->dof(nds_disp(), node, idim))];
     }
 

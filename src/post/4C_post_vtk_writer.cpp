@@ -281,13 +281,15 @@ void PostVtkWriter::write_result(const std::string groupname, const std::string 
     }
     case nodebased:
     {
-      const Teuchos::RCP<Epetra_MultiVector> data = result->read_multi_result(groupname);
+      const Teuchos::RCP<Core::LinAlg::MultiVector<double>> data =
+          result->read_multi_result(groupname);
       this->write_nodal_result_step(currentout_, data, dummy, groupname, name, numdf);
       break;
     }
     case elementbased:
     {
-      const Teuchos::RCP<Epetra_MultiVector> data = result->read_multi_result(groupname);
+      const Teuchos::RCP<Core::LinAlg::MultiVector<double>> data =
+          result->read_multi_result(groupname);
       this->write_element_result_step(currentout_, data, dummy, groupname, name, numdf, from);
       break;
     }

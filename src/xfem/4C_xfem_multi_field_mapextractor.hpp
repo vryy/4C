@@ -237,26 +237,27 @@ namespace XFEM
         const Core::LinAlg::Vector<double>& full, enum FieldName field,
         enum MapType map_type = map_dofs) const;
 
-    Teuchos::RCP<Epetra_MultiVector> extract_vector(const Epetra_MultiVector& full,
-        enum FieldName field, enum MapType map_type = map_dofs) const;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> extract_vector(
+        const Core::LinAlg::MultiVector<double>& full, enum FieldName field,
+        enum MapType map_type = map_dofs) const;
 
-    inline void extract_vector(const Epetra_MultiVector& full, enum FieldName field,
-        Epetra_MultiVector& partial, enum MapType map_type = map_dofs) const
+    inline void extract_vector(const Core::LinAlg::MultiVector<double>& full, enum FieldName field,
+        Core::LinAlg::MultiVector<double>& partial, enum MapType map_type = map_dofs) const
     {
       extract_vector(full, slave_id(field), partial, map_type);
     }
 
-    void extract_vector(const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial,
-        enum MapType map_type = map_dofs) const;
+    void extract_vector(const Core::LinAlg::MultiVector<double>& full, int block,
+        Core::LinAlg::MultiVector<double>& partial, enum MapType map_type = map_dofs) const;
 
-    inline void extract_element_vector(
-        const Epetra_MultiVector& full, enum FieldName field, Epetra_MultiVector& partial) const
+    inline void extract_element_vector(const Core::LinAlg::MultiVector<double>& full,
+        enum FieldName field, Core::LinAlg::MultiVector<double>& partial) const
     {
       extract_element_vector(full, slave_id(field), partial);
     }
 
-    void extract_element_vector(
-        const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial) const;
+    void extract_element_vector(const Core::LinAlg::MultiVector<double>& full, int block,
+        Core::LinAlg::MultiVector<double>& partial) const;
     /// @}
 
     /// @name Routines to insert a partial vector into a full vector
@@ -272,42 +273,43 @@ namespace XFEM
         const Core::LinAlg::Vector<double>& partial, enum FieldName field,
         enum MapType map_type = map_dofs) const;
 
-    /** \brief Put a partial vector into a full vector (Epetra_MultiVector)
+    /** \brief Put a partial vector into a full vector (Core::LinAlg::MultiVector<double>)
      *
      *  \param partial (in): vector to copy into full vector
      *  \param field   (in): field name enumerator of the partial vector
      *
      *  \author hiermeier \date 10/16 */
-    Teuchos::RCP<Epetra_MultiVector> insert_vector(const Epetra_MultiVector& partial,
-        enum FieldName field, enum MapType map_type = map_dofs) const;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> insert_vector(
+        const Core::LinAlg::MultiVector<double>& partial, enum FieldName field,
+        enum MapType map_type = map_dofs) const;
 
-    /** \brief Put a partial vector into a full vector (Epetra_MultiVector)
+    /** \brief Put a partial vector into a full vector (Core::LinAlg::MultiVector<double>)
      *
      *  \param partial (in): vector to copy into full vector
      *  \param field   (in): field name enumerator of the partial vector
      *  \param full   (out): vector to copy into
      *
      *  \author hiermeier \date 10/16 */
-    void insert_vector(const Epetra_MultiVector& partial, enum FieldName field,
-        Epetra_MultiVector& full, enum MapType map_type = map_dofs) const
+    void insert_vector(const Core::LinAlg::MultiVector<double>& partial, enum FieldName field,
+        Core::LinAlg::MultiVector<double>& full, enum MapType map_type = map_dofs) const
     {
       return insert_vector(partial, slave_id(field), full, map_type);
     }
 
-    /** \brief Put a partial vector into a full vector (Epetra_MultiVector) [derived]
+    /** \brief Put a partial vector into a full vector (Core::LinAlg::MultiVector<double>) [derived]
      *
      *  \author hiermeier \date 10/16  */
-    void insert_vector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full,
-        enum MapType map_type = map_dofs) const;
+    void insert_vector(const Core::LinAlg::MultiVector<double>& partial, int block,
+        Core::LinAlg::MultiVector<double>& full, enum MapType map_type = map_dofs) const;
 
-    inline void insert_element_vector(
-        const Epetra_MultiVector& partial, enum FieldName field, Epetra_MultiVector& full) const
+    inline void insert_element_vector(const Core::LinAlg::MultiVector<double>& partial,
+        enum FieldName field, Core::LinAlg::MultiVector<double>& full) const
     {
       insert_element_vector(partial, slave_id(field), full);
     }
 
-    void insert_element_vector(
-        const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full) const;
+    void insert_element_vector(const Core::LinAlg::MultiVector<double>& partial, int block,
+        Core::LinAlg::MultiVector<double>& full) const;
     /// @}
 
     /// @name Routines to add a partial vector to the full vector
@@ -326,7 +328,7 @@ namespace XFEM
       add_vector(partial, slave_id(field), full, scale, map_type);
     }
 
-    /** \brief Add a partial vector to a full vector (Epetra_MultiVector)
+    /** \brief Add a partial vector to a full vector (Core::LinAlg::MultiVector<double>)
      *
      *  \param partial (in): vector which is added to the full vector
      *  \param field   (in): field name enumerator of the partial vector
@@ -334,26 +336,28 @@ namespace XFEM
      *  \param scale   (in): scaling factor for partial vector
      *
      *  \author hiermeier \date 10/16 */
-    inline void add_vector(const Epetra_MultiVector& partial, enum FieldName field,
-        Epetra_MultiVector& full, double scale, enum MapType map_type = map_dofs) const
+    inline void add_vector(const Core::LinAlg::MultiVector<double>& partial, enum FieldName field,
+        Core::LinAlg::MultiVector<double>& full, double scale,
+        enum MapType map_type = map_dofs) const
     {
       return add_vector(partial, slave_id(field), full, scale, map_type);
     }
 
-    /** \brief Add a partial vector to a full vector (Epetra_MultiVector) [derived]
+    /** \brief Add a partial vector to a full vector (Core::LinAlg::MultiVector<double>) [derived]
      *
      *  \author hiermeier \date 10/16 */
-    void add_vector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full,
-        double scale, enum MapType map_type = map_dofs) const;
+    void add_vector(const Core::LinAlg::MultiVector<double>& partial, int block,
+        Core::LinAlg::MultiVector<double>& full, double scale,
+        enum MapType map_type = map_dofs) const;
 
-    inline void add_element_vector(const Epetra_MultiVector& partial, enum FieldName field,
-        Epetra_MultiVector& full, double scale) const
+    inline void add_element_vector(const Core::LinAlg::MultiVector<double>& partial,
+        enum FieldName field, Core::LinAlg::MultiVector<double>& full, double scale) const
     {
       add_element_vector(partial, slave_id(field), full, scale);
     }
 
-    void add_element_vector(
-        const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full, double scale) const;
+    void add_element_vector(const Core::LinAlg::MultiVector<double>& partial, int block,
+        Core::LinAlg::MultiVector<double>& full, double scale) const;
     /// @}
 
     /// @name Add a partial system-matrix to the full matrix

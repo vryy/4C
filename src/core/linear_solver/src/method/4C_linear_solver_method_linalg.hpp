@@ -16,7 +16,6 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_LinearProblem.h>
-#include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
@@ -118,8 +117,9 @@ namespace Core::LinAlg
                                to matrix kernel.
     \param params  (in)    : parameters for the solver. See documentation of SolverParams
     */
-    void setup(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Epetra_MultiVector> x,
-        Teuchos::RCP<Epetra_MultiVector> b, const SolverParams &params);
+    void setup(Teuchos::RCP<Epetra_Operator> matrix,
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> x,
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> b, const SolverParams &params);
 
     /*!
     \brief Solve system of equations in one go
@@ -135,8 +135,8 @@ namespace Core::LinAlg
     \param params  (in)    : parameters for the solver. See documentation of SolverParams
     */
     int solve_with_multi_vector(Teuchos::RCP<Epetra_Operator> matrix,
-        Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b,
-        const SolverParams &params);
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> x,
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> b, const SolverParams &params);
 
     int solve(Teuchos::RCP<Epetra_Operator> matrix, Teuchos::RCP<Core::LinAlg::Vector<double>> x,
         Teuchos::RCP<Core::LinAlg::Vector<double>> b, const SolverParams &params);
@@ -284,7 +284,9 @@ namespace Core::LinAlg
     Teuchos::RCP<Teuchos::ParameterList> params_;
 
     /// internal solver strategy
-    Teuchos::RCP<Core::LinearSolver::SolverTypeBase<Epetra_Operator, Epetra_MultiVector>> solver_;
+    Teuchos::RCP<
+        Core::LinearSolver::SolverTypeBase<Epetra_Operator, Core::LinAlg::MultiVector<double>>>
+        solver_;
 
    private:
     //! don't want = operator

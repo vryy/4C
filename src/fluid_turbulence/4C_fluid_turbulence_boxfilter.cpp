@@ -212,30 +212,33 @@ void FLD::Boxfilter::apply_box_filter(
   if (alphaij_) filtered_alphaij_ = Teuchos::null;
   if (alpha2_) filtered_alpha2_ = Teuchos::null;
 
-  if (velocity_) filtered_vel_ = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, numdim, true);
+  if (velocity_)
+    filtered_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
   if (reynoldsstress_)
     filtered_reynoldsstress_ =
-        Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, numdim * numdim, true);
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
   if (modeled_subgrid_stress_)
     filtered_modeled_subgrid_stress_ =
-        Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, numdim * numdim, true);
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
   if (densvelocity_)
-    filtered_dens_vel_ = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, numdim, true);
+    filtered_dens_vel_ =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
   if (density_) filtered_dens_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
   if (densstrainrate_)
     filtered_dens_strainrate_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
   if (strainrate_)
     filtered_strainrate_ =
-        Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, numdim * numdim, true);
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
   if (expression_)
     filtered_expression_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
   if (alphaij_)
-    filtered_alphaij_ = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, numdim * numdim, true);
+    filtered_alphaij_ =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
   if (alpha2_)
     filtered_alpha2_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
 
   if (finescale_velocity_)
-    fs_vel_ = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, numdim, true);
+    fs_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
 
   // ---------------------------------------------------------------
   // do the integration of the (not normalized) box filter function
@@ -359,12 +362,12 @@ void FLD::Boxfilter::apply_box_filter(
           if (velocity_)
           {
             double val = (*vel_hat)[idim];
-            ((*filtered_vel_)(idim))->SumIntoGlobalValues(1, &val, &id);
+            ((*filtered_vel_)(idim)).SumIntoGlobalValues(1, &val, &id);
           }
           if (densvelocity_)
           {
             double val = (*densvel_hat)[idim];
-            ((*filtered_dens_vel_)(idim))->SumIntoGlobalValues(1, &val, &id);
+            ((*filtered_dens_vel_)(idim)).SumIntoGlobalValues(1, &val, &id);
           }
 
 
@@ -374,22 +377,22 @@ void FLD::Boxfilter::apply_box_filter(
             if (reynoldsstress_)
             {
               double val = (*reynoldsstress_hat)[idim][jdim];
-              ((*filtered_reynoldsstress_)(ij))->SumIntoGlobalValues(1, &val, &id);
+              ((*filtered_reynoldsstress_)(ij)).SumIntoGlobalValues(1, &val, &id);
             }
             if (modeled_subgrid_stress_)
             {
               double val = (*modeled_subgrid_stress)[idim][jdim];
-              ((*filtered_modeled_subgrid_stress_)(ij))->SumIntoGlobalValues(1, &val, &id);
+              ((*filtered_modeled_subgrid_stress_)(ij)).SumIntoGlobalValues(1, &val, &id);
             }
             if (strainrate_)
             {
               double val = (*strainrate_hat)[idim][jdim];
-              ((*filtered_strainrate_)(ij))->SumIntoGlobalValues(1, &val, &id);
+              ((*filtered_strainrate_)(ij)).SumIntoGlobalValues(1, &val, &id);
             }
             if (alphaij_)
             {
               double val = (*alphaij_hat)[idim][jdim];
-              ((*filtered_alphaij_)(ij))->SumIntoGlobalValues(1, &val, &id);
+              ((*filtered_alphaij_)(ij)).SumIntoGlobalValues(1, &val, &id);
             }
           }
         }
@@ -456,20 +459,20 @@ void FLD::Boxfilter::apply_box_filter(
 
         for (int idim = 0; idim < numdim; ++idim)
         {
-          if (velocity_) vel_val[idim] = ((*((*filtered_vel_)(idim)))[lid]);
+          if (velocity_) vel_val[idim] = ((((*filtered_vel_)(idim)))[lid]);
 
-          if (densvelocity_) dens_vel_val[idim] = ((*((*filtered_dens_vel_)(idim)))[lid]);
+          if (densvelocity_) dens_vel_val[idim] = ((((*filtered_dens_vel_)(idim)))[lid]);
 
           for (int jdim = 0; jdim < numdim; ++jdim)
           {
             const int ij = numdim * idim + jdim;
             if (reynoldsstress_)
-              reystress_val[idim][jdim] = (*((*filtered_reynoldsstress_)(ij)))[lid];
+              reystress_val[idim][jdim] = (((*filtered_reynoldsstress_)(ij)))[lid];
             if (modeled_subgrid_stress_)
               modeled_subgrid_stress_val[idim][jdim] =
-                  (*((*filtered_modeled_subgrid_stress_)(ij)))[lid];
-            if (strainrate_) strainrate_val[idim][jdim] = (*((*filtered_strainrate_)(ij)))[lid];
-            if (alphaij_) alphaij_val[idim][jdim] = (*((*filtered_alphaij_)(ij)))[lid];
+                  (((*filtered_modeled_subgrid_stress_)(ij)))[lid];
+            if (strainrate_) strainrate_val[idim][jdim] = (((*filtered_strainrate_)(ij)))[lid];
+            if (alphaij_) alphaij_val[idim][jdim] = (((*filtered_alphaij_)(ij)))[lid];
           }
         }
 
@@ -486,20 +489,20 @@ void FLD::Boxfilter::apply_box_filter(
 
           for (int idim = 0; idim < numdim; ++idim)
           {
-            if (velocity_) vel_val[idim] += ((*((*filtered_vel_)(idim)))[lid]);
+            if (velocity_) vel_val[idim] += ((((*filtered_vel_)(idim)))[lid]);
 
-            if (densvelocity_) dens_vel_val[idim] += ((*((*filtered_dens_vel_)(idim)))[lid]);
+            if (densvelocity_) dens_vel_val[idim] += ((((*filtered_dens_vel_)(idim)))[lid]);
 
             for (int jdim = 0; jdim < numdim; ++jdim)
             {
               const int ij = numdim * idim + jdim;
               if (reynoldsstress_)
-                reystress_val[idim][jdim] += (*((*filtered_reynoldsstress_)(ij)))[lid];
+                reystress_val[idim][jdim] += (((*filtered_reynoldsstress_)(ij)))[lid];
               if (modeled_subgrid_stress_)
                 modeled_subgrid_stress_val[idim][jdim] +=
-                    (*((*filtered_modeled_subgrid_stress_)(ij)))[lid];
-              if (strainrate_) strainrate_val[idim][jdim] += (*((*filtered_strainrate_)(ij)))[lid];
-              if (alphaij_) alphaij_val[idim][jdim] += (*((*filtered_alphaij_)(ij)))[lid];
+                    (((*filtered_modeled_subgrid_stress_)(ij)))[lid];
+              if (strainrate_) strainrate_val[idim][jdim] += (((*filtered_strainrate_)(ij)))[lid];
+              if (alphaij_) alphaij_val[idim][jdim] += (((*filtered_alphaij_)(ij)))[lid];
             }  // end loop jdim
           }    // end loop idim
         }      // end loop slaves
@@ -522,27 +525,26 @@ void FLD::Boxfilter::apply_box_filter(
         for (int idim = 0; idim < numdim; ++idim)
         {
           int err = 0;
-          if (velocity_)
-            err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &(vel_val[idim]), &lid);
+          if (velocity_) err += ((*filtered_vel_)(idim)).ReplaceMyValues(1, &(vel_val[idim]), &lid);
 
           if (densvelocity_)
-            err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1, &(dens_vel_val[idim]), &lid);
+            err += ((*filtered_dens_vel_)(idim)).ReplaceMyValues(1, &(dens_vel_val[idim]), &lid);
 
           for (int jdim = 0; jdim < numdim; ++jdim)
           {
             const int ij = numdim * idim + jdim;
             if (reynoldsstress_)
               err += ((*filtered_reynoldsstress_)(ij))
-                         ->ReplaceMyValues(1, &(reystress_val[idim][jdim]), &lid);
+                         .ReplaceMyValues(1, &(reystress_val[idim][jdim]), &lid);
             if (modeled_subgrid_stress_)
               err += ((*filtered_modeled_subgrid_stress_)(ij))
-                         ->ReplaceMyValues(1, &(modeled_subgrid_stress_val[idim][jdim]), &lid);
+                         .ReplaceMyValues(1, &(modeled_subgrid_stress_val[idim][jdim]), &lid);
             if (strainrate_)
               err += ((*filtered_strainrate_)(ij))
-                         ->ReplaceMyValues(1, &(strainrate_val[idim][jdim]), &lid);
+                         .ReplaceMyValues(1, &(strainrate_val[idim][jdim]), &lid);
             if (alphaij_)
               err +=
-                  ((*filtered_alphaij_)(ij))->ReplaceMyValues(1, &(alphaij_val[idim][jdim]), &lid);
+                  ((*filtered_alphaij_)(ij)).ReplaceMyValues(1, &(alphaij_val[idim][jdim]), &lid);
           }  // end loop jdim
           if (err != 0) FOUR_C_THROW("dof not on proc");
         }  // end loop idim
@@ -567,26 +569,26 @@ void FLD::Boxfilter::apply_box_filter(
           for (int idim = 0; idim < numdim; ++idim)
           {
             if (velocity_)
-              err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &(vel_val[idim]), &lid);
+              err += ((*filtered_vel_)(idim)).ReplaceMyValues(1, &(vel_val[idim]), &lid);
 
             if (densvelocity_)
-              err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1, &(dens_vel_val[idim]), &lid);
+              err += ((*filtered_dens_vel_)(idim)).ReplaceMyValues(1, &(dens_vel_val[idim]), &lid);
 
             for (int jdim = 0; jdim < numdim; ++jdim)
             {
               const int ij = numdim * idim + jdim;
               if (reynoldsstress_)
                 err += ((*filtered_reynoldsstress_)(ij))
-                           ->ReplaceMyValues(1, &(reystress_val[idim][jdim]), &lid);
+                           .ReplaceMyValues(1, &(reystress_val[idim][jdim]), &lid);
               if (modeled_subgrid_stress_)
                 err += ((*filtered_modeled_subgrid_stress_)(ij))
-                           ->ReplaceMyValues(1, &(modeled_subgrid_stress_val[idim][jdim]), &lid);
+                           .ReplaceMyValues(1, &(modeled_subgrid_stress_val[idim][jdim]), &lid);
               if (strainrate_)
                 err += ((*filtered_strainrate_)(ij))
-                           ->ReplaceMyValues(1, &(strainrate_val[idim][jdim]), &lid);
+                           .ReplaceMyValues(1, &(strainrate_val[idim][jdim]), &lid);
               if (alphaij_)
-                err += ((*filtered_alphaij_)(ij))
-                           ->ReplaceMyValues(1, &(alphaij_val[idim][jdim]), &lid);
+                err +=
+                    ((*filtered_alphaij_)(ij)).ReplaceMyValues(1, &(alphaij_val[idim][jdim]), &lid);
             }  // end loop jdim
           }    // end loop idim
           if (err != 0) FOUR_C_THROW("dof not on proc");
@@ -706,14 +708,14 @@ void FLD::Boxfilter::apply_box_filter(
           double valvel_i = (*velocity)[lid_i];
           if (velocity_)
           {
-            err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &valvel_i, &lnodeid);
+            err += ((*filtered_vel_)(idim)).ReplaceMyValues(1, &valvel_i, &lnodeid);
           }
           // dens*reynoldsstress not in parameter list until now?
           if (densvelocity_)  //=loma
           {
             // note: for incompressible flow, this vector is rebuild in calculation of Lij and Mij
             double valdensvel_i = dens * valvel_i;
-            err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1, &valdensvel_i, &lnodeid);
+            err += ((*filtered_dens_vel_)(idim)).ReplaceMyValues(1, &valdensvel_i, &lnodeid);
           }
 
           for (int jdim = 0; jdim < numdim; ++jdim)
@@ -728,7 +730,7 @@ void FLD::Boxfilter::apply_box_filter(
               double valvel_j = (*velocity)[lid_j];
               double valvel_ij = dens * valvel_i * valvel_j;
               // remember: density = 1.0 for pure box filter application
-              err += ((*filtered_reynoldsstress_)(ij))->ReplaceMyValues(1, &valvel_ij, &lnodeid);
+              err += ((*filtered_reynoldsstress_)(ij)).ReplaceMyValues(1, &valvel_ij, &lnodeid);
             }
 
             if (is_no_slip_node == numdim)
@@ -736,13 +738,12 @@ void FLD::Boxfilter::apply_box_filter(
               // set value to zero (original Peter style)
               double val = 0.0;
               if (modeled_subgrid_stress_)
-                err +=
-                    ((*filtered_modeled_subgrid_stress_)(ij))->ReplaceMyValues(1, &val, &lnodeid);
+                err += ((*filtered_modeled_subgrid_stress_)(ij)).ReplaceMyValues(1, &val, &lnodeid);
               // remark: setting the modeled stresses equal to zero improves the estimated friction
               // Reynolds number!
               if (strainrate_)
-                err += ((*filtered_strainrate_)(ij))->ReplaceMyValues(1, &val, &lnodeid);
-              if (alphaij_) err += ((*filtered_alphaij_)(ij))->ReplaceMyValues(1, &val, &lnodeid);
+                err += ((*filtered_strainrate_)(ij)).ReplaceMyValues(1, &val, &lnodeid);
+              if (alphaij_) err += ((*filtered_alphaij_)(ij)).ReplaceMyValues(1, &val, &lnodeid);
             }
             else
             {
@@ -752,19 +753,18 @@ void FLD::Boxfilter::apply_box_filter(
               // dirichlet values
               if (modeled_subgrid_stress_)
               {
-                double val = ((*((*filtered_modeled_subgrid_stress_)(ij)))[lnodeid]) / thisvol;
-                err +=
-                    ((*filtered_modeled_subgrid_stress_)(ij))->ReplaceMyValues(1, &val, &lnodeid);
+                double val = ((((*filtered_modeled_subgrid_stress_)(ij)))[lnodeid]) / thisvol;
+                err += ((*filtered_modeled_subgrid_stress_)(ij)).ReplaceMyValues(1, &val, &lnodeid);
               }
               if (strainrate_)
               {
-                double val = ((*((*filtered_strainrate_)(ij)))[lnodeid]) / thisvol;
-                err += ((*filtered_strainrate_)(ij))->ReplaceMyValues(1, &val, &lnodeid);
+                double val = ((((*filtered_strainrate_)(ij)))[lnodeid]) / thisvol;
+                err += ((*filtered_strainrate_)(ij)).ReplaceMyValues(1, &val, &lnodeid);
               }
               if (alphaij_)
               {
-                double val = ((*((*filtered_alphaij_)(ij)))[lnodeid]) / thisvol;
-                err += ((*filtered_alphaij_)(ij))->ReplaceMyValues(1, &val, &lnodeid);
+                double val = ((((*filtered_alphaij_)(ij)))[lnodeid]) / thisvol;
+                err += ((*filtered_alphaij_)(ij)).ReplaceMyValues(1, &val, &lnodeid);
               }
             }
           }  // end loop jdim
@@ -814,14 +814,14 @@ void FLD::Boxfilter::apply_box_filter(
     {
       if (velocity_)
       {
-        val = ((*((*filtered_vel_)(idim)))[lnodeid]) / thisvol;
-        err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &val, &lnodeid);
+        val = ((((*filtered_vel_)(idim)))[lnodeid]) / thisvol;
+        err += ((*filtered_vel_)(idim)).ReplaceMyValues(1, &val, &lnodeid);
       }
 
       if (densvelocity_)
       {
-        val = ((*((*filtered_dens_vel_)(idim)))[lnodeid]) / thisvol;
-        err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1, &val, &lnodeid);
+        val = ((((*filtered_dens_vel_)(idim)))[lnodeid]) / thisvol;
+        err += ((*filtered_dens_vel_)(idim)).ReplaceMyValues(1, &val, &lnodeid);
       }
 
       for (int jdim = 0; jdim < 3; ++jdim)
@@ -830,23 +830,23 @@ void FLD::Boxfilter::apply_box_filter(
 
         if (reynoldsstress_)
         {
-          val = ((*((*filtered_reynoldsstress_)(ij)))[lnodeid]) / thisvol;
-          err += ((*filtered_reynoldsstress_)(ij))->ReplaceMyValues(1, &val, &lnodeid);
+          val = ((((*filtered_reynoldsstress_)(ij)))[lnodeid]) / thisvol;
+          err += ((*filtered_reynoldsstress_)(ij)).ReplaceMyValues(1, &val, &lnodeid);
         }
         if (modeled_subgrid_stress_)
         {
-          val = ((*((*filtered_modeled_subgrid_stress_)(ij)))[lnodeid]) / thisvol;
-          err += ((*filtered_modeled_subgrid_stress_)(ij))->ReplaceMyValues(1, &val, &lnodeid);
+          val = ((((*filtered_modeled_subgrid_stress_)(ij)))[lnodeid]) / thisvol;
+          err += ((*filtered_modeled_subgrid_stress_)(ij)).ReplaceMyValues(1, &val, &lnodeid);
         }
         if (strainrate_)
         {
-          val = ((*((*filtered_strainrate_)(ij)))[lnodeid]) / thisvol;
-          err += ((*filtered_strainrate_)(ij))->ReplaceMyValues(1, &val, &lnodeid);
+          val = ((((*filtered_strainrate_)(ij)))[lnodeid]) / thisvol;
+          err += ((*filtered_strainrate_)(ij)).ReplaceMyValues(1, &val, &lnodeid);
         }
         if (alphaij_)
         {
-          val = ((*((*filtered_alphaij_)(ij)))[lnodeid]) / thisvol;
-          err += ((*filtered_alphaij_)(ij))->ReplaceMyValues(1, &val, &lnodeid);
+          val = ((((*filtered_alphaij_)(ij)))[lnodeid]) / thisvol;
+          err += ((*filtered_alphaij_)(ij)).ReplaceMyValues(1, &val, &lnodeid);
         }
       }  // end loop jdim
       if (err != 0) FOUR_C_THROW("dof not on proc");
@@ -878,12 +878,12 @@ void FLD::Boxfilter::apply_box_filter(
         // get local dof id corresponding to the global id
         int lid = discret_->dof_row_map()->LID(gid);
         // filtered velocity and all scale velocity
-        double filteredvel = (*((*filtered_vel_)(d)))[nid];
+        double filteredvel = (((*filtered_vel_)(d)))[nid];
         double vel = (*velocity)[lid];
         // calculate fine scale velocity
         double val = vel - filteredvel;
         // calculate fine scale velocity
-        int err = ((*fs_vel_)(d))->ReplaceMyValues(1, &val, &nid);
+        int err = ((*fs_vel_)(d)).ReplaceMyValues(1, &val, &nid);
         if (err != 0) FOUR_C_THROW("dof not on proc");
       }
     }
@@ -897,24 +897,30 @@ void FLD::Boxfilter::apply_box_filter(
 
   // allocate distributed vectors in col map format to have the filtered
   // quantities available on ghosted nodes
-  if (velocity_) col_filtered_vel_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
+  if (velocity_)
+    col_filtered_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   if (reynoldsstress_)
-    col_filtered_reynoldsstress_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
+    col_filtered_reynoldsstress_ =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
   if (modeled_subgrid_stress_)
     col_filtered_modeled_subgrid_stress_ =
-        Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
   if (finescale_velocity_)
-    col_fs_vel_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
+    col_fs_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   if (densvelocity_)
-    col_filtered_dens_vel_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
+    col_filtered_dens_vel_ =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   if (density_)
     col_filtered_dens_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   if (densstrainrate_)
     col_filtered_dens_strainrate_ =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   if (strainrate_)
-    col_filtered_strainrate_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
-  if (alphaij_) col_filtered_alphaij_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
+    col_filtered_strainrate_ =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
+  if (alphaij_)
+    col_filtered_alphaij_ =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
   if (expression_)
     col_filtered_expression_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   if (alpha2_)
@@ -993,20 +999,24 @@ void FLD::Boxfilter::apply_box_filter_scatra(
   if (phiexpression_) filtered_phiexpression_ = Teuchos::null;
   if (alphaijsc_) filtered_alphaijsc_ = Teuchos::null;
 
-  filtered_dens_vel_temp_ = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, numdim, true);
+  filtered_dens_vel_temp_ =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
   filtered_dens_rateofstrain_temp_ =
-      Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, numdim, true);
-  filtered_vel_ = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, numdim, true);
-  filtered_dens_vel_ = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, numdim, true);
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
+  filtered_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
+  filtered_dens_vel_ =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
   filtered_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
   filtered_dens_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
   filtered_dens_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
-  if (phi_) filtered_phi_ = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, numdim, true);
+  if (phi_)
+    filtered_phi_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim, true);
   if (phi2_) filtered_phi2_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
   if (phiexpression_)
     filtered_phiexpression_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*noderowmap, true);
   if (alphaijsc_)
-    filtered_alphaijsc_ = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, numdim * numdim, true);
+    filtered_alphaijsc_ =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, numdim * numdim, true);
 
   // ---------------------------------------------------------------
   // do the integration of the (not normalized) box filter function
@@ -1103,17 +1113,17 @@ void FLD::Boxfilter::apply_box_filter_scatra(
         for (int idim = 0; idim < numdim; ++idim)
         {
           double val = (*vel_hat)[idim];
-          ((*filtered_vel_)(idim))->SumIntoGlobalValues(1, &val, &id);
+          ((*filtered_vel_)(idim)).SumIntoGlobalValues(1, &val, &id);
           val = (*densveltemp_hat)[idim];
-          ((*filtered_dens_vel_temp_)(idim))->SumIntoGlobalValues(1, &val, &id);
+          ((*filtered_dens_vel_temp_)(idim)).SumIntoGlobalValues(1, &val, &id);
           val = (*densstraintemp_hat)[idim];
-          ((*filtered_dens_rateofstrain_temp_)(idim))->SumIntoGlobalValues(1, &val, &id);
+          ((*filtered_dens_rateofstrain_temp_)(idim)).SumIntoGlobalValues(1, &val, &id);
           val = (*densvel_hat)[idim];
-          ((*filtered_dens_vel_)(idim))->SumIntoGlobalValues(1, &val, &id);
+          ((*filtered_dens_vel_)(idim)).SumIntoGlobalValues(1, &val, &id);
           if (phi_)
           {
             val = (*phi_hat)[idim];
-            ((*filtered_phi_)(idim))->SumIntoGlobalValues(1, &val, &id);
+            ((*filtered_phi_)(idim)).SumIntoGlobalValues(1, &val, &id);
           }
           if (alphaijsc_)
           {
@@ -1121,7 +1131,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
             {
               const int ij = numdim * idim + jdim;
               double val = (*alphaijsc_hat)[idim][jdim];
-              ((*filtered_alphaijsc_)(ij))->SumIntoGlobalValues(1, &val, &id);
+              ((*filtered_alphaijsc_)(ij)).SumIntoGlobalValues(1, &val, &id);
             }
           }
         }
@@ -1175,17 +1185,17 @@ void FLD::Boxfilter::apply_box_filter_scatra(
 
         for (int idim = 0; idim < numdim; ++idim)
         {
-          vel_val[idim] = ((*((*filtered_vel_)(idim)))[lid]);
-          dens_vel_val[idim] = ((*((*filtered_dens_vel_)(idim)))[lid]);
-          dens_vel_temp_val[idim] = ((*((*filtered_dens_vel_temp_)(idim)))[lid]);
-          dens_strain_temp_val[idim] = ((*((*filtered_dens_rateofstrain_temp_)(idim)))[lid]);
-          if (phi_) phi_val[idim] = ((*((*filtered_phi_)(idim)))[lid]);
+          vel_val[idim] = ((((*filtered_vel_)(idim)))[lid]);
+          dens_vel_val[idim] = ((((*filtered_dens_vel_)(idim)))[lid]);
+          dens_vel_temp_val[idim] = ((((*filtered_dens_vel_temp_)(idim)))[lid]);
+          dens_strain_temp_val[idim] = ((((*filtered_dens_rateofstrain_temp_)(idim)))[lid]);
+          if (phi_) phi_val[idim] = ((((*filtered_phi_)(idim)))[lid]);
           if (alphaijsc_)
           {
             for (int jdim = 0; jdim < numdim; ++jdim)
             {
               const int ij = numdim * idim + jdim;
-              alphaijsc_val[idim][jdim] = (*((*filtered_alphaijsc_)(ij)))[lid];
+              alphaijsc_val[idim][jdim] = (((*filtered_alphaijsc_)(ij)))[lid];
             }
           }
         }
@@ -1204,17 +1214,17 @@ void FLD::Boxfilter::apply_box_filter_scatra(
 
           for (int idim = 0; idim < numdim; ++idim)
           {
-            vel_val[idim] += ((*((*filtered_vel_)(idim)))[lid]);
-            dens_vel_val[idim] += ((*((*filtered_dens_vel_)(idim)))[lid]);
-            dens_vel_temp_val[idim] += ((*((*filtered_dens_vel_temp_)(idim)))[lid]);
-            dens_strain_temp_val[idim] += ((*((*filtered_dens_rateofstrain_temp_)(idim)))[lid]);
-            if (phi_) phi_val[idim] += ((*((*filtered_phi_)(idim)))[lid]);
+            vel_val[idim] += ((((*filtered_vel_)(idim)))[lid]);
+            dens_vel_val[idim] += ((((*filtered_dens_vel_)(idim)))[lid]);
+            dens_vel_temp_val[idim] += ((((*filtered_dens_vel_temp_)(idim)))[lid]);
+            dens_strain_temp_val[idim] += ((((*filtered_dens_rateofstrain_temp_)(idim)))[lid]);
+            if (phi_) phi_val[idim] += ((((*filtered_phi_)(idim)))[lid]);
             if (alphaijsc_)
             {
               for (int jdim = 0; jdim < numdim; ++jdim)
               {
                 const int ij = numdim * idim + jdim;
-                alphaijsc_val[idim][jdim] += (*((*filtered_alphaijsc_)(ij)))[lid];
+                alphaijsc_val[idim][jdim] += (((*filtered_alphaijsc_)(ij)))[lid];
               }
             }
           }
@@ -1237,20 +1247,20 @@ void FLD::Boxfilter::apply_box_filter_scatra(
         for (int idim = 0; idim < numdim; ++idim)
         {
           int err = 0;
-          err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &(vel_val[idim]), &lid);
-          err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1, &(dens_vel_val[idim]), &lid);
+          err += ((*filtered_vel_)(idim)).ReplaceMyValues(1, &(vel_val[idim]), &lid);
+          err += ((*filtered_dens_vel_)(idim)).ReplaceMyValues(1, &(dens_vel_val[idim]), &lid);
           err += ((*filtered_dens_vel_temp_)(idim))
-                     ->ReplaceMyValues(1, &(dens_vel_temp_val[idim]), &lid);
+                     .ReplaceMyValues(1, &(dens_vel_temp_val[idim]), &lid);
           err += ((*filtered_dens_rateofstrain_temp_)(idim))
-                     ->ReplaceMyValues(1, &(dens_strain_temp_val[idim]), &lid);
-          if (phi_) err += ((*filtered_phi_)(idim))->ReplaceMyValues(1, &(phi_val[idim]), &lid);
+                     .ReplaceMyValues(1, &(dens_strain_temp_val[idim]), &lid);
+          if (phi_) err += ((*filtered_phi_)(idim)).ReplaceMyValues(1, &(phi_val[idim]), &lid);
           if (alphaijsc_)
           {
             for (int jdim = 0; jdim < numdim; ++jdim)
             {
               const int ij = numdim * idim + jdim;
               err += ((*filtered_alphaijsc_)(ij))
-                         ->ReplaceMyValues(1, &(alphaijsc_val[idim][jdim]), &lid);
+                         .ReplaceMyValues(1, &(alphaijsc_val[idim][jdim]), &lid);
             }  // end loop jdim
           }
           if (err != 0) FOUR_C_THROW("dof not on proc");
@@ -1272,20 +1282,20 @@ void FLD::Boxfilter::apply_box_filter_scatra(
 
           for (int idim = 0; idim < numdim; ++idim)
           {
-            err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &(vel_val[idim]), &lid);
-            err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1, &(dens_vel_val[idim]), &lid);
+            err += ((*filtered_vel_)(idim)).ReplaceMyValues(1, &(vel_val[idim]), &lid);
+            err += ((*filtered_dens_vel_)(idim)).ReplaceMyValues(1, &(dens_vel_val[idim]), &lid);
             err += ((*filtered_dens_vel_temp_)(idim))
-                       ->ReplaceMyValues(1, &(dens_vel_temp_val[idim]), &lid);
+                       .ReplaceMyValues(1, &(dens_vel_temp_val[idim]), &lid);
             err += ((*filtered_dens_rateofstrain_temp_)(idim))
-                       ->ReplaceMyValues(1, &(dens_strain_temp_val[idim]), &lid);
-            if (phi_) err += ((*filtered_phi_)(idim))->ReplaceMyValues(1, &(phi_val[idim]), &lid);
+                       .ReplaceMyValues(1, &(dens_strain_temp_val[idim]), &lid);
+            if (phi_) err += ((*filtered_phi_)(idim)).ReplaceMyValues(1, &(phi_val[idim]), &lid);
             if (alphaijsc_)
             {
               for (int jdim = 0; jdim < numdim; ++jdim)
               {
                 const int ij = numdim * idim + jdim;
                 err += ((*filtered_alphaijsc_)(ij))
-                           ->ReplaceMyValues(1, &(alphaijsc_val[idim][jdim]), &lid);
+                           .ReplaceMyValues(1, &(alphaijsc_val[idim][jdim]), &lid);
               }  // end loop jdim
             }
           }
@@ -1407,23 +1417,23 @@ void FLD::Boxfilter::apply_box_filter_scatra(
             if (lid < 0) FOUR_C_THROW("Local ID not found in map for given global ID!");
 
             double valvel_i = (*convel)[lid];
-            err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &valvel_i, &lnodeid);
+            err += ((*filtered_vel_)(idim)).ReplaceMyValues(1, &valvel_i, &lnodeid);
 
             double valdensvel_i = dens * valvel_i;
-            err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1, &valdensvel_i, &lnodeid);
+            err += ((*filtered_dens_vel_)(idim)).ReplaceMyValues(1, &valdensvel_i, &lnodeid);
 
             double dvtval = dens * temp * valvel_i;
-            err += ((*filtered_dens_vel_temp_)(idim))->ReplaceMyValues(1, &dvtval, &lnodeid);
+            err += ((*filtered_dens_vel_temp_)(idim)).ReplaceMyValues(1, &dvtval, &lnodeid);
 
             // Peter style
             double drtval = 0.0;
             err +=
-                ((*filtered_dens_rateofstrain_temp_)(idim))->ReplaceMyValues(1, &drtval, &lnodeid);
+                ((*filtered_dens_rateofstrain_temp_)(idim)).ReplaceMyValues(1, &drtval, &lnodeid);
 
             if (phi_)
             {
               double drtval = 0.0;
-              err += ((*filtered_phi_)(idim))->ReplaceMyValues(1, &drtval, &lnodeid);
+              err += ((*filtered_phi_)(idim)).ReplaceMyValues(1, &drtval, &lnodeid);
             }
             if (alphaijsc_)
             {
@@ -1434,7 +1444,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
                 {
                   // set value to zero (original Peter style)
                   double val = 0.0;
-                  err += ((*filtered_alphaijsc_)(ij))->ReplaceMyValues(1, &val, &lnodeid);
+                  err += ((*filtered_alphaijsc_)(ij)).ReplaceMyValues(1, &val, &lnodeid);
                 }
                 else
                 {
@@ -1442,8 +1452,8 @@ void FLD::Boxfilter::apply_box_filter_scatra(
                   // we already divide by the corresponding volume of all contributing elements,
                   // since we set the volume to 1.0 in the next step in order not to modify the
                   // dirichlet values
-                  double val = ((*((*filtered_alphaijsc_)(ij)))[lnodeid]) / thisvol;
-                  err += ((*filtered_alphaijsc_)(ij))->ReplaceMyValues(1, &val, &lnodeid);
+                  double val = ((((*filtered_alphaijsc_)(ij)))[lnodeid]) / thisvol;
+                  err += ((*filtered_alphaijsc_)(ij)).ReplaceMyValues(1, &val, &lnodeid);
                 }
               }  // end loop jdim
             }
@@ -1451,7 +1461,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
             // alternative: see comment in apply_box_filter() for velocity field
             // double drtval = ((*((*filtered_dens_rateofstrain_temp_)(idim)))[lnodeid])/thisvol;
             // err +=
-            // ((*filtered_dens_rateofstrain_temp_)(idim))->ReplaceMyValues(1,&drtval,&lnodeid);
+            // ((*filtered_dens_rateofstrain_temp_)(idim)).ReplaceMyValues(1,&drtval,&lnodeid);
           }
 
           double volval = 1.0;
@@ -1492,26 +1502,26 @@ void FLD::Boxfilter::apply_box_filter_scatra(
     }
     for (int idim = 0; idim < 3; ++idim)
     {
-      val = ((*((*filtered_vel_)(idim)))[lnodeid]) / thisvol;
-      err += ((*filtered_vel_)(idim))->ReplaceMyValues(1, &val, &lnodeid);
-      val = ((*((*filtered_dens_vel_)(idim)))[lnodeid]) / thisvol;
-      err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1, &val, &lnodeid);
-      val = ((*((*filtered_dens_vel_temp_)(idim)))[lnodeid]) / thisvol;
-      err += ((*filtered_dens_vel_temp_)(idim))->ReplaceMyValues(1, &val, &lnodeid);
-      val = ((*((*filtered_dens_rateofstrain_temp_)(idim)))[lnodeid]) / thisvol;
-      err += ((*filtered_dens_rateofstrain_temp_)(idim))->ReplaceMyValues(1, &val, &lnodeid);
+      val = ((((*filtered_vel_)(idim)))[lnodeid]) / thisvol;
+      err += ((*filtered_vel_)(idim)).ReplaceMyValues(1, &val, &lnodeid);
+      val = ((((*filtered_dens_vel_)(idim)))[lnodeid]) / thisvol;
+      err += ((*filtered_dens_vel_)(idim)).ReplaceMyValues(1, &val, &lnodeid);
+      val = ((((*filtered_dens_vel_temp_)(idim)))[lnodeid]) / thisvol;
+      err += ((*filtered_dens_vel_temp_)(idim)).ReplaceMyValues(1, &val, &lnodeid);
+      val = ((((*filtered_dens_rateofstrain_temp_)(idim)))[lnodeid]) / thisvol;
+      err += ((*filtered_dens_rateofstrain_temp_)(idim)).ReplaceMyValues(1, &val, &lnodeid);
       if (phi_)
       {
-        val = ((*((*filtered_phi_)(idim)))[lnodeid]) / thisvol;
-        err += ((*filtered_phi_)(idim))->ReplaceMyValues(1, &val, &lnodeid);
+        val = ((((*filtered_phi_)(idim)))[lnodeid]) / thisvol;
+        err += ((*filtered_phi_)(idim)).ReplaceMyValues(1, &val, &lnodeid);
       }
       if (alphaijsc_)
       {
         for (int jdim = 0; jdim < 3; ++jdim)
         {
           const int ij = numdim * idim + jdim;
-          val = ((*((*filtered_alphaijsc_)(ij)))[lnodeid]) / thisvol;
-          err += ((*filtered_alphaijsc_)(ij))->ReplaceMyValues(1, &val, &lnodeid);
+          val = ((((*filtered_alphaijsc_)(ij)))[lnodeid]) / thisvol;
+          err += ((*filtered_alphaijsc_)(ij)).ReplaceMyValues(1, &val, &lnodeid);
         }  // end loop jdim
       }
     }  // end loop idim
@@ -1529,22 +1539,26 @@ void FLD::Boxfilter::apply_box_filter_scatra(
 
   // allocate distributed vectors in col map format to have the filtered
   // quantities available on ghosted nodes
-  col_filtered_vel_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
-  col_filtered_dens_vel_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
-  col_filtered_dens_vel_temp_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
+  col_filtered_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+  col_filtered_dens_vel_ =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+  col_filtered_dens_vel_temp_ =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   col_filtered_dens_rateofstrain_temp_ =
-      Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   col_filtered_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   col_filtered_dens_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   col_filtered_dens_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
-  if (phi_) col_filtered_phi_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
+  if (phi_)
+    col_filtered_phi_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   if (phi2_)
     col_filtered_phi2_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   if (phiexpression_)
     col_filtered_phiexpression_ =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   if (alphaijsc_)
-    col_filtered_alphaijsc_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
+    col_filtered_alphaijsc_ =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
 
   // export filtered vectors in rowmap to columnmap format
   Core::LinAlg::export_to(*filtered_vel_, *col_filtered_vel_);

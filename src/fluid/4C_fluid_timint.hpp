@@ -613,7 +613,7 @@ namespace FLD
     }
 
     /// apply external forces to the fluid
-    void apply_external_forces(Teuchos::RCP<Epetra_MultiVector> fext) override
+    void apply_external_forces(Teuchos::RCP<Core::LinAlg::MultiVector<double>> fext) override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return;

@@ -37,7 +37,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(
 
   // refcountpointer to vector of all coordinates
   // distributed among all procs
-  Teuchos::RCP<Epetra_MultiVector> nodecoords;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> nodecoords;
 
   // the ids of the visualisation points on this proc
   std::vector<int> local_vis_point_ids;
@@ -1349,7 +1349,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(
       local_vis_point_ids.data(), 0, nurbsdis->get_comm());
 
   // allocate the coordinates of the vizualisation points
-  nodecoords = Teuchos::make_rcp<Epetra_MultiVector>(*vispointmap_, 3);
+  nodecoords = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*vispointmap_, 3);
 
   // loop over the nodes on this proc and store the coordinate information
   for (int inode = 0; inode < (int)local_vis_point_x.size(); inode++)
@@ -1366,13 +1366,14 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map, *vispointmap_);
-  Epetra_MultiVector allnodecoords(*proc0map, 3);
+  Core::LinAlg::MultiVector<double> allnodecoords(*proc0map, 3);
   int err = allnodecoords.Import(*nodecoords, proc0importer, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
   // write the node coordinates (only proc 0)
   // ensight format requires x_1 .. x_n, y_1 .. y_n, z_1 ... z_n
-  // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
+  // this is fulfilled automatically due to Core::LinAlg::MultiVector<double> usage (columnwise
+  // writing data)
   if (myrank_ == 0)
   {
     double* coords = allnodecoords.Values();
@@ -1719,8 +1720,8 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   using namespace FourC;
 
   // a multivector for the interpolated data
-  Teuchos::RCP<Epetra_MultiVector> idata;
-  idata = Teuchos::make_rcp<Epetra_MultiVector>(*vispointmap_, numdf);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> idata;
+  idata = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*vispointmap_, numdf);
 
   Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
       dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*field_->discretization()));
@@ -2113,13 +2114,14 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map_, *vispointmap_);
-  Epetra_MultiVector allsols(*proc0map_, numdf);
+  Core::LinAlg::MultiVector<double> allsols(*proc0map_, numdf);
   int err = allsols.Import(*idata, proc0importer, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
   // write the node results (only proc 0)
   // ensight format requires u_1 .. u_n, v_1 .. v_n, w_1 ... w_n, as for nodes
-  // this is fulfilled automatically due to Epetra_MultiVector usage (columnwise writing data)
+  // this is fulfilled automatically due to Core::LinAlg::MultiVector<double> usage (columnwise
+  // writing data)
   if (myrank_ == 0)
   {
     double* solvals = allsols.Values();
@@ -2152,9 +2154,10 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
     my_data acoordingly.
 */
 /*----------------------------------------------------------------------*/
-void EnsightWriter::interpolate_nurbs_result_to_viz_points(Epetra_MultiVector& idata, const int dim,
-    const int npatch, const std::vector<int>& vpoff, const std::vector<int>& ele_cart_id,
-    const Core::Elements::Element* actele, Core::FE::Nurbs::NurbsDiscretization* nurbsdis,
+void EnsightWriter::interpolate_nurbs_result_to_viz_points(Core::LinAlg::MultiVector<double>& idata,
+    const int dim, const int npatch, const std::vector<int>& vpoff,
+    const std::vector<int>& ele_cart_id, const Core::Elements::Element* actele,
+    Core::FE::Nurbs::NurbsDiscretization* nurbsdis,
     const std::vector<Core::LinAlg::SerialDenseVector>& eleknots,
     const Core::LinAlg::SerialDenseVector& weights, const int numdf,
     const std::vector<double>& my_data) const
@@ -3332,13 +3335,13 @@ void EnsightWriter::interpolate_nurbs_result_to_viz_points(Epetra_MultiVector& i
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const int numdf,
-    Epetra_MultiVector& data, const std::string name, const int offset) const
+    Core::LinAlg::MultiVector<double>& data, const std::string name, const int offset) const
 {
   using namespace FourC;
 
   // a multivector for the interpolated data
-  Teuchos::RCP<Epetra_MultiVector> idata;
-  idata = Teuchos::make_rcp<Epetra_MultiVector>(*vispointmap_, numdf);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> idata;
+  idata = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*vispointmap_, numdf);
 
   Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
       dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*field_->discretization()));
@@ -3424,7 +3427,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   colnodemapvec.clear();
 
   const Epetra_Map* fullnodemap = &(colnodemap);
-  Epetra_MultiVector coldata(*fullnodemap, numdf, true);  // numdf important!!!
+  Core::LinAlg::MultiVector<double> coldata(*fullnodemap, numdf, true);  // numdf important!!!
 
   // create an importer and import the data
   Epetra_Import importer((coldata).Map(), (data).Map());
@@ -3498,7 +3501,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
       for (int rr = 0; rr < numdf; ++rr)
       {
         // value of nodemap-based column rr
-        my_data[numdf * inode + rr] = (*((coldata)(rr)))[(coldata).Map().LID(nodeids[inode])];
+        my_data[numdf * inode + rr] = (((coldata)(rr)))[(coldata).Map().LID(nodeids[inode])];
       }
     }
 
@@ -3510,7 +3513,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map_, *vispointmap_);
-  Epetra_MultiVector allsols(*proc0map_, numdf);
+  Core::LinAlg::MultiVector<double> allsols(*proc0map_, numdf);
   int err = allsols.Import(*idata, proc0importer, Insert);
   if (err > 0) FOUR_C_THROW("Importing everything to proc 0 went wrong. Import returns %d", err);
 
@@ -3524,7 +3527,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   {
     for (int idf = 0; idf < numdf; ++idf)
     {
-      Core::LinAlg::Vector<double> column(*(allsols)(idf));
+      Core::LinAlg::Vector<double> column((allsols)(idf));
       for (int inode = 0; inode < finalnumnode;
            inode++)  // inode == lid of node because we use proc0map_
       {

@@ -168,8 +168,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
         FOUR_C_THROW(
             "Currently unsupported, since the variation of the "
             "l2-projected gradient is missing. -- hiermeier 12/2016");
-        const Teuchos::RCP<Epetra_MultiVector>& gradphi =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("gradphi");
+        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& gradphi =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("gradphi");
         Core::FE::extract_my_node_based_values(ele, my::econvelnp_, *gradphi, nsd_);
         Teuchos::RCP<const Core::LinAlg::Vector<double>> l2_proj_sys_diag =
             discretization.get_state("l2_proj_system_mat_diag");
@@ -371,8 +371,9 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
       if (lsreinitparams_->use_projected_vel())
       {
         // get velocity at nodes (pre-computed via L2 projection)
-        const Teuchos::RCP<Epetra_MultiVector> velocity =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("reinitialization velocity field");
+        const Teuchos::RCP<Core::LinAlg::MultiVector<double>> velocity =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
+                "reinitialization velocity field");
         Core::FE::extract_my_node_based_values(ele, my::econvelnp_, *velocity, nsd_);
       }
 
@@ -403,8 +404,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
 
       if (lsreinitparams_->project())
       {
-        const Teuchos::RCP<Epetra_MultiVector> gradphi =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("gradphi");
+        const Teuchos::RCP<Core::LinAlg::MultiVector<double>> gradphi =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("gradphi");
         Core::FE::extract_my_node_based_values(ele, my::econvelnp_, *gradphi, nsd_);
       }
 

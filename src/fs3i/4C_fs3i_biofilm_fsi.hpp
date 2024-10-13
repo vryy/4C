@@ -97,7 +97,7 @@ namespace FS3I
     const Epetra_Comm& comm() { return comm_; }
 
     void vec_to_scatravec(Core::FE::Discretization& scatradis, Core::LinAlg::Vector<double>& vec,
-        Epetra_MultiVector& scatravec);
+        Core::LinAlg::MultiVector<double>& scatravec);
 
     void struct_gmsh_output();
 
@@ -125,10 +125,10 @@ namespace FS3I
     Teuchos::RCP<Adapter::AleFsiWrapper> ale_;
 
     //    // total flux at the interface overall the InnerTimeloop
-    //    Teuchos::RCP<Epetra_MultiVector> flux;
+    //    Teuchos::RCP<Core::LinAlg::MultiVector<double>> flux;
     //
     //    // total flux at the structure interface overall the InnerTimeloop
-    //    Teuchos::RCP<Epetra_MultiVector> struflux;
+    //    Teuchos::RCP<Core::LinAlg::MultiVector<double>> struflux;
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> norminflux_;
 
@@ -209,10 +209,10 @@ namespace FS3I
     Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_growth_disp_;
 
     /// total scatra structure displacement due to growth
-    Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> scatra_struct_growth_disp_;
 
     /// total scatra fluid displacement due to growth
-    Teuchos::RCP<Epetra_MultiVector> scatra_fluid_growth_disp_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> scatra_fluid_growth_disp_;
   };
 
 }  // namespace FS3I

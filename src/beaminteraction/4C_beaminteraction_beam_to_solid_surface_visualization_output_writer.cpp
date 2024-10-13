@@ -232,8 +232,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
       output_writer_base_ptr_->get_visualization_writer("btss-coupling-nodal-forces");
   if (nodal_force_visualization != Teuchos::null)
     add_beam_interaction_nodal_forces(nodal_force_visualization, beam_contact->discret_ptr(),
-        beam_contact->beam_interaction_data_state().get_dis_np()->get_ptr_of_const_Epetra_Vector(),
-        *beam_contact->beam_interaction_data_state().get_force_np(),
+        beam_contact->beam_interaction_data_state().get_dis_np()->get_ptr_of_MultiVector(),
+        Core::LinAlg::Vector<double>(*beam_contact->beam_interaction_data_state().get_force_np()),
         output_params_ptr_->get_write_unique_i_ds_flag());
 
 
@@ -291,7 +291,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
         Core::LinAlg::Matrix<3, 2, double> beam_resultant(true);
         Core::LinAlg::Matrix<3, 2, double> solid_resultant(true);
         get_global_coupling_force_resultants(beam_contact->discret(),
-            *(beam_contact->beam_interaction_data_state().get_force_np()),
+            Core::LinAlg::MultiVector<double>(
+                *(beam_contact->beam_interaction_data_state().get_force_np())),
             *(beam_contact->beam_interaction_data_state().get_dis_np()), beam_resultant,
             solid_resultant);
 

@@ -25,8 +25,8 @@ Core::LinearSolver::IFPACKPreconditioner::IFPACKPreconditioner(
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void Core::LinearSolver::IFPACKPreconditioner::setup(
-    bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
+void Core::LinearSolver::IFPACKPreconditioner::setup(bool create, Epetra_Operator* matrix,
+    Core::LinAlg::MultiVector<double>* x, Core::LinAlg::MultiVector<double>* b)
 {
   if (create)
   {

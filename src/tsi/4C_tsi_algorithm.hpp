@@ -151,11 +151,11 @@ namespace TSI
         const Core::LinAlg::Vector<double>& dispnp);
 
     //! displacements at time n+1 for thermal output
-    Teuchos::RCP<Epetra_MultiVector> dispnp_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> dispnp_;
 
     //! temperatures at time n+1 for structure output
     //! introduced for non-matching discretizations
-    Teuchos::RCP<Epetra_MultiVector> tempnp_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> tempnp_;
 
     //@}
 

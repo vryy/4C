@@ -111,7 +111,7 @@ namespace POROMULTIPHASE
     virtual Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const = 0;
 
     /// return fluid flux
-    virtual Teuchos::RCP<const Epetra_MultiVector> fluid_flux() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::MultiVector<double>> fluid_flux() const = 0;
 
     /// return fluid solution variable
     virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_phinp() const = 0;

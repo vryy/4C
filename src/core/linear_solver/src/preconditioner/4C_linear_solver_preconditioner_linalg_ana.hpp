@@ -107,16 +107,20 @@ namespace Core::LinAlg
       /*!
       \brief Apply operator to X and return result in Y
 
-      \note X and Y might be in-place pointing to the same physical Epetra_MultiVector
+      \note X and Y might be in-place pointing to the same physical
+      Core::LinAlg::MultiVector<double>
       */
-      virtual int apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
+      virtual int apply(const Core::LinAlg::MultiVector<double>& X,
+          Core::LinAlg::MultiVector<double>& Y) const = 0;
 
       /*!
       \brief Apply the inverse of the operator to X and return result in Y
 
-      \note X and Y might be in-place pointing to the same physical Epetra_MultiVector
+      \note X and Y might be in-place pointing to the same physical
+      Core::LinAlg::MultiVector<double>
       */
-      virtual int apply_inverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
+      virtual int apply_inverse(const Core::LinAlg::MultiVector<double>& X,
+          Core::LinAlg::MultiVector<double>& Y) const = 0;
 
       /*!
       \brief return inf-norm of operator
@@ -190,12 +194,14 @@ namespace Core::LinAlg
         return const_cast<Epetra_Operator&>(op_).SetUseTranspose(UseTranspose);
       }
 
-      int apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply(const Core::LinAlg::MultiVector<double>& X,
+          Core::LinAlg::MultiVector<double>& Y) const override
       {
         return op_.Apply(X, Y);
       }
 
-      int apply_inverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply_inverse(const Core::LinAlg::MultiVector<double>& X,
+          Core::LinAlg::MultiVector<double>& Y) const override
       {
         return op_.ApplyInverse(X, Y);
       }
@@ -252,7 +258,8 @@ namespace Core::LinAlg
         return const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!UseTranspose);
       }
 
-      int apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply(const Core::LinAlg::MultiVector<double>& X,
+          Core::LinAlg::MultiVector<double>& Y) const override
       {  // apply the transposed
         const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!op_->use_transpose());
         int err = op_->apply(X, Y);
@@ -260,7 +267,8 @@ namespace Core::LinAlg
         return err;
       }
 
-      int apply_inverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply_inverse(const Core::LinAlg::MultiVector<double>& X,
+          Core::LinAlg::MultiVector<double>& Y) const override
       {
         const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!op_->use_transpose());
         int err = op_->apply_inverse(X, Y);
@@ -328,7 +336,8 @@ namespace Core::LinAlg
         return const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(UseTranspose);
       }
 
-      int apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply(const Core::LinAlg::MultiVector<double>& X,
+          Core::LinAlg::MultiVector<double>& Y) const override
       {  // apply the transposed
         const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!op_->use_transpose());
         int err = op_->apply(X, Y);
@@ -337,7 +346,8 @@ namespace Core::LinAlg
         return err;
       }
 
-      int apply_inverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply_inverse(const Core::LinAlg::MultiVector<double>& X,
+          Core::LinAlg::MultiVector<double>& Y) const override
       {
         const_cast<LightWeightOperatorBase&>(*op_).set_use_transpose(!op_->use_transpose());
         int err = op_->apply_inverse(X, Y);
@@ -406,9 +416,11 @@ namespace Core::LinAlg
         return 0;
       }
 
-      int apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+      int apply(const Core::LinAlg::MultiVector<double>& X,
+          Core::LinAlg::MultiVector<double>& Y) const override;
 
-      int apply_inverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+      int apply_inverse(const Core::LinAlg::MultiVector<double>& X,
+          Core::LinAlg::MultiVector<double>& Y) const override;
 
       double norm_inf() const override
       {
@@ -492,9 +504,11 @@ namespace Core::LinAlg
         return 0;
       }
 
-      int apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+      int apply(const Core::LinAlg::MultiVector<double>& X,
+          Core::LinAlg::MultiVector<double>& Y) const override;
 
-      int apply_inverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply_inverse(const Core::LinAlg::MultiVector<double>& X,
+          Core::LinAlg::MultiVector<double>& Y) const override
       {
         FOUR_C_THROW(
             "Core::LinAlg::Ana::OperatorSum does not implement "
@@ -626,9 +640,11 @@ namespace Core::LinAlg
         return -1;
       }
 
-      int apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+      int apply(const Core::LinAlg::MultiVector<double>& X,
+          Core::LinAlg::MultiVector<double>& Y) const override;
 
-      int apply_inverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
+      int apply_inverse(const Core::LinAlg::MultiVector<double>& X,
+          Core::LinAlg::MultiVector<double>& Y) const override
       {
         FOUR_C_THROW(
             "Core::LinAlg::Ana::OperatorInverse does not support inverse of inverse of underlying "
@@ -694,7 +710,8 @@ namespace Core::LinAlg
       Vector(Epetra_DataAccess CV, const Epetra_BlockMap& m, double* V) : Epetra_Vector(CV, m, V) {}
 
       /// Implements Core::LinAlg::Vector<double> ctor
-      Vector(Epetra_DataAccess CV, const Epetra_MultiVector& mv, int i) : Epetra_Vector(CV, mv, i)
+      Vector(Epetra_DataAccess CV, const Core::LinAlg::MultiVector<double>& mv, int i)
+          : Epetra_Vector(CV, mv, i)
       {
       }
 

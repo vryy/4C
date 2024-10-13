@@ -2103,7 +2103,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_stochastic_forces(
    * forces with zero mean and standard deviation (2*kT / dt)^0.5; note carefully: a space between
    * the two subsequal ">" signs is mandatory for the C++ parser in order to avoid confusion with
    * ">>" for streams*/
-  Teuchos::RCP<Epetra_MultiVector> randomforces =
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> randomforces =
       brownian_dyn_params_interface().get_random_forces();
 
   // tangent vector (derivative of beam centerline curve r with respect to arc-length parameter s)
@@ -2136,7 +2136,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_stochastic_forces(
     for (unsigned int idim = 0; idim < ndim; idim++)
     {
 #ifndef BEAM3EBCONSTSTOCHFORCE
-      randnumvec(idim) = (*randomforces)[gp * randompergauss + idim][lid()];
+      randnumvec(idim) = (*randomforces)(gp * randompergauss + idim)[lid()];
 #else
       randnumvec(idim) = (*randomforces)[idim][LID()];
 #endif

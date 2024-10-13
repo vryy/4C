@@ -488,8 +488,8 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
 
   if (solver->params().isSublist("ML Parameters"))
   {
-    Teuchos::RCP<Epetra_MultiVector> pressure_nullspace =
-        Teuchos::make_rcp<Epetra_MultiVector>(*(dis_->dof_row_map()), 1);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> pressure_nullspace =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(dis_->dof_row_map()), 1);
     pressure_nullspace->PutScalar(1.0);
 
     solver->params().sublist("ML Parameters").set("PDE equations", 1);
@@ -500,7 +500,8 @@ void Adapter::FluidFSI::proj_vel_to_div_zero()
     solver->params().sublist("ML Parameters").remove("nullspace", false);  // necessary?
     solver->params()
         .sublist("Michael's secret vault")
-        .set<Teuchos::RCP<Epetra_MultiVector>>("pressure nullspace", pressure_nullspace);
+        .set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
+            "pressure nullspace", pressure_nullspace);
   }
 
   Core::LinAlg::SolverParams solver_params;

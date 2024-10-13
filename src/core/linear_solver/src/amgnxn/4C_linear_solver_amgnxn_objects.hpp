@@ -14,7 +14,6 @@
 
 #include "4C_linalg_blocksparsematrix.hpp"
 
-#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -31,9 +30,9 @@ namespace Core::LinearSolver::AMGNxN
 
     int get_num_blocks() const { return vectors_.size(); }
 
-    Teuchos::RCP<Epetra_MultiVector> get_vector(int i) const { return vectors_[i]; }
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> get_vector(int i) const { return vectors_[i]; }
 
-    void set_vector(Teuchos::RCP<Epetra_MultiVector> V, int i)
+    void set_vector(Teuchos::RCP<Core::LinAlg::MultiVector<double>> V, int i)
     {
       vectors_[i] = V;
       return;
@@ -54,7 +53,7 @@ namespace Core::LinearSolver::AMGNxN
     Teuchos::RCP<BlockedVector> new_rcp(bool ZeroIt = false) const;
 
    private:
-    std::vector<Teuchos::RCP<Epetra_MultiVector>> vectors_;
+    std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>> vectors_;
   };
 
   class BlockedMatrix

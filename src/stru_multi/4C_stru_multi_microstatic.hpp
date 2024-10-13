@@ -197,8 +197,9 @@ namespace MultiScale
     Marsden and Hughes, Mathematical Foundations of Elasticity,
     Dover, pg. 215
     */
-    void convert_mat(const Epetra_MultiVector& cmatpf, const Core::LinAlg::Matrix<3, 3>& F_inv,
-        const Core::LinAlg::Matrix<6, 1>& S, Core::LinAlg::Matrix<6, 6>& cmat);
+    void convert_mat(const Core::LinAlg::MultiVector<double>& cmatpf,
+        const Core::LinAlg::Matrix<3, 3>& F_inv, const Core::LinAlg::Matrix<6, 1>& S,
+        Core::LinAlg::Matrix<6, 6>& cmat);
 
 
     /*!
@@ -310,8 +311,9 @@ namespace MultiScale
     Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKaainv_;
     Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKda_;
 
-    Teuchos::RCP<Epetra_MultiVector> D_;    //!< D Matrix following Miehe et al., 2002
-    Teuchos::RCP<Epetra_MultiVector> rhs_;  //!< exported transpose of D (pdof -> dofrowmap)
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> D_;  //!< D Matrix following Miehe et al., 2002
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+        rhs_;  //!< exported transpose of D (pdof -> dofrowmap)
 
     int microdisnum_;  //!< number of RVE
 

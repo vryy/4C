@@ -180,26 +180,26 @@ namespace FLD
     //        --------------------------
 
     //! the filtered vel exported to column map
-    Teuchos::RCP<Epetra_MultiVector> col_filtered_vel_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_vel_;
     //! the filtered reystress exported to column map
-    Teuchos::RCP<Epetra_MultiVector> col_filtered_reynoldsstress_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_reynoldsstress_;
     //! the modeled subgrid stresses exported to column map
-    Teuchos::RCP<Epetra_MultiVector> col_filtered_modeled_subgrid_stress_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_modeled_subgrid_stress_;
     //! the filtered velocities times rho exported to column map
-    Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_dens_vel_;
     //! the filtered density exported to column map
     Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_dens_;
     //! the filtered strainrate times rho exported to column map
     Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_dens_strainrate_;
     //! the modeled fine scale velocities exported to column map
-    Teuchos::RCP<Epetra_MultiVector> col_fs_vel_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_fs_vel_;
     //! the filtered density times temperature times velocity exported to column map (scalar)
-    Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel_temp_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_dens_vel_temp_;
     //! the filtered density times temperature gradient times rate of strain exported to column map
     //! (scalar)
-    Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_rateofstrain_temp_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_dens_rateofstrain_temp_;
     //  //! the filtered temperature gradient exported to column map (scalar)
-    //  Teuchos::RCP<Epetra_MultiVector>      col_filtered_gradtemp_;
+    //  Teuchos::RCP<Core::LinAlg::MultiVector<double>>      col_filtered_gradtemp_;
     //! the filtered temperature exported to column map (scalar)
     Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_temp_;
     //! the filtered density times temperature exported to column map (scalar)

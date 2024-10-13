@@ -121,9 +121,9 @@ namespace Core::LinAlg
     }
 
     /// create multi vector to map i
-    Teuchos::RCP<Epetra_MultiVector> vector(int i, int numvec) const
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> vector(int i, int numvec) const
     {
-      return Teuchos::make_rcp<Epetra_MultiVector>(*Map(i), numvec);
+      return Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*Map(i), numvec);
     }
 
     //@
@@ -144,8 +144,8 @@ namespace Core::LinAlg
       \param full vector on the full map
       \param block number of vector to extract
      */
-    Teuchos::RCP<Epetra_MultiVector> extract_vector(
-        const Epetra_MultiVector& full, int block) const;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> extract_vector(
+        const Core::LinAlg::MultiVector<double>& full, int block) const;
 
     /// extract a partial vector from a full vector
     /*!
@@ -153,8 +153,8 @@ namespace Core::LinAlg
       \param block number of vector to extract
       \param partial vector to fill
      */
-    virtual void extract_vector(
-        const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial) const;
+    virtual void extract_vector(const Core::LinAlg::MultiVector<double>& full, int block,
+        Core::LinAlg::MultiVector<double>& partial) const;
 
 
     //@}
@@ -175,8 +175,8 @@ namespace Core::LinAlg
       \param partial vector to copy into full vector
       \param block number of partial vector
      */
-    Teuchos::RCP<Epetra_MultiVector> insert_vector(
-        const Epetra_MultiVector& partial, int block) const;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> insert_vector(
+        const Core::LinAlg::MultiVector<double>& partial, int block) const;
 
     /// Put a partial vector into a full vector
     /*!
@@ -184,8 +184,8 @@ namespace Core::LinAlg
       \param block number of partial vector
       \param full vector to copy into
      */
-    virtual void insert_vector(
-        const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full) const;
+    virtual void insert_vector(const Core::LinAlg::MultiVector<double>& partial, int block,
+        Core::LinAlg::MultiVector<double>& full) const;
 
     //@}
 
@@ -199,8 +199,8 @@ namespace Core::LinAlg
       \param full vector to copy into
       \param scale scaling factor for partial vector
      */
-    virtual void add_vector(const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full,
-        double scale = 1.0) const;
+    virtual void add_vector(const Core::LinAlg::MultiVector<double>& partial, int block,
+        Core::LinAlg::MultiVector<double>& full, double scale = 1.0) const;
 
     //@}
 
@@ -214,7 +214,7 @@ namespace Core::LinAlg
     void scale(Core::LinAlg::Vector<double>& full, int block, double scalar) const;
 
     /// Scale one block only
-    void scale(Epetra_MultiVector& full, int block, double scalar) const;
+    void scale(Core::LinAlg::MultiVector<double>& full, int block, double scalar) const;
 
    protected:
     /// the full row map

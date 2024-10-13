@@ -233,7 +233,8 @@ namespace Core::IO
    * @return Number of points added by this element.
    */
   unsigned int append_visualization_node_based_result_data_vector_lagrange_ele(
-      const Core::Elements::Element& ele, const Epetra_MultiVector& result_data_nodebased,
+      const Core::Elements::Element& ele,
+      const Core::LinAlg::MultiVector<double>& result_data_nodebased,
       const int result_num_components_per_node, std::vector<double>& point_result_data)
   {
     const std::vector<int>& numbering =
@@ -246,10 +247,10 @@ namespace Core::IO
 
       for (int component_i = 0; component_i < result_num_components_per_node; ++component_i)
       {
-        const Epetra_Vector* column = (result_data_nodebased)(component_i);
+        const auto& column = (result_data_nodebased)(component_i);
 
         if (lid > -1)
-          point_result_data.push_back((*column)[lid]);
+          point_result_data.push_back(column[lid]);
         else
           FOUR_C_THROW("received illegal node local id: %d", lid);
       }
@@ -359,7 +360,8 @@ namespace Core::IO
   template <Core::FE::CellType celltype, unsigned int result_num_components_per_node>
   unsigned int append_visualization_node_based_result_data_vector_nurbs(
       const Core::Elements::Element& ele, const Core::FE::Discretization& discret,
-      const Epetra_MultiVector& result_data_nodebased, std::vector<double>& vtu_point_result_data)
+      const Core::LinAlg::MultiVector<double>& result_data_nodebased,
+      std::vector<double>& vtu_point_result_data)
   {
     constexpr int number_of_output_points = Core::FE::num_nodes<celltype>;
     constexpr int dim_nurbs = Core::FE::dim<celltype>;
@@ -482,7 +484,7 @@ namespace Core::IO
    */
   unsigned int append_visualization_node_based_result_data_vector_nurbs_ele(
       const Core::Elements::Element& ele, const Core::FE::Discretization& discret,
-      const Epetra_MultiVector& result_data_nodebased,
+      const Core::LinAlg::MultiVector<double>& result_data_nodebased,
       const unsigned int result_num_components_per_node, std::vector<double>& vtu_point_result_data)
   {
     using implemented_celltypes =

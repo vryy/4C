@@ -173,7 +173,8 @@ Adapter::PoroFluidMultiphaseWrapper::valid_vol_frac_spec_dofs() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_MultiVector> Adapter::PoroFluidMultiphaseWrapper::flux() const
+Teuchos::RCP<const Core::LinAlg::MultiVector<double>> Adapter::PoroFluidMultiphaseWrapper::flux()
+    const
 {
   return porofluid_->flux();
 }

@@ -420,15 +420,15 @@ Teuchos::RCP<Epetra_CrsGraph> Core::FE::Discretization::build_node_graph() const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::FE::Discretization::build_node_coordinates(
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::Discretization::build_node_coordinates(
     Teuchos::RCP<const Epetra_Map> noderowmap) const
 {
   // get nodal row map if not given
   if (noderowmap == Teuchos::null)
     noderowmap = Teuchos::rcpFromRef<const Epetra_Map>(*node_row_map());
 
-  Teuchos::RCP<Epetra_MultiVector> coordinates =
-      Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, 3, true);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> coordinates =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, 3, true);
 
   for (int lid = 0; lid < noderowmap->NumMyElements(); ++lid)
   {

@@ -119,14 +119,14 @@ namespace FLD
     //        --------------------------
 
     //! the filtered reystress exported to column map
-    Teuchos::RCP<Epetra_MultiVector> col_filtered_strainrate_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_strainrate_;
     Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_expression_;
-    Teuchos::RCP<Epetra_MultiVector> col_filtered_alphaij_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_alphaij_;
     Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_alpha2_;
-    Teuchos::RCP<Epetra_MultiVector> col_filtered_phi_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_phi_;
     Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_phi2_;
     Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_phiexpression_;
-    Teuchos::RCP<Epetra_MultiVector> col_filtered_alphaijsc_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_alphaijsc_;
     //@}
 
     //! @name homogeneous flow specials

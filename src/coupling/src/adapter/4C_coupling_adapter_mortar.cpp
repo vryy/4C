@@ -1298,20 +1298,21 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::ma
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::CouplingMortar::master_to_slave(
-    Teuchos::RCP<Epetra_MultiVector> mv) const
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMortar::master_to_slave(
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv) const
 {
   // safety check
   check_setup();
 
   FOUR_C_ASSERT(masterdofrowmap_->SameAs(mv->Map()), "Vector with master dof map expected");
 
-  Epetra_MultiVector tmp = Epetra_MultiVector(M_->row_map(), mv->NumVectors());
+  Core::LinAlg::MultiVector<double> tmp =
+      Core::LinAlg::MultiVector<double>(M_->row_map(), mv->NumVectors());
 
   if (M_->multiply(false, *mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
 
-  Teuchos::RCP<Epetra_MultiVector> sv =
-      Teuchos::make_rcp<Epetra_MultiVector>(*pslavedofrowmap_, mv->NumVectors());
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*pslavedofrowmap_, mv->NumVectors());
 
   if (Dinv_->multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
 
@@ -1320,20 +1321,21 @@ Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::CouplingMortar::master_to_sl
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::CouplingMortar::master_to_slave(
-    Teuchos::RCP<const Epetra_MultiVector> mv) const
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMortar::master_to_slave(
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> mv) const
 {
   // safety check
   check_setup();
 
   FOUR_C_ASSERT(masterdofrowmap_->SameAs(mv->Map()), "Vector with master dof map expected");
 
-  Epetra_MultiVector tmp = Epetra_MultiVector(M_->row_map(), mv->NumVectors());
+  Core::LinAlg::MultiVector<double> tmp =
+      Core::LinAlg::MultiVector<double>(M_->row_map(), mv->NumVectors());
 
   if (M_->multiply(false, *mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
 
-  Teuchos::RCP<Epetra_MultiVector> sv =
-      Teuchos::make_rcp<Epetra_MultiVector>(*pslavedofrowmap_, mv->NumVectors());
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*pslavedofrowmap_, mv->NumVectors());
 
   if (Dinv_->multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
 
@@ -1366,7 +1368,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::ma
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::master_to_slave(
-    Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> mv,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not mv->Map().PointSameAs(P_->col_map())) FOUR_C_THROW("master dof map vector expected");
@@ -1377,7 +1380,7 @@ void Coupling::Adapter::CouplingMortar::master_to_slave(
   check_setup();
 
   // slave vector with auxiliary dofmap
-  Epetra_MultiVector sv_aux(P_->row_map(), sv->NumVectors());
+  Core::LinAlg::MultiVector<double> sv_aux(P_->row_map(), sv->NumVectors());
 
   // project
   P_->multiply(false, *mv, sv_aux);
@@ -1395,7 +1398,8 @@ void Coupling::Adapter::CouplingMortar::master_to_slave(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::slave_to_master(
-    Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> sv,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not mv->Map().PointSameAs(P_->col_map())) FOUR_C_THROW("master dof map vector expected");
@@ -1458,17 +1462,18 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::sl
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::CouplingMortar::slave_to_master(
-    Teuchos::RCP<Epetra_MultiVector> sv) const
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMortar::slave_to_master(
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv) const
 {
   // safety check
   check_setup();
 
-  Epetra_MultiVector tmp = Epetra_MultiVector(M_->range_map(), sv->NumVectors());
+  Core::LinAlg::MultiVector<double> tmp =
+      Core::LinAlg::MultiVector<double>(M_->range_map(), sv->NumVectors());
   std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
-  Teuchos::RCP<Epetra_MultiVector> mv =
-      Teuchos::make_rcp<Epetra_MultiVector>(*pmasterdofrowmap_, sv->NumVectors());
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*pmasterdofrowmap_, sv->NumVectors());
   if (M_->multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   return mv;
@@ -1476,17 +1481,18 @@ Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::CouplingMortar::slave_to_mas
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::CouplingMortar::slave_to_master(
-    Teuchos::RCP<const Epetra_MultiVector> sv) const
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMortar::slave_to_master(
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> sv) const
 {
   // safety check
   check_setup();
 
-  Epetra_MultiVector tmp = Epetra_MultiVector(M_->range_map(), sv->NumVectors());
+  Core::LinAlg::MultiVector<double> tmp =
+      Core::LinAlg::MultiVector<double>(M_->range_map(), sv->NumVectors());
   std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
-  Teuchos::RCP<Epetra_MultiVector> mv =
-      Teuchos::make_rcp<Epetra_MultiVector>(*pmasterdofrowmap_, sv->NumVectors());
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*pmasterdofrowmap_, sv->NumVectors());
   if (M_->multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   return mv;

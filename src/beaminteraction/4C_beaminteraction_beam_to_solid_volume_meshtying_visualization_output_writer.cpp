@@ -181,8 +181,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
       output_writer_base_ptr_->get_visualization_writer("btsv-nodal-forces");
   if (visualization != Teuchos::null)
     add_beam_interaction_nodal_forces(visualization, beam_contact->discret_ptr(),
-        beam_contact->beam_interaction_data_state().get_dis_np()->get_ptr_of_const_Epetra_Vector(),
-        *beam_contact->beam_interaction_data_state().get_force_np(),
+        beam_contact->beam_interaction_data_state().get_dis_np()->get_ptr_of_MultiVector(),
+        Core::LinAlg::MultiVector<double>(
+            *beam_contact->beam_interaction_data_state().get_force_np()),
         output_params_ptr_->get_write_unique_i_ds_flag());
 
 

@@ -399,14 +399,14 @@ void Discret::ELEMENTS::Rigidsphere::calc_stochastic_force(
 
   /*get pointer at Epetra multivector in parameter list linking to random numbers for stochastic
    * forces with zero mean and standard deviation (2*kT / dt)^0.5*/
-  Teuchos::RCP<Epetra_MultiVector> randomnumbers =
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> randomnumbers =
       params_interface().get_brownian_dyn_param_interface()->get_random_forces();
 
   if (force != nullptr)
   {
     for (unsigned int k = 0; k < 3; ++k)
     {
-      (*force)(k) -= sqrt(gamma) * (*randomnumbers)[k][lid()];
+      (*force)(k) -= sqrt(gamma) * (*randomnumbers)(k)[lid()];
     }
   }
 

@@ -884,9 +884,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> PostResult::read_result(const std::st
   {
     if (columns != 1) FOUR_C_THROW("got multivector with name '%s', vector expected", name.c_str());
   }
-  Teuchos::RCP<Epetra_Vector> test =
-      Teuchos::rcp_dynamic_cast<Epetra_Vector>(read_multi_result(name));
-  return Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*test);
+  auto test = read_multi_result(name);
+  return Teuchos::make_rcp<Core::LinAlg::Vector<double>>((*test)(0));
 }
 
 /*----------------------------------------------------------------------*
@@ -938,7 +937,8 @@ PostResult::read_result_serialdensematrix(const std::string name)
  * reads the data of the result vector 'name' from the current result
  * block and returns it as an Epetra Vector.
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> PostResult::read_multi_result(const std::string name)
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> PostResult::read_multi_result(
+    const std::string name)
 {
   const Teuchos::RCP<Epetra_Comm> comm = field_->problem()->get_comm();
   MAP* result = map_read_map(group_, name.c_str());

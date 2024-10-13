@@ -92,6 +92,13 @@ namespace Core::LinAlg
     //! get pointer of epetra multi vector
     Teuchos::RCP<Epetra_MultiVector> get_ptr_of_Epetra_MultiVector() { return vector_; }
 
+    //! Temporary helper to ease transition from Epetra and simplify interfacing with RCP-laden code
+    Teuchos::RCP<MultiVector<T>> get_ptr_of_MultiVector() const
+    {
+      sync_view();
+      return multi_vector_view_;
+    }
+
     //! Computes dot product of each corresponding pair of vectors.
     int Dot(const Epetra_MultiVector &A, double *Result) const;
 

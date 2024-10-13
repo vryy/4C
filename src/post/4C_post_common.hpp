@@ -450,7 +450,7 @@ class PostResult
    *
    *  \returns vector with results read
    */
-  Teuchos::RCP<Epetra_MultiVector> read_multi_result(const std::string name);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> read_multi_result(const std::string name);
 
   //@}
 

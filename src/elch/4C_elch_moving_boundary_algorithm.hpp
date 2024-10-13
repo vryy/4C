@@ -89,10 +89,10 @@ namespace ElCh
     Teuchos::RCP<Core::LinAlg::Vector<double>> iveln_;
 
     /// old flux
-    Teuchos::RCP<Epetra_MultiVector> fluxn_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> fluxn_;
 
     /// current flux
-    Teuchos::RCP<Epetra_MultiVector> fluxnp_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> fluxnp_;
 
     /// maximum iteration steps for outer loop
     const int itmax_;

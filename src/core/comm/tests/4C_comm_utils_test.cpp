@@ -224,7 +224,7 @@ namespace
   TEST_F(SetupCompareParallelVectorsTest, PositiveTestCompareVectors)
   {
     bool success = Core::Communication::are_distributed_vectors_identical(*communicators_,
-        *epetraVector_->get_ptr_of_Epetra_MultiVector(),  //
+        *epetraVector_,  //
         "epetraVector");
     EXPECT_EQ(success, true);
   }
@@ -236,8 +236,8 @@ namespace
     double disturbedValue = static_cast<double>(lastLocalIndex);
     epetraVector_->ReplaceMyValues(1, &disturbedValue, &lastLocalIndex);
 
-    EXPECT_THROW(Core::Communication::are_distributed_vectors_identical(*communicators_,
-                     *epetraVector_->get_ptr_of_Epetra_MultiVector(), "epetraVector"),
+    EXPECT_THROW(Core::Communication::are_distributed_vectors_identical(
+                     *communicators_, *epetraVector_, "epetraVector"),
         Core::Exception);
   }
 

@@ -107,8 +107,8 @@ void Solid::IMPLICIT::GenAlpha::setup()
   // ---------------------------------------------------------------------------
   // setup mid-point vectors
   // ---------------------------------------------------------------------------
-  const_vel_acc_update_ptr_ =
-      Teuchos::make_rcp<Epetra_MultiVector>(*global_state().dof_row_map_view(), 2, true);
+  const_vel_acc_update_ptr_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+      *global_state().dof_row_map_view(), 2, true);
 
   // ---------------------------------------------------------------------------
   // setup pointers to the force vectors of the global state data container
@@ -265,13 +265,13 @@ void Solid::IMPLICIT::GenAlpha::set_state(const Core::LinAlg::Vector<double>& x)
   // new end-point velocities
   // ---------------------------------------------------------------------------
   global_state().get_vel_np()->Update(
-      1.0, *(*const_vel_acc_update_ptr_)(0), gamma_ / (beta_ * dt), *disnp_ptr, 0.0);
+      1.0, (*const_vel_acc_update_ptr_)(0), gamma_ / (beta_ * dt), *disnp_ptr, 0.0);
 
   // ---------------------------------------------------------------------------
   // new end-point accelerations
   // ---------------------------------------------------------------------------
   global_state().get_acc_np()->Update(
-      1.0, *(*const_vel_acc_update_ptr_)(1), 1.0 / (beta_ * dt * dt), *disnp_ptr, 0.0);
+      1.0, (*const_vel_acc_update_ptr_)(1), 1.0 / (beta_ * dt * dt), *disnp_ptr, 0.0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -283,18 +283,18 @@ void Solid::IMPLICIT::GenAlpha::update_constant_state_contributions()
   // ---------------------------------------------------------------------------
   // velocity
   // ---------------------------------------------------------------------------
-  (*const_vel_acc_update_ptr_)(0)->Scale((beta_ - gamma_) / beta_, *global_state().get_vel_n());
-  (*const_vel_acc_update_ptr_)(0)->Update(
+  (*const_vel_acc_update_ptr_)(0).Scale((beta_ - gamma_) / beta_, *global_state().get_vel_n());
+  (*const_vel_acc_update_ptr_)(0).Update(
       (2.0 * beta_ - gamma_) * dt / (2.0 * beta_), *global_state().get_acc_n(), 1.0);
-  (*const_vel_acc_update_ptr_)(0)->Update(-gamma_ / (beta_ * dt), *global_state().get_dis_n(), 1.0);
+  (*const_vel_acc_update_ptr_)(0).Update(-gamma_ / (beta_ * dt), *global_state().get_dis_n(), 1.0);
 
   // ---------------------------------------------------------------------------
   // acceleration
   // ---------------------------------------------------------------------------
-  (*const_vel_acc_update_ptr_)(1)->Scale(
+  (*const_vel_acc_update_ptr_)(1).Scale(
       (2.0 * beta_ - 1.0) / (2.0 * beta_), *global_state().get_acc_n());
-  (*const_vel_acc_update_ptr_)(1)->Update(-1.0 / (beta_ * dt), *global_state().get_vel_n(), 1.0);
-  (*const_vel_acc_update_ptr_)(1)->Update(
+  (*const_vel_acc_update_ptr_)(1).Update(-1.0 / (beta_ * dt), *global_state().get_vel_n(), 1.0);
+  (*const_vel_acc_update_ptr_)(1).Update(
       -1.0 / (beta_ * dt * dt), *global_state().get_dis_n(), 1.0);
 }
 

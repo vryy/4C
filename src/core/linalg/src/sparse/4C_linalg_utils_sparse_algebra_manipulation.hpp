@@ -21,7 +21,6 @@
 #include <Epetra_Export.h>
 #include <Epetra_Import.h>
 #include <Epetra_Map.h>
-#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -41,7 +40,8 @@ namespace Core::LinAlg
    \param source (in) : source vector values are taken from
    \param target (out): target vector values will be inserted in
    */
-  void export_to(const Epetra_MultiVector& source, Epetra_MultiVector& target);
+  void export_to(
+      const Core::LinAlg::MultiVector<double>& source, Core::LinAlg::MultiVector<double>& target);
 
   /*!
    \brief Communicate a vector to a different map
@@ -310,28 +310,30 @@ namespace Core::LinAlg
       Teuchos::RCP<const Epetra_Map>& x1map, Teuchos::RCP<Core::LinAlg::Vector<double>>& x1,
       Teuchos::RCP<const Epetra_Map>& x2map, Teuchos::RCP<Core::LinAlg::Vector<double>>& x2);
 
-  /*! \brief Write values from a std::vector to a Epetra_MultiVector
+  /*! \brief Write values from a std::vector to a Core::LinAlg::MultiVector<double>
    *
-   *  The data layout in the std::vector is consecutivly ordered. The Epetra_MultiVector consists
-   *  of several single vectors put together after each other.
+   *  The data layout in the std::vector is consecutivly ordered. The
+   * Core::LinAlg::MultiVector<double> consists of several single vectors put together after each
+   * other.
    *
    *  \param(in) stdVector:         A std::vector<double> to read data from.
-   *  \param(in) epetraMultiVector: A Epetra_MultiVector to write data to.
-   *  \param(in) blockSize:         Block size of the Epetra_MultiVector.
+   *  \param(in) epetraMultiVector: A Core::LinAlg::MultiVector<double> to write data to.
+   *  \param(in) blockSize:         Block size of the Core::LinAlg::MultiVector<double>.
    */
   void std_vector_to_epetra_multi_vector(const std::vector<double>& stdVector,
-      Epetra_MultiVector& epetraMultiVector, const int blockSize);
+      Core::LinAlg::MultiVector<double>& epetraMultiVector, const int blockSize);
 
-  /*! \brief Write values from a std::vector to a Epetra_MultiVector
+  /*! \brief Write values from a std::vector to a Core::LinAlg::MultiVector<double>
    *
-   *  The data layout in the std::vector is consecutivly ordered. The Epetra_MultiVector consists
-   *  of several single vectors put together after each other.
+   *  The data layout in the std::vector is consecutivly ordered. The
+   * Core::LinAlg::MultiVector<double> consists of several single vectors put together after each
+   * other.
    *
-   *  \param(in) epetraMultiVector: A Epetra_MultiVector to read data from.
+   *  \param(in) epetraMultiVector: A Core::LinAlg::MultiVector<double> to read data from.
    *  \param(in) stdVector:         A std::vector<double> to read data to.
-   *  \param(in) blockSize:         Block size of the Epetra_MultiVector.
+   *  \param(in) blockSize:         Block size of the Core::LinAlg::MultiVector<double>.
    */
-  void epetra_multi_vector_to_std_vector(const Epetra_MultiVector& epetraMultiVector,
+  void epetra_multi_vector_to_std_vector(const Core::LinAlg::MultiVector<double>& epetraMultiVector,
       std::vector<double>& stdVector, const int blockSize);
 
 

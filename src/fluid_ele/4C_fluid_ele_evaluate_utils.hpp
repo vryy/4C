@@ -1328,10 +1328,12 @@ namespace FLD
    */
   template <int iel>
   void f3_calc_smag_const_lij_mij_and_mij_mij(Discret::ELEMENTS::Fluid* ele,
-      Discret::ELEMENTS::FluidEleParameterStd* fldpara, Epetra_MultiVector& col_filtered_vel,
-      Epetra_MultiVector& col_filtered_reynoldsstress,
-      Epetra_MultiVector& col_filtered_modeled_subgrid_stress,
-      Epetra_MultiVector& col_filtered_dens_vel, Core::LinAlg::Vector<double>& col_filtered_dens,
+      Discret::ELEMENTS::FluidEleParameterStd* fldpara,
+      Core::LinAlg::MultiVector<double>& col_filtered_vel,
+      Core::LinAlg::MultiVector<double>& col_filtered_reynoldsstress,
+      Core::LinAlg::MultiVector<double>& col_filtered_modeled_subgrid_stress,
+      Core::LinAlg::MultiVector<double>& col_filtered_dens_vel,
+      Core::LinAlg::Vector<double>& col_filtered_dens,
       Core::LinAlg::Vector<double>& col_filtered_dens_strainrate, double& LijMij, double& MijMij,
       double& CI_numerator, double& CI_denominator, double& xcenter, double& ycenter,
       double& zcenter)
@@ -1350,16 +1352,16 @@ namespace FLD
 
       for (int dimi = 0; dimi < 3; ++dimi)
       {
-        evel_hat(dimi, nn) = (*((col_filtered_vel)(dimi)))[lid];
+        evel_hat(dimi, nn) = ((col_filtered_vel)(dimi))[lid];
 
         for (int dimj = 0; dimj < 3; ++dimj)
         {
           int index = 3 * dimi + dimj;
 
-          ereynoldsstress_hat(index, nn) = (*((col_filtered_reynoldsstress)(index)))[lid];
+          ereynoldsstress_hat(index, nn) = (((col_filtered_reynoldsstress)(index)))[lid];
 
           efiltered_modeled_subgrid_stress_hat(index, nn) =
-              (*((col_filtered_modeled_subgrid_stress)(index)))[lid];
+              (((col_filtered_modeled_subgrid_stress)(index)))[lid];
         }
       }
     }
@@ -1375,7 +1377,7 @@ namespace FLD
 
         for (int dimi = 0; dimi < 3; ++dimi)
         {
-          edensvel_hat(dimi, nn) = (*((col_filtered_dens_vel)(dimi)))[lid];
+          edensvel_hat(dimi, nn) = (((col_filtered_dens_vel)(dimi)))[lid];
         }
       }
     }
@@ -1797,7 +1799,8 @@ namespace FLD
 
   template <int iel>
   void f3_calc_vreman_const(Discret::ELEMENTS::Fluid* ele,
-      Epetra_MultiVector& col_filtered_strainrate, Epetra_MultiVector& col_filtered_alphaij,
+      Core::LinAlg::MultiVector<double>& col_filtered_strainrate,
+      Core::LinAlg::MultiVector<double>& col_filtered_alphaij,
       Core::LinAlg::Vector<double>& col_filtered_expression,
       Core::LinAlg::Vector<double>& col_filtered_alpha2, double& cv_numerator,
       double& cv_denominator, double& volume)
@@ -1822,9 +1825,9 @@ namespace FLD
         {
           int index = 3 * dimi + dimj;
 
-          estrainrate_hat(index, nn) = (*((col_filtered_strainrate)(index)))[lid];
+          estrainrate_hat(index, nn) = (((col_filtered_strainrate)(index)))[lid];
 
-          ealphaij_hat(index, nn) = (*((col_filtered_alphaij)(index)))[lid];
+          ealphaij_hat(index, nn) = (((col_filtered_alphaij)(index)))[lid];
         }
       }
     }

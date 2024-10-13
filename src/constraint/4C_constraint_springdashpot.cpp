@@ -637,7 +637,7 @@ void CONSTRAINTS::SpringDashpot::set_restart(Core::LinAlg::Vector<double>& vec)
 /*----------------------------------------------------------------------*
  |                                                             mhv 12/15|
  *----------------------------------------------------------------------*/
-void CONSTRAINTS::SpringDashpot::set_restart_old(Epetra_MultiVector& vec)
+void CONSTRAINTS::SpringDashpot::set_restart_old(Core::LinAlg::MultiVector<double>& vec)
 {
   // loop nodes of current condition
   for (int node_gid : *nodes_)
@@ -664,9 +664,9 @@ void CONSTRAINTS::SpringDashpot::set_restart_old(Epetra_MultiVector& vec)
           if (lid >= 0)
           {
             // copy all components of spring offset length vector
-            (i.second)[0] = (*(vec)(0))[lid];
-            (i.second)[1] = (*(vec)(1))[lid];
-            (i.second)[2] = (*(vec)(2))[lid];
+            (i.second)[0] = ((vec)(0))[lid];
+            (i.second)[1] = ((vec)(1))[lid];
+            (i.second)[2] = ((vec)(2))[lid];
           }
         }
       }
@@ -679,7 +679,7 @@ void CONSTRAINTS::SpringDashpot::set_restart_old(Epetra_MultiVector& vec)
  |                                                         pfaller Jan14|
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::output_gap_normal(Core::LinAlg::Vector<double>& gap,
-    Epetra_MultiVector& normals, Epetra_MultiVector& stress) const
+    Core::LinAlg::MultiVector<double>& normals, Core::LinAlg::MultiVector<double>& stress) const
 {
   // export gap function
   for (const auto& i : gap_)
@@ -699,9 +699,9 @@ void CONSTRAINTS::SpringDashpot::output_gap_normal(Core::LinAlg::Vector<double>&
     if (lid >= 0)
     {
       // copy all components of normal vector
-      (*(normals)(0))[lid] += (normal.second).at(0);
-      (*(normals)(1))[lid] += (normal.second).at(1);
-      (*(normals)(2))[lid] += (normal.second).at(2);
+      ((normals)(0))[lid] += (normal.second).at(0);
+      ((normals)(1))[lid] += (normal.second).at(1);
+      ((normals)(2))[lid] += (normal.second).at(2);
     }
   }
 
@@ -714,9 +714,9 @@ void CONSTRAINTS::SpringDashpot::output_gap_normal(Core::LinAlg::Vector<double>&
     if (lid >= 0)
     {
       // copy all components of normal vector
-      (*(stress)(0))[lid] += (i.second).at(0);
-      (*(stress)(1))[lid] += (i.second).at(1);
-      (*(stress)(2))[lid] += (i.second).at(2);
+      ((stress)(0))[lid] += (i.second).at(0);
+      ((stress)(1))[lid] += (i.second).at(1);
+      ((stress)(2))[lid] += (i.second).at(2);
     }
   }
 }
@@ -734,7 +734,7 @@ void CONSTRAINTS::SpringDashpot::output_prestr_offset(
  |                                                             mhv Dec15|
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::SpringDashpot::output_prestr_offset_old(
-    Epetra_MultiVector& springprestroffset) const
+    Core::LinAlg::MultiVector<double>& springprestroffset) const
 {
   // export spring offset length
   for (const auto& i : offset_prestr_)
@@ -745,9 +745,9 @@ void CONSTRAINTS::SpringDashpot::output_prestr_offset_old(
     if (lid >= 0)
     {
       // copy all components of spring offset length vector
-      (*(springprestroffset)(0))[lid] = (i.second)[0];
-      (*(springprestroffset)(1))[lid] = (i.second)[1];
-      (*(springprestroffset)(2))[lid] = (i.second)[2];
+      ((springprestroffset)(0))[lid] = (i.second)[0];
+      ((springprestroffset)(1))[lid] = (i.second)[1];
+      ((springprestroffset)(2))[lid] = (i.second)[2];
     }
   }
 }

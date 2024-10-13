@@ -20,7 +20,6 @@
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
-#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -70,7 +69,7 @@ namespace Core::LinAlg
   void assemble(Epetra_Vector& V, const Core::LinAlg::SerialDenseVector& Vele,
       const std::vector<int>& lm, const std::vector<int>& lmowner);
   /*!
-   \brief Assemble a Core::LinAlg::SerialDenseVector into a Epetra_MultiVector
+   \brief Assemble a Core::LinAlg::SerialDenseVector into a Core::LinAlg::MultiVector<double>
 
    This is an individual call.
    Will only assemble locally and will never do any commmunication.
@@ -83,8 +82,9 @@ namespace Core::LinAlg
    \param lm (in) : vector with gids
    \param lmowner (in) : vector with owner procs of gids
    */
-  void assemble(Epetra_MultiVector& V, const int n, const Core::LinAlg::SerialDenseVector& Vele,
-      const std::vector<int>& lm, const std::vector<int>& lmowner);
+  void assemble(Core::LinAlg::MultiVector<double>& V, const int n,
+      const Core::LinAlg::SerialDenseVector& Vele, const std::vector<int>& lm,
+      const std::vector<int>& lmowner);
 
   /*! \brief Assemble a source Core::LinAlg::Vector<double> into a target
    * Core::LinAlg::Vector<double>

@@ -2145,11 +2145,10 @@ void FLD::FluidImplicitTimeInt::setup_krylov_space_projection(Core::Conditions::
 void FLD::FluidImplicitTimeInt::update_krylov_space_projection()
 {
   // get Teuchos::RCP to kernel vector of projector
-  Teuchos::RCP<Epetra_MultiVector> c = projector_->get_non_const_kernel();
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> c = projector_->get_non_const_kernel();
   // scope to modify c
   {
-    Core::LinAlg::VectorView c_view(*(*c)(0));
-    Core::LinAlg::Vector<double>& c0(c_view);
+    auto& c0 = (*c)(0);
     c0.PutScalar(0.0);
     // extract vector of pressure-dofs
     Teuchos::RCP<Core::LinAlg::Vector<double>> presmode = velpressplitter_->extract_cond_vector(c0);
@@ -2176,9 +2175,8 @@ void FLD::FluidImplicitTimeInt::update_krylov_space_projection()
     else if (*weighttype == "integration")
     {
       // get Teuchos::RCP to weight vector of projector
-      Teuchos::RCP<Epetra_MultiVector> w = projector_->get_non_const_weights();
-      Core::LinAlg::VectorView w_view(*(*w)(0));
-      Core::LinAlg::Vector<double>& w0(w_view);
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> w = projector_->get_non_const_weights();
+      auto& w0 = (*w)(0);
       w0.PutScalar(0.0);
 
       // create parameter list for condition evaluate and ...
@@ -2205,13 +2203,13 @@ void FLD::FluidImplicitTimeInt::update_krylov_space_projection()
 
       // compute w_ by evaluating the integrals of all pressure basis functions
       discret_->evaluate_condition(mode_params, Teuchos::null, Teuchos::null,
-          w_view.get_non_owning_rcp_ref(), Teuchos::null, Teuchos::null, "KrylovSpaceProjection");
+          Teuchos::rcpFromRef(w0), Teuchos::null, Teuchos::null, "KrylovSpaceProjection");
 
       discret_->clear_state();
 
       // adapt weight vector according to meshtying case
       if (msht_ != Inpar::FLUID::no_meshtying)
-        w0_update = meshtying_->adapt_krylov_projector(w_view.get_non_owning_rcp_ref());
+        w0_update = meshtying_->adapt_krylov_projector(Teuchos::rcpFromRef(w0));
     }
     else
     {
@@ -2233,17 +2231,15 @@ void FLD::FluidImplicitTimeInt::update_krylov_space_projection()
       Teuchos::RCP<Core::LinAlg::Vector<double>> c0_update;
       if (*weighttype != "integration")
         FOUR_C_THROW("Fluidmeshtying supports only an integration - like Krylov projector");
-      c0_update = meshtying_->adapt_krylov_projector(c_view.get_non_owning_rcp_ref());
+      c0_update = meshtying_->adapt_krylov_projector(Teuchos::rcpFromRef(c0));
       if (msht_ == Inpar::FLUID::condensed_bmat || msht_ == Inpar::FLUID::condensed_bmat_merged)
       {
         const Epetra_BlockMap* mergedmap = meshtying_->get_merged_map();
-        projector_->set_cw(*c0_update->get_ptr_of_Epetra_Vector(),
-            *w0_update->get_ptr_of_Epetra_Vector(), mergedmap);
+        projector_->set_cw(*c0_update, *w0_update, mergedmap);
       }
       else
       {
-        projector_->set_cw(
-            *c0_update->get_ptr_of_Epetra_Vector(), *w0_update->get_ptr_of_Epetra_Vector());
+        projector_->set_cw(*c0_update, *w0_update);
       }
     }
   }
@@ -2262,7 +2258,7 @@ void FLD::FluidImplicitTimeInt::check_matrix_nullspace()
   // Note: this check is expensive and should only be used in the debug mode
   if (projector_ != Teuchos::null)
   {
-    Teuchos::RCP<Epetra_MultiVector> c = projector_->get_non_const_kernel();
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> c = projector_->get_non_const_kernel();
     projector_->fill_complete();
     int nsdim = c->NumVectors();
     if (nsdim != 1) FOUR_C_THROW("Only one mode, namely the constant pressure mode, expected.");
@@ -4926,7 +4922,7 @@ Teuchos::RCP<double> FLD::FluidImplicitTimeInt::evaluate_div_u()
     set_state_tim_int();
 
     const Epetra_Map* elementrowmap = discret_->element_row_map();
-    Epetra_MultiVector divu(*elementrowmap, 1, true);
+    Core::LinAlg::MultiVector<double> divu(*elementrowmap, 1, true);
 
     // optional: elementwise defined div u may be written to standard output file (not implemented
     // yet)
@@ -5007,7 +5003,7 @@ double FLD::FluidImplicitTimeInt::evaluate_dt_via_cfl_if_applicable()
     }
 
     const Epetra_Map* elementrowmap = discret_->element_row_map();
-    Epetra_MultiVector h_u(*elementrowmap, 1, true);
+    Core::LinAlg::MultiVector<double> h_u(*elementrowmap, 1, true);
 
     // optional: elementwise defined h_u may be written to standard output file (not implemented
     // yet)
@@ -6138,7 +6134,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::FluidImplicitTimeInt::extrapolat
 // -------------------------------------------------------------------
 // apply external forces to the fluid                    ghamm 03/2013
 // -------------------------------------------------------------------
-void FLD::FluidImplicitTimeInt::apply_external_forces(Teuchos::RCP<Epetra_MultiVector> fext)
+void FLD::FluidImplicitTimeInt::apply_external_forces(
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> fext)
 {
   if (external_loads_ == Teuchos::null)
     external_loads_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);

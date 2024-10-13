@@ -130,14 +130,15 @@ void POROFLUIDMULTIPHASE::Utils::setup_material(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector>
+Teuchos::RCP<Core::LinAlg::MultiVector<double>>
 POROFLUIDMULTIPHASE::Utils::convert_dof_vector_to_node_based_multi_vector(
     const Core::FE::Discretization& dis, const Core::LinAlg::Vector<double>& vector, const int nds,
     const int numdofpernode)
 {
   // initialize multi vector
-  Teuchos::RCP<Epetra_MultiVector> multi =
-      Teuchos::make_rcp<Epetra_MultiVector>(*dis.node_row_map(), numdofpernode, true);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> multi =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+          *dis.node_row_map(), numdofpernode, true);
 
   // get maps
   const Epetra_BlockMap& vectormap = vector.Map();
@@ -149,7 +150,7 @@ POROFLUIDMULTIPHASE::Utils::convert_dof_vector_to_node_based_multi_vector(
     Core::Nodes::Node* node = dis.l_row_node(inode);
     // copy each dof value of node
     for (int idof = 0; idof < numdofpernode; ++idof)
-      (*multi)[idof][inode] = vector[vectormap.LID(dis.dof(nds, node, idof))];
+      (*multi)(idof)[inode] = vector[vectormap.LID(dis.dof(nds, node, idof))];
   }
 
   return multi;

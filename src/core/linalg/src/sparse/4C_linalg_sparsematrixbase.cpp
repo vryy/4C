@@ -100,8 +100,8 @@ int Core::LinAlg::SparseMatrixBase::multiply(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::SparseMatrixBase::multiply(
-    bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+int Core::LinAlg::SparseMatrixBase::multiply(bool TransA,
+    const Core::LinAlg::MultiVector<double>& X, Core::LinAlg::MultiVector<double>& Y) const
 {
   return sysmat_->Multiply(TransA, X, Y);
 }

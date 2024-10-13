@@ -135,12 +135,12 @@ namespace XFEM
     //! The nodal curvature and smoothed gradient of the levelset field. (Stored w.r.t to the
     //! scatra-dis = cutter-dis)
     Teuchos::RCP<Core::LinAlg::Vector<double>> curvaturenp_node_;
-    Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_node_;
-    // Teuchos::RCP<Epetra_MultiVector>   gradphi2np_smoothed_node_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> gradphinp_smoothed_node_;
+    // Teuchos::RCP<Core::LinAlg::MultiVector<double>>   gradphi2np_smoothed_node_;
 
     //! and column versions
     Teuchos::RCP<Core::LinAlg::Vector<double>> curvaturenp_node_col_;
-    Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_node_col_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> gradphinp_smoothed_node_col_;
 
     //! boolean operation type on level-set for current ls-field and previous combination of
     //! level-set fields
@@ -449,8 +449,8 @@ namespace XFEM
       {
         Core::LinAlg::SerialDenseMatrix ephi_test(nen, 1);
         Core::LinAlg::Matrix<nen, 1> ephi(ephi_test, View);
-        XFEM::Utils::extract_quantity_at_element(ephi_test, actele,
-            *cutter_phinp_col_->get_ptr_of_Epetra_Vector(), *cutter_dis_, cutter_nds_phi_, 1);
+        XFEM::Utils::extract_quantity_at_element(
+            ephi_test, actele, *cutter_phinp_col_, *cutter_dis_, cutter_nds_phi_, 1);
 
         // Gradients @ GaussPoints
         gradphi.multiply(derxy, ephi);
@@ -551,7 +551,7 @@ namespace XFEM
 
   /// set levelset field by given vector
   void write_access_geometric_quantities(Teuchos::RCP<Core::LinAlg::Vector<double>>& scalaraf,
-      Teuchos::RCP<Epetra_MultiVector>& smoothed_gradphiaf,
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>>& smoothed_gradphiaf,
       Teuchos::RCP<Core::LinAlg::Vector<double>>& curvatureaf);
 
 

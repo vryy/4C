@@ -656,7 +656,7 @@ namespace
   void get_node_vectors_hdg_weak_comp(Core::FE::Discretization& dis,
       const Teuchos::RCP<Core::LinAlg::Vector<double>>& interiorValues,
       const Teuchos::RCP<Core::LinAlg::Vector<double>>& traceValues, const int ndim,
-      Teuchos::RCP<Epetra_MultiVector>& mixedvar,
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mixedvar,
       Teuchos::RCP<Core::LinAlg::Vector<double>>& density,
       Teuchos::RCP<Core::LinAlg::Vector<double>>& traceden)
   {
@@ -665,7 +665,7 @@ namespace
     // create dofsets for mixed variable, density and momentum at nodes
     if (density.get() == nullptr || density->GlobalLength() != dis.num_global_nodes())
     {
-      mixedvar = Teuchos::make_rcp<Epetra_MultiVector>(*dis.node_row_map(), msd);
+      mixedvar = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), msd);
       density = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis.node_row_map());
     }
     traceden = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(density->Map());
@@ -699,7 +699,7 @@ namespace
         if (localIndex < 0) continue;
         touchCount[localIndex]++;
         for (int m = 0; m < msd; ++m)
-          (*mixedvar)[m][localIndex] += interpolVec(i + m * ele->num_node());
+          (*mixedvar)(m)[localIndex] += interpolVec(i + m * ele->num_node());
         (*density)[localIndex] += interpolVec(i + msd * ele->num_node());
         (*traceden)[localIndex] += interpolVec(i + (msd + 1 + ndim) * ele->num_node());
       }
@@ -707,7 +707,7 @@ namespace
 
     for (int i = 0; i < density->MyLength(); ++i)
     {
-      for (int m = 0; m < msd; ++m) (*mixedvar)[m][i] /= touchCount[i];
+      for (int m = 0; m < msd; ++m) (*mixedvar)(m)[i] /= touchCount[i];
       (*density)[i] /= touchCount[i];
       (*traceden)[i] /= touchCount[i];
     }
@@ -733,7 +733,7 @@ void FLD::TimIntHDGWeakComp::output()
 
     // initialize trace variables
     Teuchos::RCP<Core::LinAlg::Vector<double>> traceDen;
-    Teuchos::RCP<Epetra_MultiVector> traceMom;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> traceMom;
 
     // get node vectors
     get_node_vectors_hdg_weak_comp(
@@ -748,7 +748,7 @@ void FLD::TimIntHDGWeakComp::output()
         static_cast<const Mat::PAR::WeaklyCompressibleFluid*>(mat);
 
     // evaluate derived variables
-    Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> interpolatedVelocity;
     Teuchos::RCP<Core::LinAlg::Vector<double>> interpolatedPressure;
     interpolatedPressure =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(interpolatedDensity_->Map());
@@ -770,9 +770,9 @@ void FLD::TimIntHDGWeakComp::output()
     // write ALE variables
     if (alefluid_)
     {
-      Epetra_MultiVector AleDisplacement(*discret_->node_row_map(), nsd);
+      Core::LinAlg::MultiVector<double> AleDisplacement(*discret_->node_row_map(), nsd);
       for (int i = 0; i < interpolatedDensity_->MyLength(); ++i)
-        for (unsigned int d = 0; d < nsd; ++d) (AleDisplacement)[d][i] = (*dispnp_)[(i * nsd) + d];
+        for (unsigned int d = 0; d < nsd; ++d) AleDisplacement(d)[i] = (*dispnp_)[(i * nsd) + d];
 
       output_->write_multi_vector("Ale_displacement", AleDisplacement, Core::IO::nodevector);
     }

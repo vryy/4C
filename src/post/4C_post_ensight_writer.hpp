@@ -312,20 +312,22 @@ class EnsightWriter : public PostWriterBase
       Core::LinAlg::Vector<double>& data, const std::string name, const int offset) const;
 
   //! perform interpolation of result data to visualization points.
-  void interpolate_nurbs_result_to_viz_points(Epetra_MultiVector& idata, const int dim,
-      const int npatch, const std::vector<int>& vpoff, const std::vector<int>& ele_cart_id,
-      const Core::Elements::Element* actele, Core::FE::Nurbs::NurbsDiscretization* nurbsdis,
+  void interpolate_nurbs_result_to_viz_points(Core::LinAlg::MultiVector<double>& idata,
+      const int dim, const int npatch, const std::vector<int>& vpoff,
+      const std::vector<int>& ele_cart_id, const Core::Elements::Element* actele,
+      Core::FE::Nurbs::NurbsDiscretization* nurbsdis,
       const std::vector<Core::LinAlg::SerialDenseVector>& eleknots,
       const Core::LinAlg::SerialDenseVector& weights, const int numdf,
       const std::vector<double>& my_data) const;
 
   void write_nodal_result_step_for_nurbs(std::ofstream& file, const int numdf,
-      Epetra_MultiVector& data, const std::string name, const int offset) const;
+      Core::LinAlg::MultiVector<double>& data, const std::string name, const int offset) const;
 
   void write_nodal_result_step(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf);
-  void write_nodal_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
+  void write_nodal_result_step(std::ofstream& file,
+      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf) override;
   void write_element_dof_result_step(std::ofstream& file, PostResult& result,
@@ -335,7 +337,8 @@ class EnsightWriter : public PostWriterBase
   void write_element_result_step(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from);
-  void write_element_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
+  void write_element_result_step(std::ofstream& file,
+      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf,
       const int from) override;

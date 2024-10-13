@@ -228,6 +228,8 @@ namespace Core::LinAlg
       return vector_->ExtractView(ArrayOfPointers);
     }
 
+    int ExtractCopy(double *A, int MyLDA) const { return vector_->ExtractCopy(A, MyLDA); }
+
     Core::LinAlg::Vector<double> &operator()(int i);
 
     const Core::LinAlg::Vector<double> &operator()(int i) const;

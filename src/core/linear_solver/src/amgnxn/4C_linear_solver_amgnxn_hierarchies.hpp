@@ -17,7 +17,6 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_preconditioner_type.hpp"
 
-#include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
 #include <MueLu.hpp>
 #include <MueLu_BaseClass.hpp>

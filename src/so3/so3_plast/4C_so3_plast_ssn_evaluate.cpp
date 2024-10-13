@@ -540,7 +540,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
             case Inpar::Solid::GaussPointDataOutputType::element_center:
             {
               // compute average of the quantities
-              Teuchos::RCP<Epetra_MultiVector> global_data =
+              Teuchos::RCP<Core::LinAlg::MultiVector<double>> global_data =
                   str_params_interface()
                       .gauss_point_data_output_manager_ptr()
                       ->get_element_center_data()
@@ -551,7 +551,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
             }
             case Inpar::Solid::GaussPointDataOutputType::nodes:
             {
-              Teuchos::RCP<Epetra_MultiVector> global_data =
+              Teuchos::RCP<Core::LinAlg::MultiVector<double>> global_data =
                   str_params_interface().gauss_point_data_output_manager_ptr()->get_nodal_data().at(
                       quantity_name);
 
@@ -584,7 +584,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
             }
             case Inpar::Solid::GaussPointDataOutputType::gauss_points:
             {
-              std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
+              std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>& global_data =
                   str_params_interface()
                       .gauss_point_data_output_manager_ptr()
                       ->get_gauss_point_data()

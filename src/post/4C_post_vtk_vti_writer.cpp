@@ -228,7 +228,7 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
 
 
 void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
-    const Teuchos::RCP<Epetra_MultiVector>& data,
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
@@ -247,12 +247,13 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
       colmap->MaxAllGID() == vecmap.MaxAllGID() && colmap->MinAllGID() == vecmap.MinAllGID(),
       "Given data vector does not seem to match discretization node map");
 
-  Teuchos::RCP<Epetra_MultiVector> ghostedData;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
   else
   {
-    ghostedData = Teuchos::make_rcp<Epetra_MultiVector>(*colmap, data->NumVectors(), false);
+    ghostedData =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*colmap, data->NumVectors(), false);
     Core::LinAlg::export_to(*data, *ghostedData);
   }
 
@@ -273,7 +274,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
 
       for (int idf = 0; idf < numdf; ++idf)
       {
-        Core::LinAlg::Vector<double> column(*(*ghostedData)(idf));
+        Core::LinAlg::Vector<double> column((*ghostedData)(idf));
 
         const int lid = ghostedData->Map().LID(gid);
 
@@ -313,7 +314,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
 
 
 void PostVtiWriter::write_element_result_step(std::ofstream& file,
-    const Teuchos::RCP<Epetra_MultiVector>& data,
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
@@ -333,15 +334,15 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
 
   const int numcol = data->NumVectors();
   if (numdf + from > numcol)
-    FOUR_C_THROW("violated column range of Epetra_MultiVector: %d", numcol);
+    FOUR_C_THROW("violated column range of Core::LinAlg::MultiVector<double>: %d", numcol);
 
-  Teuchos::RCP<Epetra_MultiVector> importedData;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> importedData;
   if (dis->element_col_map()->SameAs(data->Map()))
     importedData = data;
   else
   {
-    importedData =
-        Teuchos::make_rcp<Epetra_MultiVector>(*dis->element_col_map(), data->NumVectors(), false);
+    importedData = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+        *dis->element_col_map(), data->NumVectors(), false);
     Core::LinAlg::export_to(*data, *importedData);
   }
 
@@ -352,7 +353,7 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
     const int inpos = ncomponents * (eidmapping_.find(egid)->second);
     for (int d = 0; d < numdf; ++d)
     {
-      Core::LinAlg::Vector<double> column(*(*importedData)(d + from));
+      Core::LinAlg::Vector<double> column((*importedData)(d + from));
       solution[inpos + d] = (column)[e];
     }
   }

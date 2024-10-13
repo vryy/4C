@@ -435,7 +435,7 @@ namespace Adapter
     //@{
 
     /// set forces due to interface with fluid, the force is expected external-force-like
-    void set_force_interface(Teuchos::RCP<Epetra_MultiVector> iforce) override
+    void set_force_interface(Teuchos::RCP<Core::LinAlg::MultiVector<double>> iforce) override
     {
       structure_->set_force_interface(iforce);
     }

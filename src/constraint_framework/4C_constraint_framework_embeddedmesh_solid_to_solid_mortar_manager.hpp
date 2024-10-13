@@ -20,7 +20,6 @@
 
 // Forward declarations.
 class Epetra_Map;
-class Epetra_MultiVector;
 class Epetra_FEVector;
 
 FOUR_C_NAMESPACE_OPEN
@@ -263,7 +262,7 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     //! The global row ID of the multi vector is the global ID of the node that a Lagrange
     //! multiplier is defined on. The columns hold the corresponding global IDs of the Lagrange
     //! multipliers.
-    Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> node_gid_to_lambda_gid_;
 
     //! Standard map from global node ids to global Lagrange multiplier ids, for all
     //! nodes used on this rank.

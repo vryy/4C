@@ -47,7 +47,8 @@ namespace ScaTra
     void update() override{};
 
     //! set the nodal L2-flux
-    virtual void set_l2_flux_of_multi_fluid(Teuchos::RCP<const Epetra_MultiVector> multiflux);
+    virtual void set_l2_flux_of_multi_fluid(
+        Teuchos::RCP<const Core::LinAlg::MultiVector<double>> multiflux);
 
     //! set solution field of the multiphase fluid
     virtual void set_solution_field_of_multi_fluid(

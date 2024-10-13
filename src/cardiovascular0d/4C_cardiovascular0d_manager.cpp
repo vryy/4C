@@ -991,8 +991,7 @@ int Utils::Cardiovascular0DManager::solve(Core::LinAlg::SparseMatrix& mat_struct
         mor_->reduce_off_diagonal(*mat_dcardvasc0d_dd);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_dstruct_dcv0ddof_R =
         mor_->reduce_off_diagonal(*mat_dstruct_dcv0ddof);
-    Teuchos::RCP<Epetra_MultiVector> rhsstruct_R =
-        mor_->reduce_rhs(*rhsstruct.get_ptr_of_Epetra_MultiVector());
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> rhsstruct_R = mor_->reduce_rhs(rhsstruct);
 
     // define maps of reduced standard dofs and additional pressures
     Epetra_Map structmap_R(mor_->get_red_dim(), 0, actdisc_->get_comm());

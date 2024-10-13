@@ -453,8 +453,8 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       int gid = id();
       Core::LinAlg::Matrix<numgpt_post_, 1> gpthick(((*gpthickmap)[gid])->values(), true);
 
-      Teuchos::RCP<Epetra_MultiVector> postthick =
-          params.get<Teuchos::RCP<Epetra_MultiVector>>("postthick", Teuchos::null);
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> postthick =
+          params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("postthick", Teuchos::null);
       if (postthick == Teuchos::null) FOUR_C_THROW("No element thickness vector available");
 
       if (optquantitytype == "ndxyz")
@@ -475,7 +475,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
           {
             int lid = postthick->Map().LID(gid);
             int myadjele = nodes()[i]->num_element();
-            (*((*postthick)(0)))[lid] += nodalthickness(i) / myadjele;
+            (*postthick)(0)[lid] += nodalthickness(i) / myadjele;
           }
         }
       }

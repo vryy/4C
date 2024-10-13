@@ -27,8 +27,8 @@ Core::LinearSolver::SimplePreconditioner::SimplePreconditioner(Teuchos::Paramete
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::SimplePreconditioner::setup(
-    bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
+void Core::LinearSolver::SimplePreconditioner::setup(bool create, Epetra_Operator* matrix,
+    Core::LinAlg::MultiVector<double>* x, Core::LinAlg::MultiVector<double>* b)
 {
   if (create)
   {
@@ -148,14 +148,15 @@ void Core::LinearSolver::SimplePreconditioner::setup(
           if (nv > 2) (vnewns)[2 * vlength + i * nv + 2] = 1.0;
         }
 
-        Teuchos::RCP<Epetra_MultiVector> nullspace =
-            Teuchos::make_rcp<Epetra_MultiVector>(A->matrix(0, 0).row_map(), nv, true);
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> nullspace =
+            Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+                A->matrix(0, 0).row_map(), nv, true);
         Core::LinAlg::std_vector_to_epetra_multi_vector(vnewns, *nullspace, nv);
 
         inv1.sublist("ML Parameters").set("null space: vectors", nullspace->Values());
         inv1.sublist("ML Parameters").remove("nullspace", false);  // necessary??
         inv1.sublist("Michael's secret vault")
-            .set<Teuchos::RCP<Epetra_MultiVector>>("velocity nullspace", nullspace);
+            .set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("velocity nullspace", nullspace);
       }
 
       // Teuchos::ParameterList& inv2 = params_.sublist("Inverse2");
@@ -165,14 +166,15 @@ void Core::LinearSolver::SimplePreconditioner::setup(
         inv2.sublist("ML Parameters").set("PDE equations", 1);
         inv2.sublist("ML Parameters").set("null space: dimension", 1);
 
-        Teuchos::RCP<Epetra_MultiVector> nullspace =
-            Teuchos::make_rcp<Epetra_MultiVector>(A->matrix(1, 1).row_map(), 1, true);
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> nullspace =
+            Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+                A->matrix(1, 1).row_map(), 1, true);
         nullspace->PutScalar(1.0);
 
         inv2.sublist("ML Parameters").set("null space: vectors", nullspace->Values());
         inv2.sublist("ML Parameters").remove("nullspace", false);  // necessary?
         inv2.sublist("Michael's secret vault")
-            .set<Teuchos::RCP<Epetra_MultiVector>>("pressure nullspace", nullspace);
+            .set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("pressure nullspace", nullspace);
       }
 
       p_ = Teuchos::make_rcp<Core::LinearSolver::CheapSimpleBlockPreconditioner>(A,

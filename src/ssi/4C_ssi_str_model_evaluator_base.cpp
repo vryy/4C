@@ -52,7 +52,7 @@ void Solid::ModelEvaluator::BaseSSI::determine_stress_strain()
   exporter.do_export(*stresses);
 
   // prepare nodal stress vectors
-  Epetra_MultiVector nodal_stresses_source(*discret().node_row_map(), 6);
+  Core::LinAlg::MultiVector<double> nodal_stresses_source(*discret().node_row_map(), 6);
 
   discret().evaluate(
       [&](Core::Elements::Element& ele)
@@ -75,12 +75,12 @@ void Solid::ModelEvaluator::BaseSSI::determine_stress_strain()
     const int doflid_epetra = mechanical_stress_state_->Map().LID(dofgid_epetra);
     if (doflid_epetra < 0) FOUR_C_THROW("Local ID not found in epetra vector!");
 
-    (*mechanical_stress_state_)[doflid_epetra] = (*nodal_stresses_source(0))[nodelid];
-    (*mechanical_stress_state_)[doflid_epetra + 1] = (*nodal_stresses_source(1))[nodelid];
-    (*mechanical_stress_state_)[doflid_epetra + 2] = (*nodal_stresses_source(2))[nodelid];
-    (*mechanical_stress_state_)[doflid_epetra + 3] = (*nodal_stresses_source(3))[nodelid];
-    (*mechanical_stress_state_)[doflid_epetra + 4] = (*nodal_stresses_source(4))[nodelid];
-    (*mechanical_stress_state_)[doflid_epetra + 5] = (*nodal_stresses_source(5))[nodelid];
+    (*mechanical_stress_state_)[doflid_epetra] = (nodal_stresses_source(0))[nodelid];
+    (*mechanical_stress_state_)[doflid_epetra + 1] = (nodal_stresses_source(1))[nodelid];
+    (*mechanical_stress_state_)[doflid_epetra + 2] = (nodal_stresses_source(2))[nodelid];
+    (*mechanical_stress_state_)[doflid_epetra + 3] = (nodal_stresses_source(3))[nodelid];
+    (*mechanical_stress_state_)[doflid_epetra + 4] = (nodal_stresses_source(4))[nodelid];
+    (*mechanical_stress_state_)[doflid_epetra + 5] = (nodal_stresses_source(5))[nodelid];
   }
 }
 

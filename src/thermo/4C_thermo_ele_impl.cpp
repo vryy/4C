@@ -504,8 +504,8 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(
     {
       processed = true;
 
-      Teuchos::RCP<Epetra_MultiVector> eleheatflux =
-          params.get<Teuchos::RCP<Epetra_MultiVector>>("eleheatflux");
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> eleheatflux =
+          params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("eleheatflux");
       const Epetra_BlockMap& elemap = eleheatflux->Map();
       int lid = elemap.LID(gid);
       if (lid != -1)
@@ -517,7 +517,7 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(
           // nquad_: number of Gauss points
           for (int jquad = 0; jquad < nquad_; ++jquad) s += gpheatflux(jquad, idim);
           s /= nquad_;
-          (*((*eleheatflux)(idim)))[lid] = s;
+          (((*eleheatflux)(idim)))[lid] = s;
         }
       }
     }  // end "cxyz" or "cxyz_ndxyz"

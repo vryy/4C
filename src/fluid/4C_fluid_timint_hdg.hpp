@@ -174,7 +174,7 @@ namespace FLD
     //@}
 
     //! @name other HDG-specific auxiliary vectors, like velocity for output
-    Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> interpolatedVelocity_;
     Teuchos::RCP<Core::LinAlg::Vector<double>> interpolatedPressure_;
     //@}
 

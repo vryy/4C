@@ -87,12 +87,14 @@ class PostVtuWriter : public PostVtkWriter
       const bool fillzeros) override;
 
   //! Write a single result step
-  void write_nodal_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
+  void write_nodal_result_step(std::ofstream& file,
+      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf) override;
 
   //! Write a single result step
-  void write_element_result_step(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
+  void write_element_result_step(std::ofstream& file,
+      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf,
       const int from) override;
@@ -144,7 +146,7 @@ class PostVtuWriter : public PostVtkWriter
   //! Write a single result step for one Nurbs Element
   virtual void write_nodal_result_step_nurbs_ele(const Core::Elements::Element* ele,
       int ncomponents, const int numdf, std::vector<double>& solution,
-      Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> ghostedData) const;
 
   /*! Generalization of the former non-template method for all implemented NURBS
    *  discretization types
@@ -152,7 +154,8 @@ class PostVtuWriter : public PostVtkWriter
    *  \author hiermeier (originally Seitz) \date 10/17 */
   template <Core::FE::CellType nurbs_type>
   void write_nodal_result_step_nurbs_ele(const Core::Elements::Element* ele, int ncomponents,
-      const int numdf, std::vector<double>& solution, Epetra_MultiVector& ghostedData) const;
+      const int numdf, std::vector<double>& solution,
+      Core::LinAlg::MultiVector<double>& ghostedData) const;
 
   ///! width of the proc identifier number in the processor specific file names
   const int proc_file_padding_;

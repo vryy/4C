@@ -262,12 +262,12 @@ void Adapter::StructureConstrMerged::apply_interface_forces_temporary_deprecated
   interface_->add_fsi_cond_vector(*iforce, *fifc);
 
   // extract the force values from the displacement DOFs only
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fifcdisp =
-      Core::LinAlg::create_vector(*conmerger_->cond_map(), true);
-  conmerger_->extract_cond_vector(*fifc, *fifcdisp);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> fifcdisp =
+      Core::LinAlg::create_multi_vector(*conmerger_->cond_map(), 1, true);
+  conmerger_->extract_cond_vector(*fifc, (*fifcdisp)(0));
 
   // set interface forces within the structural time integrator
-  set_force_interface(fifcdisp->get_ptr_of_Epetra_MultiVector());
+  set_force_interface(fifcdisp);
 
   prepare_partition_step();
 

@@ -608,9 +608,9 @@ namespace ScaTra
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix4,
         const Inpar::S2I::InterfaceSides matrix4_side_rows,
         const Inpar::S2I::InterfaceSides matrix4_side_cols,
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector1,
+        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& systemvector1,
         const Inpar::S2I::InterfaceSides vector1_side,
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector2,
+        const Teuchos::RCP<Epetra_FEVector>& systemvector2,
         const Inpar::S2I::InterfaceSides vector2_side) const;
 
     /*!
@@ -656,9 +656,9 @@ namespace ScaTra
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix4,
         const Inpar::S2I::InterfaceSides matrix4_side_rows,
         const Inpar::S2I::InterfaceSides matrix4_side_cols,
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector1,
+        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& systemvector1,
         const Inpar::S2I::InterfaceSides vector1_side,
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector2,
+        const Teuchos::RCP<Epetra_FEVector>& systemvector2,
         const Inpar::S2I::InterfaceSides vector2_side) const;
 
     /*!
@@ -700,9 +700,9 @@ namespace ScaTra
         const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix4,
         const Inpar::S2I::InterfaceSides matrix4_side_rows,
         const Inpar::S2I::InterfaceSides matrix4_side_cols,
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector1,
+        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& systemvector1,
         const Inpar::S2I::InterfaceSides vector1_side,
-        const Teuchos::RCP<Epetra_MultiVector>& systemvector2,
+        const Teuchos::RCP<Epetra_FEVector>& systemvector2,
         const Inpar::S2I::InterfaceSides vector2_side) const;
 
     //! flag indicating if we have capacitive interface flux contributions
@@ -1112,10 +1112,10 @@ namespace ScaTra
             matrix4_side_rows,  //!< interface side associated with rows of system matrix 4
         const Inpar::S2I::InterfaceSides
             matrix4_side_cols,  //!< interface side associated with columns of system matrix 4
-        Teuchos::RCP<Epetra_MultiVector> systemvector1,  //!< system vector 1
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> systemvector1,  //!< system vector 1
         const Inpar::S2I::InterfaceSides
             vector1_side,  //!< interface side associated with system vector 1
-        Teuchos::RCP<Epetra_MultiVector> systemvector2,  //!< system vector 2
+        Teuchos::RCP<Epetra_FEVector> systemvector2,
         const Inpar::S2I::InterfaceSides
             vector2_side,        //!< interface side associated with system vector 2
         const int nds_rows = 0,  //!< number of dofset associated with matrix rows
@@ -1203,7 +1203,12 @@ namespace ScaTra
      * @param la_master     master-side location array
      * @param assembler_pid_master  ID of processor performing master-side vector assembly
      */
-    void assemble_cell_vector(const Teuchos::RCP<Epetra_MultiVector>& systemvector,
+    void assemble_cell_vector(const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& systemvector,
+        const Core::LinAlg::SerialDenseVector& cellvector, const Inpar::S2I::InterfaceSides side,
+        Core::Elements::LocationArray& la_slave, Core::Elements::LocationArray& la_master,
+        const int assembler_pid_master) const;
+
+    void assemble_cell_vector(const Teuchos::RCP<Epetra_FEVector>& systemvector,
         const Core::LinAlg::SerialDenseVector& cellvector, const Inpar::S2I::InterfaceSides side,
         Core::Elements::LocationArray& la_slave, Core::Elements::LocationArray& la_master,
         const int assembler_pid_master) const;
@@ -1288,10 +1293,10 @@ namespace ScaTra
     const Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix4_;
 
     //! system vector 1
-    const Teuchos::RCP<Epetra_MultiVector> systemvector1_;
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>> systemvector1_;
 
     //! system vector 2
-    const Teuchos::RCP<Epetra_MultiVector> systemvector2_;
+    const Teuchos::RCP<Epetra_FEVector> systemvector2_;
 
     //! interface side associated with system vector 1
     const Inpar::S2I::InterfaceSides vector1_side_;

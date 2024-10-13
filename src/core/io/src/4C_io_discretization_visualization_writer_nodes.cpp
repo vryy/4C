@@ -94,8 +94,8 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterNodes::append_node_based_result_data_vector(
-      Epetra_MultiVector& result_data_nodebased, unsigned int result_num_components_per_node,
-      const std::string& resultname)
+      Core::LinAlg::MultiVector<double>& result_data_nodebased,
+      unsigned int result_num_components_per_node, const std::string& resultname)
   {
     /*  the idea is to transform the given data to a 'point data vector' and append it to the
      *  collected solution data vectors by calling append_visualization_point_data_vector()
@@ -107,7 +107,8 @@ namespace Core::IO
     // safety check
     if ((unsigned int)result_data_nodebased.NumVectors() != result_num_components_per_node)
       FOUR_C_THROW(
-          "DiscretizationVisualizationWriterNodes: expected Epetra_MultiVector with %d columns but "
+          "DiscretizationVisualizationWriterNodes: expected Core::LinAlg::MultiVector<double> with "
+          "%d columns but "
           "got %d",
           result_num_components_per_node, result_data_nodebased.NumVectors());
 
@@ -119,8 +120,8 @@ namespace Core::IO
     {
       for (unsigned int idf = 0; idf < result_num_components_per_node; ++idf)
       {
-        auto* column = (result_data_nodebased)(idf);
-        point_result_data.push_back((*column)[lid]);
+        auto& column = (result_data_nodebased)(idf);
+        point_result_data.push_back(column[lid]);
       }
     }
 

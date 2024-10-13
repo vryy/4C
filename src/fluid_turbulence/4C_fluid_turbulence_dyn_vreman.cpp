@@ -69,8 +69,10 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_cv(
   const Epetra_Map* nodecolmap = discret_->node_col_map();
 
 
-  col_filtered_strainrate_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
-  col_filtered_alphaij_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
+  col_filtered_strainrate_ =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
+  col_filtered_alphaij_ =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
   col_filtered_expression_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   col_filtered_alpha2_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
 
@@ -97,10 +99,11 @@ void FLD::Vreman::apply_filter_for_dynamic_computation_of_dt(
 {
   const Epetra_Map* nodecolmap = scatradiscret_->node_col_map();
 
-  col_filtered_phi_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
+  col_filtered_phi_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   col_filtered_phi2_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   col_filtered_phiexpression_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
-  col_filtered_alphaijsc_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
+  col_filtered_alphaijsc_ =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
 
 
   // perform filtering

@@ -502,7 +502,7 @@ void Core::Binstrategy::BinningStrategy::get_bin_corners(
 }
 
 void Core::Binstrategy::BinningStrategy::get_all_bin_centers(
-    Epetra_Map& binrowmap, Epetra_MultiVector& bincenters) const
+    Epetra_Map& binrowmap, Core::LinAlg::MultiVector<double>& bincenters) const
 {
   // loop over row bins and get center coordinates
   for (int i = 0; i < binrowmap.NumMyElements(); ++i)
@@ -812,8 +812,9 @@ void Core::Binstrategy::BinningStrategy::write_bin_output(int const step, double
 }
 
 void Core::Binstrategy::BinningStrategy::distribute_bins_recurs_coord_bisection(
-    Teuchos::RCP<Epetra_Map>& binrowmap, Teuchos::RCP<Epetra_MultiVector>& bincenters,
-    Teuchos::RCP<Epetra_MultiVector>& binweights) const
+    Teuchos::RCP<Epetra_Map>& binrowmap,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>>& bincenters,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>>& binweights) const
 {
   // create a parameter list for partitioner
   Teuchos::ParameterList params;

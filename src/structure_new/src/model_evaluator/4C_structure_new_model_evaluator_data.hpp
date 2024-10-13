@@ -24,7 +24,6 @@
 #include "4C_utils_function_manager.hpp"
 #include "4C_utils_pairedvector.hpp"
 
-#include <Epetra_MultiVector.h>
 #include <NOX_Abstract_Vector.H>
 
 #include <array>
@@ -552,25 +551,28 @@ namespace Solid
       }
 
       //! get nodal postprocessed stress data vector
-      inline const Teuchos::RCP<Epetra_MultiVector>& get_stress_data_node_postprocessed() const
+      inline const Teuchos::RCP<Core::LinAlg::MultiVector<double>>&
+      get_stress_data_node_postprocessed() const
       {
         return stressdata_postprocessed_nodal_ptr_;
       }
 
       //! get nodal postprocessed stress data vector
-      inline Teuchos::RCP<Epetra_MultiVector>& get_stress_data_node_postprocessed()
+      inline Teuchos::RCP<Core::LinAlg::MultiVector<double>>& get_stress_data_node_postprocessed()
       {
         return stressdata_postprocessed_nodal_ptr_;
       }
 
       //! get element postprocessed stress data vector
-      inline const Teuchos::RCP<Epetra_MultiVector>& get_stress_data_element_postprocessed() const
+      inline const Teuchos::RCP<Core::LinAlg::MultiVector<double>>&
+      get_stress_data_element_postprocessed() const
       {
         return stressdata_postprocessed_element_ptr_;
       }
 
       //! get element postprocessed stress data vector
-      inline Teuchos::RCP<Epetra_MultiVector>& get_stress_data_element_postprocessed()
+      inline Teuchos::RCP<Core::LinAlg::MultiVector<double>>&
+      get_stress_data_element_postprocessed()
       {
         return stressdata_postprocessed_element_ptr_;
       }
@@ -601,25 +603,28 @@ namespace Solid
       }
 
       //! get nodal postprocessed strain data vector
-      inline const Teuchos::RCP<Epetra_MultiVector>& get_strain_data_node_postprocessed() const
+      inline const Teuchos::RCP<Core::LinAlg::MultiVector<double>>&
+      get_strain_data_node_postprocessed() const
       {
         return straindata_postprocessed_nodal_ptr_;
       }
 
       //! get nodal postprocessed strain data vector
-      inline Teuchos::RCP<Epetra_MultiVector>& get_strain_data_node_postprocessed()
+      inline Teuchos::RCP<Core::LinAlg::MultiVector<double>>& get_strain_data_node_postprocessed()
       {
         return straindata_postprocessed_nodal_ptr_;
       }
 
       //! get element postprocessed strain data vector
-      inline const Teuchos::RCP<Epetra_MultiVector>& get_strain_data_element_postprocessed() const
+      inline const Teuchos::RCP<Core::LinAlg::MultiVector<double>>&
+      get_strain_data_element_postprocessed() const
       {
         return straindata_postprocessed_element_ptr_;
       }
 
       //! get element postprocessed strain data vector
-      inline Teuchos::RCP<Epetra_MultiVector>& get_strain_data_element_postprocessed()
+      inline Teuchos::RCP<Core::LinAlg::MultiVector<double>>&
+      get_strain_data_element_postprocessed()
       {
         return straindata_postprocessed_element_ptr_;
       }
@@ -907,19 +912,19 @@ namespace Solid
       Teuchos::RCP<std::vector<char>> stressdata_ptr_;
 
       //! postprocessed nodal stress data vector
-      Teuchos::RCP<Epetra_MultiVector> stressdata_postprocessed_nodal_ptr_;
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> stressdata_postprocessed_nodal_ptr_;
 
       //! postprocessed element stress data vector
-      Teuchos::RCP<Epetra_MultiVector> stressdata_postprocessed_element_ptr_;
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> stressdata_postprocessed_element_ptr_;
 
       //! strain data vector
       Teuchos::RCP<std::vector<char>> straindata_ptr_;
 
       //! postprocessed nodal strain data vector
-      Teuchos::RCP<Epetra_MultiVector> straindata_postprocessed_nodal_ptr_;
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> straindata_postprocessed_nodal_ptr_;
 
       //! postprocessed element strain data vector
-      Teuchos::RCP<Epetra_MultiVector> straindata_postprocessed_element_ptr_;
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> straindata_postprocessed_element_ptr_;
 
       //! strain data vector
       Teuchos::RCP<std::vector<char>> plastic_straindata_ptr_;
@@ -1354,7 +1359,7 @@ namespace Solid
           Teuchos::RCP<Core::FE::Discretization> discret_ptr, int maxrandnumelement);
 
       //! get mutable random force vector
-      Teuchos::RCP<Epetra_MultiVector>& get_random_forces()
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>>& get_random_forces()
       {
         check_init_setup();
         return randomforces_;
@@ -1378,7 +1383,7 @@ namespace Solid
       /*! @name set routines which are allowed to be called by the elements
        */
       //! @{
-      Teuchos::RCP<Epetra_MultiVector> const& get_random_forces() const override
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> const& get_random_forces() const override
       {
         check_init_setup();
         return randomforces_;
@@ -1462,7 +1467,7 @@ namespace Solid
       std::array<double, 3> beams_damping_coefficient_prefactors_perunitlength_;
 
       /// multiVector holding random forces
-      Teuchos::RCP<Epetra_MultiVector> randomforces_;
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> randomforces_;
     };
 
   }  // namespace ModelEvaluator

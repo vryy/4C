@@ -137,8 +137,8 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     // change the dis from a dof_row_map to a NodeRowMap, because Paraview can only visualize
     // nodebased date
     const Epetra_Map* nodemap = dis->node_row_map();
-    Teuchos::RCP<Epetra_MultiVector> nodal_heatfluxes =
-        Teuchos::make_rcp<Epetra_MultiVector>(*nodemap, numdf);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> nodal_heatfluxes =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodemap, numdf);
 
     const int numnodes = dis->num_my_row_nodes();
     const unsigned numdofpernode = 1;
@@ -153,11 +153,11 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
         if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
         const int adjele = lnode->num_element();
         // build three scalar valued vectors for the heatflux output
-        (*((*nodal_heatfluxes)(0)))[i] =
+        (((*nodal_heatfluxes)(0)))[i] =
             (*heatfluxx)[dis->dof_row_map()->LID(lnodedofs[0])] / adjele;
-        (*((*nodal_heatfluxes)(1)))[i] =
+        (((*nodal_heatfluxes)(1)))[i] =
             (*heatfluxy)[dis->dof_row_map()->LID(lnodedofs[0])] / adjele;
-        (*((*nodal_heatfluxes)(2)))[i] =
+        (((*nodal_heatfluxes)(2)))[i] =
             (*heatfluxz)[dis->dof_row_map()->LID(lnodedofs[0])] / adjele;
       }
     }
@@ -171,9 +171,9 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
         if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
         const int adjele = lnode->num_element();
         // build two scalar valued vectors for the heatflux output
-        (*((*nodal_heatfluxes)(0)))[i] =
+        (((*nodal_heatfluxes)(0)))[i] =
             (*heatfluxx)[dis->dof_row_map()->LID(lnodedofs[0])] / adjele;
-        (*((*nodal_heatfluxes)(1)))[i] =
+        (((*nodal_heatfluxes)(1)))[i] =
             (*heatfluxy)[dis->dof_row_map()->LID(lnodedofs[0])] / adjele;
       }
     }
@@ -187,7 +187,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
         if (lnodedofs.size() < numdofpernode) FOUR_C_THROW("Too few DOFs at node of interest");
         const int adjele = lnode->num_element();
         // build one scalar valued vectors for the heatflux output
-        (*((*nodal_heatfluxes)(0)))[i] =
+        (((*nodal_heatfluxes)(0)))[i] =
             (*heatfluxx)[dis->dof_row_map()->LID(lnodedofs[0])] / adjele;
       }
     }
@@ -252,8 +252,8 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     p.set("heatfluxtype", "cxyz");
     p.set("gpheatfluxmap", data);
     p.set("total time", -1.0);
-    Teuchos::RCP<Epetra_MultiVector> eleheatflux =
-        Teuchos::make_rcp<Epetra_MultiVector>(*(dis->element_row_map()), numdf);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> eleheatflux =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(dis->element_row_map()), numdf);
     p.set("eleheatflux", eleheatflux);
     dis->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     if (eleheatflux == Teuchos::null)

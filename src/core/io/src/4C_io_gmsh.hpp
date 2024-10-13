@@ -180,17 +180,17 @@ namespace Core::IO
 
     //! write dof-based vector field to Gmsh postprocessing file
     void vector_field_multi_vector_dof_based_to_gmsh(
-        const Core::FE::Discretization& discret,  ///< discretization
-        const Epetra_MultiVector& vectorfield,    ///< vector field to output
-        std::ostream& s,                          ///< output stream
-        const int nds = 0                         //< which dof-set to use from vector
+        const Core::FE::Discretization& discret,               ///< discretization
+        const Core::LinAlg::MultiVector<double>& vectorfield,  ///< vector field to output
+        std::ostream& s,                                       ///< output stream
+        const int nds = 0                                      //< which dof-set to use from vector
     );
 
     //! write node-based vector field to Gmsh postprocessing file
     void vector_field_node_based_to_gmsh(
-        const Core::FE::Discretization& discret,  ///< discretization
-        const Epetra_MultiVector& vectorfield,    ///< vector field to output
-        std::ostream& s                           ///< output stream
+        const Core::FE::Discretization& discret,               ///< discretization
+        const Core::LinAlg::MultiVector<double>& vectorfield,  ///< vector field to output
+        std::ostream& s                                        ///< output stream
     );
 
     //! write dof-based vector field to Gmsh postprocessing file

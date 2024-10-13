@@ -17,7 +17,6 @@
 
 #include "4C_structure_new_impl_genalpha.hpp"
 
-class Epetra_MultiVector;
 
 FOUR_C_NAMESPACE_OPEN
 

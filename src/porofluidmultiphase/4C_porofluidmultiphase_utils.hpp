@@ -65,7 +65,7 @@ namespace POROFLUIDMULTIPHASE
       \param numdofpernode    : number of dofs per node of the vector (assumed to be equal for all
       nodes)
      */
-    Teuchos::RCP<Epetra_MultiVector> convert_dof_vector_to_node_based_multi_vector(
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> convert_dof_vector_to_node_based_multi_vector(
         const Core::FE::Discretization& dis, const Core::LinAlg::Vector<double>& vector,
         const int nds, const int numdofpernode);
 

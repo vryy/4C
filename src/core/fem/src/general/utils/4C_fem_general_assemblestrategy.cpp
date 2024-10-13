@@ -158,7 +158,7 @@ void Core::FE::AssembleStrategy::assemble(Core::LinAlg::Vector<double>& V,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::AssembleStrategy::assemble(Epetra_MultiVector& V, const int n,
+void Core::FE::AssembleStrategy::assemble(Core::LinAlg::MultiVector<double>& V, const int n,
     const LinAlg::SerialDenseVector& Vele, const std::vector<int>& lm,
     const std::vector<int>& lmowner)
 {

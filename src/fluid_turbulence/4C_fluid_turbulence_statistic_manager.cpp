@@ -831,9 +831,9 @@ namespace FLD
 
             // set vector values needed by elements
             std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> statevecs;
-            std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> statetenss;
+            std::map<std::string, Teuchos::RCP<Core::LinAlg::MultiVector<double>>> statetenss;
             std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> scatrastatevecs;
-            std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> scatrafieldvecs;
+            std::map<std::string, Teuchos::RCP<Core::LinAlg::MultiVector<double>>> scatrafieldvecs;
 
             statevecs.insert(std::pair<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>>(
                 "hist", myhist_));

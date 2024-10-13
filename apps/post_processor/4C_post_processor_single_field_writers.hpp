@@ -16,7 +16,6 @@
 #include "4C_post_filter_base.hpp"
 #include "4C_post_writer_base.hpp"
 
-#include <Epetra_MultiVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 

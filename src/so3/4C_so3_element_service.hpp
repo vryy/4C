@@ -12,7 +12,6 @@
 
 #include "4C_so3_base.hpp"
 
-#include <Epetra_MultiVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -40,7 +39,8 @@ namespace Discret
      * \param gp_data (numgp x size) matrix of the Gauss point data
      * \param ele element
      */
-    void assemble_gauss_point_values(std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
+    void assemble_gauss_point_values(
+        std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>& global_data,
         const Core::LinAlg::SerialDenseMatrix& gp_data, const Core::Elements::Element& ele);
 
     /*!

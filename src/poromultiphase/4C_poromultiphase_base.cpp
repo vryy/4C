@@ -324,7 +324,8 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> POROMULTIPHASE::PoroMultiPhaseB
 /*------------------------------------------------------------------------*
  | return fluid Flux                                         vuong 08/16  |
  *------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_MultiVector> POROMULTIPHASE::PoroMultiPhaseBase::fluid_flux() const
+Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
+POROMULTIPHASE::PoroMultiPhaseBase::fluid_flux() const
 {
   return fluid_->flux();
 }

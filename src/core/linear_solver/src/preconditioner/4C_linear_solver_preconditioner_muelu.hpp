@@ -55,8 +55,8 @@ namespace Core::LinearSolver
      * @param x Solution of the linear system
      * @param b Right-hand side of the linear system
      */
-    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
-        Epetra_MultiVector* b) override;
+    void setup(bool create, Epetra_Operator* matrix, Core::LinAlg::MultiVector<double>* x,
+        Core::LinAlg::MultiVector<double>* b) override;
 
     //! linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> prec_operator() const final { return P_; }
@@ -111,8 +111,8 @@ namespace Core::LinearSolver
      * @param x Solution of the linear system
      * @param b Right-hand side of the linear system
      */
-    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
-        Epetra_MultiVector* b) override;
+    void setup(bool create, Epetra_Operator* matrix, Core::LinAlg::MultiVector<double>* x,
+        Core::LinAlg::MultiVector<double>* b) override;
 
    private:
     //! system of equations used for preconditioning used by P_ only

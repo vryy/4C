@@ -192,9 +192,9 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::setup(BlockedMatrix matrix)
   if (crsA == Teuchos::null) FOUR_C_THROW("Houston, something went wrong in merging the matrix");
 
   // Set sol vector and rhs
-  x_ = Teuchos::make_rcp<Epetra_MultiVector>(
+  x_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
       a_->OperatorDomainMap(), 1);  // TODO this one might cause problems
-  b_ = Teuchos::make_rcp<Epetra_MultiVector>(a_->OperatorRangeMap(), 1);
+  b_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(a_->OperatorRangeMap(), 1);
 
   // Create linear solver
   Teuchos::ParameterList solvparams;
@@ -228,8 +228,8 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::solve(
   const Core::LinAlg::MultiMapExtractor& domain_ex = block_sparse_matrix_->domain_extractor();
 
   int NV = X.get_vector(0)->NumVectors();
-  Epetra_MultiVector Xmv(*(range_ex.full_map()), NV);
-  Epetra_MultiVector Ymv(*(domain_ex.full_map()), NV);
+  Core::LinAlg::MultiVector<double> Xmv(*(range_ex.full_map()), NV);
+  Core::LinAlg::MultiVector<double> Ymv(*(domain_ex.full_map()), NV);
 
   for (int i = 0; i < X.get_num_blocks(); i++) range_ex.insert_vector(*(X.get_vector(i)), i, Xmv);
 
@@ -363,25 +363,30 @@ void Core::LinearSolver::AMGNxN::CoupledAmg::solve(
 /*------------------------------------------------------------------------------*/
 
 void Core::LinearSolver::AMGNxN::MueluSmootherWrapper::apply(
-    const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
+    const Core::LinAlg::MultiVector<double>& X, Core::LinAlg::MultiVector<double>& Y,
+    bool InitialGuessIsZero) const
 {
   if (InitialGuessIsZero)
     Y.PutScalar(0.0);  // I am not sure what is the meaning of InitialGuessIsZero in MueLu. This is
                        // for safety
 
   // Convert to Tpetra
-  Teuchos::RCP<Epetra_MultiVector> X_rcp = Teuchos::make_rcp<Epetra_MultiVector>(X);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> X_rcp =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(X);
 
   Teuchos::RCP<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>> Xex =
-      Teuchos::make_rcp<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>>(X_rcp);
+      Teuchos::make_rcp<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>>(
+          X_rcp->get_ptr_of_Epetra_MultiVector());
 
   Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> Xx =
       Teuchos::rcp_dynamic_cast<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>>(
           Xex);
-  Teuchos::RCP<Epetra_MultiVector> Y_rcp = Teuchos::make_rcp<Epetra_MultiVector>(Y);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> Y_rcp =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(Y);
 
   Teuchos::RCP<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>> Yex =
-      Teuchos::make_rcp<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>>(Y_rcp);
+      Teuchos::make_rcp<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>>(
+          Y_rcp->get_ptr_of_Epetra_MultiVector());
 
   Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> Yx =
       Teuchos::rcp_dynamic_cast<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>>(
@@ -391,10 +396,9 @@ void Core::LinearSolver::AMGNxN::MueluSmootherWrapper::apply(
   s_->Apply(*Yx, *Xx, InitialGuessIsZero);
 
   // Convert to Epetra
-  const Teuchos::RCP<Epetra_MultiVector>& Ye =
-      MueLu::Utilities<double, int, int, Node>::MV2NonConstEpetraMV(Yx);
+  const auto& Ye = MueLu::Utilities<double, int, int, Node>::MV2NonConstEpetraMV(Yx);
 
-  Y.Update(1.0, *Ye, 0.0);
+  Y.Update(1.0, Core::LinAlg::MultiVector<double>(*Ye), 0.0);
 }
 
 
@@ -411,7 +415,8 @@ Core::LinearSolver::AMGNxN::MueluHierarchyWrapper::MueluHierarchyWrapper(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 void Core::LinearSolver::AMGNxN::MueluHierarchyWrapper::apply(
-    const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
+    const Core::LinAlg::MultiVector<double>& X, Core::LinAlg::MultiVector<double>& Y,
+    bool InitialGuessIsZero) const
 {
   if (InitialGuessIsZero)
     Y.PutScalar(0.0);  // TODO Remove when you are sure that ApplyInverse will zero out Y.
@@ -519,8 +524,8 @@ void Core::LinearSolver::AMGNxN::MueluAMGWrapper::setup()
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void Core::LinearSolver::AMGNxN::MueluAMGWrapper::apply(
-    const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
+void Core::LinearSolver::AMGNxN::MueluAMGWrapper::apply(const Core::LinAlg::MultiVector<double>& X,
+    Core::LinAlg::MultiVector<double>& Y, bool InitialGuessIsZero) const
 {
   if (InitialGuessIsZero)
     Y.PutScalar(0.0);  // TODO Remove when you are sure that ApplyInverse will zero out Y.
@@ -670,8 +675,8 @@ void Core::LinearSolver::AMGNxN::SingleFieldAMG::setup()
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void Core::LinearSolver::AMGNxN::SingleFieldAMG::apply(
-    const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
+void Core::LinearSolver::AMGNxN::SingleFieldAMG::apply(const Core::LinAlg::MultiVector<double>& X,
+    Core::LinAlg::MultiVector<double>& Y, bool InitialGuessIsZero) const
 {
   if (InitialGuessIsZero)
     Y.PutScalar(0.0);  // TODO Remove when you are sure that ApplyInverse will zero out Y.
@@ -727,8 +732,8 @@ Core::LinearSolver::AMGNxN::IfpackWrapper::IfpackWrapper(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void Core::LinearSolver::AMGNxN::IfpackWrapper::apply(
-    const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
+void Core::LinearSolver::AMGNxN::IfpackWrapper::apply(const Core::LinAlg::MultiVector<double>& X,
+    Core::LinAlg::MultiVector<double>& Y, bool InitialGuessIsZero) const
 {
   // We assume that ifpack is always setting the initial guess to zero
   // (This can be done using input parameters, but the default behavior is to zero out the initial
@@ -739,10 +744,10 @@ void Core::LinearSolver::AMGNxN::IfpackWrapper::apply(
   }
   else
   {
-    Epetra_MultiVector DX(X.Map(), X.NumVectors(), false);
+    Core::LinAlg::MultiVector<double> DX(X.Map(), X.NumVectors(), false);
     a_->Apply(Y, DX);
     DX.Update(1.0, X, -1.0);
-    Epetra_MultiVector DY(Y.Map(), X.NumVectors(), false);
+    Core::LinAlg::MultiVector<double> DY(Y.Map(), X.NumVectors(), false);
     prec_->ApplyInverse(DX, DY);
     Y.Update(1.0, DY, 1.0);
   }
@@ -772,8 +777,8 @@ void Core::LinearSolver::AMGNxN::DirectSolverWrapper::setup(
   if (crsA == Teuchos::null) FOUR_C_THROW("Something wrong");
 
   // Set sol vector and rhs
-  x_ = Teuchos::make_rcp<Epetra_MultiVector>(a_->OperatorDomainMap(), 1);
-  b_ = Teuchos::make_rcp<Epetra_MultiVector>(a_->OperatorRangeMap(), 1);
+  x_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(a_->OperatorDomainMap(), 1);
+  b_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(a_->OperatorRangeMap(), 1);
 
   // Create linear solver. Default solver: UMFPACK
   const auto solvertype = params->get<std::string>("solver", "umfpack");
@@ -807,7 +812,8 @@ void Core::LinearSolver::AMGNxN::DirectSolverWrapper::setup(
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 void Core::LinearSolver::AMGNxN::DirectSolverWrapper::apply(
-    const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
+    const Core::LinAlg::MultiVector<double>& X, Core::LinAlg::MultiVector<double>& Y,
+    bool InitialGuessIsZero) const
 {
   if (not(is_set_up_))
     FOUR_C_THROW("The DirectSolverWrapper class should be set up before calling Apply");
@@ -2221,7 +2227,9 @@ Core::LinearSolver::AMGNxN::SimpleSmootherFactory::approximate_inverse(
   {
     A.extract_diagonal_copy(invAVector);
     int err = invAVector.Reciprocal(invAVector);
-    if (err) FOUR_C_THROW("Epetra_MultiVector::Reciprocal returned %d, are we dividing by 0?", err);
+    if (err)
+      FOUR_C_THROW(
+          "Core::LinAlg::MultiVector<double>::Reciprocal returned %d, are we dividing by 0?", err);
   }
   else if (method == "row sums" or method == "row sums diagonal blocks")
   {

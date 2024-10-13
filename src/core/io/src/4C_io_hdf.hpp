@@ -104,9 +104,9 @@ namespace Core::IO
     Teuchos::RCP<std::vector<char>> read_knotvector(const int step) const;
 
 
-    //! read an Epetra_MultiVector from the result files
+    //! read an Core::LinAlg::MultiVector<double> from the result files
     /*!
-      Right now an Epetra_MultiVector has to be read along with its map. Thus
+      Right now an Core::LinAlg::MultiVector<double> has to be read along with its map. Thus
       we read an integer and a double array here.
 
       \note If columns==1, we create an Core::LinAlg::Vector<double>.
@@ -116,7 +116,7 @@ namespace Core::IO
       \param columns      (in): number of vector columns
       \param Comm         (in): the communicator
      */
-    Teuchos::RCP<Epetra_MultiVector> read_result_data(
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> read_result_data(
         std::string id_path, std::string value_path, int columns, const Epetra_Comm& Comm) const;
 
     //! read a std::vector<char> from the result files

@@ -8,7 +8,8 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_MultiVector.h>
+#include "4C_linalg_multi_vector.hpp"
+
 #include <Teuchos_RCPDecl.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -28,8 +29,9 @@ namespace Core::FE
      \param dimns (in): nullspace dimension
      \param map (in): nullspace map
       */
-  Teuchos::RCP<Epetra_MultiVector> compute_null_space(const Core::FE::Discretization& dis,
-      const int numdf, const int dimns, const Epetra_Map& dofmap);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> compute_null_space(
+      const Core::FE::Discretization& dis, const int numdf, const int dimns,
+      const Epetra_Map& dofmap);
 }  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE

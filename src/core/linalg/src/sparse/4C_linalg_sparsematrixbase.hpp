@@ -141,7 +141,8 @@ namespace Core::LinAlg
         bool TransA, const Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& y) const;
 
     /// Returns the result of a Epetra_CrsMatrix multiplied by a Epetra_MultiVector X in Y.
-    int multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+    int multiply(bool TransA, const Core::LinAlg::MultiVector<double>& X,
+        Core::LinAlg::MultiVector<double>& Y) const override;
 
     /// Scales the Epetra_CrsMatrix on the left with a Core::LinAlg::Vector<double> x.
     int left_scale(const Core::LinAlg::Vector<double>& x);

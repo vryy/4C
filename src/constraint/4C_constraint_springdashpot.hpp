@@ -18,7 +18,6 @@
 #include "4C_utils_pairedvector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
 
@@ -98,11 +97,12 @@ namespace CONSTRAINTS
     void set_restart(Core::LinAlg::Vector<double>& vec);
 
     //! set reset after prestressing with MULF
-    void set_restart_old(Epetra_MultiVector& vec);
+    void set_restart_old(Core::LinAlg::MultiVector<double>& vec);
 
     //! output of gap, normal, and nodal stiffness
-    void output_gap_normal(Core::LinAlg::Vector<double>& gap, Epetra_MultiVector& normals,
-        Epetra_MultiVector& stress) const;
+    void output_gap_normal(Core::LinAlg::Vector<double>& gap,
+        Core::LinAlg::MultiVector<double>& normals,
+        Core::LinAlg::MultiVector<double>& stress) const;
 
     //! select spring stiffness for tensile or compressive spring
     double select_stiffness(double gap)
@@ -117,7 +117,7 @@ namespace CONSTRAINTS
     void output_prestr_offset(Core::LinAlg::Vector<double>& springprestroffset) const;
 
     //! output of spring offset
-    void output_prestr_offset_old(Epetra_MultiVector& springprestroffset) const;
+    void output_prestr_offset_old(Core::LinAlg::MultiVector<double>& springprestroffset) const;
 
     //! return type of spring
     SpringType get_spring_type() { return springtype_; }

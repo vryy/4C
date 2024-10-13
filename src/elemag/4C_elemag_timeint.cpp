@@ -80,10 +80,13 @@ void EleMag::ElemagTimeInt::init()
   if (dtp_ <= 0.0) FOUR_C_THROW("Zero or negative time-step length!");
 
   // Nodevectors for the output
-  electric = Teuchos::make_rcp<Epetra_MultiVector>(*discret_->node_row_map(), numdim_);
-  electric_post = Teuchos::make_rcp<Epetra_MultiVector>(*discret_->node_row_map(), numdim_);
-  magnetic = Teuchos::make_rcp<Epetra_MultiVector>(*discret_->node_row_map(), numdim_);
-  trace = Teuchos::make_rcp<Epetra_MultiVector>(*discret_->node_row_map(), numdim_);
+  electric =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
+  electric_post =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
+  magnetic =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
+  trace = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
   conductivity = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->element_row_map());
   permittivity = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->element_row_map());
   permeability = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->element_row_map());
@@ -832,8 +835,10 @@ namespace
   // internal helper function for output
   void get_node_vectors_hdg(Core::FE::Discretization &dis,
       const Teuchos::RCP<Core::LinAlg::Vector<double>> &traceValues, const int ndim,
-      Teuchos::RCP<Epetra_MultiVector> &electric, Teuchos::RCP<Epetra_MultiVector> &electric_post,
-      Teuchos::RCP<Epetra_MultiVector> &magnetic, Teuchos::RCP<Epetra_MultiVector> &trace,
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> &electric,
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> &electric_post,
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> &magnetic,
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> &trace,
       Core::LinAlg::Vector<double> &conductivity, Core::LinAlg::Vector<double> &permittivity,
       Core::LinAlg::Vector<double> &permeability)
   {
@@ -845,13 +850,14 @@ namespace
       // The electric is a multivector because it is a vectorial field.
       // The multivector is based on the map of the node
       // owned by the processor. The vectors are zeroed.
-      electric = Teuchos::make_rcp<Epetra_MultiVector>(*dis.node_row_map(), ndim);
-      electric_post = Teuchos::make_rcp<Epetra_MultiVector>(*dis.node_row_map(), ndim);
-      magnetic = Teuchos::make_rcp<Epetra_MultiVector>(*dis.node_row_map(), ndim);
+      electric = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
+      electric_post =
+          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
+      magnetic = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
     }
 
     // Same for the trace and cell pressure.
-    trace = Teuchos::make_rcp<Epetra_MultiVector>(*dis.node_row_map(), ndim);
+    trace = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
     // call element routine for interpolate HDG to elements
     // Here it is used the function that acts in the elements, evaluate().
     Teuchos::ParameterList params;
@@ -904,12 +910,12 @@ namespace
         touchCount[localIndex]++;
         for (int d = 0; d < ndim; ++d)
         {
-          (*electric)[d][localIndex] += interpolVec(i + d * ele->num_node());
-          (*electric_post)[d][localIndex] +=
+          (*electric)(d)[localIndex] += interpolVec(i + d * ele->num_node());
+          (*electric_post)(d)[localIndex] +=
               interpolVec(ele->num_node() * (2 * ndim) + i + d * ele->num_node());
-          (*magnetic)[d][localIndex] +=
+          (*magnetic)(d)[localIndex] +=
               interpolVec(ele->num_node() * (ndim) + i + d * ele->num_node());
-          (*trace)[d][localIndex] +=
+          (*trace)(d)[localIndex] +=
               interpolVec(ele->num_node() * (3 * ndim) + i + d * ele->num_node());
         }
       }
@@ -918,13 +924,13 @@ namespace
     {
       for (int d = 0; d < ndim; ++d)
       {
-        (*electric)[d][i] /= touchCount[i];
-        (*electric_post)[d][i] /= touchCount[i];
-        (*magnetic)[d][i] /= touchCount[i];
+        (*electric)(d)[i] /= touchCount[i];
+        (*electric_post)(d)[i] /= touchCount[i];
+        (*magnetic)(d)[i] /= touchCount[i];
       }
       for (int d = 0; d < ndim; ++d)
       {
-        (*trace)[d][i] /= touchCount[i];
+        (*trace)(d)[i] /= touchCount[i];
       }
     }
     dis.clear_state(true);
@@ -961,10 +967,13 @@ void EleMag::ElemagTimeInt::output()
 {
   TEUCHOS_FUNC_TIME_MONITOR("EleMag::ElemagTimeInt::Output");
   // Preparing the vectors that are going to be written in the output file
-  electric = Teuchos::make_rcp<Epetra_MultiVector>(*discret_->node_row_map(), numdim_);
-  electric_post = Teuchos::make_rcp<Epetra_MultiVector>(*discret_->node_row_map(), numdim_);
-  magnetic = Teuchos::make_rcp<Epetra_MultiVector>(*discret_->node_row_map(), numdim_);
-  trace = Teuchos::make_rcp<Epetra_MultiVector>(*discret_->node_row_map(), numdim_);
+  electric =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
+  electric_post =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
+  magnetic =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
+  trace = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
 
   // Get the results from the discretization vectors to the output ones
   get_node_vectors_hdg(*discret_, trace_, numdim_, electric, electric_post, magnetic, trace,

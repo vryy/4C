@@ -27,8 +27,8 @@ FOUR_C_NAMESPACE_OPEN
 void BEAMINTERACTION::add_beam_interaction_nodal_forces(
     const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
     const Teuchos::RCP<const Core::FE::Discretization>& discret_ptr,
-    const Teuchos::RCP<const Epetra_MultiVector>& displacement, const Epetra_MultiVector& force,
-    const bool write_unique_ids)
+    const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& displacement,
+    const Core::LinAlg::MultiVector<double>& force, const bool write_unique_ids)
 {
   // Add the reference geometry and displacement to the visualization.
   visualization->add_discretization_nodal_reference_position(discret_ptr);
@@ -143,7 +143,8 @@ void BEAMINTERACTION::add_averaged_nodal_normals(
  *
  */
 void BEAMINTERACTION::get_global_coupling_force_resultants(const Core::FE::Discretization& discret,
-    const Epetra_MultiVector& force, const Epetra_MultiVector& displacement,
+    const Core::LinAlg::MultiVector<double>& force,
+    const Core::LinAlg::MultiVector<double>& displacement,
     Core::LinAlg::Matrix<3, 2, double>& beam_resultant,
     Core::LinAlg::Matrix<3, 2, double>& solid_resultant)
 {

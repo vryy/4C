@@ -131,8 +131,8 @@ void BEAMINTERACTION::BeamToFluidMortarManager::setup()
 
 
   // We need to be able to get the global ids for a Lagrange multiplier DOF from the global id
-  // of a node or element. To do so, we 'abuse' the Epetra_MultiVector as map between the
-  // global node / element ids and the global Lagrange multiplier DOF ids.
+  // of a node or element. To do so, we 'abuse' the Core::LinAlg::MultiVector<double> as map between
+  // the global node / element ids and the global Lagrange multiplier DOF ids.
   Epetra_Map node_gid_rowmap(
       -1, n_nodes, my_nodes_gid.data(), 0, discretization_structure_->get_comm());
   Epetra_Map element_gid_rowmap(
@@ -144,10 +144,10 @@ void BEAMINTERACTION::BeamToFluidMortarManager::setup()
   element_gid_to_lambda_gid_ = Teuchos::null;
   if (n_lambda_node_ > 0)
     node_gid_to_lambda_gid_ =
-        Teuchos::make_rcp<Epetra_MultiVector>(node_gid_rowmap, n_lambda_node_, true);
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(node_gid_rowmap, n_lambda_node_, true);
   if (n_lambda_element_ > 0)
-    element_gid_to_lambda_gid_ =
-        Teuchos::make_rcp<Epetra_MultiVector>(element_gid_rowmap, n_lambda_element_, true);
+    element_gid_to_lambda_gid_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+        element_gid_rowmap, n_lambda_element_, true);
 
   // Fill in the entries in the node / element global id to Lagrange multiplier global id vector.
   int error_code = 0;
@@ -289,14 +289,14 @@ void BEAMINTERACTION::BeamToFluidMortarManager::set_local_maps(
       discretization_structure_->get_comm());
 
   // Create the Multivectors that will be filled with all values needed on this rank.
-  Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_copy = Teuchos::null;
-  Teuchos::RCP<Epetra_MultiVector> element_gid_to_lambda_gid_copy = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> node_gid_to_lambda_gid_copy = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> element_gid_to_lambda_gid_copy = Teuchos::null;
   if (node_gid_to_lambda_gid_ != Teuchos::null)
-    node_gid_to_lambda_gid_copy =
-        Teuchos::make_rcp<Epetra_MultiVector>(node_gid_needed_rowmap, n_lambda_node_, true);
+    node_gid_to_lambda_gid_copy = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+        node_gid_needed_rowmap, n_lambda_node_, true);
   if (element_gid_to_lambda_gid_ != Teuchos::null)
-    element_gid_to_lambda_gid_copy =
-        Teuchos::make_rcp<Epetra_MultiVector>(element_gid_needed_rowmap, n_lambda_element_, true);
+    element_gid_to_lambda_gid_copy = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+        element_gid_needed_rowmap, n_lambda_element_, true);
 
   // Export values from the global multi vector to the ones needed on this rank.
   if (node_gid_to_lambda_gid_ != Teuchos::null)
@@ -315,7 +315,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::set_local_maps(
     for (int i_node = 0; i_node < node_gid_needed_rowmap.NumMyElements(); i_node++)
     {
       for (unsigned int i_temp = 0; i_temp < n_lambda_node_; i_temp++)
-        temp_node[i_temp] = (int)((*(*node_gid_to_lambda_gid_copy)(i_temp))[i_node]);
+        temp_node[i_temp] = (int)((*node_gid_to_lambda_gid_copy)(i_temp)[i_node]);
       node_gid_to_lambda_gid_map_[node_gid_needed_rowmap.GID(i_node)] = temp_node;
       lambda_gid_for_col_map.insert(
           std::end(lambda_gid_for_col_map), std::begin(temp_node), std::end(temp_node));
@@ -327,7 +327,7 @@ void BEAMINTERACTION::BeamToFluidMortarManager::set_local_maps(
     for (int i_element = 0; i_element < element_gid_needed_rowmap.NumMyElements(); i_element++)
     {
       for (unsigned int i_temp = 0; i_temp < n_lambda_element_; i_temp++)
-        temp_elements[i_temp] = (int)((*(*element_gid_to_lambda_gid_copy)(i_temp))[i_element]);
+        temp_elements[i_temp] = (int)((*element_gid_to_lambda_gid_copy)(i_temp)[i_element]);
       element_gid_to_lambda_gid_map_[element_gid_needed_rowmap.GID(i_element)] = temp_elements;
       lambda_gid_for_col_map.insert(
           std::end(lambda_gid_for_col_map), std::begin(temp_elements), std::end(temp_elements));

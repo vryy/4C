@@ -995,7 +995,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
     // Computer Methods in Applied Mechanics and Engineering 192: 559-591, 2003.
 
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Epetra_MultiVector cmatpf(D_->Map(), 9);
+    Core::LinAlg::MultiVector<double> cmatpf(D_->Map(), 9);
 
     // make a copy
     stiff_dirich_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*stiff_);
@@ -1024,7 +1024,8 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
     // prescribe rigid body modes
     discret_->compute_null_space_if_necessary(solver.params());
 
-    Teuchos::RCP<Epetra_MultiVector> iterinc = Teuchos::make_rcp<Epetra_MultiVector>(*dofrowmap, 9);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> iterinc =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dofrowmap, 9);
     iterinc->PutScalar(0.0);
 
     switch (solvertype)
@@ -1048,7 +1049,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
           solver_params.refactor = true;
           solver_params.reset = true;
           solver.solve_with_multi_vector(stiff_->epetra_operator(),
-              Teuchos::rcpFromRef(*((*iterinc)(i))), Teuchos::rcpFromRef(*((*rhs_)(i))),
+              (*iterinc)(i).get_ptr_of_MultiVector(), (*rhs_)(i).get_ptr_of_MultiVector(),
               solver_params);
         }
         break;
@@ -1059,15 +1060,15 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
       }
     }
 
-    Epetra_MultiVector temp(*dofrowmap, 9);
+    Core::LinAlg::MultiVector<double> temp(*dofrowmap, 9);
     stiff_dirich_->multiply(false, *iterinc, temp);
 
-    Epetra_MultiVector fexp(*pdof_, 9);
+    Core::LinAlg::MultiVector<double> fexp(*pdof_, 9);
     int err = fexp.Import(temp, *importp_, Insert);
     if (err) FOUR_C_THROW("Export of boundary 'forces' failed with err=%d", err);
 
-    // multiply manually D_ and fexp because D_ is not distributed as usual Epetra_MultiVectors and,
-    // hence, standard Multiply functions do not apply.
+    // multiply manually D_ and fexp because D_ is not distributed as usual
+    // Core::LinAlg::MultiVector<double>s and, hence, standard Multiply functions do not apply.
     // NOTE: D_ has the same row GIDs (0-8), but different col IDs on different procs (corresponding
     // to pdof_). fexp is distributed normally with 9 vectors (=cols) and np_ rows. result is saved
     // as a std::vector<double> to ease subsequent communication
@@ -1079,7 +1080,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
       {
         for (int k = 0; k < D_->MyLength(); k++)
         {
-          val[i * D_rows + j] += ((*(*D_)(i))[k]) * ((*fexp(j))[k]);
+          val[i * D_rows + j] += (((*D_)(i))[k]) * ((fexp(j))[k]);
         }
       }
     }
@@ -1092,7 +1093,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
     {
       // write as a 9x9 matrix
       for (int i = 0; i < 9; i++)
-        for (int j = 0; j < 9; j++) (*(cmatpf(j)))[i] = sum[i * 9 + j];
+        for (int j = 0; j < 9; j++) ((cmatpf(j)))[i] = sum[i * 9 + j];
 
       // scale with inverse of RVE volume
       cmatpf.Scale(1.0 / V0_);

@@ -615,12 +615,12 @@ void Core::FE::Discretization::evaluate_scalars(
  |  evaluate/assemble scalars across elements (public)         gee 05/11|
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate_scalars(
-    Teuchos::ParameterList& params, Epetra_MultiVector& scalars)
+    Teuchos::ParameterList& params, Core::LinAlg::MultiVector<double>& scalars)
 {
   if (!filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
-  Epetra_MultiVector& sca = scalars;
+  Core::LinAlg::MultiVector<double>& sca = scalars;
 
   // number of scalars
   const int numscalars = scalars.NumVectors();
@@ -660,7 +660,7 @@ void Core::FE::Discretization::evaluate_scalars(
 
     for (int j = 0; j < numscalars; ++j)
     {
-      (*sca(j))[i] = elescalars(j);
+      sca(j)[i] = elescalars(j);
     }
 
   }  // for (int i=0; i<numrowele; ++i)

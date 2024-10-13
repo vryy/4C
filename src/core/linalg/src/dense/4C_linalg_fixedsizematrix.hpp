@@ -1926,7 +1926,7 @@ namespace Core::LinAlg
     column-major order, just like in Core::LinAlg::SerialDenseMatrix.
 
     The interface is based on that of Core::LinAlg::SerialDenseMatrix and
-    Epetra_MultiVector. The whole View/Copy thing works a little
+    Core::LinAlg::MultiVector<double>. The whole View/Copy thing works a little
     different, though. See the appropriate functions for details.
 
     There is no operator[]. It behaves differently in

@@ -347,7 +347,7 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
 
 
 void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
-    const Teuchos::RCP<Epetra_MultiVector>& data,
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
@@ -366,12 +366,13 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
       colmap->MaxAllGID() == vecmap.MaxAllGID() && colmap->MinAllGID() == vecmap.MinAllGID(),
       "Given data vector does not seem to match discretization node map");
 
-  Teuchos::RCP<Epetra_MultiVector> ghostedData;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
   else
   {
-    ghostedData = Teuchos::make_rcp<Epetra_MultiVector>(*colmap, data->NumVectors(), false);
+    ghostedData =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*colmap, data->NumVectors(), false);
     Core::LinAlg::export_to(*data, *ghostedData);
   }
 
@@ -390,7 +391,7 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
   {
     for (int idf = 0; idf < numdf; ++idf)
     {
-      Core::LinAlg::Vector<double> column(*(*ghostedData)(idf));
+      Core::LinAlg::Vector<double> column((*ghostedData)(idf));
       solution.push_back((column)[i]);
     }
     for (int d = numdf; d < ncomponents; ++d) solution.push_back(0.);
@@ -420,7 +421,7 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
 
 
 void PostVtuWriterNode::write_element_result_step(std::ofstream& file,
-    const Teuchos::RCP<Epetra_MultiVector>& data,
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
@@ -462,7 +463,7 @@ void PostVtuWriterNode::write_dof_result_step_beam_ele(const Discret::ELEMENTS::
 
 void PostVtuWriterNode::write_nodal_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
-    Teuchos::RCP<Epetra_MultiVector> ghostedData)
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> ghostedData)
 {
   FOUR_C_THROW("VTU node based filter cannot handle NURBS elements");
 }

@@ -2692,7 +2692,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_stochastic_forces(Teuchos::ParameterLis
 
   /* get pointer at Epetra multivector in parameter list linking to random numbers for stochastic
    * forces with zero mean and standard deviation (2*kT / dt)^0.5 */
-  Teuchos::RCP<Epetra_MultiVector> randomforces =
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> randomforces =
       brownian_dyn_params_interface().get_random_forces();
 
   // my random number vector at current GP
@@ -2731,7 +2731,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_stochastic_forces(Teuchos::ParameterLis
     for (unsigned int idim = 0; idim < ndim; idim++)
     {
 #ifndef BEAM3RCONSTSTOCHFORCE
-      randnumvec(idim) = (*randomforces)[gp * randompergauss + idim][lid()];
+      randnumvec(idim) = (*randomforces)(gp * randompergauss + idim)[lid()];
 #else
       randnumvec(idim) = (*randomforces)[idim][LID()];
 #endif

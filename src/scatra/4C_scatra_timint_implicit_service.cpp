@@ -99,15 +99,16 @@ void ScaTra::ScaTraTimIntImpl::calc_flux(const bool writetofile)
 /*----------------------------------------------------------------------*
  | calculate flux vector field inside computational domain   fang 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_in_domain()
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> ScaTra::ScaTraTimIntImpl::calc_flux_in_domain()
 {
   // extract dofrowmap from discretization
   const Epetra_Map& dofrowmap = *discret_->dof_row_map();
 
   // initialize global flux vectors
-  Teuchos::RCP<Epetra_MultiVector> flux = Teuchos::make_rcp<Epetra_MultiVector>(dofrowmap, 3);
-  Teuchos::RCP<Epetra_MultiVector> flux_projected =
-      Teuchos::make_rcp<Epetra_MultiVector>(dofrowmap, 3);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> flux =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(dofrowmap, 3);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> flux_projected =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(dofrowmap, 3);
 
   // parameter list for element evaluation
   Teuchos::ParameterList params;
@@ -126,9 +127,9 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_in_domain()
     auto f1 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dofrowmap);
     auto f2 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dofrowmap);
     discret_->evaluate(params, Teuchos::null, Teuchos::null, f0, f1, f2);
-    (*flux)(0)->Update(1., *f0, 0.);
-    (*flux)(1)->Update(1., *f1, 0.);
-    (*flux)(2)->Update(1., *f2, 0.);
+    (*flux)(0).Update(1., *f0, 0.);
+    (*flux)(1).Update(1., *f1, 0.);
+    (*flux)(2).Update(1., *f2, 0.);
   }
 
   if (calcflux_domain_lumped_)
@@ -192,7 +193,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_in_domain()
 /*----------------------------------------------------------------------*
  |  calculate mass / heat normal flux at specified boundaries  gjb 06/09|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary(
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary(
     const bool writetofile)
 {
   // The normal flux calculation is based on the idea proposed in
@@ -202,8 +203,8 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
   // INTERNATIONAL JOURNAL FOR NUMERICAL METHODS IN FLUIDS, VOL. 7, 371-394 (1987)
 
   // empty vector for (normal) mass or heat flux vectors (always 3D)
-  Teuchos::RCP<Epetra_MultiVector> flux =
-      Teuchos::make_rcp<Epetra_MultiVector>(*discret_->dof_row_map(), 3, true);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> flux =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->dof_row_map(), 3, true);
 
   // determine the averaged normal vector field for indicated boundaries
   // used for the output of the normal flux as a vector field
@@ -456,8 +457,8 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
             // outward pointing normal vector
             for (int idim = 0; idim < 3; idim++)
             {
-              auto* normalcomp = (*normals_)(idim);
-              double normalveccomp = (*normalcomp)[lnodid];
+              auto& normalcomp = (*normals_)(idim);
+              double normalveccomp = normalcomp[lnodid];
               int err =
                   flux->ReplaceGlobalValue(dofgid, idim, (*normalfluxes)[doflid] * normalveccomp);
               if (err != 0) FOUR_C_THROW("Detected error in ReplaceMyValue");
@@ -896,15 +897,15 @@ void ScaTra::ScaTraTimIntImpl::kedem_katchalsky(Teuchos::RCP<Core::LinAlg::Spars
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::add_flux_approx_to_parameter_list(Teuchos::ParameterList& p)
 {
-  Teuchos::RCP<Epetra_MultiVector> flux = calc_flux_in_domain();
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> flux = calc_flux_in_domain();
 
   // post_ensight does not support multivectors based on the dofmap
   // for now, I create single vectors that can be handled by the filters
 
   // get the noderowmap
   const Epetra_Map* noderowmap = discret_->node_row_map();
-  Teuchos::RCP<Epetra_MultiVector> fluxk =
-      Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, 3, true);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> fluxk =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, 3, true);
   for (int k = 0; k < num_scal(); ++k)
   {
     std::ostringstream temp;
@@ -914,9 +915,9 @@ void ScaTra::ScaTraTimIntImpl::add_flux_approx_to_parameter_list(Teuchos::Parame
     {
       Core::Nodes::Node* actnode = discret_->l_row_node(i);
       int dofgid = discret_->dof(0, actnode, k);
-      fluxk->ReplaceMyValue(i, 0, ((*flux)[0])[(flux->Map()).LID(dofgid)]);
-      fluxk->ReplaceMyValue(i, 1, ((*flux)[1])[(flux->Map()).LID(dofgid)]);
-      fluxk->ReplaceMyValue(i, 2, ((*flux)[2])[(flux->Map()).LID(dofgid)]);
+      fluxk->ReplaceMyValue(i, 0, ((*flux)(0))[(flux->Map()).LID(dofgid)]);
+      fluxk->ReplaceMyValue(i, 1, ((*flux)(1))[(flux->Map()).LID(dofgid)]);
+      fluxk->ReplaceMyValue(i, 2, ((*flux)(2))[(flux->Map()).LID(dofgid)]);
     }
     discret_->add_multi_vector_to_parameter_list(p, name, fluxk);
   }
@@ -926,20 +927,20 @@ void ScaTra::ScaTraTimIntImpl::add_flux_approx_to_parameter_list(Teuchos::Parame
 /*----------------------------------------------------------------------*
  | compute outward pointing unit normal vectors at given b.c.  gjb 01/09|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::compute_normal_vectors(
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> ScaTra::ScaTraTimIntImpl::compute_normal_vectors(
     const std::vector<std::string>& condnames)
 {
   // create vectors for x,y and z component of average normal vector field
   // get noderowmap of discretization
   const Epetra_Map* noderowmap = discret_->node_row_map();
-  Teuchos::RCP<Epetra_MultiVector> normal =
-      Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, 3, true);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> normal =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, 3, true);
 
   // set action for elements
   Teuchos::ParameterList eleparams;
   Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_normal_vectors, eleparams);
-  eleparams.set<Teuchos::RCP<Epetra_MultiVector>>("normal vectors", normal);
+  eleparams.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("normal vectors", normal);
 
   // loop over all intended types of conditions
   for (const auto& condname : condnames)
@@ -949,14 +950,14 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::compute_normal_vector
 
   // the normal vector field is not properly scaled up to now. We do this here
   int numrownodes = discret_->num_my_row_nodes();
-  auto* xcomp = (*normal)(0);
-  auto* ycomp = (*normal)(1);
-  auto* zcomp = (*normal)(2);
+  auto& xcomp = (*normal)(0);
+  auto& ycomp = (*normal)(1);
+  auto& zcomp = (*normal)(2);
   for (int i = 0; i < numrownodes; ++i)
   {
-    double x = (*xcomp)[i];
-    double y = (*ycomp)[i];
-    double z = (*zcomp)[i];
+    double x = xcomp[i];
+    double y = ycomp[i];
+    double z = zcomp[i];
     double norm = sqrt(x * x + y * y + z * z);
     // form the unit normal vector
     if (norm > 1e-15)
@@ -992,17 +993,18 @@ void ScaTra::ScaTraTimIntImpl::compute_null_space_if_necessary() const
       mllist.set("null space: type", "pre-computed");
       mllist.set("null space: add default vectors", false);
 
-      Teuchos::RCP<Epetra_MultiVector> nullspace =
-          Teuchos::make_rcp<Epetra_MultiVector>(*(discret_->dof_row_map()), 1, true);
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> nullspace =
+          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(discret_->dof_row_map()), 1, true);
       nullspace->PutScalar(1.0);
 
-      mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
+      mllist.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace", nullspace);
       mllist.set("null space: vectors", nullspace->Values());
       mllist.set("ML validate parameter list", false);
 
-      Teuchos::RCP<Epetra_MultiVector> coordinates = discret_->build_node_coordinates();
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> coordinates =
+          discret_->build_node_coordinates();
 
-      mllist.set<Teuchos::RCP<Epetra_MultiVector>>("Coordinates", coordinates);
+      mllist.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("Coordinates", coordinates);
     }
 
     else
@@ -1210,7 +1212,7 @@ void ScaTra::ScaTraTimIntImpl::write_restart() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::collect_output_flux_data(
-    Teuchos::RCP<Epetra_MultiVector> flux, const std::string& fluxtype)
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> flux, const std::string& fluxtype)
 {
   // safety checks
   if (flux == Teuchos::null)
@@ -1224,7 +1226,7 @@ void ScaTra::ScaTraTimIntImpl::collect_output_flux_data(
   auto* nurbsdis = dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(*discret_));
   if (nurbsdis != nullptr)
   {
-    auto normalflux = *(*flux)(0);
+    auto normalflux = (*flux)(0);
     std::vector<std::optional<std::string>> context(nsd_, "normalflux");
     visualization_writer_->append_result_data_vector_with_context(
         normalflux, Core::IO::OutputEntity::dof, context);
@@ -1233,7 +1235,7 @@ void ScaTra::ScaTraTimIntImpl::collect_output_flux_data(
 
   // get the noderowmap
   const Epetra_Map* noderowmap = discret_->node_row_map();
-  auto fluxk = Epetra_MultiVector(*noderowmap, 3, true);
+  auto fluxk = Core::LinAlg::MultiVector<double>(*noderowmap, 3, true);
   for (int writefluxid : *writefluxids_)
   {
     std::ostringstream temp;
@@ -1244,9 +1246,9 @@ void ScaTra::ScaTraTimIntImpl::collect_output_flux_data(
       Core::Nodes::Node* actnode = discret_->l_row_node(i);
       int dofgid = discret_->dof(0, actnode, writefluxid - 1);
       // get value for each component of flux vector
-      double xvalue = ((*flux)[0])[(flux->Map()).LID(dofgid)];
-      double yvalue = ((*flux)[1])[(flux->Map()).LID(dofgid)];
-      double zvalue = ((*flux)[2])[(flux->Map()).LID(dofgid)];
+      double xvalue = ((*flux)(0))[(flux->Map()).LID(dofgid)];
+      double yvalue = ((*flux)(1))[(flux->Map()).LID(dofgid)];
+      double zvalue = ((*flux)(2))[(flux->Map()).LID(dofgid)];
       // care for the slave nodes of rotationally symm. periodic boundary conditions
       double rotangle(0.0);  // already converted to radians
       bool havetorotate = FLD::is_slave_node_of_rot_sym_pbc(actnode, rotangle);
@@ -1719,7 +1721,7 @@ void ScaTra::ScaTraTimIntImpl::calc_intermediate_solution()
 /*----------------------------------------------------------------------*/
 /* set scatra-fluid displacement vector due to biofilm growth          */
 void ScaTra::ScaTraTimIntImpl::set_sc_fld_gr_disp(
-    Teuchos::RCP<Epetra_MultiVector> scatra_fluid_growth_disp)
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> scatra_fluid_growth_disp)
 {
   scfldgrdisp_ = scatra_fluid_growth_disp;
 }
@@ -1727,7 +1729,7 @@ void ScaTra::ScaTraTimIntImpl::set_sc_fld_gr_disp(
 /*----------------------------------------------------------------------*/
 /* set scatra-structure displacement vector due to biofilm growth          */
 void ScaTra::ScaTraTimIntImpl::set_sc_str_gr_disp(
-    Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp)
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> scatra_struct_growth_disp)
 {
   scstrgrdisp_ = scatra_struct_growth_disp;
 }
@@ -1735,7 +1737,8 @@ void ScaTra::ScaTraTimIntImpl::set_sc_str_gr_disp(
 /*----------------------------------------------------------------------*
  | Calculate the reconstructed nodal gradient of phi        winter 04/17|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::compute_superconvergent_patch_recovery(
+Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+ScaTra::ScaTraTimIntImpl::compute_superconvergent_patch_recovery(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> state, const std::string& statename,
     const int numvec, Teuchos::ParameterList& eleparams, const int dim)
 {

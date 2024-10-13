@@ -676,7 +676,8 @@ void Solid::ModelEvaluator::BrownianDyn::generate_gaussian_random_numbers()
   Global::Problem::instance()->random()->set_rand_range(0.0, 1.0);
 
   // multivector for stochastic forces evaluated by each element based on row map
-  Teuchos::RCP<Epetra_MultiVector> randomnumbersrow = eval_browniandyn_ptr_->get_random_forces();
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> randomnumbersrow =
+      eval_browniandyn_ptr_->get_random_forces();
 
   int numele = randomnumbersrow->MyLength();
   int numperele = randomnumbersrow->NumVectors();
@@ -691,7 +692,7 @@ void Solid::ModelEvaluator::BrownianDyn::generate_gaussian_random_numbers()
     for (int i = 0; i < numele; ++i)
       for (int j = 0; j < numperele; ++j)
       {
-        (*randomnumbersrow)[j][i] = randvec[i * numperele + j];
+        (*randomnumbersrow)(j)[i] = randvec[i * numperele + j];
       }
   }
   else
@@ -699,21 +700,21 @@ void Solid::ModelEvaluator::BrownianDyn::generate_gaussian_random_numbers()
     for (int i = 0; i < numele; ++i)
       for (int j = 0; j < numperele; ++j)
       {
-        (*randomnumbersrow)[j][i] = randvec[i * numperele + j];
+        (*randomnumbersrow)(j)[i] = randvec[i * numperele + j];
 
-        if ((*randomnumbersrow)[j][i] > maxrandforcefac * standarddeviation + meanvalue)
+        if ((*randomnumbersrow)(j)[i] > maxrandforcefac * standarddeviation + meanvalue)
         {
           std::cout << "warning: stochastic force restricted according to MAXRANDFORCE"
                        " this should not happen to often"
                     << std::endl;
-          (*randomnumbersrow)[j][i] = maxrandforcefac * standarddeviation + meanvalue;
+          (*randomnumbersrow)(j)[i] = maxrandforcefac * standarddeviation + meanvalue;
         }
-        else if ((*randomnumbersrow)[j][i] < -maxrandforcefac * standarddeviation + meanvalue)
+        else if ((*randomnumbersrow)(j)[i] < -maxrandforcefac * standarddeviation + meanvalue)
         {
           std::cout << "warning: stochastic force restricted according to MAXRANDFORCE"
                        " this should not happen to often"
                     << std::endl;
-          (*randomnumbersrow)[j][i] = -maxrandforcefac * standarddeviation + meanvalue;
+          (*randomnumbersrow)(j)[i] = -maxrandforcefac * standarddeviation + meanvalue;
         }
       }
   }

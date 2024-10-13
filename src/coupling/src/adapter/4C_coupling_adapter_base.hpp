@@ -18,7 +18,6 @@
 #include "4C_linalg_vector.hpp"
 
 #include <Epetra_Map.h>
-#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -55,13 +54,13 @@ namespace Coupling::Adapter
     ) const = 0;
 
     /// transfer a dof vector from master to slave
-    virtual Teuchos::RCP<Epetra_MultiVector> master_to_slave(
-        Teuchos::RCP<Epetra_MultiVector> mv  ///< master vector (to be transferred)
+    virtual Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv  ///< master vector (to be transferred)
     ) const = 0;
 
     /// transfer a dof vector from slave to master
-    virtual Teuchos::RCP<Epetra_MultiVector> slave_to_master(
-        Teuchos::RCP<Epetra_MultiVector> sv  ///< slave vector (to be transferred)
+    virtual Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv  ///< slave vector (to be transferred)
     ) const = 0;
 
     /// transfer a dof vector from master to slave
@@ -75,25 +74,27 @@ namespace Coupling::Adapter
     ) const = 0;
 
     /// transfer a dof vector from master to slave
-    virtual Teuchos::RCP<Epetra_MultiVector> master_to_slave(
-        Teuchos::RCP<const Epetra_MultiVector> mv  ///< master vector (to be transferred)
+    virtual Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
+        Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
+            mv  ///< master vector (to be transferred)
     ) const = 0;
 
     /// transfer a dof vector from slave to master
-    virtual Teuchos::RCP<Epetra_MultiVector> slave_to_master(
-        Teuchos::RCP<const Epetra_MultiVector> sv  ///< slave vector (to be transferred)
+    virtual Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
+        Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
+            sv  ///< slave vector (to be transferred)
     ) const = 0;
 
     /// transfer a dof vector from master to slave
-    virtual void master_to_slave(
-        Teuchos::RCP<const Epetra_MultiVector> mv,  ///< master vector (to be transferred)
-        Teuchos::RCP<Epetra_MultiVector> sv         ///< slave vector (containing result)
+    virtual void master_to_slave(Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
+                                     mv,                    ///< master vector (to be transferred)
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv  ///< slave vector (containing result)
     ) const = 0;
 
     /// transfer a dof vector from slave to master
-    virtual void slave_to_master(
-        Teuchos::RCP<const Epetra_MultiVector> sv,  ///< slave vector (to be transferred)
-        Teuchos::RCP<Epetra_MultiVector> mv         ///< master vector (containing result)
+    virtual void slave_to_master(Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
+                                     sv,                    ///< slave vector (to be transferred)
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv  ///< master vector (containing result)
     ) const = 0;
 
     //!@}

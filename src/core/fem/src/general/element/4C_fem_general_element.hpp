@@ -1234,7 +1234,8 @@ might become invalid after a redistribution of the discretization.
      * @return Number of points added by this element.
      */
     virtual unsigned int append_visualization_node_based_result_data_vector(
-        const Core::FE::Discretization& discret, const Epetra_MultiVector& result_data_nodebased,
+        const Core::FE::Discretization& discret,
+        const Core::LinAlg::MultiVector<double>& result_data_nodebased,
         int result_num_components_per_node, std::vector<double>& point_result_data) const;
 
     /**

@@ -295,8 +295,8 @@ void Core::LinearSolver::AMGNxN::VcycleSingle::set_pos_smoothers(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void Core::LinearSolver::AMGNxN::VcycleSingle::do_vcycle(
-    const Epetra_MultiVector& X, Epetra_MultiVector& Y, int level, bool InitialGuessIsZero) const
+void Core::LinearSolver::AMGNxN::VcycleSingle::do_vcycle(const Core::LinAlg::MultiVector<double>& X,
+    Core::LinAlg::MultiVector<double>& Y, int level, bool InitialGuessIsZero) const
 {
   if (level != num_levels_ - 1)  // Perform one iteration of the V-cycle
   {
@@ -305,22 +305,22 @@ void Core::LinearSolver::AMGNxN::VcycleSingle::do_vcycle(
 
     // Compute residual
     int NV = X.NumVectors();
-    Epetra_MultiVector DX(X.Map(), NV, false);
+    Core::LinAlg::MultiVector<double> DX(X.Map(), NV, false);
     avec_[level]->Apply(Y, DX);
     DX.Update(1.0, X, -1.0);
 
     //  Create coarser representation of the residual
     const Epetra_Map& Map = rvec_[level]->range_map();
-    Epetra_MultiVector DXcoarse(Map, NV, false);
+    Core::LinAlg::MultiVector<double> DXcoarse(Map, NV, false);
     rvec_[level]->Apply(DX, DXcoarse);
 
     // Damp error with coarser levels
     const Epetra_Map& Map2 = pvec_[level]->domain_map();
-    Epetra_MultiVector DYcoarse(Map2, NV, false);
+    Core::LinAlg::MultiVector<double> DYcoarse(Map2, NV, false);
     do_vcycle(DXcoarse, DYcoarse, level + 1, true);
 
     // Compute correction
-    Epetra_MultiVector DY(Y.Map(), NV, false);
+    Core::LinAlg::MultiVector<double> DY(Y.Map(), NV, false);
     pvec_[level]->Apply(DYcoarse, DY);
     Y.Update(1.0, DY, 1.0);
 
@@ -338,8 +338,8 @@ void Core::LinearSolver::AMGNxN::VcycleSingle::do_vcycle(
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
-void Core::LinearSolver::AMGNxN::VcycleSingle::apply(
-    const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const
+void Core::LinearSolver::AMGNxN::VcycleSingle::apply(const Core::LinAlg::MultiVector<double>& X,
+    Core::LinAlg::MultiVector<double>& Y, bool InitialGuessIsZero) const
 {
   // Check if everithing is set up
   if (!flag_set_up_a_) FOUR_C_THROW("Operators missing");

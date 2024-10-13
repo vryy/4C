@@ -122,7 +122,7 @@ void Solid::ModelEvaluator::BrownianDynData::resize_random_force_m_vector(
   check_init_setup();
 
   // resize in case of new crosslinkers that were set and are now part of the discretization
-  randomforces_ = Teuchos::make_rcp<Epetra_MultiVector>(
+  randomforces_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
       *(discret_ptr->element_col_map()), maxrandnumelement, true);
 
   return;

@@ -143,43 +143,43 @@ void MultiScale::MicroStatic::set_up_homogenization()
   // now create D and its transpose DT (following Miehe et al., 2002)
   // NOTE: D_ has the same row GIDs (0-8), but different col IDs on different procs (corresponding
   // to pdof_).
-  D_ = Teuchos::make_rcp<Epetra_MultiVector>(*pdof_, 9);
+  D_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*pdof_, 9);
 
   for (int n = 0; n < np_ / 3; ++n)
   {
-    (*(*D_)(0))[3 * n] = (*Xp_)[3 * n];
-    (*(*D_)(3))[3 * n] = (*Xp_)[3 * n + 1];
-    (*(*D_)(6))[3 * n] = (*Xp_)[3 * n + 2];
+    ((*D_)(0))[3 * n] = (*Xp_)[3 * n];
+    ((*D_)(3))[3 * n] = (*Xp_)[3 * n + 1];
+    ((*D_)(6))[3 * n] = (*Xp_)[3 * n + 2];
 
-    (*(*D_)(1))[3 * n + 1] = (*Xp_)[3 * n + 1];
-    (*(*D_)(4))[3 * n + 1] = (*Xp_)[3 * n + 2];
-    (*(*D_)(7))[3 * n + 1] = (*Xp_)[3 * n];
+    ((*D_)(1))[3 * n + 1] = (*Xp_)[3 * n + 1];
+    ((*D_)(4))[3 * n + 1] = (*Xp_)[3 * n + 2];
+    ((*D_)(7))[3 * n + 1] = (*Xp_)[3 * n];
 
-    (*(*D_)(2))[3 * n + 2] = (*Xp_)[3 * n + 2];
-    (*(*D_)(5))[3 * n + 2] = (*Xp_)[3 * n];
-    (*(*D_)(8))[3 * n + 2] = (*Xp_)[3 * n + 1];
+    ((*D_)(2))[3 * n + 2] = (*Xp_)[3 * n + 2];
+    ((*D_)(5))[3 * n + 2] = (*Xp_)[3 * n];
+    ((*D_)(8))[3 * n + 2] = (*Xp_)[3 * n + 1];
   }
 
-  Epetra_MultiVector DT(*pdof_, 9);
+  Core::LinAlg::MultiVector<double> DT(*pdof_, 9);
 
   for (int n = 0; n < np_ / 3; ++n)
   {
-    (*(DT(0)))[3 * n] = (*Xp_)[3 * n];
-    (*(DT(1)))[3 * n + 1] = (*Xp_)[3 * n + 1];
-    (*(DT(2)))[3 * n + 2] = (*Xp_)[3 * n + 2];
-    (*(DT(3)))[3 * n] = (*Xp_)[3 * n + 1];
-    (*(DT(4)))[3 * n + 1] = (*Xp_)[3 * n + 2];
-    (*(DT(5)))[3 * n + 2] = (*Xp_)[3 * n];
-    (*(DT(6)))[3 * n] = (*Xp_)[3 * n + 2];
-    (*(DT(7)))[3 * n + 1] = (*Xp_)[3 * n];
-    (*(DT(8)))[3 * n + 2] = (*Xp_)[3 * n + 1];
+    ((DT(0)))[3 * n] = (*Xp_)[3 * n];
+    ((DT(1)))[3 * n + 1] = (*Xp_)[3 * n + 1];
+    ((DT(2)))[3 * n + 2] = (*Xp_)[3 * n + 2];
+    ((DT(3)))[3 * n] = (*Xp_)[3 * n + 1];
+    ((DT(4)))[3 * n + 1] = (*Xp_)[3 * n + 2];
+    ((DT(5)))[3 * n + 2] = (*Xp_)[3 * n];
+    ((DT(6)))[3 * n] = (*Xp_)[3 * n + 2];
+    ((DT(7)))[3 * n + 1] = (*Xp_)[3 * n];
+    ((DT(8)))[3 * n + 2] = (*Xp_)[3 * n + 1];
   }
 
-  rhs_ = Teuchos::make_rcp<Epetra_MultiVector>(*(discret_->dof_row_map()), 9);
+  rhs_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(discret_->dof_row_map()), 9);
 
   for (int i = 0; i < 9; ++i)
   {
-    ((*rhs_)(i))->Export(*(DT(i)), *importp_, Insert);
+    ((*rhs_)(i)).Export((DT(i)), *importp_, Insert);
   }
 }
 

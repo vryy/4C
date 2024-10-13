@@ -18,7 +18,6 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_preconditioner_type.hpp"
 
-#include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
 #include <MueLu.hpp>
 #include <MueLu_BaseClass.hpp>
@@ -37,8 +36,8 @@ namespace Core::LinearSolver
    public:
     AmGnxnPreconditioner(Teuchos::ParameterList &params);
 
-    void setup(bool create, Epetra_Operator *matrix, Epetra_MultiVector *x,
-        Epetra_MultiVector *b) override;
+    void setup(bool create, Epetra_Operator *matrix, Core::LinAlg::MultiVector<double> *x,
+        Core::LinAlg::MultiVector<double> *b) override;
 
     virtual void setup(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A);
 

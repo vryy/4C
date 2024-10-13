@@ -312,13 +312,13 @@ namespace BEAMINTERACTION
     //! The global row ID of the multi vector is the global ID of the node that a Lagrange
     //! multiplier is defined on. The columns hold the corresponding global IDs of the Lagrange
     //! multipliers.
-    Teuchos::RCP<Epetra_MultiVector> node_gid_to_lambda_gid_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> node_gid_to_lambda_gid_;
 
     //! Multivector that connects the global element IDs with the Lagrange multiplier DOF IDs.
     //! The global row ID of the multi vector is the global ID of the element that a Lagrange
     //! multiplier is defined on. The columns hold the corresponding global IDs of the Lagrange
     //! multipliers.
-    Teuchos::RCP<Epetra_MultiVector> element_gid_to_lambda_gid_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> element_gid_to_lambda_gid_;
 
     //! Standard map from global node ids to global Lagrange multiplier ids, for all
     //! nodes used on this rank.
