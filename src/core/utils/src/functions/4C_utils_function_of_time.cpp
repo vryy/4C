@@ -15,7 +15,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Core::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
+Core::Utils::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
     const std::vector<std::string>& expressions,
     std::vector<Teuchos::RCP<FunctionVariable>> variables)
     : variables_(std::move(variables))
@@ -24,13 +24,13 @@ Core::UTILS::SymbolicFunctionOfTime::SymbolicFunctionOfTime(
   {
     {
       auto symbolicexpression =
-          Teuchos::make_rcp<Core::UTILS::SymbolicExpression<double>>(expression);
+          Teuchos::make_rcp<Core::Utils::SymbolicExpression<double>>(expression);
       expr_.push_back(symbolicexpression);
     }
   }
 }
 
-double Core::UTILS::SymbolicFunctionOfTime::evaluate(
+double Core::Utils::SymbolicFunctionOfTime::evaluate(
     const double time, const std::size_t component) const
 {
   std::map<std::string, double> variable_values;
@@ -45,7 +45,7 @@ double Core::UTILS::SymbolicFunctionOfTime::evaluate(
   return expr_[component]->value(variable_values);
 }
 
-double Core::UTILS::SymbolicFunctionOfTime::evaluate_derivative(
+double Core::Utils::SymbolicFunctionOfTime::evaluate_derivative(
     const double time, const std::size_t component) const
 {
   using FirstDerivativeType = SymbolicExpression<double>::FirstDerivativeType;
@@ -86,7 +86,7 @@ double Core::UTILS::SymbolicFunctionOfTime::evaluate_derivative(
   return f_dt;
 }
 
-Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::try_create_function_of_time(
+Teuchos::RCP<Core::Utils::FunctionOfTime> Core::Utils::try_create_function_of_time(
     const std::vector<Input::LineDefinition>& function_line_defs)
 {
   // Work around a design flaw in the input line for SymbolicFunctionOfTime.
@@ -153,7 +153,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfTime> Core::UTILS::try_create_function_of_ti
     ignore_errors_in([&]() { varid = line.container().get<int>("VARIABLE"); });
 
     const auto variable = std::invoke(
-        [&line]() -> Teuchos::RCP<Core::UTILS::FunctionVariable>
+        [&line]() -> Teuchos::RCP<Core::Utils::FunctionVariable>
         {
           // read the name of the variable
           std::string varname = line.container().get<std::string>("NAME");

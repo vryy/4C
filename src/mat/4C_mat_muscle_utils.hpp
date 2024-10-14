@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Mat::UTILS::Muscle
+namespace Mat::Utils::Muscle
 {
   /*!
    * @brief Evaluate Lambert W function with Halley's method
@@ -268,7 +268,7 @@ namespace Mat::UTILS::Muscle
    * @param[out]    sigma_max_ft Time-/space-dependent optimal active stress at x, t_current
    */
   double evaluate_time_space_dependent_active_stress_by_funct(const double sigma_max,
-      const Core::UTILS::FunctionOfSpaceTime &activation_function, const double t_current,
+      const Core::Utils::FunctionOfSpaceTime &activation_function, const double t_current,
       const Core::LinAlg::Matrix<3, 1> &x);
 
   /*!
@@ -327,7 +327,7 @@ namespace Mat::UTILS::Muscle
    */
   double contraction_velocity_bw_euler(
       const double lambdaM, const double lambdaMOld, const double timeStepSize);
-}  // namespace Mat::UTILS::Muscle
+}  // namespace Mat::Utils::Muscle
 
 FOUR_C_NAMESPACE_CLOSE
 

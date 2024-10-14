@@ -105,7 +105,7 @@ void LUBRICATION::LubricationBaseAlgorithm::setup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest>
+Teuchos::RCP<Core::Utils::ResultTest>
 LUBRICATION::LubricationBaseAlgorithm::create_lubrication_field_test()
 {
   return Teuchos::make_rcp<LUBRICATION::ResultTest>(lubrication_);

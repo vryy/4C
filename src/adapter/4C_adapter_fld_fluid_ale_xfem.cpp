@@ -49,7 +49,7 @@ Teuchos::RCP<Core::FE::Discretization> Adapter::FluidAleXFEM::boundary_discretiz
 /*----------------------------------------------------------------------*/
 /// communication object at the struct interface
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::UTILS::MapExtractor> const& Adapter::FluidAleXFEM::struct_interface()
+Teuchos::RCP<FLD::Utils::MapExtractor> const& Adapter::FluidAleXFEM::struct_interface()
 {
   Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(fluid_field(), true);
 

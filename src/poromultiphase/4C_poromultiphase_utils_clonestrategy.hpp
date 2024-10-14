@@ -25,7 +25,7 @@ namespace Core::Elements
 
 namespace POROMULTIPHASE
 {
-  namespace UTILS
+  namespace Utils
   {
     /*!
     \brief implementation of special clone strategy for automatic generation
@@ -57,7 +57,7 @@ namespace POROMULTIPHASE
      private:
     };  // class PoroFluidMultiPhaseCloneStrategy
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace POROMULTIPHASE
 
 FOUR_C_NAMESPACE_CLOSE

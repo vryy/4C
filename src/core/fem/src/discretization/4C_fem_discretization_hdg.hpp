@@ -109,7 +109,7 @@ namespace Core::FE
 
   };  // class DiscretizationHDG
 
-  namespace UTILS
+  namespace Utils
   {
     /** \brief Specialized Dbc evaluation class for HDG discretizations
      *
@@ -142,7 +142,7 @@ namespace Core::FE
           double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
           const Core::LinAlg::Vector<int>& toggle) const;
     };  // class DbcHDG
-  }     // namespace UTILS
+  }     // namespace Utils
 }  // namespace Core::FE
 
 /// << operator

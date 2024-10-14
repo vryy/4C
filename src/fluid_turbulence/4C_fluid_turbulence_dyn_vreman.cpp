@@ -191,7 +191,7 @@ void FLD::Vreman::dyn_vreman_compute_dt(Teuchos::ParameterList& extraparams)
 
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_vreman_params_scatra;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_vreman_scatra, calc_vreman_params_scatra);
   calc_vreman_params_scatra.set("col_filtered_phi", col_filtered_phi_);
   calc_vreman_params_scatra.set("col_filtered_phi2", col_filtered_phi2_);

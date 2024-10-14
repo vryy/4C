@@ -134,7 +134,7 @@ double Mat::Newman::compute_transference_number(const double cint) const
     trans = eval_pre_defined_funct(-1, cint, trans_nr_params());
   else
     trans = Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfTime>(trans_nr_curve() - 1)
+                ->function_by_id<Core::Utils::FunctionOfTime>(trans_nr_curve() - 1)
                 .evaluate(cint);
 
   return trans;
@@ -152,7 +152,7 @@ double Mat::Newman::compute_first_deriv_trans(const double cint) const
     firstderiv = eval_first_deriv_pre_defined_funct(-1, cint, trans_nr_params());
   else
     firstderiv = Global::Problem::instance()
-                     ->function_by_id<Core::UTILS::FunctionOfTime>(trans_nr_curve() - 1)
+                     ->function_by_id<Core::Utils::FunctionOfTime>(trans_nr_curve() - 1)
                      .evaluate_derivative(cint);
 
   return firstderiv;
@@ -171,7 +171,7 @@ double Mat::Newman::compute_therm_fac(const double cint) const
     therm = 1.0;
   else
     therm = Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfTime>(therm_fac_curve() - 1)
+                ->function_by_id<Core::Utils::FunctionOfTime>(therm_fac_curve() - 1)
                 .evaluate(cint);
 
   return therm;
@@ -191,7 +191,7 @@ double Mat::Newman::compute_first_deriv_therm_fac(const double cint) const
     firstderiv = 0.0;
   else
     firstderiv = Global::Problem::instance()
-                     ->function_by_id<Core::UTILS::FunctionOfTime>(therm_fac_curve() - 1)
+                     ->function_by_id<Core::Utils::FunctionOfTime>(therm_fac_curve() - 1)
                      .evaluate_derivative(cint);
 
   return firstderiv;

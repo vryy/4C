@@ -31,7 +31,7 @@ namespace Discret
      public:
       /// Singleton access method
       static FluidEleParameterXFEM* instance(
-          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
       /// set all the XFEM specific parameters
       void set_element_xfem_parameter(Teuchos::ParameterList& params,  ///< parameter list

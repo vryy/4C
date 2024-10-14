@@ -95,7 +95,7 @@ namespace Core::IO
         {
           // remove comments, trailing and leading whitespaces
           // compact internal whitespaces
-          line = Core::UTILS::strip_comment(line);
+          line = Core::Utils::strip_comment(line);
 
           // line is now empty
           if (line.size() == 0) continue;
@@ -222,7 +222,7 @@ namespace Core::IO
     if (!myrank && !reader_.my_output_flag())
       Core::IO::cout << time.totalElapsedTime(true) << " secs" << Core::IO::endl;
 
-    Core::Rebalance::UTILS::print_parallel_distribution(*dis_);
+    Core::Rebalance::Utils::print_parallel_distribution(*dis_);
   }
 
 }  // namespace Core::IO

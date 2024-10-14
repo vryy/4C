@@ -37,7 +37,7 @@ namespace Thermo
   //! \brief Thermo specific result test class
   //!
   //! \author cd
-  class ResultTest : public Core::UTILS::ResultTest
+  class ResultTest : public Core::Utils::ResultTest
   {
    public:
     //! Constructor for time integrators of general kind
@@ -64,7 +64,7 @@ namespace Thermo
     //! NOTE: these have to be present explicitly
     //! as they are not part of the problem instance like in fluid3
 
-  };  // Core::UTILS::ResultTest
+  };  // Core::Utils::ResultTest
 
 }  // namespace Thermo
 

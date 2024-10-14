@@ -194,7 +194,7 @@ void electromagnetics_drt()
           scatradis->fill_complete();
 
           Core::FE::clone_discretization<
-              EleMag::UTILS::ScatraCloneStrategy<Core::FE::ShapeFunctionType::hdg>>(
+              EleMag::Utils::ScatraCloneStrategy<Core::FE::ShapeFunctionType::hdg>>(
               *elemagdishdg, *scatradis, Global::Problem::instance()->cloning_material_map());
         }
         else
@@ -204,7 +204,7 @@ void electromagnetics_drt()
           scatradis->fill_complete();
 
           Core::FE::clone_discretization<
-              EleMag::UTILS::ScatraCloneStrategy<Core::FE::ShapeFunctionType::polynomial>>(
+              EleMag::Utils::ScatraCloneStrategy<Core::FE::ShapeFunctionType::polynomial>>(
               *elemagdishdg, *scatradis, Global::Problem::instance()->cloning_material_map());
         }
 
@@ -215,7 +215,7 @@ void electromagnetics_drt()
 
         // This is necessary to have the dirichlet conditions done also in the scatra problmem. It
         // might be necessary to rethink how things are handled inside the
-        // Core::FE::UTILS::DbcHDG::do_dirichlet_condition.
+        // Core::FE::Utils::DbcHDG::do_dirichlet_condition.
         problem->set_problem_type(Core::ProblemType::scatra);
 
         // access the problem-specific parameter list

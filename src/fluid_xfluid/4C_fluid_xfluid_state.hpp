@@ -56,7 +56,7 @@ namespace XFEM
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     class KSPMapExtractor;
   }

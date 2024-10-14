@@ -268,7 +268,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
       if (gact->ReplaceMap(*gactiven_)) FOUR_C_THROW("replaceMap went wrong");
     }
   }
-  CONTACT::UTILS::add_vector(*gact, *rcsa);
+  CONTACT::Utils::add_vector(*gact, *rcsa);
   rcsa->Norm2(&mech_contact_res_);
 
   // complete all the new matrix blocks
@@ -573,7 +573,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   Core::LinAlg::export_to(*z_, *tmpv2);
   dcsdLMc->multiply(false, *tmpv2, *tmpv);
   tmpv->Scale(-1.);
-  CONTACT::UTILS::add_vector(*tmpv, *rcsa);
+  CONTACT::Utils::add_vector(*tmpv, *rcsa);
   tmpv = Teuchos::null;
   tmpv2 = Teuchos::null;
 
@@ -694,8 +694,8 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   kst_new.add(*kst_ni, false, 1., 1.);
   kts_new.add(*kts_ni, false, 1., 1.);
   ktt_new.add(*ktt_ni, false, 1., 1.);
-  CONTACT::UTILS::add_vector(rsni, *combined_RHS);
-  CONTACT::UTILS::add_vector(rtni, *combined_RHS);
+  CONTACT::Utils::add_vector(rsni, *combined_RHS);
+  CONTACT::Utils::add_vector(rtni, *combined_RHS);
 
   // (2) add the 'uncondensed' blocks (i.e. everything w/o a D^-1
   // (2)a actual stiffness blocks of the master-rows
@@ -703,8 +703,8 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   kst_new.add(*kst_m, false, 1., 1.);
   kts_new.add(*kts_m, false, 1., 1.);
   ktt_new.add(*ktt_m, false, 1., 1.);
-  CONTACT::UTILS::add_vector(rsm, *combined_RHS);
-  CONTACT::UTILS::add_vector(rtm, *combined_RHS);
+  CONTACT::Utils::add_vector(rsm, *combined_RHS);
+  CONTACT::Utils::add_vector(rtm, *combined_RHS);
 
   // (2)b active constraints in the active slave rows
   kss_new.add(*dcsdd, false, 1., 1.);
@@ -716,7 +716,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   Coupling::Adapter::MatrixRowColTransform()(dcTdT, 1.,
       Coupling::Adapter::CouplingMasterConverter(*coupST),
       Coupling::Adapter::CouplingMasterConverter(*coupST), ktt_new, true, true);
-  CONTACT::UTILS::add_vector(*rcsa, *combined_RHS);
+  CONTACT::Utils::add_vector(*rcsa, *combined_RHS);
 
   // (3) condensed parts
   // second row
@@ -726,7 +726,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
       false, 1., 1.);
   tmpv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
   dInvMa->multiply(true, *rsa, *tmpv);
-  CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
+  CONTACT::Utils::add_vector(*tmpv, *combined_RHS);
   tmpv = Teuchos::null;
 
   // third row
@@ -739,7 +739,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   tmpv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gactivedofs_);
   wDinv->multiply(false, *rsa, *tmpv);
   tmpv->Scale(-1. / (1. - alphaf_));
-  CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
+  CONTACT::Utils::add_vector(*tmpv, *combined_RHS);
   tmpv = Teuchos::null;
   wDinv = Teuchos::null;
 
@@ -756,7 +756,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   tmpv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*thr_m_dofs);
   tmp->multiply(false, *rsa, *tmpv);
   tmpv->Scale(-tsi_alpha_ / (1. - alphaf_));
-  CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
+  CONTACT::Utils::add_vector(*tmpv, *combined_RHS);
   tmpv = Teuchos::null;
 
   kts_new.add(*Core::LinAlg::matrix_multiply(dInvMaThr, true, *kts_a, false, false, false, true),
@@ -765,7 +765,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
       false, 1., 1.);
   tmpv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*thr_m_dofs);
   dInvMaThr.multiply(true, *rta, *tmpv);
-  CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
+  CONTACT::Utils::add_vector(*tmpv, *combined_RHS);
   tmp = Teuchos::null;
 
   // sixth row
@@ -778,7 +778,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   tmpv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*thr_act_dofs);
   yDinv->multiply(false, *rsa, *tmpv);
   tmpv->Scale(-1. / (1. - alphaf_));
-  CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
+  CONTACT::Utils::add_vector(*tmpv, *combined_RHS);
   tmpv = Teuchos::null;
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> gDinv =
@@ -790,7 +790,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   tmpv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*thr_act_dofs);
   gDinv->multiply(false, *rta, *tmpv);
   tmpv->Scale(-1. / tsi_alpha_);
-  CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
+  CONTACT::Utils::add_vector(*tmpv, *combined_RHS);
 
   // and were done with the system matrix
   sysmat->complete();
@@ -802,7 +802,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
 }
 
 
-void CONTACT::UTILS::add_vector(
+void CONTACT::Utils::add_vector(
     Core::LinAlg::Vector<double>& src, Core::LinAlg::Vector<double>& dst)
 {
   // return if src has no elements
@@ -952,12 +952,12 @@ void CONTACT::LagrangeStrategyTsi::update(Teuchos::RCP<const Core::LinAlg::Vecto
   Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gsdofrowmap_);
   dmatrix_->multiply(false, *z_, *tmp);
-  CONTACT::UTILS::add_vector(*tmp, *fscn_);
+  CONTACT::Utils::add_vector(*tmp, *fscn_);
 
   tmp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gmdofrowmap_);
   mmatrix_->multiply(true, *z_, *tmp);
   tmp->Scale(-1.);
-  CONTACT::UTILS::add_vector(*tmp, *fscn_);
+  CONTACT::Utils::add_vector(*tmp, *fscn_);
 
   CONTACT::AbstractStrategy::update(dis);
 
@@ -970,7 +970,7 @@ void CONTACT::LagrangeStrategyTsi::update(Teuchos::RCP<const Core::LinAlg::Vecto
   tmp =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*coupST_->master_to_slave_map(*gsdofrowmap_));
   if (dThr.Apply(*z_thr_, *tmp) != 0) FOUR_C_THROW("apply went wrong");
-  CONTACT::UTILS::add_vector(*tmp, *ftcnp_);
+  CONTACT::Utils::add_vector(*tmp, *ftcnp_);
 
   Core::LinAlg::SparseMatrix mThr(*coupST_->master_to_slave_map(*gsdofrowmap_), 100, true, false,
       Core::LinAlg::SparseMatrix::FE_MATRIX);
@@ -984,7 +984,7 @@ void CONTACT::LagrangeStrategyTsi::update(Teuchos::RCP<const Core::LinAlg::Vecto
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*coupST_->master_to_slave_map(*gmdofrowmap_));
   if (mThr.multiply(true, *z_thr_, *tmp) != 0) FOUR_C_THROW("multiply went wrong");
   tmp->Scale(-1.);
-  CONTACT::UTILS::add_vector(*tmp, *ftcnp_);
+  CONTACT::Utils::add_vector(*tmp, *ftcnp_);
 
   Core::LinAlg::SparseMatrix m_LinDissContactLM(
       *gmdofrowmap_, 100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
@@ -1002,7 +1002,7 @@ void CONTACT::LagrangeStrategyTsi::update(Teuchos::RCP<const Core::LinAlg::Vecto
   Teuchos::RCP<Core::LinAlg::Vector<double>> tmp3 = coupST_->master_to_slave(tmp2);
   Core::LinAlg::Vector<double> tmp4(*coupST_->master_to_slave_map(*gmdofrowmap_));
   Core::LinAlg::export_to(*tmp3, tmp4);
-  CONTACT::UTILS::add_vector(tmp4, *ftcnp_);
+  CONTACT::Utils::add_vector(tmp4, *ftcnp_);
 
   ftcn_ = ftcnp_;
 }

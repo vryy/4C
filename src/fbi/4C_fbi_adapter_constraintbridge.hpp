@@ -55,7 +55,7 @@ namespace GEOMETRYPAIR
 namespace FBI
 {
   class BeamToFluidMeshtyingParams;
-  namespace UTILS
+  namespace Utils
   {
     class FBIAssemblyStrategy;
   }
@@ -176,7 +176,7 @@ namespace Adapter
     Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_interaction_params_;
 
     /// Store the assembly strategy here to hand into the assembly manager
-    Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy_;
+    Teuchos::RCP<FBI::Utils::FBIAssemblyStrategy> assemblystrategy_;
 
    private:
     /// meshtying pairs

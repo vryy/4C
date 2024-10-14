@@ -34,7 +34,7 @@ namespace SSI
     \author fang
     \date 11/2017
   */
-  class SSIResultTest : public Core::UTILS::ResultTest
+  class SSIResultTest : public Core::Utils::ResultTest
   {
    public:
     /*!

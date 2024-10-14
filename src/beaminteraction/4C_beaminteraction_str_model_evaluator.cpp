@@ -132,7 +132,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
 
   ia_state_ptr_->get_dis_np() =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state_ptr()->get_dis_np());
-  BEAMINTERACTION::UTILS::periodic_boundary_consistent_dis_vector(*ia_state_ptr_->get_dis_np(),
+  BEAMINTERACTION::Utils::periodic_boundary_consistent_dis_vector(*ia_state_ptr_->get_dis_np(),
       *tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), *ia_discret_);
 
   // -------------------------------------------------------------------------
@@ -156,7 +156,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> disp_vec(
       1, ia_state_ptr_->get_dis_col_np());
   Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-  Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+  Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
       binning_params);
 
@@ -216,8 +216,8 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   print_binning_info_to_screen();
 
   // extract map for each eletype that is in discretization
-  eletypeextractor_ = Teuchos::make_rcp<BEAMINTERACTION::UTILS::MapExtractor>();
-  BEAMINTERACTION::UTILS::setup_ele_type_map_extractor(ia_discret_, eletypeextractor_);
+  eletypeextractor_ = Teuchos::make_rcp<BEAMINTERACTION::Utils::MapExtractor>();
+  BEAMINTERACTION::Utils::setup_ele_type_map_extractor(ia_discret_, eletypeextractor_);
 
   // initialize and setup submodel evaluators
   init_and_setup_sub_model_evaluators();
@@ -233,8 +233,8 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   if (not Global::Problem::instance()->restart()) post_setup();
 
   // some screen output
-  Core::Rebalance::UTILS::print_parallel_distribution(*ia_discret_);
-  Core::Rebalance::UTILS::print_parallel_distribution(*bindis_);
+  Core::Rebalance::Utils::print_parallel_distribution(*ia_discret_);
+  Core::Rebalance::Utils::print_parallel_distribution(*bindis_);
 
   issetup_ = true;
 }
@@ -369,7 +369,7 @@ void Solid::ModelEvaluator::BeamInteraction::init_and_setup_sub_model_evaluators
     (*sme_iter)->init(ia_discret_, bindis_, global_state_ptr(), global_in_output_ptr(),
         ia_state_ptr_, beam_crosslinker_handler_, binstrategy_,
         tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(),
-        Teuchos::rcp_dynamic_cast<BEAMINTERACTION::UTILS::MapExtractor>(eletypeextractor_, true));
+        Teuchos::rcp_dynamic_cast<BEAMINTERACTION::Utils::MapExtractor>(eletypeextractor_, true));
     (*sme_iter)->setup();
   }
 
@@ -490,7 +490,7 @@ void Solid::ModelEvaluator::BeamInteraction::partition_problem()
   // assign Elements to bins
   binstrategy_->remove_all_eles_from_bins();
   binstrategy_->assign_eles_to_bins(*ia_discret_, ia_state_ptr_->get_extended_bin_to_row_ele_map(),
-      BEAMINTERACTION::UTILS::convert_element_to_bin_content_type);
+      BEAMINTERACTION::Utils::convert_element_to_bin_content_type);
 
   // update maps of state vectors and matrices
   update_maps();
@@ -587,9 +587,9 @@ void Solid::ModelEvaluator::BeamInteraction::reset(const Core::LinAlg::Vector<do
       global_state().get_time_n(), Global::Problem::instance()->function_manager());
 
   // get current displacement state and export to interaction discretization dofmap
-  BEAMINTERACTION::UTILS::update_dof_map_of_vector(
+  BEAMINTERACTION::Utils::update_dof_map_of_vector(
       *ia_discret_, ia_state_ptr_->get_dis_np(), global_state().get_dis_np());
-  BEAMINTERACTION::UTILS::periodic_boundary_consistent_dis_vector(*ia_state_ptr_->get_dis_np(),
+  BEAMINTERACTION::Utils::periodic_boundary_consistent_dis_vector(*ia_state_ptr_->get_dis_np(),
       *tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), *ia_discret_);
 
   // update column vector
@@ -897,7 +897,7 @@ void Solid::ModelEvaluator::BeamInteraction::update_step_element()
     binstrategy_->remove_all_eles_from_bins();
     binstrategy_->assign_eles_to_bins(*ia_discret_,
         ia_state_ptr_->get_extended_bin_to_row_ele_map(),
-        BEAMINTERACTION::UTILS::convert_element_to_bin_content_type);
+        BEAMINTERACTION::Utils::convert_element_to_bin_content_type);
 
     // current displacement state gets new reference state
     dis_at_last_redistr_ =
@@ -918,7 +918,7 @@ void Solid::ModelEvaluator::BeamInteraction::update_step_element()
     binstrategy_->remove_all_eles_from_bins();
     binstrategy_->assign_eles_to_bins(*ia_discret_,
         ia_state_ptr_->get_extended_bin_to_row_ele_map(),
-        BEAMINTERACTION::UTILS::convert_element_to_bin_content_type);
+        BEAMINTERACTION::Utils::convert_element_to_bin_content_type);
 
     if (global_state().get_my_rank() == 0)
     {
@@ -964,8 +964,8 @@ bool Solid::ModelEvaluator::BeamInteraction::check_if_beam_discret_redistributio
     /* Hermite Interpolation: Check whether node is a beam node which is NOT
      * used for centerline interpolation if so, we simply skip it because
      * it does not have position DoFs */
-    if (BEAMINTERACTION::UTILS::is_beam_node(*node) and
-        not BEAMINTERACTION::UTILS::is_beam_centerline_node(*node))
+    if (BEAMINTERACTION::Utils::is_beam_node(*node) and
+        not BEAMINTERACTION::Utils::is_beam_centerline_node(*node))
       continue;
 
     // get GIDs of this node's degrees of freedom
@@ -1158,12 +1158,12 @@ void Solid::ModelEvaluator::BeamInteraction::update_maps()
   // todo: check if update is necessary (->SameAs())
 
   // beam displacement
-  BEAMINTERACTION::UTILS::update_dof_map_of_vector(*ia_discret_, ia_state_ptr_->get_dis_np());
+  BEAMINTERACTION::Utils::update_dof_map_of_vector(*ia_discret_, ia_state_ptr_->get_dis_np());
 
   // get current displacement state and export to interaction discretization dofmap
-  BEAMINTERACTION::UTILS::update_dof_map_of_vector(
+  BEAMINTERACTION::Utils::update_dof_map_of_vector(
       *ia_discret_, ia_state_ptr_->get_dis_np(), global_state().get_dis_np());
-  BEAMINTERACTION::UTILS::periodic_boundary_consistent_dis_vector(*ia_state_ptr_->get_dis_np(),
+  BEAMINTERACTION::Utils::periodic_boundary_consistent_dis_vector(*ia_state_ptr_->get_dis_np(),
       *tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box(), *ia_discret_);
 
   // update column vector
@@ -1190,7 +1190,7 @@ void Solid::ModelEvaluator::BeamInteraction::update_maps()
   ia_state_ptr_->get_stiff() = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
       *ia_discret_->dof_row_map(), 81, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
-  BEAMINTERACTION::UTILS::setup_ele_type_map_extractor(ia_discret_, eletypeextractor_);
+  BEAMINTERACTION::Utils::setup_ele_type_map_extractor(ia_discret_, eletypeextractor_);
 }
 
 /*-----------------------------------------------------------------------------*

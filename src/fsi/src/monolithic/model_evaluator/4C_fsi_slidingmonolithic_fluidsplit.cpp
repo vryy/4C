@@ -295,7 +295,7 @@ void FSI::SlidingMonolithicFluidSplit::setup_system()
     // enable debugging
     if (fsidyn.get<bool>("DEBUGOUTPUT"))
     {
-      pcdbg_ = Teuchos::make_rcp<UTILS::MonolithicDebugWriter>(*this);
+      pcdbg_ = Teuchos::make_rcp<Utils::MonolithicDebugWriter>(*this);
     }
 
     create_system_matrix();
@@ -303,7 +303,7 @@ void FSI::SlidingMonolithicFluidSplit::setup_system()
     if (aleproj_ != Inpar::FSI::ALEprojection_none)
     {
       // set up sliding ale utils
-      slideale_ = Teuchos::make_rcp<FSI::UTILS::SlideAleUtils>(structure_field()->discretization(),
+      slideale_ = Teuchos::make_rcp<FSI::Utils::SlideAleUtils>(structure_field()->discretization(),
           fluid_field()->discretization(), *coupsfm_, true, aleproj_);
 
       iprojdispinc_ =

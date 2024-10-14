@@ -27,9 +27,9 @@ void Inpar::ALE::set_valid_parameters(Teuchos::ParameterList& list)
 
   Teuchos::ParameterList& adyn = list.sublist("ALE DYNAMIC", false, "");
 
-  Core::UTILS::double_parameter("TIMESTEP", 0.1, "time step size", &adyn);
-  Core::UTILS::int_parameter("NUMSTEP", 41, "max number of time steps", &adyn);
-  Core::UTILS::double_parameter("MAXTIME", 4.0, "max simulation time", &adyn);
+  Core::Utils::double_parameter("TIMESTEP", 0.1, "time step size", &adyn);
+  Core::Utils::int_parameter("NUMSTEP", 41, "max number of time steps", &adyn);
+  Core::Utils::double_parameter("MAXTIME", 4.0, "max simulation time", &adyn);
 
   setStringToIntegralParameter<Inpar::ALE::AleDynamic>("ALE_TYPE", "solid",
       "ale mesh movement algorithm",
@@ -39,21 +39,21 @@ void Inpar::ALE::set_valid_parameters(Teuchos::ParameterList& list)
           springs_material, springs_spatial),
       &adyn);
 
-  Core::UTILS::bool_parameter("ASSESSMESHQUALITY", "no",
+  Core::Utils::bool_parameter("ASSESSMESHQUALITY", "no",
       "Evaluate element quality measure according to [Oddy et al. 1988]", &adyn);
 
-  Core::UTILS::bool_parameter("UPDATEMATRIX", "no",
+  Core::Utils::bool_parameter("UPDATEMATRIX", "no",
       "Update stiffness matrix in every time step (only for linear/material strategies)", &adyn);
 
-  Core::UTILS::int_parameter("MAXITER", 1, "Maximum number of newton iterations.", &adyn);
-  Core::UTILS::double_parameter(
+  Core::Utils::int_parameter("MAXITER", 1, "Maximum number of newton iterations.", &adyn);
+  Core::Utils::double_parameter(
       "TOLRES", 1.0e-06, "Absolute tolerance for length scaled L2 residual norm ", &adyn);
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "TOLDISP", 1.0e-06, "Absolute tolerance for length scaled L2 increment norm ", &adyn);
 
-  Core::UTILS::int_parameter("NUM_INITSTEP", 0, "", &adyn);
-  Core::UTILS::int_parameter("RESTARTEVRY", 1, "write restart data every RESTARTEVRY steps", &adyn);
-  Core::UTILS::int_parameter("RESULTSEVRY", 0, "write results every RESULTSTEVRY steps", &adyn);
+  Core::Utils::int_parameter("NUM_INITSTEP", 0, "", &adyn);
+  Core::Utils::int_parameter("RESTARTEVRY", 1, "write restart data every RESTARTEVRY steps", &adyn);
+  Core::Utils::int_parameter("RESULTSEVRY", 0, "write results every RESULTSTEVRY steps", &adyn);
   setStringToIntegralParameter<Inpar::ALE::DivContAct>("DIVERCONT", "continue",
       "What to do if nonlinear solver does not converge?", tuple<std::string>("stop", "continue"),
       tuple<Inpar::ALE::DivContAct>(divcont_stop, divcont_continue), &adyn);
@@ -70,10 +70,10 @@ void Inpar::ALE::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<Inpar::ALE::InitialDisp>(initdisp_zero_disp, initdisp_disp_by_function), &adyn);
 
   // Function to evaluate initial displacement
-  Core::UTILS::int_parameter("STARTFUNCNO", -1, "Function for Initial displacement", &adyn);
+  Core::Utils::int_parameter("STARTFUNCNO", -1, "Function for Initial displacement", &adyn);
 
   // linear solver id used for scalar ale problems
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "LINEAR_SOLVER", -1, "number of linear solver used for ale problems...", &adyn);
 }
 

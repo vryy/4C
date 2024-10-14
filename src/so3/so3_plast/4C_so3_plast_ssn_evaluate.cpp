@@ -776,7 +776,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate_neumann(Teuchos::ParameterLis
       const int functnum = (funct) ? (*funct)[dim] : -1;
       const double functfac =
           (functnum > 0) ? Global::Problem::instance()
-                               ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                               ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                                .evaluate(xrefegp.data(), time, dim)
                          : 1.0;
       const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;

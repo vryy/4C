@@ -103,7 +103,7 @@ void ScaTra::TimIntOneStepTheta::setup()
     Teuchos::ParameterList eleparams;
 
     // set action
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::micro_scale_initialize, eleparams);
 
     // loop over macro-scale elements
@@ -118,7 +118,7 @@ void ScaTra::TimIntOneStepTheta::set_element_time_parameter(bool forcedincrement
 {
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", false);
@@ -299,7 +299,7 @@ void ScaTra::TimIntOneStepTheta::update()
     Teuchos::ParameterList eleparams;
 
     // set action
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::micro_scale_update, eleparams);
 
     // loop over macro-scale elements
@@ -367,7 +367,7 @@ void ScaTra::TimIntOneStepTheta::read_restart(
     Teuchos::ParameterList eleparams;
 
     // set action
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::micro_scale_read_restart, eleparams);
 
     // loop over macro-scale elements

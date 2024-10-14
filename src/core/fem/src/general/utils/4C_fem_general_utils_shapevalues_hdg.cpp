@@ -538,12 +538,12 @@ void Core::FE::ShapeValuesFace<distype>::compute_face_reference_system(
 template <Core::FE::CellType distype>
 Core::FE::ShapeValuesFaceCache<distype>& Core::FE::ShapeValuesFaceCache<distype>::instance()
 {
-  static Core::UTILS::SingletonOwner<Core::FE::ShapeValuesFaceCache<distype>> owner(
+  static Core::Utils::SingletonOwner<Core::FE::ShapeValuesFaceCache<distype>> owner(
       []() {
         return std::unique_ptr<ShapeValuesFaceCache<distype>>(new ShapeValuesFaceCache<distype>);
       });
 
-  return *owner.instance(Core::UTILS::SingletonAction::create);
+  return *owner.instance(Core::Utils::SingletonAction::create);
 }
 
 template <Core::FE::CellType distype>
@@ -572,14 +572,14 @@ template <Core::FE::CellType distype>
 Core::FE::ShapeValuesInteriorOnFaceCache<distype>&
 Core::FE::ShapeValuesInteriorOnFaceCache<distype>::instance()
 {
-  static Core::UTILS::SingletonOwner<Core::FE::ShapeValuesInteriorOnFaceCache<distype>> owner(
+  static Core::Utils::SingletonOwner<Core::FE::ShapeValuesInteriorOnFaceCache<distype>> owner(
       []()
       {
         return std::unique_ptr<ShapeValuesInteriorOnFaceCache<distype>>(
             new ShapeValuesInteriorOnFaceCache<distype>);
       });
 
-  return *owner.instance(Core::UTILS::SingletonAction::create);
+  return *owner.instance(Core::Utils::SingletonAction::create);
 }
 
 

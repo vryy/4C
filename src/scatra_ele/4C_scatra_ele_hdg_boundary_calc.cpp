@@ -80,9 +80,9 @@ Discret::ELEMENTS::ScaTraHDGBoundaryImplInterface::impl(const Core::Elements::El
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>*
-Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::instance(Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>>(
@@ -119,7 +119,7 @@ int Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::evaluate_neumann(
   Core::LinAlg::SerialDenseVector dummy_vec2, dummy_vec3;
   Core::LinAlg::SerialDenseMatrix dummy_mat2;
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::project_neumann_field, params);
 
   const int* nodeids = ele->node_ids();

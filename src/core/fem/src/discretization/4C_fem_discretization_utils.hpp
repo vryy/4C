@@ -34,7 +34,7 @@ namespace Core::FE
   class AssembleStrategy;
 }
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   class FunctionManager;
 }
@@ -43,7 +43,7 @@ namespace Core::FE
 {
   class Discretization;
   class DiscretizationFaces;
-  namespace UTILS
+  namespace Utils
   {
     class Dbc;
 
@@ -144,7 +144,7 @@ namespace Core::FE
     prescribing an initial pressure in a 3D fluid dynamics simulation, where locids would have to
     contain only the local pressure DOF id, namely {3}.
     */
-    void evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
+    void evaluate_initial_field(const Core::Utils::FunctionManager& function_manager,
         const Core::FE::Discretization& discret, const std::string& fieldstring,
         Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids);
 
@@ -155,7 +155,7 @@ namespace Core::FE
     This is the actual evaluation method.
 
     */
-    void do_initial_field(const Core::UTILS::FunctionManager& function_manager,
+    void do_initial_field(const Core::Utils::FunctionManager& function_manager,
         const Core::FE::Discretization& discret, Core::Conditions::Condition& cond,
         Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids);
 
@@ -446,7 +446,7 @@ namespace Core::FE
           const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const;
 
     };  // class Dbc
-  }     // namespace UTILS
+  }     // namespace Utils
 }  // namespace Core::FE
 
 

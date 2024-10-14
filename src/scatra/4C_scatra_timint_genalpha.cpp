@@ -123,7 +123,7 @@ void ScaTra::TimIntGenAlpha::set_element_time_parameter(bool forcedincrementalso
 {
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", true);
   eleparams.set<bool>("using stationary formulation", false);
@@ -150,7 +150,7 @@ void ScaTra::TimIntGenAlpha::set_element_time_parameter_backward_euler() const
 {
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_time_parameter, eleparams);
 
   eleparams.set<bool>("using generalized-alpha time integration", false);

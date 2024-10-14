@@ -155,7 +155,7 @@ void scatra_dyn(int restart)
 
         Teuchos::ParameterList binning_params =
             Global::Problem::instance()->binning_strategy_params();
-        Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+        Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
             "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
         Core::Rebalance::rebalance_discretizations_by_binning(binning_params,
@@ -292,7 +292,7 @@ void scatra_dyn(int restart)
 
         Teuchos::ParameterList binning_params =
             Global::Problem::instance()->binning_strategy_params();
-        Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+        Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
             "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
         Core::Rebalance::rebalance_discretizations_by_binning(binning_params,

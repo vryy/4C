@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::print_discretization_to_stream(Teuchos::RCP<Core::FE::Discretization> dis,
+void XFEM::Utils::print_discretization_to_stream(Teuchos::RCP<Core::FE::Discretization> dis,
     const std::string& disname, bool elements, bool elecol, bool nodes, bool nodecol, bool faces,
     bool facecol, std::ostream& s, std::map<int, Core::LinAlg::Matrix<3, 1>>* curr_pos)
 {
@@ -168,7 +168,7 @@ void XFEM::UTILS::print_discretization_to_stream(Teuchos::RCP<Core::FE::Discreti
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
+void XFEM::Utils::XFEMDiscretizationBuilder::setup_xfem_discretization(
     const Teuchos::ParameterList& xgen_params, Teuchos::RCP<Core::FE::Discretization> dis,
     int numdof) const
 {
@@ -214,7 +214,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
+void XFEM::Utils::XFEMDiscretizationBuilder::setup_xfem_discretization(
     const Teuchos::ParameterList& xgen_params, Teuchos::RCP<Core::FE::Discretization> dis,
     Core::FE::Discretization& embedded_dis, const std::string& embedded_cond_name, int numdof) const
 {
@@ -235,15 +235,15 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 
   setup_xfem_discretization(xgen_params, xdis, numdof);
 
-  Core::Rebalance::UTILS::print_parallel_distribution(*dis);
-  Core::Rebalance::UTILS::print_parallel_distribution(embedded_dis);
+  Core::Rebalance::Utils::print_parallel_distribution(*dis);
+  Core::Rebalance::Utils::print_parallel_distribution(embedded_dis);
 
   return;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
+int XFEM::Utils::XFEMDiscretizationBuilder::setup_xfem_discretization(
     const Teuchos::ParameterList& xgen_params, Teuchos::RCP<Core::FE::Discretization> src_dis,
     Teuchos::RCP<Core::FE::Discretization> target_dis,
     const std::vector<Core::Conditions::Condition*>& boundary_conds) const
@@ -268,8 +268,8 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
   if (!Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(target_dis).is_null())
     setup_xfem_discretization(xgen_params, target_dis, num_dof_per_node);
 
-  Core::Rebalance::UTILS::print_parallel_distribution(*src_dis);
-  Core::Rebalance::UTILS::print_parallel_distribution(*target_dis);
+  Core::Rebalance::Utils::print_parallel_distribution(*src_dis);
+  Core::Rebalance::Utils::print_parallel_distribution(*target_dis);
 
   return num_dof_per_node;
 }
@@ -277,7 +277,7 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::setup_xfem_discretization(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
+void XFEM::Utils::XFEMDiscretizationBuilder::split_discretization_by_condition(
     Core::FE::Discretization& sourcedis, Core::FE::Discretization& targetdis,
     std::vector<Core::Conditions::Condition*>& conditions,
     const std::vector<std::string>& conditions_to_copy) const
@@ -301,7 +301,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_condition(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
+void XFEM::Utils::XFEMDiscretizationBuilder::split_discretization(
     Core::FE::Discretization& sourcedis, Core::FE::Discretization& targetdis,
     const std::map<int, Core::Nodes::Node*>& sourcenodes,
     const std::map<int, Core::Nodes::Node*>& sourcegnodes,
@@ -448,7 +448,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::XFEMDiscretizationBuilder::redistribute(
+void XFEM::Utils::XFEMDiscretizationBuilder::redistribute(
     Core::FE::Discretization& dis, std::vector<int>& noderowvec, std::vector<int>& nodecolvec) const
 {
   dis.check_filled_globally();
@@ -483,7 +483,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::redistribute(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_condition(
+void XFEM::Utils::XFEMDiscretizationBuilder::split_discretization_by_boundary_condition(
     Core::FE::Discretization& sourcedis, Core::FE::Discretization& targetdis,
     const std::vector<Core::Conditions::Condition*>& boundary_conds,
     const std::vector<std::string>& conditions_to_copy) const
@@ -540,7 +540,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::split_discretization_by_boundary_co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Conditions::Condition> XFEM::UTILS::XFEMDiscretizationBuilder::split_condition(
+Teuchos::RCP<Core::Conditions::Condition> XFEM::Utils::XFEMDiscretizationBuilder::split_condition(
     const Core::Conditions::Condition* src_cond, const std::vector<int>& nodecolvec,
     const Epetra_Comm& comm) const
 {

@@ -60,7 +60,7 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
     Teuchos::ParameterList condparams;
 
     // action for elements
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
         "action", ScaTra::BoundaryAction::calc_elch_minmax_overpotential, condparams);
 
     // initialize results
@@ -547,7 +547,7 @@ ScaTra::MortarCellCalcElch<distype_s, distype_m>::instance(
     const std::string& disname        //!< name of mortar discretization
 )
 {
-  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
+  static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
       [](const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
@@ -556,7 +556,7 @@ ScaTra::MortarCellCalcElch<distype_s, distype_m>::instance(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
-  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, couplingtype, lmside,
+  return singleton_map[disname].instance(Core::Utils::SingletonAction::create, couplingtype, lmside,
       numdofpernode_slave, numdofpernode_master);
 }
 
@@ -724,7 +724,7 @@ ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::instance(
     const std::string& disname        //!< name of mortar discretization
 )
 {
-  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
+  static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
       [](const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
@@ -733,7 +733,7 @@ ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::instance(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
-  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, couplingtype, lmside,
+  return singleton_map[disname].instance(Core::Utils::SingletonAction::create, couplingtype, lmside,
       numdofpernode_slave, numdofpernode_master);
 }
 
@@ -936,7 +936,7 @@ ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::instance(
     const std::string& disname        //!< name of mortar discretization
 )
 {
-  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
+  static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
       [](const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
@@ -945,7 +945,7 @@ ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::instance(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
-  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, couplingtype, lmside,
+  return singleton_map[disname].instance(Core::Utils::SingletonAction::create, couplingtype, lmside,
       numdofpernode_slave, numdofpernode_master);
 }
 

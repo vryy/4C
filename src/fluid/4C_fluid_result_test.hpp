@@ -37,7 +37,7 @@ namespace FLD
 
   \author u.kue
   */
-  class FluidResultTest : public Core::UTILS::ResultTest
+  class FluidResultTest : public Core::Utils::ResultTest
   {
    public:
     /*!

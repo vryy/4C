@@ -57,7 +57,7 @@ void Coupling::Adapter::MortarVolCoupl::init(int spatial_dimension,
     Teuchos::RCP<Core::FE::Discretization> dis2,  // slavedis  - on Omega_2
     std::vector<int>* coupleddof12, std::vector<int>* coupleddof21, std::pair<int, int>* dofsets12,
     std::pair<int, int>* dofsets21,
-    Teuchos::RCP<FourC::Coupling::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy,
+    Teuchos::RCP<FourC::Coupling::VolMortar::Utils::DefaultMaterialStrategy> materialstrategy,
     bool createauxdofs)
 {
   // Note : We need to make sure that the parallel distribution of discretizations
@@ -104,7 +104,7 @@ void Coupling::Adapter::MortarVolCoupl::setup(
   // create material strategy
   if (materialstrategy_.is_null())
     materialstrategy_ =
-        Teuchos::make_rcp<FourC::Coupling::VolMortar::UTILS::DefaultMaterialStrategy>();
+        Teuchos::make_rcp<FourC::Coupling::VolMortar::Utils::DefaultMaterialStrategy>();
 
   // create coupling instance
   Teuchos::RCP<FourC::Coupling::VolMortar::VolMortarCoupl> coupdis =
@@ -200,11 +200,11 @@ void Coupling::Adapter::MortarVolCoupl::create_aux_dofsets(Core::FE::Discretizat
 void Coupling::Adapter::MortarVolCoupl::assign_materials(
     Teuchos::RCP<Core::FE::Discretization> dis1, Teuchos::RCP<Core::FE::Discretization> dis2,
     const Teuchos::ParameterList& volmortar_params, const Teuchos::ParameterList& cut_params,
-    Teuchos::RCP<FourC::Coupling::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy)
+    Teuchos::RCP<FourC::Coupling::VolMortar::Utils::DefaultMaterialStrategy> materialstrategy)
 {
   if (materialstrategy == Teuchos::null)
     materialstrategy =
-        Teuchos::make_rcp<FourC::Coupling::VolMortar::UTILS::DefaultMaterialStrategy>();
+        Teuchos::make_rcp<FourC::Coupling::VolMortar::Utils::DefaultMaterialStrategy>();
   // create coupling instance
   FourC::Coupling::VolMortar::VolMortarCoupl coupdis(spatial_dimension_, dis1, dis2,
       volmortar_params, cut_params, nullptr, nullptr, nullptr, nullptr, materialstrategy);

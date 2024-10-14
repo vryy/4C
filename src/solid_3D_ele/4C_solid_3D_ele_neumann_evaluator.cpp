@@ -130,7 +130,7 @@ void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
             const double function_scale_factor =
                 (function_number > 0)
                     ? Global::Problem::instance()
-                          ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(function_number - 1)
+                          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(function_number - 1)
                           .evaluate(gauss_point_reference_coordinates.data(), total_time, dim)
                     : 1.0;
 

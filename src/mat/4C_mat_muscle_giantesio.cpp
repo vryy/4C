@@ -406,7 +406,7 @@ void Mat::MuscleGiantesio::update(Core::LinAlg::Matrix<3, 3> const& defgrd, int 
   const Core::LinAlg::Matrix<3, 3>& M = anisotropy_extension_.get_structural_tensor(gp, 0);
 
   // save the current fibre stretch in lambdaMOld_
-  lambda_m_old_ = Mat::UTILS::Muscle::fiber_stretch(C, M);
+  lambda_m_old_ = Mat::Utils::Muscle::fiber_stretch(C, M);
 }
 
 void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
@@ -453,18 +453,18 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // structural tensor M, i.e. dyadic product of fibre directions
   Core::LinAlg::Matrix<3, 3> M = anisotropy_extension_.get_structural_tensor(gp, 0);
-  double lambdaM = Mat::UTILS::Muscle::fiber_stretch(C, M);
+  double lambdaM = Mat::Utils::Muscle::fiber_stretch(C, M);
   // derivative of lambdaM w.r.t. C
-  Core::LinAlg::Matrix<3, 3> dlambdaMdC = Mat::UTILS::Muscle::d_fiber_stretch_dc(lambdaM, C, M);
+  Core::LinAlg::Matrix<3, 3> dlambdaMdC = Mat::Utils::Muscle::d_fiber_stretch_dc(lambdaM, C, M);
   Core::LinAlg::Matrix<6, 1> dlambdaMdCv(true);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(dlambdaMdC, dlambdaMdCv);
 
   // contraction velocity dotLambdaM
   double dotLambdaM =
-      Mat::UTILS::Muscle::contraction_velocity_bw_euler(lambdaM, lambda_m_old_, timeStepSize);
+      Mat::Utils::Muscle::contraction_velocity_bw_euler(lambdaM, lambda_m_old_, timeStepSize);
 
   // compute activation level omegaa and derivative w.r.t. fiber stretch if material is active
-  Core::UTILS::ValuesFunctAndFunctDerivs omegaaAndDerivs = {
+  Core::Utils::ValuesFunctAndFunctDerivs omegaaAndDerivs = {
       .val_funct = 0.0, .val_deriv_funct = 0.0, .val_deriv_deriv_funct = 0.0};
 
   if (is_active(currentTime))
@@ -608,7 +608,7 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   cmat->update(1.0, cmatvolv, 1.0);
 }
 
-Core::UTILS::ValuesFunctAndFunctDerivs
+Core::Utils::ValuesFunctAndFunctDerivs
 Mat::MuscleGiantesio::evaluate_activation_level_and_derivatives(
     const double& lambdaM, const double& dotLambdaM, const double& currentTime)
 {
@@ -623,8 +623,8 @@ Mat::MuscleGiantesio::evaluate_activation_level_and_derivatives(
 
   // compute activation level omegaa and its first and second derivative w.r.t. lambdaM using
   // central differences
-  Core::UTILS::ValuesFunctAndFunctDerivs omegaaAndDerivs =
-      Core::UTILS::evaluate_function_and_derivatives_central_differences(
+  Core::Utils::ValuesFunctAndFunctDerivs omegaaAndDerivs =
+      Core::Utils::evaluate_function_and_derivatives_central_differences(
           FunctionSolveActivationLevelEquation, lambdaM, h);
 
   return omegaaAndDerivs;
@@ -653,7 +653,7 @@ double Mat::MuscleGiantesio::solve_activation_level_equation(
     const double omegaa_b_init = 1.0;  // omegaa <= 1
 
     // approximate the starting guess for the newton solver via bisection method
-    omegaa_init = Core::UTILS::bisection([&](double omegaa_init)
+    omegaa_init = Core::Utils::bisection([&](double omegaa_init)
         { return std::get<0>(actLevelEquationAndDeriv(omegaa_init)); },
         omegaa_a_init, omegaa_b_init, tol_bisec, maxiter_bisec);
   }
@@ -666,7 +666,7 @@ double Mat::MuscleGiantesio::solve_activation_level_equation(
   const int maxiter_newton = 200;
 
   // compute activation level as solution of activation level equation
-  double omegaa = Core::UTILS::solve_local_newton(
+  double omegaa = Core::Utils::solve_local_newton(
       actLevelEquationAndDeriv, omegaa_init, tol_newton, maxiter_newton);
 
   return omegaa;
@@ -750,15 +750,15 @@ double Mat::MuscleGiantesio::evaluate_active_nominal_stress_integral(
   const auto& actValues = params_->actValues_;
 
   // compute force-time/stimulation frequency dependency Poptft
-  double Poptft = Mat::UTILS::Muscle::evaluate_time_dependent_active_stress_ehret(
+  double Poptft = Mat::Utils::Muscle::evaluate_time_dependent_active_stress_ehret(
       Na, muTypesNum, rho, I, F, T, actIntervalsNum, actTimes, actValues, currentTime);
 
   // compute integral of the force-stretch dependency fxi in the boundaries lambdaMin to lambdaM
-  double intFxi = Mat::UTILS::Muscle::evaluate_integral_force_stretch_dependency_ehret(
+  double intFxi = Mat::Utils::Muscle::evaluate_integral_force_stretch_dependency_ehret(
       lambdaM, lambdaMin, lambdaOpt);
 
   // compute force-velocity dependency fv
-  double fv = Mat::UTILS::Muscle::evaluate_force_velocity_dependency_boel(
+  double fv = Mat::Utils::Muscle::evaluate_force_velocity_dependency_boel(
       dotLambdaM, dotLambdaMMin, de, dc, ke, kc);
 
   // compute integral of the active nominal stress Pa

@@ -123,7 +123,7 @@ int Discret::ELEMENTS::Shell7p::evaluate(Teuchos::ParameterList& params,
       shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *solid_material(),
           discretization, nodal_directors_, dof_index_array, params, &elevec1, &elemat1, &elemat2);
       if (action == Core::Elements::struct_calc_nlnstifflmass)
-        Solid::UTILS::Shell::lump_mass_matrix(elemat2);
+        Solid::Utils::Shell::lump_mass_matrix(elemat2);
     }
     break;
     case Core::Elements::struct_calc_recover:

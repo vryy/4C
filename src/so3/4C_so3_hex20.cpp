@@ -116,7 +116,7 @@ Discret::ELEMENTS::SoHex20::SoHex20(int id, int owner)
     pstype_ = Prestress::get_type();
     pstime_ = Prestress::get_prestress_time();
 
-    Discret::ELEMENTS::UTILS::throw_error_fd_material_tangent(
+    Discret::ELEMENTS::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (Prestress::is_mulf(pstype_))

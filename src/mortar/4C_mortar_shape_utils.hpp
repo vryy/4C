@@ -33,7 +33,7 @@ namespace Mortar
 {
   class Node;
 
-  namespace UTILS
+  namespace Utils
   {
     // ----------------------------------------------------------------------
     // TAW 01/14
@@ -2122,7 +2122,7 @@ namespace Mortar
       }
     }
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE

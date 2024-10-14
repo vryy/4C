@@ -305,7 +305,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
       Teuchos::ParameterList condparams;
 
       // action for elements
-      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+      Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
           "action", ScaTra::BoundaryAction::calc_s2icoupling, condparams);
 
       // set global state vectors according to time-integration scheme
@@ -893,7 +893,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
         Teuchos::ParameterList conditionparams;
 
         // action for elements
-        Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+        Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
             "action", ScaTra::BoundaryAction::calc_s2icoupling, conditionparams);
 
         // set global state vectors according to time-integration scheme
@@ -1057,7 +1057,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 Teuchos::ParameterList condparams;
 
                 // set action for elements
-                Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+                Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
                     "action", ScaTra::BoundaryAction::calc_s2icoupling_scatragrowth, condparams);
 
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface
@@ -1149,7 +1149,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 Teuchos::ParameterList condparams;
 
                 // set action for elements
-                Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+                Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
                     "action", ScaTra::BoundaryAction::calc_s2icoupling_growthscatra, condparams);
 
                 // evaluate off-diagonal linearizations
@@ -1201,7 +1201,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 Teuchos::ParameterList condparams;
 
                 // set action for elements
-                Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+                Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
                     "action", ScaTra::BoundaryAction::calc_s2icoupling_scatragrowth, condparams);
 
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface
@@ -1283,7 +1283,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                 Teuchos::ParameterList condparams;
 
                 // set action for elements
-                Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+                Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
                     "action", ScaTra::BoundaryAction::calc_s2icoupling_growthscatra, condparams);
 
                 // evaluate off-diagonal linearizations
@@ -1350,7 +1350,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
             Teuchos::ParameterList condparams;
 
             // set action for elements
-            Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+            Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
                 "action", ScaTra::BoundaryAction::calc_s2icoupling_growthgrowth, condparams);
 
             // set history vector associated with discrete scatra-scatra interface layer thicknesses
@@ -1387,7 +1387,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
   Teuchos::ParameterList capcondparas;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_s2icoupling_capacitance, capcondparas);
 
   // set global state vectors according to time-integration scheme
@@ -3023,7 +3023,7 @@ void ScaTra::MeshtyingStrategyS2I::write_s2_i_kinetics_specific_scatra_parameter
   const Core::Conditions::ConditionType conditiontype = s2ikinetics_cond.type();
 
   // set action, kinetic model, condition type and numscal
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_scatra_ele_boundary_parameter, s2icouplingparameters);
   s2icouplingparameters.set<int>("KINETIC_MODEL", kineticmodel);
   s2icouplingparameters.set<Core::Conditions::ConditionType>("condition type", conditiontype);
@@ -3353,7 +3353,7 @@ void ScaTra::MeshtyingStrategyS2I::output_interface_flux() const
       {
         Teuchos::ParameterList condparams;
 
-        Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+        Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
             "action", ScaTra::BoundaryAction::calc_s2icoupling_flux, condparams);
 
         scatratimint_->discretization()->evaluate_scalars(
@@ -3364,7 +3364,7 @@ void ScaTra::MeshtyingStrategyS2I::output_interface_flux() const
         Teuchos::ParameterList condparams;
 
         // overwrite action in parameter list
-        Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+        Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
             "action", ScaTra::BoundaryAction::calc_boundary_integral, condparams);
 
         // compute value of boundary integral
@@ -4167,7 +4167,7 @@ ScaTra::MortarCellCalc<distype_s, distype_m>::instance(const Inpar::S2I::Couplin
     const Inpar::S2I::InterfaceSides& lmside, const int& numdofpernode_slave,
     const int& numdofpernode_master, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
+  static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
       [](const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
@@ -4176,7 +4176,7 @@ ScaTra::MortarCellCalc<distype_s, distype_m>::instance(const Inpar::S2I::Couplin
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
-  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, couplingtype, lmside,
+  return singleton_map[disname].instance(Core::Utils::SingletonAction::create, couplingtype, lmside,
       numdofpernode_slave, numdofpernode_master);
 }
 
@@ -4398,8 +4398,8 @@ double ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_and_dom_int
           coordinates_global.data(), cell.auxn(), masterelement, coordinates_master.data(), dummy);
 
   // evaluate shape functions at current integration point on slave and master elements
-  Coupling::VolMortar::UTILS::shape_function<distype_s>(funct_slave_, coordinates_slave.data());
-  Coupling::VolMortar::UTILS::shape_function<distype_m>(funct_master_, coordinates_master.data());
+  Coupling::VolMortar::Utils::shape_function<distype_s>(funct_slave_, coordinates_slave.data());
+  Coupling::VolMortar::Utils::shape_function<distype_m>(funct_master_, coordinates_master.data());
   switch (couplingtype_)
   {
     case Inpar::S2I::coupling_mortar_standard:
@@ -4420,13 +4420,13 @@ double ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_and_dom_int
       // functions
       if (lmside_ == Inpar::S2I::side_slave)
       {
-        Coupling::VolMortar::UTILS::dual_shape_function<distype_s>(
+        Coupling::VolMortar::Utils::dual_shape_function<distype_s>(
             shape_lm_slave_, coordinates_slave.data(), slaveelement);
         test_lm_slave_ = funct_slave_;
       }
       else
       {
-        Coupling::VolMortar::UTILS::dual_shape_function<distype_m>(
+        Coupling::VolMortar::Utils::dual_shape_function<distype_m>(
             shape_lm_master_, coordinates_master.data(), masterelement);
         test_lm_master_ = funct_master_;
       }
@@ -4441,13 +4441,13 @@ double ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_and_dom_int
       // functions
       if (lmside_ == Inpar::S2I::side_slave)
       {
-        Coupling::VolMortar::UTILS::dual_shape_function<distype_s>(
+        Coupling::VolMortar::Utils::dual_shape_function<distype_s>(
             shape_lm_slave_, coordinates_slave.data(), slaveelement);
         test_lm_slave_ = shape_lm_slave_;
       }
       else
       {
-        Coupling::VolMortar::UTILS::dual_shape_function<distype_m>(
+        Coupling::VolMortar::Utils::dual_shape_function<distype_m>(
             shape_lm_master_, coordinates_master.data(), masterelement);
         test_lm_master_ = shape_lm_master_;
       }
@@ -4543,7 +4543,7 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_at_slave_node
           coordinates_master.data(), dummy);
 
   // evaluate master-side shape functions at projected node on master-side element
-  Coupling::VolMortar::UTILS::shape_function<distype_m>(funct_master_, coordinates_master.data());
+  Coupling::VolMortar::Utils::shape_function<distype_m>(funct_master_, coordinates_master.data());
 }
 
 /*----------------------------------------------------------------------*

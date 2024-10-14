@@ -118,7 +118,7 @@ void CONTACT::IntegratorNitsche::gpts_forces(Mortar::Element& sele, Mortar::Elem
 
     double ws = 0.;
     double wm = 0.;
-    CONTACT::UTILS::nitsche_weights_and_scaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
+    CONTACT::Utils::nitsche_weights_and_scaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
 
     // variables for friction (declaration only)
     Core::LinAlg::Matrix<dim, 1> t1, t2;
@@ -180,12 +180,12 @@ void CONTACT::IntegratorNitsche::gpts_forces(Mortar::Element& sele, Mortar::Elem
     // evaluation of tangential stuff
     if (frtype_)
     {
-      CONTACT::UTILS::build_tangent_vectors<dim>(
+      CONTACT::Utils::build_tangent_vectors<dim>(
           contact_normal.data(), deriv_contact_normal, t1.data(), dt1, t2.data(), dt2);
-      CONTACT::UTILS::rel_vel_invariant<dim>(sele, sxi, dsxi, sval, sderiv, mele, mxi, dmxi, mval,
+      CONTACT::Utils::rel_vel_invariant<dim>(sele, sxi, dsxi, sval, sderiv, mele, mxi, dmxi, mval,
           mderiv, gap, dgapgp, relVel, relVel_deriv);
-      CONTACT::UTILS::vector_scalar_product<dim>(t1, dt1, relVel, relVel_deriv, vt1, dvt1);
-      CONTACT::UTILS::vector_scalar_product<dim>(t2, dt2, relVel, relVel_deriv, vt2, dvt2);
+      CONTACT::Utils::vector_scalar_product<dim>(t1, dt1, relVel, relVel_deriv, vt1, dvt1);
+      CONTACT::Utils::vector_scalar_product<dim>(t2, dt2, relVel, relVel_deriv, vt2, dvt2);
 
       so_ele_cauchy<dim>(sele, sxi, dsxi, wgt, slave_normal, deriv_slave_normal, t1, dt1, ws,
           cauchy_nt1_weighted_average, cauchy_nt1_weighted_average_deriv, t1_adjoint_test_slave,
@@ -404,7 +404,7 @@ void CONTACT::IntegratorNitsche::gpts_forces(Mortar::Element& sele, Mortar::Elem
  *----------------------------------------------------------------------*/
 
 template <int dim>
-void CONTACT::UTILS::map_gp_to_parent(Mortar::Element& moEle, double* boundary_gpcoord,
+void CONTACT::Utils::map_gp_to_parent(Mortar::Element& moEle, double* boundary_gpcoord,
     const double wgt, Core::LinAlg::Matrix<dim, 1>& pxsi,
     Core::LinAlg::Matrix<dim, dim>& derivtravo_slave)
 {
@@ -412,27 +412,27 @@ void CONTACT::UTILS::map_gp_to_parent(Mortar::Element& moEle, double* boundary_g
   switch (distype)
   {
     case Core::FE::CellType::hex8:
-      CONTACT::UTILS::so_ele_gp<Core::FE::CellType::hex8, dim>(
+      CONTACT::Utils::so_ele_gp<Core::FE::CellType::hex8, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     case Core::FE::CellType::tet4:
-      CONTACT::UTILS::so_ele_gp<Core::FE::CellType::tet4, dim>(
+      CONTACT::Utils::so_ele_gp<Core::FE::CellType::tet4, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     case Core::FE::CellType::quad4:
-      CONTACT::UTILS::so_ele_gp<Core::FE::CellType::quad4, dim>(
+      CONTACT::Utils::so_ele_gp<Core::FE::CellType::quad4, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     case Core::FE::CellType::quad9:
-      CONTACT::UTILS::so_ele_gp<Core::FE::CellType::quad9, dim>(
+      CONTACT::Utils::so_ele_gp<Core::FE::CellType::quad9, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     case Core::FE::CellType::tri3:
-      CONTACT::UTILS::so_ele_gp<Core::FE::CellType::tri3, dim>(
+      CONTACT::Utils::so_ele_gp<Core::FE::CellType::tri3, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     case Core::FE::CellType::nurbs27:
-      CONTACT::UTILS::so_ele_gp<Core::FE::CellType::nurbs27, dim>(
+      CONTACT::Utils::so_ele_gp<Core::FE::CellType::nurbs27, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     default:
@@ -454,7 +454,7 @@ void CONTACT::IntegratorNitsche::so_ele_cauchy(Mortar::Element& moEle, double* b
 {
   Core::LinAlg::Matrix<dim, 1> pxsi(true);
   Core::LinAlg::Matrix<dim, dim> derivtravo_slave;
-  CONTACT::UTILS::map_gp_to_parent<dim>(moEle, boundary_gpcoord, gp_wgt, pxsi, derivtravo_slave);
+  CONTACT::Utils::map_gp_to_parent<dim>(moEle, boundary_gpcoord, gp_wgt, pxsi, derivtravo_slave);
 
   // define which linearizations we need
   Core::LinAlg::SerialDenseMatrix d_cauchyndir_dd{};
@@ -690,7 +690,7 @@ void CONTACT::IntegratorNitsche::integrate_adjoint_test(const double fac, const 
   }
 }
 
-void CONTACT::UTILS::nitsche_weights_and_scaling(Mortar::Element& sele, Mortar::Element& mele,
+void CONTACT::Utils::nitsche_weights_and_scaling(Mortar::Element& sele, Mortar::Element& mele,
     const Inpar::CONTACT::NitscheWeighting nit_wgt, const double dt, double& ws, double& wm,
     double& pen, double& pet)
 {
@@ -731,7 +731,7 @@ void CONTACT::UTILS::nitsche_weights_and_scaling(Mortar::Element& sele, Mortar::
 }
 
 template <int dim>
-void CONTACT::UTILS::rel_vel(Mortar::Element& ele, const Core::LinAlg::SerialDenseVector& shape,
+void CONTACT::Utils::rel_vel(Mortar::Element& ele, const Core::LinAlg::SerialDenseVector& shape,
     const Core::LinAlg::SerialDenseMatrix& deriv,
     const std::vector<Core::Gen::Pairedvector<int, double>>& dxi, const double fac,
     Core::LinAlg::Matrix<dim, 1>& relVel,
@@ -759,7 +759,7 @@ void CONTACT::UTILS::rel_vel(Mortar::Element& ele, const Core::LinAlg::SerialDen
 
 
 template <int dim>
-void CONTACT::UTILS::rel_vel_invariant(Mortar::Element& sele, const double* sxi,
+void CONTACT::Utils::rel_vel_invariant(Mortar::Element& sele, const double* sxi,
     const std::vector<Core::Gen::Pairedvector<int, double>>& derivsxi,
     const Core::LinAlg::SerialDenseVector& sval, const Core::LinAlg::SerialDenseMatrix& sderiv,
     Mortar::Element& mele, const double* mxi,
@@ -810,7 +810,7 @@ void CONTACT::UTILS::rel_vel_invariant(Mortar::Element& sele, const double* sxi,
 }
 
 template <int dim>
-void CONTACT::UTILS::vector_scalar_product(const Core::LinAlg::Matrix<dim, 1>& v1,
+void CONTACT::Utils::vector_scalar_product(const Core::LinAlg::Matrix<dim, 1>& v1,
     const std::vector<Core::Gen::Pairedvector<int, double>>& v1d,
     const Core::LinAlg::Matrix<dim, 1>& v2,
     const std::vector<Core::Gen::Pairedvector<int, double>>& v2d, double& val,
@@ -826,7 +826,7 @@ void CONTACT::UTILS::vector_scalar_product(const Core::LinAlg::Matrix<dim, 1>& v
   }
 }
 
-void CONTACT::UTILS::build_tangent_vectors3_d(const double* np,
+void CONTACT::Utils::build_tangent_vectors3_d(const double* np,
     const std::vector<Core::Gen::Pairedvector<int, double>>& dn, double* t1p,
     std::vector<Core::Gen::Pairedvector<int, double>>& dt1, double* t2p,
     std::vector<Core::Gen::Pairedvector<int, double>>& dt2)
@@ -908,7 +908,7 @@ void CONTACT::UTILS::build_tangent_vectors3_d(const double* np,
 }
 
 template <int dim>
-void CONTACT::UTILS::build_tangent_vectors(const double* np,
+void CONTACT::Utils::build_tangent_vectors(const double* np,
     const std::vector<Core::Gen::Pairedvector<int, double>>& dn, double* t1p,
     std::vector<Core::Gen::Pairedvector<int, double>>& dt1, double* t2p,
     std::vector<Core::Gen::Pairedvector<int, double>>& dt2)
@@ -919,12 +919,12 @@ void CONTACT::UTILS::build_tangent_vectors(const double* np,
     FOUR_C_THROW("not implemented");
 }
 
-template void CONTACT::UTILS::build_tangent_vectors<2>(const double*,
+template void CONTACT::Utils::build_tangent_vectors<2>(const double*,
     const std::vector<Core::Gen::Pairedvector<int, double>>&, double*,
     std::vector<Core::Gen::Pairedvector<int, double>>&, double*,
     std::vector<Core::Gen::Pairedvector<int, double>>&);
 
-template void CONTACT::UTILS::build_tangent_vectors<3>(const double*,
+template void CONTACT::Utils::build_tangent_vectors<3>(const double*,
     const std::vector<Core::Gen::Pairedvector<int, double>>&, double*,
     std::vector<Core::Gen::Pairedvector<int, double>>&, double*,
     std::vector<Core::Gen::Pairedvector<int, double>>&);
@@ -973,26 +973,26 @@ template void CONTACT::IntegratorNitsche::build_adjoint_test<3>(Mortar::Element&
     Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseVector>&);
 
 
-template void CONTACT::UTILS::rel_vel<2>(Mortar::Element&, const Core::LinAlg::SerialDenseVector&,
+template void CONTACT::Utils::rel_vel<2>(Mortar::Element&, const Core::LinAlg::SerialDenseVector&,
     const Core::LinAlg::SerialDenseMatrix&,
     const std::vector<Core::Gen::Pairedvector<int, double>>&, const double,
     Core::LinAlg::Matrix<2, 1>&, std::vector<Core::Gen::Pairedvector<int, double>>&);
 
-template void CONTACT::UTILS::rel_vel<3>(Mortar::Element&, const Core::LinAlg::SerialDenseVector&,
+template void CONTACT::Utils::rel_vel<3>(Mortar::Element&, const Core::LinAlg::SerialDenseVector&,
     const Core::LinAlg::SerialDenseMatrix&,
     const std::vector<Core::Gen::Pairedvector<int, double>>&, const double,
     Core::LinAlg::Matrix<3, 1>&, std::vector<Core::Gen::Pairedvector<int, double>>&);
 
-template void CONTACT::UTILS::vector_scalar_product<2>(const Core::LinAlg::Matrix<2, 1>&,
+template void CONTACT::Utils::vector_scalar_product<2>(const Core::LinAlg::Matrix<2, 1>&,
     const std::vector<Core::Gen::Pairedvector<int, double>>&, const Core::LinAlg::Matrix<2, 1>&,
     const std::vector<Core::Gen::Pairedvector<int, double>>&, double&,
     Core::Gen::Pairedvector<int, double>&);
-template void CONTACT::UTILS::vector_scalar_product<3>(const Core::LinAlg::Matrix<3, 1>&,
+template void CONTACT::Utils::vector_scalar_product<3>(const Core::LinAlg::Matrix<3, 1>&,
     const std::vector<Core::Gen::Pairedvector<int, double>>&, const Core::LinAlg::Matrix<3, 1>&,
     const std::vector<Core::Gen::Pairedvector<int, double>>&, double&,
     Core::Gen::Pairedvector<int, double>&);
 
-template void CONTACT::UTILS::rel_vel_invariant<2>(Mortar::Element&, const double*,
+template void CONTACT::Utils::rel_vel_invariant<2>(Mortar::Element&, const double*,
     const std::vector<Core::Gen::Pairedvector<int, double>>&,
     const Core::LinAlg::SerialDenseVector&, const Core::LinAlg::SerialDenseMatrix&,
     Mortar::Element&, const double*, const std::vector<Core::Gen::Pairedvector<int, double>>&,
@@ -1000,7 +1000,7 @@ template void CONTACT::UTILS::rel_vel_invariant<2>(Mortar::Element&, const doubl
     const Core::Gen::Pairedvector<int, double>&, Core::LinAlg::Matrix<2, 1>&,
     std::vector<Core::Gen::Pairedvector<int, double>>&, const double);
 
-template void CONTACT::UTILS::rel_vel_invariant<3>(Mortar::Element&, const double*,
+template void CONTACT::Utils::rel_vel_invariant<3>(Mortar::Element&, const double*,
     const std::vector<Core::Gen::Pairedvector<int, double>>&,
     const Core::LinAlg::SerialDenseVector&, const Core::LinAlg::SerialDenseMatrix&,
     Mortar::Element&, const double*, const std::vector<Core::Gen::Pairedvector<int, double>>&,
@@ -1008,10 +1008,10 @@ template void CONTACT::UTILS::rel_vel_invariant<3>(Mortar::Element&, const doubl
     const Core::Gen::Pairedvector<int, double>&, Core::LinAlg::Matrix<3, 1>&,
     std::vector<Core::Gen::Pairedvector<int, double>>&, const double);
 
-template void CONTACT::UTILS::map_gp_to_parent<2>(Mortar::Element&, double*, const double,
+template void CONTACT::Utils::map_gp_to_parent<2>(Mortar::Element&, double*, const double,
     Core::LinAlg::Matrix<2, 1>&, Core::LinAlg::Matrix<2, 2>&);
 
-template void CONTACT::UTILS::map_gp_to_parent<3>(Mortar::Element&, double*, const double,
+template void CONTACT::Utils::map_gp_to_parent<3>(Mortar::Element&, double*, const double,
     Core::LinAlg::Matrix<3, 1>&, Core::LinAlg::Matrix<3, 3>&);
 
 FOUR_C_NAMESPACE_CLOSE

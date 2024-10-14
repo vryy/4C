@@ -356,7 +356,7 @@ int main(int argc, char** argv)
                   << std::endl;
       {
         std::stringstream tmp;
-        Core::UTILS::FunctionManager functionmanager;
+        Core::Utils::FunctionManager functionmanager;
         global_legacy_module_callbacks().AttachFunctionDefinitions(functionmanager);
         const std::vector<Input::LineDefinition> flines = functionmanager.valid_function_lines();
         Core::IO::DatFileUtils::print_section(tmp, "FUNCT", flines);

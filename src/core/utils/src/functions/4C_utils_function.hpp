@@ -29,7 +29,7 @@ namespace Input
   class LineDefinition;
 }
 
-namespace Core::UTILS
+namespace Core::Utils
 {
 
   template <class T>
@@ -134,7 +134,7 @@ namespace Core::UTILS
 
    private:
     /// vector of parsed expressions
-    std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<double>>> expr_;
+    std::vector<Teuchos::RCP<Core::Utils::SymbolicExpression<double>>> expr_;
 
     /// vector of the function variables and all their definitions
     std::vector<Teuchos::RCP<FunctionVariable>> variables_;
@@ -243,7 +243,7 @@ namespace Core::UTILS
     using ValueType = double;
 
     //! vector of parsed expressions
-    std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<ValueType>>> expr_;
+    std::vector<Teuchos::RCP<Core::Utils::SymbolicExpression<ValueType>>> expr_;
 
     //! vector of the function variables and all their definitions
     std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables_;
@@ -260,7 +260,7 @@ namespace Core::UTILS
   /// create a vector function from multiple expressions
   Teuchos::RCP<FunctionOfSpaceTime> try_create_symbolic_function_of_space_time(
       const std::vector<Input::LineDefinition>& function_line_defs);
-}  // namespace Core::UTILS
+}  // namespace Core::Utils
 
 
 

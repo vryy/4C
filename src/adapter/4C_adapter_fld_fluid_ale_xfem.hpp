@@ -36,7 +36,7 @@ namespace Adapter
     Teuchos::RCP<Core::FE::Discretization> boundary_discretization();
 
     /// communication object at the struct interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& struct_interface();
+    virtual Teuchos::RCP<FLD::Utils::MapExtractor> const& struct_interface();
 
     //@}
 

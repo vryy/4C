@@ -207,7 +207,7 @@ namespace XFEM
       {
         double stabnit = 0.0;
         double stabadj = 0.0;
-        XFEM::UTILS::get_navier_slip_stabilization_parameters(
+        XFEM::Utils::get_navier_slip_stabilization_parameters(
             visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);
         configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
         configuration_map_[Inpar::XFEM::F_Con_t_Row] =

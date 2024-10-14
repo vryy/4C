@@ -146,7 +146,7 @@ void FPSI::FpsiCoupling::setup_interface_coupling()
   }
 
   {
-    fluid_fsifpsi_extractor_ = Teuchos::make_rcp<FPSI::UTILS::MapExtractor>();
+    fluid_fsifpsi_extractor_ = Teuchos::make_rcp<FPSI::Utils::MapExtractor>();
     Core::Conditions::MultiConditionSelector mcs;
     mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
         *fluiddis, "FSICoupling", 0, ndim));
@@ -522,8 +522,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
 
       {
         TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::transform");
-        (*couplingrowtransform5_)(temp6->matrix(FLD::UTILS::MapExtractor::cond_other,
-                                      ALE::UTILS::MapExtractor::cond_other),
+        (*couplingrowtransform5_)(temp6->matrix(FLD::Utils::MapExtractor::cond_other,
+                                      ALE::Utils::MapExtractor::cond_other),
             1.0,
             Coupling::Adapter::CouplingSlaveConverter(
                 coupsf_fpsi),  // important to use slave converter
@@ -694,10 +694,10 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
 
         // Add all inner ale parts to c_fa_ directly
         c_fa_->add(tmp_c_fa->matrix(
-                       FLD::UTILS::MapExtractor::cond_other, ALE::UTILS::MapExtractor::cond_other),
+                       FLD::Utils::MapExtractor::cond_other, ALE::Utils::MapExtractor::cond_other),
             false, 1.0, 0.0);
         c_fa_->add(tmp_c_fa->matrix(
-                       FLD::UTILS::MapExtractor::cond_fsi, ALE::UTILS::MapExtractor::cond_other),
+                       FLD::Utils::MapExtractor::cond_fsi, ALE::Utils::MapExtractor::cond_other),
             false, 1.0, 1.0);
 
         //-->now transform ale fpsi block to structure (is condensed)!!!
@@ -707,16 +707,16 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
 
         // Add all condensed parts to tmp_c_fa...
         tmp_c_fp.add(tmp_c_fa->matrix(
-                         FLD::UTILS::MapExtractor::cond_other, ALE::UTILS::MapExtractor::cond_fpsi),
+                         FLD::Utils::MapExtractor::cond_other, ALE::Utils::MapExtractor::cond_fpsi),
             false, 1.0, 0.0);
         tmp_c_fp.add(tmp_c_fa->matrix(
-                         FLD::UTILS::MapExtractor::cond_fsi, ALE::UTILS::MapExtractor::cond_fpsi),
+                         FLD::Utils::MapExtractor::cond_fsi, ALE::Utils::MapExtractor::cond_fpsi),
             false, 1.0, 1.0);
         tmp_c_fp.add(tmp_c_fa->matrix(
-                         FLD::UTILS::MapExtractor::cond_other, ALE::UTILS::MapExtractor::cond_fsi),
+                         FLD::Utils::MapExtractor::cond_other, ALE::Utils::MapExtractor::cond_fsi),
             false, 1.0, 1.0);
         tmp_c_fp.add(tmp_c_fa->matrix(
-                         FLD::UTILS::MapExtractor::cond_fsi, ALE::UTILS::MapExtractor::cond_fsi),
+                         FLD::Utils::MapExtractor::cond_fsi, ALE::Utils::MapExtractor::cond_fsi),
             false, 1.0, 1.0);
         tmp_c_fp.complete(
             *ale_field()->interface()->fpsi_cond_map(), *fluid_field()->dof_row_map());

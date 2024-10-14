@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Core::Rebalance::UTILS::print_parallel_distribution(const Core::FE::Discretization& dis)
+void Core::Rebalance::Utils::print_parallel_distribution(const Core::FE::Discretization& dis)
 {
   const int numproc = dis.get_comm().NumProc();
   const int myrank = dis.get_comm().MyPID();

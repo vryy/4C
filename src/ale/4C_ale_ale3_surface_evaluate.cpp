@@ -30,7 +30,7 @@ Discret::ELEMENTS::Ale3SurfaceImplInterface* Discret::ELEMENTS::Ale3SurfaceImplI
     case Core::FE::CellType::quad4:
     {
       return Discret::ELEMENTS::Ale3SurfaceImpl<Core::FE::CellType::quad4>::instance(
-          Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction::create);
     }
     default:
       FOUR_C_THROW("shape %d (%d nodes) not supported", ele->shape(), ele->num_node());
@@ -41,9 +41,9 @@ Discret::ELEMENTS::Ale3SurfaceImplInterface* Discret::ELEMENTS::Ale3SurfaceImplI
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::Ale3SurfaceImpl<distype>* Discret::ELEMENTS::Ale3SurfaceImpl<distype>::instance(
-    Core::UTILS::SingletonAction action)
+    Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::Ale3SurfaceImpl<distype>>(

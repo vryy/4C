@@ -55,7 +55,7 @@ namespace PoroElast
   };
 
   //! PoroElast::UTILS: Random stuff that might be helpful when dealing with poroelasticity problems
-  namespace UTILS
+  namespace Utils
   {
     //! check if element is a poro-element
     bool is_poro_element(const Core::Elements::Element* actele);
@@ -124,7 +124,7 @@ namespace PoroElast
 
      \author vuong 10/14
      */
-    class PoroMaterialStrategy : public Coupling::VolMortar::UTILS::DefaultMaterialStrategy
+    class PoroMaterialStrategy : public Coupling::VolMortar::Utils::DefaultMaterialStrategy
     {
      public:
       //! constructor
@@ -142,7 +142,7 @@ namespace PoroElast
           Teuchos::RCP<Core::FE::Discretization> dis1,
           Teuchos::RCP<Core::FE::Discretization> dis2) override;
     };
-  }  // namespace UTILS
+  }  // namespace Utils
 
   void print_logo();
 

@@ -137,7 +137,7 @@ void CONTACT::IntegratorNitscheTsi::gpts_forces(Mortar::Element& sele, Mortar::E
 
   double ws = 0.;
   double wm = 0.;
-  CONTACT::UTILS::nitsche_weights_and_scaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
+  CONTACT::Utils::nitsche_weights_and_scaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
 
   // variables for friction (declaration only)
   Core::LinAlg::Matrix<dim, 1> t1, t2;
@@ -224,12 +224,12 @@ void CONTACT::IntegratorNitscheTsi::gpts_forces(Mortar::Element& sele, Mortar::E
   // evaluation of tangential stuff
   if (frtype_)
   {
-    CONTACT::UTILS::build_tangent_vectors<dim>(
+    CONTACT::Utils::build_tangent_vectors<dim>(
         contact_normal.data(), deriv_contact_normal, t1.data(), dt1, t2.data(), dt2);
-    CONTACT::UTILS::rel_vel_invariant<dim>(sele, sxi, dsxi, sval, sderiv, mele, mxi, dmxi, mval,
+    CONTACT::Utils::rel_vel_invariant<dim>(sele, sxi, dsxi, sval, sderiv, mele, mxi, dmxi, mval,
         mderiv, gap, dgapgp, relVel, relVel_deriv);
-    CONTACT::UTILS::vector_scalar_product<dim>(t1, dt1, relVel, relVel_deriv, vt1, dvt1);
-    CONTACT::UTILS::vector_scalar_product<dim>(t2, dt2, relVel, relVel_deriv, vt2, dvt2);
+    CONTACT::Utils::vector_scalar_product<dim>(t1, dt1, relVel, relVel_deriv, vt1, dvt1);
+    CONTACT::Utils::vector_scalar_product<dim>(t2, dt2, relVel, relVel_deriv, vt2, dvt2);
 
     so_ele_cauchy<dim>(sele, sxi, dsxi, wgt, slave_normal, deriv_slave_normal, t1, dt1, ws,
         cauchy_nt1_weighted_average, cauchy_nt1_weighted_average_deriv,
@@ -784,7 +784,7 @@ void CONTACT::IntegratorNitscheTsi::so_ele_cauchy(Mortar::Element& moEle, double
 {
   Core::LinAlg::Matrix<dim, 1> pxsi(true);
   Core::LinAlg::Matrix<dim, dim> derivtravo_slave;
-  CONTACT::UTILS::map_gp_to_parent<dim>(moEle, boundary_gpcoord, gp_wgt, pxsi, derivtravo_slave);
+  CONTACT::Utils::map_gp_to_parent<dim>(moEle, boundary_gpcoord, gp_wgt, pxsi, derivtravo_slave);
 
   double sigma_nt;
   Core::LinAlg::SerialDenseMatrix dsntdd, d2sntdd2, d2sntDdDn, d2sntDdDt, d2sntDdDpxi, d2sntDdDT,

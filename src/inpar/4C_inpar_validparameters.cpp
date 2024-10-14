@@ -338,28 +338,28 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::valid_parameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& discret = list->sublist("DISCRETISATION", false, "");
 
-  Core::UTILS::int_parameter("NUMFLUIDDIS", 1, "Number of meshes in fluid field", &discret);
-  Core::UTILS::int_parameter("NUMSTRUCDIS", 1, "Number of meshes in structural field", &discret);
-  Core::UTILS::int_parameter("NUMALEDIS", 1, "Number of meshes in ale field", &discret);
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter("NUMFLUIDDIS", 1, "Number of meshes in fluid field", &discret);
+  Core::Utils::int_parameter("NUMSTRUCDIS", 1, "Number of meshes in structural field", &discret);
+  Core::Utils::int_parameter("NUMALEDIS", 1, "Number of meshes in ale field", &discret);
+  Core::Utils::int_parameter(
       "NUMARTNETDIS", 1, "Number of meshes in arterial network field", &discret);
-  Core::UTILS::int_parameter("NUMTHERMDIS", 1, "Number of meshes in thermal field", &discret);
-  Core::UTILS::int_parameter("NUMAIRWAYSDIS", 1,
+  Core::Utils::int_parameter("NUMTHERMDIS", 1, "Number of meshes in thermal field", &discret);
+  Core::Utils::int_parameter("NUMAIRWAYSDIS", 1,
       "Number of meshes in reduced dimensional airways network field", &discret);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& size = list->sublist("PROBLEM SIZE", false, "");
 
-  Core::UTILS::int_parameter("DIM", 3, "2d or 3d problem", &size);
+  Core::Utils::int_parameter("DIM", 3, "2d or 3d problem", &size);
 
   // deactivate all the follwing (unused) parameters one day
   // they are nice as general info in the input file but should not
   // read into a parameter list. Misuse is possible
-  Core::UTILS::int_parameter("ELEMENTS", 0, "Total number of elements", &size);
-  Core::UTILS::int_parameter("NODES", 0, "Total number of nodes", &size);
-  Core::UTILS::int_parameter("NPATCHES", 0, "number of nurbs patches", &size);
-  Core::UTILS::int_parameter("MATERIALS", 0, "number of materials", &size);
-  Core::UTILS::int_parameter("NUMDF", 3, "maximum number of degrees of freedom", &size);
+  Core::Utils::int_parameter("ELEMENTS", 0, "Total number of elements", &size);
+  Core::Utils::int_parameter("NODES", 0, "Total number of nodes", &size);
+  Core::Utils::int_parameter("NPATCHES", 0, "number of nurbs patches", &size);
+  Core::Utils::int_parameter("MATERIALS", 0, "number of materials", &size);
+  Core::Utils::int_parameter("NUMDF", 3, "maximum number of degrees of freedom", &size);
 
   Inpar::PROBLEMTYPE::set_valid_parameters(*list);
 
@@ -368,11 +368,11 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::valid_parameters()
   Teuchos::ParameterList& nurbs_param = list->sublist(
       "NURBS", false, "Section to define information related to NURBS discretizations.");
 
-  Core::UTILS::bool_parameter("DO_LS_DBC_PROJECTION", "No",
+  Core::Utils::bool_parameter("DO_LS_DBC_PROJECTION", "No",
       "Determines if a projection is needed for least square Dirichlet boundary conditions.",
       &nurbs_param);
 
-  Core::UTILS::int_parameter("SOLVER_LS_DBC_PROJECTION", -1,
+  Core::Utils::int_parameter("SOLVER_LS_DBC_PROJECTION", -1,
       "Number of linear solver for the projection of least squares Dirichlet boundary conditions "
       "for NURBS "
       "discretizations",

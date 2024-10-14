@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FSI
 {
-  namespace UTILS
+  namespace Utils
   {
     class DebugWriter;
   }
@@ -388,8 +388,8 @@ namespace FSI
     //--------------------------------------------------------------------------//
     //! @name special debugging output
 
-    Teuchos::RCP<UTILS::DebugWriter> sdbg_;
-    Teuchos::RCP<UTILS::DebugWriter> fdbg_;
+    Teuchos::RCP<Utils::DebugWriter> sdbg_;
+    Teuchos::RCP<Utils::DebugWriter> fdbg_;
 
     //@}
 

@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace PARTICLEALGORITHM
 {
-  namespace UTILS
+  namespace Utils
   {
     /*!
      * \brief read parameters relating particle types to values
@@ -44,7 +44,7 @@ namespace PARTICLEALGORITHM
     void read_params_types_related_to_values(const Teuchos::ParameterList& params,
         const std::string& name, std::map<PARTICLEENGINE::TypeEnum, Valtype>& typetovalmap);
 
-  }  // namespace UTILS
+  }  // namespace Utils
 
 }  // namespace PARTICLEALGORITHM
 

@@ -40,30 +40,30 @@ namespace Inpar
               Inpar::Solid::timada_kind_centraldiff),
           &list);
 
-      Core::UTILS::double_parameter("OUTSYSPERIOD", 0.0,
+      Core::Utils::double_parameter("OUTSYSPERIOD", 0.0,
           "Write system vectors (displacements, velocities, etc) every given period of time",
           &list);
-      Core::UTILS::double_parameter(
+      Core::Utils::double_parameter(
           "OUTSTRPERIOD", 0.0, "Write stress/strain every given period of time", &list);
-      Core::UTILS::double_parameter(
+      Core::Utils::double_parameter(
           "OUTENEPERIOD", 0.0, "Write energy every given period of time", &list);
-      Core::UTILS::double_parameter(
+      Core::Utils::double_parameter(
           "OUTRESTPERIOD", 0.0, "Write restart data every given period of time", &list);
-      Core::UTILS::int_parameter("OUTSIZEEVERY", 0, "Write step size every given time step", &list);
+      Core::Utils::int_parameter("OUTSIZEEVERY", 0, "Write step size every given time step", &list);
 
-      Core::UTILS::double_parameter(
+      Core::Utils::double_parameter(
           "STEPSIZEMAX", 0.0, "Limit maximally permitted time step size (>0)", &list);
-      Core::UTILS::double_parameter(
+      Core::Utils::double_parameter(
           "STEPSIZEMIN", 0.0, "Limit minimally allowed time step size (>0)", &list);
-      Core::UTILS::double_parameter("SIZERATIOMAX", 0.0,
+      Core::Utils::double_parameter("SIZERATIOMAX", 0.0,
           "Limit maximally permitted change of time step size compared to previous size, important "
           "for multi-step schemes (>0)",
           &list);
-      Core::UTILS::double_parameter("SIZERATIOMIN", 0.0,
+      Core::Utils::double_parameter("SIZERATIOMIN", 0.0,
           "Limit minimally permitted change of time step size compared to previous size, important "
           "for multi-step schemes (>0)",
           &list);
-      Core::UTILS::double_parameter("SIZERATIOSCALE", 0.9,
+      Core::Utils::double_parameter("SIZERATIOSCALE", 0.9,
           "This is a safety factor to scale theoretical optimal step size, should be lower than 1 "
           "and must be larger than 0",
           &list);
@@ -75,15 +75,15 @@ namespace Inpar
               Inpar::Solid::norm_l2, Inpar::Solid::norm_rms, Inpar::Solid::norm_inf),
           &list);
 
-      Core::UTILS::double_parameter("LOCERRTOL", 0.0, "Target local error tolerance (>0)", &list);
-      Core::UTILS::int_parameter(
+      Core::Utils::double_parameter("LOCERRTOL", 0.0, "Target local error tolerance (>0)", &list);
+      Core::Utils::int_parameter(
           "ADAPTSTEPMAX", 0, "Limit maximally allowed step size reduction attempts (>0)", &list);
 
       /// valid parameters for JOINT EXPLICIT
 
       Teuchos::ParameterList& jep = list.sublist("JOINT EXPLICIT", false, "");
 
-      Core::UTILS::int_parameter(
+      Core::Utils::int_parameter(
           "LINEAR_SOLVER", -1, "number of linear solver used for auxiliary integrator", &jep);
 
       setStringToIntegralParameter<Inpar::Solid::IntegrationStrategy>("INT_STRATEGY", "Standard",
@@ -96,7 +96,7 @@ namespace Inpar
           tuple<Inpar::Solid::DynamicType>(dyna_expleuler, dyna_centrdiff, dyna_ab2, dyna_ab4),
           &jep);
 
-      Core::UTILS::bool_parameter(
+      Core::Utils::bool_parameter(
           "LUMPMASS", "No", "Lump the mass matrix for explicit time integration", &jep);
 
       setStringToIntegralParameter<Inpar::Solid::DampKind>("DAMPING", "No",
@@ -107,8 +107,8 @@ namespace Inpar
               damp_rayleigh, damp_rayleigh, damp_rayleigh, damp_material),
           &jep);
 
-      Core::UTILS::double_parameter("M_DAMP", -1.0, "", &jep);
-      Core::UTILS::double_parameter("K_DAMP", -1.0, "", &jep);
+      Core::Utils::double_parameter("M_DAMP", -1.0, "", &jep);
+      Core::Utils::double_parameter("K_DAMP", -1.0, "", &jep);
     }
 
 
@@ -125,7 +125,7 @@ namespace Inpar
           "global type of the used integration strategy", tuple<std::string>("Old", "Standard"),
           tuple<Solid::IntegrationStrategy>(int_old, int_standard), &sdyn);
 
-      Core::UTILS::bool_parameter(
+      Core::Utils::bool_parameter(
           "TIME_ADAPTIVITY", "No", "Enable adaptive time integration", &sdyn);
 
       setStringToIntegralParameter<Solid::DynamicType>("DYNAMICTYP", "GenAlpha",
@@ -148,31 +148,31 @@ namespace Inpar
               Inpar::Solid::PreStress::material_iterative),
           &sdyn);
 
-      Core::UTILS::double_parameter(
+      Core::Utils::double_parameter(
           "PRESTRESSTIME", 0.0, "time to switch from pre to post stressing", &sdyn);
 
-      Core::UTILS::double_parameter("PRESTRESSTOLDISP", 1e-9,
+      Core::Utils::double_parameter("PRESTRESSTOLDISP", 1e-9,
           "tolerance in the displacement norm during prestressing", &sdyn);
-      Core::UTILS::int_parameter(
+      Core::Utils::int_parameter(
           "PRESTRESSMINLOADSTEPS", 0, "Minimum number of load steps during prestressing", &sdyn);
 
       // Output type
-      Core::UTILS::int_parameter(
+      Core::Utils::int_parameter(
           "RESULTSEVRY", 1, "save displacements and contact forces every RESULTSEVRY steps", &sdyn);
-      Core::UTILS::int_parameter(
+      Core::Utils::int_parameter(
           "RESEVRYERGY", 0, "write system energies every requested step", &sdyn);
-      Core::UTILS::int_parameter(
+      Core::Utils::int_parameter(
           "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &sdyn);
-      Core::UTILS::bool_parameter("CALC_ACC_ON_RESTART", "No",
+      Core::Utils::bool_parameter("CALC_ACC_ON_RESTART", "No",
           "Compute the initial state for a restart dynamics analysis", &sdyn);
-      Core::UTILS::int_parameter("OUTPUT_STEP_OFFSET", 0,
+      Core::Utils::int_parameter("OUTPUT_STEP_OFFSET", 0,
           "An offset added to the current step to shift the steps to be written.", &sdyn);
 
       // Time loop control
-      Core::UTILS::double_parameter("TIMESTEP", 0.05, "time step size", &sdyn);
-      Core::UTILS::int_parameter("NUMSTEP", 200, "maximum number of steps", &sdyn);
-      Core::UTILS::double_parameter("TIMEINIT", 0.0, "initial time", &sdyn);
-      Core::UTILS::double_parameter("MAXTIME", 5.0, "maximum time", &sdyn);
+      Core::Utils::double_parameter("TIMESTEP", 0.05, "time step size", &sdyn);
+      Core::Utils::int_parameter("NUMSTEP", 200, "maximum number of steps", &sdyn);
+      Core::Utils::double_parameter("TIMEINIT", 0.0, "initial time", &sdyn);
+      Core::Utils::double_parameter("MAXTIME", 5.0, "maximum time", &sdyn);
 
       // Damping
       setStringToIntegralParameter<Solid::DampKind>("DAMPING", "No",
@@ -182,29 +182,29 @@ namespace Inpar
           tuple<Solid::DampKind>(damp_none, damp_none, damp_none, damp_rayleigh, damp_rayleigh,
               damp_rayleigh, damp_rayleigh, damp_material),
           &sdyn);
-      Core::UTILS::double_parameter("M_DAMP", -1.0, "", &sdyn);
-      Core::UTILS::double_parameter("K_DAMP", -1.0, "", &sdyn);
+      Core::Utils::double_parameter("M_DAMP", -1.0, "", &sdyn);
+      Core::Utils::double_parameter("K_DAMP", -1.0, "", &sdyn);
 
-      Core::UTILS::double_parameter(
+      Core::Utils::double_parameter(
           "TOLDISP", 1.0E-10, "tolerance in the displacement norm for the newton iteration", &sdyn);
       setStringToIntegralParameter<Solid::ConvNorm>("NORM_DISP", "Abs",
           "type of norm for displacement convergence check",
           tuple<std::string>("Abs", "Rel", "Mix"),
           tuple<Solid::ConvNorm>(convnorm_abs, convnorm_rel, convnorm_mix), &sdyn);
 
-      Core::UTILS::double_parameter(
+      Core::Utils::double_parameter(
           "TOLRES", 1.0E-08, "tolerance in the residual norm for the newton iteration", &sdyn);
       setStringToIntegralParameter<Solid::ConvNorm>("NORM_RESF", "Abs",
           "type of norm for residual convergence check", tuple<std::string>("Abs", "Rel", "Mix"),
           tuple<Solid::ConvNorm>(convnorm_abs, convnorm_rel, convnorm_mix), &sdyn);
 
-      Core::UTILS::double_parameter(
+      Core::Utils::double_parameter(
           "TOLPRE", 1.0E-08, "tolerance in pressure norm for the newton iteration", &sdyn);
       setStringToIntegralParameter<Solid::ConvNorm>("NORM_PRES", "Abs",
           "type of norm for pressure convergence check", tuple<std::string>("Abs"),
           tuple<Solid::ConvNorm>(convnorm_abs), &sdyn);
 
-      Core::UTILS::double_parameter("TOLINCO", 1.0E-08,
+      Core::Utils::double_parameter("TOLINCO", 1.0E-08,
           "tolerance in the incompressible residual norm for the newton iteration", &sdyn);
       setStringToIntegralParameter<Solid::ConvNorm>("NORM_INCO", "Abs",
           "type of norm for incompressible residual convergence check", tuple<std::string>("Abs"),
@@ -227,22 +227,22 @@ namespace Inpar
           tuple<std::string>("no", "No", "NO", "Symmetric", "Right"),
           tuple<Solid::StcScale>(stc_none, stc_none, stc_none, stc_currsym, stc_curr), &sdyn);
 
-      Core::UTILS::int_parameter("STC_LAYER", 1, "number of STC layers for multilayer case", &sdyn);
+      Core::Utils::int_parameter("STC_LAYER", 1, "number of STC layers for multilayer case", &sdyn);
 
-      Core::UTILS::double_parameter("PTCDT", 0.1,
+      Core::Utils::double_parameter("PTCDT", 0.1,
           "pseudo time step for pseudo transient continuation (PTC) stabilized Newton procedure",
           &sdyn);
 
-      Core::UTILS::double_parameter("TOLCONSTR", 1.0E-08,
+      Core::Utils::double_parameter("TOLCONSTR", 1.0E-08,
           "tolerance in the constr error norm for the newton iteration", &sdyn);
 
-      Core::UTILS::double_parameter("TOLCONSTRINCR", 1.0E-08,
+      Core::Utils::double_parameter("TOLCONSTRINCR", 1.0E-08,
           "tolerance in the constr lm incr norm for the newton iteration", &sdyn);
 
-      Core::UTILS::int_parameter("MAXITER", 50,
+      Core::Utils::int_parameter("MAXITER", 50,
           "maximum number of iterations allowed for Newton-Raphson iteration before failure",
           &sdyn);
-      Core::UTILS::int_parameter("MINITER", 0,
+      Core::Utils::int_parameter("MINITER", 0,
           "minimum number of iterations to be done within Newton-Raphson loop", &sdyn);
       setStringToIntegralParameter<Solid::VectorNorm>("ITERNORM", "L2",
           "type of norm to be applied to residuals", tuple<std::string>("L1", "L2", "Rms", "Inf"),
@@ -259,7 +259,7 @@ namespace Inpar
               divcont_adapt_penaltycontact, divcont_adapt_3D0Dptc_ele_err),
           &sdyn);
 
-      Core::UTILS::int_parameter("MAXDIVCONREFINEMENTLEVEL", 10,
+      Core::Utils::int_parameter("MAXDIVCONREFINEMENTLEVEL", 10,
           "number of times timestep is halved in case nonlinear solver diverges", &sdyn);
 
       setStringToIntegralParameter<Solid::NonlinSolTech>("NLNSOL", "fullnewton",
@@ -272,18 +272,18 @@ namespace Inpar
               soltech_noxnewtonlinesearch, soltech_noxgeneral, soltech_nox_nln, soltech_singlestep),
           &sdyn);
 
-      Core::UTILS::int_parameter("LSMAXITER", 30, "maximum number of line search steps", &sdyn);
-      Core::UTILS::double_parameter(
+      Core::Utils::int_parameter("LSMAXITER", 30, "maximum number of line search steps", &sdyn);
+      Core::Utils::double_parameter(
           "ALPHA_LS", 0.5, "step reduction factor alpha in (Newton) line search scheme", &sdyn);
-      Core::UTILS::double_parameter(
+      Core::Utils::double_parameter(
           "SIGMA_LS", 1.e-4, "sufficient descent factor in (Newton) line search scheme", &sdyn);
 
       std::vector<std::string> material_tangent_valid_input = {"analytical", "finitedifferences"};
-      Core::UTILS::string_parameter("MATERIALTANGENT", "analytical",
+      Core::Utils::string_parameter("MATERIALTANGENT", "analytical",
           "way of evaluating the constitutive matrix", &sdyn, material_tangent_valid_input);
 
 
-      Core::UTILS::bool_parameter(
+      Core::Utils::bool_parameter(
           "LOADLIN", "No", "Use linearization of external follower load in Newton", &sdyn);
 
       setStringToIntegralParameter<Solid::MassLin>("MASSLIN", "No",
@@ -293,7 +293,7 @@ namespace Inpar
               ml_none, ml_none, ml_standard, ml_standard, ml_rotations, ml_rotations),
           &sdyn);
 
-      Core::UTILS::bool_parameter("NEGLECTINERTIA", "No", "Neglect inertia", &sdyn);
+      Core::Utils::bool_parameter("NEGLECTINERTIA", "No", "Neglect inertia", &sdyn);
 
       // Since predictor "none" would be misleading, the usage of no predictor is called vague.
       setStringToIntegralParameter<Solid::PredEnum>("PREDICT", "ConstDis", "Type of predictor",
@@ -305,11 +305,11 @@ namespace Inpar
           &sdyn);
 
       // Uzawa iteration for constraint systems
-      Core::UTILS::double_parameter("UZAWAPARAM", 1.0,
+      Core::Utils::double_parameter("UZAWAPARAM", 1.0,
           "Parameter for Uzawa algorithm dealing with lagrange multipliers", &sdyn);
-      Core::UTILS::double_parameter(
+      Core::Utils::double_parameter(
           "UZAWATOL", 1.0E-8, "Tolerance for iterative solve with Uzawa algorithm", &sdyn);
-      Core::UTILS::int_parameter("UZAWAMAXITER", 50,
+      Core::Utils::int_parameter("UZAWAMAXITER", 50,
           "maximum number of iterations allowed for uzawa algorithm before failure going to next "
           "newton step",
           &sdyn);
@@ -318,21 +318,21 @@ namespace Inpar
           tuple<Solid::ConSolveAlgo>(consolve_uzawa, consolve_simple, consolve_direct), &sdyn);
 
       // convergence criteria adaptivity
-      Core::UTILS::bool_parameter("ADAPTCONV", "No",
+      Core::Utils::bool_parameter("ADAPTCONV", "No",
           "Switch on adaptive control of linear solver tolerance for nonlinear solution", &sdyn);
-      Core::UTILS::double_parameter("ADAPTCONV_BETTER", 0.1,
+      Core::Utils::double_parameter("ADAPTCONV_BETTER", 0.1,
           "The linear solver shall be this much better than the current nonlinear residual in the "
           "nonlinear convergence limit",
           &sdyn);
 
-      Core::UTILS::bool_parameter(
+      Core::Utils::bool_parameter(
           "LUMPMASS", "No", "Lump the mass matrix for explicit time integration", &sdyn);
 
-      Core::UTILS::bool_parameter("MODIFIEDEXPLEULER", "Yes",
+      Core::Utils::bool_parameter("MODIFIEDEXPLEULER", "Yes",
           "Use the modified explicit Euler time integration scheme", &sdyn);
 
       // linear solver id used for structural problems
-      Core::UTILS::int_parameter(
+      Core::Utils::int_parameter(
           "LINEAR_SOLVER", -1, "number of linear solver used for structural problems", &sdyn);
 
       // where the geometry comes from
@@ -354,7 +354,7 @@ namespace Inpar
           tuple<Solid::InitialDisp>(initdisp_zero_disp, initdisp_disp_by_function), &sdyn);
 
       // Function to evaluate initial displacement
-      Core::UTILS::int_parameter("STARTFUNCNO", -1, "Function for Initial displacement", &sdyn);
+      Core::Utils::int_parameter("STARTFUNCNO", -1, "Function for Initial displacement", &sdyn);
 
       /*--------------------------------------------------------------------*/
       /* parameters for time step size adaptivity in structural dynamics */
@@ -368,13 +368,13 @@ namespace Inpar
       setStringToIntegralParameter<Solid::MidAverageEnum>("GENAVG", "TrLike",
           "mid-average type of internal forces", tuple<std::string>("Vague", "ImrLike", "TrLike"),
           tuple<Solid::MidAverageEnum>(midavg_vague, midavg_imrlike, midavg_trlike), &genalpha);
-      Core::UTILS::double_parameter("BETA", -1.0, "Generalised-alpha factor in (0,1/2]", &genalpha);
-      Core::UTILS::double_parameter("GAMMA", -1.0, "Generalised-alpha factor in (0,1]", &genalpha);
-      Core::UTILS::double_parameter(
+      Core::Utils::double_parameter("BETA", -1.0, "Generalised-alpha factor in (0,1/2]", &genalpha);
+      Core::Utils::double_parameter("GAMMA", -1.0, "Generalised-alpha factor in (0,1]", &genalpha);
+      Core::Utils::double_parameter(
           "ALPHA_M", -1.0, "Generalised-alpha factor in [0,1)", &genalpha);
-      Core::UTILS::double_parameter(
+      Core::Utils::double_parameter(
           "ALPHA_F", -1.0, "Generalised-alpha factor in [0,1)", &genalpha);
-      Core::UTILS::double_parameter("RHO_INF", 1.0,
+      Core::Utils::double_parameter("RHO_INF", 1.0,
           "Spectral radius for generalised-alpha time integration, valid range is [0,1]",
           &genalpha);
 
@@ -382,7 +382,7 @@ namespace Inpar
       /* parameters for one-step-theta structural integrator */
       Teuchos::ParameterList& onesteptheta = sdyn.sublist("ONESTEPTHETA", false, "");
 
-      Core::UTILS::double_parameter("THETA", 0.5, "One-step-theta factor in (0,1]", &onesteptheta);
+      Core::Utils::double_parameter("THETA", 0.5, "One-step-theta factor in (0,1]", &onesteptheta);
     }
 
 

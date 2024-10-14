@@ -165,10 +165,10 @@ void ParticleInteraction::SPHBoundaryParticleAdami::init_boundary_particle_state
       sumj_press_j_wij_[type_i][particle_i] += press_j[0] * particlepair.Wij_;
 
       const double fac = dens_j[0] * particlepair.absdist_ * particlepair.Wij_;
-      UTILS::vec_add_scale(
+      Utils::vec_add_scale(
           sumj_dens_j_r_ij_wij_[type_i][particle_i].data(), fac, particlepair.e_ij_);
 
-      UTILS::vec_add_scale(sumj_vel_j_wij_[type_i][particle_i].data(), particlepair.Wij_, vel_j);
+      Utils::vec_add_scale(sumj_vel_j_wij_[type_i][particle_i].data(), particlepair.Wij_, vel_j);
     }
 
     // evaluate contribution of neighboring fluid particle i
@@ -188,10 +188,10 @@ void ParticleInteraction::SPHBoundaryParticleAdami::init_boundary_particle_state
       sumj_press_j_wij_[type_j][particle_j] += press_i[0] * particlepair.Wji_;
 
       const double fac = -dens_i[0] * particlepair.absdist_ * particlepair.Wji_;
-      UTILS::vec_add_scale(
+      Utils::vec_add_scale(
           sumj_dens_j_r_ij_wij_[type_j][particle_j].data(), fac, particlepair.e_ij_);
 
-      UTILS::vec_add_scale(sumj_vel_j_wij_[type_j][particle_j].data(), particlepair.Wji_, vel_i);
+      Utils::vec_add_scale(sumj_vel_j_wij_[type_j][particle_j].data(), particlepair.Wji_, vel_i);
     }
   }
 
@@ -223,20 +223,20 @@ void ParticleInteraction::SPHBoundaryParticleAdami::init_boundary_particle_state
 
         // get relative acceleration of boundary particle
         double relacc[3];
-        UTILS::vec_set(relacc, gravity.data());
-        UTILS::vec_sub(relacc, acc_i);
+        Utils::vec_set(relacc, gravity.data());
+        Utils::vec_sub(relacc, acc_i);
 
         const double inv_sumj_Wij = 1.0 / sumj_wij_[type_i][particle_i];
 
         // set modified boundary pressure
         boundarypress_i[0] =
             (sumj_press_j_wij_[type_i][particle_i] +
-                UTILS::vec_dot(relacc, sumj_dens_j_r_ij_wij_[type_i][particle_i].data())) *
+                Utils::vec_dot(relacc, sumj_dens_j_r_ij_wij_[type_i][particle_i].data())) *
             inv_sumj_Wij;
 
         // set modified boundary velocity
-        UTILS::vec_set_scale(boundaryvel_i, 2.0, vel_i);
-        UTILS::vec_add_scale(
+        Utils::vec_set_scale(boundaryvel_i, 2.0, vel_i);
+        Utils::vec_add_scale(
             boundaryvel_i, -inv_sumj_Wij, sumj_vel_j_wij_[type_i][particle_i].data());
       }
     }

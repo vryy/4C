@@ -38,7 +38,7 @@ namespace Core::Elements
 
     double get_delta_time() const override { return delta_time_; };
 
-    const Core::UTILS::FunctionManager* get_function_manager() const override
+    const Core::Utils::FunctionManager* get_function_manager() const override
     {
       return function_manager_;
     }
@@ -60,7 +60,7 @@ namespace Core::Elements
     inline void set_delta_time(const double& dt) { delta_time_ = dt; }
 
     //! store function manager
-    void set_function_manager(const Core::UTILS::FunctionManager& function_manager)
+    void set_function_manager(const Core::Utils::FunctionManager& function_manager)
     {
       function_manager_ = &function_manager;
     }
@@ -80,7 +80,7 @@ namespace Core::Elements
     double delta_time_;
 
     //! function manager
-    const Core::UTILS::FunctionManager* function_manager_;
+    const Core::Utils::FunctionManager* function_manager_;
     //! @}
   };  // class ParamsMinimal
 

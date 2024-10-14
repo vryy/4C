@@ -67,7 +67,7 @@ namespace Core::DOFSets
   class DofSetProxy;
 }
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   class FunctionManager;
 }
@@ -1974,7 +1974,7 @@ namespace Core::FE
     the local pressure DOF id, namely {3}.
 
     */
-    void evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
+    void evaluate_initial_field(const Core::Utils::FunctionManager& function_manager,
         const std::string& fieldstring, Core::LinAlg::Vector<double>& fieldvector,
         const std::vector<int>& locids) const;
 

@@ -81,7 +81,7 @@ namespace Discret
      public:
       /// Singleton access method
       static ElemagBoundaryImpl<distype>* instance(
-          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
       /// Constructor
       ElemagBoundaryImpl();

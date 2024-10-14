@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 ALE::Meshtying::Meshtying(Teuchos::RCP<Core::FE::Discretization> dis, Core::LinAlg::Solver& solver,
-    int msht, int nsd, const UTILS::MapExtractor* surfacesplitter)
+    int msht, int nsd, const Utils::MapExtractor* surfacesplitter)
     : discret_(dis),
       solver_(solver),
       dofrowmap_(discret_->dof_row_map()),
@@ -108,8 +108,8 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshtying::setup(
   // | ksn | ksm | kss |
   // -------------------
 
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat;
-  mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>>(
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::Utils::InterfaceSplitStrategy>> mat;
+  mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<ALE::Utils::InterfaceSplitStrategy>>(
       extractor, extractor, 108, false, true);
   // nodes on the interface
   Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
@@ -163,8 +163,8 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ALE::Meshtying::msht_split()
   // | ksn | ksm | kss |
   // -------------------
 
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat;
-  mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>>(
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::Utils::InterfaceSplitStrategy>> mat;
+  mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<ALE::Utils::InterfaceSplitStrategy>>(
       extractor, extractor, 108, false, true);
   // nodes on the interface
   Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
@@ -333,8 +333,8 @@ void ALE::Meshtying::msht_split(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysm
     // | ksn | ksm | kss |
     // -------------------
 
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat;
-    mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>>(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::Utils::InterfaceSplitStrategy>> mat;
+    mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<ALE::Utils::InterfaceSplitStrategy>>(
         extractor, extractor, 108, false, true);
     // nodes on the interface
     Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
@@ -384,8 +384,8 @@ void ALE::Meshtying::multifield_split(Teuchos::RCP<Core::LinAlg::SparseOperator>
     Core::LinAlg::MapExtractor extractor(
         *multifield_interface_.full_map(), multifield_interface_.Map(1));
 
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::UTILS::InterfaceSplitStrategy>> mat =
-        Core::LinAlg::split_matrix<ALE::UTILS::InterfaceSplitStrategy>(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<ALE::Utils::InterfaceSplitStrategy>> mat =
+        Core::LinAlg::split_matrix<ALE::Utils::InterfaceSplitStrategy>(
             *mergedmatrix, extractor, extractor);
 
     mat->complete();

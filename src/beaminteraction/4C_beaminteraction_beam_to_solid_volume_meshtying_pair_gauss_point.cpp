@@ -245,7 +245,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam, Solid>::eva
   // Get the GIDs of this pair.
   // The first 9 entries in the vector will be the rotational DOFs of the beam, the other entries
   // are the solid DOFs.
-  const auto rot_gid = UTILS::get_element_rot_gid_indices(*discret, this->element1());
+  const auto rot_gid = Utils::get_element_rot_gid_indices(*discret, this->element1());
   std::vector<int> lm_solid, lmowner, lmstride;
   this->element2()->location_vector(*discret, lm_solid, lmowner, lmstride);
   Core::LinAlg::Matrix<n_dof_pair_, 1, int> gid_pair;

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::evaluate_dirichlet(const Core::FE::Discretization& discret,
+void Core::FE::Utils::evaluate_dirichlet(const Core::FE::Discretization& discret,
     const Teuchos::ParameterList& params,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectord,
@@ -31,30 +31,30 @@ void Core::FE::UTILS::evaluate_dirichlet(const Core::FE::Discretization& discret
     const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor)
 {
   // create const version
-  const Teuchos::RCP<const Core::FE::UTILS::Dbc> dbc = build_dbc(&discret);
+  const Teuchos::RCP<const Core::FE::Utils::Dbc> dbc = build_dbc(&discret);
   (*dbc)(discret, params, systemvector, systemvectord, systemvectordd, toggle, dbcmapextractor);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::FE::UTILS::Dbc> Core::FE::UTILS::build_dbc(
+Teuchos::RCP<const Core::FE::Utils::Dbc> Core::FE::Utils::build_dbc(
     const Core::FE::Discretization* discret_ptr)
 {
   // HDG discretization
   if (dynamic_cast<const Core::FE::DiscretizationHDG*>(discret_ptr) != nullptr)
-    return Teuchos::RCP<const Core::FE::UTILS::Dbc>(new const Core::FE::UTILS::DbcHDG());
+    return Teuchos::RCP<const Core::FE::Utils::Dbc>(new const Core::FE::Utils::DbcHDG());
 
   // Nurbs discretization
   if (dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(discret_ptr) != nullptr)
-    return Teuchos::RCP<const Core::FE::UTILS::Dbc>(new const Core::FE::UTILS::DbcNurbs());
+    return Teuchos::RCP<const Core::FE::Utils::Dbc>(new const Core::FE::Utils::DbcNurbs());
 
   // default case
-  return Teuchos::make_rcp<const Core::FE::UTILS::Dbc>();
+  return Teuchos::make_rcp<const Core::FE::Utils::Dbc>();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::Dbc::operator()(const Core::FE::Discretization& discret,
+void Core::FE::Utils::Dbc::operator()(const Core::FE::Discretization& discret,
     const Teuchos::ParameterList& params,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectord,
@@ -107,7 +107,7 @@ void Core::FE::UTILS::Dbc::operator()(const Core::FE::Discretization& discret,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<int>> Core::FE::UTILS::Dbc::create_toggle_vector(
+Teuchos::RCP<Core::LinAlg::Vector<int>> Core::FE::Utils::Dbc::create_toggle_vector(
     const Teuchos::RCP<Core::LinAlg::Vector<int>> toggle_input,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors) const
 {
@@ -143,7 +143,7 @@ Teuchos::RCP<Core::LinAlg::Vector<int>> Core::FE::UTILS::Dbc::create_toggle_vect
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::Dbc::evaluate(const Teuchos::ParameterList& params,
+void Core::FE::Utils::Dbc::evaluate(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, double time,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors, DbcInfo& info,
     Teuchos::RCP<std::set<int>>* dbcgids) const
@@ -163,7 +163,7 @@ void Core::FE::UTILS::Dbc::evaluate(const Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret,
     const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time, DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
@@ -185,7 +185,7 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret,
     const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time, DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids,
@@ -223,7 +223,7 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
     DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
@@ -345,8 +345,8 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
         {
           funct_num = (*funct)[onesetj];
           if (funct_num > 0)
-            functfac = params.get<const Core::UTILS::FunctionManager*>("function_manager")
-                           ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+            functfac = params.get<const Core::Utils::FunctionManager*>("function_manager")
+                           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funct_num - 1)
                            .evaluate(actnode->x().data(), time, onesetj);
         }
 
@@ -426,7 +426,7 @@ void Core::FE::UTILS::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret,
     const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
@@ -444,7 +444,7 @@ void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret,
     const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
@@ -462,7 +462,7 @@ void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
+void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
     const Core::LinAlg::Vector<int>& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
@@ -552,8 +552,8 @@ void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
         funct_num = (*funct)[onesetj];
         if (funct_num > 0)
         {
-          functimederivfac = params.get<const Core::UTILS::FunctionManager*>("function_manager")
-                                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+          functimederivfac = params.get<const Core::Utils::FunctionManager*>("function_manager")
+                                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funct_num - 1)
                                  .evaluate_time_derivative(actnode->x().data(), time, deg, onesetj);
         }
       }
@@ -577,7 +577,7 @@ void Core::FE::UTILS::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::UTILS::Dbc::build_dbc_map_extractor(const Core::FE::Discretization& discret,
+void Core::FE::Utils::Dbc::build_dbc_map_extractor(const Core::FE::Discretization& discret,
     const std::set<int>& dbcrowgids,
     const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const
 {

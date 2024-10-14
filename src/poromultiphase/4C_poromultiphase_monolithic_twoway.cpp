@@ -747,7 +747,7 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::print_header()
 void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::build_convergence_norms()
 {
   //------------------------------------------------------------ build residual force norms
-  normrhs_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_);
+  normrhs_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_s;
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_f;
 
@@ -755,8 +755,8 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::build_convergence_norms()
   extract_structure_and_fluid_vectors(rhs_, rhs_s, rhs_f);
 
   // build also norms for fluid and structure
-  normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_s);
-  normrhsfluid_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_f);
+  normrhsstruct_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_s);
+  normrhsfluid_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_f);
 
   //------------------------------------------------------------- build residual increment norms
   // displacement and fluid velocity & pressure incremental vector
@@ -767,11 +767,11 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::build_convergence_norms()
   extract_structure_and_fluid_vectors(iterinc_, iterincs, iterincf);
 
   // build also norms for fluid and structure
-  normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, *iterincs);
-  normincfluid_ = UTILS::calculate_vector_norm(vectornorminc_, *iterincf);
+  normincstruct_ = Utils::calculate_vector_norm(vectornorminc_, *iterincs);
+  normincfluid_ = Utils::calculate_vector_norm(vectornorminc_, *iterincf);
 
-  double dispnorm = UTILS::calculate_vector_norm(vectornorminc_, (*structure_field()->dispnp()));
-  double fluidnorm = UTILS::calculate_vector_norm(vectornorminc_, (*fluid_field()->phinp()));
+  double dispnorm = Utils::calculate_vector_norm(vectornorminc_, (*structure_field()->dispnp()));
+  double fluidnorm = Utils::calculate_vector_norm(vectornorminc_, (*fluid_field()->phinp()));
 
   // take care of very small norms
   if (dispnorm < 1.0e-6) dispnorm = 1.0;
@@ -1336,9 +1336,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling::build_converg
       extractor()->extract_vector(*iterinc_, 2);
 
   // build also norms for artery
-  normrhsart_ = UTILS::calculate_vector_norm(vectornormfres_, *arteryrhs);
-  normincart_ = UTILS::calculate_vector_norm(vectornorminc_, *arteryinc);
-  arterypressnorm_ = UTILS::calculate_vector_norm(
+  normrhsart_ = Utils::calculate_vector_norm(vectornormfres_, *arteryrhs);
+  normincart_ = Utils::calculate_vector_norm(vectornorminc_, *arteryinc);
+  arterypressnorm_ = Utils::calculate_vector_norm(
       vectornorminc_, (*fluid_field()->art_net_tim_int()->pressurenp()));
 
   // call base class

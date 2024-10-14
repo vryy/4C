@@ -42,13 +42,13 @@ namespace Adapter
     void apply_fsi_interface_displacements(Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp);
 
     //! communicate object at the interface
-    Teuchos::RCP<const ALE::UTILS::MapExtractor> interface() const;
+    Teuchos::RCP<const ALE::Utils::MapExtractor> interface() const;
 
     //@}
 
    private:
     //! interface map extractor
-    Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;
+    Teuchos::RCP<ALE::Utils::MapExtractor> interface_;
 
 
   };  // class AleFpsiWrapper

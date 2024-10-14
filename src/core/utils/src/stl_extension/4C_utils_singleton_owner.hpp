@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   //! Action types for the singleton owner
   enum class SingletonAction
@@ -189,7 +189,7 @@ namespace Core::UTILS
      * call to SingletonOwner::instance() e.g.
      *
      * @code
-     *   singleton_map[disname].Instance(Core::UTILS::SingletonAction::create, numdofpernode,
+     *   singleton_map[disname].Instance(Core::Utils::SingletonAction::create, numdofpernode,
      * disname);
      * @endoce
      */
@@ -233,7 +233,7 @@ namespace Core::UTILS
    * @code
    *
    *   // static initialization upon first call
-   *  static auto singleton_map = ::UTILS::make_singleton_map<std::string>(
+   *  static auto singleton_map = ::Utils::make_singleton_map<std::string>(
    *    [](const int numdofpernode, const int numscal, const std::string& disname)
    *    {
    *      return std::unique_ptr<ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype>>(
@@ -376,7 +376,7 @@ namespace Core::UTILS
     using T = typename detail::DeduceSingletonMap<KeyType, decltype(&Fn::operator())>::type;
     return T(std::forward<Fn>(creator));
   }
-}  // namespace Core::UTILS
+}  // namespace Core::Utils
 
 
 FOUR_C_NAMESPACE_CLOSE

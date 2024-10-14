@@ -18,9 +18,9 @@ FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>*
-Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>::instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>::instance(Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>>(

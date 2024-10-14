@@ -31,7 +31,7 @@ namespace ALE
         Core::LinAlg::Solver& solver,                           ///> solver
         int msht,                                               ///> meshting parameter list
         int nsd,                                                ///> number space dimensions
-        const UTILS::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
+        const Utils::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
 
     //! Set up mesh sliding framework
     Teuchos::RCP<Core::LinAlg::SparseOperator> setup(

@@ -198,7 +198,7 @@ void Core::LinearSolver::AMGNxN::MergeAndSolve::setup(BlockedMatrix matrix)
 
   // Create linear solver
   Teuchos::ParameterList solvparams;
-  Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
+  Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
   solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(
       solvparams, a_->Comm(), nullptr, Core::IO::Verbositylevel::standard);
@@ -780,12 +780,12 @@ void Core::LinearSolver::AMGNxN::DirectSolverWrapper::setup(
 
   if (solvertype == "umfpack")
   {
-    Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
+    Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
         "SOLVER", Core::LinearSolver::SolverType::umfpack, *params);
   }
   else if (solvertype == "superlu")
   {
-    Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
+    Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
         "SOLVER", Core::LinearSolver::SolverType::superlu, *params);
   }
   else

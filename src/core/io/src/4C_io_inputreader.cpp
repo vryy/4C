@@ -283,7 +283,7 @@ namespace Core::IO
                 {
                   // remove comments, trailing and leading whitespaces
                   // compact internal whitespaces
-                  line = Core::UTILS::strip_comment(line);
+                  line = Core::Utils::strip_comment(line);
 
                   // line is now empty
                   if (line.size() == 0) continue;
@@ -959,7 +959,7 @@ namespace Core::IO
       {
         // remove comments, trailing and leading whitespaces
         // compact internal whitespaces
-        line = Core::UTILS::strip_comment(line);
+        line = Core::Utils::strip_comment(line);
 
         // line is now empty
         if (line.size() == 0) continue;
@@ -1201,8 +1201,8 @@ namespace Core::IO
         FOUR_C_THROW("Line '%s' with just one word in parameter section", line.c_str());
     }
 
-    std::string key = Core::UTILS::trim(line.substr(0, separator_index));
-    std::string value = Core::UTILS::trim(line.substr(separator_index + 1));
+    std::string key = Core::Utils::trim(line.substr(0, separator_index));
+    std::string value = Core::Utils::trim(line.substr(separator_index + 1));
 
     if (key.empty()) FOUR_C_THROW("Cannot get key from line '%s'", line.c_str());
     if (value.empty()) FOUR_C_THROW("Cannot get value from line '%s'", line.c_str());

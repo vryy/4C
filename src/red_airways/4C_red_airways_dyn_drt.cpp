@@ -163,7 +163,7 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
     airwayimplicit->integrate();
 
     // Create resulttest
-    Teuchos::RCP<Core::UTILS::ResultTest> resulttest =
+    Teuchos::RCP<Core::Utils::ResultTest> resulttest =
         Teuchos::make_rcp<Airway::RedAirwayResultTest>(*airwayimplicit);
 
     // Resulttest for 0D problem and testing

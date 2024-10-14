@@ -363,7 +363,7 @@ namespace Core::IO
     {
       const char sep = Internal::get_separator_at_rank<Internal::StringPatternTraits<T>::list_rank>(
           Internal::default_list_separator);
-      auto split_str = Core::UTILS::split_string_list(str, sep);
+      auto split_str = Core::Utils::split_string_list(str, sep);
 
       T t;
       Internal::parse_split_string(t, split_str);
@@ -395,11 +395,11 @@ namespace Core::IO
           Internal::get_separator_at_rank<Internal::StringPatternTraits<T>::list_rank>(
               Internal::default_list_separator);
 
-      auto split_str = Core::UTILS::split_string_list(str, sep_list);
+      auto split_str = Core::Utils::split_string_list(str, sep_list);
 
       for (const auto &split_str_i : split_str)
       {
-        auto key_val = Core::UTILS::split_string_list(split_str_i, sep_map);
+        auto key_val = Core::Utils::split_string_list(split_str_i, sep_map);
         Internal::check_dimension(key_val, 2);
 
         t.insert(std::make_pair(StringConverter<typename T::key_type>::parse(key_val[0]),

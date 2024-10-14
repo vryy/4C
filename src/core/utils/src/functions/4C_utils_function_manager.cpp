@@ -51,9 +51,9 @@ namespace
     // List all known TryCreate functions in a vector, so they can be called with a unified
     // syntax below. Also, erase their exact return type, since we can only store std::any.
     std::vector<TypeErasedFunctionCreator> try_create_function_vector{
-        wrap_function(Core::UTILS::try_create_symbolic_function_of_anything),
-        wrap_function(Core::UTILS::try_create_symbolic_function_of_space_time),
-        wrap_function(Core::UTILS::try_create_function_of_time)};
+        wrap_function(Core::Utils::try_create_symbolic_function_of_anything),
+        wrap_function(Core::Utils::try_create_symbolic_function_of_space_time),
+        wrap_function(Core::Utils::try_create_function_of_time)};
 
     for (const auto& try_create_function : try_create_function_vector)
     {
@@ -67,7 +67,7 @@ namespace
 }  // namespace
 
 
-void Core::UTILS::add_valid_builtin_functions(Core::UTILS::FunctionManager& function_manager)
+void Core::Utils::add_valid_builtin_functions(Core::Utils::FunctionManager& function_manager)
 {
   using namespace Input;
 
@@ -121,7 +121,7 @@ void Core::UTILS::add_valid_builtin_functions(Core::UTILS::FunctionManager& func
 }
 
 
-std::vector<Input::LineDefinition> Core::UTILS::FunctionManager::valid_function_lines()
+std::vector<Input::LineDefinition> Core::Utils::FunctionManager::valid_function_lines()
 {
   std::vector<Input::LineDefinition> lines;
   for (const auto& [possible_lines, _] : attached_function_data_)
@@ -135,14 +135,14 @@ std::vector<Input::LineDefinition> Core::UTILS::FunctionManager::valid_function_
 }
 
 
-void Core::UTILS::FunctionManager::add_function_definition(
+void Core::Utils::FunctionManager::add_function_definition(
     std::vector<Input::LineDefinition> possible_lines, FunctionFactory function_factory)
 {
   attached_function_data_.emplace_back(std::move(possible_lines), std::move(function_factory));
 }
 
 
-void Core::UTILS::FunctionManager::read_input(Core::IO::DatFileReader& reader)
+void Core::Utils::FunctionManager::read_input(Core::IO::DatFileReader& reader)
 {
   functions_.clear();
 

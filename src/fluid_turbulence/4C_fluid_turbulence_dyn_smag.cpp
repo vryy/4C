@@ -800,7 +800,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
   // generate a parameterlist for communication and control
   Teuchos::ParameterList calc_turb_prandtl_params;
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_turbulent_prandtl_number, calc_turb_prandtl_params);
 
   // hand filtered global vectors down to the element

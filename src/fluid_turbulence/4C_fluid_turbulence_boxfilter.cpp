@@ -957,7 +957,7 @@ void FLD::Boxfilter::apply_box_filter_scatra(
   // generate a parameterlist for communication and control
   Teuchos::ParameterList filterparams;
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_box_filter, filterparams);
 
   filterparams.set("thermpress", thermpress);

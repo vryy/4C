@@ -28,7 +28,7 @@ namespace Core
     class SerialDenseMatrix;
     class SerialDenseVector;
   }  // namespace LinAlg
-  namespace UTILS
+  namespace Utils
   {
     class FunctionOfAnything;
   }
@@ -2015,7 +2015,7 @@ namespace Discret
             ) override;
 
         //! cast to VarExp-function
-        [[nodiscard]] const Core::UTILS::FunctionOfAnything& function(int functnum) const;
+        [[nodiscard]] const Core::Utils::FunctionOfAnything& function(int functnum) const;
 
         //! vector holding the functions to be integrated
         std::vector<int> domainint_funct_;

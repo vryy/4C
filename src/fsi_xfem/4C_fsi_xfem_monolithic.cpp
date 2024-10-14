@@ -131,9 +131,9 @@ FSI::MonolithicXFEM::MonolithicXFEM(const Epetra_Comm& comm,
   if (fsidyn_.get<bool>("DEBUGOUTPUT"))
   {
     // debug writer for structure field
-    sdbg_ = Teuchos::make_rcp<UTILS::DebugWriter>(structure_poro()->discretization());
+    sdbg_ = Teuchos::make_rcp<Utils::DebugWriter>(structure_poro()->discretization());
     // debug writer for fluid field
-    fdbg_ = Teuchos::make_rcp<UTILS::DebugWriter>(fluid_field()->discretization());
+    fdbg_ = Teuchos::make_rcp<Utils::DebugWriter>(fluid_field()->discretization());
   }
   //-------------------------------------------------------------------------
   // write files
@@ -2042,7 +2042,7 @@ void FSI::MonolithicXFEM::create_linear_solver()
     merge_fsi_blockmatrix_ = true;
 
     Teuchos::ParameterList solverparams;
-    Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>("SOLVER",
+    Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>("SOLVER",
         Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(xfsisolverparams, "SOLVER"),
         solverparams);
 

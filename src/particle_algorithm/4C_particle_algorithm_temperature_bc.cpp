@@ -37,7 +37,7 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::init()
       params_.sublist("INITIAL AND BOUNDARY CONDITIONS");
 
   // read parameters relating particle types to values
-  PARTICLEALGORITHM::UTILS::read_params_types_related_to_values(
+  PARTICLEALGORITHM::Utils::read_params_types_related_to_values(
       params_conditions, "TEMPERATURE_BOUNDARY_CONDITION", temperaturebctypetofunctid_);
 
   // iterate over particle types and insert into set
@@ -111,7 +111,7 @@ void PARTICLEALGORITHM::TemperatureBoundaryConditionHandler::
 
     // get reference to function
     const auto& function =
-        Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functid - 1);
+        Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(functid - 1);
 
     // get pointer to particle states
     const double* refpos = container->get_ptr_to_state(PARTICLEENGINE::ReferencePosition, 0);

@@ -832,7 +832,7 @@ int Discret::ELEMENTS::SoTet4::evaluate_neumann(Teuchos::ParameterList& params,
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
             (functnum > 0) ? Global::Problem::instance()
-                                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                                  .evaluate(xrefegp.data(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -1270,7 +1270,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
       params.set("gp_coords_ref", point);
     }
 
-    UTILS::get_temperature_for_structural_material<Core::FE::CellType::tet4>(shapefcts[gp], params);
+    Utils::get_temperature_for_structural_material<Core::FE::CellType::tet4>(shapefcts[gp], params);
 
     solid_material()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, id());
 

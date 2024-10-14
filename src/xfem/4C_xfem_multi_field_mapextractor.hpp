@@ -99,7 +99,7 @@ namespace XFEM
    *
    *  Before you can call this class, you have to split the discretization into
    *  a standard and a xFEM discretization. This can be achieved in different
-   *  ways. One possibility is to use the XFEM::UTILS::XFEMDiscretizationBuilder.
+   *  ways. One possibility is to use the XFEM::Utils::XFEMDiscretizationBuilder.
    *  Both discretizations are supposed to share still the same nodal global
    *  ID's at their joint interfaces.
    *

@@ -48,7 +48,7 @@ void ScaTra::HeterogeneousReactionStrategy::evaluate_meshtying()
   Teuchos::ParameterList condparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_heteroreac_mat_and_rhs, condparams);
 
   // set global state vectors according to time-integration scheme
@@ -158,7 +158,7 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
 
     if (com->MyPID() == 0 and com->NumProc() > 1)
       std::cout << "parallel distribution of auxiliary discr. with standard ghosting" << std::endl;
-    Core::Rebalance::UTILS::print_parallel_distribution(*discret_);
+    Core::Rebalance::Utils::print_parallel_distribution(*discret_);
   }
 
   set_is_setup(true);

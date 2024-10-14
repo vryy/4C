@@ -77,9 +77,9 @@ void POROFLUIDMULTIPHASE::MeshtyingStrategyStd::calculate_norms(std::vector<doub
   incprenorm.resize(1);
   prenorm.resize(1);
 
-  preresnorm[0] = UTILS::calculate_vector_norm(vectornormfres_, *porofluidmultitimint_->rhs());
-  incprenorm[0] = UTILS::calculate_vector_norm(vectornorminc_, *increment);
-  prenorm[0] = UTILS::calculate_vector_norm(vectornorminc_, *porofluidmultitimint_->phinp());
+  preresnorm[0] = Utils::calculate_vector_norm(vectornormfres_, *porofluidmultitimint_->rhs());
+  incprenorm[0] = Utils::calculate_vector_norm(vectornorminc_, *increment);
+  prenorm[0] = Utils::calculate_vector_norm(vectornorminc_, *porofluidmultitimint_->phinp());
 
   return;
 }

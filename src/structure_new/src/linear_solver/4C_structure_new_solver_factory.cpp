@@ -137,7 +137,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_s
       {
         const Core::Nodes::Node* node = actdis.l_row_node(i);
 
-        if (BEAMINTERACTION::UTILS::is_beam_node(*node))
+        if (BEAMINTERACTION::Utils::is_beam_node(*node))
           actdis.dof(node, beamDofs);
         else
           actdis.dof(node, solidDofs);

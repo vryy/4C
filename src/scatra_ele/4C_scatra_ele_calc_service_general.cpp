@@ -1684,12 +1684,12 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
           gradphi.multiply(derxy_, ephinp_[k]);
 
           phi_exact = Global::Problem::instance()
-                          ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(errorfunctno - 1)
                           .evaluate(position, t, k);
 
           std::vector<double> gradphi_exact_vec =
               Global::Problem::instance()
-                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(errorfunctno - 1)
                   .evaluate_spatial_derivative(position, t, k);
 
           if (gradphi_exact_vec.size())

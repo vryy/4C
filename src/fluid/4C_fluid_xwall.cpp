@@ -41,7 +41,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 FLD::XWall::XWall(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
     Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
-    Teuchos::RCP<FLD::UTILS::StressManager> wssmanager)
+    Teuchos::RCP<FLD::Utils::StressManager> wssmanager)
     : discret_(dis), params_(params), mystressmanager_(wssmanager), iter_(0)
 {
   // get the processor ID from the communicator
@@ -1609,7 +1609,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XWall::fix_dirichlet_inflow(
  *----------------------------------------------------------------------*/
 FLD::XWallAleFSI::XWallAleFSI(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
     Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
-    Teuchos::RCP<FLD::UTILS::StressManager> wssmanager,
+    Teuchos::RCP<FLD::Utils::StressManager> wssmanager,
     Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp,
     Teuchos::RCP<Core::LinAlg::Vector<double>> gridv)
     : XWall(dis, nsd, params, dbcmaps, wssmanager), mydispnp_(dispnp), mygridv_(gridv)

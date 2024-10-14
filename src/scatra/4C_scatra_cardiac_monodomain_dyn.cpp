@@ -149,7 +149,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
           // binning strategy is created and parallel redistribution is performed
           Teuchos::ParameterList binning_params =
               Global::Problem::instance()->binning_strategy_params();
-          Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+          Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
               "spatial_approximation_type",
               Global::Problem::instance()->spatial_approximation_type(), binning_params);
           binningstrategy = Teuchos::make_rcp<Core::Binstrategy::BinningStrategy>(binning_params,

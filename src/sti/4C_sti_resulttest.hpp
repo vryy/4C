@@ -34,7 +34,7 @@ namespace STI
     \author fang
     \date 01/2017
   */
-  class STIResultTest : public Core::UTILS::ResultTest
+  class STIResultTest : public Core::Utils::ResultTest
   {
    public:
     //! constructor

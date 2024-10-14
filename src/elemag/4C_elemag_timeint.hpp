@@ -289,7 +289,7 @@ namespace EleMag
     /*!
     \brief create result test
     */
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test();
+    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test();
 
    protected:
     /// discretization, solver, parameter list and output

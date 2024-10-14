@@ -35,7 +35,7 @@ namespace Airway
   /*!
     \brief red_airways specific result test class
   */
-  class RedAirwayResultTest : public Core::UTILS::ResultTest
+  class RedAirwayResultTest : public Core::Utils::ResultTest
   {
    public:
     /*!

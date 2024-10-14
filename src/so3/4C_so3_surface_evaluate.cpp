@@ -307,7 +307,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
 
               // evaluate function at current gauss point
               functfac = Global::Problem::instance()
-                             ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                             ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                              .evaluate(coordgpref, time, dof);
             }
             else
@@ -354,7 +354,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
 
           // evaluate function at current gauss point
           functfac = Global::Problem::instance()
-                         ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                          .evaluate(coordgpref, time, 0);
         }
 
@@ -430,7 +430,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
 
             // evaluate function at current gauss point
             functfac = Global::Problem::instance()
-                           ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                            .evaluate(coordgpref, time, 0);
           }
           else
@@ -1596,7 +1596,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
         {
           springstiff[i] = (*numfuncstiff)[i] != 0
                                ? springstiff[i] * Global::Problem::instance()
-                                                      ->function_by_id<Core::UTILS::FunctionOfTime>(
+                                                      ->function_by_id<Core::Utils::FunctionOfTime>(
                                                           (*numfuncstiff)[i] - 1)
                                                       .evaluate(time)
                                : springstiff[i];
@@ -1606,7 +1606,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
       for (auto i = 0U; i < numfuncvisco->size(); ++i)
         dashpotvisc[i] = (*numfuncvisco)[i] != 0
                              ? dashpotvisc[i] * Global::Problem::instance()
-                                                    ->function_by_id<Core::UTILS::FunctionOfTime>(
+                                                    ->function_by_id<Core::Utils::FunctionOfTime>(
                                                         (*numfuncvisco)[i] - 1)
                                                     .evaluate(time)
                              : dashpotvisc[i];
@@ -1614,7 +1614,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
       for (auto i = 0U; i < numfuncdisploffset->size(); ++i)
         disploffset[i] = (*numfuncdisploffset)[i] != 0
                              ? disploffset[i] * Global::Problem::instance()
-                                                    ->function_by_id<Core::UTILS::FunctionOfTime>(
+                                                    ->function_by_id<Core::Utils::FunctionOfTime>(
                                                         (*numfuncdisploffset)[i] - 1)
                                                     .evaluate(time)
                              : disploffset[i];
@@ -1823,12 +1823,12 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
                       std::numeric_limits<double>::infinity()};
                   displ[dim] = dispnp_gp - disploffset[dim] + offprestrn_gp;
                   force_disp = Global::Problem::instance()
-                                   ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+                                   ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                                        (*numfuncnonlinstiff)[dim] - 1)
                                    .evaluate(displ, time, 0);
 
                   force_disp_deriv = (Global::Problem::instance()
-                                          ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+                                          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                                               (*numfuncnonlinstiff)[dim] - 1)
                                           .evaluate_spatial_derivative(displ, time, 0))[dim];
                 }
@@ -1903,12 +1903,12 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
                     std::numeric_limits<double>::infinity(),
                     std::numeric_limits<double>::infinity()};
                 force_disp = Global::Problem::instance()
-                                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+                                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                                      (*numfuncnonlinstiff)[0] - 1)
                                  .evaluate(displ, time, 0);
 
                 force_disp_deriv = (Global::Problem::instance()
-                                        ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+                                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                                             (*numfuncnonlinstiff)[0] - 1)
                                         .evaluate_spatial_derivative(displ, time, 0))[0];
               }

@@ -1106,7 +1106,7 @@ Mat::InelasticDefgradTimeFunct::InelasticDefgradTimeFunct(Core::Mat::PAR::Parame
 void Mat::InelasticDefgradTimeFunct::pre_evaluate(Teuchos::ParameterList& params, int gp)
 {
   // evaluate function value for current time step.
-  auto& funct = Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfTime>(
+  auto& funct = Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfTime>(
       parameter()->funct_num() - 1);
   const double time = params.get<double>("total time");
   funct_value_ = funct.evaluate(time);

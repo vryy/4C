@@ -237,7 +237,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::init(bool isale, int nds_disp, int nds_vel
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
-    eleparams.set<const Core::UTILS::FunctionManager*>(
+    eleparams.set<const Core::Utils::FunctionManager*>(
         "function_manager", &Global::Problem::instance()->function_manager());
     discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
@@ -678,7 +678,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_dirichlet_bc(const double time,
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time);  // actual time t_{n+1}
-  p.set<const Core::UTILS::FunctionManager*>(
+  p.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // predicted Dirichlet values
@@ -930,7 +930,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_starting_dbc()
                 dirichlet_dofs.push_back(gid);
               }
               const double dbc_value = Global::Problem::instance()
-                                           ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+                                           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                                                starting_dbc_funct_[dof_idx] - 1)
                                            .evaluate(current_node->x().data(), time_, 0);
               phinp_->ReplaceGlobalValue(gid, 0, dbc_value);
@@ -1648,7 +1648,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
   {
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     Teuchos::RCP<Epetra_MultiVector> solidpressure_multi =
-        POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
+        POROFLUIDMULTIPHASE::Utils::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *solidpressure_, nds_solidpressure_, 1);
 
     output_->write_multi_vector("solidpressure", *solidpressure_multi, Core::IO::nodevector);
@@ -1664,7 +1664,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     Teuchos::RCP<Epetra_MultiVector> dispnp_multi =
-        POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
+        POROFLUIDMULTIPHASE::Utils::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *dispnp, nds_disp_, nsd_);
 
     output_->write_multi_vector("dispnp", *dispnp_multi, Core::IO::nodevector);
@@ -1731,7 +1731,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::output_state()
   {
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     Teuchos::RCP<Epetra_MultiVector> porosity_multi =
-        POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
+        POROFLUIDMULTIPHASE::Utils::convert_dof_vector_to_node_based_multi_vector(
             *discret_, *porosity_, nds_solidpressure_, 1);
 
     output_->write_multi_vector("porosity", *porosity_multi, Core::IO::nodevector);
@@ -1983,7 +1983,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::set_initial_field(
           // evaluate component k of spatial function
           double initialval =
               Global::Problem::instance()
-                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno - 1)
                   .evaluate(lnode->x().data(), time_, k);
           int err = phin_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
@@ -2048,7 +2048,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::set_initial_field(
 /*----------------------------------------------------------------------*
  | create result test for this field                        vuong 08/16  |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> POROFLUIDMULTIPHASE::TimIntImpl::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> POROFLUIDMULTIPHASE::TimIntImpl::create_field_test()
 {
   strategy_->create_field_test();
   return Teuchos::make_rcp<POROFLUIDMULTIPHASE::ResultTest>(*this);

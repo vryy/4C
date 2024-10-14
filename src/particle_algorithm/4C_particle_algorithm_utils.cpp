@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 template <typename Valtype>
-void PARTICLEALGORITHM::UTILS::read_params_types_related_to_values(
+void PARTICLEALGORITHM::Utils::read_params_types_related_to_values(
     const Teuchos::ParameterList& params, const std::string& name,
     std::map<PARTICLEENGINE::TypeEnum, Valtype>& typetovalmap)
 {
@@ -72,11 +72,11 @@ void PARTICLEALGORITHM::UTILS::read_params_types_related_to_values(
 /*---------------------------------------------------------------------------*
  | template instantiations                                                   |
  *---------------------------------------------------------------------------*/
-template void PARTICLEALGORITHM::UTILS::read_params_types_related_to_values<int>(
+template void PARTICLEALGORITHM::Utils::read_params_types_related_to_values<int>(
     const Teuchos::ParameterList& params, const std::string& name,
     std::map<PARTICLEENGINE::TypeEnum, int>& typetovalmap);
 
-template void PARTICLEALGORITHM::UTILS::read_params_types_related_to_values<double>(
+template void PARTICLEALGORITHM::Utils::read_params_types_related_to_values<double>(
     const Teuchos::ParameterList& params, const std::string& name,
     std::map<PARTICLEENGINE::TypeEnum, double>& typetovalmap);
 

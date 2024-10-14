@@ -44,7 +44,7 @@ Teuchos::RCP<Core::FE::Discretization> Adapter::FBIFluidMB::discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::UTILS::MapExtractor> const& Adapter::FBIFluidMB::interface() const
+Teuchos::RCP<FLD::Utils::MapExtractor> const& Adapter::FBIFluidMB::interface() const
 {
   return fluidadapter_->interface();
 }
@@ -128,7 +128,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FBIFluidMB::integrate_interf
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> Adapter::FBIFluidMB::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> Adapter::FBIFluidMB::create_field_test()
 {
   return fluid_field()->create_field_test();
 }

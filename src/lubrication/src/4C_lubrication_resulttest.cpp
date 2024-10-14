@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  | ctor                                                     wirtz 11/15 |
  *----------------------------------------------------------------------*/
 LUBRICATION::ResultTest::ResultTest(Teuchos::RCP<TimIntImpl> lubrication)
-    : Core::UTILS::ResultTest("LUBRICATION"),
+    : Core::Utils::ResultTest("LUBRICATION"),
       dis_(lubrication->discretization()),
       mysol_(lubrication->prenp()),
       mynumiter_(lubrication->iter_num())

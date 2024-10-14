@@ -33,7 +33,7 @@ namespace Core::Elements
 namespace FBI
 {
   class BeamToFluidMeshtyingParams;
-  namespace UTILS
+  namespace Utils
   {
     class FBIAssemblyStrategy;
   }
@@ -78,7 +78,7 @@ namespace BEAMINTERACTION
         Teuchos::RCP<const Core::FE::Discretization> discretization2,
         std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> interaction_pairs,
         const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr,
-        Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy);
+        Teuchos::RCP<FBI::Utils::FBIAssemblyStrategy> assemblystrategy);
   };
 }  // namespace BEAMINTERACTION
 

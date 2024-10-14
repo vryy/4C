@@ -38,7 +38,7 @@ Teuchos::RCP<Core::FE::Discretization> Adapter::FluidImmersed::discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::UTILS::MapExtractor> const& Adapter::FluidImmersed::interface() const
+Teuchos::RCP<FLD::Utils::MapExtractor> const& Adapter::FluidImmersed::interface() const
 {
   return fluidadapter_->interface();
 }
@@ -124,7 +124,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::integrate_int
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> Adapter::FluidImmersed::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> Adapter::FluidImmersed::create_field_test()
 {
   return fluid_field()->create_field_test();
 }

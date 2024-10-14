@@ -223,9 +223,9 @@ void Core::FE::Discretization::evaluate_neumann(Teuchos::ParameterList& params,
                     params.isParameter("interface")
                         ? params.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface")
                               ->get_function_manager()
-                        : params.get<const Core::UTILS::FunctionManager*>("function_manager");
+                        : params.get<const Core::Utils::FunctionManager*>("function_manager");
                 return function_manager
-                    ->function_by_id<Core::UTILS::FunctionOfTime>((*tmp_funct)[j] - 1)
+                    ->function_by_id<Core::Utils::FunctionOfTime>((*tmp_funct)[j] - 1)
                     .evaluate(time);
               }
               else
@@ -351,7 +351,7 @@ void Core::FE::Discretization::evaluate_dirichlet(Teuchos::ParameterList& params
     Teuchos::RCP<Core::LinAlg::Vector<int>> toggle,
     Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmapextractor) const
 {
-  Core::FE::UTILS::evaluate_dirichlet(
+  Core::FE::Utils::evaluate_dirichlet(
       *this, params, systemvector, systemvectord, systemvectordd, toggle, dbcmapextractor);
 }
 
@@ -412,9 +412,9 @@ void Core::FE::Discretization::evaluate_condition(Teuchos::ParameterList& params
         if (curvenum >= 0)
         {
           const auto& function_manager =
-              params.get<const Core::UTILS::FunctionManager*>("function_manager");
+              params.get<const Core::Utils::FunctionManager*>("function_manager");
           curvefac =
-              function_manager->function_by_id<Core::UTILS::FunctionOfTime>(curvenum).evaluate(
+              function_manager->function_by_id<Core::Utils::FunctionOfTime>(curvenum).evaluate(
                   time);
         }
 
@@ -671,10 +671,10 @@ void Core::FE::Discretization::evaluate_scalars(
  |  evaluate an initial scalar or vector field (public)       popp 06/11|
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::evaluate_initial_field(
-    const Core::UTILS::FunctionManager& function_manager, const std::string& fieldstring,
+    const Core::Utils::FunctionManager& function_manager, const std::string& fieldstring,
     Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids) const
 {
-  Core::FE::UTILS::evaluate_initial_field(
+  Core::FE::Utils::evaluate_initial_field(
       function_manager, *this, fieldstring, fieldvector, locids);
 }  // Core::FE::Discretization::EvaluateIntialField
 

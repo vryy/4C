@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Solid::UTILS
+namespace Solid::Utils
 {
   void nodal_block_information_solid(
       Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
@@ -70,7 +70,7 @@ namespace Solid::UTILS
 
   }  // namespace read_element
 
-}  // namespace Solid::UTILS
+}  // namespace Solid::Utils
 
 FOUR_C_NAMESPACE_CLOSE
 

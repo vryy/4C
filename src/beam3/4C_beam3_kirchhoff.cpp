@@ -1950,7 +1950,7 @@ void Discret::ELEMENTS::Beam3k::calc_velocity(
     Core::LinAlg::Matrix<ndim, 1, double>& velocity,
     const Core::LinAlg::Matrix<ndim, 1, double>& position, int gausspoint_index) const
 {
-  Discret::UTILS::Beam::calc_interpolation<nnodecl, vpernode, ndim, double>(
+  Discret::Utils::Beam::calc_interpolation<nnodecl, vpernode, ndim, double>(
       velocity_dofvec, N_i, velocity);
 }
 
@@ -1970,7 +1970,7 @@ void Discret::ELEMENTS::Beam3k::calc_velocity(
    * adapt the calculated velocity and compare it with the velocity calculated in time integrator
    * and handed in from outside for safety reasons */
   Core::LinAlg::Matrix<ndim, 1, double> velocity_test;
-  Discret::UTILS::Beam::calc_interpolation<nnodecl, vpernode, ndim, double>(
+  Discret::Utils::Beam::calc_interpolation<nnodecl, vpernode, ndim, double>(
       velocity_dofvec, N_i, velocity_test);
 
   // get time step size

@@ -54,7 +54,7 @@ namespace Core
     class SerialDenseVector;
     class SerialDenseMatrix;
   }  // namespace LinAlg
-  namespace UTILS
+  namespace Utils
   {
     class FunctionOfAnything;
   }
@@ -421,7 +421,7 @@ namespace PoroMultiPhaseScaTra
 
     //! evaluate function and its derivative
 
-    void evaluate_function_and_deriv(const Core::UTILS::FunctionOfAnything& funct,
+    void evaluate_function_and_deriv(const Core::Utils::FunctionOfAnything& funct,
         const double& artpressnpAtGP, const std::vector<double>& artscalarnpAtGP,
         const std::vector<double>& scalarnpAtGP, double& functval, std::vector<double>& artderivs,
         std::vector<double>& contderivs);
@@ -477,12 +477,12 @@ namespace PoroMultiPhaseScaTra
         Core::LinAlg::SerialDenseMatrix& M_ele, Core::LinAlg::SerialDenseVector& Kappa_ele);
 
     //! fill the function vector
-    void fill_function_vector(std::vector<const Core::UTILS::FunctionOfAnything*>& my_funct_vec,
+    void fill_function_vector(std::vector<const Core::Utils::FunctionOfAnything*>& my_funct_vec,
         const std::vector<int>& funct_vec, const std::vector<int>& scale_vec);
 
 
     //! initialize a function
-    void initialize_function(const Core::UTILS::FunctionOfAnything& funct);
+    void initialize_function(const Core::Utils::FunctionOfAnything& funct);
 
     //! initialize names used in functions
     void initialize_function_names();
@@ -675,10 +675,10 @@ namespace PoroMultiPhaseScaTra
     //! scale vector
     std::vector<std::vector<int>> scale_vec_;
     //! function vector
-    std::vector<std::vector<const Core::UTILS::FunctionOfAnything*>> funct_vec_;
+    std::vector<std::vector<const Core::Utils::FunctionOfAnything*>> funct_vec_;
 
     //! diameter function
-    const Core::UTILS::FunctionOfAnything* artdiam_funct_;
+    const Core::Utils::FunctionOfAnything* artdiam_funct_;
 
     //! string name used for scalars in function parser
     std::vector<std::string> scalarnames_;

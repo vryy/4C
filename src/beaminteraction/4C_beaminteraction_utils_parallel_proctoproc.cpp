@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::UTILS::i_send_receive_any(Core::FE::Discretization& discret,
+void Discret::Utils::i_send_receive_any(Core::FE::Discretization& discret,
     std::map<int, std::vector<std::pair<int, std::vector<int>>>> const& toranktosenddata,
     std::vector<std::pair<int, std::vector<int>>>& recvdata)
 {

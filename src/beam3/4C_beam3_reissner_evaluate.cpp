@@ -653,7 +653,7 @@ int Discret::ELEMENTS::Beam3r::evaluate_neumann(Teuchos::ParameterList& params,
       // evaluate function at the position of the current GP
       if (functnum > 0)
         functionfac = Global::Problem::instance()
-                          ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                           .evaluate(X_ref.data(), time, dof);
       else
         functionfac = 1.0;
@@ -926,10 +926,10 @@ void Discret::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
 
   // evaluate all shape functions and derivatives with respect to element parameter xi at all
   // specified Gauss points
-  Discret::UTILS::Beam::evaluate_shape_functions_all_gps<nnodetriad, 1>(
+  Discret::Utils::Beam::evaluate_shape_functions_all_gps<nnodetriad, 1>(
       gausspoints_elast_force, I_i, this->shape());
 
-  Discret::UTILS::Beam::evaluate_shape_function_derivs_all_gps<nnodecl, vpernode>(
+  Discret::Utils::Beam::evaluate_shape_function_derivs_all_gps<nnodecl, vpernode>(
       gausspoints_elast_force, H_i_xi, this->shape(), this->ref_length());
 
   // re-assure correct size of strain and stress resultant class variables
@@ -1045,7 +1045,7 @@ void Discret::ELEMENTS::Beam3r::calc_internal_force_and_stiff(
 
   // evaluate all shape functions and derivatives with respect to element parameter xi at all
   // specified Gauss points
-  Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_all_gps<nnodetriad, 1>(
+  Discret::Utils::Beam::evaluate_shape_functions_and_derivs_all_gps<nnodetriad, 1>(
       gausspoints_elast_moment, I_i, I_i_xi, this->shape());
 
   // reset norm of maximal bending curvature
@@ -1219,9 +1219,9 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
   H_i.resize(gausspoints_mass.nquad);
 
   // evaluate all shape functions at all specified Gauss points
-  Discret::UTILS::Beam::evaluate_shape_functions_all_gps<nnodetriad, 1>(
+  Discret::Utils::Beam::evaluate_shape_functions_all_gps<nnodetriad, 1>(
       gausspoints_mass, I_i, this->shape());
-  Discret::UTILS::Beam::evaluate_shape_functions_all_gps<nnodecl, vpernode>(
+  Discret::Utils::Beam::evaluate_shape_functions_all_gps<nnodecl, vpernode>(
       gausspoints_mass, H_i, this->shape(), this->ref_length());
 
   // Calculate current centerline position at gauss points (needed for element intern time
@@ -2285,7 +2285,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
   std::vector<Core::LinAlg::Matrix<1, nnodetriad, double>> I_i(gausspoints.nquad);
 
   // evaluate all shape functions at all specified Gauss points
-  Discret::UTILS::Beam::evaluate_shape_functions_all_gps<nnodetriad, 1>(
+  Discret::Utils::Beam::evaluate_shape_functions_all_gps<nnodetriad, 1>(
       gausspoints, I_i, this->shape());
 
   /* vector with nnodetriad elements, who represent the 3x3-matrix-shaped interpolation function
@@ -2536,7 +2536,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_translational_damping(Teuchos::Paramete
 
   // evaluate all shape functions and derivatives with respect to element parameter xi at all
   // specified Gauss points
-  Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_all_gps<nnodecl, vpernode>(
+  Discret::Utils::Beam::evaluate_shape_functions_and_derivs_all_gps<nnodecl, vpernode>(
       gausspoints, H_i, H_i_xi, this->shape(), this->ref_length());
 
   for (int gp = 0; gp < gausspoints.nquad; gp++)
@@ -2553,7 +2553,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_translational_damping(Teuchos::Paramete
 
     // compute velocity vector at this Gauss point via same interpolation as for centerline position
     // vector
-    Discret::UTILS::Beam::calc_interpolation<nnodecl, vpernode, 3, double>(
+    Discret::Utils::Beam::calc_interpolation<nnodecl, vpernode, 3, double>(
         vel_centerline, H_i[gp], vel_rel);
     vel_rel -= velbackground;
 
@@ -2717,7 +2717,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_stochastic_forces(Teuchos::ParameterLis
 
   // evaluate all shape function derivatives with respect to element parameter xi at all specified
   // Gauss points
-  Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_all_gps<nnodecl, vpernode>(
+  Discret::Utils::Beam::evaluate_shape_functions_and_derivs_all_gps<nnodecl, vpernode>(
       gausspoints, H_i, H_i_xi, this->shape(), this->ref_length());
 
 

@@ -78,7 +78,7 @@ namespace CONTACT
 
   std::string vec_block_type_to_str(const VecBlockType bt);
 
-  namespace UTILS
+  namespace Utils
   {
     /// Get the solid to solid contact conditions
     int get_contact_conditions(std::vector<Core::Conditions::Condition*>& contact_conditions,
@@ -166,7 +166,7 @@ namespace CONTACT
           const std::vector<const Core::Conditions::Condition*>& sl_conds);
     };  // class DbcHandler
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace CONTACT
 
 

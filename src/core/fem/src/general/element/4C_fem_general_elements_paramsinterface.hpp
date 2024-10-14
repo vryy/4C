@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   class FunctionManager;
 }
@@ -60,7 +60,7 @@ namespace Core::Elements
     virtual double get_delta_time() const = 0;
 
     //! get function manager
-    virtual const Core::UTILS::FunctionManager* get_function_manager() const = 0;
+    virtual const Core::Utils::FunctionManager* get_function_manager() const = 0;
     //! @}
   };  // class ParamsInterface
 }  // namespace Core::Elements

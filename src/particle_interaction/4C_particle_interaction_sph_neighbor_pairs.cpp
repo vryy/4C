@@ -170,7 +170,7 @@ void ParticleInteraction::SPHNeighborPairs::evaluate_particle_pairs()
     particleengineinterface_->distance_between_particles(pos_i, pos_j, r_ji);
 
     // absolute distance between particles
-    const double absdist = UTILS::vec_norm_two(r_ji);
+    const double absdist = Utils::vec_norm_two(r_ji);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (absdist < (1.0e-10 * rad_i[0]) or absdist < (1.0e-10 * rad_j[0]))
@@ -200,7 +200,7 @@ void ParticleInteraction::SPHNeighborPairs::evaluate_particle_pairs()
       particlepair.absdist_ = absdist;
 
       // versor from particle j to i
-      UTILS::vec_set_scale(particlepair.e_ij_, -1.0 / absdist, r_ji);
+      Utils::vec_set_scale(particlepair.e_ij_, -1.0 / absdist, r_ji);
 
       // particle j within support radius of particle i
       if (absdist < rad_i[0])
@@ -295,7 +295,7 @@ void ParticleInteraction::SPHNeighborPairs::evaluate_particle_wall_pairs()
     for (int i = 0; i < 3; i++) r_ji[i] = closestpos(i) - pos_i(i);
 
     // absolute distance between particle and wall contact point
-    const double absdist = UTILS::vec_norm_two(r_ji);
+    const double absdist = Utils::vec_norm_two(r_ji);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (absdist < (1.0e-10 * rad_i[0]))
@@ -328,7 +328,7 @@ void ParticleInteraction::SPHNeighborPairs::evaluate_particle_wall_pairs()
       particlewallpair.absdist_ = absdist;
 
       // versor from wall contact point j to particle i
-      UTILS::vec_set_scale(particlewallpair.e_ij_, -1.0 / absdist, r_ji);
+      Utils::vec_set_scale(particlewallpair.e_ij_, -1.0 / absdist, r_ji);
 
       // get coordinates of wall contact point in element parameter space
       Core::LinAlg::Matrix<2, 1> elecoords(true);
@@ -383,7 +383,7 @@ void ParticleInteraction::SPHNeighborPairs::evaluate_particle_wall_pairs()
 
       // intersection radius of particle with column wall element in wall contact point
       const double intersectionradius =
-          std::sqrt(UTILS::pow<2>(rad_i[0]) - UTILS::pow<2>(masterpair.absdist_));
+          std::sqrt(Utils::pow<2>(rad_i[0]) - Utils::pow<2>(masterpair.absdist_));
 
       // check with other particle-wall pairs (slave)
       for (std::pair<Core::Geo::ObjectType, int>& slave : indexofparticlewallpairs)
@@ -396,11 +396,11 @@ void ParticleInteraction::SPHNeighborPairs::evaluate_particle_wall_pairs()
 
         // vector between detected wall contact points
         double dist[3];
-        UTILS::vec_set_scale(dist, masterpair.absdist_, masterpair.e_ij_);
-        UTILS::vec_add_scale(dist, -slavepair.absdist_, slavepair.e_ij_);
+        Utils::vec_set_scale(dist, masterpair.absdist_, masterpair.e_ij_);
+        Utils::vec_add_scale(dist, -slavepair.absdist_, slavepair.e_ij_);
 
         // absolute distance between wall contact points
-        const double absdist = UTILS::vec_norm_two(dist);
+        const double absdist = Utils::vec_norm_two(dist);
 
         bool removeslavepair = false;
 

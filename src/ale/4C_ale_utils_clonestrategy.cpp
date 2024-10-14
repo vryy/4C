@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-std::map<std::string, std::string> ALE::UTILS::AleCloneStrategy::conditions_to_copy() const
+std::map<std::string, std::string> ALE::Utils::AleCloneStrategy::conditions_to_copy() const
 {
   return {{"ALEDirichlet", "Dirichlet"}, {"FSICoupling", "FSICoupling"},
       {"fpsi_coupling", "fpsi_coupling"}, {"FREESURFCoupling", "FREESURFCoupling"},
@@ -40,7 +40,7 @@ std::map<std::string, std::string> ALE::UTILS::AleCloneStrategy::conditions_to_c
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::UTILS::AleCloneStrategy::check_material_type(const int matid)
+void ALE::Utils::AleCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -52,7 +52,7 @@ void ALE::UTILS::AleCloneStrategy::check_material_type(const int matid)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::UTILS::AleCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
+void ALE::Utils::AleCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
     Core::Elements::Element* oldele, const int matid, const bool nurbsdis)
 {
   if (nurbsdis == false)
@@ -104,7 +104,7 @@ void ALE::UTILS::AleCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements:
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-bool ALE::UTILS::AleCloneStrategy::determine_ele_type(
+bool ALE::Utils::AleCloneStrategy::determine_ele_type(
     Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   bool cloneit = true;

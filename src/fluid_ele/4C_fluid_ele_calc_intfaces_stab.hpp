@@ -126,7 +126,7 @@ namespace Discret
      public:
       /// Singleton access method
       static FluidInternalSurfaceStab<distype, pdistype, ndistype>* instance(
-          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
       /// Constructor with number of nodes
       FluidInternalSurfaceStab();

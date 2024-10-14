@@ -1737,38 +1737,38 @@ NTS::MTInterpolator* NTS::MTInterpolator::impl(std::vector<Mortar::Element*> mel
     case Core::FE::CellType::quad4:
     {
       return MTInterpolatorCalc<Core::FE::CellType::quad4>::instance(
-          Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction::create);
     }
     case Core::FE::CellType::quad8:
     {
       return MTInterpolatorCalc<Core::FE::CellType::quad8>::instance(
-          Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction::create);
     }
     case Core::FE::CellType::quad9:
     {
       return MTInterpolatorCalc<Core::FE::CellType::quad9>::instance(
-          Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction::create);
     }
     case Core::FE::CellType::tri3:
     {
       return MTInterpolatorCalc<Core::FE::CellType::tri3>::instance(
-          Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction::create);
     }
     case Core::FE::CellType::tri6:
     {
       return MTInterpolatorCalc<Core::FE::CellType::tri6>::instance(
-          Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction::create);
     }
       // 1D surface elements
     case Core::FE::CellType::line2:
     {
       return MTInterpolatorCalc<Core::FE::CellType::line2>::instance(
-          Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction::create);
     }
     case Core::FE::CellType::line3:
     {
       return MTInterpolatorCalc<Core::FE::CellType::line3>::instance(
-          Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction::create);
     }
     default:
       FOUR_C_THROW("Chosen element type not supported!");
@@ -1789,9 +1789,9 @@ NTS::MTInterpolatorCalc<distype_m>::MTInterpolatorCalc()
 
 template <Core::FE::CellType distype_m>
 NTS::MTInterpolatorCalc<distype_m>* NTS::MTInterpolatorCalc<distype_m>::instance(
-    Core::UTILS::SingletonAction action)
+    Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<NTS::MTInterpolatorCalc<distype_m>>(
@@ -1856,7 +1856,7 @@ void NTS::MTInterpolatorCalc<distype_m>::interpolate_2d(
       snode.has_proj() = true;
 
       static Core::LinAlg::Matrix<nm_, 1> mval;
-      Mortar::UTILS::evaluate_shape_displ(mxi, mval, *meles[nummaster], false);
+      Mortar::Utils::evaluate_shape_displ(mxi, mval, *meles[nummaster], false);
 
       // node-wise M value
       for (int k = 0; k < nm_; ++k)
@@ -2045,7 +2045,7 @@ void NTS::MTInterpolatorCalc<distype_m>::interpolate_3d(
       snode.has_proj() = true;
 
       static Core::LinAlg::Matrix<nm_, 1> mval;
-      Mortar::UTILS::evaluate_shape_displ(mxi, mval, *meles[nummaster], false);
+      Mortar::Utils::evaluate_shape_displ(mxi, mval, *meles[nummaster], false);
 
       // node-wise M value
       for (int k = 0; k < nm_; ++k)

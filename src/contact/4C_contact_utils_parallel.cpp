@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::UTILS::use_safe_redistribute_and_ghosting(const Teuchos::ParameterList& contactParams)
+bool CONTACT::Utils::use_safe_redistribute_and_ghosting(const Teuchos::ParameterList& contactParams)
 {
   /* Limit the use of the new safe "redistribute & ghosting" branch to our core contact
    * capabilities. If your case of interest is missing here, feel free to migrate your scenario to

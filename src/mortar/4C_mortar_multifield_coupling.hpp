@@ -52,7 +52,7 @@ namespace Mortar
         const Teuchos::ParameterList& mortar_params, const Teuchos::ParameterList& contact_params,
         const Teuchos::ParameterList& binning_params,
         const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
-        const Core::UTILS::FunctionManager& function_manager,
+        const Core::Utils::FunctionManager& function_manager,
         Teuchos::RCP<Core::IO::OutputControl> output_control,
         Core::FE::ShapeFunctionType shape_function_typ, int ndim);
 

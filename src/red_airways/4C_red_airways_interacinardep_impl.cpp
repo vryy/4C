@@ -216,7 +216,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
           if ((*curve)[0] >= 0)
           {
             curvefac = Global::Problem::instance()
-                           ->function_by_id<Core::UTILS::FunctionOfTime>((*curve)[0])
+                           ->function_by_id<Core::Utils::FunctionOfTime>((*curve)[0])
                            .evaluate(time);
             BCin = (*vals)[0] * curvefac;
           }
@@ -236,7 +236,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
           if (functnum > 0)
           {
             functionfac = Global::Problem::instance()
-                              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                               .evaluate((ele->nodes()[i])->x().data(), time, 0);
           }
 
@@ -246,7 +246,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
           if (curve) curve2num = (*curve)[1];
           if (curve2num >= 0)
             curve2fac = Global::Problem::instance()
-                            ->function_by_id<Core::UTILS::FunctionOfTime>(curve2num)
+                            ->function_by_id<Core::Utils::FunctionOfTime>(curve2num)
                             .evaluate(time);
 
           // Add first_CURVE + FUNCTION * second_CURVE
@@ -284,7 +284,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInt
               if ((*curve)[0] >= 0)
               {
                 curvefac = Global::Problem::instance()
-                               ->function_by_id<Core::UTILS::FunctionOfTime>((*curve)[0])
+                               ->function_by_id<Core::Utils::FunctionOfTime>((*curve)[0])
                                .evaluate(time);
               }
 

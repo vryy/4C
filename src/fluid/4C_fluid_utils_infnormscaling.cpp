@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FLD::UTILS::FluidInfNormScaling::FluidInfNormScaling(Core::LinAlg::MapExtractor& mapextractor)
+FLD::Utils::FluidInfNormScaling::FluidInfNormScaling(Core::LinAlg::MapExtractor& mapextractor)
     : myrank_(mapextractor.Map(0)->Comm().MyPID()),
       velpressplitter_(mapextractor),
       leftscale_momentum_(true),
@@ -35,7 +35,7 @@ FLD::UTILS::FluidInfNormScaling::FluidInfNormScaling(Core::LinAlg::MapExtractor&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::FluidInfNormScaling::scale_system(
+void FLD::Utils::FluidInfNormScaling::scale_system(
     Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Core::LinAlg::Vector<double>& b)
 {
   if (myrank_ == 0) std::cout << "Performing scaling of linear system" << std::endl;
@@ -191,7 +191,7 @@ void FLD::UTILS::FluidInfNormScaling::scale_system(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::FluidInfNormScaling::unscale_solution(
+void FLD::Utils::FluidInfNormScaling::unscale_solution(
     Teuchos::RCP<Core::LinAlg::SparseOperator> matrix, Core::LinAlg::Vector<double>& x,
     Core::LinAlg::Vector<double>& b)
 {

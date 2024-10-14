@@ -27,10 +27,10 @@ namespace Core::Elements
 
 namespace PoroElastScaTra
 {
-  namespace UTILS
+  namespace Utils
   {
 
-    class PoroelastCloneStrategyforScatraElements : public PoroElast::UTILS::PoroelastCloneStrategy
+    class PoroelastCloneStrategyforScatraElements : public PoroElast::Utils::PoroelastCloneStrategy
     {
      public:
       //! constructor
@@ -74,7 +74,7 @@ namespace PoroElastScaTra
       //! returns conditions names to be copied (source and target name)
       std::map<std::string, std::string> conditions_to_copy() const;
     };
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace PoroElastScaTra
 
 FOUR_C_NAMESPACE_CLOSE

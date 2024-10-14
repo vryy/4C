@@ -38,39 +38,39 @@ namespace Inpar
             sublist_IO_VTK.sublist("STRUCTURE", false, "");
 
         // whether to write output for structure
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "OUTPUT_STRUCTURE", "No", "write structure output", &sublist_IO_VTK_structure);
 
         // whether to write displacement state
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "DISPLACEMENT", "No", "write displacement output", &sublist_IO_VTK_structure);
 
         // whether to write velocity state
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "VELOCITY", "No", "write velocity output", &sublist_IO_VTK_structure);
 
         // whether to write element owner
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "ELEMENT_OWNER", "No", "write element owner", &sublist_IO_VTK_structure);
 
         // whether to write element GIDs
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "ELEMENT_GID", "No", "write 4C internal element GIDs", &sublist_IO_VTK_structure);
 
         // write element ghosting information
-        Core::UTILS::bool_parameter("ELEMENT_GHOSTING", "No",
+        Core::Utils::bool_parameter("ELEMENT_GHOSTING", "No",
             "write which processors ghost the elements", &sublist_IO_VTK_structure);
 
         // whether to write node GIDs
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "NODE_GID", "No", "write 4C internal node GIDs", &sublist_IO_VTK_structure);
 
         // write element material IDs
-        Core::UTILS::bool_parameter("ELEMENT_MAT_ID", "No",
+        Core::Utils::bool_parameter("ELEMENT_MAT_ID", "No",
             "Output of the material id of each element", &sublist_IO_VTK_structure);
 
         // whether to write stress and / or strain data
-        Core::UTILS::bool_parameter("STRESS_STRAIN", "No",
+        Core::Utils::bool_parameter("STRESS_STRAIN", "No",
             "Write element stress and / or strain  data. The type of stress / strain has to be "
             "selected in the --IO input section",
             &sublist_IO_VTK_structure);

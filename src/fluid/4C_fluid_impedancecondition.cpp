@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | Constructor (public)                                      Thon 07/16 |
  *----------------------------------------------------------------------*/
-FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
+FLD::Utils::FluidImpedanceWrapper::FluidImpedanceWrapper(
     const Teuchos::RCP<Core::FE::Discretization> actdis)
 {
   std::vector<Core::Conditions::Condition*> impedancecond;
@@ -85,7 +85,7 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(
  |  Split linearization matrix to a BlockSparseMatrixBase    Thon 07/16 |
  *----------------------------------------------------------------------*/
 
-void FLD::UTILS::FluidImpedanceWrapper::use_block_matrix(Teuchos::RCP<std::set<int>> condelements,
+void FLD::Utils::FluidImpedanceWrapper::use_block_matrix(Teuchos::RCP<std::set<int>> condelements,
     const Core::LinAlg::MultiMapExtractor& domainmaps,
     const Core::LinAlg::MultiMapExtractor& rangemaps, bool splitmatrix)
 {
@@ -102,7 +102,7 @@ void FLD::UTILS::FluidImpedanceWrapper::use_block_matrix(Teuchos::RCP<std::set<i
 /*----------------------------------------------------------------------*
  |  Wrap update of residual                                  Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::add_impedance_bc_to_residual_and_sysmat(const double dta,
+void FLD::Utils::FluidImpedanceWrapper::add_impedance_bc_to_residual_and_sysmat(const double dta,
     const double time, Core::LinAlg::Vector<double>& residual, Core::LinAlg::SparseOperator& sysmat)
 {
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
@@ -121,7 +121,7 @@ void FLD::UTILS::FluidImpedanceWrapper::add_impedance_bc_to_residual_and_sysmat(
 /*----------------------------------------------------------------------*
  |  Wrap for time update of impedance conditions             Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::time_update_impedances(const double time)
+void FLD::Utils::FluidImpedanceWrapper::time_update_impedances(const double time)
 {
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
 
@@ -136,7 +136,7 @@ void FLD::UTILS::FluidImpedanceWrapper::time_update_impedances(const double time
 /*----------------------------------------------------------------------*
  |  Wrap restart writing                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::write_restart(Core::IO::DiscretizationWriter& output)
+void FLD::Utils::FluidImpedanceWrapper::write_restart(Core::IO::DiscretizationWriter& output)
 {
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
 
@@ -150,7 +150,7 @@ void FLD::UTILS::FluidImpedanceWrapper::write_restart(Core::IO::DiscretizationWr
 /*----------------------------------------------------------------------*
  |  Wrap restart reading                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceWrapper::read_restart(Core::IO::DiscretizationReader& reader)
+void FLD::Utils::FluidImpedanceWrapper::read_restart(Core::IO::DiscretizationReader& reader)
 {
   std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
 
@@ -163,16 +163,16 @@ void FLD::UTILS::FluidImpedanceWrapper::read_restart(Core::IO::DiscretizationRea
 /*----------------------------------------------------------------------*
  |  Return relative vector of relative pressure errors      Thon 07/16 |
  *----------------------------------------------------------------------*/
-std::vector<double> FLD::UTILS::FluidImpedanceWrapper::get_w_krelerrors()
+std::vector<double> FLD::Utils::FluidImpedanceWrapper::get_w_krelerrors()
 {
   std::vector<double> wk_rel_error;
 
   // get an iterator to my map
-  std::map<const int, Teuchos::RCP<class FLD::UTILS::FluidImpedanceBc>>::iterator mapiter;
+  std::map<const int, Teuchos::RCP<class FLD::Utils::FluidImpedanceBc>>::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
-    wk_rel_error.push_back(mapiter->second->FLD::UTILS::FluidImpedanceBc::get_w_krelerror());
+    wk_rel_error.push_back(mapiter->second->FLD::Utils::FluidImpedanceBc::get_w_krelerror());
   }
 
   return wk_rel_error;
@@ -182,7 +182,7 @@ std::vector<double> FLD::UTILS::FluidImpedanceWrapper::get_w_krelerrors()
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<Core::FE::Discretization> actdis,
+FLD::Utils::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<Core::FE::Discretization> actdis,
     const int condid, Core::Conditions::Condition* impedancecond)
     : discret_(actdis),
       myrank_(discret_->get_comm().MyPID()),
@@ -254,16 +254,16 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<Core::FE::Disc
 /*----------------------------------------------------------------------*
  |  Split linearization matrix to a BlockSparseMatrixBase   Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::use_block_matrix(Teuchos::RCP<std::set<int>> condelements,
+void FLD::Utils::FluidImpedanceBc::use_block_matrix(Teuchos::RCP<std::set<int>> condelements,
     const Core::LinAlg::MultiMapExtractor& domainmaps,
     const Core::LinAlg::MultiMapExtractor& rangemaps, bool splitmatrix)
 {
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat;
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>> mat;
 
   if (splitmatrix)
   {
     // (re)allocate system matrix
-    mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>(
+    mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>>(
         domainmaps, rangemaps, 108, false, true);
     mat->set_cond_elements(condelements);
     impedancetbcsysmat_ = mat;
@@ -290,7 +290,7 @@ void FLD::UTILS::FluidImpedanceBc::use_block_matrix(Teuchos::RCP<std::set<int>> 
   very last cycle!
 
 */
-void FLD::UTILS::FluidImpedanceBc::flow_rate_calculation(const int condid)
+void FLD::Utils::FluidImpedanceBc::flow_rate_calculation(const int condid)
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
@@ -329,7 +329,7 @@ void FLD::UTILS::FluidImpedanceBc::flow_rate_calculation(const int condid)
 /*----------------------------------------------------------------------*
  |  Apply Impedance to outflow boundary                      Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_residual_and_sysmat(
+void FLD::Utils::FluidImpedanceBc::calculate_impedance_tractions_and_update_residual_and_sysmat(
     Core::LinAlg::Vector<double>& residual, Core::LinAlg::SparseOperator& sysmat, const double dta,
     const double time, const int condid)
 {
@@ -359,7 +359,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
   else if (treetype_ == "pressure_by_funct")
   {
     pressure = Global::Problem::instance()
-                   ->function_by_id<Core::UTILS::FunctionOfTime>(functnum_ - 1)
+                   ->function_by_id<Core::Utils::FunctionOfTime>(functnum_ - 1)
                    .evaluate(time);
     Q_np_fac = 0.0;
   }
@@ -469,7 +469,7 @@ void FLD::UTILS::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
 /*----------------------------------------------------------------------*
  |  Update flowrate and pressure vector                       Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::time_update_impedance(const double time, const int condid)
+void FLD::Utils::FluidImpedanceBc::time_update_impedance(const double time, const int condid)
 {
   const double actpressure = p_np_;
 
@@ -501,7 +501,7 @@ void FLD::UTILS::FluidImpedanceBc::time_update_impedance(const double time, cons
 /*----------------------------------------------------------------------*
  |  Restart writing                                          Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::write_restart(
+void FLD::Utils::FluidImpedanceBc::write_restart(
     Core::IO::DiscretizationWriter& output, const int condnum)
 {
   // condnum contains the number of the present condition
@@ -537,7 +537,7 @@ void FLD::UTILS::FluidImpedanceBc::write_restart(
 /*----------------------------------------------------------------------*
  |  Restart reading                                          Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidImpedanceBc::read_restart(
+void FLD::Utils::FluidImpedanceBc::read_restart(
     Core::IO::DiscretizationReader& reader, const int condnum)
 {
   std::stringstream stream1, stream2, stream3, stream4, stream5, stream6;
@@ -581,7 +581,7 @@ void FLD::UTILS::FluidImpedanceBc::read_restart(
 /*----------------------------------------------------------------------*
  | Area calculation                                          Thon 07/16 |
  *----------------------------------------------------------------------*/
-double FLD::UTILS::FluidImpedanceBc::area(const int condid)
+double FLD::Utils::FluidImpedanceBc::area(const int condid)
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here

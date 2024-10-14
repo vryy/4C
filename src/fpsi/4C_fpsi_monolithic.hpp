@@ -51,12 +51,12 @@ namespace Adapter
 
 namespace FSI
 {
-  namespace UTILS
+  namespace Utils
   {
     class DebugWriter;
     class MonolithicDebugWriter;
     class MatrixColTransform;
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FSI
 /*----------------------------------------------------------------------*/
 
@@ -181,7 +181,7 @@ namespace FPSI
 
   class Monolithic : public MonolithicBase
   {
-    friend class FSI::UTILS::MonolithicDebugWriter;
+    friend class FSI::Utils::MonolithicDebugWriter;
 
    public:
     //! ctor

@@ -513,7 +513,7 @@ namespace Solid
       }
 
       /// create result test for encapsulated structure algorithm
-      Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
+      Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
 
       /** \brief Get data that is written during restart
        *

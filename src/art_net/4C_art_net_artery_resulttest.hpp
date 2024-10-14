@@ -37,7 +37,7 @@ namespace Arteries
     \author Mahmoud Ismail
     \date 11/11
   */
-  class ArteryResultTest : public Core::UTILS::ResultTest
+  class ArteryResultTest : public Core::Utils::ResultTest
   {
    public:
     /*!

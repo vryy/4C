@@ -260,7 +260,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
 
   // Assemble the terms to the global stiffness matrix
   Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-  BEAMINTERACTION::UTILS::get_element_centerline_gid_indices(
+  BEAMINTERACTION::Utils::get_element_centerline_gid_indices(
       discret, this->element1(), beam_centerline_gid);
   const std::vector<int>& patch_gid = this->face_element_->get_patch_gid();
 

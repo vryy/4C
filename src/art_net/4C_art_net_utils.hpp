@@ -69,7 +69,7 @@ namespace Arteries
     std::map<std::string, std::string> conditions_to_copy() const;
   };  // class ArteryScatraCloneStrategy
 
-  namespace UTILS
+  namespace Utils
   {
     // create algorithm depending on time integration scheme
     Teuchos::RCP<Adapter::ArtNet> create_algorithm(
@@ -85,7 +85,7 @@ namespace Arteries
     //! set material pointers
     void set_material_pointers_matching_grid(
         const Core::FE::Discretization& sourcedis, const Core::FE::Discretization& targetdis);
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace Arteries
 
 

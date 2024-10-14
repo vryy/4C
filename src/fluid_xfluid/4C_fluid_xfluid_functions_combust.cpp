@@ -16,18 +16,18 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> create_combust_function(
+  Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> create_combust_function(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
 
     if (function_line_defs.front().container().get_or("ZALESAKSDISK", false))
     {
-      return Teuchos::make_rcp<Discret::UTILS::ZalesaksDiskFunction>();
+      return Teuchos::make_rcp<Discret::Utils::ZalesaksDiskFunction>();
     }
     else if (function_line_defs.front().container().get_or("COLLAPSINGWATERCOLUMN", false))
     {
-      return Teuchos::make_rcp<Discret::UTILS::CollapsingWaterColumnFunction>();
+      return Teuchos::make_rcp<Discret::Utils::CollapsingWaterColumnFunction>();
     }
     else
     {
@@ -36,7 +36,7 @@ namespace
   }
 }  // namespace
 
-void Discret::UTILS::add_valid_combust_functions(Core::UTILS::FunctionManager& function_manager)
+void Discret::Utils::add_valid_combust_functions(Core::Utils::FunctionManager& function_manager)
 {
   Input::LineDefinition zalesaksdisk =
       Input::LineDefinition::Builder().add_tag("ZALESAKSDISK").build();
@@ -50,7 +50,7 @@ void Discret::UTILS::add_valid_combust_functions(Core::UTILS::FunctionManager& f
 
 
 
-double Discret::UTILS::ZalesaksDiskFunction::evaluate(
+double Discret::Utils::ZalesaksDiskFunction::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // the disk consists of 3 lines and a part of a circle and four points
@@ -123,7 +123,7 @@ double Discret::UTILS::ZalesaksDiskFunction::evaluate(
 }
 
 
-double Discret::UTILS::CollapsingWaterColumnFunction::evaluate(
+double Discret::Utils::CollapsingWaterColumnFunction::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // here calculation of distance (sign is already taken in consideration)

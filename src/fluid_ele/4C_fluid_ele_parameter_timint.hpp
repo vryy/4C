@@ -35,7 +35,7 @@ namespace Discret
      public:
       //! Singleton access method
       static FluidEleParameterTimInt* instance(
-          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
       //! time parameter are set
       void set_element_time_parameter(Teuchos::ParameterList& params  //> parameter list

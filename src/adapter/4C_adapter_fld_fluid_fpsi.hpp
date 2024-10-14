@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FPSI
 {
-  namespace UTILS
+  namespace Utils
   {
     class MapExtractor;
   }
@@ -43,7 +43,7 @@ namespace Adapter
     void init() override;
 
     /// communication object at the interface without pressure dofs for FPSI problems
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& fpsi_interface() const override
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& fpsi_interface() const override
     {
       return fpsiinterface_;
     }
@@ -52,11 +52,11 @@ namespace Adapter
 
     void use_block_matrix(bool splitmatrix) override;
     virtual void use_block_matrix(
-        bool splitmatrix, Teuchos::RCP<FPSI::UTILS::MapExtractor> const& shapederivSplitter);
+        bool splitmatrix, Teuchos::RCP<FPSI::Utils::MapExtractor> const& shapederivSplitter);
 
    protected:
     /// the interface map setup for fpsi interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> fpsiinterface_;
+    Teuchos::RCP<FLD::Utils::MapExtractor> fpsiinterface_;
 
   };  // class FluidFPSI
 }  // namespace Adapter

@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     //--------------------------------------------------------------------
     // Wrapper class (to be called from outside) for volumetric surface
@@ -427,7 +427,7 @@ namespace FLD
 
     };  // FluidVolumetricSurfaceFlowBc
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FLD
 
 FOUR_C_NAMESPACE_CLOSE

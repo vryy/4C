@@ -631,7 +631,7 @@ bool Discret::ELEMENTS::So3Plast<distype>::read_element(const std::string& elety
   dDp_inc_.resize(numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true));
 
   Teuchos::ParameterList plparams = Global::Problem::instance()->semi_smooth_plast_params();
-  Core::UTILS::add_enum_class_to_parameter_list(
+  Core::Utils::add_enum_class_to_parameter_list(
       "Core::ProblemType", Global::Problem::instance()->get_problem_type(), plparams);
   read_parameter_list(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 

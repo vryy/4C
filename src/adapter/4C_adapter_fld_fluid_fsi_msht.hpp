@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     class FsiMapExtractor;
   }
@@ -44,7 +44,7 @@ namespace Adapter
     void init() override;
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::FsiMapExtractor> const& fsi_interface() const
+    virtual Teuchos::RCP<FLD::Utils::FsiMapExtractor> const& fsi_interface() const
     {
       return fsiinterface_;
     }
@@ -57,7 +57,7 @@ namespace Adapter
     //! \brief interface map setup for fsi interface and other
     //!
     //! Note: full map contains velocity AND pressure DOFs
-    Teuchos::RCP<FLD::UTILS::FsiMapExtractor> fsiinterface_;
+    Teuchos::RCP<FLD::Utils::FsiMapExtractor> fsiinterface_;
   };
 }  // namespace Adapter
 

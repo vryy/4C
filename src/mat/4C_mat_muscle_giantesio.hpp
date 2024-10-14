@@ -196,7 +196,7 @@ namespace Mat
      * @param[in] currentTime Current time t_n
      * @param[out] omegaaAndDerivs Activation level and derivatives
      */
-    Core::UTILS::ValuesFunctAndFunctDerivs evaluate_activation_level_and_derivatives(
+    Core::Utils::ValuesFunctAndFunctDerivs evaluate_activation_level_and_derivatives(
         const double& lambdaM, const double& dotLambdaM, const double& currentTime);
 
     /*!

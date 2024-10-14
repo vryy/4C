@@ -28,12 +28,12 @@ namespace FS3I
 {
   namespace BioFilm
   {
-    namespace UTILS
+    namespace Utils
     {
       void scatra_change_config(Core::FE::Discretization& scatradis, Core::FE::Discretization& dis,
           Core::LinAlg::Vector<double>& disp);
 
-    } /* namespace UTILS */
+    } /* namespace Utils */
   }   // namespace BioFilm
 } /* namespace FS3I */
 

@@ -66,7 +66,7 @@ namespace Arteries
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     // create field test
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
 
 
     /*!
@@ -266,16 +266,16 @@ namespace Arteries
     //@}
 
     //! @name Junction boundary condition
-    Teuchos::RCP<UTILS::ArtJunctionWrapper> artjun_;
+    Teuchos::RCP<Utils::ArtJunctionWrapper> artjun_;
     //@}
 
     //! @name 1D artery values at the junctions
-    Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>
+    Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>
         junc_nodal_vals_;
     //@}
 
     //! @name A condition to export 1D arteries as a gnuplot format
-    Teuchos::RCP<UTILS::ArtWriteGnuplotWrapper> artgnu_;
+    Teuchos::RCP<Utils::ArtWriteGnuplotWrapper> artgnu_;
     //@}
 
     //@}

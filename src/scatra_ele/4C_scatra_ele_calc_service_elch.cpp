@@ -411,7 +411,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElch<distype, probdim>::calc_elch_boundary_
   if (functnum >= 0)
   {
     const double functfac =
-        Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfTime>(functnum).evaluate(
+        Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfTime>(functnum).evaluate(
             time);
 
     // adjust potential at metal side accordingly

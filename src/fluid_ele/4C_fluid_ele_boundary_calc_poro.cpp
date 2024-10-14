@@ -29,9 +29,9 @@ FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>*
-Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::instance(Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>>(
@@ -3818,7 +3818,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     std::array<double, 3> Axi = {0.0, 0.0, 0.0};
     for (int i = 0; i < Base::bdrynsd_; i++) Axi[i] = Base::xsi_(i);
     for (int i = Base::bdrynsd_; i < 3; i++) Axi[i] = 0.0;
-    Coupling::VolMortar::UTILS::dual_shape_function<distype>(dualfunct, Axi.data(), *ele);
+    Coupling::VolMortar::Utils::dual_shape_function<distype>(dualfunct, Axi.data(), *ele);
 
     // dxyzdrs vector -> normal which is not normalized
     Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
@@ -4802,9 +4802,9 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>*
 Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::instance(
-    Core::UTILS::SingletonAction action)
+    Core::Utils::SingletonAction action)
 {
-  static Core::UTILS::SingletonOwner<Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>>
+  static Core::Utils::SingletonOwner<Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>>
       singleton_owner(
           []()
           {

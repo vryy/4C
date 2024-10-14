@@ -244,14 +244,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   if (function_number != -1)
     q1 *= Global::Problem::instance()
-              ->function_by_id<Core::UTILS::FunctionOfTime>(function_number - 1)
+              ->function_by_id<Core::Utils::FunctionOfTime>(function_number - 1)
               .evaluate(time_);
 
   function_number = linechargeconds_[1]->parameters().get<int>("FUNCT");
 
   if (function_number != -1)
     q2 *= Global::Problem::instance()
-              ->function_by_id<Core::UTILS::FunctionOfTime>(function_number - 1)
+              ->function_by_id<Core::Utils::FunctionOfTime>(function_number - 1)
               .evaluate(time_);
 
 
@@ -292,7 +292,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     double jacobifactor_segment1 =
         0.5 * (integration_segment1_upper_limit - integration_segment1_lower_limit);
 
-    Discret::UTILS::Beam::evaluate_shape_functions_all_gps<numnodes, numnodalvalues>(gausspoints,
+    Discret::Utils::Beam::evaluate_shape_functions_all_gps<numnodes, numnodalvalues>(gausspoints,
         N1_i, beam_element1()->shape(), ele1length_, integration_segment1_lower_limit,
         integration_segment1_upper_limit);
 
@@ -307,7 +307,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       double jacobifactor_segment2 =
           0.5 * (integration_segment2_upper_limit - integration_segment2_lower_limit);
 
-      Discret::UTILS::Beam::evaluate_shape_functions_all_gps<numnodes, numnodalvalues>(gausspoints,
+      Discret::Utils::Beam::evaluate_shape_functions_all_gps<numnodes, numnodalvalues>(gausspoints,
           N2_i, beam_element2()->shape(), ele2length_, integration_segment2_lower_limit,
           integration_segment2_upper_limit);
 
@@ -625,14 +625,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   if (function_number != -1)
     q1 *= Global::Problem::instance()
-              ->function_by_id<Core::UTILS::FunctionOfTime>(function_number - 1)
+              ->function_by_id<Core::Utils::FunctionOfTime>(function_number - 1)
               .evaluate(time_);
 
   function_number = linechargeconds_[1]->parameters().get<int>("FUNCT");
 
   if (function_number != -1)
     q2 *= Global::Problem::instance()
-              ->function_by_id<Core::UTILS::FunctionOfTime>(function_number - 1)
+              ->function_by_id<Core::Utils::FunctionOfTime>(function_number - 1)
               .evaluate(time_);
 
 
@@ -705,7 +705,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     double jacobifactor_segment1 =
         0.5 * (integration_segment1_upper_limit - integration_segment1_lower_limit);
 
-    Discret::UTILS::Beam::evaluate_shape_functions_all_gps<numnodes, numnodalvalues>(gausspoints,
+    Discret::Utils::Beam::evaluate_shape_functions_all_gps<numnodes, numnodalvalues>(gausspoints,
         N1_i, beam_element1()->shape(), ele1length_, integration_segment1_lower_limit,
         integration_segment1_upper_limit);
 
@@ -720,7 +720,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       double jacobifactor_segment2 =
           0.5 * (integration_segment2_upper_limit - integration_segment2_lower_limit);
 
-      Discret::UTILS::Beam::evaluate_shape_functions_all_gps<numnodes, numnodalvalues>(gausspoints,
+      Discret::Utils::Beam::evaluate_shape_functions_all_gps<numnodes, numnodalvalues>(gausspoints,
           N2_i, beam_element2()->shape(), ele2length_, integration_segment2_lower_limit,
           integration_segment2_upper_limit);
 
@@ -1210,14 +1210,14 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
   if (function_number != -1)
     rho1 *= Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfTime>(function_number - 1)
+                ->function_by_id<Core::Utils::FunctionOfTime>(function_number - 1)
                 .evaluate(time_);
 
   function_number = linechargeconds_[1]->parameters().get<int>("FUNCT");
 
   if (function_number != -1)
     rho2 *= Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfTime>(function_number - 1)
+                ->function_by_id<Core::Utils::FunctionOfTime>(function_number - 1)
                 .evaluate(time_);
 
 
@@ -1264,7 +1264,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         0.5 * (integration_segment_upper_limit - integration_segment_lower_limit);
 
     // Evaluate shape functions at Gauss points of slave element and store values
-    Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_all_gps<numnodes, numnodalvalues>(
+    Discret::Utils::Beam::evaluate_shape_functions_and_derivs_all_gps<numnodes, numnodalvalues>(
         gausspoints, N_i_slave, N_i_xi_slave, beam_element1()->shape(), ele1length_,
         integration_segment_lower_limit, integration_segment_upper_limit);
 
@@ -1334,7 +1334,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
             Core::FADUtils::cast_to_double(xi_master));
       }
 
-      Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_and2nd_derivs_at_xi<numnodes,
+      Discret::Utils::Beam::evaluate_shape_functions_and_derivs_and2nd_derivs_at_xi<numnodes,
           numnodalvalues>(xi_master, N_i_master, N_i_xi_master, N_i_xixi_master,
           beam_element2()->shape(), ele2length_);
 
@@ -1376,10 +1376,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
 
       // Todo: maybe avoid this assembly of shape fcns into matrices
       // Fixme: at least, do this only in case of FAD-based linearization
-      Discret::UTILS::Beam::assemble_shape_functions<numnodes, numnodalvalues>(
+      Discret::Utils::Beam::assemble_shape_functions<numnodes, numnodalvalues>(
           N_i_slave[igp], N_slave);
 
-      Discret::UTILS::Beam::assemble_shape_functions_and_derivs_and2nd_derivs<numnodes,
+      Discret::Utils::Beam::assemble_shape_functions_and_derivs_and2nd_derivs<numnodes,
           numnodalvalues>(
           N_i_master, N_i_xi_master, N_i_xixi_master, N_master, N_xi_master, N_xixi_master);
 
@@ -1820,12 +1820,12 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   // also to [.]_deriv_r_xixi_master expressions (according to chain rule)
   Core::LinAlg::Matrix<1, numnodes * numnodalvalues, double> N_i_xixixi_master(true);
 
-  Discret::UTILS::Beam::evaluate_shape_function3rd_derivs_at_xi<numnodes, numnodalvalues>(
+  Discret::Utils::Beam::evaluate_shape_function3rd_derivs_at_xi<numnodes, numnodalvalues>(
       xi_master, N_i_xixixi_master, beam_element2()->shape(), ele2length_);
 
   Core::LinAlg::Matrix<3, 1, double> r_xixixi_master(true);
 
-  Discret::UTILS::Beam::calc_interpolation<numnodes, numnodalvalues, 3>(
+  Discret::Utils::Beam::calc_interpolation<numnodes, numnodalvalues, 3>(
       Core::FADUtils::cast_to_double(ele2pos_), N_i_xixixi_master, r_xixixi_master);
 
   tmp_vec2.multiply(cos_alpha_deriv_r_slave_deriv_r_xixi_master, r_xixixi_master);
@@ -3654,10 +3654,10 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::get_
     std::vector<Core::LinAlg::Matrix<1, numnodes * numnodalvalues, double>>& N2_i_xi,
     Core::FE::IntegrationPoints1D& gausspoints) const
 {
-  Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_all_gps<numnodes, numnodalvalues>(
+  Discret::Utils::Beam::evaluate_shape_functions_and_derivs_all_gps<numnodes, numnodalvalues>(
       gausspoints, N1_i, N1_i_xi, beam_element1()->shape(), ele1length_);
 
-  Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_all_gps<numnodes, numnodalvalues>(
+  Discret::Utils::Beam::evaluate_shape_functions_and_derivs_all_gps<numnodes, numnodalvalues>(
       gausspoints, N2_i, N2_i_xi, beam_element2()->shape(), ele2length_);
 }
 
@@ -3671,7 +3671,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T2>& N_i,
     const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T> eledofvec) const
 {
-  Discret::UTILS::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T2>(eledofvec, N_i, r);
+  Discret::Utils::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T2>(eledofvec, N_i, r);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -3683,7 +3683,7 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
     const Core::LinAlg::Matrix<1, numnodes * numnodalvalues, T2>& N_i_xi,
     const Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, T> eledofvec) const
 {
-  Discret::UTILS::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T2>(
+  Discret::Utils::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T2>(
       eledofvec, N_i_xi, r_xi);
 }
 

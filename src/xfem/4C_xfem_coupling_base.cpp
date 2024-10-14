@@ -591,7 +591,7 @@ void XFEM::CouplingBase::evaluate_function(std::vector<double>& final_values, co
     if (functnum > 0)
     {
       functionfac = Global::Problem::instance()
-                        ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                         .evaluate(x, time, dof % numdof);
     }
 
@@ -648,7 +648,7 @@ void XFEM::CouplingBase::evaluate_scalar_function(double& final_values, const do
     if (functnum > 0)
     {
       functionfac = Global::Problem::instance()
-                        ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                         .evaluate(x, time, dof % numdof);
     }
 
@@ -683,7 +683,7 @@ void XFEM::CouplingBase::get_viscosity_master(Core::Elements::Element* xfele,  /
   // Todo: As soon as the master side may not be position = outside anymore we need to take that
   // into account
   // by an additional input parameter here (e.g. XFSI with TwoPhase)
-  XFEM::UTILS::get_volume_cell_material(xfele, mat_m, Cut::Point::outside);
+  XFEM::Utils::get_volume_cell_material(xfele, mat_m, Cut::Point::outside);
   if (mat_m->material_type() == Core::Materials::m_fluid)
     visc_m = Teuchos::rcp_dynamic_cast<Mat::NewtonianFluid>(mat_m)->viscosity();
   else
@@ -703,7 +703,7 @@ void XFEM::CouplingBase::get_average_weights(Core::Elements::Element* xfele,  //
   non_xfluid_coupling = (get_averaging_strategy() != Inpar::XFEM::Xfluid_Sided);
 
   if (get_averaging_strategy() != Inpar::XFEM::Harmonic)
-    XFEM::UTILS::get_std_average_weights(get_averaging_strategy(), kappa_m);
+    XFEM::Utils::get_std_average_weights(get_averaging_strategy(), kappa_m);
   else
     get_coupling_specific_average_weights(xfele, coup_ele, kappa_m);
 
@@ -759,10 +759,10 @@ void XFEM::CouplingBase::get_visc_penalty_stabfac(Core::Elements::Element* xfele
     penscaling += penscaling_s * kappa_s * inv_h_k;
   }
 
-  XFEM::UTILS::nit_compute_visc_penalty_stabfac(xfele->shape(), penscaling, NITStabScaling,
+  XFEM::Utils::nit_compute_visc_penalty_stabfac(xfele->shape(), penscaling, NITStabScaling,
       IsPseudo2D, ViscStab_TraceEstimate, NIT_visc_stab_fac);
 
-  XFEM::UTILS::nit_compute_visc_penalty_stabfac(xfele->shape(), penscaling, NITStabScalingTang,
+  XFEM::Utils::nit_compute_visc_penalty_stabfac(xfele->shape(), penscaling, NITStabScalingTang,
       IsPseudo2D, ViscStab_TraceEstimate, NIT_visc_stab_fac_tang);
   return;
 }

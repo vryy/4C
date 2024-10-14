@@ -66,7 +66,7 @@ namespace Discret::ELEMENTS::Shell::Internal
   inline static constexpr int numdofperelement = num_node<distype>* node_dof;
 }  // namespace Discret::ELEMENTS::Shell::Internal
 
-namespace Solid::UTILS::Shell
+namespace Solid::Utils::Shell
 {
   /*!
    * \brief Helper function for the nodal nullspace of Shell elements in 3D
@@ -164,7 +164,7 @@ namespace Solid::UTILS::Shell
 
   }  // namespace read_element
 
-}  // namespace Solid::UTILS::Shell
+}  // namespace Solid::Utils::Shell
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -66,29 +66,29 @@ void Inpar::Cut::set_valid_parameters(Teuchos::ParameterList& list)
       &cut_general);
 
   // Specifiy is Cutsides are triangulated
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "SPLIT_CUTSIDES", "Yes", "Split Quad4 CutSides into Tri3-Subtriangles?", &cut_general);
 
   // Do the Selfcut before standard CUT
-  Core::UTILS::bool_parameter("DO_SELFCUT", "Yes", "Do the SelfCut?", &cut_general);
+  Core::Utils::bool_parameter("DO_SELFCUT", "Yes", "Do the SelfCut?", &cut_general);
 
   // Do meshcorrection in Selfcut
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "SELFCUT_DO_MESHCORRECTION", "Yes", "Do meshcorrection in the SelfCut?", &cut_general);
 
   // Selfcut meshcorrection multiplicator
-  Core::UTILS::int_parameter("SELFCUT_MESHCORRECTION_MULTIPLICATOR", 30,
+  Core::Utils::int_parameter("SELFCUT_MESHCORRECTION_MULTIPLICATOR", 30,
       "ISLANDS with maximal size of the bounding box of h*multiplacator will be removed in the "
       "meshcorrection",
       &cut_general);
 
   // Cubaturedegree utilized for the numerical integration on the CUT BoundaryCells.
-  Core::UTILS::int_parameter("BOUNDARYCELL_CUBATURDEGREE", 20,
+  Core::Utils::int_parameter("BOUNDARYCELL_CUBATURDEGREE", 20,
       "Cubaturedegree utilized for the numerical integration on the CUT BoundaryCells.",
       &cut_general);
 
   // Integrate inside volume cells
-  Core::UTILS::bool_parameter("INTEGRATE_INSIDE_CELLS", "Yes",
+  Core::Utils::bool_parameter("INTEGRATE_INSIDE_CELLS", "Yes",
       "Should the integration be done on inside cells", &cut_general);
 }
 

@@ -184,7 +184,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
     // find out which sides are Master and Slave
     std::vector<bool> isslave(0);
     std::vector<bool> isself(0);
-    CONTACT::UTILS::get_master_slave_side_info(isslave, isself, currentgroup);
+    CONTACT::Utils::get_master_slave_side_info(isslave, isself, currentgroup);
     for (const bool is : isself)
     {
       if (is)
@@ -200,7 +200,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
     bool Check_nonsmooth_selfcontactsurface(false);
     bool Searchele_AllProc(false);
 
-    CONTACT::UTILS::get_initialization_info(Two_half_pass, Check_nonsmooth_selfcontactsurface,
+    CONTACT::Utils::get_initialization_info(Two_half_pass, Check_nonsmooth_selfcontactsurface,
         Searchele_AllProc, isactive, isslave, isself, currentgroup);
 
     // create interface local parameter list (copy)
@@ -341,7 +341,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
                   discret.dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus);
           //-------------------
           // get nurbs weight!
-          if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, *cnode);
+          if (nurbs) Mortar::Utils::prepare_nurbs_node(node, *cnode);
 
           // get edge and corner information:
           std::vector<Core::Conditions::Condition*> contactcornercond(0);
@@ -398,7 +398,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
           // get nurbs weight!
           if (nurbs)
           {
-            Mortar::UTILS::prepare_nurbs_node(node, *cnode);
+            Mortar::Utils::prepare_nurbs_node(node, *cnode);
           }
 
           // get edge and corner information:
@@ -498,7 +498,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
         {
-          Mortar::UTILS::prepare_nurbs_element(discret, ele, *cele, dim);
+          Mortar::Utils::prepare_nurbs_element(discret, ele, *cele, dim);
         }
 
         interface->add_element(cele);
@@ -513,7 +513,7 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
      * setup. This is an initial one time cost, that does not matter compared to the repeated
      * fill_complete calls due to dynamic redistribution.
      */
-    if (CONTACT::UTILS::use_safe_redistribute_and_ghosting(contactParams))
+    if (CONTACT::Utils::use_safe_redistribute_and_ghosting(contactParams))
     {
       /* Finalize parallel layout of maps. Note: Do not redistribute here.
        *

@@ -158,16 +158,16 @@ void Arteries::ArtNetExplicitTimeInt::init(const Teuchos::ParameterList& globalt
   Teuchos::ParameterList junparams;
 
   junc_nodal_vals_ =
-      Teuchos::make_rcp<std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>();
+      Teuchos::make_rcp<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>();
 
   junparams
-      .set<Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>>(
+      .set<Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>>(
           "Junctions Parameters", junc_nodal_vals_);
 
-  artjun_ = Teuchos::make_rcp<UTILS::ArtJunctionWrapper>(discret_, output_, junparams, dta_);
+  artjun_ = Teuchos::make_rcp<Utils::ArtJunctionWrapper>(discret_, output_, junparams, dta_);
 
   // create the gnuplot export conditions
-  artgnu_ = Teuchos::make_rcp<Arteries::UTILS::ArtWriteGnuplotWrapper>(discret_, junparams);
+  artgnu_ = Teuchos::make_rcp<Arteries::Utils::ArtWriteGnuplotWrapper>(discret_, junparams);
 
   // ---------------------------------------------------------------------------------------
   // Initialize all the arteries' cross-sectional areas to the initial crossectional area Ao
@@ -341,7 +341,7 @@ void Arteries::ArtNetExplicitTimeInt::solve(Teuchos::RCP<Teuchos::ParameterList>
 
     eleparams.set("total time", time_);
     eleparams
-        .set<Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>>(
+        .set<Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>>(
             "Junctions Parameters", junc_nodal_vals_);
 
     // call standard loop over all elements
@@ -371,7 +371,7 @@ void Arteries::ArtNetExplicitTimeInt::solve(Teuchos::RCP<Teuchos::ParameterList>
     eleparams.set("Wfnp", Wfnp_);
     eleparams.set("Wbnp", Wbnp_);
     eleparams
-        .set<Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>>(
+        .set<Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>>(
             "Junctions Parameters", junc_nodal_vals_);
 
     // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
@@ -855,7 +855,7 @@ void Arteries::ArtNetExplicitTimeInt::calc_scatra_from_scatra_fw(
 
 void Arteries::ArtNetExplicitTimeInt::test_results()
 {
-  Teuchos::RCP<Core::UTILS::ResultTest> resulttest = create_field_test();
+  Teuchos::RCP<Core::Utils::ResultTest> resulttest = create_field_test();
   Global::Problem::instance()->add_field_test(resulttest);
   Global::Problem::instance()->test_all(discret_->get_comm());
 }
@@ -863,7 +863,7 @@ void Arteries::ArtNetExplicitTimeInt::test_results()
 /*----------------------------------------------------------------------*
  | create result test for this field                   kremheller 03/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> Arteries::ArtNetExplicitTimeInt::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> Arteries::ArtNetExplicitTimeInt::create_field_test()
 {
   return Teuchos::make_rcp<Arteries::ArteryResultTest>(*(this));
 }

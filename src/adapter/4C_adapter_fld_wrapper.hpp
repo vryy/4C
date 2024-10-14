@@ -354,17 +354,17 @@ namespace Adapter
     /// return time integration factor
     double tim_int_param() const override { return fluid_->tim_int_param(); }
 
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
+      static Teuchos::RCP<FLD::Utils::MapExtractor> ret = Teuchos::null;
       return ret;
     }
 
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& fpsi_interface() const override
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& fpsi_interface() const override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
-      static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
+      static Teuchos::RCP<FLD::Utils::MapExtractor> ret = Teuchos::null;
       return ret;
     }
     Inpar::FLUID::TimeIntegrationScheme tim_int_scheme() const override
@@ -447,7 +447,7 @@ namespace Adapter
     {
       return fluid_->use_block_matrix(splitmatrix);
     }
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override
     {
       return fluid_->create_field_test();
     }

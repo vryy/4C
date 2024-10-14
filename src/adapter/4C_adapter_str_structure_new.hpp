@@ -474,7 +474,7 @@ namespace Adapter
     Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override = 0;
 
     /// create result test for encapsulated structure algorithm
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override = 0;
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override = 0;
 
     /// reset time and state vectors (needed for biofilm growth simulations)
     void reset() override = 0;

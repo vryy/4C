@@ -404,7 +404,7 @@ namespace Immersed
     Core::Communication::Exporter exporter(comm);
 
     // get current global coordinates of the given point xi of the target dis
-    Mortar::UTILS::local_to_current_global<targetdistype>(
+    Mortar::Utils::local_to_current_global<targetdistype>(
         targetele, globdim, targetxi.data(), targetedisp, x.data());
     std::vector<double> xvec(globdim);
     xvec[0] = x[0];
@@ -539,7 +539,7 @@ namespace Immersed
               // fac*characteristic element length
               if (distance < 1.5 * diagonal)
               {
-                Mortar::UTILS::global_to_current_local<sourcedistype>(
+                Mortar::Utils::global_to_current_local<sourcedistype>(
                     *(curr->second), sourceeledisp, xvec.data(), &xi(0), converged, residual);
                 if (converged == false)
                 {
@@ -579,7 +579,7 @@ namespace Immersed
               {
                 // get parameter space coords xi in source element of global point xvec of target
                 // element
-                Mortar::UTILS::global_to_local<sourcedistype>(
+                Mortar::Utils::global_to_local<sourcedistype>(
                     *(curr->second), xvec.data(), &xi(0), converged);
                 if (converged == false)
                 {
@@ -893,7 +893,7 @@ namespace Immersed
     Core::Elements::LocationArray la(1);
 
     // get current global coordinates of the given point xi of the target dis
-    Mortar::UTILS::local_to_current_global<targetdistype>(
+    Mortar::Utils::local_to_current_global<targetdistype>(
         targetele, globdim, targetxi.data(), targetedisp, x.data());
     std::vector<double> xvec(globdim);
     xvec[0] = x[0];
@@ -992,7 +992,7 @@ namespace Immersed
             // only try to match given target point and sourceele if within bounding box
             if (within)
             {
-              Mortar::UTILS::global_to_current_local<sourcedistype>(
+              Mortar::Utils::global_to_current_local<sourcedistype>(
                   *sourceele, mysourcedispnp.data(), xvec.data(), &xi(0), converged, residual);
 
               if (converged == false)
@@ -1228,7 +1228,7 @@ namespace Immersed
     Core::Elements::LocationArray la(structdis.num_dof_sets());
 
     // get current global coordinates of the given fluid node fluid_xi
-    Mortar::UTILS::local_to_current_global<fluiddistype>(
+    Mortar::Utils::local_to_current_global<fluiddistype>(
         fluidele, globdim, fluidxi.data(), fluideledisp, x_fluid_node.data());
     // get as vector
     std::vector<double> fluid_node_glob_coord(globdim);
@@ -1384,7 +1384,7 @@ namespace Immersed
                   std::vector<double> structsurf_gp_glob_coord(globdim);
 
                   // get current global position of the given int point xi on the structural surface
-                  Mortar::UTILS::local_to_current_global<structdistype>(*(structele), globdim,
+                  Mortar::Utils::local_to_current_global<structdistype>(*(structele), globdim,
                       struct_xsi.data(), mydispnp, structsurf_gp_glob_coord.data());
 
                   // distance between fluid node and given structure gp
@@ -1435,10 +1435,10 @@ namespace Immersed
           // get local coordinates of closest structural surface point in fluid element parameter
           // space
           if (isALE)
-            Mortar::UTILS::global_to_current_local<fluiddistype>(
+            Mortar::Utils::global_to_current_local<fluiddistype>(
                 fluidele, fluideledisp.data(), xvec.data(), &fluid_xi(0), converged, residual);
           else
-            Mortar::UTILS::global_to_local<fluiddistype>(
+            Mortar::Utils::global_to_local<fluiddistype>(
                 fluidele, xvec.data(), &fluid_xi(0), converged);
 
           if (converged == false)

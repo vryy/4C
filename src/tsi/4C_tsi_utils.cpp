@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | remove flag thermo from condition                         dano 12/11 |
  *----------------------------------------------------------------------*/
-std::map<std::string, std::string> TSI::UTILS::ThermoStructureCloneStrategy::conditions_to_copy()
+std::map<std::string, std::string> TSI::Utils::ThermoStructureCloneStrategy::conditions_to_copy()
     const
 {
   return {{"ThermoDirichlet", "Dirichlet"}, {"ThermoPointNeumann", "PointNeumann"},
@@ -50,7 +50,7 @@ std::map<std::string, std::string> TSI::UTILS::ThermoStructureCloneStrategy::con
 /*----------------------------------------------------------------------*
  | check material of cloned element                          dano 12/11 |
  *----------------------------------------------------------------------*/
-void TSI::UTILS::ThermoStructureCloneStrategy::check_material_type(const int matid)
+void TSI::Utils::ThermoStructureCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -65,7 +65,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::check_material_type(const int mat
 /*----------------------------------------------------------------------*
  | set element data for cloned element                                  |
  *----------------------------------------------------------------------*/
-void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
+void TSI::Utils::ThermoStructureCloneStrategy::set_element_data(
     Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
     const bool isnurbs)
 {
@@ -114,7 +114,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::set_element_data(
 /*----------------------------------------------------------------------*
  | cloned element has to be a THERMO element                 dano 12/11 |
  *----------------------------------------------------------------------*/
-bool TSI::UTILS::ThermoStructureCloneStrategy::determine_ele_type(
+bool TSI::Utils::ThermoStructureCloneStrategy::determine_ele_type(
     Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // we only support thermo elements here
@@ -127,7 +127,7 @@ bool TSI::UTILS::ThermoStructureCloneStrategy::determine_ele_type(
 /*----------------------------------------------------------------------*
  | setup TSI                                                 dano 12/11 |
  *----------------------------------------------------------------------*/
-void TSI::UTILS::setup_tsi(const Epetra_Comm& comm)
+void TSI::Utils::setup_tsi(const Epetra_Comm& comm)
 {
   // access the structure discretization, make sure it is filled
   Teuchos::RCP<Core::FE::Discretization> structdis;
@@ -162,7 +162,7 @@ void TSI::UTILS::setup_tsi(const Epetra_Comm& comm)
           "MATCHINGGRID is set to 'no' in TSI DYNAMIC section, but thermo discretization is "
           "empty!");
 
-    Core::FE::clone_discretization<TSI::UTILS::ThermoStructureCloneStrategy>(
+    Core::FE::clone_discretization<TSI::Utils::ThermoStructureCloneStrategy>(
         *structdis, *thermdis, Global::Problem::instance()->cloning_material_map());
     thermdis->fill_complete();
 
@@ -201,7 +201,7 @@ void TSI::UTILS::setup_tsi(const Epetra_Comm& comm)
     structdis->fill_complete(true, true, true);
     thermdis->fill_complete(true, true, true);
 
-    TSI::UTILS::set_material_pointers_matching_grid(*structdis, *thermdis);
+    TSI::Utils::set_material_pointers_matching_grid(*structdis, *thermdis);
   }
   else
   {
@@ -245,7 +245,7 @@ void TSI::UTILS::setup_tsi(const Epetra_Comm& comm)
 /*----------------------------------------------------------------------*
  | print TSI-logo                                            dano 03/10 |
  *----------------------------------------------------------------------*/
-void TSI::UTILS::set_material_pointers_matching_grid(
+void TSI::Utils::set_material_pointers_matching_grid(
     const Core::FE::Discretization& sourcedis, const Core::FE::Discretization& targetdis)
 {
   const int numelements = targetdis.num_my_col_elements();
@@ -266,13 +266,13 @@ void TSI::UTILS::set_material_pointers_matching_grid(
 /*----------------------------------------------------------------------*
  |  assign material to discretization A                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void TSI::UTILS::TSIMaterialStrategy::assign_material2_to1(
+void TSI::Utils::TSIMaterialStrategy::assign_material2_to1(
     const Coupling::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
     const std::vector<int>& ids_2, Teuchos::RCP<Core::FE::Discretization> dis1,
     Teuchos::RCP<Core::FE::Discretization> dis2)
 {
   // call default assignment
-  Coupling::VolMortar::UTILS::DefaultMaterialStrategy::assign_material2_to1(
+  Coupling::VolMortar::Utils::DefaultMaterialStrategy::assign_material2_to1(
       volmortar, ele1, ids_2, dis1, dis2);
 
   // done
@@ -283,7 +283,7 @@ void TSI::UTILS::TSIMaterialStrategy::assign_material2_to1(
 /*----------------------------------------------------------------------*
 |  assign material to discretization B                       vuong 09/14|
  *----------------------------------------------------------------------*/
-void TSI::UTILS::TSIMaterialStrategy::assign_material1_to2(
+void TSI::Utils::TSIMaterialStrategy::assign_material1_to2(
     const Coupling::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
     const std::vector<int>& ids_1, Teuchos::RCP<Core::FE::Discretization> dis1,
     Teuchos::RCP<Core::FE::Discretization> dis2)
@@ -292,7 +292,7 @@ void TSI::UTILS::TSIMaterialStrategy::assign_material1_to2(
   if (ids_1.empty()) return;
 
   // call default assignment
-  Coupling::VolMortar::UTILS::DefaultMaterialStrategy::assign_material1_to2(
+  Coupling::VolMortar::Utils::DefaultMaterialStrategy::assign_material1_to2(
       volmortar, ele2, ids_1, dis1, dis2);
 
   // initialise kinematic type to geo_linear.

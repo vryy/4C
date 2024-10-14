@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 
-void FBI::UTILS::FBIAssemblyStrategy::assemble(const Core::FE::Discretization& discretization1,
+void FBI::Utils::FBIAssemblyStrategy::assemble(const Core::FE::Discretization& discretization1,
     const Core::FE::Discretization& discretization2, std::vector<int> const& elegid,
     std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
     std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
@@ -81,7 +81,7 @@ void FBI::UTILS::FBIAssemblyStrategy::assemble(const Core::FE::Discretization& d
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 
-void FBI::UTILS::FBIAssemblyStrategy::assemble_fluid_matrix(
+void FBI::Utils::FBIAssemblyStrategy::assemble_fluid_matrix(
     Teuchos::RCP<Core::LinAlg::SparseOperator> cff, int elegid, const std::vector<int>& lmstride,
     const Core::LinAlg::SerialDenseMatrix& elemat, const std::vector<int>& lmrow,
     const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)

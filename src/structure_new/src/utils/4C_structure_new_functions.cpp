@@ -33,7 +33,7 @@ namespace
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> create_structure_function(
+  Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> create_structure_function(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -74,7 +74,7 @@ namespace
     }
     else
     {
-      return Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>(nullptr);
+      return Teuchos::RCP<Core::Utils::FunctionOfSpaceTime>(nullptr);
     }
   }
 }  // namespace
@@ -82,7 +82,7 @@ namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Solid::add_valid_structure_functions(Core::UTILS::FunctionManager& function_manager)
+void Solid::add_valid_structure_functions(Core::Utils::FunctionManager& function_manager)
 {
   std::vector<Input::LineDefinition> lines;
   lines.emplace_back(Input::LineDefinition::Builder()

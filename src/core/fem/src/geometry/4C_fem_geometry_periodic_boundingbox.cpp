@@ -471,7 +471,7 @@ bool Core::Geo::MeshFree::BoundingBox::in_between(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Core::Geo::MeshFree::BoundingBox::random_pos_within(
-    Core::LinAlg::Matrix<3, 1>& randpos, Core::UTILS::Random* random) const
+    Core::LinAlg::Matrix<3, 1>& randpos, Core::Utils::Random* random) const
 {
   throw_if_not_init();
 
@@ -597,13 +597,13 @@ void Core::Geo::MeshFree::BoundingBox::print()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Core::Geo::MeshFree::BoundingBox::apply_dirichlet(
-    const double timen, const Core::UTILS::FunctionManager& function_manager)
+    const double timen, const Core::Utils::FunctionManager& function_manager)
 {
   throw_if_not_init_or_setup();
 
   Teuchos::ParameterList p;
   p.set("total time", timen);
-  p.set<const Core::UTILS::FunctionManager*>("function_manager", &function_manager);
+  p.set<const Core::Utils::FunctionManager*>("function_manager", &function_manager);
 
   // disn_ then also holds prescribed new Dirichlet displacements
   boxdiscret_->clear_state();

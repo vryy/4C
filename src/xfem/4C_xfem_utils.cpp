@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void XFEM::UTILS::extract_node_vectors(Core::FE::Discretization& dis,
+void XFEM::Utils::extract_node_vectors(Core::FE::Discretization& dis,
     std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap,
     Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp)
 {
@@ -51,7 +51,7 @@ void XFEM::UTILS::extract_node_vectors(Core::FE::Discretization& dis,
 // -------------------------------------------------------------------
 // set master and slave parameters (winter 01/2015)
 // -------------------------------------------------------------------
-void XFEM::UTILS::get_volume_cell_material(Core::Elements::Element* actele,
+void XFEM::Utils::get_volume_cell_material(Core::Elements::Element* actele,
     Teuchos::RCP<Core::Mat::Material>& mat, Cut::Point::PointPosition position)
 {
   int position_id = 0;
@@ -91,7 +91,7 @@ void XFEM::UTILS::get_volume_cell_material(Core::Elements::Element* actele,
  | Checks if Materials in parent and neighbor element are identical     |
  |                                                         winter 01/15 |
  *----------------------------------------------------------------------*/
-void XFEM::UTILS::safety_check_materials(
+void XFEM::Utils::safety_check_materials(
     Teuchos::RCP<Core::Mat::Material>& pmat, Teuchos::RCP<Core::Mat::Material>& nmat)
 {
   //------------------------------ see whether materials in patch are equal
@@ -144,7 +144,7 @@ void XFEM::UTILS::safety_check_materials(
 }
 
 //! Extract a quantity for an element
-void XFEM::UTILS::extract_quantity_at_element(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
+void XFEM::Utils::extract_quantity_at_element(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
     const Core::Elements::Element* element, const Epetra_MultiVector& global_col_vector,
     Core::FE::Discretization& dis, const int nds_vector, const int nsd)
 {
@@ -172,7 +172,7 @@ void XFEM::UTILS::extract_quantity_at_element(Core::LinAlg::SerialDenseMatrix::B
 
 
 //! Extract a quantity for a node
-void XFEM::UTILS::extract_quantity_at_node(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
+void XFEM::Utils::extract_quantity_at_node(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
     const Core::Nodes::Node* node, const Epetra_MultiVector& global_col_vector,
     Core::FE::Discretization& dis, const int nds_vector, const unsigned int nsd)
 {

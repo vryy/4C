@@ -34,7 +34,7 @@ void Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(Teuchos::ParameterList
       &list);
 
   // Number of search points for segmentation.
-  Core::UTILS::int_parameter("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 6,
+  Core::Utils::int_parameter("GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS", 6,
       "Number of search points for segmentation", &list);
 
   // What to do if not all Gauss points of a segment project valid
@@ -47,11 +47,11 @@ void Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(Teuchos::ParameterList
       &list);
 
   // Number of integration points on the line.
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "GAUSS_POINTS", 6, "Number of Gauss Points for the integral evaluations", &list);
 
   // Number of integration along the circumference in cross section coupling.
-  Core::UTILS::int_parameter("INTEGRATION_POINTS_CIRCUMFERENCE", 6,
+  Core::Utils::int_parameter("INTEGRATION_POINTS_CIRCUMFERENCE", 6,
       "Number of Integration points along the circumferencial direction of the beam. This is "
       "parameter is only used in beam to cylinder meshtying. No gauss integration is "
       "used along the circumferencial direction, equally spaced integration points are used.",

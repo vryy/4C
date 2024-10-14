@@ -251,7 +251,7 @@ namespace Discret
 
       /// Singleton access method
       static FluidEleCalcHDGWeakComp<distype>* instance(
-          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
      private:
       /// private Constructor since we are a Singleton.

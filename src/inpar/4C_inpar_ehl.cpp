@@ -29,20 +29,20 @@ void Inpar::EHL::set_valid_parameters(Teuchos::ParameterList& list)
       "interaction)");
 
   // Output type
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "RESTARTEVRYTIME", 0, "write restart possibility every RESTARTEVRY steps", &ehldyn);
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &ehldyn);
   // Time loop control
-  Core::UTILS::int_parameter("NUMSTEP", 200, "maximum number of Timesteps", &ehldyn);
-  Core::UTILS::double_parameter("MAXTIME", 1000.0, "total simulation time", &ehldyn);
-  Core::UTILS::double_parameter("TIMESTEP", -1, "time step size dt", &ehldyn);
-  Core::UTILS::bool_parameter(
+  Core::Utils::int_parameter("NUMSTEP", 200, "maximum number of Timesteps", &ehldyn);
+  Core::Utils::double_parameter("MAXTIME", 1000.0, "total simulation time", &ehldyn);
+  Core::Utils::double_parameter("TIMESTEP", -1, "time step size dt", &ehldyn);
+  Core::Utils::bool_parameter(
       "DIFFTIMESTEPSIZE", "No", "use different step size for lubrication and solid", &ehldyn);
-  Core::UTILS::double_parameter("RESULTSEVRYTIME", 0, "increment for writing solution", &ehldyn);
-  Core::UTILS::int_parameter("RESULTSEVRY", 1, "increment for writing solution", &ehldyn);
-  Core::UTILS::int_parameter("ITEMAX", 10, "maximum number of iterations over fields", &ehldyn);
-  Core::UTILS::int_parameter("ITEMIN", 1, "minimal number of iterations over fields", &ehldyn);
+  Core::Utils::double_parameter("RESULTSEVRYTIME", 0, "increment for writing solution", &ehldyn);
+  Core::Utils::int_parameter("RESULTSEVRY", 1, "increment for writing solution", &ehldyn);
+  Core::Utils::int_parameter("ITEMAX", 10, "maximum number of iterations over fields", &ehldyn);
+  Core::Utils::int_parameter("ITEMIN", 1, "minimal number of iterations over fields", &ehldyn);
 
   // Type of coupling strategy between the two fields
   setStringToIntegralParameter<FieldCoupling>("FIELDCOUPLING", "none",
@@ -61,10 +61,10 @@ void Inpar::EHL::set_valid_parameters(Teuchos::ParameterList& list)
       "Dynamic section for monolithic EHL");
 
   // convergence tolerance of EHL residual
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "CONVTOL", 1e-6, "tolerance for convergence check of EHL", &ehldynmono);
   // Iterationparameters
-  Core::UTILS::double_parameter("TOLINC", 1.0e-6,
+  Core::Utils::double_parameter("TOLINC", 1.0e-6,
       "tolerance for convergence check of EHL-increment in monolithic EHL", &ehldynmono);
 
   setStringToIntegralParameter<ConvNorm>("NORM_RESF", "Abs",
@@ -89,23 +89,23 @@ void Inpar::EHL::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<std::string>("L1", "L1_Scaled", "L2", "Rms", "Inf"),
       tuple<VectorNorm>(norm_l1, norm_l1_scaled, norm_l2, norm_rms, norm_inf), &ehldynmono);
 
-  Core::UTILS::double_parameter("PTCDT", 0.1,
+  Core::Utils::double_parameter("PTCDT", 0.1,
       "pseudo time step for pseudo-transient continuation (PTC) stabilised Newton procedure",
       &ehldynmono);
 
   // number of linear solver used for monolithic EHL
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "LINEAR_SOLVER", -1, "number of linear solver used for monolithic EHL problems", &ehldynmono);
 
   // convergence criteria adaptivity of monolithic EHL solver
-  Core::UTILS::bool_parameter("ADAPTCONV", "No",
+  Core::Utils::bool_parameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution", &ehldynmono);
-  Core::UTILS::double_parameter("ADAPTCONV_BETTER", 0.1,
+  Core::Utils::double_parameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
       "nonlinear convergence limit",
       &ehldynmono);
 
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "INFNORMSCALING", "yes", "Scale blocks of matrix with row infnorm?", &ehldynmono);
 
   /*----------------------------------------------------------------------*/
@@ -116,22 +116,22 @@ void Inpar::EHL::set_valid_parameters(Teuchos::ParameterList& list)
       "Control section for partitioned EHL");
 
   // Solver parameter for relaxation of iterative staggered partitioned EHL
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "MAXOMEGA", 10.0, "largest omega allowed for Aitken relaxation", &ehldynpart);
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "MINOMEGA", 0.1, "smallest omega allowed for Aitken relaxation", &ehldynpart);
-  Core::UTILS::double_parameter("STARTOMEGA", 1.0, "fixed relaxation parameter", &ehldynpart);
+  Core::Utils::double_parameter("STARTOMEGA", 1.0, "fixed relaxation parameter", &ehldynpart);
 
   // convergence tolerance of outer iteration loop
-  Core::UTILS::double_parameter("CONVTOL", 1e-6,
+  Core::Utils::double_parameter("CONVTOL", 1e-6,
       "tolerance for convergence check of outer iteration within partitioned EHL", &ehldynpart);
 
   // set unprojectable nodes to zero pressure via Dirichlet condition
-  Core::UTILS::bool_parameter("UNPROJ_ZERO_DBC", "No",
+  Core::Utils::bool_parameter("UNPROJ_ZERO_DBC", "No",
       "set unprojectable nodes to zero pressure via Dirichlet condition", &ehldyn);
 
   // use dry contact model
-  Core::UTILS::bool_parameter("DRY_CONTACT_MODEL", "No",
+  Core::Utils::bool_parameter("DRY_CONTACT_MODEL", "No",
       "set unprojectable nodes to zero pressure via Dirichlet condition", &ehldyn);
 }
 

@@ -112,7 +112,7 @@ namespace FSI
 
     virtual void correct_interface_displacements(
         Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_fluid,
-        Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
+        Teuchos::RCP<FLD::Utils::MapExtractor> const& finterface);
 
    private:
     Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp_;
@@ -139,18 +139,18 @@ namespace FSI
     virtual void correct_vol_displacements(Teuchos::RCP<Adapter::FluidAle> fluidale,
         Teuchos::RCP<Core::LinAlg::Vector<double>> deltadisp,
         Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_fluid,
-        Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
+        Teuchos::RCP<FLD::Utils::MapExtractor> const& finterface);
 
    private:
     virtual void correct_vol_displacements_para_space(Teuchos::RCP<Adapter::FluidAle> fluidale,
         Teuchos::RCP<Core::LinAlg::Vector<double>> deltadisp,
         Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_fluid,
-        Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
+        Teuchos::RCP<FLD::Utils::MapExtractor> const& finterface);
 
     virtual void correct_vol_displacements_phys_space(Teuchos::RCP<Adapter::FluidAle> fluidale,
         Teuchos::RCP<Core::LinAlg::Vector<double>> deltadisp,
         Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_fluid,
-        Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface);
+        Teuchos::RCP<FLD::Utils::MapExtractor> const& finterface);
 
     void init_dop_normals();
 

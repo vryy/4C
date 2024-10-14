@@ -43,7 +43,7 @@ namespace BEAMINTERACTION
 
 namespace FBI
 {
-  namespace UTILS
+  namespace Utils
   {
     /**
      * \brief This class assembles the contributions of fluid beam mesh tying pairs into the global
@@ -105,7 +105,7 @@ namespace FBI
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& c12,
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& c21);
     };
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FBI
 
 FOUR_C_NAMESPACE_CLOSE

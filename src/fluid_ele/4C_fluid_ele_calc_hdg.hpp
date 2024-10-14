@@ -265,7 +265,7 @@ namespace Discret
 
       /// Singleton access method
       static FluidEleCalcHDG<distype>* instance(
-          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
       /// Print local residuals
       void print_local_residuals(Discret::ELEMENTS::Fluid* ele);

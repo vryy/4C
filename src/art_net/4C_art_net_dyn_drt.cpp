@@ -139,7 +139,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
       Teuchos::getIntegralValue<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
 
   // build art net time integrator
-  Teuchos::RCP<Adapter::ArtNet> artnettimint = Arteries::UTILS::create_algorithm(
+  Teuchos::RCP<Adapter::ArtNet> artnettimint = Arteries::Utils::create_algorithm(
       timintscheme, actdis, linsolvernumber, artdyn, artdyn, *output);
 
   // initialize
@@ -167,7 +167,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // note: to be done after potential restart, as in read_restart()
   //       the secondary material is destroyed
   if (artdyn.get<bool>("SOLVESCATRA"))
-    Arteries::UTILS::assign_material_pointers(artery_disname, scatra_disname);
+    Arteries::Utils::assign_material_pointers(artery_disname, scatra_disname);
 
   if (!CoupledTo3D)
   {

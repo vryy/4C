@@ -36,14 +36,14 @@ Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::instance(
     const std::string& disname  //!< name of discretization
 )
 {
-  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
+  static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
       [](const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleParameterElchDiffCond>(
             new ScaTraEleParameterElchDiffCond(disname));
       });
 
-  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].instance(Core::Utils::SingletonAction::create, disname);
 }
 
 /*----------------------------------------------------------------------*

@@ -107,7 +107,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
         local_kappa);
 
   // Get the GIDs of the solid and beam.
-  const auto rot_dof_gid = UTILS::get_element_rot_gid_indices(discret, this->element1());
+  const auto rot_dof_gid = Utils::get_element_rot_gid_indices(discret, this->element1());
   std::vector<int> gid_solid, lmowner, lmstride;
   this->element2()->location_vector(discret, gid_solid, lmowner, lmstride);
 
@@ -397,7 +397,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
         local_stiff_SB, local_stiff_SS);
 
   // Get the GIDs of the solid and beam.
-  const auto rot_dof_gid = UTILS::get_element_rot_gid_indices(discret, this->element1());
+  const auto rot_dof_gid = Utils::get_element_rot_gid_indices(discret, this->element1());
   std::vector<int> gid_solid, lmowner, lmstride;
   this->element2()->location_vector(discret, gid_solid, lmowner, lmstride);
 

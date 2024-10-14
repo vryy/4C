@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
-UTILS::Cardiovascular0DArterialProxDist::Cardiovascular0DArterialProxDist(
+Utils::Cardiovascular0DArterialProxDist::Cardiovascular0DArterialProxDist(
     Teuchos::RCP<Core::FE::Discretization> discr, const std::string& conditionname,
     std::vector<int>& curID)
     : Cardiovascular0D(discr, conditionname, curID)
@@ -47,7 +47,7 @@ UTILS::Cardiovascular0DArterialProxDist::Cardiovascular0DArterialProxDist(
  |calling element evaluates of a condition and assembing results         |
  |based on this conditions                                               |
  *----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DArterialProxDist::evaluate(Teuchos::ParameterList& params,
+void Utils::Cardiovascular0DArterialProxDist::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3,
@@ -119,7 +119,7 @@ void UTILS::Cardiovascular0DArterialProxDist::evaluate(Teuchos::ParameterList& p
     if (curvenum >= 0 && usetime)
     {
       curvefac_np = Global::Problem::instance()
-                        ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
+                        ->function_by_id<Core::Utils::FunctionOfTime>(curvenum)
                         .evaluate(tim);
     }
 
@@ -341,7 +341,7 @@ void UTILS::Cardiovascular0DArterialProxDist::evaluate(Teuchos::ParameterList& p
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DArterialProxDist::initialize(Teuchos::ParameterList& params,
+void Utils::Cardiovascular0DArterialProxDist::initialize(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec1,
     Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2)
 {

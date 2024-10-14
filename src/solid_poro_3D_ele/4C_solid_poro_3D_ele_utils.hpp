@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Solid::UTILS::read_element
+namespace Solid::Utils::read_element
 {
   inline Inpar::ScaTra::ImplType read_type(const Core::IO::InputParameterContainer& container)
   {
@@ -54,7 +54,7 @@ namespace Solid::UTILS::read_element
     }
   }
 
-}  // namespace Solid::UTILS::read_element
+}  // namespace Solid::Utils::read_element
 
 FOUR_C_NAMESPACE_CLOSE
 

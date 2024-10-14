@@ -70,7 +70,7 @@ void Solid::Dbc::setup()
   Teuchos::ParameterList p;
   p.set<double>("total time", timint_ptr_->get_data_global_state().get_time_np());
   dbcmap_ptr_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
-  p.set<const Core::UTILS::FunctionManager*>(
+  p.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
   discret_ptr_->evaluate_dirichlet(
       p, zeros_ptr_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmap_ptr_);
@@ -200,7 +200,7 @@ void Solid::Dbc::apply_dirichlet_bc(const double& time,
   // ---------------------------------------------------------------------------
   Teuchos::ParameterList p;
   p.set("total time", time);
-  p.set<const Core::UTILS::FunctionManager*>(
+  p.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // predicted Dirichlet values

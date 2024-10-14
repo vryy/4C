@@ -62,9 +62,9 @@ Discret::ELEMENTS::ElemagIntFaceImplInterface* Discret::ELEMENTS::ElemagIntFaceI
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ElemagIntFaceImpl<distype>*
-Discret::ELEMENTS::ElemagIntFaceImpl<distype>::instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::ElemagIntFaceImpl<distype>::instance(Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::ElemagIntFaceImpl<distype>>(

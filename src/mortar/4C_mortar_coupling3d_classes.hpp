@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace Mortar
 {
   // forward declarations
-  // namespace UTILS
+  // namespace Utils
   //{
   // template<typename _Key, typename _Tp> class fixedsizemap;
   //}

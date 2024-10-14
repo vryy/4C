@@ -33,12 +33,12 @@ namespace FSI
 {
   class Monolithic;
 
-  namespace UTILS
+  namespace Utils
   {
     class MatrixRowTransform;
     class MatrixColTransform;
     class MatrixRowColTransform;
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FSI
 
 namespace PoroMultiPhaseScaTra

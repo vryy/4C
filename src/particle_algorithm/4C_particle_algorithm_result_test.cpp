@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEALGORITHM::ParticleResultTest::ParticleResultTest() : Core::UTILS::ResultTest("PARTICLE")
+PARTICLEALGORITHM::ParticleResultTest::ParticleResultTest() : Core::Utils::ResultTest("PARTICLE")
 {
   // empty constructor
 }

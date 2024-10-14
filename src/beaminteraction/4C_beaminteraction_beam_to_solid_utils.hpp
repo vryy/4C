@@ -330,7 +330,7 @@ namespace BEAMINTERACTION
   {
     // Get the beam centerline GIDs.
     Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-    UTILS::get_element_centerline_gid_indices(discret, &beam_element, beam_centerline_gid);
+    Utils::get_element_centerline_gid_indices(discret, &beam_element, beam_centerline_gid);
 
     // Get the patch (in this case just the one face element) GIDs.
     const std::vector<int>& patch_gid = face_element.get_patch_gid();

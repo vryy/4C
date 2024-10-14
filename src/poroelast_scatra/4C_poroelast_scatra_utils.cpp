@@ -36,7 +36,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-bool PoroElastScaTra::UTILS::is_poro_scatra_element(const Core::Elements::Element* actele)
+bool PoroElastScaTra::Utils::is_poro_scatra_element(const Core::Elements::Element* actele)
 {
   // checks if element is a poro scatra element (new elements need to be listed here)
   return actele->element_type() == Discret::ELEMENTS::SoHex8PoroScatraType::instance() or
@@ -55,7 +55,7 @@ bool PoroElastScaTra::UTILS::is_poro_scatra_element(const Core::Elements::Elemen
          is_poro_p1_scatra_element(actele);
 }
 
-bool PoroElastScaTra::UTILS::is_poro_p1_scatra_element(const Core::Elements::Element* actele)
+bool PoroElastScaTra::Utils::is_poro_p1_scatra_element(const Core::Elements::Element* actele)
 {
   // checks if element is a porop1 scatra element (new elements need to be listed here)
   return actele->element_type() == Discret::ELEMENTS::SoHex8PoroP1ScatraType::instance() or
@@ -65,7 +65,7 @@ bool PoroElastScaTra::UTILS::is_poro_p1_scatra_element(const Core::Elements::Ele
          actele->element_type() == Discret::ELEMENTS::WallQuad9PoroP1ScatraType::instance();
 }
 
-Teuchos::RCP<PoroElastScaTra::PoroScatraBase> PoroElastScaTra::UTILS::create_poro_scatra_algorithm(
+Teuchos::RCP<PoroElastScaTra::PoroScatraBase> PoroElastScaTra::Utils::create_poro_scatra_algorithm(
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
 {
   Global::Problem* problem = Global::Problem::instance();
@@ -115,7 +115,7 @@ Teuchos::RCP<PoroElastScaTra::PoroScatraBase> PoroElastScaTra::UTILS::create_por
   return algo;
 }
 
-Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElastScaTra::UTILS::build_poro_scatra_splitter(
+Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElastScaTra::Utils::build_poro_scatra_splitter(
     Core::FE::Discretization& dis)
 {
   Teuchos::RCP<Core::LinAlg::MapExtractor> porositysplitter = Teuchos::null;
@@ -138,7 +138,7 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElastScaTra::UTILS::build_poro_scat
   return porositysplitter;
 }
 
-void PoroElastScaTra::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret)
+void PoroElastScaTra::Utils::create_volume_ghosting(Core::FE::Discretization& idiscret)
 {
   // We get the discretizations from the global problem, as the contact does not have
   // both structural and porofluid discretization, but we should guarantee consistent ghosting!
@@ -201,12 +201,12 @@ void PoroElastScaTra::UTILS::create_volume_ghosting(Core::FE::Discretization& id
   }
 
   // 2 Material pointers need to be reset after redistribution.
-  PoroElast::UTILS::set_material_pointers_matching_grid(*voldis[0], *voldis[1]);
-  PoroElast::UTILS::set_material_pointers_matching_grid(*voldis[0], *voldis[2]);
-  PoroElast::UTILS::set_material_pointers_matching_grid(*voldis[1], *voldis[2]);
+  PoroElast::Utils::set_material_pointers_matching_grid(*voldis[0], *voldis[1]);
+  PoroElast::Utils::set_material_pointers_matching_grid(*voldis[0], *voldis[2]);
+  PoroElast::Utils::set_material_pointers_matching_grid(*voldis[1], *voldis[2]);
 
   // 3 Reconnect Face Element -- Porostructural Parent Element Pointers!
-  PoroElast::UTILS::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));
+  PoroElast::Utils::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));
 
   // 4 In case we use
   Teuchos::RCP<Core::FE::DiscretizationFaces> facediscret =

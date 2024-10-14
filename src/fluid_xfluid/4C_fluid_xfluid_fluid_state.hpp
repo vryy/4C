@@ -31,7 +31,7 @@ namespace XFEM
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     class XFluidFluidMapExtractor;
   }
@@ -90,7 +90,7 @@ namespace FLD
     //@name Map extractors of the merged system
     //@{
     /// extractor used for splitting fluid and embedded fluid
-    Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> xffluidsplitter_;
+    Teuchos::RCP<FLD::Utils::XFluidFluidMapExtractor> xffluidsplitter_;
     /// extractor used for splitting between velocity and pressure dof from the combined background
     /// & embedded fluid dof-map
     Teuchos::RCP<Core::LinAlg::MapExtractor> xffluidvelpressplitter_;

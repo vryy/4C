@@ -24,7 +24,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace UTILS
+namespace Utils
 {
   /*!
   \brief A set of degrees of freedom
@@ -88,11 +88,11 @@ namespace UTILS
 
    protected:
   };  // class Cardiovascular0DDofSet
-}  // namespace UTILS
+}  // namespace Utils
 
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const UTILS::Cardiovascular0DDofSet& dofset);
+std::ostream& operator<<(std::ostream& os, const Utils::Cardiovascular0DDofSet& dofset);
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -389,7 +389,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::integrate_interfac
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> Adapter::FluidAle::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> Adapter::FluidAle::create_field_test()
 {
   return fluid_field()->create_field_test();
 }

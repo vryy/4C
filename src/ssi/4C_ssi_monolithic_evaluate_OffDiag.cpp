@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
     Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
+    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2i,
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<Adapter::SSIStructureWrapper> structure)
@@ -49,7 +49,7 @@ SSI::ScatraStructureOffDiagCoupling::ScatraStructureOffDiagCoupling(
 SSI::ScatraManifoldStructureOffDiagCoupling::ScatraManifoldStructureOffDiagCoupling(
     Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
+    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2i,
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
@@ -71,7 +71,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_scatra_structu
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
   // add state vectors to scalar transport discretization
@@ -109,7 +109,7 @@ void SSI::ScatraManifoldStructureOffDiagCoupling::
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
   // add state vectors to scalar transport discretization
@@ -333,11 +333,11 @@ void SSI::ScatraStructureOffDiagCoupling::
   Teuchos::ParameterList condparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_s2icoupling_capacitance_od, condparams);
 
   // linearization of boundary flux w.r.t. displacement
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::DifferentiationType>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::DifferentiationType>(
       "differentiationtype", ScaTra::DifferentiationType::disp, condparams);
 
   // add state vectors to scalar transport discretization
@@ -590,11 +590,11 @@ void SSI::ScatraStructureOffDiagCoupling::
   Teuchos::ParameterList condparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_s2icoupling_od, condparams);
 
   // linearization of boundary flux w.r.t. displacement
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::DifferentiationType>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::DifferentiationType>(
       "differentiationtype", ScaTra::DifferentiationType::disp, condparams);
 
   // add state vectors to scalar transport discretization
@@ -729,7 +729,7 @@ SSI::ScatraStructureOffDiagCouplingSSTI::ScatraStructureOffDiagCouplingSSTI(
     Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_scatra,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying,
+    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying,
     Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2i,
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<Adapter::SSIStructureWrapper> structure)

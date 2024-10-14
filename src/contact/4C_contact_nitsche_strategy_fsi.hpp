@@ -93,7 +93,7 @@ namespace CONTACT
     Inpar::CONTACT::NitscheWeighting weighting_;
   };
 
-  namespace UTILS
+  namespace Utils
   {
     //! The the contact state at local coord of Element cele and compare to the fsi_traction,
     //! return true if contact is evaluated, reture false if FSI is evaluated
@@ -105,7 +105,7 @@ namespace CONTACT
         const double& full_fsi_traction,             ///< stressfluid + penalty
         double& gap                                  ///< gap
     );
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace CONTACT
 FOUR_C_NAMESPACE_CLOSE
 

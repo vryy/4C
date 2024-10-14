@@ -267,12 +267,12 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
   const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_field()->block_system_matrix();
 
   // Get Idx of fluid and ale field map extractors
-  const int& fidx_other = FLD::UTILS::MapExtractor::cond_other;
-  const int& fidx_fsi = FLD::UTILS::MapExtractor::cond_fsi;
+  const int& fidx_other = FLD::Utils::MapExtractor::cond_other;
+  const int& fidx_fsi = FLD::Utils::MapExtractor::cond_fsi;
 
-  const int& aidx_other = ALE::UTILS::MapExtractor::cond_other;
-  const int& aidx_fsi = ALE::UTILS::MapExtractor::cond_fsi;
-  const int& aidx_fpsi = ALE::UTILS::MapExtractor::cond_fpsi;
+  const int& aidx_other = ALE::Utils::MapExtractor::cond_other;
+  const int& aidx_fsi = ALE::Utils::MapExtractor::cond_fsi;
+  const int& aidx_fpsi = ALE::Utils::MapExtractor::cond_fpsi;
 
   // FPSI Couplings
   const Coupling::Adapter::Coupling& coupsa_fpsi = fpsi_coupl()->poro_structure_ale_coupling();
@@ -403,7 +403,7 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
       // belong to the fsi-block matrix!
 
       Core::LinAlg::SparseMatrix& fluidalematrix_ii = fluidalematrix->matrix(
-          FPSI::UTILS::MapExtractor::cond_other, FPSI::UTILS::MapExtractor::cond_other);
+          FPSI::Utils::MapExtractor::cond_other, FPSI::Utils::MapExtractor::cond_other);
 
       // add fluid_ale block ii and gi
       // those two blocks are not condensed since they belong to the columns of the inner ale dofs
@@ -418,16 +418,16 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
       if (FSI_Interface_exists_)
       {
         Core::LinAlg::SparseMatrix& fluidalematrix_gg_fsi = fluidalematrix->matrix(
-            FPSI::UTILS::MapExtractor::cond_fsi, FPSI::UTILS::MapExtractor::cond_fsi);
+            FPSI::Utils::MapExtractor::cond_fsi, FPSI::Utils::MapExtractor::cond_fsi);
         Core::LinAlg::SparseMatrix& fluidalematrix_gi_fsi = fluidalematrix->matrix(
-            FPSI::UTILS::MapExtractor::cond_fsi, FPSI::UTILS::MapExtractor::cond_other);
+            FPSI::Utils::MapExtractor::cond_fsi, FPSI::Utils::MapExtractor::cond_other);
         Core::LinAlg::SparseMatrix& fluidalematrix_ig_fsi = fluidalematrix->matrix(
-            FPSI::UTILS::MapExtractor::cond_other, FPSI::UTILS::MapExtractor::cond_fsi);
+            FPSI::Utils::MapExtractor::cond_other, FPSI::Utils::MapExtractor::cond_fsi);
 
         Core::LinAlg::SparseMatrix& fluidalematrix_gfsigfpsi = fluidalematrix->matrix(
-            FPSI::UTILS::MapExtractor::cond_fsi, FPSI::UTILS::MapExtractor::cond_fpsi);
+            FPSI::Utils::MapExtractor::cond_fsi, FPSI::Utils::MapExtractor::cond_fpsi);
         Core::LinAlg::SparseMatrix& fluidalematrix_gfpsigfsi = fluidalematrix->matrix(
-            FPSI::UTILS::MapExtractor::cond_fpsi, FPSI::UTILS::MapExtractor::cond_fsi);
+            FPSI::Utils::MapExtractor::cond_fpsi, FPSI::Utils::MapExtractor::cond_fsi);
 
 
         (*figtransform1_)(fluid_field()->block_system_matrix()->full_row_map(),
@@ -539,9 +539,9 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
   // if (FSI_Interface_exists_)
   {
     fgicur_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-        fbm->matrix(FLD::UTILS::MapExtractor::cond_fsi, FLD::UTILS::MapExtractor::cond_other));
+        fbm->matrix(FLD::Utils::MapExtractor::cond_fsi, FLD::Utils::MapExtractor::cond_other));
     fggcur_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-        fbm->matrix(FLD::UTILS::MapExtractor::cond_fsi, FLD::UTILS::MapExtractor::cond_fsi));
+        fbm->matrix(FLD::Utils::MapExtractor::cond_fsi, FLD::Utils::MapExtractor::cond_fsi));
 
     // store parts of fluid matrix to know them in the next iteration as previous iteration matrices
     fgiprev_ = fgicur_;
@@ -554,9 +554,9 @@ void FPSI::MonolithicPlain::setup_system_matrix(Core::LinAlg::BlockSparseMatrixB
     if (fluidalematrix != Teuchos::null)
     {
       fmgicur_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(fluidalematrix->matrix(
-          FLD::UTILS::MapExtractor::cond_fsi, FLD::UTILS::MapExtractor::cond_other));
+          FLD::Utils::MapExtractor::cond_fsi, FLD::Utils::MapExtractor::cond_other));
       fmggcur_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(fluidalematrix->matrix(
-          FLD::UTILS::MapExtractor::cond_fsi, FLD::UTILS::MapExtractor::cond_fsi));
+          FLD::Utils::MapExtractor::cond_fsi, FLD::Utils::MapExtractor::cond_fsi));
     }
   }
 }
@@ -572,7 +572,7 @@ void FPSI::MonolithicPlain::setup_vector(Core::LinAlg::Vector<double>& f,
   const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> fbm =
       fluid_field()->block_system_matrix();
   const Core::LinAlg::SparseMatrix fgg =
-      fbm->matrix(FLD::UTILS::MapExtractor::cond_fsi, FLD::UTILS::MapExtractor::cond_fsi);
+      fbm->matrix(FLD::Utils::MapExtractor::cond_fsi, FLD::Utils::MapExtractor::cond_fsi);
 
   // get time integration parameters of structure and fluid time integrators
   // to enable consistent time integration among the fields
@@ -682,11 +682,11 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Core::LinAlg::Vector<double>& f
 
   // extract fluid and ale submatrices
   const Core::LinAlg::SparseMatrix& fig = blockf->matrix(
-      FLD::UTILS::MapExtractor::cond_other, FLD::UTILS::MapExtractor::cond_fsi);  // F_{I\Gamma}
+      FLD::Utils::MapExtractor::cond_other, FLD::Utils::MapExtractor::cond_fsi);  // F_{I\Gamma}
   const Core::LinAlg::SparseMatrix& fgg = blockf->matrix(
-      FLD::UTILS::MapExtractor::cond_fsi, FLD::UTILS::MapExtractor::cond_fsi);  // F_{\Gamma\Gamma}
+      FLD::Utils::MapExtractor::cond_fsi, FLD::Utils::MapExtractor::cond_fsi);  // F_{\Gamma\Gamma}
   // const Core::LinAlg::SparseMatrix& aig =
-  // blocka->Matrix(ALE::UTILS::MapExtractor::cond_other,ALE::UTILS::MapExtractor::cond_fsi); //
+  // blocka->Matrix(ALE::Utils::MapExtractor::cond_other,ALE::Utils::MapExtractor::cond_fsi); //
   // A_{I\Gamma}
 
   // some often re-used vectors

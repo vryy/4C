@@ -31,11 +31,11 @@ namespace Adapter
 
 namespace SSI
 {
-  namespace UTILS
+  namespace Utils
   {
     class SSIMaps;
     class SSIMeshTying;
-  }  // namespace UTILS
+  }  // namespace Utils
 
   class SsiMono;
 
@@ -50,8 +50,8 @@ namespace SSI
 
     //! constructor
     explicit MeshtyingStrategyBase(bool is_scatra_manifold,
-        Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-        Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying);
+        Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
+        Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying);
 
     /*!
      * @brief apply mesh tying to structure matrix
@@ -129,10 +129,10 @@ namespace SSI
     bool is_scatra_manifold() const { return is_scatra_manifold_; }
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps() const { return ssi_maps_; }
+    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps() const { return ssi_maps_; }
 
     //! SSI structure meshtying object containing coupling adapters, converters and maps
-    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying() const
+    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying() const
     {
       return ssi_structure_meshtying_;
     }
@@ -159,10 +159,10 @@ namespace SSI
     const bool is_scatra_manifold_;
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps_;
+    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps_;
 
     //! SSI structure meshtying object containing coupling adapters, converters and maps
-    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying_;
+    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying_;
   };
 
   //! SSI problem is represented by one sparse matrix
@@ -171,8 +171,8 @@ namespace SSI
    public:
     //! constructor
     explicit MeshtyingStrategySparse(bool is_scatra_manifold,
-        Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-        Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying);
+        Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
+        Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying);
 
     void apply_meshtying_to_scatra_manifold_structure(
         Teuchos::RCP<Core::LinAlg::SparseOperator> manifold_structure_matrix,
@@ -193,8 +193,8 @@ namespace SSI
    public:
     //! constructor
     explicit MeshtyingStrategyBlock(bool is_scatra_manifold,
-        Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-        Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying);
+        Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
+        Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying);
 
     void apply_meshtying_to_scatra_manifold_structure(
         Teuchos::RCP<Core::LinAlg::SparseOperator> manifold_structure_matrix,
@@ -234,8 +234,8 @@ namespace SSI
 
   //! build specific mesh tying strategy
   Teuchos::RCP<SSI::MeshtyingStrategyBase> build_meshtying_strategy(bool is_scatra_manifold,
-      Core::LinAlg::MatrixType matrixtype_scatra, Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
-      Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying);
+      Core::LinAlg::MatrixType matrixtype_scatra, Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
+      Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying);
 }  // namespace SSI
 FOUR_C_NAMESPACE_CLOSE
 

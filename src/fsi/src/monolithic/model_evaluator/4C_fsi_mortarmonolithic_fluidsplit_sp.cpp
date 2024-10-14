@@ -254,7 +254,7 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::setup_system()
     // enable debugging
     if (fsidyn.get<bool>("DEBUGOUTPUT"))
     {
-      pcdbg_ = Teuchos::make_rcp<UTILS::MonolithicDebugWriter>(*this);
+      pcdbg_ = Teuchos::make_rcp<Utils::MonolithicDebugWriter>(*this);
     }
 
     create_system_matrix();

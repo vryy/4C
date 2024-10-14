@@ -111,7 +111,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::init(
         "approach instead.");
   }
 
-  poromulti_ = POROMULTIPHASE::UTILS::create_poro_multi_phase_algorithm(
+  poromulti_ = POROMULTIPHASE::Utils::create_poro_multi_phase_algorithm(
       solschemeporo, globaltimeparams, get_comm());
 
   // initialize

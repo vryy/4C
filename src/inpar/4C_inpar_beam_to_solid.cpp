@@ -88,7 +88,7 @@ void Inpar::BeamToSolid::set_valid_parameters(Teuchos::ParameterList& list)
             BeamToSolidMortarShapefunctions::line4),
         &beam_to_solid_volume_mestying);
 
-    Core::UTILS::double_parameter("PENALTY_PARAMETER", 0.0,
+    Core::Utils::double_parameter("PENALTY_PARAMETER", 0.0,
         "Penalty parameter for beam-to-solid volume meshtying", &beam_to_solid_volume_mestying);
 
     // Add the geometry pair input parameters.
@@ -100,7 +100,7 @@ void Inpar::BeamToSolid::set_valid_parameters(Teuchos::ParameterList& list)
     //        coupled.
     // - Yes: The beam and solid states at the restart configuration are coupled. This allows to
     //        pre-deform the structures and then couple them.
-    Core::UTILS::bool_parameter("COUPLE_RESTART_STATE", "No",
+    Core::Utils::bool_parameter("COUPLE_RESTART_STATE", "No",
         "Enable / disable the coupling of the restart configuration.",
         &beam_to_solid_volume_mestying);
 
@@ -136,7 +136,7 @@ void Inpar::BeamToSolid::set_valid_parameters(Teuchos::ParameterList& list)
             BeamToSolidMortarShapefunctions::line4),
         &beam_to_solid_volume_mestying);
 
-    Core::UTILS::double_parameter("ROTATION_COUPLING_PENALTY_PARAMETER", 0.0,
+    Core::Utils::double_parameter("ROTATION_COUPLING_PENALTY_PARAMETER", 0.0,
         "Penalty parameter for rotational coupling in beam-to-solid volume mesh tying",
         &beam_to_solid_volume_mestying);
   }
@@ -146,35 +146,35 @@ void Inpar::BeamToSolid::set_valid_parameters(Teuchos::ParameterList& list)
       beam_to_solid_volume_mestying.sublist("RUNTIME VTK OUTPUT", false, "");
   {
     // Whether to write visualization output at all for btsvmt.
-    Core::UTILS::bool_parameter("WRITE_OUTPUT", "No",
+    Core::Utils::bool_parameter("WRITE_OUTPUT", "No",
         "Enable / disable beam-to-solid volume mesh tying output.",
         &beam_to_solid_volume_mestying_output);
 
-    Core::UTILS::bool_parameter("NODAL_FORCES", "No",
+    Core::Utils::bool_parameter("NODAL_FORCES", "No",
         "Enable / disable output of the resulting nodal forces due to beam to solid interaction.",
         &beam_to_solid_volume_mestying_output);
 
-    Core::UTILS::bool_parameter("MORTAR_LAMBDA_DISCRET", "No",
+    Core::Utils::bool_parameter("MORTAR_LAMBDA_DISCRET", "No",
         "Enable / disable output of the discrete Lagrange multipliers at the node of the Lagrange "
         "multiplier shape functions.",
         &beam_to_solid_volume_mestying_output);
 
-    Core::UTILS::bool_parameter("MORTAR_LAMBDA_CONTINUOUS", "No",
+    Core::Utils::bool_parameter("MORTAR_LAMBDA_CONTINUOUS", "No",
         "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
         &beam_to_solid_volume_mestying_output);
 
-    Core::UTILS::int_parameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
+    Core::Utils::int_parameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
         "Number of segments for continuous mortar output", &beam_to_solid_volume_mestying_output);
 
-    Core::UTILS::bool_parameter("SEGMENTATION", "No",
+    Core::Utils::bool_parameter("SEGMENTATION", "No",
         "Enable / disable output of segmentation points.", &beam_to_solid_volume_mestying_output);
 
-    Core::UTILS::bool_parameter("INTEGRATION_POINTS", "No",
+    Core::Utils::bool_parameter("INTEGRATION_POINTS", "No",
         "Enable / disable output of used integration points. If the contact method has 'forces' at "
         "the integration point, they will also be output.",
         &beam_to_solid_volume_mestying_output);
 
-    Core::UTILS::bool_parameter("UNIQUE_IDS", "No",
+    Core::Utils::bool_parameter("UNIQUE_IDS", "No",
         "Enable / disable output of unique IDs (mainly for testing of created VTK files).",
         &beam_to_solid_volume_mestying_output);
   }
@@ -217,13 +217,13 @@ void Inpar::BeamToSolid::set_valid_parameters(Teuchos::ParameterList& list)
             BeamToSolidMortarShapefunctions::line4),
         &beam_to_solid_surface_mestying);
 
-    Core::UTILS::double_parameter("PENALTY_PARAMETER", 0.0,
+    Core::Utils::double_parameter("PENALTY_PARAMETER", 0.0,
         "Penalty parameter for beam-to-solid surface meshtying", &beam_to_solid_surface_mestying);
 
     // Parameters for rotational coupling.
-    Core::UTILS::bool_parameter("ROTATIONAL_COUPLING", "No", "Enable / disable rotational coupling",
+    Core::Utils::bool_parameter("ROTATIONAL_COUPLING", "No", "Enable / disable rotational coupling",
         &beam_to_solid_surface_mestying);
-    Core::UTILS::double_parameter("ROTATIONAL_COUPLING_PENALTY_PARAMETER", 0.0,
+    Core::Utils::double_parameter("ROTATIONAL_COUPLING_PENALTY_PARAMETER", 0.0,
         "Penalty parameter for beam-to-solid surface rotational meshtying",
         &beam_to_solid_surface_mestying);
     setStringToIntegralParameter<BeamToSolidSurfaceRotationCoupling>(
@@ -259,7 +259,7 @@ void Inpar::BeamToSolid::set_valid_parameters(Teuchos::ParameterList& list)
             BeamToSolidConstraintEnforcement::none, BeamToSolidConstraintEnforcement::penalty),
         &beam_to_solid_surface_contact);
 
-    Core::UTILS::double_parameter("PENALTY_PARAMETER", 0.0,
+    Core::Utils::double_parameter("PENALTY_PARAMETER", 0.0,
         "Penalty parameter for beam-to-solid surface contact", &beam_to_solid_surface_contact);
 
     setStringToIntegralParameter<BeamToSolidSurfaceContact>("CONTACT_TYPE", "none",
@@ -276,7 +276,7 @@ void Inpar::BeamToSolid::set_valid_parameters(Teuchos::ParameterList& list)
             BeamToSolidSurfaceContactPenaltyLaw::linear_quadratic),
         &beam_to_solid_surface_contact);
 
-    Core::UTILS::double_parameter("PENALTY_PARAMETER_G0", 0.0,
+    Core::Utils::double_parameter("PENALTY_PARAMETER_G0", 0.0,
         "First penalty regularization parameter G0 >=0: For gap<G0 contact is active",
         &beam_to_solid_surface_contact);
 
@@ -312,38 +312,38 @@ void Inpar::BeamToSolid::set_valid_parameters(Teuchos::ParameterList& list)
       beam_to_solid_surface.sublist("RUNTIME VTK OUTPUT", false, "");
   {
     // Whether to write visualization output at all.
-    Core::UTILS::bool_parameter("WRITE_OUTPUT", "No",
+    Core::Utils::bool_parameter("WRITE_OUTPUT", "No",
         "Enable / disable beam-to-solid volume mesh tying output.", &beam_to_solid_surface_output);
 
-    Core::UTILS::bool_parameter("NODAL_FORCES", "No",
+    Core::Utils::bool_parameter("NODAL_FORCES", "No",
         "Enable / disable output of the resulting nodal forces due to beam to solid interaction.",
         &beam_to_solid_surface_output);
 
-    Core::UTILS::bool_parameter("AVERAGED_NORMALS", "No",
+    Core::Utils::bool_parameter("AVERAGED_NORMALS", "No",
         "Enable / disable output of averaged nodal normals on the surface.",
         &beam_to_solid_surface_output);
 
-    Core::UTILS::bool_parameter("MORTAR_LAMBDA_DISCRET", "No",
+    Core::Utils::bool_parameter("MORTAR_LAMBDA_DISCRET", "No",
         "Enable / disable output of the discrete Lagrange multipliers at the node of the Lagrange "
         "multiplier shape functions.",
         &beam_to_solid_surface_output);
 
-    Core::UTILS::bool_parameter("MORTAR_LAMBDA_CONTINUOUS", "No",
+    Core::Utils::bool_parameter("MORTAR_LAMBDA_CONTINUOUS", "No",
         "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
         &beam_to_solid_surface_output);
 
-    Core::UTILS::int_parameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
+    Core::Utils::int_parameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
         "Number of segments for continuous mortar output", &beam_to_solid_surface_output);
 
-    Core::UTILS::bool_parameter("SEGMENTATION", "No",
+    Core::Utils::bool_parameter("SEGMENTATION", "No",
         "Enable / disable output of segmentation points.", &beam_to_solid_surface_output);
 
-    Core::UTILS::bool_parameter("INTEGRATION_POINTS", "No",
+    Core::Utils::bool_parameter("INTEGRATION_POINTS", "No",
         "Enable / disable output of used integration points. If the contact method has 'forces' at "
         "the integration point, they will also be output.",
         &beam_to_solid_surface_output);
 
-    Core::UTILS::bool_parameter("UNIQUE_IDS", "No",
+    Core::Utils::bool_parameter("UNIQUE_IDS", "No",
         "Enable / disable output of unique IDs (mainly for testing of created VTK files).",
         &beam_to_solid_surface_output);
   }

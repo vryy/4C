@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  |                                                     berardocco 10/18 |
  *----------------------------------------------------------------------*/
 EleMag::ElemagResultTest::ElemagResultTest(ElemagTimeInt& elemagalgo)
-    : Core::UTILS::ResultTest("ELECTROMAGNETIC")
+    : Core::Utils::ResultTest("ELECTROMAGNETIC")
 {
   dis_ = elemagalgo.discretization();
   error_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(4);

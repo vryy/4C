@@ -984,7 +984,7 @@ void Mat::ConstraintMixture::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
       // numbering starts from zero here, thus use curvenum-1
       if (curvenum)
         curvefac = Global::Problem::instance()
-                       ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum - 1)
+                       ->function_by_id<Core::Utils::FunctionOfTime>(curvenum - 1)
                        .evaluate(time);
       if (curvefac > (1.0 + eps) || curvefac < (0.0 - eps))
         FOUR_C_THROW("correct your time curve for prestretch, just values in [0,1] are allowed %f",
@@ -1459,7 +1459,7 @@ void Mat::ConstraintMixture::evaluate_elastin(const Core::LinAlg::Matrix<NUM_STR
     // numbering starts from zero here, thus use curvenum-1
     if (curvenum)
       curvefac = Global::Problem::instance()
-                     ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum - 1)
+                     ->function_by_id<Core::Utils::FunctionOfTime>(curvenum - 1)
                      .evaluate(time);
     if (curvefac > 1.0 || curvefac < 0.0)
       FOUR_C_THROW(

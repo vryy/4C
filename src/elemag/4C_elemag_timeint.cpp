@@ -100,7 +100,7 @@ void EleMag::ElemagTimeInt::init()
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
-    eleparams.set<const Core::UTILS::FunctionManager *>(
+    eleparams.set<const Core::Utils::FunctionManager *>(
         "function_manager", &Global::Problem::instance()->function_manager());
     const Core::ProblemType problem_type = Core::ProblemType::elemag;
     eleparams.set<const Core::ProblemType *>("problem_type", &problem_type);
@@ -742,7 +742,7 @@ void EleMag::ElemagTimeInt::apply_dirichlet_to_system(bool resonly)
   TEUCHOS_FUNC_TIME_MONITOR("      + apply DBC");
   Teuchos::ParameterList params;
   params.set<double>("total time", time_);
-  params.set<const Core::UTILS::FunctionManager *>(
+  params.set<const Core::Utils::FunctionManager *>(
       "function_manager", &Global::Problem::instance()->function_manager());
   const Core::ProblemType problem_type = Core::ProblemType::elemag;
   params.set<const Core::ProblemType *>("problem_type", &problem_type);
@@ -1137,7 +1137,7 @@ Teuchos::RCP<Core::FE::Discretization> EleMag::ElemagTimeInt::discretization()
 /*----------------------------------------------------------------------*
  |  Create test field (public)                         berardocco 08/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> EleMag::ElemagTimeInt::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> EleMag::ElemagTimeInt::create_field_test()
 {
   return Teuchos::make_rcp<ElemagResultTest>(*this);
 }  // CreateFieldTest

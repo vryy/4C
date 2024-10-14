@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Solid::UTILS::pk2_to_cauchy(const Core::LinAlg::Matrix<6, 1>& pk2,
+void Solid::Utils::pk2_to_cauchy(const Core::LinAlg::Matrix<6, 1>& pk2,
     const Core::LinAlg::Matrix<3, 3>& defgrd, Core::LinAlg::Matrix<6, 1>& cauchy)
 {
   Core::LinAlg::Matrix<3, 3> S_matrix;
@@ -32,7 +32,7 @@ void Solid::UTILS::pk2_to_cauchy(const Core::LinAlg::Matrix<6, 1>& pk2,
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(cauchy_matrix, cauchy);
 }
 
-Core::LinAlg::Matrix<6, 1> Solid::UTILS::green_lagrange_to_euler_almansi(
+Core::LinAlg::Matrix<6, 1> Solid::Utils::green_lagrange_to_euler_almansi(
     const Core::LinAlg::Matrix<6, 1>& gl, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   Core::LinAlg::Matrix<3, 3> invdefgrd(defgrd);
@@ -52,7 +52,7 @@ Core::LinAlg::Matrix<6, 1> Solid::UTILS::green_lagrange_to_euler_almansi(
   return ea;
 }
 
-Core::LinAlg::Matrix<6, 1> Solid::UTILS::green_lagrange_to_log_strain(
+Core::LinAlg::Matrix<6, 1> Solid::Utils::green_lagrange_to_log_strain(
     const Core::LinAlg::Matrix<6, 1>& gl)
 {
   Core::LinAlg::Matrix<3, 3> E_matrix;
@@ -78,14 +78,14 @@ Core::LinAlg::Matrix<6, 1> Solid::UTILS::green_lagrange_to_log_strain(
   return log_strain_voigt;
 }
 
-int Solid::UTILS::read_element::read_element_material(
+int Solid::Utils::read_element::read_element_material(
     const Core::IO::InputParameterContainer& container)
 {
   int material = container.get<int>("MAT");
   return material;
 }
 
-Inpar::Solid::KinemType Solid::UTILS::read_element::read_element_kinematic_type(
+Inpar::Solid::KinemType Solid::Utils::read_element::read_element_kinematic_type(
     const Core::IO::InputParameterContainer& container)
 {
   auto kinem = container.get<std::string>("KINEM");
@@ -101,7 +101,7 @@ Inpar::Solid::KinemType Solid::UTILS::read_element::read_element_kinematic_type(
   }
 }
 
-Discret::ELEMENTS::ElementTechnology Solid::UTILS::read_element::read_element_technology(
+Discret::ELEMENTS::ElementTechnology Solid::Utils::read_element::read_element_technology(
     const Core::IO::InputParameterContainer& container)
 {
   auto type = container.get_or<std::string>("TECH", "none");
@@ -134,7 +134,7 @@ Discret::ELEMENTS::ElementTechnology Solid::UTILS::read_element::read_element_te
     FOUR_C_THROW("unrecognized element technology type %s", type.c_str());
 }
 
-Discret::ELEMENTS::PrestressTechnology Solid::UTILS::read_element::read_prestress_technology(
+Discret::ELEMENTS::PrestressTechnology Solid::Utils::read_element::read_prestress_technology(
     const Core::IO::InputParameterContainer& container)
 {
   auto type = container.get_or<std::string>("PRESTRESS_TECH", "none");
@@ -151,26 +151,26 @@ Discret::ELEMENTS::PrestressTechnology Solid::UTILS::read_element::read_prestres
   FOUR_C_THROW("unrecognized prestress technology type %s", type.c_str());
 }
 
-Discret::ELEMENTS::SolidElementProperties Solid::UTILS::read_element::read_solid_element_properties(
+Discret::ELEMENTS::SolidElementProperties Solid::Utils::read_element::read_solid_element_properties(
     const Core::IO::InputParameterContainer& container)
 {
   Discret::ELEMENTS::SolidElementProperties solid_properties{};
 
   // element technology
   solid_properties.element_technology =
-      Solid::UTILS::read_element::read_element_technology(container);
+      Solid::Utils::read_element::read_element_technology(container);
 
   // prestress technology
   solid_properties.prestress_technology =
-      Solid::UTILS::read_element::read_prestress_technology(container);
+      Solid::Utils::read_element::read_prestress_technology(container);
 
   // kinematic type
-  solid_properties.kintype = Solid::UTILS::read_element::read_element_kinematic_type(container);
+  solid_properties.kintype = Solid::Utils::read_element::read_element_kinematic_type(container);
 
   return solid_properties;
 }
 
-void Solid::UTILS::nodal_block_information_solid(
+void Solid::Utils::nodal_block_information_solid(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;

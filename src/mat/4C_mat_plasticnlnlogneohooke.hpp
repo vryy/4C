@@ -39,7 +39,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core
 {
-  namespace UTILS
+  namespace Utils
   {
     class FunctionOfAnything;
   }
@@ -259,7 +259,7 @@ namespace Mat
     //! active yielding between t_n and t_n+1
     std::vector<double> activeyield_;
 
-    const Core::UTILS::FunctionOfAnything* hardening_function_{nullptr};
+    const Core::Utils::FunctionOfAnything* hardening_function_{nullptr};
 
     //! indicator if #Initialize routine has been called
     bool isinit_;

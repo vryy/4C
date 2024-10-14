@@ -21,9 +21,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterList& params,
+void FLD::Utils::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
-    Core::FE::UTILS::Dbc::DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+    Core::FE::Utils::Dbc::DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
     int hierarchical_order) const
 {
   // no need to check the cast, because it has been done during
@@ -36,14 +36,14 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterList& params,
+void FLD::Utils::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
-    double time, Core::FE::UTILS::Dbc::DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+    double time, Core::FE::Utils::Dbc::DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
     int hierarchical_order) const
 
 {
   // call to corresponding method in base class; safety checks inside
-  Core::FE::UTILS::Dbc::read_dirichlet_condition(
+  Core::FE::Utils::Dbc::read_dirichlet_condition(
       params, discret, cond, time, info, dbcgids, hierarchical_order);
 
   // say good bye if there are no face elements
@@ -140,7 +140,7 @@ void FLD::UTILS::DbcHdgFluid::read_dirichlet_condition(const Teuchos::ParameterL
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterList& params,
+void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
     const Core::LinAlg::Vector<int>& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
@@ -155,13 +155,13 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterList& params,
+void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
     double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
     const Core::LinAlg::Vector<int>& toggle) const
 {
   // call corresponding method from base class; safety checks inside
-  Core::FE::UTILS::Dbc::do_dirichlet_condition(
+  Core::FE::Utils::Dbc::do_dirichlet_condition(
       params, discret, cond, time, systemvectors, toggle, nullptr);
 
   // say good bye if there are no face elements
@@ -206,7 +206,7 @@ void FLD::UTILS::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
     Teuchos::ParameterList initParams;
     if (Global::Problem::instance(0)->get_problem_type() == Core::ProblemType::elemag or
         Global::Problem::instance(0)->get_problem_type() == Core::ProblemType::scatra)
-      Core::UTILS::add_enum_class_to_parameter_list<Core::FE::HDGAction>(
+      Core::Utils::add_enum_class_to_parameter_list<Core::FE::HDGAction>(
           "action", Core::FE::HDGAction::project_dirich_field, initParams);
     else
       // TODO: Introduce a general action type that is valid for all problems

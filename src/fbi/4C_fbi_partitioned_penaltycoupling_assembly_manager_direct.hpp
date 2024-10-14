@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FBI
 {
-  namespace UTILS
+  namespace Utils
   {
     class FBIAssemblyStrategy;
   }
@@ -52,7 +52,7 @@ namespace BEAMINTERACTION
       PartitionedBeamInteractionAssemblyManagerDirect(
           const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>
               assembly_contact_elepairs,
-          Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy);
+          Teuchos::RCP<FBI::Utils::FBIAssemblyStrategy> assemblystrategy);
 
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.
@@ -76,7 +76,7 @@ namespace BEAMINTERACTION
 
      protected:
       /// Object determining how the local matrices are assembled into the global one
-      Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy_;
+      Teuchos::RCP<FBI::Utils::FBIAssemblyStrategy> assemblystrategy_;
     };
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION

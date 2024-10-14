@@ -179,7 +179,7 @@ namespace Mat
         int eleGID) override;
 
     using ActivationEvaluatorVariant =
-        std::variant<std::monostate, const Core::UTILS::FunctionOfSpaceTime*,
+        std::variant<std::monostate, const Core::Utils::FunctionOfSpaceTime*,
             const std::unordered_map<int, std::vector<std::pair<double, double>>>*>;
 
    private:

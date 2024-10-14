@@ -480,7 +480,7 @@ namespace Adapter
     Teuchos::RCP<Core::LinAlg::Vector<double>> freact() override { return structure_->freact(); }
 
     /// create result test for encapsulated structure algorithm
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override
     {
       return structure_->create_field_test();
     }

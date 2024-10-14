@@ -23,7 +23,7 @@ namespace
 
     const double ref_W = 0.69492997657856426;
 
-    Mat::UTILS::Muscle::evaluate_lambert(xi, W0, tol, maxiter);
+    Mat::Utils::Muscle::evaluate_lambert(xi, W0, tol, maxiter);
 
     EXPECT_NEAR(W0, ref_W, 1.0e-10);
   }
@@ -44,16 +44,16 @@ namespace
     double ref_fxi_l_greater_lopt = 0.90374610400726718;
 
     auto test_fxi_l_smaller_lmin =
-        Mat::UTILS::Muscle::evaluate_force_stretch_dependency_ehret(l_smaller_lmin, lmin, lopt);
+        Mat::Utils::Muscle::evaluate_force_stretch_dependency_ehret(l_smaller_lmin, lmin, lopt);
     auto test_fxi_l_equal_lmin =
-        Mat::UTILS::Muscle::evaluate_force_stretch_dependency_ehret(lmin, lmin, lopt);
+        Mat::Utils::Muscle::evaluate_force_stretch_dependency_ehret(lmin, lmin, lopt);
     auto test_fxi_l_greater_lmin_smaller_lopt =
-        Mat::UTILS::Muscle::evaluate_force_stretch_dependency_ehret(
+        Mat::Utils::Muscle::evaluate_force_stretch_dependency_ehret(
             l_greater_lmin_smaller_lopt, lmin, lopt);
     auto test_fxi_l_equal_lopt =
-        Mat::UTILS::Muscle::evaluate_force_stretch_dependency_ehret(lopt, lmin, lopt);
+        Mat::Utils::Muscle::evaluate_force_stretch_dependency_ehret(lopt, lmin, lopt);
     auto test_fxi_l_greater_lopt =
-        Mat::UTILS::Muscle::evaluate_force_stretch_dependency_ehret(l_greater_lopt, lmin, lopt);
+        Mat::Utils::Muscle::evaluate_force_stretch_dependency_ehret(l_greater_lopt, lmin, lopt);
 
     EXPECT_NEAR(test_fxi_l_smaller_lmin, ref_fxi_l_smaller_lmin, 1.0e-10);
     EXPECT_NEAR(test_fxi_l_equal_lmin, ref_fxi_l_equal_lmin, 1.0e-10);
@@ -78,17 +78,17 @@ namespace
     double ref_dfxi_l_greater_lopt = -0.87864204556262071;
 
     auto test_dfxi_l_smaller_lmin =
-        Mat::UTILS::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
+        Mat::Utils::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
             l_smaller_lmin, lmin, lopt);
     auto test_dfxi_l_equal_lmin =
-        Mat::UTILS::Muscle::evaluate_derivative_force_stretch_dependency_ehret(lmin, lmin, lopt);
+        Mat::Utils::Muscle::evaluate_derivative_force_stretch_dependency_ehret(lmin, lmin, lopt);
     auto test_dfxi_l_greater_lmin_smaller_lopt =
-        Mat::UTILS::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
+        Mat::Utils::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
             l_greater_lmin_smaller_lopt, lmin, lopt);
     auto test_dfxi_l_equal_lopt =
-        Mat::UTILS::Muscle::evaluate_derivative_force_stretch_dependency_ehret(lopt, lmin, lopt);
+        Mat::Utils::Muscle::evaluate_derivative_force_stretch_dependency_ehret(lopt, lmin, lopt);
     auto test_dfxi_l_greater_lopt =
-        Mat::UTILS::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
+        Mat::Utils::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
             l_greater_lopt, lmin, lopt);
 
     EXPECT_NEAR(test_dfxi_l_smaller_lmin, ref_dfxi_l_smaller_lmin, 1.0e-10);
@@ -115,17 +115,17 @@ namespace
     double ref_dfxi_l_greater_lopt = 0.58254701561680666;
 
     auto test_dfxi_l_smaller_lmin =
-        Mat::UTILS::Muscle::evaluate_integral_force_stretch_dependency_ehret(
+        Mat::Utils::Muscle::evaluate_integral_force_stretch_dependency_ehret(
             l_smaller_lmin, lmin, lopt);
     auto test_dfxi_l_equal_lmin =
-        Mat::UTILS::Muscle::evaluate_integral_force_stretch_dependency_ehret(lmin, lmin, lopt);
+        Mat::Utils::Muscle::evaluate_integral_force_stretch_dependency_ehret(lmin, lmin, lopt);
     auto test_dfxi_l_greater_lmin_smaller_lopt =
-        Mat::UTILS::Muscle::evaluate_integral_force_stretch_dependency_ehret(
+        Mat::Utils::Muscle::evaluate_integral_force_stretch_dependency_ehret(
             l_greater_lmin_smaller_lopt, lmin, lopt);
     auto test_dfxi_l_equal_lopt =
-        Mat::UTILS::Muscle::evaluate_integral_force_stretch_dependency_ehret(lopt, lmin, lopt);
+        Mat::Utils::Muscle::evaluate_integral_force_stretch_dependency_ehret(lopt, lmin, lopt);
     auto test_dfxi_l_greater_lopt =
-        Mat::UTILS::Muscle::evaluate_integral_force_stretch_dependency_ehret(
+        Mat::Utils::Muscle::evaluate_integral_force_stretch_dependency_ehret(
             l_greater_lopt, lmin, lopt);
 
     EXPECT_NEAR(test_dfxi_l_smaller_lmin, ref_dfxi_l_smaller_lmin, 1.0e-10);
@@ -150,9 +150,9 @@ namespace
     double ref_case_dotl_greater_zero = -59.9;
     double ref_case_dotl_smaller_zero = -5.75;
 
-    auto test_case_dotl_greater_zero = Mat::UTILS::Muscle::evaluate_force_velocity_dependency_boel(
+    auto test_case_dotl_greater_zero = Mat::Utils::Muscle::evaluate_force_velocity_dependency_boel(
         dotl_greater_zero, dotlmin, de, dc, ke, kc);
-    auto test_case_dotl_smaller_zero = Mat::UTILS::Muscle::evaluate_force_velocity_dependency_boel(
+    auto test_case_dotl_smaller_zero = Mat::Utils::Muscle::evaluate_force_velocity_dependency_boel(
         dotl_smaller_zero, dotlmin, de, dc, ke, kc);
 
     EXPECT_NEAR(test_case_dotl_greater_zero, ref_case_dotl_greater_zero, 1.0e-10);
@@ -174,10 +174,10 @@ namespace
     double ref_case_dotl_smaller_zero = -84.375;
 
     auto test_case_dotl_greater_zero =
-        Mat::UTILS::Muscle::evaluate_derivative_force_velocity_dependency_boel(
+        Mat::Utils::Muscle::evaluate_derivative_force_velocity_dependency_boel(
             dotl_greater_zero, 1 / 0.1, dotlmin, de, dc, ke, kc);
     auto test_case_dotl_smaller_zero =
-        Mat::UTILS::Muscle::evaluate_derivative_force_velocity_dependency_boel(
+        Mat::Utils::Muscle::evaluate_derivative_force_velocity_dependency_boel(
             dotl_smaller_zero, 1 / 0.1, dotlmin, de, dc, ke, kc);
 
     EXPECT_NEAR(test_case_dotl_greater_zero, ref_case_dotl_greater_zero, 1.0e-10);
@@ -205,13 +205,13 @@ namespace
     double ref_act_stress_t_smaller_tact = 0.0;
     double ref_act_stress_t_greater_tact = 5.3471385137375966;
 
-    auto test_act_stress_t_0 = Mat::UTILS::Muscle::evaluate_time_dependent_active_stress_ehret(
+    auto test_act_stress_t_0 = Mat::Utils::Muscle::evaluate_time_dependent_active_stress_ehret(
         Na, muTypesNum, rho, I, F, T, actIntervalsNum, actTimes, actValues, t_0);
     auto test_act_stress_t_smaller_tact =
-        Mat::UTILS::Muscle::evaluate_time_dependent_active_stress_ehret(
+        Mat::Utils::Muscle::evaluate_time_dependent_active_stress_ehret(
             Na, muTypesNum, rho, I, F, T, actIntervalsNum, actTimes, actValues, t_smaller_tact);
     auto test_act_stress_t_greater_tact =
-        Mat::UTILS::Muscle::evaluate_time_dependent_active_stress_ehret(
+        Mat::Utils::Muscle::evaluate_time_dependent_active_stress_ehret(
             Na, muTypesNum, rho, I, F, T, actIntervalsNum, actTimes, actValues, t_greater_tact);
 
     EXPECT_NEAR(test_act_stress_t_0, ref_act_stress_t_0, 1.0e-10);
@@ -231,11 +231,11 @@ namespace
     double ref_fxi_l_greater_lopt = 0.8888888888888888;
 
     auto test_fxi_l_smaller_lopt =
-        Mat::UTILS::Muscle::evaluate_active_force_stretch_dependency_blemker(l_smaller_lopt, lopt);
+        Mat::Utils::Muscle::evaluate_active_force_stretch_dependency_blemker(l_smaller_lopt, lopt);
     auto test_fxi_l_equal_lopt =
-        Mat::UTILS::Muscle::evaluate_active_force_stretch_dependency_blemker(lopt, lopt);
+        Mat::Utils::Muscle::evaluate_active_force_stretch_dependency_blemker(lopt, lopt);
     auto test_fxi_l_greater_lopt =
-        Mat::UTILS::Muscle::evaluate_active_force_stretch_dependency_blemker(l_greater_lopt, lopt);
+        Mat::Utils::Muscle::evaluate_active_force_stretch_dependency_blemker(l_greater_lopt, lopt);
 
     EXPECT_NEAR(test_fxi_l_smaller_lopt, ref_fxi_l_smaller_lopt, 1.0e-10);
     EXPECT_NEAR(test_fxi_l_equal_lopt, ref_fxi_l_equal_lopt, 1.0e-10);
@@ -254,12 +254,12 @@ namespace
     double ref_dfxi_l_greater_lopt = -1.1111111111111116;
 
     auto test_dfxi_l_smaller_lopt =
-        Mat::UTILS::Muscle::evaluate_derivative_active_force_stretch_dependency_blemker(
+        Mat::Utils::Muscle::evaluate_derivative_active_force_stretch_dependency_blemker(
             l_smaller_lopt, lopt);
     auto test_dfxi_l_equal_lopt =
-        Mat::UTILS::Muscle::evaluate_derivative_active_force_stretch_dependency_blemker(lopt, lopt);
+        Mat::Utils::Muscle::evaluate_derivative_active_force_stretch_dependency_blemker(lopt, lopt);
     auto test_dfxi_l_greater_lopt =
-        Mat::UTILS::Muscle::evaluate_derivative_active_force_stretch_dependency_blemker(
+        Mat::Utils::Muscle::evaluate_derivative_active_force_stretch_dependency_blemker(
             l_greater_lopt, lopt);
 
     EXPECT_NEAR(test_dfxi_l_smaller_lopt, ref_dfxi_l_smaller_lopt, 1.0e-10);
@@ -286,19 +286,19 @@ namespace
     double ref_fxi_l_greater_lstar = 4.9696657821758325;
 
     auto test_fxi_l_smaller_lopt =
-        Mat::UTILS::Muscle::evaluate_passive_force_stretch_dependency_blemker(
+        Mat::Utils::Muscle::evaluate_passive_force_stretch_dependency_blemker(
             l_smaller_lopt, lopt, lstar, P1, P2);
     auto test_fxi_l_equal_lopt =
-        Mat::UTILS::Muscle::evaluate_passive_force_stretch_dependency_blemker(
+        Mat::Utils::Muscle::evaluate_passive_force_stretch_dependency_blemker(
             lopt, lopt, lstar, P1, P2);
     auto test_fxi_l_greater_lopt_smaller_lstar =
-        Mat::UTILS::Muscle::evaluate_passive_force_stretch_dependency_blemker(
+        Mat::Utils::Muscle::evaluate_passive_force_stretch_dependency_blemker(
             l_greater_lopt_smaller_lstar, lopt, lstar, P1, P2);
     auto test_fxi_l_equal_lstar =
-        Mat::UTILS::Muscle::evaluate_passive_force_stretch_dependency_blemker(
+        Mat::Utils::Muscle::evaluate_passive_force_stretch_dependency_blemker(
             lstar, lopt, lstar, P1, P2);
     auto test_fxi_l_greater_lstar =
-        Mat::UTILS::Muscle::evaluate_passive_force_stretch_dependency_blemker(
+        Mat::Utils::Muscle::evaluate_passive_force_stretch_dependency_blemker(
             l_greater_lstar, lopt, lstar, P1, P2);
 
     EXPECT_NEAR(test_fxi_l_smaller_lopt, ref_fxi_l_smaller_lopt, 1.0e-10);
@@ -328,19 +328,19 @@ namespace
     double ref_dfxi_l_greater_lstar = 11.871004707569982;
 
     auto test_dfxi_l_smaller_lopt =
-        Mat::UTILS::Muscle::evaluate_derivative_passive_force_stretch_dependency_blemker(
+        Mat::Utils::Muscle::evaluate_derivative_passive_force_stretch_dependency_blemker(
             l_smaller_lopt, lopt, lstar, P1, P2);
     auto test_dfxi_l_equal_lopt =
-        Mat::UTILS::Muscle::evaluate_derivative_passive_force_stretch_dependency_blemker(
+        Mat::Utils::Muscle::evaluate_derivative_passive_force_stretch_dependency_blemker(
             lopt, lopt, lstar, P1, P2);
     auto test_dfxi_l_greater_lopt_smaller_lstar =
-        Mat::UTILS::Muscle::evaluate_derivative_passive_force_stretch_dependency_blemker(
+        Mat::Utils::Muscle::evaluate_derivative_passive_force_stretch_dependency_blemker(
             l_greater_lopt_smaller_lstar, lopt, lstar, P1, P2);
     auto test_dfxi_l_equal_lstar =
-        Mat::UTILS::Muscle::evaluate_derivative_passive_force_stretch_dependency_blemker(
+        Mat::Utils::Muscle::evaluate_derivative_passive_force_stretch_dependency_blemker(
             lstar, lopt, lstar, P1, P2);
     auto test_dfxi_l_greater_lstar =
-        Mat::UTILS::Muscle::evaluate_derivative_passive_force_stretch_dependency_blemker(
+        Mat::Utils::Muscle::evaluate_derivative_passive_force_stretch_dependency_blemker(
             l_greater_lstar, lopt, lstar, P1, P2);
 
     EXPECT_NEAR(test_dfxi_l_smaller_lopt, ref_dfxi_l_smaller_lopt, 1.0e-10);
@@ -366,13 +366,13 @@ namespace
     double ref_act_stress_t_smaller_tact = 0.0;
     double ref_act_stress_t_greater_tact = 62.467899877162083;
 
-    auto test_act_stress_t_0 = Mat::UTILS::Muscle::evaluate_time_dependent_active_stress_tanh(
+    auto test_act_stress_t_0 = Mat::Utils::Muscle::evaluate_time_dependent_active_stress_tanh(
         sigma_max, alpha, beta, t_act_start, t_0);
     auto test_act_stress_t_smaller_tact =
-        Mat::UTILS::Muscle::evaluate_time_dependent_active_stress_tanh(
+        Mat::Utils::Muscle::evaluate_time_dependent_active_stress_tanh(
             sigma_max, alpha, beta, t_act_start, t_smaller_tact);
     auto test_act_stress_t_greater_tact =
-        Mat::UTILS::Muscle::evaluate_time_dependent_active_stress_tanh(
+        Mat::Utils::Muscle::evaluate_time_dependent_active_stress_tanh(
             sigma_max, alpha, beta, t_act_start, t_greater_tact);
 
     EXPECT_NEAR(test_act_stress_t_0, ref_act_stress_t_0, 1.0e-10);

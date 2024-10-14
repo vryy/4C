@@ -440,7 +440,7 @@ namespace Discret
      public:
       /// Singleton access method
       static Ale3Impl<distype>* instance(
-          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
       void static_ke_laplace(Ale3* ele,                ///< pointer to element
           Core::FE::Discretization& dis,               ///< discretization
@@ -787,7 +787,7 @@ namespace Discret
      public:
       /// Singleton access method
       static Ale3SurfaceImpl<distype>* instance(
-          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
       //! number of element nodes
       static constexpr int bdrynen_ = Core::FE::num_nodes<distype>;

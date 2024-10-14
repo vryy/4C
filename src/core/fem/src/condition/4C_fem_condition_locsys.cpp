@@ -70,7 +70,7 @@ Core::Conditions::LocsysManager::LocsysManager(Core::FE::Discretization& discret
  *-------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::update(const double time,
     std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> nodenormals,
-    const Core::UTILS::FunctionManager& function_manager)
+    const Core::Utils::FunctionManager& function_manager)
 {
   nodenormals_ = std::move(nodenormals);
   // IMPORTANT NOTE:
@@ -227,14 +227,14 @@ void Core::Conditions::LocsysManager::update(const double time,
                     currPos[dim] = xp[dim] + currDisp[dim];
 
                   // Evaluate function with current node position
-                  functfac = (function_manager.function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+                  functfac = (function_manager.function_by_id<Core::Utils::FunctionOfSpaceTime>(
                                   (*funct)[j] - 1))
                                  .evaluate(currPos.data(), time, j);
                 }
                 else
                 {
                   // Evaluate function with reference node position
-                  functfac = (function_manager.function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+                  functfac = (function_manager.function_by_id<Core::Utils::FunctionOfSpaceTime>(
                                   (*funct)[j] - 1))
                                  .evaluate(node->x().data(), time, j);
                 }

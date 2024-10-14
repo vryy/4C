@@ -116,7 +116,7 @@ void TSI::Partitioned::read_restart(int step)
 
   // Material pointers to other field were deleted during read_restart().
   // They need to be reset.
-  TSI::UTILS::set_material_pointers_matching_grid(
+  TSI::Utils::set_material_pointers_matching_grid(
       *structure_field()->discretization(), *thermo_field()->discretization());
 
   // structural and thermal contact

@@ -163,9 +163,9 @@ void PoroElastScaTra::PoroScatraPart1WCPoroToScatra::read_restart(int restart)
 
     // Material pointers to other field were deleted during read_restart().
     // They need to be reset.
-    PoroElast::UTILS::set_material_pointers_matching_grid(
+    PoroElast::Utils::set_material_pointers_matching_grid(
         *poro_field()->structure_field()->discretization(), *scatra_field()->discretization());
-    PoroElast::UTILS::set_material_pointers_matching_grid(
+    PoroElast::Utils::set_material_pointers_matching_grid(
         *poro_field()->fluid_field()->discretization(), *scatra_field()->discretization());
   }
 }
@@ -252,9 +252,9 @@ void PoroElastScaTra::PoroScatraPart1WCScatraToPoro::read_restart(int restart)
 
     // Material pointers to other field were deleted during read_restart().
     // They need to be reset.
-    PoroElast::UTILS::set_material_pointers_matching_grid(
+    PoroElast::Utils::set_material_pointers_matching_grid(
         *poro_field()->structure_field()->discretization(), *scatra_field()->discretization());
-    PoroElast::UTILS::set_material_pointers_matching_grid(
+    PoroElast::Utils::set_material_pointers_matching_grid(
         *poro_field()->fluid_field()->discretization(), *scatra_field()->discretization());
   }
 }

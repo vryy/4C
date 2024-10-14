@@ -34,13 +34,13 @@ void pasi_dyn()
   const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
   // print pasi logo to screen
-  if (comm.MyPID() == 0) PaSI::UTILS::logo();
+  if (comm.MyPID() == 0) PaSI::Utils::logo();
 
   // get parameter list
   const Teuchos::ParameterList& params = problem->pasi_dynamic_params();
 
   // modification of time parameters of subproblems
-  PaSI::UTILS::change_time_parameter(comm, params,
+  PaSI::Utils::change_time_parameter(comm, params,
       const_cast<Teuchos::ParameterList&>(problem->particle_params()),
       const_cast<Teuchos::ParameterList&>(problem->structural_dynamic_params()));
 

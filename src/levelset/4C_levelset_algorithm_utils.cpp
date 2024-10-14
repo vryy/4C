@@ -236,7 +236,7 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
       {
         // create the parameters for the error calculation
         Teuchos::ParameterList eleparams;
-        Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+        Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
             "action", ScaTra::Action::calc_error, eleparams);
         eleparams.set<Inpar::ScaTra::CalcErrorLevelSet>("calcerrorflag", calcerr);
 
@@ -264,7 +264,7 @@ void ScaTra::LevelSetAlgorithm::evaluate_error_compared_to_analytical_sol()
             int doflid = dofrowmap->LID(dofgid);
             // evaluate component k of spatial function
             double initialval =
-                problem_->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                problem_->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno - 1)
                     .evaluate(lnode->x().data(), time_, k);
             int err = phiref->ReplaceMyValues(1, &initialval, &doflid);
             if (err != 0) FOUR_C_THROW("dof not on proc");
@@ -925,7 +925,7 @@ void ScaTra::LevelSetAlgorithm::mass_center_using_smoothing()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_mass_center_smoothingfunct, eleparams);
 
   // give access to interface thickness from smoothing function (TPF module) in element calculations

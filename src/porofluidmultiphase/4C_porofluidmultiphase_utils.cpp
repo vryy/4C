@@ -66,7 +66,7 @@ namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROFLUIDMULTIPHASE::UTILS::setup_material(
+void POROFLUIDMULTIPHASE::Utils::setup_material(
     const Epetra_Comm& comm, const std::string& struct_disname, const std::string& fluid_disname)
 {
   // get the fluid discretization
@@ -131,7 +131,7 @@ void POROFLUIDMULTIPHASE::UTILS::setup_material(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector>
-POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
+POROFLUIDMULTIPHASE::Utils::convert_dof_vector_to_node_based_multi_vector(
     const Core::FE::Discretization& dis, const Core::LinAlg::Vector<double>& vector, const int nds,
     const int numdofpernode)
 {
@@ -158,7 +158,7 @@ POROFLUIDMULTIPHASE::UTILS::convert_dof_vector_to_node_based_multi_vector(
 /*----------------------------------------------------------------------*
  | create algorithm                                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Adapter::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::create_algorithm(
+Teuchos::RCP<Adapter::PoroFluidMultiphase> POROFLUIDMULTIPHASE::Utils::create_algorithm(
     Inpar::POROFLUIDMULTIPHASE::TimeIntegrationScheme timintscheme,
     Teuchos::RCP<Core::FE::Discretization> dis, const int linsolvernumber,
     const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
@@ -192,7 +192,7 @@ Teuchos::RCP<Adapter::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::create_al
 /*--------------------------------------------------------------------------*
  | perform extended ghosting for artery dis                kremheller 03/19 |
  *--------------------------------------------------------------------------*/
-std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::extended_ghosting_artery_discretization(
+std::map<int, std::set<int>> POROFLUIDMULTIPHASE::Utils::extended_ghosting_artery_discretization(
     Core::FE::Discretization& contdis, Teuchos::RCP<Core::FE::Discretization> artdis,
     const bool evaluate_on_lateral_surface,
     const Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod couplingmethod)
@@ -268,7 +268,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::extended_ghosting_arter
 
   // fill and inform user
   artdis->fill_complete();
-  Core::Rebalance::UTILS::print_parallel_distribution(*artdis);
+  Core::Rebalance::Utils::print_parallel_distribution(*artdis);
 
   // user output
   if (contdis.get_comm().MyPID() == 0)
@@ -285,7 +285,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::extended_ghosting_arter
  | create the fully overlapping artery discretization      kremheller 03/19 |
  *--------------------------------------------------------------------------*/
 Teuchos::RCP<Core::FE::Discretization>
-POROFLUIDMULTIPHASE::UTILS::create_fully_overlapping_artery_discretization(
+POROFLUIDMULTIPHASE::Utils::create_fully_overlapping_artery_discretization(
     Core::FE::Discretization& artdis, std::string disname, bool doboundaryconditions)
 {
   // we clone a search discretization of the artery discretization on which the search will be
@@ -303,7 +303,7 @@ POROFLUIDMULTIPHASE::UTILS::create_fully_overlapping_artery_discretization(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::oct_tree_search(
+std::map<int, std::set<int>> POROFLUIDMULTIPHASE::Utils::oct_tree_search(
     Core::FE::Discretization& contdis, Core::FE::Discretization& artdis,
     Core::FE::Discretization& artsearchdis, const bool evaluate_on_lateral_surface,
     const std::vector<int> artEleGIDs, std::set<int>& elecolset, std::set<int>& nodecolset)
@@ -399,7 +399,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::oct_tree_search(
 /*----------------------------------------------------------------------*
  | get axis-aligned bounding box of element            kremheller 03/19 |
  *----------------------------------------------------------------------*/
-Core::LinAlg::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::get_aabb(Core::Elements::Element* ele,
+Core::LinAlg::Matrix<3, 2> POROFLUIDMULTIPHASE::Utils::get_aabb(Core::Elements::Element* ele,
     std::map<int, Core::LinAlg::Matrix<3, 1>>& positions, const bool evaluate_on_lateral_surface)
 {
   const Core::LinAlg::SerialDenseMatrix xyze_element(
@@ -430,7 +430,7 @@ Core::LinAlg::Matrix<3, 2> POROFLUIDMULTIPHASE::UTILS::get_aabb(Core::Elements::
 /*----------------------------------------------------------------------*
  | get nodal positions                                 kremheller 10/19 |
  *----------------------------------------------------------------------*/
-std::map<int, Core::LinAlg::Matrix<3, 1>> POROFLUIDMULTIPHASE::UTILS::get_nodal_positions(
+std::map<int, Core::LinAlg::Matrix<3, 1>> POROFLUIDMULTIPHASE::Utils::get_nodal_positions(
     Core::FE::Discretization& dis, const Epetra_Map* nodemap)
 {
   std::map<int, Core::LinAlg::Matrix<3, 1>> positions;
@@ -451,7 +451,7 @@ std::map<int, Core::LinAlg::Matrix<3, 1>> POROFLUIDMULTIPHASE::UTILS::get_nodal_
 /*----------------------------------------------------------------------*
  | get maximum nodal distance                          kremheller 05/18 |
  *----------------------------------------------------------------------*/
-double POROFLUIDMULTIPHASE::UTILS::get_max_nodal_distance(
+double POROFLUIDMULTIPHASE::Utils::get_max_nodal_distance(
     Core::Elements::Element* ele, Core::FE::Discretization& dis)
 {
   double maxdist = 0.0;
@@ -491,7 +491,7 @@ double POROFLUIDMULTIPHASE::UTILS::get_max_nodal_distance(
 /*----------------------------------------------------------------------*
  | calculate vector norm                             kremheller 12/17   |
  *----------------------------------------------------------------------*/
-double POROFLUIDMULTIPHASE::UTILS::calculate_vector_norm(
+double POROFLUIDMULTIPHASE::Utils::calculate_vector_norm(
     const enum Inpar::POROFLUIDMULTIPHASE::VectorNorm norm,
     const Core::LinAlg::Vector<double>& vect)
 {

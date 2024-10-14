@@ -30,7 +30,7 @@ namespace Core::LinAlg
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     class FluidInfNormScaling
     {
@@ -67,7 +67,7 @@ namespace FLD
 
     };  // class FluidInfNormScaling
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FLD
 
 FOUR_C_NAMESPACE_CLOSE

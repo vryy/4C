@@ -24,12 +24,12 @@ void Inpar::ElectroPhysiology::set_valid_parameters(Teuchos::ParameterList& list
 
 
   // Parameters for reaction-diffusion systems (for example cardiac electrophysiology)
-  Core::UTILS::int_parameter("WRITEMAXINTSTATE", 0,
+  Core::Utils::int_parameter("WRITEMAXINTSTATE", 0,
       "number of maximal internal state variables to be postprocessed", &epcontrol);
-  Core::UTILS::int_parameter("WRITEMAXIONICCURRENTS", 0,
+  Core::Utils::int_parameter("WRITEMAXIONICCURRENTS", 0,
       "number of maximal ionic currents to be postprocessed", &epcontrol);
 
-  Core::UTILS::double_parameter("ACTTHRES", 1.0,
+  Core::Utils::double_parameter("ACTTHRES", 1.0,
       "threshold for the potential for computing and postprocessing activation time ", &epcontrol);
 }
 

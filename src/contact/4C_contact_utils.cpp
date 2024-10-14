@@ -48,7 +48,7 @@ std::string CONTACT::vec_block_type_to_str(const CONTACT::VecBlockType bt)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CONTACT::UTILS::get_contact_conditions(
+int CONTACT::Utils::get_contact_conditions(
     std::vector<Core::Conditions::Condition*>& contact_conditions,
     const std::vector<Core::Conditions::Condition*>& beamandsolidcontactconditions,
     const bool& throw_error)
@@ -86,7 +86,7 @@ int CONTACT::UTILS::get_contact_conditions(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CONTACT::UTILS::get_contact_condition_groups(
+int CONTACT::Utils::get_contact_condition_groups(
     std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
     const Core::FE::Discretization& discret, const bool& throw_error)
 {
@@ -96,16 +96,16 @@ int CONTACT::UTILS::get_contact_condition_groups(
 
   std::vector<Core::Conditions::Condition*> cconds(0);
   int err =
-      CONTACT::UTILS::get_contact_conditions(cconds, beamandsolidcontactconditions, throw_error);
+      CONTACT::Utils::get_contact_conditions(cconds, beamandsolidcontactconditions, throw_error);
   // direct return, if an error occurred
   if (err) return err;
-  CONTACT::UTILS::get_contact_condition_groups(ccond_grps, cconds);
+  CONTACT::Utils::get_contact_condition_groups(ccond_grps, cconds);
   return 0;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::get_contact_condition_groups(
+void CONTACT::Utils::get_contact_condition_groups(
     std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
     const std::vector<Core::Conditions::Condition*>& cconds)
 {
@@ -168,7 +168,7 @@ void CONTACT::UTILS::get_contact_condition_groups(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::get_master_slave_side_info(std::vector<bool>& isslave,
+void CONTACT::Utils::get_master_slave_side_info(std::vector<bool>& isslave,
     std::vector<bool>& isself, const std::vector<Core::Conditions::Condition*>& cond_grp)
 {
   bool hasslave = false;
@@ -232,7 +232,7 @@ void CONTACT::UTILS::get_master_slave_side_info(std::vector<bool>& isslave,
 /*----------------------------------------------------------------------------*
  | gather initialization information                            schmidt 11/18 |
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::get_initialization_info(bool& Two_half_pass,
+void CONTACT::Utils::get_initialization_info(bool& Two_half_pass,
     bool& Check_nonsmooth_selfcontactsurface, bool& Searchele_AllProc, std::vector<bool>& isactive,
     std::vector<bool>& isslave, std::vector<bool>& isself,
     const std::vector<Core::Conditions::Condition*>& cond_grp)
@@ -373,7 +373,7 @@ void CONTACT::UTILS::get_initialization_info(bool& Two_half_pass,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::write_conservation_data_to_file(const int mypid, const int interface_id,
+void CONTACT::Utils::write_conservation_data_to_file(const int mypid, const int interface_id,
     const int nln_iter, const Core::LinAlg::SerialDenseMatrix& conservation_data,
     const std::string& ofile_path, const std::string& prefix)
 {
@@ -434,7 +434,7 @@ void CONTACT::UTILS::write_conservation_data_to_file(const int mypid, const int 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
+void CONTACT::Utils::DbcHandler::detect_dbc_slave_nodes_and_elements(
     const Core::FE::Discretization& str_discret,
     const std::vector<std::vector<Core::Conditions::Condition*>>& ccond_grps,
     std::set<const Core::Nodes::Node*>& dbc_slave_nodes,
@@ -451,7 +451,7 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
   {
     std::vector<bool> isslave;
     std::vector<bool> isself;
-    CONTACT::UTILS::get_master_slave_side_info(isslave, isself, ccond_grp);
+    CONTACT::Utils::get_master_slave_side_info(isslave, isself, ccond_grp);
 
     for (unsigned i = 0; i < ccond_grp.size(); ++i)
     {
@@ -489,7 +489,7 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
+void CONTACT::Utils::DbcHandler::detect_dbc_slave_nodes(
     std::map<const Core::Nodes::Node*, int>& dbc_slave_node_map,
     const Core::FE::Discretization& str_discret,
     const std::vector<const Core::Conditions::Condition*>& sl_conds)
@@ -540,7 +540,7 @@ void CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::UTILS::DbcHandler::detect_dbc_slave_elements(
+void CONTACT::Utils::DbcHandler::detect_dbc_slave_elements(
     std::set<const Core::Elements::Element*>& dbc_slave_eles,
     const std::map<const Core::Nodes::Node*, int>& dbc_slave_nodes,
     const std::vector<const Core::Conditions::Condition*>& sl_conds)

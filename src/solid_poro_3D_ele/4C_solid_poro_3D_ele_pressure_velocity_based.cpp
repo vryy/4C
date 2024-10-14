@@ -111,7 +111,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SolidPoroPressureVelocityBase
 void Discret::ELEMENTS::SolidPoroPressureVelocityBasedType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  FourC::Solid::UTILS::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
+  FourC::Solid::Utils::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
 }
 
 Core::LinAlg::SerialDenseMatrix
@@ -189,19 +189,19 @@ bool Discret::ELEMENTS::SolidPoroPressureVelocityBased::read_element(const std::
 
   // read number of material model
   set_material(
-      0, Mat::factory(FourC::Solid::UTILS::read_element::read_element_material(container)));
+      0, Mat::factory(FourC::Solid::Utils::read_element::read_element_material(container)));
 
   // read kinematic type
   solid_ele_property_.kintype =
-      FourC::Solid::UTILS::read_element::read_element_kinematic_type(container);
+      FourC::Solid::Utils::read_element::read_element_kinematic_type(container);
 
   // check element technology
-  if (FourC::Solid::UTILS::read_element::read_element_technology(container) !=
+  if (FourC::Solid::Utils::read_element::read_element_technology(container) !=
       ElementTechnology::none)
     FOUR_C_THROW("SOLIDPORO elements do not support any element technology!");
 
   // read scalar transport implementation type
-  poro_ele_property_.impltype = FourC::Solid::UTILS::read_element::read_type(container);
+  poro_ele_property_.impltype = FourC::Solid::Utils::read_element::read_type(container);
 
   read_anisotropic_permeability_directions_from_element_line_definition(container);
   read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(container);

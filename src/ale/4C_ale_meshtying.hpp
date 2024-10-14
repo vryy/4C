@@ -59,11 +59,11 @@ namespace Core::LinAlg
 
 namespace ALE
 {
-  namespace UTILS
+  namespace Utils
   {
     class MapExtractor;
     class InterfaceSplitStrategy;
-  }  // namespace UTILS
+  }  // namespace Utils
   class Meshtying
   {
    public:
@@ -72,7 +72,7 @@ namespace ALE
         Core::LinAlg::Solver& solver,                           ///> solver
         int msht,                                               ///> meshting parameter list
         int nsd,                                                ///> number space dimensions
-        const UTILS::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
+        const Utils::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
 
     virtual ~Meshtying() = default;
 
@@ -182,7 +182,7 @@ namespace ALE
     int myrank_;
 
     // interface splitter
-    const UTILS::MapExtractor* surfacesplitter_;
+    const Utils::MapExtractor* surfacesplitter_;
 
     //! dof row map of the complete system
     Teuchos::RCP<Epetra_Map> problemrowmap_;

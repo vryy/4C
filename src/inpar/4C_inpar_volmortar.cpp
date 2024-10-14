@@ -71,10 +71,10 @@ void Inpar::VolMortar::set_valid_parameters(Teuchos::ParameterList& list)
           Coupling::VolMortar::dualquad_quad_mod),
       &volmortar);
 
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "MESH_INIT", "No", "If chosen, mesh initialization procedure is performed", &volmortar);
 
-  Core::UTILS::bool_parameter("KEEP_EXTENDEDGHOSTING", "Yes",
+  Core::Utils::bool_parameter("KEEP_EXTENDEDGHOSTING", "Yes",
       "If chosen, extended ghosting is kept for simulation", &volmortar);
 }
 

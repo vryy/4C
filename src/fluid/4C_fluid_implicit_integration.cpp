@@ -239,7 +239,7 @@ void FLD::FluidImplicitTimeInt::init()
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
-    eleparams.set<const Core::UTILS::FunctionManager*>(
+    eleparams.set<const Core::Utils::FunctionManager*>(
         "function_manager", &Global::Problem::instance()->function_manager());
 
     apply_dirichlet_bc(eleparams, zeros_, Teuchos::null, Teuchos::null, true);
@@ -254,7 +254,7 @@ void FLD::FluidImplicitTimeInt::init()
 
   // manager for wall stress related things
   stressmanager_ =
-      Teuchos::make_rcp<FLD::UTILS::StressManager>(discret_, dispnp_, alefluid_, numdim_);
+      Teuchos::make_rcp<FLD::Utils::StressManager>(discret_, dispnp_, alefluid_, numdim_);
 
   // -------------------------------------------------------------------
   // create empty system matrix --- stiffness and mass are assembled in
@@ -309,8 +309,8 @@ void FLD::FluidImplicitTimeInt::init()
   }
   else
   {
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>> blocksysmat =
-        Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::VelPressSplitStrategy>>(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::Utils::VelPressSplitStrategy>> blocksysmat =
+        Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::Utils::VelPressSplitStrategy>>(
             *velpressplitter_, *velpressplitter_, 108, false, true);
     blocksysmat->set_numdim(numdim_);
     sysmat_ = blocksysmat;
@@ -348,7 +348,7 @@ void FLD::FluidImplicitTimeInt::init()
 
   if (params_->get<bool>("INFNORMSCALING"))
   {
-    fluid_infnormscaling_ = Teuchos::make_rcp<FLD::UTILS::FluidInfNormScaling>(*velpressplitter_);
+    fluid_infnormscaling_ = Teuchos::make_rcp<FLD::Utils::FluidInfNormScaling>(*velpressplitter_);
   }
 
   // ------------------------------------------------------------------------------
@@ -458,7 +458,7 @@ void FLD::FluidImplicitTimeInt::init_nonlinear_bc()
       discret_->set_state(ndsale_, "dispnp", dispnp_);
     }
 
-    impedancebc_ = Teuchos::make_rcp<UTILS::FluidImpedanceWrapper>(discret_);
+    impedancebc_ = Teuchos::make_rcp<Utils::FluidImpedanceWrapper>(discret_);
     isimpedancebc_ = true;  // Set bool to true since there is an impedance BC
 
     // Test if also AVM3 is used
@@ -2119,7 +2119,7 @@ void FLD::FluidImplicitTimeInt::setup_krylov_space_projection(Core::Conditions::
   std::vector<int> activemodeids(1, numdim_);
 
   // allocate kspsplitter_
-  kspsplitter_ = Teuchos::make_rcp<FLD::UTILS::KSPMapExtractor>();
+  kspsplitter_ = Teuchos::make_rcp<FLD::Utils::KSPMapExtractor>();
   // create map of nodes involved in Krylov projection
 
   kspsplitter_->setup(*discret_);
@@ -2649,7 +2649,7 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
           for (int i = 0; i < numdim_; i++)
           {
             (*nodeNormals)[dofsLocalInd[i]] =
-                (Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+                (Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                      nodeNormalFunct - 1))
                     .evaluate(currPos.data(), 0.0, i);
           }
@@ -4164,7 +4164,7 @@ void FLD::FluidImplicitTimeInt::set_initial_flow_field(
         int gid = nodedofset[index];
 
         double initialval = Global::Problem::instance()
-                                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno - 1)
                                 .evaluate(lnode->x().data(), time_, index);
 
         velnp_->ReplaceGlobalValues(1, &initialval, &gid);
@@ -4196,7 +4196,7 @@ void FLD::FluidImplicitTimeInt::set_initial_flow_field(
       }
 
       Core::FE::Nurbs::apply_nurbs_initial_condition(*discret_, solver_params,
-          Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+          Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(
               startfuncno - 1),
           velnp_);
     }
@@ -5084,15 +5084,15 @@ void FLD::FluidImplicitTimeInt::lift_drag() const
 
       forces->Update(1.0, *trueresidual_, 1.0, *slip_bc_normal_tractions_, 0.0);
 
-      FLD::UTILS::lift_drag(discret_, *forces, dispnp_, numdim_, liftdragvals, alefluid_);
+      FLD::Utils::lift_drag(discret_, *forces, dispnp_, numdim_, liftdragvals, alefluid_);
     }
     else
     {
-      FLD::UTILS::lift_drag(discret_, *trueresidual_, dispnp_, numdim_, liftdragvals, alefluid_);
+      FLD::Utils::lift_drag(discret_, *trueresidual_, dispnp_, numdim_, liftdragvals, alefluid_);
     }
 
     if (liftdragvals != Teuchos::null and discret_->get_comm().MyPID() == 0)
-      FLD::UTILS::write_lift_drag_to_file(time_, step_, *liftdragvals);
+      FLD::Utils::write_lift_drag_to_file(time_, step_, *liftdragvals);
   }
 }
 
@@ -5124,25 +5124,25 @@ void FLD::FluidImplicitTimeInt::compute_flow_rates() const
 
   if (alefluid_)
   {
-    const std::map<int, double> flowrates = FLD::UTILS::compute_flow_rates(
+    const std::map<int, double> flowrates = FLD::Utils::compute_flow_rates(
         *discret_, velnp_, gridv_, dispnp_, condstring, physicaltype_);
-    // const std::map<int,double> volume = FLD::UTILS::compute_volume(*discret_,
+    // const std::map<int,double> volume = FLD::Utils::compute_volume(*discret_,
     // velnp_,gridv_,dispnp_,physicaltype_);
 
     // write to file
     if (discret_->get_comm().MyPID() == 0)
     {
-      FLD::UTILS::write_doubles_to_file(time_, step_, flowrates, "flowrate");
+      FLD::Utils::write_doubles_to_file(time_, step_, flowrates, "flowrate");
     }
   }
   else
   {
     const std::map<int, double> flowrates =
-        FLD::UTILS::compute_flow_rates(*discret_, velnp_, condstring, physicaltype_);
+        FLD::Utils::compute_flow_rates(*discret_, velnp_, condstring, physicaltype_);
 
     // write to file
     if (discret_->get_comm().MyPID() == 0)
-      FLD::UTILS::write_doubles_to_file(time_, step_, flowrates, "flowrate");
+      FLD::Utils::write_doubles_to_file(time_, step_, flowrates, "flowrate");
   }
 }
 
@@ -5199,7 +5199,7 @@ void FLD::FluidImplicitTimeInt::use_block_matrix(Teuchos::RCP<std::set<int>> con
   }
   else
   {
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat;
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>> mat;
 
     if (splitmatrix)
     {
@@ -5211,7 +5211,7 @@ void FLD::FluidImplicitTimeInt::use_block_matrix(Teuchos::RCP<std::set<int>> con
       }
 
       // (re)allocate system matrix
-      mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>(
+      mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>>(
           domainmaps, rangemaps, 108, false, true);
       mat->set_cond_elements(condelements);
       sysmat_ = mat;
@@ -5229,7 +5229,7 @@ void FLD::FluidImplicitTimeInt::use_block_matrix(Teuchos::RCP<std::set<int>> con
     if (params_->get<bool>("shape derivatives"))
     {
       // allocate special mesh moving matrix
-      mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>(
+      mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>>(
           domainmaps_shape, rangemaps_shape, 108, false, true);
       mat->set_cond_elements(condelements_shape);
       shapederivatives_ = mat;
@@ -6150,7 +6150,7 @@ void FLD::FluidImplicitTimeInt::apply_external_forces(Teuchos::RCP<Epetra_MultiV
 /*------------------------------------------------------------------------------------------------*
  | create field test
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> FLD::FluidImplicitTimeInt::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> FLD::FluidImplicitTimeInt::create_field_test()
 {
   return Teuchos::make_rcp<FLD::FluidResultTest>(*this);
 }
@@ -6462,7 +6462,7 @@ void FLD::FluidImplicitTimeInt::set_dirichlet_neumann_bc()
 
   // total time required for Dirichlet conditions
   eleparams.set("total time", time_);
-  eleparams.set<const Core::UTILS::FunctionManager*>(
+  eleparams.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // predicted dirichlet values
@@ -6525,7 +6525,7 @@ void FLD::FluidImplicitTimeInt::apply_dirichlet_bc(Teuchos::ParameterList& param
   // If we have HDG discret
   if (dynamic_cast<const Core::FE::DiscretizationHDG*>(&(*discret_)) != nullptr)
   {
-    auto dbc = Teuchos::RCP<const Core::FE::UTILS::Dbc>(new const FLD::UTILS::DbcHdgFluid());
+    auto dbc = Teuchos::RCP<const Core::FE::Utils::Dbc>(new const FLD::Utils::DbcHdgFluid());
     (*dbc)(*discret_, params, systemvector, systemvectord, systemvectordd, Teuchos::null,
         recreatemap ? dbcmaps_ : Teuchos::null);
   }

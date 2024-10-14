@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
-UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::
+Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::
     CardiovascularRespiratory0DSysPulPeriphCirculation(Teuchos::RCP<Core::FE::Discretization> discr,
         const std::string& conditionname, std::vector<int>& curID)
     : Cardiovascular0D(discr, conditionname, curID)
@@ -235,7 +235,7 @@ UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::
  |Experiment-based parameter estimation for patient-specific cardiac     |
  |mechanics", IJNMBE, 2016)                                              |
  *-----------------------------------------------------------------------*/
-void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
+void Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
     Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3,
@@ -285,11 +285,11 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
   double y_at_r_np = 0.0;
   if (atrium_act_curve_l_ >= 0 && usetime)
     y_at_l_np = Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfTime>(atrium_act_curve_l_ - 1)
+                    ->function_by_id<Core::Utils::FunctionOfTime>(atrium_act_curve_l_ - 1)
                     .evaluate(tim);
   if (atrium_act_curve_r_ >= 0 && usetime)
     y_at_r_np = Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfTime>(atrium_act_curve_r_ - 1)
+                    ->function_by_id<Core::Utils::FunctionOfTime>(atrium_act_curve_r_ - 1)
                     .evaluate(tim);
   // 0D time-varying atrial elastance
   double E_at_l_np = 0.;
@@ -300,11 +300,11 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
   double y_v_r_np = 0.0;
   if (ventricle_act_curve_l_ >= 0 && usetime)
     y_v_l_np = Global::Problem::instance()
-                   ->function_by_id<Core::UTILS::FunctionOfTime>(ventricle_act_curve_l_ - 1)
+                   ->function_by_id<Core::Utils::FunctionOfTime>(ventricle_act_curve_l_ - 1)
                    .evaluate(tim);
   if (ventricle_act_curve_r_ >= 0 && usetime)
     y_v_r_np = Global::Problem::instance()
-                   ->function_by_id<Core::UTILS::FunctionOfTime>(ventricle_act_curve_r_ - 1)
+                   ->function_by_id<Core::Utils::FunctionOfTime>(ventricle_act_curve_r_ - 1)
                    .evaluate(tim);
   // 0D time-varying ventricular elastance
   double E_v_l_np = 0.;
@@ -316,12 +316,12 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
   if (atrium_prescr_e_curve_l_ >= 0 && usetime)
     E_at_l_prescr_np =
         Global::Problem::instance()
-            ->function_by_id<Core::UTILS::FunctionOfTime>(atrium_prescr_e_curve_l_ - 1)
+            ->function_by_id<Core::Utils::FunctionOfTime>(atrium_prescr_e_curve_l_ - 1)
             .evaluate(tim);
   if (atrium_prescr_e_curve_r_ >= 0 && usetime)
     E_at_r_prescr_np =
         Global::Problem::instance()
-            ->function_by_id<Core::UTILS::FunctionOfTime>(atrium_prescr_e_curve_r_ - 1)
+            ->function_by_id<Core::Utils::FunctionOfTime>(atrium_prescr_e_curve_r_ - 1)
             .evaluate(tim);
   // prescribed ventricular elastances
   double E_v_l_prescr_np = 0.0;
@@ -329,12 +329,12 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
   if (ventricle_prescr_e_curve_l_ >= 0 && usetime)
     E_v_l_prescr_np =
         Global::Problem::instance()
-            ->function_by_id<Core::UTILS::FunctionOfTime>(ventricle_prescr_e_curve_l_ - 1)
+            ->function_by_id<Core::Utils::FunctionOfTime>(ventricle_prescr_e_curve_l_ - 1)
             .evaluate(tim);
   if (ventricle_prescr_e_curve_r_ >= 0 && usetime)
     E_v_r_prescr_np =
         Global::Problem::instance()
-            ->function_by_id<Core::UTILS::FunctionOfTime>(ventricle_prescr_e_curve_r_ - 1)
+            ->function_by_id<Core::Utils::FunctionOfTime>(ventricle_prescr_e_curve_r_ - 1)
             .evaluate(tim);
 
 
@@ -1092,7 +1092,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate(
 
 
 
-void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate_respiratory(
+void Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate_respiratory(
     Teuchos::ParameterList& params, std::vector<double>& df_np, std::vector<double>& f_np,
     Core::LinAlg::SerialDenseMatrix& wkstiff, Teuchos::RCP<Core::LinAlg::Vector<double>> dofvec,
     Teuchos::RCP<Core::LinAlg::Vector<double>> volvec, bool evalstiff)
@@ -1109,7 +1109,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate_respira
   double U_t = 0.0;
   if (u_t_curve_ >= 0 && usetime)
     U_t = Global::Problem::instance()
-              ->function_by_id<Core::UTILS::FunctionOfTime>(u_t_curve_ - 1)
+              ->function_by_id<Core::Utils::FunctionOfTime>(u_t_curve_ - 1)
               .evaluate(tim);
 
   // extract values of dof vector at t_{n+1}
@@ -8874,7 +8874,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::evaluate_respira
 }
 
 // cbO2 and its derivatives
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::cb_o2(double ppCO2, double ppO2)
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::cb_o2(double ppCO2, double ppO2)
 {
   //  const double n = 2.7;
   //  const double ppO2_50 = 26.8/7.500615; // 26.8 mmHg -> convert to kPa!
@@ -8883,7 +8883,7 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::cb_o2(double p
 
   return cbO2_val;
 }
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::s_o2(double ppCO2, double ppO2)
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::s_o2(double ppCO2, double ppO2)
 {
   const double n = 2.7;
   const double ppO2_50 = 26.8 / 7.500615;  // 26.8 mmHg -> convert to kPa!
@@ -8894,7 +8894,7 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::s_o2(double pp
   return SO2_val;
 }
 // w.r.t. O2
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::dcb_o2_dpp_o2(
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::dcb_o2_dpp_o2(
     double ppCO2, double ppO2)
 {
   const double n = 2.7;
@@ -8905,7 +8905,7 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::dcb_o2_dpp_o2(
 
   return dcbO2_dppO2_val;
 }
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_o2_dpp_o22(
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_o2_dpp_o22(
     double ppCO2, double ppO2)
 {
   const double n = 2.7;
@@ -8920,21 +8920,21 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_o2_dpp_o2
   return d2cbO2_dppO22_val;
 }
 // w.r.t. CO2
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::dcb_o2_dpp_c_o2(
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::dcb_o2_dpp_c_o2(
     double ppCO2, double ppO2)
 {
   const double dcbO2_dppCO2_val = 0.;
 
   return dcbO2_dppCO2_val;
 }
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_o2_dpp_c_o22(
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_o2_dpp_c_o22(
     double ppCO2, double ppO2)
 {
   const double d2cbO2_dppCO22_val = 0.;
 
   return d2cbO2_dppCO22_val;
 }
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_o2_dpp_o2dpp_c_o2(
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_o2_dpp_o2dpp_c_o2(
     double ppCO2, double ppO2)
 {
   const double d2cbO2_dppO2dppCO2_val = 0.;
@@ -8944,21 +8944,21 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_o2_dpp_o2
 
 
 // cbCO2 and its derivatives
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::cb_c_o2(double ppCO2, double ppO2)
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::cb_c_o2(double ppCO2, double ppO2)
 {
   const double cbCO2_val = alpha_c_o2_ * ppCO2;
 
   return cbCO2_val;
 }
 // w.r.t. CO2
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::dcb_c_o2_dpp_c_o2(
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::dcb_c_o2_dpp_c_o2(
     double ppCO2, double ppO2)
 {
   const double dcbCO2_dppCO2_val = alpha_c_o2_;
 
   return dcbCO2_dppCO2_val;
 }
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_c_o2_dpp_c_o22(
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_c_o2_dpp_c_o22(
     double ppCO2, double ppO2)
 {
   const double d2cbCO2_dppCO22_val = 0.;
@@ -8966,21 +8966,21 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_c_o2_dpp_
   return d2cbCO2_dppCO22_val;
 }
 // w.r.t. O2
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::dcb_c_o2_dpp_o2(
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::dcb_c_o2_dpp_o2(
     double ppCO2, double ppO2)
 {
   const double dcbCO2_dppO2_val = 0.;
 
   return dcbCO2_dppO2_val;
 }
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_c_o2_dpp_o22(
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_c_o2_dpp_o22(
     double ppCO2, double ppO2)
 {
   const double d2cbCO2_dppO22_val = 0.;
 
   return d2cbCO2_dppO22_val;
 }
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_c_o2_dpp_c_o2dpp_o2(
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_c_o2_dpp_c_o2dpp_o2(
     double ppCO2, double ppO2)
 {
   const double d2cbCO2_dppCO2dppO2_val = 0.;
@@ -8990,21 +8990,21 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2cb_c_o2_dpp_
 
 
 
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::ct_o2(double ppO2)
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::ct_o2(double ppO2)
 {
   const double ctO2_val = alpha_o2_ * ppO2;
 
   return ctO2_val;
 }
 
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::dct_o2_dpp_o2(double ppO2)
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::dct_o2_dpp_o2(double ppO2)
 {
   const double dctO2_dppO2_val = alpha_o2_;
 
   return dctO2_dppO2_val;
 }
 
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2ct_o2_dpp_o22(double ppO2)
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::d2ct_o2_dpp_o22(double ppO2)
 {
   const double d2ctO2_dppO22_val = 0.;
 
@@ -9013,21 +9013,21 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2ct_o2_dpp_o2
 
 
 
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::ct_c_o2(double ppCO2)
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::ct_c_o2(double ppCO2)
 {
   const double ctCO2_val = alpha_c_o2_ * ppCO2;
 
   return ctCO2_val;
 }
 
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::dct_c_o2_dpp_c_o2(double ppCO2)
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::dct_c_o2_dpp_c_o2(double ppCO2)
 {
   const double dctCO2_dppCO2_val = alpha_c_o2_;
 
   return dctCO2_dppCO2_val;
 }
 
-double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2ct_c_o2_dpp_c_o22(double ppCO2)
+double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::d2ct_c_o2_dpp_c_o22(double ppCO2)
 {
   const double d2ctCO2_dppCO22_val = 0.;
 
@@ -9035,7 +9035,7 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2ct_c_o2_dpp_
 }
 
 
-// double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::y(double ppCO2,double ppO2)
+// double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::y(double ppCO2,double ppO2)
 //{
 //  const double T_blood = 37.; // in  degrees celsius !
 //  // ppO2 in log10 in kPa!!
@@ -9044,7 +9044,7 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2ct_c_o2_dpp_
 //  return y_val;
 //}
 //
-// double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::a(double ppCO2,double ppO2)
+// double Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::a(double ppCO2,double ppO2)
 //{
 //  const double x_Hbf = 1.; // fraction of fetal hemoglobin concentration in the blood
 //  const double x_HbCO = 1.; // fraction of carboxyhemoglobin in the blood
@@ -9061,7 +9061,7 @@ double UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::d2ct_c_o2_dpp_
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::initialize(
+void Utils::CardiovascularRespiratory0DSysPulPeriphCirculation::initialize(
     Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec1,
     Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2)
 {
@@ -9137,7 +9137,7 @@ void UTILS::CardiovascularRespiratory0DSysPulPeriphCirculation::initialize(
       double U_t_0 = 0.0;
       if (u_t_curve_ >= 0)
         U_t_0 = Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfTime>(u_t_curve_ - 1)
+                    ->function_by_id<Core::Utils::FunctionOfTime>(u_t_curve_ - 1)
                     .evaluate(0);
 
       double V_alv_0 = respirpar.get("V_alv_0", -1.0);

@@ -28,7 +28,7 @@ namespace Core::FE
 
 namespace POROMULTIPHASE
 {
-  namespace UTILS
+  namespace Utils
   {
     /// setup discretizations and dofsets
     std::map<int, std::set<int>> setup_discretizations_and_field_coupling(const Epetra_Comm& comm,
@@ -53,7 +53,7 @@ namespace POROMULTIPHASE
         const Core::LinAlg::Vector<double>& vect            //!< the vector of interest
     );
 
-  }  // namespace UTILS
+  }  // namespace Utils
   // Print the logo
   void print_logo();
 }  // namespace POROMULTIPHASE

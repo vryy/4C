@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-PARTICLEWALL::WallResultTest::WallResultTest() : Core::UTILS::ResultTest("PARTICLEWALL")
+PARTICLEWALL::WallResultTest::WallResultTest() : Core::Utils::ResultTest("PARTICLEWALL")
 {
   // empty constructor
 }

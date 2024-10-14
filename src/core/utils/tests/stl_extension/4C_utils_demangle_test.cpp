@@ -24,13 +24,13 @@ namespace
 
   TEST(DemangleTest, Struct)
   {
-    EXPECT_EQ(Core::UTILS::try_demangle(typeid(DEMANGLE_TEST::TestStruct).name()),
+    EXPECT_EQ(Core::Utils::try_demangle(typeid(DEMANGLE_TEST::TestStruct).name()),
         "DEMANGLE_TEST::TestStruct");
   }
 
   TEST(DemangleTest, RCP)
   {
-    EXPECT_EQ(Core::UTILS::try_demangle(typeid(Teuchos::RCP<DEMANGLE_TEST::TestStruct>).name()),
+    EXPECT_EQ(Core::Utils::try_demangle(typeid(Teuchos::RCP<DEMANGLE_TEST::TestStruct>).name()),
         "Teuchos::RCP<DEMANGLE_TEST::TestStruct>");
   }
 }  // namespace

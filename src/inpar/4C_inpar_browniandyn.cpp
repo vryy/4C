@@ -23,24 +23,24 @@ void Inpar::BrownianDynamics::set_valid_parameters(Teuchos::ParameterList& list)
 
   Teuchos::ParameterList& browniandyn_list = list.sublist("BROWNIAN DYNAMICS", false, "");
 
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "BROWNDYNPROB", "No", "switch Brownian dynamics on/off", &browniandyn_list);
 
   // Reading double parameter for viscosity of background fluid
-  Core::UTILS::double_parameter("VISCOSITY", 0.0, "viscosity", &browniandyn_list);
+  Core::Utils::double_parameter("VISCOSITY", 0.0, "viscosity", &browniandyn_list);
 
   // Reading double parameter for thermal energy in background fluid (temperature * Boltzmann
   // constant)
-  Core::UTILS::double_parameter("KT", 0.0, "thermal energy", &browniandyn_list);
+  Core::Utils::double_parameter("KT", 0.0, "thermal energy", &browniandyn_list);
 
   // cutoff for random forces, which determines the maximal value
-  Core::UTILS::double_parameter("MAXRANDFORCE", -1.0,
+  Core::Utils::double_parameter("MAXRANDFORCE", -1.0,
       "Any random force beyond MAXRANDFORCE*(standard dev.) will be omitted and redrawn. "
       "-1.0 means no bounds.'",
       &browniandyn_list);
 
   // time interval in which random numbers are constant
-  Core::UTILS::double_parameter("TIMESTEP", -1.0,
+  Core::Utils::double_parameter("TIMESTEP", -1.0,
       "Within this time interval the random numbers remain constant. -1.0 ", &browniandyn_list);
 
   // the way how damping coefficient values for beams are specified
@@ -57,7 +57,7 @@ void Inpar::BrownianDynamics::set_valid_parameters(Teuchos::ParameterList& list)
 
   // values for damping coefficients of beams if they are specified via input file
   // (per unit length, NOT yet multiplied by fluid viscosity)
-  Core::UTILS::string_parameter("BEAMS_DAMPING_COEFF_PER_UNITLENGTH", "0.0 0.0 0.0",
+  Core::Utils::string_parameter("BEAMS_DAMPING_COEFF_PER_UNITLENGTH", "0.0 0.0 0.0",
       "values for beam damping coefficients (per unit length and NOT yet multiplied by fluid "
       "viscosity): "
       "translational perpendicular/parallel to beam axis, rotational around axis",

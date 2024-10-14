@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace PoroElast
 {
-  namespace UTILS
+  namespace Utils
   {
     //! setup poro discretization,i.e. clone the structural discretization
     template <class PoroCloneStrategy>
@@ -69,7 +69,7 @@ namespace PoroElast
 
         // set material pointers
         if (setmaterialpointers)
-          PoroElast::UTILS::set_material_pointers_matching_grid(*structdis, *fluiddis);
+          PoroElast::Utils::set_material_pointers_matching_grid(*structdis, *fluiddis);
 
         // if one discretization is a subset of the other, they will differ in node number (and
         // element number) we assume matching grids for the overlapping part here
@@ -158,7 +158,7 @@ namespace PoroElast
         fluiddis->fill_complete(true, false, false);
       }
     }
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace PoroElast
 
 FOUR_C_NAMESPACE_CLOSE

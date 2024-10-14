@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace Discret
 {
-  namespace UTILS
+  namespace Utils
   {
     class GaussIntegration;
   }
@@ -41,7 +41,7 @@ namespace Cut
 namespace XFEM
 {
   class ConditionManager;
-  namespace UTILS
+  namespace Utils
   {
     //! @name GetAverageWeights
     /*!
@@ -189,7 +189,7 @@ namespace XFEM
         const Core::LinAlg::Matrix<3, 1>& selexsi, const Core::FE::Discretization& discret,
         const std::string& state, Core::LinAlg::Matrix<3, 1>& vel_s);
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace XFEM
 
 FOUR_C_NAMESPACE_CLOSE

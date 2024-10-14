@@ -114,7 +114,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SolidType::create(
 void Discret::ELEMENTS::SolidType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  FourC::Solid::UTILS::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
+  FourC::Solid::Utils::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
 }
 
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidType::compute_null_space(
@@ -225,12 +225,12 @@ bool Discret::ELEMENTS::Solid::read_element(const std::string& eletype, const st
 
   // read number of material model
   set_material(
-      0, Mat::factory(FourC::Solid::UTILS::read_element::read_element_material(container)));
+      0, Mat::factory(FourC::Solid::Utils::read_element::read_element_material(container)));
 
   // kinematic type
-  set_kinematic_type(FourC::Solid::UTILS::read_element::read_element_kinematic_type(container));
+  set_kinematic_type(FourC::Solid::Utils::read_element::read_element_kinematic_type(container));
 
-  solid_ele_property_ = FourC::Solid::UTILS::read_element::read_solid_element_properties(container);
+  solid_ele_property_ = FourC::Solid::Utils::read_element::read_solid_element_properties(container);
 
 
   solid_calc_variant_ = create_solid_calculation_interface(celltype_, solid_ele_property_);

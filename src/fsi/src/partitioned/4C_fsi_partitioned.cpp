@@ -149,7 +149,7 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
 
   // enable debugging
   if (fsidyn.get<bool>("DEBUGOUTPUT"))
-    debugwriter_ = Teuchos::make_rcp<UTILS::DebugWriter>(structure_field()->discretization());
+    debugwriter_ = Teuchos::make_rcp<Utils::DebugWriter>(structure_field()->discretization());
 }
 
 

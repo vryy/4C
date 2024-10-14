@@ -36,7 +36,7 @@ namespace Adapter
 
 namespace Discret
 {
-  namespace UTILS
+  namespace Utils
   {
     template <typename>
     class TimIntMStep;
@@ -53,11 +53,11 @@ namespace FSI
   class FSIResultTest;
   class OverlappingBlockMatrix;
 
-  namespace UTILS
+  namespace Utils
   {
     class DebugWriter;
     class MonolithicDebugWriter;
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FSI
 
 namespace Core::LinAlg
@@ -296,7 +296,7 @@ namespace FSI
                      public ::NOX::Epetra::Interface::Preconditioner,
                      public ::NOX::Direction::UserDefinedFactory
   {
-    friend class FSI::UTILS::MonolithicDebugWriter;
+    friend class FSI::Utils::MonolithicDebugWriter;
 
    public:
     explicit Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
@@ -979,8 +979,8 @@ namespace FSI
 
     /// @name special debugging output
 
-    Teuchos::RCP<UTILS::DebugWriter> sdbg_;
-    Teuchos::RCP<UTILS::DebugWriter> fdbg_;
+    Teuchos::RCP<Utils::DebugWriter> sdbg_;
+    Teuchos::RCP<Utils::DebugWriter> fdbg_;
 
     //@}
   };
@@ -1091,7 +1091,7 @@ namespace FSI
         const bool slave_vectors_contain_interface_dofs) override{};
 
     /// debug writer to be used inside preconditioner
-    Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg_;
+    Teuchos::RCP<Utils::MonolithicDebugWriter> pcdbg_;
 
     /*! \brief Counter of iterations to reuse the block matrix preconditioner
      *

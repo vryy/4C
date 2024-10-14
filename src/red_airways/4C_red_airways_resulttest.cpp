@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Airway::RedAirwayResultTest::RedAirwayResultTest(RedAirwayImplicitTimeInt& airways)
-    : Core::UTILS::ResultTest("RED_AIRWAY")
+    : Core::Utils::ResultTest("RED_AIRWAY")
 {
   dis_ = airways.discretization();
   mynodesol_pressure_ = airways.pnp();

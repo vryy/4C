@@ -33,10 +33,10 @@ namespace FSI
 {
   class OverlappingBlockMatrix;
 
-  namespace UTILS
+  namespace Utils
   {
     class SlideAleUtils;
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FSI
 
 namespace FSI
@@ -339,7 +339,7 @@ namespace FSI
 
     bool notsetup_;  ///< indicates if Setup has not been called yet
 
-    Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;  ///< Sliding Ale helper class
+    Teuchos::RCP<FSI::Utils::SlideAleUtils> slideale_;  ///< Sliding Ale helper class
 
     Teuchos::RCP<Core::LinAlg::Vector<double>>
         iprojdispinc_;  ///< displacement of fluid side of the interface

@@ -308,7 +308,7 @@ namespace SSI
     std::vector<Teuchos::RCP<SSI::ManifoldScaTraCoupling>> scatra_manifold_couplings_;
 
     //! SSI structure mesh tying object containing coupling adapters, converters and maps
-    Teuchos::RCP<SSI::UTILS::SSIMeshTying> ssi_structure_meshtying_;
+    Teuchos::RCP<SSI::Utils::SSIMeshTying> ssi_structure_meshtying_;
 
     //! system matrices of scatra and manifold
     //@{
@@ -340,7 +340,7 @@ namespace SSI
 
     explicit ManifoldMeshTyingStrategyBase(
         Teuchos::RCP<Core::FE::Discretization> scatra_manifold_dis,
-        Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
+        Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 
     //! apply mesh tying to right hand side
     void apply_mesh_tying_to_manifold_rhs(Core::LinAlg::Vector<double>& rhs_manifold);
@@ -368,7 +368,7 @@ namespace SSI
         bool do_uncomplete) = 0;
 
     //! coupling adpaters, maps, and extractors for mesh tying
-    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_mesh_tying() const { return ssi_meshtying_; }
+    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_mesh_tying() const { return ssi_meshtying_; }
 
    protected:
     //! should meshtying between manifold fields be applied?
@@ -378,11 +378,11 @@ namespace SSI
     Teuchos::RCP<const Epetra_Map> condensed_dof_map_;
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps_;
+    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps_;
 
    private:
     //! coupling adpaters, maps, and extractors for mesh tying
-    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_meshtying_;
+    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_meshtying_;
   };
 
   class ManifoldMeshTyingStrategySparse : public ManifoldMeshTyingStrategyBase
@@ -390,7 +390,7 @@ namespace SSI
    public:
     explicit ManifoldMeshTyingStrategySparse(
         Teuchos::RCP<Core::FE::Discretization> scatra_manifold_dis,
-        Teuchos::RCP<UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
+        Teuchos::RCP<Utils::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 
     void apply_meshtying_to_manifold_matrix(
         Teuchos::RCP<Core::LinAlg::SparseOperator> ssi_manifold_matrix,
@@ -416,7 +416,7 @@ namespace SSI
    public:
     explicit ManifoldMeshTyingStrategyBlock(
         Teuchos::RCP<Core::FE::Discretization> scatra_manifold_dis,
-        Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying);
+        Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps, bool is_manifold_meshtying);
 
     void apply_meshtying_to_manifold_matrix(
         Teuchos::RCP<Core::LinAlg::SparseOperator> ssi_manifold_matrix,
@@ -463,7 +463,7 @@ namespace SSI
   //! build specific mesh tying strategy
   Teuchos::RCP<SSI::ManifoldMeshTyingStrategyBase> build_manifold_mesh_tying_strategy(
       Teuchos::RCP<Core::FE::Discretization> scatra_manifold_dis,
-      Teuchos::RCP<UTILS::SSIMaps> ssi_maps, bool is_manifold_meshtying,
+      Teuchos::RCP<Utils::SSIMaps> ssi_maps, bool is_manifold_meshtying,
       Core::LinAlg::MatrixType matrixtype_manifold);
 
 }  // namespace SSI

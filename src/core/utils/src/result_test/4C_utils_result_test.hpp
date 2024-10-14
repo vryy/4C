@@ -34,7 +34,7 @@ namespace Core::IO
   class DatFileReader;
 }
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   /*!
     \brief Base class of all field test classes
@@ -156,7 +156,7 @@ namespace Core::UTILS
     std::vector<std::vector<std::vector<int>>> nodeset_;
   };
 
-}  // namespace Core::UTILS
+}  // namespace Core::Utils
 
 FOUR_C_NAMESPACE_CLOSE
 

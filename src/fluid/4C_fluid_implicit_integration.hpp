@@ -86,12 +86,12 @@ namespace FLD
   class Meshtying;
   class XWall;
   class TransferTurbulentInflowCondition;
-  namespace UTILS
+  namespace Utils
   {
     class FluidInfNormScaling;
     class FluidImpedanceWrapper;
     class StressManager;
-  }  // namespace UTILS
+  }  // namespace Utils
 
   /*!
   \brief time integration for fluid problems
@@ -706,10 +706,10 @@ namespace FLD
     virtual Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() { return locsysman_; }
 
     //! Return wss manager
-    virtual Teuchos::RCP<FLD::UTILS::StressManager> stress_manager() { return stressmanager_; }
+    virtual Teuchos::RCP<FLD::Utils::StressManager> stress_manager() { return stressmanager_; }
 
     //! Return impedance BC
-    virtual Teuchos::RCP<FLD::UTILS::FluidImpedanceWrapper> impedance_bc() { return impedancebc_; }
+    virtual Teuchos::RCP<FLD::Utils::FluidImpedanceWrapper> impedance_bc() { return impedancebc_; }
 
     //! Evaluate Dirichlet and Neumann boundary conditions
     virtual void set_dirichlet_neumann_bc();
@@ -850,7 +850,7 @@ namespace FLD
       This method must (and will) be called during setup with a properly
       initialized extractor object if we are on an ale mesh.
      */
-    virtual void set_surface_splitter(const UTILS::MapExtractor* surfacesplitter)
+    virtual void set_surface_splitter(const Utils::MapExtractor* surfacesplitter)
     {
       surfacesplitter_ = surfacesplitter;
     }
@@ -942,7 +942,7 @@ namespace FLD
     void apply_external_forces(Teuchos::RCP<Epetra_MultiVector> fext) override;
 
     /// create field test
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
 
     Teuchos::RCP<const Core::LinAlg::Vector<double>> convective_vel() override;
 
@@ -1334,7 +1334,7 @@ namespace FLD
     Teuchos::RCP<Core::LinAlg::MapExtractor> velpressplitter_;
 
     /// row dof map extractor
-    const UTILS::MapExtractor* surfacesplitter_;
+    const Utils::MapExtractor* surfacesplitter_;
 
     /// a manager doing the transfer of boundary data for
     /// turbulent inflow profiles from a separate (periodic) domain
@@ -1363,7 +1363,7 @@ namespace FLD
     //@}
 
     // possible inf-norm scaling of linear system / fluid matrix
-    Teuchos::RCP<FLD::UTILS::FluidInfNormScaling> fluid_infnormscaling_;
+    Teuchos::RCP<FLD::Utils::FluidInfNormScaling> fluid_infnormscaling_;
 
     //! @name Biofilm specific stuff
     //@{
@@ -1374,10 +1374,10 @@ namespace FLD
     Teuchos::RCP<Core::Conditions::LocsysManager> locsysman_;
 
     /// windkessel (outflow) boundaries
-    Teuchos::RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
+    Teuchos::RCP<Utils::FluidImpedanceWrapper> impedancebc_;
 
     //! Dirichlet BCs with local co-ordinate system
-    Teuchos::RCP<FLD::UTILS::StressManager> stressmanager_;
+    Teuchos::RCP<FLD::Utils::StressManager> stressmanager_;
 
     /// flag for windkessel outflow condition
     bool isimpedancebc_;

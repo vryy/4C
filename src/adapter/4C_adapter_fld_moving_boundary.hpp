@@ -28,7 +28,7 @@ namespace Discret
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     class MapExtractor;
   }
@@ -61,7 +61,7 @@ namespace Adapter
     virtual const Teuchos::RCP<Adapter::Fluid>& fluid_field() = 0;
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const = 0;
+    virtual Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const = 0;
 
     //@}
 
@@ -129,7 +129,7 @@ namespace Adapter
     virtual Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape() = 0;
 
     /// create result test for encapulated fluid algorithm
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() = 0;
+    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test() = 0;
   };
 
 

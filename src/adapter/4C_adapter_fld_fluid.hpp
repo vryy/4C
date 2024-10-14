@@ -60,7 +60,7 @@ namespace FLD
   class TurbulenceStatisticManager;
   class DynSmagFilter;
   class Vreman;
-  namespace UTILS
+  namespace Utils
   {
     class MapExtractor;
   }
@@ -475,10 +475,10 @@ namespace Adapter
     virtual double tim_int_param() const = 0;
 
     /// communication object at the interface (neglecting pressure dofs)
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const = 0;
+    virtual Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const = 0;
 
     /// communication object at the interface (including pressure dofs)
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& fpsi_interface() const = 0;
+    virtual Teuchos::RCP<FLD::Utils::MapExtractor> const& fpsi_interface() const = 0;
 
     /// return type of time integration scheme
     virtual Inpar::FLUID::TimeIntegrationScheme tim_int_scheme() const = 0;
@@ -578,7 +578,7 @@ namespace Adapter
     virtual void use_block_matrix(bool splitmatrix) = 0;
 
     /// create result test for encapulated fluid algorithm
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() = 0;
+    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test() = 0;
 
     /// calculate error in comparison to analytical solution
     virtual void calculate_error() = 0;

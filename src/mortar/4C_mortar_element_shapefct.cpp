@@ -2510,7 +2510,7 @@ bool Mortar::Element::evaluate_shape_lag_mult_const(const Inpar::Mortar::ShapeFc
     const double* xi, Core::LinAlg::SerialDenseVector& val, Core::LinAlg::SerialDenseMatrix& deriv,
     const int valdim) const
 {
-  Mortar::UTILS::evaluate_shape_lm_const(lmtype, xi, val, *this, valdim);
+  Mortar::Utils::evaluate_shape_lm_const(lmtype, xi, val, *this, valdim);
   deriv.putScalar(0.0);
 
   return true;
@@ -2675,7 +2675,7 @@ void Mortar::Element::shape_function_linearizations(Mortar::Element::ShapeType s
         for (int i = 0; i < integrator.n_gp(); ++i)
         {
           double gpc[2] = {integrator.coordinate(i, 0), integrator.coordinate(i, 1)};
-          UTILS::mortar_shape_function_2d(val, gpc[0], gpc[1], Mortar::Element::bilin2D);
+          Utils::mortar_shape_function_2d(val, gpc[0], gpc[1], Mortar::Element::bilin2D);
           detg = jacobian(gpc);
 
           // directional derivative of Jacobian

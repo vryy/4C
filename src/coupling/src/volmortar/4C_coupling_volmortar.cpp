@@ -55,7 +55,7 @@ Coupling::VolMortar::VolMortarCoupl::VolMortarCoupl(int dim,
     std::vector<int>* coupleddof21,  // 1-->2
     std::pair<int, int>* dofset12,   // 2-->1
     std::pair<int, int>* dofset21,   // 1-->2
-    Teuchos::RCP<Coupling::VolMortar::UTILS::DefaultMaterialStrategy>
+    Teuchos::RCP<Coupling::VolMortar::Utils::DefaultMaterialStrategy>
         materialstrategy  // strategy for element information transfer
     )
     : dim_(dim),
@@ -1392,7 +1392,7 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     // solve with default solver
 
     Teuchos::ParameterList solvparams;
-    Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
+    Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
         "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
     Core::LinAlg::Solver solver(solvparams, *comm_, nullptr, Core::IO::Verbositylevel::standard);
 
@@ -1766,17 +1766,17 @@ bool Coupling::VolMortar::VolMortarCoupl::check_ele_integration(
 
     // global to local:
     if (mele.shape() == Core::FE::CellType::hex8)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(mele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::hex8>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::hex20)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::hex20>(mele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::hex20>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::hex27)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::hex27>(mele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::hex27>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::tet4)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::tet4>(mele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::tet4>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::tet10)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::tet10>(mele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::tet10>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::pyramid5)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::pyramid5>(mele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::pyramid5>(mele, xgl, xi, converged);
     else
       FOUR_C_THROW("ERROR: Shape function not supported!");
 
@@ -1848,17 +1848,17 @@ bool Coupling::VolMortar::VolMortarCoupl::check_cut(
 
       // global to local:
       if (sele.shape() == Core::FE::CellType::hex8)
-        Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(sele, xgl, xi, converged);
+        Mortar::Utils::global_to_local<Core::FE::CellType::hex8>(sele, xgl, xi, converged);
       else if (sele.shape() == Core::FE::CellType::hex20)
-        Mortar::UTILS::global_to_local<Core::FE::CellType::hex20>(sele, xgl, xi, converged);
+        Mortar::Utils::global_to_local<Core::FE::CellType::hex20>(sele, xgl, xi, converged);
       else if (sele.shape() == Core::FE::CellType::hex27)
-        Mortar::UTILS::global_to_local<Core::FE::CellType::hex27>(sele, xgl, xi, converged);
+        Mortar::Utils::global_to_local<Core::FE::CellType::hex27>(sele, xgl, xi, converged);
       else if (sele.shape() == Core::FE::CellType::tet4)
-        Mortar::UTILS::global_to_local<Core::FE::CellType::tet4>(sele, xgl, xi, converged);
+        Mortar::Utils::global_to_local<Core::FE::CellType::tet4>(sele, xgl, xi, converged);
       else if (sele.shape() == Core::FE::CellType::tet10)
-        Mortar::UTILS::global_to_local<Core::FE::CellType::tet10>(sele, xgl, xi, converged);
+        Mortar::Utils::global_to_local<Core::FE::CellType::tet10>(sele, xgl, xi, converged);
       else if (sele.shape() == Core::FE::CellType::pyramid5)
-        Mortar::UTILS::global_to_local<Core::FE::CellType::pyramid5>(sele, xgl, xi, converged);
+        Mortar::Utils::global_to_local<Core::FE::CellType::pyramid5>(sele, xgl, xi, converged);
       else
         FOUR_C_THROW("ERROR: Shape function not supported!");
 
@@ -1922,17 +1922,17 @@ bool Coupling::VolMortar::VolMortarCoupl::check_cut(
 
       // global to local:
       if (mele.shape() == Core::FE::CellType::hex8)
-        Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(mele, xgl, xi, converged);
+        Mortar::Utils::global_to_local<Core::FE::CellType::hex8>(mele, xgl, xi, converged);
       else if (mele.shape() == Core::FE::CellType::hex20)
-        Mortar::UTILS::global_to_local<Core::FE::CellType::hex20>(mele, xgl, xi, converged);
+        Mortar::Utils::global_to_local<Core::FE::CellType::hex20>(mele, xgl, xi, converged);
       else if (mele.shape() == Core::FE::CellType::hex27)
-        Mortar::UTILS::global_to_local<Core::FE::CellType::hex27>(mele, xgl, xi, converged);
+        Mortar::Utils::global_to_local<Core::FE::CellType::hex27>(mele, xgl, xi, converged);
       else if (mele.shape() == Core::FE::CellType::tet4)
-        Mortar::UTILS::global_to_local<Core::FE::CellType::tet4>(mele, xgl, xi, converged);
+        Mortar::Utils::global_to_local<Core::FE::CellType::tet4>(mele, xgl, xi, converged);
       else if (mele.shape() == Core::FE::CellType::tet10)
-        Mortar::UTILS::global_to_local<Core::FE::CellType::tet10>(mele, xgl, xi, converged);
+        Mortar::Utils::global_to_local<Core::FE::CellType::tet10>(mele, xgl, xi, converged);
       else if (mele.shape() == Core::FE::CellType::pyramid5)
-        Mortar::UTILS::global_to_local<Core::FE::CellType::pyramid5>(mele, xgl, xi, converged);
+        Mortar::Utils::global_to_local<Core::FE::CellType::pyramid5>(mele, xgl, xi, converged);
       else
         FOUR_C_THROW("ERROR: Shape function not supported!");
 
@@ -1986,17 +1986,17 @@ bool Coupling::VolMortar::VolMortarCoupl::check_cut(
 
     // global to local:
     if (sele.shape() == Core::FE::CellType::hex8)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(sele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::hex8>(sele, xgl, xi, converged);
     else if (sele.shape() == Core::FE::CellType::hex20)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::hex20>(sele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::hex20>(sele, xgl, xi, converged);
     else if (sele.shape() == Core::FE::CellType::hex27)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::hex27>(sele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::hex27>(sele, xgl, xi, converged);
     else if (sele.shape() == Core::FE::CellType::tet4)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::tet4>(sele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::tet4>(sele, xgl, xi, converged);
     else if (sele.shape() == Core::FE::CellType::tet10)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::tet10>(sele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::tet10>(sele, xgl, xi, converged);
     else if (sele.shape() == Core::FE::CellType::pyramid5)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::pyramid5>(sele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::pyramid5>(sele, xgl, xi, converged);
     else
       FOUR_C_THROW("ERROR: Shape function not supported!");
 
@@ -2033,17 +2033,17 @@ bool Coupling::VolMortar::VolMortarCoupl::check_cut(
 
     // global to local:
     if (mele.shape() == Core::FE::CellType::hex8)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(mele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::hex8>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::hex20)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::hex20>(mele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::hex20>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::hex27)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::hex27>(mele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::hex27>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::tet4)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::tet4>(mele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::tet4>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::tet10)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::tet10>(mele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::tet10>(mele, xgl, xi, converged);
     else if (mele.shape() == Core::FE::CellType::pyramid5)
-      Mortar::UTILS::global_to_local<Core::FE::CellType::pyramid5>(mele, xgl, xi, converged);
+      Mortar::Utils::global_to_local<Core::FE::CellType::pyramid5>(mele, xgl, xi, converged);
     else
       FOUR_C_THROW("ERROR: Shape function not supported!");
 

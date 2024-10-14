@@ -105,7 +105,7 @@ void ParticleInteraction::SPHHeatSourceVolume::evaluate_heat_source(const double
 
   // get reference to function
   const auto& function =
-      Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+      Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(
           heatsourcefctnumber_ - 1);
 
   // safety check
@@ -172,11 +172,11 @@ void ParticleInteraction::SPHHeatSourceSurface::init()
         static_cast<int>(direction_.size()));
 
   // normalize heat source direction vector
-  const double direction_norm = UTILS::vec_norm_two(direction_.data());
+  const double direction_norm = Utils::vec_norm_two(direction_.data());
   if (direction_norm > 0.0)
   {
     eval_direction_ = true;
-    UTILS::vec_set_scale(direction_.data(), 1.0 / direction_norm, direction_.data());
+    Utils::vec_set_scale(direction_.data(), 1.0 / direction_norm, direction_.data());
   }
 }
 
@@ -257,13 +257,13 @@ void ParticleInteraction::SPHHeatSourceSurface::evaluate_heat_source(const doubl
     const double V_i = mass_i[0] / dens_i[0];
     const double V_j = mass_j[0] / dens_j[0];
 
-    const double fac = (UTILS::pow<2>(V_i) + UTILS::pow<2>(V_j)) / (dens_i[0] + dens_j[0]);
+    const double fac = (Utils::pow<2>(V_i) + Utils::pow<2>(V_j)) / (dens_i[0] + dens_j[0]);
 
     // evaluate contribution of neighboring particle j
     if (absorbingtypes_.count(type_i))
     {
       // sum contribution of neighboring particle j
-      UTILS::vec_add_scale(cfg_i[type_i][particle_i].data(),
+      Utils::vec_add_scale(cfg_i[type_i][particle_i].data(),
           dens_i[0] / V_i * fac * particlepair.dWdrij_, particlepair.e_ij_);
     }
 
@@ -271,7 +271,7 @@ void ParticleInteraction::SPHHeatSourceSurface::evaluate_heat_source(const doubl
     if (absorbingtypes_.count(type_j) and status_j == PARTICLEENGINE::Owned)
     {
       // sum contribution of neighboring particle i
-      UTILS::vec_add_scale(cfg_i[type_j][particle_j].data(),
+      Utils::vec_add_scale(cfg_i[type_j][particle_j].data(),
           -dens_j[0] / V_j * fac * particlepair.dWdrji_, particlepair.e_ij_);
     }
   }
@@ -281,7 +281,7 @@ void ParticleInteraction::SPHHeatSourceSurface::evaluate_heat_source(const doubl
 
   // get reference to function
   const auto& function =
-      Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+      Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(
           heatsourcefctnumber_ - 1);
 
   // safety check
@@ -305,14 +305,14 @@ void ParticleInteraction::SPHHeatSourceSurface::evaluate_heat_source(const doubl
     for (int particle_i = 0; particle_i < container_i->particles_stored(); ++particle_i)
     {
       // norm of colorfield gradient of absorbing interface particles
-      const double f_i = UTILS::vec_norm_two(cfg_i[type_i][particle_i].data());
+      const double f_i = Utils::vec_norm_two(cfg_i[type_i][particle_i].data());
 
       // no heat source contribution to current particle
       if (not(f_i > 0.0)) continue;
 
       // projection of colorfield gradient with heat source direction
       const double f_i_proj =
-          eval_direction_ ? -UTILS::vec_dot(direction_.data(), cfg_i[type_i][particle_i].data())
+          eval_direction_ ? -Utils::vec_dot(direction_.data(), cfg_i[type_i][particle_i].data())
                           : f_i;
 
       // heat source contribution only for surface opposing heat source

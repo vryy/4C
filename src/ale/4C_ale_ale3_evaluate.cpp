@@ -30,44 +30,44 @@ Discret::ELEMENTS::Ale3ImplInterface* Discret::ELEMENTS::Ale3ImplInterface::impl
   {
     case Core::FE::CellType::hex8:
     {
-      return Ale3Impl<Core::FE::CellType::hex8>::instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::hex8>::instance(Core::Utils::SingletonAction::create);
     }
     case Core::FE::CellType::hex20:
     {
-      return Ale3Impl<Core::FE::CellType::hex20>::instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::hex20>::instance(Core::Utils::SingletonAction::create);
     }
     case Core::FE::CellType::hex27:
     {
-      return Ale3Impl<Core::FE::CellType::hex27>::instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::hex27>::instance(Core::Utils::SingletonAction::create);
     }
     case Core::FE::CellType::tet4:
     {
-      return Ale3Impl<Core::FE::CellType::tet4>::instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::tet4>::instance(Core::Utils::SingletonAction::create);
     }
     case Core::FE::CellType::tet10:
     {
-      return Ale3Impl<Core::FE::CellType::tet10>::instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::tet10>::instance(Core::Utils::SingletonAction::create);
     }
     case Core::FE::CellType::wedge6:
     {
-      return Ale3Impl<Core::FE::CellType::wedge6>::instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::wedge6>::instance(Core::Utils::SingletonAction::create);
     }
       /*  case Core::FE::CellType::wedge15:
         {
           return
-        Ale3Impl<Core::FE::CellType::wedge15>::Instance(Core::UTILS::SingletonAction::create);
+        Ale3Impl<Core::FE::CellType::wedge15>::Instance(Core::Utils::SingletonAction::create);
         }*/
     case Core::FE::CellType::pyramid5:
     {
-      return Ale3Impl<Core::FE::CellType::pyramid5>::instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::pyramid5>::instance(Core::Utils::SingletonAction::create);
     }
     case Core::FE::CellType::nurbs8:
     {
-      return Ale3Impl<Core::FE::CellType::nurbs8>::instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::nurbs8>::instance(Core::Utils::SingletonAction::create);
     }
     case Core::FE::CellType::nurbs27:
     {
-      return Ale3Impl<Core::FE::CellType::nurbs27>::instance(Core::UTILS::SingletonAction::create);
+      return Ale3Impl<Core::FE::CellType::nurbs27>::instance(Core::Utils::SingletonAction::create);
     }
     default:
       FOUR_C_THROW("shape %d (%d nodes) not supported", ele->shape(), ele->num_node());
@@ -78,9 +78,9 @@ Discret::ELEMENTS::Ale3ImplInterface* Discret::ELEMENTS::Ale3ImplInterface::impl
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::Ale3Impl<distype>* Discret::ELEMENTS::Ale3Impl<distype>::instance(
-    Core::UTILS::SingletonAction action)
+    Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::Ale3Impl<distype>>(

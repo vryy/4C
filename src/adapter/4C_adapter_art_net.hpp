@@ -57,7 +57,7 @@ namespace Adapter
     virtual void test_results() = 0;
 
     // create field test
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() = 0;
+    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test() = 0;
 
     //! get discretization
     virtual Teuchos::RCP<Core::FE::Discretization> discretization() = 0;

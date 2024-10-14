@@ -31,7 +31,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Inpar::ScaTra::ImplType PoroElastScaTra::UTILS::PoroScatraCloneStrategy::get_impl_type(
+Inpar::ScaTra::ImplType PoroElastScaTra::Utils::PoroScatraCloneStrategy::get_impl_type(
     Core::Elements::Element* ele  //! element whose ScaTra::ImplType shall be determined
 )
 {
@@ -153,12 +153,12 @@ Inpar::ScaTra::ImplType PoroElastScaTra::UTILS::PoroScatraCloneStrategy::get_imp
     return Adapter::get_sca_tra_impl_type(ele);
 }
 
-bool PoroElastScaTra::UTILS::PoroScatraCloneStrategy::determine_ele_type(
+bool PoroElastScaTra::Utils::PoroScatraCloneStrategy::determine_ele_type(
     Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone elements based on poro or scatra elements
-  if (PoroElastScaTra::UTILS::is_poro_scatra_element(actele) or
-      PoroElast::UTILS::is_poro_element(actele))
+  if (PoroElastScaTra::Utils::is_poro_scatra_element(actele) or
+      PoroElast::Utils::is_poro_element(actele))
   {
     // we only support fluid elements here
     eletype.emplace_back("TRANSP");
@@ -169,7 +169,7 @@ bool PoroElastScaTra::UTILS::PoroScatraCloneStrategy::determine_ele_type(
 }
 
 
-void PoroElastScaTra::UTILS::PoroScatraCloneStrategy::set_element_data(
+void PoroElastScaTra::Utils::PoroScatraCloneStrategy::set_element_data(
     Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
     const bool isnurbsdis)
 {
@@ -189,7 +189,7 @@ void PoroElastScaTra::UTILS::PoroScatraCloneStrategy::set_element_data(
 
   // now check whether ImplType is reasonable and if set the ImplType
   Inpar::ScaTra::ImplType impltype =
-      PoroElastScaTra::UTILS::PoroScatraCloneStrategy::get_impl_type(oldele);
+      PoroElastScaTra::Utils::PoroScatraCloneStrategy::get_impl_type(oldele);
 
   if (impltype == Inpar::ScaTra::impltype_undefined)
     FOUR_C_THROW(
@@ -208,7 +208,7 @@ void PoroElastScaTra::UTILS::PoroScatraCloneStrategy::set_element_data(
 }
 
 std::map<std::string, std::string>
-PoroElastScaTra::UTILS::PoroScatraCloneStrategy::conditions_to_copy() const
+PoroElastScaTra::Utils::PoroScatraCloneStrategy::conditions_to_copy() const
 {
   return {{"TransportDirichlet", "Dirichlet"}, {"TransportPointNeumann", "PointNeumann"},
       {"TransportLineNeumann", "LineNeumann"}, {"TransportSurfaceNeumann", "SurfaceNeumann"},
@@ -222,7 +222,7 @@ PoroElastScaTra::UTILS::PoroScatraCloneStrategy::conditions_to_copy() const
       {"ArtScatraCouplConNodeToPoint", "ArtScatraCouplConNodeToPoint"}};
 }
 
-void PoroElastScaTra::UTILS::PoroScatraCloneStrategy::check_material_type(const int matid)
+void PoroElastScaTra::Utils::PoroScatraCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -235,12 +235,12 @@ void PoroElastScaTra::UTILS::PoroScatraCloneStrategy::check_material_type(const 
     FOUR_C_THROW("Material with ID %d is not admissible for scalar transport elements", matid);
 }
 
-bool PoroElastScaTra::UTILS::PoroelastCloneStrategyforScatraElements::determine_ele_type(
+bool PoroElastScaTra::Utils::PoroelastCloneStrategyforScatraElements::determine_ele_type(
     Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone the element only if it is a poro or scatra element (we support submeshes here)
-  if (PoroElastScaTra::UTILS::is_poro_scatra_element(actele) or
-      PoroElast::UTILS::is_poro_element(actele))
+  if (PoroElastScaTra::Utils::is_poro_scatra_element(actele) or
+      PoroElast::Utils::is_poro_element(actele))
   {
     // we only support fluid elements here
     eletype.emplace_back("FLUIDPORO");

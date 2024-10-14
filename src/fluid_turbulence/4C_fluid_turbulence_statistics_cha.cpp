@@ -3062,7 +3062,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
       {
         if (state->first == "velaf")
         {  // project_gradient_and_set_param decides, if we want to project something or not
-          FLD::UTILS::project_gradient_and_set_param(
+          FLD::Utils::project_gradient_and_set_param(
               *discret_, eleparams_, state->second, "velafgrad", alefluid_);
           break;
         }
@@ -3096,7 +3096,7 @@ void FLD::TurbulenceStatisticsCha::evaluate_residuals(
       // add dissipation and residuals of scalar field
 
       // set action for elements
-      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+      Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::calc_dissipation, scatraeleparams_);
       // set parameters required for evaluation of residuals, etc.
       scatraeleparams_.set<double>("time-step length", scatraparams_->get<double>("TIMESTEP"));

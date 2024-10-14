@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    ismail 09/10|
  *----------------------------------------------------------------------*/
-FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper(
+FLD::Utils::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper(
     Teuchos::RCP<Core::FE::Discretization> actdis, double dta)
     :  // call constructor for "nontrivial" objects
       discret_(actdis)
@@ -99,7 +99,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::FluidVolumetricSurfaceFlowWrapper
 /*----------------------------------------------------------------------*
  |  Output (public)                                         ismail 10/10|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::output(Core::IO::DiscretizationWriter& output)
+void FLD::Utils::FluidVolumetricSurfaceFlowWrapper::output(Core::IO::DiscretizationWriter& output)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
@@ -116,7 +116,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::output(Core::IO::Discretizat
 /*----------------------------------------------------------------------*
  |  read_restart (public)                                    ismail 10/10|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::read_restart(
+void FLD::Utils::FluidVolumetricSurfaceFlowWrapper::read_restart(
     Core::IO::DiscretizationReader& reader)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
@@ -135,7 +135,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::read_restart(
  | Evaluate the velocities of the dof and the map          ismail 09/10 |
  | extractor of boundary condition                                      |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::evaluate_velocities(
+void FLD::Utils::FluidVolumetricSurfaceFlowWrapper::evaluate_velocities(
     Core::LinAlg::Vector<double>& velocities, const double time)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
@@ -165,7 +165,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowWrapper::evaluate_velocities(
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    ismail 09/10|
  *----------------------------------------------------------------------*/
-FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
+FLD::Utils::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
     Teuchos::RCP<Core::FE::Discretization> actdis, double dta, std::string ds_condname,
     std::string dl_condname, int condid, int surf_numcond, int line_numcond)
     :  // call constructor for "nontrivial" objects
@@ -351,7 +351,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(
 /*----------------------------------------------------------------------*
  |  Calculate center of mass (public)                       ismail 10/10|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::center_of_mass_calculation(
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::center_of_mass_calculation(
     Teuchos::RCP<std::vector<double>> coords, Teuchos::RCP<std::vector<double>> normal,
     std::string ds_condname)
 {
@@ -421,7 +421,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::center_of_mass_calculation(
 /*----------------------------------------------------------------------*
  |  Calculate local normalized radii (public)               ismail 10/10|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
     std::string ds_condname, std::string dl_condname)
 // Teuchos::RCP<std::vector<double> > center_of_mass,
 // Teuchos::RCP<std::vector<double> > avg_normal,
@@ -685,7 +685,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
 /*----------------------------------------------------------------------*
  |  Calculate local normalized radii (public)               ismail 10/10|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_node_row_map(
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::build_condition_node_row_map(
     Teuchos::RCP<Core::FE::Discretization> dis, const std::string condname, int condid, int condnum,
     Teuchos::RCP<Epetra_Map>& cond_noderowmap)
 {
@@ -735,7 +735,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_node_row_map(
 /*----------------------------------------------------------------------*
  |  Build condition dof_row_map (public)                      ismail 10/10|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
     Teuchos::RCP<Core::FE::Discretization> dis, const std::string condname, int condid, int condnum,
     Teuchos::RCP<Epetra_Map>& cond_dofrowmap)
 {
@@ -790,7 +790,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::build_condition_dof_row_map(
 /*----------------------------------------------------------------------*
  |  Output (public)                                         ismail 10/10|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::output(
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::output(
     Core::IO::DiscretizationWriter& output, std::string ds_condname, int condnum)
 {
   // condnum contains the number of the present condition
@@ -818,7 +818,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::output(
 /*----------------------------------------------------------------------*
  |  read_restart (public)                                    ismail 11/10|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::read_restart(
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::read_restart(
     Core::IO::DiscretizationReader& reader, std::string ds_condname, int condnum)
 {
   // condnum contains the number of the present condition
@@ -874,7 +874,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::read_restart(
 /*----------------------------------------------------------------------*
  |  Evaluates the Velocities (public)                       ismail 10/10|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_velocities(
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::evaluate_velocities(
     const double flowrate, const std::string ds_condname, const double time)
 {
   const double time_in_a_period = fmod(time, period_);  // time - period_*floor(time/period_);
@@ -914,12 +914,12 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_velocities(
   this->velocities(*discret_, *cond_velocities_, *cond_surfnoderowmap_, *local_radii_,
       *border_radii_, *vnormal_, *params);
 
-}  // FLD::UTILS::FluidWomersleyBc::EvaluateVelocities
+}  // FLD::Utils::FluidWomersleyBc::EvaluateVelocities
 
 /*----------------------------------------------------------------------*
  |  Evaluates the Velocity componets of the traction        ismail 05/11|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::reset_traction_velocity_comp()
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::reset_traction_velocity_comp()
 {
   cond_traction_vel_->PutScalar(0.0);
 }
@@ -928,7 +928,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::reset_traction_velocity_comp()
 /*----------------------------------------------------------------------*
  |  Evaluates the Velocity componets of the traction        ismail 05/11|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_traction_velocity_comp(
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::evaluate_traction_velocity_comp(
     Teuchos::ParameterList eleparams, std::string condname, double flowrate, int condid_,
     double time, double theta, double dta)
 {
@@ -954,7 +954,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_traction_velocity_comp(
 /*----------------------------------------------------------------------*
  |  Evaluates the Flowrate  (public)                        ismail 04/11|
  *----------------------------------------------------------------------*/
-double FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_flowrate(
+double FLD::Utils::FluidVolumetricSurfaceFlowBc::evaluate_flowrate(
     const std::string ds_condname, const double time)
 {
   // -------------------------------------------------------------------
@@ -980,7 +980,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_flowrate(
   if (functnum > 0)
   {
     functfac = Global::Problem::instance()
-                   ->function_by_id<Core::UTILS::FunctionOfTime>(functnum - 1)
+                   ->function_by_id<Core::Utils::FunctionOfTime>(functnum - 1)
                    .evaluate(time);
     flowrate = val * functfac;
   }
@@ -991,7 +991,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::evaluate_flowrate(
 /*----------------------------------------------------------------------*
  |  Evaluates the Velocities (public)                       ismail 10/10|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::velocities(Core::FE::Discretization& disc,
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::velocities(Core::FE::Discretization& disc,
     Core::LinAlg::Vector<double>& bcdof, Epetra_Map& cond_noderowmap,
     Core::LinAlg::Vector<double>& local_radii, Core::LinAlg::Vector<double>& border_radii,
     std::vector<double>& normal, Teuchos::ParameterList& params)
@@ -1171,13 +1171,13 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::velocities(Core::FE::Discretizati
     }
   }
 
-}  // FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities
+}  // FLD::Utils::FluidVolumetricSurfaceFlowBc::Velocities
 
 
 /*----------------------------------------------------------------------*
  |  Corrects the Flow Rate   (public)                       ismail 10/10|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
     const Teuchos::ParameterList eleparams, const std::string ds_condname,
     const FLD::BoundaryAction action, const double time, const bool force_correction)
 {
@@ -1300,7 +1300,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::correct_flow_rate(
 /*----------------------------------------------------------------------*
  |  Apply velocities         (public)                       ismail 10/10|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::set_velocities(
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::set_velocities(
     Core::LinAlg::Vector<double>& velocities)
 {
   for (int lid = 0; lid < cond_velocities_->MyLength(); lid++)
@@ -1330,7 +1330,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::set_velocities(
   very last cycle!
 
 */
-double FLD::UTILS::FluidVolumetricSurfaceFlowBc::flow_rate_calculation(
+double FLD::Utils::FluidVolumetricSurfaceFlowBc::flow_rate_calculation(
     Teuchos::ParameterList eleparams, double time, std::string ds_condname,
     FLD::BoundaryAction action, int condid)
 {
@@ -1365,7 +1365,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::flow_rate_calculation(
 }  // FluidImplicitTimeInt::flow_rate_calculation
 
 
-double FLD::UTILS::FluidVolumetricSurfaceFlowBc::pressure_calculation(
+double FLD::Utils::FluidVolumetricSurfaceFlowBc::pressure_calculation(
     double time, std::string ds_condname, std::string action, int condid)
 {
   // fill in parameter list for subsequent element evaluation
@@ -1397,17 +1397,17 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::pressure_calculation(
 /*----------------------------------------------------------------------*
  |  Parabolic velocity at certain raduis and time         mueller 04/10 |
  *----------------------------------------------------------------------*/
-double FLD::UTILS::FluidVolumetricSurfaceFlowBc::polynomail_velocity(double r, int order)
+double FLD::Utils::FluidVolumetricSurfaceFlowBc::polynomail_velocity(double r, int order)
 {
   return (1.0 - pow(r, double(order)));
 
-}  // FLD::UTILS::FluidVolumetricSurfaceFlowBc::PolynomailVelocity
+}  // FLD::Utils::FluidVolumetricSurfaceFlowBc::PolynomailVelocity
 
 
 /*----------------------------------------------------------------------*
  |  Womersley velocity at certain raduis and time         mueller 04/10 |
  *----------------------------------------------------------------------*/
-double FLD::UTILS::FluidVolumetricSurfaceFlowBc::womersley_velocity(double r, double R, double Bn,
+double FLD::Utils::FluidVolumetricSurfaceFlowBc::womersley_velocity(double r, double R, double Bn,
     double Phi,
     // complex<double> Bn,
     int n, double time)
@@ -1459,13 +1459,13 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::womersley_velocity(double r, do
   // return the real part of the Womersley velocity
   return real(velocity);
 
-}  // FLD::UTILS::FluidVolumetricSurfaceFlowBc::PolynomailVelocity
+}  // FLD::Utils::FluidVolumetricSurfaceFlowBc::PolynomailVelocity
 
 
 /*----------------------------------------------------------------------*
  |  Womersley: Bessel functions of order 0 and 1          mueller 04/10 |
  *----------------------------------------------------------------------*/
-std::complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::bessel_j01(
+std::complex<double> FLD::Utils::FluidVolumetricSurfaceFlowBc::bessel_j01(
     std::complex<double> z, bool order)
 {
   // DESCRIPTION:
@@ -1572,7 +1572,7 @@ std::complex<double> FLD::UTILS::FluidVolumetricSurfaceFlowBc::bessel_j01(
 /*!
 
 */
-double FLD::UTILS::FluidVolumetricSurfaceFlowBc::area(
+double FLD::Utils::FluidVolumetricSurfaceFlowBc::area(
     double& density, double& viscosity, std::string ds_condname, int condid)
 {
   // fill in parameter list for subsequent element evaluation
@@ -1620,12 +1620,12 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::area(
               << std::endl;
   }
   return pararea;
-}  // FLD::UTILS::FluidVolumetricSurfaceFlowBc::Area
+}  // FLD::Utils::FluidVolumetricSurfaceFlowBc::Area
 
 /*----------------------------------------------------------------------*
  |  Womersley: Discrete Fourier Transfomation              ismail 10/10 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::dft(Teuchos::RCP<std::vector<double>> f,
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::dft(Teuchos::RCP<std::vector<double>> f,
     Teuchos::RCP<std::vector<std::complex<double>>>& F, int starting_pos)
 {
   //--------------------------------------------------------------------
@@ -1704,7 +1704,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::dft(Teuchos::RCP<std::vector<doub
  |  interpolations.                                                     |
  |                                                                      |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate(
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::interpolate(
     std::vector<double>& V1, std::vector<double>& V2, int index1, int& index2, double period)
 {
   // Get size of V1 and V2
@@ -1767,9 +1767,9 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate(
   // -------------------------------------------------------------------
   index2 = int(double(index1) * (dt1 / dt2));
 
-}  // FLD::UTILS::FluidVolumetricSurfaceFlowBc::interpolate
+}  // FLD::Utils::FluidVolumetricSurfaceFlowBc::interpolate
 
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::update_residual(
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::update_residual(
     Core::LinAlg::Vector<double>& residual)
 {
   residual.Update(1.0, *cond_traction_vel_, 1.0);
@@ -1778,7 +1778,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::update_residual(
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    ismail 04/11|
  *----------------------------------------------------------------------*/
-FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(
+FLD::Utils::TotalTractionCorrector::TotalTractionCorrector(
     Teuchos::RCP<Core::FE::Discretization> actdis, double dta)
     :  // call constructor for "nontrivial" objects
       discret_(actdis)
@@ -1856,7 +1856,7 @@ FLD::UTILS::TotalTractionCorrector::TotalTractionCorrector(
  | Evaluate the velocities of the dof and the map          ismail 04/11 |
  | extractor of boundary condition                                      |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::TotalTractionCorrector::evaluate_velocities(
+void FLD::Utils::TotalTractionCorrector::evaluate_velocities(
     Teuchos::RCP<Core::LinAlg::Vector<double>> velocities, double time, double theta, double dta)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
@@ -1898,7 +1898,7 @@ void FLD::UTILS::TotalTractionCorrector::evaluate_velocities(
 /*----------------------------------------------------------------------*
  | Update residual                                         ismail 04/11 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::TotalTractionCorrector::update_residual(Core::LinAlg::Vector<double>& residual)
+void FLD::Utils::TotalTractionCorrector::update_residual(Core::LinAlg::Vector<double>& residual)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
@@ -1912,7 +1912,7 @@ void FLD::UTILS::TotalTractionCorrector::update_residual(Core::LinAlg::Vector<do
 /*----------------------------------------------------------------------*
  |  Output (public)                                         ismail 04/11|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::TotalTractionCorrector::output(Core::IO::DiscretizationWriter& output)
+void FLD::Utils::TotalTractionCorrector::output(Core::IO::DiscretizationWriter& output)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
@@ -1929,7 +1929,7 @@ void FLD::UTILS::TotalTractionCorrector::output(Core::IO::DiscretizationWriter& 
 /*----------------------------------------------------------------------*
  |  read_restart (public)                                    ismail 04/11|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::TotalTractionCorrector::read_restart(Core::IO::DiscretizationReader& reader)
+void FLD::Utils::TotalTractionCorrector::read_restart(Core::IO::DiscretizationReader& reader)
 {
   std::map<const int, Teuchos::RCP<class FluidVolumetricSurfaceFlowBc>>::iterator mapiter;
 
@@ -1945,7 +1945,7 @@ void FLD::UTILS::TotalTractionCorrector::read_restart(Core::IO::DiscretizationRe
 /*----------------------------------------------------------------------*
  |  Export boundary values and setstate                     ismail 07/14|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::FluidVolumetricSurfaceFlowBc::export_and_set_boundary_values(
+void FLD::Utils::FluidVolumetricSurfaceFlowBc::export_and_set_boundary_values(
     Core::LinAlg::Vector<double>& source, Teuchos::RCP<Core::LinAlg::Vector<double>> target,
     std::string name)
 {
@@ -1962,7 +1962,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::export_and_set_boundary_values(
 /*----------------------------------------------------------------------*
  |  Export boundary values and setstate                     ismail 07/14|
  *----------------------------------------------------------------------*/
-void FLD::UTILS::TotalTractionCorrector::export_and_set_boundary_values(
+void FLD::Utils::TotalTractionCorrector::export_and_set_boundary_values(
     Core::LinAlg::Vector<double>& source, Teuchos::RCP<Core::LinAlg::Vector<double>> target,
     std::string name)
 {

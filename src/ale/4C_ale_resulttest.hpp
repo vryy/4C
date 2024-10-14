@@ -39,7 +39,7 @@ namespace ALE
 namespace ALE
 {
   /// Result test subclass for linear ale algorithm
-  class AleResultTest : public Core::UTILS::ResultTest
+  class AleResultTest : public Core::Utils::ResultTest
   {
    public:
     AleResultTest(ALE::Ale& ale);

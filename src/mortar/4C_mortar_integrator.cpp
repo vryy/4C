@@ -44,27 +44,27 @@ Mortar::Integrator* Mortar::Integrator::impl(
         case Core::FE::CellType::quad4:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad4,
-              Core::FE::CellType::quad4>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad4>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::quad8:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad4,
-              Core::FE::CellType::quad8>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad8>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::quad9:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad4,
-              Core::FE::CellType::quad9>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad9>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::tri3:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad4,
-              Core::FE::CellType::tri3>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::tri3>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::tri6:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad4,
-              Core::FE::CellType::tri6>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::tri6>::instance(Core::Utils::SingletonAction::create, params);
         }
         default:
           FOUR_C_THROW("Element combination not allowed!");
@@ -78,27 +78,27 @@ Mortar::Integrator* Mortar::Integrator::impl(
         case Core::FE::CellType::quad4:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad8,
-              Core::FE::CellType::quad4>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad4>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::quad8:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad8,
-              Core::FE::CellType::quad8>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad8>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::quad9:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad8,
-              Core::FE::CellType::quad9>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad9>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::tri3:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad8,
-              Core::FE::CellType::tri3>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::tri3>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::tri6:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad8,
-              Core::FE::CellType::tri6>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::tri6>::instance(Core::Utils::SingletonAction::create, params);
         }
         default:
           FOUR_C_THROW("Element combination not allowed!");
@@ -112,27 +112,27 @@ Mortar::Integrator* Mortar::Integrator::impl(
         case Core::FE::CellType::quad4:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad9,
-              Core::FE::CellType::quad4>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad4>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::quad8:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad9,
-              Core::FE::CellType::quad8>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad8>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::quad9:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad9,
-              Core::FE::CellType::quad9>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad9>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::tri3:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad9,
-              Core::FE::CellType::tri3>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::tri3>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::tri6:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::quad9,
-              Core::FE::CellType::tri6>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::tri6>::instance(Core::Utils::SingletonAction::create, params);
         }
         default:
           FOUR_C_THROW("Element combination not allowed!");
@@ -146,27 +146,27 @@ Mortar::Integrator* Mortar::Integrator::impl(
         case Core::FE::CellType::quad4:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::tri3,
-              Core::FE::CellType::quad4>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad4>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::quad8:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::tri3,
-              Core::FE::CellType::quad8>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad8>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::quad9:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::tri3,
-              Core::FE::CellType::quad9>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad9>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::tri3:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::tri3,
-              Core::FE::CellType::tri3>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::tri3>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::tri6:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::tri3,
-              Core::FE::CellType::tri6>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::tri6>::instance(Core::Utils::SingletonAction::create, params);
         }
         default:
           FOUR_C_THROW("Element combination not allowed!");
@@ -180,27 +180,27 @@ Mortar::Integrator* Mortar::Integrator::impl(
         case Core::FE::CellType::quad4:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::tri6,
-              Core::FE::CellType::quad4>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad4>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::quad8:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::tri6,
-              Core::FE::CellType::quad8>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad8>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::quad9:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::tri6,
-              Core::FE::CellType::quad9>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::quad9>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::tri3:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::tri6,
-              Core::FE::CellType::tri3>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::tri3>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::tri6:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::tri6,
-              Core::FE::CellType::tri6>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::tri6>::instance(Core::Utils::SingletonAction::create, params);
         }
         default:
           FOUR_C_THROW("Element combination not allowed!");
@@ -215,12 +215,12 @@ Mortar::Integrator* Mortar::Integrator::impl(
         case Core::FE::CellType::line2:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::line2,
-              Core::FE::CellType::line2>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::line2>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::line3:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::line2,
-              Core::FE::CellType::line3>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::line3>::instance(Core::Utils::SingletonAction::create, params);
         }
         default:
           FOUR_C_THROW("Element combination not allowed!");
@@ -234,12 +234,12 @@ Mortar::Integrator* Mortar::Integrator::impl(
         case Core::FE::CellType::line2:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::line3,
-              Core::FE::CellType::line2>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::line2>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::line3:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::line3,
-              Core::FE::CellType::line3>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::line3>::instance(Core::Utils::SingletonAction::create, params);
         }
         default:
           FOUR_C_THROW("Element combination not allowed!");
@@ -258,12 +258,12 @@ Mortar::Integrator* Mortar::Integrator::impl(
         case Core::FE::CellType::nurbs2:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::nurbs2,
-              Core::FE::CellType::nurbs2>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::nurbs2>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::nurbs3:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::nurbs2,
-              Core::FE::CellType::nurbs3>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::nurbs3>::instance(Core::Utils::SingletonAction::create, params);
         }
         default:
           FOUR_C_THROW("Element combination not allowed!");
@@ -277,12 +277,12 @@ Mortar::Integrator* Mortar::Integrator::impl(
         case Core::FE::CellType::nurbs2:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::nurbs3,
-              Core::FE::CellType::nurbs2>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::nurbs2>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::nurbs3:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::nurbs3,
-              Core::FE::CellType::nurbs3>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::nurbs3>::instance(Core::Utils::SingletonAction::create, params);
         }
         default:
           FOUR_C_THROW("Element combination not allowed!");
@@ -296,12 +296,12 @@ Mortar::Integrator* Mortar::Integrator::impl(
         case Core::FE::CellType::nurbs9:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::nurbs9,
-              Core::FE::CellType::nurbs9>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::nurbs9>::instance(Core::Utils::SingletonAction::create, params);
         }
         case Core::FE::CellType::nurbs4:
         {
           return Mortar::IntegratorCalc<Core::FE::CellType::nurbs9,
-              Core::FE::CellType::nurbs4>::instance(Core::UTILS::SingletonAction::create, params);
+              Core::FE::CellType::nurbs4>::instance(Core::Utils::SingletonAction::create, params);
         }
         default:
           FOUR_C_THROW("Element combination not allowed!");
@@ -331,9 +331,9 @@ Mortar::IntegratorCalc<distype_s, distype_m>::IntegratorCalc(const Teuchos::Para
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 Mortar::IntegratorCalc<distype_s, distype_m>*
 Mortar::IntegratorCalc<distype_s, distype_m>::instance(
-    Core::UTILS::SingletonAction action, const Teuchos::ParameterList& params)
+    Core::Utils::SingletonAction action, const Teuchos::ParameterList& params)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       [](const Teuchos::ParameterList& p)
       {
         return std::unique_ptr<Mortar::IntegratorCalc<distype_s, distype_m>>(
@@ -772,14 +772,14 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_2d(Mortar
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     if (lmquadtype_ == Inpar::Mortar::lagmult_const)
-      UTILS::evaluate_shape_lm_const(shapefcn_, sxi, lmval, sele, nrow);
+      Utils::evaluate_shape_lm_const(shapefcn_, sxi, lmval, sele, nrow);
     else if (linlm)
-      UTILS::evaluate_shape_lm_lin(shapefcn_, sxi, lmval, sele, nrow);
+      Utils::evaluate_shape_lm_lin(shapefcn_, sxi, lmval, sele, nrow);
     else
-      UTILS::evaluate_shape_lm(shapefcn_, sxi, lmval, sele, nrow);
+      Utils::evaluate_shape_lm(shapefcn_, sxi, lmval, sele, nrow);
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::evaluate_shape_displ(sxi, sval, sele, dualquad);
+    Utils::evaluate_shape_displ(sxi, sval, sele, dualquad);
 
     //********************************************************************
     //  loop over all involved masterelements
@@ -798,7 +798,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_2d(Mortar
           ->project_gauss_point_2d(sele, eta, *meles[nummaster], mxi);
 
       // evaluate trace space shape functions (on both elements)
-      UTILS::evaluate_shape_displ(mxi, mval, *meles[nummaster], false);
+      Utils::evaluate_shape_displ(mxi, mval, *meles[nummaster], false);
 
       // check GP projection
       if ((mxi[0] >= -1) && (mxi[0] <= 1) && (kink_projection == false))
@@ -943,11 +943,11 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_segment_2d(Mortar::
 
     // evaluate Lagrange multiplier shape functions (on slave element)
     if (lmtype == Inpar::Mortar::lagmult_const)
-      UTILS::evaluate_shape_lm_const(shapefcn_, sxi, lmval, sele, nrow);
+      Utils::evaluate_shape_lm_const(shapefcn_, sxi, lmval, sele, nrow);
     else if (linlm)
-      UTILS::evaluate_shape_lm_lin(shapefcn_, sxi, lmval, sele, nrow);
+      Utils::evaluate_shape_lm_lin(shapefcn_, sxi, lmval, sele, nrow);
     else
-      UTILS::evaluate_shape_lm(shapefcn_, sxi, lmval, sele, nrow);
+      Utils::evaluate_shape_lm(shapefcn_, sxi, lmval, sele, nrow);
 
     // transform shape functions for bound case
     if (bound)
@@ -960,8 +960,8 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_segment_2d(Mortar::
     }
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::evaluate_shape_displ(sxi, sval, sele, dualquad);
-    UTILS::evaluate_shape_displ(mxi, mval, mele, false);
+    Utils::evaluate_shape_displ(sxi, sval, sele, dualquad);
+    Utils::evaluate_shape_displ(mxi, mval, mele, false);
 
     // evaluate the two slave side Jacobians
     double dxdsxi = sele.jacobian(sxi);
@@ -1436,12 +1436,12 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_3d(Mortar
 
     // evaluate Lagrange mutliplier shape functions (on slave element)
     if (lmquadtype_ == Inpar::Mortar::lagmult_const)
-      UTILS::evaluate_shape_lm_const(shapefcn_, sxi, lmval, sele, nrow);
+      Utils::evaluate_shape_lm_const(shapefcn_, sxi, lmval, sele, nrow);
     else
-      UTILS::evaluate_shape_lm(shapefcn_, sxi, lmval, sele, nrow);
+      Utils::evaluate_shape_lm(shapefcn_, sxi, lmval, sele, nrow);
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::evaluate_shape_displ(sxi, sval, sele, false);
+    Utils::evaluate_shape_displ(sxi, sval, sele, false);
 
     // check for Boundary Segmentation
     bool projactable_gp = false;
@@ -1481,7 +1481,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_3d(Mortar
         projactable_gp = true;
 
         // evaluate trace space shape functions (on both elements)
-        UTILS::evaluate_shape_displ(mxi, mval, *meles[nummaster], false);
+        Utils::evaluate_shape_displ(mxi, mval, *meles[nummaster], false);
 
         // compute cell D/M matrix *******************************************
         bool bound = false;
@@ -1653,7 +1653,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane(
     }
 
     // evaluate Lagrange mutliplier shape functions (on slave element)
-    UTILS::evaluate_shape_lm(shapefcn_, sxi, lmval, sele, nrow);
+    Utils::evaluate_shape_lm(shapefcn_, sxi, lmval, sele, nrow);
 
     // transform shape functions for bound case
     if (bound)
@@ -1667,8 +1667,8 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane(
 
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::evaluate_shape_displ(sxi, sval, sele, false);
-    UTILS::evaluate_shape_displ(mxi, mval, mele, false);
+    Utils::evaluate_shape_displ(sxi, sval, sele, false);
+    Utils::evaluate_shape_displ(mxi, mval, mele, false);
 
     // evaluate the integration cell Jacobian
     double jac = cell->jacobian();
@@ -1919,7 +1919,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane_q
     //    }
 
     if (lmtype == Inpar::Mortar::lagmult_const)
-      UTILS::evaluate_shape_lm_const(shapefcn_, psxi, lmval, sele, nrow);
+      Utils::evaluate_shape_lm_const(shapefcn_, psxi, lmval, sele, nrow);
     else if (bound)
     {
       sele.evaluate_shape_lag_mult(shapefcn_, psxi, lmval, lmderiv, nrow);
@@ -1931,8 +1931,8 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane_q
     }
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::evaluate_shape_displ(psxi, sval, sele, dualquad3d);
-    UTILS::evaluate_shape_displ(pmxi, mval, mele, false);
+    Utils::evaluate_shape_displ(psxi, sval, sele, dualquad3d);
+    Utils::evaluate_shape_displ(pmxi, mval, mele, false);
 
     // evaluate the integration cell Jacobian
     double jac = cell->jacobian();

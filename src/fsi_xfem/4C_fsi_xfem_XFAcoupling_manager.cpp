@@ -75,7 +75,7 @@ void XFEM::XfaCouplingManager::predict_coupling_states()
       // apply inner Dirichlet conditions (don't forget to reset the time and the step!)
       ale_->prepare_time_step(); // applies DBCs to the current dispnp
 
-      ale_->TimeStep(ALE::UTILS::MapExtractor::dbc_set_structale);
+      ale_->TimeStep(ALE::Utils::MapExtractor::dbc_set_structale);
 
       // Reset the time and dt to be called incremented again in the actual ale->prepare_time_step
       ale_->reset_time(ale_->Dt());
@@ -115,7 +115,7 @@ void XFEM::XfaCouplingManager::add_coupling_matrix(
     Core::LinAlg::BlockSparseMatrixBase& systemmatrix, double scaling)
 {
   // Get Idx of fluid and ale field map extractors
-  const int& aidx_other = ALE::UTILS::MapExtractor::cond_other;
+  const int& aidx_other = ALE::Utils::MapExtractor::cond_other;
   const Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a = ale_->block_system_matrix();
 
   // ALE Condensation
@@ -125,7 +125,7 @@ void XFEM::XfaCouplingManager::add_coupling_matrix(
 
   if (ale_struct_coupling_ != Teuchos::null)
   {
-    const int& aidx_as = ALE::UTILS::MapExtractor::cond_lung_asi;
+    const int& aidx_as = ALE::Utils::MapExtractor::cond_lung_asi;
     Core::LinAlg::SparseMatrix& ai_gau = a->matrix(aidx_other, aidx_as);
     ale_struct_coupling_->insert_matrix(0, 0, ai_gau, 1, systemmatrix.matrix(idx_[1], idx_[2]),
         XFEM::CouplingCommManager::col, 1.0, true, false);

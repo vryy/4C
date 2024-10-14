@@ -27,7 +27,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   /*!
    * @brief Remove all leading and trailing whitespaces from a string.
@@ -75,7 +75,7 @@ namespace Core::UTILS
    *  @result vector of strings
    */
   std::vector<std::string> split_string_list(const std::string& str, const char separator);
-}  // namespace Core::UTILS
+}  // namespace Core::Utils
 
 FOUR_C_NAMESPACE_CLOSE
 

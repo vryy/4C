@@ -119,7 +119,7 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
   const double& sigma_max = params_->sigma_max_;
   const double& t_act_start = params_->t_act_start_;
   const double& t_tot = params.get<double>("total time");  // current simulation time
-  double sigma_max_ft = Mat::UTILS::Muscle::evaluate_time_dependent_active_stress_tanh(
+  double sigma_max_ft = Mat::Utils::Muscle::evaluate_time_dependent_active_stress_tanh(
       sigma_max, alpha, beta, t_act_start, t_tot);
 
   // compute total fiber cauchy stress and derivative w.r.t. fibre stretch
@@ -279,17 +279,17 @@ void Mat::Elastic::IsoMuscleBlemker::evaluate_total_fiber_cauchy_stress_and_deri
   const double& P2 = params_->P2_;
 
   // compute normalized passive fiber force and derivative w.r.t. fibre stretch
-  double f_passive = Mat::UTILS::Muscle::evaluate_passive_force_stretch_dependency_blemker(
+  double f_passive = Mat::Utils::Muscle::evaluate_passive_force_stretch_dependency_blemker(
       lambdaM, 1.0, lambda_star, P1, P2);
   double deriv_f_passive =
-      Mat::UTILS::Muscle::evaluate_derivative_passive_force_stretch_dependency_blemker(
+      Mat::Utils::Muscle::evaluate_derivative_passive_force_stretch_dependency_blemker(
           lambdaM, 1.0, lambda_star, P1, P2);
 
   // compute normalized normalized active fiber force and derivative w.r.t. fibre stretch
   double f_active =
-      Mat::UTILS::Muscle::evaluate_active_force_stretch_dependency_blemker(lambdaM, lambda_ofl);
+      Mat::Utils::Muscle::evaluate_active_force_stretch_dependency_blemker(lambdaM, lambda_ofl);
   double deriv_f_active =
-      Mat::UTILS::Muscle::evaluate_derivative_active_force_stretch_dependency_blemker(
+      Mat::Utils::Muscle::evaluate_derivative_active_force_stretch_dependency_blemker(
           lambdaM, lambda_ofl);
 
   sigma_fiber_total = (sigma_max * f_passive + sigma_max_ft * f_active) * lambdaM / lambda_ofl;

@@ -2131,7 +2131,7 @@ int Discret::ELEMENTS::Beam3k::evaluate_neumann(Teuchos::ParameterList& params,
 
       if (functnum > 0)
         functtimefac[i] = Global::Problem::instance()
-                              ->function_by_id<Core::UTILS::FunctionOfTime>(functnum - 1)
+                              ->function_by_id<Core::Utils::FunctionOfTime>(functnum - 1)
                               .evaluate(time);
 
       load_vector_neumann(i) *= functtimefac[i];
@@ -2593,7 +2593,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_line_neumann_forces(
       {
         functionfac =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>((*function_numbers)[idof] - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>((*function_numbers)[idof] - 1)
                 .evaluate(X_ref.data(), time, idof);
       }
       else
@@ -2822,7 +2822,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_translational_damping(Teuchos::Paramete
 
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
-    Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_at_xi<nnode, vpernode>(
+    Discret::Utils::Beam::evaluate_shape_functions_and_derivs_at_xi<nnode, vpernode>(
         gausspoints.qxg[gp][0], N_i, N_i_xi, this->shape(), this->ref_length());
 
     // compute position vector r of point in physical space corresponding to Gauss point
@@ -3007,7 +3007,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_stochastic_forces(
 
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
-    Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_at_xi<nnode, vpernode>(
+    Discret::Utils::Beam::evaluate_shape_functions_and_derivs_at_xi<nnode, vpernode>(
         gausspoints.qxg[gp][0], N_i, N_i_xi, this->shape(), this->ref_length());
 
     // compute tangent vector t_{\par}=r' at current Gauss point

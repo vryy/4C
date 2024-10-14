@@ -204,7 +204,7 @@ void FSI::InterfaceCorrector::set_interface_displacements(
 /*----------------------------------------------------------------------------*/
 void FSI::InterfaceCorrector::correct_interface_displacements(
     Teuchos::RCP<Core::LinAlg::Vector<double>> disp_fluid,
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& finterface)
 {
   if (icoupfs_ == Teuchos::null) FOUR_C_THROW("Coupling adapter not set!");
   if (idisp_ == Teuchos::null) FOUR_C_THROW("Interface displacements not set!");
@@ -241,7 +241,7 @@ void FSI::InterfaceCorrector::correct_interface_displacements(
 void FSI::VolCorrector::correct_vol_displacements(Teuchos::RCP<Adapter::FluidAle> fluidale,
     Teuchos::RCP<Core::LinAlg::Vector<double>> deltadisp,
     Teuchos::RCP<Core::LinAlg::Vector<double>> disp_fluid,
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& finterface)
 {
   if (fluidale->ale_field()->discretization()->get_comm().MyPID() == 0)
     std::cout << "******************   FSI Volume Correction Step   **********************"
@@ -268,7 +268,7 @@ void FSI::VolCorrector::correct_vol_displacements(Teuchos::RCP<Adapter::FluidAle
 void FSI::VolCorrector::correct_vol_displacements_para_space(
     Teuchos::RCP<Adapter::FluidAle> fluidale, Teuchos::RCP<Core::LinAlg::Vector<double>> deltadisp,
     Teuchos::RCP<Core::LinAlg::Vector<double>> disp_fluid,
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& finterface)
 {
   Core::LinAlg::Vector<double> correction(disp_fluid->Map(), true);
   Core::LinAlg::Vector<double> DofColMapDummy(
@@ -295,9 +295,9 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
       double gpos[3] = {fluidnode->x()[0], fluidnode->x()[1], fluidnode->x()[2]};
       double lpos[3] = {0.0, 0.0, 0.0};
       if (aleele->shape() == Core::FE::CellType::quad4)
-        Mortar::UTILS::global_to_local<Core::FE::CellType::quad4>(*aleele, gpos, lpos);
+        Mortar::Utils::global_to_local<Core::FE::CellType::quad4>(*aleele, gpos, lpos);
       else if (aleele->shape() == Core::FE::CellType::hex8)
-        Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(*aleele, gpos, lpos);
+        Mortar::Utils::global_to_local<Core::FE::CellType::hex8>(*aleele, gpos, lpos);
       else
         FOUR_C_THROW("ERROR: element type not implemented!");
 
@@ -315,9 +315,9 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
         double gposFSI[3] = {fluidnodeFSI->x()[0], fluidnodeFSI->x()[1], fluidnodeFSI->x()[2]};
         double lposFSI[3] = {0.0, 0.0, 0.0};
         if (aleele->shape() == Core::FE::CellType::quad4)
-          Mortar::UTILS::global_to_local<Core::FE::CellType::quad4>(*aleele, gposFSI, lposFSI);
+          Mortar::Utils::global_to_local<Core::FE::CellType::quad4>(*aleele, gposFSI, lposFSI);
         else if (aleele->shape() == Core::FE::CellType::hex8)
-          Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(*aleele, gposFSI, lposFSI);
+          Mortar::Utils::global_to_local<Core::FE::CellType::hex8>(*aleele, gposFSI, lposFSI);
         else
           FOUR_C_THROW("ERROR: element type not implemented!");
 
@@ -397,7 +397,7 @@ void FSI::VolCorrector::correct_vol_displacements_para_space(
 void FSI::VolCorrector::correct_vol_displacements_phys_space(
     Teuchos::RCP<Adapter::FluidAle> fluidale, Teuchos::RCP<Core::LinAlg::Vector<double>> deltadisp,
     Teuchos::RCP<Core::LinAlg::Vector<double>> disp_fluid,
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& finterface)
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& finterface)
 {
   Core::LinAlg::Vector<double> correction(disp_fluid->Map(), true);
   Core::LinAlg::Vector<double> DofColMapDummy(
@@ -523,9 +523,9 @@ void FSI::VolCorrector::setup(const int dim, Teuchos::RCP<Adapter::FluidAle> flu
         double gpos[3] = {fluidnode->x()[0], fluidnode->x()[1], fluidnode->x()[2]};
         double lpos[3] = {0.0, 0.0, 0.0};
         if (aleele->shape() == Core::FE::CellType::quad4)
-          Mortar::UTILS::global_to_local<Core::FE::CellType::quad4>(*aleele, gpos, lpos);
+          Mortar::Utils::global_to_local<Core::FE::CellType::quad4>(*aleele, gpos, lpos);
         else if (aleele->shape() == Core::FE::CellType::hex8)
-          Mortar::UTILS::global_to_local<Core::FE::CellType::hex8>(*aleele, gpos, lpos);
+          Mortar::Utils::global_to_local<Core::FE::CellType::hex8>(*aleele, gpos, lpos);
         else
           FOUR_C_THROW("ERROR: element type not implemented!");
 

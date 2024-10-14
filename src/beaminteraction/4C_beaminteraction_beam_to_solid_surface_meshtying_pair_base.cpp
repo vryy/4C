@@ -188,7 +188,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
 
   // Set the number of (centerline) degrees of freedom for the beam element in the face element
   face_element_->set_number_of_dof_other_element(
-      UTILS::get_number_of_element_centerline_dof(this->element1()));
+      Utils::get_number_of_element_centerline_dof(this->element1()));
 
   // If the solid surface is the surface of a 3D volume we set the face element here. Otherwise we
   // simply set the same element again.

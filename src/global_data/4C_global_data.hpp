@@ -561,17 +561,17 @@ namespace Global
     void test_all(const Epetra_Comm& comm) { resulttest_.test_all(comm); }
 
     /// add field specific result test object
-    void add_field_test(Teuchos::RCP<Core::UTILS::ResultTest> test)
+    void add_field_test(Teuchos::RCP<Core::Utils::ResultTest> test)
     {
       resulttest_.add_field_test(test);
     }
 
-    Core::UTILS::ResultTestManager& get_result_test_manager() { return resulttest_; }
+    Core::Utils::ResultTestManager& get_result_test_manager() { return resulttest_; }
 
     //@}
 
     /// Return the class that handles random numbers globally
-    Core::UTILS::Random* random() { return &random_; }
+    Core::Utils::Random* random() { return &random_; }
 
     /// Return the class that handles restart initiating -> to be extended
     Core::IO::RestartManager* restart_manager() { return &restartmanager_; }
@@ -582,9 +582,9 @@ namespace Global
      * @note The parsing of functions must take place before. This calls wants a filled
      * FunctionManager.
      */
-    void set_function_manager(Core::UTILS::FunctionManager&& function_manager);
+    void set_function_manager(Core::Utils::FunctionManager&& function_manager);
 
-    const Core::UTILS::FunctionManager& function_manager() const { return functionmanager_; }
+    const Core::Utils::FunctionManager& function_manager() const { return functionmanager_; }
 
    private:
     /// private default constructor to disallow creation of instances
@@ -615,10 +615,10 @@ namespace Global
     std::vector<std::shared_ptr<PARTICLEENGINE::ParticleObject>> particles_;
 
     /// basket of spatial function
-    Core::UTILS::FunctionManager functionmanager_;
+    Core::Utils::FunctionManager functionmanager_;
 
     /// all test values we might have
-    Core::UTILS::ResultTestManager resulttest_;
+    Core::Utils::ResultTestManager resulttest_;
 
     /// map of coupled fields and corresponding material IDs (needed for cloning
     /// of discretizations)
@@ -635,7 +635,7 @@ namespace Global
     //@}
 
     /// handles all sorts of random numbers
-    Core::UTILS::Random random_;
+    Core::Utils::Random random_;
 
     /// handles restart
     Core::IO::RestartManager restartmanager_;

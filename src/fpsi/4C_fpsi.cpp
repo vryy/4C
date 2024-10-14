@@ -31,7 +31,7 @@ void FPSI::FpsiBase::redistribute_interface()
 {
   Global::Problem* problem = Global::Problem::instance();
   const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
-  Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::instance();
+  FPSI::InterfaceUtils* FPSI_UTILS = FPSI::InterfaceUtils::instance();
 
   if (comm.NumProc() >
       1)  // if we have more than one processor, we need to redistribute at the FPSI interface
@@ -51,7 +51,7 @@ void FPSI::FpsiBase::redistribute_interface()
         *problem->get_dis("structure"), "fpsi_coupling", *Fluid_PoroFluid_InterfaceMap);
 
     // Material pointers need to be reset after redistribution.
-    PoroElast::UTILS::set_material_pointers_matching_grid(
+    PoroElast::Utils::set_material_pointers_matching_grid(
         *problem->get_dis("structure"), *problem->get_dis("porofluid"));
   }
 

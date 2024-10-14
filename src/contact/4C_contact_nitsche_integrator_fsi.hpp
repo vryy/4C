@@ -140,7 +140,7 @@ namespace CONTACT
     Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm_;
   };
 
-  namespace UTILS
+  namespace Utils
   {
     /// Compute Cauchy stress component sigma_{n dir} at local coord xsi
     double solid_cauchy_at_xi(CONTACT::Element* cele,  ///< the contact element
@@ -148,7 +148,7 @@ namespace CONTACT
         const Core::LinAlg::Matrix<3, 1>& n,           ///< normal n
         const Core::LinAlg::Matrix<3, 1>& dir          ///< second directional vector
     );
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace CONTACT
 FOUR_C_NAMESPACE_CLOSE
 

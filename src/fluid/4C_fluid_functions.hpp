@@ -25,7 +25,7 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
-namespace Core::UTILS
+namespace Core::Utils
 {
   class FunctionManager;
 }
@@ -34,10 +34,10 @@ namespace Core::UTILS
 namespace FLD
 {
   /// add valid fluid-specific function lines
-  void add_valid_fluid_functions(Core::UTILS::FunctionManager& function_manager);
+  void add_valid_fluid_functions(Core::Utils::FunctionManager& function_manager);
 
   /// special implementation for beltrami flow (velocity, pressure)
-  class BeltramiUP : public Core::UTILS::FunctionOfSpaceTime
+  class BeltramiUP : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     BeltramiUP(const Mat::PAR::NewtonianFluid& fparams);
@@ -60,7 +60,7 @@ namespace FLD
   };
 
   /// special implementation beltrami flow (gradient of velocity)
-  class BeltramiGradU : public Core::UTILS::FunctionOfSpaceTime
+  class BeltramiGradU : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     BeltramiGradU(const Mat::PAR::NewtonianFluid& fparams);
@@ -81,7 +81,7 @@ namespace FLD
 
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (velocity,
   /// pressure)
-  class KimMoinUP : public Core::UTILS::FunctionOfSpaceTime
+  class KimMoinUP : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     KimMoinUP(const Mat::PAR::NewtonianFluid& fparams, bool is_stationary);
@@ -107,7 +107,7 @@ namespace FLD
 
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (gradient of
   /// velocity)
-  class KimMoinGradU : public Core::UTILS::FunctionOfSpaceTime
+  class KimMoinGradU : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     KimMoinGradU(const Mat::PAR::NewtonianFluid& fparams, bool is_stationary);
@@ -131,7 +131,7 @@ namespace FLD
   };
 
   /// special implementation for 3d Beltrami flow
-  class BeltramiFunction : public Core::UTILS::FunctionOfSpaceTime
+  class BeltramiFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     BeltramiFunction(double c1);
@@ -154,7 +154,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow in a channel
-  class ChannelWeaklyCompressibleFunction : public Core::UTILS::FunctionOfSpaceTime
+  class ChannelWeaklyCompressibleFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     double evaluate(const double* x, double t, std::size_t component) const override;
@@ -172,7 +172,7 @@ namespace FLD
   };
 
   /// correction term for weakly compressible flow in a channel
-  class CorrectionTermChannelWeaklyCompressibleFunction : public Core::UTILS::FunctionOfSpaceTime
+  class CorrectionTermChannelWeaklyCompressibleFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     double evaluate(const double* x, double t, std::size_t component) const override;
@@ -184,7 +184,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible Poiseuille flow
-  class WeaklyCompressiblePoiseuilleFunction : public Core::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressiblePoiseuilleFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressiblePoiseuilleFunction(
@@ -208,7 +208,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible Poiseuille flow (force)
-  class WeaklyCompressiblePoiseuilleForceFunction : public Core::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressiblePoiseuilleForceFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressiblePoiseuilleForceFunction(
@@ -231,7 +231,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow with manufactured solution
-  class WeaklyCompressibleManufacturedFlowFunction : public Core::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleManufacturedFlowFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleManufacturedFlowFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
@@ -251,7 +251,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow with manufactured solution (force)
-  class WeaklyCompressibleManufacturedFlowForceFunction : public Core::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleManufacturedFlowForceFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleManufacturedFlowForceFunction(
@@ -272,7 +272,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne CFD problem
-  class WeaklyCompressibleEtienneCFDFunction : public Core::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneCFDFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneCFDFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
@@ -291,7 +291,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne CFD problem (force)
-  class WeaklyCompressibleEtienneCFDForceFunction : public Core::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneCFDForceFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneCFDForceFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
@@ -308,7 +308,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne CFD problem (viscosity)
-  class WeaklyCompressibleEtienneCFDViscosityFunction : public Core::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneCFDViscosityFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneCFDViscosityFunction(const Mat::PAR::WeaklyCompressibleFluid& fparams);
@@ -322,7 +322,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem
-  class WeaklyCompressibleEtienneFSIFluidFunction : public Core::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneFSIFluidFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIFluidFunction(
@@ -346,7 +346,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem (force)
-  class WeaklyCompressibleEtienneFSIFluidForceFunction : public Core::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneFSIFluidForceFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIFluidForceFunction(
@@ -370,7 +370,7 @@ namespace FLD
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem (viscosity)
-  class WeaklyCompressibleEtienneFSIFluidViscosityFunction : public Core::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneFSIFluidViscosityFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIFluidViscosityFunction(
@@ -394,7 +394,7 @@ namespace FLD
   };
 
   /// special implementation for beltrami flow (rhs)
-  class BeltramiRHS : public Core::UTILS::FunctionOfSpaceTime
+  class BeltramiRHS : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     BeltramiRHS(const Mat::PAR::NewtonianFluid& fparams, bool is_stokes);
@@ -418,7 +418,7 @@ namespace FLD
   };
 
   /// special implementation for 2d(3D) stationary kim-moin flow (rhs) for pure stokes equation
-  class KimMoinRHS : public Core::UTILS::FunctionOfSpaceTime
+  class KimMoinRHS : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     KimMoinRHS(const Mat::PAR::NewtonianFluid& fparams, bool is_stationary, bool is_stokes);
@@ -444,7 +444,7 @@ namespace FLD
 
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (analytical
   /// stress)
-  class KimMoinStress : public Core::UTILS::FunctionOfSpaceTime
+  class KimMoinStress : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     KimMoinStress(

@@ -54,8 +54,8 @@ void Inpar::PROBLEMTYPE::set_valid_parameters(Teuchos::ParameterList& list)
         "Defines the function spaces for the spatial approximation", name, label, &type);
   }
 
-  Core::UTILS::int_parameter("RESTART", 0, "", &type);
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter("RESTART", 0, "", &type);
+  Core::Utils::int_parameter(
       "RANDSEED", -1, "Set the random seed. If < 0 use current time.", &type);
 }
 

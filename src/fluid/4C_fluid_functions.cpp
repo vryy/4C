@@ -59,7 +59,7 @@ namespace
   }
 
 
-  Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> create_fluid_function(
+  Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> create_fluid_function(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -331,12 +331,12 @@ namespace
     }
     else
     {
-      return Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>(nullptr);
+      return Teuchos::RCP<Core::Utils::FunctionOfSpaceTime>(nullptr);
     }
   }
 }  // namespace
 
-void FLD::add_valid_fluid_functions(Core::UTILS::FunctionManager& function_manager)
+void FLD::add_valid_fluid_functions(Core::Utils::FunctionManager& function_manager)
 {
   auto beltrami =
       Input::LineDefinition::Builder().add_tag("BELTRAMI").add_named_double("c1").build();

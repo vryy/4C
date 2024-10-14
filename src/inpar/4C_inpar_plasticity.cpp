@@ -26,9 +26,9 @@ void Inpar::Plasticity::set_valid_parameters(Teuchos::ParameterList& list)
   /* parameters for semi-smooth Newton plasticity algorithm */
   Teuchos::ParameterList& iplast = list.sublist("SEMI-SMOOTH PLASTICITY", false, "");
 
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "SEMI_SMOOTH_CPL", 1.0, "Weighting factor cpl for semi-smooth PDASS", &iplast);
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "STABILIZATION_S", 1.0, "Stabilization factor s for semi-smooth PDASS", &iplast);
 
   // solver convergence test parameters for semi-smooth plasticity formulation
@@ -43,9 +43,9 @@ void Inpar::Plasticity::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<std::string>("And", "Or"),
       tuple<Inpar::Solid::BinaryOp>(Inpar::Solid::bop_and, Inpar::Solid::bop_or), &iplast);
 
-  Core::UTILS::double_parameter("TOLPLASTCONSTR", 1.0E-8,
+  Core::Utils::double_parameter("TOLPLASTCONSTR", 1.0E-8,
       "tolerance in the plastic constraint norm for the newton iteration", &iplast);
-  Core::UTILS::double_parameter("TOLDELTALP", 1.0E-8,
+  Core::Utils::double_parameter("TOLDELTALP", 1.0E-8,
       "tolerance in the plastic flow (Delta Lp) norm for the Newton iteration", &iplast);
 
   setStringToIntegralParameter<Inpar::Solid::BinaryOp>("NORMCOMBI_EASRES", "And",
@@ -58,9 +58,9 @@ void Inpar::Plasticity::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<std::string>("And", "Or"),
       tuple<Inpar::Solid::BinaryOp>(Inpar::Solid::bop_and, Inpar::Solid::bop_or), &iplast);
 
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "TOLEASRES", 1.0E-8, "tolerance in the EAS residual norm for the newton iteration", &iplast);
-  Core::UTILS::double_parameter("TOLEASINCR", 1.0E-8,
+  Core::Utils::double_parameter("TOLEASINCR", 1.0E-8,
       "tolerance in the EAS increment norm for the Newton iteration", &iplast);
 
   setStringToIntegralParameter<Inpar::TSI::DissipationMode>("DISSIPATION_MODE", "pl_multiplier",

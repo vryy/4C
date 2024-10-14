@@ -3014,12 +3014,12 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-inline const Core::UTILS::FunctionOfAnything&
+inline const Core::Utils::FunctionOfAnything&
 Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd, nen>::function(
     int functnum) const
 {
   const auto& funct =
-      Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfAnything>(functnum);
+      Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfAnything>(functnum);
   if (funct.number_components() != 1)
     FOUR_C_THROW("only one component allowed for domain integral functions");
   return funct;

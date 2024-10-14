@@ -130,7 +130,7 @@ namespace Discret::ELEMENTS
       case Inpar::Solid::strain_ea:
       {
         const Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> ea =
-            Solid::UTILS::green_lagrange_to_euler_almansi(gl_strain, defgrd);
+            Solid::Utils::green_lagrange_to_euler_almansi(gl_strain, defgrd);
         Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> ea_stress_like;
         Core::LinAlg::Voigt::Strains::to_stress_like(ea, ea_stress_like);
         Internal::assemble_vector_to_matrix_row(ea_stress_like, data, row);
@@ -139,7 +139,7 @@ namespace Discret::ELEMENTS
       case Inpar::Solid::strain_log:
       {
         const Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> log_strain =
-            Solid::UTILS::green_lagrange_to_log_strain(gl_strain);
+            Solid::Utils::green_lagrange_to_log_strain(gl_strain);
         Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> log_strain_stress_like;
         Core::LinAlg::Voigt::Strains::to_stress_like(log_strain, log_strain_stress_like);
         Internal::assemble_vector_to_matrix_row(log_strain_stress_like, data, row);
@@ -180,7 +180,7 @@ namespace Discret::ELEMENTS
       case Inpar::Solid::stress_cauchy:
       {
         Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> cauchy;
-        Solid::UTILS::pk2_to_cauchy(stress.pk2_, defgrd, cauchy);
+        Solid::Utils::pk2_to_cauchy(stress.pk2_, defgrd, cauchy);
         Internal::assemble_vector_to_matrix_row(cauchy, data, row);
         return;
       }

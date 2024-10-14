@@ -121,7 +121,7 @@ void CONTACT::IntegratorNitschePoro::gpts_forces(Mortar::Element& sele, Mortar::
 
   double ws = 0.;
   double wm = 0.;
-  CONTACT::UTILS::nitsche_weights_and_scaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
+  CONTACT::Utils::nitsche_weights_and_scaling(sele, mele, nit_wgt_, dt_, ws, wm, pen, pet);
 
   double cauchy_nn_weighted_average = 0.;
   Core::Gen::Pairedvector<int, double> cauchy_nn_weighted_average_deriv_d(
@@ -171,7 +171,7 @@ void CONTACT::IntegratorNitschePoro::so_ele_cauchy(Mortar::Element& moEle, doubl
 {
   Core::LinAlg::Matrix<dim, 1> pxsi(true);
   Core::LinAlg::Matrix<dim, dim> derivtravo_slave;
-  CONTACT::UTILS::map_gp_to_parent<dim>(moEle, boundary_gpcoord, gp_wgt, pxsi, derivtravo_slave);
+  CONTACT::Utils::map_gp_to_parent<dim>(moEle, boundary_gpcoord, gp_wgt, pxsi, derivtravo_slave);
 
   double sigma_nt;
   Core::LinAlg::SerialDenseMatrix dsntdd, dsntdp;

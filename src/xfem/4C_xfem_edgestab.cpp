@@ -277,8 +277,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
             else
               face_type = Inpar::XFEM::face_type_std;
 
-            XFEM::UTILS::get_volume_cell_material(p_master, matptr_m, (*f)->position());
-            XFEM::UTILS::get_volume_cell_material(p_slave, matptr_s, (*f)->position());
+            XFEM::Utils::get_volume_cell_material(p_master, matptr_m, (*f)->position());
+            XFEM::Utils::get_volume_cell_material(p_slave, matptr_s, (*f)->position());
 
             //--------------------------------------------------------------------------------------------
 
@@ -417,8 +417,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
             else
               face_type = Inpar::XFEM::face_type_std;
 
-            XFEM::UTILS::get_volume_cell_material(p_master, matptr_m, (*f)->position());
-            XFEM::UTILS::get_volume_cell_material(p_slave, matptr_s, (*f)->position());
+            XFEM::Utils::get_volume_cell_material(p_master, matptr_m, (*f)->position());
+            XFEM::Utils::get_volume_cell_material(p_slave, matptr_s, (*f)->position());
 
             //--------------------------------------------------------------------------------------------
             // call evaluate and assemble routine
@@ -559,8 +559,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
 
 
           // Get materials:
-          XFEM::UTILS::get_volume_cell_material(p_master, matptr_m, f->position());
-          XFEM::UTILS::get_volume_cell_material(p_slave, matptr_s, f->position());
+          XFEM::Utils::get_volume_cell_material(p_master, matptr_m, f->position());
+          XFEM::Utils::get_volume_cell_material(p_slave, matptr_s, f->position());
 
           //--------------------------------------------------------------------------------------------
 
@@ -607,7 +607,7 @@ void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
 )
 {
   // If Saftey check is passed, both elements contain the same material and with the same settings
-  XFEM::UTILS::safety_check_materials(material_m, material_s);
+  XFEM::Utils::safety_check_materials(material_m, material_s);
 
   //======================================================================================
   // call the internal faces stabilization routine for the current side/surface

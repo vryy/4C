@@ -75,7 +75,7 @@ FSI::AlgorithmXFEM::AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::Parame
     const Teuchos::ParameterList& poroelastdyn =
         problem->poroelast_dynamic_params();  // access the problem-specific parameter list
     Teuchos::RCP<PoroElast::Monolithic> poro = Teuchos::rcp_dynamic_cast<PoroElast::Monolithic>(
-        PoroElast::UTILS::create_poro_algorithm(poroelastdyn, comm, false));
+        PoroElast::Utils::create_poro_algorithm(poroelastdyn, comm, false));
     if (poro == Teuchos::null)  // safety check
       FOUR_C_THROW(
           "Couldn't cast poro to PoroElast::Monolithic --> check your COUPALGO in the "

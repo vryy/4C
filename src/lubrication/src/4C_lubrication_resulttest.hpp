@@ -43,7 +43,7 @@ namespace LUBRICATION
     \author wirtz
     \date 11/15
   */
-  class ResultTest : public Core::UTILS::ResultTest
+  class ResultTest : public Core::Utils::ResultTest
   {
    public:
     /*!

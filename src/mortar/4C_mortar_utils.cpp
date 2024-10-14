@@ -712,7 +712,7 @@ int Mortar::sort_convex_hull_points(bool out, Core::LinAlg::SerialDenseMatrix& t
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mortar::UTILS::create_volume_ghosting(const Core::FE::Discretization& dis_src,
+void Mortar::Utils::create_volume_ghosting(const Core::FE::Discretization& dis_src,
     const std::vector<Teuchos::RCP<Core::FE::Discretization>>& voldis,
     std::vector<std::pair<int, int>> material_links, bool check_on_in, bool check_on_exit)
 {
@@ -837,7 +837,7 @@ void Mortar::UTILS::create_volume_ghosting(const Core::FE::Discretization& dis_s
 /*----------------------------------------------------------------------*
  |  Prepare mortar element for nurbs-case                    farah 11/14|
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::prepare_nurbs_element(Core::FE::Discretization& discret,
+void Mortar::Utils::prepare_nurbs_element(Core::FE::Discretization& discret,
     Teuchos::RCP<Core::Elements::Element> ele, Mortar::Element& cele, int dim)
 {
   Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
@@ -865,7 +865,7 @@ void Mortar::UTILS::prepare_nurbs_element(Core::FE::Discretization& discret,
 /*----------------------------------------------------------------------*
  |  Prepare mortar node for nurbs-case                       farah 11/14|
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::prepare_nurbs_node(Core::Nodes::Node* node, Mortar::Node& mnode)
+void Mortar::Utils::prepare_nurbs_node(Core::Nodes::Node* node, Mortar::Node& mnode)
 {
   Core::FE::Nurbs::ControlPoint* cp = dynamic_cast<Core::FE::Nurbs::ControlPoint*>(node);
 
@@ -876,7 +876,7 @@ void Mortar::UTILS::prepare_nurbs_node(Core::Nodes::Node* node, Mortar::Node& mn
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,
+void Mortar::Utils::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,
     const Teuchos::RCP<const Core::LinAlg::SparseMatrix>& p_row,
     const Teuchos::RCP<const Core::LinAlg::SparseMatrix>& p_col)
 {
@@ -958,7 +958,7 @@ void Mortar::UTILS::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::Sparse
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::mortar_rhs_condensation(
+void Mortar::Utils::mortar_rhs_condensation(
     Core::LinAlg::Vector<double>& rhs, Core::LinAlg::SparseMatrix& p)
 {
   // prepare maps
@@ -985,7 +985,7 @@ void Mortar::UTILS::mortar_rhs_condensation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::mortar_recover(Core::LinAlg::Vector<double>& inc, Core::LinAlg::SparseMatrix& p)
+void Mortar::Utils::mortar_recover(Core::LinAlg::Vector<double>& inc, Core::LinAlg::SparseMatrix& p)
 {
   // prepare maps
   Teuchos::RCP<Epetra_Map> gsdofrowmap =
@@ -1007,7 +1007,7 @@ void Mortar::UTILS::mortar_recover(Core::LinAlg::Vector<double>& inc, Core::LinA
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& k,
+void Mortar::Utils::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& k,
     const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p)
 {
   Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> cond_mat =
@@ -1030,7 +1030,7 @@ void Mortar::UTILS::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::BlockS
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::mortar_rhs_condensation(Core::LinAlg::Vector<double>& rhs,
+void Mortar::Utils::mortar_rhs_condensation(Core::LinAlg::Vector<double>& rhs,
     const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p)
 {
   for (unsigned i = 0; i < p.size(); mortar_rhs_condensation(rhs, *p[i++]))
@@ -1039,7 +1039,7 @@ void Mortar::UTILS::mortar_rhs_condensation(Core::LinAlg::Vector<double>& rhs,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::UTILS::mortar_recover(Core::LinAlg::Vector<double>& inc,
+void Mortar::Utils::mortar_recover(Core::LinAlg::Vector<double>& inc,
     const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p)
 {
   for (unsigned i = 0; i < p.size(); mortar_recover(inc, *p[i++]))

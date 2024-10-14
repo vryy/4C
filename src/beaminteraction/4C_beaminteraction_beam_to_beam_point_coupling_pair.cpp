@@ -109,7 +109,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_p
     std::vector<double> element_posdofvec_absolutevalues(Beam::n_dof_, 0.0);
     std::vector<int> lm(Beam::n_dof_);
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++) lm[i_dof] = gid_pos[i_beam](i_dof);
-    BEAMINTERACTION::UTILS::extract_pos_dof_vec_absolute_values(
+    BEAMINTERACTION::Utils::extract_pos_dof_vec_absolute_values(
         discret, beam_ele[i_beam], displacement_vector, element_posdofvec_absolutevalues);
     for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
       beam_pos[i_beam].element_position_(i_dof) =
@@ -192,7 +192,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_r
   for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
   {
     // Get GIDs of the beams rotational DOF.
-    gid_rot[i_beam] = UTILS::get_element_rot_gid_indices(discret, beam_ele[i_beam]);
+    gid_rot[i_beam] = Utils::get_element_rot_gid_indices(discret, beam_ele[i_beam]);
 
     // Get the triad interpolation schemes for the two beams.
     LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;

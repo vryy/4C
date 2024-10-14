@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::UTILS
+namespace Discret::Utils
 {
   class FunctionOfTime;
 }

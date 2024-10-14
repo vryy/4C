@@ -122,7 +122,7 @@ namespace Solid
       }
 
       //! get function manager
-      const Core::UTILS::FunctionManager* get_function_manager() const override
+      const Core::Utils::FunctionManager* get_function_manager() const override
       {
         return function_manager_;
       }
@@ -226,7 +226,7 @@ namespace Solid
       void set_value_for_energy_type(double value, enum Solid::EnergyType type);
 
       //! set function manager
-      void set_function_manager(const Core::UTILS::FunctionManager& function_manager)
+      void set_function_manager(const Core::Utils::FunctionManager& function_manager)
       {
         function_manager_ = &function_manager;
       }
@@ -860,7 +860,7 @@ namespace Solid
       double total_time_;
 
       //! function manager
-      const Core::UTILS::FunctionManager* function_manager_;
+      const Core::Utils::FunctionManager* function_manager_;
 
       //! current time step for the evaluation
       double delta_time_;

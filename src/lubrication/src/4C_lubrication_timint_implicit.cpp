@@ -136,7 +136,7 @@ void LUBRICATION::TimIntImpl::init()
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
-    eleparams.set<const Core::UTILS::FunctionManager*>(
+    eleparams.set<const Core::Utils::FunctionManager*>(
         "function_manager", &Global::Problem::instance()->function_manager());
     discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
@@ -299,7 +299,7 @@ void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
     {
       double heightfuncvalue =
           Global::Problem::instance()
-              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(heightfuncno - 1)
+              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(heightfuncno - 1)
               .evaluate(lnode->x().data(), time_, index);
 
       // get global and local dof IDs
@@ -343,7 +343,7 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
     for (int index = 0; index < nsd_; ++index)
     {
       double velfuncvalue = Global::Problem::instance()
-                                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
+                                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(velfuncno - 1)
                                 .evaluate(lnode->x().data(), time_, index);
 
       // get global and local dof IDs
@@ -534,7 +534,7 @@ void LUBRICATION::TimIntImpl::apply_dirichlet_bc(const double time,
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time);  // actual time t_{n+1}
-  p.set<const Core::UTILS::FunctionManager*>(
+  p.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // predicted Dirichlet values

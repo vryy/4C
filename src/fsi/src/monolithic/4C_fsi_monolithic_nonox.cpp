@@ -47,8 +47,8 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(
   // enable debugging
   if (fsidyn.get<bool>("DEBUGOUTPUT"))
   {
-    sdbg_ = Teuchos::make_rcp<UTILS::DebugWriter>(structure_field()->discretization());
-    // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->discretization()));
+    sdbg_ = Teuchos::make_rcp<Utils::DebugWriter>(structure_field()->discretization());
+    // fdbg_ = Teuchos::rcp(new Utils::DebugWriter(fluid_field()->discretization()));
   }
 
   std::string s = Global::Problem::instance()->output_control_file()->file_name();

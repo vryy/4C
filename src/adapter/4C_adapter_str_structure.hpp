@@ -62,10 +62,10 @@ namespace CONSTRAINTS
   class SpringDashpotManager;
 }  // namespace CONSTRAINTS
 
-namespace UTILS
+namespace Utils
 {
   class Cardiovascular0DManager;
-}  // namespace UTILS
+}  // namespace Utils
 
 namespace TimeInt
 {
@@ -500,7 +500,7 @@ namespace Adapter
     //@}
 
     /// create result test for encapsulated structure algorithm
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() = 0;
+    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test() = 0;
 
     /// reset time and state vectors (needed for biofilm growth simulations)
     virtual void reset() = 0;

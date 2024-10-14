@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-ParticleRigidBody::RigidBodyResultTest::RigidBodyResultTest() : Core::UTILS::ResultTest("RIGIDBODY")
+ParticleRigidBody::RigidBodyResultTest::RigidBodyResultTest() : Core::Utils::ResultTest("RIGIDBODY")
 {
   // empty constructor
 }

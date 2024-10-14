@@ -307,7 +307,7 @@ Teuchos::RCP<const Epetra_Map> FLD::XFluidFluid::velocity_row_map()
   return xff_state_->xffluidvelpressplitter_->other_map();
 }
 
-Teuchos::RCP<Core::UTILS::ResultTest> FLD::XFluidFluid::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> FLD::XFluidFluid::create_field_test()
 {
   return Teuchos::make_rcp<FLD::XFluidResultTest>(*this);
 }
@@ -468,8 +468,8 @@ void FLD::XFluidFluid::prepare_shape_derivatives(
   // REMARK: the shape derivatives matrix results from linearization w.r.t. ALE-displacements
   // and therefore solely knows ALE-dof - here we use "extended shapederivatives" including
   // background fluid entries, that are set to zero
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat =
-      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>(
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>> mat =
+      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>>(
           fsiextractor, fsiextractor, 108, false, true);
   mat->set_cond_elements(condelements);
   extended_shapederivatives_ = mat;

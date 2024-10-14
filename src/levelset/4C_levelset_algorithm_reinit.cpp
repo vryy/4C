@@ -69,7 +69,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_parameters(
   Teuchos::ParameterList eleparams;
 
   // set action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_lsreinit_scatra_parameter, eleparams);
 
   // reinitialization equation is given in convective form
@@ -134,7 +134,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_time_parameters()
 {
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_time_parameter, eleparams);
 
   eleparams.set<bool>("using generalized-alpha time integration", false);
@@ -361,7 +361,7 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
 
       // parameters for the elements
       // action
-      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+      Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::calc_node_based_reinit_velocity, eleparams);
       // set current spatial direction
       // we have to loop the dimensions, since we merely have one dof per node here
@@ -467,7 +467,7 @@ void ScaTra::LevelSetAlgorithm::correction_reinit()
   // generate a parameterlist for communication and control
   Teuchos::ParameterList eleparams;
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_mat_and_rhs_lsreinit_correction_step, eleparams);
   eleparams.set<bool>("solve reinit eq", true);
 

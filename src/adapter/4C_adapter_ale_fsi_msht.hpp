@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /* forward declarations */
 namespace ALE
 {
-  namespace UTILS
+  namespace Utils
   {
     class FsiMapExtractor;
   }
@@ -55,10 +55,10 @@ namespace Adapter
     //@}
 
     //! communicate object at the interface
-    Teuchos::RCP<const ALE::UTILS::FsiMapExtractor> fsi_interface() const;
+    Teuchos::RCP<const ALE::Utils::FsiMapExtractor> fsi_interface() const;
 
    private:
-    Teuchos::RCP<ALE::UTILS::FsiMapExtractor> fsiinterface_;
+    Teuchos::RCP<ALE::Utils::FsiMapExtractor> fsiinterface_;
 
   };  // class AleFsiWrapper
 }  // namespace Adapter

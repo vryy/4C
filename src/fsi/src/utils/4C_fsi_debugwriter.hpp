@@ -31,7 +31,7 @@ namespace FSI
 {
   class Monolithic;
 
-  namespace UTILS
+  namespace Utils
   {
     /// Helper to write unconverged results at the FSI interface
     class DebugWriter
@@ -149,7 +149,7 @@ namespace FSI
 
       int counter_;
     };
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FSI
 
 FOUR_C_NAMESPACE_CLOSE

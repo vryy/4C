@@ -48,19 +48,19 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
           timeint_stationary, timeint_one_step_theta, timeint_bdf2, timeint_gen_alpha),
       &scatradyn);
 
-  Core::UTILS::double_parameter("MAXTIME", 1000.0, "Total simulation time", &scatradyn);
-  Core::UTILS::int_parameter("NUMSTEP", 20, "Total number of time steps", &scatradyn);
-  Core::UTILS::double_parameter("TIMESTEP", 0.1, "Time increment dt", &scatradyn);
-  Core::UTILS::double_parameter("THETA", 0.5, "One-step-theta time integration factor", &scatradyn);
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter("MAXTIME", 1000.0, "Total simulation time", &scatradyn);
+  Core::Utils::int_parameter("NUMSTEP", 20, "Total number of time steps", &scatradyn);
+  Core::Utils::double_parameter("TIMESTEP", 0.1, "Time increment dt", &scatradyn);
+  Core::Utils::double_parameter("THETA", 0.5, "One-step-theta time integration factor", &scatradyn);
+  Core::Utils::double_parameter(
       "ALPHA_M", 0.5, "Generalized-alpha time integration factor", &scatradyn);
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "ALPHA_F", 0.5, "Generalized-alpha time integration factor", &scatradyn);
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "GAMMA", 0.5, "Generalized-alpha time integration factor", &scatradyn);
-  Core::UTILS::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &scatradyn);
-  Core::UTILS::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &scatradyn);
-  Core::UTILS::int_parameter("MATID", -1, "Material ID for automatic mesh generation", &scatradyn);
+  Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &scatradyn);
+  Core::Utils::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &scatradyn);
+  Core::Utils::int_parameter("MATID", -1, "Material ID for automatic mesh generation", &scatradyn);
 
   setStringToIntegralParameter<Inpar::ScaTra::VelocityField>("VELOCITYFIELD", "zero",
       "type of velocity field used for scalar transport problems",
@@ -68,7 +68,7 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<Inpar::ScaTra::VelocityField>(velocity_zero, velocity_function, velocity_Navier_Stokes),
       &scatradyn);
 
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "VELFUNCNO", -1, "function number for scalar transport velocity field", &scatradyn);
 
   {
@@ -106,10 +106,10 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
         "Initial Field for scalar transport problem", name, label, &scatradyn);
   }
 
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "INITFUNCNO", -1, "function number for scalar transport initial field", &scatradyn);
 
-  Core::UTILS::bool_parameter("SPHERICALCOORDS", "No", "use of spherical coordinates", &scatradyn);
+  Core::Utils::bool_parameter("SPHERICALCOORDS", "No", "use of spherical coordinates", &scatradyn);
 
   setStringToIntegralParameter<Inpar::ScaTra::CalcError>("CALCERROR", "No",
       "compute error compared to analytical solution",
@@ -120,7 +120,7 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
           calcerror_spherediffusion, calcerror_AnalyticSeries),
       &scatradyn);
 
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "CALCERRORNO", -1, "function number for scalar transport error computation", &scatradyn);
 
   setStringToIntegralParameter<Inpar::ScaTra::FluxType>("CALCFLUX_DOMAIN", "No",
@@ -128,7 +128,7 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<std::string>("No", "total", "diffusive"),
       tuple<Inpar::ScaTra::FluxType>(flux_none, flux_total, flux_diffusive), &scatradyn);
 
-  Core::UTILS::bool_parameter("CALCFLUX_DOMAIN_LUMPED", "Yes",
+  Core::Utils::bool_parameter("CALCFLUX_DOMAIN_LUMPED", "Yes",
       "perform approximate domain flux calculation involving matrix lumping", &scatradyn);
 
   setStringToIntegralParameter<Inpar::ScaTra::FluxType>("CALCFLUX_BOUNDARY", "No",
@@ -137,7 +137,7 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<Inpar::ScaTra::FluxType>(flux_none, flux_total, flux_diffusive, flux_convective),
       &scatradyn);
 
-  Core::UTILS::bool_parameter("CALCFLUX_BOUNDARY_LUMPED", "Yes",
+  Core::Utils::bool_parameter("CALCFLUX_BOUNDARY_LUMPED", "Yes",
       "perform approximate boundary flux calculation involving matrix lumping", &scatradyn);
 
   setNumericStringParameter("WRITEFLUX_IDS", "-1",
@@ -150,27 +150,27 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<Inpar::ScaTra::OutputScalarType>(outputscalars_none, outputscalars_entiredomain,
           outputscalars_condition, outputscalars_entiredomain_condition),
       &scatradyn);
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "OUTPUTSCALARSMEANGRAD", "No", "Output of mean gradient of scalars", &scatradyn);
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "OUTINTEGRREAC", "No", "Output of integral reaction values", &scatradyn);
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "OUTPUT_GMSH", "No", "Do you want to write Gmsh postprocessing files?", &scatradyn);
 
-  Core::UTILS::bool_parameter("MATLAB_STATE_OUTPUT", "No",
+  Core::Utils::bool_parameter("MATLAB_STATE_OUTPUT", "No",
       "Do you want to write the state solution to Matlab file?", &scatradyn);
 
   setStringToIntegralParameter<Inpar::ScaTra::ConvForm>("CONVFORM", "convective",
       "form of convective term", tuple<std::string>("convective", "conservative"),
       tuple<Inpar::ScaTra::ConvForm>(convform_convective, convform_conservative), &scatradyn);
 
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "NEUMANNINFLOW", "no", "Flag to (de)activate potential Neumann inflow term(s)", &scatradyn);
 
-  Core::UTILS::bool_parameter("CONV_HEAT_TRANS", "no",
+  Core::Utils::bool_parameter("CONV_HEAT_TRANS", "no",
       "Flag to (de)activate potential convective heat transfer boundary conditions", &scatradyn);
 
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "SKIPINITDER", "no", "Flag to skip computation of initial time derivative", &scatradyn);
 
   setStringToIntegralParameter<Inpar::ScaTra::FSSUGRDIFF>("FSSUGRDIFF", "No",
@@ -181,11 +181,11 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       &scatradyn);
 
   // flag for output of performance statistics associated with nonlinear solver into *.csv file
-  Core::UTILS::bool_parameter("ELECTROMAGNETICDIFFUSION", "No",
+  Core::Utils::bool_parameter("ELECTROMAGNETICDIFFUSION", "No",
       "flag to activate electromagnetic diffusion problems", &scatradyn);
 
   // Current density source function for EMD problems
-  Core::UTILS::int_parameter("EMDSOURCE", -1, "Current density source", &scatradyn);
+  Core::Utils::int_parameter("EMDSOURCE", -1, "Current density source", &scatradyn);
 
   setStringToIntegralParameter<Inpar::FLUID::MeshTying>("MESHTYING", "no",
       "Flag to (de)activate mesh tying algorithm",
@@ -200,10 +200,10 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<Inpar::ScaTra::FieldCoupling>(coupling_match, coupling_volmortar), &scatradyn);
 
   // linear solver id used for scalar transport/elch problems
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "LINEAR_SOLVER", -1, "number of linear solver used for scalar transport/elch...", &scatradyn);
   // linear solver id used for l2 projection problems (e.g. gradient projections)
-  Core::UTILS::int_parameter("L2_PROJ_LINEAR_SOLVER", -1,
+  Core::Utils::int_parameter("L2_PROJ_LINEAR_SOLVER", -1,
       "number of linear solver used for l2-projection sub-problems", &scatradyn);
 
   // flag for equilibration of global system of equations
@@ -229,7 +229,7 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       &scatradyn);
 
   // flag for natural convection effects
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "NATURAL_CONVECTION", "No", "Include natural convection effects", &scatradyn);
 
   // parameters for finite difference check
@@ -245,11 +245,11 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<Inpar::ScaTra::FdCheck>(
           fdcheck_none, fdcheck_global, fdcheck_global_extended, fdcheck_local),
       &scatradyn);
-  Core::UTILS::double_parameter("FDCHECKEPS", 1.e-6,
+  Core::Utils::double_parameter("FDCHECKEPS", 1.e-6,
       "dof perturbation magnitude for finite difference check (1.e-6 seems to work very well, "
       "whereas smaller values don't)",
       &scatradyn);
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "FDCHECKTOL", 1.e-6, "relative tolerance for finite difference check", &scatradyn);
 
   // parameter for optional computation of domain and boundary integrals, i.e., of surface areas and
@@ -263,59 +263,59 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
 
   // parameter for using p-adpativity and semi-implicit evaluation of the reaction term (at the
   // moment only used for HDG and cardiac monodomain problems)
-  Core::UTILS::bool_parameter("PADAPTIVITY", "no", "Flag to (de)activate p-adativity", &scatradyn);
-  Core::UTILS::double_parameter("PADAPTERRORTOL", 1e-6,
+  Core::Utils::bool_parameter("PADAPTIVITY", "no", "Flag to (de)activate p-adativity", &scatradyn);
+  Core::Utils::double_parameter("PADAPTERRORTOL", 1e-6,
       "The error tolerance to calculate the variation of the elemental degree", &scatradyn);
-  Core::UTILS::double_parameter("PADAPTERRORBASE", 1.66,
+  Core::Utils::double_parameter("PADAPTERRORBASE", 1.66,
       "The error tolerance base to calculate the variation of the elemental degree", &scatradyn);
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "PADAPTDEGREEMAX", 4, "The max. degree of the shape functions", &scatradyn);
-  Core::UTILS::bool_parameter("SEMIIMPLICIT", "no",
+  Core::Utils::bool_parameter("SEMIIMPLICIT", "no",
       "Flag to (de)activate semi-implicit calculation of the reaction term", &scatradyn);
 
   // flag for output of performance statistics associated with linear solver into *.csv file
-  Core::UTILS::bool_parameter("OUTPUTLINSOLVERSTATS", "No",
+  Core::Utils::bool_parameter("OUTPUTLINSOLVERSTATS", "No",
       "flag for output of performance statistics associated with linear solver into csv file",
       &scatradyn);
 
   // flag for output of performance statistics associated with nonlinear solver into *.csv file
-  Core::UTILS::bool_parameter("OUTPUTNONLINSOLVERSTATS", "No",
+  Core::Utils::bool_parameter("OUTPUTNONLINSOLVERSTATS", "No",
       "flag for output of performance statistics associated with nonlinear solver into csv file",
       &scatradyn);
 
   // flag for point-based null space calculation
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "NULLSPACE_POINTBASED", "No", "flag for point-based null space calculation", &scatradyn);
 
   // flag for adaptive time stepping
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "ADAPTIVE_TIMESTEPPING", "No", "flag for adaptive time stepping", &scatradyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& scatra_nonlin = scatradyn.sublist(
       "NONLINEAR", false, "control parameters for solving nonlinear SCATRA problems\n");
 
-  Core::UTILS::int_parameter("ITEMAX", 10, "max. number of nonlin. iterations", &scatra_nonlin);
-  Core::UTILS::double_parameter("CONVTOL", 1e-6, "Tolerance for convergence check", &scatra_nonlin);
-  Core::UTILS::int_parameter("ITEMAX_OUTER", 10,
+  Core::Utils::int_parameter("ITEMAX", 10, "max. number of nonlin. iterations", &scatra_nonlin);
+  Core::Utils::double_parameter("CONVTOL", 1e-6, "Tolerance for convergence check", &scatra_nonlin);
+  Core::Utils::int_parameter("ITEMAX_OUTER", 10,
       "Maximum number of outer iterations in partitioned coupling schemes (natural convection, "
       "multi-scale simulations etc.)",
       &scatra_nonlin);
-  Core::UTILS::double_parameter("CONVTOL_OUTER", 1e-6,
+  Core::Utils::double_parameter("CONVTOL_OUTER", 1e-6,
       "Convergence check tolerance for outer loop in partitioned coupling schemes (natural "
       "convection, multi-scale simulations etc.)",
       &scatra_nonlin);
-  Core::UTILS::bool_parameter("EXPLPREDICT", "no",
+  Core::Utils::bool_parameter("EXPLPREDICT", "no",
       "do an explicit predictor step before starting nonlinear iteration", &scatra_nonlin);
-  Core::UTILS::double_parameter("ABSTOLRES", 1e-14,
+  Core::Utils::double_parameter("ABSTOLRES", 1e-14,
       "Absolute tolerance for deciding if residual of nonlinear problem is already zero",
       &scatra_nonlin);
 
   // convergence criteria adaptivity
-  Core::UTILS::bool_parameter("ADAPTCONV", "No",
+  Core::Utils::bool_parameter("ADAPTCONV", "No",
       "Switch on adaptive control of linear solver tolerance for nonlinear solution",
       &scatra_nonlin);
-  Core::UTILS::double_parameter("ADAPTCONV_BETTER", 0.1,
+  Core::Utils::double_parameter("ADAPTCONV_BETTER", 0.1,
       "The linear solver shall be this much better than the current nonlinear residual in the "
       "nonlinear convergence limit",
       &scatra_nonlin);
@@ -336,11 +336,11 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       &scatradyn_stab);
 
   // this parameter governs whether subgrid-scale velocity is included
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "SUGRVEL", "no", "potential incorporation of subgrid-scale velocity", &scatradyn_stab);
 
   // this parameter governs whether all-scale subgrid diffusivity is included
-  Core::UTILS::bool_parameter("ASSUGRDIFF", "no",
+  Core::Utils::bool_parameter("ASSUGRDIFF", "no",
       "potential incorporation of all-scale subgrid diffusivity (a.k.a. discontinuity-capturing) "
       "term",
       &scatradyn_stab);
@@ -414,7 +414,7 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       &scatradyn_stab);
 
   // this parameter defines the numerical value, if stabilization with numerical values is used
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "TAU_VALUE", 0.0, "Numerical value for tau for stabilization", &scatradyn_stab);
 
   // ----------------------------------------------------------------------
@@ -439,7 +439,7 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       &scatradyn_art);
 
   // penalty parameter
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "PENALTY", 1000.0, "Penalty parameter for line-based coupling", &scatradyn_art);
 
   // coupled artery dofs for mesh tying
@@ -471,15 +471,15 @@ void Inpar::ScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       scatradyn.sublist("EXTERNAL FORCE", false, "Parameters for magnetics");
 
   // Flag for external force
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "EXTERNAL_FORCE", "No", "Flag to activate external force", &scatradyn_external_force);
 
   // Function ID for external force
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "FORCE_FUNCTION_ID", -1, "Function ID for external force", &scatradyn_external_force);
 
   // Function ID for mobility of the scalar
-  Core::UTILS::int_parameter("INTRINSIC_MOBILITY_FUNCTION_ID", -1,
+  Core::Utils::int_parameter("INTRINSIC_MOBILITY_FUNCTION_ID", -1,
       "Function ID for intrinsic mobility", &scatradyn_external_force);
 }
 

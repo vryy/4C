@@ -28,11 +28,11 @@ void Inpar::PaSI::set_valid_parameters(Teuchos::ParameterList& list)
       "general control parameters for particle structure interaction problems");
 
   // time loop control
-  Core::UTILS::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &pasidyn);
-  Core::UTILS::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &pasidyn);
-  Core::UTILS::double_parameter("TIMESTEP", 0.01, "Time increment dt", &pasidyn);
-  Core::UTILS::int_parameter("NUMSTEP", 100, "Total number of Timesteps", &pasidyn);
-  Core::UTILS::double_parameter("MAXTIME", 1.0, "Total simulation time", &pasidyn);
+  Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &pasidyn);
+  Core::Utils::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &pasidyn);
+  Core::Utils::double_parameter("TIMESTEP", 0.01, "Time increment dt", &pasidyn);
+  Core::Utils::int_parameter("NUMSTEP", 100, "Total number of Timesteps", &pasidyn);
+  Core::Utils::double_parameter("MAXTIME", 1.0, "Total simulation time", &pasidyn);
 
   // type of partitioned coupling
   setStringToIntegralParameter<PartitionedCouplingType>("COUPLING", "partitioned_onewaycoup",
@@ -44,32 +44,32 @@ void Inpar::PaSI::set_valid_parameters(Teuchos::ParameterList& list)
       &pasidyn);
 
   // partitioned iteration dependent parameters
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "ITEMAX", 10, "maximum number of partitioned iterations over fields", &pasidyn);
 
-  Core::UTILS::double_parameter("CONVTOLSCALEDDISP", -1.0,
+  Core::Utils::double_parameter("CONVTOLSCALEDDISP", -1.0,
       "tolerance of dof and dt scaled interface displacement increments in partitioned iterations",
       &pasidyn);
 
-  Core::UTILS::double_parameter("CONVTOLRELATIVEDISP", -1.0,
+  Core::Utils::double_parameter("CONVTOLRELATIVEDISP", -1.0,
       "tolerance of relative interface displacement increments in partitioned iterations",
       &pasidyn);
 
-  Core::UTILS::double_parameter("CONVTOLSCALEDFORCE", -1.0,
+  Core::Utils::double_parameter("CONVTOLSCALEDFORCE", -1.0,
       "tolerance of dof and dt scaled interface force increments in partitioned iterations",
       &pasidyn);
 
-  Core::UTILS::double_parameter("CONVTOLRELATIVEFORCE", -1.0,
+  Core::Utils::double_parameter("CONVTOLRELATIVEFORCE", -1.0,
       "tolerance of relative interface force increments in partitioned iterations", &pasidyn);
 
-  Core::UTILS::bool_parameter(
+  Core::Utils::bool_parameter(
       "IGNORE_CONV_CHECK", "no", "ignore convergence check and proceed simulation", &pasidyn);
 
   // parameters for relaxation
-  Core::UTILS::double_parameter("STARTOMEGA", 1.0, "fixed relaxation parameter", &pasidyn);
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter("STARTOMEGA", 1.0, "fixed relaxation parameter", &pasidyn);
+  Core::Utils::double_parameter(
       "MAXOMEGA", 10.0, "largest omega allowed for Aitken relaxation", &pasidyn);
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "MINOMEGA", 0.1, "smallest omega allowed for Aitken relaxation", &pasidyn);
 }
 

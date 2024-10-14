@@ -59,7 +59,7 @@ void Solid::ModelEvaluator::Cardiovascular0D::setup()
       *global_state().dof_row_map_view(), 81, true, true);
 
   Teuchos::ParameterList solvparams;
-  Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
+  Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
   Teuchos::RCP<Core::LinAlg::Solver> dummysolver(new Core::LinAlg::Solver(
       solvparams, disnp_ptr_->Comm(), nullptr, Core::IO::Verbositylevel::standard));
@@ -68,7 +68,7 @@ void Solid::ModelEvaluator::Cardiovascular0D::setup()
   // to the manager in the future! -> get rid of it as soon as old
   // time-integration dies ...
   // initialize 0D cardiovascular manager
-  cardvasc0dman_ = Teuchos::make_rcp<UTILS::Cardiovascular0DManager>(dis, disnp_ptr_,
+  cardvasc0dman_ = Teuchos::make_rcp<Utils::Cardiovascular0DManager>(dis, disnp_ptr_,
       Global::Problem::instance()->structural_dynamic_params(),
       Global::Problem::instance()->cardiovascular0_d_structural_params(), *dummysolver,
       Teuchos::null);

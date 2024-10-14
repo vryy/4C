@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<Core::FE::Discretization> dis) : itnum_(-1)
+FSI::Utils::DebugWriter::DebugWriter(Teuchos::RCP<Core::FE::Discretization> dis) : itnum_(-1)
 {
   std::vector<std::string> conditions_to_copy = {"FSICoupling"};
   Teuchos::RCP<Core::FE::DiscretizationCreatorBase> discreator =
@@ -42,7 +42,7 @@ FSI::UTILS::DebugWriter::DebugWriter(Teuchos::RCP<Core::FE::Discretization> dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::DebugWriter::new_time_step(int step, std::string name)
+void FSI::Utils::DebugWriter::new_time_step(int step, std::string name)
 {
   std::stringstream s;
   s << Global::Problem::instance()->output_control_file()->file_name();
@@ -68,7 +68,7 @@ void FSI::UTILS::DebugWriter::new_time_step(int step, std::string name)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::DebugWriter::new_iteration()
+void FSI::Utils::DebugWriter::new_iteration()
 {
   writer_->new_step(itnum_, itnum_);
   itnum_ += 1;
@@ -77,7 +77,7 @@ void FSI::UTILS::DebugWriter::new_iteration()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::DebugWriter::write_vector(
+void FSI::Utils::DebugWriter::write_vector(
     const std::string& name, const Core::LinAlg::Vector<double>& v)
 {
   writer_->write_vector(name, coup_->master_to_slave(Teuchos::rcpFromRef(v)));
@@ -86,7 +86,7 @@ void FSI::UTILS::DebugWriter::write_vector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::UTILS::SimpleDebugWriter::SimpleDebugWriter(
+FSI::Utils::SimpleDebugWriter::SimpleDebugWriter(
     Teuchos::RCP<Core::FE::Discretization> dis, const std::string& name)
     : dis_(dis), name_(name), itnum_(-1)
 {
@@ -95,7 +95,7 @@ FSI::UTILS::SimpleDebugWriter::SimpleDebugWriter(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SimpleDebugWriter::new_linear_system(int step, std::string name)
+void FSI::Utils::SimpleDebugWriter::new_linear_system(int step, std::string name)
 {
   std::stringstream s;
   s << Global::Problem::instance()->output_control_file()->file_name() << "-" << name_;
@@ -121,7 +121,7 @@ void FSI::UTILS::SimpleDebugWriter::new_linear_system(int step, std::string name
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SimpleDebugWriter::new_iteration()
+void FSI::Utils::SimpleDebugWriter::new_iteration()
 {
   writer_->new_step(itnum_, itnum_);
   itnum_ += 1;
@@ -130,7 +130,7 @@ void FSI::UTILS::SimpleDebugWriter::new_iteration()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SimpleDebugWriter::write_vector(
+void FSI::Utils::SimpleDebugWriter::write_vector(
     const std::string& name, Core::LinAlg::Vector<double>& v)
 {
   writer_->write_vector(name, Teuchos::rcpFromRef(v));
@@ -139,7 +139,7 @@ void FSI::UTILS::SimpleDebugWriter::write_vector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::UTILS::MonolithicDebugWriter::MonolithicDebugWriter(Monolithic& algorithm)
+FSI::Utils::MonolithicDebugWriter::MonolithicDebugWriter(Monolithic& algorithm)
     : algorithm_(algorithm), counter_(0)
 {
   struct_writer_ = Teuchos::make_rcp<SimpleDebugWriter>(
@@ -153,7 +153,7 @@ FSI::UTILS::MonolithicDebugWriter::MonolithicDebugWriter(Monolithic& algorithm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::MonolithicDebugWriter::new_linear_system()
+void FSI::Utils::MonolithicDebugWriter::new_linear_system()
 {
   counter_ += 1;
   struct_writer_->new_linear_system(counter_);
@@ -164,7 +164,7 @@ void FSI::UTILS::MonolithicDebugWriter::new_linear_system()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::MonolithicDebugWriter::new_iteration()
+void FSI::Utils::MonolithicDebugWriter::new_iteration()
 {
   struct_writer_->new_iteration();
   fluid_writer_->new_iteration();
@@ -174,7 +174,7 @@ void FSI::UTILS::MonolithicDebugWriter::new_iteration()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::MonolithicDebugWriter::write_vector(
+void FSI::Utils::MonolithicDebugWriter::write_vector(
     const std::string& name, const Teuchos::RCP<Core::LinAlg::Vector<double>>& v)
 {
   Teuchos::RCP<const Core::LinAlg::Vector<double>> sx;

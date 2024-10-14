@@ -42,7 +42,7 @@ namespace POROFLUIDMULTIPHASE
 {
   /// POROFLUIDMULTIPHASE::UTILS: Random stuff that might be helpful when dealing with
   /// poromultiphase problems
-  namespace UTILS
+  namespace Utils
   {
     /// setup second materials for porosity evaluation within solid phase
     void setup_material(const Epetra_Comm& comm, const std::string& struct_disname,
@@ -150,7 +150,7 @@ namespace POROFLUIDMULTIPHASE
     Teuchos::RCP<Core::FE::Discretization> create_fully_overlapping_artery_discretization(
         Core::FE::Discretization& artdis, std::string disname, bool doboundaryconditions);
 
-  }  // namespace UTILS
+  }  // namespace Utils
   // Print the logo
   void print_logo();
 }  // namespace POROFLUIDMULTIPHASE

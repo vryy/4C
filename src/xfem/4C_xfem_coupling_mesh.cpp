@@ -151,8 +151,8 @@ void XFEM::MeshCoupling::gmsh_output_discretization(std::ostream& gmshfileconten
   std::map<int, Core::LinAlg::Matrix<3, 1>> currinterfacepositions;
 
   // output of cutting discretization
-  XFEM::UTILS::extract_node_vectors(*cutter_dis_, currinterfacepositions, idispnp_);
-  XFEM::UTILS::print_discretization_to_stream(cutter_dis_, cutter_dis_->name(), true, true, true,
+  XFEM::Utils::extract_node_vectors(*cutter_dis_, currinterfacepositions, idispnp_);
+  XFEM::Utils::print_discretization_to_stream(cutter_dis_, cutter_dis_->name(), true, true, true,
       true, false, false, gmshfilecontent, &currinterfacepositions);
 }
 
@@ -1560,7 +1560,7 @@ void XFEM::MeshCouplingNavierSlip::update_configuration_map_gp(
   {
     double stabnit = 0.0;
     double stabadj = 0.0;
-    XFEM::UTILS::get_navier_slip_stabilization_parameters(
+    XFEM::Utils::get_navier_slip_stabilization_parameters(
         visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);
     configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
     configuration_map_[Inpar::XFEM::F_Con_t_Row] =
@@ -1703,7 +1703,7 @@ void XFEM::MeshCouplingFSI::gmsh_output(const std::string& filename_base, const 
 
   // compute the current boundary position
   std::map<int, Core::LinAlg::Matrix<3, 1>> currinterfacepositions;
-  XFEM::UTILS::extract_node_vectors(*cutter_dis_, currinterfacepositions, idispnp_);
+  XFEM::Utils::extract_node_vectors(*cutter_dis_, currinterfacepositions, idispnp_);
 
 
   const std::string filename = Core::IO::Gmsh::get_new_file_name_and_delete_old_files(
@@ -1759,9 +1759,9 @@ void XFEM::MeshCouplingFSI::gmsh_output_discretization(std::ostream& gmshfilecon
   Teuchos::RCP<Core::LinAlg::Vector<double>> solid_dispnp =
       Core::LinAlg::create_vector(*cond_dis_->dof_row_map(), true);
 
-  XFEM::UTILS::extract_node_vectors(*cond_dis_, currsolidpositions, solid_dispnp);
+  XFEM::Utils::extract_node_vectors(*cond_dis_, currsolidpositions, solid_dispnp);
 
-  XFEM::UTILS::print_discretization_to_stream(cond_dis_, cond_dis_->name(), true, false, true,
+  XFEM::Utils::print_discretization_to_stream(cond_dis_, cond_dis_->name(), true, false, true,
       false, false, false, gmshfilecontent, &currsolidpositions);
 }
 
@@ -1832,8 +1832,8 @@ void XFEM::MeshCouplingFSI::set_condition_specific_parameters()
       {
         Core::LinAlg::Matrix<3, 8> xyze(true);
         Core::Geo::fill_initial_position_array(fluid_ele, xyze);
-        double vol = XFEM::UTILS::eval_element_volume<Core::FE::CellType::hex8>(xyze);
-        hmax = std::max(hmax, XFEM::UTILS::compute_vol_eq_diameter(vol));
+        double vol = XFEM::Utils::eval_element_volume<Core::FE::CellType::hex8>(xyze);
+        hmax = std::max(hmax, XFEM::Utils::compute_vol_eq_diameter(vol));
       }
       else
         FOUR_C_THROW("Element type != hex8, add it here!");
@@ -2144,7 +2144,7 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp(double& kappa_m,  //< fl
       double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
       double stabnit = 0.0;
       double stabadj = 0.0;
-      XFEM::UTILS::get_navier_slip_stabilization_parameters(
+      XFEM::Utils::get_navier_slip_stabilization_parameters(
           visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);
 
       configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
@@ -2254,7 +2254,7 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp_contact(
   double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
   double stabnit = 0.0;
   double stabadj = 0.0;
-  XFEM::UTILS::get_navier_slip_stabilization_parameters(
+  XFEM::Utils::get_navier_slip_stabilization_parameters(
       visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);  // sliplength is input for this
 
 #ifdef WRITE_GMSH
@@ -2496,7 +2496,7 @@ XFEM::MeshCouplingFluidFluid::MeshCouplingFluidFluid(
 void XFEM::MeshCouplingFluidFluid::get_interface_slave_material(
     Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat)
 {
-  XFEM::UTILS::get_volume_cell_material(actele, mat, Cut::Point::outside);
+  XFEM::Utils::get_volume_cell_material(actele, mat, Cut::Point::outside);
 }
 
 /*--------------------------------------------------------------------------*
@@ -2604,7 +2604,7 @@ void XFEM::MeshCouplingFluidFluid::get_viscosity_slave(
     double& visc_s)                     ///< viscosity slavesided
 {
   Teuchos::RCP<Core::Mat::Material> mat_s;
-  XFEM::UTILS::get_volume_cell_material(coup_ele, mat_s, Cut::Point::outside);
+  XFEM::Utils::get_volume_cell_material(coup_ele, mat_s, Cut::Point::outside);
   if (mat_s->material_type() == Core::Materials::m_fluid)
     visc_s = Teuchos::rcp_dynamic_cast<Mat::NewtonianFluid>(mat_s)->viscosity();
   else

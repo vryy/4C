@@ -301,7 +301,7 @@ namespace
 
     // call element routine to interpolate HDG to elements
     Teuchos::ParameterList eleparams;
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::interpolate_hdg_to_node, eleparams);
     dis.set_state(0, "phiaf", traceValues);
     dis.set_state(nds_intvar_, "intphinp", interiorValues);
@@ -421,7 +421,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
       // binning strategy is created and parallel redistribution is performed
       Teuchos::ParameterList binning_params =
           Global::Problem::instance()->binning_strategy_params();
-      Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+      Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
           "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
           binning_params);
       binningstrategy = Teuchos::make_rcp<Core::Binstrategy::BinningStrategy>(binning_params,
@@ -518,7 +518,7 @@ void ScaTra::TimIntHDG::set_initial_field(
     {
       // set initial field defined by function
       Teuchos::ParameterList eleparams;
-      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+      Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::set_initial_field, eleparams);
       eleparams.set<int>("funct", startfuncno);
 
@@ -646,7 +646,7 @@ void ScaTra::TimIntHDG::update_interior_variables(
 {
   discret_->clear_state(true);
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::update_interior_variables, eleparams);
   discret_->set_state("phiaf", phinp_);
   discret_->set_state("phin", phin_);
@@ -726,7 +726,7 @@ void ScaTra::TimIntHDG::fd_check()
   discret_->set_state(0, "phin", phin_);
   discret_->set_state(nds_intvar_, "intphinp", intphitemp);
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_mat_and_rhs, eleparams);
   Core::Elements::LocationArray la(discret_->num_dof_sets());
 
@@ -798,7 +798,7 @@ void ScaTra::TimIntHDG::fd_check()
       discret_->set_state(nds_intvar_, "intphinp", intphitemp);
 
       Teuchos::ParameterList eleparams;
-      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+      Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::calc_mat_and_rhs, eleparams);
 
       Core::Elements::LocationArray la(discret_->num_dof_sets());
@@ -956,7 +956,7 @@ Teuchos::RCP<Core::LinAlg::SerialDenseVector> ScaTra::TimIntHDG::compute_error()
 
   // create the parameters for the error calculation
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_error, eleparams);
 
   eleparams.set<int>("error function number", errorfunctnumber);
@@ -1004,7 +1004,7 @@ void ScaTra::TimIntHDG::calc_mat_initial()
 
   // check validity of material and element formulation
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_mat_initial, eleparams);
 
   discret_->set_state("phiaf", phinp_);
@@ -1092,7 +1092,7 @@ void ScaTra::TimIntHDG::adapt_degree()
 
   // set action
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_padaptivity, eleparams);
 
   Core::LinAlg::SerialDenseMatrix dummyMat;
@@ -1286,7 +1286,7 @@ void ScaTra::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Core::LinAlg::Vector<
 {
   // set action
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::project_field, eleparams);
 
   // set number of dofset for the old dofsets on the parameter list to extract the correct location
@@ -1398,7 +1398,7 @@ void ScaTra::TimIntHDG::assemble_rhs()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_mat_and_rhs, eleparams);
 
   // set vector values needed by elements
@@ -1448,7 +1448,7 @@ void ScaTra::TimIntHDG::assemble_rhs()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::TimIntHDG::create_scatra_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> ScaTra::TimIntHDG::create_scatra_field_test()
 {
   return Teuchos::make_rcp<ScaTra::HDGResultTest>(Teuchos::rcpFromRef(*this));
 }

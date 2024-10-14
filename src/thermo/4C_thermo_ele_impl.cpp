@@ -104,9 +104,9 @@ Discret::ELEMENTS::TemperImplInterface* Discret::ELEMENTS::TemperImplInterface::
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::TemperImpl<distype>* Discret::ELEMENTS::TemperImpl<distype>::instance(
-    Core::UTILS::SingletonAction action)
+    Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::TemperImpl<distype>>(
@@ -2780,7 +2780,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::radiation(
     const int functnum = (funct) ? (*funct)[0] : -1;
     const double functfac =
         (functnum > 0) ? Global::Problem::instance()
-                             ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                             ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                              .evaluate(xrefegp.data(), time, 0)
                        : 1.0;
 
@@ -3346,14 +3346,14 @@ void Discret::ELEMENTS::TemperImpl<distype>::compute_error(
 
         const double T_exact =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(errorfunctno - 1)
                 .evaluate(position, t, 0);
 
         T_analytical(0, 0) = T_exact;
 
         std::vector<double> Tder_exact =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(errorfunctno - 1)
                 .evaluate_spatial_derivative(position, t, 0);
 
         if (Tder_exact.size())

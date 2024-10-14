@@ -137,7 +137,7 @@ int Discret::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& 
 
               // evaluate function at current gauss point
               functfac = Global::Problem::instance()
-                             ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                             ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                              .evaluate(coordgpref, time, i);
             }
 

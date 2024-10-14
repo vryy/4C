@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluid& xfluid)
-    : Core::UTILS::ResultTest("XFLUID"),
+    : Core::Utils::ResultTest("XFLUID"),
       discret_(xfluid.discret_),
       velnp_(xfluid.state_->velnp_),
       node_from_zero_(true)
@@ -31,7 +31,7 @@ FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluid& xfluid)
 }
 
 FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluidFluid& xfluid)
-    : Core::UTILS::ResultTest("XFLUID"),
+    : Core::Utils::ResultTest("XFLUID"),
       discret_(xfluid.discret_),
       velnp_(xfluid.state_->velnp_),
       coupl_discret_(xfluid.embedded_fluid_->discretization()),

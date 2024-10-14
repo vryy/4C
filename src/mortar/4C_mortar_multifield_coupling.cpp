@@ -25,7 +25,7 @@ void Mortar::MultiFieldCoupling::push_back_coupling(
     const std::vector<int>& dofs_to_couple, const Teuchos::ParameterList& mortar_params,
     const Teuchos::ParameterList& contact_params, const Teuchos::ParameterList& binning_params,
     const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
-    const Core::UTILS::FunctionManager& function_manager,
+    const Core::Utils::FunctionManager& function_manager,
     Teuchos::RCP<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType shape_function_type, const int ndim)
 {
@@ -49,21 +49,21 @@ void Mortar::MultiFieldCoupling::push_back_coupling(
 void Mortar::MultiFieldCoupling::condense_matrix(
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat)
 {
-  Mortar::UTILS::mortar_matrix_condensation(mat, p_);
+  Mortar::Utils::mortar_matrix_condensation(mat, p_);
 }
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
 void Mortar::MultiFieldCoupling::condense_rhs(Core::LinAlg::Vector<double>& rhs)
 {
-  Mortar::UTILS::mortar_rhs_condensation(rhs, p_);
+  Mortar::Utils::mortar_rhs_condensation(rhs, p_);
 }
 
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
 void Mortar::MultiFieldCoupling::recover_incr(Core::LinAlg::Vector<double>& incr)
 {
-  Mortar::UTILS::mortar_recover(incr, p_);
+  Mortar::Utils::mortar_recover(incr, p_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

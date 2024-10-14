@@ -43,7 +43,7 @@ namespace FSI
     \author mayr.mt
     \date 11/2012
   */
-  class FSIResultTest : public Core::UTILS::ResultTest
+  class FSIResultTest : public Core::Utils::ResultTest
   {
    public:
     //! constructor for standard FSI

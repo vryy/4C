@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::MapExtractor::setup(
+void FLD::Utils::MapExtractor::setup(
     const Core::FE::Discretization& dis, bool withpressure, bool overlapping, const int nds_master)
 {
   const int ndim = Global::Problem::instance()->n_dim();
@@ -42,8 +42,8 @@ void FLD::UTILS::MapExtractor::setup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::MapExtractor::setup(
-    Teuchos::RCP<const Epetra_Map>& additionalothermap, const FLD::UTILS::MapExtractor& extractor)
+void FLD::Utils::MapExtractor::setup(
+    Teuchos::RCP<const Epetra_Map>& additionalothermap, const FLD::Utils::MapExtractor& extractor)
 {
   // build the new othermap
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
@@ -73,7 +73,7 @@ void FLD::UTILS::MapExtractor::setup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> FLD::UTILS::MapExtractor::conditioned_element_map(
+Teuchos::RCP<std::set<int>> FLD::Utils::MapExtractor::conditioned_element_map(
     const Core::FE::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements =
@@ -97,7 +97,7 @@ Teuchos::RCP<std::set<int>> FLD::UTILS::MapExtractor::conditioned_element_map(
   return condelements;
 }
 
-void FLD::UTILS::VolumetricFlowMapExtractor::setup(const Core::FE::Discretization& dis)
+void FLD::Utils::VolumetricFlowMapExtractor::setup(const Core::FE::Discretization& dis)
 {
   const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
@@ -109,7 +109,7 @@ void FLD::UTILS::VolumetricFlowMapExtractor::setup(const Core::FE::Discretizatio
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::KSPMapExtractor::setup(const Core::FE::Discretization& dis)
+void FLD::Utils::KSPMapExtractor::setup(const Core::FE::Discretization& dis)
 {
   Core::Conditions::MultiConditionSelector mcs;
   mcs.add_selector(
@@ -120,7 +120,7 @@ void FLD::UTILS::KSPMapExtractor::setup(const Core::FE::Discretization& dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> FLD::UTILS::KSPMapExtractor::conditioned_element_map(
+Teuchos::RCP<std::set<int>> FLD::Utils::KSPMapExtractor::conditioned_element_map(
     const Core::FE::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements =
@@ -131,7 +131,7 @@ Teuchos::RCP<std::set<int>> FLD::UTILS::KSPMapExtractor::conditioned_element_map
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::VelPressExtractor::setup(const Core::FE::Discretization& dis)
+void FLD::Utils::VelPressExtractor::setup(const Core::FE::Discretization& dis)
 {
   const int ndim = Global::Problem::instance()->n_dim();
   Core::LinAlg::create_map_extractor_from_discretization(dis, ndim, *this);
@@ -139,7 +139,7 @@ void FLD::UTILS::VelPressExtractor::setup(const Core::FE::Discretization& dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::FsiMapExtractor::setup(const Core::FE::Discretization& dis)
+void FLD::Utils::FsiMapExtractor::setup(const Core::FE::Discretization& dis)
 {
   const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
@@ -150,8 +150,8 @@ void FLD::UTILS::FsiMapExtractor::setup(const Core::FE::Discretization& dis)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::FsiMapExtractor::setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
-    const FLD::UTILS::FsiMapExtractor& extractor)
+void FLD::Utils::FsiMapExtractor::setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
+    const FLD::Utils::FsiMapExtractor& extractor)
 {
   // build the new othermap
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
@@ -181,7 +181,7 @@ void FLD::UTILS::FsiMapExtractor::setup(Teuchos::RCP<const Epetra_Map>& addition
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FLD::UTILS::XFluidFluidMapExtractor::setup(const Epetra_Map& fullmap,
+void FLD::Utils::XFluidFluidMapExtractor::setup(const Epetra_Map& fullmap,
     Teuchos::RCP<const Epetra_Map> fluidmap, Teuchos::RCP<const Epetra_Map> xfluidmap)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> maps;

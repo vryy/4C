@@ -64,7 +64,7 @@ namespace FLD
   class TurbulenceStatisticsGeneralMean;
   class TurbulenceStatisticsPh;
   class TurbulenceStatisticsBfda;
-  namespace UTILS
+  namespace Utils
   {
     class StressManager;
   }
@@ -250,7 +250,7 @@ namespace FLD
     // xwall object is required for evaluating inner element planes of channel
     Teuchos::RCP<FLD::XWall> myxwall_;
 
-    Teuchos::RCP<FLD::UTILS::StressManager> mystressmanager_;
+    Teuchos::RCP<FLD::Utils::StressManager> mystressmanager_;
 
     //! scatra result vector (defined on the scatra dofrowmap!)
     Teuchos::RCP<Core::LinAlg::Vector<double>> myphinp_;

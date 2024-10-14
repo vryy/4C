@@ -430,9 +430,9 @@ Mortar::ProjectorCalcEleBased<distype_s, distype_m>::ProjectorCalcEleBased()
 
 template <Core::FE::CellType distype>
 Mortar::ProjectorCalc<distype>* Mortar::ProjectorCalc<distype>::instance(
-    Core::UTILS::SingletonAction action)
+    Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []() {
         return std::unique_ptr<Mortar::ProjectorCalc<distype>>(
             new Mortar::ProjectorCalc<distype>());
@@ -443,9 +443,9 @@ Mortar::ProjectorCalc<distype>* Mortar::ProjectorCalc<distype>::instance(
 
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 Mortar::ProjectorCalcEleBased<distype_s, distype_m>*
-Mortar::ProjectorCalcEleBased<distype_s, distype_m>::instance(Core::UTILS::SingletonAction action)
+Mortar::ProjectorCalcEleBased<distype_s, distype_m>::instance(Core::Utils::SingletonAction action)
 {
-  static Core::UTILS::SingletonOwner<Mortar::ProjectorCalcEleBased<distype_s, distype_m>>
+  static Core::Utils::SingletonOwner<Mortar::ProjectorCalcEleBased<distype_s, distype_m>>
       singleton_owner(
           []()
           {
@@ -1114,7 +1114,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal_3d(const Mortar:
     double normalpart[3] = {0.0, 0.0, 0.0};
 
     // calc xmaster
-    Mortar::UTILS::local_to_global<distype>(mele, eta, xm, 0);
+    Mortar::Utils::local_to_global<distype>(mele, eta, xm, 0);
 
     // calc normal part
     double length = mele.compute_unit_normal_at_xi(eta, unormal);
@@ -1138,8 +1138,8 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal_3d(const Mortar:
     // master coordinate grad
     double meta0[3] = {0.0, 0.0, 0.0};  // x,xi_0
     double meta1[3] = {0.0, 0.0, 0.0};  // x,xi_1
-    Mortar::UTILS::local_to_global<distype>(mele, eta, meta0, 1);
-    Mortar::UTILS::local_to_global<distype>(mele, eta, meta1, 2);
+    Mortar::Utils::local_to_global<distype>(mele, eta, meta0, 1);
+    Mortar::Utils::local_to_global<distype>(mele, eta, meta1, 2);
 
     // normal grad
     Core::LinAlg::Matrix<3, n_> secderiv;
@@ -1277,7 +1277,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal_3d_lin(const Mor
     double normalpart[3] = {0.0, 0.0, 0.0};
 
     // calc xmaster
-    Mortar::UTILS::local_to_global<distype>(mele, eta, xm, 0);
+    Mortar::Utils::local_to_global<distype>(mele, eta, xm, 0);
 
     // calc normal part
     double length = mele.compute_unit_normal_at_xi(eta, unormal);
@@ -1301,8 +1301,8 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal_3d_lin(const Mor
     // master coordinate grad
     std::array<double, 3> meta0 = {0.0, 0.0, 0.0};  // x , xi_0
     std::array<double, 3> meta1 = {0.0, 0.0, 0.0};  // x , xi_1
-    Mortar::UTILS::local_to_global<distype>(mele, eta, meta0, 1);
-    Mortar::UTILS::local_to_global<distype>(mele, eta, meta1, 2);
+    Mortar::Utils::local_to_global<distype>(mele, eta, meta0, 1);
+    Mortar::Utils::local_to_global<distype>(mele, eta, meta1, 2);
 
     // normal grad
     Core::LinAlg::Matrix<3, n_> secderiv;
@@ -2043,7 +2043,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal_2d(const Mortar:
     double normalpart[3] = {0.0, 0.0, 0.0};
 
     // calc xmaster
-    Mortar::UTILS::local_to_global<distype>(mele, eta, xm, 0);
+    Mortar::Utils::local_to_global<distype>(mele, eta, xm, 0);
 
     // calc normal part
     double length = mele.compute_unit_normal_at_xi(eta, unormal);
@@ -2068,7 +2068,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal_2d(const Mortar:
     // master coordinate grad
     double meta0[3] = {0.0, 0.0, 0.0};  // x,xi_0
     double meta1[3] = {0.0, 0.0, 1.0};  // x,xi_1
-    Mortar::UTILS::local_to_global<distype>(mele, eta, meta0, 1);
+    Mortar::Utils::local_to_global<distype>(mele, eta, meta0, 1);
 
     // normal grad
     Core::LinAlg::Matrix<1, n_> secderiv;
@@ -2194,7 +2194,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal_2d_lin(const Mor
     double normalpart[3] = {0.0, 0.0, 0.0};
 
     // calc xmaster
-    Mortar::UTILS::local_to_global<distype>(mele, eta, xm, 0);
+    Mortar::Utils::local_to_global<distype>(mele, eta, xm, 0);
 
     // calc normal part
     double length = mele.compute_unit_normal_at_xi(eta, unormal);
@@ -2219,7 +2219,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal_2d_lin(const Mor
     // master coordinate grad
     double meta0[3] = {0.0, 0.0, 0.0};  // x,xi_0
     double meta1[3] = {0.0, 0.0, 1.0};  // x,xi_1
-    Mortar::UTILS::local_to_global<distype>(mele, eta, meta0, 1);
+    Mortar::Utils::local_to_global<distype>(mele, eta, meta0, 1);
 
     // normal grad
     Core::LinAlg::Matrix<1, n_> secderiv;
@@ -2577,7 +2577,7 @@ double Mortar::ProjectorCalc<distype>::evaluate_f_nodal_normal(
 
   // build interpolation of master node coordinates for current eta
   double nx[ndim_];
-  Mortar::UTILS::local_to_global<distype>(ele, eta, nx, 0);
+  Mortar::Utils::local_to_global<distype>(ele, eta, nx, 0);
 
   // subtract slave node coordinates
   for (int i = 0; i < ndim_; ++i) nx[i] -= node.xspatial()[i];
@@ -2607,7 +2607,7 @@ double Mortar::ProjectorCalc<distype>::evaluate_grad_f_nodal_normal(
   // build interpolation of master node coordinates for current eta
   // use shape function derivatives for interpolation (hence "1")
   double nxeta[ndim_];
-  Mortar::UTILS::local_to_global<distype>(ele, eta, nxeta, 1);
+  Mortar::Utils::local_to_global<distype>(ele, eta, nxeta, 1);
 
   // calculate GradF
   fgrad = nxeta[0] * node.mo_data().n()[1] - nxeta[1] * node.mo_data().n()[0];
@@ -2787,7 +2787,7 @@ double Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_f_gauss_poi
 
   // build interpolation of master node coordinates for current eta
   double nx[ndim_];
-  Mortar::UTILS::local_to_global<distype_m>(ele, eta, nx, 0);
+  Mortar::Utils::local_to_global<distype_m>(ele, eta, nx, 0);
 
   // subtract GP coordinates
   nx[0] -= gpx[0];
@@ -2818,7 +2818,7 @@ double Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_grad_f_gaus
   // build interpolation of master node coordinates for current eta
   // use shape function derivatives for interpolation (hence "1")
   double nxeta[ndim_];
-  Mortar::UTILS::local_to_global<distype_m>(ele, eta, nxeta, 1);
+  Mortar::Utils::local_to_global<distype_m>(ele, eta, nxeta, 1);
 
   // calculate GradF
   fgrad = nxeta[0] * gpn[1] - nxeta[1] * gpn[0];
@@ -2844,7 +2844,7 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_f_gauss_point
 
   // build interpolation of ele node coordinates for current eta
   double nx[ndim_];
-  Mortar::UTILS::local_to_global<distype_m>(ele, eta, nx, 0);
+  Mortar::Utils::local_to_global<distype_m>(ele, eta, nx, 0);
 
   // evaluate function f
   for (int i = 0; i < ndim_; ++i) f[i] = nx[i] - alpha * gpn[i] - gpx[i];
@@ -2875,8 +2875,8 @@ bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_grad_f_gauss_
   //  ele.local_to_global(eta,nxeta2,2);
   double* nxeta1 = &fgrad(0, 0);
   double* nxeta2 = &fgrad(0, 1);
-  Mortar::UTILS::local_to_global<distype_m>(ele, eta, nxeta1, 1);
-  Mortar::UTILS::local_to_global<distype_m>(ele, eta, nxeta2, 2);
+  Mortar::Utils::local_to_global<distype_m>(ele, eta, nxeta1, 1);
+  Mortar::Utils::local_to_global<distype_m>(ele, eta, nxeta2, 2);
 
   // evaluate function f gradient
   for (int i = 0; i < ndim_; ++i) fgrad(i, 2) = -gpn[i];
@@ -2901,7 +2901,7 @@ bool Mortar::ProjectorCalc<distype>::evaluate_f_gauss_point_auxn_3d(double* f, c
 
   // build interpolation of ele node coordinates for current eta
   double nx[ndim_];
-  Mortar::UTILS::local_to_global<distype>(ele, eta, nx, 0);
+  Mortar::Utils::local_to_global<distype>(ele, eta, nx, 0);
 
   // evaluate function f
   for (int i = 0; i < ndim_; ++i) f[i] = nx[i] - alpha * auxn[i] - globgp[i];
@@ -2930,8 +2930,8 @@ bool Mortar::ProjectorCalc<distype>::evaluate_grad_f_gauss_point_auxn_3d(
   //  double nxeta2[ndim_];
   double* nxeta1 = &fgrad(0, 0);
   double* nxeta2 = &fgrad(0, 1);
-  Mortar::UTILS::local_to_global<distype>(ele, eta, nxeta1, 1);
-  Mortar::UTILS::local_to_global<distype>(ele, eta, nxeta2, 2);
+  Mortar::Utils::local_to_global<distype>(ele, eta, nxeta1, 1);
+  Mortar::Utils::local_to_global<distype>(ele, eta, nxeta2, 2);
 
   // evaluate function f gradient
   for (int i = 0; i < ndim_; ++i) fgrad(i, 2) = -auxn[i];

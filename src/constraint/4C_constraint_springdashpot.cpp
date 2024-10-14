@@ -246,20 +246,20 @@ void CONSTRAINTS::SpringDashpot::evaluate_robin(Teuchos::RCP<Core::LinAlg::Spars
               (*numfuncstiff)[dof] != 0
                   ? (*springstiff)[dof] *
                         Global::Problem::instance()
-                            ->function_by_id<Core::UTILS::FunctionOfTime>((*numfuncstiff)[dof] - 1)
+                            ->function_by_id<Core::Utils::FunctionOfTime>((*numfuncstiff)[dof] - 1)
                             .evaluate(total_time)
                   : (*springstiff)[dof];
           const double dof_viscosity =
               (*numfuncvisco)[dof] != 0
                   ? (*dashpotvisc)[dof] *
                         Global::Problem::instance()
-                            ->function_by_id<Core::UTILS::FunctionOfTime>((*numfuncvisco)[dof] - 1)
+                            ->function_by_id<Core::Utils::FunctionOfTime>((*numfuncvisco)[dof] - 1)
                             .evaluate(total_time)
                   : (*dashpotvisc)[dof];
           const double dof_disploffset =
               (*numfuncdisploffset)[dof] != 0
                   ? (*disploffset)[dof] * Global::Problem::instance()
-                                              ->function_by_id<Core::UTILS::FunctionOfTime>(
+                                              ->function_by_id<Core::Utils::FunctionOfTime>(
                                                   (*numfuncdisploffset)[dof] - 1)
                                               .evaluate(total_time)
                   : (*disploffset)[dof];
@@ -276,12 +276,12 @@ void CONSTRAINTS::SpringDashpot::evaluate_robin(Teuchos::RCP<Core::LinAlg::Spars
           {
             std::array<double, 3> displ = {(*disp)[0], (*disp)[1], (*disp)[2]};
             force_disp = Global::Problem::instance()
-                             ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+                             ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                                  (*numfuncnonlinstiff)[dof] - 1)
                              .evaluate(displ.data(), total_time, 0);
 
             force_disp_deriv = (Global::Problem::instance()
-                                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+                                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                                         (*numfuncnonlinstiff)[dof] - 1)
                                     .evaluate_spatial_derivative(displ.data(), total_time, 0))[dof];
           }

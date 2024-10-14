@@ -34,7 +34,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-bool PoroElast::UTILS::is_poro_element(const Core::Elements::Element* actele)
+bool PoroElast::Utils::is_poro_element(const Core::Elements::Element* actele)
 {
   // all poro elements need to be listed here
   return actele->element_type() == Discret::ELEMENTS::SoHex8PoroType::instance() or
@@ -53,7 +53,7 @@ bool PoroElast::UTILS::is_poro_element(const Core::Elements::Element* actele)
          is_poro_p1_element(actele);
 }
 
-bool PoroElast::UTILS::is_poro_p1_element(const Core::Elements::Element* actele)
+bool PoroElast::Utils::is_poro_p1_element(const Core::Elements::Element* actele)
 {
   // all poro-p1 elements need to be listed here
   return actele->element_type() == Discret::ELEMENTS::SoHex8PoroP1Type::instance() or
@@ -63,7 +63,7 @@ bool PoroElast::UTILS::is_poro_p1_element(const Core::Elements::Element* actele)
          actele->element_type() == Discret::ELEMENTS::WallQuad9PoroP1Type::instance();
 }
 
-Teuchos::RCP<PoroElast::PoroBase> PoroElast::UTILS::create_poro_algorithm(
+Teuchos::RCP<PoroElast::PoroBase> PoroElast::Utils::create_poro_algorithm(
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm, bool setup_solver,
     Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter)
 {
@@ -133,7 +133,7 @@ Teuchos::RCP<PoroElast::PoroBase> PoroElast::UTILS::create_poro_algorithm(
 }
 
 
-Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElast::UTILS::build_poro_splitter(
+Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElast::Utils::build_poro_splitter(
     Core::FE::Discretization& dis)
 {
   Teuchos::RCP<Core::LinAlg::MapExtractor> porositysplitter = Teuchos::null;
@@ -156,7 +156,7 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> PoroElast::UTILS::build_poro_splitter(
   return porositysplitter;
 }
 
-void PoroElast::UTILS::set_material_pointers_matching_grid(
+void PoroElast::Utils::set_material_pointers_matching_grid(
     const Core::FE::Discretization& sourcedis, const Core::FE::Discretization& targetdis)
 {
   const int numelements = targetdis.num_my_col_elements();
@@ -174,7 +174,7 @@ void PoroElast::UTILS::set_material_pointers_matching_grid(
   }
 }
 
-void PoroElast::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret)
+void PoroElast::Utils::create_volume_ghosting(Core::FE::Discretization& idiscret)
 {
   //**********************************************************************
   // Prerequisites of this funtion:
@@ -244,10 +244,10 @@ void PoroElast::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret
   }
 
   // 2 Material pointers need to be reset after redistribution.
-  PoroElast::UTILS::set_material_pointers_matching_grid(*voldis[0], *voldis[1]);
+  PoroElast::Utils::set_material_pointers_matching_grid(*voldis[0], *voldis[1]);
 
   // 3 Reconnect Face Element -- Porostructural Parent Element Pointers!
-  PoroElast::UTILS::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));
+  PoroElast::Utils::reconnect_parent_pointers(idiscret, *voldis[0], &(*voldis[1]));
 
   // 4 In case we use
   Teuchos::RCP<Core::FE::DiscretizationFaces> facediscret =
@@ -255,7 +255,7 @@ void PoroElast::UTILS::create_volume_ghosting(Core::FE::Discretization& idiscret
   if (facediscret != Teuchos::null) facediscret->fill_complete_faces(true, true, true, true);
 }
 
-void PoroElast::UTILS::reconnect_parent_pointers(Core::FE::Discretization& idiscret,
+void PoroElast::Utils::reconnect_parent_pointers(Core::FE::Discretization& idiscret,
     Core::FE::Discretization& voldiscret, Core::FE::Discretization* voldiscret2)
 {
   const Epetra_Map* ielecolmap = idiscret.element_col_map();
@@ -275,7 +275,7 @@ void PoroElast::UTILS::reconnect_parent_pointers(Core::FE::Discretization& idisc
   }
 }
 
-void PoroElast::UTILS::set_slave_and_master(const Core::FE::Discretization& voldiscret,
+void PoroElast::Utils::set_slave_and_master(const Core::FE::Discretization& voldiscret,
     const Core::FE::Discretization* voldiscret2, const Epetra_Map* elecolmap,
     Core::Elements::FaceElement* faceele)
 {
@@ -328,7 +328,7 @@ void PoroElast::print_logo()
   std::cout << "             (_.--__) (_.--__) " << std::endl;
 }
 
-double PoroElast::UTILS::calculate_vector_norm(
+double PoroElast::Utils::calculate_vector_norm(
     const enum Inpar::PoroElast::VectorNorm norm, const Core::LinAlg::Vector<double>& vect)
 {
   // L1 norm
@@ -377,13 +377,13 @@ double PoroElast::UTILS::calculate_vector_norm(
   }
 }
 
-void PoroElast::UTILS::PoroMaterialStrategy::assign_material2_to1(
+void PoroElast::Utils::PoroMaterialStrategy::assign_material2_to1(
     const Coupling::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
     const std::vector<int>& ids_2, Teuchos::RCP<Core::FE::Discretization> dis1,
     Teuchos::RCP<Core::FE::Discretization> dis2)
 {
   // call default assignment
-  Coupling::VolMortar::UTILS::DefaultMaterialStrategy::assign_material2_to1(
+  Coupling::VolMortar::Utils::DefaultMaterialStrategy::assign_material2_to1(
       volmortar, ele1, ids_2, dis1, dis2);
 
   // default strategy: take material of element with closest center in reference coordinates
@@ -424,13 +424,13 @@ void PoroElast::UTILS::PoroMaterialStrategy::assign_material2_to1(
   }
 }
 
-void PoroElast::UTILS::PoroMaterialStrategy::assign_material1_to2(
+void PoroElast::Utils::PoroMaterialStrategy::assign_material1_to2(
     const Coupling::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
     const std::vector<int>& ids_1, Teuchos::RCP<Core::FE::Discretization> dis1,
     Teuchos::RCP<Core::FE::Discretization> dis2)
 {
   // call default assignment
-  Coupling::VolMortar::UTILS::DefaultMaterialStrategy::assign_material1_to2(
+  Coupling::VolMortar::Utils::DefaultMaterialStrategy::assign_material1_to2(
       volmortar, ele2, ids_1, dis1, dis2);
 
   // if no corresponding element found -> leave

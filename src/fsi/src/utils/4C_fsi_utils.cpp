@@ -39,7 +39,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool FSI::UTILS::fluid_ale_nodes_disjoint(
+bool FSI::Utils::fluid_ale_nodes_disjoint(
     Core::FE::Discretization& fluiddis, Core::FE::Discretization& aledis)
 {
   // flag indicating whether fluid and ALE node numbers have are non-overlapping or not
@@ -80,7 +80,7 @@ bool FSI::UTILS::fluid_ale_nodes_disjoint(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> structdis,
+FSI::Utils::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> structdis,
     Teuchos::RCP<Core::FE::Discretization> fluiddis, Coupling::Adapter::CouplingMortar& coupsf,
     bool structcoupmaster, Inpar::FSI::SlideALEProj aleproj)
     : aletype_(aleproj)
@@ -216,7 +216,7 @@ FSI::UTILS::SlideAleUtils::SlideAleUtils(Teuchos::RCP<Core::FE::Discretization> 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SlideAleUtils::remeshing(Adapter::FSIStructureWrapper& structure,
+void FSI::Utils::SlideAleUtils::remeshing(Adapter::FSIStructureWrapper& structure,
     Core::FE::Discretization& fluiddis, Core::LinAlg::Vector<double>& idispale,
     Core::LinAlg::Vector<double>& iprojdispale, Coupling::Adapter::CouplingMortar& coupsf,
     const Epetra_Comm& comm)
@@ -265,7 +265,7 @@ void FSI::UTILS::SlideAleUtils::remeshing(Adapter::FSIStructureWrapper& structur
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SlideAleUtils::evaluate_mortar(Core::LinAlg::Vector<double>& idispstruct,
+void FSI::Utils::SlideAleUtils::evaluate_mortar(Core::LinAlg::Vector<double>& idispstruct,
     Core::LinAlg::Vector<double>& idispfluid, Coupling::Adapter::CouplingMortar& coupsf)
 {
   // merge displacement values of interface nodes (struct+fluid) into idispms_ for mortar
@@ -285,7 +285,7 @@ void FSI::UTILS::SlideAleUtils::evaluate_mortar(Core::LinAlg::Vector<double>& id
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SlideAleUtils::evaluate_fluid_mortar(
+void FSI::Utils::SlideAleUtils::evaluate_fluid_mortar(
     Teuchos::RCP<Core::LinAlg::Vector<double>> ima, Teuchos::RCP<Core::LinAlg::Vector<double>> isl)
 {
   // new D,M,Dinv out of fluid disp before and after sliding
@@ -294,7 +294,7 @@ void FSI::UTILS::SlideAleUtils::evaluate_fluid_mortar(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::UTILS::SlideAleUtils::interpolate_fluid(
+Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Utils::SlideAleUtils::interpolate_fluid(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> uold)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> unew = coupff_->master_to_slave(uold);
@@ -306,7 +306,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::UTILS::SlideAleUtils::interpolat
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> FSI::UTILS::SlideAleUtils::centerdisp(
+std::vector<double> FSI::Utils::SlideAleUtils::centerdisp(
     Adapter::FSIStructureWrapper& structure, const Epetra_Comm& comm)
 {
   Teuchos::RCP<Core::FE::Discretization> structdis = structure.discretization();
@@ -388,7 +388,7 @@ std::vector<double> FSI::UTILS::SlideAleUtils::centerdisp(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<int, Core::LinAlg::Matrix<3, 1>> FSI::UTILS::SlideAleUtils::current_struct_pos(
+std::map<int, Core::LinAlg::Matrix<3, 1>> FSI::Utils::SlideAleUtils::current_struct_pos(
     Core::LinAlg::Vector<double>& reddisp, Core::FE::Discretization& interfacedis,
     std::map<int, double>& maxcoord)
 {
@@ -437,7 +437,7 @@ std::map<int, Core::LinAlg::Matrix<3, 1>> FSI::UTILS::SlideAleUtils::current_str
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::UTILS::SlideAleUtils::slide_projection(
+void FSI::Utils::SlideAleUtils::slide_projection(
     Adapter::FSIStructureWrapper& structure, Core::FE::Discretization& fluiddis,
     Core::LinAlg::Vector<double>& idispale, Core::LinAlg::Vector<double>& iprojdispale,
     Coupling::Adapter::CouplingMortar& coupsf, const Epetra_Comm& comm
@@ -576,7 +576,7 @@ void FSI::UTILS::SlideAleUtils::slide_projection(
   }
 }
 
-void FSI::UTILS::SlideAleUtils::redundant_elements(
+void FSI::Utils::SlideAleUtils::redundant_elements(
     Coupling::Adapter::CouplingMortar& coupsf, const Epetra_Comm& comm)
 {
   // We need the structure elements (NOT THE MORTAR-ELEMENTS!) on every processor for the projection
@@ -674,7 +674,7 @@ void FSI::UTILS::SlideAleUtils::redundant_elements(
 }
 
 
-void FSI::UTILS::SlideAleUtils::rotation(
+void FSI::Utils::SlideAleUtils::rotation(
     Core::FE::Discretization& mtrdis,        ///< fluid discretization
     Core::LinAlg::Vector<double>& idispale,  ///< vector of ALE displacements
     const Epetra_Comm& comm,                 ///< communicator
@@ -786,14 +786,14 @@ void FSI::UTILS::SlideAleUtils::rotation(
   return;
 }
 
-void FSI::UTILS::SlideAleUtils::output_restart(Core::IO::DiscretizationWriter& output)
+void FSI::Utils::SlideAleUtils::output_restart(Core::IO::DiscretizationWriter& output)
 {
   output.write_vector("projhist", iprojhist_);
 
   return;
 }
 
-void FSI::UTILS::SlideAleUtils::read_restart(Core::IO::DiscretizationReader& reader)
+void FSI::Utils::SlideAleUtils::read_restart(Core::IO::DiscretizationReader& reader)
 {
   reader.read_vector(iprojhist_, "projhist");
 }

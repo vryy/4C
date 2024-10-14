@@ -10,7 +10,7 @@
 #include "4C_contact_ehl_integrator.hpp"
 
 #include "4C_contact_element.hpp"
-#include "4C_contact_nitsche_integrator.hpp"  // for CONTACT::UTILS:: functions
+#include "4C_contact_nitsche_integrator.hpp"  // for CONTACT::Utils:: functions
 #include "4C_contact_node.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -200,12 +200,12 @@ void CONTACT::IntegratorEhl::gp_weighted_av_rel_vel(Mortar::Element& sele, Morta
   Core::Gen::Pairedvector<int, double> dvt1(0);
   Core::Gen::Pairedvector<int, double> dvt2(0);
 
-  CONTACT::UTILS::build_tangent_vectors<dim>(normal, dnmap_unit, t1.data(), dt1, t2.data(), dt2);
-  CONTACT::UTILS::rel_vel_invariant<dim>(sele, sxi, derivsxi, sval, sderiv, mele, mxi, derivmxi,
+  CONTACT::Utils::build_tangent_vectors<dim>(normal, dnmap_unit, t1.data(), dt1, t2.data(), dt2);
+  CONTACT::Utils::rel_vel_invariant<dim>(sele, sxi, derivsxi, sval, sderiv, mele, mxi, derivmxi,
       mval, mderiv, gap, deriv_gap, relVel, relVel_deriv, -.5);
 
-  CONTACT::UTILS::vector_scalar_product<dim>(t1, dt1, relVel, relVel_deriv, vt1, dvt1);
-  CONTACT::UTILS::vector_scalar_product<dim>(t2, dt2, relVel, relVel_deriv, vt2, dvt2);
+  CONTACT::Utils::vector_scalar_product<dim>(t1, dt1, relVel, relVel_deriv, vt1, dvt1);
+  CONTACT::Utils::vector_scalar_product<dim>(t2, dt2, relVel, relVel_deriv, vt2, dvt2);
 
   for (int i = 0; i < sele.num_node(); ++i)
   {
@@ -265,9 +265,9 @@ void CONTACT::IntegratorEhl::gp_weighted_av_rel_vel(Mortar::Element& sele, Morta
             jac * wgt * lmval(i) * vt2 * p->second;
   }
 
-  CONTACT::UTILS::rel_vel<dim>(sele, sval, sderiv, derivsxi, -1., relVel, relVel_deriv);
-  CONTACT::UTILS::vector_scalar_product<dim>(t1, dt1, relVel, relVel_deriv, vt1, dvt1);
-  CONTACT::UTILS::vector_scalar_product<dim>(t2, dt2, relVel, relVel_deriv, vt2, dvt2);
+  CONTACT::Utils::rel_vel<dim>(sele, sval, sderiv, derivsxi, -1., relVel, relVel_deriv);
+  CONTACT::Utils::vector_scalar_product<dim>(t1, dt1, relVel, relVel_deriv, vt1, dvt1);
+  CONTACT::Utils::vector_scalar_product<dim>(t2, dt2, relVel, relVel_deriv, vt2, dvt2);
 
   for (int i = 0; i < sele.num_node(); ++i)
   {

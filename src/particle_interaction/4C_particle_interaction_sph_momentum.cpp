@@ -446,8 +446,8 @@ void ParticleInteraction::SPHMomentum::momentum_equation_particle_boundary_contr
 
     // versor from particle j to i
     double e_ij[3];
-    UTILS::vec_set(e_ij, particlepair.e_ij_);
-    if (swapparticles) UTILS::vec_scale(e_ij, -1.0);
+    Utils::vec_set(e_ij, particlepair.e_ij_);
+    if (swapparticles) Utils::vec_scale(e_ij, -1.0);
 
     // first derivative of kernel
     const double dWdrij = (swapparticles) ? particlepair.dWdrji_ : particlepair.dWdrij_;
@@ -578,11 +578,11 @@ void ParticleInteraction::SPHMomentum::momentum_equation_particle_boundary_contr
     }
 
     // add contribution from neighboring boundary particle j
-    if (acc_i) UTILS::vec_add(acc_i, acc_ij);
-    if (mod_acc_i) UTILS::vec_add(mod_acc_i, mod_acc_ij);
+    if (acc_i) Utils::vec_add(acc_i, acc_ij);
+    if (mod_acc_i) Utils::vec_add(mod_acc_i, mod_acc_ij);
 
     // add contribution to neighboring boundary particle j
-    if (force_j) UTILS::vec_add_scale(force_j, -mass_i[0], acc_ij);
+    if (force_j) Utils::vec_add_scale(force_j, -mass_i[0], acc_ij);
   }
 }
 
@@ -719,20 +719,20 @@ void ParticleInteraction::SPHMomentum::momentum_equation_particle_wall_contribut
 
     // compute vector from wall contact point j to particle i
     double r_ij[3];
-    UTILS::vec_set_scale(r_ij, particlewallpair.absdist_, particlewallpair.e_ij_);
+    Utils::vec_set_scale(r_ij, particlewallpair.absdist_, particlewallpair.e_ij_);
 
     // vector from weighted fluid particle positions l to wall contact point j
     double r_jl_weighted[3];
-    UTILS::vec_set(r_jl_weighted, weighteddistancevector[particlewallpairindex].data());
+    Utils::vec_set(r_jl_weighted, weighteddistancevector[particlewallpairindex].data());
 
     // inverse normal distance from weighted fluid particle positions l to wall contact point j
     const double inv_norm_dist_jl_weighted =
-        1.0 / UTILS::vec_dot(r_jl_weighted, particlewallpair.e_ij_);
+        1.0 / Utils::vec_dot(r_jl_weighted, particlewallpair.e_ij_);
 
     // unit surface tangent vectors in wall contact point j
     double t_j_1[3];
     double t_j_2[3];
-    UTILS::unit_surface_tangents(particlewallpair.e_ij_, t_j_1, t_j_2);
+    Utils::unit_surface_tangents(particlewallpair.e_ij_, t_j_1, t_j_2);
 
     // iterate over virtual particles
     for (const std::vector<double>& virtualparticle :
@@ -740,32 +740,32 @@ void ParticleInteraction::SPHMomentum::momentum_equation_particle_wall_contribut
     {
       // vector from virtual particle k to wall contact point j
       double r_jk[3];
-      UTILS::vec_set_scale(r_jk, virtualparticle[0], particlewallpair.e_ij_);
-      UTILS::vec_add_scale(r_jk, virtualparticle[1], t_j_1);
-      UTILS::vec_add_scale(r_jk, virtualparticle[2], t_j_2);
+      Utils::vec_set_scale(r_jk, virtualparticle[0], particlewallpair.e_ij_);
+      Utils::vec_add_scale(r_jk, virtualparticle[1], t_j_1);
+      Utils::vec_add_scale(r_jk, virtualparticle[2], t_j_2);
 
       // vector from virtual particle k to particle i
       double r_ik[3];
-      UTILS::vec_set(r_ik, r_ij);
-      UTILS::vec_add(r_ik, r_jk);
+      Utils::vec_set(r_ik, r_ij);
+      Utils::vec_add(r_ik, r_jk);
 
       // absolute distance between virtual particle k and particle i
-      const double absdist = UTILS::vec_norm_two(r_ik);
+      const double absdist = Utils::vec_norm_two(r_ik);
 
       // virtual particle within interaction distance
       if (absdist < rad_i[0])
       {
         // vector from weighted fluid particle positions l to virtual particle k
         double r_kl_weighted[3];
-        UTILS::vec_set(r_kl_weighted, r_jl_weighted);
-        UTILS::vec_sub(r_kl_weighted, r_jk);
+        Utils::vec_set(r_kl_weighted, r_jl_weighted);
+        Utils::vec_sub(r_kl_weighted, r_jk);
 
         // get pointer to virtual particle states
         const double* mass_k = container_i->get_ptr_to_state(PARTICLEENGINE::Mass, particle_i);
 
         const double temp_press_k =
             weightedpressure[particlewallpairindex] +
-            UTILS::vec_dot(r_kl_weighted, weightedpressuregradient[particlewallpairindex].data());
+            Utils::vec_dot(r_kl_weighted, weightedpressuregradient[particlewallpairindex].data());
         const double* press_k = &temp_press_k;
 
         const double temp_dens_k =
@@ -774,13 +774,13 @@ void ParticleInteraction::SPHMomentum::momentum_equation_particle_wall_contribut
 
         double temp_vel_k[3];
         double fac = -virtualparticle[0] * inv_norm_dist_jl_weighted;
-        UTILS::vec_set_scale(temp_vel_k, 1 + fac, vel_j);
-        UTILS::vec_add_scale(temp_vel_k, -fac, weightedvelocity[particlewallpairindex].data());
+        Utils::vec_set_scale(temp_vel_k, 1 + fac, vel_j);
+        Utils::vec_add_scale(temp_vel_k, -fac, weightedvelocity[particlewallpairindex].data());
         const double* vel_k = temp_vel_k;
 
         // versor from virtual particle k to particle i
         double e_ik[3];
-        UTILS::vec_set_scale(e_ik, 1.0 / absdist, r_ik);
+        Utils::vec_set_scale(e_ik, 1.0 / absdist, r_ik);
 
         // evaluate first derivative of kernel
         const double dWdrik = kernel_->d_wdrij(absdist, rad_i[0]);
@@ -863,21 +863,21 @@ void ParticleInteraction::SPHMomentum::momentum_equation_particle_wall_contribut
     }
 
     // add contribution from neighboring virtual particle k
-    UTILS::vec_add(acc_i, sumk_acc_ik);
-    if (mod_acc_i) UTILS::vec_add(mod_acc_i, sumk_mod_acc_ik);
+    Utils::vec_add(acc_i, sumk_acc_ik);
+    if (mod_acc_i) Utils::vec_add(mod_acc_i, sumk_mod_acc_ik);
 
     // calculation of wall contact force
     double wallcontactforce[3] = {0.0, 0.0, 0.0};
     if (writeinteractionoutput or walldatastate->get_force_col() != Teuchos::null)
-      UTILS::vec_set_scale(wallcontactforce, -mass_i[0], sumk_acc_ik);
+      Utils::vec_set_scale(wallcontactforce, -mass_i[0], sumk_acc_ik);
 
     // write interaction output
     if (writeinteractionoutput)
     {
       // calculate wall contact point
       double wallcontactpoint[3];
-      UTILS::vec_set(wallcontactpoint, pos_i);
-      UTILS::vec_sub(wallcontactpoint, r_ij);
+      Utils::vec_set(wallcontactpoint, pos_i);
+      Utils::vec_sub(wallcontactpoint, r_ij);
 
       // set wall attack point and states
       for (int dim = 0; dim < 3; ++dim) attackpoints.push_back(wallcontactpoint[dim]);

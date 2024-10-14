@@ -132,7 +132,7 @@ namespace Core::IO
         FOUR_C_THROW(
             "Could not read line '%s' from input stream. Likely the string's pattern is not "
             "convertible to an object of type %s",
-            line_str.c_str(), Core::UTILS::try_demangle(typeid(T).name()).c_str());
+            line_str.c_str(), Core::Utils::try_demangle(typeid(T).name()).c_str());
       }
     }
     return operated_data;

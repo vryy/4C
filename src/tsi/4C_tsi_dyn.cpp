@@ -41,7 +41,7 @@ void tsi_dyn_drt()
   if (comm.MyPID() == 0) TSI::printlogo();
 
   // setup of the discretizations, including clone strategy
-  TSI::UTILS::setup_tsi(comm);
+  TSI::Utils::setup_tsi(comm);
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& tsidyn = Global::Problem::instance()->tsi_dynamic_params();

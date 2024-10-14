@@ -283,7 +283,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::reset()
     for (unsigned int ielement = 0; ielement < 2; ++ielement)
     {
       // extract the Dof values of this element from displacement vector
-      BEAMINTERACTION::UTILS::extract_pos_dof_vec_absolute_values(discret(), element_ptr[ielement],
+      BEAMINTERACTION::Utils::extract_pos_dof_vec_absolute_values(discret(), element_ptr[ielement],
           *beam_interaction_data_state_ptr()->get_dis_col_np(),
           element_posdofvec_absolutevalues[ielement]);
     }
@@ -892,7 +892,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::find_and_store_neighboring
       // Check if the current element is relevant for beam-to-xxx contact.
       Core::Elements::Element* currele = discret().l_col_element(colele_i);
       const Core::Binstrategy::Utils::BinContentType contact_type =
-          BEAMINTERACTION::UTILS::convert_element_to_bin_content_type(currele);
+          BEAMINTERACTION::Utils::convert_element_to_bin_content_type(currele);
       if (std::find(contactelementtypes_.begin(), contactelementtypes_.end(), contact_type) !=
           contactelementtypes_.end())
       {
@@ -1074,7 +1074,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::set_restart_displacement_i
       for (unsigned int i_element = 0; i_element < 2; ++i_element)
       {
         // Extract the Dof values of this element from the restart vector
-        BEAMINTERACTION::UTILS::extract_pos_dof_vec_values(discret(), pair->get_element(i_element),
+        BEAMINTERACTION::Utils::extract_pos_dof_vec_values(discret(), pair->get_element(i_element),
             *beam_interaction_data_state_ptr()->get_dis_restart_col(),
             element_restart_dispalcement_[i_element]);
       }

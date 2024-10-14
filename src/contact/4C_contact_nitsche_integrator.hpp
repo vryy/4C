@@ -211,7 +211,7 @@ namespace CONTACT
     bool two_half_pass_;
   };
 
-  namespace UTILS
+  namespace Utils
   {
     //! map local surface coordinate to local parent coordinate
     template <int dim>
@@ -298,7 +298,7 @@ namespace CONTACT
       for (int idim = 0; idim < dim; idim++) pxsi(idim) = pqxg(0, idim);
     }
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace CONTACT
 FOUR_C_NAMESPACE_CLOSE
 

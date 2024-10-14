@@ -1017,7 +1017,7 @@ namespace Discret
 
         const auto relative_mobility =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfAnything>(
+                ->function_by_id<Core::Utils::FunctionOfAnything>(
                     relative_mobility_funct_id_[current_scalar] - 1)
                 .evaluate(varfunction_variables, varfunction_constants, 0);
 

@@ -720,7 +720,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate_neumann(Teuchos::ParameterList& para
       const int functnum = (funct) ? (*funct)[dim] : -1;
       const double functfac =
           (functnum > 0) ? Global::Problem::instance()
-                               ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                               ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                                .evaluate(xrefegp.data(), time, dim)
                          : 1.0;
       const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
@@ -1151,7 +1151,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     // in case of temperature-dependent material parameters, e.g. Young's modulus,
     // i.e. E(T), current element temperature T_{n+1} required for stress and cmat
 
-    UTILS::get_temperature_for_structural_material<Core::FE::CellType::hex8>(shapefcts[gp], params);
+    Utils::get_temperature_for_structural_material<Core::FE::CellType::hex8>(shapefcts[gp], params);
 
     if (material()->material_type() == Core::Materials::m_constraintmixture ||
         material()->material_type() == Core::Materials::m_growthremodel_elasthyper ||

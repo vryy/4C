@@ -63,7 +63,7 @@ Teuchos::RCP<Core::FE::Discretization> Adapter::FluidXFEM::boundary_discretizati
 /*----------------------------------------------------------------------*/
 /// communication object at the struct interface
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::UTILS::MapExtractor> const& Adapter::FluidXFEM::struct_interface()
+Teuchos::RCP<FLD::Utils::MapExtractor> const& Adapter::FluidXFEM::struct_interface()
 {
   // returns the boundary discretization
   // REMARK:
@@ -174,7 +174,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidXFEM::integrate_interfa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> Adapter::FluidXFEM::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> Adapter::FluidXFEM::create_field_test()
 {
   return fluid_field()->create_field_test();
 }

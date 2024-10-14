@@ -589,9 +589,9 @@ void Mortar::Interface::fill_complete(
   if (interface_data_->is_poro())
   {
     if (interface_data_->poro_type() == Inpar::Mortar::poroscatra)
-      PoroElastScaTra::UTILS::create_volume_ghosting(discret());
+      PoroElastScaTra::Utils::create_volume_ghosting(discret());
     else
-      PoroElast::UTILS::create_volume_ghosting(discret());
+      PoroElast::Utils::create_volume_ghosting(discret());
   }
   else if (imortar_.isParameter("STRATEGY"))
   {
@@ -1057,7 +1057,7 @@ Teuchos::RCP<Core::Binstrategy::BinningStrategy> Mortar::Interface::setup_binnin
 
   binning_params.set<double>("BIN_SIZE_LOWER_BOUND", cutoff);
   binning_params.set<std::string>("DOMAINBOUNDINGBOX", domain_bounding_box_stream.str());
-  Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+  Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", spatial_approximation_type, binning_params);
 
   // Special case for mortar nodes that store their displacements themselves
@@ -4205,7 +4205,7 @@ void Mortar::Interface::create_volume_ghosting(
       material_map.emplace_back(std::pair<int, int>(0, 1));
       material_map.emplace_back(std::pair<int, int>(1, 0));
 
-      Mortar::UTILS::create_volume_ghosting(discret(), tar_dis, material_map);
+      Mortar::Utils::create_volume_ghosting(discret(), tar_dis, material_map);
 
       // we need to redistribute the scalar field since distribution has changed during setup
       discretization_map.at("structure")->redistribute_state(1, "scalarfield");
@@ -4225,7 +4225,7 @@ void Mortar::Interface::create_volume_ghosting(
       material_map.emplace_back(std::pair<int, int>(0, 1));
       material_map.emplace_back(std::pair<int, int>(1, 0));
 
-      Mortar::UTILS::create_volume_ghosting(discret(), tar_dis, material_map);
+      Mortar::Utils::create_volume_ghosting(discret(), tar_dis, material_map);
       break;
     }
     default:
@@ -4234,7 +4234,7 @@ void Mortar::Interface::create_volume_ghosting(
       FOUR_C_ASSERT(discretization_map.find("structure") != discretization_map.end(),
           "Could not find discretization 'structure'");
       tar_dis.emplace_back(discretization_map.at("structure"));
-      Mortar::UTILS::create_volume_ghosting(
+      Mortar::Utils::create_volume_ghosting(
           discret(), tar_dis, std::vector<std::pair<int, int>>(0));
 
       break;

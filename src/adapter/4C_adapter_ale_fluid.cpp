@@ -23,16 +23,16 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::AleFluidWrapper::AleFluidWrapper(Teuchos::RCP<Ale> ale) : AleWrapper(ale)
 {
   // create the FSI interface
-  interface_ = Teuchos::make_rcp<ALE::UTILS::MapExtractor>();
+  interface_ = Teuchos::make_rcp<ALE::Utils::MapExtractor>();
   interface_->setup(*discretization());
   // extend dirichlet map by the dof
   if (interface_->fsi_cond_relevant())
-    setup_dbc_map_ex(ALE::UTILS::MapExtractor::dbc_set_part_fsi, interface_);
+    setup_dbc_map_ex(ALE::Utils::MapExtractor::dbc_set_part_fsi, interface_);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const ALE::UTILS::MapExtractor> Adapter::AleFluidWrapper::interface() const
+Teuchos::RCP<const ALE::Utils::MapExtractor> Adapter::AleFluidWrapper::interface() const
 {
   return interface_;
 }
@@ -42,7 +42,7 @@ Teuchos::RCP<const ALE::UTILS::MapExtractor> Adapter::AleFluidWrapper::interface
 int Adapter::AleFluidWrapper::solve()
 {
   if (interface_->fsi_cond_relevant())
-    evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_part_fsi);
+    evaluate(Teuchos::null, ALE::Utils::MapExtractor::dbc_set_part_fsi);
   else
     evaluate();
 

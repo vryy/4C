@@ -49,7 +49,7 @@ void Coupling::Adapter::CouplingMortar::setup(
     const Teuchos::RCP<Core::FE::Discretization>& slavedis,
     const Teuchos::RCP<Core::FE::Discretization>& aledis, const std::vector<int>& coupleddof,
     const std::string& couplingcond, const Epetra_Comm& comm,
-    const Core::UTILS::FunctionManager& function_manager,
+    const Core::Utils::FunctionManager& function_manager,
     const Teuchos::ParameterList& binning_params,
     const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
     Teuchos::RCP<Core::IO::OutputControl> output_control,
@@ -202,7 +202,7 @@ void Coupling::Adapter::CouplingMortar::setup(
  *----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::check_slave_dirichlet_overlap(
     const Teuchos::RCP<Core::FE::Discretization>& slavedis, const Epetra_Comm& comm,
-    const Core::UTILS::FunctionManager& function_manager)
+    const Core::Utils::FunctionManager& function_manager)
 {
   // safety check
   check_setup();
@@ -212,7 +212,7 @@ void Coupling::Adapter::CouplingMortar::check_slave_dirichlet_overlap(
   bool overlap = false;
   Teuchos::ParameterList p;
   p.set("total time", 0.0);
-  p.set<const Core::UTILS::FunctionManager*>("function_manager", &function_manager);
+  p.set<const Core::Utils::FunctionManager*>("function_manager", &function_manager);
   Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps =
       Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
   Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
@@ -357,7 +357,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
     Teuchos::RCP<Mortar::Node> mrtrnode =
         Teuchos::make_rcp<Mortar::Node>(node->id(), node->x(), node->owner(), dofids, false);
 
-    if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, *mrtrnode);
+    if (nurbs) Mortar::Utils::prepare_nurbs_node(node, *mrtrnode);
     interface_->add_mortar_node(mrtrnode);
   }
 
@@ -382,7 +382,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
     Teuchos::RCP<Mortar::Node> mrtrnode = Teuchos::make_rcp<Mortar::Node>(
         node->id() + nodeoffset, node->x(), node->owner(), dofids, true);
 
-    if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, *mrtrnode);
+    if (nurbs) Mortar::Utils::prepare_nurbs_node(node, *mrtrnode);
     interface_->add_mortar_node(mrtrnode);
   }
 
@@ -410,7 +410,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
     Teuchos::RCP<Mortar::Element> mrtrele = Teuchos::make_rcp<Mortar::Element>(
         ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), false, nurbs);
 
-    if (nurbs) Mortar::UTILS::prepare_nurbs_element(*masterdis, ele, *mrtrele, spatial_dimension_);
+    if (nurbs) Mortar::Utils::prepare_nurbs_element(*masterdis, ele, *mrtrele, spatial_dimension_);
     interface_->add_mortar_element(mrtrele);
   }
 
@@ -428,7 +428,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
           Teuchos::make_rcp<Mortar::Element>(ele->id() + eleoffset, ele->owner(), ele->shape(),
               ele->num_node(), ele->node_ids(), true, nurbs);
 
-      if (nurbs) Mortar::UTILS::prepare_nurbs_element(*slavedis, ele, *mrtrele, spatial_dimension_);
+      if (nurbs) Mortar::Utils::prepare_nurbs_element(*slavedis, ele, *mrtrele, spatial_dimension_);
       interface_->add_mortar_element(mrtrele);
     }
     else
@@ -1497,8 +1497,8 @@ Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::CouplingMortar::slave_to_mas
 void Coupling::Adapter::CouplingMortar::mortar_condensation(
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& k, Core::LinAlg::Vector<double>& rhs) const
 {
-  Mortar::UTILS::mortar_matrix_condensation(k, P_, P_);
-  Mortar::UTILS::mortar_rhs_condensation(rhs, *P_);
+  Mortar::Utils::mortar_matrix_condensation(k, P_, P_);
+  Mortar::Utils::mortar_rhs_condensation(rhs, *P_);
 
   return;
 }
@@ -1509,7 +1509,7 @@ void Coupling::Adapter::CouplingMortar::mortar_condensation(
 void Coupling::Adapter::CouplingMortar::mortar_recover(
     Core::LinAlg::SparseMatrix& k, Core::LinAlg::Vector<double>& inc) const
 {
-  Mortar::UTILS::mortar_recover(inc, *P_);
+  Mortar::Utils::mortar_recover(inc, *P_);
   return;
 }
 

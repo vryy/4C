@@ -158,7 +158,7 @@ void SSI::SSIBase::setup()
 
       temperature_vector_->PutScalar(
           Global::Problem::instance()
-              ->function_by_id<Core::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+              ->function_by_id<Core::Utils::FunctionOfTime>(temperature_funct_num_ - 1)
               .evaluate(time()));
 
       ssicoupling_->set_temperature_field(
@@ -207,7 +207,7 @@ void SSI::SSIBase::setup()
   // set up scatra-scatra interface coupling
   if (ssi_interface_meshtying())
   {
-    ssi_structure_meshtying_ = Teuchos::make_rcp<SSI::UTILS::SSIMeshTying>(
+    ssi_structure_meshtying_ = Teuchos::make_rcp<SSI::Utils::SSIMeshTying>(
         "ssi_interface_meshtying", structure_->discretization(), true, true);
 
     // extract meshtying strategy for scatra-scatra interface coupling on scatra discretization
@@ -240,7 +240,7 @@ void SSI::SSIBase::init_discretizations(const Epetra_Comm& comm, const std::stri
   if (redistribute_struct_dis)
   {
     Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-    Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+    Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
     Core::Rebalance::rebalance_discretizations_by_binning(binning_params,
@@ -566,7 +566,7 @@ void SSI::SSIBase::evaluate_and_set_temperature_field()
     // evaluate temperature at current time and put to scalar
     const double temperature =
         Global::Problem::instance()
-            ->function_by_id<Core::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+            ->function_by_id<Core::Utils::FunctionOfTime>(temperature_funct_num_ - 1)
             .evaluate(time());
     temperature_vector_->PutScalar(temperature);
 
@@ -673,7 +673,7 @@ void SSI::SSIBase::redistribute(const RedistributionType redistribution_type)
     std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
     dis.push_back(scatradis);
     Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-    Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+    Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
 
@@ -694,7 +694,7 @@ void SSI::SSIBase::redistribute(const RedistributionType redistribution_type)
     dis.push_back(scatradis);
 
     Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-    Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+    Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
 
@@ -779,7 +779,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
   // scatra time integrator constructed and initialized inside.
   // mesh is written inside. cloning must happen before!
   scatra_base_algorithm_ = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(*scatratimeparams,
-      SSI::UTILS::modify_sca_tra_params(scatraparams),
+      SSI::Utils::modify_sca_tra_params(scatraparams),
       problem->solver_params(scatraparams.get<int>("LINEAR_SOLVER")), scatra_disname, isAle);
 
   scatra_base_algorithm()->init();
@@ -789,7 +789,7 @@ void SSI::SSIBase::init_time_integrators(const Teuchos::ParameterList& globaltim
   {
     scatra_manifold_base_algorithm_ =
         Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(*scatratimeparams,
-            SSI::UTILS::clone_sca_tra_manifold_params(
+            SSI::Utils::clone_sca_tra_manifold_params(
                 scatraparams, globaltimeparams.sublist("MANIFOLD")),
             problem->solver_params(globaltimeparams.sublist("MANIFOLD").get<int>("LINEAR_SOLVER")),
             "scatra_manifold", isAle);
@@ -923,7 +923,7 @@ void SSI::SSIBase::check_ssi_interface_conditions(const std::string& struct_disn
     // get ssi condition to be tested
     std::vector<Core::Conditions::Condition*> ssiconditions;
     structdis->get_condition("SSIInterfaceContact", ssiconditions);
-    SSI::UTILS::check_consistency_of_ssi_interface_contact_condition(ssiconditions, structdis);
+    SSI::Utils::check_consistency_of_ssi_interface_contact_condition(ssiconditions, structdis);
   }
 }
 

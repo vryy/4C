@@ -31,7 +31,7 @@ namespace Airway
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     class MapExtractor;
     class FluidImpedanceWrapper;
@@ -42,7 +42,7 @@ namespace FLD
     class VolumetricFlowMapExtractor;
     template <class RedDTimeInt>
     class FluidCouplingWrapper;
-  }  // namespace UTILS
+  }  // namespace Utils
 
   class TimIntRedModels : public virtual FluidImplicitTimeInt
   {
@@ -142,28 +142,28 @@ namespace FLD
 
    protected:
     /// bio related special (in/outflow) traction velocity component adder
-    Teuchos::RCP<UTILS::TotalTractionCorrector> traction_vel_comp_adder_bc_;
+    Teuchos::RCP<Utils::TotalTractionCorrector> traction_vel_comp_adder_bc_;
 
     /// bio related, 3D to reduced-D coupling
-    Teuchos::RCP<UTILS::FluidCouplingWrapperBase> coupled3D_redDbc_art_;
+    Teuchos::RCP<Utils::FluidCouplingWrapperBase> coupled3D_redDbc_art_;
 
     /// 1D arterial network time integration
     Teuchos::RCP<Adapter::ArtNet> ART_timeInt_;
 
     /// bio related, 3D to reduced-D coupling
-    Teuchos::RCP<UTILS::FluidCouplingWrapperBase> coupled3D_redDbc_airways_;
+    Teuchos::RCP<Utils::FluidCouplingWrapperBase> coupled3D_redDbc_airways_;
 
     /// 1D arterial network time integration
     Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> airway_imp_timeInt_;
 
     /// bio related special (in/outflow) boundaries
-    Teuchos::RCP<UTILS::FluidVolumetricSurfaceFlowWrapper> vol_surf_flow_bc_;
+    Teuchos::RCP<Utils::FluidVolumetricSurfaceFlowWrapper> vol_surf_flow_bc_;
 
     /// maps for womersley flow profile which is applied as a Dirichlet condition
     Teuchos::RCP<Epetra_Map> vol_surf_flow_bc_maps_;
 
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<FLD::UTILS::VolumetricFlowMapExtractor> vol_flow_rates_bc_extractor_;
+    Teuchos::RCP<FLD::Utils::VolumetricFlowMapExtractor> vol_flow_rates_bc_extractor_;
 
     /// flag for potential 3D Reduced_D coupling
     bool strong_redD_3d_coupling_;

@@ -34,7 +34,7 @@ namespace Core::Elements
  *----------------------------------------------------------------------*/
 namespace TSI
 {
-  namespace UTILS
+  namespace Utils
   {
     //! \brief implementation of special clone strategy for automatic generation
     //!        of thermo discretization from a given structure discretization
@@ -89,7 +89,7 @@ namespace TSI
 
      \author vuong 10/14
      */
-    class TSIMaterialStrategy : public Coupling::VolMortar::UTILS::DefaultMaterialStrategy
+    class TSIMaterialStrategy : public Coupling::VolMortar::Utils::DefaultMaterialStrategy
     {
      public:
       //! constructor
@@ -108,7 +108,7 @@ namespace TSI
           Teuchos::RCP<Core::FE::Discretization> dis2) override;
     };
 
-  }  // namespace UTILS
+  }  // namespace Utils
 
   //! prints the 4C tsi-logo on the screen
   void printlogo();

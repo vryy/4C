@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
-    : Core::UTILS::ResultTest("FLUID")
+    : Core::Utils::ResultTest("FLUID")
 {
   fluiddis_ = fluid.discret_;
   myerror_ = fluid.evaluate_error_compared_to_analytical_sol();

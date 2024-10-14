@@ -307,7 +307,7 @@ void Global::Problem::set_restart_step(int r) { restartstep_ = r; }
 void Global::Problem::set_problem_type(Core::ProblemType targettype) { probtype_ = targettype; }
 
 
-void Global::Problem::set_function_manager(Core::UTILS::FunctionManager&& function_manager_in)
+void Global::Problem::set_function_manager(Core::Utils::FunctionManager&& function_manager_in)
 {
   functionmanager_ = std::move(function_manager_in);
 }

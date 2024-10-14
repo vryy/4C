@@ -100,12 +100,12 @@ namespace Adapter
     //! Return MapExtractor for Dirichlet boundary conditions
     virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor()
     {
-      return ale_->get_dbc_map_extractor(ALE::UTILS::MapExtractor::dbc_set_std);
+      return ale_->get_dbc_map_extractor(ALE::Utils::MapExtractor::dbc_set_std);
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions in case of non-standard Dirichlet sets
     Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor(
-        ALE::UTILS::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
+        ALE::Utils::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
         ) override
     {
       return ale_->get_dbc_map_extractor(dbc_type);
@@ -135,8 +135,8 @@ namespace Adapter
     //! integrate from t1 to t2
     int integrate() override { return ale_->integrate(); }
 
-    void time_step(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
-                       ALE::UTILS::MapExtractor::dbc_set_std) override
+    void time_step(ALE::Utils::MapExtractor::AleDBCSetType dbc_type =
+                       ALE::Utils::MapExtractor::dbc_set_std) override
     {
       ale_->time_step(dbc_type);
       return;
@@ -166,14 +166,14 @@ namespace Adapter
                                              ///< x_{n}^{converged}+ stepinc \f$
     )
     {
-      evaluate(stepinc, ALE::UTILS::MapExtractor::dbc_set_std);
+      evaluate(stepinc, ALE::Utils::MapExtractor::dbc_set_std);
     }
 
     //! update displacement and evaluate elements
     void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
                       stepinc,  ///< step increment such that \f$ x_{n+1}^{k+1}
                                 ///< = x_{n}^{converged}+ stepinc \f$
-        ALE::UTILS::MapExtractor::AleDBCSetType
+        ALE::Utils::MapExtractor::AleDBCSetType
             dbc_type  ///< application-specific type of Dirichlet set
         ) override
     {
@@ -201,12 +201,12 @@ namespace Adapter
 
     /// setup Dirichlet boundary condition map extractor
     void setup_dbc_map_ex(
-        ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
-            ALE::UTILS::MapExtractor::dbc_set_std,  //!< application-specific type of Dirichlet set
-        Teuchos::RCP<const ALE::UTILS::MapExtractor> interface =
+        ALE::Utils::MapExtractor::AleDBCSetType dbc_type =
+            ALE::Utils::MapExtractor::dbc_set_std,  //!< application-specific type of Dirichlet set
+        Teuchos::RCP<const ALE::Utils::MapExtractor> interface =
             Teuchos::null,  //!< interface for creation of additional, application-specific
                             //!< Dirichlet map extractors
-        Teuchos::RCP<const ALE::UTILS::XFluidFluidMapExtractor> xff_interface =
+        Teuchos::RCP<const ALE::Utils::XFluidFluidMapExtractor> xff_interface =
             Teuchos::null  //!< interface for creation of a Dirichlet map extractor, taylored to
                            //!< XFFSI
         ) override
@@ -237,7 +237,7 @@ namespace Adapter
     //@}
 
     //! create result test for encapsulated structure algorithm
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override
     {
       return ale_->create_field_test();
     }
@@ -249,7 +249,7 @@ namespace Adapter
      *
      */
     void create_system_matrix(
-        Teuchos::RCP<const ALE::UTILS::MapExtractor> interface =
+        Teuchos::RCP<const ALE::Utils::MapExtractor> interface =
             Teuchos::null  ///< Blocksparsematrix if an interface is passed, SparseMatrix otherwise
         ) override
     {

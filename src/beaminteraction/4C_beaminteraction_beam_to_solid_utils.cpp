@@ -180,7 +180,7 @@ void BEAMINTERACTION::get_beam_triad_interpolation_scheme(const Core::FE::Discre
 
   // Get the rotations of the beam rotation nodes.
   std::vector<double> beam_displacement_vector_full_double;
-  BEAMINTERACTION::UTILS::get_current_element_dis(
+  BEAMINTERACTION::Utils::get_current_element_dis(
       discret, beam_ele, displacement_vector, beam_displacement_vector_full_double);
 
   // Create object for triad interpolation schemes.
@@ -768,7 +768,7 @@ void BEAMINTERACTION::assemble_local_mortar_contributions(
 
   // Get the beam centerline GIDs.
   Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-  UTILS::get_element_centerline_gid_indices(discret, pair->element1(), beam_centerline_gid);
+  Utils::get_element_centerline_gid_indices(discret, pair->element1(), beam_centerline_gid);
 
   // Get the other GIDs.
   // We call this function on the element pointer of the geometry pair, since for face elements,

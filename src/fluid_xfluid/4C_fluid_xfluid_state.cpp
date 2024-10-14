@@ -365,7 +365,7 @@ void FLD::XFluidState::setup_map_extractors(
   Teuchos::ParameterList eleparams;
   // other parameters needed by the elements
   eleparams.set("total time", time);
-  eleparams.set<const Core::UTILS::FunctionManager*>(
+  eleparams.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();

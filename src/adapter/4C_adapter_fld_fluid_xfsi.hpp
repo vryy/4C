@@ -41,7 +41,7 @@ namespace Core::IO
 namespace FLD
 {
   class XFluid;
-  namespace UTILS
+  namespace Utils
   {
     class MapExtractor;
   }
@@ -67,16 +67,16 @@ namespace Adapter
     void init() override;
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& struct_interface() const
+    virtual Teuchos::RCP<FLD::Utils::MapExtractor> const& struct_interface() const
     {
       return structinterface_;
     }
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override { return interface_; }
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override { return interface_; }
 
     /// communication object at the interface without pressure dofs for FPSI problems
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& fpsi_interface() const override
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& fpsi_interface() const override
     {
       return fpsiinterface_;
     }
@@ -153,13 +153,13 @@ namespace Adapter
     Teuchos::RCP<FLD::XFluid> xfluid_;
 
     /// the interface map setup for fsi interface, interior translation
-    Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
+    Teuchos::RCP<FLD::Utils::MapExtractor> interface_;
 
     /// the interface map setup for fsi interface, interior translation
-    Teuchos::RCP<FLD::UTILS::MapExtractor> structinterface_;
+    Teuchos::RCP<FLD::Utils::MapExtractor> structinterface_;
 
     /// the interface map setup for fpsi interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> fpsiinterface_;
+    Teuchos::RCP<FLD::Utils::MapExtractor> fpsiinterface_;
 
     /// ALE dof map
     Teuchos::RCP<Core::LinAlg::MapExtractor> meshmap_;

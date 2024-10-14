@@ -77,7 +77,7 @@ namespace MIXTURE
    private:
     ///! Rule parameters as defined in the input file
     PAR::FunctionMixtureRule* params_{};
-    std::vector<const Core::UTILS::FunctionOfSpaceTime*> mass_fractions_functions_;
+    std::vector<const Core::Utils::FunctionOfSpaceTime*> mass_fractions_functions_;
   };
 }  // namespace MIXTURE
 

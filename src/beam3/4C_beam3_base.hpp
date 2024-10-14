@@ -478,13 +478,13 @@ namespace Discret
           auto lengthEquationAndDerivative = [&gausspoints, &disp_refe_centerline, &distype](
                                                  double reflength)
           {
-            return Discret::UTILS::Beam::integrate_centerline_arc_length_and_arc_length_derivative<
+            return Discret::Utils::Beam::integrate_centerline_arc_length_and_arc_length_derivative<
                 nnode, vpernode>(gausspoints, disp_refe_centerline, distype, reflength);
           };
 
           const double newton_tolerance = 1e-12;
           const int max_iterations = 200;
-          reflength = Core::UTILS::solve_local_newton(
+          reflength = Core::Utils::solve_local_newton(
               lengthEquationAndDerivative, reflength, newton_tolerance, max_iterations);
         }
 
@@ -506,7 +506,7 @@ namespace Discret
       {
         Core::LinAlg::Matrix<1, vpernode * nnode, T> N_i;
 
-        Discret::UTILS::Beam::evaluate_shape_functions_at_xi<nnode, vpernode>(
+        Discret::Utils::Beam::evaluate_shape_functions_at_xi<nnode, vpernode>(
             xi, N_i, shape(), ref_length());
         calc_r<nnode, vpernode, T>(disp_totlag, N_i, r);
       }
@@ -522,7 +522,7 @@ namespace Discret
           const Core::LinAlg::Matrix<1, vpernode * nnode, double>& funct,
           Core::LinAlg::Matrix<3, 1, T>& r) const
       {
-        Discret::UTILS::Beam::calc_interpolation<nnode, vpernode, 3, T>(
+        Discret::Utils::Beam::calc_interpolation<nnode, vpernode, 3, T>(
             disp_totlag_centerline, funct, r);
       }
 
@@ -537,7 +537,7 @@ namespace Discret
           const Core::LinAlg::Matrix<1, vpernode * nnode, double>& deriv,
           Core::LinAlg::Matrix<3, 1, T>& r_xi) const
       {
-        Discret::UTILS::Beam::calc_interpolation<nnode, vpernode, 3, T>(
+        Discret::Utils::Beam::calc_interpolation<nnode, vpernode, 3, T>(
             disp_totlag_centerline, deriv, r_xi);
       }
 

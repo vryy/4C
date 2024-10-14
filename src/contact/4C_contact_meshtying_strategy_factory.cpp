@@ -480,7 +480,7 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
         // get nurbs weight!
         if (nurbs)
         {
-          Mortar::UTILS::prepare_nurbs_node(node, *mtnode);
+          Mortar::Utils::prepare_nurbs_node(node, *mtnode);
         }
 
         // get edge and corner information:
@@ -552,7 +552,7 @@ void Mortar::STRATEGY::FactoryMT::build_interfaces(const Teuchos::ParameterList&
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
         {
-          Mortar::UTILS::prepare_nurbs_element(*discret_ptr_, ele, *mtele, dim);
+          Mortar::Utils::prepare_nurbs_element(*discret_ptr_, ele, *mtele, dim);
         }
 
         interface->add_mortar_element(mtele);

@@ -19,7 +19,7 @@ namespace
   {
     const double q_ref[4] = {0.0, 0.0, 0.0, 1.0};
     double q[4] = {1.0, 2.0, 3.0, 4.0};
-    ParticleRigidBody::UTILS::quaternion_clear(q);
+    ParticleRigidBody::Utils::quaternion_clear(q);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
   }
@@ -29,7 +29,7 @@ namespace
     double q1[4] = {0.0, 0.0, 0.0, 1.0};
     const double q2[4] = {1.0, 2.0, 3.0, 4.0};
 
-    ParticleRigidBody::UTILS::quaternion_set(q1, q2);
+    ParticleRigidBody::Utils::quaternion_set(q1, q2);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(q1, q2, 4, 1.0e-14);
   }
@@ -40,7 +40,7 @@ namespace
     const double q2[4] = {1.0, 2.0, 3.0, 4.0};
     const double q_ref[4] = {-q2[0], -q2[1], -q2[2], q2[3]};
 
-    ParticleRigidBody::UTILS::quaternion_invert(q1, q2);
+    ParticleRigidBody::Utils::quaternion_invert(q1, q2);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(q1, q_ref, 4, 1.0e-14);
   }
@@ -53,13 +53,13 @@ namespace
     const double phi2[3] = {-0.8, 5.0, 0.0};
 
     double q1[4];
-    ParticleRigidBody::UTILS::quaternion_from_angle(q1, phi1);
+    ParticleRigidBody::Utils::quaternion_from_angle(q1, phi1);
 
     double q2[4];
-    ParticleRigidBody::UTILS::quaternion_from_angle(q2, phi2);
+    ParticleRigidBody::Utils::quaternion_from_angle(q2, phi2);
 
     double q12[4];
-    ParticleRigidBody::UTILS::quaternion_product(q12, q2, q1);
+    ParticleRigidBody::Utils::quaternion_product(q12, q2, q1);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(q12, q12_ref, 4, 1.0e-14);
   }
@@ -70,7 +70,7 @@ namespace
     const double phi[3] = {0.0, 0.0, 0.0};
 
     double q[4];
-    ParticleRigidBody::UTILS::quaternion_from_angle(q, phi);
+    ParticleRigidBody::Utils::quaternion_from_angle(q, phi);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
   }
@@ -81,7 +81,7 @@ namespace
     const double phi[3] = {M_PI / 2, 0.0, 0.0};
 
     double q[4];
-    ParticleRigidBody::UTILS::quaternion_from_angle(q, phi);
+    ParticleRigidBody::Utils::quaternion_from_angle(q, phi);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
   }
@@ -92,7 +92,7 @@ namespace
     const double phi[3] = {0.0, M_PI / 2, 0.0};
 
     double q[4];
-    ParticleRigidBody::UTILS::quaternion_from_angle(q, phi);
+    ParticleRigidBody::Utils::quaternion_from_angle(q, phi);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
   }
@@ -103,7 +103,7 @@ namespace
     const double phi[3] = {0.0, 0.0, M_PI / 2};
 
     double q[4];
-    ParticleRigidBody::UTILS::quaternion_from_angle(q, phi);
+    ParticleRigidBody::Utils::quaternion_from_angle(q, phi);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
   }
@@ -115,7 +115,7 @@ namespace
     const double phi[3] = {-M_PI / 3, M_PI, M_PI / 2};
 
     double q[4];
-    ParticleRigidBody::UTILS::quaternion_from_angle(q, phi);
+    ParticleRigidBody::Utils::quaternion_from_angle(q, phi);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(q, q_ref, 4, 1.0e-14);
   }
@@ -128,7 +128,7 @@ namespace
 
     const double q[4] = {0.0, 0.0, std::sin(M_PI / 4), std::cos(M_PI / 4)};
 
-    ParticleRigidBody::UTILS::quaternion_rotate_vector(w, q, v);
+    ParticleRigidBody::Utils::quaternion_rotate_vector(w, q, v);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(w, w_ref, 3, 1.0e-14);
   }
@@ -141,7 +141,7 @@ namespace
 
     const double q[4] = {0.0, std::sin(M_PI / 4), 0.0, std::cos(M_PI / 4)};
 
-    ParticleRigidBody::UTILS::quaternion_rotate_vector(w, q, v);
+    ParticleRigidBody::Utils::quaternion_rotate_vector(w, q, v);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(w, w_ref, 3, 1.0e-14);
   }
@@ -154,7 +154,7 @@ namespace
 
     const double q[4] = {std::sin(M_PI / 4), 0.0, 0.0, std::cos(M_PI / 4)};
 
-    ParticleRigidBody::UTILS::quaternion_rotate_vector(w, q, v);
+    ParticleRigidBody::Utils::quaternion_rotate_vector(w, q, v);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(w, w_ref, 3, 1.0e-14);
   }
@@ -168,9 +168,9 @@ namespace
     const double phi[3] = {-M_PI / 3, M_PI, M_PI / 2};
 
     double q[4];
-    ParticleRigidBody::UTILS::quaternion_from_angle(q, phi);
+    ParticleRigidBody::Utils::quaternion_from_angle(q, phi);
 
-    ParticleRigidBody::UTILS::quaternion_rotate_vector(w, q, v);
+    ParticleRigidBody::Utils::quaternion_rotate_vector(w, q, v);
 
     FOUR_C_EXPECT_ITERABLE_NEAR(w, w_ref, 3, 1.0e-14);
   }

@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Arteries
 {
-  namespace UTILS
+  namespace Utils
   {
     //--------------------------------------------------------------------
     // nodal information at a junction
@@ -232,7 +232,7 @@ namespace Arteries
 
     };  // class ArtJunctionBc
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace Arteries
 
 FOUR_C_NAMESPACE_CLOSE

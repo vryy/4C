@@ -129,7 +129,7 @@ namespace Solid
           const override;
 
      private:
-      Teuchos::RCP<UTILS::Cardiovascular0DManager> cardvasc0dman_;  //!< Cardiovascular0D manager
+      Teuchos::RCP<Utils::Cardiovascular0DManager> cardvasc0dman_;  //!< Cardiovascular0D manager
 
       //! structural displacement at \f$t_{n+1}\f$
       Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp_ptr_;

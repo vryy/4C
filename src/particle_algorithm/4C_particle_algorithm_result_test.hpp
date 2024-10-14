@@ -39,7 +39,7 @@ namespace PARTICLEALGORITHM
    *
    * \author Sebastian Fuchs \date 07/2018
    */
-  class ParticleResultTest final : public Core::UTILS::ResultTest
+  class ParticleResultTest final : public Core::Utils::ResultTest
   {
    public:
     //! constructor

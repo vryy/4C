@@ -432,7 +432,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
           "currently not possible, if you still want a varying diameter without any exchange "
           "terms, you can still define a zero exchange term");
     diam_funct_active_ = true;
-    artdiam_funct_ = &Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfAnything>(
+    artdiam_funct_ = &Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfAnything>(
         diam_funct_num - 1);
     if (coupltype_ == type_porofluid)
     {
@@ -2334,7 +2334,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::evaluate_function_and_deriv(const Core::UTILS::FunctionOfAnything& funct,
+    dim>::evaluate_function_and_deriv(const Core::Utils::FunctionOfAnything& funct,
     const double& artpressnpAtGP, const std::vector<double>& artscalarnpAtGP,
     const std::vector<double>& scalarnpAtGP, double& functval, std::vector<double>& artderivs,
     std::vector<double>& contderivs)
@@ -3577,7 +3577,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::fill_function_vector(std::vector<const Core::UTILS::FunctionOfAnything*>& my_funct_vec,
+    dim>::fill_function_vector(std::vector<const Core::Utils::FunctionOfAnything*>& my_funct_vec,
     const std::vector<int>& funct_vec, const std::vector<int>& scale_vec)
 {
   for (unsigned int i = 0; i < funct_vec.size(); i++)
@@ -3585,7 +3585,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     if (funct_vec[i] >= 0 && abs(scale_vec[i]) > 0)
     {
       my_funct_vec.at(i) =
-          &Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfAnything>(
+          &Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfAnything>(
               funct_vec[i]);
       funct_coupl_active_ = true;
     }
@@ -3598,7 +3598,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
 void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, distype_cont,
-    dim>::initialize_function(const Core::UTILS::FunctionOfAnything& funct)
+    dim>::initialize_function(const Core::Utils::FunctionOfAnything& funct)
 {
   // safety check
   if (funct.number_components() != 1)

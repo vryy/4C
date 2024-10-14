@@ -74,14 +74,14 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     // Scheme: non matching meshes --> volumetric mortar coupling...
     volcoupl_ = Teuchos::make_rcp<Coupling::Adapter::MortarVolCoupl>();
 
-    Teuchos::RCP<Coupling::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy =
-        Teuchos::make_rcp<TSI::UTILS::TSIMaterialStrategy>();
+    Teuchos::RCP<Coupling::VolMortar::Utils::DefaultMaterialStrategy> materialstrategy =
+        Teuchos::make_rcp<TSI::Utils::TSIMaterialStrategy>();
     // init coupling adapter projection matrices
     volcoupl_->init(Global::Problem::instance()->n_dim(), structdis, thermodis, nullptr, nullptr,
         nullptr, nullptr, materialstrategy);
     // redistribute discretizations to meet needs of volmortar coupling
     Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-    Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+    Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
     volcoupl_->redistribute(binning_params, Global::Problem::instance()->output_control_file());

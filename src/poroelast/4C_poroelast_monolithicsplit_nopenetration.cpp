@@ -251,8 +251,8 @@ void PoroElast::MonolithicSplitNoPenetration::setup_system_matrix(
   if (f == Teuchos::null) FOUR_C_THROW("expect fluid block matrix");
 
   // Get Idx of fluid and structure field map extractor
-  const int& fidx_other = FLD::UTILS::MapExtractor::cond_other;
-  const int& fidx_nopen = FLD::UTILS::MapExtractor::cond_fsi;
+  const int& fidx_other = FLD::Utils::MapExtractor::cond_other;
+  const int& fidx_nopen = FLD::Utils::MapExtractor::cond_fsi;
 
   const int& sidx_other = Solid::MapExtractor::cond_other;
   const int& sidx_nopen = Solid::MapExtractor::cond_fsi;
@@ -713,7 +713,7 @@ void PoroElast::MonolithicSplitNoPenetration::build_convergence_norms()
 {
   Monolithic::build_convergence_norms();
 
-  normrhs_nopenetration_ = UTILS::calculate_vector_norm(vectornormfres_, *nopenetration_rhs_);
+  normrhs_nopenetration_ = Utils::calculate_vector_norm(vectornormfres_, *nopenetration_rhs_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

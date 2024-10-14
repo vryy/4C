@@ -40,7 +40,7 @@ namespace ParticleRigidBody
    *
    * \author Sebastian Fuchs \date 09/2020
    */
-  class RigidBodyResultTest final : public Core::UTILS::ResultTest
+  class RigidBodyResultTest final : public Core::Utils::ResultTest
   {
    public:
     //! constructor

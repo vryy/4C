@@ -28,15 +28,15 @@ namespace Adapter
 
 namespace FSI
 {
-  namespace UTILS
+  namespace Utils
   {
     class DebugWriter;
     class MonolithicDebugWriter;
-  }  // namespace UTILS
+  }  // namespace Utils
 
   class MonolithicNoNOX : public FSI::MonolithicBase, public FSI::MonolithicInterface
   {
-    friend class FSI::UTILS::MonolithicDebugWriter;
+    friend class FSI::Utils::MonolithicDebugWriter;
 
    public:
     explicit MonolithicNoNOX(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
@@ -284,8 +284,8 @@ namespace FSI
 
     //! @name special debugging output
     //@{
-    Teuchos::RCP<UTILS::DebugWriter> sdbg_;
-    Teuchos::RCP<UTILS::DebugWriter> fdbg_;
+    Teuchos::RCP<Utils::DebugWriter> sdbg_;
+    Teuchos::RCP<Utils::DebugWriter> fdbg_;
 
     //@}
 

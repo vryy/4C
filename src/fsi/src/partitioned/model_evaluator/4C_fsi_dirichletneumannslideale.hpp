@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FSI
 {
-  namespace UTILS
+  namespace Utils
   {
     class SlideAleUtils;
   }
@@ -108,7 +108,7 @@ namespace FSI
 
    private:
     //! Sliding Ale helper class
-    Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;
+    Teuchos::RCP<FSI::Utils::SlideAleUtils> slideale_;
 
     //! Displacement of slave side of the interface
     Teuchos::RCP<Core::LinAlg::Vector<double>> islave_;

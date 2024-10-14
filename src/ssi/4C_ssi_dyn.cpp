@@ -48,7 +48,7 @@ void ssi_drt()
     const bool is_scatra_manifold = ssiparams.sublist("MANIFOLD").get<bool>("ADD_MANIFOLD");
 
     // Modification of time parameter list
-    SSI::UTILS::change_time_parameter(comm, ssiparams, scatradyn, sdyn);
+    SSI::Utils::change_time_parameter(comm, ssiparams, scatradyn, sdyn);
 
     const auto coupling =
         Teuchos::getIntegralValue<Inpar::SSI::SolutionSchemeOverFields>(ssiparams, "COUPALGO");
@@ -109,10 +109,10 @@ void ssi_drt()
     problem->get_dis("scatra")->fill_complete(true, false, true);
     if (is_scatra_manifold) problem->get_dis("scatra_manifold")->fill_complete(true, false, true);
 
-    Core::Rebalance::UTILS::print_parallel_distribution(*problem->get_dis("structure"));
-    Core::Rebalance::UTILS::print_parallel_distribution(*problem->get_dis("scatra"));
+    Core::Rebalance::Utils::print_parallel_distribution(*problem->get_dis("structure"));
+    Core::Rebalance::Utils::print_parallel_distribution(*problem->get_dis("scatra"));
     if (is_scatra_manifold)
-      Core::Rebalance::UTILS::print_parallel_distribution(*problem->get_dis("scatra_manifold"));
+      Core::Rebalance::Utils::print_parallel_distribution(*problem->get_dis("scatra_manifold"));
 
     // 3.1.4 Setup the coupled problem
     // now as we redistributed our discretizations we can construct all

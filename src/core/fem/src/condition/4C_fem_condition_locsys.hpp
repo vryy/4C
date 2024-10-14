@@ -104,7 +104,7 @@ namespace Core::Conditions
      * calc_rotation_vector_for_normal_system().
      */
     void update(double time, std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> nodenormals,
-        const Core::UTILS::FunctionManager& function_manager);
+        const Core::Utils::FunctionManager& function_manager);
 
     /*!
      *\brief Print this Manager

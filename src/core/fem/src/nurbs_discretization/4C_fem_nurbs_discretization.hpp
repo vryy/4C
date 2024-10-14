@@ -161,9 +161,9 @@ namespace Core::FE
     };  // class NurbsDiscretization
   }     // namespace Nurbs
 
-  namespace UTILS
+  namespace Utils
   {
-    class DbcNurbs : public Core::FE::UTILS::Dbc
+    class DbcNurbs : public Core::FE::Utils::Dbc
     {
       using Dbc::do_dirichlet_condition;
 
@@ -204,7 +204,7 @@ namespace Core::FE
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
           const double time, Core::LinAlg::SerialDenseMatrix& elemass,
           std::vector<Core::LinAlg::SerialDenseVector>& elerhs,
-          const Core::UTILS::FunctionManager& function_manager) const;
+          const Core::Utils::FunctionManager& function_manager) const;
 
       /*!
       \brief Fill mass matrix and rhs vector for evaluation of least squares dirichlet on a domain
@@ -226,10 +226,10 @@ namespace Core::FE
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
           const double time, Core::LinAlg::SerialDenseMatrix& elemass,
           std::vector<Core::LinAlg::SerialDenseVector>& elerhs,
-          const Core::UTILS::FunctionManager& function_manager) const;
+          const Core::Utils::FunctionManager& function_manager) const;
 
     };  // class DbcNurbs
-  }     // namespace UTILS
+  }     // namespace Utils
 }  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE

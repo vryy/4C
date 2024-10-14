@@ -31,9 +31,9 @@ FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleCalcXFEM<distype>*
-Discret::ELEMENTS::FluidEleCalcXFEM<distype>::instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::FluidEleCalcXFEM<distype>::instance(Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcXFEM<distype>>(
@@ -375,10 +375,10 @@ namespace Discret
             FOUR_C_THROW("invalid nsd %d", nsd_);
 
           // evaluate velocity and pressure
-          Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> function = Teuchos::null;
+          Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> function = Teuchos::null;
 
           // evaluate the velocity gradient
-          Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> function_grad = Teuchos::null;
+          Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> function_grad = Teuchos::null;
 
           // get material
           Core::Mat::PAR::Parameter* params = mat->parameter();
@@ -502,10 +502,10 @@ namespace Discret
             FOUR_C_THROW("invalid nsd %d", nsd_);
 
           // evaluate velocity and pressure
-          Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> function = Teuchos::null;
+          Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> function = Teuchos::null;
 
           // evaluate the velocity gradient
-          Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> function_grad = Teuchos::null;
+          Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> function_grad = Teuchos::null;
 
           bool is_stationary = false;
 
@@ -652,15 +652,15 @@ namespace Discret
           {
             const double u_exact_x =
                 Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate(position, t, 0);
             const double u_exact_y =
                 Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate(position, t, 1);
             const double p_exact =
                 Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate(position, t, 2);
 
             u(0) = u_exact_x;
@@ -670,11 +670,11 @@ namespace Discret
 
             std::vector<double> uder_exact_x =
                 Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 0);
             std::vector<double> uder_exact_y =
                 Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 1);
 
             if (uder_exact_x.size())
@@ -693,19 +693,19 @@ namespace Discret
           {
             const double u_exact_x =
                 Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate(position, t, 0);
             const double u_exact_y =
                 Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate(position, t, 1);
             const double u_exact_z =
                 Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate(position, t, 2);
             const double p_exact =
                 Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate(position, t, 3);
 
             u(0) = u_exact_x;
@@ -715,15 +715,15 @@ namespace Discret
 
             std::vector<double> uder_exact_x =
                 Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 0);
             std::vector<double> uder_exact_y =
                 Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 1);
             std::vector<double> uder_exact_z =
                 Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                     .evaluate_spatial_derivative(position, t, 2);
 
             if (uder_exact_x.size())
@@ -853,7 +853,7 @@ namespace Discret
 
       //  // set element area or volume
       const double vol =
-          XFEM::UTILS::eval_element_volume<distype>(my::xyze_, &(my::weights_), &(my::myknots_));
+          XFEM::Utils::eval_element_volume<distype>(my::xyze_, &(my::weights_), &(my::myknots_));
 
       //-----------------------------------------------------------------------------------
       //         evaluate element length, stabilization factors and average weights
@@ -864,7 +864,7 @@ namespace Discret
       double inv_hk = 0.0;
 
       // take a volume based element length
-      h_k = XFEM::UTILS::compute_vol_eq_diameter(vol);
+      h_k = XFEM::Utils::compute_vol_eq_diameter(vol);
       inv_hk = 1.0 / h_k;
 
 
@@ -1018,7 +1018,7 @@ namespace Discret
 
         if (cond_manager->has_averaging_strategy(Inpar::XFEM::Xfluid_Sided))
         {
-          h_k = XFEM::UTILS::compute_char_ele_length<distype>(ele, ele_xyze, *cond_manager, vcSet,
+          h_k = XFEM::Utils::compute_char_ele_length<distype>(ele, ele_xyze, *cond_manager, vcSet,
               bcells, bintpoints, fldparaxfem_->visc_stab_hk());
           inv_hk = 1.0 / h_k;
         }
@@ -1051,7 +1051,7 @@ namespace Discret
             // compute transformation factor, normal vector and global Gauss point coordiantes
             if (bc->shape() != Core::FE::CellType::dis_none)  // Tessellation approach
             {
-              XFEM::UTILS::compute_surface_transformation(drs, x_gp_lin, normal, bc, eta);
+              XFEM::Utils::compute_surface_transformation(drs, x_gp_lin, normal, bc, eta);
             }
             else  // MomentFitting approach
             {
@@ -1229,7 +1229,7 @@ namespace Discret
             cond_manager->get_visc_penalty_stabfac(coup_sid, ele, kappa_m, kappa_s, inv_hk,
                 fldparaxfem_, visc_stab_fac, visc_stab_fac_tang);
 
-            XFEM::UTILS::nit_compute_full_penalty_stabfac(
+            XFEM::Utils::nit_compute_full_penalty_stabfac(
                 nit_stabfac,  ///< to be filled: full Nitsche's penalty term scaling
                               ///< (viscous+convective part)
                 normal, h_k,
@@ -1379,7 +1379,7 @@ namespace Discret
       if (my::fldpara_->physical_type() == Inpar::FLUID::oseen) my::set_advective_vel_oseen(ele);
 
       // compute characteristic element length based on the background element
-      const double h_k = XFEM::UTILS::compute_char_ele_length<distype>(
+      const double h_k = XFEM::Utils::compute_char_ele_length<distype>(
           ele, ele_xyze, *cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->visc_stab_hk());
 
       //--------------------------------------------------------
@@ -1830,7 +1830,7 @@ namespace Discret
             // compute transformation factor, normal vector and global Gauss point coordiantes
             if (bc->shape() != Core::FE::CellType::dis_none)  // Tessellation approach
             {
-              XFEM::UTILS::compute_surface_transformation(drs, x_gp_lin, normal, bc, eta);
+              XFEM::Utils::compute_surface_transformation(drs, x_gp_lin, normal, bc, eta);
             }
             else  // MomentFitting approach
             {
@@ -2006,7 +2006,7 @@ namespace Discret
                   cond_manager->get_average_weights(
                       coup_sid, ele, kappa_m, kappa_s, non_xfluid_coupling);
 
-                  XFEM::UTILS::nit_compute_full_penalty_stabfac(
+                  XFEM::Utils::nit_compute_full_penalty_stabfac(
                       NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling
                                           ///< (viscous+convective part)
                       normal, h_k,
@@ -2040,7 +2040,7 @@ namespace Discret
                   cond_manager->get_average_weights(
                       coup_sid, ele, kappa_m, kappa_s, non_xfluid_coupling);
 
-                  XFEM::UTILS::nit_compute_full_penalty_stabfac(
+                  XFEM::Utils::nit_compute_full_penalty_stabfac(
                       NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling
                                           ///< (viscous+convective part)
                       normal, h_k,
@@ -3301,7 +3301,7 @@ namespace Discret
 
       if (cond_manager->has_averaging_strategy(Inpar::XFEM::Xfluid_Sided))
       {
-        h_k = XFEM::UTILS::compute_char_ele_length<distype>(
+        h_k = XFEM::Utils::compute_char_ele_length<distype>(
             ele, ele_xyze, *cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->visc_stab_hk());
         inv_hk = 1.0 / h_k;
       }
@@ -3575,7 +3575,7 @@ namespace Discret
           else  // ... char. length defined otherwise
           {
             // compute characteristic element length based on the embedded element
-            h_k = XFEM::UTILS::compute_char_ele_length<distype>(coupl_ele, coupl_xyze,
+            h_k = XFEM::Utils::compute_char_ele_length<distype>(coupl_ele, coupl_xyze,
                 *cond_manager, vcSet, bcells, bintpoints, fldparaxfem_->visc_stab_hk(), ci, side);
             inv_hk = 1.0 / h_k;
           }
@@ -3623,7 +3623,7 @@ namespace Discret
             // compute transformation factor, normal vector and global Gauss point coordinates
             if (bc->shape() != Core::FE::CellType::dis_none)  // Tessellation approach
             {
-              XFEM::UTILS::compute_surface_transformation(drs, x_gp_lin_, normal_, bc, eta);
+              XFEM::Utils::compute_surface_transformation(drs, x_gp_lin_, normal_, bc, eta);
             }
             else  // MomentFitting approach
             {
@@ -3647,7 +3647,7 @@ namespace Discret
                 Core::LinAlg::Matrix<3, 1> tmp_normal;
                 if (bc->shape() != Core::FE::CellType::dis_none)  // Tessellation approach
                 {
-                  XFEM::UTILS::compute_surface_transformation(
+                  XFEM::Utils::compute_surface_transformation(
                       tmp_drs, x_ref, tmp_normal, bc, eta, true);
                 }
 
@@ -3722,7 +3722,7 @@ namespace Discret
             // Extract slave velocity at Gausspoint
             ci->get_interface_velnp(velint_s_);
 
-            XFEM::UTILS::nit_compute_full_penalty_stabfac(
+            XFEM::Utils::nit_compute_full_penalty_stabfac(
                 NIT_full_stab_fac,  ///< to be filled: full Nitsche's penalty term scaling
                                     ///< (viscous+convective part)
                 normal_, h_k, kappa_m, kappa_s, my::convvelint_, velint_s_,
@@ -3772,7 +3772,7 @@ namespace Discret
               {
                 if (mc_fsi->get_interface_law() == Inpar::XFEM::navierslip_contact)
                   fulltraction =
-                      XFEM::UTILS::evaluate_full_traction(press, my::vderxy_, viscaf_master_,
+                      XFEM::Utils::evaluate_full_traction(press, my::vderxy_, viscaf_master_,
                           NIT_full_stab_fac, my::velint_, velint_s_, normal_, normal_, velint_s_);
               }
               else if (mc_fpi != Teuchos::null)
@@ -3781,14 +3781,14 @@ namespace Discret
                 double porosity = mc_fpi->calc_porosity(side, rst_slave, J);
                 static Core::LinAlg::Matrix<3, 1> vel_s(true);
                 static Core::LinAlg::Matrix<3, 1> velpf_s(true);
-                XFEM::UTILS::evalute_stateat_gp(side, rst_slave,
+                XFEM::Utils::evalute_stateat_gp(side, rst_slave,
                     *cond_manager->get_mesh_coupling("XFEMSurfFPIMono_ps_ps")->get_cutter_dis(),
                     "ivelnp", vel_s);
-                XFEM::UTILS::evalute_stateat_gp(side, rst_slave,
+                XFEM::Utils::evalute_stateat_gp(side, rst_slave,
                     *cond_manager->get_mesh_coupling("XFEMSurfFPIMono_pf_pf")->get_cutter_dis(),
                     "ivelnp", velpf_s);
                 fulltraction =
-                    XFEM::UTILS::evaluate_full_traction(press, my::vderxy_, viscaf_master_,
+                    XFEM::Utils::evaluate_full_traction(press, my::vderxy_, viscaf_master_,
                         NIT_full_stab_fac, my::velint_, vel_s, normal_, normal_, velpf_s, porosity);
               }
 
@@ -3890,7 +3890,7 @@ namespace Discret
                   velintn_s_.clear();
                   ci->get_interface_veln(velintn_s_);
 
-                  XFEM::UTILS::nit_compute_full_penalty_stabfac(
+                  XFEM::Utils::nit_compute_full_penalty_stabfac(
                       NIT_full_stab_fac_n,  ///< to be filled: full Nitsche's penalty term scaling
                                             ///< (viscous+convective part)
                       normal_, h_k,

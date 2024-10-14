@@ -288,14 +288,14 @@ void Coupling::VolMortar::VolMortarIntegratorEleBased<distype_s>::integrate_ele_
     double AuxXi[3] = {0.0, 0.0, 0.0};
 
     // evaluate the integration cell Jacobian
-    jac = UTILS::jacobian<distype_s>(eta, sele);
+    jac = Utils::jacobian<distype_s>(eta, sele);
 
     // get global Gauss point coordinates
-    UTILS::local_to_global<distype_s>(sele, eta, globgp);
+    Utils::local_to_global<distype_s>(sele, eta, globgp);
 
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::global_to_local<distype_s>(sele, globgp, Axi);
+    Mortar::Utils::global_to_local<distype_s>(sele, globgp, Axi);
 
     // loop over beles
     for (int found = 0; found < (int)foundeles.size(); ++found)
@@ -464,7 +464,7 @@ bool Coupling::VolMortar::vol_mortar_ele_based_gp(Core::Elements::Element& sele,
   double Bxi[3] = {0.0, 0.0, 0.0};
 
   bool converged = true;
-  Mortar::UTILS::global_to_local<distype_m>(*mele, globgp, Bxi, converged);
+  Mortar::Utils::global_to_local<distype_m>(*mele, globgp, Bxi, converged);
   if (!converged and found != ((int)foundeles.size() - 1)) return false;
 
   // save distance of gp
@@ -493,11 +493,11 @@ bool Coupling::VolMortar::vol_mortar_ele_based_gp(Core::Elements::Element& sele,
   }
 
   // for "master" side
-  UTILS::shape_function<distype_s>(sval_A, Axi, dq);
-  UTILS::shape_function<distype_m>(mval_A, Bxi);
+  Utils::shape_function<distype_s>(sval_A, Axi, dq);
+  Utils::shape_function<distype_m>(mval_A, Bxi);
 
   // evaluate Lagrange multiplier shape functions (on slave element)
-  UTILS::dual_shape_function<distype_s>(lmval_A, Axi, sele, dq);
+  Utils::dual_shape_function<distype_s>(lmval_A, Axi, sele, dq);
 
   // compute cell D/M matrix ****************************************
   // dual shape functions
@@ -812,19 +812,19 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
     // map gp into slave and master para space
     double sxi[3] = {0.0, 0.0, 0.0};
     double mxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::global_to_local<distype_s>(sele, globgp, sxi);
-    Mortar::UTILS::global_to_local<distype_m>(mele, globgp, mxi);
+    Mortar::Utils::global_to_local<distype_s>(sele, globgp, sxi);
+    Mortar::Utils::global_to_local<distype_m>(mele, globgp, mxi);
 
     // Check parameter space mapping
     bool proj = check_mapping_2d(sele, mele, sxi, mxi);
     if (proj == false) FOUR_C_THROW("ERROR: Mapping failed!");
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::shape_function<distype_s>(sval, sxi);
-    UTILS::shape_function<distype_m>(mval, mxi);
+    Utils::shape_function<distype_s>(sval, sxi);
+    Utils::shape_function<distype_m>(mval, mxi);
 
     // evaluate Lagrange mutliplier shape functions (on slave element)
-    UTILS::dual_shape_function<distype_s>(lmval, sxi, sele);
+    Utils::dual_shape_function<distype_s>(lmval, sxi, sele);
 
     // evaluate the integration cell Jacobian
     double jac = cell.jacobian();
@@ -977,8 +977,8 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
     double Bxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::global_to_local<distype_s>(Aele, globgp, Axi);
-    Mortar::UTILS::global_to_local<distype_m>(Bele, globgp, Bxi);
+    Mortar::Utils::global_to_local<distype_s>(Aele, globgp, Axi);
+    Mortar::Utils::global_to_local<distype_m>(Bele, globgp, Bxi);
 
     // evaluate the integration cell Jacobian
     double jac = 0.0;
@@ -996,12 +996,12 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_c
     if (!check) continue;
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::shape_function<distype_s>(sval_A, Axi);
-    UTILS::shape_function<distype_m>(mval_A, Bxi);
+    Utils::shape_function<distype_s>(sval_A, Axi);
+    Utils::shape_function<distype_m>(mval_A, Bxi);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    UTILS::dual_shape_function<distype_s>(lmval_A, Axi, Aele, dualquad_);
-    UTILS::dual_shape_function<distype_m>(lmval_B, Bxi, Bele, dualquad_);
+    Utils::dual_shape_function<distype_s>(lmval_A, Axi, Aele, dualquad_);
+    Utils::dual_shape_function<distype_m>(lmval_B, Bxi, Bele, dualquad_);
 
     // compute cell D/M matrix ****************************************
     // dual shape functions
@@ -1113,15 +1113,15 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s,
     double globgp[3] = {0.0, 0.0, 0.0};
 
     if (switched_conf)
-      UTILS::local_to_global<distype_s>(Aele, eta, globgp);
+      Utils::local_to_global<distype_s>(Aele, eta, globgp);
     else
-      UTILS::local_to_global<distype_m>(Bele, eta, globgp);
+      Utils::local_to_global<distype_m>(Bele, eta, globgp);
 
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
     double Bxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::global_to_local<distype_s>(Aele, globgp, Axi);
-    Mortar::UTILS::global_to_local<distype_m>(Bele, globgp, Bxi);
+    Mortar::Utils::global_to_local<distype_s>(Aele, globgp, Axi);
+    Mortar::Utils::global_to_local<distype_m>(Bele, globgp, Bxi);
 
     //      std::cout << "-------------------------------------" << std::endl;
     //      std::cout << "globgp= " << globgp[0] << "  " << globgp[1] << "  " << globgp[2] <<
@@ -1134,20 +1134,20 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s,
     double jac = 0.0;
 
     if (switched_conf)
-      jac = UTILS::jacobian<distype_s>(Axi, Aele);
+      jac = Utils::jacobian<distype_s>(Axi, Aele);
     else
-      jac = UTILS::jacobian<distype_m>(Bxi, Bele);
+      jac = Utils::jacobian<distype_m>(Bxi, Bele);
 
     // Check parameter space mapping
     // check_mapping_3d(Aele,Bele,Axi,Bxi);
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::shape_function<distype_s>(sval_A, Axi);
-    UTILS::shape_function<distype_m>(mval_A, Bxi);
+    Utils::shape_function<distype_s>(sval_A, Axi);
+    Utils::shape_function<distype_m>(mval_A, Bxi);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    UTILS::dual_shape_function<distype_s>(lmval_A, Axi, Aele, dualquad_);
-    UTILS::dual_shape_function<distype_m>(lmval_B, Bxi, Bele, dualquad_);
+    Utils::dual_shape_function<distype_s>(lmval_A, Axi, Aele, dualquad_);
+    Utils::dual_shape_function<distype_m>(lmval_B, Bxi, Bele, dualquad_);
 
     // compute cell D/M matrix ****************************************
     // dual shape functions
@@ -1263,14 +1263,14 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     std::array<double, 3> AuxXi = {0.0, 0.0, 0.0};
 
     // evaluate the integration cell Jacobian
-    jac = UTILS::jacobian<distype_s>(eta, Aele);
+    jac = Utils::jacobian<distype_s>(eta, Aele);
 
     // get global Gauss point coordinates
-    UTILS::local_to_global<distype_s>(Aele, eta, globgp);
+    Utils::local_to_global<distype_s>(Aele, eta, globgp);
 
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::global_to_local<distype_s>(Aele, globgp, Axi);
+    Mortar::Utils::global_to_local<distype_s>(Aele, globgp, Axi);
 
     // loop over beles
     for (int found = 0; found < (int)foundeles.size(); ++found)
@@ -1280,7 +1280,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
       double Bxi[3] = {0.0, 0.0, 0.0};
 
       bool converged = true;
-      Mortar::UTILS::global_to_local<distype_m>(*Bele, globgp, Bxi, converged);
+      Mortar::Utils::global_to_local<distype_m>(*Bele, globgp, Bxi, converged);
       if (!converged and found != ((int)foundeles.size() - 1)) continue;
 
       // save distance of gp
@@ -1309,11 +1309,11 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
       }
 
       // for "master" side
-      UTILS::shape_function<distype_s>(sval_A, Axi, dualquad_);
-      UTILS::shape_function<distype_m>(mval_A, Bxi);
+      Utils::shape_function<distype_s>(sval_A, Axi, dualquad_);
+      Utils::shape_function<distype_m>(mval_A, Bxi);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      UTILS::dual_shape_function<distype_s>(lmval_A, Axi, Aele, dualquad_);
+      Utils::dual_shape_function<distype_s>(lmval_A, Axi, Aele, dualquad_);
 
       // compute cell D/M matrix ****************************************
       // dual shape functions
@@ -1389,14 +1389,14 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     double AuxXi[3] = {0.0, 0.0, 0.0};
 
     // evaluate the integration cell Jacobian
-    jac = UTILS::jacobian<distype_m>(eta, Bele);
+    jac = Utils::jacobian<distype_m>(eta, Bele);
 
     // get global Gauss point coordinates
-    UTILS::local_to_global<distype_m>(Bele, eta, globgp);
+    Utils::local_to_global<distype_m>(Bele, eta, globgp);
 
     // map gp into A and B para space
     double Bxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::global_to_local<distype_m>(Bele, globgp, Bxi);
+    Mortar::Utils::global_to_local<distype_m>(Bele, globgp, Bxi);
 
     // loop over beles
     for (int found = 0; found < (int)foundeles.size(); ++found)
@@ -1406,7 +1406,7 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
       double Axi[3] = {0.0, 0.0, 0.0};
 
       bool converged = true;
-      Mortar::UTILS::global_to_local<distype_s>(*Aele, globgp, Axi, converged);
+      Mortar::Utils::global_to_local<distype_s>(*Aele, globgp, Axi, converged);
       if (!converged and found != ((int)foundeles.size() - 1)) continue;
 
       // save distance of gp
@@ -1435,11 +1435,11 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
       }
 
       // evaluate trace space shape functions (on both elements)
-      UTILS::shape_function<distype_m>(sval_B, Bxi, dualquad_);
-      UTILS::shape_function<distype_s>(mval_A, Axi);
+      Utils::shape_function<distype_m>(sval_B, Bxi, dualquad_);
+      Utils::shape_function<distype_s>(mval_A, Axi);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      UTILS::dual_shape_function<distype_m>(lmval_B, Bxi, Bele, dualquad_);
+      Utils::dual_shape_function<distype_m>(lmval_B, Bxi, Bele, dualquad_);
       // compute cell D/M matrix ****************************************
       // dual shape functions
       for (int j = 0; j < nm_; ++j)
@@ -1516,18 +1516,18 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     if (domain == 0)
     {
       // evaluate the integration cell Jacobian
-      jac = UTILS::jacobian<distype_s>(eta, Aele);
+      jac = Utils::jacobian<distype_s>(eta, Aele);
 
       // get global Gauss point coordinates
-      UTILS::local_to_global<distype_s>(Aele, eta, globgp);
+      Utils::local_to_global<distype_s>(Aele, eta, globgp);
     }
     else if (domain == 1)
     {
       // evaluate the integration cell Jacobian
-      jac = UTILS::jacobian<distype_m>(eta, Bele);
+      jac = Utils::jacobian<distype_m>(eta, Bele);
 
       // get global Gauss point coordinates
-      UTILS::local_to_global<distype_m>(Bele, eta, globgp);
+      Utils::local_to_global<distype_m>(Bele, eta, globgp);
     }
     else
       FOUR_C_THROW("wrong domain for integration!");
@@ -1536,19 +1536,19 @@ void Coupling::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_e
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
     double Bxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::global_to_local<distype_s>(Aele, globgp, Axi);
-    Mortar::UTILS::global_to_local<distype_m>(Bele, globgp, Bxi);
+    Mortar::Utils::global_to_local<distype_s>(Aele, globgp, Axi);
+    Mortar::Utils::global_to_local<distype_m>(Bele, globgp, Bxi);
 
     // Check parameter space mapping
     check_mapping_3d(Aele, Bele, Axi, Bxi);
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::shape_function<distype_s>(sval_A, Axi);
-    UTILS::shape_function<distype_m>(mval_A, Bxi);
+    Utils::shape_function<distype_s>(sval_A, Axi);
+    Utils::shape_function<distype_m>(mval_A, Bxi);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    UTILS::dual_shape_function<distype_s>(lmval_A, Axi, Aele, dualquad_);
-    UTILS::dual_shape_function<distype_m>(lmval_B, Bxi, Bele, dualquad_);
+    Utils::dual_shape_function<distype_s>(lmval_A, Axi, Aele, dualquad_);
+    Utils::dual_shape_function<distype_m>(lmval_B, Bxi, Bele, dualquad_);
 
     // compute cell D/M matrix ****************************************
     // dual shape functions
@@ -2100,7 +2100,7 @@ bool Coupling::VolMortar::cons_interpolator_eval(Core::Nodes::Node* node,
   double xi[3] = {0.0, 0.0, 0.0};
   bool converged = true;
 
-  Mortar::UTILS::global_to_local<distype>(*ele, nodepos, xi, converged);
+  Mortar::Utils::global_to_local<distype>(*ele, nodepos, xi, converged);
 
   // no convergence of local newton?
   if (!converged and found != ((int)foundeles.size() - 1)) return false;
@@ -2134,7 +2134,7 @@ bool Coupling::VolMortar::cons_interpolator_eval(Core::Nodes::Node* node,
 
   // get values
   Core::LinAlg::Matrix<n_, 1> val;
-  UTILS::shape_function<distype>(val, xi);
+  Utils::shape_function<distype>(val, xi);
 
   int nsdof = nodediscret.num_dof(dofset.first, node);
 

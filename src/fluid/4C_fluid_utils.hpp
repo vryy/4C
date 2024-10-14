@@ -38,7 +38,7 @@ namespace Core::LinAlg
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     /// velocity-pressure block matrix split strategy
     class VelPressSplitStrategy
@@ -548,7 +548,7 @@ namespace FLD
     Teuchos::RCP<Epetra_MultiVector> project_gradient(Core::FE::Discretization& discret,
         Teuchos::RCP<const Core::LinAlg::Vector<double>> vel, bool alefluid);
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FLD
 
 FOUR_C_NAMESPACE_CLOSE

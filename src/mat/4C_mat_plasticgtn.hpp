@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core
 {
-  namespace UTILS
+  namespace Utils
   {
     class FunctionOfAnything;
   }
@@ -163,7 +163,7 @@ namespace Mat
     std::vector<double> f_n1_;
     std::vector<double> epbar_n_;
     std::vector<double> epbar_n1_;
-    const Core::UTILS::FunctionOfAnything* hardening_function_{nullptr};
+    const Core::Utils::FunctionOfAnything* hardening_function_{nullptr};
     bool isinit_;
 
     /**************************************************

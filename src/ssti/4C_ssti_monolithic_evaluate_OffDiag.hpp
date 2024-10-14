@@ -35,7 +35,7 @@ namespace ScaTra
 
 namespace SSI
 {
-  namespace UTILS
+  namespace Utils
   {
     class SSIMeshTying;
   }
@@ -52,7 +52,7 @@ namespace SSTI
         Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmapthermo,
         Teuchos::RCP<const Epetra_Map> full_map_structure,
         Teuchos::RCP<const Epetra_Map> full_map_thermo,
-        Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssti_structure_meshtying,
+        Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssti_structure_meshtying,
         Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo,
         Teuchos::RCP<Adapter::SSIStructureWrapper> structure,
         Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo);
@@ -92,7 +92,7 @@ namespace SSTI
     Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo_;
 
     //! SSTI structure meshtying object containing coupling adapters, converters and maps
-    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssti_structure_meshtying_;
+    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssti_structure_meshtying_;
 
     //! structure problem
     Teuchos::RCP<Adapter::SSIStructureWrapper> structure_;

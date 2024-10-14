@@ -108,7 +108,7 @@ namespace Mortar
 
     /// Singleton access method
     static IntegratorCalc<distype_s, distype_m>* instance(
-        Core::UTILS::SingletonAction action, const Teuchos::ParameterList& params);
+        Core::Utils::SingletonAction action, const Teuchos::ParameterList& params);
 
     //! ns_: number of slave element nodes
     static constexpr int ns_ = Core::FE::num_nodes<distype_s>;

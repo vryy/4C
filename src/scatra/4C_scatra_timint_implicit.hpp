@@ -373,7 +373,7 @@ namespace ScaTra
     }
 
     //! create result test for scalar transport field
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_scatra_field_test();
+    virtual Teuchos::RCP<Core::Utils::ResultTest> create_scatra_field_test();
 
     //! Add tests to global problem and start tests
     virtual void test_results();

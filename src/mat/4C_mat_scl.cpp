@@ -129,7 +129,7 @@ double Mat::Scl::compute_transference_number(const double cint) const
   else
   {
     return Global::Problem::instance()
-        ->function_by_id<Core::UTILS::FunctionOfScalar>(trans_nr_curve() - 1)
+        ->function_by_id<Core::Utils::FunctionOfScalar>(trans_nr_curve() - 1)
         .evaluate(cint);
   }
 }
@@ -145,7 +145,7 @@ double Mat::Scl::compute_first_deriv_trans(const double cint) const
   else
   {
     return Global::Problem::instance()
-        ->function_by_id<Core::UTILS::FunctionOfScalar>(trans_nr_curve() - 1)
+        ->function_by_id<Core::Utils::FunctionOfScalar>(trans_nr_curve() - 1)
         .evaluate_derivative(cint, 1);
   }
 }

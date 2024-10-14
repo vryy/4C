@@ -103,7 +103,7 @@ void FS3I::PartFPS3I::init()
         "DYNAMIC\"!");
   }
 
-  Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::instance();
+  FPSI::InterfaceUtils* FPSI_UTILS = FPSI::InterfaceUtils::instance();
 
   // ##################    2.- Creation of Poroelastic + Fluid problem. (discretization called
   //  inside)     //##################
@@ -189,7 +189,7 @@ void FS3I::PartFPS3I::init()
   if (structscatradis->num_global_nodes() == 0)
   {
     // fill poro-based scatra discretization by cloning structure discretization
-    Core::FE::clone_discretization<PoroElastScaTra::UTILS::PoroScatraCloneStrategy>(
+    Core::FE::clone_discretization<PoroElastScaTra::Utils::PoroScatraCloneStrategy>(
         *structdis, *structscatradis, Global::Problem::instance()->cloning_material_map());
   }
   else
@@ -382,7 +382,7 @@ void FS3I::PartFPS3I::redistribute_interface()
   if (comm_.NumProc() >
       1)  // if we have more than one processor, we need to redistribute at the FPSI interface
   {
-    Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::instance();
+    FPSI::InterfaceUtils* FPSI_UTILS = FPSI::InterfaceUtils::instance();
 
     Teuchos::RCP<std::map<int, int>> Fluid_PoroFluid_InterfaceMap =
         FPSI_UTILS->get_fluid_poro_fluid_interface_map();
@@ -400,7 +400,7 @@ void FS3I::PartFPS3I::redistribute_interface()
 
   // after redistributing the interface we have to fix the material pointers of the structure-scatra
   // discretisation
-  PoroElast::UTILS::set_material_pointers_matching_grid(*structdis, *structscatradis);
+  PoroElast::Utils::set_material_pointers_matching_grid(*structdis, *structscatradis);
 }
 
 /*----------------------------------------------------------------------*

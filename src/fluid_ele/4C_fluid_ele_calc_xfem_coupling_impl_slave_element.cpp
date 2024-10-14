@@ -608,7 +608,7 @@ namespace Discret
         {
           case 3:
           {
-            return XFEM::UTILS::eval_element_volume<slave_distype>(slave_xyze_);
+            return XFEM::Utils::eval_element_volume<slave_distype>(slave_xyze_);
             break;
           }
           default:

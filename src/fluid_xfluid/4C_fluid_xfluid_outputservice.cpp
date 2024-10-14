@@ -1307,7 +1307,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
   gmshfilecontent.setf(std::ios::scientific, std::ios::floatfield);
   gmshfilecontent.precision(16);
 
-  XFEM::UTILS::print_discretization_to_stream(discret_, discret_->name(), true, false, true, false,
+  XFEM::Utils::print_discretization_to_stream(discret_, discret_->name(), true, false, true, false,
       print_faces, false, gmshfilecontent, curr_pos);
 
   // append other discretizations involved (cutter surface discretization, coupling discretization,

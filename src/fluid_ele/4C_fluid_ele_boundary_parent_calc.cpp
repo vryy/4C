@@ -42,7 +42,7 @@ Discret::ELEMENTS::FluidBoundaryParentInterface::impl(Core::Elements::FaceElemen
     case Core::FE::CellType::line2:
     {
       return FluidBoundaryParent<Core::FE::CellType::line2>::instance(
-          Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction::create);
     }
     /*case Core::FE::CellType::line3:
     {
@@ -59,7 +59,7 @@ Discret::ELEMENTS::FluidBoundaryParentInterface::impl(Core::Elements::FaceElemen
     case Core::FE::CellType::quad4:
     {
       return FluidBoundaryParent<Core::FE::CellType::quad4>::instance(
-          Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction::create);
     }
     case Core::FE::CellType::quad8:
     {
@@ -97,9 +97,9 @@ Discret::ELEMENTS::FluidBoundaryParentInterface::impl(Core::Elements::FaceElemen
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidBoundaryParentInterface*
-Discret::ELEMENTS::FluidBoundaryParent<distype>::instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::FluidBoundaryParent<distype>::instance(Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidBoundaryParent<distype>>(
@@ -537,7 +537,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
   double curvefac = 1.0;
   if (curvenum >= 0 and usetime)
     curvefac =
-        Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfTime>(curvenum).evaluate(
+        Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfTime>(curvenum).evaluate(
             time);
 
   // (temporarily) switch off any flow-dependent pressure condition in case of zero
@@ -2209,7 +2209,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
           // evaluate function at current gauss point
           // (important: requires 3D position vector)
           functionfac(idim) = Global::Problem::instance()
-                                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                                   .evaluate(coordgp.data(), time, idim);
         }
         else
@@ -4880,7 +4880,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
               // evaluate function at current gauss point (important: requires 3D position vector)
               functionfac(dim) =
                   Global::Problem::instance()
-                      ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                      ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                       .evaluate(coordgp.data(), time, dim);
             }
             else
@@ -5253,7 +5253,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
           {
             // evaluate function at current gauss point (important: requires 3D position vector)
             functionfac(dim) = Global::Problem::instance()
-                                   ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                   ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                                    .evaluate(coordgp.data(), time, dim);
           }
           else

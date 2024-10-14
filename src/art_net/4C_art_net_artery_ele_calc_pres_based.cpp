@@ -43,7 +43,7 @@ Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::instance(
     const int numdofpernode, const std::string& disname)
 {
   using Key = std::pair<std::string, int>;
-  static auto singleton_map = Core::UTILS::make_singleton_map<Key>(
+  static auto singleton_map = Core::Utils::make_singleton_map<Key>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<ArteryEleCalcPresBased<distype>>(
@@ -52,7 +52,7 @@ Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::instance(
 
   std::pair<std::string, int> key(disname, numdofpernode);
 
-  return singleton_map[key].instance(Core::UTILS::SingletonAction::create, numdofpernode, disname);
+  return singleton_map[key].instance(Core::Utils::SingletonAction::create, numdofpernode, disname);
 }
 
 /*----------------------------------------------------------------------*

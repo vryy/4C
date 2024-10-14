@@ -57,7 +57,7 @@ namespace Adapter
     Teuchos::RCP<Core::FE::Discretization> discretization() override;
 
     /// fluid interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override
     {
       return fluid_->interface();
     }
@@ -97,7 +97,7 @@ namespace Adapter
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
 
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
 
    protected:
     //! @name Transfer helpers

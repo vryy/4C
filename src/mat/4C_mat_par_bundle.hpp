@@ -53,7 +53,7 @@ namespace Mat
        * Insert new pair of material ID and the input data. The input data is set up for lazy
        * construction the first time the material is accessed.
        */
-      void insert(int matid, Core::UTILS::LazyPtr<Core::Mat::PAR::Parameter> mat);
+      void insert(int matid, Core::Utils::LazyPtr<Core::Mat::PAR::Parameter> mat);
 
       /**
        * Check whether material parameters exist for provided @p id.
@@ -64,7 +64,7 @@ namespace Mat
       [[nodiscard]] bool id_exists(int id) const;
 
       /// provide access to material map (a li'l dirty)
-      [[nodiscard]] const std::map<int, Core::UTILS::LazyPtr<Core::Mat::PAR::Parameter>>& map()
+      [[nodiscard]] const std::map<int, Core::Utils::LazyPtr<Core::Mat::PAR::Parameter>>& map()
           const
       {
         return matmap_;
@@ -100,7 +100,7 @@ namespace Mat
      private:
       /// The map linking material IDs to input paramters. The data is stored as a lazy pointer to
       /// allow for lazy construction of material parameters in arbitrary order.
-      std::map<int, Core::UTILS::LazyPtr<Core::Mat::PAR::Parameter>> matmap_;
+      std::map<int, Core::Utils::LazyPtr<Core::Mat::PAR::Parameter>> matmap_;
 
       /// the index of problem instance of which material read-in shall be performed
       int materialreadfromproblem_{};

@@ -36,7 +36,7 @@ namespace Core::IO
 namespace FLD
 {
   class FluidImplicitTimeInt;
-  namespace UTILS
+  namespace Utils
   {
     class MapExtractor;
   }
@@ -77,7 +77,7 @@ namespace Adapter
         Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override;
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override { return interface_; }
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override { return interface_; }
 
     /// update slave dofs for multifield simulations with fluid mesh tying
     virtual void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& f);
@@ -240,7 +240,7 @@ namespace Adapter
     //! \brief interface map setup for fsi interface, interior translation
     //!
     //! Note: full map contains velocity AND pressure DOFs
-    Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
+    Teuchos::RCP<FLD::Utils::MapExtractor> interface_;
 
     /// interface force at old time level t_n
     Teuchos::RCP<Core::LinAlg::Vector<double>> interfaceforcen_;

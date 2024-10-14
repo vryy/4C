@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FBI
 {
-  namespace UTILS
+  namespace Utils
   {
     /**
      * \brief This class assembles the contributions of fluid beam mesh tying pairs into the global
@@ -55,7 +55,7 @@ namespace FBI
           const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
           const std::vector<int>& lmcol) override;
     };
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FBI
 
 FOUR_C_NAMESPACE_CLOSE

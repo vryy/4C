@@ -29,7 +29,7 @@ namespace SSTI
     by field-specific result testing classes. Feel free to extend this class if necessary.
 
   */
-  class SSTIResultTest : public Core::UTILS::ResultTest
+  class SSTIResultTest : public Core::Utils::ResultTest
   {
    public:
     //! constructor

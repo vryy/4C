@@ -113,7 +113,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_in_domain()
   Teuchos::ParameterList params;
 
   // set action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_flux_domain, params);
 
   // provide discretization with state vector
@@ -138,7 +138,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_in_domain()
         Core::LinAlg::create_vector(dofrowmap);
 
     // overwrite action for elements
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::integrate_shape_functions, params);
 
     // integrate shape functions
@@ -161,7 +161,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_in_domain()
   {
     // solve global, linear system of equations without lumping global mass matrix
     // overwrite action for elements
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::calc_mass_matrix, params);
 
     // initialize global mass matrix
@@ -236,7 +236,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
 
       Teuchos::ParameterList eleparams;
       // action for elements
-      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+      Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::calc_mat_and_rhs, eleparams);
 
       // other parameters that might be needed by the elements
@@ -288,7 +288,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
     discret_->get_condition("ScaTraFluxCalc", cond);
 
     Teuchos::ParameterList params;
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
         "action", ScaTra::BoundaryAction::add_convective_mass_flux, params);
 
     // add element parameters according to time-integration scheme
@@ -366,7 +366,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
       // lump boundary mass matrix instead of solving a small, linear system of equations
       // calculate integral of shape functions over indicated boundary and its area
       params.set("area", 0.0);
-      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+      Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
           "action", ScaTra::BoundaryAction::integrate_shape_functions, params);
 
       // create vector (+ initialization with zeros)
@@ -388,7 +388,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
     {
       // solve small, linear system of equations without lumping boundary mass matrix
       // add action to parameter list
-      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+      Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
           "action", ScaTra::BoundaryAction::calc_mass_matrix, params);
 
       // initialize boundary mass matrix
@@ -413,7 +413,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::calc_flux_at_boundary
       solver_->reset();
 
       // overwrite action in parameter list
-      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+      Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
           "action", ScaTra::BoundaryAction::calc_boundary_integral, params);
 
       // initialize one-component result vector for value of boundary integral
@@ -621,7 +621,7 @@ void ScaTra::ScaTraTimIntImpl::calc_initial_time_derivative()
 
   // create and fill parameter list for elements
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_initial_time_deriv, eleparams);
   add_problem_specific_parameters_and_vectors(eleparams);
 
@@ -801,7 +801,7 @@ void ScaTra::ScaTraTimIntImpl::surface_permeability(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_fs3i_surface_permeability, condparams);
 
   // add element parameters according to time-integration scheme
@@ -851,7 +851,7 @@ void ScaTra::ScaTraTimIntImpl::kedem_katchalsky(Teuchos::RCP<Core::LinAlg::Spars
   Teuchos::ParameterList condparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_fps3i_surface_permeability, condparams);
 
   // add element parameters according to time-integration scheme
@@ -937,7 +937,7 @@ Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraTimIntImpl::compute_normal_vector
 
   // set action for elements
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_normal_vectors, eleparams);
   eleparams.set<Teuchos::RCP<Epetra_MultiVector>>("normal vectors", normal);
 
@@ -1033,7 +1033,7 @@ void ScaTra::ScaTraTimIntImpl::compute_neumann_inflow(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_Neumann_inflow, condparams);
 
   // add element parameters and vectors according to time-integration scheme
@@ -1061,7 +1061,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_convective_heat_transfer(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_convective_heat_transfer, condparams);
 
   // add element parameters and vectors according to time-integration scheme
@@ -1286,7 +1286,7 @@ void ScaTra::ScaTraTimIntImpl::output_integr_reac(const int num)
     discret_->set_state("phinp", phinp_);
     // set action for elements
     Teuchos::ParameterList eleparams;
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::calc_integr_reaction, eleparams);
     Teuchos::RCP<std::vector<double>> myreacnp =
         Teuchos::make_rcp<std::vector<double>>(num_scal(), 0.0);
@@ -1367,7 +1367,7 @@ void ScaTra::ScaTraTimIntImpl::avm3_preparation()
   Teuchos::ParameterList eleparams;
 
   // action for elements, time factor and stationary flag
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_subgrid_diffusivity_matrix, eleparams);
 
   // add element parameters according to time-integration scheme
@@ -1585,7 +1585,7 @@ void ScaTra::ScaTraTimIntImpl::recompute_mean_csgs_b()
     Teuchos::ParameterList myparams;
 
     // action for elements
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::calc_mean_Cai, myparams);
 
     // add element parameters according to time-integration scheme
@@ -1637,7 +1637,7 @@ void ScaTra::ScaTraTimIntImpl::recompute_mean_csgs_b()
     }
 
     // set meanCai via pre-evaluate call
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::set_mean_Cai, myparams);
     myparams.set<double>("meanCai", meanCai);
     // call standard loop over elements
@@ -2108,7 +2108,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
     {
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
-      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+      Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::calc_error, eleparams);
       eleparams.set<Inpar::ScaTra::CalcError>("calcerrorflag", calcerror_);
 
@@ -2185,7 +2185,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_error_compared_to_analytical_sol()
 
         // create element parameter list for error calculation
         Teuchos::ParameterList eleparams;
-        Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+        Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
             "action", ScaTra::Action::calc_error, eleparams);
         eleparams.set<Inpar::ScaTra::CalcError>(
             "calcerrorflag", Inpar::ScaTra::calcerror_byfunction);
@@ -2364,7 +2364,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_initial_time_derivative(
 {
   // create and fill parameter list for elements
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_initial_time_deriv, eleparams);
   add_problem_specific_parameters_and_vectors(eleparams);
 
@@ -2388,7 +2388,7 @@ void ScaTra::OutputScalarsStrategyBase::prepare_evaluate(
   discret->set_state("phinp", scatratimint->phinp_);
 
   // set action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", output_mean_grad_);
@@ -2799,13 +2799,13 @@ void ScaTra::OutputDomainIntegralStrategy::evaluate_integrals_and_print_results(
   if (condstring == "BoundaryIntegral")
   {
     label = "Boundary";
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
         "action", ScaTra::BoundaryAction::calc_boundary_integral, condparams);
   }
   else if (condstring == "DomainIntegral")
   {
     label = "Domain";
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::calc_domain_integral, condparams);
   }
   else

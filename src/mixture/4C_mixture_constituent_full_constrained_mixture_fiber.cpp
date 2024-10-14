@@ -356,7 +356,7 @@ double MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_initial_
   }
 
   return Global::Problem::instance()
-      ->function_by_id<Core::UTILS::FunctionOfTime>(
+      ->function_by_id<Core::Utils::FunctionOfTime>(
           params_->initial_deposition_stretch_timefunc_num_ - 1)
       .evaluate(time);
 }

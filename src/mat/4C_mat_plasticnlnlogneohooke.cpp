@@ -38,7 +38,7 @@ namespace
 {
   std::pair<double, double> residuum_and_jacobian_from_function(
       Mat::PAR::PlasticNlnLogNeoHooke* matparameter, double Dgamma, double dt, double accplstrain,
-      double abs_dev_KH_trial, const Core::UTILS::FunctionOfAnything& hardeningfunction)
+      double abs_dev_KH_trial, const Core::Utils::FunctionOfAnything& hardeningfunction)
   {
     const double ym = matparameter->youngs_;        // Young's modulus
     const double nu = matparameter->poissonratio_;  // Poisson's ratio
@@ -94,7 +94,7 @@ namespace
 
   std::pair<double, double> solve_newton_with_hardening_func(
       Mat::PAR::PlasticNlnLogNeoHooke* matparameter, double abs_dev_KH_trial,
-      double accplstrain_last, double dt, const Core::UTILS::FunctionOfAnything& hardening_function,
+      double accplstrain_last, double dt, const Core::Utils::FunctionOfAnything& hardening_function,
       bool error_tol)
   {
     const double visc = matparameter->visc_;            // viscosity
@@ -111,7 +111,7 @@ namespace
     };
 
     const double Dgamma =
-        Core::UTILS::solve_local_newton(residuumAndJacobianFromFunction, 0.0, tol, maxiter);
+        Core::Utils::solve_local_newton(residuumAndJacobianFromFunction, 0.0, tol, maxiter);
 
     //! vector for input of accumulated strain to function
     std::vector<std::pair<std::string, double>> dp;
@@ -144,7 +144,7 @@ namespace
     auto residuumAndJacobian = [&](double Dgamma)
     { return residuum_and_jacobian(matparameter, Dgamma, dt, accplstrain_last, abs_dev_KH_trial); };
 
-    const double Dgamma = Core::UTILS::solve_local_newton(residuumAndJacobian, 0.0, tol, maxiter);
+    const double Dgamma = Core::Utils::solve_local_newton(residuumAndJacobian, 0.0, tol, maxiter);
 
     const double accplstrain_curr = accplstrain_last + Dgamma;
 
@@ -337,7 +337,7 @@ void Mat::PlasticNlnLogNeoHooke::setup(
   if (functionID_hardening != 0)
   {
     hardening_function_ =
-        &Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfAnything>(
+        &Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfAnything>(
             functionID_hardening - 1);
   }
 

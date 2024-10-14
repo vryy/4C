@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   /**
    * A class which lazily allocates an object of type T. This class behaves mostly like a
@@ -74,7 +74,7 @@ namespace Core::UTILS
     std::function<std::shared_ptr<T>()> constructor_;
   };
 
-}  // namespace Core::UTILS
+}  // namespace Core::Utils
 
 FOUR_C_NAMESPACE_CLOSE
 

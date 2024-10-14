@@ -177,16 +177,16 @@ void sti_dyn(const int& restartstep  //! time step for restart
 
   // perform result tests
   problem->add_field_test(
-      Teuchos::RCP<Core::UTILS::ResultTest>(new STI::STIResultTest(sti_algorithm)));
+      Teuchos::RCP<Core::Utils::ResultTest>(new STI::STIResultTest(sti_algorithm)));
   if (Teuchos::getIntegralValue<Inpar::STI::ScaTraTimIntType>(
           problem->sti_dynamic_params(), "SCATRATIMINTTYPE") == Inpar::STI::ScaTraTimIntType::elch)
-    problem->add_field_test(Teuchos::RCP<Core::UTILS::ResultTest>(new ScaTra::ElchResultTest(
+    problem->add_field_test(Teuchos::RCP<Core::Utils::ResultTest>(new ScaTra::ElchResultTest(
         Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(sti_algorithm->scatra_field()))));
   else
     FOUR_C_THROW(
         "Scatra-thermo interaction is currently only available for thermodynamic electrochemistry, "
         "but not for other kinds of thermodynamic scalar transport!");
-  problem->add_field_test(Teuchos::RCP<Core::UTILS::ResultTest>(
+  problem->add_field_test(Teuchos::RCP<Core::Utils::ResultTest>(
       new ScaTra::ScaTraResultTest(sti_algorithm->thermo_field())));
   problem->test_all(comm);
 

@@ -31,7 +31,7 @@ namespace Solid
 /*!
   \brief Structure specific result test class
 */
-class StruResultTest : public Core::UTILS::ResultTest
+class StruResultTest : public Core::Utils::ResultTest
 {
  public:
   //! Constructor for time integrators of general kind

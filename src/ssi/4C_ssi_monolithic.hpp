@@ -35,12 +35,12 @@ namespace Core::LinAlg
 
 namespace SSI
 {
-  namespace UTILS
+  namespace Utils
   {
     class SSIMaps;
     class SSIMatrices;
     class SSIVectors;
-  }  // namespace UTILS
+  }  // namespace Utils
 
   class AssembleStrategyBase;
   class ContactStrategyBase;
@@ -113,7 +113,7 @@ namespace SSI
     void solve_linear_system();
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps() const { return ssi_maps_; }
+    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps() const { return ssi_maps_; }
 
     //! return algebraic solver for global system of equations
     const Core::LinAlg::Solver& solver() const { return *solver_; };
@@ -258,13 +258,13 @@ namespace SSI
     Teuchos::RCP<Core::LinAlg::Solver> solver_;
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps_;
+    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps_;
 
     //! this object holds the system matrix and all sub blocks
-    Teuchos::RCP<SSI::UTILS::SSIMatrices> ssi_matrices_;
+    Teuchos::RCP<SSI::Utils::SSIMatrices> ssi_matrices_;
 
     //! this object holds the system residuals and increment
-    Teuchos::RCP<SSI::UTILS::SSIVectors> ssi_vectors_;
+    Teuchos::RCP<SSI::Utils::SSIVectors> ssi_vectors_;
 
     //! strategy how to assembly system matrix and rhs
     Teuchos::RCP<SSI::AssembleStrategyBase> strategy_assemble_;

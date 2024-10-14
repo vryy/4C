@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   /**
    * @brief Cubic spline interpolation based on two input vectors \f$ \vec{x}, \vec{y} \f$
@@ -146,7 +146,7 @@ namespace Core::UTILS
     //! sampling points for cubic spline interpolation
     std::vector<double> x_;
   };
-}  // namespace Core::UTILS
+}  // namespace Core::Utils
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -166,7 +166,7 @@ namespace Arteries
     }
 
     // create field test
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override = 0;
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override = 0;
 
    protected:
     //! @name general algorithm parameters

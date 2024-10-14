@@ -42,7 +42,7 @@ namespace Core::LinAlg
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     class FluidImpedanceWrapper
     {
@@ -225,7 +225,7 @@ namespace FLD
       double p_0_;
     };  // class FluidImpedanceBc
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FLD
 
 FOUR_C_NAMESPACE_CLOSE

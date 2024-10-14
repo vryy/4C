@@ -45,7 +45,7 @@ namespace Core::Nodes
   class Node;
 }
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   class FunctionManager;
 }
@@ -103,7 +103,7 @@ namespace Coupling::Adapter
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
         const std::string& couplingcond,     ///< string for coupling condition
         const Epetra_Comm& comm,             ///< communicator
-        const Core::UTILS::FunctionManager& function_manager,  ///< function manager
+        const Core::Utils::FunctionManager& function_manager,  ///< function manager
         const Teuchos::ParameterList& binning_params,          ///< parameters for binning strategy
         const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
         Teuchos::RCP<Core::IO::OutputControl> output_control,
@@ -328,7 +328,7 @@ namespace Coupling::Adapter
      *      Engineering Computation, 20:305-319 (2003)
      */
     void check_slave_dirichlet_overlap(const Teuchos::RCP<Core::FE::Discretization>& slavedis,
-        const Epetra_Comm& comm, const Core::UTILS::FunctionManager& function_manager);
+        const Epetra_Comm& comm, const Core::Utils::FunctionManager& function_manager);
 
     /// back transformation to initial parallel distribution
     void matrix_row_col_transform();

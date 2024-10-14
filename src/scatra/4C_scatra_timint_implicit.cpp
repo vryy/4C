@@ -417,7 +417,7 @@ void ScaTra::ScaTraTimIntImpl::setup()
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
-    eleparams.set<const Core::UTILS::FunctionManager*>(
+    eleparams.set<const Core::Utils::FunctionManager*>(
         "function_manager", &Global::Problem::instance()->function_manager());
     const Core::ProblemType problem_type = Core::ProblemType::scatra;
     eleparams.set<const Core::ProblemType*>("problem_type", &problem_type);
@@ -710,7 +710,7 @@ void ScaTra::ScaTraTimIntImpl::setup_nat_conv()
 
   // set action for elements
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
@@ -958,7 +958,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_nodeset_parameters() const
   Teuchos::ParameterList eleparams;
 
   // set action
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_nodeset_parameter, eleparams);
 
   eleparams.set<int>("ndsdisp", nds_disp());
@@ -982,7 +982,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_general_parameters(bool calcinitialti
   Teuchos::ParameterList eleparams;
 
   // set action
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_general_scatra_parameter, eleparams);
 
   // set problem number
@@ -1064,7 +1064,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_turbulence_parameters(
 {
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_turbulence_scatra_parameter, eleparams);
 
   eleparams.sublist("TURBULENCE MODEL") = extraparams_->sublist("TURBULENCE MODEL");
@@ -1206,7 +1206,7 @@ void ScaTra::ScaTraTimIntImpl::prepare_time_step()
     Teuchos::ParameterList eleparams;
 
     // set action
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::micro_scale_prepare_time_step, eleparams);
 
     // add state vectors
@@ -1293,7 +1293,7 @@ void ScaTra::ScaTraTimIntImpl::set_velocity_field()
 
         for (int index = 0; index < nsd_; ++index)
         {
-          double value = problem_->function_by_id<Core::UTILS::FunctionOfSpaceTime>(velfuncno - 1)
+          double value = problem_->function_by_id<Core::Utils::FunctionOfSpaceTime>(velfuncno - 1)
                              .evaluate(lnode->x().data(), time_, index);
 
           // get global and local dof IDs
@@ -1355,12 +1355,12 @@ void ScaTra::ScaTraTimIntImpl::set_external_force()
     for (int spatial_dimension = 0; spatial_dimension < nsd_; ++spatial_dimension)
     {
       const double external_force_value =
-          problem_->function_by_id<Core::UTILS::FunctionOfSpaceTime>(external_force_function_id - 1)
+          problem_->function_by_id<Core::Utils::FunctionOfSpaceTime>(external_force_function_id - 1)
               .evaluate(current_node->x().data(), time_, spatial_dimension);
 
       const double intrinsic_mobility_value =
           problem_
-              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(intrinsic_mobility_function_id - 1)
+              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(intrinsic_mobility_function_id - 1)
               .evaluate(current_node->x().data(), time_, spatial_dimension);
       const double force_velocity_value = external_force_value * intrinsic_mobility_value;
 
@@ -1757,7 +1757,7 @@ void ScaTra::ScaTraTimIntImpl::write_result()
     Teuchos::ParameterList eleparams;
 
     // set action
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::micro_scale_output, eleparams);
 
     // loop over macro-scale elements
@@ -1884,7 +1884,7 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
     Teuchos::ParameterList eleparams;
 
     // set action
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::collect_micro_scale_output, eleparams);
 
     // loop over macro-scale elements
@@ -1937,7 +1937,7 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
           int doflid = dofrowmap->LID(dofgid);
           // evaluate component k of spatial function
           double initialval =
-              problem_->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+              problem_->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno - 1)
                   .evaluate(lnode->x().data(), time_, k);
           int err = phin_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) FOUR_C_THROW("dof not on proc");
@@ -1962,7 +1962,7 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
 
         Core::FE::Nurbs::apply_nurbs_initial_condition(*discret_,
             problem_->solver_params(lstsolver),
-            problem_->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1), phin_);
+            problem_->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno - 1), phin_);
       }
 
       // initialize also the solution vector. These values are a pretty good guess for the
@@ -2447,7 +2447,7 @@ void ScaTra::ScaTraTimIntImpl::update_krylov_space_projection()
     Teuchos::ParameterList mode_params;
 
     // set parameters for elements that do not change over mode
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::integrate_shape_functions, mode_params);
 
     // loop over all activemodes
@@ -2605,7 +2605,7 @@ void ScaTra::ScaTraTimIntImpl::apply_dirichlet_bc(const double time,
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time);  // actual time t_{n+1}
-  p.set<const Core::UTILS::FunctionManager*>(
+  p.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
   const Core::ProblemType problem_type = Core::ProblemType::scatra;
   p.set<const Core::ProblemType*>("problem_type", &problem_type);
@@ -2646,10 +2646,10 @@ void ScaTra::ScaTraTimIntImpl::apply_neumann_bc(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_Neumann, condparams);
 
-  condparams.set<const Core::UTILS::FunctionManager*>(
+  condparams.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // specific parameters
@@ -2725,7 +2725,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_robin_boundary_conditions(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_Robin, condparams);
 
   // add element parameters and set state vectors according to time-integration scheme
@@ -2760,7 +2760,7 @@ void ScaTra::ScaTraTimIntImpl::assemble_mat_and_rhs()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_mat_and_rhs, eleparams);
 
   // DO THIS AT VERY FIRST!!!
@@ -2813,7 +2813,7 @@ void ScaTra::ScaTraTimIntImpl::assemble_mat_and_rhs()
     Teuchos::ParameterList mhdbcparams;
 
     // set action for elements
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
         "action", ScaTra::BoundaryAction::calc_weak_Dirichlet, mhdbcparams);
 
     add_time_integration_specific_vectors();
@@ -3130,7 +3130,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_micro_scale_solve()
   Teuchos::ParameterList eleparams;
 
   // set action for macro-scale elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::micro_scale_solve, eleparams);
 
   // clear state vectors
@@ -3792,7 +3792,7 @@ void ScaTra::ScaTraTimIntImpl::calc_mean_micro_concentration()
 
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_elch_elctrode_mean_concentration, eleparams);
 
   // evaluate nodal mean concentration of micro discretizations
@@ -3942,7 +3942,7 @@ void ScaTra::ScaTraTimIntImpl::set_time_stepping_to_micro_scale()
 {
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::micro_scale_set_time, eleparams);
 
   eleparams.set<double>("dt", dta_);
@@ -3956,7 +3956,7 @@ void ScaTra::ScaTraTimIntImpl::set_time_stepping_to_micro_scale()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::ScaTraTimIntImpl::create_scatra_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> ScaTra::ScaTraTimIntImpl::create_scatra_field_test()
 {
   return Teuchos::make_rcp<ScaTra::ScaTraResultTest>(Teuchos::rcpFromRef(*this));
 }

@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSTI::SSTIResultTest::SSTIResultTest(const SSTI::SSTIAlgorithm& ssti_algorithm)
-    : Core::UTILS::ResultTest("SSTI"), ssti_algorithm_(ssti_algorithm)
+    : Core::Utils::ResultTest("SSTI"), ssti_algorithm_(ssti_algorithm)
 {
 }
 

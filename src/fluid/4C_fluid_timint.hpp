@@ -50,7 +50,7 @@ namespace FLD
   class TurbulenceStatisticManager;
   class DynSmagFilter;
   class Vreman;
-  namespace UTILS
+  namespace Utils
   {
     class KSPMapExtractor;
   }
@@ -318,18 +318,18 @@ namespace FLD
     double tim_int_param() const override = 0;
 
     /// communication object at the interface (neglecting pressure dofs)
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override
     {
       FOUR_C_THROW("Implemented in the fluid wrapper and derived classes");
-      static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
+      static Teuchos::RCP<FLD::Utils::MapExtractor> ret = Teuchos::null;
       return ret;
     }
 
     /// communication object at the interface needed for fpsi problems (including pressure dofs)
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& fpsi_interface() const override
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& fpsi_interface() const override
     {
       FOUR_C_THROW("Implemented in the fluid wrapper and derived classes");
-      static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
+      static Teuchos::RCP<FLD::Utils::MapExtractor> ret = Teuchos::null;
       return ret;
     }
 
@@ -578,7 +578,7 @@ namespace FLD
       return Teuchos::null;
     }
 
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override
     {
       FOUR_C_THROW("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -769,7 +769,7 @@ namespace FLD
     Teuchos::RCP<Core::LinAlg::KrylovProjector> projector_;
 
     /// Krylov space projection map extractor
-    Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
+    Teuchos::RCP<FLD::Utils::KSPMapExtractor> kspsplitter_;
 
     //@}
 

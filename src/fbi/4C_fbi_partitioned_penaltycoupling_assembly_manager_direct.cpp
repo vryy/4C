@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect::
     PartitionedBeamInteractionAssemblyManagerDirect(
         std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs,
-        Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy)
+        Teuchos::RCP<FBI::Utils::FBIAssemblyStrategy> assemblystrategy)
     : PartitionedBeamInteractionAssemblyManager(assembly_contact_elepairs),
       assemblystrategy_(assemblystrategy)
 {
@@ -95,7 +95,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManag
 
       // assemble force vector and stiffness matrix affecting the centerline DoFs only
       // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-      FBI::UTILS::assemble_centerline_dof_force_stiff_into_fbi_element_force_stiff(discretization1,
+      FBI::Utils::assemble_centerline_dof_force_stiff_into_fbi_element_force_stiff(discretization1,
           discretization2, elegids, eleforce_centerlineDOFs, elestiff_centerlineDOFs, &eleforce,
           &elestiff);
 

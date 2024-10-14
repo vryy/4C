@@ -52,10 +52,10 @@ void Adapter::FBIConstraintBridge::setup(const Epetra_Map* beam_map, const Epetr
         Inpar::FBI::BeamToFluidDiscretization::mortar)
       FOUR_C_THROW("Fluid Meshtying is not supported when using a mortar discretization!");
 
-    assemblystrategy_ = Teuchos::make_rcp<FBI::UTILS::FBIBlockAssemblyStrategy>();
+    assemblystrategy_ = Teuchos::make_rcp<FBI::Utils::FBIBlockAssemblyStrategy>();
   }
   else
-    assemblystrategy_ = Teuchos::make_rcp<FBI::UTILS::FBIAssemblyStrategy>();
+    assemblystrategy_ = Teuchos::make_rcp<FBI::Utils::FBIAssemblyStrategy>();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

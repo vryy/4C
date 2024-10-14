@@ -153,13 +153,13 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
       // this is needed in case your input file contains shifted/cut elements
       if (periodic_boundingbox_ != Teuchos::null)
       {
-        BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(*discretization_, ele,
+        BEAMINTERACTION::Utils::get_current_unshifted_element_dis(*discretization_, ele,
             displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector);
       }
       // this is needed in case your input file does not contain shifted/cut elements
       else
       {
-        BEAMINTERACTION::UTILS::get_current_element_dis(
+        BEAMINTERACTION::Utils::get_current_element_dis(
             *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
       }
     }
@@ -291,7 +291,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_displacement_field(
     // get the displacement state vector for this element
     std::vector<double> beamelement_displacement_vector;
 
-    BEAMINTERACTION::UTILS::get_current_element_dis(
+    BEAMINTERACTION::Utils::get_current_element_dis(
         *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
 
     /* loop over the chosen visualization points (equidistant distribution in the element
@@ -387,7 +387,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_triad_field(
     // get the displacement state vector for this element
     std::vector<double> beamelement_displacement_vector;
 
-    BEAMINTERACTION::UTILS::get_current_element_dis(
+    BEAMINTERACTION::Utils::get_current_element_dis(
         *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
 
 
@@ -735,7 +735,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_point_circular_cross_section_
     // get the displacement state vector for this element
     std::vector<double> beamelement_displacement_vector;
 
-    BEAMINTERACTION::UTILS::get_current_element_dis(
+    BEAMINTERACTION::Utils::get_current_element_dis(
         *discretization_, ele, displacement_state_vector, beamelement_displacement_vector);
 
 
@@ -1488,9 +1488,9 @@ void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
     const Discret::ELEMENTS::Beam3Base* beamele =
         dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
 
-    BEAMINTERACTION::UTILS::get_current_element_dis(
+    BEAMINTERACTION::Utils::get_current_element_dis(
         *discretization_, ele, displacement_state_vector, beamelement_shift_displacement_vector);
-    BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(*discretization_, ele,
+    BEAMINTERACTION::Utils::get_current_unshifted_element_dis(*discretization_, ele,
         displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector);
 
     beamele->get_pos_at_xi(pos_node_1, -1.0, beamelement_displacement_vector);

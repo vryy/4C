@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::AssembleStrategyBase::AssembleStrategyBase(
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold)
+    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps, const bool is_scatra_manifold)
     : is_scatra_manifold_(is_scatra_manifold), ssi_maps_(std::move(ssi_maps))
 {
 }
@@ -29,7 +29,7 @@ SSI::AssembleStrategyBase::AssembleStrategyBase(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::AssembleStrategyBlock::AssembleStrategyBlock(
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold_value)
+    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps, const bool is_scatra_manifold_value)
     : AssembleStrategyBase(ssi_maps, is_scatra_manifold_value),
       block_position_scatra_(ssi_maps()->get_block_positions(SSI::Subproblem::scalar_transport)),
       position_structure_(ssi_maps()->get_block_positions(SSI::Subproblem::structure).at(0))
@@ -41,7 +41,7 @@ SSI::AssembleStrategyBlock::AssembleStrategyBlock(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::AssembleStrategyBlockBlock::AssembleStrategyBlockBlock(
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold)
+    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps, const bool is_scatra_manifold)
     : AssembleStrategyBlock(ssi_maps, is_scatra_manifold)
 {
 }
@@ -49,7 +49,7 @@ SSI::AssembleStrategyBlockBlock::AssembleStrategyBlockBlock(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::AssembleStrategyBlockSparse::AssembleStrategyBlockSparse(
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold)
+    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps, const bool is_scatra_manifold)
     : AssembleStrategyBlock(ssi_maps, is_scatra_manifold)
 {
 }
@@ -57,7 +57,7 @@ SSI::AssembleStrategyBlockSparse::AssembleStrategyBlockSparse(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSI::AssembleStrategySparse::AssembleStrategySparse(
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold)
+    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps, const bool is_scatra_manifold)
     : AssembleStrategyBase(ssi_maps, is_scatra_manifold)
 {
 }
@@ -485,22 +485,22 @@ void SSI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<d
     const Core::LinAlg::Vector<double>& rhs_manifold)
 {
   ssi_maps()->maps_sub_problems()->insert_vector(
-      *rhs_scatra, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::scalar_transport), *rhs);
+      *rhs_scatra, Utils::SSIMaps::get_problem_position(SSI::Subproblem::scalar_transport), *rhs);
 
   if (is_scatra_manifold())
   {
     ssi_maps()->maps_sub_problems()->insert_vector(
-        rhs_manifold, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::manifold), *rhs);
+        rhs_manifold, Utils::SSIMaps::get_problem_position(SSI::Subproblem::manifold), *rhs);
   }
 
   ssi_maps()->maps_sub_problems()->add_vector(
-      *rhs_structure, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::structure), *rhs, -1.0);
+      *rhs_structure, Utils::SSIMaps::get_problem_position(SSI::Subproblem::structure), *rhs, -1.0);
 }
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 Teuchos::RCP<SSI::AssembleStrategyBase> SSI::build_assemble_strategy(
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold,
+    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps, const bool is_scatra_manifold,
     Core::LinAlg::MatrixType matrixtype_ssi, Core::LinAlg::MatrixType matrixtype_scatra)
 {
   Teuchos::RCP<SSI::AssembleStrategyBase> assemblestrategy = Teuchos::null;

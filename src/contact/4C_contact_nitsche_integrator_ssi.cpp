@@ -106,7 +106,7 @@ void CONTACT::IntegratorNitscheSsi::gpts_forces(Mortar::Element& slave_ele,
   double pet = ppt_;
   double nitsche_wgt_slave(0.0), nitsche_wgt_master(0.0);
 
-  CONTACT::UTILS::nitsche_weights_and_scaling(
+  CONTACT::Utils::nitsche_weights_and_scaling(
       slave_ele, master_ele, nit_wgt_, dt_, nitsche_wgt_slave, nitsche_wgt_master, pen, pet);
 
   double cauchy_nn_weighted_average(0.0);
@@ -192,7 +192,7 @@ void CONTACT::IntegratorNitscheSsi::so_ele_cauchy_struct(Mortar::Element& mortar
 {
   static Core::LinAlg::Matrix<dim, 1> parent_xi(true);
   static Core::LinAlg::Matrix<dim, dim> local_to_parent_trafo(true);
-  CONTACT::UTILS::map_gp_to_parent<dim>(
+  CONTACT::Utils::map_gp_to_parent<dim>(
       mortar_ele, gp_coord, gp_wgt, parent_xi, local_to_parent_trafo);
 
   // cauchy stress tensor contracted with normal and test direction

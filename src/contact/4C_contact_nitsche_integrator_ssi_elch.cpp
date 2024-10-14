@@ -102,7 +102,7 @@ void CONTACT::IntegratorNitscheSsiElch::gpts_forces(Mortar::Element& slave_ele,
   double pet = ppt_;
   double nitsche_wgt_slave(0.0), nitsche_wgt_master(0.0);
 
-  CONTACT::UTILS::nitsche_weights_and_scaling(
+  CONTACT::Utils::nitsche_weights_and_scaling(
       slave_ele, master_ele, nit_wgt_, dt_, nitsche_wgt_slave, nitsche_wgt_master, pen, pet);
 
   double cauchy_nn_weighted_average(0.0);
@@ -204,7 +204,7 @@ double CONTACT::IntegratorNitscheSsiElch::calculate_det_f_of_parent_element(
   {
     case Core::FE::CellType::hex8:
     {
-      Discret::ELEMENTS::UTILS::compute_deformation_gradient<Core::FE::CellType::hex8, dim>(defgrd,
+      Discret::ELEMENTS::Utils::compute_deformation_gradient<Core::FE::CellType::hex8, dim>(defgrd,
           electrode_ele->parent_element()->nodes(), xi_parent,
           electrode_ele->mo_data().parent_disp());
 
@@ -212,7 +212,7 @@ double CONTACT::IntegratorNitscheSsiElch::calculate_det_f_of_parent_element(
     }
     case Core::FE::CellType::tet4:
     {
-      Discret::ELEMENTS::UTILS::compute_deformation_gradient<Core::FE::CellType::tet4, dim>(defgrd,
+      Discret::ELEMENTS::Utils::compute_deformation_gradient<Core::FE::CellType::tet4, dim>(defgrd,
           electrode_ele->parent_element()->nodes(), xi_parent,
           electrode_ele->mo_data().parent_disp());
 
@@ -274,7 +274,7 @@ void CONTACT::IntegratorNitscheSsiElch::calculate_spatial_derivative_of_det_f(co
       "Number of nodes is not matching discretization type");
 
   static Core::LinAlg::Matrix<num_ele_nodes, dim> xyze;
-  Discret::ELEMENTS::UTILS::evaluate_nodal_coordinates<distype, dim>(electrode_ele->nodes(), xyze);
+  Discret::ELEMENTS::Utils::evaluate_nodal_coordinates<distype, dim>(electrode_ele->nodes(), xyze);
 
   static Core::LinAlg::Matrix<ele_dim, num_ele_nodes> deriv;
   for (auto i = 0; i < num_ele_nodes; ++i)

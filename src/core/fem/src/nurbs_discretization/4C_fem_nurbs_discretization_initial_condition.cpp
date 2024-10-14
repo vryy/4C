@@ -73,7 +73,7 @@ namespace
   */
 
   void apply_nurbs_initial_condition_solve(Core::FE::Discretization& dis,
-      Core::LinAlg::Solver& solver, const Core::UTILS::FunctionOfSpaceTime& start_function,
+      Core::LinAlg::Solver& solver, const Core::Utils::FunctionOfSpaceTime& start_function,
       Teuchos::RCP<Core::LinAlg::Vector<double>> initialvals)
   {
     // try to cast dis to a nurbs discretisation --- if possible, proceed
@@ -559,7 +559,7 @@ namespace
 /*----------------------------------------------------------------------*/
 void Core::FE::Nurbs::apply_nurbs_initial_condition(Core::FE::Discretization& dis,
     const Teuchos::ParameterList& solverparams,
-    const Core::UTILS::FunctionOfSpaceTime& start_function,
+    const Core::Utils::FunctionOfSpaceTime& start_function,
     Teuchos::RCP<Core::LinAlg::Vector<double>> initialvals)
 {
   // try to cast dis to a nurbs discretisation --- if possible, proceed

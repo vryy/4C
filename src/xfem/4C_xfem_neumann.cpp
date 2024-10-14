@@ -132,7 +132,7 @@ void XFEM::evaluate_neumann_standard(
     if (functnum >= 0)
     {
       functfac = Global::Problem::instance()
-                     ->function_by_id<Core::UTILS::FunctionOfTime>(functnum)
+                     ->function_by_id<Core::Utils::FunctionOfTime>(functnum)
                      .evaluate(time);
     }
     for (int i = 0; i < nnode; ++i)

@@ -98,7 +98,7 @@ void FS3I::PartFS3I::init()
   //---------------------------------------------------------------------
   if (aledis->num_global_nodes() == 0)
   {
-    Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
+    Core::FE::clone_discretization<ALE::Utils::AleCloneStrategy>(
         *fluiddis, *aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
@@ -382,7 +382,7 @@ Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_morta
   // setup projection matrices (use default material strategy)
   volume_coupling_object->init(Global::Problem::instance()->n_dim(), masterdis, slavedis);
   Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-  Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+  Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
       binning_params);
 

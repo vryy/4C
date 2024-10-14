@@ -52,7 +52,7 @@ namespace Core::IO
 
 namespace FSI
 {
-  namespace UTILS
+  namespace Utils
   {
     /// Check whether fluid node numbers and ALE node numbers are equal.
     bool fluid_ale_nodes_disjoint(
@@ -195,7 +195,7 @@ namespace FSI
 
     };  // class SlideAleUtils
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FSI
 
 FOUR_C_NAMESPACE_CLOSE

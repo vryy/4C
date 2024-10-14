@@ -65,7 +65,7 @@ namespace LUBRICATION
     Teuchos::RCP<LUBRICATION::TimIntImpl> lubrication_field() { return lubrication_; }
 
     /// create result test for Lubrication field
-    Teuchos::RCP<Core::UTILS::ResultTest> create_lubrication_field_test();
+    Teuchos::RCP<Core::Utils::ResultTest> create_lubrication_field_test();
 
     virtual Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer();
 

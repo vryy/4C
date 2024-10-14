@@ -70,7 +70,7 @@ namespace Discret::ELEMENTS
     // setup default integration
     Core::FE::IntPointsAndWeights<Core::FE::dim<celltype>> intpoints(rule);
 
-    // format as Discret::UTILS::GaussIntegration
+    // format as Discret::Utils::GaussIntegration
     Teuchos::RCP<Core::FE::CollectedGaussPoints> gp =
         Teuchos::make_rcp<Core::FE::CollectedGaussPoints>();
 

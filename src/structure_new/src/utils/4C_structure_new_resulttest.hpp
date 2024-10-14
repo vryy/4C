@@ -49,7 +49,7 @@ namespace Solid
   }  // namespace ModelEvaluator
 
   /*! \brief Structure specific result test class */
-  class ResultTest : public Core::UTILS::ResultTest
+  class ResultTest : public Core::Utils::ResultTest
   {
     /// possible status flag for the result test
     enum class Status : char

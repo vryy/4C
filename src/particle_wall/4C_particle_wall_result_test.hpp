@@ -44,7 +44,7 @@ namespace PARTICLEWALL
    *
    * \author Sebastian Fuchs \date 03/2019
    */
-  class WallResultTest final : public Core::UTILS::ResultTest
+  class WallResultTest final : public Core::Utils::ResultTest
   {
    public:
     //! constructor

@@ -28,14 +28,14 @@ FOUR_C_NAMESPACE_OPEN
 Discret::ELEMENTS::ScaTraEleParameterTurbulence*
 Discret::ELEMENTS::ScaTraEleParameterTurbulence::instance(const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
+  static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
       [](const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleParameterTurbulence>(
             new ScaTraEleParameterTurbulence(disname));
       });
 
-  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].instance(Core::Utils::SingletonAction::create, disname);
 }
 
 

@@ -321,7 +321,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
 
       if (functnum >= 0)
         functfac[i] = Global::Problem::instance()
-                          ->function_by_id<Core::UTILS::FunctionOfTime>(functnum - 1)
+                          ->function_by_id<Core::Utils::FunctionOfTime>(functnum - 1)
                           .evaluate(time);
     }
 
@@ -510,7 +510,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
         {
           // evaluate function at the position of the current node       --> dof here correct?
           functionfac = Global::Problem::instance()
-                            ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                            ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                             .evaluate(X_ref.data(), time, dof);
         }
         else
@@ -687,7 +687,7 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 
     // Get integrationpoints for exact integration
     Core::FE::IntegrationPoints1D gausspoints =
-        Core::FE::IntegrationPoints1D(Discret::UTILS::mygaussruleeb);
+        Core::FE::IntegrationPoints1D(Discret::Utils::mygaussruleeb);
 
     // Get DiscretizationType of beam element
     const Core::FE::CellType distype = Shape();
@@ -2018,7 +2018,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_translational_damping(
 
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
-    Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_at_xi<nnode, vpernode>(
+    Discret::Utils::Beam::evaluate_shape_functions_and_derivs_at_xi<nnode, vpernode>(
         gausspoints.qxg[gp][0], N_i, N_i_xi, this->shape(), this->ref_length());
 
     // compute position vector r of point in physical space corresponding to Gauss point
@@ -2033,7 +2033,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_translational_damping(
 
     // compute velocity vector at this Gauss point via same interpolation as for centerline position
     // vector
-    Discret::UTILS::Beam::calc_interpolation<nnode, vpernode, 3, double>(vel, N_i, vel_rel);
+    Discret::Utils::Beam::calc_interpolation<nnode, vpernode, 3, double>(vel, N_i, vel_rel);
     vel_rel -= velbackground;
 
     // loop over lines and columns of damping matrix
@@ -2126,7 +2126,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_stochastic_forces(
 
   for (int gp = 0; gp < gausspoints.nquad; gp++)
   {
-    Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_at_xi<nnode, vpernode>(
+    Discret::Utils::Beam::evaluate_shape_functions_and_derivs_at_xi<nnode, vpernode>(
         gausspoints.qxg[gp][0], N_i, N_i_xi, this->shape(), this->ref_length());
 
     // compute tangent vector t_{\par}=r' at current Gauss point

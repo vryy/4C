@@ -58,10 +58,10 @@ void FLD::TimIntRedModels::init()
     discret_->set_state("dispnp", dispn_);
   }
 
-  vol_surf_flow_bc_ = Teuchos::make_rcp<UTILS::FluidVolumetricSurfaceFlowWrapper>(discret_, dta_);
+  vol_surf_flow_bc_ = Teuchos::make_rcp<Utils::FluidVolumetricSurfaceFlowWrapper>(discret_, dta_);
 
   // evaluate the map of the womersley bcs
-  vol_flow_rates_bc_extractor_ = Teuchos::make_rcp<FLD::UTILS::VolumetricFlowMapExtractor>();
+  vol_flow_rates_bc_extractor_ = Teuchos::make_rcp<FLD::Utils::VolumetricFlowMapExtractor>();
   vol_flow_rates_bc_extractor_->setup(*discret_);
   vol_surf_flow_bc_maps_ = Teuchos::make_rcp<Epetra_Map>(
       *(vol_flow_rates_bc_extractor_->volumetric_surface_flow_cond_map()));
@@ -89,7 +89,7 @@ void FLD::TimIntRedModels::init()
         discret_->set_state("dispnp", dispnp_);
       }
       coupled3D_redDbc_art_ =
-          Teuchos::make_rcp<UTILS::FluidCouplingWrapper<Adapter::ArtNet>>(discret_,
+          Teuchos::make_rcp<Utils::FluidCouplingWrapper<Adapter::ArtNet>>(discret_,
               ART_timeInt_->discretization(), ART_timeInt_, output_redD, dta_, ART_timeInt_->dt());
     }
 
@@ -108,7 +108,7 @@ void FLD::TimIntRedModels::init()
         discret_->set_state("dispnp", dispnp_);
       }
       coupled3D_redDbc_airways_ =
-          Teuchos::make_rcp<UTILS::FluidCouplingWrapper<Airway::RedAirwayImplicitTimeInt>>(discret_,
+          Teuchos::make_rcp<Utils::FluidCouplingWrapper<Airway::RedAirwayImplicitTimeInt>>(discret_,
               airway_imp_timeInt_->discretization(), airway_imp_timeInt_, output_redD, dta_,
               airway_imp_timeInt_->dt());
     }
@@ -117,7 +117,7 @@ void FLD::TimIntRedModels::init()
     zeros_->PutScalar(0.0);  // just in case of change
   }
 
-  traction_vel_comp_adder_bc_ = Teuchos::make_rcp<UTILS::TotalTractionCorrector>(discret_, dta_);
+  traction_vel_comp_adder_bc_ = Teuchos::make_rcp<Utils::TotalTractionCorrector>(discret_, dta_);
 
 
   // ------------------------------------------------------------------------------

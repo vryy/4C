@@ -117,7 +117,7 @@ namespace Discret
      public:
       /// Singleton access method
       static FluidEleCalcXFEM<distype>* instance(
-          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
       /// evaluate the XFEM cut element
       int evaluate_xfem(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,

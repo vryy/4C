@@ -33,7 +33,7 @@ SSTI::ThermoStructureOffDiagCoupling::ThermoStructureOffDiagCoupling(
     Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmapthermo,
     Teuchos::RCP<const Epetra_Map> full_map_structure,
     Teuchos::RCP<const Epetra_Map> full_map_thermo,
-    Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssti_structure_meshtying,
+    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssti_structure_meshtying,
     Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo,
     Teuchos::RCP<Adapter::SSIStructureWrapper> structure,
     Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo)
@@ -58,7 +58,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
 
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_mesh, eleparams);
 
   // remove state vectors from thermo discretization
@@ -284,10 +284,10 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
 {
   Teuchos::ParameterList condparams;
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_s2icoupling_od, condparams);
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::DifferentiationType>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::DifferentiationType>(
       "differentiationtype", ScaTra::DifferentiationType::disp, condparams);
 
   thermo_->scatra_field()->discretization()->clear_state();

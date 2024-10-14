@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::ShapeFunctionType sft>
-std::map<std::string, std::string> EleMag::UTILS::ScatraCloneStrategy<sft>::conditions_to_copy()
+std::map<std::string, std::string> EleMag::Utils::ScatraCloneStrategy<sft>::conditions_to_copy()
     const
 {
   return {{"Dirichlet", "Dirichlet"}};
@@ -34,7 +34,7 @@ std::map<std::string, std::string> EleMag::UTILS::ScatraCloneStrategy<sft>::cond
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::ShapeFunctionType sft>
-void EleMag::UTILS::ScatraCloneStrategy<sft>::check_material_type(const int matid)
+void EleMag::Utils::ScatraCloneStrategy<sft>::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -47,7 +47,7 @@ void EleMag::UTILS::ScatraCloneStrategy<sft>::check_material_type(const int mati
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::ShapeFunctionType sft>
-void EleMag::UTILS::ScatraCloneStrategy<sft>::set_element_data(
+void EleMag::Utils::ScatraCloneStrategy<sft>::set_element_data(
     Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
     const bool nurbsdis)
 {
@@ -77,7 +77,7 @@ void EleMag::UTILS::ScatraCloneStrategy<sft>::set_element_data(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::ShapeFunctionType sft>
-bool EleMag::UTILS::ScatraCloneStrategy<sft>::determine_ele_type(
+bool EleMag::Utils::ScatraCloneStrategy<sft>::determine_ele_type(
     Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // Clone it now.
@@ -91,6 +91,6 @@ bool EleMag::UTILS::ScatraCloneStrategy<sft>::determine_ele_type(
 }
 
 // template classes
-template class EleMag::UTILS::ScatraCloneStrategy<Core::FE::ShapeFunctionType::polynomial>;
-template class EleMag::UTILS::ScatraCloneStrategy<Core::FE::ShapeFunctionType::hdg>;
+template class EleMag::Utils::ScatraCloneStrategy<Core::FE::ShapeFunctionType::polynomial>;
+template class EleMag::Utils::ScatraCloneStrategy<Core::FE::ShapeFunctionType::hdg>;
 FOUR_C_NAMESPACE_CLOSE

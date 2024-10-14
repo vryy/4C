@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 namespace ParticleInteraction
 {
-  namespace UTILS
+  namespace Utils
   {
     /**
      *  \brief provide an efficient method to determine the power with integer exponents
@@ -248,7 +248,7 @@ namespace ParticleInteraction
 
     //@}
 
-  }  // namespace UTILS
+  }  // namespace Utils
 
 }  // namespace ParticleInteraction
 

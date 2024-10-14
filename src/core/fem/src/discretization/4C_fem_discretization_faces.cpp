@@ -150,7 +150,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
         break;
       }
       default:
-        FOUR_C_THROW("Core::FE::UTILS::build... not supported");
+        FOUR_C_THROW("Core::FE::Utils::build... not supported");
         break;
     }
 

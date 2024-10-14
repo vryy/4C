@@ -116,7 +116,7 @@ namespace Core::Geo
       /*!
       \brief get random position inside box
       */
-      void random_pos_within(Core::LinAlg::Matrix<3, 1>& pos, Core::UTILS::Random* random) const;
+      void random_pos_within(Core::LinAlg::Matrix<3, 1>& pos, Core::Utils::Random* random) const;
 
       /*!
        \brief If necessary make the boundingbox larger to include this point as one of the corners
@@ -187,7 +187,7 @@ namespace Core::Geo
       /*!
        \brief Apply dirichlet condition according to input file
       */
-      void apply_dirichlet(double timen, const Core::UTILS::FunctionManager& function_manager);
+      void apply_dirichlet(double timen, const Core::Utils::FunctionManager& function_manager);
 
       /*!
        \brief init runtime output object for bounding box discretization

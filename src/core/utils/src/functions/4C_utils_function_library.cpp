@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
 
-  Teuchos::RCP<Core::UTILS::FunctionOfScalar> create_library_function_scalar(
+  Teuchos::RCP<Core::Utils::FunctionOfScalar> create_library_function_scalar(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
     if (function_line_defs.size() != 1) return Teuchos::null;
@@ -43,7 +43,7 @@ namespace
       std::vector<double> coefficients =
           function_lin_def.container().get<std::vector<double>>("COEFF");
 
-      return Teuchos::make_rcp<Core::UTILS::FastPolynomialFunction>(std::move(coefficients));
+      return Teuchos::make_rcp<Core::Utils::FastPolynomialFunction>(std::move(coefficients));
     }
     else if (function_lin_def.container().get_or<bool>("CUBIC_SPLINE_FROM_CSV", false))
     {
@@ -53,7 +53,7 @@ namespace
       if (csv_file.empty())
         FOUR_C_THROW("You forgot to specify the *.csv file for cubic spline interpolation!");
 
-      return Teuchos::make_rcp<Core::UTILS::CubicSplineFromCSV>(csv_file.string());
+      return Teuchos::make_rcp<Core::Utils::CubicSplineFromCSV>(csv_file.string());
     }
     else
       return {Teuchos::null};
@@ -63,7 +63,7 @@ namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::UTILS::add_valid_library_functions(Core::UTILS::FunctionManager& function_manager)
+void Core::Utils::add_valid_library_functions(Core::Utils::FunctionManager& function_manager)
 {
   using namespace Input;
 
@@ -83,39 +83,39 @@ void Core::UTILS::add_valid_library_functions(Core::UTILS::FunctionManager& func
 }
 
 
-Core::UTILS::FastPolynomialFunction::FastPolynomialFunction(std::vector<double> coefficients)
+Core::Utils::FastPolynomialFunction::FastPolynomialFunction(std::vector<double> coefficients)
     : mypoly_(std::move(coefficients))
 {
 }
 
-double Core::UTILS::FastPolynomialFunction::evaluate(const double argument) const
+double Core::Utils::FastPolynomialFunction::evaluate(const double argument) const
 {
   return mypoly_.evaluate(argument);
 }
 
-double Core::UTILS::FastPolynomialFunction::evaluate_derivative(
+double Core::Utils::FastPolynomialFunction::evaluate_derivative(
     const double argument, const int deriv_order) const
 {
   return mypoly_.evaluate_derivative(argument, deriv_order);
 }
 
 
-Core::UTILS::CubicSplineFromCSV::CubicSplineFromCSV(const std::string& csv_file)
+Core::Utils::CubicSplineFromCSV::CubicSplineFromCSV(const std::string& csv_file)
 {
   auto vector_of_csv_columns = Core::IO::read_csv_as_columns(2, csv_file);
 
-  cubic_spline_ = std::make_unique<Core::UTILS::CubicSplineInterpolation>(
-      Core::UTILS::CubicSplineInterpolation(vector_of_csv_columns[0], vector_of_csv_columns[1]));
+  cubic_spline_ = std::make_unique<Core::Utils::CubicSplineInterpolation>(
+      Core::Utils::CubicSplineInterpolation(vector_of_csv_columns[0], vector_of_csv_columns[1]));
 }
 
 
-double Core::UTILS::CubicSplineFromCSV::evaluate(const double scalar) const
+double Core::Utils::CubicSplineFromCSV::evaluate(const double scalar) const
 {
   return cubic_spline_->evaluate(scalar);
 }
 
 
-double Core::UTILS::CubicSplineFromCSV::evaluate_derivative(
+double Core::Utils::CubicSplineFromCSV::evaluate_derivative(
     const double scalar, const int deriv_order) const
 {
   return cubic_spline_->evaluate_derivative(scalar, deriv_order);

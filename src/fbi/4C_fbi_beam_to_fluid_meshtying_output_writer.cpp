@@ -126,7 +126,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
       Core::Nodes::Node* current_node =
           couplingenforcer.get_structure()->get_discretization()->l_row_node(i_lid);
       couplingenforcer.get_structure()->get_discretization()->dof(current_node, gid_node);
-      if (BEAMINTERACTION::UTILS::is_beam_node(*current_node))
+      if (BEAMINTERACTION::Utils::is_beam_node(*current_node))
         for (unsigned int dim = 0; dim < 3; ++dim) gid_beam_dof.push_back(gid_node[dim]);
     }
     Epetra_Map beam_dof_map(-1, gid_beam_dof.size(), gid_beam_dof.data(), 0,
