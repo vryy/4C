@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                         vuong 08/16 |
  *----------------------------------------------------------------------*/
-std::map<int, std::set<int>> POROMULTIPHASE::UTILS::setup_discretizations_and_field_coupling(
+std::map<int, std::set<int>> POROMULTIPHASE::Utils::setup_discretizations_and_field_coupling(
     const Epetra_Comm& comm, const std::string& struct_disname, const std::string& fluid_disname,
     int& nds_disp, int& nds_vel, int& nds_solidpressure)
 {
@@ -79,7 +79,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::setup_discretizations_and_fi
       case Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::ntp:
       {
         // perform extended ghosting on artery discretization
-        nearbyelepairs = POROFLUIDMULTIPHASE::UTILS::extended_ghosting_artery_discretization(
+        nearbyelepairs = POROFLUIDMULTIPHASE::Utils::extended_ghosting_artery_discretization(
             *structdis, arterydis, evaluate_on_lateral_surface, arterycoupl);
         break;
       }
@@ -98,7 +98,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::setup_discretizations_and_fi
   if (fluiddis->num_global_nodes() == 0)
   {
     // fill poro fluid discretization by cloning structure discretization
-    Core::FE::clone_discretization<POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy>(
+    Core::FE::clone_discretization<POROMULTIPHASE::Utils::PoroFluidMultiPhaseCloneStrategy>(
         *structdis, *fluiddis, Global::Problem::instance()->cloning_material_map());
   }
   else
@@ -139,7 +139,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::UTILS::setup_discretizations_and_fi
 /*----------------------------------------------------------------------*
  | exchange material pointers of both discretizations       vuong 08/16 |
  *----------------------------------------------------------------------*/
-void POROMULTIPHASE::UTILS::assign_material_pointers(
+void POROMULTIPHASE::Utils::assign_material_pointers(
     const std::string& struct_disname, const std::string& fluid_disname)
 {
   Global::Problem* problem = Global::Problem::instance();
@@ -147,14 +147,14 @@ void POROMULTIPHASE::UTILS::assign_material_pointers(
   Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
   Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
 
-  PoroElast::UTILS::set_material_pointers_matching_grid(*structdis, *fluiddis);
+  PoroElast::Utils::set_material_pointers_matching_grid(*structdis, *fluiddis);
 }
 
 /*----------------------------------------------------------------------*
  | create algorithm                                                      |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase>
-POROMULTIPHASE::UTILS::create_poro_multi_phase_algorithm(
+POROMULTIPHASE::Utils::create_poro_multi_phase_algorithm(
     Inpar::POROMULTIPHASE::SolutionSchemeOverFields solscheme,
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
 {
@@ -196,7 +196,7 @@ POROMULTIPHASE::UTILS::create_poro_multi_phase_algorithm(
 /*----------------------------------------------------------------------*
  | calculate vector norm                             kremheller 07/17   |
  *----------------------------------------------------------------------*/
-double POROMULTIPHASE::UTILS::calculate_vector_norm(
+double POROMULTIPHASE::Utils::calculate_vector_norm(
     const enum Inpar::POROMULTIPHASE::VectorNorm norm, const Core::LinAlg::Vector<double>& vect)
 {
   // L1 norm

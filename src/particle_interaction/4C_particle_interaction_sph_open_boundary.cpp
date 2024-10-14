@@ -111,10 +111,10 @@ void ParticleInteraction::SPHOpenBoundaryBase::check_open_boundary_phase_change(
 
     // compute distance of open boundary particle from plane
     std::vector<double> temp(3);
-    UTILS::vec_set(temp.data(), pos_i);
-    UTILS::vec_sub(temp.data(), planepoint_.data());
+    Utils::vec_set(temp.data(), pos_i);
+    Utils::vec_sub(temp.data(), planepoint_.data());
 
-    const double distancefromplane = UTILS::vec_dot(temp.data(), outwardnormal_.data());
+    const double distancefromplane = Utils::vec_dot(temp.data(), outwardnormal_.data());
 
     // open boundary particle traveled over plane
     if (distancefromplane < -toleranceopenboundarytofluid)
@@ -129,7 +129,7 @@ void ParticleInteraction::SPHOpenBoundaryBase::check_open_boundary_phase_change(
           std::make_shared<PARTICLEENGINE::ParticleObject>(fluidphase_, -1, particlestates));
 
       // shift open boundary particle back
-      UTILS::vec_add_scale(
+      Utils::vec_add_scale(
           pos_i, numparticleperdir * initialparticlespacing, outwardnormal_.data());
     }
     // open boundary particle more than maximum interaction distance away from plane
@@ -158,10 +158,10 @@ void ParticleInteraction::SPHOpenBoundaryBase::check_open_boundary_phase_change(
 
     // compute distance of fluid particle from plane
     std::vector<double> temp(3);
-    UTILS::vec_set(temp.data(), pos_j);
-    UTILS::vec_sub(temp.data(), planepoint_.data());
+    Utils::vec_set(temp.data(), pos_j);
+    Utils::vec_sub(temp.data(), planepoint_.data());
 
-    const double distancefromplane = UTILS::vec_dot(temp.data(), outwardnormal_.data());
+    const double distancefromplane = Utils::vec_dot(temp.data(), outwardnormal_.data());
 
     // fluid particle traveled over plane
     if (distancefromplane > 0.0)
@@ -231,9 +231,9 @@ void ParticleInteraction::SPHOpenBoundaryDirichlet::init()
           static_cast<int>(outwardnormal_.size()));
 
     // normalize outward normal
-    const double norm = UTILS::vec_norm_two(outwardnormal_.data());
+    const double norm = Utils::vec_norm_two(outwardnormal_.data());
     if (not(norm > 0.0)) FOUR_C_THROW("no outward normal set!");
-    UTILS::vec_set_scale(outwardnormal_.data(), 1.0 / norm, outwardnormal_.data());
+    Utils::vec_set_scale(outwardnormal_.data(), 1.0 / norm, outwardnormal_.data());
   }
 
   // init plain point
@@ -289,7 +289,7 @@ void ParticleInteraction::SPHOpenBoundaryDirichlet::prescribe_open_boundary_stat
 
   // get reference to function
   const auto& function =
-      Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+      Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(
           prescribedstatefunctid_ - 1);
 
   // safety check
@@ -304,7 +304,7 @@ void ParticleInteraction::SPHOpenBoundaryDirichlet::prescribe_open_boundary_stat
     double* vel_i = container_i->get_ptr_to_state(PARTICLEENGINE::Velocity, particle_i);
 
     // evaluate function to set velocity
-    UTILS::vec_set_scale(vel_i, -function.evaluate(pos_i, evaltime, 0), outwardnormal_.data());
+    Utils::vec_set_scale(vel_i, -function.evaluate(pos_i, evaltime, 0), outwardnormal_.data());
   }
 }
 
@@ -432,9 +432,9 @@ void ParticleInteraction::SPHOpenBoundaryNeumann::init()
           static_cast<int>(outwardnormal_.size()));
 
     // normalize outward normal
-    const double direction_norm = UTILS::vec_norm_two(outwardnormal_.data());
+    const double direction_norm = Utils::vec_norm_two(outwardnormal_.data());
     if (not(direction_norm > 0.0)) FOUR_C_THROW("no outward normal set!");
-    UTILS::vec_set_scale(outwardnormal_.data(), 1.0 / direction_norm, outwardnormal_.data());
+    Utils::vec_set_scale(outwardnormal_.data(), 1.0 / direction_norm, outwardnormal_.data());
   }
 
   // init plain point
@@ -499,7 +499,7 @@ void ParticleInteraction::SPHOpenBoundaryNeumann::prescribe_open_boundary_states
   {
     // get reference to function
     const auto& function =
-        Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+        Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(
             prescribedstatefunctid_ - 1);
 
     // safety check

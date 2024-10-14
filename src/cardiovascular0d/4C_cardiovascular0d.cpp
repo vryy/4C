@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
-UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization> discr,
+Utils::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization> discr,
     const std::string& conditionname, std::vector<int>& curID)
     : actdisc_(discr),
       cardiovascular0dcond_(0),
@@ -212,7 +212,7 @@ UTILS::Cardiovascular0D::Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization>
 /*-----------------------------------------------------------------------*
 |(private)                                                      mhv 10/13|
  *-----------------------------------------------------------------------*/
-UTILS::Cardiovascular0D::Cardiovascular0DType UTILS::Cardiovascular0D::get_cardiovascular0_d_type(
+Utils::Cardiovascular0D::Cardiovascular0DType Utils::Cardiovascular0D::get_cardiovascular0_d_type(
     const std::string& name)
 {
   if (name == "Cardiovascular0D4ElementWindkesselStructureCond")
@@ -230,7 +230,7 @@ UTILS::Cardiovascular0D::Cardiovascular0DType UTILS::Cardiovascular0D::get_cardi
 |(public)                                                      mhv 10/13  |
 |Initialization routine computes ref base values and activates conditions |
  *------------------------------------------------------------------------*/
-void UTILS::Cardiovascular0D::initialize(Teuchos::ParameterList& params,
+void Utils::Cardiovascular0D::initialize(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec1,
     Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2)
 {
@@ -243,7 +243,7 @@ void UTILS::Cardiovascular0D::initialize(Teuchos::ParameterList& params,
 |(public)                                                       mhv 10/13|
 |Evaluate Cardiovascular0D functions, choose the right action based on type    |
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0D::evaluate(Teuchos::ParameterList& params,
+void Utils::Cardiovascular0D::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3,
@@ -258,7 +258,7 @@ void UTILS::Cardiovascular0D::evaluate(Teuchos::ParameterList& params,
 }
 
 
-void UTILS::Cardiovascular0D::evaluate_d_struct_dp(
+void Utils::Cardiovascular0D::evaluate_d_struct_dp(
     Teuchos::ParameterList& params, Core::LinAlg::SparseOperator& sysmat)
 {
   // get structural time-integrator dependent values
@@ -497,7 +497,7 @@ void UTILS::Cardiovascular0D::evaluate_d_struct_dp(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0D::set_state(const std::string& state,  ///< name of state to set
+void Utils::Cardiovascular0D::set_state(const std::string& state,  ///< name of state to set
     Teuchos::RCP<Core::LinAlg::Vector<double>> V                   ///< values to set
 )
 {

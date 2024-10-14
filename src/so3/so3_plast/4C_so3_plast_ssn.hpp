@@ -34,7 +34,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace UTILS
+  namespace Utils
   {
     struct PlastSsnData;
   }

@@ -64,7 +64,7 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_scatra_thermo_dom
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_scatrathermo, eleparams);
 
   // remove state vectors from scatra discretization
@@ -124,7 +124,7 @@ void STI::ScatraThermoOffDiagCoupling::evaluate_off_diag_block_thermo_scatra_dom
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_thermoscatra, eleparams);
 
   // remove state vectors from thermo discretization
@@ -282,11 +282,11 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_scatra_thermo_inter
   Teuchos::ParameterList condparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_s2icoupling_od, condparams);
 
   // set type of differentiation to temperature
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::DifferentiationType>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::DifferentiationType>(
       "differentiationtype", ScaTra::DifferentiationType::temp, condparams);
 
   // remove state vectors from scalar transport discretization
@@ -470,11 +470,11 @@ void STI::ScatraThermoOffDiagCouplingMatchingNodes::evaluate_off_diag_block_ther
   Teuchos::ParameterList condparams;
 
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_s2icoupling_od, condparams);
 
   // set differentiation type to elch
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::DifferentiationType>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::DifferentiationType>(
       "differentiationtype", ScaTra::DifferentiationType::elch, condparams);
 
   // create strategy for assembly of auxiliary system matrices

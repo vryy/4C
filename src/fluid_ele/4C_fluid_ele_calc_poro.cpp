@@ -33,9 +33,9 @@ FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleCalcPoro<distype>*
-Discret::ELEMENTS::FluidEleCalcPoro<distype>::instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::FluidEleCalcPoro<distype>::instance(Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcPoro<distype>>(
@@ -6365,14 +6365,14 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENT
         {
           const double u_exact_x =
               Global::Problem::instance()
-                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
+                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no - 1)
                   .evaluate(position.data(), t, 0);
           const double u_exact_y =
               Global::Problem::instance()
-                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
+                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no - 1)
                   .evaluate(position.data(), t, 1);
           const double p_exact = Global::Problem::instance()
-                                     ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
+                                     ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no - 1)
                                      .evaluate(position.data(), t, 2);
 
           u(0) = u_exact_x;
@@ -6383,18 +6383,18 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENT
         {
           const double u_exact_x =
               Global::Problem::instance()
-                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
+                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no - 1)
                   .evaluate(position.data(), t, 0);
           const double u_exact_y =
               Global::Problem::instance()
-                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
+                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no - 1)
                   .evaluate(position.data(), t, 1);
           const double u_exact_z =
               Global::Problem::instance()
-                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
+                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no - 1)
                   .evaluate(position.data(), t, 2);
           const double p_exact = Global::Problem::instance()
-                                     ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
+                                     ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no - 1)
                                      .evaluate(position.data(), t, 3);
 
           u(0) = u_exact_x;

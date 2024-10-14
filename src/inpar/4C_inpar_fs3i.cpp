@@ -28,27 +28,27 @@ void Inpar::FS3I::set_valid_parameters(Teuchos::ParameterList& list)
   Teuchos::ParameterList& fs3idyn =
       list.sublist("FS3I DYNAMIC", false, "control parameters for FS3I problems\n");
 
-  Core::UTILS::double_parameter("TIMESTEP", 0.1, "Time increment dt", &fs3idyn);
-  Core::UTILS::int_parameter("NUMSTEP", 20, "Total number of time steps", &fs3idyn);
-  Core::UTILS::double_parameter("MAXTIME", 1000.0, "Total simulation time", &fs3idyn);
-  Core::UTILS::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &fs3idyn);
-  Core::UTILS::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &fs3idyn);
+  Core::Utils::double_parameter("TIMESTEP", 0.1, "Time increment dt", &fs3idyn);
+  Core::Utils::int_parameter("NUMSTEP", 20, "Total number of time steps", &fs3idyn);
+  Core::Utils::double_parameter("MAXTIME", 1000.0, "Total simulation time", &fs3idyn);
+  Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &fs3idyn);
+  Core::Utils::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &fs3idyn);
   setStringToIntegralParameter<Inpar::ScaTra::SolverType>("SCATRA_SOLVERTYPE", "nonlinear",
       "type of scalar transport solver", tuple<std::string>("linear", "nonlinear"),
       tuple<Inpar::ScaTra::SolverType>(
           Inpar::ScaTra::solvertype_linear_incremental, Inpar::ScaTra::solvertype_nonlinear),
       &fs3idyn);
-  Core::UTILS::bool_parameter("INF_PERM", "yes", "Flag for infinite permeability", &fs3idyn);
+  Core::Utils::bool_parameter("INF_PERM", "yes", "Flag for infinite permeability", &fs3idyn);
   std::vector<std::string> consthermpress_valid_input = {"No_energy", "No_mass", "Yes"};
-  Core::UTILS::string_parameter("CONSTHERMPRESS", "Yes",
+  Core::Utils::string_parameter("CONSTHERMPRESS", "Yes",
       "treatment of thermodynamic pressure in time", &fs3idyn, consthermpress_valid_input);
 
   // number of linear solver used for fs3i problems
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "COUPLED_LINEAR_SOLVER", -1, "number of linear solver used for fs3i problem", &fs3idyn);
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "LINEAR_SOLVER1", -1, "number of linear solver used for fluid problem", &fs3idyn);
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "LINEAR_SOLVER2", -1, "number of linear solver used for structural problem", &fs3idyn);
 
   setStringToIntegralParameter<Inpar::ScaTra::ConvForm>("STRUCTSCAL_CONVFORM", "conservative",
@@ -65,7 +65,7 @@ void Inpar::FS3I::set_valid_parameters(Teuchos::ParameterList& list)
           Inpar::ScaTra::initfield_zero_field, Inpar::ScaTra::initfield_field_by_function),
       &fs3idyn);
 
-  Core::UTILS::int_parameter("STRUCTSCAL_INITFUNCNO", -1,
+  Core::Utils::int_parameter("STRUCTSCAL_INITFUNCNO", -1,
       "function number for structure scalar transport initial field", &fs3idyn);
 
   // Type of coupling strategy between structure and structure-scalar field
@@ -91,7 +91,7 @@ void Inpar::FS3I::set_valid_parameters(Teuchos::ParameterList& list)
       &fs3idyn);
 
   // Restart from FSI instead of FS3I
-  Core::UTILS::bool_parameter("RESTART_FROM_PART_FSI", "No",
+  Core::Utils::bool_parameter("RESTART_FROM_PART_FSI", "No",
       "restart from partitioned fsi problem (e.g. from prestress calculations) instead of fs3i",
       &fs3idyn);
 
@@ -108,10 +108,10 @@ void Inpar::FS3I::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<SolutionSchemeOverFields>(fs3i_SequStagg, fs3i_IterStagg), &fs3idynpart);
 
   // convergence tolerance of outer iteration loop
-  Core::UTILS::double_parameter("CONVTOL", 1e-6,
+  Core::Utils::double_parameter("CONVTOL", 1e-6,
       "tolerance for convergence check of outer iteration within partitioned FS3I", &fs3idynpart);
 
-  Core::UTILS::int_parameter("ITEMAX", 10, "Maximum number of outer iterations", &fs3idynpart);
+  Core::Utils::int_parameter("ITEMAX", 10, "Maximum number of outer iterations", &fs3idynpart);
 
   /*----------------------------------------------------------------------  */
   /* parameters for stabilization of the structure-scalar field             */

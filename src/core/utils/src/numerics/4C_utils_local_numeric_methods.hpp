@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   /*!
    * @brief Structure holding the values of a function f(x) and its first derivative dfdx(x) and
@@ -82,7 +82,7 @@ namespace Core::UTILS
   double second_derivative_central_differences(
       const double f_i_minus_1, const double f_i, const double f_i_plus_1, const double delta_x);
 
-}  // namespace Core::UTILS
+}  // namespace Core::Utils
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -45,7 +45,7 @@ namespace FLD
 {
   class FluidImplicitTimeInt;
   class TransferTurbulentInflowConditionNodal;
-  namespace UTILS
+  namespace Utils
   {
     class StressManager;
   }
@@ -57,7 +57,7 @@ namespace FLD
     XWall(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
         Teuchos::RCP<Teuchos::ParameterList>& params,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
-        Teuchos::RCP<FLD::UTILS::StressManager> wssmanager);
+        Teuchos::RCP<FLD::Utils::StressManager> wssmanager);
 
     /// Destructor
     virtual ~XWall() = default;
@@ -149,7 +149,7 @@ namespace FLD
     Teuchos::RCP<Teuchos::ParameterList> params_;
 
     //! manager for wall shear stress
-    Teuchos::RCP<FLD::UTILS::StressManager> mystressmanager_;
+    Teuchos::RCP<FLD::Utils::StressManager> mystressmanager_;
 
     //! the processor ID from the communicator
     int myrank_;
@@ -303,7 +303,7 @@ namespace FLD
     XWallAleFSI(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
         Teuchos::RCP<Teuchos::ParameterList>& params,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
-        Teuchos::RCP<FLD::UTILS::StressManager> wssmanager,
+        Teuchos::RCP<FLD::Utils::StressManager> wssmanager,
         Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp,
         Teuchos::RCP<Core::LinAlg::Vector<double>> gridv);
 

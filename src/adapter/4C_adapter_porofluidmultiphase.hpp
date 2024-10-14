@@ -60,7 +60,7 @@ namespace Adapter
         ) = 0;
 
     /// create result test for multiphase porous fluid field
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() = 0;
+    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test() = 0;
 
     /// read restart
     virtual void read_restart(int restart) = 0;

@@ -54,15 +54,15 @@ bool BEAMINTERACTION::Geo::point_to_curve_projection(Core::LinAlg::Matrix<3, 1, 
   for (unsigned int iter = 0; iter < POINT_TO_CURVE_PROJECTION_MAX_NUM_ITER; ++iter)
   {
     // update shape functions and their derivatives
-    Discret::UTILS::Beam::evaluate_shape_functions_and_derivs_and2nd_derivs_at_xi<numnodes,
+    Discret::Utils::Beam::evaluate_shape_functions_and_derivs_and2nd_derivs_at_xi<numnodes,
         numnodalvalues, T>(xi_master, N_i, N_i_xi, N_i_xixi, master_distype, master_ele_ref_length);
 
     // update coordinates and derivatives of contact points
-    Discret::UTILS::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T>(
+    Discret::Utils::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T>(
         master_centerline_dof_values, N_i, r_master);
-    Discret::UTILS::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T>(
+    Discret::Utils::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T>(
         master_centerline_dof_values, N_i_xi, r_xi_master);
-    Discret::UTILS::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T>(
+    Discret::Utils::Beam::calc_interpolation<numnodes, numnodalvalues, 3, T, T>(
         master_centerline_dof_values, N_i_xixi, r_xixi_master);
 
     // use delta_r = r1-r2 as auxiliary quantity

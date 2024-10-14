@@ -47,7 +47,7 @@ namespace Core::Elements
 
 namespace XFEM
 {
-  namespace UTILS
+  namespace Utils
   {
     void print_discretization_to_stream(Teuchos::RCP<Core::FE::Discretization> dis,
         const std::string& disname, bool elements, bool elecol, bool nodes, bool nodecol,
@@ -165,7 +165,7 @@ namespace XFEM
           const Core::Conditions::Condition* src_cond, const std::vector<int>& nodecolvec,
           const Epetra_Comm& comm) const;
     };  // class XFEMDiscretizationBuilder
-  }     // namespace UTILS
+  }     // namespace Utils
 
   class DiscretizationXWall : public Core::FE::DiscretizationFaces
   {

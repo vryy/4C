@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
+void Core::FE::Utils::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector, const Epetra_Map* col_ele_map)
 {
@@ -36,7 +36,7 @@ void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::Param
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
+void Core::FE::Utils::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
     std::vector<Teuchos::RCP<Core::LinAlg::SparseOperator>>& systemmatrices,
     std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& systemvectors,
     const Epetra_Map* col_ele_map)
@@ -58,10 +58,10 @@ void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::Param
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
+void Core::FE::Utils::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
     Core::FE::AssembleStrategy& strategy, const Epetra_Map* col_ele_map)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate");
+  TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Utils::Evaluate");
 
   if (!discret.filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!discret.have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -74,7 +74,7 @@ void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::Param
   // for most element types, just the base class dummy is called
   // that does nothing
   {
-    TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate pre_evaluate");
+    TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Utils::Evaluate pre_evaluate");
     Core::Communication::ParObjectFactory::instance().pre_evaluate(discret, eparams,
         strategy.systemmatrix1(), strategy.systemmatrix2(), strategy.systemvector1(),
         strategy.systemvector2(), strategy.systemvector3());
@@ -104,13 +104,13 @@ void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::Param
       actele = discret.l_col_element(i);
 
     {
-      TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate LocationVector");
+      TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Utils::Evaluate LocationVector");
       // get element location vector, dirichlet flags and ownerships
       actele->location_vector(discret, la, false);
     }
 
     {
-      TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate Resize");
+      TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Utils::Evaluate Resize");
 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
@@ -118,7 +118,7 @@ void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::Param
     }
 
     {
-      TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate elements");
+      TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Utils::Evaluate elements");
       // call the element evaluate method
       int err = actele->evaluate(eparams, discret, la, strategy.elematrix1(), strategy.elematrix2(),
           strategy.elevector1(), strategy.elevector2(), strategy.elevector3());
@@ -128,7 +128,7 @@ void Core::FE::UTILS::evaluate(Core::FE::Discretization& discret, Teuchos::Param
     }
 
     {
-      TEUCHOS_FUNC_TIME_MONITOR("Core::FE::UTILS::Evaluate assemble");
+      TEUCHOS_FUNC_TIME_MONITOR("Core::FE::Utils::Evaluate assemble");
       int eid = actele->id();
       strategy.assemble_matrix1(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);
       strategy.assemble_matrix2(eid, la[row].lm_, la[col].lm_, la[row].lmowner_, la[col].stride_);

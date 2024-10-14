@@ -43,7 +43,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 11/13|
  *----------------------------------------------------------------------*/
-UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
+Utils::Cardiovascular0DManager::Cardiovascular0DManager(
     Teuchos::RCP<Core::FE::Discretization> discr,
     Teuchos::RCP<const Core::LinAlg::Vector<double>> disp, Teuchos::ParameterList strparams,
     Teuchos::ParameterList cv0dparams, Core::LinAlg::Solver& solver,
@@ -145,7 +145,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
     Teuchos::ParameterList p;
     const double time = 0.0;
     p.set("total time", time);
-    p.set<const Core::UTILS::FunctionManager*>(
+    p.set<const Core::Utils::FunctionManager*>(
         "function_manager", &Global::Problem::instance()->function_manager());
     actdisc_->evaluate_dirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
@@ -327,7 +327,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
 
 
     // Create resulttest
-    Teuchos::RCP<Core::UTILS::ResultTest> resulttest =
+    Teuchos::RCP<Core::Utils::ResultTest> resulttest =
         Teuchos::make_rcp<Cardiovascular0DResultTest>(*this, actdisc_);
 
     // Resulttest for 0D problem
@@ -342,7 +342,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
 |do all the time integration, evaluation and assembling of stiffnesses   |
 |and right-hand sides                                                    |
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DManager::evaluate_force_stiff(const double time,
+void Utils::Cardiovascular0DManager::evaluate_force_stiff(const double time,
     Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
     Teuchos::RCP<Core::LinAlg::Vector<double>> fint,
     Teuchos::RCP<Core::LinAlg::SparseOperator> stiff, Teuchos::ParameterList scalelist)
@@ -436,7 +436,7 @@ void UTILS::Cardiovascular0DManager::evaluate_force_stiff(const double time,
   return;
 }
 
-void UTILS::Cardiovascular0DManager::update_time_step()
+void Utils::Cardiovascular0DManager::update_time_step()
 {
   if (t_period_ > 0.0 and modulo_is_realtive_zero(totaltime_, t_period_, totaltime_))
   {
@@ -462,7 +462,7 @@ void UTILS::Cardiovascular0DManager::update_time_step()
   return;
 }
 
-void UTILS::Cardiovascular0DManager::check_periodic()  // not yet thoroughly tested!
+void Utils::Cardiovascular0DManager::check_periodic()  // not yet thoroughly tested!
 {
   Core::LinAlg::Vector<double> cv0ddof_T_N_red(*redcardiovascular0dmap_);
   Core::LinAlg::Vector<double> cv0ddof_T_NP_red(*redcardiovascular0dmap_);
@@ -494,7 +494,7 @@ void UTILS::Cardiovascular0DManager::check_periodic()  // not yet thoroughly tes
 /*----------------------------------------------------------------------*
  | Compare if two doubles are relatively equal               Thon 08/15 |
  *----------------------------------------------------------------------*/
-bool UTILS::Cardiovascular0DManager::is_realtive_equal_to(
+bool Utils::Cardiovascular0DManager::is_realtive_equal_to(
     const double A, const double B, const double Ref)
 {
   return ((fabs(A - B) / Ref) < 1e-12);
@@ -503,7 +503,7 @@ bool UTILS::Cardiovascular0DManager::is_realtive_equal_to(
 /*----------------------------------------------------------------------*
  | Compare if A mod B is relatively equal to zero            Thon 08/15 |
  *----------------------------------------------------------------------*/
-bool UTILS::Cardiovascular0DManager::modulo_is_realtive_zero(
+bool Utils::Cardiovascular0DManager::modulo_is_realtive_zero(
     const double value, const double modulo, const double Ref)
 {
   return is_realtive_equal_to(fmod(value + modulo / 2, modulo) - modulo / 2, 0.0, Ref);
@@ -511,7 +511,7 @@ bool UTILS::Cardiovascular0DManager::modulo_is_realtive_zero(
 
 
 
-void UTILS::Cardiovascular0DManager::reset_step()
+void Utils::Cardiovascular0DManager::reset_step()
 {
   cv0ddof_np_->Update(1.0, *cv0ddof_n_, 0.0);
   v_np_->Update(1.0, *v_n_, 0.0);
@@ -524,7 +524,7 @@ void UTILS::Cardiovascular0DManager::reset_step()
 
 /*----------------------------------------------------------------------*/
 /* iterative iteration update of state */
-void UTILS::Cardiovascular0DManager::update_cv0_d_dof(
+void Utils::Cardiovascular0DManager::update_cv0_d_dof(
     Core::LinAlg::Vector<double>& cv0ddofincrement)
 {
   // new end-point solution
@@ -538,7 +538,7 @@ void UTILS::Cardiovascular0DManager::update_cv0_d_dof(
 |(public)                                                      mhv 03/15|
 |Read restart information                                               |
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DManager::read_restart(
+void Utils::Cardiovascular0DManager::read_restart(
     Core::IO::DiscretizationReader& reader, const double& time)
 {
   // check if restart from non-Cardiovascular0D simulation is desired
@@ -570,7 +570,7 @@ void UTILS::Cardiovascular0DManager::read_restart(
 }
 
 /*----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling(
+void Utils::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling(
     Teuchos::ParameterList params, Core::LinAlg::Vector<double>& actpres,
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix)
@@ -692,7 +692,7 @@ void UTILS::Cardiovascular0DManager::evaluate_neumann_cardiovascular0_d_coupling
 }
 
 
-void UTILS::Cardiovascular0DManager::print_pres_flux(bool init) const
+void Utils::Cardiovascular0DManager::print_pres_flux(bool init) const
 {
   // prepare stuff for printing to screen
   // ATTENTION: we print the mid-point pressure (NOT the end-point pressure at t_{n+1}),
@@ -898,7 +898,7 @@ void UTILS::Cardiovascular0DManager::print_pres_flux(bool init) const
 /*----------------------------------------------------------------------*
  |  set-up (public)                                            mhv 11/13|
  *----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DManager::solver_setup(
+void Utils::Cardiovascular0DManager::solver_setup(
     Core::LinAlg::Solver& solver, Teuchos::ParameterList params)
 {
   solver_ = Teuchos::rcpFromRef(solver);
@@ -917,7 +917,7 @@ void UTILS::Cardiovascular0DManager::solver_setup(
 
 
 
-int UTILS::Cardiovascular0DManager::solve(Core::LinAlg::SparseMatrix& mat_structstiff,
+int Utils::Cardiovascular0DManager::solve(Core::LinAlg::SparseMatrix& mat_structstiff,
     Core::LinAlg::Vector<double>& dispinc, Core::LinAlg::Vector<double>& rhsstruct,
     const double k_ptc)
 {

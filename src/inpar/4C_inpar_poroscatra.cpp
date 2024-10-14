@@ -29,38 +29,38 @@ void Inpar::PoroScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       "POROSCATRA CONTROL", false, "Control paramters for scatra porous media coupling");
 
   // Output type
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &poroscatradyn);
   // Time loop control
-  Core::UTILS::int_parameter("NUMSTEP", 200, "maximum number of Timesteps", &poroscatradyn);
-  Core::UTILS::double_parameter("MAXTIME", 1000.0, "total simulation time", &poroscatradyn);
-  Core::UTILS::double_parameter("TIMESTEP", 0.05, "time step size dt", &poroscatradyn);
-  Core::UTILS::int_parameter("RESULTSEVRY", 1, "increment for writing solution", &poroscatradyn);
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter("NUMSTEP", 200, "maximum number of Timesteps", &poroscatradyn);
+  Core::Utils::double_parameter("MAXTIME", 1000.0, "total simulation time", &poroscatradyn);
+  Core::Utils::double_parameter("TIMESTEP", 0.05, "time step size dt", &poroscatradyn);
+  Core::Utils::int_parameter("RESULTSEVRY", 1, "increment for writing solution", &poroscatradyn);
+  Core::Utils::int_parameter(
       "ITEMAX", 10, "maximum number of iterations over fields", &poroscatradyn);
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "ITEMIN", 1, "minimal number of iterations over fields", &poroscatradyn);
 
   // Iterationparameters
-  Core::UTILS::double_parameter("TOLRES_GLOBAL", 1e-8,
+  Core::Utils::double_parameter("TOLRES_GLOBAL", 1e-8,
       "tolerance in the residual norm for the Newton iteration", &poroscatradyn);
-  Core::UTILS::double_parameter("TOLINC_GLOBAL", 1e-8,
+  Core::Utils::double_parameter("TOLINC_GLOBAL", 1e-8,
       "tolerance in the increment norm for the Newton iteration", &poroscatradyn);
-  Core::UTILS::double_parameter("TOLRES_DISP", 1e-8,
+  Core::Utils::double_parameter("TOLRES_DISP", 1e-8,
       "tolerance in the residual norm for the Newton iteration", &poroscatradyn);
-  Core::UTILS::double_parameter("TOLINC_DISP", 1e-8,
+  Core::Utils::double_parameter("TOLINC_DISP", 1e-8,
       "tolerance in the increment norm for the Newton iteration", &poroscatradyn);
-  Core::UTILS::double_parameter("TOLRES_VEL", 1e-8,
+  Core::Utils::double_parameter("TOLRES_VEL", 1e-8,
       "tolerance in the residual norm for the Newton iteration", &poroscatradyn);
-  Core::UTILS::double_parameter("TOLINC_VEL", 1e-8,
+  Core::Utils::double_parameter("TOLINC_VEL", 1e-8,
       "tolerance in the increment norm for the Newton iteration", &poroscatradyn);
-  Core::UTILS::double_parameter("TOLRES_PRES", 1e-8,
+  Core::Utils::double_parameter("TOLRES_PRES", 1e-8,
       "tolerance in the residual norm for the Newton iteration", &poroscatradyn);
-  Core::UTILS::double_parameter("TOLINC_PRES", 1e-8,
+  Core::Utils::double_parameter("TOLINC_PRES", 1e-8,
       "tolerance in the increment norm for the Newton iteration", &poroscatradyn);
-  Core::UTILS::double_parameter("TOLRES_SCALAR", 1e-8,
+  Core::Utils::double_parameter("TOLRES_SCALAR", 1e-8,
       "tolerance in the residual norm for the Newton iteration", &poroscatradyn);
-  Core::UTILS::double_parameter("TOLINC_SCALAR", 1e-8,
+  Core::Utils::double_parameter("TOLINC_SCALAR", 1e-8,
       "tolerance in the increment norm for the Newton iteration", &poroscatradyn);
 
   setStringToIntegralParameter<Inpar::PoroElast::ConvNorm>("NORM_INC", "AbsSingleFields",
@@ -100,7 +100,7 @@ void Inpar::PoroScaTra::set_valid_parameters(Teuchos::ParameterList& list)
       &poroscatradyn);
 
   // number of linear solver used for poroelasticity
-  Core::UTILS::int_parameter("LINEAR_SOLVER", -1,
+  Core::Utils::int_parameter("LINEAR_SOLVER", -1,
       "number of linear solver used for monolithic poroscatra problems", &poroscatradyn);
 
   // Coupling strategy for poroscatra solvers
@@ -111,7 +111,7 @@ void Inpar::PoroScaTra::set_valid_parameters(Teuchos::ParameterList& list)
           Monolithic, Part_ScatraToPoro, Part_PoroToScatra, Part_TwoWay),
       &poroscatradyn);
 
-  Core::UTILS::bool_parameter("MATCHINGGRID", "Yes", "is matching grid", &poroscatradyn);
+  Core::Utils::bool_parameter("MATCHINGGRID", "Yes", "is matching grid", &poroscatradyn);
 }
 
 FOUR_C_NAMESPACE_CLOSE

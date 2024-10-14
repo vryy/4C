@@ -85,7 +85,7 @@ namespace Core::Gen
               "to overwrite them? If yes: Clear the content first. Best practice "
               "is to clear the content right after you finished the "
               "respective task.",
-              Core::UTILS::try_demangle(data_.type().name()).c_str());
+              Core::Utils::try_demangle(data_.type().name()).c_str());
         }
         else
           data_ = data;

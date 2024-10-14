@@ -405,7 +405,7 @@ bool XFEM::LevelSetCoupling::set_level_set_field(const double time)
     else if (func_no >= 1)
     {
       value = Global::Problem::instance()
-                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(func_no - 1)
+                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(func_no - 1)
                   .evaluate(lnode->x().data(), time, 0);
     }
     else
@@ -1493,7 +1493,7 @@ void XFEM::LevelSetCouplingNavierSlip::update_configuration_map_gp(
   {
     double stabnit = 0.0;
     double stabadj = 0.0;
-    XFEM::UTILS::get_navier_slip_stabilization_parameters(
+    XFEM::Utils::get_navier_slip_stabilization_parameters(
         visc_stab_tang, dynvisc, sliplength, stabnit, stabadj);
     configuration_map_[Inpar::XFEM::F_Pen_t_Row].second = stabnit;
     configuration_map_[Inpar::XFEM::F_Con_t_Row] =

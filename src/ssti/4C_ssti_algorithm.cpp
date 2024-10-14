@@ -87,7 +87,7 @@ void SSTI::SSTIAlgorithm::init(const Epetra_Comm& comm,
 
   // create and initialize scatra problem and thermo problem
   scatra_ = Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(sstitimeparams,
-      SSI::UTILS::modify_sca_tra_params(scatraparams),
+      SSI::Utils::modify_sca_tra_params(scatraparams),
       problem->solver_params(scatraparams.get<int>("LINEAR_SOLVER")), "scatra", true);
   scatra_->init();
   scatra_->scatra_field()->set_number_of_dof_set_displacement(1);
@@ -212,7 +212,7 @@ void SSTI::SSTIAlgorithm::setup()
       FOUR_C_THROW("SSTI only implemented for interface coupling with matching interface nodes!");
 
     // setup everything for SSTI structure meshtying
-    ssti_structure_meshtying_ = Teuchos::make_rcp<SSI::UTILS::SSIMeshTying>(
+    ssti_structure_meshtying_ = Teuchos::make_rcp<SSI::Utils::SSIMeshTying>(
         "SSTIInterfaceMeshtying", structure_->discretization(), true, true);
   }
 

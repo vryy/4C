@@ -68,7 +68,7 @@ namespace Adapter
 
    private:
     /// map extractor for the fluid-fluid interface dof
-    Teuchos::RCP<ALE::UTILS::XFluidFluidMapExtractor> xff_interface_;
+    Teuchos::RCP<ALE::Utils::XFluidFluidMapExtractor> xff_interface_;
 
   };  // class AleXFFsiWrapper
 }  // namespace Adapter

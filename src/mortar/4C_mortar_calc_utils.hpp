@@ -33,7 +33,7 @@ namespace Mortar
   class Element;
   class Node;
 
-  namespace UTILS
+  namespace Utils
   {
     /*----------------------------------------------------------------------*
      |  Get global coords for given local coords                 farah 01/14|
@@ -752,7 +752,7 @@ namespace Mortar
       return;
     };
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace Mortar
 
 

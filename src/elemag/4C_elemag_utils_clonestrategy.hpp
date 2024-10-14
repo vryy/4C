@@ -37,7 +37,7 @@ namespace Core::Elements
 /* definition of classes */
 namespace EleMag
 {
-  namespace UTILS
+  namespace Utils
   {
     /*!
     \brief Implementation of special clone strategy for automatic generation
@@ -79,7 +79,7 @@ namespace EleMag
       /// check for correct material
       void check_material_type(const int matid);
     };  // class ScatraCloneStrategy
-  }     // namespace UTILS
+  }     // namespace Utils
 }  // namespace EleMag
 
 FOUR_C_NAMESPACE_CLOSE

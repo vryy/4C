@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   void bool_parameter(std::string const& paramName, std::string const& value,
       std::string const& docString, Teuchos::ParameterList* paramList)
@@ -75,6 +75,6 @@ namespace Core::UTILS
     paramList->set(paramName, value, docString, validator);
   }
 
-}  // namespace Core::UTILS
+}  // namespace Core::Utils
 
 FOUR_C_NAMESPACE_CLOSE

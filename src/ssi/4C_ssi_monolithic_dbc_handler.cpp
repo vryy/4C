@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 SSI::DBCHandlerBase::DBCHandlerBase(const bool is_scatra_manifold,
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
-    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
     Teuchos::RCP<Adapter::SSIStructureWrapper> structure)
     : is_scatra_manifold_(is_scatra_manifold),
       scatra_(std::move(scatra)),
@@ -41,7 +41,7 @@ SSI::DBCHandlerBase::DBCHandlerBase(const bool is_scatra_manifold,
 SSI::DBCHandlerSparse::DBCHandlerSparse(const bool is_scatra_manifold,
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
-    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
     Teuchos::RCP<Adapter::SSIStructureWrapper> structure)
     : DBCHandlerBase(is_scatra_manifold, scatra, scatra_manifold, ssi_maps, structure)
 {
@@ -52,7 +52,7 @@ SSI::DBCHandlerSparse::DBCHandlerSparse(const bool is_scatra_manifold,
 SSI::DBCHandlerBlock::DBCHandlerBlock(const bool is_scatra_manifold,
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
-    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
     Teuchos::RCP<Adapter::SSIStructureWrapper> structure)
     : DBCHandlerBase(is_scatra_manifold, scatra, scatra_manifold, ssi_maps, structure),
       position_structure_(ssi_maps()->get_block_positions(SSI::Subproblem::structure).at(0))
@@ -66,7 +66,7 @@ void SSI::DBCHandlerBase::apply_dbc_to_rhs(Teuchos::RCP<Core::LinAlg::Vector<dou
   // apply Dirichlet boundary conditions to the structure part of the right hand side
   const auto& locsysmanager_structure = structure_field()->locsys_manager();
   auto rhs_struct = ssi_maps()->maps_sub_problems()->extract_vector(
-      *rhs, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::structure));
+      *rhs, Utils::SSIMaps::get_problem_position(SSI::Subproblem::structure));
   const auto zeros_struct = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
       *structure_field()->get_dbc_map_extractor()->cond_map());
 
@@ -78,7 +78,7 @@ void SSI::DBCHandlerBase::apply_dbc_to_rhs(Teuchos::RCP<Core::LinAlg::Vector<dou
     locsysmanager_structure->rotate_local_to_global(*rhs_struct);
 
   ssi_maps()->maps_sub_problems()->insert_vector(
-      *rhs_struct, UTILS::SSIMaps::get_problem_position(SSI::Subproblem::structure), *rhs);
+      *rhs_struct, Utils::SSIMaps::get_problem_position(SSI::Subproblem::structure), *rhs);
 
   // apply Dirichlet boundary conditions to the scatra part of the right hand side
   const auto zeros_scatra =
@@ -189,7 +189,7 @@ void SSI::DBCHandlerBlock::apply_structure_dbc_with_loc_sys_rotation_to_system_m
 Teuchos::RCP<SSI::DBCHandlerBase> SSI::build_dbc_handler(const bool is_scatra_manifold,
     Core::LinAlg::MatrixType matrixtype_ssi, Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
-    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
     Teuchos::RCP<Adapter::SSIStructureWrapper> structure)
 {
   Teuchos::RCP<SSI::DBCHandlerBase> dbc_handler = Teuchos::null;

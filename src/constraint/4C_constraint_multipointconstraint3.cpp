@@ -465,7 +465,7 @@ void CONSTRAINTS::MPConstraint3::evaluate_constraint(Teuchos::RCP<Core::FE::Disc
       if (time < 0.0) usetime = false;
       if (curvenum >= 0 && usetime)
         curvefac = Global::Problem::instance()
-                       ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
+                       ->function_by_id<Core::Utils::FunctionOfTime>(curvenum)
                        .evaluate(time);
       Teuchos::RCP<Core::LinAlg::Vector<double>> timefact =
           params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("vector curve factors");
@@ -541,7 +541,7 @@ void CONSTRAINTS::MPConstraint3::initialize_constraint(Core::FE::Discretization&
     if (time < 0.0) usetime = false;
     if (curvenum >= 0 && usetime)
       curvefac = Global::Problem::instance()
-                     ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
+                     ->function_by_id<Core::Utils::FunctionOfTime>(curvenum)
                      .evaluate(time);
 
     // Get ConditionID of current condition if defined and write value in parameterlist

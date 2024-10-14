@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   /*!
    * @brief Integrate the interval of equidistant 3 datapoints using the Simpson's rule.
@@ -103,7 +103,7 @@ namespace Core::UTILS
   }
 
   /*!
-   * @brief See @p Core::UTILS::IntegrateSimpsonStepBCAndReturnDerivativeC, without returning the
+   * @brief See @p Core::Utils::IntegrateSimpsonStepBCAndReturnDerivativeC, without returning the
    * partial derivative.
    *
    * @tparam StepData
@@ -151,7 +151,7 @@ namespace Core::UTILS
   }
 
   /*!
-   * @brief See @p Core::UTILS::IntegrateTrapezoidalStepAndReturnDerivativeB, without returning the
+   * @brief See @p Core::Utils::IntegrateTrapezoidalStepAndReturnDerivativeB, without returning the
    * partial derivative.
    *
    * @tparam StepData
@@ -222,7 +222,7 @@ namespace Core::UTILS
 
     return integration_result;
   }
-}  // namespace Core::UTILS
+}  // namespace Core::Utils
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -64,7 +64,7 @@ namespace Discret
      public:
       //! Singleton access method
       static FluidEleCalcPoroP1<distype>* instance(
-          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
       /*!
       \brief calculate element matrix and rhs for porous flow (2)

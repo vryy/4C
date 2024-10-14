@@ -55,7 +55,7 @@ namespace BEAMINTERACTION
 {
   class CrosslinkingParams;
   class BeamLink;
-  namespace UTILS
+  namespace Utils
   {
     /// specific MultiMapExtractor to handle different types of element during beam interaction
     class MapExtractor : public Core::LinAlg::MultiMapExtractor
@@ -362,7 +362,7 @@ namespace BEAMINTERACTION
     Core::Binstrategy::Utils::BinContentType convert_element_to_bin_content_type(
         const Core::Elements::Element* ele);
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace BEAMINTERACTION
 
 FOUR_C_NAMESPACE_CLOSE

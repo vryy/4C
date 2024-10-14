@@ -417,7 +417,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
       if (time < 0.0) usetime = false;
       if (curvenum >= 0 && usetime)
         curvefac = Global::Problem::instance()
-                       ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
+                       ->function_by_id<Core::Utils::FunctionOfTime>(curvenum)
                        .evaluate(time);
 
 

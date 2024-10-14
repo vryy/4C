@@ -54,7 +54,7 @@ void particle_drt()
   // perform result tests
   {
     // create particle field specific result test objects
-    std::vector<std::shared_ptr<Core::UTILS::ResultTest>> allresulttests =
+    std::vector<std::shared_ptr<Core::Utils::ResultTest>> allresulttests =
         particlealgorithm->create_result_tests();
 
     // add particle field specific result test objects

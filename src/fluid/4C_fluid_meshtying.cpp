@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 FLD::Meshtying::Meshtying(Teuchos::RCP<Core::FE::Discretization> dis, Core::LinAlg::Solver& solver,
-    int msht, int nsd, const UTILS::MapExtractor* surfacesplitter)
+    int msht, int nsd, const Utils::MapExtractor* surfacesplitter)
     : discret_(dis),
       solver_(solver),
       msht_(msht),
@@ -297,8 +297,8 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> FLD::Meshtying::init_system_matrix() 
       // | ksn | ksm | kss |
       // -------------------
 
-      Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat;
-      mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>(
+      Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>> mat;
+      mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>>(
           extractor, extractor, 108, false, true);
       // nodes on the interface
       Teuchos::RCP<std::set<int>> condelements =
@@ -1587,8 +1587,8 @@ void FLD::Meshtying::msht_split(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysm
     // | ksn | ksm | kss |
     // -------------------
 
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat;
-    mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>> mat;
+    mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>>(
         extractor, extractor, 108, false, true);
     // nodes on the interface
     Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
@@ -1629,8 +1629,8 @@ void FLD::Meshtying::msht_split_shape(
   // | ksn | ksm | kss |
   // -------------------
 
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat;
-  mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>(
+  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>> mat;
+  mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>>(
       extractor, extractor, 108, false, true);
   // nodes on the interface
   Teuchos::RCP<std::set<int>> condelements = surfacesplitter_->conditioned_element_map(*discret_);
@@ -1679,8 +1679,8 @@ void FLD::Meshtying::multifield_split(Teuchos::RCP<Core::LinAlg::SparseOperator>
     {
       Core::LinAlg::MapExtractor extractor(
           *multifield_domainmaps_.full_map(), multifield_domainmaps_.Map(1));
-      Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>> mat =
-          Core::LinAlg::split_matrix<FLD::UTILS::InterfaceSplitStrategy>(
+      Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>> mat =
+          Core::LinAlg::split_matrix<FLD::Utils::InterfaceSplitStrategy>(
               *mergedmatrix, extractor, extractor);
       mat->set_cond_elements(multifield_condelements_);
       mat->complete();
@@ -1730,8 +1730,8 @@ void FLD::Meshtying::multifield_split_shape(
 
     Core::LinAlg::MapExtractor extractor(
         *multifield_domainmaps_shape_.full_map(), multifield_domainmaps_shape_.Map(1));
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::UTILS::InterfaceSplitStrategy>>
-        matshapederivatives = Core::LinAlg::split_matrix<FLD::UTILS::InterfaceSplitStrategy>(
+    Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>>
+        matshapederivatives = Core::LinAlg::split_matrix<FLD::Utils::InterfaceSplitStrategy>(
             *mergedshapederivatives, extractor, extractor);
     matshapederivatives->set_cond_elements(multifield_condelements_shape_);
     matshapederivatives->complete();

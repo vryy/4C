@@ -24,7 +24,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-std::map<std::string, std::string> PoroElast::UTILS::PoroelastCloneStrategy::conditions_to_copy()
+std::map<std::string, std::string> PoroElast::Utils::PoroelastCloneStrategy::conditions_to_copy()
     const
 {
   return {{"PoroDirichlet", "Dirichlet"}, {"PoroPointNeumann", "PointNeumann"},
@@ -37,7 +37,7 @@ std::map<std::string, std::string> PoroElast::UTILS::PoroelastCloneStrategy::con
       {"XFEMSurfFPIMono", "XFEMSurfFPIMono"}, {"FluidNeumannInflow", "FluidNeumannInflow"}};
 }
 
-void PoroElast::UTILS::PoroelastCloneStrategy::check_material_type(const int matid)
+void PoroElast::Utils::PoroelastCloneStrategy::check_material_type(const int matid)
 {
   // We take the material with the ID specified by the user
   // Here we check first, whether this material is of admissible type
@@ -47,7 +47,7 @@ void PoroElast::UTILS::PoroelastCloneStrategy::check_material_type(const int mat
     FOUR_C_THROW("Material with ID %d is not admissible for fluid poroelasticity elements", matid);
 }
 
-void PoroElast::UTILS::PoroelastCloneStrategy::set_element_data(
+void PoroElast::Utils::PoroelastCloneStrategy::set_element_data(
     Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
     const bool isnurbs)
 {
@@ -89,7 +89,7 @@ void PoroElast::UTILS::PoroelastCloneStrategy::set_element_data(
   }
 }
 
-void PoroElast::UTILS::PoroelastCloneStrategy::set_anisotropic_permeability_directions_onto_fluid(
+void PoroElast::Utils::PoroelastCloneStrategy::set_anisotropic_permeability_directions_onto_fluid(
     Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele)
 {
   Teuchos::RCP<Discret::ELEMENTS::FluidPoro> fluid =
@@ -150,7 +150,7 @@ void PoroElast::UTILS::PoroelastCloneStrategy::set_anisotropic_permeability_dire
   // Anisotropic permeability not yet supported for p1 type elements. Do nothing.
 }
 
-void PoroElast::UTILS::PoroelastCloneStrategy::set_anisotropic_permeability_nodal_coeffs_onto_fluid(
+void PoroElast::Utils::PoroelastCloneStrategy::set_anisotropic_permeability_nodal_coeffs_onto_fluid(
     Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele)
 {
   Teuchos::RCP<Discret::ELEMENTS::FluidPoro> fluid =
@@ -194,7 +194,7 @@ void PoroElast::UTILS::PoroelastCloneStrategy::set_anisotropic_permeability_noda
   // Do nothing.
 }
 
-bool PoroElast::UTILS::PoroelastCloneStrategy::determine_ele_type(
+bool PoroElast::Utils::PoroelastCloneStrategy::determine_ele_type(
     Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone the element only if it is a poro element (we support submeshes here)

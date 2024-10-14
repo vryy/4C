@@ -51,7 +51,7 @@ void ParticleRigidBody::set_initial_fields(const Teuchos::ParameterList& params,
 
     // get reference to function
     const auto& function =
-        Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functid - 1);
+        Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(functid - 1);
 
     // get rigid body state dimension
     const int statedim = 3;
@@ -107,7 +107,7 @@ namespace
           statetotypetofunctidmap[stateIt.second];
 
       // read parameters relating particle types to values
-      PARTICLEALGORITHM::UTILS::read_params_types_related_to_values(
+      PARTICLEALGORITHM::Utils::read_params_types_related_to_values(
           params_conditions, stateIt.first, currentstatetypetofunctidmap);
     }
 

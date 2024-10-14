@@ -763,7 +763,7 @@ namespace FLD
             // spatial dimension of problem
             const int ndim = params_->get<int>("number of velocity degrees of freedom");
 
-            FLD::UTILS::lift_drag(discret_, *myforce_, mydispnp_, ndim, liftdragvals, alefluid_);
+            FLD::Utils::lift_drag(discret_, *myforce_, mydispnp_, ndim, liftdragvals, alefluid_);
 
             if ((*liftdragvals).size() != 1)
             {

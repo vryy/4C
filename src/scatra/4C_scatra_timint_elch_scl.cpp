@@ -864,7 +864,7 @@ void ScaTra::ScaTraTimIntElchSCL::scale_micro_problem()
   Teuchos::ParameterList condparams;
 
   // scale micro problem with nodal area of macro discretiaztion
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_nodal_size, condparams);
 
   auto nodal_size_macro = Core::LinAlg::create_vector(*dof_row_map(), true);
@@ -1273,7 +1273,7 @@ void ScaTra::ScaTraTimIntElchSCL::calc_initial_potential_field()
       ->post_calc_initial_potential_field();
 }
 
-Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::ScaTraTimIntElchSCL::create_micro_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> ScaTra::ScaTraTimIntElchSCL::create_micro_field_test()
 {
   return Teuchos::make_rcp<ScaTra::ElchResultTest>(
       Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntElch>(micro_scatra_field()));

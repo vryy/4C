@@ -1504,7 +1504,7 @@ void PoroElast::Monolithic::setup_newton()
 void PoroElast::Monolithic::build_convergence_norms()
 {
   //------------------------------------------------------------ build residual force norms
-  normrhs_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_);
+  normrhs_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_s;
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_f;
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fvel;
@@ -1524,15 +1524,15 @@ void PoroElast::Monolithic::build_convergence_norms()
     Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_sdisp =
         porosity_splitter_->extract_other_vector(*rhs_s);
 
-    normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_sdisp);
-    normrhsporo_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_poro);
+    normrhsstruct_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_sdisp);
+    normrhsporo_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_poro);
   }
   else
-    normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_s);
+    normrhsstruct_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_s);
 
-  normrhsfluid_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_f);
-  normrhsfluidvel_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_fvel);
-  normrhsfluidpres_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_fpres);
+  normrhsfluid_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_f);
+  normrhsfluidvel_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_fvel);
+  normrhsfluidpres_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_fpres);
 
 
   //------------------------------------------------------------- build residual increment norms
@@ -1557,15 +1557,15 @@ void PoroElast::Monolithic::build_convergence_norms()
     Teuchos::RCP<const Core::LinAlg::Vector<double>> interincsdisp =
         porosity_splitter_->extract_other_vector(*interincs);
 
-    normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, *interincsdisp);
-    normincporo_ = UTILS::calculate_vector_norm(vectornorminc_, *interincporo);
+    normincstruct_ = Utils::calculate_vector_norm(vectornorminc_, *interincsdisp);
+    normincporo_ = Utils::calculate_vector_norm(vectornorminc_, *interincporo);
   }
   else
-    normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, *interincs);
+    normincstruct_ = Utils::calculate_vector_norm(vectornorminc_, *interincs);
 
-  normincfluid_ = UTILS::calculate_vector_norm(vectornorminc_, *interincf);
-  normincfluidvel_ = UTILS::calculate_vector_norm(vectornorminc_, *interincfvel);
-  normincfluidpres_ = UTILS::calculate_vector_norm(vectornorminc_, *interincfpres);
+  normincfluid_ = Utils::calculate_vector_norm(vectornorminc_, *interincf);
+  normincfluidvel_ = Utils::calculate_vector_norm(vectornorminc_, *interincfvel);
+  normincfluidpres_ = Utils::calculate_vector_norm(vectornorminc_, *interincfpres);
 }
 
 bool PoroElast::Monolithic::setup_solver()

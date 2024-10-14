@@ -114,7 +114,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_pairs()
     particleengineinterface_->distance_between_particles(pos_i, pos_j, r_ji);
 
     // absolute distance between particles
-    const double absdist = UTILS::vec_norm_two(r_ji);
+    const double absdist = Utils::vec_norm_two(r_ji);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (absdist < (1.0e-10 * rad_i[0]) or absdist < (1.0e-10 * rad_j[0]))
@@ -141,7 +141,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_pairs()
       particlepair.gap_ = gap;
 
       // versor from particle i to j
-      UTILS::vec_set_scale(particlepair.e_ji_, (1.0 / absdist), r_ji);
+      Utils::vec_set_scale(particlepair.e_ji_, (1.0 / absdist), r_ji);
 
       // set effective mass of particles i and j
       particlepair.m_eff_ = mass_i[0] * mass_j[0] / (mass_i[0] + mass_j[0]);
@@ -203,7 +203,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs()
     for (int i = 0; i < 3; i++) r_ji[i] = closestpos(i) - pos_i(i);
 
     // absolute distance between particle and wall contact point
-    const double absdist = UTILS::vec_norm_two(r_ji);
+    const double absdist = Utils::vec_norm_two(r_ji);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (absdist < (1.0e-10 * rad_i[0]))
@@ -239,7 +239,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs()
       particlewallpair.gap_ = gap;
 
       // versor from particle i to wall contact point j
-      UTILS::vec_set_scale(particlewallpair.e_ji_, (1.0 / absdist), r_ji);
+      Utils::vec_set_scale(particlewallpair.e_ji_, (1.0 / absdist), r_ji);
 
       // get coordinates of wall contact point in element parameter space
       Core::LinAlg::Matrix<2, 1> elecoords(true);
@@ -294,7 +294,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs()
 
       // intersection radius of particle with column wall element in wall contact point
       const double intersectionradius =
-          std::sqrt(UTILS::pow<2>(rad_i[0]) - UTILS::pow<2>(rad_i[0] + masterpair.gap_));
+          std::sqrt(Utils::pow<2>(rad_i[0]) - Utils::pow<2>(rad_i[0] + masterpair.gap_));
 
       // check with other particle-wall pairs (slave)
       for (std::pair<Core::Geo::ObjectType, int>& slave : indexofparticlewallpairs)
@@ -307,11 +307,11 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs()
 
         // vector between detected wall contact points
         double dist[3];
-        UTILS::vec_set_scale(dist, (rad_i[0] + masterpair.gap_), masterpair.e_ji_);
-        UTILS::vec_add_scale(dist, -(rad_i[0] + slavepair.gap_), slavepair.e_ji_);
+        Utils::vec_set_scale(dist, (rad_i[0] + masterpair.gap_), masterpair.e_ji_);
+        Utils::vec_add_scale(dist, -(rad_i[0] + slavepair.gap_), slavepair.e_ji_);
 
         // absolute distance between wall contact points
-        const double absdist = UTILS::vec_norm_two(dist);
+        const double absdist = Utils::vec_norm_two(dist);
 
         bool removeslavepair = false;
 
@@ -405,7 +405,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_pairs_adhesion(
     particleengineinterface_->distance_between_particles(pos_i, pos_j, r_ji);
 
     // absolute distance between particles
-    const double absdist = UTILS::vec_norm_two(r_ji);
+    const double absdist = Utils::vec_norm_two(r_ji);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (absdist < (1.0e-10 * rad_i[0]) or absdist < (1.0e-10 * rad_j[0]))
@@ -432,7 +432,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_pairs_adhesion(
       particlepair.gap_ = gap;
 
       // versor from particle i to j
-      UTILS::vec_set_scale(particlepair.e_ji_, (1.0 / absdist), r_ji);
+      Utils::vec_set_scale(particlepair.e_ji_, (1.0 / absdist), r_ji);
 
       // set effective mass of particles i and j
       particlepair.m_eff_ = mass_i[0] * mass_j[0] / (mass_i[0] + mass_j[0]);
@@ -514,7 +514,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
     for (int i = 0; i < 3; i++) r_ji[i] = closestpos(i) - pos_i(i);
 
     // absolute distance between particle and wall contact point
-    const double absdist = UTILS::vec_norm_two(r_ji);
+    const double absdist = Utils::vec_norm_two(r_ji);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (absdist < (1.0e-10 * rad_i[0]))
@@ -550,7 +550,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
       particlewallpair.gap_ = gap;
 
       // versor from particle i to wall contact point j
-      UTILS::vec_set_scale(particlewallpair.e_ji_, (1.0 / absdist), r_ji);
+      Utils::vec_set_scale(particlewallpair.e_ji_, (1.0 / absdist), r_ji);
 
       // get coordinates of wall contact point in element parameter space
       Core::LinAlg::Matrix<2, 1> elecoords(true);
@@ -605,7 +605,7 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
 
       // intersection radius of particle with column wall element in wall contact point
       const double intersectionradius = std::sqrt(
-          UTILS::pow<2>(rad_i[0] + adhesion_distance) - UTILS::pow<2>(rad_i[0] + masterpair.gap_));
+          Utils::pow<2>(rad_i[0] + adhesion_distance) - Utils::pow<2>(rad_i[0] + masterpair.gap_));
 
       // check with other particle-wall pairs (slave)
       for (std::pair<Core::Geo::ObjectType, int>& slave : indexofparticlewallpairs)
@@ -618,11 +618,11 @@ void ParticleInteraction::DEMNeighborPairs::evaluate_particle_wall_pairs_adhesio
 
         // vector between detected wall contact points
         double dist[3];
-        UTILS::vec_set_scale(dist, (rad_i[0] + masterpair.gap_), masterpair.e_ji_);
-        UTILS::vec_add_scale(dist, -(rad_i[0] + slavepair.gap_), slavepair.e_ji_);
+        Utils::vec_set_scale(dist, (rad_i[0] + masterpair.gap_), masterpair.e_ji_);
+        Utils::vec_add_scale(dist, -(rad_i[0] + slavepair.gap_), slavepair.e_ji_);
 
         // absolute distance between wall contact points
-        const double absdist = UTILS::vec_norm_two(dist);
+        const double absdist = Utils::vec_norm_two(dist);
 
         bool removeslavepair = false;
 

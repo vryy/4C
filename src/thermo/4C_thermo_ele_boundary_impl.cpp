@@ -164,7 +164,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
     if (curvenum >= 0)
     {
       curvefac = Global::Problem::instance()
-                     ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
+                     ->function_by_id<Core::Utils::FunctionOfTime>(curvenum)
                      .evaluate(time);
     }
     // multiply heat convection coefficient with the timecurve factor
@@ -177,7 +177,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
     if (surtempcurvenum >= 0)
     {
       surtempcurvefac = Global::Problem::instance()
-                            ->function_by_id<Core::UTILS::FunctionOfTime>(surtempcurvenum)
+                            ->function_by_id<Core::Utils::FunctionOfTime>(surtempcurvenum)
                             .evaluate(time);
     }
     // complete surrounding temperatures T_oo: multiply with the timecurve factor
@@ -383,7 +383,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
         if (curvenum >= 0)
         {
           curvefac = Global::Problem::instance()
-                         ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
+                         ->function_by_id<Core::Utils::FunctionOfTime>(curvenum)
                          .evaluate(time);
         }
         // multiply heat convection coefficient with the timecurve factor
@@ -396,7 +396,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
         if (surtempcurvenum >= 0)
         {
           surtempcurvefac = Global::Problem::instance()
-                                ->function_by_id<Core::UTILS::FunctionOfTime>(surtempcurvenum)
+                                ->function_by_id<Core::Utils::FunctionOfTime>(surtempcurvenum)
                                 .evaluate(time);
         }
         // complete surrounding temperatures T_oo: multiply with the timecurve factor
@@ -585,7 +585,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate_neumann(const Core::Elements::
           {
             // evaluate function at current gauss point
             functfac = Global::Problem::instance()
-                           ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                            .evaluate(coordgpref, time, dof);
           }
           else

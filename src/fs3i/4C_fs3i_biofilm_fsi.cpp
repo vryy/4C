@@ -83,7 +83,7 @@ void FS3I::BiofilmFSI::init()
 
   if (structaledis->num_global_nodes() == 0)
   {
-    Core::FE::DiscretizationCreator<ALE::UTILS::AleCloneStrategy> alecreator;
+    Core::FE::DiscretizationCreator<ALE::Utils::AleCloneStrategy> alecreator;
     alecreator.create_matching_discretization(*structdis, *structaledis, 11);
     structaledis->fill_complete();
   }
@@ -165,17 +165,17 @@ void FS3I::BiofilmFSI::setup()
       Global::Problem::instance()->get_dis("structale");
 
   // create fluid-ALE Dirichlet Map Extractor for FSI step
-  ale_->setup_dbc_map_ex(ALE::UTILS::MapExtractor::dbc_set_std);
+  ale_->setup_dbc_map_ex(ALE::Utils::MapExtractor::dbc_set_std);
 
   // create fluid-ALE Dirichlet Map Extractor for growth step
-  ale_->setup_dbc_map_ex(ALE::UTILS::MapExtractor::dbc_set_biofilm, ale_->interface());
+  ale_->setup_dbc_map_ex(ALE::Utils::MapExtractor::dbc_set_biofilm, ale_->interface());
 
   // create fluid-ALE Dirichlet Map Extractor for growth step
-  fsi_->ale_field()->setup_dbc_map_ex(ALE::UTILS::MapExtractor::dbc_set_std, Teuchos::null);
+  fsi_->ale_field()->setup_dbc_map_ex(ALE::Utils::MapExtractor::dbc_set_std, Teuchos::null);
 
   // create fluid-ALE Dirichlet Map Extractor for FSI step
   fsi_->ale_field()->setup_dbc_map_ex(
-      ALE::UTILS::MapExtractor::dbc_set_biofilm, fsi_->ale_field()->interface());
+      ALE::Utils::MapExtractor::dbc_set_biofilm, fsi_->ale_field()->interface());
 
   //---------------------------------------------------------------------
   // set up couplings
@@ -759,7 +759,7 @@ void FS3I::BiofilmFSI::fluid_ale_solve()
   }
 
   fsi_->ale_field()->create_system_matrix(Teuchos::null);
-  fsi_->ale_field()->evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
+  fsi_->ale_field()->evaluate(Teuchos::null, ALE::Utils::MapExtractor::dbc_set_biofilm);
   int error = fsi_->ale_field()->solve();
   if (error == 1) FOUR_C_THROW("Could not solve fluid ALE in biofilm FS3I!");
   fsi_->ale_field()->update_iter();
@@ -780,7 +780,7 @@ void FS3I::BiofilmFSI::fluid_ale_solve()
   // change nodes reference position also for scatra fluid field
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra = scatravec_[0];
   Teuchos::RCP<Core::FE::Discretization> scatradis = scatra->scatra_field()->discretization();
-  FS3I::BioFilm::UTILS::scatra_change_config(*scatradis, *fluiddis, *fluiddisp);
+  FS3I::BioFilm::Utils::scatra_change_config(*scatradis, *fluiddis, *fluiddisp);
 
   // set the total displacement due to growth for output reasons
   // fluid
@@ -809,7 +809,7 @@ void FS3I::BiofilmFSI::struct_ale_solve()
   }
 
   ale_->create_system_matrix(Teuchos::null);
-  ale_->evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_biofilm);
+  ale_->evaluate(Teuchos::null, ALE::Utils::MapExtractor::dbc_set_biofilm);
   int error = ale_->solve();
   if (error == 1) FOUR_C_THROW("Could not solve fluid ALE in biofilm FS3I!");
   ale_->update_iter();
@@ -828,7 +828,7 @@ void FS3I::BiofilmFSI::struct_ale_solve()
   Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
   Teuchos::RCP<Core::FE::Discretization> struscatradis =
       struscatra->scatra_field()->discretization();
-  FS3I::BioFilm::UTILS::scatra_change_config(*struscatradis, *structdis, *structdisp);
+  FS3I::BioFilm::Utils::scatra_change_config(*struscatradis, *structdis, *structdisp);
 
   // set the total displacement due to growth for output reasons
   // structure

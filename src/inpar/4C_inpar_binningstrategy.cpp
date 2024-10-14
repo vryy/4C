@@ -27,21 +27,21 @@ void Inpar::BINSTRATEGY::set_valid_parameters(Teuchos::ParameterList& list)
   Teuchos::ParameterList& binningstrategy = list.sublist("BINNING STRATEGY", false, "");
 
 
-  Core::UTILS::double_parameter("BIN_SIZE_LOWER_BOUND", -1.0,
+  Core::Utils::double_parameter("BIN_SIZE_LOWER_BOUND", -1.0,
       "Lower bound for bin size. Exact bin size is computed via (Domain edge "
       "length)/BIN_SIZE_LOWER_BOUND. This also determines the number of bins in each spatial "
       "direction",
       &binningstrategy);
 
-  Core::UTILS::string_parameter("BIN_PER_DIR", "-1 -1 -1",
+  Core::Utils::string_parameter("BIN_PER_DIR", "-1 -1 -1",
       "Number of bins per direction (x, y, z) in particle simulations. Either Define this value or "
       "BIN_SIZE_LOWER_BOUND",
       &binningstrategy);
 
-  Core::UTILS::string_parameter("PERIODICONOFF", "0 0 0",
+  Core::Utils::string_parameter("PERIODICONOFF", "0 0 0",
       "Turn on/off periodic boundary conditions in each spatial direction", &binningstrategy);
 
-  Core::UTILS::string_parameter("DOMAINBOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
+  Core::Utils::string_parameter("DOMAINBOUNDINGBOX", "1e12 1e12 1e12 1e12 1e12 1e12",
       "Bounding box for computational domain using binning strategy. Specify diagonal corner "
       "points",
       &binningstrategy);

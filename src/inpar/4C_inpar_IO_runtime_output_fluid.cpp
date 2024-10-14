@@ -37,39 +37,39 @@ namespace Inpar
             sublist_IO_output.sublist("FLUID", false, "");
 
         // whether to write output for fluid
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "OUTPUT_FLUID", "No", "write fluid output", &sublist_IO_output_fluid);
 
         // whether to write velocity state
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "VELOCITY", "No", "write velocity output", &sublist_IO_output_fluid);
 
         // whether to write pressure state
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "PRESSURE", "No", "write pressure output", &sublist_IO_output_fluid);
 
         // whether to write acceleration state
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "ACCELERATION", "No", "write acceleration output", &sublist_IO_output_fluid);
 
         // whether to write displacement state
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "DISPLACEMENT", "No", "write displacement output", &sublist_IO_output_fluid);
 
         // whether to write displacement state
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "GRIDVELOCITY", "No", "write grid velocity output", &sublist_IO_output_fluid);
 
         // whether to write element owner
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "ELEMENT_OWNER", "No", "write element owner", &sublist_IO_output_fluid);
 
         // whether to write element GIDs
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "ELEMENT_GID", "No", "write 4C internal element GIDs", &sublist_IO_output_fluid);
 
         // whether to write node GIDs
-        Core::UTILS::bool_parameter(
+        Core::Utils::bool_parameter(
             "NODE_GID", "No", "write 4C internal node GIDs", &sublist_IO_output_fluid);
       }
     }  // namespace FLUID

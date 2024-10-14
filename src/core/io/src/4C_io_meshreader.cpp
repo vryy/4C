@@ -212,7 +212,7 @@ void Core::IO::MeshReader::rebalance()
 
     discret->redistribute(*rowmap, *colmap, false, false, false);
 
-    Core::Rebalance::UTILS::print_parallel_distribution(*discret);
+    Core::Rebalance::Utils::print_parallel_distribution(*discret);
   }
 }
 

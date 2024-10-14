@@ -16,7 +16,7 @@
 namespace
 {
   using namespace FourC;
-  using namespace Core::UTILS;
+  using namespace Core::Utils;
 
   TEST(StringUtils, SplitStringSeparatorInString)
   {

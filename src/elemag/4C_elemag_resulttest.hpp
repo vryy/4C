@@ -29,7 +29,7 @@ namespace EleMag
 {
   class ElemagTimeInt;
 
-  class ElemagResultTest : public Core::UTILS::ResultTest
+  class ElemagResultTest : public Core::Utils::ResultTest
   {
    public:
     /*!

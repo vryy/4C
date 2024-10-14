@@ -84,7 +84,7 @@ namespace Mortar
 
     /// Singleton access method
     static ProjectorCalc<distype>* instance(
-        Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
+        Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
     //! n_: number of element nodes
     static constexpr int n_ = Core::FE::num_nodes<distype>;
@@ -293,7 +293,7 @@ namespace Mortar
 
     /// Singleton access method
     static ProjectorCalcEleBased<distype_s, distype_m>* instance(
-        Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
+        Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
     //! ns_: number of slave element nodes
     static constexpr int ns_ = Core::FE::num_nodes<distype_s>;

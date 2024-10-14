@@ -36,7 +36,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 namespace Coupling::VolMortar
 {
-  namespace UTILS
+  namespace Utils
   {
     //=====================================================================================
     //=====================================================================================
@@ -1946,7 +1946,7 @@ namespace Coupling::VolMortar
       return;
     }
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace Coupling::VolMortar
 
 FOUR_C_NAMESPACE_CLOSE

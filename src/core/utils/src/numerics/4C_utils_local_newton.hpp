@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   constexpr double LOCAL_NEWTON_DEFAULT_TOLERANCE = 1e-12;
   constexpr unsigned LOCAL_NEWTON_DEFAULT_MAXIMUM_ITERATIONS = 50;
@@ -100,7 +100,7 @@ namespace Core::UTILS
    * Example 1 (scalar-valued double function):
    * @code
    * double x_0 = 0.0;
-   * auto [x, jacobian] = Core::UTILS::solve_local_newton_and_return_jacobian(x_0, [](double x) {
+   * auto [x, jacobian] = Core::Utils::solve_local_newton_and_return_jacobian(x_0, [](double x) {
    *     return std::make_tuple<double, double>({std::pow(x, 2), 2*x});
    *   }, 1e-9);
    * @endcode
@@ -108,7 +108,7 @@ namespace Core::UTILS
    * Example 2 (vector-valued double function):
    * @code
    * Core::LinAlg::Matrix<2,1> x_0(true);
-   * auto [x, jacobian] = Core::UTILS::solve_local_newton_and_return_jacobian(x_0,
+   * auto [x, jacobian] = Core::Utils::solve_local_newton_and_return_jacobian(x_0,
    * [](Core::LinAlg::Matrix<2,1> x) { return std::make_tuple<Core::LinAlg::Matrix<2,1>,
    * Core::LinAlg::Matrix<2,2>>({ Core::LinAlg::Matrix<2,1>{true}, // define your function here
    *       Core::LinAlg::Matrix<2,2>{true} // define your jacobian here
@@ -132,7 +132,7 @@ namespace Core::UTILS
    * }
    *
    * double x_0 = MyVectorType{...}; // initial value
-   * auto [x, jacobian] = Core::UTILS::solve_local_newton_and_return_jacobian(x_0, [](MyVectorType
+   * auto [x, jacobian] = Core::Utils::solve_local_newton_and_return_jacobian(x_0, [](MyVectorType
    * x) { return std::make_tuple<MyVectorType, MyJacobianType>({ MyVectorType{...}, // define your
    * function here MyJacobianType{...} // define your jacobian here
    *     });
@@ -215,7 +215,7 @@ namespace Core::UTILS
         residuum_and_jacobian_evaluator, x_0, tolerance, max_iterations));
   }
 
-}  // namespace Core::UTILS
+}  // namespace Core::Utils
 
 FOUR_C_NAMESPACE_CLOSE
 

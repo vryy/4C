@@ -77,7 +77,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::setup()
   // set binding spot positions on filament elements according input file specifications
   set_filament_types();
   // this includes temporary change in ghosting
-  BEAMINTERACTION::UTILS::set_filament_binding_spot_positions(
+  BEAMINTERACTION::Utils::set_filament_binding_spot_positions(
       discret_ptr(), *crosslinking_params_ptr_);
 
   // add crosslinker to bin discretization
@@ -118,7 +118,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
     if (beamele_i == nullptr) continue;
 
     std::vector<double> eledisp;
-    BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), beamele_i,
+    BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), beamele_i,
         *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
 
     beam_data_[i] = Teuchos::make_rcp<BEAMINTERACTION::Data::BeamData>();
@@ -134,7 +134,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
       Core::LinAlg::Matrix<3, 3> triad(true);
       for (int unsigned k = 0; k < numbbspot; ++k)
       {
-        BEAMINTERACTION::UTILS::get_pos_and_triad_of_binding_spot(
+        BEAMINTERACTION::Utils::get_pos_and_triad_of_binding_spot(
             beamele_i, *periodic_bounding_box_ptr(), iter.first, k, pos, triad, eledisp);
 
         beam_data_[i]->set_b_spot_position(iter.first, k, pos);
@@ -368,7 +368,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
               beam_data_[nb_beamele->lid()].get();
 
           // exclude linking of touching elements
-          if (BEAMINTERACTION::UTILS::do_beam_elements_share_nodes(beamele, nb_beamele)) continue;
+          if (BEAMINTERACTION::Utils::do_beam_elements_share_nodes(beamele, nb_beamele)) continue;
 
           // loop over binding spots of neighboring element
           for (unsigned int nb_locbspot_i = 0;
@@ -399,7 +399,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
                     "lower bound for bin size, this can lead to missed binding events");
 #endif
 
-              if (BEAMINTERACTION::UTILS::is_distance_out_of_range(
+              if (BEAMINTERACTION::Utils::is_distance_out_of_range(
                       beamdata_i->get_b_spot_position(iter.first, locbspot_i),
                       nb_beamdata_i->get_b_spot_position(iter.first, nb_locbspot_i), linkdistmin,
                       linkdistmax))
@@ -423,7 +423,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
                 nb_bindingspot_beam_tangent(idim) =
                     nb_beamdata_i->get_b_spot_triad(iter.first, nb_locbspot_i)(idim, 0);
 
-              if (BEAMINTERACTION::UTILS::is_enclosed_angle_out_of_range(bindingspot_beam_tangent,
+              if (BEAMINTERACTION::Utils::is_enclosed_angle_out_of_range(bindingspot_beam_tangent,
                       nb_bindingspot_beam_tangent, linkanglemin, linkanglemax))
                 continue;
 
@@ -522,7 +522,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::communicate_initial_linke
     bspotlinkerdata.set_type(type[i]);
     bspotlinkerdata.set_mat_id(mat[i]);
 
-    bspotgid = BEAMINTERACTION::UTILS::cantor_pairing(std::make_pair(elegid_2[i], locbspot_2[i]));
+    bspotgid = BEAMINTERACTION::Utils::cantor_pairing(std::make_pair(elegid_2[i], locbspot_2[i]));
 
     sort_data[elegid_1[i]][bspotgid] = bspotlinkerdata;
   }
@@ -548,7 +548,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
   // loop over bspotpairs and make decision
   newlinker.reserve(global_bspot_linker.size());
   std::map<long long, int> bondsperbindingspot;
-  std::set<std::pair<long long, long long>, BEAMINTERACTION::UTILS::StdPairComparatorOrderCounts>
+  std::set<std::pair<long long, long long>, BEAMINTERACTION::Utils::StdPairComparatorOrderCounts>
       doublebonds;
   std::map<int, int> numpertype;
   Core::LinAlg::Matrix<3, 1> clpos(true);
@@ -556,9 +556,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unambiguous_decisions_on_
   {
     for (auto const& iter : iter_sort.second)
     {
-      long long bspotgid = BEAMINTERACTION::UTILS::cantor_pairing(
+      long long bspotgid = BEAMINTERACTION::Utils::cantor_pairing(
           std::make_pair(iter.get_ele_gid1(), iter.get_loc_bspot_id1()));
-      long long nb_bspotgid = BEAMINTERACTION::UTILS::cantor_pairing(
+      long long nb_bspotgid = BEAMINTERACTION::Utils::cantor_pairing(
           std::make_pair(iter.get_ele_gid2(), iter.get_loc_bspot_id2()));
 
       Inpar::BEAMINTERACTION::CrosslinkerType linkertype =
@@ -786,7 +786,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::reset()
       int locbspotnum = elepairptr->get_loc_b_spot_num(i);
       Core::Elements::Element* ele = discret_ptr()->g_element(elegid);
 
-      BEAMINTERACTION::UTILS::get_pos_and_triad_of_binding_spot(discret(), ele,
+      BEAMINTERACTION::Utils::get_pos_and_triad_of_binding_spot(discret(), ele,
           *beam_interaction_data_state_ptr()->get_dis_col_np(), *periodic_bounding_box_ptr(),
           elepairptr->get_linker_type(), locbspotnum, pos[i], triad[i]);
     }
@@ -850,14 +850,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force()
 
     // apply forces on binding spots to parent elements
     // and get their discrete element force vectors
-    BEAMINTERACTION::UTILS::apply_binding_spot_force_to_parent_elements<
+    BEAMINTERACTION::Utils::apply_binding_spot_force_to_parent_elements<
         Discret::ELEMENTS::Beam3Base, Discret::ELEMENTS::Beam3Base>(discret(),
         *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
         *elepairptr, bspotforce, eleforce);
 
     // assemble the contributions into force vector class variable
     // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-    BEAMINTERACTION::UTILS::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
+    BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
         elegids, eleforce, dummystiff, beam_interaction_data_state_ptr()->get_force_np(),
         Teuchos::null);
   }
@@ -903,14 +903,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_stiff()
         bspotstiff[0][0], bspotstiff[0][1], bspotstiff[1][0], bspotstiff[1][1]);
 
     // apply linearizations to parent elements and get their discrete element stiffness matrices
-    BEAMINTERACTION::UTILS::apply_binding_spot_stiff_to_parent_elements<
+    BEAMINTERACTION::Utils::apply_binding_spot_stiff_to_parent_elements<
         Discret::ELEMENTS::Beam3Base, Discret::ELEMENTS::Beam3Base>(discret(),
         *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
         *elepairptr, bspotstiff, elestiff);
 
     // assemble the contributions into stiffness matrix class variable
     // stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
-    BEAMINTERACTION::UTILS::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
+    BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
         elegids, dummyforce, elestiff, Teuchos::null,
         beam_interaction_data_state_ptr()->get_stiff());
   }
@@ -961,14 +961,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force_stiff()
 
     // apply forces on binding spots and corresponding linearizations to parent elements
     // and get their discrete element force vectors and stiffness matrices
-    BEAMINTERACTION::UTILS::apply_binding_spot_force_stiff_to_parent_elements<
+    BEAMINTERACTION::Utils::apply_binding_spot_force_stiff_to_parent_elements<
         Discret::ELEMENTS::Beam3Base, Discret::ELEMENTS::Beam3Base>(discret(),
         *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
         *elepairptr, bspotforce, bspotstiff, eleforce, elestiff);
 
     // assemble the contributions into force and stiffness class variables
     // f_crosslink_np_ptr_, stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
-    BEAMINTERACTION::UTILS::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
+    BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
         elegids, eleforce, elestiff, beam_interaction_data_state_ptr()->get_force_np(),
         beam_interaction_data_state_ptr()->get_stiff());
   }
@@ -1071,7 +1071,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_step_element(
   if (repartition_was_done)
   {
     // adapt map of vector to map after redistribution
-    BEAMINTERACTION::UTILS::update_dof_map_of_vector(*bin_discret_ptr(), dis_at_last_redistr_);
+    BEAMINTERACTION::Utils::update_dof_map_of_vector(*bin_discret_ptr(), dis_at_last_redistr_);
 
     // update double bonded linker
     update_my_double_bonds_after_redistribution();
@@ -1759,7 +1759,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
         // get current position of filament binding spot
         Core::LinAlg::Matrix<3, 1> bbspotpos;
         std::vector<double> eledisp;
-        BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), ele,
+        BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), ele,
             *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
         ele->get_pos_of_binding_spot(bbspotpos, eledisp,
             crosslinker_i->get_material()->linker_type(),
@@ -1811,7 +1811,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
         // get current position of filament binding spot
         Core::LinAlg::Matrix<3, 1> bbspotposone;
         std::vector<double> eledisp;
-        BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), ele,
+        BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), ele,
             *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
         ele->get_pos_of_binding_spot(bbspotposone, eledisp,
             crosslinker_i->get_material()->linker_type(), cldata_i->get_b_spots()[0].second,
@@ -1847,7 +1847,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
 
         // get current position of filament binding spot
         Core::LinAlg::Matrix<3, 1> bbspotpostwo;
-        BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), ele,
+        BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), ele,
             *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
         ele->get_pos_of_binding_spot(bbspotpostwo, eledisp,
             crosslinker_i->get_material()->linker_type(), cldata_i->get_b_spots()[1].second,
@@ -2165,7 +2165,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
 #endif
 
       std::vector<double> eledisp;
-      BEAMINTERACTION::UTILS::get_current_unshifted_element_dis(discret(), beamele_i,
+      BEAMINTERACTION::Utils::get_current_unshifted_element_dis(discret(), beamele_i,
           *beam_interaction_data_state_ptr()->get_dis_col_np(), periodic_bounding_box(), eledisp);
 
       // loop over binding spot types of current element
@@ -2177,7 +2177,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
         Core::LinAlg::Matrix<3, 3> triad(true);
         for (int unsigned k = 0; k < numbbspot; ++k)
         {
-          BEAMINTERACTION::UTILS::get_pos_and_triad_of_binding_spot(
+          BEAMINTERACTION::Utils::get_pos_and_triad_of_binding_spot(
               beamele_i, *periodic_bounding_box_ptr(), iter.first, k, pos, triad, eledisp);
 
           beam_data_i->set_b_spot_position(iter.first, k, pos);
@@ -2301,7 +2301,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::find_potential_binding_ev
   // loop over all column crosslinker in random order
   // create random order of indices
   std::vector<int> rordercolcl =
-      BEAMINTERACTION::UTILS::permutation(bin_discret_ptr()->num_my_col_nodes());
+      BEAMINTERACTION::Utils::permutation(bin_discret_ptr()->num_my_col_nodes());
 
   for (auto const& icl : rordercolcl)
   {
@@ -2371,7 +2371,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
   const int numcrosslinker = bin->num_node();
 
   // obtain random order in which crosslinker are addressed
-  std::vector<int> randorder = BEAMINTERACTION::UTILS::permutation(numcrosslinker);
+  std::vector<int> randorder = BEAMINTERACTION::Utils::permutation(numcrosslinker);
 
   // loop over all crosslinker in CurrentBin in random order
   for (auto const& randcliter : randorder)
@@ -2410,7 +2410,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_if_sphere_prohibits
 
     // sphere current position
     std::vector<double> sphereeledisp;
-    BEAMINTERACTION::UTILS::get_current_element_dis(
+    BEAMINTERACTION::Utils::get_current_element_dis(
         discret(), sphere_iter, *beam_interaction_data_state().get_dis_col_np(), sphereeledisp);
 
     // note: sphere has just one node (with three translational dofs)
@@ -2459,10 +2459,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(Core::Nod
   // NOTE: This is crucial for reproducibility to ensure that computation does
   // not depend on pointer addresses (see also comment of class Less)
   // -------------------------------------------------------------------------
-  std::sort(beamvec.begin(), beamvec.end(), BEAMINTERACTION::UTILS::Less());
+  std::sort(beamvec.begin(), beamvec.end(), BEAMINTERACTION::Utils::Less());
 
   std::vector<int> randorder =
-      BEAMINTERACTION::UTILS::permutation(static_cast<int>(beamvec.size()));
+      BEAMINTERACTION::Utils::permutation(static_cast<int>(beamvec.size()));
   for (auto const& randiter : randorder)
   {
     // get neighboring (nb) beam element
@@ -2483,14 +2483,14 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::prepare_binding(Core::Nod
       // 2. criterion:
       // exclude binding of a single bonded crosslinker in close proximity on the
       // same filament (i.e. element cloud of old element binding partner is excluded)
-      if (BEAMINTERACTION::UTILS::do_beam_elements_share_nodes(
+      if (BEAMINTERACTION::Utils::do_beam_elements_share_nodes(
               discret().g_element(cl_bondedtogid), nbbeam))
         continue;
     }
 
     // loop over all binding spots of current element in random order
     std::vector<int> randbspot =
-        BEAMINTERACTION::UTILS::permutation(beamdata_i->get_number_of_binding_spots_of_type(
+        BEAMINTERACTION::Utils::permutation(beamdata_i->get_number_of_binding_spots_of_type(
             crosslinker_i->get_material()->linker_type()));
 
     for (auto const& rbspotiter : randbspot)
@@ -2599,10 +2599,10 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_bind_event_criteria
 #endif
 
   if ((cldata_i->get_number_of_bonds() == 0 and
-          BEAMINTERACTION::UTILS::is_distance_out_of_range(
+          BEAMINTERACTION::Utils::is_distance_out_of_range(
               cldata_i->get_position(), currbbspos, 0.5 * linkdistmin, 0.5 * linkdistmax)) or
       (cldata_i->get_number_of_bonds() == 1 and
-          BEAMINTERACTION::UTILS::is_distance_out_of_range(
+          BEAMINTERACTION::Utils::is_distance_out_of_range(
               cldata_i->get_position(), currbbspos, linkdistmin, linkdistmax)))
     return false;
 
@@ -2627,7 +2627,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_bind_event_criteria
         beamdata_i->get_b_spot_triad(linkertype, locnbspot)(idim, 0);
 
   if (cldata_i->get_number_of_bonds() == 1 and
-      BEAMINTERACTION::UTILS::is_enclosed_angle_out_of_range(
+      BEAMINTERACTION::Utils::is_enclosed_angle_out_of_range(
           occ_bindingspot_beam_tangent, curr_bindingspot_beam_tangent, linkanglemin, linkanglemax))
     return false;
 
@@ -3283,7 +3283,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::un_bind_crosslinker()
    * to col element, we potentially need to communicate if such an element
    * needs to be updated*/
   const int numrowcl = bin_discret_ptr()->num_my_row_nodes();
-  std::vector<int> rorderrowcl = BEAMINTERACTION::UTILS::permutation(numrowcl);
+  std::vector<int> rorderrowcl = BEAMINTERACTION::Utils::permutation(numrowcl);
   for (auto const& rowcli : rorderrowcl)
   {
     CrossLinking::CrosslinkerNode* linker =
@@ -3329,7 +3329,7 @@ int BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::un_bind_crosslinker()
           p_unlink_db[0] = p_unlink_db[1] = p_unlink;
 
         // loop through crosslinker bonds in random order
-        std::vector<int> ro = BEAMINTERACTION::UTILS::permutation(cldata_i->get_number_of_bonds());
+        std::vector<int> ro = BEAMINTERACTION::Utils::permutation(cldata_i->get_number_of_bonds());
         for (auto const& clbspotiter : ro)
         {
           // if probability criterion isn't met, go to next spot
@@ -3608,7 +3608,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::unbind_crosslinker_in_bin
         {
           // dissolve random bond and update states
           dissolve_bond(crosslinker_i,
-              BEAMINTERACTION::UTILS::permutation(cldata_i->get_number_of_bonds())[0],
+              BEAMINTERACTION::Utils::permutation(cldata_i->get_number_of_bonds())[0],
               cldata_i->get_number_of_bonds(), sendunbindevents, myrankunbindevents);
 
           // in case we want to allow transition from double bonded to free, take same linker

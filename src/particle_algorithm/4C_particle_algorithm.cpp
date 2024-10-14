@@ -328,14 +328,14 @@ void PARTICLEALGORITHM::ParticleAlgorithm::write_restart() const
   }
 }
 
-std::vector<std::shared_ptr<Core::UTILS::ResultTest>>
+std::vector<std::shared_ptr<Core::Utils::ResultTest>>
 PARTICLEALGORITHM::ParticleAlgorithm::create_result_tests()
 {
   // build global id to local index map
   particleengine_->build_global_id_to_local_index_map();
 
   // particle field specific result test objects
-  std::vector<std::shared_ptr<Core::UTILS::ResultTest>> allresulttests(0);
+  std::vector<std::shared_ptr<Core::Utils::ResultTest>> allresulttests(0);
 
   // particle result test
   {
@@ -562,7 +562,7 @@ void PARTICLEALGORITHM::ParticleAlgorithm::determine_particle_types()
   std::map<PARTICLEENGINE::TypeEnum, double> typetodynloadbal;
 
   // read parameters relating particle types to values
-  PARTICLEALGORITHM::UTILS::read_params_types_related_to_values(
+  PARTICLEALGORITHM::Utils::read_params_types_related_to_values(
       params_, "PHASE_TO_DYNLOADBALFAC", typetodynloadbal);
 
   // insert into map of particle types and corresponding states with empty set

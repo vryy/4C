@@ -883,13 +883,13 @@ bool XFEM::ConditionManager::has_averaging_strategy(Inpar::XFEM::AveragingStrate
 void XFEM::ConditionManager::get_volume_cell_material(Core::Elements::Element* actele,
     Teuchos::RCP<Core::Mat::Material>& mat, const Cut::VolumeCell* vc)
 {
-  XFEM::UTILS::get_volume_cell_material(actele, mat, vc->position());
+  XFEM::Utils::get_volume_cell_material(actele, mat, vc->position());
 }
 
 void XFEM::ConditionManager::get_interface_master_material(Core::Elements::Element* actele,
     Teuchos::RCP<Core::Mat::Material>& mat, const Cut::VolumeCell* vc)
 {
-  XFEM::UTILS::get_volume_cell_material(actele, mat, vc->position());
+  XFEM::Utils::get_volume_cell_material(actele, mat, vc->position());
 }
 
 void XFEM::ConditionManager::get_interface_slave_material(

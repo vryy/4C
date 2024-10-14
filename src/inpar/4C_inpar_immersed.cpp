@@ -53,26 +53,26 @@ void Inpar::Immersed::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<Inpar::Immersed::ImmersedNlnsolver>(nlnsolver_stop, nlnsolver_continue),
       &immersedmethod);
 
-  Core::UTILS::bool_parameter("OUTPUT_EVRY_NLNITER", "no",
+  Core::Utils::bool_parameter("OUTPUT_EVRY_NLNITER", "no",
       "write output after every solution step of the nonlin. part. iter. scheme", &immersedmethod);
 
-  Core::UTILS::bool_parameter("CORRECT_BOUNDARY_VELOCITIES", "no",
+  Core::Utils::bool_parameter("CORRECT_BOUNDARY_VELOCITIES", "no",
       "correct velocities in fluid elements cut by surface of immersed structure", &immersedmethod);
 
-  Core::UTILS::bool_parameter("DEFORM_BACKGROUND_MESH", "no",
+  Core::Utils::bool_parameter("DEFORM_BACKGROUND_MESH", "no",
       "switch between immersed with fixed or deformable background mesh", &immersedmethod);
 
   std::vector<std::string> timestats_valid_input = {"everyiter", "endofsim"};
-  Core::UTILS::string_parameter("TIMESTATS", "everyiter",
+  Core::Utils::string_parameter("TIMESTATS", "everyiter",
       "summarize time monitor every nln iteration", &immersedmethod, timestats_valid_input);
 
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "FLD_SRCHRADIUS_FAC", 1.0, "fac times fluid ele. diag. length", &immersedmethod);
 
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "STRCT_SRCHRADIUS_FAC", 0.5, "fac times structure bounding box diagonal", &immersedmethod);
 
-  Core::UTILS::int_parameter("NUM_GP_FLUID_BOUND", 8,
+  Core::Utils::int_parameter("NUM_GP_FLUID_BOUND", 8,
       "number of gp in fluid elements cut by surface of immersed structure (higher number yields "
       "better mass conservation)",
       &immersedmethod);
@@ -87,21 +87,21 @@ void Inpar::Immersed::set_valid_parameters(Teuchos::ParameterList& list)
 
   std::vector<std::string> predictor_valid_input = {
       "d(n)", "d(n)+dt*(1.5*v(n)-0.5*v(n-1))", "d(n)+dt*v(n)", "d(n)+dt*v(n)+0.5*dt^2*a(n)"};
-  Core::UTILS::string_parameter("PREDICTOR", "d(n)", "Predictor for interface displacements",
+  Core::Utils::string_parameter("PREDICTOR", "d(n)", "Predictor for interface displacements",
       &immersedpart, predictor_valid_input);
 
   std::vector<std::string> coupvariable_valid_input = {"Displacement", "Force"};
-  Core::UTILS::string_parameter("COUPVARIABLE", "Displacement",
+  Core::Utils::string_parameter("COUPVARIABLE", "Displacement",
       "Coupling variable at the fsi interface", &immersedpart, coupvariable_valid_input);
 
 
-  Core::UTILS::double_parameter("CONVTOL", 1e-6,
+  Core::Utils::double_parameter("CONVTOL", 1e-6,
       "Tolerance for iteration over fields in case of partitioned scheme", &immersedpart);
-  Core::UTILS::double_parameter(
+  Core::Utils::double_parameter(
       "RELAX", 1.0, "fixed relaxation parameter for partitioned FSI solvers", &immersedpart);
-  Core::UTILS::double_parameter("MAXOMEGA", 0.0,
+  Core::Utils::double_parameter("MAXOMEGA", 0.0,
       "largest omega allowed for Aitken relaxation (0.0 means no constraint)", &immersedpart);
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "ITEMAX", 100, "Maximum number of iterations over fields", &immersedpart);
 }
 

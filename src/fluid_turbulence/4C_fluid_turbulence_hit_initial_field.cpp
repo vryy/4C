@@ -286,7 +286,7 @@ namespace FLD
               // velocity field in physical space
               if (discret_->get_comm().MyPID() == 0)
               {
-                Core::UTILS::Random* random = Global::Problem::instance()->random();
+                Core::Utils::Random* random = Global::Problem::instance()->random();
                 // set range [0;1] (default: [-1;1])
                 //              random->SetRandRange(0.0,1.0);
                 //              random_theta1 = random->Uni();
@@ -964,7 +964,7 @@ namespace FLD
               // velocity field in physical space
               if (discret_->get_comm().MyPID() == 0)
               {
-                Core::UTILS::Random* random = Global::Problem::instance()->random();
+                Core::Utils::Random* random = Global::Problem::instance()->random();
                 // set range [0;1] (default: [-1;1])
                 //              random->SetRandRange(0.0,1.0);
                 //              random_theta1 = random->Uni();

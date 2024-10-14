@@ -50,7 +50,7 @@ namespace Cardiovascular0D
   class ProperOrthogonalDecomposition;
 }
 
-namespace UTILS
+namespace Utils
 {
   // forward declarations
   class Cardiovascular0D;
@@ -426,7 +426,7 @@ namespace UTILS
     bool have_mor_;  ///< model order reduction is used
 
   };  // class
-}  // namespace UTILS
+}  // namespace Utils
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

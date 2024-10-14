@@ -411,14 +411,14 @@ void ScaTra::ScaTraTimIntElch::set_element_specific_scatra_parameters(
   // overwrite action type
   if (elchparams_->get<bool>("DIFFCOND_FORMULATION"))
   {
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::set_diffcond_scatra_parameter, eleparams);
 
     // parameters for diffusion-conduction formulation
     eleparams.sublist("DIFFCOND") = elchparams_->sublist("DIFFCOND");
   }
   else
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::set_elch_scatra_parameter, eleparams);
 
   // general elch parameters
@@ -617,7 +617,7 @@ void ScaTra::ScaTraTimIntElch::prepare_time_loop()
 
   // check validity of material and element formulation
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::check_scatra_element_parameter, eleparams);
 
   discret_->evaluate(
@@ -689,7 +689,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_error_compared_to_analytical_sol()
 
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
-      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+      Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<Inpar::ScaTra::CalcError>("calcerrorflag", calcerror_);
@@ -737,7 +737,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_error_compared_to_analytical_sol()
 
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
-      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+      Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<Inpar::ScaTra::CalcError>("calcerrorflag", calcerror_);
@@ -769,7 +769,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_error_compared_to_analytical_sol()
 
       // create the parameters for the error calculation
       Teuchos::ParameterList eleparams;
-      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+      Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::calc_error, eleparams);
       eleparams.set("total time", time_);
       eleparams.set<Inpar::ScaTra::CalcError>("calcerrorflag", calcerror_);
@@ -992,10 +992,10 @@ ScaTra::ScaTraTimIntElch::evaluate_single_electrode_info(
 
   // set action for elements depending on type of condition to be evaluated
   if (condstring == "ElchDomainKinetics")
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::calc_elch_domain_kinetics, eleparams);
   else if (condstring == "ElchBoundaryKinetics")
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
         "action", ScaTra::BoundaryAction::calc_elch_boundary_kinetics, eleparams);
   else
     FOUR_C_THROW("Invalid action " + condstring + " for output of electrode status information!");
@@ -1079,7 +1079,7 @@ ScaTra::ScaTraTimIntElch::evaluate_single_electrode_info_point(
     Teuchos::ParameterList condparams;
 
     // set action for elements
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::calc_elch_boundary_kinetics_point, condparams);
 
     // set flag for evaluation of status information
@@ -1362,7 +1362,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_info_interior()
       Teuchos::ParameterList condparams;
 
       // action for elements
-      Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+      Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
           "action", ScaTra::Action::calc_elch_electrode_soc_and_c_rate, condparams);
 
       // initialize result vector
@@ -1483,7 +1483,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_cell_voltage()
         Teuchos::ParameterList condparams;
 
         // action for elements
-        Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+        Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
             "action", ScaTra::BoundaryAction::calc_elch_cell_voltage, condparams);
 
         // initialize result vector
@@ -1662,7 +1662,7 @@ void ScaTra::ScaTraTimIntElch::setup_nat_conv()
 
   // set action for elements
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
@@ -2117,7 +2117,7 @@ double ScaTra::ScaTraTimIntElch::compute_conductivity(
 
   // create the parameters for the elements
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_elch_conductivity, eleparams);
 
   eleparams.set("effCond", effCond);
@@ -2234,7 +2234,7 @@ bool ScaTra::ScaTraTimIntElch::apply_galvanostatic_control()
       compute_time_derivative();
 
       double targetcurrent =
-          problem_->function_by_id<Core::UTILS::FunctionOfTime>(curvenum - 1).evaluate(time_);
+          problem_->function_by_id<Core::Utils::FunctionOfTime>(curvenum - 1).evaluate(time_);
       double timefacrhs = 1.0 / residual_scaling();
 
       double currtangent_anode(0.0);
@@ -2626,10 +2626,10 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_kinetics_conditions(
 
   // set action for elements depending on type of condition to be evaluated
   if (condstring == "ElchDomainKinetics")
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::calc_elch_domain_kinetics, condparams);
   else if (condstring == "ElchBoundaryKinetics")
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
         "action", ScaTra::BoundaryAction::calc_elch_boundary_kinetics, condparams);
   else
     FOUR_C_THROW("Illegal action for electrode kinetics evaluation!");
@@ -2657,7 +2657,7 @@ void ScaTra::ScaTraTimIntElch::evaluate_electrode_boundary_kinetics_point_condit
   Teuchos::ParameterList condparams;
 
   // set action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_elch_boundary_kinetics_point, condparams);
 
   // set state vectors according to time-integration scheme
@@ -2759,7 +2759,7 @@ void ScaTra::ScaTraTimIntElch::linearization_nernst_condition()
   // update total time for time curve actions
   add_time_integration_specific_vectors();
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
       "action", ScaTra::BoundaryAction::calc_elch_linearize_nernst, condparams);
 
   // add element parameters and set state vectors according to time-integration scheme
@@ -2983,7 +2983,7 @@ void ScaTra::ScaTraTimIntElch::apply_neumann_bc(
             Teuchos::ParameterList params;
 
             // set action for elements
-            Core::UTILS::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
+            Core::Utils::add_enum_class_to_parameter_list<ScaTra::BoundaryAction>(
                 "action", ScaTra::BoundaryAction::calc_Neumann, params);
 
             // loop over all conditioned elements
@@ -3273,7 +3273,7 @@ void ScaTra::ScaTraTimIntElch::reduce_dimension_null_space_blocks(
  *-----------------------------------------------------------------------------*/
 double ScaTra::ScaTraTimIntElch::compute_temperature_from_function() const
 {
-  return problem_->function_by_id<Core::UTILS::FunctionOfTime>(temperature_funct_num_ - 1)
+  return problem_->function_by_id<Core::Utils::FunctionOfTime>(temperature_funct_num_ - 1)
       .evaluate(time_);
 }
 
@@ -3294,7 +3294,7 @@ double ScaTra::ScaTraTimIntElch::get_current_temperature() const
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> ScaTra::ScaTraTimIntElch::create_scatra_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> ScaTra::ScaTraTimIntElch::create_scatra_field_test()
 {
   return Teuchos::make_rcp<ScaTra::ElchResultTest>(Teuchos::rcpFromRef(*this));
 }

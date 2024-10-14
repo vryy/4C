@@ -51,7 +51,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::init(
     Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
     Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy,
     Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox,
-    Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor)
+    Teuchos::RCP<BEAMINTERACTION::Utils::MapExtractor> const& eletypeextractor)
 {
   issetup_ = false;
 
@@ -300,7 +300,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::periodic_bounding_box() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::UTILS::MapExtractor&
+BEAMINTERACTION::Utils::MapExtractor&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ele_type_map_extractor()
 {
   check_init();
@@ -310,7 +310,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ele_type_map_extractor()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor>&
+Teuchos::RCP<BEAMINTERACTION::Utils::MapExtractor>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ele_type_map_extractor_ptr()
 {
   check_init();
@@ -320,7 +320,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ele_type_map_extractor_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-BEAMINTERACTION::UTILS::MapExtractor const&
+BEAMINTERACTION::Utils::MapExtractor const&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ele_type_map_extractor() const
 {
   check_init();

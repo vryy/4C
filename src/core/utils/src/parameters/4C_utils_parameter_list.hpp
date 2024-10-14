@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core
 {
-  namespace UTILS
+  namespace Utils
   {
     //! add entry as item of enum class @p value to @p list with name @p parameter_name
     template <class EnumType>
@@ -60,7 +60,7 @@ namespace Core
         std::string const& docString, Teuchos::ParameterList* paramList,
         std::vector<std::string> const& validParams = {});
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace Core
 
 

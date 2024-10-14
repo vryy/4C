@@ -85,7 +85,7 @@ namespace
     Core::FE::IntPointsAndWeights<nsd> intpoints(
         Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
-    // format as Discret::UTILS::GaussIntegration
+    // format as Discret::Utils::GaussIntegration
     Teuchos::RCP<Core::FE::CollectedGaussPoints> gp =
         Teuchos::make_rcp<Core::FE::CollectedGaussPoints>();
 

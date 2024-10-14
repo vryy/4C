@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::UTILS::MapExtractor::setup(const Core::FE::Discretization& dis, bool overlapping)
+void ALE::Utils::MapExtractor::setup(const Core::FE::Discretization& dis, bool overlapping)
 {
   const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
@@ -46,7 +46,7 @@ void ALE::UTILS::MapExtractor::setup(const Core::FE::Discretization& dis, bool o
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> ALE::UTILS::MapExtractor::conditioned_element_map(
+Teuchos::RCP<std::set<int>> ALE::Utils::MapExtractor::conditioned_element_map(
     const Core::FE::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements =
@@ -84,7 +84,7 @@ Teuchos::RCP<std::set<int>> ALE::UTILS::MapExtractor::conditioned_element_map(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ALE::UTILS::FsiMapExtractor::setup(const Core::FE::Discretization& dis)
+void ALE::Utils::FsiMapExtractor::setup(const Core::FE::Discretization& dis)
 {
   const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
@@ -95,7 +95,7 @@ void ALE::UTILS::FsiMapExtractor::setup(const Core::FE::Discretization& dis)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::UTILS::XFluidFluidMapExtractor::setup(const Core::FE::Discretization& dis)
+void ALE::Utils::XFluidFluidMapExtractor::setup(const Core::FE::Discretization& dis)
 {
   const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;

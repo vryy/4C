@@ -594,7 +594,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::apply_scatra_st
 
   if (solve_structure_)
   {
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::calc_scatra_mono_odblock_mesh, sparams_struct);
     // other parameters that might be needed by the elements
     sparams_struct.set("delta time", dt());
@@ -640,7 +640,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::
 
   k_spf->zero();
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_fluid, sparams_fluid);
   // other parameters that might be needed by the elements
   sparams_fluid.set("delta time", dt());
@@ -819,7 +819,7 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::converged()
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_convergence_norms()
 {
   //------------------------------------------------------------ build residual force norms
-  normrhs_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_);
+  normrhs_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_);
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_st;
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fl;
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_sc;
@@ -828,9 +828,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_convergen
   extract_3d_field_vectors(rhs_, rhs_st, rhs_fl, rhs_sc);
 
   // build also norms for structure, fluid and scatra
-  normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_st);
-  normrhsfluid_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_fl);
-  normrhsscatra_ = UTILS::calculate_vector_norm(vectornormfres_, *rhs_sc);
+  normrhsstruct_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_st);
+  normrhsfluid_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_fl);
+  normrhsscatra_ = Utils::calculate_vector_norm(vectornormfres_, *rhs_sc);
 
   //------------------------------------------------------------- build residual increment norms
   // displacement and fluid velocity & pressure incremental vector
@@ -842,16 +842,16 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_convergen
   extract_3d_field_vectors(iterinc_, iterincst, iterincfl, iterincsc);
 
   // build also norms for fluid and structure
-  normincstruct_ = UTILS::calculate_vector_norm(vectornorminc_, *iterincst);
-  normincfluid_ = UTILS::calculate_vector_norm(vectornorminc_, *iterincfl);
-  normincscatra_ = UTILS::calculate_vector_norm(vectornorminc_, *iterincsc);
+  normincstruct_ = Utils::calculate_vector_norm(vectornorminc_, *iterincst);
+  normincfluid_ = Utils::calculate_vector_norm(vectornorminc_, *iterincfl);
+  normincscatra_ = Utils::calculate_vector_norm(vectornorminc_, *iterincsc);
 
   double dispnorm =
-      UTILS::calculate_vector_norm(vectornorminc_, *poro_field()->structure_field()->dispnp());
+      Utils::calculate_vector_norm(vectornorminc_, *poro_field()->structure_field()->dispnp());
   double fluidnorm =
-      UTILS::calculate_vector_norm(vectornorminc_, *poro_field()->fluid_field()->phinp());
+      Utils::calculate_vector_norm(vectornorminc_, *poro_field()->fluid_field()->phinp());
   double scatranorm =
-      UTILS::calculate_vector_norm(vectornorminc_, *scatra_algo()->scatra_field()->phinp());
+      Utils::calculate_vector_norm(vectornorminc_, *scatra_algo()->scatra_field()->phinp());
 
   // take care of very small norms
   if (dispnorm < 1.0e-6) dispnorm = 1.0;
@@ -1554,9 +1554,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
       extractor()->extract_vector(*iterinc_, struct_offset_ + 2);
 
   // build also norms for artery
-  normrhsart_ = UTILS::calculate_vector_norm(vectornormfres_, *arteryrhs);
-  normincart_ = UTILS::calculate_vector_norm(vectornorminc_, *arteryinc);
-  arterypressnorm_ = UTILS::calculate_vector_norm(
+  normrhsart_ = Utils::calculate_vector_norm(vectornormfres_, *arteryrhs);
+  normincart_ = Utils::calculate_vector_norm(vectornorminc_, *arteryinc);
+  arterypressnorm_ = Utils::calculate_vector_norm(
       vectornorminc_, (*poro_field()->fluid_field()->art_net_tim_int()->pressurenp()));
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> arteryscarhs =
@@ -1565,10 +1565,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
       extractor()->extract_vector(*iterinc_, struct_offset_ + 3);
 
   // build also norms for artery
-  normrhsartsca_ = UTILS::calculate_vector_norm(vectornormfres_, *arteryscarhs);
-  normincartsca_ = UTILS::calculate_vector_norm(vectornorminc_, *arteryscainc);
+  normrhsartsca_ = Utils::calculate_vector_norm(vectornormfres_, *arteryscarhs);
+  normincartsca_ = Utils::calculate_vector_norm(vectornorminc_, *arteryscainc);
   arteryscanorm_ =
-      UTILS::calculate_vector_norm(vectornorminc_, *(scatramsht_->art_scatra_field()->phinp()));
+      Utils::calculate_vector_norm(vectornorminc_, *(scatramsht_->art_scatra_field()->phinp()));
 
   // call base class
   PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay::build_convergence_norms();
@@ -1620,7 +1620,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling::
 
   k_asa->zero();
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_fluid, sparams_artery);
   // other parameters that might be needed by the elements
   sparams_artery.set("delta time", dt());

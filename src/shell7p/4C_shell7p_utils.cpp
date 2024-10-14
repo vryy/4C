@@ -326,7 +326,7 @@ namespace
 
 }  // namespace
 
-Teuchos::SerialDenseMatrix<int, double> Solid::UTILS::Shell::compute_shell_null_space(
+Teuchos::SerialDenseMatrix<int, double> Solid::Utils::Shell::compute_shell_null_space(
     Core::Nodes::Node& node, const double* x0, const Core::LinAlg::Matrix<3, 1>& dir)
 {
   const auto& x = node.x();
@@ -378,7 +378,7 @@ Teuchos::SerialDenseMatrix<int, double> Solid::UTILS::Shell::compute_shell_null_
   return nullspace;
 }
 
-void Solid::UTILS::Shell::nodal_block_information_shell(
+void Solid::Utils::Shell::nodal_block_information_shell(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 6;
@@ -386,7 +386,7 @@ void Solid::UTILS::Shell::nodal_block_information_shell(
   nv = 3;
 }
 
-void Solid::UTILS::Shell::Director::setup_director_for_element(
+void Solid::Utils::Shell::Director::setup_director_for_element(
     const Core::Elements::Element& ele, Core::LinAlg::SerialDenseMatrix& nodal_directors)
 {
   constexpr auto num_dim = Discret::ELEMENTS::Shell::Internal::num_dim;
@@ -427,7 +427,7 @@ void Solid::UTILS::Shell::Director::setup_director_for_element(
   }
 }
 
-void Solid::UTILS::Shell::Director::average_director(const Core::LinAlg::Matrix<3, 8>& dir_list,
+void Solid::Utils::Shell::Director::average_director(const Core::LinAlg::Matrix<3, 8>& dir_list,
     const int num_directors, Core::LinAlg::Matrix<3, 1>& nodal_director)
 {
   Core::LinAlg::Matrix<3, 1> davn(true);
@@ -492,7 +492,7 @@ void Solid::UTILS::Shell::Director::average_director(const Core::LinAlg::Matrix<
   }
 }
 
-void Solid::UTILS::Shell::Director::export_director_map_from_row_to_col_map(
+void Solid::Utils::Shell::Director::export_director_map_from_row_to_col_map(
     const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis,
     std::map<int, std::vector<double>>& director_map)
 {
@@ -541,7 +541,7 @@ void Solid::UTILS::Shell::Director::export_director_map_from_row_to_col_map(
 }
 
 
-void Solid::UTILS::Shell::Director::average_directors_at_nodes(
+void Solid::Utils::Shell::Director::average_directors_at_nodes(
     const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis,
     std::map<int, std::vector<double>>& director_map)
 {
@@ -609,7 +609,7 @@ void Solid::UTILS::Shell::Director::average_directors_at_nodes(
   }
 }
 
-void Solid::UTILS::Shell::Director::setup_shell_element_directors(
+void Solid::Utils::Shell::Director::setup_shell_element_directors(
     const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis)
 {
   for (const auto& actele : dis.my_col_element_range())
@@ -647,7 +647,7 @@ void Solid::UTILS::Shell::Director::setup_shell_element_directors(
 
 
 
-void Solid::UTILS::Shell::lump_mass_matrix(Core::LinAlg::SerialDenseMatrix& mass_matrix)
+void Solid::Utils::Shell::lump_mass_matrix(Core::LinAlg::SerialDenseMatrix& mass_matrix)
 {
   // lump mass matrix
   FOUR_C_ASSERT(mass_matrix.numRows() == mass_matrix.numCols(),
@@ -667,7 +667,7 @@ void Solid::UTILS::Shell::lump_mass_matrix(Core::LinAlg::SerialDenseMatrix& mass
 }
 
 
-void Solid::UTILS::Shell::read_element::read_and_set_locking_types(
+void Solid::Utils::Shell::read_element::read_and_set_locking_types(
     const Core::FE::CellType& distype, const Core::IO::InputParameterContainer& container,
     Solid::ELEMENTS::ShellLockingTypes& locking_types)
 {
@@ -710,14 +710,14 @@ void Solid::UTILS::Shell::read_element::read_and_set_locking_types(
                         locking_types.transverse_shear_strain_lin;
 }
 
-int Solid::UTILS::Shell::read_element::read_and_set_element_material(
+int Solid::Utils::Shell::read_element::read_and_set_element_material(
     const Core::IO::InputParameterContainer& container)
 {
   int material = container.get<int>("MAT");
   return material;
 }
 
-int Solid::UTILS::Shell::read_element::read_and_set_num_ans(const Core::FE::CellType& distype)
+int Solid::Utils::Shell::read_element::read_and_set_num_ans(const Core::FE::CellType& distype)
 {
   switch (distype)
   {

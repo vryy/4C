@@ -197,12 +197,12 @@ void TSI::Monolithic::read_restart(int step)
   // Material pointers to other field were deleted during read_restart().
   // They need to be reset.
   if (matchinggrid_)
-    TSI::UTILS::set_material_pointers_matching_grid(
+    TSI::Utils::set_material_pointers_matching_grid(
         *structure_field()->discretization(), *thermo_field()->discretization());
   else
   {
-    Teuchos::RCP<TSI::UTILS::TSIMaterialStrategy> strategy =
-        Teuchos::make_rcp<TSI::UTILS::TSIMaterialStrategy>();
+    Teuchos::RCP<TSI::Utils::TSIMaterialStrategy> strategy =
+        Teuchos::make_rcp<TSI::Utils::TSIMaterialStrategy>();
     volcoupl_->assign_materials(structure_field()->discretization(),
         thermo_field()->discretization(), Global::Problem::instance()->volmortar_params(),
         Global::Problem::instance()->cut_general_params(), strategy);

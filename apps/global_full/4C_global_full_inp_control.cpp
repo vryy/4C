@@ -57,7 +57,7 @@ void ntainp_ccadiscret(
   Global::read_cloning_material_map(*problem, reader);
 
   {
-    Core::UTILS::FunctionManager function_manager;
+    Core::Utils::FunctionManager function_manager;
     global_legacy_module_callbacks().AttachFunctionDefinitions(function_manager);
     function_manager.read_input(reader);
     problem->set_function_manager(std::move(function_manager));

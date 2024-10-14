@@ -108,7 +108,7 @@ void fluid_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->num_global_nodes() == 0)
   {
-    Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
+    Core::FE::clone_discretization<ALE::Utils::AleCloneStrategy>(
         *fluiddis, *aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
@@ -118,7 +118,7 @@ void fluid_ale_drt()
   }
   else  // filled ale discretization
   {
-    if (!FSI::UTILS::fluid_ale_nodes_disjoint(*fluiddis, *aledis))
+    if (!FSI::Utils::fluid_ale_nodes_disjoint(*fluiddis, *aledis))
       FOUR_C_THROW(
           "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -163,7 +163,7 @@ void fluid_xfem_drt()
     // create ale elements if the ale discretization is empty
     if (aledis->num_global_nodes() == 0)
     {
-      Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
+      Core::FE::clone_discretization<ALE::Utils::AleCloneStrategy>(
           *problem->get_dis("fluid"), *aledis, Global::Problem::instance()->cloning_material_map());
       aledis->fill_complete();
       // setup material in every ALE element
@@ -173,7 +173,7 @@ void fluid_xfem_drt()
     }
     else  // filled ale discretization
     {
-      if (!FSI::UTILS::fluid_ale_nodes_disjoint(*problem->get_dis("fluid"), *aledis))
+      if (!FSI::Utils::fluid_ale_nodes_disjoint(*problem->get_dis("fluid"), *aledis))
         FOUR_C_THROW(
             "Fluid and ALE nodes have the same node numbers. "
             "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -267,7 +267,7 @@ void fsi_immersed_drt()
   {
     structdis->fill_complete(false, false, false);
     Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-    Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+    Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
     Core::Rebalance::rebalance_discretizations_by_binning(binning_params,
@@ -291,7 +291,7 @@ void fsi_immersed_drt()
 
   // binning strategy is created
   Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-  Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+  Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
       binning_params);
 
@@ -402,7 +402,7 @@ void fsi_ale_drt()
   {
     structdis->fill_complete(false, false, false);
     Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-    Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+    Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
 
@@ -431,7 +431,7 @@ void fsi_ale_drt()
   // create ale elements if the ale discretization is empty
   if (aledis->num_global_nodes() == 0)  // empty ale discretization
   {
-    Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
+    Core::FE::clone_discretization<ALE::Utils::AleCloneStrategy>(
         *fluiddis, *aledis, Global::Problem::instance()->cloning_material_map());
     aledis->fill_complete();
     // setup material in every ALE element
@@ -441,7 +441,7 @@ void fsi_ale_drt()
   }
   else  // filled ale discretization (i.e. read from input file)
   {
-    if (!FSI::UTILS::fluid_ale_nodes_disjoint(*fluiddis, *aledis))
+    if (!FSI::Utils::fluid_ale_nodes_disjoint(*fluiddis, *aledis))
       FOUR_C_THROW(
           "Fluid and ALE nodes have the same node numbers. "
           "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -465,7 +465,7 @@ void fsi_ale_drt()
         // binning strategy is created and parallel redistribution is performed
         Teuchos::ParameterList binning_params =
             Global::Problem::instance()->binning_strategy_params();
-        Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+        Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
             "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
         Core::Binstrategy::BinningStrategy binningstrategy(binning_params,
@@ -710,7 +710,7 @@ void xfsi_drt()
     // Create ALE elements if the ale discretization is empty
     if (aledis->num_global_nodes() == 0)  // ALE discretization still empty
     {
-      Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
+      Core::FE::clone_discretization<ALE::Utils::AleCloneStrategy>(
           *fluiddis, *aledis, Global::Problem::instance()->cloning_material_map());
       aledis->fill_complete();
       // setup material in every ALE element
@@ -720,7 +720,7 @@ void xfsi_drt()
     }
     else  // ALE discretization already filled
     {
-      if (!FSI::UTILS::fluid_ale_nodes_disjoint(*fluiddis, *aledis))
+      if (!FSI::Utils::fluid_ale_nodes_disjoint(*fluiddis, *aledis))
         FOUR_C_THROW(
             "Fluid and ALE nodes have the same node numbers. "
             "This it not allowed since it causes problems with Dirichlet BCs. "
@@ -838,7 +838,7 @@ void xfpsi_drt()
 
   // 1.-Initialization.
   // setup of the discretizations, including clone strategy
-  PoroElast::UTILS::setup_poro<PoroElast::UTILS::PoroelastCloneStrategy>();
+  PoroElast::Utils::setup_poro<PoroElast::Utils::PoroelastCloneStrategy>();
 
   // setup of discretization for xfluid
   FLD::XFluid::setup_fluid_discretization();
@@ -858,7 +858,7 @@ void xfpsi_drt()
     // 3.- Create ALE elements if the ale discretization is empty
     if (aledis->num_global_nodes() == 0)  // ALE discretization still empty
     {
-      Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
+      Core::FE::clone_discretization<ALE::Utils::AleCloneStrategy>(
           *fluiddis, *aledis, Global::Problem::instance()->cloning_material_map());
       aledis->fill_complete();
       // setup material in every ALE element
@@ -868,7 +868,7 @@ void xfpsi_drt()
     }
     else  // ALE discretization already filled
     {
-      if (!FSI::UTILS::fluid_ale_nodes_disjoint(*fluiddis, *aledis))
+      if (!FSI::Utils::fluid_ale_nodes_disjoint(*fluiddis, *aledis))
         FOUR_C_THROW(
             "Fluid and ALE nodes have the same node numbers. "
             "This it not allowed since it causes problems with Dirichlet BCs. "

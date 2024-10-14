@@ -28,7 +28,7 @@ namespace
       setup_template_csv_file(csv_template_file_name);
 
       cubic_spline_from_csv_ =
-          Teuchos::make_rcp<Core::UTILS::CubicSplineFromCSV>(csv_template_file_name);
+          Teuchos::make_rcp<Core::Utils::CubicSplineFromCSV>(csv_template_file_name);
     }
 
     void setup_template_csv_file(const std::string& csv_template_file_name) const
@@ -43,7 +43,7 @@ namespace
       test_csv_file << "0.45,4.10" << '\n';
     }
 
-    Teuchos::RCP<Core::UTILS::FunctionOfScalar> cubic_spline_from_csv_;
+    Teuchos::RCP<Core::Utils::FunctionOfScalar> cubic_spline_from_csv_;
   };
 
   TEST_F(CubicSplineFromCSVTest, TestEvaluate)

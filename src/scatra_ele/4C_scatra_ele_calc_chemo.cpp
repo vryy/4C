@@ -42,7 +42,7 @@ Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>*
 Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
+  static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
         return std::unique_ptr<ScaTraEleCalcChemo<distype, probdim>>(
@@ -50,7 +50,7 @@ Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::instance(
       });
 
   return singleton_map[disname].instance(
-      Core::UTILS::SingletonAction::create, numdofpernode, numscal, disname);
+      Core::Utils::SingletonAction::create, numdofpernode, numscal, disname);
 }
 
 

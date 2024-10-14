@@ -22,7 +22,7 @@ Adapter::FluidFPSI::FluidFPSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond),
-      fpsiinterface_(Teuchos::make_rcp<FLD::UTILS::MapExtractor>())
+      fpsiinterface_(Teuchos::make_rcp<FLD::Utils::MapExtractor>())
 {
   return;
 }  // constructor
@@ -53,7 +53,7 @@ void Adapter::FluidFPSI::setup_interface(const int nds_master)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Adapter::FluidFPSI::use_block_matrix(
-    bool splitmatrix, Teuchos::RCP<FPSI::UTILS::MapExtractor> const& shapederivSplitter)
+    bool splitmatrix, Teuchos::RCP<FPSI::Utils::MapExtractor> const& shapederivSplitter)
 {
   Teuchos::RCP<std::set<int>> condelements =
       interface()->conditioned_element_map(*discretization());

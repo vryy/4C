@@ -709,7 +709,7 @@ void SSI::SsiMono::setup_system()
   SSI::SSIBase::setup_system();
 
   // setup the ssi maps object
-  ssi_maps_ = Teuchos::make_rcp<SSI::UTILS::SSIMaps>(*this);
+  ssi_maps_ = Teuchos::make_rcp<SSI::Utils::SSIMaps>(*this);
 
   // perform initializations associated with global system matrix
   switch (matrixtype_)
@@ -744,11 +744,11 @@ void SSI::SsiMono::setup_system()
   }
 
   // initialize sub blocks and system matrix
-  ssi_matrices_ = Teuchos::make_rcp<SSI::UTILS::SSIMatrices>(
+  ssi_matrices_ = Teuchos::make_rcp<SSI::Utils::SSIMatrices>(
       ssi_maps_, matrixtype_, scatra_field()->matrix_type(), is_scatra_manifold());
 
   // initialize residual and increment vectors
-  ssi_vectors_ = Teuchos::make_rcp<SSI::UTILS::SSIVectors>(ssi_maps_, is_scatra_manifold());
+  ssi_vectors_ = Teuchos::make_rcp<SSI::Utils::SSIVectors>(ssi_maps_, is_scatra_manifold());
 
   // initialize strategy for assembly
   strategy_assemble_ = SSI::build_assemble_strategy(
@@ -948,13 +948,13 @@ void SSI::SsiMono::update_iter_scatra()
 {
   // update scalar transport field
   scatra_field()->update_iter(*maps_sub_problems()->extract_vector(*ssi_vectors_->increment(),
-      UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport)));
+      Utils::SSIMaps::get_problem_position(Subproblem::scalar_transport)));
   scatra_field()->compute_intermediate_values();
 
   if (is_scatra_manifold())
   {
     auto increment_manifold = maps_sub_problems()->extract_vector(
-        *ssi_vectors_->increment(), UTILS::SSIMaps::get_problem_position(Subproblem::manifold));
+        *ssi_vectors_->increment(), Utils::SSIMaps::get_problem_position(Subproblem::manifold));
 
     // reconstruct slave side solution from master side
     if (is_scatra_manifold_meshtying())
@@ -983,7 +983,7 @@ void SSI::SsiMono::update_iter_structure()
   // set up structural increment vector
   const Teuchos::RCP<Core::LinAlg::Vector<double>> increment_structure =
       maps_sub_problems()->extract_vector(
-          *ssi_vectors_->increment(), UTILS::SSIMaps::get_problem_position(Subproblem::structure));
+          *ssi_vectors_->increment(), Utils::SSIMaps::get_problem_position(Subproblem::structure));
 
   // consider structural meshtying. Copy master increments and displacements to slave side.
   if (ssi_interface_meshtying())
@@ -1327,27 +1327,27 @@ void SSI::SsiMono::calc_initial_time_derivative()
   auto massmatrix_scatra =
       scatra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse
           ? Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseOperator>(
-                UTILS::SSIMatrices::setup_sparse_matrix(*scatra_field()->dof_row_map()))
+                Utils::SSIMatrices::setup_sparse_matrix(*scatra_field()->dof_row_map()))
           : Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseOperator>(
-                UTILS::SSIMatrices::setup_block_matrix(
+                Utils::SSIMatrices::setup_block_matrix(
                     *scatra_field()->block_maps(), *scatra_field()->block_maps()));
 
   auto massmatrix_manifold =
       is_scatra_manifold()
           ? (scatra_manifold()->matrix_type() == Core::LinAlg::MatrixType::sparse
                     ? Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseOperator>(
-                          UTILS::SSIMatrices::setup_sparse_matrix(
+                          Utils::SSIMatrices::setup_sparse_matrix(
                               *scatra_manifold()->dof_row_map()))
                     : Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseOperator>(
-                          UTILS::SSIMatrices::setup_block_matrix(
+                          Utils::SSIMatrices::setup_block_matrix(
                               *scatra_manifold()->block_maps(), *scatra_manifold()->block_maps())))
           : Teuchos::null;
 
   auto massmatrix_system = matrix_type() == Core::LinAlg::MatrixType::sparse
                                ? Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseOperator>(
-                                     UTILS::SSIMatrices::setup_sparse_matrix(*dof_row_map()))
+                                     Utils::SSIMatrices::setup_sparse_matrix(*dof_row_map()))
                                : Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseOperator>(
-                                     UTILS::SSIMatrices::setup_block_matrix(
+                                     Utils::SSIMatrices::setup_block_matrix(
                                          *block_map_system_matrix(), *block_map_system_matrix()));
 
   // fill ones on main diag of structure block (not solved)
@@ -1372,13 +1372,13 @@ void SSI::SsiMono::calc_initial_time_derivative()
 
   rhs_scatra->Update(1.0,
       *maps_sub_problems()->extract_vector(*ssi_vectors_->residual(),
-          UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport)),
+          Utils::SSIMaps::get_problem_position(Subproblem::scalar_transport)),
       0.0);
   if (is_scatra_manifold())
   {
     rhs_manifold->Update(1.0,
         *maps_sub_problems()->extract_vector(
-            *ssi_vectors_->residual(), UTILS::SSIMaps::get_problem_position(Subproblem::manifold)),
+            *ssi_vectors_->residual(), Utils::SSIMaps::get_problem_position(Subproblem::manifold)),
         0.0);
   }
 
@@ -1495,10 +1495,10 @@ void SSI::SsiMono::calc_initial_time_derivative()
   // reconstruct global residual from partial residuals
   auto rhs_system = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dof_row_map(), true);
   maps_sub_problems()->insert_vector(
-      *rhs_scatra, UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport), *rhs_system);
+      *rhs_scatra, Utils::SSIMaps::get_problem_position(Subproblem::scalar_transport), *rhs_system);
   if (is_scatra_manifold())
     maps_sub_problems()->insert_vector(
-        *rhs_manifold, UTILS::SSIMaps::get_problem_position(Subproblem::manifold), *rhs_system);
+        *rhs_manifold, Utils::SSIMaps::get_problem_position(Subproblem::manifold), *rhs_system);
 
   // apply artificial Dirichlet boundary conditions to system of equations to non-transported
   // scalars and structure
@@ -1532,14 +1532,14 @@ void SSI::SsiMono::calc_initial_time_derivative()
 
   // copy solution to sub problmes
   auto phidtnp_scatra = maps_sub_problems()->extract_vector(
-      *phidtnp_system, UTILS::SSIMaps::get_problem_position(Subproblem::scalar_transport));
+      *phidtnp_system, Utils::SSIMaps::get_problem_position(Subproblem::scalar_transport));
   scatra_field()->phidtnp()->Update(1.0, *phidtnp_scatra, 0.0);
   scatra_field()->phidtn()->Update(1.0, *phidtnp_scatra, 0.0);
 
   if (is_scatra_manifold())
   {
     auto phidtnp_manifold = maps_sub_problems()->extract_vector(
-        *phidtnp_system, UTILS::SSIMaps::get_problem_position(Subproblem::manifold));
+        *phidtnp_system, Utils::SSIMaps::get_problem_position(Subproblem::manifold));
     scatra_manifold()->phidtnp()->Update(1.0, *phidtnp_manifold, 0.0);
     scatra_manifold()->phidtn()->Update(1.0, *phidtnp_manifold, 0.0);
   }

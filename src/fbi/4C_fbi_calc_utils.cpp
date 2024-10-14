@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 
-void FBI::UTILS::get_fbi_element_centerline_dof_indices(Core::FE::Discretization const& discret,
+void FBI::Utils::get_fbi_element_centerline_dof_indices(Core::FE::Discretization const& discret,
     const Core::Elements::Element* ele, std::vector<unsigned int>& ele_centerline_dof_indices,
     unsigned int& num_dof)
 {
@@ -59,7 +59,7 @@ void FBI::UTILS::get_fbi_element_centerline_dof_indices(Core::FE::Discretization
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void FBI::UTILS::assemble_centerline_dof_force_stiff_into_fbi_element_force_stiff(
+void FBI::Utils::assemble_centerline_dof_force_stiff_into_fbi_element_force_stiff(
     const Core::FE::Discretization& discretization1,
     const Core::FE::Discretization& discretization2, std::vector<int> const& elegid,
     std::vector<Core::LinAlg::SerialDenseVector> const& eleforce_centerlineDOFs,

@@ -258,7 +258,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
 
   // Beam centerline GIDs.
   Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
-  UTILS::get_element_centerline_gid_indices(*discret, this->element1(), beam_centerline_gid);
+  Utils::get_element_centerline_gid_indices(*discret, this->element1(), beam_centerline_gid);
   for (unsigned int i_dof_beam = 0; i_dof_beam < Beam::n_dof_; i_dof_beam++)
     gid_pair(i_dof_beam) = beam_centerline_gid(i_dof_beam);
 
@@ -268,7 +268,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
   for (unsigned int i = 0; i < Solid::n_dof_; i++) gid_pair(i + Beam::n_dof_) = lm[i];
 
   // Beam rot GIDs.
-  const auto rot_gid = UTILS::get_element_rot_gid_indices(*discret, this->element1());
+  const auto rot_gid = Utils::get_element_rot_gid_indices(*discret, this->element1());
   for (unsigned int i = 0; i < n_dof_rot_; i++)
     gid_pair(i + Beam::n_dof_ + Solid::n_dof_) = rot_gid[i];
 

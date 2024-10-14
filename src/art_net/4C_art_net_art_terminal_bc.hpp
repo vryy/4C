@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Arteries
 {
-  namespace UTILS
+  namespace Utils
   {
     //--------------------------------------------------------------------
     // Wrapper class (to be called from outside) for inlet bc
@@ -54,7 +54,7 @@ namespace Arteries
     void solve_expl_windkessel_bc(Core::FE::Discretization& actdis,
         const Core::Conditions::Condition* condition, Teuchos::ParameterList& params);
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace Arteries
 
 FOUR_C_NAMESPACE_CLOSE

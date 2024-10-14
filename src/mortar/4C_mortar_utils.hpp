@@ -187,7 +187,7 @@ namespace Mortar
   int sort_convex_hull_points(bool out, Core::LinAlg::SerialDenseMatrix& transformed,
       std::vector<Vertex>& collconvexhull, std::vector<Vertex>& respoly, double& tol);
 
-  namespace UTILS
+  namespace Utils
   {
     /*!
     \brief copy the ghosting of dis_src to all discretizations with names in
@@ -239,7 +239,7 @@ namespace Mortar
 
     void mortar_recover(Core::LinAlg::Vector<double>& inc,
         const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p);
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace Mortar
 
 FOUR_C_NAMESPACE_CLOSE

@@ -32,14 +32,14 @@ namespace FPSI
 {
   class FpsiBase;
 
-  class Utils
+  class InterfaceUtils
   {
    public:
     //! Singleton access method
-    static Teuchos::RCP<Utils> instance();
+    static InterfaceUtils* instance();
 
     //! singleton object
-    static Teuchos::RCP<FPSI::Utils> instance_;
+    static Teuchos::RCP<FPSI::InterfaceUtils> instance_;
 
     //! Setup Discretizations for FPSI problem (clone ALE and porofluid and setup interfaces)
     Teuchos::RCP<FPSI::FpsiBase> setup_discretizations(const Epetra_Comm& comm,
@@ -85,6 +85,8 @@ namespace FPSI
     };
 
    private:
+    InterfaceUtils() = default;
+
     //! interface maps
     Teuchos::RCP<std::map<int, int>> fluid_poro_fluid_interface_map_;
     Teuchos::RCP<std::map<int, int>> poro_fluid_fluid_interface_map_;
@@ -92,7 +94,7 @@ namespace FPSI
   };  // class Utils
 
 
-  namespace UTILS
+  namespace Utils
   {
     /// specific MultiMapExtractor to handle the fluid field
     class MapExtractor : public Core::LinAlg::MultiMapExtractor
@@ -121,7 +123,7 @@ namespace FPSI
        * \date 05/2014
        */
       void setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
-          const FPSI::UTILS::MapExtractor& extractor);
+          const FPSI::Utils::MapExtractor& extractor);
 
       /// get all element gids those nodes are touched by any condition
       Teuchos::RCP<std::set<int>> conditioned_element_map(
@@ -132,7 +134,7 @@ namespace FPSI
       MAP_EXTRACTOR_VECTOR_METHODS(fpsi_cond, cond_fpsi)
     };
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FPSI
 
 FOUR_C_NAMESPACE_CLOSE

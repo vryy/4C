@@ -21,10 +21,10 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------*/
 namespace Discret
 {
-  namespace UTILS
+  namespace Utils
   {
     class FunctionOfAnything;
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace Discret
 
 namespace Mat

@@ -554,7 +554,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
     if (functnum > 0)
     {
       functfacs[i] = Global::Problem::instance()
-                         ->function_by_id<Core::UTILS::FunctionOfTime>(functnum - 1)
+                         ->function_by_id<Core::Utils::FunctionOfTime>(functnum - 1)
                          .evaluate(time);
     }
   }

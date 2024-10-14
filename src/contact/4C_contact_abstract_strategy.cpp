@@ -307,7 +307,7 @@ bool CONTACT::AbstractStrategy::redistribute_contact(
 {
   bool redistributed = false;
 
-  if (CONTACT::UTILS::use_safe_redistribute_and_ghosting(params()))
+  if (CONTACT::Utils::use_safe_redistribute_and_ghosting(params()))
     redistributed = redistribute_with_safe_ghosting(*dis, *vel);
   else
   {

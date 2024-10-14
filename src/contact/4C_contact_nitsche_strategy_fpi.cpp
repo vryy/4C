@@ -45,7 +45,7 @@ bool CONTACT::NitscheStrategyFpi::check_nitsche_contact_state(
     double& gap                             // gap
 )
 {
-  return CONTACT::UTILS::check_nitsche_contact_state(
+  return CONTACT::Utils::check_nitsche_contact_state(
       *contact_interfaces()[0], pen_n_, weighting_, cele, xsi, full_fsi_traction, gap);
 }
 

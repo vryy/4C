@@ -314,7 +314,7 @@ void Mat::PlasticDruckerPrager::evaluate_fad(const Core::LinAlg::Matrix<3, 3>* d
 
     const double tol = params_->abstol_;
     Dgamma =
-        Core::UTILS::solve_local_newton(returnToConeFunctAndDeriv, Dgamma, tol * cohesion, itermax);
+        Core::Utils::solve_local_newton(returnToConeFunctAndDeriv, Dgamma, tol * cohesion, itermax);
     strainbar_p = (strainbarpllast_.at(gp)) + xi * Dgamma;
     devstress.scale(1.0 - (G * Dgamma / std::sqrt(J2)));
     p = p_trial - kappa * etabar * Dgamma;
@@ -325,7 +325,7 @@ void Mat::PlasticDruckerPrager::evaluate_fad(const Core::LinAlg::Matrix<3, 3>* d
       { return this->return_to_apex_funct_and_deriv(dstrainv_init, p_trial, kappa, strainbar_p); };
 
       const double tol = params_->abstol_;
-      dstrainv = Core::UTILS::solve_local_newton(
+      dstrainv = Core::Utils::solve_local_newton(
           returnToApexFunctAndDeriv, dstrainv, tol * cohesion, itermax);
       strainbar_p = (strainbarpllast_.at(gp)) + xi / eta * dstrainv;
       p = p_trial - kappa * dstrainv;

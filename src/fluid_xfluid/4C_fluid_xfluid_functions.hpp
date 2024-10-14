@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   class FunctionManager;
 }
@@ -29,13 +29,13 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace UTILS
+  namespace Utils
   {
     /// add valid xfluid-specific function lines
-    void add_valid_xfluid_functions(Core::UTILS::FunctionManager& function_manager);
+    void add_valid_xfluid_functions(Core::Utils::FunctionManager& function_manager);
 
     /// special implementation level set cut utilizing xfluid
-    class GerstenbergerForwardfacingStep : public Core::UTILS::FunctionOfSpaceTime
+    class GerstenbergerForwardfacingStep : public Core::Utils::FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -58,7 +58,7 @@ namespace Discret
      *   at the time t_dist = n*PI/2   n=0,1,2,3,...
      *   and maximum velocity at t_max  = n*PI/4   n=1,2,3,4,...
      */
-    class MovingLevelSetCylinder : public Core::UTILS::FunctionOfSpaceTime
+    class MovingLevelSetCylinder : public Core::Utils::FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -126,7 +126,7 @@ namespace Discret
      *   0)
      *   1) Increasing sliplength in shape of sphere.
      */
-    class MovingLSTorus : public Core::UTILS::FunctionOfSpaceTime
+    class MovingLSTorus : public Core::Utils::FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -235,7 +235,7 @@ namespace Discret
      * @brief Stationary Taylor-Couette flow with Navier-Slip type boundary condition at inner
      * cylinder.
      */
-    class TaylorCouetteFlow : public Core::UTILS::FunctionOfSpaceTime
+    class TaylorCouetteFlow : public Core::Utils::FunctionOfSpaceTime
     {
      public:
       /// ctor (for NavSlip at both boundaries)
@@ -271,7 +271,7 @@ namespace Discret
      * Oseen test case (can be solved with Nav-Stokes as well as the advective velocity.
      * is chosen as the analytic solution to the Nav-Stokes equations).
      */
-    class UrquizaBoxFlow : public Core::UTILS::FunctionOfSpaceTime
+    class UrquizaBoxFlow : public Core::Utils::FunctionOfSpaceTime
     {
      public:
       /// ctor
@@ -341,7 +341,7 @@ namespace Discret
         return {};
       }
     };
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

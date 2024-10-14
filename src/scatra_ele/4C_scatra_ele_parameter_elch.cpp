@@ -32,10 +32,10 @@ Discret::ELEMENTS::ScaTraEleParameterElch* Discret::ELEMENTS::ScaTraEleParameter
 )
 {
   static auto singleton_map =
-      Core::UTILS::make_singleton_map<std::string>([](const std::string& disname)
+      Core::Utils::make_singleton_map<std::string>([](const std::string& disname)
           { return std::unique_ptr<ScaTraEleParameterElch>(new ScaTraEleParameterElch(disname)); });
 
-  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].instance(Core::Utils::SingletonAction::create, disname);
 }
 
 

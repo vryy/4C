@@ -43,8 +43,8 @@ namespace Core::IO
         FOUR_C_THROW(
             "You tried to get the data named %s from the container as type '%s'.\n"
             "Actually, it has type '%s'.",
-            name.c_str(), Core::UTILS::try_demangle(typeid(T).name()).c_str(),
-            Core::UTILS::try_demangle(data.type().name()).c_str());
+            name.c_str(), Core::Utils::try_demangle(typeid(T).name()).c_str(),
+            Core::Utils::try_demangle(data.type().name()).c_str());
       }
     }
   }  // namespace Internal

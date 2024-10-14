@@ -23,11 +23,11 @@ namespace Core::FE
   class Discretization;
 }  // namespace Core::FE
 
-namespace UTILS
+namespace Utils
 {
   class Cardiovascular0D;
   class Cardiovascular0DManager;
-}  // namespace UTILS
+}  // namespace Utils
 
 namespace Core::IO
 {
@@ -37,11 +37,11 @@ namespace Core::IO
 /*!
   \brief Structure specific result test class
 */
-class Cardiovascular0DResultTest : public Core::UTILS::ResultTest
+class Cardiovascular0DResultTest : public Core::Utils::ResultTest
 {
  public:
   Cardiovascular0DResultTest(
-      UTILS::Cardiovascular0DManager& cardvasc0dman, Teuchos::RCP<Core::FE::Discretization> discr);
+      Utils::Cardiovascular0DManager& cardvasc0dman, Teuchos::RCP<Core::FE::Discretization> discr);
 
   void test_special(
       const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;

@@ -66,8 +66,8 @@ PoroElastScaTra::PoroScatraBase::PoroScatraBase(
   setup_coupling(structdis, fluiddis, scatradis);
   // Create the two uncoupled subproblems.
   // 1. poro problem
-  poro_ = PoroElast::UTILS::create_poro_algorithm(
-      timeparams, comm, false, PoroElastScaTra::UTILS::build_poro_scatra_splitter(*structdis));
+  poro_ = PoroElast::Utils::create_poro_algorithm(
+      timeparams, comm, false, PoroElastScaTra::Utils::build_poro_scatra_splitter(*structdis));
 
   // get the solver number used for ScalarTransport solver
   const int linsolvernumber = scatradyn.get<int>("LINEAR_SOLVER");

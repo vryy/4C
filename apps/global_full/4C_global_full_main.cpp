@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
 {
   using namespace FourC;
 
-  Core::UTILS::SingletonOwnerRegistry::initialize();
+  Core::Utils::SingletonOwnerRegistry::initialize();
   MPI_Init(&argc, &argv);
   Kokkos::ScopeGuard kokkos_guard{};
 
@@ -378,7 +378,7 @@ int main(int argc, char *argv[])
     printf("processor %d finished normally\n", lcomm->MyPID());
   }
 
-  Core::UTILS::SingletonOwnerRegistry::finalize();
+  Core::Utils::SingletonOwnerRegistry::finalize();
 
   Global::Problem::done();
 

@@ -938,7 +938,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::evaluate_all(const 
     Core::LinAlg::SerialDenseVector& v) const
 {
   int numComp = Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(start_func - 1)
                     .number_components();
 
   // If there is on component for each entry of the vector use une for each
@@ -946,7 +946,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::evaluate_all(const 
   {
     for (int d = 0; d < v.numRows(); ++d)
       v[d] = Global::Problem::instance()
-                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(start_func - 1)
                  .evaluate(xyz.data(), t, d);
   }
   // If the vector is half the number of the component only use the firt half
@@ -954,7 +954,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::evaluate_all(const 
   {
     for (int d = 0; d < v.numRows(); ++d)
       v[d] = Global::Problem::instance()
-                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(start_func - 1)
                  .evaluate(xyz.data(), t, d);
   }
   // If the number of component is half of the vector, repeat the first half twice
@@ -962,7 +962,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::evaluate_all(const 
   {
     for (int d = 0; d < v.numRows(); ++d)
       v[d] = Global::Problem::instance()
-                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(start_func - 1)
                  .evaluate(xyz.data(), t, d % numComp);
   }
   // If there is only one component always use it
@@ -970,7 +970,7 @@ void Discret::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::evaluate_all(const 
   {
     for (int d = 0; d < v.numRows(); ++d)
       v[d] = Global::Problem::instance()
-                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(start_func - 1)
                  .evaluate(xyz.data(), t, 0);
   }
   // If the number is not recognised throw an error
@@ -1153,9 +1153,9 @@ int Discret::ELEMENTS::ElemagEleCalc<distype>::interpolate_solution_to_nodes(
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ElemagEleCalc<distype>* Discret::ELEMENTS::ElemagEleCalc<distype>::instance(
-    Core::UTILS::SingletonAction action)
+    Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::ElemagEleCalc<distype>>(

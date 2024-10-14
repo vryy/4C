@@ -37,7 +37,7 @@ namespace Core::IO
 }  // namespace Core::IO
 
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   /**
    * A class that collects various (mathematical) 4C Functions specified by the user.
@@ -108,13 +108,13 @@ namespace Core::UTILS
    * depending on arbitrary variables.
    */
   void add_valid_builtin_functions(FunctionManager& function_manager);
-}  // namespace Core::UTILS
+}  // namespace Core::Utils
 
 
 // --- template and inline functions --- //
 
 template <typename T>
-const T& Core::UTILS::FunctionManager::function_by_id(int num) const
+const T& Core::Utils::FunctionManager::function_by_id(int num) const
 {
   const int input_id = num + 1;
   if (functions_.size() < (unsigned int)(input_id) || input_id < 1)
@@ -136,7 +136,7 @@ const T& Core::UTILS::FunctionManager::function_by_id(int num) const
         [&function_any]()
         {
           const std::string actual_type_name_with_rcp_prefix =
-              Core::UTILS::try_demangle(function_any.type().name());
+              Core::Utils::try_demangle(function_any.type().name());
 
           // find the outermost pair of angle brackets which should enclose the type inside an RCP
           const std::size_t start = actual_type_name_with_rcp_prefix.find_first_of('<');
@@ -153,7 +153,7 @@ const T& Core::UTILS::FunctionManager::function_by_id(int num) const
     FOUR_C_THROW(
         "You tried to query function %d as a function of type '%s'.\n"
         "Actually, it has type '%s'.",
-        input_id, Core::UTILS::try_demangle(typeid(T).name()).c_str(), actual_type_name.c_str());
+        input_id, Core::Utils::try_demangle(typeid(T).name()).c_str(), actual_type_name.c_str());
   }
 }
 

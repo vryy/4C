@@ -42,7 +42,7 @@ namespace SSI
 {
   class SsiMono;
 
-  namespace UTILS
+  namespace Utils
   {
     class SSIMaps;
   }
@@ -59,7 +59,7 @@ namespace SSI
     //! constructor
     explicit DBCHandlerBase(bool is_scatra_manifold, Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
         Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
-        Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+        Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
         Teuchos::RCP<Adapter::SSIStructureWrapper> structure);
 
     /*!
@@ -98,7 +98,7 @@ namespace SSI
     }
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps() const { return ssi_maps_; }
+    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps() const { return ssi_maps_; }
 
     //! access to structural field
     Teuchos::RCP<Adapter::SSIStructureWrapper> structure_field() const { return structure_; }
@@ -128,7 +128,7 @@ namespace SSI
     Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold_;
 
     //! this object holds all maps relevant to monolithic scalar transport - structure interaction
-    Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps_;
+    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps_;
 
     /// structure field solver
     Teuchos::RCP<Adapter::SSIStructureWrapper> structure_;
@@ -143,7 +143,7 @@ namespace SSI
     explicit DBCHandlerSparse(bool is_scatra_manifold,
         Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
         Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
-        Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+        Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
         Teuchos::RCP<Adapter::SSIStructureWrapper> structure);
 
    private:
@@ -161,7 +161,7 @@ namespace SSI
     //! constructor
     explicit DBCHandlerBlock(bool is_scatra_manifold, Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
         Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
-        Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+        Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
         Teuchos::RCP<Adapter::SSIStructureWrapper> structure);
 
    private:
@@ -187,7 +187,7 @@ namespace SSI
   Teuchos::RCP<SSI::DBCHandlerBase> build_dbc_handler(bool is_scatra_manifold,
       Core::LinAlg::MatrixType matrixtype_ssi, Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra,
       Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold,
-      Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
+      Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
       Teuchos::RCP<Adapter::SSIStructureWrapper> structure);
 }  // namespace SSI
 FOUR_C_NAMESPACE_CLOSE

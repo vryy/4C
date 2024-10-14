@@ -38,7 +38,7 @@ struct ModuleCallbacks
    * Allow the module to attach any custom Function to the @p function_manager object. Inside this
    * callback, a module should call `FunctionManager::add_function_definition`.
    */
-  std::function<void(Core::UTILS::FunctionManager& function_manager)> AttachFunctionDefinitions;
+  std::function<void(Core::Utils::FunctionManager& function_manager)> AttachFunctionDefinitions;
 
   /**
    * A callback to return valid result description lines.

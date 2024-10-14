@@ -278,7 +278,7 @@ namespace Thermo
     void prepare_partition_step() override = 0;
 
     //! thermal result test
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
 
     //@}
 

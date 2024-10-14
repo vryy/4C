@@ -53,7 +53,7 @@ Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::instance(
     const int numdofpernode, const std::string& disname)
 {
   using Key = std::pair<std::string, int>;
-  static auto singleton_map = Core::UTILS::make_singleton_map<Key>(
+  static auto singleton_map = Core::Utils::make_singleton_map<Key>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<ArteryEleCalcLinExp<distype>>(
@@ -62,7 +62,7 @@ Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::instance(
 
   std::pair<std::string, int> key(disname, numdofpernode);
 
-  return singleton_map[key].instance(Core::UTILS::SingletonAction::create, numdofpernode, disname);
+  return singleton_map[key].instance(Core::Utils::SingletonAction::create, numdofpernode, disname);
 }
 
 
@@ -1128,9 +1128,9 @@ bool Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
       if (ele->nodes()[i]->get_condition("ArtJunctionCond"))
       {
         // Update the characteristic wave speed
-        Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>
+        Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>
             junc_nodal_vals = params.get<Teuchos::RCP<
-                std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>>(
+                std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>>(
                 "Junctions Parameters");
 
         int local_id = discretization.node_row_map()->LID(ele->nodes()[i]->id());
@@ -1336,7 +1336,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
         const Core::Conditions::Condition* condition =
             ele->nodes()[i]->get_condition("ArtPrescribedCond");
         Cparams.set<std::string>("Condition Name", "ArtPrescribedCond");
-        Arteries::UTILS::solve_prescribed_terminal_bc(discretization, condition, Cparams);
+        Arteries::Utils::solve_prescribed_terminal_bc(discretization, condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1352,7 +1352,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
             "coupling with 3D fluid params", CoupledTo3DParams);
         Cparams.set<std::string>("Condition Name", "Art_redD_3D_CouplingCond");
 
-        Arteries::UTILS::solve_prescribed_terminal_bc(discretization, condition, Cparams);
+        Arteries::Utils::solve_prescribed_terminal_bc(discretization, condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1361,7 +1361,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
       if (ele->nodes()[i]->get_condition("ArtRfCond"))
       {
         const Core::Conditions::Condition* condition = ele->nodes()[i]->get_condition("ArtRfCond");
-        Arteries::UTILS::solve_reflective_terminal(discretization, condition, Cparams);
+        Arteries::Utils::solve_reflective_terminal(discretization, condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1374,7 +1374,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
         Cparams.set<double>("external pressure", pext_(i));
         Cparams.set<double>("terminal volumetric flow rate", qn_(i));
         Cparams.set<double>("terminal cross-sectional area", an_(i));
-        Arteries::UTILS::solve_expl_windkessel_bc(discretization, condition, Cparams);
+        Arteries::Utils::solve_expl_windkessel_bc(discretization, condition, Cparams);
       }
 
       // -----------------------------------------------------------------------------
@@ -1441,10 +1441,10 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
   {
     if (ele->nodes()[i]->get_condition("ArtJunctionCond"))
     {
-      Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>
+      Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>
           junc_nodal_vals;
       junc_nodal_vals = params.get<
-          Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::UTILS::JunctionNodeParams>>>>(
+          Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>>(
           "Junctions Parameters");
 
       Teuchos::RCP<Core::LinAlg::Vector<double>> bcval =
@@ -1512,7 +1512,7 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::evaluate_scatra_bc(Artery*
       if (curvenum > 0)
       {
         curvefac = Global::Problem::instance()
-                       ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
+                       ->function_by_id<Core::Utils::FunctionOfTime>(curvenum)
                        .evaluate(time);
       }
 

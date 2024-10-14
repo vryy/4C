@@ -64,7 +64,7 @@ namespace BEAMINTERACTION
 {
   class BeamCrosslinkerHandler;
 
-  namespace UTILS
+  namespace Utils
   {
     class MapExtractor;
   }
@@ -97,7 +97,7 @@ namespace BEAMINTERACTION
           Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
           Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy,
           Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox,
-          Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> const& eletypeextractor);
+          Teuchos::RCP<BEAMINTERACTION::Utils::MapExtractor> const& eletypeextractor);
 
       //! setup class variables
       virtual void setup() = 0;
@@ -239,9 +239,9 @@ namespace BEAMINTERACTION
       Teuchos::RCP<Core::Geo::MeshFree::BoundingBox>& periodic_bounding_box_ptr();
       Core::Geo::MeshFree::BoundingBox const& periodic_bounding_box() const;
 
-      BEAMINTERACTION::UTILS::MapExtractor& ele_type_map_extractor();
-      Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor>& ele_type_map_extractor_ptr();
-      BEAMINTERACTION::UTILS::MapExtractor const& ele_type_map_extractor() const;
+      BEAMINTERACTION::Utils::MapExtractor& ele_type_map_extractor();
+      Teuchos::RCP<BEAMINTERACTION::Utils::MapExtractor>& ele_type_map_extractor_ptr();
+      BEAMINTERACTION::Utils::MapExtractor const& ele_type_map_extractor() const;
 
       //! @}
      protected:
@@ -277,7 +277,7 @@ namespace BEAMINTERACTION
       Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox_;
 
       /// map extractor for split of different element types
-      Teuchos::RCP<BEAMINTERACTION::UTILS::MapExtractor> eletypeextractor_;
+      Teuchos::RCP<BEAMINTERACTION::Utils::MapExtractor> eletypeextractor_;
 
     };  // class Generic
 

@@ -744,7 +744,7 @@ namespace Discret
           }
         }
 
-        Discret::UTILS::Beam::evaluate_shape_function_derivs_at_xi<nnodecl, vpernode>(
+        Discret::Utils::Beam::evaluate_shape_function_derivs_at_xi<nnodecl, vpernode>(
             xi, N_i_xi, this->shape(), this->ref_length());
         this->calc_r_xi<nnodecl, vpernode, double>(disp_centerline_ref, N_i_xi, r0_xi);
 

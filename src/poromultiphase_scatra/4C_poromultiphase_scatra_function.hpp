@@ -24,7 +24,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   class FunctionManager;
 }
@@ -36,7 +36,7 @@ namespace PoroMultiPhaseScaTra
    * FunctionOfAnything in scatra_reaction_coupling and fluidporo_multiphase_singlereaction
    */
   template <int dim>
-  class PoroMultiPhaseScaTraFunction : public Core::UTILS::FunctionOfAnything
+  class PoroMultiPhaseScaTraFunction : public Core::Utils::FunctionOfAnything
   {
    public:
     PoroMultiPhaseScaTraFunction();
@@ -71,7 +71,7 @@ namespace PoroMultiPhaseScaTra
   };
 
   /// Attach poro-specific functions to the @p function_manager.
-  void add_valid_poro_functions(Core::UTILS::FunctionManager& function_manager);
+  void add_valid_poro_functions(Core::Utils::FunctionManager& function_manager);
 
   /*!
    * @brief standard growth law for tumor cells <--> IF (with lysis) and pressure dependency:

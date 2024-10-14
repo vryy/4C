@@ -40,7 +40,7 @@ namespace ScaTra
     \author gjb
     \date 07/08
   */
-  class ScaTraResultTest : public Core::UTILS::ResultTest
+  class ScaTraResultTest : public Core::Utils::ResultTest
   {
    public:
     /*!

@@ -1300,7 +1300,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::evaluate_all(co
     Core::LinAlg::SerialDenseVector& v) const
 {
   int numComp = Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(start_func - 1)
                     .number_components();
 
   // If the number is not recognised throw an error
@@ -1317,7 +1317,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::evaluate_all(co
   // If there is only one component always use it
   for (int d = 0; d < v.numRows(); ++d)
     v[d] = Global::Problem::instance()
-               ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+               ->function_by_id<Core::Utils::FunctionOfSpaceTime>(start_func - 1)
                .evaluate(xyz.data(), t, d % numComp);
 
   return;
@@ -1332,7 +1332,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
     Core::LinAlg::SerialDenseMatrix& v) const
 {
   int numComp = Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(start_func - 1)
                     .number_components();
 
   // If the number is not recognised throw an error
@@ -1350,7 +1350,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
   {
     std::vector<double> deriv =
         Global::Problem::instance()
-            ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+            ->function_by_id<Core::Utils::FunctionOfSpaceTime>(start_func - 1)
             .evaluate_spatial_derivative(xyz.data(), t, d % numComp);
     for (unsigned int d_der = 0; d_der < nsd_; ++d_der) v(d, d_der) = deriv[d_der];
   }
@@ -1367,7 +1367,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
     Core::LinAlg::SerialDenseVector& v) const
 {
   int numComp = Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(start_func - 1)
                     .number_components();
 
   // If the number is not recognised throw an error
@@ -1384,10 +1384,10 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
   // If there is only one component always use it
   for (int d = 0; d < v.numRows(); ++d)
     v[d] = (Global::Problem::instance()
-                   ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                   ->function_by_id<Core::Utils::FunctionOfSpaceTime>(start_func - 1)
                    .evaluate(xyz.data(), t + (0.5 * dt), d % numComp) -
                Global::Problem::instance()
-                   ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
+                   ->function_by_id<Core::Utils::FunctionOfSpaceTime>(start_func - 1)
                    .evaluate(xyz.data(), t - (0.5 * dt), d % numComp)) /
            dt;
 
@@ -1570,9 +1570,9 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ElemagDiffEleCalc<distype>*
-Discret::ELEMENTS::ElemagDiffEleCalc<distype>::instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::ElemagDiffEleCalc<distype>::instance(Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::ElemagDiffEleCalc<distype>>(

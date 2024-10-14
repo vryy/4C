@@ -226,7 +226,7 @@ namespace NTS
     MTInterpolatorCalc();
 
     /// Singleton access method
-    static MTInterpolatorCalc<distype_m>* instance(Core::UTILS::SingletonAction action);
+    static MTInterpolatorCalc<distype_m>* instance(Core::Utils::SingletonAction action);
 
     //! nm_: number of master element nodes
     static constexpr int nm_ = Core::FE::num_nodes<distype_m>;

@@ -64,9 +64,9 @@ Discret::ELEMENTS::ScaTraHDGIntFaceImplInterface::impl(const Core::Elements::Ele
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>*
-Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::instance(Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>>(

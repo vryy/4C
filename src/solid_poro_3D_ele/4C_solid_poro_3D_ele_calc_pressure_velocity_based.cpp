@@ -512,7 +512,7 @@ void Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<celltype>::couplin
           {
             // push forward of material stress to the spatial configuration
             Core::LinAlg::Matrix<num_str_, 1> cauchycouplstressvector;
-            Solid::UTILS::pk2_to_cauchy(pk2_couplstress_gp,
+            Solid::Utils::pk2_to_cauchy(pk2_couplstress_gp,
                 spatial_material_mapping.deformation_gradient_, cauchycouplstressvector);
             Internal::assemble_vector_to_matrix_row(cauchycouplstressvector, couplstress_data, gp);
           }

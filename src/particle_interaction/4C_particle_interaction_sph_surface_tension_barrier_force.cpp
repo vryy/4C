@@ -148,11 +148,11 @@ void ParticleInteraction::SPHBarrierForce::compute_barrier_force_particle_contri
 
     if (type_i != gastype_ and trans_dT_barrier_ > 0.0)
       tempfac_i =
-          UTILS::comp_lin_trans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_barrier_);
+          Utils::comp_lin_trans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_barrier_);
 
     if (type_j != gastype_ and trans_dT_barrier_ > 0.0)
       tempfac_j =
-          UTILS::comp_lin_trans(temp_j[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_barrier_);
+          Utils::comp_lin_trans(temp_j[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_barrier_);
 
     // evaluate active barrier force distance
     const double activedist = std::max(1.0 + cr_ * tempfac_i, 1.0 + cr_ * tempfac_j) * dist_;
@@ -161,7 +161,7 @@ void ParticleInteraction::SPHBarrierForce::compute_barrier_force_particle_contri
     {
       const double gap = particlepair.absdist_ - activedist;
       const double gapdot =
-          UTILS::vec_dot(vel_i, particlepair.e_ij_) - UTILS::vec_dot(vel_j, particlepair.e_ij_);
+          Utils::vec_dot(vel_i, particlepair.e_ij_) - Utils::vec_dot(vel_j, particlepair.e_ij_);
 
       const double stiff = (type_i == gastype_ or type_j == gastype_) ? stiff_g_ : stiff_h_;
       const double damp = (type_i == gastype_ or type_j == gastype_) ? damp_g_ : damp_h_;
@@ -170,11 +170,11 @@ void ParticleInteraction::SPHBarrierForce::compute_barrier_force_particle_contri
       const double fac = (stiff * gap + damp * std::abs(gap) * gapdot);
 
       // sum contribution of neighboring particle j
-      UTILS::vec_add_scale(acc_i, -fac / mass_i[0], particlepair.e_ij_);
+      Utils::vec_add_scale(acc_i, -fac / mass_i[0], particlepair.e_ij_);
 
       // sum contribution of neighboring particle i
       if (status_j == PARTICLEENGINE::Owned)
-        UTILS::vec_add_scale(acc_j, fac / mass_j[0], particlepair.e_ij_);
+        Utils::vec_add_scale(acc_j, fac / mass_j[0], particlepair.e_ij_);
     }
   }
 }
@@ -217,8 +217,8 @@ void ParticleInteraction::SPHBarrierForce::compute_barrier_force_particle_bounda
 
     // versor from particle j to i
     double e_ij[3];
-    UTILS::vec_set(e_ij, particlepair.e_ij_);
-    if (swapparticles) UTILS::vec_scale(e_ij, -1.0);
+    Utils::vec_set(e_ij, particlepair.e_ij_);
+    if (swapparticles) Utils::vec_scale(e_ij, -1.0);
 
     // get corresponding particle containers
     PARTICLEENGINE::ParticleContainer* container_i =
@@ -248,11 +248,11 @@ void ParticleInteraction::SPHBarrierForce::compute_barrier_force_particle_bounda
 
     if (type_i != gastype_ and trans_dT_barrier_ > 0.0)
       tempfac_i =
-          UTILS::comp_lin_trans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_barrier_);
+          Utils::comp_lin_trans(temp_i[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_barrier_);
 
     if (trans_dT_barrier_ > 0.0)
       tempfac_j =
-          UTILS::comp_lin_trans(temp_j[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_barrier_);
+          Utils::comp_lin_trans(temp_j[0], trans_ref_temp_, trans_ref_temp_ + trans_dT_barrier_);
 
     // evaluate active barrier force distance
     const double activedist = std::max(1.0 + cr_ * tempfac_i, 1.0 + cr_ * tempfac_j) * dist_;
@@ -260,7 +260,7 @@ void ParticleInteraction::SPHBarrierForce::compute_barrier_force_particle_bounda
     if (absdist < activedist)
     {
       const double gap = absdist - activedist;
-      const double gapdot = UTILS::vec_dot(vel_i, e_ij) - UTILS::vec_dot(vel_j, e_ij);
+      const double gapdot = Utils::vec_dot(vel_i, e_ij) - Utils::vec_dot(vel_j, e_ij);
 
       const double stiff = (type_i == gastype_) ? stiff_g_ : stiff_h_;
       const double damp = (type_i == gastype_) ? damp_g_ : damp_h_;
@@ -269,7 +269,7 @@ void ParticleInteraction::SPHBarrierForce::compute_barrier_force_particle_bounda
       const double fac = (stiff * gap + damp * std::abs(gap) * gapdot);
 
       // sum contribution of neighboring particle j
-      if (acc_i) UTILS::vec_add_scale(acc_i, -fac / mass_i[0], e_ij);
+      if (acc_i) Utils::vec_add_scale(acc_i, -fac / mass_i[0], e_ij);
     }
   }
 }

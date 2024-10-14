@@ -26,7 +26,7 @@ namespace Core::FE
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     /// specific MultiMapExtractor to handle the fluid field
     class MapExtractor : public Core::LinAlg::MultiMapExtractor
@@ -57,7 +57,7 @@ namespace FLD
        * \date 05/2014
        */
       void setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
-          const FLD::UTILS::MapExtractor& extractor);
+          const FLD::Utils::MapExtractor& extractor);
 
       /// get all element gids those nodes are touched by any condition
       Teuchos::RCP<std::set<int>> conditioned_element_map(
@@ -134,7 +134,7 @@ namespace FLD
       void setup(const Core::FE::Discretization& dis);
 
       void setup(Teuchos::RCP<const Epetra_Map>& additionalothermap,
-          const FLD::UTILS::FsiMapExtractor& extractor);
+          const FLD::Utils::FsiMapExtractor& extractor);
 
       MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(fsi, cond_fsi)
@@ -158,7 +158,7 @@ namespace FLD
       MAP_EXTRACTOR_VECTOR_METHODS(x_fluid, cond_xfluid)
     };
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FLD
 
 FOUR_C_NAMESPACE_CLOSE

@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                         Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-FLD::UTILS::StressManager::StressManager(Teuchos::RCP<Core::FE::Discretization> discret,
+FLD::Utils::StressManager::StressManager(Teuchos::RCP<Core::FE::Discretization> discret,
     Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp, const bool alefluid, const int numdim)
     : discret_(discret),
       dispnp_(dispnp),
@@ -72,7 +72,7 @@ FLD::UTILS::StressManager::StressManager(Teuchos::RCP<Core::FE::Discretization> 
 /*----------------------------------------------------------------------*
  | constructor                                         Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::StressManager::init_aggr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat)
+void FLD::Utils::StressManager::init_aggr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat)
 {
   if (wss_type_ != Inpar::FLUID::wss_aggregation)
     FOUR_C_THROW("One should end up here just in case of aggregated stresses!");
@@ -89,7 +89,7 @@ void FLD::UTILS::StressManager::init_aggr(Teuchos::RCP<Core::LinAlg::SparseOpera
 /*----------------------------------------------------------------------*
  | update and return WSS vector                        Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_wall_shear_stresses(
+Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::get_wall_shear_stresses(
     const Core::LinAlg::Vector<double>& trueresidual, const double dt)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> wss = get_wall_shear_stresses_wo_agg(trueresidual);
@@ -118,7 +118,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_wall_s
  | return wss vector (without updating the mean stress vector)   Thon 11/14 |
  *--------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>>
-FLD::UTILS::StressManager::get_pre_calc_wall_shear_stresses(
+FLD::Utils::StressManager::get_pre_calc_wall_shear_stresses(
     const Core::LinAlg::Vector<double>& trueresidual)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> wss =
@@ -150,7 +150,7 @@ FLD::UTILS::StressManager::get_pre_calc_wall_shear_stresses(
  | return WSS vector always without aggregation        Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>>
-FLD::UTILS::StressManager::get_wall_shear_stresses_wo_agg(
+FLD::Utils::StressManager::get_wall_shear_stresses_wo_agg(
     const Core::LinAlg::Vector<double>& trueresidual)
 {
   if (not isinit_) FOUR_C_THROW("StressManager not initialized");
@@ -165,18 +165,18 @@ FLD::UTILS::StressManager::get_wall_shear_stresses_wo_agg(
 /*-----------------------------------------------------------------------------*
  |  calculate traction vector at (Dirichlet) boundary (public) Thon/Krank 07/07|
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_stresses_wo_agg(
+Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::get_stresses_wo_agg(
     const Core::LinAlg::Vector<double>& trueresidual)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> stresses = calc_stresses(trueresidual);
 
   return stresses;
-}  // FLD::UTILS::StressManager::GetStressesWOAgg()
+}  // FLD::Utils::StressManager::GetStressesWOAgg()
 
 /*-----------------------------------------------------------------------------*
  |  update and return stress vector                            Thon/Krank 07/07|
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_stresses(
+Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::get_stresses(
     const Core::LinAlg::Vector<double>& trueresidual, const double dt)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> stresses = get_stresses_wo_agg(trueresidual);
@@ -199,12 +199,12 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_stress
   }
 
   return stresses;
-}  // FLD::UTILS::StressManager::GetStresses()
+}  // FLD::Utils::StressManager::GetStresses()
 
 /*-----------------------------------------------------------------------------*
  | return stress vector (without updating the mean stress vector)   Thon 03/15 |
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_pre_calc_stresses(
+Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::get_pre_calc_stresses(
     const Core::LinAlg::Vector<double>& trueresidual)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> stresses =
@@ -235,7 +235,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::get_pre_ca
 /*-----------------------------------------------------------------------------*
  |  calculate traction vector at (Dirichlet) boundary (public) Thon/Krank 07/07|
  *-----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::calc_stresses(
+Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::calc_stresses(
     const Core::LinAlg::Vector<double>& trueresidual)
 {
   if (not isinit_) FOUR_C_THROW("StressManager not initialized");
@@ -256,11 +256,11 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::calc_stres
   }
 
   return integratedshapefunc;
-}  // FLD::UTILS::StressManager::calc_stresses()
+}  // FLD::Utils::StressManager::calc_stresses()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::integrate_interface_shape(
+Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::integrate_interface_shape(
     std::string condname)
 {
   Teuchos::ParameterList eleparams;
@@ -292,7 +292,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::integrate_
  |  calculate wall sheer stress from stresses at dirichlet boundary     |
  |                                                     Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::calc_wall_shear_stresses(
+Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::calc_wall_shear_stresses(
     Teuchos::RCP<Core::LinAlg::Vector<double>> stresses)
 {
   // -------------------------------------------------------------------
@@ -380,7 +380,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::calc_wall_
 /*----------------------------------------------------------------------*
  | smooth stresses/wss via ML-aggregation              Thon/Krank 11/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::aggreagte_stresses(
+Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::aggreagte_stresses(
     Core::LinAlg::Vector<double>& wss)
 {
   if (sep_enr_ == Teuchos::null) FOUR_C_THROW("no scale separation matrix");
@@ -397,7 +397,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::aggreagte_
 /*----------------------------------------------------------------------*
  | time average stresses                                     Thon 03/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::time_average_stresses(
+Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::time_average_stresses(
     const Core::LinAlg::Vector<double>& stresses, const double dt)
 {
   sum_stresses_->Update(dt, stresses, 1.0);  // weighted sum of all prior stresses
@@ -413,7 +413,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::time_avera
 /*----------------------------------------------------------------------*
  | time average wss                                          Thon 03/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::time_average_wss(
+Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::time_average_wss(
     const Core::LinAlg::Vector<double>& wss, const double dt)
 {
   sum_wss_->Update(dt, wss, 1.0);  // weighted sum of all prior stresses
@@ -430,7 +430,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::UTILS::StressManager::time_avera
  | Calculate Aggregation Matrix and set is as member variable SepEnr_   |
  |                                                     Thon/Krank 11/14 |
  *------------------------------------------------- --------------------*/
-void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat)
+void FLD::Utils::StressManager::calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat)
 {
   if (wss_type_ == Inpar::FLUID::wss_aggregation)  // iff we have not specified a ML-solver one does
                                                    // not want to smooth the wss
@@ -537,7 +537,7 @@ void FLD::UTILS::StressManager::calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOp
 
 //----------------------------------------------------------------------*/
 //----------------------------------------------------------------------*/
-void FLD::UTILS::setup_fluid_fluid_vel_pres_split(const Core::FE::Discretization& fluiddis,
+void FLD::Utils::setup_fluid_fluid_vel_pres_split(const Core::FE::Discretization& fluiddis,
     int ndim, const Core::FE::Discretization& alefluiddis, Core::LinAlg::MapExtractor& extractor,
     Teuchos::RCP<Epetra_Map> fullmap)
 {
@@ -608,7 +608,7 @@ void FLD::UTILS::setup_fluid_fluid_vel_pres_split(const Core::FE::Discretization
 // -------------------------------------------------------------------
 // compute forces and moments                          rasthofer 08/13
 // -------------------------------------------------------------------
-void FLD::UTILS::lift_drag(const Teuchos::RCP<const Core::FE::Discretization> dis,
+void FLD::Utils::lift_drag(const Teuchos::RCP<const Core::FE::Discretization> dis,
     const Core::LinAlg::Vector<double>& trueresidual,
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp, const int ndim,
     Teuchos::RCP<std::map<int, std::vector<double>>>& liftdragvals, bool alefluid)
@@ -821,7 +821,7 @@ void FLD::UTILS::lift_drag(const Teuchos::RCP<const Core::FE::Discretization> di
 // -------------------------------------------------------------------
 // write forces and moments to file                    rasthofer 08/13
 // -------------------------------------------------------------------
-void FLD::UTILS::write_lift_drag_to_file(
+void FLD::Utils::write_lift_drag_to_file(
     const double time, const int step, const std::map<int, std::vector<double>>& liftdragvals)
 {
   // print to file
@@ -870,7 +870,7 @@ void FLD::UTILS::write_lift_drag_to_file(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int, double> FLD::UTILS::compute_flow_rates(Core::FE::Discretization& dis,
+std::map<int, double> FLD::Utils::compute_flow_rates(Core::FE::Discretization& dis,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp, const std::string& condstring,
     const Inpar::FLUID::PhysicalType physicaltype)
 {
@@ -879,7 +879,7 @@ std::map<int, double> FLD::UTILS::compute_flow_rates(Core::FE::Discretization& d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int, double> FLD::UTILS::compute_flow_rates(Core::FE::Discretization& dis,
+std::map<int, double> FLD::Utils::compute_flow_rates(Core::FE::Discretization& dis,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& gridv,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp, const std::string& condstring,
@@ -942,7 +942,7 @@ std::map<int, double> FLD::UTILS::compute_flow_rates(Core::FE::Discretization& d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<int, double> FLD::UTILS::compute_volume(Core::FE::Discretization& dis,
+std::map<int, double> FLD::Utils::compute_volume(Core::FE::Discretization& dis,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& gridv,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& dispnp,
@@ -975,7 +975,7 @@ std::map<int, double> FLD::UTILS::compute_volume(Core::FE::Discretization& dis,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::write_doubles_to_file(
+void FLD::Utils::write_doubles_to_file(
     const double time, const int step, const std::map<int, double>& data, const std::string& name)
 {
   if (data.empty()) FOUR_C_THROW("data vector is empty");
@@ -1012,13 +1012,13 @@ void FLD::UTILS::write_doubles_to_file(
 /*----------------------------------------------------------------------*|
  | project vel gradient and store it in given param list        bk 05/15 |
  *----------------------------------------------------------------------*/
-void FLD::UTILS::project_gradient_and_set_param(Core::FE::Discretization& discret,
+void FLD::Utils::project_gradient_and_set_param(Core::FE::Discretization& discret,
     Teuchos::ParameterList& eleparams, Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,
     const std::string paraname, bool alefluid)
 {
   // project gradient
   Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
-      FLD::UTILS::project_gradient(discret, vel, alefluid);
+      FLD::Utils::project_gradient(discret, vel, alefluid);
 
   // store multi vector in parameter list after export to col layout
   if (projected_velgrad != Teuchos::null)
@@ -1031,7 +1031,7 @@ void FLD::UTILS::project_gradient_and_set_param(Core::FE::Discretization& discre
 /*----------------------------------------------------------------------*|
  | Project velocity gradient                                    bk 05/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> FLD::UTILS::project_gradient(Core::FE::Discretization& discret,
+Teuchos::RCP<Epetra_MultiVector> FLD::Utils::project_gradient(Core::FE::Discretization& discret,
     Teuchos::RCP<const Core::LinAlg::Vector<double>> vel, bool alefluid)
 {
   // reconstruction of second derivatives for fluid residual

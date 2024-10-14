@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace XFEM
 {
-  namespace UTILS
+  namespace Utils
   {
     //! extract the nodal vectors and store them in node-vector-map
     //! \author schott \date 01/13
@@ -71,7 +71,7 @@ namespace XFEM
         const Core::Nodes::Node* node, const Epetra_MultiVector& global_col_vector,
         Core::FE::Discretization& dis, const int nds_vector, const unsigned int nsd);
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace XFEM
 
 

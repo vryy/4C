@@ -61,7 +61,7 @@ namespace FLD
   class XFluidState;
   class XFluidFluidState;
 
-  namespace UTILS
+  namespace Utils
   {
     class KSPMapExtractor;
   }

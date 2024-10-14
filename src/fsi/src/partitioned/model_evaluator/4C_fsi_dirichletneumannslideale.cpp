@@ -53,7 +53,7 @@ void FSI::DirichletNeumannSlideale::setup()
   auto aletype = Teuchos::getIntegralValue<Inpar::FSI::SlideALEProj>(
       Global::Problem::instance()->fsi_dynamic_params(), "SLIDEALEPROJ");
 
-  slideale_ = Teuchos::make_rcp<FSI::UTILS::SlideAleUtils>(structure_field()->discretization(),
+  slideale_ = Teuchos::make_rcp<FSI::Utils::SlideAleUtils>(structure_field()->discretization(),
       mb_fluid_field()->discretization(), structure_fluid_coupling_mortar(), true, aletype);
 
   islave_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(

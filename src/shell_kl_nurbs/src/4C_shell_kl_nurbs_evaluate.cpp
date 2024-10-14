@@ -152,13 +152,13 @@ int Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate_neumann(Teuchos::Parame
     FOUR_C_THROW("Wrong number of BC values. Expected %d, got %d.", n_nodal_dof, onoff.size());
 
   // Get the functions from the global problem
-  std::array<const Core::UTILS::FunctionOfSpaceTime*, n_nodal_dof> functions;
+  std::array<const Core::Utils::FunctionOfSpaceTime*, n_nodal_dof> functions;
   for (int i_dof = 0; i_dof < n_nodal_dof; ++i_dof)
   {
     if (onoff[i_dof] == 1 and funct_id[i_dof] > 0)
     {
       functions[i_dof] =
-          &(Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+          &(Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(
               funct_id[i_dof] - 1));
     }
   }

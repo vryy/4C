@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   /*!
    * \brief interface for time-dependent functions.
@@ -72,7 +72,7 @@ namespace Core::UTILS
 
    private:
     //! vector of parsed expressions
-    std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<double>>> expr_;
+    std::vector<Teuchos::RCP<Core::Utils::SymbolicExpression<double>>> expr_;
 
 
     //! vector of the function variables and all their definitions
@@ -83,7 +83,7 @@ namespace Core::UTILS
   Teuchos::RCP<FunctionOfTime> try_create_function_of_time(
       const std::vector<Input::LineDefinition>& function_line_defs);
 
-}  // namespace Core::UTILS
+}  // namespace Core::Utils
 
 FOUR_C_NAMESPACE_CLOSE
 

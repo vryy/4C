@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace PoroElastScaTra
 {
-  namespace UTILS
+  namespace Utils
   {
     //! setup discretization, includes cloning the structure discretization
     template <class PoroCloneStrategy, class PoroScatraCloneStrategy>
@@ -49,7 +49,7 @@ namespace PoroElastScaTra
 
       // setup of the discretizations, including clone strategy (do not set material pointers, this
       // will be done here)
-      PoroElast::UTILS::setup_poro<PoroCloneStrategy>(false);
+      PoroElast::Utils::setup_poro<PoroCloneStrategy>(false);
 
       // 3.-Access the scatra discretization, make sure it's empty, and fill it by cloning the
       // structural one.
@@ -65,9 +65,9 @@ namespace PoroElastScaTra
         scatradis->fill_complete();
 
         // assign materials. Order is important here!
-        PoroElast::UTILS::set_material_pointers_matching_grid(*structdis, *fluiddis);
-        PoroElast::UTILS::set_material_pointers_matching_grid(*structdis, *scatradis);
-        PoroElast::UTILS::set_material_pointers_matching_grid(*fluiddis, *scatradis);
+        PoroElast::Utils::set_material_pointers_matching_grid(*structdis, *fluiddis);
+        PoroElast::Utils::set_material_pointers_matching_grid(*structdis, *scatradis);
+        PoroElast::Utils::set_material_pointers_matching_grid(*fluiddis, *scatradis);
 
         // the problem is two way coupled, thus each discretization must know the other
         // discretization
@@ -103,14 +103,14 @@ namespace PoroElastScaTra
 
         Teuchos::ParameterList binning_params =
             Global::Problem::instance()->binning_strategy_params();
-        Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+        Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
             "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
             binning_params);
         Core::Rebalance::rebalance_discretizations_by_binning(binning_params,
             Global::Problem::instance()->output_control_file(), dis, nullptr, nullptr, false);
 
         // set material pointers
-        PoroElast::UTILS::set_material_pointers_matching_grid(*structdis, *fluiddis);
+        PoroElast::Utils::set_material_pointers_matching_grid(*structdis, *fluiddis);
 
         // first call fill_complete for single discretizations.
         // This way the physical dofs are numbered successively
@@ -155,7 +155,7 @@ namespace PoroElastScaTra
         scatradis->fill_complete(true, false, false);
       }
     }
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace PoroElastScaTra
 
 FOUR_C_NAMESPACE_CLOSE

@@ -23,7 +23,7 @@ namespace Discret
   {
     class PreStress;
 
-    namespace UTILS
+    namespace Utils
     {
       template <Core::FE::CellType distype>
       void calc_r(const Core::Elements::Element* ele, const std::vector<double>& disp,
@@ -189,7 +189,7 @@ namespace Discret
       void throw_error_fd_material_tangent(
           const Teuchos::ParameterList& sdyn, const std::string& eletype);
 
-    }  // namespace UTILS
+    }  // namespace Utils
   }    // namespace ELEMENTS
 }  // namespace Discret
 

@@ -28,7 +28,7 @@ namespace XFEM
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     class XFluidFluidMapExtractor;
   }
@@ -189,7 +189,7 @@ namespace FLD
     }
 
     /// get map extractor for background/embedded fluid
-    Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> const& x_fluid_fluid_map_extractor()
+    Teuchos::RCP<FLD::Utils::XFluidFluidMapExtractor> const& x_fluid_fluid_map_extractor()
     {
       return xff_state_->xffluidsplitter_;
     }
@@ -210,7 +210,7 @@ namespace FLD
     void interpolate_embedded_state_vectors();
 
     /// create a result test
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
 
     /// write output for both fluid discretizations
     void output() override;

@@ -166,7 +166,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::MtPenaltyStrategy::mes
 
   // solve with default solver
   Teuchos::ParameterList solvparams;
-  Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
+  Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
       "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
   Core::LinAlg::Solver solver(solvparams, get_comm(), nullptr, Core::IO::Verbositylevel::standard);
 

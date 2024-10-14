@@ -67,7 +67,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::element_material_time_update()
   discret_->clear_state(true);
 
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::time_update_material, eleparams);
 
   discret_->set_state("phiaf", phinp_);
@@ -102,7 +102,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::collect_runtime_output_data()
   {
     material_internal_state_np_->PutScalar(0.0);
     Teuchos::ParameterList params;
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::get_material_internal_state, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>(
         "material_internal_state", material_internal_state_np_);
@@ -221,7 +221,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::project_material()
   discret_->clear_state(true);
   // set action
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::project_material_field, eleparams);
 
   Core::LinAlg::SerialDenseMatrix dummyMat;

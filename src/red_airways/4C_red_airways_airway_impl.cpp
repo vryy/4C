@@ -102,7 +102,7 @@ namespace
         if (curve) curvenum = (*curve)[0];
         if (curvenum >= 0)
           curvefac = Global::Problem::instance()
-                         ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
+                         ->function_by_id<Core::Utils::FunctionOfTime>(curvenum)
                          .evaluate(time);
 
         bcVal = (*vals)[0] * curvefac;
@@ -116,7 +116,7 @@ namespace
         if (functnum > 0)
         {
           functionfac = Global::Problem::instance()
-                            ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                            ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                             .evaluate(node->x().data(), time, 0);
         }
         // get curve2
@@ -125,7 +125,7 @@ namespace
         if (curve) curve2num = (*curve)[1];
         if (curve2num >= 0)
           curve2fac = Global::Problem::instance()
-                          ->function_by_id<Core::UTILS::FunctionOfTime>(curve2num)
+                          ->function_by_id<Core::Utils::FunctionOfTime>(curve2num)
                           .evaluate(time);
 
         bcVal += functionfac * curve2fac;
@@ -930,7 +930,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
 
             const double pressure_active =
                 Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfTime>(funct_id_switch - 1)
+                    ->function_by_id<Core::Utils::FunctionOfTime>(funct_id_switch - 1)
                     .evaluate(time);
 
             int funct_id_current = 0;
@@ -956,7 +956,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
             }
 
             BCin = Global::Problem::instance()
-                       ->function_by_id<Core::UTILS::FunctionOfTime>(funct_id_current - 1)
+                       ->function_by_id<Core::Utils::FunctionOfTime>(funct_id_current - 1)
                        .evaluate(time);
           }
           else
@@ -976,7 +976,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
               {
                 if ((curvenum = (*curve)[id]) >= 0)
                   return Global::Problem::instance()
-                      ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
+                      ->function_by_id<Core::Utils::FunctionOfTime>(curvenum)
                       .evaluate(time);
                 else
                   return 1.0;
@@ -995,7 +995,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
                   if (functions)
                     if ((functnum = (*functions)[0]) > 0)
                       return Global::Problem::instance()
-                          ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                           .evaluate((ele->nodes()[i])->x().data(), time, 0);
                     else
                       return 0.0;
@@ -1116,7 +1116,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
           if (curve) curvenum = (*curve)[phase_number];
           if (curvenum >= 0)
             curvefac = Global::Problem::instance()
-                           ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
+                           ->function_by_id<Core::Utils::FunctionOfTime>(curvenum)
                            .evaluate(time);
 
           BCin = (*vals)[phase_number] * curvefac;
@@ -1131,7 +1131,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
               double Vnp = BCin;
               double Vn = (*vals)[phase_number] *
                           Global::Problem::instance()
-                              ->function_by_id<Core::UTILS::FunctionOfTime>(curvenum)
+                              ->function_by_id<Core::Utils::FunctionOfTime>(curvenum)
                               .evaluate(time - dt);
               BCin = (Vnp - Vn) / dt;
               Bc = "flow";

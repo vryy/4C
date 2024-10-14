@@ -76,14 +76,14 @@ template <Core::FE::CellType distype, int probdim>
 Discret::ELEMENTS::LubricationEleCalc<distype, probdim>*
 Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::instance(const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
+  static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
       [](const std::string& disname)
       {
         return std::unique_ptr<LubricationEleCalc<distype, probdim>>(
             new LubricationEleCalc<distype, probdim>(disname));
       });
 
-  return singleton_map[disname].instance(Core::UTILS::SingletonAction::create, disname);
+  return singleton_map[disname].instance(Core::Utils::SingletonAction::create, disname);
 }
 
 
@@ -1358,12 +1358,12 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared
         gradpre.multiply(derxy_, eprenp_);
 
         pre_exact = Global::Problem::instance()
-                        ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                        ->function_by_id<Core::Utils::FunctionOfSpaceTime>(errorfunctno - 1)
                         .evaluate(position, t, 0);
 
         std::vector<double> gradpre_exact_vec =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(errorfunctno - 1)
                 .evaluate_spatial_derivative(position, t, 0);
 
         if (gradpre_exact_vec.size())

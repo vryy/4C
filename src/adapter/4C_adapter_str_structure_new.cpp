@@ -161,7 +161,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   {
     std::vector<Teuchos::RCP<Core::FE::Discretization>> actdis_vec(1, actdis_);
     Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-    Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+    Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
     actdis_vec[0]->fill_complete(false, false, false);

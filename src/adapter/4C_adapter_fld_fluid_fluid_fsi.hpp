@@ -37,11 +37,11 @@ namespace Core::IO
 namespace FLD
 {
   class XFluidFluid;
-  namespace UTILS
+  namespace Utils
   {
     class MapExtractor;
     class XFluidFluidMapExtractor;
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FLD
 
 namespace Adapter
@@ -87,7 +87,7 @@ namespace Adapter
     Teuchos::RCP<const Epetra_Map> dof_row_map() override;
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override
     {
       return mergedfluidinterface_;
     }
@@ -112,7 +112,7 @@ namespace Adapter
     const Teuchos::RCP<Core::IO::DiscretizationWriter>& disc_writer() override { return output_; }
 
     /// get map extractor for background/embedded fluid
-    Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> const& x_fluid_fluid_map_extractor();
+    Teuchos::RCP<FLD::Utils::XFluidFluidMapExtractor> const& x_fluid_fluid_map_extractor();
 
     //@}
 
@@ -163,7 +163,7 @@ namespace Adapter
 
     /// fsi map extractor for merged fluid maps (to keep fsi interface-DOF apart from
     /// merged inner DOF (inner embedded fluid together with background fluid)
-    Teuchos::RCP<FLD::UTILS::MapExtractor> mergedfluidinterface_;
+    Teuchos::RCP<FLD::Utils::MapExtractor> mergedfluidinterface_;
 
     /// type of monolithic XFluid-Fluid approach (decides whether ALE-mesh is fixed during
     /// Newton iteration)

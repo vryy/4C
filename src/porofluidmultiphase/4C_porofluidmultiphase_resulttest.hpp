@@ -45,7 +45,7 @@ namespace POROFLUIDMULTIPHASE
     \author vuong
     \date 08/16
   */
-  class ResultTest : public Core::UTILS::ResultTest
+  class ResultTest : public Core::Utils::ResultTest
   {
    public:
     /*!

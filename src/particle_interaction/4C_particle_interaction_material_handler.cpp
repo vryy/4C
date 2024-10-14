@@ -32,7 +32,7 @@ void ParticleInteraction::MaterialHandler::init()
   std::map<PARTICLEENGINE::TypeEnum, int> typetomatidmap;
 
   // read parameters relating particle types to values
-  PARTICLEALGORITHM::UTILS::read_params_types_related_to_values(
+  PARTICLEALGORITHM::Utils::read_params_types_related_to_values(
       params_, "PHASE_TO_MATERIAL_ID", typetomatidmap);
 
   // determine size of vector indexed by particle types

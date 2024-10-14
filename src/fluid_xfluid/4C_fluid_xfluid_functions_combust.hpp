@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   class FunctionManager;
 }
@@ -29,15 +29,15 @@ namespace Core::FE
 
 namespace Discret
 {
-  // namespace UTILS
+  // namespace Utils
 
-  namespace UTILS
+  namespace Utils
   {
     /// add valid combustion-specific function lines
-    void add_valid_combust_functions(Core::UTILS::FunctionManager& function_manager);
+    void add_valid_combust_functions(Core::Utils::FunctionManager& function_manager);
 
     /// special implementation for a level set test function "Zalesak's disk"
-    class ZalesaksDiskFunction : public Core::UTILS::FunctionOfSpaceTime
+    class ZalesaksDiskFunction : public Core::Utils::FunctionOfSpaceTime
     {
      public:
       double evaluate(const double* x, double t, std::size_t component) const override;
@@ -49,7 +49,7 @@ namespace Discret
     };
 
     /// special implementation two-phase flow test case
-    class CollapsingWaterColumnFunction : public Core::UTILS::FunctionOfSpaceTime
+    class CollapsingWaterColumnFunction : public Core::Utils::FunctionOfSpaceTime
     {
      public:
       double evaluate(const double* x, double t, std::size_t component) const override;
@@ -59,7 +59,7 @@ namespace Discret
         FOUR_C_THROW("Number of components not defined for CollapsingWaterColumnFunction.");
       };
     };
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

@@ -121,7 +121,7 @@ namespace Discret
 
       //! Singleton access method
       static TemperImpl<distype>* instance(
-          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
       //! number of nodes
       static constexpr int nen_ = Core::FE::num_nodes<distype>;

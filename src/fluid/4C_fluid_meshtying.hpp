@@ -61,11 +61,11 @@ namespace Core::LinAlg
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     class MapExtractor;
     class InterfaceSplitStrategy;
-  }  // namespace UTILS
+  }  // namespace Utils
   class Meshtying
   {
     friend class FluidEleParameter;
@@ -76,7 +76,7 @@ namespace FLD
         Core::LinAlg::Solver& solver,                           ///> solver
         int msht,                                               ///> meshting parameter list
         int nsd,                                                ///> number space dimensions
-        const UTILS::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
+        const Utils::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
 
     const Epetra_Map* get_merged_map();
     virtual ~Meshtying() = default;
@@ -267,7 +267,7 @@ namespace FLD
     int myrank_;
 
     // interface splitter
-    const UTILS::MapExtractor* surfacesplitter_;
+    const Utils::MapExtractor* surfacesplitter_;
 
     //! dof row map of the complete system
     const Epetra_Map* dofrowmap_;

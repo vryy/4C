@@ -133,7 +133,7 @@ void Solid::Integrator::set_initial_displacement(
           // evaluate component k of spatial function
           const double initialval =
               Global::Problem::instance()
-                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno - 1)
                   .evaluate(lnode->x().data(), global_state().get_time_n(), d);
 
           const int err = global_state().get_dis_n()->ReplaceMyValues(1, &initialval, &doflid);

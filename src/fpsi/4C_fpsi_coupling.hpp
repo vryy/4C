@@ -44,7 +44,7 @@ namespace Adapter
 
 namespace FPSI
 {
-  namespace UTILS
+  namespace Utils
   {
     class MapExtractor;
   }
@@ -163,7 +163,7 @@ namespace FPSI
     {
       return poro_extractor_;
     }
-    const Teuchos::RCP<FPSI::UTILS::MapExtractor>& fluid_fsi_fpsi_extractor() const
+    const Teuchos::RCP<FPSI::Utils::MapExtractor>& fluid_fsi_fpsi_extractor() const
     {
       return fluid_fsifpsi_extractor_;
     }
@@ -227,7 +227,7 @@ namespace FPSI
     //! dof row map splitted in inner structure (0), struct interface (1)
     //! inner porofluid (2) and porofluidinterface (3)
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> poro_extractor_;
-    Teuchos::RCP<FPSI::UTILS::MapExtractor> fluid_fsifpsi_extractor_;
+    Teuchos::RCP<FPSI::Utils::MapExtractor> fluid_fsifpsi_extractor_;
 
     // Evaluate is called first time!
     bool isfirstcall_;

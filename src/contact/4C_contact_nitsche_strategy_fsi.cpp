@@ -51,11 +51,11 @@ void CONTACT::NitscheStrategyFsi::do_contact_search()
 bool CONTACT::NitscheStrategyFsi::check_nitsche_contact_state(CONTACT::Element* cele,
     const Core::LinAlg::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
 {
-  return CONTACT::UTILS::check_nitsche_contact_state(
+  return CONTACT::Utils::check_nitsche_contact_state(
       *contact_interfaces()[0], pen_n_, weighting_, cele, xsi, full_fsi_traction, gap);
 }
 
-bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinterface,
+bool CONTACT::Utils::check_nitsche_contact_state(CONTACT::Interface& contactinterface,
     const double& pen_n, Inpar::CONTACT::NitscheWeighting weighting, CONTACT::Element* cele,
     const Core::LinAlg::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
 {
@@ -159,15 +159,15 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
   double wm = 0.;
   double my_pen = pen_n;
   double my_pen_t = 0.0;
-  CONTACT::UTILS::nitsche_weights_and_scaling(
+  CONTACT::Utils::nitsche_weights_and_scaling(
       *cele, *other_cele, weighting, 1., ws, wm, my_pen, my_pen_t);
 
   Core::LinAlg::Matrix<3, 1> ele_n;
   cele->compute_unit_normal_at_xi(xsi.data(), ele_n.data());
 
   double stress_plus_penalty =
-      ws * CONTACT::UTILS::solid_cauchy_at_xi(cele, xsi, ele_n, ele_n) +
-      wm * CONTACT::UTILS::solid_cauchy_at_xi(other_cele, mxi_m, ele_n, ele_n) + my_pen * gap;
+      ws * CONTACT::Utils::solid_cauchy_at_xi(cele, xsi, ele_n, ele_n) +
+      wm * CONTACT::Utils::solid_cauchy_at_xi(other_cele, mxi_m, ele_n, ele_n) + my_pen * gap;
 
   if (stress_plus_penalty >= full_fsi_traction)
     return true;  // aka evaluate FSI

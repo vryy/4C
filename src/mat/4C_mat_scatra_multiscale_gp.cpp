@@ -319,7 +319,7 @@ double Mat::ScatraMultiScaleGP::evaluate_mean_concentration() const
 
   // set parameters for micro-scale elements
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_total_and_mean_scalars, eleparams);
   eleparams.set("inverting", false);
   eleparams.set("calc_grad_phi", false);
@@ -352,7 +352,7 @@ double Mat::ScatraMultiScaleGP::evaluate_mean_concentration_time_derivative() co
 
   // set parameters for micro-scale elements
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_mean_scalar_time_derivatives, eleparams);
 
   // initialize result vector: first component = integral of concentration time derivative, second

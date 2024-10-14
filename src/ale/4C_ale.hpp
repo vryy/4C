@@ -50,10 +50,10 @@ namespace Core::IO
 
 namespace ALE
 {
-  namespace UTILS
+  namespace Utils
   {
     class MapExtractor;
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace ALE
 
 
@@ -135,7 +135,7 @@ namespace ALE
      *
      */
     void create_system_matrix(
-        Teuchos::RCP<const ALE::UTILS::MapExtractor> interface = Teuchos::null  //!< interface
+        Teuchos::RCP<const ALE::Utils::MapExtractor> interface = Teuchos::null  //!< interface
         ) override;
 
     /*! \brief evaluate and assemble residual #residual_ and jacobian matrix #sysmat_
@@ -147,8 +147,8 @@ namespace ALE
     void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc =
                       Teuchos::null,  ///< step increment such that \f$ x_{n+1}^{k+1} =
                                       ///< x_{n}^{converged}+ stepinc \f$
-        ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
-            ALE::UTILS::MapExtractor::dbc_set_std  ///< application-specific type of Dirichlet set
+        ALE::Utils::MapExtractor::AleDBCSetType dbc_type =
+            ALE::Utils::MapExtractor::dbc_set_std  ///< application-specific type of Dirichlet set
         ) override;
 
     /// linear solve
@@ -186,8 +186,8 @@ namespace ALE
      *
      *  Perform Newton iteration to solve the nonlinear problem.
      */
-    void time_step(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
-                       ALE::UTILS::MapExtractor::dbc_set_std) override;
+    void time_step(ALE::Utils::MapExtractor::AleDBCSetType dbc_type =
+                       ALE::Utils::MapExtractor::dbc_set_std) override;
 
     /// write output
     void output() override;
@@ -298,22 +298,22 @@ namespace ALE
      *  map extractor is used.
      */
     void setup_dbc_map_ex(
-        ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
-            ALE::UTILS::MapExtractor::dbc_set_std,  //!< application-specific type of Dirichlet set
-        Teuchos::RCP<const ALE::UTILS::MapExtractor> interface =
+        ALE::Utils::MapExtractor::AleDBCSetType dbc_type =
+            ALE::Utils::MapExtractor::dbc_set_std,  //!< application-specific type of Dirichlet set
+        Teuchos::RCP<const ALE::Utils::MapExtractor> interface =
             Teuchos::null,  //!< interface for creation of additional, application-specific
                             //!< Dirichlet map extractors
-        Teuchos::RCP<const ALE::UTILS::XFluidFluidMapExtractor> xff_interface =
+        Teuchos::RCP<const ALE::Utils::XFluidFluidMapExtractor> xff_interface =
             Teuchos::null  //!< interface for creation of a Dirichlet map extractor, taylored to
                            //!< XFFSI
         ) override;
 
     /// create result test for encapsulated algorithm
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
 
     Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor(
-        ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
-            ALE::UTILS::MapExtractor::dbc_set_std  //!< application-specific type of Dirichlet set
+        ALE::Utils::MapExtractor::AleDBCSetType dbc_type =
+            ALE::Utils::MapExtractor::dbc_set_std  //!< application-specific type of Dirichlet set
         ) override
     {
       return dbcmaps_[dbc_type];
@@ -565,8 +565,8 @@ namespace ALE
      *
      *  \author mayr.mt \date 11/2015
      */
-    void time_step(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
-                       ALE::UTILS::MapExtractor::dbc_set_std) override;
+    void time_step(ALE::Utils::MapExtractor::AleDBCSetType dbc_type =
+                       ALE::Utils::MapExtractor::dbc_set_std) override;
 
     /*! \brief Evaluate all elements
      *

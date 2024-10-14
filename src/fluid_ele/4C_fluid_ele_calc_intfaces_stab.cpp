@@ -223,9 +223,9 @@ Discret::ELEMENTS::FluidIntFaceStab* Discret::ELEMENTS::FluidIntFaceStab::impl(
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
 Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>*
 Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::instance(
-    Core::UTILS::SingletonAction action)
+    Core::Utils::SingletonAction action)
 {
-  static Core::UTILS::SingletonOwner<
+  static Core::Utils::SingletonOwner<
       Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>>
       singleton_owner(
           []()
@@ -857,7 +857,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       for (int idim = 0; idim < nsd_; ++idim)
         peconvvelaf_(idim, jnode) =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum - 1)
                 .evaluate(jx, time, idim);
     }
 
@@ -868,7 +868,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       for (int idim = 0; idim < nsd_; ++idim)
         neconvvelaf_(idim, jnode) =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum - 1)
                 .evaluate(jx, time, idim);
     }
 

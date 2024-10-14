@@ -250,7 +250,7 @@ void Core::Rebalance::match_element_distribution_of_matching_discretizations(
     if (err) FOUR_C_THROW("fill_complete() returned err=%d", err);
 
     // print to screen
-    Core::Rebalance::UTILS::print_parallel_distribution(dis_to_rebalance);
+    Core::Rebalance::Utils::print_parallel_distribution(dis_to_rebalance);
   }  // if more than one proc
 }  // Core::Rebalance::match_element_distribution_of_matching_discretizations
 
@@ -532,7 +532,7 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
     if (err) FOUR_C_THROW("fill_complete() returned err=%d", err);
 
     // print to screen
-    Core::Rebalance::UTILS::print_parallel_distribution(dis_to_rebalance);
+    Core::Rebalance::Utils::print_parallel_distribution(dis_to_rebalance);
 
   }  // if more than one proc
 }  // match_element_distribution_of_matching_conditioned_elements

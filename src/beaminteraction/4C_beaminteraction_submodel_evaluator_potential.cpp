@@ -187,7 +187,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::reset()
     for (unsigned int ielement = 0; ielement < 2; ++ielement)
     {
       // extract the Dof values of this element from displacement vector
-      BEAMINTERACTION::UTILS::extract_pos_dof_vec_absolute_values(discret(), element_ptr[ielement],
+      BEAMINTERACTION::Utils::extract_pos_dof_vec_absolute_values(discret(), element_ptr[ielement],
           *beam_interaction_data_state_ptr()->get_dis_col_np(),
           element_posdofvec_absolutevalues[ielement]);
     }
@@ -270,12 +270,12 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force()
 
             // assemble force vector affecting the centerline DoFs only
             // into element force vector ('all DoFs' format, as usual)
-            BEAMINTERACTION::UTILS::assemble_centerline_dof_force_stiff_into_element_force_stiff(
+            BEAMINTERACTION::Utils::assemble_centerline_dof_force_stiff_into_element_force_stiff(
                 discret(), elegids, eleforce_centerlineDOFs, dummystiff, &eleforce, nullptr);
 
             // assemble the contributions into force vector class variable
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-            BEAMINTERACTION::UTILS::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
+            BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
                 elegids, eleforce, dummystiff, beam_interaction_data_state_ptr()->get_force_np(),
                 Teuchos::null);
           }
@@ -361,12 +361,12 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_stiff()
 
             // assemble stiffness matrix affecting the centerline DoFs only
             // into element stiffness matrix ('all DoFs' format, as usual)
-            BEAMINTERACTION::UTILS::assemble_centerline_dof_force_stiff_into_element_force_stiff(
+            BEAMINTERACTION::Utils::assemble_centerline_dof_force_stiff_into_element_force_stiff(
                 discret(), elegids, dummyforce, elestiff_centerlineDOFs, nullptr, &elestiff);
 
             // assemble the contributions into force vector class variable
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-            BEAMINTERACTION::UTILS::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
+            BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
                 elegids, dummyforce, elestiff, Teuchos::null,
                 beam_interaction_data_state_ptr()->get_stiff());
           }
@@ -462,13 +462,13 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::evaluate_force_stiff()
 
             // assemble force vector and stiffness matrix affecting the centerline DoFs only
             // into element force vector and stiffness matrix ('all DoFs' format, as usual)
-            BEAMINTERACTION::UTILS::assemble_centerline_dof_force_stiff_into_element_force_stiff(
+            BEAMINTERACTION::Utils::assemble_centerline_dof_force_stiff_into_element_force_stiff(
                 discret(), elegids, eleforce_centerlineDOFs, elestiff_centerlineDOFs, &eleforce,
                 &elestiff);
 
             // assemble the contributions into force vector class variable
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
-            BEAMINTERACTION::UTILS::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
+            BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
                 elegids, eleforce, elestiff, beam_interaction_data_state_ptr()->get_force_np(),
                 beam_interaction_data_state_ptr()->get_stiff());
           }
@@ -765,9 +765,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
       nodes1[0]->get_condition("BeamPotentialLineCharge", conds1);
 
       // get correct condition for beam or rigid sphere element
-      if (BEAMINTERACTION::UTILS::is_beam_element(*currneighborele))
+      if (BEAMINTERACTION::Utils::is_beam_element(*currneighborele))
         nodes2[0]->get_condition("BeamPotentialLineCharge", conds2);
-      else if (BEAMINTERACTION::UTILS::is_rigid_sphere_element(*currneighborele))
+      else if (BEAMINTERACTION::Utils::is_rigid_sphere_element(*currneighborele))
         nodes2[0]->get_condition("RigidspherePotentialPointCharge", conds2);
       else
         FOUR_C_THROW(
@@ -952,9 +952,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
   nodes1[0]->get_condition("BeamPotentialLineCharge", conditions_element1);
 
   // get correct condition for beam or rigid sphere element
-  if (BEAMINTERACTION::UTILS::is_beam_element(*ele2))
+  if (BEAMINTERACTION::Utils::is_beam_element(*ele2))
     nodes2[0]->get_condition("BeamPotentialLineCharge", conditions_element2);
-  else if (BEAMINTERACTION::UTILS::is_rigid_sphere_element(*ele2))
+  else if (BEAMINTERACTION::Utils::is_rigid_sphere_element(*ele2))
     nodes2[0]->get_condition("RigidspherePotentialPointCharge", conditions_element2);
   else
     FOUR_C_THROW(

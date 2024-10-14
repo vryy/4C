@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Core::UTILS
+namespace Core::Utils
 {
   /**
    * Utility function which tries to demangle the given @p mangledString. As a fallback, it returns
@@ -31,7 +31,7 @@ namespace Core::UTILS
 
     return (status == 0 && result) ? std::string(result.get()) : std::string(mangledString);
   }
-}  // namespace Core::UTILS
+}  // namespace Core::Utils
 
 FOUR_C_NAMESPACE_CLOSE
 

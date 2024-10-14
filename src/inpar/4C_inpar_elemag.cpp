@@ -26,20 +26,20 @@ void Inpar::EleMag::set_valid_parameters(Teuchos::ParameterList& list)
       "ELECTROMAGNETIC DYNAMIC", false, "control parameters for electromagnetic problems\n");
 
   // general settings for time-integration scheme
-  Core::UTILS::double_parameter("TIMESTEP", 0.01, "Time-step length dt", &electromagneticdyn);
-  Core::UTILS::double_parameter("TAU", 1, "Stabilization parameter", &electromagneticdyn);
-  Core::UTILS::int_parameter("NUMSTEP", 100, "Number of time steps", &electromagneticdyn);
-  Core::UTILS::double_parameter("MAXTIME", 1.0, "Total simulation time", &electromagneticdyn);
+  Core::Utils::double_parameter("TIMESTEP", 0.01, "Time-step length dt", &electromagneticdyn);
+  Core::Utils::double_parameter("TAU", 1, "Stabilization parameter", &electromagneticdyn);
+  Core::Utils::int_parameter("NUMSTEP", 100, "Number of time steps", &electromagneticdyn);
+  Core::Utils::double_parameter("MAXTIME", 1.0, "Total simulation time", &electromagneticdyn);
 
   // additional parameters
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "RESULTSEVRY", 1, "Increment for writing solution", &electromagneticdyn);
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "RESTARTEVRY", 1, "Increment for writing restart", &electromagneticdyn);
-  Core::UTILS::int_parameter("LINEAR_SOLVER", -1,
+  Core::Utils::int_parameter("LINEAR_SOLVER", -1,
       "Number of linear solver used for electromagnetic problem", &electromagneticdyn);
-  Core::UTILS::int_parameter("STARTFUNCNO", -1, "Function for initial field", &electromagneticdyn);
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter("STARTFUNCNO", -1, "Function for initial field", &electromagneticdyn);
+  Core::Utils::int_parameter(
       "SOURCEFUNCNO", -1, "Function for source term in volume", &electromagneticdyn);
 
   {
@@ -85,15 +85,15 @@ void Inpar::EleMag::set_valid_parameters(Teuchos::ParameterList& list)
         "Initial field for ele problem", name, label, &electromagneticdyn);
 
     // Error calculation
-    Core::UTILS::bool_parameter(
+    Core::Utils::bool_parameter(
         "CALCERR", "No", "Calc the error wrt ERRORFUNCNO?", &electromagneticdyn);
 
     // Post process solution?
-    Core::UTILS::bool_parameter(
+    Core::Utils::bool_parameter(
         "POSTPROCESS", "No", "Postprocess solution? (very slow)", &electromagneticdyn);
   }
 
-  Core::UTILS::int_parameter(
+  Core::Utils::int_parameter(
       "ERRORFUNCNO", -1, "Function for error calculation", &electromagneticdyn);
 
   // flag for equilibration of global system of equations

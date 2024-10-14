@@ -20,41 +20,41 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Core::UTILS::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}
+Core::Utils::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}
 
-void Core::UTILS::ResultTest::test_element(
+void Core::Utils::ResultTest::test_element(
     const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no element test available");
 }
 
-void Core::UTILS::ResultTest::test_node(
+void Core::Utils::ResultTest::test_node(
     const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no node test available");
 }
 
-void Core::UTILS::ResultTest::test_node_on_geometry(
+void Core::Utils::ResultTest::test_node_on_geometry(
     const Core::IO::InputParameterContainer& container, int& nerr, int& test_count,
     const std::vector<std::vector<std::vector<int>>>& nodeset)
 {
   FOUR_C_THROW("no geometry test available");
 }
 
-void Core::UTILS::ResultTest::test_special(
+void Core::Utils::ResultTest::test_special(
     const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   FOUR_C_THROW("no special case test available");
 }
 
-void Core::UTILS::ResultTest::test_special(const Core::IO::InputParameterContainer& container,
+void Core::Utils::ResultTest::test_special(const Core::IO::InputParameterContainer& container,
     int& nerr, int& test_count, int& unevaluated_test_count)
 {
   test_special(container, nerr, test_count);
 }
 
 
-int Core::UTILS::ResultTest::compare_values(
+int Core::Utils::ResultTest::compare_values(
     double actresult, std::string type, const Core::IO::InputParameterContainer& container)
 {
   std::string quantity = container.get<std::string>("QUANTITY");
@@ -122,7 +122,7 @@ int Core::UTILS::ResultTest::compare_values(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Core::UTILS::ResultTest::match(const Core::IO::InputParameterContainer& container)
+bool Core::Utils::ResultTest::match(const Core::IO::InputParameterContainer& container)
 {
   return container.get_or<bool>(myname_, false);
 }
@@ -131,7 +131,7 @@ bool Core::UTILS::ResultTest::match(const Core::IO::InputParameterContainer& con
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::UTILS::ResultTestManager::add_field_test(Teuchos::RCP<ResultTest> test)
+void Core::Utils::ResultTestManager::add_field_test(Teuchos::RCP<ResultTest> test)
 {
   fieldtest_.push_back(test);
 }
@@ -139,7 +139,7 @@ void Core::UTILS::ResultTestManager::add_field_test(Teuchos::RCP<ResultTest> tes
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::UTILS::ResultTestManager::test_all(const Epetra_Comm& comm)
+void Core::Utils::ResultTestManager::test_all(const Epetra_Comm& comm)
 {
   int nerr = 0;                      // number of tests with errors
   int test_count = 0;                // number of tests performed
@@ -206,14 +206,14 @@ void Core::UTILS::ResultTestManager::test_all(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::UTILS::ResultTestManager::set_parsed_lines(std::vector<Input::LineDefinition> results)
+void Core::Utils::ResultTestManager::set_parsed_lines(std::vector<Input::LineDefinition> results)
 {
   results_ = std::move(results);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::UTILS::ResultTestManager::set_node_set(
+void Core::Utils::ResultTestManager::set_node_set(
     const std::vector<std::vector<std::vector<int>>>& nodeset)
 {
   nodeset_ = std::move(nodeset);

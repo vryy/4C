@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /* forward declarations */
 namespace ALE
 {
-  namespace UTILS
+  namespace Utils
   {
     class MapExtractor;
   }
@@ -55,7 +55,7 @@ namespace Adapter
     //@}
 
     //! communicate object at the interface
-    Teuchos::RCP<const ALE::UTILS::MapExtractor> interface() const;
+    Teuchos::RCP<const ALE::Utils::MapExtractor> interface() const;
 
     //! solve
     int solve() override;
@@ -70,7 +70,7 @@ namespace Adapter
     void apply_interface_displacements(Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp);
 
    private:
-    Teuchos::RCP<ALE::UTILS::MapExtractor> interface_;
+    Teuchos::RCP<ALE::Utils::MapExtractor> interface_;
 
   };  // class AleFluidWrapper
 }  // namespace Adapter

@@ -439,7 +439,7 @@ namespace XFEM
         // smoothed normal at cutter element nodes, the Gaussian point lies in
         Core::LinAlg::SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
         Core::LinAlg::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
-        XFEM::UTILS::extract_quantity_at_element(esmoothedgradphi_test, actele,
+        XFEM::Utils::extract_quantity_at_element(esmoothedgradphi_test, actele,
             *gradphinp_smoothed_node_col_, *cutter_dis_, cutter_nds_phi_, nsd_);
 
         // Gradients @ GaussPoints
@@ -449,7 +449,7 @@ namespace XFEM
       {
         Core::LinAlg::SerialDenseMatrix ephi_test(nen, 1);
         Core::LinAlg::Matrix<nen, 1> ephi(ephi_test, View);
-        XFEM::UTILS::extract_quantity_at_element(ephi_test, actele,
+        XFEM::Utils::extract_quantity_at_element(ephi_test, actele,
             *cutter_phinp_col_->get_ptr_of_Epetra_Vector(), *cutter_dis_, cutter_nds_phi_, 1);
 
         // Gradients @ GaussPoints
@@ -460,7 +460,7 @@ namespace XFEM
         // smoothed normal at cutter element nodes, the Gaussian point lies in
         Core::LinAlg::SerialDenseMatrix esmoothedgradphi_test(nsd, nen);
         Core::LinAlg::Matrix<nsd, nen> esmoothedgradphi(esmoothedgradphi_test, View);
-        XFEM::UTILS::extract_quantity_at_element(esmoothedgradphi_test, actele,
+        XFEM::Utils::extract_quantity_at_element(esmoothedgradphi_test, actele,
             *gradphinp_smoothed_node_col_, *cutter_dis_, cutter_nds_phi_, nsd_);
 
         // Gradients @ GaussPoints

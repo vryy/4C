@@ -50,10 +50,10 @@ namespace FSI
 {
   class OverlappingBlockMatrix;
 
-  namespace UTILS
+  namespace Utils
   {
     class SlideAleUtils;
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FSI
 
 namespace FSI

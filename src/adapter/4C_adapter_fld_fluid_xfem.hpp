@@ -43,13 +43,13 @@ namespace Adapter
     Teuchos::RCP<Core::FE::Discretization> boundary_discretization();
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override
     {
       return fluid_->interface();
     }
 
     /// communication object at the struct interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& struct_interface();
+    virtual Teuchos::RCP<FLD::Utils::MapExtractor> const& struct_interface();
 
     //@}
 
@@ -124,7 +124,7 @@ namespace Adapter
     Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
 
     /// create the testing of fields
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
 
 
 

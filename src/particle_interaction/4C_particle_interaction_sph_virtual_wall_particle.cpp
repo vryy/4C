@@ -112,7 +112,7 @@ void ParticleInteraction::SPHVirtualWallParticle::init_relative_positions_of_vir
         currvirtualparticle[2] = t * initialparticlespacing;
 
         // current virtual particle within support radius
-        if (UTILS::vec_norm_two(currvirtualparticle.data()) > maxinteractiondistance) continue;
+        if (Utils::vec_norm_two(currvirtualparticle.data()) > maxinteractiondistance) continue;
 
         // add to relative positions of virtual particles
         virtualparticles_.push_back(currvirtualparticle);
@@ -210,12 +210,12 @@ void ParticleInteraction::SPHVirtualWallParticle::init_states_at_wall_contact_po
 
     // compute vector from wall contact point j to particle i
     double r_ij[3];
-    UTILS::vec_set_scale(r_ij, particlewallpair.absdist_, particlewallpair.e_ij_);
+    Utils::vec_set_scale(r_ij, particlewallpair.absdist_, particlewallpair.e_ij_);
 
     // compute position of wall contact point j
     double pos_j[3];
-    UTILS::vec_set(pos_j, pos_i);
-    UTILS::vec_sub(pos_j, r_ij);
+    Utils::vec_set(pos_j, pos_i);
+    Utils::vec_sub(pos_j, r_ij);
 
     // get particles within radius
     std::vector<PARTICLEENGINE::LocalIndexTuple> neighboringparticles;
@@ -261,7 +261,7 @@ void ParticleInteraction::SPHVirtualWallParticle::init_states_at_wall_contact_po
       particleengineinterface_->distance_between_particles(pos_k, pos_j, r_jk);
 
       // absolute distance between particles
-      const double absdist = UTILS::vec_norm_two(r_jk);
+      const double absdist = Utils::vec_norm_two(r_jk);
 
       // evaluate kernel
       const double Wjk = kernel_->w(absdist, rad_j[0]);
@@ -270,8 +270,8 @@ void ParticleInteraction::SPHVirtualWallParticle::init_states_at_wall_contact_po
       sumk_Wjk += Wjk;
       sumk_press_k_Wjk += press_k[0] * Wjk;
       sumk_dens_k_Wjk += dens_k[0] * Wjk;
-      UTILS::vec_add_scale(sumk_r_jk_Wjk, Wjk, r_jk);
-      UTILS::vec_add_scale(sumk_vel_k_Wjk, Wjk, vel_k);
+      Utils::vec_add_scale(sumk_r_jk_Wjk, Wjk, r_jk);
+      Utils::vec_add_scale(sumk_vel_k_Wjk, Wjk, vel_k);
     }
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -283,22 +283,22 @@ void ParticleInteraction::SPHVirtualWallParticle::init_states_at_wall_contact_po
 
     // compute relative acceleration of wall contact point
     double relacc[3];
-    UTILS::vec_set(relacc, gravity.data());
-    UTILS::vec_sub(relacc, acc_j);
+    Utils::vec_set(relacc, gravity.data());
+    Utils::vec_sub(relacc, acc_j);
 
     // set weighted fluid particle pressure
     weightedpressure_[particlewallpairindex] = sumk_press_k_Wjk * inv_sumk_Wjk;
 
     // set weighted fluid particle pressure gradient
-    UTILS::vec_set_scale(weightedpressuregradient_[particlewallpairindex].data(),
+    Utils::vec_set_scale(weightedpressuregradient_[particlewallpairindex].data(),
         sumk_dens_k_Wjk * inv_sumk_Wjk, relacc);
 
     // set weighted fluid particle distance vector
-    UTILS::vec_set_scale(
+    Utils::vec_set_scale(
         weighteddistancevector_[particlewallpairindex].data(), inv_sumk_Wjk, sumk_r_jk_Wjk);
 
     // set weighted fluid particle velocity
-    UTILS::vec_set_scale(
+    Utils::vec_set_scale(
         weightedvelocity_[particlewallpairindex].data(), inv_sumk_Wjk, sumk_vel_k_Wjk);
   }
 }

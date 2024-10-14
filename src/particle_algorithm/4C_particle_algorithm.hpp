@@ -188,7 +188,7 @@ namespace PARTICLEALGORITHM
      *
      * \return particle field specific result test objects
      */
-    std::vector<std::shared_ptr<Core::UTILS::ResultTest>> create_result_tests();
+    std::vector<std::shared_ptr<Core::Utils::ResultTest>> create_result_tests();
 
     /*!
      * \brief get interface to particle engine

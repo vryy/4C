@@ -259,7 +259,7 @@ namespace Thermo
     virtual void prepare_partition_step() = 0;
 
     /// create result test for encapulated thermo algorithm
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() = 0;
+    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test() = 0;
   };
 
 

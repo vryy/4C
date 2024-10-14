@@ -168,7 +168,7 @@ int Discret::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& param
           if (functnum > 0)
             // evaluate function at current gauss point (3D position vector required!)
             functionfac = Global::Problem::instance()
-                              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                               .evaluate(coordgpref, time, dim);
           else
             functionfac = 1.0;

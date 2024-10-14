@@ -92,7 +92,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SolidScatraType::create(
 void Discret::ELEMENTS::SolidScatraType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  Solid::UTILS::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
+  Solid::Utils::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
 }
 
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidScatraType::compute_null_space(
@@ -158,12 +158,12 @@ bool Discret::ELEMENTS::SolidScatra::read_element(const std::string& eletype,
   celltype_ = Core::FE::string_to_cell_type(celltype);
 
   // read number of material model
-  set_material(0, Mat::factory(Solid::UTILS::read_element::read_element_material(container)));
+  set_material(0, Mat::factory(Solid::Utils::read_element::read_element_material(container)));
 
   // read scalar transport implementation type
   properties_.impltype = read_scatra_impl_type(container);
 
-  properties_.solid = Solid::UTILS::read_element::read_solid_element_properties(container);
+  properties_.solid = Solid::Utils::read_element::read_solid_element_properties(container);
 
   solid_scatra_calc_variant_ =
       create_solid_scatra_calculation_interface(celltype_, properties_.solid);

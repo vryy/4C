@@ -336,8 +336,8 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
   // enable debugging
   if (fsidyn.get<bool>("DEBUGOUTPUT"))
   {
-    sdbg_ = Teuchos::make_rcp<UTILS::DebugWriter>(structure_field()->discretization());
-    // fdbg_ = Teuchos::rcp(new UTILS::DebugWriter(fluid_field()->discretization()));
+    sdbg_ = Teuchos::make_rcp<Utils::DebugWriter>(structure_field()->discretization());
+    // fdbg_ = Teuchos::rcp(new Utils::DebugWriter(fluid_field()->discretization()));
   }
 
   // write iterations-file

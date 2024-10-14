@@ -105,7 +105,7 @@ void Arteries::ArtNetImplStationary::init(const Teuchos::ParameterList& globalti
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time", time_);
-    eleparams.set<const Core::UTILS::FunctionManager*>(
+    eleparams.set<const Core::Utils::FunctionManager*>(
         "function_manager", &Global::Problem::instance()->function_manager());
     discret_->evaluate_dirichlet(
         eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
@@ -351,7 +351,7 @@ void Arteries::ArtNetImplStationary::apply_dirichlet_bc()
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time_);  // actual time t_{n+1}
-  p.set<const Core::UTILS::FunctionManager*>(
+  p.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // Dirichlet values
@@ -394,7 +394,7 @@ void Arteries::ArtNetImplStationary::apply_neumann_bc(Core::LinAlg::Vector<doubl
   // create parameter list
   Teuchos::ParameterList condparams;
   condparams.set("total time", time_);
-  condparams.set<const Core::UTILS::FunctionManager*>(
+  condparams.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // evaluate Neumann boundary conditions
@@ -591,7 +591,7 @@ void Arteries::ArtNetImplStationary::output_flow()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void Arteries::ArtNetImplStationary::test_results()
 {
-  Teuchos::RCP<Core::UTILS::ResultTest> resulttest = create_field_test();
+  Teuchos::RCP<Core::Utils::ResultTest> resulttest = create_field_test();
   Global::Problem::instance()->add_field_test(resulttest);
   if (solvescatra_)
   {
@@ -603,7 +603,7 @@ void Arteries::ArtNetImplStationary::test_results()
 /*----------------------------------------------------------------------*
  | create result test for this field                   kremheller 03/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> Arteries::ArtNetImplStationary::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> Arteries::ArtNetImplStationary::create_field_test()
 {
   return Teuchos::make_rcp<Arteries::ArteryResultTest>(*(this));
 }
@@ -693,7 +693,7 @@ void Arteries::ArtNetImplStationary::set_initial_field(
           // evaluate component k of spatial function
           double initialval =
               Global::Problem::instance()
-                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno - 1)
                   .evaluate(lnode->x().data(), time_, k);
           int err = pressurenp_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) FOUR_C_THROW("dof not on proc");

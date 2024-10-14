@@ -48,12 +48,12 @@ namespace Core::Conditions
 
 namespace FSI
 {
-  namespace UTILS
+  namespace Utils
   {
     class MatrixRowTransform;
     class MatrixColTransform;
     class MatrixRowColTransform;
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FSI
 
 namespace Mortar

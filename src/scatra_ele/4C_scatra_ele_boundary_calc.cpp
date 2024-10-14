@@ -547,7 +547,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_neumann
         {
           // evaluate function at current Gauss point (provide always 3D coordinates!)
           functfac = Global::Problem::instance()
-                         ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                          .evaluate(coordgpref, time, dof);
         }
         else
@@ -2581,7 +2581,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
       for (int i = 0; i < pnsd; i++) coordgp3D[i] = coordgp(i);
 
       functfac = Global::Problem::instance()
-                     ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+                     ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum - 1)
                      .evaluate(coordgp3D.data(), time, 0);
     }
     else

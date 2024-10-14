@@ -30,7 +30,7 @@ namespace Core::Elements
 
 namespace PoroElast
 {
-  namespace UTILS
+  namespace Utils
   {
     //! \brief implementation of special clone strategy for automatic generation
     //!        of fluid discretization from a given structure discretization
@@ -67,7 +67,7 @@ namespace PoroElast
           Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele);
     };
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace PoroElast
 
 FOUR_C_NAMESPACE_CLOSE

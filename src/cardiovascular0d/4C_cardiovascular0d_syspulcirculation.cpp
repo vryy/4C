@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
-UTILS::Cardiovascular0DSysPulCirculation::Cardiovascular0DSysPulCirculation(
+Utils::Cardiovascular0DSysPulCirculation::Cardiovascular0DSysPulCirculation(
     Teuchos::RCP<Core::FE::Discretization> discr, const std::string& conditionname,
     std::vector<int>& curID)
     : Cardiovascular0D(discr, conditionname, curID)
@@ -108,7 +108,7 @@ UTILS::Cardiovascular0DSysPulCirculation::Cardiovascular0DSysPulCirculation(
  |Experiment-based parameter estimation for patient-specific cardiac     |
  |mechanics", IJNMBE, 2016)                                              |
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& params,
+void Utils::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
     Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3,
@@ -158,11 +158,11 @@ void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
   double y_at_r_np = 0.0;
   if (atrium_act_curve_l_ >= 0 && usetime)
     y_at_l_np = Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfTime>(atrium_act_curve_l_ - 1)
+                    ->function_by_id<Core::Utils::FunctionOfTime>(atrium_act_curve_l_ - 1)
                     .evaluate(tim);
   if (atrium_act_curve_r_ >= 0 && usetime)
     y_at_r_np = Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfTime>(atrium_act_curve_r_ - 1)
+                    ->function_by_id<Core::Utils::FunctionOfTime>(atrium_act_curve_r_ - 1)
                     .evaluate(tim);
   // 0D time-varying atrial elastance
   double E_at_l_np = 0.;
@@ -173,11 +173,11 @@ void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
   double y_v_r_np = 0.0;
   if (ventricle_act_curve_l_ >= 0 && usetime)
     y_v_l_np = Global::Problem::instance()
-                   ->function_by_id<Core::UTILS::FunctionOfTime>(ventricle_act_curve_l_ - 1)
+                   ->function_by_id<Core::Utils::FunctionOfTime>(ventricle_act_curve_l_ - 1)
                    .evaluate(tim);
   if (ventricle_act_curve_r_ >= 0 && usetime)
     y_v_r_np = Global::Problem::instance()
-                   ->function_by_id<Core::UTILS::FunctionOfTime>(ventricle_act_curve_r_ - 1)
+                   ->function_by_id<Core::Utils::FunctionOfTime>(ventricle_act_curve_r_ - 1)
                    .evaluate(tim);
   // 0D time-varying ventricular elastance
   double E_v_l_np = 0.;
@@ -189,12 +189,12 @@ void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
   if (atrium_prescr_e_curve_l_ >= 0 && usetime)
     E_at_l_prescr_np =
         Global::Problem::instance()
-            ->function_by_id<Core::UTILS::FunctionOfTime>(atrium_prescr_e_curve_l_ - 1)
+            ->function_by_id<Core::Utils::FunctionOfTime>(atrium_prescr_e_curve_l_ - 1)
             .evaluate(tim);
   if (atrium_prescr_e_curve_r_ >= 0 && usetime)
     E_at_r_prescr_np =
         Global::Problem::instance()
-            ->function_by_id<Core::UTILS::FunctionOfTime>(atrium_prescr_e_curve_r_ - 1)
+            ->function_by_id<Core::Utils::FunctionOfTime>(atrium_prescr_e_curve_r_ - 1)
             .evaluate(tim);
   // prescribed ventricular elastances
   double E_v_l_prescr_np = 0.0;
@@ -202,12 +202,12 @@ void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
   if (ventricle_prescr_e_curve_l_ >= 0 && usetime)
     E_v_l_prescr_np =
         Global::Problem::instance()
-            ->function_by_id<Core::UTILS::FunctionOfTime>(ventricle_prescr_e_curve_l_ - 1)
+            ->function_by_id<Core::Utils::FunctionOfTime>(ventricle_prescr_e_curve_l_ - 1)
             .evaluate(tim);
   if (ventricle_prescr_e_curve_r_ >= 0 && usetime)
     E_v_r_prescr_np =
         Global::Problem::instance()
-            ->function_by_id<Core::UTILS::FunctionOfTime>(ventricle_prescr_e_curve_r_ - 1)
+            ->function_by_id<Core::Utils::FunctionOfTime>(ventricle_prescr_e_curve_r_ - 1)
             .evaluate(tim);
 
 
@@ -698,7 +698,7 @@ void UTILS::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DSysPulCirculation::initialize(Teuchos::ParameterList& params,
+void Utils::Cardiovascular0DSysPulCirculation::initialize(Teuchos::ParameterList& params,
     Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec1,
     Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2)
 {

@@ -225,7 +225,7 @@ double XFEM::XFluidContactComm::get_fsi_traction(Mortar::Element* ele,
       if (scaling < 1.0)
       {
         return -(*poropressure) * (scaling) +
-               (1 - scaling) * XFEM::UTILS::evaluate_full_traction(pres_m, vderxy_m, visc_m,
+               (1 - scaling) * XFEM::Utils::evaluate_full_traction(pres_m, vderxy_m, visc_m,
                                    penalty_fac, vel_m, vel_s, elenormal, elenormal, velpf_s,
                                    porosity);
       }
@@ -237,13 +237,13 @@ double XFEM::XFluidContactComm::get_fsi_traction(Mortar::Element* ele,
     else
     {
       if (!extrapolate_to_zero_)
-        return XFEM::UTILS::evaluate_full_traction(pres_m, vderxy_m, visc_m, penalty_fac, vel_m,
+        return XFEM::Utils::evaluate_full_traction(pres_m, vderxy_m, visc_m, penalty_fac, vel_m,
             vel_s, elenormal, elenormal, velpf_s, porosity);
       else
       {
         double scaling = (distance) / (mc_[mcidx_]->get_h());
         if (scaling > 1.0) scaling = 1;
-        return XFEM::UTILS::evaluate_full_traction(pres_m, vderxy_m, visc_m, penalty_fac, vel_m,
+        return XFEM::Utils::evaluate_full_traction(pres_m, vderxy_m, visc_m, penalty_fac, vel_m,
                    vel_s, elenormal, elenormal, velpf_s, porosity) *
                (1 - scaling);
       }
@@ -513,7 +513,7 @@ void XFEM::XFluidContactComm::get_penalty_param(Core::Elements::Element* fluidel
     }
     if (fluidele->shape() != Core::FE::CellType::hex8) FOUR_C_THROW("Add hex8 shapes here!");
 
-    h_k = XFEM::UTILS::compute_char_ele_length<Core::FE::CellType::hex8>(
+    h_k = XFEM::Utils::compute_char_ele_length<Core::FE::CellType::hex8>(
         fluidele, ele_xyze, *condition_manager_, cells, bcells, bintpoints, visc_stab_hk_);
 
     inv_h_k = 1.0 / h_k;
@@ -534,11 +534,11 @@ void XFEM::XFluidContactComm::get_penalty_param(Core::Elements::Element* fluidel
       dummy, nit_stab_gamma_, nit_stab_gamma_, is_pseudo_2d_, visc_stab_trace_estimate_);
 
   Teuchos::RCP<Core::Mat::Material> mat;
-  XFEM::UTILS::get_volume_cell_material(fluidele, mat);
+  XFEM::Utils::get_volume_cell_material(fluidele, mat);
   const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(mat.get());
   if (actmat == nullptr) FOUR_C_THROW("Cast of Fluidmat failed!");
 
-  XFEM::UTILS::nit_compute_full_penalty_stabfac(
+  XFEM::Utils::nit_compute_full_penalty_stabfac(
       penalty_fac,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
       elenormal, h_k,
       kappa_m,  // weights (only existing for Nitsche currently!!)
@@ -1350,7 +1350,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
       for (Core::FE::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end(); ++iquad)
       {
         const Core::LinAlg::Matrix<2, 1> eta(iquad.point(), false);
-        XFEM::UTILS::compute_surface_transformation(
+        XFEM::Utils::compute_surface_transformation(
             drs, x_gp_lin, normal, bcs[bc].getRawPtr(), eta);
 
         // find element local position of gauss point

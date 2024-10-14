@@ -307,7 +307,7 @@ void FLD::XFluid::init(bool createinitialstate)
 
 void FLD::XFluid::setup_fluid_discretization()
 {
-  XFEM::UTILS::XFEMDiscretizationBuilder xdisbuilder;
+  XFEM::Utils::XFEMDiscretizationBuilder xdisbuilder;
 
   Teuchos::RCP<Core::FE::Discretization> xfluiddis;
 
@@ -607,7 +607,7 @@ void FLD::XFluid::create_state()
   if (false /*xfluid_.params_->get<bool>("INFNORMSCALING")*/)
   {
     fluid_infnormscaling_ =
-        Teuchos::make_rcp<FLD::UTILS::FluidInfNormScaling>(*state_->velpressplitter_);
+        Teuchos::make_rcp<FLD::Utils::FluidInfNormScaling>(*state_->velpressplitter_);
   }
 }
 
@@ -2780,7 +2780,7 @@ void FLD::XFluid::setup_krylov_space_projection(Core::Conditions::Condition* ksp
   std::vector<int> activemodeids(1, numdim_);
 
   // allocate kspsplitter_
-  kspsplitter_ = Teuchos::make_rcp<FLD::UTILS::KSPMapExtractor>();
+  kspsplitter_ = Teuchos::make_rcp<FLD::Utils::KSPMapExtractor>();
   // create map of nodes involved in Krylov projection
 
   kspsplitter_->setup(*discret_);
@@ -4483,7 +4483,7 @@ void FLD::XFluid::set_initial_flow_field(
 
           double initialval =
               Global::Problem::instance()
-                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno - 1)
                   .evaluate(lnode->x().data(), time_, dof % 4);
           state_->velnp_->ReplaceGlobalValues(1, &initialval, &gid);
         }
@@ -4783,7 +4783,7 @@ void FLD::XFluid::set_dirichlet_neumann_bc()
 
   // other parameters needed by the elements
   eleparams.set("total time", time_);
-  eleparams.set<const Core::UTILS::FunctionManager*>(
+  eleparams.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // set vector values needed by elements
@@ -4977,7 +4977,7 @@ void FLD::XFluid::predict_tang_vel_consist_acc()
   // total time required for evaluation of Dirichlet conditions
   Teuchos::ParameterList eleparams;
   eleparams.set("total time", time_);
-  eleparams.set<const Core::UTILS::FunctionManager*>(
+  eleparams.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // initialize
@@ -5212,7 +5212,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XFluid::rhs_s_vec(const std::str
 /*------------------------------------------------------------------------------------------------*
  | create field test
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> FLD::XFluid::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> FLD::XFluid::create_field_test()
 {
   return Teuchos::make_rcp<FLD::XFluidResultTest>(*this);
 }

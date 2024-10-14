@@ -29,7 +29,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>*
 Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::instance(
     const int numdofpernode, const std::string& disname)
 {
-  static auto singleton_map = Core::UTILS::make_singleton_map<std::string>(
+  static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
       [](const int numdofpernode, const std::string& disname)
       {
         return std::unique_ptr<PoroFluidMultiPhaseEleBoundaryCalc<distype>>(
@@ -37,7 +37,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::instance(
       });
 
   return singleton_map[disname].instance(
-      Core::UTILS::SingletonAction::create, numdofpernode, disname);
+      Core::Utils::SingletonAction::create, numdofpernode, disname);
 }
 
 
@@ -230,7 +230,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neu
         {
           // evaluate function at current Gauss point (provide always 3D coordinates!)
           functfac = Global::Problem::instance()
-                         ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                         ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                          .evaluate(coordgpref, time, dof);
         }
         else

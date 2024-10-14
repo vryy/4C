@@ -425,11 +425,11 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
           {
             // evaluate function at current gauss point
             functfac = Global::Problem::instance()
-                           ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                            .evaluate(coordgpref, time, idim);
             if (fldparatimint_->is_new_ost_implementation())
               functfacn = Global::Problem::instance()
-                              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                               .evaluate(coordgpref, time - fldparatimint_->dt(), idim);
           }
           else
@@ -464,11 +464,11 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
           {
             // evaluate function at current gauss point
             functfac = Global::Problem::instance()
-                           ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                           ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                            .evaluate(coordgpref, time, idim);
             if (fldparatimint_->is_new_ost_implementation())
               functfacn = Global::Problem::instance()
-                              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                               .evaluate(coordgpref, time - fldparatimint_->dt(), idim);
           }
           else

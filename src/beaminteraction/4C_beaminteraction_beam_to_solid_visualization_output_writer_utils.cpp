@@ -43,7 +43,7 @@ void BEAMINTERACTION::add_beam_interaction_nodal_forces(
     gid_node.clear();
     Core::Nodes::Node* current_node = discret_ptr->l_row_node(i_lid);
     discret_ptr->dof(current_node, gid_node);
-    if (BEAMINTERACTION::UTILS::is_beam_node(*current_node))
+    if (BEAMINTERACTION::Utils::is_beam_node(*current_node))
       for (unsigned int dim = 0; dim < 3; ++dim) gid_beam_dof.push_back(gid_node[dim]);
     else
       for (unsigned int dim = 0; dim < 3; ++dim) gid_solid_dof.push_back(gid_node[dim]);
@@ -167,9 +167,9 @@ void BEAMINTERACTION::get_global_coupling_force_resultants(const Core::FE::Discr
     Core::FE::extract_my_values(displacement, local_position, gid_node);
     for (unsigned int dim = 0; dim < 3; ++dim) local_position[dim] += current_node->x()[dim];
 
-    if (BEAMINTERACTION::UTILS::is_beam_node(*current_node))
+    if (BEAMINTERACTION::Utils::is_beam_node(*current_node))
     {
-      if (BEAMINTERACTION::UTILS::is_beam_centerline_node(*current_node))
+      if (BEAMINTERACTION::Utils::is_beam_centerline_node(*current_node))
         get_node_coupling_force_resultants(local_force, local_position, beam_resultant);
       else
         // Do nothing for non-centerline nodes.

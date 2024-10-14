@@ -29,15 +29,15 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  std::vector<const Core::UTILS::FunctionOfSpaceTime*> create_functions_from_function_ids(
+  std::vector<const Core::Utils::FunctionOfSpaceTime*> create_functions_from_function_ids(
       const std::vector<int>& funct_ids)
   {
-    std::vector<const Core::UTILS::FunctionOfSpaceTime*> functions;
+    std::vector<const Core::Utils::FunctionOfSpaceTime*> functions;
     // get function handles from function ids
     for (int id : funct_ids)
     {
       const auto* function =
-          &Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(id - 1);
+          &Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(id - 1);
 
       const std::string errorMessage =
           "pointer to mass fraction function with id " + std::to_string(id) + " is nullptr!";

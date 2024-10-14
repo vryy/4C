@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BioFilm::UTILS::scatra_change_config(Core::FE::Discretization& scatradis,
+void FS3I::BioFilm::Utils::scatra_change_config(Core::FE::Discretization& scatradis,
     Core::FE::Discretization& dis, Core::LinAlg::Vector<double>& disp)
 {
   const int numnode = (scatradis.node_col_map())->NumMyElements();

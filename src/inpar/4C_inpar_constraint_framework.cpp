@@ -38,7 +38,7 @@ void Inpar::CONSTRAINTS::set_valid_parameters(Teuchos::ParameterList& list)
             EmbeddedMeshConstraintEnforcement::none, EmbeddedMeshConstraintEnforcement::penalty),
         &embeddedmeshcoupling);
 
-    Core::UTILS::double_parameter("CONSTRAINT_ENFORCEMENT_PENALTYPARAM", 0.0,
+    Core::Utils::double_parameter("CONSTRAINT_ENFORCEMENT_PENALTYPARAM", 0.0,
         "Penalty parameter for the constraint enforcement in embedded mesh coupling",
         &embeddedmeshcoupling);
   }

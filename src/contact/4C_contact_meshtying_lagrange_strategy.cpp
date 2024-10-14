@@ -247,7 +247,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::MtLagrangeStrategy::me
       // solve with default solver
 
       Teuchos::ParameterList solvparams;
-      Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
+      Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
           "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
       Core::LinAlg::Solver solver(
           solvparams, get_comm(), nullptr, Core::IO::Verbositylevel::standard);
@@ -284,7 +284,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::MtLagrangeStrategy::me
       // solve with default solver
 
       Teuchos::ParameterList solvparams;
-      Core::UTILS::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
+      Core::Utils::add_enum_class_to_parameter_list<Core::LinearSolver::SolverType>(
           "SOLVER", Core::LinearSolver::SolverType::umfpack, solvparams);
       Core::LinAlg::Solver solver(
           solvparams, get_comm(), nullptr, Core::IO::Verbositylevel::standard);
@@ -1165,10 +1165,10 @@ void CONTACT::MtLagrangeStrategy::run_pre_apply_jacobian_inverse(
     }
 
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> non_redist_mhatmatrix = get_non_redist_m_hat();
-    Mortar::UTILS::mortar_matrix_condensation(k, non_redist_mhatmatrix, non_redist_mhatmatrix);
+    Mortar::Utils::mortar_matrix_condensation(k, non_redist_mhatmatrix, non_redist_mhatmatrix);
     *kteff = *k;
 
-    Mortar::UTILS::mortar_rhs_condensation(*r, *mhatmatrix_);
+    Mortar::Utils::mortar_rhs_condensation(*r, *mhatmatrix_);
   }
 }
 
@@ -1183,7 +1183,7 @@ void CONTACT::MtLagrangeStrategy::run_post_apply_jacobian_inverse(
   {
     Teuchos::RCP<Core::LinAlg::Vector<double>> inc =
         Teuchos::rcpFromRef<Core::LinAlg::Vector<double>>(result);
-    Mortar::UTILS::mortar_recover(*inc, *mhatmatrix_);
+    Mortar::Utils::mortar_recover(*inc, *mhatmatrix_);
 
     // undo basis transformation to solution
     if (dualquadslavetrafo() && lagmultquad == Inpar::Mortar::lagmult_lin)
@@ -1220,7 +1220,7 @@ void CONTACT::MtLagrangeStrategy::remove_condensed_contributions_from_rhs(
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> r =
         Teuchos::rcpFromRef<Core::LinAlg::Vector<double>>(rhs);
-    Mortar::UTILS::mortar_rhs_condensation(*r, *mhatmatrix_);
+    Mortar::Utils::mortar_rhs_condensation(*r, *mhatmatrix_);
   }
 }
 

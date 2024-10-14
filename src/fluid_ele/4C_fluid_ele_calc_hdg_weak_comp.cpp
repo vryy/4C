@@ -846,17 +846,17 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_all(const int
     double& r, Core::LinAlg::Matrix<nsd_, 1>& w) const
 {
   r = Global::Problem::instance()
-          ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum - 1)
           .evaluate(xyz.data(), t, 0);
 
   for (unsigned int d = 0; d < nsd_; ++d)
     w(d) = Global::Problem::instance()
-               ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+               ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum - 1)
                .evaluate(xyz.data(), t, 1 + d);
 
   for (unsigned int m = 0; m < msd_; ++m)
     L(m) = Global::Problem::instance()
-               ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+               ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum - 1)
                .evaluate(xyz.data(), t, 1 + nsd_ + m);
 }
 
@@ -868,12 +868,12 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_density_momen
     Core::LinAlg::Matrix<nsd_, 1>& w) const
 {
   r = Global::Problem::instance()
-          ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+          ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum - 1)
           .evaluate(xyz.data(), t, 0);
 
   for (unsigned int d = 0; d < nsd_; ++d)
     w(d) = Global::Problem::instance()
-               ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+               ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum - 1)
                .evaluate(xyz.data(), t, 1 + d);
 }
 
@@ -881,9 +881,9 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_density_momen
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>*
-Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::instance(Core::UTILS::SingletonAction action)
+Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::instance(Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>>(
@@ -1086,7 +1086,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_m
 
     // get viscosity
     double mu = Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(varviscfuncnum - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(varviscfuncnum - 1)
                     .evaluate(xyz.data(), time, 0);
 
     // evaluate Dw
@@ -1204,7 +1204,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_i
       if (forcefuncnum > 0)
         for (unsigned int dmod = 0; dmod < (1 + nsd_); ++dmod)
           feg(dmod, q) = Global::Problem::instance()
-                             ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(forcefuncnum - 1)
+                             ->function_by_id<Core::Utils::FunctionOfSpaceTime>(forcefuncnum - 1)
                              .evaluate(xyzeg.data(), time, dmod);
 
       drdteg(q) += N(i, q) * drdte(i);

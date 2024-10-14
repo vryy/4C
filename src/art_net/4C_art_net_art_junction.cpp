@@ -76,7 +76,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-Arteries::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(
+Arteries::Utils::ArtJunctionWrapper::ArtJunctionWrapper(
     Teuchos::RCP<Core::FE::Discretization> actdis, Core::IO::DiscretizationWriter &output,
     Teuchos::ParameterList &params, double dta)
     : discret_(actdis), output_(output)
@@ -241,7 +241,7 @@ Arteries::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-int Arteries::UTILS::ArtJunctionWrapper::solve(Teuchos::ParameterList &params)
+int Arteries::Utils::ArtJunctionWrapper::solve(Teuchos::ParameterList &params)
 {
   //----------------------------------------------------------------------
   // Exit if the function accessed by a non-master processor
@@ -267,7 +267,7 @@ int Arteries::UTILS::ArtJunctionWrapper::solve(Teuchos::ParameterList &params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-Arteries::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<Core::FE::Discretization> actdis,
+Arteries::Utils::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<Core::FE::Discretization> actdis,
     Core::IO::DiscretizationWriter &output, std::vector<Core::Conditions::Condition *> conds,
     std::vector<int> IOart_flag, double dta, int condid, int numcond)
     : condid_(condid), discret_(actdis), output_(output), io_art_flag_(IOart_flag)
@@ -407,7 +407,7 @@ Arteries::UTILS::ArtJunctionBc::ArtJunctionBc(Teuchos::RCP<Core::FE::Discretizat
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-int Arteries::UTILS::ArtJunctionBc::solve(Teuchos::ParameterList &params)
+int Arteries::Utils::ArtJunctionBc::solve(Teuchos::ParameterList &params)
 {
   //----------------------------------------------------------------------
   // Define the matricese and the vectors that are needed to solve the
@@ -545,7 +545,7 @@ int Arteries::UTILS::ArtJunctionBc::solve(Teuchos::ParameterList &params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::UTILS::ArtJunctionBc::jacobian_eval(Core::LinAlg::SerialDenseMatrix &Jacobian,
+void Arteries::Utils::ArtJunctionBc::jacobian_eval(Core::LinAlg::SerialDenseMatrix &Jacobian,
     std::vector<double> &A, std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
     std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext)
 {
@@ -588,7 +588,7 @@ void Arteries::UTILS::ArtJunctionBc::jacobian_eval(Core::LinAlg::SerialDenseMatr
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::UTILS::ArtJunctionBc::residual_eval(Core::LinAlg::SerialDenseVector &f,
+void Arteries::Utils::ArtJunctionBc::residual_eval(Core::LinAlg::SerialDenseVector &f,
     std::vector<double> &A, std::vector<double> &Q, std::vector<double> &W, std::vector<double> &Ao,
     std::vector<double> &rho, std::vector<double> &beta, std::vector<double> &Pext)
 {
@@ -624,7 +624,7 @@ void Arteries::UTILS::ArtJunctionBc::residual_eval(Core::LinAlg::SerialDenseVect
 /*----------------------------------------------------------------------*
  |  Update Residual (public)                                ismail 09/09|
  *----------------------------------------------------------------------*/
-void Arteries::UTILS::ArtJunctionBc::update_result(
+void Arteries::Utils::ArtJunctionBc::update_result(
     Core::LinAlg::SerialDenseVector &xn, Core::LinAlg::SerialDenseVector &dx)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS

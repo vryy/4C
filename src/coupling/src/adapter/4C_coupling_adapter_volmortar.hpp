@@ -47,7 +47,7 @@ namespace Core::LinAlg
 
 namespace Coupling::VolMortar
 {
-  namespace UTILS
+  namespace Utils
   {
     class DefaultMaterialStrategy;
   }
@@ -77,7 +77,7 @@ namespace Coupling::Adapter
         Teuchos::RCP<Core::FE::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
         std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofsets12 = nullptr,
         std::pair<int, int>* dofsets21 = nullptr,
-        Teuchos::RCP<VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null,
+        Teuchos::RCP<VolMortar::Utils::DefaultMaterialStrategy> materialstrategy = Teuchos::null,
         bool createauxdofs = true);
 
     /*!
@@ -137,7 +137,7 @@ namespace Coupling::Adapter
     void assign_materials(Teuchos::RCP<Core::FE::Discretization> dis1,
         Teuchos::RCP<Core::FE::Discretization> dis2, const Teuchos::ParameterList& volmortar_params,
         const Teuchos::ParameterList& cut_params,
-        Teuchos::RCP<VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null);
+        Teuchos::RCP<VolMortar::Utils::DefaultMaterialStrategy> materialstrategy = Teuchos::null);
 
 
     /** \name Conversion between master and slave */
@@ -255,7 +255,7 @@ namespace Coupling::Adapter
     std::vector<int>* coupleddof21_;
     std::pair<int, int>* dofsets12_;
     std::pair<int, int>* dofsets21_;
-    Teuchos::RCP<VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy_;
+    Teuchos::RCP<VolMortar::Utils::DefaultMaterialStrategy> materialstrategy_;
 
     int spatial_dimension_{};
   };

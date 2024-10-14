@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace BEAMINTERACTION
 {
-  namespace UTILS
+  namespace Utils
   {
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
@@ -1389,7 +1389,7 @@ namespace BEAMINTERACTION
     template void get_element_centerline_gid_indices<12>(Core::FE::Discretization const&,
         const Core::Elements::Element*, Core::LinAlg::Matrix<12, 1, int>&);
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace BEAMINTERACTION
 
 FOUR_C_NAMESPACE_CLOSE

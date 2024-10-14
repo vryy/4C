@@ -65,7 +65,7 @@ void Mat::PAR::FluidPoroSingleReaction::initialize_internal()
 {
   // safety check
   if (Global::Problem::instance()
-          ->function_by_id<Core::UTILS::FunctionOfAnything>(functID_ - 1)
+          ->function_by_id<Core::Utils::FunctionOfAnything>(functID_ - 1)
           .number_components() != 1)
     FOUR_C_THROW("expected only one component for single phase reaction!");
 
@@ -199,11 +199,11 @@ void Mat::PAR::FluidPoroSingleReaction::evaluate_function_internal(std::vector<d
 
   // evaluate the reaction term
   double curval = Global::Problem::instance()
-                      ->function_by_id<Core::UTILS::FunctionOfAnything>(functID_ - 1)
+                      ->function_by_id<Core::Utils::FunctionOfAnything>(functID_ - 1)
                       .evaluate(variables, constants, 0);
   // evaluate derivatives
   std::vector<double> curderivs(Global::Problem::instance()
-                                    ->function_by_id<Core::UTILS::FunctionOfAnything>(functID_ - 1)
+                                    ->function_by_id<Core::Utils::FunctionOfAnything>(functID_ - 1)
                                     .evaluate_derivative(variables, constants, 0));
 
   // fill the output vector

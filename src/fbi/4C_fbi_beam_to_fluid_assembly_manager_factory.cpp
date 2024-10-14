@@ -27,7 +27,7 @@ BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
     Teuchos::RCP<const Core::FE::Discretization> discretization2,
     std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> interaction_pairs,
     const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr,
-    Teuchos::RCP<FBI::UTILS::FBIAssemblyStrategy> assemblystrategy)
+    Teuchos::RCP<FBI::Utils::FBIAssemblyStrategy> assemblystrategy)
 {
   // Get the meshtying discretization method.
   Inpar::FBI::BeamToFluidDiscretization meshtying_discretization =

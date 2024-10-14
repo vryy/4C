@@ -293,7 +293,7 @@ namespace RTD
     std::stringstream cloningMatStream;
     Core::IO::DatFileUtils::print_section(cloningMatStream, "CLONING MATERIAL MAP", lines);
     const std::vector<std::string> cloningMatList =
-        Core::UTILS::split(cloningMatStream.str(), "\n");
+        Core::Utils::split(cloningMatStream.str(), "\n");
 
     write_code(stream, cloningMatList);
   }
@@ -392,7 +392,7 @@ namespace RTD
         }
         fullname += name;
         std::string linktarget = boost::algorithm::replace_all_copy(fullname, "/", "_");
-        linktarget = Teuchos::StrUtils::removeAllSpaces(Core::UTILS::to_lower(linktarget));
+        linktarget = Teuchos::StrUtils::removeAllSpaces(Core::Utils::to_lower(linktarget));
 
         if (entry.isList())  // it is a section header
         {
@@ -472,7 +472,7 @@ namespace RTD
 
     std::string sectionname = condition.section_name();
     const std::string sectionlinktarget =
-        Teuchos::StrUtils::removeAllSpaces(Core::UTILS::to_lower(sectionname));
+        Teuchos::StrUtils::removeAllSpaces(Core::Utils::to_lower(sectionname));
     //
     // boundary condition header
     //
@@ -711,7 +711,7 @@ namespace RTD
       std::stringstream resultDescriptionStream;
       Core::IO::DatFileUtils::print_section(resultDescriptionStream, "RESULT DESCRIPTION", lines);
       const std::vector<std::string> resultDescriptionList =
-          Core::UTILS::split(resultDescriptionStream.str(), "\n");
+          Core::Utils::split(resultDescriptionStream.str(), "\n");
       write_code(stream, resultDescriptionList);
     }
     //
@@ -719,7 +719,7 @@ namespace RTD
     {
       write_linktarget(stream, "functionreference");
       write_header(stream, 0, "Functions reference");
-      Core::UTILS::FunctionManager function_manager;
+      Core::Utils::FunctionManager function_manager;
       global_legacy_module_callbacks().AttachFunctionDefinitions(function_manager);
 
       const auto lines = function_manager.valid_function_lines();
@@ -728,7 +728,7 @@ namespace RTD
           stream, "Definition of functions for various cases, mainly boundary conditions");
       std::stringstream functionStream;
       Core::IO::DatFileUtils::print_section(functionStream, "FUNCT", lines);
-      const std::vector<std::string> functionList = Core::UTILS::split(functionStream.str(), "\n");
+      const std::vector<std::string> functionList = Core::Utils::split(functionStream.str(), "\n");
       write_code(stream, functionList);
     }
   }

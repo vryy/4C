@@ -47,11 +47,11 @@ namespace
         "integrated with a Simpson's rule if we remove point i (0 < i < size-2)");
 
     Number full_integration =
-        Core::UTILS::integrate_simpson_step<std::tuple<double, Number>>(
+        Core::Utils::integrate_simpson_step<std::tuple<double, Number>>(
             evaluated_integrand[i - 1], evaluated_integrand[i], evaluated_integrand[i + 1]) +
-        Core::UTILS::integrate_simpson_step_bc<std::tuple<double, Number>>(
+        Core::Utils::integrate_simpson_step_bc<std::tuple<double, Number>>(
             evaluated_integrand[i + 0], evaluated_integrand[i + 1], evaluated_integrand[i + 2]);
-    Number skipped_integration = Core::UTILS::integrate_simpson_step<std::tuple<double, Number>>(
+    Number skipped_integration = Core::Utils::integrate_simpson_step<std::tuple<double, Number>>(
         evaluated_integrand[i - 1], evaluated_integrand[i + 1], evaluated_integrand[i + 2]);
 
     return std::abs(full_integration - skipped_integration);
@@ -92,7 +92,7 @@ namespace
     Number integration_result = 0;
     for (const auto& interval : history)
     {
-      integration_result += Core::UTILS::integrate_simpson_trapezoidal(interval.timesteps,
+      integration_result += Core::Utils::integrate_simpson_trapezoidal(interval.timesteps,
           [&](const MIXTURE::MassIncrement<Number>& increment)
           { return std::make_tuple(increment.deposition_time, integrand(increment)); });
     }
@@ -112,7 +112,7 @@ namespace
     {
       // can only apply trapezoidal rule
       const auto [integration, derivative] =
-          Core::UTILS::integrate_trapezoidal_step_and_return_derivative_b<
+          Core::Utils::integrate_trapezoidal_step_and_return_derivative_b<
               std::tuple<double, Number>>(
               {interval.timesteps[0].deposition_time, integrand(interval.timesteps[0])},
               {current_increment.deposition_time, integrand(current_increment)});
@@ -120,7 +120,7 @@ namespace
     }
 
     const auto [integration, derivative] =
-        Core::UTILS::integrate_simpson_step_bc_and_return_derivative_c<std::tuple<double, Number>>(
+        Core::Utils::integrate_simpson_step_bc_and_return_derivative_c<std::tuple<double, Number>>(
             {interval.timesteps[size - 2].deposition_time, integrand(interval.timesteps[size - 2])},
             {interval.timesteps[size - 1].deposition_time, integrand(interval.timesteps[size - 1])},
             {current_increment.deposition_time, integrand(current_increment)});
@@ -678,7 +678,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::compute_internal_variables()
   Core::LinAlg::Matrix<2, 1, Number> initial_guess;
   initial_guess(0) = computed_growth_scalar_;
   initial_guess(1) = computed_sigma_;
-  auto [growth_scalar_and_sigma, K] = Core::UTILS::solve_local_newton_and_return_jacobian(
+  auto [growth_scalar_and_sigma, K] = Core::Utils::solve_local_newton_and_return_jacobian(
       EvaluateCurrentLocalNewtonLinearSystem, initial_guess, tolerance, max_iterations);
 
   computed_growth_scalar_ = growth_scalar_and_sigma(0);
@@ -860,7 +860,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::update()
                           }
 
                           return std::abs(
-                              Core::UTILS::integrate_simpson_step(values[0], values[2], values[4]) -
+                              Core::Utils::integrate_simpson_step(values[0], values[2], values[4]) -
                               integrate_boole_step(values));
                         };
 

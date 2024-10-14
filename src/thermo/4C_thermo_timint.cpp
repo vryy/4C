@@ -115,7 +115,7 @@ Thermo::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
   {
     Teuchos::ParameterList p;
     p.set("total time", timen_);
-    p.set<const Core::UTILS::FunctionManager*>(
+    p.set<const Core::Utils::FunctionManager*>(
         "function_manager", &Global::Problem::instance()->function_manager());
     discret_->evaluate_dirichlet(p, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
@@ -245,7 +245,7 @@ void Thermo::TimInt::apply_dirichlet_bc(const double time,
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time);  // target time
-  p.set<const Core::UTILS::FunctionManager*>(
+  p.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // predicted Dirichlet values
@@ -610,7 +610,7 @@ void Thermo::TimInt::output_energy()
 /*----------------------------------------------------------------------*
  | thermal result test                                       dano 01/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> Thermo::TimInt::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> Thermo::TimInt::create_field_test()
 {
   return Teuchos::make_rcp<Thermo::ResultTest>(*this);
 
@@ -885,7 +885,7 @@ void Thermo::TimInt::set_initial_field(
           // evaluate component k of spatial function
           double initialval =
               Global::Problem::instance()
-                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno - 1)
                   .evaluate(lnode->x().data(), 0.0, k);
           // extract temperature vector at time t_n (temp_ contains various vectors of
           // old(er) temperatures and is of type TimIntMStep<Core::LinAlg::Vector<double>>)

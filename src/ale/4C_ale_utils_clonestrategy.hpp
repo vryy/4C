@@ -35,7 +35,7 @@ namespace Core::Elements
 /* definition of classes */
 namespace ALE
 {
-  namespace UTILS
+  namespace Utils
   {
     /*!
     \brief Implementation of special clone strategy for automatic generation
@@ -78,7 +78,7 @@ namespace ALE
 
      private:
     };  // class AleCloneStrategy
-  }     // namespace UTILS
+  }     // namespace Utils
 }  // namespace ALE
 
 FOUR_C_NAMESPACE_CLOSE

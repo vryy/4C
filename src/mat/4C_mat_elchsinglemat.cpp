@@ -263,7 +263,7 @@ double Mat::ElchSingleMat::compute_diffusion_coefficient_concentration_dependent
   else
   {
     diffusionCoefficient = Global::Problem::instance()
-                               ->function_by_id<Core::UTILS::FunctionOfTime>(
+                               ->function_by_id<Core::Utils::FunctionOfTime>(
                                    diffusion_coefficient_concentration_dependence_funct_num() - 1)
                                .evaluate(concentration);
   }
@@ -291,7 +291,7 @@ double Mat::ElchSingleMat::compute_temperature_dependent_scale_factor(const doub
   {
     temperatureDependentScaleFactor =
         Global::Problem::instance()
-            ->function_by_id<Core::UTILS::FunctionOfTime>(functionNumber - 1)
+            ->function_by_id<Core::Utils::FunctionOfTime>(functionNumber - 1)
             .evaluate(temperature);
   }
   else
@@ -334,7 +334,7 @@ double Mat::ElchSingleMat::compute_concentration_derivative_of_diffusion_coeffic
   {
     diffusion_coeff_conc_deriv =
         (Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfTime>(
+                ->function_by_id<Core::Utils::FunctionOfTime>(
                     diffusion_coefficient_concentration_dependence_funct_num() - 1)
                 .evaluate_derivative(concentration));
   }
@@ -385,7 +385,7 @@ double Mat::ElchSingleMat::compute_temperature_dependent_scale_factor_deriv(
   {
     temperatureDependentScaleFactorDeriv =
         Global::Problem::instance()
-            ->function_by_id<Core::UTILS::FunctionOfTime>(functionNumber - 1)
+            ->function_by_id<Core::Utils::FunctionOfTime>(functionNumber - 1)
             .evaluate_derivative(temperature);
   }
   else
@@ -436,7 +436,7 @@ double Mat::ElchSingleMat::compute_conductivity_concentration_dependent(
   else
   {
     conductivity = Global::Problem::instance()
-                       ->function_by_id<Core::UTILS::FunctionOfTime>(
+                       ->function_by_id<Core::Utils::FunctionOfTime>(
                            conductivity_concentration_dependence_funct_num() - 1)
                        .evaluate(concentration);
   }
@@ -470,7 +470,7 @@ double Mat::ElchSingleMat::compute_concentration_derivative_of_conductivity(
   else
   {
     conductivity_conc_deriv = (Global::Problem::instance()
-                                   ->function_by_id<Core::UTILS::FunctionOfTime>(
+                                   ->function_by_id<Core::Utils::FunctionOfTime>(
                                        conductivity_concentration_dependence_funct_num() - 1)
                                    .evaluate_derivative(concentration));
   }

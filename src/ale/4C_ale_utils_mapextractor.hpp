@@ -26,7 +26,7 @@ namespace Core::FE
 
 namespace ALE
 {
-  namespace UTILS
+  namespace Utils
   {
     /// specific MultiMapExtractor to handle the ale field
     class MapExtractor : public Core::LinAlg::MultiMapExtractor
@@ -109,7 +109,7 @@ namespace ALE
       MAP_EXTRACTOR_VECTOR_METHODS(other, cond_other)
       MAP_EXTRACTOR_VECTOR_METHODS(xfluid_fluid_cond, cond_xfluidfluid)
     };
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace ALE
 
 FOUR_C_NAMESPACE_CLOSE

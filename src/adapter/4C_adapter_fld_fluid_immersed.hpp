@@ -39,7 +39,7 @@ namespace Adapter
     Teuchos::RCP<Core::FE::Discretization> discretization() override;
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::UTILS::MapExtractor> const& interface() const override;
+    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override;
 
     //@}
 
@@ -121,7 +121,7 @@ namespace Adapter
     Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
 
     /// create the testing of fields
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
 
 
    private:

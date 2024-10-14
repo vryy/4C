@@ -25,7 +25,7 @@ namespace Core::FE
 
 namespace ALE
 {
-  namespace UTILS
+  namespace Utils
   {
     /// (FSI) interface block matrix split strategy
     class InterfaceSplitStrategy : public Core::LinAlg::DefaultBlockMatrixStrategy
@@ -71,7 +71,7 @@ namespace ALE
      private:
       Teuchos::RCP<std::set<int>> condelements_;
     };
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace ALE
 
 

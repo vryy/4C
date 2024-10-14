@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Arteries
 {
-  namespace UTILS
+  namespace Utils
   {
     //--------------------------------------------------------------------
     // Wrapper class (to be called from outside) for outputing
@@ -119,7 +119,7 @@ namespace Arteries
 
 
     };  // class ArtWriteGnuplot
-  }     // namespace UTILS
+  }     // namespace Utils
 }  // namespace Arteries
 
 

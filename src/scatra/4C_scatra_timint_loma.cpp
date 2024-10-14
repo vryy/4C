@@ -131,7 +131,7 @@ void ScaTra::ScaTraTimIntLoma::compute_initial_mass()
   discret_->set_state("phinp", phin_);
   // set action for elements
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_total_and_mean_scalars, eleparams);
   // inverted scalar values are required here
   eleparams.set("inverting", true);
@@ -173,7 +173,7 @@ void ScaTra::ScaTraTimIntLoma::compute_therm_pressure_from_mass_cons()
   discret_->set_state("phinp", phinp_);
   // set action for elements
   Teuchos::ParameterList eleparams;
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_total_and_mean_scalars, eleparams);
   // inverted scalar values are required here
   eleparams.set("inverting", true);

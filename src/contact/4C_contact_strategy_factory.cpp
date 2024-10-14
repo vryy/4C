@@ -648,11 +648,11 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
 
   // Vector that solely contains solid-to-solid contact pairs
   std::vector<std::vector<Core::Conditions::Condition*>> ccond_grps(0);
-  CONTACT::UTILS::get_contact_condition_groups(ccond_grps, discret());
+  CONTACT::Utils::get_contact_condition_groups(ccond_grps, discret());
 
   std::set<const Core::Nodes::Node*> dbc_slave_nodes;
   std::set<const Core::Elements::Element*> dbc_slave_eles;
-  CONTACT::UTILS::DbcHandler::detect_dbc_slave_nodes_and_elements(
+  CONTACT::Utils::DbcHandler::detect_dbc_slave_nodes_and_elements(
       discret(), ccond_grps, dbc_slave_nodes, dbc_slave_eles);
 
   // maximum dof number in discretization
@@ -725,7 +725,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
     // find out which sides are Master and Slave
     std::vector<bool> isslave(0);
     std::vector<bool> isself(0);
-    CONTACT::UTILS::get_master_slave_side_info(isslave, isself, currentgroup);
+    CONTACT::Utils::get_master_slave_side_info(isslave, isself, currentgroup);
     for (const bool is : isself)
     {
       if (is)
@@ -741,7 +741,7 @@ void CONTACT::STRATEGY::Factory::build_interfaces(const Teuchos::ParameterList& 
     bool Check_nonsmooth_selfcontactsurface(false);
     bool Searchele_AllProc(false);
 
-    CONTACT::UTILS::get_initialization_info(Two_half_pass, Check_nonsmooth_selfcontactsurface,
+    CONTACT::Utils::get_initialization_info(Two_half_pass, Check_nonsmooth_selfcontactsurface,
         Searchele_AllProc, isactive, isslave, isself, currentgroup);
 
     // create interface local parameter list (copy)

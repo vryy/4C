@@ -41,10 +41,10 @@ namespace Core::FE
   class DiscretizationFaces;
 }  // namespace Core::FE
 
-namespace UTILS
+namespace Utils
 {
   class Cardiovascular0DManager;
-}  // namespace UTILS
+}  // namespace Utils
 
 namespace CONSTRAINTS
 {
@@ -388,7 +388,7 @@ namespace Solid
     void determine_optional_quantity();
 
     /// create result test for encapsulated structure algorithm
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
 
     //@}
 
@@ -1098,7 +1098,7 @@ namespace Solid
     Teuchos::RCP<CONSTRAINTS::ConstraintSolver> consolv_;  //!< constraint solver
 
     // for 0D cardiovascular models
-    Teuchos::RCP<UTILS::Cardiovascular0DManager> cardvasc0dman_;  //!< Cardiovascular0D manager
+    Teuchos::RCP<Utils::Cardiovascular0DManager> cardvasc0dman_;  //!< Cardiovascular0D manager
 
     // spring dashpot
     Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> springman_;

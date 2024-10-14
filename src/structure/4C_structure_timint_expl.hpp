@@ -327,7 +327,7 @@ namespace Solid
     };
 
     //! Return Teuchos::rcp to Cardiovascular0DManager windkman_
-    virtual Teuchos::RCP<UTILS::Cardiovascular0DManager> get_cardiovascular0_d_manager()
+    virtual Teuchos::RCP<Utils::Cardiovascular0DManager> get_cardiovascular0_d_manager()
     {
       FOUR_C_THROW(
           "get_cardiovascular0_d_manager() has not been tested for explicit time integrators");

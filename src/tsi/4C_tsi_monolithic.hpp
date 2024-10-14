@@ -55,11 +55,11 @@ namespace Adapter
 
 namespace TSI
 {
-  namespace UTILS
+  namespace Utils
   {
     // forward declaration of clone strategy
     class ThermoStructureCloneStrategy;
-  }  // namespace UTILS
+  }  // namespace Utils
 
   //! monolithic TSI algorithm
   //!

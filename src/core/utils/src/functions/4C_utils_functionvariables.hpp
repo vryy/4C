@@ -30,7 +30,7 @@ struct Periodicstruct
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-namespace Core::UTILS
+namespace Core::Utils
 {
   template <class T>
   class SymbolicExpression;
@@ -80,7 +80,7 @@ namespace Core::UTILS
 
    private:
     /// parsed function
-    Teuchos::RCP<Core::UTILS::SymbolicExpression<double>> timefunction_;
+    Teuchos::RCP<Core::Utils::SymbolicExpression<double>> timefunction_;
   };
 
 
@@ -143,7 +143,7 @@ namespace Core::UTILS
     const std::vector<double> times_;
 
     /// vector of parsed functions
-    std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<double>>> timefunction_;
+    std::vector<Teuchos::RCP<Core::Utils::SymbolicExpression<double>>> timefunction_;
 
 
     /// flag for periodic repetition
@@ -229,7 +229,7 @@ namespace Core::UTILS
     //! Internal helper to figure out the correct time points from input.
     std::vector<double> extract_time_vector(const Input::LineDefinition& timevar);
   }  // namespace Internal
-}  // namespace Core::UTILS
+}  // namespace Core::Utils
 
 FOUR_C_NAMESPACE_CLOSE
 

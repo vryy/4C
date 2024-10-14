@@ -79,7 +79,7 @@ void fpsi_drt()
   const Teuchos::ParameterList& fpsidynparams = problem->fpsi_dynamic_params();
   const Teuchos::ParameterList& poroelastdynparams = problem->poroelast_dynamic_params();
 
-  Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::instance();
+  FPSI::InterfaceUtils* FPSI_UTILS = FPSI::InterfaceUtils::instance();
 
   // 3.- Creation of Poroelastic + Fluid problem. (discretization called inside)
   Teuchos::RCP<FPSI::FpsiBase> fpsi = Teuchos::null;

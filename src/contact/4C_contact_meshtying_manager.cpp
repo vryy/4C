@@ -216,7 +216,7 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
             node->id(), node->x(), node->owner(), discret.dof(0, node), isslave[j]);
         //-------------------
         // get nurbs weight!
-        if (nurbs) Mortar::UTILS::prepare_nurbs_node(node, *mtnode);
+        if (nurbs) Mortar::Utils::prepare_nurbs_node(node, *mtnode);
 
         // get edge and corner information:
         std::vector<Core::Conditions::Condition*> contactcornercond(0);
@@ -284,7 +284,7 @@ CONTACT::MtManager::MtManager(Core::FE::Discretization& discret, double alphaf)
             ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), isslave[j], nurbs);
         //------------------------------------------------------------------
         // get knotvector, normal factor and zero-size information for nurbs
-        if (nurbs) Mortar::UTILS::prepare_nurbs_element(discret, ele, *mtele, spatialDim);
+        if (nurbs) Mortar::Utils::prepare_nurbs_element(discret, ele, *mtele, spatialDim);
 
         interface->add_mortar_element(mtele);
       }

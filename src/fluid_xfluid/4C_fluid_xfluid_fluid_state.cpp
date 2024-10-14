@@ -34,7 +34,7 @@ FLD::XFluidFluidState::XFluidFluidState(
     const Teuchos::RCP<const Epetra_Map>& embfluiddofrowmap)
     : XFluidState(condition_manager, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap),
       xffluiddofrowmap_(Core::LinAlg::merge_map(xfluiddofrowmap, embfluiddofrowmap, false)),
-      xffluidsplitter_(Teuchos::make_rcp<FLD::UTILS::XFluidFluidMapExtractor>()),
+      xffluidsplitter_(Teuchos::make_rcp<FLD::Utils::XFluidFluidMapExtractor>()),
       xffluidvelpressplitter_(Teuchos::make_rcp<Core::LinAlg::MapExtractor>()),
       embfluiddofrowmap_(embfluiddofrowmap)
 {
@@ -132,7 +132,7 @@ void FLD::XFluidFluidState::setup_map_extractors(
   XFluidState::setup_map_extractors(xfluiddiscret, time);
   xffluidsplitter_->setup(*xffluiddofrowmap_, embfluiddofrowmap_, XFluidState::xfluiddofrowmap_);
 
-  FLD::UTILS::setup_fluid_fluid_vel_pres_split(*xfluiddiscret, Global::Problem::instance()->n_dim(),
+  FLD::Utils::setup_fluid_fluid_vel_pres_split(*xfluiddiscret, Global::Problem::instance()->n_dim(),
       *embfluiddiscret, *xffluidvelpressplitter_, xffluiddofrowmap_);
 }
 

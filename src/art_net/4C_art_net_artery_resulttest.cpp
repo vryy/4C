@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Arteries::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net)
-    : Core::UTILS::ResultTest("ARTNET")
+    : Core::Utils::ResultTest("ARTNET")
 {
   dis_ = art_net.discretization();
   mysol_ = art_net.q_anp();
@@ -29,7 +29,7 @@ Arteries::ArteryResultTest::ArteryResultTest(ArtNetExplicitTimeInt& art_net)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Arteries::ArteryResultTest::ArteryResultTest(ArtNetImplStationary& art_net)
-    : Core::UTILS::ResultTest("ARTNET")
+    : Core::Utils::ResultTest("ARTNET")
 {
   dis_ = art_net.discretization();
   mysol_ = art_net.pressurenp();

@@ -36,7 +36,7 @@ namespace Coupling::VolMortar
 {
   class VolMortarCoupl;
 
-  namespace UTILS
+  namespace Utils
   {
     /// Helper class for assigning materials for volumetric coupling of non conforming meshes
     /*!
@@ -74,7 +74,7 @@ namespace Coupling::VolMortar
           Core::Elements::Element* ele2, const std::vector<int>& ids_1,
           Teuchos::RCP<Core::FE::Discretization> dis1, Teuchos::RCP<Core::FE::Discretization> dis2);
     };
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace Coupling::VolMortar
 
 

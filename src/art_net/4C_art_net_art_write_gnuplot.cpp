@@ -57,7 +57,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-Arteries::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
+Arteries::Utils::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params)
     : discret_(actdis)
 {
@@ -187,7 +187,7 @@ Arteries::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void Arteries::UTILS::ArtWriteGnuplotWrapper::write(Teuchos::ParameterList& params)
+void Arteries::Utils::ArtWriteGnuplotWrapper::write(Teuchos::ParameterList& params)
 {
   //----------------------------------------------------------------------
   // Exit if the function accessed by a non-master processor
@@ -219,7 +219,7 @@ void Arteries::UTILS::ArtWriteGnuplotWrapper::write(Teuchos::ParameterList& para
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-Arteries::UTILS::ArtWriteGnuplot::ArtWriteGnuplot(int ArteryNum) : artery_num_(ArteryNum)
+Arteries::Utils::ArtWriteGnuplot::ArtWriteGnuplot(int ArteryNum) : artery_num_(ArteryNum)
 {
   // -------------------------------------------------------------------
   // Create the file with the following name
@@ -253,7 +253,7 @@ Arteries::UTILS::ArtWriteGnuplot::ArtWriteGnuplot(int ArteryNum) : artery_num_(A
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-Arteries::UTILS::ArtWriteGnuplot::ArtWriteGnuplot() {}
+Arteries::Utils::ArtWriteGnuplot::ArtWriteGnuplot() {}
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -265,7 +265,7 @@ Arteries::UTILS::ArtWriteGnuplot::ArtWriteGnuplot() {}
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Arteries::UTILS::ArtWriteGnuplot::write(Core::FE::Discretization& discret,
+void Arteries::Utils::ArtWriteGnuplot::write(Core::FE::Discretization& discret,
     Teuchos::ParameterList& params, const std::vector<int>* nodes)
 {
   // defining the Length

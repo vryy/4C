@@ -91,7 +91,7 @@ namespace Coupling::VolMortar
     shape_std    ///< std. shape functions --> lumped
   };
 
-  namespace UTILS
+  namespace Utils
   {
     class DefaultMaterialStrategy;
   }
@@ -125,7 +125,7 @@ namespace Coupling::VolMortar
         const Teuchos::ParameterList& cut_parameters, std::vector<int>* coupleddof12 = nullptr,
         std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofset12 = nullptr,
         std::pair<int, int>* dofset21 = nullptr,
-        Teuchos::RCP<Coupling::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy =
+        Teuchos::RCP<Coupling::VolMortar::Utils::DefaultMaterialStrategy> materialstrategy =
             Teuchos::null);
 
     /*!
@@ -509,7 +509,7 @@ namespace Coupling::VolMortar
     DualQuad dualquad_;  /// type of quadratic weighting interpolation
 
     /// strategy for element information transfer (mainly material, but can be more)
-    Teuchos::RCP<Coupling::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy_;
+    Teuchos::RCP<Coupling::VolMortar::Utils::DefaultMaterialStrategy> materialstrategy_;
 
     //! @name mesh initialization
 

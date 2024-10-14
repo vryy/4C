@@ -4394,9 +4394,9 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_shape
 
   // Assemble the individual shape functions in matrices, such that: r1=N1*d1, r1_xi=N1_xi*d1,
   // r1_xixi=N1_xixi*d1, r2=N2*d2, r2_xi=N2_xi*d2, r2_xixi=N2_xixi*d2
-  Discret::UTILS::Beam::assemble_shape_functions_and_derivs_and2nd_derivs<numnodes, numnodalvalues,
+  Discret::Utils::Beam::assemble_shape_functions_and_derivs_and2nd_derivs<numnodes, numnodalvalues,
       TYPE>(N1_i, N1_i_xi, N1_i_xixi, N1, N1_xi, N1_xixi);
-  Discret::UTILS::Beam::assemble_shape_functions_and_derivs_and2nd_derivs<numnodes, numnodalvalues,
+  Discret::Utils::Beam::assemble_shape_functions_and_derivs_and2nd_derivs<numnodes, numnodalvalues,
       TYPE>(N2_i, N2_i_xi, N2_i_xixi, N2, N2_xi, N2_xixi);
 
   return;
@@ -4474,7 +4474,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_shape
 
   // Assemble the individual shape functions in matrices, such that: r1=N1*d1, r1_xi=N1_xi*d1,
   // r1_xixi=N1_xixi*d1, r2=N2*d2, r2_xi=N2_xi*d2, r2_xixi=N2_xixi*d2
-  Discret::UTILS::Beam::assemble_shape_functions<numnodes, numnodalvalues, TYPE>(N_i, N);
+  Discret::Utils::Beam::assemble_shape_functions<numnodes, numnodalvalues, TYPE>(N_i, N);
 
   return;
 }

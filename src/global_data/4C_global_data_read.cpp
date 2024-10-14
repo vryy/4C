@@ -1714,7 +1714,7 @@ void Global::read_micro_fields(Global::Problem& problem, Core::IO::DatFileReader
 
 
         {
-          Core::UTILS::FunctionManager function_manager;
+          Core::Utils::FunctionManager function_manager;
           global_legacy_module_callbacks().AttachFunctionDefinitions(function_manager);
           function_manager.read_input(micro_reader);
           micro_problem->set_function_manager(std::move(function_manager));
@@ -2153,7 +2153,7 @@ void Global::read_materials(Global::Problem& problem, Core::IO::DatFileReader& r
       // of parameters.
       // Also, this line shows a design flaw where the parameter object needs to know the material
       // id that was chosen in the input file.
-      mmap->insert(id, Core::UTILS::LazyPtr<Core::Mat::PAR::Parameter>(
+      mmap->insert(id, Core::Utils::LazyPtr<Core::Mat::PAR::Parameter>(
                            [i = id, mat_type = mat->type(), d = data]()
                            { return Mat::make_parameter(i, mat_type, d); }));
     }

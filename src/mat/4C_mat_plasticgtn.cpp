@@ -177,7 +177,7 @@ void Mat::PlasticGTN::setup(int numgp, const Core::IO::InputParameterContainer& 
   if (functionID_hardening != 0)
   {
     hardening_function_ =
-        &Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfAnything>(
+        &Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfAnything>(
             functionID_hardening - 1);
   }
 
@@ -309,7 +309,7 @@ void Mat::PlasticGTN::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     x(3) = f_n;
     x(4) = 0.0;
 
-    x = Core::UTILS::solve_local_newton(
+    x = Core::Utils::solve_local_newton(
         local_system_evaluator, x, TOL * sigmastar_n, max_local_iters);
 
     p_n1 = x(0);

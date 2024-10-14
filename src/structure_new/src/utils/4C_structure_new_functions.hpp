@@ -23,7 +23,7 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
-namespace Core::UTILS
+namespace Core::Utils
 {
   class FunctionManager;
 }
@@ -31,10 +31,10 @@ namespace Core::UTILS
 namespace Solid
 {
   /// add valid structure-specific function lines
-  void add_valid_structure_functions(Core::UTILS::FunctionManager& function_manager);
+  void add_valid_structure_functions(Core::Utils::FunctionManager& function_manager);
 
   /// special implementation for weakly compressible flow - Etienne FSI problem
-  class WeaklyCompressibleEtienneFSIStructureFunction : public Core::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneFSIStructureFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIStructureFunction(const Mat::PAR::StVenantKirchhoff& fparams);
@@ -48,7 +48,7 @@ namespace Solid
   };
 
   /// special implementation for weakly compressible flow - Etienne FSI problem (force)
-  class WeaklyCompressibleEtienneFSIStructureForceFunction : public Core::UTILS::FunctionOfSpaceTime
+  class WeaklyCompressibleEtienneFSIStructureForceFunction : public Core::Utils::FunctionOfSpaceTime
   {
    public:
     WeaklyCompressibleEtienneFSIStructureForceFunction(const Mat::PAR::StVenantKirchhoff& fparams);

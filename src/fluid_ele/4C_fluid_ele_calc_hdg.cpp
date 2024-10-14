@@ -611,7 +611,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_field(Discret::ELEMENTS
           const int funct_num = (*functno)[d];
           if (funct_num > 0)
             u(d) = Global::Problem::instance()
-                       ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                       ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funct_num - 1)
                        .evaluate(xyz.data(), *time, d);
         }
       }
@@ -1312,10 +1312,10 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_all(const int startfu
     {
       for (unsigned int index = 0; index < nsd_; ++index)
         u(index) = Global::Problem::instance()
-                       ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfunc - 1)
+                       ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfunc - 1)
                        .evaluate(xyz.data(), 0, index);
       p = Global::Problem::instance()
-              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfunc - 1)
+              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfunc - 1)
               .evaluate(xyz.data(), 0, nsd_);
     }
     break;
@@ -1328,9 +1328,9 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_all(const int startfu
 
 template <Core::FE::CellType distype>
 Discret::ELEMENTS::FluidEleCalcHDG<distype>* Discret::ELEMENTS::FluidEleCalcHDG<distype>::instance(
-    Core::UTILS::SingletonAction action)
+    Core::Utils::SingletonAction action)
 {
-  static auto singleton_owner = Core::UTILS::make_singleton_owner(
+  static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
         return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcHDG<distype>>(
@@ -2524,7 +2524,7 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_correctio
 
     interiorecorrectionterm[i] =
         Global::Problem::instance()
-            ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(corrtermfuncnum - 1)
+            ->function_by_id<Core::Utils::FunctionOfSpaceTime>(corrtermfuncnum - 1)
             .evaluate(x, 0.0, 0);
   }
 }
@@ -2541,7 +2541,7 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_body_forc
     for (unsigned int d = 0; d < nsd_; ++d)
       interiorebodyforce[d * ndofs_ + i] =
           Global::Problem::instance()
-              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(bodyforcefuncnum - 1)
+              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(bodyforcefuncnum - 1)
               .evaluate(x, 0.0, d);
   }
 }

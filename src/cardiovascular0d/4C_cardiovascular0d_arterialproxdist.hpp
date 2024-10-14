@@ -53,7 +53,7 @@ namespace Core::LinAlg
   class SparseOperator;
 }  // namespace Core::LinAlg
 
-namespace UTILS
+namespace Utils
 {
   class Cardiovascular0DArterialProxDist : public Cardiovascular0D
 
@@ -111,7 +111,7 @@ namespace UTILS
 
 
   };  // class
-}  // namespace UTILS
+}  // namespace Utils
 
 FOUR_C_NAMESPACE_CLOSE
 

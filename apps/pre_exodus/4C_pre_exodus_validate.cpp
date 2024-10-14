@@ -53,7 +53,7 @@ void EXODUS::validate_input_file(const Teuchos::RCP<Epetra_Comm> comm, const std
 
   std::cout << "...";
   {
-    Core::UTILS::FunctionManager function_manager;
+    Core::Utils::FunctionManager function_manager;
     global_legacy_module_callbacks().AttachFunctionDefinitions(function_manager);
     function_manager.read_input(reader);
   }

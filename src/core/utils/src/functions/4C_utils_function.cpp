@@ -62,7 +62,7 @@ namespace
 
   /// sets the values of the variables in second derivative of expression
   void set_values_in_expression_second_deriv(
-      const std::vector<Teuchos::RCP<Core::UTILS::FunctionVariable>>& variables, const double* x,
+      const std::vector<Teuchos::RCP<Core::Utils::FunctionVariable>>& variables, const double* x,
       const double t,
       std::map<std::string, Sacado::Fad::DFad<Sacado::Fad::DFad<double>>>& variable_values)
   {
@@ -111,7 +111,7 @@ namespace
   std::vector<double> evaluate_and_assemble_expression_to_result_vector(
       const std::map<std::string, Sacado::Fad::DFad<double>>& variables,
       const std::size_t component,
-      std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<double>>> expr,
+      std::vector<Teuchos::RCP<Core::Utils::SymbolicExpression<double>>> expr,
       const std::map<std::string, double>& constant_values)
   {
     // number of variables
@@ -131,7 +131,7 @@ namespace
 
   /// modifies the component to zero in case the expression is of size one
   std::size_t find_modified_component(const std::size_t component,
-      const std::vector<Teuchos::RCP<Core::UTILS::SymbolicExpression<double>>>& expr)
+      const std::vector<Teuchos::RCP<Core::Utils::SymbolicExpression<double>>>& expr)
   {
     return (expr.size() == 1) ? 0 : component;
   }
@@ -166,7 +166,7 @@ namespace
 
 
 
-Teuchos::RCP<Core::UTILS::FunctionOfAnything> Core::UTILS::try_create_symbolic_function_of_anything(
+Teuchos::RCP<Core::Utils::FunctionOfAnything> Core::Utils::try_create_symbolic_function_of_anything(
     const std::vector<Input::LineDefinition>& function_line_defs)
 {
   if (function_line_defs.size() != 1) return Teuchos::null;
@@ -186,7 +186,7 @@ Teuchos::RCP<Core::UTILS::FunctionOfAnything> Core::UTILS::try_create_symbolic_f
           "CONSTANTS");
     }
 
-    return Teuchos::make_rcp<Core::UTILS::SymbolicFunctionOfAnything>(component, constants);
+    return Teuchos::make_rcp<Core::Utils::SymbolicFunctionOfAnything>(component, constants);
   }
   else
   {
@@ -196,8 +196,8 @@ Teuchos::RCP<Core::UTILS::FunctionOfAnything> Core::UTILS::try_create_symbolic_f
 
 
 
-Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime>
-Core::UTILS::try_create_symbolic_function_of_space_time(
+Teuchos::RCP<Core::Utils::FunctionOfSpaceTime>
+Core::Utils::try_create_symbolic_function_of_space_time(
     const std::vector<Input::LineDefinition>& function_line_defs)
 {
   // Work around a design flaw in the input line for SymbolicFunctionOfSpaceTime.
@@ -265,7 +265,7 @@ Core::UTILS::try_create_symbolic_function_of_space_time(
     ignore_errors_in([&]() { varid = line.container().get<int>("VARIABLE"); });
 
     const auto variable = std::invoke(
-        [&]() -> Teuchos::RCP<Core::UTILS::FunctionVariable>
+        [&]() -> Teuchos::RCP<Core::Utils::FunctionVariable>
         {
           // read the name of the variable
           std::string varname = line.container().get<std::string>("NAME");
@@ -373,7 +373,7 @@ Core::UTILS::try_create_symbolic_function_of_space_time(
   return Teuchos::make_rcp<SymbolicFunctionOfSpaceTime>(functstring, functvarvector);
 }
 
-Core::UTILS::SymbolicFunctionOfSpaceTime::SymbolicFunctionOfSpaceTime(
+Core::Utils::SymbolicFunctionOfSpaceTime::SymbolicFunctionOfSpaceTime(
     const std::vector<std::string>& expressions,
     std::vector<Teuchos::RCP<FunctionVariable>> variables)
     : variables_(std::move(variables))
@@ -382,13 +382,13 @@ Core::UTILS::SymbolicFunctionOfSpaceTime::SymbolicFunctionOfSpaceTime(
   {
     {
       auto symbolicexpression =
-          Teuchos::make_rcp<Core::UTILS::SymbolicExpression<double>>(expression);
+          Teuchos::make_rcp<Core::Utils::SymbolicExpression<double>>(expression);
       expr_.push_back(symbolicexpression);
     }
   }
 }
 
-double Core::UTILS::SymbolicFunctionOfSpaceTime::evaluate(
+double Core::Utils::SymbolicFunctionOfSpaceTime::evaluate(
     const double* x, const double t, const std::size_t component) const
 {
   std::size_t component_mod = find_modified_component(component, expr_);
@@ -418,7 +418,7 @@ double Core::UTILS::SymbolicFunctionOfSpaceTime::evaluate(
   return expr_[component_mod]->value(variable_values);
 }
 
-std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime::evaluate_spatial_derivative(
+std::vector<double> Core::Utils::SymbolicFunctionOfSpaceTime::evaluate_spatial_derivative(
     const double* x, const double t, const std::size_t component) const
 {
   std::size_t component_mod = find_modified_component(component, expr_);
@@ -440,7 +440,7 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime::evaluate_spatial_d
   return {fdfad.dx(0).val(), fdfad.dx(1).val(), fdfad.dx(2).val()};
 }
 
-std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime::evaluate_time_derivative(
+std::vector<double> Core::Utils::SymbolicFunctionOfSpaceTime::evaluate_time_derivative(
     const double* x, const double t, const unsigned deg, const std::size_t component) const
 {
   // result vector
@@ -527,12 +527,12 @@ std::vector<double> Core::UTILS::SymbolicFunctionOfSpaceTime::evaluate_time_deri
 }
 
 
-Core::UTILS::SymbolicFunctionOfAnything::SymbolicFunctionOfAnything(
+Core::Utils::SymbolicFunctionOfAnything::SymbolicFunctionOfAnything(
     const std::string& component, std::vector<std::pair<std::string, double>> constants)
     : constants_from_input_(std::move(constants))
 {
   // build the parser for the function evaluation
-  auto symbolicexpression = Teuchos::make_rcp<Core::UTILS::SymbolicExpression<double>>(component);
+  auto symbolicexpression = Teuchos::make_rcp<Core::Utils::SymbolicExpression<double>>(component);
 
   // save the parsers
   expr_.push_back(symbolicexpression);
@@ -540,7 +540,7 @@ Core::UTILS::SymbolicFunctionOfAnything::SymbolicFunctionOfAnything(
 
 
 
-double Core::UTILS::SymbolicFunctionOfAnything::evaluate(
+double Core::Utils::SymbolicFunctionOfAnything::evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const std::size_t component) const
 {
@@ -570,7 +570,7 @@ double Core::UTILS::SymbolicFunctionOfAnything::evaluate(
 }
 
 
-std::vector<double> Core::UTILS::SymbolicFunctionOfAnything::evaluate_derivative(
+std::vector<double> Core::Utils::SymbolicFunctionOfAnything::evaluate_derivative(
     const std::vector<std::pair<std::string, double>>& variables,
     const std::vector<std::pair<std::string, double>>& constants, const std::size_t component) const
 {

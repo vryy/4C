@@ -608,7 +608,7 @@ void XFEM::MeshProjector::gmsh_output(
           targetdis_->writer()->output()->file_name(), step, 30, 0, targetdis_->get_comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
   {
-    XFEM::UTILS::print_discretization_to_stream(
+    XFEM::Utils::print_discretization_to_stream(
         Teuchos::rcp_const_cast<Core::FE::Discretization>(sourcedis_), sourcedis_->name(), true,
         false, false, false, false, false, gmshfilecontent, &src_nodepositions_n_);
 

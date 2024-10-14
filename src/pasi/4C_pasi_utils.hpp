@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace PaSI
 {
-  namespace UTILS
+  namespace Utils
   {
     /*!
      * \brief modification of time parameter list
@@ -41,7 +41,7 @@ namespace PaSI
      */
     void logo();
 
-  }  // namespace UTILS
+  }  // namespace Utils
 
 }  // namespace PaSI
 

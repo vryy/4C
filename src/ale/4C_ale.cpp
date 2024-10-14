@@ -161,7 +161,7 @@ void ALE::Ale::set_initial_displacement(const Inpar::ALE::InitialDisp init, cons
           // evaluate component d of function
           double initialval =
               Global::Problem::instance()
-                  ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                  ->function_by_id<Core::Utils::FunctionOfSpaceTime>(startfuncno - 1)
                   .evaluate(lnode->x().data(), 0, d);
 
           int err = dispn_->ReplaceMyValues(1, &initialval, &doflid);
@@ -183,13 +183,13 @@ void ALE::Ale::set_initial_displacement(const Inpar::ALE::InitialDisp init, cons
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::create_system_matrix(Teuchos::RCP<const ALE::UTILS::MapExtractor> interface)
+void ALE::Ale::create_system_matrix(Teuchos::RCP<const ALE::Utils::MapExtractor> interface)
 {
   if (msht_ != Inpar::ALE::no_meshtying)
   {
     std::vector<int> coupleddof(Global::Problem::instance()->n_dim(), 1);
     sysmat_ = meshtying_->setup(coupleddof, dispnp_);
-    meshtying_->dirichlet_on_master(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->cond_map());
+    meshtying_->dirichlet_on_master(dbcmaps_[ALE::Utils::MapExtractor::dbc_set_std]->cond_map());
 
     if (interface != Teuchos::null)
     {
@@ -212,7 +212,7 @@ void ALE::Ale::create_system_matrix(Teuchos::RCP<const ALE::UTILS::MapExtractor>
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void ALE::Ale::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc,
-    ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
+    ALE::Utils::MapExtractor::AleDBCSetType dbc_type)
 {
   // We save the current solution here. This will not change the
   // result of our element call, but the next time somebody asks us we
@@ -541,7 +541,7 @@ void ALE::Ale::prepare_time_step()
   Teuchos::ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
-  eleparams.set<const Core::UTILS::FunctionManager*>(
+  eleparams.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // Apply Dirichlet boundary conditions on provided state vector
@@ -552,7 +552,7 @@ void ALE::Ale::prepare_time_step()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::time_step(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
+void ALE::Ale::time_step(ALE::Utils::MapExtractor::AleDBCSetType dbc_type)
 {
   bool is_converged = false;
   int iter = 0;
@@ -603,24 +603,24 @@ void ALE::Ale::print_time_step_header() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::setup_dbc_map_ex(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type,
-    Teuchos::RCP<const ALE::UTILS::MapExtractor> interface,
-    Teuchos::RCP<const ALE::UTILS::XFluidFluidMapExtractor> xff_interface)
+void ALE::Ale::setup_dbc_map_ex(ALE::Utils::MapExtractor::AleDBCSetType dbc_type,
+    Teuchos::RCP<const ALE::Utils::MapExtractor> interface,
+    Teuchos::RCP<const ALE::Utils::XFluidFluidMapExtractor> xff_interface)
 {
   // set fixed nodes (conditions != 0 are not supported right now). hahn: Why?!
   Teuchos::ParameterList eleparams;
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
-  eleparams.set<const Core::UTILS::FunctionManager*>(
+  eleparams.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // some consistency checks
-  if (interface == Teuchos::null && dbc_type != ALE::UTILS::MapExtractor::dbc_set_std &&
-      dbc_type != ALE::UTILS::MapExtractor::dbc_set_x_ff)
+  if (interface == Teuchos::null && dbc_type != ALE::Utils::MapExtractor::dbc_set_std &&
+      dbc_type != ALE::Utils::MapExtractor::dbc_set_x_ff)
     FOUR_C_THROW(
-        "For non-standard use of SetupDBCMapEx, please provide a valid ALE::UTILS::MapExtractor.");
+        "For non-standard use of SetupDBCMapEx, please provide a valid ALE::Utils::MapExtractor.");
 
-  if (xff_interface == Teuchos::null && dbc_type == ALE::UTILS::MapExtractor::dbc_set_x_ff)
+  if (xff_interface == Teuchos::null && dbc_type == ALE::Utils::MapExtractor::dbc_set_x_ff)
     FOUR_C_THROW(
         "For non-standard use of SetupDBCMapEx with fluid-fluid coupling, please provide a "
         "x_fluid_fluid_map_extractor.");
@@ -629,43 +629,43 @@ void ALE::Ale::setup_dbc_map_ex(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type
 
   switch (dbc_type)
   {
-    case ALE::UTILS::MapExtractor::dbc_set_std:
-      dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std] =
+    case ALE::Utils::MapExtractor::dbc_set_std:
+      dbcmaps_[ALE::Utils::MapExtractor::dbc_set_std] =
           Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
       apply_dirichlet_bc(eleparams, dispnp_, Teuchos::null, Teuchos::null, true);
       break;
-    case ALE::UTILS::MapExtractor::dbc_set_x_ff:
+    case ALE::Utils::MapExtractor::dbc_set_x_ff:
     {
       std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
       condmaps.push_back(xff_interface->xfluid_fluid_cond_map());
-      condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->cond_map());
+      condmaps.push_back(dbcmaps_[ALE::Utils::MapExtractor::dbc_set_std]->cond_map());
       Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
 
-      dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_x_ff] =
+      dbcmaps_[ALE::Utils::MapExtractor::dbc_set_x_ff] =
           Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*(discret_->dof_row_map()), condmerged);
       break;
     }
-    case ALE::UTILS::MapExtractor::dbc_set_x_fsi:
-    case ALE::UTILS::MapExtractor::dbc_set_biofilm:
-    case ALE::UTILS::MapExtractor::dbc_set_part_fsi:
+    case ALE::Utils::MapExtractor::dbc_set_x_fsi:
+    case ALE::Utils::MapExtractor::dbc_set_biofilm:
+    case ALE::Utils::MapExtractor::dbc_set_part_fsi:
     {
       std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
       condmaps.push_back(interface->fsi_cond_map());
-      condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->cond_map());
+      condmaps.push_back(dbcmaps_[ALE::Utils::MapExtractor::dbc_set_std]->cond_map());
       Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
 
       dbcmaps_[dbc_type] =
           Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*(discret_->dof_row_map()), condmerged);
       break;
     }
-    case ALE::UTILS::MapExtractor::dbc_set_wear:
+    case ALE::Utils::MapExtractor::dbc_set_wear:
     {
       std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
       condmaps.push_back(interface->ale_wear_cond_map());
-      condmaps.push_back(dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]->cond_map());
+      condmaps.push_back(dbcmaps_[ALE::Utils::MapExtractor::dbc_set_std]->cond_map());
 
       Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
-      dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_wear] =
+      dbcmaps_[ALE::Utils::MapExtractor::dbc_set_wear] =
           Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*(discret_->dof_row_map()), condmerged);
       break;
     }
@@ -679,7 +679,7 @@ void ALE::Ale::setup_dbc_map_ex(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> ALE::Ale::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> ALE::Ale::create_field_test()
 {
   return Teuchos::make_rcp<ALE::AleResultTest>(*this);
 }
@@ -706,7 +706,7 @@ void ALE::Ale::apply_dirichlet_bc(Teuchos::ParameterList& params,
   if (recreatemap)
   {
     discret_->evaluate_dirichlet(params, systemvector, systemvectord, systemvectordd, Teuchos::null,
-        dbcmaps_[ALE::UTILS::MapExtractor::dbc_set_std]);
+        dbcmaps_[ALE::Utils::MapExtractor::dbc_set_std]);
   }
   else
   {
@@ -874,7 +874,7 @@ void ALE::AleLinear::prepare_time_step()
 }
 
 /*----------------------------------------------------------------------------*/
-void ALE::AleLinear::time_step(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type)
+void ALE::AleLinear::time_step(ALE::Utils::MapExtractor::AleDBCSetType dbc_type)
 {
   evaluate(Teuchos::null, dbc_type);
   solve();

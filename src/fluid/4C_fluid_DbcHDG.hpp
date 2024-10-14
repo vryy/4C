@@ -19,20 +19,20 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::UTILS
+namespace Discret::Utils
 {
   class Dbc;
   // class DbcInfo;
-}  // namespace Discret::UTILS
+}  // namespace Discret::Utils
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     /** \brief Specialized Dbc evaluation class for HDG discretizations
      *
      *  \author hiermeier \date 10/16 */
-    class DbcHdgFluid : public Core::FE::UTILS::Dbc
+    class DbcHdgFluid : public Core::FE::Utils::Dbc
     {
      public:
       /// constructor
@@ -60,7 +60,7 @@ namespace FLD
           double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
           const Core::LinAlg::Vector<int>& toggle) const;
     };  // class DbcHDG_Fluid
-  }     // namespace UTILS
+  }     // namespace Utils
 
 }  // namespace FLD
 

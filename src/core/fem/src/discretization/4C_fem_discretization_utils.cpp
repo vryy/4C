@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager& function_manager,
+void Core::FE::Utils::evaluate_initial_field(const Core::Utils::FunctionManager& function_manager,
     const Core::FE::Discretization& discret, const std::string& fieldstring,
     Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids)
 {
@@ -62,7 +62,7 @@ void Core::FE::UTILS::evaluate_initial_field(const Core::UTILS::FunctionManager&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::FE::UTILS::do_initial_field(const Core::UTILS::FunctionManager& function_manager,
+void Core::FE::Utils::do_initial_field(const Core::Utils::FunctionManager& function_manager,
     const Core::FE::Discretization& discret, Core::Conditions::Condition& cond,
     Core::LinAlg::Vector<double>& fieldvector, const std::vector<int>& locids)
 {
@@ -110,7 +110,7 @@ void Core::FE::UTILS::do_initial_field(const Core::UTILS::FunctionManager& funct
 
           const double functfac =
               funct_num > 0
-                  ? function_manager.function_by_id<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
+                  ? function_manager.function_by_id<Core::Utils::FunctionOfSpaceTime>(funct_num - 1)
                         .evaluate(node->x().data(), time, localdof)
                   : 0.0;
 

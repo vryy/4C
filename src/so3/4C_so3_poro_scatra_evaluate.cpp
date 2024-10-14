@@ -74,7 +74,7 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::pre_evaluate(Teuchos::Pa
     }
     const double* coordgpref = xrefe.data();
     double functfac =
-        Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(num).evaluate(
+        Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(num).evaluate(
             coordgpref, time, 0);
     params.set<double>("scalar", functfac);
   }

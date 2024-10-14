@@ -82,10 +82,10 @@ namespace
                        (dens_ij * (std::pow(abs_rij, 2) + epsilon * std::pow(h_ij, 2)));
 
     double acc_i_ref[3];
-    ParticleInteraction::UTILS::vec_set_scale(acc_i_ref, (artvisc_i * mass_j * dWdrij * fac), e_ij);
+    ParticleInteraction::Utils::vec_set_scale(acc_i_ref, (artvisc_i * mass_j * dWdrij * fac), e_ij);
 
     double acc_j_ref[3];
-    ParticleInteraction::UTILS::vec_set_scale(
+    ParticleInteraction::Utils::vec_set_scale(
         acc_j_ref, (-artvisc_j * mass_i * dWdrji * fac), e_ij);
 
     artificialviscosity_->artificial_viscosity(vel_i, vel_j, &mass_i, &mass_j, artvisc_i, artvisc_j,

@@ -215,7 +215,7 @@ void Mat::MuscleWeickenmeier::update(Core::LinAlg::Matrix<3, 3> const& defgrd, i
   const Core::LinAlg::Matrix<3, 3>& M = anisotropy_extension_.get_structural_tensor(gp, 0);
 
   // save the current fibre stretch in lambdaMOld_
-  lambda_m_old_ = Mat::UTILS::Muscle::fiber_stretch(C, M);
+  lambda_m_old_ = Mat::Utils::Muscle::fiber_stretch(C, M);
 }
 
 void Mat::MuscleWeickenmeier::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
@@ -268,7 +268,7 @@ void Mat::MuscleWeickenmeier::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // stretch in fibre direction lambdaM
   // lambdaM = sqrt(C:M) = sqrt(tr(C^T M)), see Holzapfel2000, p.14
-  double lambdaM = Mat::UTILS::Muscle::fiber_stretch(C, M);
+  double lambdaM = Mat::Utils::Muscle::fiber_stretch(C, M);
 
   // computation of active nominal stress Pa, and derivative derivPa
   double Pa = 0.0;
@@ -390,15 +390,15 @@ void Mat::MuscleWeickenmeier::evaluate_active_nominal_stress(
   const auto& actValues = params_->actValues_;
 
   // compute force-time/stimulation frequency dependency Poptft
-  double Poptft = Mat::UTILS::Muscle::evaluate_time_dependent_active_stress_ehret(
+  double Poptft = Mat::Utils::Muscle::evaluate_time_dependent_active_stress_ehret(
       Na, muTypesNum, rho, I, F, T, actIntervalsNum, actTimes, actValues, t_tot);
 
   // compute force-stretch dependency fxi
   double fxi =
-      Mat::UTILS::Muscle::evaluate_force_stretch_dependency_ehret(lambdaM, lambdaMin, lambdaOpt);
+      Mat::Utils::Muscle::evaluate_force_stretch_dependency_ehret(lambdaM, lambdaMin, lambdaOpt);
 
   // compute force-velocity dependency fv
-  double fv = Mat::UTILS::Muscle::evaluate_force_velocity_dependency_boel(
+  double fv = Mat::Utils::Muscle::evaluate_force_velocity_dependency_boel(
       dotLambdaM, dotLambdaMMin, de, dc, ke, kc);
 
   // compute active nominal stress Pa
@@ -410,9 +410,9 @@ void Mat::MuscleWeickenmeier::evaluate_active_nominal_stress(
   double dFvdLambdaM = 0.0;
   if (Pa != 0)
   {
-    dFxidLamdaM = Mat::UTILS::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
+    dFxidLamdaM = Mat::Utils::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
         lambdaM, lambdaMin, lambdaOpt);
-    dFvdLambdaM = Mat::UTILS::Muscle::evaluate_derivative_force_velocity_dependency_boel(
+    dFvdLambdaM = Mat::Utils::Muscle::evaluate_derivative_force_velocity_dependency_boel(
         dotLambdaM, dDotLambdaMdLambdaM, dotLambdaMMin, de, dc, ke, kc);
   }
 
@@ -445,7 +445,7 @@ void Mat::MuscleWeickenmeier::evaluate_activation_level(const double lambdaM, co
   double W0 = 1.0;           // starting guess for solution
   const double tol = 1e-15;  // tolerance for numeric approximation 10^-15
   const int maxiter = 100;   // maximal number of iterations
-  Mat::UTILS::Muscle::evaluate_lambert(xi, W0, tol, maxiter);
+  Mat::Utils::Muscle::evaluate_lambert(xi, W0, tol, maxiter);
 
   // derivatives of xi and W0 w.r.t. lambdaM used for activation level computation
   double derivXi =

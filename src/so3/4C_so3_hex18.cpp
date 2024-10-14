@@ -105,7 +105,7 @@ Discret::ELEMENTS::SoHex18::SoHex18(int id, int owner) : SoBase(id, owner)
       Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
-    Discret::ELEMENTS::UTILS::throw_error_fd_material_tangent(
+    Discret::ELEMENTS::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
@@ -612,7 +612,7 @@ int Discret::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
             (functnum > 0) ? Global::Problem::instance()
-                                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                                  .evaluate(xrefegp.data(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;

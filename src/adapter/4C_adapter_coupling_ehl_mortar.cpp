@@ -223,7 +223,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
       interface_->assemble_lin_slip_normal_regularization(*dcsdLMc, *dcsdd, *rcsa_fr);
       interface_->assemble_lin_stick(*dcsdLMc, *dcsdd, *rcsa_fr);
       rcsa_fr->Scale(-1.);
-      CONTACT::UTILS::add_vector(*rcsa_fr, *fcsa);
+      CONTACT::Utils::add_vector(*rcsa_fr, *fcsa);
     }
     else
     {
@@ -233,7 +233,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
       interface_->assemble_t_nderiv(dcsdd, Teuchos::null);
       interface_->assemble_tangrhs(*rcsa_fr);
       rcsa_fr->Scale(-1.);
-      CONTACT::UTILS::add_vector(*rcsa_fr, *fcsa);
+      CONTACT::Utils::add_vector(*rcsa_fr, *fcsa);
     }
   }
   else
@@ -260,7 +260,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
       if (gact->ReplaceMap(*interface_->active_n_dofs())) FOUR_C_THROW("replaceMap went wrong");
     }
   }
-  CONTACT::UTILS::add_vector(*gact, *fcsa);
+  CONTACT::Utils::add_vector(*gact, *fcsa);
   fcsa->Norm2(&contact_rhs_norm_);
 
   // complete all the new matrix blocks
@@ -467,7 +467,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   Core::LinAlg::export_to(*z_, *tmpv2);
   dcsdLMc->multiply(false, *tmpv2, *tmpv);
   tmpv->Scale(-1.);
-  CONTACT::UTILS::add_vector(*tmpv, *fcsa);
+  CONTACT::Utils::add_vector(*tmpv, *fcsa);
   tmpv = Teuchos::null;
   tmpv2 = Teuchos::null;
 
@@ -519,7 +519,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
 
   // reset rhs
   combined_RHS->PutScalar(0.);
-  CONTACT::UTILS::add_vector(rt, *combined_RHS);
+  CONTACT::Utils::add_vector(rt, *combined_RHS);
 
   // **********************************************************************
   // **********************************************************************
@@ -530,17 +530,17 @@ void Adapter::CouplingEhlMortar::condense_contact(
   // (1) add the blocks, we do nothing with (i.e. (Inactive+others))
   kss_new.add(*kss_ni, false, 1., 1.);
   kst_new.add(*kst_ni, false, 1., 1.);
-  CONTACT::UTILS::add_vector(rsni, *combined_RHS);
+  CONTACT::Utils::add_vector(rsni, *combined_RHS);
 
   // (2) add the 'uncondensed' blocks (i.e. everything w/o a D^-1
   // (2)a actual stiffness blocks of the master-rows
   kss_new.add(*kss_m, false, 1., 1.);
   kst_new.add(*kst_m, false, 1., 1.);
-  CONTACT::UTILS::add_vector(rsm, *combined_RHS);
+  CONTACT::Utils::add_vector(rsm, *combined_RHS);
 
   // (2)b active constraints in the active slave rows
   kss_new.add(*dcsdd, false, 1., 1.);
-  CONTACT::UTILS::add_vector(*fcsa, *combined_RHS);
+  CONTACT::Utils::add_vector(*fcsa, *combined_RHS);
 
   // (3) condensed parts
   // second row
@@ -550,7 +550,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
       false, 1., 1.);
   tmpv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->master_row_dofs());
   if (dInvMa->multiply(true, *rsa, *tmpv)) FOUR_C_THROW("multiply failed");
-  CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
+  CONTACT::Utils::add_vector(*tmpv, *combined_RHS);
   tmpv = Teuchos::null;
 
   // third row
@@ -563,7 +563,7 @@ void Adapter::CouplingEhlMortar::condense_contact(
   tmpv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*interface_->active_dofs());
   wDinv->multiply(false, *rsa, *tmpv);
   tmpv->Scale(-1. / (1. - alphaf_));
-  CONTACT::UTILS::add_vector(*tmpv, *combined_RHS);
+  CONTACT::Utils::add_vector(*tmpv, *combined_RHS);
   tmpv = Teuchos::null;
   wDinv = Teuchos::null;
 

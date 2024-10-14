@@ -60,9 +60,9 @@ Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::FluidEleCalcXWall()
 template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
 Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>*
 Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::instance(
-    Core::UTILS::SingletonAction action)
+    Core::Utils::SingletonAction action)
 {
-  static Core::UTILS::SingletonOwner<Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>
+  static Core::Utils::SingletonOwner<Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>>
       singleton_owner(
           []()
           {

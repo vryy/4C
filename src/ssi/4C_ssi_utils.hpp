@@ -50,7 +50,7 @@ namespace SSI
   class SsiMono;
   enum class Subproblem;
 
-  namespace UTILS
+  namespace Utils
   {
     // forward declaration
     class SSIMaps;
@@ -91,7 +91,7 @@ namespace SSI
        * @param[in] scatra_matrixtype   the scalar transport matrix type
        * @param[in] is_scatra_manifold  flag indicating if a scatra manifold is used
        */
-      SSIMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps,
+      SSIMatrices(Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps,
           Core::LinAlg::MatrixType ssi_matrixtype, Core::LinAlg::MatrixType scatra_matrixtype,
           bool is_scatra_manifold);
 
@@ -167,14 +167,14 @@ namespace SSI
        *
        * @param[in] ssi_maps            pointer to the ssi maps object containing all relevant maps
        */
-      void initialize_main_diag_matrices(const SSI::UTILS::SSIMaps& ssi_maps);
+      void initialize_main_diag_matrices(const SSI::Utils::SSIMaps& ssi_maps);
 
       /*!
        * @brief initialize the scatra-structure interaction off-diagonal matrices
        *
        * @param[in] ssi_maps            pointer to the ssi maps object containing all relevant maps
        */
-      void initialize_off_diag_matrices(const SSI::UTILS::SSIMaps& ssi_maps);
+      void initialize_off_diag_matrices(const SSI::Utils::SSIMaps& ssi_maps);
 
       /*!
        * @brief initialize the system matrix
@@ -183,7 +183,7 @@ namespace SSI
        * @param[in] ssi_matrixtype   the ssi matrix type
        */
       void initialize_system_matrix(
-          const SSI::UTILS::SSIMaps& ssi_maps, Core::LinAlg::MatrixType ssi_matrixtype);
+          const SSI::Utils::SSIMaps& ssi_maps, Core::LinAlg::MatrixType ssi_matrixtype);
 
       //! flag indicating if we have a scatra manifold
       const bool is_scatra_manifold_;
@@ -228,7 +228,7 @@ namespace SSI
        * @param[in] is_scatra_manifold  flag indicating if a scatra manifold is used
        */
       explicit SSIVectors(
-          Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, bool is_scatra_manifold);
+          Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps, bool is_scatra_manifold);
 
       //! clear the increment vector
       void clear_increment();
@@ -523,7 +523,7 @@ namespace SSI
       const int num_proc_;
     };
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace SSI
 
 FOUR_C_NAMESPACE_CLOSE

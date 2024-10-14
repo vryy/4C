@@ -386,7 +386,7 @@ void Solid::TimeInt::Base::initialize_energy_file_stream_and_write_headers()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> Solid::TimeInt::Base::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> Solid::TimeInt::Base::create_field_test()
 {
   check_init_setup();
   Teuchos::RCP<Solid::ResultTest> resulttest = Teuchos::make_rcp<Solid::ResultTest>();

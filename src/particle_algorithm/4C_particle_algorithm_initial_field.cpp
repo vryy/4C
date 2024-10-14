@@ -51,7 +51,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::init()
         statetotypetofunctidmap_[stateIt.second];
 
     // read parameters relating particle types to values
-    PARTICLEALGORITHM::UTILS::read_params_types_related_to_values(
+    PARTICLEALGORITHM::Utils::read_params_types_related_to_values(
         params_conditions, stateIt.first, currentstatetypetofunctidmap);
   }
 }
@@ -97,7 +97,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::set_initial_fields()
 
       // get reference to function
       const auto& function =
-          Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+          Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(
               functid - 1);
 
       // get pointer to particle states

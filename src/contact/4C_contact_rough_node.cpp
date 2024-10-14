@@ -55,10 +55,10 @@ CONTACT::RoughNode::RoughNode(int id, const std::vector<double>& coords, const i
   {
     hurstExponent_ =
         Global::Problem::instance()
-            ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(hurstexponentfunction_ - 1)
+            ->function_by_id<Core::Utils::FunctionOfSpaceTime>(hurstexponentfunction_ - 1)
             .evaluate(this->x().data(), 1, this->n_dim());
     initialTopologyStdDeviation_ = Global::Problem::instance()
-                                       ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+                                       ->function_by_id<Core::Utils::FunctionOfSpaceTime>(
                                            initialtopologystddeviationfunction_ - 1)
                                        .evaluate(this->x().data(), 1, this->n_dim());
 

@@ -59,7 +59,7 @@ void Adapter::FluidFluidFSI::init()
 
   // create map extractor for combined fluid domains
   // (to distinguish between FSI interface DOF / merged inner embedded & background fluid DOF)
-  mergedfluidinterface_ = Teuchos::make_rcp<FLD::UTILS::MapExtractor>();
+  mergedfluidinterface_ = Teuchos::make_rcp<FLD::Utils::MapExtractor>();
   // call base class init
   FluidFSI::init();
 }
@@ -132,7 +132,7 @@ void Adapter::FluidFluidFSI::update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::UTILS::XFluidFluidMapExtractor> const&
+Teuchos::RCP<FLD::Utils::XFluidFluidMapExtractor> const&
 Adapter::FluidFluidFSI::x_fluid_fluid_map_extractor()
 {
   return xfluidfluid_->x_fluid_fluid_map_extractor();

@@ -96,7 +96,7 @@ void POROMULTIPHASE::PoroMultiPhaseBase::init(const Teuchos::ParameterList& glob
 
   // build poro fluid time integrator
   Teuchos::RCP<Adapter::PoroFluidMultiphase> porofluid =
-      POROFLUIDMULTIPHASE::UTILS::create_algorithm(
+      POROFLUIDMULTIPHASE::Utils::create_algorithm(
           timintscheme, fluiddis, linsolvernumber, globaltimeparams, fluidparams, output);
 
   // wrap it

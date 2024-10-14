@@ -129,9 +129,9 @@ void PoroElastScaTra::PoroScatraMono::read_restart(int restart)
 
     // Material pointers to other field were deleted during read_restart().
     // They need to be reset.
-    PoroElast::UTILS::set_material_pointers_matching_grid(
+    PoroElast::Utils::set_material_pointers_matching_grid(
         *poro_field()->structure_field()->discretization(), *scatra_field()->discretization());
-    PoroElast::UTILS::set_material_pointers_matching_grid(
+    PoroElast::Utils::set_material_pointers_matching_grid(
         *poro_field()->fluid_field()->discretization(), *scatra_field()->discretization());
   }
 }
@@ -931,7 +931,7 @@ void PoroElastScaTra::PoroScatraMono::build_convergence_norms()
   //------------------------------------------------------------ build residual force norms
 
   // global norm
-  normrhs_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, *rhs_);
+  normrhs_ = PoroElast::Utils::calculate_vector_norm(vectornormfres_, *rhs_);
 
   // split vectors
   Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_s;
@@ -957,17 +957,17 @@ void PoroElastScaTra::PoroScatraMono::build_convergence_norms()
   //    porositysplitter_->extract_cond_vector(rhs_s); Teuchos::RCP<const
   //    Core::LinAlg::Vector<double>> rhs_sdisp = porositysplitter_->extract_other_vector(rhs_s);
   //
-  //    normrhsstruct_ = UTILS::calculate_vector_norm(vectornormfres_,rhs_sdisp);
-  //    normrhsporo_ = UTILS::calculate_vector_norm(vectornormfres_,rhs_poro);
+  //    normrhsstruct_ = Utils::calculate_vector_norm(vectornormfres_,rhs_sdisp);
+  //    normrhsporo_ = Utils::calculate_vector_norm(vectornormfres_,rhs_poro);
   //  }
   //  else
-  normrhsstruct_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, *rhs_s);
+  normrhsstruct_ = PoroElast::Utils::calculate_vector_norm(vectornormfres_, *rhs_s);
 
-  normrhsfluid_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, *rhs_f);
-  normrhsfluidvel_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, *rhs_fvel);
-  normrhsfluidpres_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, *rhs_fpres);
+  normrhsfluid_ = PoroElast::Utils::calculate_vector_norm(vectornormfres_, *rhs_f);
+  normrhsfluidvel_ = PoroElast::Utils::calculate_vector_norm(vectornormfres_, *rhs_fvel);
+  normrhsfluidpres_ = PoroElast::Utils::calculate_vector_norm(vectornormfres_, *rhs_fpres);
 
-  normrhsscalar_ = PoroElast::UTILS::calculate_vector_norm(vectornormfres_, *rhs_scalar);
+  normrhsscalar_ = PoroElast::Utils::calculate_vector_norm(vectornormfres_, *rhs_scalar);
 
 
   //------------------------------------------------------------- build residual increment norms
@@ -998,17 +998,17 @@ void PoroElastScaTra::PoroScatraMono::build_convergence_norms()
   //    Core::LinAlg::Vector<double>> interincsdisp =
   //    porositysplitter_->extract_other_vector(interincs);
   //
-  //    normincstruct_     = UTILS::calculate_vector_norm(vectornorminc_,interincsdisp);
-  //    normincporo_       = UTILS::calculate_vector_norm(vectornorminc_,interincporo);
+  //    normincstruct_     = Utils::calculate_vector_norm(vectornorminc_,interincsdisp);
+  //    normincporo_       = Utils::calculate_vector_norm(vectornorminc_,interincporo);
   //  }
   //  else
-  normincstruct_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, *interincs);
+  normincstruct_ = PoroElast::Utils::calculate_vector_norm(vectornorminc_, *interincs);
 
-  normincfluid_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, *interincf);
-  normincfluidvel_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, *interincfvel);
-  normincfluidpres_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, *interincfpres);
+  normincfluid_ = PoroElast::Utils::calculate_vector_norm(vectornorminc_, *interincf);
+  normincfluidvel_ = PoroElast::Utils::calculate_vector_norm(vectornorminc_, *interincfvel);
+  normincfluidpres_ = PoroElast::Utils::calculate_vector_norm(vectornorminc_, *interincfpres);
 
-  normincscalar_ = PoroElast::UTILS::calculate_vector_norm(vectornorminc_, *interincscalar);
+  normincscalar_ = PoroElast::Utils::calculate_vector_norm(vectornorminc_, *interincscalar);
 
   return;
 }
@@ -1151,7 +1151,7 @@ void PoroElastScaTra::PoroScatraMono::evaluate_od_block_mat_scatra()
 
   k_sps_->zero();
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_mesh, sparams_struct);
   // other parameters that might be needed by the elements
   sparams_struct.set("delta time", dt());
@@ -1184,7 +1184,7 @@ void PoroElastScaTra::PoroScatraMono::evaluate_od_block_mat_scatra()
   // create the parameters for the discretization
   Teuchos::ParameterList sparams_fluid;
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::calc_scatra_mono_odblock_fluid, sparams_fluid);
   // other parameters that might be needed by the elements
   sparams_fluid.set("delta time", dt());

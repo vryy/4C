@@ -136,7 +136,7 @@ namespace
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Solid::ResultTest::ResultTest()
-    : Core::UTILS::ResultTest("STRUCTURE"),
+    : Core::Utils::ResultTest("STRUCTURE"),
       isinit_(false),
       issetup_(false),
       strudisc_(Teuchos::null),

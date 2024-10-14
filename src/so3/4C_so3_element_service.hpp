@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace UTILS
+  namespace Utils
   {
     class GaussIntegration;
   }

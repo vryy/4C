@@ -584,7 +584,7 @@ void Mat::Damage::evaluate_simplified_lemaitre(const Core::LinAlg::Matrix<3, 3>*
       auto residuumAndJacobianNoDamage = [&](double Dgamma)
       { return residuum_and_jacobian_no_damage(params_, Dgamma, strainbar_p, q_tilde); };
 
-      Dgamma = Core::UTILS::solve_local_newton(
+      Dgamma = Core::Utils::solve_local_newton(
           residuumAndJacobianNoDamage, 0.0, newton_tolerance, itermax);
       strainbar_p = strainbarpllast_.at(gp) + Dgamma / omega;
 
@@ -724,7 +724,7 @@ void Mat::Damage::evaluate_simplified_lemaitre(const Core::LinAlg::Matrix<3, 3>*
             params_, Dgamma, Rplast, q_tilde, p_tilde, omegaold);
       };
 
-      Dgamma = Core::UTILS::solve_local_newton(
+      Dgamma = Core::Utils::solve_local_newton(
           residuumAndJacobianWithDamage, Dgamma, newton_tolerance, itermax);
 
       // Finally, calculate the important quantities

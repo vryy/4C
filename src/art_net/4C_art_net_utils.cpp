@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | create algorithm                                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Adapter::ArtNet> Arteries::UTILS::create_algorithm(
+Teuchos::RCP<Adapter::ArtNet> Arteries::Utils::create_algorithm(
     Inpar::ArtDyn::TimeIntegrationScheme timintscheme, Teuchos::RCP<Core::FE::Discretization> dis,
     const int linsolvernumber, const Teuchos::ParameterList& probparams,
     const Teuchos::ParameterList& artparams, Core::IO::DiscretizationWriter& output)
@@ -62,7 +62,7 @@ Teuchos::RCP<Adapter::ArtNet> Arteries::UTILS::create_algorithm(
 /*----------------------------------------------------------------------*
  | exchange material pointers of both discretizations  kremheller 03/18 |
  *----------------------------------------------------------------------*/
-void Arteries::UTILS::assign_material_pointers(
+void Arteries::Utils::assign_material_pointers(
     const std::string& artery_disname, const std::string& scatra_disname)
 {
   Global::Problem* problem = Global::Problem::instance();
@@ -76,7 +76,7 @@ void Arteries::UTILS::assign_material_pointers(
 /*----------------------------------------------------------------------*
  | reset Material pointers after redistribution        kremheller 03/18 |
  *----------------------------------------------------------------------*/
-void Arteries::UTILS::set_material_pointers_matching_grid(
+void Arteries::Utils::set_material_pointers_matching_grid(
     const Core::FE::Discretization& sourcedis, const Core::FE::Discretization& targetdis)
 {
   const int numelements = targetdis.num_my_col_elements();

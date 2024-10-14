@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace CONTACT
 {
-  namespace UTILS
+  namespace Utils
   {
     /*!
     \brief Decide whether to use the new code path that performs ghosting in a safe way or not
@@ -34,7 +34,7 @@ namespace CONTACT
     */
     bool use_safe_redistribute_and_ghosting(const Teuchos::ParameterList& contactParams);
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace CONTACT
 
 FOUR_C_NAMESPACE_CLOSE

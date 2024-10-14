@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     //--------------------------------------------------------------------
     // Wrapper class (to be called from outside) for coupling 3D/red D  bc
@@ -314,7 +314,7 @@ namespace FLD
 
     };  // class FluidCouplingBc
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FLD
 
 FOUR_C_NAMESPACE_CLOSE

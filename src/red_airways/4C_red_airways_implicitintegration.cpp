@@ -133,7 +133,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
 
     // fill and inform user (not fully overlapping anymore at this point
     discret_->fill_complete();
-    Core::Rebalance::UTILS::print_parallel_distribution(*discret_);
+    Core::Rebalance::Utils::print_parallel_distribution(*discret_);
 
     // Neighbouring acinus
     airway_acinus_dep_ = Core::LinAlg::create_vector(*discret_->element_col_map(), true);
@@ -2256,7 +2256,7 @@ void Airway::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
 /*----------------------------------------------------------------------*
  | Create the field test for redairway field                 roth 10/13 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::UTILS::ResultTest> Airway::RedAirwayImplicitTimeInt::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> Airway::RedAirwayImplicitTimeInt::create_field_test()
 {
   return Teuchos::make_rcp<RedAirwayResultTest>(*this);
 }

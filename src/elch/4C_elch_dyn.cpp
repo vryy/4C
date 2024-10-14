@@ -170,7 +170,7 @@ void elch_dyn(int restart)
         if (aledis->num_global_nodes() == 0)
         {
           // clone ALE discretization from fluid discretization
-          Core::FE::clone_discretization<ALE::UTILS::AleCloneStrategy>(
+          Core::FE::clone_discretization<ALE::Utils::AleCloneStrategy>(
               *fluiddis, *aledis, Global::Problem::instance()->cloning_material_map());
 
           aledis->fill_complete(true, true, false);

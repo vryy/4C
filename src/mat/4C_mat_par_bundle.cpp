@@ -22,7 +22,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-void Mat::PAR::Bundle::insert(int matid, Core::UTILS::LazyPtr<Core::Mat::PAR::Parameter> mat)
+void Mat::PAR::Bundle::insert(int matid, Core::Utils::LazyPtr<Core::Mat::PAR::Parameter> mat)
 {
   matmap_.emplace(matid, mat);
 }

@@ -429,7 +429,7 @@ Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Beam3Base::get_bounding
 {
   // Get the centerline dof values of the beam.
   std::vector<double> element_posdofvec;
-  BEAMINTERACTION::UTILS::extract_pos_dof_vec_values(
+  BEAMINTERACTION::Utils::extract_pos_dof_vec_values(
       discret, this, result_data_dofbased, element_posdofvec);
   Core::GeometricSearch::BoundingVolume bounding_volume;
 

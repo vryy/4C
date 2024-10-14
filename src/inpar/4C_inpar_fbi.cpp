@@ -35,7 +35,7 @@ void Inpar::FBI::set_valid_parameters(Teuchos::ParameterList& list)
           BeamToFluidCoupling::twoway, BeamToFluidCoupling::fluid, BeamToFluidCoupling::solid),
       &fbi);
 
-  Core::UTILS::int_parameter("STARTSTEP", 0,
+  Core::Utils::int_parameter("STARTSTEP", 0,
       "Time Step at which to begin the fluid beam coupling. Usually this will be the first step.",
       &fbi);
 
@@ -63,10 +63,10 @@ void Inpar::FBI::set_valid_parameters(Teuchos::ParameterList& list)
           BeamToFluidConstraintEnforcement::none, BeamToFluidConstraintEnforcement::penalty),
       &beam_to_fluid_meshtying);
 
-  Core::UTILS::double_parameter("PENALTY_PARAMETER", 0.0,
+  Core::Utils::double_parameter("PENALTY_PARAMETER", 0.0,
       "Penalty parameter for beam-to-Fluid volume meshtying", &beam_to_fluid_meshtying);
 
-  Core::UTILS::double_parameter("SEARCH_RADIUS", 1000,
+  Core::Utils::double_parameter("SEARCH_RADIUS", 1000,
       "Absolute Search radius for beam-to-fluid volume meshtying. Choose carefully to not blow up "
       "memory demand but to still find all interaction pairs!",
       &beam_to_fluid_meshtying);
@@ -91,35 +91,35 @@ void Inpar::FBI::set_valid_parameters(Teuchos::ParameterList& list)
       beam_to_fluid_meshtying.sublist("RUNTIME VTK OUTPUT", false, "");
 
   // Whether to write visualization output at all for beam to fluid meshtying.
-  Core::UTILS::bool_parameter("WRITE_OUTPUT", "No",
+  Core::Utils::bool_parameter("WRITE_OUTPUT", "No",
       "Enable / disable beam-to-fluid mesh tying output.", &beam_to_fluid_meshtying_output);
 
-  Core::UTILS::bool_parameter("NODAL_FORCES", "No",
+  Core::Utils::bool_parameter("NODAL_FORCES", "No",
       "Enable / disable output of the resulting nodal forces due to beam to Fluid interaction.",
       &beam_to_fluid_meshtying_output);
 
-  Core::UTILS::bool_parameter("SEGMENTATION", "No",
+  Core::Utils::bool_parameter("SEGMENTATION", "No",
       "Enable / disable output of segmentation points.", &beam_to_fluid_meshtying_output);
 
-  Core::UTILS::bool_parameter("INTEGRATION_POINTS", "No",
+  Core::Utils::bool_parameter("INTEGRATION_POINTS", "No",
       "Enable / disable output of used integration points. If the meshtying method has 'forces' at "
       "the integration point, they will also be output.",
       &beam_to_fluid_meshtying_output);
 
-  Core::UTILS::bool_parameter("CONSTRAINT_VIOLATION", "No",
+  Core::Utils::bool_parameter("CONSTRAINT_VIOLATION", "No",
       "Enable / disable output of the constraint violation into a output_name.penalty csv file.",
       &beam_to_fluid_meshtying_output);
 
-  Core::UTILS::bool_parameter("MORTAR_LAMBDA_DISCRET", "No",
+  Core::Utils::bool_parameter("MORTAR_LAMBDA_DISCRET", "No",
       "Enable / disable output of the discrete Lagrange multipliers at the node of the Lagrange "
       "multiplier shape functions.",
       &beam_to_fluid_meshtying_output);
 
-  Core::UTILS::bool_parameter("MORTAR_LAMBDA_CONTINUOUS", "No",
+  Core::Utils::bool_parameter("MORTAR_LAMBDA_CONTINUOUS", "No",
       "Enable / disable output of the continuous Lagrange multipliers function along the beam.",
       &beam_to_fluid_meshtying_output);
 
-  Core::UTILS::int_parameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
+  Core::Utils::int_parameter("MORTAR_LAMBDA_CONTINUOUS_SEGMENTS", 5,
       "Number of segments for continuous mortar output", &beam_to_fluid_meshtying_output);
 }
 

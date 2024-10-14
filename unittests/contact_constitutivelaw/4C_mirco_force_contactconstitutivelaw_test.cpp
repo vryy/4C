@@ -33,18 +33,18 @@ namespace
       Global::Problem& problem = (*Global::Problem::instance());
       problem.materials()->set_read_from_problem(problemid);
 
-      std::vector<Teuchos::RCP<Core::UTILS::FunctionVariable>> variables;
-      Teuchos::RCP<Core::UTILS::SymbolicFunctionOfSpaceTime> FFUNCT1 =
-          Teuchos::make_rcp<Core::UTILS::SymbolicFunctionOfSpaceTime>(
+      std::vector<Teuchos::RCP<Core::Utils::FunctionVariable>> variables;
+      Teuchos::RCP<Core::Utils::SymbolicFunctionOfSpaceTime> FFUNCT1 =
+          Teuchos::make_rcp<Core::Utils::SymbolicFunctionOfSpaceTime>(
               std::vector<std::string>{"0.7"}, variables);
-      Teuchos::RCP<Core::UTILS::SymbolicFunctionOfSpaceTime> FFUNCT2 =
-          Teuchos::make_rcp<Core::UTILS::SymbolicFunctionOfSpaceTime>(
+      Teuchos::RCP<Core::Utils::SymbolicFunctionOfSpaceTime> FFUNCT2 =
+          Teuchos::make_rcp<Core::Utils::SymbolicFunctionOfSpaceTime>(
               std::vector<std::string>{"20.0"}, variables);
 
-      Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> FUNCT1 = FFUNCT1;
-      Teuchos::RCP<Core::UTILS::FunctionOfSpaceTime> FUNCT2 = FFUNCT2;
+      Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> FUNCT1 = FFUNCT1;
+      Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> FUNCT2 = FFUNCT2;
 
-      Core::UTILS::FunctionManager functionmanager_;
+      Core::Utils::FunctionManager functionmanager_;
       functionmanager_.set_functions<std::any>({FUNCT1, FUNCT2});
       problem.set_function_manager(std::move(functionmanager_));
 
@@ -55,7 +55,7 @@ namespace
       mat_stvenant.add("DENS", 1.0);
 
       problem.materials()->insert(
-          1, Core::UTILS::LazyPtr<Core::Mat::PAR::Parameter>(
+          1, Core::Utils::LazyPtr<Core::Mat::PAR::Parameter>(
                  Mat::make_parameter(1, Core::Materials::MaterialType::m_stvenant, mat_stvenant)));
 
       // initialize container for material parameters

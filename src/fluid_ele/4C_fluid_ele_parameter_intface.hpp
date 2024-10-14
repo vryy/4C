@@ -36,7 +36,7 @@ namespace Discret
      public:
       //! Singleton access method
       static FluidEleParameterIntFace* instance(
-          Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
+          Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
       virtual ~FluidEleParameterIntFace() = default;
 

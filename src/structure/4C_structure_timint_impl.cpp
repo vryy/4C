@@ -838,7 +838,7 @@ void Solid::TimIntImpl::apply_force_stiff_external(const double time,  //!< eval
   Teuchos::ParameterList p;
   // other parameters needed by the elements
   p.set("total time", time);
-  p.set<const Core::UTILS::FunctionManager*>(
+  p.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // set vector values needed by elements

@@ -31,12 +31,12 @@ namespace Core::LinAlg
 
 namespace FSI
 {
-  namespace UTILS
+  namespace Utils
   {
     class MatrixRowTransform;
     class MatrixColTransform;
     class MatrixRowColTransform;
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FSI
 
 namespace CONTACT
@@ -221,11 +221,11 @@ namespace CONTACT
     Teuchos::RCP<Coupling::Adapter::Coupling> coupST_;
   };  // class LagrangeStrategyTsi
 
-  namespace UTILS
+  namespace Utils
   {
     //! @name little helpers
     void add_vector(Core::LinAlg::Vector<double>& src, Core::LinAlg::Vector<double>& dst);
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace CONTACT
 
 

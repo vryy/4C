@@ -1003,7 +1003,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
             // in some fancy turbulance stuff.
             functfac =
                 Global::Problem::instance()
-                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                     .evaluate((ele->nodes()[jnode])->x().data(), scatraparatimint_->time(), isd);
           }
           else

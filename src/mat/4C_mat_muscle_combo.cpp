@@ -51,7 +51,7 @@ namespace
   {
     Mat::MuscleCombo::ActivationEvaluatorVariant operator()(const int function_id) const
     {
-      return &Global::Problem::instance()->function_by_id<Core::UTILS::FunctionOfSpaceTime>(
+      return &Global::Problem::instance()->function_by_id<Core::Utils::FunctionOfSpaceTime>(
           function_id - 1);
     }
 
@@ -73,13 +73,13 @@ namespace
     double operator()(const ActivationMapType*& map) const
     {
       // use one-based element ids in the pattern file (corresponding to the ones in the dat-file)
-      return Mat::UTILS::Muscle::evaluate_time_space_dependent_active_stress_by_map(
+      return Mat::Utils::Muscle::evaluate_time_space_dependent_active_stress_by_map(
           Popt_, *map, t_tot_, eleGID_ + 1);
     }
 
-    double operator()(const Core::UTILS::FunctionOfSpaceTime*& function) const
+    double operator()(const Core::Utils::FunctionOfSpaceTime*& function) const
     {
-      return Mat::UTILS::Muscle::evaluate_time_space_dependent_active_stress_by_funct(
+      return Mat::Utils::Muscle::evaluate_time_space_dependent_active_stress_by_funct(
           Popt_, *function, t_tot_, element_center_reference_coordinates_);
     }
 
@@ -293,7 +293,7 @@ void Mat::MuscleCombo::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // stretch in fibre direction lambdaM
   // lambdaM = sqrt(C:M) = sqrt(tr(C^T M)), see Holzapfel2000, p.14
-  double lambdaM = Mat::UTILS::Muscle::fiber_stretch(C, M);
+  double lambdaM = Mat::Utils::Muscle::fiber_stretch(C, M);
 
   // computation of active nominal stress Pa, and derivative derivPa
   double intPa = 0.0;
@@ -424,11 +424,11 @@ void Mat::MuscleCombo::evaluate_active_nominal_stress(Teuchos::ParameterList& pa
 
   // compute the force-stretch dependency fxi, its integral in the boundaries lambdaMin to lambdaM,
   // and its derivative w.r.t. lambdaM
-  double intFxi = Mat::UTILS::Muscle::evaluate_integral_force_stretch_dependency_ehret(
+  double intFxi = Mat::Utils::Muscle::evaluate_integral_force_stretch_dependency_ehret(
       lambdaM, lambdaMin, lambdaOpt);
   double fxi =
-      Mat::UTILS::Muscle::evaluate_force_stretch_dependency_ehret(lambdaM, lambdaMin, lambdaOpt);
-  double dFxidLamdaM = Mat::UTILS::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
+      Mat::Utils::Muscle::evaluate_force_stretch_dependency_ehret(lambdaM, lambdaMin, lambdaOpt);
+  double dFxidLamdaM = Mat::Utils::Muscle::evaluate_derivative_force_stretch_dependency_ehret(
       lambdaM, lambdaMin, lambdaOpt);
 
   // compute active nominal stress Pa, its integral in the boundaries lambdaMin to lambdaM,

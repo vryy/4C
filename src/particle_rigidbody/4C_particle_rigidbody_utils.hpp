@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  *---------------------------------------------------------------------------*/
 namespace ParticleRigidBody
 {
-  namespace UTILS
+  namespace Utils
   {
     //! @name collection of quaternion operations
     //@{
@@ -138,7 +138,7 @@ namespace ParticleRigidBody
 
     //@}
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace ParticleRigidBody
 
 /*---------------------------------------------------------------------------*/

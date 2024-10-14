@@ -66,14 +66,14 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     volcoupl_ = Teuchos::make_rcp<Coupling::Adapter::MortarVolCoupl>();
 
     // build material strategy
-    Teuchos::RCP<UTILS::PoroMaterialStrategy> materialstrategy =
-        Teuchos::make_rcp<UTILS::PoroMaterialStrategy>();
+    Teuchos::RCP<Utils::PoroMaterialStrategy> materialstrategy =
+        Teuchos::make_rcp<Utils::PoroMaterialStrategy>();
 
     // setup projection matrices
     volcoupl_->init(Global::Problem::instance()->n_dim(), structdis, fluiddis, nullptr, nullptr,
         nullptr, nullptr, materialstrategy);
     Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-    Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+    Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
         "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
         binning_params);
 
@@ -277,14 +277,14 @@ void PoroElast::PoroBase::read_restart(const int step)
     // They need to be reset.
     if (matchinggrid_)
     {
-      PoroElast::UTILS::set_material_pointers_matching_grid(
+      PoroElast::Utils::set_material_pointers_matching_grid(
           *structure_field()->discretization(), *fluid_field()->discretization());
     }
     else
     {
       // build material strategy
-      Teuchos::RCP<UTILS::PoroMaterialStrategy> materialstrategy =
-          Teuchos::make_rcp<UTILS::PoroMaterialStrategy>();
+      Teuchos::RCP<Utils::PoroMaterialStrategy> materialstrategy =
+          Teuchos::make_rcp<Utils::PoroMaterialStrategy>();
 
       volcoupl_->assign_materials(structure_field()->discretization(),
           fluid_field()->discretization(), Global::Problem::instance()->volmortar_params(),
@@ -453,7 +453,7 @@ void PoroElast::PoroBase::setup_coupling()
     if (porosity_splitter_.is_null())
     {
       porosity_splitter_ =
-          PoroElast::UTILS::build_poro_splitter(*structure_field()->discretization());
+          PoroElast::Utils::build_poro_splitter(*structure_field()->discretization());
     }
   }
 

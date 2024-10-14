@@ -32,7 +32,7 @@ void Inpar::Rebalance::set_valid_parameters(Teuchos::ParameterList& list)
           Core::Rebalance::RebalanceType::monolithic),
       &meshpartitioning);
 
-  Core::UTILS::double_parameter("IMBALANCE_TOL", 1.1,
+  Core::Utils::double_parameter("IMBALANCE_TOL", 1.1,
       "Tolerance for relative imbalance of subdomain sizes for graph partitioning of unstructured "
       "meshes read from input files.",
       &meshpartitioning);

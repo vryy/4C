@@ -105,7 +105,7 @@ void ScaTra::TimIntCardiacMonodomain::collect_runtime_output_data()
   if (material_internal_state_np_ != Teuchos::null and nb_max_mat_int_state_vars_)
   {
     Teuchos::ParameterList params;
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::get_material_internal_state, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state",
         material_internal_state_np_);  // Probably do it once at the beginning
@@ -130,7 +130,7 @@ void ScaTra::TimIntCardiacMonodomain::collect_runtime_output_data()
   if (material_ionic_currents_np_ != Teuchos::null and nb_max_mat_ionic_currents_)
   {
     Teuchos::ParameterList params;
-    Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+    Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::get_material_ionic_currents, params);
     params.set<Teuchos::RCP<Epetra_MultiVector>>("material_ionic_currents",
         material_ionic_currents_np_);  // Probably do it once at the beginning
@@ -159,7 +159,7 @@ void ScaTra::TimIntCardiacMonodomain::element_material_time_update()
   // create the parameters for the discretization
   Teuchos::ParameterList p;
   // action for elements
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::time_update_material, p);
   // further required parameter
   p.set<double>("time-step length", dta_);

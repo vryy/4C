@@ -39,7 +39,7 @@ namespace Core::LinAlg
   class SparseOperator;
 }  // namespace Core::LinAlg
 
-namespace UTILS
+namespace Utils
 {
   /*! \brief Four-element Windkessel model without valves
    *
@@ -115,7 +115,7 @@ namespace UTILS
 
 
   };  // class
-}  // namespace UTILS
+}  // namespace Utils
 
 FOUR_C_NAMESPACE_CLOSE
 

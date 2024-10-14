@@ -22,14 +22,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
  *----------------------------------------------------------------------*/
-UTILS::Cardiovascular0DDofSet::Cardiovascular0DDofSet() : Core::DOFSets::DofSet() { return; }
+Utils::Cardiovascular0DDofSet::Cardiovascular0DDofSet() : Core::DOFSets::DofSet() { return; }
 
 
 
 /*----------------------------------------------------------------------*
  |  reset everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-void UTILS::Cardiovascular0DDofSet::reset()
+void Utils::Cardiovascular0DDofSet::reset()
 {
   dofrowmap_ = Teuchos::null;
   dofcolmap_ = Teuchos::null;
@@ -39,7 +39,7 @@ void UTILS::Cardiovascular0DDofSet::reset()
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
-int UTILS::Cardiovascular0DDofSet::assign_degrees_of_freedom(
+int Utils::Cardiovascular0DDofSet::assign_degrees_of_freedom(
     const Teuchos::RCP<Core::FE::Discretization> dis, const int ndofs, const int start,
     const Teuchos::RCP<FourC::Cardiovascular0D::ProperOrthogonalDecomposition> mor)
 {

@@ -114,18 +114,18 @@ namespace Adapter
 
     //! Return MapExtractor for Dirichlet boundary conditions
     virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor(
-        ALE::UTILS::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
+        ALE::Utils::MapExtractor::AleDBCSetType dbc_type  ///< type of dbc set
         ) = 0;
 
     //@}
 
     /// setup Dirichlet boundary condition map extractor
-    virtual void setup_dbc_map_ex(ALE::UTILS::MapExtractor::AleDBCSetType
+    virtual void setup_dbc_map_ex(ALE::Utils::MapExtractor::AleDBCSetType
                                       dbc_type,  //!< application-specific type of Dirichlet set
-        Teuchos::RCP<const ALE::UTILS::MapExtractor>
+        Teuchos::RCP<const ALE::Utils::MapExtractor>
             interface,  //!< interface for creation of additional, application-specific Dirichlet
                         //!< map extractors
-        Teuchos::RCP<const ALE::UTILS::XFluidFluidMapExtractor>
+        Teuchos::RCP<const ALE::Utils::XFluidFluidMapExtractor>
             xff_interface  //!< interface for creation of a Dirichlet map extractor, taylored to
                            //!< XFFSI
         ) = 0;
@@ -142,8 +142,8 @@ namespace Adapter
     virtual double step() const = 0;
 
     //! Evaluate time step
-    virtual void time_step(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
-                               ALE::UTILS::MapExtractor::dbc_set_std) = 0;
+    virtual void time_step(ALE::Utils::MapExtractor::AleDBCSetType dbc_type =
+                               ALE::Utils::MapExtractor::dbc_set_std) = 0;
 
     //! Get time step size \f$\Delta t_n\f$
     virtual double dt() const = 0;
@@ -174,7 +174,7 @@ namespace Adapter
     virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
                               disiterinc,  ///< step increment such that \f$ x_{n+1}^{k+1} =
                                            ///< x_{n}^{converged}+ stepinc \f$
-        ALE::UTILS::MapExtractor::AleDBCSetType
+        ALE::Utils::MapExtractor::AleDBCSetType
             dbc_type  ///< application-specific type of Dirichlet set
         ) = 0;
 
@@ -227,7 +227,7 @@ namespace Adapter
     //@}
 
     //! create result test for encapsulated structure algorithm
-    virtual Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() = 0;
+    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test() = 0;
 
     //! reset state vectors to zero
     virtual void reset() = 0;
@@ -238,7 +238,7 @@ namespace Adapter
      * object. Evaluate has to be called separately.
      */
     virtual void create_system_matrix(
-        Teuchos::RCP<const ALE::UTILS::MapExtractor> interface = Teuchos::null) = 0;
+        Teuchos::RCP<const ALE::Utils::MapExtractor> interface = Teuchos::null) = 0;
 
     //! update slave dofs for multifield simulations with ale mesh tying
     virtual void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& a) = 0;

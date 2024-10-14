@@ -923,7 +923,7 @@ void PARTICLEENGINE::ParticleEngine::init_binning_strategy()
 {
   // create and init binning strategy and create bins
   Teuchos::ParameterList binning_params = Global::Problem::instance()->binning_strategy_params();
-  Core::UTILS::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
+  Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
       "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
       binning_params);
   binstrategy_ = std::make_shared<Core::Binstrategy::BinningStrategy>(
@@ -1089,7 +1089,7 @@ void PARTICLEENGINE::ParticleEngine::setup_type_weights()
   std::map<ParticleType, double> typetodynloadbal;
 
   // read parameters relating particle types to values
-  PARTICLEALGORITHM::UTILS::read_params_types_related_to_values(
+  PARTICLEALGORITHM::Utils::read_params_types_related_to_values(
       params_, "PHASE_TO_DYNLOADBALFAC", typetodynloadbal);
 
   // insert weight of particle type

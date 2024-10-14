@@ -214,7 +214,7 @@ namespace Airway
     */
     void read_restart(int step, bool coupledTo3D = false);
 
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test();
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test();
 
 
     //! @name access methods for composite algorithms

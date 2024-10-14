@@ -30,7 +30,7 @@ namespace Core::LinAlg
 }
 namespace Discret
 {
-  namespace UTILS
+  namespace Utils
   {
     struct IntegrationPoints1D;
   }

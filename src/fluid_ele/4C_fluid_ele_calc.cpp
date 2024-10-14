@@ -1468,7 +1468,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force(Discret::ELEM
             // based element bodyforce vector for prescribed pressure gradients
             // in some fancy turbulance stuff.
             functionfac = Global::Problem::instance()
-                              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                               .evaluate((ele->nodes()[jnode])->x().data(), time, isd);
           }
           else
@@ -1496,7 +1496,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force(Discret::ELEM
             // based element bodyforce vector for prescribed pressure gradients
             // in some fancy turbulance stuff.
             functionfac = Global::Problem::instance()
-                              ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                              ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                               .evaluate((ele->nodes()[jnode])->x().data(), time, isd);
           }
           else
@@ -1546,7 +1546,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force(Discret::ELEM
         // time factor (negative time indicating error)
         if (time >= 0.0)
           functfac = Global::Problem::instance()
-                         ->function_by_id<Core::UTILS::FunctionOfTime>(functnum)
+                         ->function_by_id<Core::Utils::FunctionOfTime>(functnum)
                          .evaluate(time);
         else
           FOUR_C_THROW("Negative time in bodyforce calculation: time = %f", time);
@@ -1581,7 +1581,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correction_term(
   for (int i = 0; i < nen_; ++i)
   {
     ecorrectionterm(i) = Global::Problem::instance()
-                             ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                             ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                              .evaluate((ele->nodes()[i])->x().data(), 0.0, 0);
   }
 }
@@ -1843,7 +1843,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::set_advective_vel_oseen(
       const double* jx = ele->nodes()[jnode]->x().data();
       for (int idim = 0; idim < nsd_; ++idim)
         eadvvel_(idim, jnode) = Global::Problem::instance()
-                                    ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
+                                    ->function_by_id<Core::Utils::FunctionOfSpaceTime>(funcnum - 1)
                                     .evaluate(jx, time, idim);
     }
   }
@@ -6716,15 +6716,15 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
       {
         const double u_exact_x =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .evaluate(position, t, 0);
         const double u_exact_y =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .evaluate(position, t, 1);
         const double p_exact =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .evaluate(position, t, 2);
 
         u(0) = u_exact_x;
@@ -6733,11 +6733,11 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
 
         std::vector<double> uder_exact_x =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .evaluate_spatial_derivative(position, t, 0);
         std::vector<double> uder_exact_y =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .evaluate_spatial_derivative(position, t, 1);
 
         if (uder_exact_x.size())
@@ -6756,19 +6756,19 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
       {
         const double u_exact_x =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .evaluate(position, t, 0);
         const double u_exact_y =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .evaluate(position, t, 1);
         const double u_exact_z =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .evaluate(position, t, 2);
         const double p_exact =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .evaluate(position, t, 3);
 
         u(0) = u_exact_x;
@@ -6778,15 +6778,15 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
 
         std::vector<double> uder_exact_x =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .evaluate_spatial_derivative(position, t, 0);
         std::vector<double> uder_exact_y =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .evaluate_spatial_derivative(position, t, 1);
         std::vector<double> uder_exact_z =
             Global::Problem::instance()
-                ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(calcerrfunctno - 1)
+                ->function_by_id<Core::Utils::FunctionOfSpaceTime>(calcerrfunctno - 1)
                 .evaluate_spatial_derivative(position, t, 2);
 
         if (uder_exact_x.size())

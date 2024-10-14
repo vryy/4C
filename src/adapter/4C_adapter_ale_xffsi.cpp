@@ -24,24 +24,24 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::AleXFFsiWrapper::AleXFFsiWrapper(Teuchos::RCP<Ale> ale) : AleFsiWrapper(ale)
 {
   // create the FSI interface
-  xff_interface_ = Teuchos::make_rcp<ALE::UTILS::XFluidFluidMapExtractor>();
+  xff_interface_ = Teuchos::make_rcp<ALE::Utils::XFluidFluidMapExtractor>();
   xff_interface_->setup(*discretization());
-  setup_dbc_map_ex(ALE::UTILS::MapExtractor::dbc_set_x_ff, interface(), xff_interface_);
-  setup_dbc_map_ex(ALE::UTILS::MapExtractor::dbc_set_x_fsi, interface());
+  setup_dbc_map_ex(ALE::Utils::MapExtractor::dbc_set_x_ff, interface(), xff_interface_);
+  setup_dbc_map_ex(ALE::Utils::MapExtractor::dbc_set_x_fsi, interface());
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<const Core::LinAlg::MapExtractor> Adapter::AleXFFsiWrapper::get_dbc_map_extractor()
 {
-  return AleWrapper::get_dbc_map_extractor(ALE::UTILS::MapExtractor::dbc_set_x_ff);
+  return AleWrapper::get_dbc_map_extractor(ALE::Utils::MapExtractor::dbc_set_x_ff);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void Adapter::AleXFFsiWrapper::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc)
 {
-  AleFsiWrapper::evaluate(stepinc, ALE::UTILS::MapExtractor::dbc_set_x_ff);
+  AleFsiWrapper::evaluate(stepinc, ALE::Utils::MapExtractor::dbc_set_x_ff);
 
   // set dispnp_ of xfem dofs to dispn_
   xff_interface_->insert_xfluid_fluid_cond_vector(
@@ -52,7 +52,7 @@ void Adapter::AleXFFsiWrapper::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<
 /*----------------------------------------------------------------------------*/
 int Adapter::AleXFFsiWrapper::solve()
 {
-  AleFsiWrapper::evaluate(Teuchos::null, ALE::UTILS::MapExtractor::dbc_set_x_fsi);
+  AleFsiWrapper::evaluate(Teuchos::null, ALE::Utils::MapExtractor::dbc_set_x_fsi);
 
   int err = AleFsiWrapper::solve();
 

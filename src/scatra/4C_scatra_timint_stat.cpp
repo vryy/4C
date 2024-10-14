@@ -82,7 +82,7 @@ void ScaTra::TimIntStationary::set_element_time_parameter(bool forcedincremental
 {
   Teuchos::ParameterList eleparams;
 
-  Core::UTILS::add_enum_class_to_parameter_list<ScaTra::Action>(
+  Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
       "action", ScaTra::Action::set_time_parameter, eleparams);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", true);

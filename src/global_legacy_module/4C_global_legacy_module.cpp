@@ -343,13 +343,13 @@ namespace
       << MultiScale::MicroStaticParObjectType::instance().name() << " ";
   }
 
-  void attach_function_definitions(Core::UTILS::FunctionManager& function_manager)
+  void attach_function_definitions(Core::Utils::FunctionManager& function_manager)
   {
     add_valid_builtin_functions(function_manager);
     Solid::add_valid_structure_functions(function_manager);
     FLD::add_valid_fluid_functions(function_manager);
-    Discret::UTILS::add_valid_combust_functions(function_manager);
-    Discret::UTILS::add_valid_xfluid_functions(function_manager);
+    Discret::Utils::add_valid_combust_functions(function_manager);
+    Discret::Utils::add_valid_xfluid_functions(function_manager);
     add_valid_library_functions(function_manager);
     PoroMultiPhaseScaTra::add_valid_poro_functions(function_manager);
   }

@@ -83,7 +83,7 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   coupfa_fsi_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
   icoupfa_fsi_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
 
-  Teuchos::RCP<FPSI::Utils> FPSI_UTILS = FPSI::Utils::instance();
+  FPSI::InterfaceUtils* FPSI_UTILS = FPSI::InterfaceUtils::instance();
 
   Fluid_PoroFluid_InterfaceMap = FPSI_UTILS->get_fluid_poro_fluid_interface_map();
   PoroFluid_Fluid_InterfaceMap = FPSI_UTILS->get_poro_fluid_fluid_interface_map();
@@ -223,7 +223,7 @@ FPSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLi
   // Check if FSI-Interface exists and set flag
   // Will be used to jump over all sections, which are just for FSI condensation procedure required!
 
-  if (fluid_field()->interface()->Map(FLD::UTILS::MapExtractor::cond_fsi)->NumGlobalElements())
+  if (fluid_field()->interface()->Map(FLD::Utils::MapExtractor::cond_fsi)->NumGlobalElements())
   {
     FSI_Interface_exists_ = true;
     if (comm.MyPID() == 0)
@@ -1074,7 +1074,7 @@ void FPSI::Monolithic::build_convergence_norms()
   //  Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_fullfluid = Teuchos::rcp(new
   //  Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map())); Teuchos::RCP<const
   //  Core::LinAlg::Vector<double>> rhs_fsi = Teuchos::rcp(new
-  //  Core::LinAlg::Vector<double>(*fluid_field()->Interface()->Map(FLD::UTILS::MapExtractor::cond_fsi),true));
+  //  Core::LinAlg::Vector<double>(*fluid_field()->Interface()->Map(FLD::Utils::MapExtractor::cond_fsi),true));
   //  rhs_fullfluid = Core::LinAlg::MergeVector(rhs_fluid,rhs_fsi,false);
 
   rhs_fluidvelocity = fluid_field()->extract_velocity_part(rhs_fluid);
@@ -1137,7 +1137,7 @@ void FPSI::Monolithic::build_convergence_norms()
   //  Teuchos::RCP<const Core::LinAlg::Vector<double>> iterincfullfluid = Teuchos::rcp(new
   //  Core::LinAlg::Vector<double>(*fluid_field()->dof_row_map())); Teuchos::RCP<const
   //  Core::LinAlg::Vector<double>> iterincfsi = Teuchos::rcp(new
-  //  Core::LinAlg::Vector<double>(*fluid_field()->Interface()->Map(FLD::UTILS::MapExtractor::cond_fsi),true));
+  //  Core::LinAlg::Vector<double>(*fluid_field()->Interface()->Map(FLD::Utils::MapExtractor::cond_fsi),true));
   //  iterincfullfluid = Core::LinAlg::MergeVector(iterincfluid,iterincfsi,false);
 
   iterincfluidvelocity = fluid_field()->extract_velocity_part(iterincfluid);

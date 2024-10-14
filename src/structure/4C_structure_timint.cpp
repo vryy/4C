@@ -242,7 +242,7 @@ void Solid::TimInt::setup()
 
   // initialize 0D cardiovascular manager
   cardvasc0dman_ =
-      Teuchos::make_rcp<FourC::UTILS::Cardiovascular0DManager>(discret_, (*dis_)(0), sdynparams_,
+      Teuchos::make_rcp<FourC::Utils::Cardiovascular0DManager>(discret_, (*dis_)(0), sdynparams_,
           Global::Problem::instance()->cardiovascular0_d_structural_params(), *solver_, mor_);
 
   // initialize spring dashpot manager
@@ -301,7 +301,7 @@ void Solid::TimInt::setup()
 
 
   // Check for porosity dofs within the structure and build a map extractor if necessary
-  porositysplitter_ = PoroElast::UTILS::build_poro_splitter(*discret_);
+  porositysplitter_ = PoroElast::Utils::build_poro_splitter(*discret_);
 
 
   // we have successfully set up this class
@@ -346,7 +346,7 @@ void Solid::TimInt::create_fields()
   {
     Teuchos::ParameterList p;
     p.set("total time", timen_);
-    p.set<const Core::UTILS::FunctionManager*>(
+    p.set<const Core::Utils::FunctionManager*>(
         "function_manager", &Global::Problem::instance()->function_manager());
 
     // if this is a NURBS discretization, get the solver parameters for solving the least squares
@@ -1184,7 +1184,7 @@ void Solid::TimInt::apply_dirichlet_bc(const double time,
   // needed parameters
   Teuchos::ParameterList p;
   p.set("total time", time);  // target time
-  p.set<const Core::UTILS::FunctionManager*>(
+  p.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // if this is a NURBS discretization, get the solver parameters for solving the least squares
@@ -2400,7 +2400,7 @@ void Solid::TimInt::determine_stress_strain()
 
     Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix = Teuchos::null;
     Teuchos::RCP<Core::LinAlg::Vector<double>> system_vector = Teuchos::null;
-    Core::FE::UTILS::evaluate(
+    Core::FE::Utils::evaluate(
         *discret_, p, system_matrix, system_vector, discret_->element_row_map());
     discret_->clear_state();
   }
@@ -2898,7 +2898,7 @@ void Solid::TimInt::apply_force_external(const double time,
   Teuchos::ParameterList p;
   // other parameters needed by the elements
   p.set("total time", time);
-  p.set<const Core::UTILS::FunctionManager*>(
+  p.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // set vector values needed by elements
@@ -3304,7 +3304,7 @@ const Epetra_Map& Solid::TimInt::domain_map() const { return mass_->domain_map()
 
 /*----------------------------------------------------------------------*/
 /* Creates the field test                                               */
-Teuchos::RCP<Core::UTILS::ResultTest> Solid::TimInt::create_field_test()
+Teuchos::RCP<Core::Utils::ResultTest> Solid::TimInt::create_field_test()
 {
   return Teuchos::make_rcp<StruResultTest>(*this);
 }

@@ -34,7 +34,7 @@ namespace FLD
   /*!
     ResultTest class for XFluid
    */
-  class XFluidResultTest : public Core::UTILS::ResultTest
+  class XFluidResultTest : public Core::Utils::ResultTest
   {
    public:
     //! ctor for standard XFEM problems

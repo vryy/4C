@@ -707,13 +707,13 @@ namespace Core::FE
   template <int nsd>
   Core::FE::PolynomialSpaceCache<nsd> &Core::FE::PolynomialSpaceCache<nsd>::instance()
   {
-    static Core::UTILS::SingletonOwner<Core::FE::PolynomialSpaceCache<nsd>> owner(
+    static Core::Utils::SingletonOwner<Core::FE::PolynomialSpaceCache<nsd>> owner(
         []() {
           return std::unique_ptr<Core::FE::PolynomialSpaceCache<nsd>>(
               new PolynomialSpaceCache<nsd>);
         });
 
-    return *owner.instance(Core::UTILS::SingletonAction::create);
+    return *owner.instance(Core::Utils::SingletonAction::create);
   }
 
   template <int nsd>

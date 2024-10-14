@@ -624,7 +624,7 @@ int Discret::ELEMENTS::SoHex27::evaluate_neumann(Teuchos::ParameterList& params,
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
             (functnum > 0) ? Global::Problem::instance()
-                                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                                  .evaluate(xrefegp.data(), time, dim)
                            : 1.0;
         double dim_fac = (*val)[dim] * fac * functfac;
@@ -1238,7 +1238,7 @@ void Discret::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
-    UTILS::get_temperature_for_structural_material<Core::FE::CellType::hex27>(
+    Utils::get_temperature_for_structural_material<Core::FE::CellType::hex27>(
         shapefcts[gp], params);
     solid_material()->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc

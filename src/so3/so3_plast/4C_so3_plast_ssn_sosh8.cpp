@@ -324,7 +324,7 @@ Discret::ELEMENTS::SoSh8Plast::SoSh8Plast(int id, int owner)
       Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
-    Discret::ELEMENTS::UTILS::throw_error_fd_material_tangent(
+    Discret::ELEMENTS::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
@@ -515,7 +515,7 @@ bool Discret::ELEMENTS::SoSh8Plast::read_element(const std::string& eletype,
   dDp_inc_.resize(numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true));
 
   Teuchos::ParameterList plparams = Global::Problem::instance()->semi_smooth_plast_params();
-  Core::UTILS::add_enum_class_to_parameter_list(
+  Core::Utils::add_enum_class_to_parameter_list(
       "Core::ProblemType", Global::Problem::instance()->get_problem_type(), plparams);
   read_parameter_list(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
 

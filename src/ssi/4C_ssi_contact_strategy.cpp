@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  *-------------------------------------------------------------------------*/
 SSI::ContactStrategyBase::ContactStrategyBase(
     Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps)
+    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps)
     : contact_strategy_nitsche_(std::move(contact_nitsche_strategy)), ssi_maps_(std::move(ssi_maps))
 {
 }
@@ -29,7 +29,7 @@ SSI::ContactStrategyBase::ContactStrategyBase(
  *-------------------------------------------------------------------------*/
 SSI::ContactStrategySparse::ContactStrategySparse(
     Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps)
+    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps)
     : ContactStrategyBase(contact_nitsche_strategy, ssi_maps)
 {
 }
@@ -38,7 +38,7 @@ SSI::ContactStrategySparse::ContactStrategySparse(
  *-------------------------------------------------------------------------*/
 SSI::ContactStrategyBlock::ContactStrategyBlock(
     Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps)
+    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps)
     : ContactStrategyBase(contact_nitsche_strategy, ssi_maps)
 {
 }
@@ -158,7 +158,7 @@ void SSI::ContactStrategyBlock::apply_contact_to_structure_scatra(
  *-------------------------------------------------------------------------*/
 Teuchos::RCP<SSI::ContactStrategyBase> SSI::build_contact_strategy(
     Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
-    Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, Core::LinAlg::MatrixType matrixtype_scatra)
+    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps, Core::LinAlg::MatrixType matrixtype_scatra)
 {
   Teuchos::RCP<SSI::ContactStrategyBase> contact_strategy(Teuchos::null);
 

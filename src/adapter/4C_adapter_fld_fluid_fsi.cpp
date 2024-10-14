@@ -44,7 +44,7 @@ Adapter::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Di
       params_(params),
       output_(output),
       dirichletcond_(dirichletcond),
-      interface_(Teuchos::make_rcp<FLD::UTILS::MapExtractor>()),
+      interface_(Teuchos::make_rcp<FLD::Utils::MapExtractor>()),
       meshmap_(Teuchos::make_rcp<Core::LinAlg::MapExtractor>()),
       locerrvelnp_(Teuchos::null),
       auxintegrator_(Inpar::FSI::timada_fld_none),
@@ -679,7 +679,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidFSI::calculate_wall_she
   double dt = fluidimpl_->dt();
 
   // Get WSSManager
-  Teuchos::RCP<FLD::UTILS::StressManager> stressmanager = fluidimpl_->stress_manager();
+  Teuchos::RCP<FLD::Utils::StressManager> stressmanager = fluidimpl_->stress_manager();
 
   // Since the WSS Manager cannot be initialized in the FluidImplicitTimeInt::init()
   // it is not so sure if the WSSManager is jet initialized. So let's be safe here..

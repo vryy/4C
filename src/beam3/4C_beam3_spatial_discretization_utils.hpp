@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::UTILS::Beam
+namespace Discret::Utils::Beam
 {
   /** \brief evaluate shape functions at position \xi in element parameter space [-1,1]
    */
@@ -372,7 +372,7 @@ namespace Discret::UTILS::Beam
 
     return {reflength - int_length, 1 - deriv_length};
   }
-}  // namespace Discret::UTILS::Beam
+}  // namespace Discret::Utils::Beam
 
 FOUR_C_NAMESPACE_CLOSE
 

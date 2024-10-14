@@ -85,7 +85,7 @@ namespace XFEM
 
 namespace FLD
 {
-  namespace UTILS
+  namespace Utils
   {
     class FluidInfNormScaling;
   }
@@ -322,7 +322,7 @@ namespace FLD
     }
 
     /// create field test
-    Teuchos::RCP<Core::UTILS::ResultTest> create_field_test() override;
+    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
 
     /// read restart data for fluid discretization
     void read_restart(int step) override;
@@ -678,7 +678,7 @@ namespace FLD
 
     //-------------------------------------------------------------------------------
     //! possible inf-norm scaling of linear system / fluid matrix
-    Teuchos::RCP<FLD::UTILS::FluidInfNormScaling> fluid_infnormscaling_;
+    Teuchos::RCP<FLD::Utils::FluidInfNormScaling> fluid_infnormscaling_;
 
     //--------------- discretization and general algorithm parameters----------------
 

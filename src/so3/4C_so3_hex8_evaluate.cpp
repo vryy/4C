@@ -641,9 +641,9 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current  coord. of element
       Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;
 
-      UTILS::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
-      UTILS::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(mydisp, xdisp);
-      UTILS::evaluate_current_nodal_coordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
+      Utils::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
+      Utils::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(mydisp, xdisp);
+      Utils::evaluate_current_nodal_coordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
 
       // safety check before the actual evaluation starts
       const double min_detJ_curr = soh8_get_min_det_jac_at_corners(xcurr);
@@ -885,9 +885,9 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>
           xdisp;  // current displacements of element nodes
       Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr;  // current coord. of element
-      UTILS::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
-      UTILS::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(mydispnp, xdisp);
-      UTILS::evaluate_current_nodal_coordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
+      Utils::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
+      Utils::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(mydispnp, xdisp);
+      Utils::evaluate_current_nodal_coordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
 
       // shape functions and derivatives w.r.t. r,s,t
       Core::LinAlg::Matrix<NUMNOD_SOH8, 1> shapefcts;
@@ -1253,7 +1253,7 @@ int Discret::ELEMENTS::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
 
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
-  UTILS::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
+  Utils::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
   /* ================================================= Loop over Gauss Points */
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
@@ -1290,7 +1290,7 @@ int Discret::ELEMENTS::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
         const int functnum = (funct) ? (*funct)[dim] : -1;
         const double functfac =
             (functnum > 0) ? Global::Problem::instance()
-                                 ->function_by_id<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
+                                 ->function_by_id<Core::Utils::FunctionOfSpaceTime>(functnum - 1)
                                  .evaluate(xrefegp.data(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
@@ -1566,9 +1566,9 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(false);  // current  coord. of element
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp(false);
 
-  UTILS::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
-  UTILS::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
-  UTILS::evaluate_current_nodal_coordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
+  Utils::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
+  Utils::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
+  Utils::evaluate_current_nodal_coordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
 
   // safety check before the actual evaluation starts
   const double min_detJ_curr = soh8_get_min_det_jac_at_corners(xcurr);
@@ -2073,7 +2073,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
 
-    UTILS::get_temperature_for_structural_material<Core::FE::CellType::hex8>(shapefcts[gp], params);
+    Utils::get_temperature_for_structural_material<Core::FE::CellType::hex8>(shapefcts[gp], params);
 
     if (material()->material_type() == Core::Materials::m_constraintmixture ||
         material()->material_type() == Core::Materials::m_growthremodel_elasthyper ||
@@ -2656,7 +2656,7 @@ void Discret::ELEMENTS::SoHex8::def_gradient(const std::vector<double>& disp,
 
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp;  // current  coord. of element
-  UTILS::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
+  Utils::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
 
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
@@ -2692,7 +2692,7 @@ void Discret::ELEMENTS::SoHex8::update_jacobian_mapping(
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
 
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp(false);
-  UTILS::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
+  Utils::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
 
   Core::LinAlg::Matrix<3, 3> invJhist;
   Core::LinAlg::Matrix<3, 3> invJ;
@@ -2740,9 +2740,9 @@ void Discret::ELEMENTS::SoHex8::update_element(
     Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp(false);
     Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(false);
 
-    UTILS::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
-    UTILS::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
-    UTILS::evaluate_current_nodal_coordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
+    Utils::evaluate_nodal_coordinates<Core::FE::CellType::hex8, 3>(nodes(), xrefe);
+    Utils::evaluate_nodal_displacements<Core::FE::CellType::hex8, 3>(disp, xdisp);
+    Utils::evaluate_current_nodal_coordinates<Core::FE::CellType::hex8, 3>(xrefe, xdisp, xcurr);
 
     /* =========================================================================*/
     /* ================================================= Loop over Gauss Points */
@@ -2770,7 +2770,7 @@ void Discret::ELEMENTS::SoHex8::update_element(
       soh8_derivs(derivs, gp);
 
       // Compute deformation gradient
-      UTILS::compute_deformation_gradient<Core::FE::CellType::hex8>(
+      Utils::compute_deformation_gradient<Core::FE::CellType::hex8>(
           defgrd, kintype_, xdisp, xcurr, invJ_[gp], derivs, pstype_, *prestress_, gp);
 
       // call material update if material = m_growthremodel_elasthyper (calculate and update

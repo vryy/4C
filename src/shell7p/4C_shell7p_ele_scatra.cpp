@@ -166,7 +166,7 @@ void Discret::ELEMENTS::Shell7pScatraType::setup_element_definition(
 
 int Discret::ELEMENTS::Shell7pScatraType::initialize(Core::FE::Discretization& dis)
 {
-  Solid::UTILS::Shell::Director::setup_shell_element_directors(*this, dis);
+  Solid::Utils::Shell::Director::setup_shell_element_directors(*this, dis);
 
   return 0;
 }
@@ -190,13 +190,13 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Shell7pScatraType::compute_nu
   for (int dim = 0; dim < Shell::Internal::num_dim; ++dim)
     director(dim, 0) = nodal_directors(j, dim) * half_thickness;
 
-  return Solid::UTILS::Shell::compute_shell_null_space(node, x0, director);
+  return Solid::Utils::Shell::compute_shell_null_space(node, x0, director);
 }
 
 void Discret::ELEMENTS::Shell7pScatraType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  Solid::UTILS::Shell::nodal_block_information_shell(dwele, numdf, dimns, nv, np);
+  Solid::Utils::Shell::nodal_block_information_shell(dwele, numdf, dimns, nv, np);
 }
 
 
@@ -377,7 +377,7 @@ bool Discret::ELEMENTS::Shell7pScatra::read_element(const std::string& eletype,
   if (container.get_if<std::string>("EAS") != nullptr)
   {
     eletech_.insert(Inpar::Solid::EleTech::eas);
-    Solid::UTILS::Shell::read_element::read_and_set_locking_types(
+    Solid::Utils::Shell::read_element::read_and_set_locking_types(
         distype_, container, locking_types);
   }
 
@@ -390,7 +390,7 @@ bool Discret::ELEMENTS::Shell7pScatra::read_element(const std::string& eletype,
   {
     if (container.get<bool>("ANS"))
     {
-      shell_data.num_ans = Solid::UTILS::Shell::read_element::read_and_set_num_ans(distype_);
+      shell_data.num_ans = Solid::Utils::Shell::read_element::read_and_set_num_ans(distype_);
     }
   }
 
@@ -399,7 +399,7 @@ bool Discret::ELEMENTS::Shell7pScatra::read_element(const std::string& eletype,
 
   // read and set number of material model
   set_material(
-      0, Mat::factory(Solid::UTILS::Shell::read_element::read_and_set_element_material(container)));
+      0, Mat::factory(Solid::Utils::Shell::read_element::read_and_set_element_material(container)));
 
   // setup shell calculation interface
   shell_interface_->setup(*this, *solid_material(), container, locking_types, shell_data);

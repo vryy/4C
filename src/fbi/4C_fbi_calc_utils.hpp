@@ -39,7 +39,7 @@ namespace Core::LinAlg
 
 namespace FBI
 {
-  namespace UTILS
+  namespace Utils
   {
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
@@ -87,7 +87,7 @@ namespace FBI
         std::vector<Core::LinAlg::SerialDenseVector>* eleforce,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>* elestiff);
 
-  }  // namespace UTILS
+  }  // namespace Utils
 }  // namespace FBI
 
 
