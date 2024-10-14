@@ -252,7 +252,7 @@ void Solid::ModelEvaluator::SpringDashpot::write_restart(
   // write vector to output for restart
   iowriter.write_vector("springoffsetprestr", springoffsetprestr);
   // write vector to output for restart
-  iowriter.write_multi_vector("springoffsetprestr_old", springoffsetprestr_old);
+  iowriter.write_multi_vector("springoffsetprestr_old", *springoffsetprestr_old);
 }
 
 /*----------------------------------------------------------------------*
@@ -315,16 +315,14 @@ void Solid::ModelEvaluator::SpringDashpot::output_step_state(
   // row maps for export
   Teuchos::RCP<Core::LinAlg::Vector<double>> gap =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret().node_row_map()), true);
-  Teuchos::RCP<Epetra_MultiVector> normals =
-      Teuchos::make_rcp<Epetra_MultiVector>(*(discret().node_row_map()), 3, true);
-  Teuchos::RCP<Epetra_MultiVector> springstress =
-      Teuchos::make_rcp<Epetra_MultiVector>(*(discret().node_row_map()), 3, true);
+  Epetra_MultiVector normals(*(discret().node_row_map()), 3, true);
+  Epetra_MultiVector springstress(*(discret().node_row_map()), 3, true);
 
   // collect outputs from all spring dashpot conditions
   bool found_cursurfnormal = false;
   for (const auto& spring : springs_)
   {
-    spring->output_gap_normal(*gap, *normals, *springstress);
+    spring->output_gap_normal(*gap, normals, springstress);
 
     // get spring type from current condition
     const CONSTRAINTS::SpringDashpot::SpringType stype = spring->get_spring_type();

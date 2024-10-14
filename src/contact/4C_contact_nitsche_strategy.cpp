@@ -311,9 +311,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::setup_matrix_
   {
     case CONTACT::MatBlockType::displ_displ:
       return Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-          *Teuchos::rcpFromRef<const Epetra_Map>(
-              *Global::Problem::instance()->get_dis("structure")->dof_row_map()),
-          100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+          *Global::Problem::instance()->get_dis("structure")->dof_row_map(), 100, true, false,
+          Core::LinAlg::SparseMatrix::FE_MATRIX);
     default:
       FOUR_C_THROW("you should not be here");
       break;

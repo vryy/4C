@@ -122,10 +122,10 @@ namespace Core::FE
    *  \date 08/08
    */
   void extract_my_node_based_values(
-      const Core::Elements::Element* ele,              ///< pointer to current element
-      Core::LinAlg::SerialDenseVector& local,          ///< local vector on element-level
-      const Teuchos::RCP<Epetra_MultiVector>& global,  ///< global vector
-      const int nsd                                    ///< number of space dimensions
+      const Core::Elements::Element* ele,      ///< pointer to current element
+      Core::LinAlg::SerialDenseVector& local,  ///< local vector on element-level
+      Epetra_MultiVector& global,              ///< global vector
+      const int nsd                            ///< number of space dimensions
   );
 
   /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
@@ -134,7 +134,7 @@ namespace Core::FE
    */
   void extract_my_node_based_values(const Core::Nodes::Node* node,  ///< pointer to current element
       Core::LinAlg::SerialDenseVector& local,                       ///< local vector on node-level
-      const Teuchos::RCP<Epetra_MultiVector>& global,               ///< global vector
+      Epetra_MultiVector& global,                                   ///< global vector
       const int nsd                                                 ///< number of space dimensions
   );
 
@@ -146,15 +146,14 @@ namespace Core::FE
    */
   template <class M>
   void extract_my_node_based_values(
-      const Core::Elements::Element* ele,              ///< pointer to current element
-      M& localmatrix,                                  ///< local matrix on element-level
-      const Teuchos::RCP<Epetra_MultiVector>& global,  ///< global vector
-      const int nsd                                    ///< number of space dimensions
+      const Core::Elements::Element* ele,  ///< pointer to current element
+      M& localmatrix,                      ///< local matrix on element-level
+      Epetra_MultiVector& global,          ///< global vector
+      const int nsd                        ///< number of space dimensions
   )
   {
-    if (global == Teuchos::null) FOUR_C_THROW("received a TEUCHOS::null pointer");
-    if (nsd > global->NumVectors())
-      FOUR_C_THROW("Requested %d of %d available columns", nsd, global->NumVectors());
+    if (nsd > global.NumVectors())
+      FOUR_C_THROW("Requested %d of %d available columns", nsd, global.NumVectors());
     const int iel = ele->num_node();  // number of nodes
     if (((int)localmatrix.num_cols()) != iel)
       FOUR_C_THROW("local matrix has wrong number of columns");
@@ -163,15 +162,15 @@ namespace Core::FE
     for (int i = 0; i < nsd; i++)
     {
       // access actual component column of multi-vector
-      double* globalcolumn = (*global)[i];
+      double* globalcolumn = (global)[i];
       // loop over the element nodes
       for (int j = 0; j < iel; j++)
       {
         const int nodegid = (ele->nodes()[j])->id();
-        const int lid = global->Map().LID(nodegid);
+        const int lid = global.Map().LID(nodegid);
         if (lid < 0)
           FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::Vector<double>",
-              (*global).Comm().MyPID(), nodegid);
+              (global).Comm().MyPID(), nodegid);
         localmatrix(i, j) = globalcolumn[lid];
       }
     }

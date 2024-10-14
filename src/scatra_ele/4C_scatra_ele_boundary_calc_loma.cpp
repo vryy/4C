@@ -152,7 +152,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_t
   Teuchos::RCP<Epetra_MultiVector>* f = params.getPtr<Teuchos::RCP<Epetra_MultiVector>>(name);
   // check: field has been set and is not of type Teuchos::null
   if (f != nullptr)
-    Core::FE::extract_my_node_based_values(peleptr, eflux, *f, 3);
+    Core::FE::extract_my_node_based_values(peleptr, eflux, **f, 3);
   else
     FOUR_C_THROW("MultiVector %s has not been found!", name.c_str());
 

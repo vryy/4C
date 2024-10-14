@@ -89,8 +89,8 @@ namespace POROFLUIDMULTIPHASE
      *                     artery element with a vector of close 3D elements
      */
     std::map<int, std::set<int>> extended_ghosting_artery_discretization(
-        Teuchos::RCP<Core::FE::Discretization> contdis,
-        Teuchos::RCP<Core::FE::Discretization> artdis, const bool evaluate_on_lateral_surface,
+        Core::FE::Discretization& contdis, Teuchos::RCP<Core::FE::Discretization> artdis,
+        const bool evaluate_on_lateral_surface,
         const Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod couplingmethod);
 
     /**

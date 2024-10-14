@@ -118,7 +118,7 @@ namespace BEAMINTERACTION
    * \brief Factory function for beam-to-solid contact mortar pairs.
    */
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> beam_to_solid_surface_contact_pair_mortar_factory(
-      const Teuchos::RCP<const BeamToSolidSurfaceContactParams> beam_to_surface_contact_params,
+      const BeamToSolidSurfaceContactParams& beam_to_surface_contact_params,
       const Core::FE::CellType& surface_type, const bool beam_is_hermite);
 
 }  // namespace BEAMINTERACTION

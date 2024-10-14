@@ -52,11 +52,6 @@ namespace Core::IO
         VisualizationParameters parameters);
 
     /**
-     * @brief Destructor
-     */
-    virtual ~DiscretizationVisualizationWriterNodes() = default;
-
-    /**
      * @brief Append result vector with num_dof values per node to output data
      *
      * The results are expected to be stored in the following form (for result_num_dofs_per_node =

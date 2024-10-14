@@ -51,7 +51,7 @@ void ParticleRigidBody::RigidBodyAffiliationPairs::write_restart() const
   // pack all affiliation pairs
   if (not affiliationdata_.empty()) pack_all_affiliation_pairs(*buffer);
 
-  binwriter->write_char_data("RigidBodyAffiliationData", buffer);
+  binwriter->write_char_data("RigidBodyAffiliationData", *buffer);
 }
 
 void ParticleRigidBody::RigidBodyAffiliationPairs::read_restart(

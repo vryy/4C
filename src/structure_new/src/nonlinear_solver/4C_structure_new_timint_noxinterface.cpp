@@ -103,7 +103,7 @@ bool Solid::TimeInt::NoxInterface::computeF(
 
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
-  dbc_ptr_->apply_dirichlet_to_rhs(F_view.get_non_owning_rcp_ref());
+  dbc_ptr_->apply_dirichlet_to_rhs(*F_view.get_non_owning_rcp_ref());
 
   return true;
 }
@@ -143,7 +143,7 @@ bool Solid::TimeInt::NoxInterface::compute_f_and_jacobian(
 
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
-  dbc_ptr_->apply_dirichlet_to_rhs(rhs_view.get_non_owning_rcp_ref());
+  dbc_ptr_->apply_dirichlet_to_rhs(*rhs_view.get_non_owning_rcp_ref());
 
   /* We do not consider the jacobian DBC at this point. The Dirichlet conditions
    * are applied inside the NOX::Nln::LinearSystem::applyJacobianInverse()
@@ -174,7 +174,7 @@ bool Solid::TimeInt::NoxInterface::compute_correction_system(
 
   /* Apply the DBC on the right hand side, since we need the Dirichlet free
    * right hand side inside NOX for the convergence check, etc.               */
-  dbc_ptr_->apply_dirichlet_to_rhs(rhs_view.get_non_owning_rcp_ref());
+  dbc_ptr_->apply_dirichlet_to_rhs(*rhs_view.get_non_owning_rcp_ref());
 
   return true;
 }

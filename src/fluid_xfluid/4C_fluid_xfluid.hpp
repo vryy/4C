@@ -402,8 +402,8 @@ namespace FLD
 
     /// evaluate and assemble face-oriented fluid and ghost penalty stabilizations
     void assemble_mat_and_rhs_face_terms(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& sysmat,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual_col,
-        const Teuchos::RCP<Cut::CutWizard>& wizard, bool is_ghost_penalty_reconstruct = false);
+        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual_col, Cut::CutWizard& wizard,
+        bool is_ghost_penalty_reconstruct = false);
 
     /// evaluate gradient penalty terms to reconstruct ghost values
     void assemble_mat_and_rhs_gradient_penalty(Core::LinAlg::MapExtractor& ghost_penaly_dbcmaps,

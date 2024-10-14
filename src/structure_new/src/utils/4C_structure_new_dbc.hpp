@@ -76,18 +76,18 @@ namespace Solid
     /*! \brief Apply the DBC to system of equations
      *
      *  \note Stay in the local coordinate system and do not rotate back (if locSys is defined).*/
-    void apply_dirichlet_to_local_system(Teuchos::RCP<Core::LinAlg::SparseOperator> A,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& b) const;
+    void apply_dirichlet_to_local_system(
+        Core::LinAlg::SparseOperator& A, Core::LinAlg::Vector<double>& b) const;
 
     /*! \brief Apply the DBC to a vector
      *
      *  \note Stay in the global coordinate system (Rotation: global-->local-->global).*/
-    void apply_dirichlet_to_vector(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec) const;
+    void apply_dirichlet_to_vector(Core::LinAlg::Vector<double>& vec) const;
 
     /*! \brief Apply the DBC to the rhs vector and calculate and save the reaction forces
      *
      *  \note Stay in the global coordinate system (Rotation: global-->local-->global).*/
-    void apply_dirichlet_to_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>>& b) const;
+    void apply_dirichlet_to_rhs(Core::LinAlg::Vector<double>& b) const;
 
     //! Update the locsys manager
     void update_loc_sys_manager();
@@ -211,7 +211,7 @@ namespace Solid
 
     /*! Apply the DBC to the right hand side in the local coordinate system and
      *  do not rotate it back to the global coordinate system. */
-    void apply_dirichlet_to_local_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>>& b) const;
+    void apply_dirichlet_to_local_rhs(Core::LinAlg::Vector<double>& b) const;
 
     /*! \brief Apply the DBC to the Jacobian in the local coordinate system
      *

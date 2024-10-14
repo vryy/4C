@@ -92,9 +92,9 @@ void EXODUS::validate_mesh_element_jacobians(Mesh& mymesh)
     Teuchos::RCP<ElementBlock> eb = i_eb->second;
     const Core::FE::CellType distype = pre_shape_to_drt(eb->get_shape());
     // check and rewind if necessary
-    validate_element_jacobian(mymesh, distype, eb);
+    validate_element_jacobian(mymesh, distype, *eb);
     // full check at all gausspoints
-    int invalid_dets = validate_element_jacobian_fullgp(mymesh, distype, eb);
+    int invalid_dets = validate_element_jacobian_fullgp(mymesh, distype, *eb);
     if (invalid_dets > 0)
       std::cout << invalid_dets << " negative Jacobian determinants in EB of shape "
                 << shape_to_string(eb->get_shape()) << std::endl;
@@ -105,7 +105,7 @@ void EXODUS::validate_mesh_element_jacobians(Mesh& mymesh)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::validate_element_jacobian(
-    Mesh& mymesh, const Core::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
+    Mesh& mymesh, const Core::FE::CellType distype, ElementBlock& eb)
 {
   using namespace FourC;
 
@@ -147,13 +147,13 @@ void EXODUS::validate_element_jacobian(
       break;
   }
   const Core::FE::IntegrationPoints3D intpoints(integrationrule_1point);
-  const int iel = eb->get_ele_nodes(0).size();
+  const int iel = eb.get_ele_nodes(0).size();
   // shape functions derivatives
   const int NSD = 3;
   Core::LinAlg::SerialDenseMatrix deriv(NSD, iel);
 
   // go through all elements
-  Teuchos::RCP<std::map<int, std::vector<int>>> eleconn = eb->get_ele_conn();
+  Teuchos::RCP<std::map<int, std::vector<int>>> eleconn = eb.get_ele_conn();
   std::map<int, std::vector<int>>::iterator i_ele;
   int numrewindedeles = 0;
   for (i_ele = eleconn->begin(); i_ele != eleconn->end(); ++i_ele)
@@ -189,7 +189,7 @@ void EXODUS::validate_element_jacobian(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int EXODUS::validate_element_jacobian_fullgp(
-    Mesh& mymesh, const Core::FE::CellType distype, Teuchos::RCP<ElementBlock> eb)
+    Mesh& mymesh, const Core::FE::CellType distype, ElementBlock& eb)
 {
   using namespace FourC;
 
@@ -233,14 +233,14 @@ int EXODUS::validate_element_jacobian_fullgp(
       break;
   }
   const Core::FE::IntegrationPoints3D intpoints(integrationrule);
-  const int iel = eb->get_ele_nodes(0).size();
+  const int iel = eb.get_ele_nodes(0).size();
   // shape functions derivatives
   const int NSD = 3;
   Core::LinAlg::SerialDenseMatrix deriv(NSD, iel);
 
   // go through all elements
   int invalids = 0;
-  Teuchos::RCP<std::map<int, std::vector<int>>> eleconn = eb->get_ele_conn();
+  Teuchos::RCP<std::map<int, std::vector<int>>> eleconn = eb.get_ele_conn();
   std::map<int, std::vector<int>>::iterator i_ele;
   for (i_ele = eleconn->begin(); i_ele != eleconn->end(); ++i_ele)
   {

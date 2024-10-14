@@ -103,7 +103,7 @@ void PARTICLEENGINE::ParticleEngine::write_restart(const int step, const double 
   particlecontainerbundle_->get_packed_particle_objects_of_all_containers(particlebuffer);
 
   // write particle data
-  binwriter->write_char_data("ParticleData", Teuchos::rcp(particlebuffer));
+  binwriter->write_char_data("ParticleData", *Teuchos::rcp(particlebuffer));
 
   // write restart of unique global identifier handler
   particleuniqueglobalidhandler_->write_restart(binwriter);

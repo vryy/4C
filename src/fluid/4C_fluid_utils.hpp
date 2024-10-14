@@ -326,11 +326,11 @@ namespace FLD
 
       /// update and return WSS vector
       Teuchos::RCP<Core::LinAlg::Vector<double>> get_wall_shear_stresses(
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual, const double dt);
+          const Core::LinAlg::Vector<double>& trueresidual, const double dt);
 
       /// return WSS vector (without updating the mean wss vector)
       Teuchos::RCP<Core::LinAlg::Vector<double>> get_pre_calc_wall_shear_stresses(
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual);
+          const Core::LinAlg::Vector<double>& trueresidual);
 
       /// return WSS vector always without aggregation, even if scale separation matrix exists
       Teuchos::RCP<Core::LinAlg::Vector<double>> get_wall_shear_stresses_wo_agg(
@@ -338,11 +338,11 @@ namespace FLD
 
       /// update and return stress vector
       Teuchos::RCP<Core::LinAlg::Vector<double>> get_stresses(
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual, const double dt);
+          const Core::LinAlg::Vector<double>& trueresidual, const double dt);
 
       /// return stress vector (without updating the mean stress vector)
       Teuchos::RCP<Core::LinAlg::Vector<double>> get_pre_calc_stresses(
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> trueresidual);
+          const Core::LinAlg::Vector<double>& trueresidual);
 
       /// return stress vector always without aggregation, even if scale separation matrix exists
       Teuchos::RCP<Core::LinAlg::Vector<double>> get_stresses_wo_agg(

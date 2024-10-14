@@ -65,8 +65,7 @@ namespace XFEM
 
       //! setup xfem discretization and embedded discretization
       void setup_xfem_discretization(const Teuchos::ParameterList& xgen_params,
-          Teuchos::RCP<Core::FE::Discretization> dis,
-          Teuchos::RCP<Core::FE::Discretization> embedded_dis,
+          Teuchos::RCP<Core::FE::Discretization> dis, Core::FE::Discretization& embedded_dis,
           const std::string& embedded_cond_name, int numdof = 4) const;
 
       /*! \brief Setup xfem discretization and embedded discretization
@@ -125,8 +124,8 @@ namespace XFEM
       //! split a discretization into two by removing conditioned nodes
       //! in source and adding to target
       void split_discretization_by_condition(
-          Teuchos::RCP<Core::FE::Discretization> sourcedis,  //< initially contains all
-          Teuchos::RCP<Core::FE::Discretization> targetdis,  //< initially empty
+          Core::FE::Discretization& sourcedis,  //< initially contains all
+          Core::FE::Discretization& targetdis,  //< initially empty
           std::vector<Core::Conditions::Condition*>&
               conditions,  //< conditioned nodes to be shifted to target
           const std::vector<std::string>& conditions_to_copy  //< conditions to copy to target
@@ -153,9 +152,8 @@ namespace XFEM
        *
        *  \date 06/16
        *  \author hiermeier  */
-      void split_discretization_by_boundary_condition(
-          const Teuchos::RCP<Core::FE::Discretization>& sourcedis,
-          const Teuchos::RCP<Core::FE::Discretization>& targetdis,
+      void split_discretization_by_boundary_condition(Core::FE::Discretization& sourcedis,
+          Core::FE::Discretization& targetdis,
           const std::vector<Core::Conditions::Condition*>& boundary_conds,
           const std::vector<std::string>& conditions_to_copy) const;
 

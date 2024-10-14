@@ -38,12 +38,12 @@ namespace EXODUS
 
   //! Check for positive Jacobian for Element of distype and otherwise 'rewind' them
   void validate_element_jacobian(
-      EXODUS::Mesh& mymesh, const Core::FE::CellType distype, Teuchos::RCP<EXODUS::ElementBlock>);
+      EXODUS::Mesh& mymesh, const Core::FE::CellType distype, EXODUS::ElementBlock&);
 
   //! Check Elements of distype with full gauss integration rule for positive det at all gps and
   //! return number of negative dets
   int validate_element_jacobian_fullgp(
-      Mesh& mymesh, const Core::FE::CellType distype, Teuchos::RCP<ElementBlock> eb);
+      Mesh& mymesh, const Core::FE::CellType distype, ElementBlock& eb);
 
   //! Check one element for positive Jacobi determinant
   bool positive_ele(const int& eleid, const std::vector<int>& nodes, const EXODUS::Mesh& mymesh,

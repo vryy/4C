@@ -197,10 +197,10 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void get_pos_and_triad_of_binding_spot(Core::FE::Discretization const& discret,
-        Core::Elements::Element* ele, Teuchos::RCP<Core::LinAlg::Vector<double>> const& ia_discolnp,
-        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
-        Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotnum,
-        Core::LinAlg::Matrix<3, 1>& bspotpos, Core::LinAlg::Matrix<3, 3>& bspottriad);
+        Core::Elements::Element* ele, Core::LinAlg::Vector<double>& ia_discolnp,
+        Core::Geo::MeshFree::BoundingBox& pbb, Inpar::BEAMINTERACTION::CrosslinkerType linkertype,
+        int locbspotnum, Core::LinAlg::Matrix<3, 1>& bspotpos,
+        Core::LinAlg::Matrix<3, 3>& bspottriad);
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
@@ -314,8 +314,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
     void apply_binding_spot_force_to_parent_elements(Core::FE::Discretization const& discret,
-        Core::Geo::MeshFree::BoundingBox& pbb,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> disp_np_col,
+        Core::Geo::MeshFree::BoundingBox& pbb, Core::LinAlg::Vector<double>& disp_np_col,
         BEAMINTERACTION::BeamLink& elepairptr,
         std::vector<Core::LinAlg::SerialDenseVector> const& bspotforce,
         std::vector<Core::LinAlg::SerialDenseVector>& eleforce);
@@ -324,8 +323,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
     void apply_binding_spot_stiff_to_parent_elements(Core::FE::Discretization const& discret,
-        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> disp_np_col,
+        Core::Geo::MeshFree::BoundingBox& pbb, Core::LinAlg::Vector<double>& disp_np_col,
         BEAMINTERACTION::BeamLink& elepairptr,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& bspotstiff,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>& elestiff);
@@ -334,8 +332,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
     void apply_binding_spot_force_stiff_to_parent_elements(Core::FE::Discretization const& discret,
-        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> disp_np_col,
+        Core::Geo::MeshFree::BoundingBox& pbb, Core::LinAlg::Vector<double>& disp_np_col,
         BEAMINTERACTION::BeamLink& elepairptr,
         std::vector<Core::LinAlg::SerialDenseVector> const& bspotforce,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& bspotstiff,

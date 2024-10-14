@@ -222,50 +222,50 @@ void Solid::Dbc::apply_dirichlet_bc(const double& time,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::apply_dirichlet_to_local_system(Teuchos::RCP<Core::LinAlg::SparseOperator> A,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& b) const
+void Solid::Dbc::apply_dirichlet_to_local_system(
+    Core::LinAlg::SparseOperator& A, Core::LinAlg::Vector<double>& b) const
 {
   check_init_setup();
   apply_dirichlet_to_local_rhs(b);
-  apply_dirichlet_to_local_jacobian(*A);
+  apply_dirichlet_to_local_jacobian(A);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::apply_dirichlet_to_vector(Teuchos::RCP<Core::LinAlg::Vector<double>>& vec) const
+void Solid::Dbc::apply_dirichlet_to_vector(Core::LinAlg::Vector<double>& vec) const
 {
   check_init_setup();
   // rotate the coordinate system if desired
-  rotate_global_to_local(*vec);
+  rotate_global_to_local(vec);
   // apply the dbc
-  Core::LinAlg::apply_dirichlet_to_system(*vec, *zeros_ptr_, *(dbcmap_ptr_->cond_map()));
+  Core::LinAlg::apply_dirichlet_to_system(vec, *zeros_ptr_, *(dbcmap_ptr_->cond_map()));
   // rotate back
-  rotate_local_to_global(*vec);
+  rotate_local_to_global(vec);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>>& b) const
+void Solid::Dbc::apply_dirichlet_to_local_rhs(Core::LinAlg::Vector<double>& b) const
 {
   check_init_setup();
 
   // rotate the coordinate system: global --> local
-  rotate_global_to_local(*b);
+  rotate_global_to_local(b);
 
-  extract_freact(*b);
-  Core::LinAlg::apply_dirichlet_to_system(*b, *zeros_ptr_, *(dbcmap_ptr_->cond_map()));
+  extract_freact(b);
+  Core::LinAlg::apply_dirichlet_to_system(b, *zeros_ptr_, *(dbcmap_ptr_->cond_map()));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::apply_dirichlet_to_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>>& b) const
+void Solid::Dbc::apply_dirichlet_to_rhs(Core::LinAlg::Vector<double>& b) const
 {
   check_init_setup();
 
   apply_dirichlet_to_local_rhs(b);
 
   // rotate back: local --> global
-  rotate_local_to_global(*b);
+  rotate_local_to_global(b);
 }
 
 /*----------------------------------------------------------------------------*
@@ -319,7 +319,7 @@ bool Solid::Dbc::rotate_global_to_local(Core::LinAlg::Vector<double>& v, bool of
     Core::LinAlg::Vector<double> v_displ(*g_state().dof_row_map_view());
     Core::LinAlg::extract_my_vector(v, v_displ);
 
-    locsysman_ptr_->rotate_global_to_local(*Teuchos::rcpFromRef(v_displ), offset);
+    locsysman_ptr_->rotate_global_to_local(v_displ, offset);
 
     Core::LinAlg::assemble_my_vector(0.0, v, 1.0, v_displ);
   }
@@ -367,7 +367,7 @@ bool Solid::Dbc::rotate_local_to_global(Core::LinAlg::Vector<double>& v, bool of
     Core::LinAlg::Vector<double> v_displ(*g_state().dof_row_map_view());
     Core::LinAlg::extract_my_vector(v, v_displ);
 
-    locsysman_ptr_->rotate_local_to_global(*Teuchos::rcpFromRef(v_displ), offset);
+    locsysman_ptr_->rotate_local_to_global(v_displ, offset);
 
     Core::LinAlg::assemble_my_vector(0.0, v, 1.0, v_displ);
   }
@@ -401,7 +401,7 @@ void Solid::Dbc::extract_freact(Core::LinAlg::Vector<double>& b) const
   insert_vector_in_non_dbc_dofs(zeros_ptr_, Teuchos::rcpFromRef(freact()));
 
   // turn the reaction forces back to the global coordinate system if necessary
-  rotate_local_to_global(*Teuchos::rcpFromRef(freact()));
+  rotate_local_to_global(freact());
 }
 
 /*----------------------------------------------------------------------------*
@@ -502,7 +502,7 @@ void NOX::Nln::LinSystem::PrePostOp::Dbc::run_pre_apply_jacobian_inverse(
   Core::LinAlg::VectorView rhs_view(rhs_epetra.getEpetraVector());
   Teuchos::RCP<Core::LinAlg::SparseOperator> jac_ptr = Teuchos::rcpFromRef(jac);
   // apply the dirichlet condition and rotate the system if desired
-  dbc_ptr_->apply_dirichlet_to_local_system(jac_ptr, rhs_view.get_non_owning_rcp_ref());
+  dbc_ptr_->apply_dirichlet_to_local_system(*jac_ptr, *rhs_view.get_non_owning_rcp_ref());
 }
 
 FOUR_C_NAMESPACE_CLOSE

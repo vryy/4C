@@ -986,10 +986,10 @@ void EleMag::ElemagTimeInt::output()
   }
 
   // Output the reuslts
-  output_->write_multi_vector("magnetic", magnetic, Core::IO::nodevector);
-  output_->write_multi_vector("trace", trace, Core::IO::nodevector);
-  output_->write_multi_vector("electric", electric, Core::IO::nodevector);
-  output_->write_multi_vector("electric_post", electric_post, Core::IO::nodevector);
+  output_->write_multi_vector("magnetic", *magnetic, Core::IO::nodevector);
+  output_->write_multi_vector("trace", *trace, Core::IO::nodevector);
+  output_->write_multi_vector("electric", *electric, Core::IO::nodevector);
+  output_->write_multi_vector("electric_post", *electric_post, Core::IO::nodevector);
 
   // add restart data
 
@@ -1009,7 +1009,7 @@ void EleMag::ElemagTimeInt::write_restart()
 {
   if (myrank_ == 0) std::cout << "======= Restart written in step " << step_ << std::endl;
 
-  output_->write_multi_vector("traceRestart", trace);
+  output_->write_multi_vector("traceRestart", *trace);
 
   // write internal field for which we need to create and fill the corresponding vectors
   // since this requires some effort, the write_restart method should not be used excessively!

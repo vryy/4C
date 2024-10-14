@@ -915,7 +915,7 @@ void FLD::FluidImplicitTimeInt::solve()
       }
       else
         meshtying_->solve_meshtying(
-            *solver_, sysmat_, incvel_, residual_, velnp_, itnum, solver_params);
+            *solver_, sysmat_, incvel_, residual_, *velnp_, itnum, solver_params);
 
       solver_->reset_tolerance();
 
@@ -955,7 +955,7 @@ void FLD::FluidImplicitTimeInt::solve()
 
     // prepare meshtying system
     if (msht_ != Inpar::FLUID::no_meshtying)
-      meshtying_->prepare_meshtying_system(sysmat_, residual_, velnp_);
+      meshtying_->prepare_meshtying_system(sysmat_, *residual_, *velnp_);
 
     // print to screen
     convergence_check(0, itmax, velrestol, velinctol, presrestol, presinctol);
@@ -972,7 +972,7 @@ void FLD::FluidImplicitTimeInt::prepare_solve()
 
   // prepare meshtying system
   if (msht_ != Inpar::FLUID::no_meshtying)
-    meshtying_->prepare_meshtying(sysmat_, residual_, velnp_, shapederivatives_);
+    meshtying_->prepare_meshtying(sysmat_, *residual_, *velnp_, shapederivatives_);
 
   // update local coordinate systems for ALE fluid case
   // (which may be time and displacement dependent)
@@ -2357,7 +2357,7 @@ bool FLD::FluidImplicitTimeInt::convergence_check(int itnum, int itmax, const do
   if (projector_ != Teuchos::null)
   {
     if (msht_ == Inpar::FLUID::condensed_bmat_merged or msht_ == Inpar::FLUID::condensed_bmat)
-      meshtying_->apply_pt_to_residual(*sysmat_, residual_, *projector_);
+      meshtying_->apply_pt_to_residual(*sysmat_, *residual_, *projector_);
     else
       projector_->apply_pt(*residual_);
   }
@@ -3166,9 +3166,9 @@ void FLD::FluidImplicitTimeInt::time_update()
  *----------------------------------------------------------------------*/
 void FLD::FluidImplicitTimeInt::time_update_stresses()
 {
-  if (writestresses_) stressmanager_->get_stresses(trueresidual_, dta_);
+  if (writestresses_) stressmanager_->get_stresses(*trueresidual_, dta_);
 
-  if (write_wall_shear_stresses_) stressmanager_->get_wall_shear_stresses(trueresidual_, dta_);
+  if (write_wall_shear_stresses_) stressmanager_->get_wall_shear_stresses(*trueresidual_, dta_);
 }
 
 /*----------------------------------------------------------------------*
@@ -3507,12 +3507,13 @@ void FLD::FluidImplicitTimeInt::output()
     // only perform stress calculation when output is needed
     if (writestresses_)
     {
-      output_->write_vector("traction", stressmanager_->get_pre_calc_stresses(trueresidual_));
+      output_->write_vector("traction", stressmanager_->get_pre_calc_stresses(*trueresidual_));
     }
     // only perform wall shear stress calculation when output is needed
     if (write_wall_shear_stresses_ && xwall_ == Teuchos::null)
     {
-      output_->write_vector("wss", stressmanager_->get_pre_calc_wall_shear_stresses(trueresidual_));
+      output_->write_vector(
+          "wss", stressmanager_->get_pre_calc_wall_shear_stresses(*trueresidual_));
     }
 
     // biofilm growth
@@ -3545,7 +3546,7 @@ void FLD::FluidImplicitTimeInt::output()
 
       if (xwall_ != Teuchos::null)
         output_->write_vector("wss", stressmanager_->get_pre_calc_wall_shear_stresses(
-                                         xwall_->fix_dirichlet_inflow(*trueresidual_)));
+                                         *xwall_->fix_dirichlet_inflow(*trueresidual_)));
 
       // flow rate, flow volume and impedance in case of flow-dependent pressure bc
       if (nonlinearbc_) output_nonlinear_bc();
@@ -3601,12 +3602,13 @@ void FLD::FluidImplicitTimeInt::output()
     // only perform stress calculation when output is needed
     if (writestresses_)
     {
-      output_->write_vector("traction", stressmanager_->get_pre_calc_stresses(trueresidual_));
+      output_->write_vector("traction", stressmanager_->get_pre_calc_stresses(*trueresidual_));
     }
     // only perform wall shear stress calculation when output is needed
     if (write_wall_shear_stresses_ && xwall_ == Teuchos::null)
     {
-      output_->write_vector("wss", stressmanager_->get_pre_calc_wall_shear_stresses(trueresidual_));
+      output_->write_vector(
+          "wss", stressmanager_->get_pre_calc_wall_shear_stresses(*trueresidual_));
     }
     // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
     output_->write_vector("accnp", accnp_);
@@ -3618,7 +3620,7 @@ void FLD::FluidImplicitTimeInt::output()
     {
       output_->write_vector("xwall_tauw", xwall_->get_tauw_vector());
       output_->write_vector("wss", stressmanager_->get_pre_calc_wall_shear_stresses(
-                                       xwall_->fix_dirichlet_inflow(*trueresidual_)));
+                                       *xwall_->fix_dirichlet_inflow(*trueresidual_)));
     }
 
     // flow rate, flow volume and impedance in case of flow-dependent pressure bc
@@ -6796,11 +6798,11 @@ void FLD::FluidImplicitTimeInt::init_forcing()
  * Update slave dofs for multifield simulations with fluid mesh tying   |
  *                                                          wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void FLD::FluidImplicitTimeInt::update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& f)
+void FLD::FluidImplicitTimeInt::update_slave_dof(Core::LinAlg::Vector<double>& f)
 {
   if (msht_ != Inpar::FLUID::no_meshtying)
   {
-    meshtying_->update_slave_dof(*f, *velnp_);
+    meshtying_->update_slave_dof(f, *velnp_);
   }
 }
 /*----------------------------------------------------------------------*|

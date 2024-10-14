@@ -321,7 +321,7 @@ void FLD::XFluid::setup_fluid_discretization()
         "fluid");  // fluid dis is here the embedded mesh (required for XFFSI)
     xfluiddis = Global::Problem::instance()->get_dis("xfluid");  // xfluid dis is here the cut mesh
     xdisbuilder.setup_xfem_discretization(
-        Global::Problem::instance()->xfem_general_params(), xfluiddis, fluiddis, "FluidMesh");
+        Global::Problem::instance()->xfem_general_params(), xfluiddis, *fluiddis, "FluidMesh");
   }
   else  // standard xfluid case
   {
@@ -779,7 +779,7 @@ void FLD::XFluid::assemble_mat_and_rhs(int itnum)
 
     //-------------------------------------------------------------------------------
     // evaluate and assemble face-oriented fluid and ghost penalty stabilizations
-    assemble_mat_and_rhs_face_terms(state_->sysmat_, state_->residual_col_, state_->wizard_);
+    assemble_mat_and_rhs_face_terms(state_->sysmat_, state_->residual_col_, *state_->wizard_);
 
     //-------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------
@@ -1290,8 +1290,8 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
 
 void FLD::XFluid::assemble_mat_and_rhs_face_terms(
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& sysmat,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual_col,
-    const Teuchos::RCP<Cut::CutWizard>& wizard, bool is_ghost_penalty_reconstruct)
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual_col, Cut::CutWizard& wizard,
+    bool is_ghost_penalty_reconstruct)
 {
   // call edge stabilization
   if (eval_eos_ || is_ghost_penalty_reconstruct)
@@ -1325,7 +1325,7 @@ void FLD::XFluid::assemble_mat_and_rhs_face_terms(
 
       const bool gmsh_EOS_out(params_->sublist("XFEM").get<bool>("GMSH_EOS_OUT"));
       edgestab_->evaluate_edge_stab_ghost_penalty(faceparams, discret_, face_ele, sysmat,
-          residual_col, *wizard, include_inner_, ghost_penalty_add_inner_faces_, gmsh_EOS_out);
+          residual_col, wizard, include_inner_, ghost_penalty_add_inner_faces_, gmsh_EOS_out);
     }
   }
 }
@@ -1569,7 +1569,7 @@ void FLD::XFluid::assemble_mat_and_rhs_gradient_penalty(
   //----------------------------------------------------------------------
 
   // call loop over face-elements
-  assemble_mat_and_rhs_face_terms(sysmat_gp, residual_gp_col, state_->wizard_, true);
+  assemble_mat_and_rhs_face_terms(sysmat_gp, residual_gp_col, *state_->wizard_, true);
 
   discret_->clear_state();
 

@@ -485,8 +485,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
   // Get the beam triad interpolation schemes.
   LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;
   LargeRotations::TriadInterpolationLocalRotationVectors<3, double> ref_triad_interpolation_scheme;
-  get_beam_triad_interpolation_scheme(discret, *Teuchos::rcpFromRef(displacement_vector),
-      this->element1(), triad_interpolation_scheme, ref_triad_interpolation_scheme);
+  get_beam_triad_interpolation_scheme(discret, displacement_vector, this->element1(),
+      triad_interpolation_scheme, ref_triad_interpolation_scheme);
 
   // Set the FAD variables for the solid DOFs. For the terms calculated here we need second
   // order derivatives.

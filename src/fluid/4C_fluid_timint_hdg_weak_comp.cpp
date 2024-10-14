@@ -760,7 +760,7 @@ void FLD::TimIntHDGWeakComp::output()
     }
 
     // write solution variables
-    output_->write_multi_vector("Mixedvar", interpolatedMixedVar_, Core::IO::nodevector);
+    output_->write_multi_vector("Mixedvar", *interpolatedMixedVar_, Core::IO::nodevector);
     output_->write_vector("Density", interpolatedDensity_, Core::IO::nodevector);
     output_->write_vector("Trace_density", traceDen, Core::IO::nodevector);
 
@@ -770,10 +770,9 @@ void FLD::TimIntHDGWeakComp::output()
     // write ALE variables
     if (alefluid_)
     {
-      Teuchos::RCP<Epetra_MultiVector> AleDisplacement;
-      AleDisplacement = Teuchos::make_rcp<Epetra_MultiVector>(*discret_->node_row_map(), nsd);
+      Epetra_MultiVector AleDisplacement(*discret_->node_row_map(), nsd);
       for (int i = 0; i < interpolatedDensity_->MyLength(); ++i)
-        for (unsigned int d = 0; d < nsd; ++d) (*AleDisplacement)[d][i] = (*dispnp_)[(i * nsd) + d];
+        for (unsigned int d = 0; d < nsd; ++d) (AleDisplacement)[d][i] = (*dispnp_)[(i * nsd) + d];
 
       output_->write_multi_vector("Ale_displacement", AleDisplacement, Core::IO::nodevector);
     }

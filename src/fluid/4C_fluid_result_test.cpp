@@ -33,8 +33,8 @@ FLD::FluidResultTest::FluidResultTest(FluidImplicitTimeInt& fluid)
   // quantities not implemented in the HDG formulation
   if (Global::Problem::instance()->spatial_approximation_type() != Core::FE::ShapeFunctionType::hdg)
   {
-    mytraction_ = fluid.stressmanager_->get_pre_calc_stresses(fluid.trueresidual_);
-    mywss_ = fluid.stressmanager_->get_pre_calc_wall_shear_stresses(fluid.trueresidual_);
+    mytraction_ = fluid.stressmanager_->get_pre_calc_stresses(*fluid.trueresidual_);
+    mywss_ = fluid.stressmanager_->get_pre_calc_wall_shear_stresses(*fluid.trueresidual_);
     mydivu_ = fluid.evaluate_div_u();
   }
 }

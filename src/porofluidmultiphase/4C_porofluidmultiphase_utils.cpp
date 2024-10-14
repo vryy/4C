@@ -193,12 +193,12 @@ Teuchos::RCP<Adapter::PoroFluidMultiphase> POROFLUIDMULTIPHASE::UTILS::create_al
  | perform extended ghosting for artery dis                kremheller 03/19 |
  *--------------------------------------------------------------------------*/
 std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::extended_ghosting_artery_discretization(
-    Teuchos::RCP<Core::FE::Discretization> contdis, Teuchos::RCP<Core::FE::Discretization> artdis,
+    Core::FE::Discretization& contdis, Teuchos::RCP<Core::FE::Discretization> artdis,
     const bool evaluate_on_lateral_surface,
     const Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod couplingmethod)
 {
   // user output
-  if (contdis->get_comm().MyPID() == 0)
+  if (contdis.get_comm().MyPID() == 0)
   {
     std::cout
         << "\n<<<<<<<<<<<<<<< Starting extended ghosting of artery discretization >>>>>>>>>>>>>>>\n"
@@ -206,7 +206,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::extended_ghosting_arter
   }
 
   artdis->fill_complete();
-  if (!contdis->filled()) contdis->fill_complete();
+  if (!contdis.filled()) contdis.fill_complete();
 
   // create the fully overlapping search discretization
   Teuchos::RCP<Core::FE::Discretization> artsearchdis =
@@ -251,18 +251,18 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::extended_ghosting_arter
       });
 
   // search with the fully overlapping discretization
-  std::map<int, std::set<int>> nearbyelepairs = oct_tree_search(*contdis, *artdis, *artsearchdis,
+  std::map<int, std::set<int>> nearbyelepairs = oct_tree_search(contdis, *artdis, *artsearchdis,
       evaluate_on_lateral_surface, artEleGIDs, elecolset, nodecolset);
 
   // extended ghosting for elements
   std::vector<int> coleles(elecolset.begin(), elecolset.end());
-  const Epetra_Map extendedelecolmap(-1, coleles.size(), coleles.data(), 0, contdis->get_comm());
+  const Epetra_Map extendedelecolmap(-1, coleles.size(), coleles.data(), 0, contdis.get_comm());
 
   artdis->export_column_elements(extendedelecolmap);
 
   // extended ghosting for nodes
   std::vector<int> colnodes(nodecolset.begin(), nodecolset.end());
-  const Epetra_Map extendednodecolmap(-1, colnodes.size(), colnodes.data(), 0, contdis->get_comm());
+  const Epetra_Map extendednodecolmap(-1, colnodes.size(), colnodes.data(), 0, contdis.get_comm());
 
   artdis->export_column_nodes(extendednodecolmap);
 
@@ -271,7 +271,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::extended_ghosting_arter
   Core::Rebalance::UTILS::print_parallel_distribution(*artdis);
 
   // user output
-  if (contdis->get_comm().MyPID() == 0)
+  if (contdis.get_comm().MyPID() == 0)
   {
     std::cout << "<<<<<<<<<<<<<<< Finished extended ghosting of artery discretization "
                  ">>>>>>>>>>>>>>>\n"

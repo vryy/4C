@@ -688,7 +688,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidFSI::calculate_wall_she
 
   // Call StressManager to calculate WSS from residual
   Teuchos::RCP<Core::LinAlg::Vector<double>> wss =
-      stressmanager->get_wall_shear_stresses(trueresidual, dt);
+      stressmanager->get_wall_shear_stresses(*trueresidual, dt);
 
   return wss;
 }
@@ -823,7 +823,7 @@ void Adapter::FluidFSI::build_inner_vel_map()
  *----------------------------------------------------------------------*/
 void Adapter::FluidFSI::update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& f)
 {
-  fluidimpl_->update_slave_dof(f);
+  fluidimpl_->update_slave_dof(*f);
 }
 
 FOUR_C_NAMESPACE_CLOSE

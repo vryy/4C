@@ -49,7 +49,7 @@ void ScaTra::MeshtyingStrategyFluid::evaluate_meshtying()
 
   // evaluate fluid-fluid meshtying
   meshtying_->prepare_meshtying_system(
-      scatratimint_->system_matrix_operator(), scatratimint_->residual(), scatratimint_->phinp());
+      scatratimint_->system_matrix_operator(), *scatratimint_->residual(), *scatratimint_->phinp());
 
   return;
 }  // ScaTra::MeshtyingStrategyFluid::evaluate_meshtying
@@ -132,7 +132,7 @@ void ScaTra::MeshtyingStrategyFluid::solve(
     Core::LinAlg::SolverParams& solver_params) const
 {
   meshtying_->solve_meshtying(
-      *solver, systemmatrix, increment, residual, phinp, iteration, solver_params);
+      *solver, systemmatrix, increment, residual, *phinp, iteration, solver_params);
 
   return;
 }  // ScaTra::MeshtyingStrategyFluid::Solve

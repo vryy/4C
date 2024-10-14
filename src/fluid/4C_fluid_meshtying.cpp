@@ -373,7 +373,7 @@ void FLD::Meshtying::check_overlapping_bc(Epetra_Map& map)
 /*  Correct slave Dirichlet value       ehrl (12/12) */
 /*---------------------------------------------------*/
 void FLD::Meshtying::project_master_to_slave_for_overlapping_bc(
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp, Teuchos::RCP<const Epetra_Map> bmaps)
+    Core::LinAlg::Vector<double>& velnp, Teuchos::RCP<const Epetra_Map> bmaps)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> intersectionmaps;
   intersectionmaps.push_back(bmaps);
@@ -401,7 +401,7 @@ void FLD::Meshtying::project_master_to_slave_for_overlapping_bc(
     // std::cout << "BEFORE projection from master to slave side" << std::endl;
     // OutputVectorSplit(velnp);
 
-    update_slave_dof(*velnp, *velnp);
+    update_slave_dof(velnp, velnp);
 
     // std::cout << "AFTER projection from master to slave side" << std::endl;
     // OutputVectorSplit(velnp);
@@ -486,8 +486,7 @@ void FLD::Meshtying::evaluate_with_mesh_relocation(
 /*  Prepare Meshtying                    wirtz 02/16 */
 /*---------------------------------------------------*/
 void FLD::Meshtying::prepare_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp,
+    Core::LinAlg::Vector<double>& residual, Core::LinAlg::Vector<double>& velnp,
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& shapederivatives)
 {
   prepare_meshtying_system(sysmat, residual, velnp);
@@ -506,17 +505,16 @@ void FLD::Meshtying::prepare_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator
 /*---------------------------------------------------*/
 void FLD::Meshtying::prepare_meshtying_system(
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp)
+    Core::LinAlg::Vector<double>& residual, Core::LinAlg::Vector<double>& velnp)
 {
   switch (msht_)
   {
     case Inpar::FLUID::condensed_bmat:
     case Inpar::FLUID::condensed_bmat_merged:
-      condensation_block_matrix(sysmat, *residual, *velnp);
+      condensation_block_matrix(sysmat, residual, velnp);
       break;
     case Inpar::FLUID::condensed_smat:
-      condensation_sparse_matrix(sysmat, *residual, *velnp);
+      condensation_sparse_matrix(sysmat, residual, velnp);
       break;
     default:
       FOUR_C_THROW("Meshtying algorithm not recognized!");
@@ -528,19 +526,19 @@ void FLD::Meshtying::prepare_meshtying_system(
 /*---------------------------------------------------*/
 /*---------------------------------------------------*/
 void FLD::Meshtying::apply_pt_to_residual(Core::LinAlg::SparseOperator& sysmat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual, Core::LinAlg::KrylovProjector& projector)
+    Core::LinAlg::Vector<double>& residual, Core::LinAlg::KrylovProjector& projector)
 {
   // define residual vector for case of block matrix
   Teuchos::RCP<Core::LinAlg::Vector<double>> res = Core::LinAlg::create_vector(*mergedmap_, true);
 
   // split original residual vector
-  split_vector_based_on3x3(*residual, *res);
+  split_vector_based_on3x3(residual, *res);
 
   // apply projector
   projector.apply_pt(*res);
 
   // export residual back to original vector
-  Core::LinAlg::export_to(*res, *residual);
+  Core::LinAlg::export_to(*res, residual);
 }
 
 
@@ -585,9 +583,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::Meshtying::adapt_krylov_projecto
 void FLD::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& sysmat,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& incvel,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp, const int itnum,
-    Core::LinAlg::SolverParams& solver_params)
+    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual, Core::LinAlg::Vector<double>& velnp,
+    const int itnum, Core::LinAlg::SolverParams& solver_params)
 {
   solver_params.refactor = true;
   solver_params.reset = itnum == 1;
@@ -634,7 +631,7 @@ void FLD::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
         Core::LinAlg::export_to(*res, *residual);
 
         // compute and update slave dof's
-        update_slave_dof(*incvel, *velnp);
+        update_slave_dof(*incvel, velnp);
       }
     }
     break;
@@ -678,7 +675,7 @@ void FLD::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
         Core::LinAlg::export_to(*inc, *incvel);
         Core::LinAlg::export_to(*res, *residual);
         // compute and update slave dof's
-        update_slave_dof(*incvel, *velnp);
+        update_slave_dof(*incvel, velnp);
       }
     }
     break;
@@ -692,7 +689,7 @@ void FLD::Meshtying::solve_meshtying(Core::LinAlg::Solver& solver,
       {
         TEUCHOS_FUNC_TIME_MONITOR("Meshtying:  3.3)   - Update");
         // compute and update slave dof's
-        update_slave_dof(*incvel, *velnp);
+        update_slave_dof(*incvel, velnp);
       }
     }
     break;

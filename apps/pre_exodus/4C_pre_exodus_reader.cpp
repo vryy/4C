@@ -543,7 +543,7 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(const SideSet si
   int tetc = 0, hexc = 0, pyrc = 0, wedgc = 0;
   for (i_side = mysides.begin(); i_side != mysides.end(); ++i_side)
   {
-    Teuchos::RCP<Teuchos::TimeMonitor> tm1 = Teuchos::make_rcp<Teuchos::TimeMonitor>(*time1);
+    Teuchos::TimeMonitor tm1(*time1);
     int actele = i_side->second.at(0) -
                  1;  // ExoIds start from 1, but we from 0 //ToDo: remove -1 idconfusion
     int actface = i_side->second.at(1) - 1;  // ExoIds start from 1, but we from 0

@@ -241,7 +241,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
       output_deformation_in_thr(structure_field()->dispn(), *structure_field()->discretization());
 
       thermo_field()->disc_writer()->write_multi_vector(
-          "displacement", dispnp_, Core::IO::nodevector);
+          "displacement", *dispnp_, Core::IO::nodevector);
     }
     else
     {
@@ -285,7 +285,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
       }  // for lnodid
 
       thermo_field()->disc_writer()->write_multi_vector(
-          "displacement", dispnp_, Core::IO::nodevector);
+          "displacement", *dispnp_, Core::IO::nodevector);
     }
   }
 
@@ -324,7 +324,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
       }  // for lnodid
 
       structure_field()->discretization()->writer()->write_multi_vector(
-          "struct_temperature", tempnp_, Core::IO::nodevector);
+          "struct_temperature", *tempnp_, Core::IO::nodevector);
     }
 
 

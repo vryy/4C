@@ -1665,65 +1665,65 @@ void FLD::TurbulenceStatisticsLdc::write_restart(Core::IO::DiscretizationWriter&
 {
   writer.write_double("numsamp", numsamp_);
 
-  writer.write_redundant_double_vector("x1sumu", x1sumu_);
-  writer.write_redundant_double_vector("x1sumv", x1sumv_);
-  writer.write_redundant_double_vector("x1sumw", x1sumw_);
-  writer.write_redundant_double_vector("x1sump", x1sump_);
+  writer.write_redundant_double_vector("x1sumu", *x1sumu_);
+  writer.write_redundant_double_vector("x1sumv", *x1sumv_);
+  writer.write_redundant_double_vector("x1sumw", *x1sumw_);
+  writer.write_redundant_double_vector("x1sump", *x1sump_);
   //  writer.write_redundant_double_vector("x1sumrho", x1sumrho_);
   //  writer.write_redundant_double_vector("x1sumT", x1sumT_);
 
-  writer.write_redundant_double_vector("x1sumsqu", x1sumsqu_);
-  writer.write_redundant_double_vector("x1sumsqv", x1sumsqv_);
-  writer.write_redundant_double_vector("x1sumsqw", x1sumsqw_);
-  writer.write_redundant_double_vector("x1sumsqp", x1sumsqp_);
+  writer.write_redundant_double_vector("x1sumsqu", *x1sumsqu_);
+  writer.write_redundant_double_vector("x1sumsqv", *x1sumsqv_);
+  writer.write_redundant_double_vector("x1sumsqw", *x1sumsqw_);
+  writer.write_redundant_double_vector("x1sumsqp", *x1sumsqp_);
   //  writer.write_redundant_double_vector("x1sumsqrho", x1sumsqrho_);
   //  writer.write_redundant_double_vector("x1sumsqT", x1sumsqT_);
 
-  writer.write_redundant_double_vector("x1sumuv", x1sumuv_);
-  writer.write_redundant_double_vector("x1sumuw", x1sumuw_);
-  writer.write_redundant_double_vector("x1sumvw", x1sumvw_);
+  writer.write_redundant_double_vector("x1sumuv", *x1sumuv_);
+  writer.write_redundant_double_vector("x1sumuw", *x1sumuw_);
+  writer.write_redundant_double_vector("x1sumvw", *x1sumvw_);
   //  writer.write_redundant_double_vector("x1sumuT", x1sumuT_);
   //  writer.write_redundant_double_vector("x1sumvT", x1sumvT_);
   //  writer.write_redundant_double_vector("x1sumwT", x1sumwT_);
 
-  writer.write_redundant_double_vector("x2sumu", x2sumu_);
-  writer.write_redundant_double_vector("x2sumv", x2sumv_);
-  writer.write_redundant_double_vector("x2sumw", x2sumw_);
-  writer.write_redundant_double_vector("x2sump", x2sump_);
+  writer.write_redundant_double_vector("x2sumu", *x2sumu_);
+  writer.write_redundant_double_vector("x2sumv", *x2sumv_);
+  writer.write_redundant_double_vector("x2sumw", *x2sumw_);
+  writer.write_redundant_double_vector("x2sump", *x2sump_);
   //  writer.write_redundant_double_vector("x2sumrho", x2sumrho_);
   //  writer.write_redundant_double_vector("x2sumT", x2sumT_);
 
-  writer.write_redundant_double_vector("x2sumsqu", x2sumsqu_);
-  writer.write_redundant_double_vector("x2sumsqv", x2sumsqv_);
-  writer.write_redundant_double_vector("x2sumsqw", x2sumsqw_);
-  writer.write_redundant_double_vector("x2sumsqp", x2sumsqp_);
+  writer.write_redundant_double_vector("x2sumsqu", *x2sumsqu_);
+  writer.write_redundant_double_vector("x2sumsqv", *x2sumsqv_);
+  writer.write_redundant_double_vector("x2sumsqw", *x2sumsqw_);
+  writer.write_redundant_double_vector("x2sumsqp", *x2sumsqp_);
   //  writer.write_redundant_double_vector("x2sumsqrho", x2sumsqrho_);
   //  writer.write_redundant_double_vector("x2sumsqT", x2sumsqT_);
 
-  writer.write_redundant_double_vector("x2sumuv", x2sumuv_);
-  writer.write_redundant_double_vector("x2sumuw", x2sumuw_);
-  writer.write_redundant_double_vector("x2sumvw", x2sumvw_);
+  writer.write_redundant_double_vector("x2sumuv", *x2sumuv_);
+  writer.write_redundant_double_vector("x2sumuw", *x2sumuw_);
+  writer.write_redundant_double_vector("x2sumvw", *x2sumvw_);
   //  writer.write_redundant_double_vector("x2sumuT", x2sumuT_);
   //  writer.write_redundant_double_vector("x2sumvT", x2sumvT_);
   //  writer.write_redundant_double_vector("x2sumwT", x2sumwT_);
 
-  writer.write_redundant_double_vector("x3sumu", x3sumu_);
-  writer.write_redundant_double_vector("x3sumv", x3sumv_);
-  writer.write_redundant_double_vector("x3sumw", x3sumw_);
-  writer.write_redundant_double_vector("x3sump", x3sump_);
+  writer.write_redundant_double_vector("x3sumu", *x3sumu_);
+  writer.write_redundant_double_vector("x3sumv", *x3sumv_);
+  writer.write_redundant_double_vector("x3sumw", *x3sumw_);
+  writer.write_redundant_double_vector("x3sump", *x3sump_);
   //  writer.write_redundant_double_vector("x3sumrho", x3sumrho_);
   //  writer.write_redundant_double_vector("x3sumT", x3sumT_);
 
-  writer.write_redundant_double_vector("x3sumsqu", x3sumsqu_);
-  writer.write_redundant_double_vector("x3sumsqv", x3sumsqv_);
-  writer.write_redundant_double_vector("x3sumsqw", x3sumsqw_);
-  writer.write_redundant_double_vector("x3sumsqp", x3sumsqp_);
+  writer.write_redundant_double_vector("x3sumsqu", *x3sumsqu_);
+  writer.write_redundant_double_vector("x3sumsqv", *x3sumsqv_);
+  writer.write_redundant_double_vector("x3sumsqw", *x3sumsqw_);
+  writer.write_redundant_double_vector("x3sumsqp", *x3sumsqp_);
   //  writer.write_redundant_double_vector("x3sumsqrho", x3sumsqrho_);
   //  writer.write_redundant_double_vector("x3sumsqT", x3sumsqT_);
 
-  writer.write_redundant_double_vector("x3sumuv", x3sumuv_);
-  writer.write_redundant_double_vector("x3sumuw", x3sumuw_);
-  writer.write_redundant_double_vector("x3sumvw", x3sumvw_);
+  writer.write_redundant_double_vector("x3sumuv", *x3sumuv_);
+  writer.write_redundant_double_vector("x3sumuw", *x3sumuw_);
+  writer.write_redundant_double_vector("x3sumvw", *x3sumvw_);
   //  writer.write_redundant_double_vector("x3sumuT", x3sumuT_);
   //  writer.write_redundant_double_vector("x3sumvT", x3sumvT_);
   //  writer.write_redundant_double_vector("x3sumwT", x3sumwT_);

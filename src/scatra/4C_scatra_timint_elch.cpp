@@ -1566,12 +1566,12 @@ void ScaTra::ScaTraTimIntElch::write_restart() const
     if (isale_)
     {
       // extract condition ID and volume into two separate std vectors and write out
-      auto conditionid_vec = Teuchos::make_rcp<std::vector<int>>();
-      auto electrodeinitvol_vec = Teuchos::make_rcp<std::vector<double>>();
+      std::vector<int> conditionid_vec;
+      std::vector<double> electrodeinitvol_vec;
       for (const auto& electrodeinitvol : electrodeinitvols_)
       {
-        conditionid_vec->push_back(electrodeinitvol.first);
-        electrodeinitvol_vec->push_back(electrodeinitvol.second);
+        conditionid_vec.push_back(electrodeinitvol.first);
+        electrodeinitvol_vec.push_back(electrodeinitvol.second);
       }
       output_->write_redundant_int_vector("electrodeconditionids", conditionid_vec);
       output_->write_redundant_double_vector("electrodeinitvols", electrodeinitvol_vec);

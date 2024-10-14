@@ -544,7 +544,7 @@ void EXODUS::write_dat_eles(
     for (const auto& ele : ele_vector)
     {
       Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.get_element_block(ele.id);
-      EXODUS::dat_eles(eb, ele, startele, dat, ele.id);
+      EXODUS::dat_eles(*eb, ele, startele, dat, ele.id);
     }
   };
 
@@ -586,10 +586,10 @@ void EXODUS::write_dat_eles(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::dat_eles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::ElemDef& acte,
-    int& startele, std::ostream& datfile, const int eb_id)
+void EXODUS::dat_eles(const EXODUS::ElementBlock& eb, const EXODUS::ElemDef& acte, int& startele,
+    std::ostream& datfile, const int eb_id)
 {
-  auto eles = eb->get_ele_conn();
+  auto eles = eb.get_ele_conn();
   for (const auto& ele : *eles)
   {
     std::stringstream dat;  // first build up the std::string for actual element line
@@ -597,7 +597,7 @@ void EXODUS::dat_eles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS:
     std::vector<int>::const_iterator i_n;
     dat << "   " << startele;
     dat << " " << acte.ename;  // e.g. "SOLID"
-    dat << " " << Core::FE::cell_type_to_string(pre_shape_to_drt(eb->get_shape()));
+    dat << " " << Core::FE::cell_type_to_string(pre_shape_to_drt(eb.get_shape()));
     dat << "  ";
     for (auto node : nodes) dat << node << " ";
     dat << "   " << acte.desc;  // e.g. "MAT 1"

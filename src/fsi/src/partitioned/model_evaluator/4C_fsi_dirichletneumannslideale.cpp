@@ -70,8 +70,8 @@ void FSI::DirichletNeumannSlideale::remeshing()
   Teuchos::RCP<Core::LinAlg::Vector<double>> idisptotal =
       structure_field()->extract_interface_dispnp();
 
-  slideale_->remeshing(*structure_field(), mb_fluid_field()->discretization(), idisptotal, islave_,
-      structure_fluid_coupling_mortar(), get_comm());
+  slideale_->remeshing(*structure_field(), *mb_fluid_field()->discretization(), *idisptotal,
+      *islave_, structure_fluid_coupling_mortar(), get_comm());
 
   // Evaluate solid/fluid Mortar coupling
   slideale_->evaluate_mortar(

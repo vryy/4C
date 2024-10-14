@@ -90,7 +90,7 @@ void porofluidmultiphase_dyn(int restart)
       {
         actdis->fill_complete();
         nearbyelepairs = POROFLUIDMULTIPHASE::UTILS::extended_ghosting_artery_discretization(
-            actdis, arterydis, evaluate_on_lateral_surface, arterycoupl);
+            *actdis, arterydis, evaluate_on_lateral_surface, arterycoupl);
         break;
       }
       default:

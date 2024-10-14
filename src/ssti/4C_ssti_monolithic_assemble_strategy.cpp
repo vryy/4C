@@ -1204,7 +1204,7 @@ void SSTI::AssembleStrategyBlock::apply_structural_dbc_system_matrix(
           .apply_dirichlet_with_trafo(
               *locsysmanager_structure->trafo(), *dbcmap_structure, iblock == position_structure());
       locsysmanager_structure->rotate_local_to_global(
-          *Teuchos::rcpFromRef(systemmatrix_block->matrix(position_structure(), iblock)));
+          systemmatrix_block->matrix(position_structure(), iblock));
     }
   }
 }

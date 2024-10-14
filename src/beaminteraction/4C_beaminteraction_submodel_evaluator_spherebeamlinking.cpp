@@ -207,7 +207,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force()
       // and get their discrete element force vectors
       BEAMINTERACTION::UTILS::apply_binding_spot_force_to_parent_elements<
           Discret::ELEMENTS::Rigidsphere, Discret::ELEMENTS::Beam3Base>(discret(),
-          *periodic_bounding_box_ptr(), beam_interaction_data_state_ptr()->get_dis_col_np(),
+          *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
           *elepairptr, bspotforce, eleforce);
 
       // assemble the contributions into force vector class variable
@@ -269,7 +269,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_stiff()
       // apply linearizations to parent elements and get their discrete element stiffness matrices
       BEAMINTERACTION::UTILS::apply_binding_spot_stiff_to_parent_elements<
           Discret::ELEMENTS::Rigidsphere, Discret::ELEMENTS::Beam3Base>(discret(),
-          periodic_bounding_box_ptr(), beam_interaction_data_state_ptr()->get_dis_col_np(),
+          *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
           *elepairptr, bspotstiff, elestiff);
 
       // assemble the contributions into stiffness matrix class variable
@@ -336,7 +336,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force_stiff
       // and get their discrete element force vectors and stiffness matrices
       BEAMINTERACTION::UTILS::apply_binding_spot_force_stiff_to_parent_elements<
           Discret::ELEMENTS::Rigidsphere, Discret::ELEMENTS::Beam3Base>(discret(),
-          periodic_bounding_box_ptr(), beam_interaction_data_state_ptr()->get_dis_col_np(),
+          *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
           *elepairptr, bspotforce, bspotstiff, eleforce, elestiff);
 
       // assemble the contributions into force and stiffness class variables

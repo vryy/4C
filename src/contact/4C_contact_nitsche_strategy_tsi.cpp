@@ -159,9 +159,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategyTsi::setup_matr
   {
     case CONTACT::MatBlockType::displ_temp:
       return Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-          *Teuchos::rcpFromRef<const Epetra_Map>(
-              *Global::Problem::instance()->get_dis("structure")->dof_row_map()),
-          100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+          *Global::Problem::instance()->get_dis("structure")->dof_row_map(), 100, true, false,
+          Core::LinAlg::SparseMatrix::FE_MATRIX);
     case CONTACT::MatBlockType::temp_displ:
     case CONTACT::MatBlockType::temp_temp:
       return Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(

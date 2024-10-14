@@ -974,7 +974,7 @@ namespace FLD
         const Teuchos::RCP<const Core::LinAlg::Vector<double>> contributing_vector) override;
 
     ///< Update slave dofs for multifield simulations with fluid mesh tying
-    void update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& f);
+    void update_slave_dof(Core::LinAlg::Vector<double>& f);
 
     /** \brief Here additional contributions to the system matrix can be set
      *

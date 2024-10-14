@@ -524,16 +524,16 @@ namespace BEAMINTERACTION
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
     void get_pos_and_triad_of_binding_spot(Core::FE::Discretization const& discret,
-        Core::Elements::Element* ele, Teuchos::RCP<Core::LinAlg::Vector<double>> const& ia_discolnp,
-        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
-        Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int locbspotnum,
-        Core::LinAlg::Matrix<3, 1>& bspotpos, Core::LinAlg::Matrix<3, 3>& bspottriad)
+        Core::Elements::Element* ele, Core::LinAlg::Vector<double>& ia_discolnp,
+        Core::Geo::MeshFree::BoundingBox& pbb, Inpar::BEAMINTERACTION::CrosslinkerType linkertype,
+        int locbspotnum, Core::LinAlg::Matrix<3, 1>& bspotpos,
+        Core::LinAlg::Matrix<3, 3>& bspottriad)
     {
       std::vector<double> eledisp;
-      get_current_unshifted_element_dis(discret, ele, *ia_discolnp, *pbb, eledisp);
+      get_current_unshifted_element_dis(discret, ele, ia_discolnp, pbb, eledisp);
 
       get_pos_and_triad_of_binding_spot(
-          ele, *pbb, linkertype, locbspotnum, bspotpos, bspottriad, eledisp);
+          ele, pbb, linkertype, locbspotnum, bspotpos, bspottriad, eledisp);
     }
 
     /*----------------------------------------------------------------------------*
@@ -918,8 +918,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
     void apply_binding_spot_force_to_parent_elements(Core::FE::Discretization const& discret,
-        Core::Geo::MeshFree::BoundingBox& pbb,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> disp_np_col,
+        Core::Geo::MeshFree::BoundingBox& pbb, Core::LinAlg::Vector<double>& disp_np_col,
         BEAMINTERACTION::BeamLink& elepairptr,
         std::vector<Core::LinAlg::SerialDenseVector> const& bspotforce,
         std::vector<Core::LinAlg::SerialDenseVector>& eleforce)
@@ -935,7 +934,7 @@ namespace BEAMINTERACTION
         // get current element displacements
         std::vector<double> eledisp;
         get_current_unshifted_element_dis(
-            discret, discret.g_element(elepairptr.get_ele_gid(elei)), *disp_np_col, pbb, eledisp);
+            discret, discret.g_element(elepairptr.get_ele_gid(elei)), disp_np_col, pbb, eledisp);
         const int numdof_ele = eledisp.size();
 
         // zero out and set correct size of transformation matrix
@@ -962,8 +961,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
     void apply_binding_spot_stiff_to_parent_elements(Core::FE::Discretization const& discret,
-        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> disp_np_col,
+        Core::Geo::MeshFree::BoundingBox& pbb, Core::LinAlg::Vector<double>& disp_np_col,
         BEAMINTERACTION::BeamLink& elepairptr,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& bspotstiff,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>& elestiff)
@@ -981,11 +979,11 @@ namespace BEAMINTERACTION
 
       // get current element displacements
       std::vector<double> ele1disp;
-      get_current_unshifted_element_dis(discret, ele1, *disp_np_col, *pbb, ele1disp);
+      get_current_unshifted_element_dis(discret, ele1, disp_np_col, pbb, ele1disp);
       const int numdof_ele1 = ele1disp.size();
 
       std::vector<double> ele2disp;
-      get_current_unshifted_element_dis(discret, ele2, *disp_np_col, *pbb, ele2disp);
+      get_current_unshifted_element_dis(discret, ele2, disp_np_col, pbb, ele2disp);
       const int numdof_ele2 = ele2disp.size();
 
       // transformation matrix, will be resized and reused for various needs
@@ -1067,8 +1065,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
     template <class T1, class T2>
     void apply_binding_spot_force_stiff_to_parent_elements(Core::FE::Discretization const& discret,
-        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& pbb,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> disp_np_col,
+        Core::Geo::MeshFree::BoundingBox& pbb, Core::LinAlg::Vector<double>& disp_np_col,
         BEAMINTERACTION::BeamLink& elepairptr,
         std::vector<Core::LinAlg::SerialDenseVector> const& bspotforce,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& bspotstiff,
@@ -1099,11 +1096,11 @@ namespace BEAMINTERACTION
 
       // get current element displacements
       std::vector<double> ele1disp;
-      get_current_unshifted_element_dis(discret, ele1, *disp_np_col, *pbb, ele1disp);
+      get_current_unshifted_element_dis(discret, ele1, disp_np_col, pbb, ele1disp);
       const int numdof_ele1 = ele1disp.size();
 
       std::vector<double> ele2disp;
-      get_current_unshifted_element_dis(discret, ele2, *disp_np_col, *pbb, ele2disp);
+      get_current_unshifted_element_dis(discret, ele2, disp_np_col, pbb, ele2disp);
       const int numdof_ele2 = ele2disp.size();
 
       // transformation matrix, will be resized and reused for various needs
@@ -1350,41 +1347,39 @@ namespace BEAMINTERACTION
 
     template void apply_binding_spot_force_to_parent_elements<Discret::ELEMENTS::Beam3Base,
         Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
-        Core::Geo::MeshFree::BoundingBox&, const Teuchos::RCP<Core::LinAlg::Vector<double>>,
+        Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
         BEAMINTERACTION::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
         std::vector<Core::LinAlg::SerialDenseVector>&);
     template void apply_binding_spot_force_to_parent_elements<Discret::ELEMENTS::Rigidsphere,
         Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
-        Core::Geo::MeshFree::BoundingBox&, const Teuchos::RCP<Core::LinAlg::Vector<double>>,
+        Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
         BEAMINTERACTION::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
         std::vector<Core::LinAlg::SerialDenseVector>&);
 
     template void apply_binding_spot_stiff_to_parent_elements<Discret::ELEMENTS::Beam3Base,
         Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
-        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>, BEAMINTERACTION::BeamLink&,
+        Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
+        BEAMINTERACTION::BeamLink&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
     template void apply_binding_spot_stiff_to_parent_elements<Discret::ELEMENTS::Rigidsphere,
         Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
-        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>, BEAMINTERACTION::BeamLink&,
+        Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
+        BEAMINTERACTION::BeamLink&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
 
     template void apply_binding_spot_force_stiff_to_parent_elements<Discret::ELEMENTS::Beam3Base,
         Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
-        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>, BEAMINTERACTION::BeamLink&,
-        std::vector<Core::LinAlg::SerialDenseVector> const&,
+        Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
+        BEAMINTERACTION::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
         std::vector<Core::LinAlg::SerialDenseVector>&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
     template void apply_binding_spot_force_stiff_to_parent_elements<Discret::ELEMENTS::Rigidsphere,
         Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
-        Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const&,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>, BEAMINTERACTION::BeamLink&,
-        std::vector<Core::LinAlg::SerialDenseVector> const&,
+        Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
+        BEAMINTERACTION::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
         std::vector<Core::LinAlg::SerialDenseVector>&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);

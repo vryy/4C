@@ -1261,7 +1261,7 @@ void TSI::Monolithic::setup_rhs()
   extractor()->insert_vector(*thermo_field()->rhs(), 1, *rhs_);
 
   // apply mortar coupling
-  if (mortar_coupling_ != Teuchos::null) mortar_coupling_->condense_rhs(rhs_);
+  if (mortar_coupling_ != Teuchos::null) mortar_coupling_->condense_rhs(*rhs_);
 
 }  // setup_rhs()
 
@@ -1342,7 +1342,7 @@ void TSI::Monolithic::linear_solve()
 #endif  // TSI_DEBUG
 
   // apply mortar coupling
-  if (mortar_coupling_ != Teuchos::null) mortar_coupling_->recover_incr(iterinc_);
+  if (mortar_coupling_ != Teuchos::null) mortar_coupling_->recover_incr(*iterinc_);
 
 }  // linear_solve()
 
