@@ -709,6 +709,14 @@ void Solid::Integrator::recover_from_backup_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void Solid::Integrator::post_time_loop()
+{
+  check_init_setup();
+  model_eval().post_time_loop();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 Solid::Integrator::MidTimeEnergy::MidTimeEnergy(const Integrator& integrator)
     : integrator_(integrator), avg_type_(Inpar::Solid::midavg_vague)
 {

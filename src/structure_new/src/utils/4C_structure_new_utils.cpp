@@ -130,6 +130,7 @@ enum NOX::Nln::SolutionType Solid::Nln::convert_model_type2_sol_type(
     case Inpar::Solid::model_browniandyn:
     case Inpar::Solid::model_beaminteraction:
     case Inpar::Solid::model_constraints:
+    case Inpar::Solid::model_multiscale:
       soltype = NOX::Nln::sol_structure;
       break;
     case Inpar::Solid::model_contact:

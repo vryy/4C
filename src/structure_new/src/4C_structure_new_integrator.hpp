@@ -301,7 +301,7 @@ namespace Solid
     virtual void post_update() = 0;
 
     /// things that should be done after the timeloop
-    virtual void post_time_loop(){};
+    virtual void post_time_loop();
 
     //! update constant contributions of the current state for the new time step \f$t_{n+1}\f$
     virtual void update_constant_state_contributions() = 0;

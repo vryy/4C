@@ -167,6 +167,11 @@ namespace Discret
         mass_matrix_integration_ = integration_rule;
       }
 
+      const Core::FE::GaussIntegration& get_gauss_rule_stiffness_integration() const
+      {
+        return stiffness_matrix_integration_;
+      };
+
      private:
       /// EAS matrices and vectors to be stored between iterations
       Discret::ELEMENTS::EasIterationData<celltype, eastype> eas_iteration_data_ = {};

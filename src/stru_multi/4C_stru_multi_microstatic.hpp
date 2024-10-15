@@ -90,6 +90,9 @@ namespace MultiScale
         Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
         std::string name);
 
+    /// get corresponding time to step
+    double get_time_to_step(int step, std::string name);
+
     /*!
     \brief Return time from parameter list
 
@@ -132,6 +135,13 @@ namespace MultiScale
     */
     void output(Core::IO::DiscretizationWriter& output, const double time, const int istep,
         const double dt);
+
+    /*!
+    \brief Write restart
+
+    */
+    void write_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output, const double time,
+        const int step, const double dt);
 
     /*!
     \brief Determine toggle vector identifying prescribed boundary dofs
@@ -377,6 +387,19 @@ namespace MultiScale
 
    private:
     MicroStaticData microstatic_data_{};
+  };
+
+  //! Micro material nested parallelism action
+  enum class MicromaterialNestedParallelismAction : int
+  {
+    read_restart,       ///< read restart
+    post_setup,         ///< perform post setup routine for micro material
+    evaluate,           ///< evaluate micro material
+    update,             ///< update micro material
+    prepare_output,     ///< prepare output for micro material
+    output_step_state,  ///< write output for micro material
+    write_restart,      ///< write restart output for micro material
+    stop_multiscale     ///< after time loop stop multiscale simulation
   };
 }  // namespace MultiScale
 FOUR_C_NAMESPACE_CLOSE

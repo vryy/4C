@@ -85,6 +85,8 @@ void Solid::EXPLICIT::AdamsBashforthX<t_order>::post_setup()
 {
   check_init_setup();
   equilibrate_initial_state();
+
+  model_eval().post_setup();
 }
 
 /*----------------------------------------------------------------------------*

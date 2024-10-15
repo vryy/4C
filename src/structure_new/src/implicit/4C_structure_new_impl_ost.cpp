@@ -119,6 +119,8 @@ void Solid::IMPLICIT::OneStepTheta::post_setup()
     update_step_element();
     post_update();
   }
+
+  model_eval().post_setup();
 }
 
 /*----------------------------------------------------------------------------*

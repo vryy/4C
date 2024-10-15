@@ -55,7 +55,9 @@ void Solid::IMPLICIT::Statics::setup()
 void Solid::IMPLICIT::Statics::post_setup()
 {
   check_init_setup();
-  // DO NOTHING
+  // no acceleration to equilibriate
+
+  model_eval().post_setup();
 }
 
 /*----------------------------------------------------------------------------*

@@ -230,7 +230,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   if (not Global::Problem::instance()->restart() and post_partition_problem()) partition_problem();
 
   // only call post_setup at this stage for non restarted simulations
-  if (not Global::Problem::instance()->restart()) post_setup();
+  if (not Global::Problem::instance()->restart()) post_setup_submodels();
 
   // some screen output
   Core::Rebalance::Utils::print_parallel_distribution(*ia_discret_);
@@ -241,7 +241,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::BeamInteraction::post_setup()
+void Solid::ModelEvaluator::BeamInteraction::post_setup_submodels()
 {
   check_init();
 

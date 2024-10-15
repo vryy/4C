@@ -164,6 +164,13 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Solid::sur
   return Core::Communication::get_element_surfaces<StructuralSurface, Solid>(*this);
 }
 
+const Core::FE::GaussIntegration& Discret::ELEMENTS::Solid::get_gauss_rule() const
+{
+  return std::visit([](auto& interface) -> const Core::FE::GaussIntegration&
+      { return interface->get_gauss_rule_stiffness_integration(); },
+      solid_calc_variant_);
+}
+
 void Discret::ELEMENTS::Solid::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);

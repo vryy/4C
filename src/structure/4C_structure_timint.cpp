@@ -51,7 +51,6 @@
 
 #include <algorithm>
 #include <iostream>
-
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
@@ -2866,7 +2865,7 @@ void Solid::TimInt::output_micro()
     if (mat->material_type() == Core::Materials::m_struct_multiscale)
     {
       auto* micro = static_cast<Mat::MicroMaterial*>(mat.get());
-      micro->output();
+      micro->output_step_state();  // OUTDATED -> DELETE -> JUST TO MAKE COMPILE
     }
   }
 }
