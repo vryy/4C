@@ -16,7 +16,6 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -48,7 +47,8 @@ namespace Cardiovascular0D
     Teuchos::RCP<Core::LinAlg::SparseMatrix> reduce_off_diagonal(Core::LinAlg::SparseMatrix& M);
 
     //! v_red = V^T * v
-    Teuchos::RCP<Epetra_MultiVector> reduce_rhs(Epetra_MultiVector& v);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> reduce_rhs(
+        Core::LinAlg::MultiVector<double>& v);
 
     //! v_red = V^T * v
     Teuchos::RCP<Core::LinAlg::Vector<double>> reduce_residual(Core::LinAlg::Vector<double>& v);
@@ -69,20 +69,21 @@ namespace Cardiovascular0D
      * Number of Columns: int
      * Values (row-wise): float
      */
-    void read_pod_basis_vectors_from_file(
-        const std::string& absolute_path_to_pod_file, Teuchos::RCP<Epetra_MultiVector>& projmatrix);
+    void read_pod_basis_vectors_from_file(const std::string& absolute_path_to_pod_file,
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>>& projmatrix);
 
     //! Multiply two Epetra MultiVectors
-    void multiply_epetra_multi_vectors(Epetra_MultiVector&, char, Epetra_MultiVector&, char,
-        Epetra_Map&, Epetra_Import&, Epetra_MultiVector&);
+    void multiply_epetra_multi_vectors(Core::LinAlg::MultiVector<double>&, char,
+        Core::LinAlg::MultiVector<double>&, char, Epetra_Map&, Epetra_Import&,
+        Core::LinAlg::MultiVector<double>&);
 
-    //! Epetra_MultiVector to Core::LinAlg::SparseMatrix
-    void epetra_multi_vector_to_linalg_sparse_matrix(Epetra_MultiVector& multivect,
+    //! Core::LinAlg::MultiVector<double> to Core::LinAlg::SparseMatrix
+    void epetra_multi_vector_to_linalg_sparse_matrix(Core::LinAlg::MultiVector<double>& multivect,
         Epetra_Map& rangemap, Teuchos::RCP<Epetra_Map> domainmap,
         Core::LinAlg::SparseMatrix& sparsemat);
 
     //! Check orthogonality of POD basis vectors with M^T * M - I == 0
-    bool is_pod_basis_orthogonal(const Epetra_MultiVector& M);
+    bool is_pod_basis_orthogonal(const Core::LinAlg::MultiVector<double>& M);
 
     /// DOF row map of the full model, i.e. map of POD basis vectors
     Teuchos::RCP<const Epetra_Map> full_model_dof_row_map_;
@@ -91,7 +92,7 @@ namespace Cardiovascular0D
     bool havemor_ = false;
 
     //! Projection matrix for POD
-    Teuchos::RCP<Epetra_MultiVector> projmatrix_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> projmatrix_;
 
     //! Unique map of structure dofs after POD-MOR
     Teuchos::RCP<Epetra_Map> structmapr_;

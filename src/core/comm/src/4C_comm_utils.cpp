@@ -334,7 +334,7 @@ namespace Core::Communication
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
   bool are_distributed_vectors_identical(const Communicators& communicators,
-      const Epetra_MultiVector& vec, const char* name, double tol /*= 1.0e-14*/
+      const Core::LinAlg::MultiVector<double>& vec, const char* name, double tol /*= 1.0e-14*/
   )
   {
     Teuchos::RCP<Epetra_Comm> lcomm = communicators.local_comm();
@@ -364,7 +364,7 @@ namespace Core::Communication
       proc0map = Core::LinAlg::allreduce_overlapping_e_map(vecmap, lcomm->NumProc() - 1);
 
     // export full vectors to the two desired processors
-    Epetra_MultiVector fullvec(*proc0map, vec.NumVectors(), true);
+    Core::LinAlg::MultiVector<double> fullvec(*proc0map, vec.NumVectors(), true);
     Core::LinAlg::export_to(vec, fullvec);
 
     const int myglobalrank = gcomm->MyPID();

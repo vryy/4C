@@ -206,20 +206,21 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
       stcinv = Core::LinAlg::matrix_multiply(*stcinv, false, *tmpstcmat, false, false, false, true);
     }
 
-    Epetra_Vector temp(*(actdis->dof_row_map()), false);
+    Core::LinAlg::Vector<double> temp(*(actdis->dof_row_map()), false);
 
-    stcinv->multiply(false, nsv1, temp);
-    nsv1.Update(1.0, temp, 0.0);
-    stcinv->multiply(false, nsv2, temp);
-    nsv2.Update(1.0, temp, 0.0);
-    stcinv->multiply(false, nsv3, temp);
-    nsv3.Update(1.0, temp, 0.0);
-    stcinv->multiply(false, nsv4, temp);
-    nsv4.Update(1.0, temp, 0.0);
-    stcinv->multiply(false, nsv5, temp);
-    nsv5.Update(1.0, temp, 0.0);
-    stcinv->multiply(false, nsv6, temp);
-    nsv6.Update(1.0, temp, 0.0);
+    const auto multiply = [&](Epetra_Vector& vec)
+    {
+      Core::LinAlg::VectorView vec_view(vec);
+      stcinv->multiply(false, vec_view, temp);
+      vec.Update(1.0, temp, 0.0);
+    };
+
+    multiply(nsv1);
+    multiply(nsv2);
+    multiply(nsv3);
+    multiply(nsv4);
+    multiply(nsv5);
+    multiply(nsv6);
   }
 
   // Checks in case of multi-scale simulations

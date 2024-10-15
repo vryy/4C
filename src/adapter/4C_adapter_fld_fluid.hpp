@@ -222,7 +222,7 @@ namespace Adapter
         const Inpar::PoroElast::InitialField initfield, const int startfuncno) = 0;
 
     /// apply external forces to the fluid
-    virtual void apply_external_forces(Teuchos::RCP<Epetra_MultiVector> fext) = 0;
+    virtual void apply_external_forces(Teuchos::RCP<Core::LinAlg::MultiVector<double>> fext) = 0;
 
     /// apply contribution to neumann loads of the fluid (similar to ApplyExternalForces but without
     /// residual scaling)

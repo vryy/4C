@@ -72,8 +72,8 @@ void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
   a_ = crsA;
 
   // 3. Do a GID reindexing of the overall problem and create the direct solver
-  linear_problem_->SetRHS(b_.get());
-  linear_problem_->SetLHS(x_.get());
+  linear_problem_->SetRHS(b_->get_ptr_of_Epetra_MultiVector().get());
+  linear_problem_->SetLHS(x_->get_ptr_of_Epetra_MultiVector().get());
   linear_problem_->SetOperator(a_.get());
 
   if (not reindexer_.is_null() and not(reset or refactor)) reindexer_->fwd();
@@ -121,6 +121,6 @@ int Core::LinearSolver::DirectSolver<MatrixType, VectorType>::solve()
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 // explicit initialization
-template class Core::LinearSolver::DirectSolver<Epetra_Operator, Epetra_MultiVector>;
+template class Core::LinearSolver::DirectSolver<Epetra_Operator, Core::LinAlg::MultiVector<double>>;
 
 FOUR_C_NAMESPACE_CLOSE

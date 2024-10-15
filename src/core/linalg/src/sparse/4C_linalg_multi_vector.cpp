@@ -119,6 +119,13 @@ int Core::LinAlg::MultiVector<T>::PutScalar(double ScalarConstant)
 }
 
 template <typename T>
+int Core::LinAlg::MultiVector<T>::ReplaceMap(const Epetra_BlockMap& map)
+{
+  for (auto& view : column_vector_view_) view->ReplaceMap(map);
+  return vector_->ReplaceMap(map);
+}
+
+template <typename T>
 Core::LinAlg::Vector<double>& Core::LinAlg::MultiVector<T>::operator()(int i)
 {
   sync_view();

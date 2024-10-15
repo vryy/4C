@@ -3767,11 +3767,13 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     // ***************************************************************************************************
     // export inactive wear rhs
     Core::LinAlg::Vector<double> WearCondRhsexpM(*gmdofnrowmap_);
-    Core::LinAlg::export_to(*wear_cond_rhs_m_, WearCondRhsexpM);
+    Core::LinAlg::VectorView wear_cond_rhs_m_view(*wear_cond_rhs_m_);
+    Core::LinAlg::export_to(wear_cond_rhs_m_view, WearCondRhsexpM);
 
     // export inactive wear rhs
     Core::LinAlg::Vector<double> inactiveWearRhsexpM(*gmdofnrowmap_);
-    Core::LinAlg::export_to(*inactive_wear_rhs_m_, inactiveWearRhsexpM);
+    Core::LinAlg::VectorView inactive_wear_rhs_m_view(*inactive_wear_rhs_m_);
+    Core::LinAlg::export_to(inactive_wear_rhs_m_view, inactiveWearRhsexpM);
 
     wearrhsM->Update(1.0, WearCondRhsexpM, 1.0);
     wearrhsM->Update(1.0, inactiveWearRhsexpM, 1.0);

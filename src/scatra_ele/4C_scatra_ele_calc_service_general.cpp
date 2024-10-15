@@ -187,14 +187,16 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
       if (nsd_ == 3)
       {
         // get required quantities, set in dynamic Smagorinsky class
-        Teuchos::RCP<Epetra_MultiVector> col_filtered_vel =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_vel");
-        Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_dens_vel");
-        Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel_temp =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_dens_vel_temp");
-        Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_rateofstrain_temp =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_dens_rateofstrain_temp");
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_vel =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("col_filtered_vel");
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_dens_vel =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("col_filtered_dens_vel");
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_dens_vel_temp =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
+                "col_filtered_dens_vel_temp");
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_dens_rateofstrain_temp =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
+                "col_filtered_dens_rateofstrain_temp");
         Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_temp =
             params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_filtered_temp");
         Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_dens =
@@ -264,14 +266,14 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
     {
       if (nsd_ == 3)
       {
-        Teuchos::RCP<Epetra_MultiVector> col_filtered_phi =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_phi");
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_phi =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("col_filtered_phi");
         Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_phi2 =
             params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_filtered_phi2");
         Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_phiexpression =
             params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_filtered_phiexpression");
-        Teuchos::RCP<Epetra_MultiVector> col_filtered_alphaijsc =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_alphaijsc");
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_alphaijsc =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("col_filtered_alphaijsc");
 
         // initialize variables to calculate
         double dt_numerator = 0.0;

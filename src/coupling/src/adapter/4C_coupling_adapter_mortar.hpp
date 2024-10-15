@@ -216,8 +216,9 @@ namespace Coupling::Adapter
      *
      *  \return Slave vector
      */
-    Teuchos::RCP<Epetra_MultiVector> master_to_slave(
-        Teuchos::RCP<Epetra_MultiVector> mv  ///< [in] master vector (to be transferred)
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+            mv  ///< [in] master vector (to be transferred)
     ) const override;
 
     /*! \brief Transfer a dof vector from master to slave (const version)
@@ -233,8 +234,9 @@ namespace Coupling::Adapter
      *
      *  \return Slave vector
      */
-    Teuchos::RCP<Epetra_MultiVector> master_to_slave(
-        Teuchos::RCP<const Epetra_MultiVector> mv  ///< [in] master vector (to be transferred)
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
+        Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
+            mv  ///< [in] master vector (to be transferred)
     ) const override;
 
     /*! \brief Transfer a dof vector from slave to master
@@ -249,8 +251,9 @@ namespace Coupling::Adapter
      *
      *  \return Master vector
      */
-    Teuchos::RCP<Epetra_MultiVector> slave_to_master(
-        Teuchos::RCP<Epetra_MultiVector> sv  ///< [in] slave vector (to be transferred)
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+            sv  ///< [in] slave vector (to be transferred)
     ) const override;
 
     /*! \brief Transfer a dof vector from slave to master (const version)
@@ -266,20 +269,23 @@ namespace Coupling::Adapter
      *
      *  \return Master vector
      */
-    Teuchos::RCP<Epetra_MultiVector> slave_to_master(
-        Teuchos::RCP<const Epetra_MultiVector> sv  ///< [in] slave vector (to be transferred)
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
+        Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
+            sv  ///< [in] slave vector (to be transferred)
     ) const override;
 
     /// transfer a dof vector from master to slave
-    void master_to_slave(
-        Teuchos::RCP<const Epetra_MultiVector> mv,  ///< [in] master vector (to be transferred)
-        Teuchos::RCP<Epetra_MultiVector> sv         ///< [out] slave vector (containing result)
+    void master_to_slave(Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
+                             mv,  ///< [in] master vector (to be transferred)
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+            sv  ///< [out] slave vector (containing result)
     ) const override;
 
     /// transfer a dof vector from slave to master
-    void slave_to_master(
-        Teuchos::RCP<const Epetra_MultiVector> sv,  ///< [in] slave vector (to be transferred)
-        Teuchos::RCP<Epetra_MultiVector> mv         ///< [out] master vector (containing result)
+    void slave_to_master(Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
+                             sv,  ///< [in] slave vector (to be transferred)
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+            mv  ///< [out] master vector (containing result)
     ) const override;
 
     //@}

@@ -776,7 +776,7 @@ void Discret::ELEMENTS::So3Plast<distype>::read_parameter_list(
 template <Core::FE::CellType distype>
 template <unsigned int num_cols>
 void Discret::ELEMENTS::So3Plast<distype>::soh8_expol(
-    Core::LinAlg::Matrix<numgpt_post, num_cols>& data, Epetra_MultiVector& expolData)
+    Core::LinAlg::Matrix<numgpt_post, num_cols>& data, Core::LinAlg::MultiVector<double>& expolData)
 {
   if (distype != Core::FE::CellType::hex8) FOUR_C_THROW("soh8_expol called from non-hex8 element");
 
@@ -847,17 +847,17 @@ void Discret::ELEMENTS::So3Plast<distype>::soh8_expol(
     {
       const double invmyadjele = 1.0 / nodes()[i]->num_element();
       for (unsigned int j = 0; j < num_cols; ++j)
-        (*(expolData(j)))[lid] += nodalData(i, j) * invmyadjele;
+        ((expolData(j)))[lid] += nodalData(i, j) * invmyadjele;
     }
   }
 }
 
 template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::soh8_expol(
-    Core::LinAlg::Matrix<numgpt_post, 1>&, Epetra_MultiVector&);
+    Core::LinAlg::Matrix<numgpt_post, 1>&, Core::LinAlg::MultiVector<double>&);
 template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::soh8_expol(
-    Core::LinAlg::Matrix<numgpt_post, numstr_>&, Epetra_MultiVector&);
+    Core::LinAlg::Matrix<numgpt_post, numstr_>&, Core::LinAlg::MultiVector<double>&);
 template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::soh8_expol(
-    Core::LinAlg::Matrix<numgpt_post, 9>&, Epetra_MultiVector&);
+    Core::LinAlg::Matrix<numgpt_post, 9>&, Core::LinAlg::MultiVector<double>&);
 
 /*----------------------------------------------------------------------*
  | Have plastic spin                                        seitz 05/14 |

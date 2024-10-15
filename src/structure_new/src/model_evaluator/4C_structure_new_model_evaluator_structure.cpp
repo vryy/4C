@@ -38,7 +38,6 @@
 #include "4C_structure_new_timint_implicit.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_MultiVector.h>
 #include <Teuchos_ParameterList.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -824,7 +823,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
         case Inpar::Solid::GaussPointDataOutputType::element_center:
         {
           std::vector<std::optional<std::string>> context(size, name);
-          Teuchos::RCP<Epetra_MultiVector> data =
+          Teuchos::RCP<Core::LinAlg::MultiVector<double>> data =
               elementDataManager.get_element_center_data().at(name);
           vtu_writer_ptr_->append_result_data_vector_with_context(
               *data, Core::IO::OutputEntity::element, context);
@@ -832,7 +831,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
         }
         case Inpar::Solid::GaussPointDataOutputType::gauss_points:
         {
-          const std::vector<Teuchos::RCP<Epetra_MultiVector>>& data_list =
+          const std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>& data_list =
               elementDataManager.get_gauss_point_data().at(name);
           for (std::size_t gp = 0; gp < data_list.size(); ++gp)
           {
@@ -846,7 +845,8 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
         case Inpar::Solid::GaussPointDataOutputType::nodes:
         {
           std::vector<std::optional<std::string>> context(size, name);
-          Teuchos::RCP<Epetra_MultiVector> data = elementDataManager.get_nodal_data().at(name);
+          Teuchos::RCP<Core::LinAlg::MultiVector<double>> data =
+              elementDataManager.get_nodal_data().at(name);
           vtu_writer_ptr_->append_result_data_vector_with_context(
               *data, Core::IO::OutputEntity::node, context);
           break;
@@ -924,7 +924,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
 
     auto PostprocessGaussPointDataToNodes =
         [&](const std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& map_data,
-            Epetra_MultiVector& assembled_data)
+            Core::LinAlg::MultiVector<double>& assembled_data)
     {
       discret_ptr()->evaluate(
           [&](Core::Elements::Element& ele)
@@ -937,7 +937,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
 
     auto PostprocessGaussPointDataToElementCenter =
         [&](const std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& map_data,
-            Epetra_MultiVector& assembled_data)
+            Core::LinAlg::MultiVector<double>& assembled_data)
     {
       discret_ptr()->evaluate(
           [&](Core::Elements::Element& ele)
@@ -958,12 +958,13 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
       ex.do_export(gp_stress_data);
 
       eval_data().get_stress_data_node_postprocessed() =
-          Teuchos::make_rcp<Epetra_MultiVector>(*discret().node_col_map(), 6, true);
+          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret().node_col_map(), 6, true);
       eval_data().get_stress_data_element_postprocessed() =
-          Teuchos::make_rcp<Epetra_MultiVector>(*discret().element_row_map(), 6, true);
+          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+              *discret().element_row_map(), 6, true);
 
 
-      Epetra_MultiVector row_nodal_data(*discret().node_row_map(), 6, true);
+      Core::LinAlg::MultiVector<double> row_nodal_data(*discret().node_row_map(), 6, true);
       PostprocessGaussPointDataToNodes(gp_stress_data, row_nodal_data);
       Core::LinAlg::export_to(row_nodal_data, *eval_data().get_stress_data_node_postprocessed());
 
@@ -980,11 +981,12 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
       ex.do_export(gp_strain_data);
 
       eval_data().get_strain_data_node_postprocessed() =
-          Teuchos::make_rcp<Epetra_MultiVector>(*discret().node_col_map(), 6, true);
+          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret().node_col_map(), 6, true);
       eval_data().get_strain_data_element_postprocessed() =
-          Teuchos::make_rcp<Epetra_MultiVector>(*discret().element_row_map(), 6, true);
+          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+              *discret().element_row_map(), 6, true);
 
-      Epetra_MultiVector row_nodal_data(*discret().node_row_map(), 6, true);
+      Core::LinAlg::MultiVector<double> row_nodal_data(*discret().node_row_map(), 6, true);
       PostprocessGaussPointDataToNodes(gp_strain_data, row_nodal_data);
       Core::LinAlg::export_to(row_nodal_data, *eval_data().get_strain_data_node_postprocessed());
 

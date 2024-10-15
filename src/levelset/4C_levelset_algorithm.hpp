@@ -142,8 +142,11 @@ namespace ScaTra
     /** \brief access nodal gradient-based values for reinitialization
      *
      * (reinit_eq() only; Sussman and Elliptic) */
-    inline Teuchos::RCP<Epetra_MultiVector>& nodal_grad_based_value() { return nb_grad_val_; }
-    inline Teuchos::RCP<const Epetra_MultiVector> nodal_grad_based_value() const
+    inline Teuchos::RCP<Core::LinAlg::MultiVector<double>>& nodal_grad_based_value()
+    {
+      return nb_grad_val_;
+    }
+    inline Teuchos::RCP<const Core::LinAlg::MultiVector<double>> nodal_grad_based_value() const
     {
       return nb_grad_val_;
     }
@@ -159,7 +162,7 @@ namespace ScaTra
     // -----------------------------------------------------------------
     void reconstructed_nodal_curvature(Teuchos::RCP<Core::LinAlg::Vector<double>> curvature,
         const Teuchos::RCP<const Core::LinAlg::Vector<double>> phi,
-        const Teuchos::RCP<const Epetra_MultiVector> gradphi);
+        const Teuchos::RCP<const Core::LinAlg::MultiVector<double>> gradphi);
 
     // -----------------------------------------------------------------
     // members
@@ -307,7 +310,7 @@ namespace ScaTra
     Teuchos::RCP<Core::LinAlg::Vector<double>> initialphireinit_;
 
     /// nodal gradient-based values for reinitialization (reinit_eq() only; Sussman and Elliptic)
-    Teuchos::RCP<Epetra_MultiVector> nb_grad_val_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> nb_grad_val_;
 
     /// interval for reinitialization (every 'reinitinterval_' time steps)
     int reinitinterval_;

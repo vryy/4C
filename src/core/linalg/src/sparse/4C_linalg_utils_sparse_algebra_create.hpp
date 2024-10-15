@@ -22,7 +22,6 @@
 #include <Epetra_Export.h>
 #include <Epetra_Import.h>
 #include <Epetra_Map.h>
-#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -65,13 +64,13 @@ namespace Core::LinAlg
       const Epetra_BlockMap& rowmap, const bool init = true);
 
   /*!
-   \brief Create a new Epetra_MultiVector and return RefcountPtr to it
+   \brief Create a new Core::LinAlg::MultiVector<double> and return RefcountPtr to it
 
    \param rowmap (in): row map of vector
    \param rowmap (in): number of vectors
    \param init (in): initialize vector to zero upon construction
    */
-  Teuchos::RCP<Epetra_MultiVector> create_multi_vector(
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> create_multi_vector(
       const Epetra_BlockMap& rowmap, const int numrows, const bool init = true);
 
   /*!

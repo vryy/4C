@@ -48,8 +48,8 @@ Core::LinearSolver::MueLuPreconditioner::MueLuPreconditioner(Teuchos::ParameterL
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::MueLuPreconditioner::setup(
-    bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
+void Core::LinearSolver::MueLuPreconditioner::setup(bool create, Epetra_Operator* matrix,
+    Core::LinAlg::MultiVector<double>* x, Core::LinAlg::MultiVector<double>* b)
 {
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<GO, NO>;
   using EpetraMap = Xpetra::EpetraMapT<GO, NO>;
@@ -91,7 +91,8 @@ void Core::LinearSolver::MueLuPreconditioner::setup(
 
       Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> coordinates =
           Teuchos::make_rcp<EpetraMultiVector>(
-              inverseList.get<Teuchos::RCP<Epetra_MultiVector>>("Coordinates"));
+              inverseList.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("Coordinates")
+                  ->get_ptr_of_Epetra_MultiVector());
 
       muelu_params->set("number of equations", number_of_equations);
       Teuchos::ParameterList& user_param_list = muelu_params->sublist("user data");
@@ -170,7 +171,8 @@ void Core::LinearSolver::MueLuPreconditioner::setup(
 
         Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace =
             Teuchos::make_rcp<EpetraMultiVector>(
-                inverseList.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace"));
+                inverseList.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace")
+                    ->get_ptr_of_Epetra_MultiVector());
 
         H->GetLevel(0)->Set("Nullspace" + std::to_string(block + 1), nullspace);
       }
@@ -192,8 +194,8 @@ Core::LinearSolver::MueLuContactSpPreconditioner::MueLuContactSpPreconditioner(
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::MueLuContactSpPreconditioner::setup(
-    bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
+void Core::LinearSolver::MueLuContactSpPreconditioner::setup(bool create, Epetra_Operator* matrix,
+    Core::LinAlg::MultiVector<double>* x, Core::LinAlg::MultiVector<double>* b)
 {
   using EpetraMap = Xpetra::EpetraMapT<int, Xpetra::EpetraNode>;
   using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<int, Xpetra::EpetraNode>;

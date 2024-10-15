@@ -354,10 +354,10 @@ namespace EleMag
     Teuchos::RCP<Core::LinAlg::Vector<double>> trace_;
 
     /// Output vectors
-    Teuchos::RCP<Epetra_MultiVector> electric;
-    Teuchos::RCP<Epetra_MultiVector> electric_post;
-    Teuchos::RCP<Epetra_MultiVector> magnetic;
-    Teuchos::RCP<Epetra_MultiVector> trace;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> electric;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> electric_post;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> magnetic;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> trace;
     Teuchos::RCP<Core::LinAlg::Vector<double>> conductivity;
     Teuchos::RCP<Core::LinAlg::Vector<double>> permittivity;
     Teuchos::RCP<Core::LinAlg::Vector<double>> permeability;

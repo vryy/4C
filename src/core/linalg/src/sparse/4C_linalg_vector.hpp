@@ -65,10 +65,6 @@ namespace Core::LinAlg
 
     Teuchos::RCP<Epetra_Vector> get_ptr_of_Epetra_Vector() { return vector_; }
 
-    operator Teuchos::RCP<Epetra_Vector>() { return vector_; }
-
-    operator Teuchos::RCP<const Epetra_Vector>() const { return vector_; }
-
     operator Epetra_MultiVector &() { return *vector_; }
 
     operator const Epetra_MultiVector &() const { return *vector_; }
@@ -77,20 +73,15 @@ namespace Core::LinAlg
 
     operator const Epetra_Vector &() const { return *vector_; }
 
-    operator Teuchos::RCP<Epetra_MultiVector>()
-    {
-      return Teuchos::rcp_dynamic_cast<Epetra_MultiVector>(vector_);
-    }
-
-    operator Teuchos::RCP<const Epetra_MultiVector>() const
-    {
-      return Teuchos::rcp_dynamic_cast<Epetra_MultiVector>(vector_);
-    }
-
-    Teuchos::RCP<const Epetra_Vector> get_ptr_of_const_Epetra_Vector() const { return vector_; }
-
     //! get pointer of epetra multi vector
     Teuchos::RCP<Epetra_MultiVector> get_ptr_of_Epetra_MultiVector() { return vector_; }
+
+    //! Temporary helper to ease transition from Epetra and simplify interfacing with RCP-laden code
+    Teuchos::RCP<MultiVector<T>> get_ptr_of_MultiVector() const
+    {
+      sync_view();
+      return multi_vector_view_;
+    }
 
     //! Computes dot product of each corresponding pair of vectors.
     int Dot(const Epetra_MultiVector &A, double *Result) const;
@@ -205,7 +196,7 @@ namespace Core::LinAlg
     /** Replace map, only if new map has same point-structure as current map.
         return 0 if map is replaced, -1 if not.
      */
-    int ReplaceMap(const Epetra_BlockMap &map) { return vector_->ReplaceMap(map); }
+    int ReplaceMap(const Epetra_BlockMap &map);
 
     int ReplaceGlobalValue(int GlobalRow, int VectorIndex, double ScalarValue)
     {
@@ -341,6 +332,7 @@ namespace Core::LinAlg
     mutable Teuchos::RCP<MultiVector<T>> multi_vector_view_;
 
     friend class VectorView<Vector<T>>;
+    friend class VectorView<const Vector<T>>;
     friend class MultiVector<T>;
   };
 
@@ -416,20 +408,16 @@ namespace Core::LinAlg
   };
 
   /**
-   * Temporary helper class for migration. View an Epetra_Vector as a Vector. Make sure that the
-   * viewed vector lives longer than the view.
+   * Temporary helper class for migration. View one of the Trilinos vector types as one of ours.
+   * Make sure that the viewed vector lives longer than the view.
    */
   template <typename VectorType>
   class VectorView
   {
    public:
     template <typename EpetraVectorType>
-    VectorView(EpetraVectorType &vector)
-        // Construct something cheap, it will be overwritten anyway.
-        : view_vector_(VectorType::create_view(vector))
+    VectorView(EpetraVectorType &vector) : view_vector_(VectorType::create_view(vector))
     {
-      // Replace the internals of the Vector with a viewing RCP.
-      view_vector_->vector_ = Teuchos::rcpFromRef(vector);
     }
 
     // Make the class hard to misuse and disallow copy and move.
@@ -453,8 +441,15 @@ namespace Core::LinAlg
 
   // Template deduction guide for view of Epetra_Vector
   VectorView(Epetra_Vector &)->VectorView<Vector<double>>;
+  VectorView(const Epetra_Vector &)->VectorView<const Vector<double>>;
+
   // Template deduction guide for view of Epetra_MultiVector
   VectorView(Epetra_MultiVector &)->VectorView<MultiVector<double>>;
+  VectorView(const Epetra_MultiVector &)->VectorView<const MultiVector<double>>;
+
+  // Template deduction guide for view of Epetra_FEVector
+  VectorView(Epetra_FEVector &)->VectorView<MultiVector<double>>;
+  VectorView(const Epetra_FEVector &)->VectorView<const MultiVector<double>>;
 
 }  // namespace Core::LinAlg
 

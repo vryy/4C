@@ -35,8 +35,6 @@
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_utils_result_test.hpp"
 
-#include <Epetra_MultiVector.h>
-
 #include <memory>
 #include <optional>
 #include <set>
@@ -407,38 +405,38 @@ namespace ScaTra
     );
 
     //! calculate flux vector field inside computational domain
-    Teuchos::RCP<Epetra_MultiVector> calc_flux_in_domain();
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> calc_flux_in_domain();
 
     //! calculate mass/heat normal flux at specified boundaries and write result to file if @p
     //! writetofile is true
-    Teuchos::RCP<Epetra_MultiVector> calc_flux_at_boundary(const bool writetofile);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> calc_flux_at_boundary(const bool writetofile);
 
     //! calculation of relative error with reference to analytical solution
     virtual void evaluate_error_compared_to_analytical_sol();
 
     //! Calculate the reconstructed nodal gradient of phi from L2-projection
-    Teuchos::RCP<Epetra_MultiVector> reconstruct_gradient_at_nodes_l2_projection(
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> reconstruct_gradient_at_nodes_l2_projection(
         const Teuchos::RCP<const Core::LinAlg::Vector<double>> phi,
         bool scalenormal = false,  ///< Scale the smoothed normal field to 1
         bool returnnodal = false   ///< Return nodal based vector
     );
 
     //! Calculate the reconstructed nodal gradient of phi from super convergent patch recovery
-    Teuchos::RCP<Epetra_MultiVector> reconstruct_gradient_at_nodes_patch_recon(
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> reconstruct_gradient_at_nodes_patch_recon(
         const Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, const int dimension = 3,
         bool scalenormal = false,  ///< Scale the smoothed normal field to 1
         bool returnnodal = false   ///< Return nodal based vector
     );
 
     //! Calculate the reconstructed nodal gradient of phi from node mean averaging
-    Teuchos::RCP<Epetra_MultiVector> reconstruct_gradient_at_nodes_mean_average(
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> reconstruct_gradient_at_nodes_mean_average(
         Teuchos::RCP<const Core::LinAlg::Vector<double>> phi,
         bool scalenormal = false,  ///< Scale the smoothed normal field to 1
         bool returnnodal = false   ///< Return nodal based vector
     );
 
     //! Calculate the reconstructed nodal gradient of phi
-    void scale_gradients_to_one(Teuchos::RCP<Epetra_MultiVector> state);
+    void scale_gradients_to_one(Teuchos::RCP<Core::LinAlg::MultiVector<double>> state);
 
     //! finite difference check for scalar transport system matrix
     virtual void fd_check();
@@ -489,7 +487,8 @@ namespace ScaTra
     virtual void print_time_step_info();
 
     //! convert dof-based result vector into node-based multi-vector for postprocessing
-    [[nodiscard]] Teuchos::RCP<Epetra_MultiVector> convert_dof_vector_to_componentwise_node_vector(
+    [[nodiscard]] Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+    convert_dof_vector_to_componentwise_node_vector(
         const Core::LinAlg::Vector<double>& dof_vector,  ///< dof-based result vector
         const int nds                                    ///< number of dofset to convert
     ) const;
@@ -549,10 +548,16 @@ namespace ScaTra
     int nds_wall_shear_stress() const { return nds_wss_; }
 
     //! return domain flux vector
-    Teuchos::RCP<const Epetra_MultiVector> flux_domain() const { return flux_domain_; };
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> flux_domain() const
+    {
+      return flux_domain_;
+    };
 
     //! return boundary flux vector
-    Teuchos::RCP<const Epetra_MultiVector> flux_boundary() const { return flux_boundary_; };
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> flux_boundary() const
+    {
+      return flux_boundary_;
+    };
 
     //! return Dirichlet map
     Teuchos::RCP<const Core::LinAlg::MapExtractor> dirich_maps() { return dbcmaps_; }
@@ -910,16 +915,24 @@ namespace ScaTra
     /*========================================================================*/
 
     //! return scatra structure growth vector
-    Teuchos::RCP<const Epetra_MultiVector> str_growth() const { return scstrgrdisp_; };
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> str_growth() const
+    {
+      return scstrgrdisp_;
+    };
 
     //! return scatra fluid growth vector
-    Teuchos::RCP<const Epetra_MultiVector> fld_growth() const { return scfldgrdisp_; };
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> fld_growth() const
+    {
+      return scfldgrdisp_;
+    };
 
     //! set scatra fluid displacement vector due to biofilm growth
-    void set_sc_fld_gr_disp(Teuchos::RCP<Epetra_MultiVector> scatra_fluid_growth_disp);
+    void set_sc_fld_gr_disp(
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> scatra_fluid_growth_disp);
 
     //! set scatra structure displacement vector due to biofilm growth
-    void set_sc_str_gr_disp(Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp);
+    void set_sc_str_gr_disp(
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> scatra_struct_growth_disp);
 
     //! set ptr to wrapper of this time integrator
     void set_model_evaluatro_ptr(Adapter::AdapterScatraWrapper* adapter_scatra_wrapper)
@@ -1007,7 +1020,7 @@ namespace ScaTra
     );
 
     //! compute outward pointing unit normal vectors at given bc's
-    Teuchos::RCP<Epetra_MultiVector> compute_normal_vectors(
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> compute_normal_vectors(
         const std::vector<std::string>& condnames  //!< ?
     );
 
@@ -1055,7 +1068,7 @@ namespace ScaTra
 
 
     //! Calculate the reconstructed nodal gradient of phi by means of SPR
-    Teuchos::RCP<Epetra_MultiVector> compute_superconvergent_patch_recovery(
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> compute_superconvergent_patch_recovery(
         Teuchos::RCP<const Core::LinAlg::Vector<double>> state, const std::string& statename,
         const int numvec, Teuchos::ParameterList& params, const int dim);
 
@@ -1123,7 +1136,7 @@ namespace ScaTra
      * @param[in] fluxtype  flux type ("domain" or "boundary")
      */
     virtual void collect_output_flux_data(
-        Teuchos::RCP<Epetra_MultiVector> flux, const std::string& fluxtype);
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> flux, const std::string& fluxtype);
 
     /*========================================================================*/
     //! @name Time, time-step and related methods
@@ -1315,10 +1328,10 @@ namespace ScaTra
     Teuchos::RCP<std::vector<int>> writefluxids_;
 
     //! flux vector field inside domain
-    Teuchos::RCP<Epetra_MultiVector> flux_domain_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> flux_domain_;
 
     //! flux vector field on boundary
-    Teuchos::RCP<Epetra_MultiVector> flux_boundary_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> flux_boundary_;
 
     //! map extractor associated with boundary segments for flux calculation
     Teuchos::RCP<Core::LinAlg::MultiMapExtractor> flux_boundary_maps_;
@@ -1440,7 +1453,7 @@ namespace ScaTra
     /*========================================================================*/
 
     //! subgrid-scale velocity required for multifractal subgrid-scale modeling
-    Teuchos::RCP<Epetra_MultiVector> fsvel_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> fsvel_;
 
     //! type of velocity field
     const Inpar::ScaTra::VelocityField velocity_field_type_;
@@ -1531,7 +1544,7 @@ namespace ScaTra
     Teuchos::RCP<Core::LinAlg::Vector<double>> neumann_loads_;
 
     //! unit outer normal vector field for flux output
-    Teuchos::RCP<Epetra_MultiVector> normals_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> normals_;
 
     //! residual vector
     Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
@@ -1628,10 +1641,10 @@ namespace ScaTra
 
     // TODO: SCATRA_ELE_CLEANING: BIOFILM
     //! scatra fluid displacement due to growth
-    Teuchos::RCP<Epetra_MultiVector> scfldgrdisp_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> scfldgrdisp_;
 
     //! scatra structure displacement due to growth
-    Teuchos::RCP<Epetra_MultiVector> scstrgrdisp_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> scstrgrdisp_;
 
     //! flag for printing out integral values of reaction
     const bool outintegrreac_;

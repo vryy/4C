@@ -54,7 +54,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::master_t
       break;
   }
 
-  master_to_slave(mv->get_ptr_of_const_Epetra_Vector(), map_type, sv->get_ptr_of_Epetra_Vector());
+  master_to_slave(mv->get_ptr_of_MultiVector(), map_type, sv->get_ptr_of_MultiVector());
   return sv;
 }
 
@@ -75,23 +75,24 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::slave_to
       break;
   }
 
-  slave_to_master(sv->get_ptr_of_const_Epetra_Vector(), map_type, mv->get_ptr_of_Epetra_Vector());
+  slave_to_master(sv->get_ptr_of_MultiVector(), map_type, mv->get_ptr_of_MultiVector());
   return mv;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> XFEM::XFieldField::Coupling::master_to_slave(
-    const Teuchos::RCP<const Epetra_MultiVector>& mv, const enum XFEM::MapType& map_type) const
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> XFEM::XFieldField::Coupling::master_to_slave(
+    const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& mv,
+    const enum XFEM::MapType& map_type) const
 {
-  Teuchos::RCP<Epetra_MultiVector> sv = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv = Teuchos::null;
   switch (map_type)
   {
     case XFEM::map_dofs:
       return ::FourC::Coupling::Adapter::Coupling::master_to_slave(mv);
       break;
     case XFEM::map_nodes:
-      sv = Teuchos::make_rcp<Epetra_MultiVector>(*slavenodemap_, mv->NumVectors());
+      sv = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*slavenodemap_, mv->NumVectors());
       break;
   }
 
@@ -101,17 +102,18 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::XFieldField::Coupling::master_to_slave(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> XFEM::XFieldField::Coupling::slave_to_master(
-    const Teuchos::RCP<const Epetra_MultiVector>& sv, const enum XFEM::MapType& map_type) const
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> XFEM::XFieldField::Coupling::slave_to_master(
+    const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& sv,
+    const enum XFEM::MapType& map_type) const
 {
-  Teuchos::RCP<Epetra_MultiVector> mv = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv = Teuchos::null;
   switch (map_type)
   {
     case XFEM::map_dofs:
       return ::FourC::Coupling::Adapter::Coupling::slave_to_master(sv);
       break;
     case XFEM::map_nodes:
-      mv = Teuchos::make_rcp<Epetra_MultiVector>(*masternodemap_, sv->NumVectors());
+      mv = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*masternodemap_, sv->NumVectors());
       break;
   }
 
@@ -121,8 +123,9 @@ Teuchos::RCP<Epetra_MultiVector> XFEM::XFieldField::Coupling::slave_to_master(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::master_to_slave(const Teuchos::RCP<const Epetra_MultiVector>& mv,
-    const enum XFEM::MapType& map_type, Teuchos::RCP<Epetra_MultiVector> sv) const
+void XFEM::XFieldField::Coupling::master_to_slave(
+    const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& mv,
+    const enum XFEM::MapType& map_type, Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv) const
 {
   switch (map_type)
   {
@@ -141,7 +144,7 @@ void XFEM::XFieldField::Coupling::master_to_slave(const Teuchos::RCP<const Epetr
         FOUR_C_THROW("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
 #endif
 
-      Epetra_MultiVector perm(*permslavenodemap_, mv->NumVectors());
+      Core::LinAlg::MultiVector<double> perm(*permslavenodemap_, mv->NumVectors());
       std::copy(mv->Values(), mv->Values() + (mv->MyLength() * mv->NumVectors()), perm.Values());
 
       const int err = sv->Export(perm, *nodal_slaveexport_, Insert);
@@ -152,8 +155,9 @@ void XFEM::XFieldField::Coupling::master_to_slave(const Teuchos::RCP<const Epetr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::slave_to_master(const Teuchos::RCP<const Epetra_MultiVector>& sv,
-    const enum XFEM::MapType& map_type, Teuchos::RCP<Epetra_MultiVector> mv) const
+void XFEM::XFieldField::Coupling::slave_to_master(
+    const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& sv,
+    const enum XFEM::MapType& map_type, Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv) const
 {
   switch (map_type)
   {
@@ -172,7 +176,7 @@ void XFEM::XFieldField::Coupling::slave_to_master(const Teuchos::RCP<const Epetr
         FOUR_C_THROW("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
 #endif
 
-      Epetra_MultiVector perm(*permmasternodemap_, sv->NumVectors());
+      Core::LinAlg::MultiVector<double> perm(*permmasternodemap_, sv->NumVectors());
       std::copy(sv->Values(), sv->Values() + (sv->MyLength() * sv->NumVectors()), perm.Values());
 
       const int err = mv->Export(perm, *nodal_masterexport_, Insert);

@@ -3039,10 +3039,11 @@ void FLD::TurbulenceStatisticsCha::add_model_params_multifractal(
 
 void FLD::TurbulenceStatisticsCha::evaluate_residuals(
     std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> statevecs,
-    std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> statetenss, const double thermpressaf,
-    const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
+    std::map<std::string, Teuchos::RCP<Core::LinAlg::MultiVector<double>>> statetenss,
+    const double thermpressaf, const double thermpressam, const double thermpressdtaf,
+    const double thermpressdtam,
     std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> scatrastatevecs,
-    std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> scatrafieldvecs)
+    std::map<std::string, Teuchos::RCP<Core::LinAlg::MultiVector<double>>> scatrafieldvecs)
 {
   if (subgrid_dissipation_)
   {

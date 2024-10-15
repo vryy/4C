@@ -107,8 +107,8 @@ int Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
       {
         // access the general material
         Teuchos::RCP<Core::Mat::Material> material = ele->material();
-        Teuchos::RCP<Epetra_MultiVector> material_internal_state =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> material_internal_state =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("material_internal_state");
 
         if (material->material_type() == Core::Materials::m_myocard)
         {
@@ -121,7 +121,7 @@ int Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
             if (err != 0) FOUR_C_THROW("%i", err);
           }
         }
-        params.set<Teuchos::RCP<Epetra_MultiVector>>(
+        params.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
             "material_internal_state", material_internal_state);
       }
 
@@ -158,8 +158,8 @@ int Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
       {
         // access the general material
         Teuchos::RCP<Core::Mat::Material> material = ele->material();
-        Teuchos::RCP<Epetra_MultiVector> material_ionic_currents =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("material_ionic_currents");
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> material_ionic_currents =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("material_ionic_currents");
 
         if (material->material_type() == Core::Materials::m_myocard)
         {
@@ -172,7 +172,7 @@ int Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
             if (err != 0) FOUR_C_THROW("%i", err);
           }
         }
-        params.set<Teuchos::RCP<Epetra_MultiVector>>(
+        params.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
             "material_ionic_currents", material_ionic_currents);
       }
 

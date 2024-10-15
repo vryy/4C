@@ -53,16 +53,6 @@ namespace Core::LinAlg
 
     operator const Epetra_MultiVector &() const { return *vector_; }
 
-    operator Teuchos::RCP<Epetra_MultiVector>()
-    {
-      return Teuchos::rcp_dynamic_cast<Epetra_MultiVector>(vector_);
-    }
-
-    operator Teuchos::RCP<const Epetra_MultiVector>() const
-    {
-      return Teuchos::rcp_dynamic_cast<Epetra_MultiVector>(vector_);
-    }
-
     //! get pointer of epetra multi vector
     Teuchos::RCP<Epetra_MultiVector> get_ptr_of_Epetra_MultiVector() { return vector_; }
 
@@ -141,7 +131,7 @@ namespace Core::LinAlg
     /** Replace map, only if new map has same point-structure as current map.
         return 0 if map is replaced, -1 if not.
      */
-    int ReplaceMap(const Epetra_BlockMap &map) { return vector_->ReplaceMap(map); }
+    int ReplaceMap(const Epetra_BlockMap &map);
 
     int ReplaceGlobalValue(int GlobalRow, int VectorIndex, double ScalarValue)
     {
@@ -228,6 +218,8 @@ namespace Core::LinAlg
       return vector_->ExtractView(ArrayOfPointers);
     }
 
+    int ExtractCopy(double *A, int MyLDA) const { return vector_->ExtractCopy(A, MyLDA); }
+
     Core::LinAlg::Vector<double> &operator()(int i);
 
     const Core::LinAlg::Vector<double> &operator()(int i) const;
@@ -264,6 +256,7 @@ namespace Core::LinAlg
 
     friend class Vector<T>;
     friend class VectorView<MultiVector<T>>;
+    friend class VectorView<const MultiVector<T>>;
   };
 
 }  // namespace Core::LinAlg

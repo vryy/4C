@@ -290,7 +290,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::MortarVolCoupl::ma
   Teuchos::RCP<Core::LinAlg::Vector<double>> sv =
       Core::LinAlg::create_vector(p21_->row_map(), true);
   // project
-  master_to_slave(mv->get_ptr_of_const_Epetra_Vector(), sv->get_ptr_of_Epetra_Vector());
+  master_to_slave(mv->get_ptr_of_MultiVector(), sv->get_ptr_of_MultiVector());
 
   return sv;
 }
@@ -298,7 +298,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::MortarVolCoupl::ma
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::MortarVolCoupl::master_to_slave(
-    Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> mv,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv) const
 {
 #ifdef FOUR_C_DEBUG
   if (not mv->Map().PointSameAs(p21_->DomainMap())) FOUR_C_THROW("master dof map vector expected");
@@ -312,7 +313,7 @@ void Coupling::Adapter::MortarVolCoupl::master_to_slave(
   check_init();
 
   // slave vector with auxiliary dofmap
-  Epetra_MultiVector sv_aux(p21_->row_map(), sv->NumVectors());
+  Core::LinAlg::MultiVector<double> sv_aux(p21_->row_map(), sv->NumVectors());
 
   // project
   int err = p21_->multiply(false, *mv, sv_aux);
@@ -330,16 +331,16 @@ void Coupling::Adapter::MortarVolCoupl::master_to_slave(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::MortarVolCoupl::master_to_slave(
-    Teuchos::RCP<const Epetra_MultiVector> mv) const
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::MortarVolCoupl::master_to_slave(
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> mv) const
 {
   // safety check
   check_setup();
   check_init();
 
   // create vector
-  Teuchos::RCP<Epetra_MultiVector> sv =
-      Teuchos::make_rcp<Epetra_MultiVector>(p21_->row_map(), mv->NumVectors());
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(p21_->row_map(), mv->NumVectors());
   // project
   master_to_slave(mv, sv);
 
@@ -359,7 +360,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::MortarVolCoupl::sl
   Teuchos::RCP<Core::LinAlg::Vector<double>> mv =
       Core::LinAlg::create_vector(p12_->row_map(), true);
   // project
-  slave_to_master(sv->get_ptr_of_const_Epetra_Vector(), mv->get_ptr_of_Epetra_MultiVector());
+  slave_to_master(sv->get_ptr_of_MultiVector(), mv->get_ptr_of_MultiVector());
 
   return mv;
 }
@@ -367,16 +368,16 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::MortarVolCoupl::sl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::MortarVolCoupl::slave_to_master(
-    Teuchos::RCP<const Epetra_MultiVector> sv) const
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::MortarVolCoupl::slave_to_master(
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> sv) const
 {
   // safety check
   check_setup();
   check_init();
 
   // create vector
-  Teuchos::RCP<Epetra_MultiVector> mv =
-      Teuchos::make_rcp<Epetra_MultiVector>(p12_->row_map(), sv->NumVectors());
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(p12_->row_map(), sv->NumVectors());
   // project
   slave_to_master(sv, mv);
 
@@ -387,7 +388,8 @@ Teuchos::RCP<Epetra_MultiVector> Coupling::Adapter::MortarVolCoupl::slave_to_mas
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::MortarVolCoupl::slave_to_master(
-    Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> sv,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv) const
 {
 #ifdef FOUR_C_DEBUG
   if (not mv->Map().PointSameAs(p12_->RowMap())) FOUR_C_THROW("master dof map vector expected");
@@ -401,7 +403,7 @@ void Coupling::Adapter::MortarVolCoupl::slave_to_master(
   check_init();
 
   // master vector with auxiliary dofmap
-  Epetra_MultiVector mv_aux(p12_->row_map(), mv->NumVectors());
+  Core::LinAlg::MultiVector<double> mv_aux(p12_->row_map(), mv->NumVectors());
 
   // project
   int err = p12_->multiply(false, *sv, mv_aux);

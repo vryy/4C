@@ -18,8 +18,6 @@
 #include "4C_structure_new_timint_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_MultiVector.h>
-
 #include <optional>
 #include <string>
 
@@ -60,9 +58,10 @@ namespace
 
   [[nodiscard]] double get_gauss_point_data_value(
       const QuantityNameAndComponent& name_and_component, int node_id,
-      const std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>& all_data)
+      const std::unordered_map<std::string, Teuchos::RCP<Core::LinAlg::MultiVector<double>>>&
+          all_data)
   {
-    const Epetra_MultiVector& data = *all_data.at(name_and_component.name);
+    const Core::LinAlg::MultiVector<double>& data = *all_data.at(name_and_component.name);
 
     int local_id = data.Map().LID(node_id);
 
@@ -72,7 +71,7 @@ namespace
           name_and_component.name.c_str(), node_id);
     }
 
-    return data[name_and_component.component][local_id];
+    return data(name_and_component.component)[local_id];
   }
 
   /*!
@@ -85,7 +84,7 @@ namespace
    * @return double
    */
   double get_nodal_stress_strain_component(const std::string& prefix, const std::string& label,
-      int node_id, const Epetra_MultiVector& nodal_data)
+      int node_id, const Core::LinAlg::MultiVector<double>& nodal_data)
   {
     int voigt_index = -1;
     if (label == prefix + "_xx")
@@ -129,7 +128,7 @@ namespace
           "You tried to test %s on a proc that does not own node %i.", label.c_str(), node_id);
     }
 
-    return nodal_data[voigt_index][local_id];
+    return nodal_data(voigt_index)[local_id];
   }
 }  // namespace
 

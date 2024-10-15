@@ -361,13 +361,13 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Discret::ELEMENT
   if (fldpara_->is_reconstruct_der())
   {
     // extract gradient projection for consistent residual
-    const Teuchos::RCP<Epetra_MultiVector> velafgrad =
-        params.get<Teuchos::RCP<Epetra_MultiVector>>("velafgrad");
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>> velafgrad =
+        params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("velafgrad");
     Core::FE::extract_my_node_based_values(ele, evelafgrad_, *velafgrad, nsd_ * nsd_);
     if (fldparatimint_->is_new_ost_implementation())
     {
-      const Teuchos::RCP<Epetra_MultiVector> velngrad =
-          params.get<Teuchos::RCP<Epetra_MultiVector>>("velngrad");
+      const Teuchos::RCP<Core::LinAlg::MultiVector<double>> velngrad =
+          params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("velngrad");
       Core::FE::extract_my_node_based_values(ele, evelngrad_, *velngrad, nsd_ * nsd_);
     }
   }
@@ -7205,8 +7205,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
 
   if (fldpara_->is_reconstruct_der())
   {
-    const Teuchos::RCP<Epetra_MultiVector> velafgrad =
-        params.get<Teuchos::RCP<Epetra_MultiVector>>("velafgrad");
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>> velafgrad =
+        params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("velafgrad");
     Core::FE::extract_my_node_based_values(ele, evelafgrad_, *velafgrad, nsd_ * nsd_);
   }
 

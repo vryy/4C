@@ -128,7 +128,7 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterMesh::append_result_data_vector_with_context(
-      const Epetra_MultiVector& result_data, const OutputEntity output_entity,
+      const Core::LinAlg::MultiVector<double>& result_data, const OutputEntity output_entity,
       const std::vector<std::optional<std::string>>& context)
   {
     std::set<std::string> unique_names;
@@ -162,8 +162,8 @@ namespace Core::IO
           }
 
           // finally append the data
-          append_dof_based_result_data_vector(Core::LinAlg::Vector<double>(*result_data(0)),
-              context_map.count(name), min_index_of_name, name);
+          append_dof_based_result_data_vector(
+              result_data(0), context_map.count(name), min_index_of_name, name);
           break;
         }
         case OutputEntity::element:
@@ -249,14 +249,14 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterMesh::append_node_based_result_data_vector(
-      const Epetra_MultiVector& result_data_nodebased,
+      const Core::LinAlg::MultiVector<double>& result_data_nodebased,
       const unsigned int result_num_components_per_node, const std::string& resultname)
   {
     /* the idea is to transform the given data to a 'point data vector' and append it to the
      * collected solution data vectors by calling
      * append_visualization_node_based_result_data_vector() */
 
-    auto convert_to_col_map_if_necessary = [&](const Epetra_MultiVector& vector)
+    auto convert_to_col_map_if_necessary = [&](const Core::LinAlg::MultiVector<double>& vector)
     {
       if (discretization_->node_col_map()->SameAs(vector.Map()))
       {
@@ -264,7 +264,7 @@ namespace Core::IO
       }
       else if (discretization_->node_row_map()->SameAs(vector.Map()))
       {
-        auto vector_col_map = Epetra_MultiVector(
+        auto vector_col_map = Core::LinAlg::MultiVector<double>(
             *discretization_->node_col_map(), result_num_components_per_node, true);
         Core::LinAlg::export_to(vector, vector_col_map);
         return vector_col_map;
@@ -277,8 +277,8 @@ namespace Core::IO
     // safety checks
     FOUR_C_ASSERT(static_cast<unsigned int>(result_data_nodebased_col_map.NumVectors()) ==
                       result_num_components_per_node,
-        "Expected Epetra_MultiVector with %i columns but got %i.", result_num_components_per_node,
-        result_data_nodebased_col_map.NumVectors());
+        "Expected Core::LinAlg::MultiVector<double> with %i columns but got %i.",
+        result_num_components_per_node, result_data_nodebased_col_map.NumVectors());
 
     FOUR_C_ASSERT(discretization_->node_col_map()->SameAs(result_data_nodebased_col_map.Map()),
         "Received map of node-based result data vector does not match the discretization's node "
@@ -317,7 +317,7 @@ namespace Core::IO
   /*-----------------------------------------------------------------------------------------------*
    *-----------------------------------------------------------------------------------------------*/
   void DiscretizationVisualizationWriterMesh::append_element_based_result_data_vector(
-      const Epetra_MultiVector& result_data_elementbased,
+      const Core::LinAlg::MultiVector<double>& result_data_elementbased,
       const unsigned int result_num_components_per_element, const std::string& resultname)
   {
     /* the idea is to transform the given data to a 'cell data vector' and append it to the
@@ -327,7 +327,7 @@ namespace Core::IO
     // safety check
     FOUR_C_ASSERT(static_cast<unsigned int>(result_data_elementbased.NumVectors()) ==
                       result_num_components_per_element,
-        "Expected Epetra_MultiVector with %i columns but got %i.",
+        "Expected Core::LinAlg::MultiVector<double> with %i columns but got %i.",
         result_num_components_per_element, result_data_elementbased.NumVectors());
 
     FOUR_C_ASSERT(discretization_->element_row_map()->SameAs(result_data_elementbased.Map()),
@@ -350,9 +350,9 @@ namespace Core::IO
 
       for (unsigned int icpe = 0; icpe < result_num_components_per_element; ++icpe)
       {
-        const auto* column = (result_data_elementbased)(icpe);
+        const auto& column = result_data_elementbased(icpe);
 
-        cell_result_data.push_back((*column)[iele]);
+        cell_result_data.push_back(column[iele]);
       }
 
       ++cellcounter;

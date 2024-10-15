@@ -1017,7 +1017,7 @@ void FLD::Utils::project_gradient_and_set_param(Core::FE::Discretization& discre
     const std::string paraname, bool alefluid)
 {
   // project gradient
-  Teuchos::RCP<Epetra_MultiVector> projected_velgrad =
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> projected_velgrad =
       FLD::Utils::project_gradient(discret, vel, alefluid);
 
   // store multi vector in parameter list after export to col layout
@@ -1031,8 +1031,9 @@ void FLD::Utils::project_gradient_and_set_param(Core::FE::Discretization& discre
 /*----------------------------------------------------------------------*|
  | Project velocity gradient                                    bk 05/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> FLD::Utils::project_gradient(Core::FE::Discretization& discret,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel, bool alefluid)
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> FLD::Utils::project_gradient(
+    Core::FE::Discretization& discret, Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,
+    bool alefluid)
 {
   // reconstruction of second derivatives for fluid residual
   auto recomethod = Teuchos::getIntegralValue<Inpar::FLUID::GradientReconstructionMethod>(
@@ -1041,7 +1042,7 @@ Teuchos::RCP<Epetra_MultiVector> FLD::Utils::project_gradient(Core::FE::Discreti
   const int dim = Global::Problem::instance()->n_dim();
   const int numvec = dim * dim;
   Teuchos::ParameterList params;
-  Teuchos::RCP<Epetra_MultiVector> projected_velgrad = Teuchos::null;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> projected_velgrad = Teuchos::null;
 
   // dependent on the desired projection, just remove this line
   if (not vel->Map().SameAs(*discret.dof_row_map()))

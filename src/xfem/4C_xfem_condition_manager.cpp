@@ -402,7 +402,7 @@ void XFEM::ConditionManager::set_level_set_field(const double time)
 
 
 void XFEM::ConditionManager::write_access_geometric_quantities(
-    Core::LinAlg::Vector<double>& scalaraf, Epetra_MultiVector& smoothed_gradphiaf,
+    Core::LinAlg::Vector<double>& scalaraf, Core::LinAlg::MultiVector<double>& smoothed_gradphiaf,
     Core::LinAlg::Vector<double>& curvatureaf)
 {
   // TOOD: when using two-phase in combination with other levelset, how to access to the right

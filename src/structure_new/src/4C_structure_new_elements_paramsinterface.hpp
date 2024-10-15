@@ -19,10 +19,9 @@
 #include "4C_fem_general_elements_paramsinterface.hpp"  // base class
 #include "4C_inpar_browniandyn.hpp"                     // enums
 #include "4C_inpar_structure.hpp"                       // enums
-#include "4C_solver_nonlin_nox_enum_lists.hpp"          // enums
+#include "4C_linalg_multi_vector.hpp"
+#include "4C_solver_nonlin_nox_enum_lists.hpp"  // enums
 #include "4C_structure_new_enum_lists.hpp"
-
-#include <Epetra_MultiVector.h>
 
 #include <unordered_map>
 
@@ -245,7 +244,7 @@ namespace BrownianDynamics
         const = 0;
 
     //! get the current step length
-    virtual const Teuchos::RCP<Epetra_MultiVector>& get_random_forces() const = 0;
+    virtual const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& get_random_forces() const = 0;
   };
 }  // namespace BrownianDynamics
 

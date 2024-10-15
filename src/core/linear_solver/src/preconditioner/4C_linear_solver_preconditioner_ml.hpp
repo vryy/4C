@@ -27,8 +27,8 @@ namespace Core::LinearSolver
    public:
     MLPreconditioner(Teuchos::ParameterList& mllist);
 
-    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
-        Epetra_MultiVector* b) override;
+    void setup(bool create, Epetra_Operator* matrix, Core::LinAlg::MultiVector<double>* x,
+        Core::LinAlg::MultiVector<double>* b) override;
 
     /// linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> prec_operator() const override { return p_; }

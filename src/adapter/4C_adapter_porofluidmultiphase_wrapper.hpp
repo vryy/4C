@@ -105,7 +105,7 @@ namespace Adapter
     Teuchos::RCP<const Core::LinAlg::Vector<double>> valid_vol_frac_spec_dofs() const override;
 
     //! return phase flux field at time n+1
-    Teuchos::RCP<const Epetra_MultiVector> flux() const override;
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> flux() const override;
 
     //! return number of dof set associated with solid pressure
     int get_dof_set_number_of_solid_pressure() const override;

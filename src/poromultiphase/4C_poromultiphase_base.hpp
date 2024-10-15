@@ -110,7 +110,7 @@ namespace POROMULTIPHASE
     Teuchos::RCP<const Core::LinAlg::Vector<double>> struct_velnp() const override;
 
     /// return fluid flux
-    Teuchos::RCP<const Epetra_MultiVector> fluid_flux() const override;
+    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> fluid_flux() const override;
 
     /// return fluid solution variable
     Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_phinp() const override;

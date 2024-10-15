@@ -16,8 +16,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_multi_vector.hpp"
+
 #include <Epetra_BlockMap.h>
-#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
@@ -55,13 +56,14 @@ namespace Core::LinAlg
     );
 
     //! give out Teuchos::RCP to c_ for change
-    Teuchos::RCP<Epetra_MultiVector> get_non_const_kernel();
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> get_non_const_kernel();
 
     //! give out Teuchos::RCP to w_ for change
-    Teuchos::RCP<Epetra_MultiVector> get_non_const_weights();
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> get_non_const_weights();
     // set c_ and w_ from outside
-    void set_cw(Epetra_MultiVector& c0, Epetra_MultiVector& w0, const Epetra_BlockMap* newmap);
-    void set_cw(Epetra_MultiVector& c0, Epetra_MultiVector& w0);
+    void set_cw(Core::LinAlg::MultiVector<double>& c0, Core::LinAlg::MultiVector<double>& w0,
+        const Epetra_BlockMap* newmap);
+    void set_cw(Core::LinAlg::MultiVector<double>& c0, Core::LinAlg::MultiVector<double>& w0);
     //! compute (w^T c)^(-1) and completes projector for use
     void fill_complete();
 
@@ -72,10 +74,10 @@ namespace Core::LinAlg
     Core::LinAlg::SparseMatrix get_pt();
 
     //! wrapper for applying projector to vector for iterative solver
-    int apply_p(Epetra_MultiVector& Y) const;
+    int apply_p(Core::LinAlg::MultiVector<double>& Y) const;
 
     //! wrapper for applying transpose of projector to vector for iterative solver
-    int apply_pt(Epetra_MultiVector& Y) const;
+    int apply_pt(Core::LinAlg::MultiVector<double>& Y) const;
 
     //! give out projection P^T A P
     Teuchos::RCP<Core::LinAlg::SparseMatrix> project(const Core::LinAlg::SparseMatrix& A) const;
@@ -92,22 +94,23 @@ namespace Core::LinAlg
    private:
     //! creates actual projector matrix P (or its transpose) for use in direct solver
     void create_projector(Teuchos::RCP<Core::LinAlg::SparseMatrix>& P,
-        const Teuchos::RCP<Epetra_MultiVector>& v1, const Teuchos::RCP<Epetra_MultiVector>& v2,
+        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& v1,
+        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& v2,
         const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& inv_v1Tv2);
 
     //! applies projector (or its transpose) to vector for iterative solver
-    int apply_projector(Epetra_MultiVector& Y, Epetra_MultiVector& v1, Epetra_MultiVector& v2,
-        Core::LinAlg::SerialDenseMatrix& inv_v1Tv2) const;
+    int apply_projector(Core::LinAlg::MultiVector<double>& Y, Core::LinAlg::MultiVector<double>& v1,
+        Core::LinAlg::MultiVector<double>& v2, Core::LinAlg::SerialDenseMatrix& inv_v1Tv2) const;
 
     //! multiplies Epetra_MultiVector times Core::LinAlg::SerialDenseMatrix
-    Teuchos::RCP<Epetra_MultiVector> multiply_multi_vecter_dense_matrix(
-        const Teuchos::RCP<Epetra_MultiVector>& mv,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> multiply_multi_vecter_dense_matrix(
+        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv,
         const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& dm) const;
 
     //! outer product of two Epetra_MultiVectors
     Teuchos::RCP<Core::LinAlg::SparseMatrix> multiply_multi_vecter_multi_vector(
-        const Teuchos::RCP<Epetra_MultiVector>& mv1,  //! first MultiVector
-        const Teuchos::RCP<Epetra_MultiVector>& mv2,  //! second MultiVector
+        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv1,  //! first MultiVector
+        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv2,  //! second MultiVector
         const int id = 1,  //! id of MultiVector form which sparsity of output matrix is estimated
         const bool fill = true  //! bool for completing matrix after computation
     ) const;
@@ -221,11 +224,11 @@ namespace Core::LinAlg
     Teuchos::RCP<Core::LinAlg::SparseMatrix> pt_;
 
     //! a set of vectors defining weighted (basis integral) vector for the projector
-    Teuchos::RCP<Epetra_MultiVector> w_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> w_;
 
     //! a set of vectors defining the vectors of ones (in the respective components)
     //! for the matrix kernel
-    Teuchos::RCP<Epetra_MultiVector> c_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> c_;
 
     //! inverse of product (c_^T * w_), computed once after setting c_ and w_
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> invw_tc_;

@@ -21,7 +21,6 @@ calls into one global sparse matrix and global load vector
 #include "4C_linalg_vector.hpp"
 
 #include <Epetra_CrsGraph.h>
-#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <vector>
@@ -168,8 +167,9 @@ namespace Core::FE
         const std::vector<int>& lm, const std::vector<int>& lmowner);
 
     /// Assemble to given vector
-    virtual void assemble(Epetra_MultiVector& V, const int n, const LinAlg::SerialDenseVector& Vele,
-        const std::vector<int>& lm, const std::vector<int>& lmowner);
+    virtual void assemble(Core::LinAlg::MultiVector<double>& V, const int n,
+        const LinAlg::SerialDenseVector& Vele, const std::vector<int>& lm,
+        const std::vector<int>& lmowner);
 
     //@}
 

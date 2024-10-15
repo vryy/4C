@@ -36,7 +36,7 @@ Core::LinearSolver::AMGNxN::BlockedVector Core::LinearSolver::AMGNxN::BlockedVec
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::BlockedVector::DeepCopy");
   BlockedVector out(this->get_num_blocks());
   for (int i = 0; i < get_num_blocks(); i++)
-    out.set_vector(Teuchos::make_rcp<Epetra_MultiVector>(*(this->get_vector(i))), i);
+    out.set_vector(Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(this->get_vector(i))), i);
   return out;
 }
 
@@ -50,7 +50,8 @@ Core::LinearSolver::AMGNxN::BlockedVector::deep_copy_rcp() const
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGNxN::BlockedVector::DeepCopyRCP");
   Teuchos::RCP<BlockedVector> out = Teuchos::make_rcp<BlockedVector>(this->get_num_blocks());
   for (int i = 0; i < get_num_blocks(); i++)
-    out->set_vector(Teuchos::make_rcp<Epetra_MultiVector>(*(this->get_vector(i))), i);
+    out->set_vector(
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(this->get_vector(i))), i);
   return out;
 }
 
@@ -67,8 +68,9 @@ Core::LinearSolver::AMGNxN::BlockedVector::new_rcp(bool ZeroIt) const
   {
     // const Epetra_BlockMap&  Map = this->GetVector(i)->Map();
     // int NV = this->GetNumBlocks();
-    // out->SetVector(Teuchos::rcp( new Epetra_MultiVector(Map,NV,ZeroIt)),i); //This is buggy
-    out->set_vector(Teuchos::make_rcp<Epetra_MultiVector>(*(this->get_vector(i))),
+    // out->SetVector(Teuchos::rcp( new Core::LinAlg::MultiVector<double>(Map,NV,ZeroIt)),i); //This
+    // is buggy
+    out->set_vector(Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(this->get_vector(i))),
         i);  // This works, I don't know why...
   }
   return out;
@@ -148,15 +150,15 @@ void Core::LinearSolver::AMGNxN::BlockedMatrix::apply(
   {
     if (out.get_vector(i) == Teuchos::null) FOUR_C_THROW("Have you set your output error?");
 
-    Teuchos::RCP<Epetra_MultiVector> Yi = out.get_vector(i);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> Yi = out.get_vector(i);
     Yi->PutScalar(0.0);
-    Epetra_MultiVector Yitmp(Yi->Map(), Yi->NumVectors(), true);
+    Core::LinAlg::MultiVector<double> Yitmp(Yi->Map(), Yi->NumVectors(), true);
 
     for (int j = 0; j < get_num_cols(); j++)
     {
       if (in.get_vector(j) == Teuchos::null) FOUR_C_THROW("Have you set your input error?");
 
-      Teuchos::RCP<Epetra_MultiVector> Xj = in.get_vector(j);
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> Xj = in.get_vector(j);
       if (get_matrix(i, j) == Teuchos::null) FOUR_C_THROW("Have you set all the blocks?");
 
       get_matrix(i, j)->Apply(*Xj, Yitmp);
@@ -295,8 +297,8 @@ void Core::LinearSolver::AMGNxN::DiagonalBlockedMatrix::apply(
     if (out.get_vector(i) == Teuchos::null) FOUR_C_THROW("Have you set your output error?");
     if (in.get_vector(i) == Teuchos::null) FOUR_C_THROW("Have you set your input error?");
 
-    Teuchos::RCP<Epetra_MultiVector> Yi = out.get_vector(i);
-    Teuchos::RCP<Epetra_MultiVector> Xi = in.get_vector(i);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> Yi = out.get_vector(i);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> Xi = in.get_vector(i);
     get_matrix(i, i)->Apply(*Xi, *Yi);
   }
 
@@ -414,9 +416,10 @@ Core::LinearSolver::AMGNxN::BlockedMatrix::new_domain_blocked_vector(int NV, boo
   for (int i = 0; i < get_num_cols(); i++)
   {
     const Epetra_Map& Map = get_matrix(0, i)->domain_map();
-    Teuchos::RCP<Epetra_MultiVector> Vi = Teuchos::make_rcp<Epetra_MultiVector>(
-        Map, NV, ZeroIt);  // This constructor seems to be buggy inside function
-                           // BlockedVector::NewRCP. I don't know why here works well.
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> Vi =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+            Map, NV, ZeroIt);  // This constructor seems to be buggy inside function
+                               // BlockedVector::NewRCP. I don't know why here works well.
 
     out->set_vector(Vi, i);
   }
@@ -434,7 +437,8 @@ Core::LinearSolver::AMGNxN::BlockedMatrix::new_range_blocked_vector(int NV, bool
   for (int i = 0; i < get_num_rows(); i++)
   {
     const Epetra_Map& Map = get_matrix(i, 0)->range_map();
-    Teuchos::RCP<Epetra_MultiVector> Vi = Teuchos::make_rcp<Epetra_MultiVector>(Map, NV, ZeroIt);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> Vi =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(Map, NV, ZeroIt);
 
     out->set_vector(Vi, i);
   }
@@ -453,7 +457,8 @@ Core::LinearSolver::AMGNxN::DiagonalBlockedMatrix::new_domain_blocked_vector(
   for (int i = 0; i < get_num_cols(); i++)
   {
     const Epetra_Map& Map = get_matrix(i, i)->domain_map();
-    Teuchos::RCP<Epetra_MultiVector> Vi = Teuchos::make_rcp<Epetra_MultiVector>(Map, NV, ZeroIt);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> Vi =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(Map, NV, ZeroIt);
 
     out->set_vector(Vi, i);
   }
@@ -472,7 +477,8 @@ Core::LinearSolver::AMGNxN::DiagonalBlockedMatrix::new_range_blocked_vector(
   for (int i = 0; i < get_num_rows(); i++)
   {
     const Epetra_Map& Map = get_matrix(i, i)->range_map();
-    Teuchos::RCP<Epetra_MultiVector> Vi = Teuchos::make_rcp<Epetra_MultiVector>(Map, NV, ZeroIt);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> Vi =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(Map, NV, ZeroIt);
 
     out->set_vector(Vi, i);
   }

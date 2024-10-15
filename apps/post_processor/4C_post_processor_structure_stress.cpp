@@ -120,7 +120,7 @@ struct WriteNodalStressStep : public SpecialFieldInterface
     const Epetra_Map* noderowmap = dis->node_row_map();
 
     Teuchos::ParameterList p;
-    Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
+    Core::LinAlg::MultiVector<double> nodal_stress(*noderowmap, 6, true);
 
     dis->evaluate(
         [&](Core::Elements::Element& ele)
@@ -158,7 +158,7 @@ struct WriteElementCenterStressStep : public SpecialFieldInterface
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    Epetra_MultiVector elestress(*(dis->element_row_map()), 6);
+    Core::LinAlg::MultiVector<double> elestress(*(dis->element_row_map()), 6);
 
     dis->evaluate(
         [&](Core::Elements::Element& ele)
@@ -196,7 +196,7 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
     const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    Epetra_MultiVector elerotation(*(dis->element_row_map()), 9);
+    Core::LinAlg::MultiVector<double> elerotation(*(dis->element_row_map()), 9);
     dis->evaluate(
         [&](Core::Elements::Element& ele)
         {
@@ -207,7 +207,7 @@ struct WriteElementCenterRotation : public SpecialFieldInterface
           if (lid != -1)
             for (int i = 0; i < elecenterrot.numRows(); ++i)
               for (int j = 0; j < elecenterrot.numCols(); ++j)
-                (*(elerotation(i * elecenterrot.numRows() + j)))[lid] = elecenterrot(i, j);
+                ((elerotation(i * elecenterrot.numRows() + j)))[lid] = elecenterrot(i, j);
         });
 
     filter_.get_writer().write_element_result_step(
@@ -246,8 +246,8 @@ struct WriteNodalMembraneThicknessStep : public SpecialFieldInterface
     p.set("action", "postprocess_thickness");
     p.set("optquantitytype", "ndxyz");
     p.set("gpthickmap", data);
-    Teuchos::RCP<Epetra_MultiVector> nodal_thickness =
-        Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, 1, true);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> nodal_thickness =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, 1, true);
     p.set("postthick", nodal_thickness);
     dis->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
     if (nodal_thickness == Teuchos::null)
@@ -407,7 +407,7 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
     const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
     const Epetra_Map* noderowmap = dis->node_row_map();
 
-    Epetra_MultiVector nodal_stress(*noderowmap, 6, true);
+    Core::LinAlg::MultiVector<double> nodal_stress(*noderowmap, 6, true);
 
     dis->evaluate(
         [&](Core::Elements::Element& ele)
@@ -417,12 +417,13 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
         });
 
 
-    // Epetra_MultiVector with eigenvalues (3) and eigenvectors (9 components) in each row (=node)
-    std::vector<Teuchos::RCP<Epetra_MultiVector>> nodal_eigen_val_vec(6);
+    // Core::LinAlg::MultiVector<double> with eigenvalues (3) and eigenvectors (9 components) in
+    // each row (=node)
+    std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>> nodal_eigen_val_vec(6);
     for (int i = 0; i < 3; ++i)
-      nodal_eigen_val_vec[i] = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, 1);
+      nodal_eigen_val_vec[i] = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, 1);
     for (int i = 3; i < 6; ++i)
-      nodal_eigen_val_vec[i] = Teuchos::make_rcp<Epetra_MultiVector>(*noderowmap, 3);
+      nodal_eigen_val_vec[i] = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, 3);
 
     const int numnodes = dis->num_my_row_nodes();
     bool threedim = true;
@@ -436,22 +437,22 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
         Core::LinAlg::SerialDenseMatrix eigenvec(3, 3);
         Core::LinAlg::SerialDenseVector eigenval(3);
 
-        eigenvec(0, 0) = (*(nodal_stress(0)))[i];
-        eigenvec(0, 1) = (*(nodal_stress(3)))[i];
-        eigenvec(0, 2) = (*(nodal_stress(5)))[i];
+        eigenvec(0, 0) = ((nodal_stress(0)))[i];
+        eigenvec(0, 1) = ((nodal_stress(3)))[i];
+        eigenvec(0, 2) = ((nodal_stress(5)))[i];
         eigenvec(1, 0) = eigenvec(0, 1);
-        eigenvec(1, 1) = (*(nodal_stress(1)))[i];
-        eigenvec(1, 2) = (*(nodal_stress(4)))[i];
+        eigenvec(1, 1) = ((nodal_stress(1)))[i];
+        eigenvec(1, 2) = ((nodal_stress(4)))[i];
         eigenvec(2, 0) = eigenvec(0, 2);
         eigenvec(2, 1) = eigenvec(1, 2);
-        eigenvec(2, 2) = (*(nodal_stress(2)))[i];
+        eigenvec(2, 2) = ((nodal_stress(2)))[i];
 
         Core::LinAlg::symmetric_eigen_problem(eigenvec, eigenval, true);
 
         for (int d = 0; d < 3; ++d)
         {
-          (*((*nodal_eigen_val_vec[d])(0)))[i] = eigenval(d);
-          for (int e = 0; e < 3; ++e) (*((*nodal_eigen_val_vec[d + 3])(e)))[i] = eigenvec(e, d);
+          (((*nodal_eigen_val_vec[d])(0)))[i] = eigenval(d);
+          for (int e = 0; e < 3; ++e) (((*nodal_eigen_val_vec[d + 3])(e)))[i] = eigenvec(e, d);
         }
       }
     }
@@ -463,25 +464,25 @@ struct WriteNodalEigenStressStep : public SpecialFieldInterface
         Core::LinAlg::SerialDenseMatrix eigenvec(2, 2);
         Core::LinAlg::SerialDenseVector eigenval(2);
 
-        eigenvec(0, 0) = (*(nodal_stress(0)))[i];
-        eigenvec(0, 1) = (*(nodal_stress(3)))[i];
+        eigenvec(0, 0) = ((nodal_stress(0)))[i];
+        eigenvec(0, 1) = ((nodal_stress(3)))[i];
         eigenvec(1, 0) = eigenvec(0, 1);
-        eigenvec(1, 1) = (*(nodal_stress(1)))[i];
+        eigenvec(1, 1) = ((nodal_stress(1)))[i];
 
         Core::LinAlg::symmetric_eigen_problem(eigenvec, eigenval, true);
 
-        (*((*nodal_eigen_val_vec[0])(0)))[i] = eigenval(0);
-        (*((*nodal_eigen_val_vec[1])(0)))[i] = eigenval(1);
-        (*((*nodal_eigen_val_vec[2])(0)))[i] = 0.0;
-        (*((*nodal_eigen_val_vec[3])(0)))[i] = eigenvec(0, 0);
-        (*((*nodal_eigen_val_vec[3])(1)))[i] = eigenvec(1, 0);
-        (*((*nodal_eigen_val_vec[3])(2)))[i] = 0.0;
-        (*((*nodal_eigen_val_vec[4])(0)))[i] = eigenvec(0, 1);
-        (*((*nodal_eigen_val_vec[4])(1)))[i] = eigenvec(1, 1);
-        (*((*nodal_eigen_val_vec[4])(2)))[i] = 0.0;
-        (*((*nodal_eigen_val_vec[5])(0)))[i] = 0.0;
-        (*((*nodal_eigen_val_vec[5])(1)))[i] = 0.0;
-        (*((*nodal_eigen_val_vec[5])(2)))[i] = 0.0;
+        (((*nodal_eigen_val_vec[0])(0)))[i] = eigenval(0);
+        (((*nodal_eigen_val_vec[1])(0)))[i] = eigenval(1);
+        (((*nodal_eigen_val_vec[2])(0)))[i] = 0.0;
+        (((*nodal_eigen_val_vec[3])(0)))[i] = eigenvec(0, 0);
+        (((*nodal_eigen_val_vec[3])(1)))[i] = eigenvec(1, 0);
+        (((*nodal_eigen_val_vec[3])(2)))[i] = 0.0;
+        (((*nodal_eigen_val_vec[4])(0)))[i] = eigenvec(0, 1);
+        (((*nodal_eigen_val_vec[4])(1)))[i] = eigenvec(1, 1);
+        (((*nodal_eigen_val_vec[4])(2)))[i] = 0.0;
+        (((*nodal_eigen_val_vec[5])(0)))[i] = 0.0;
+        (((*nodal_eigen_val_vec[5])(1)))[i] = 0.0;
+        (((*nodal_eigen_val_vec[5])(2)))[i] = 0.0;
       }
     }
 
@@ -523,7 +524,7 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
 
     const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
 
-    Epetra_MultiVector element_stress(*dis->element_row_map(), 6, true);
+    Core::LinAlg::MultiVector<double> element_stress(*dis->element_row_map(), 6, true);
 
     dis->evaluate(
         [&](Core::Elements::Element& ele)
@@ -533,11 +534,13 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
         });
 
 
-    std::vector<Teuchos::RCP<Epetra_MultiVector>> nodal_eigen_val_vec(6);
+    std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>> nodal_eigen_val_vec(6);
     for (int i = 0; i < 3; ++i)
-      nodal_eigen_val_vec[i] = Teuchos::make_rcp<Epetra_MultiVector>(*(dis->element_row_map()), 1);
+      nodal_eigen_val_vec[i] =
+          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(dis->element_row_map()), 1);
     for (int i = 3; i < 6; ++i)
-      nodal_eigen_val_vec[i] = Teuchos::make_rcp<Epetra_MultiVector>(*(dis->element_row_map()), 3);
+      nodal_eigen_val_vec[i] =
+          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(dis->element_row_map()), 3);
 
     const int numnodes = dis->num_my_row_nodes();
     bool threedim = true;
@@ -551,22 +554,22 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
         Core::LinAlg::SerialDenseMatrix eigenvec(3, 3);
         Core::LinAlg::SerialDenseVector eigenval(3);
 
-        eigenvec(0, 0) = (*(element_stress(0)))[i];
-        eigenvec(0, 1) = (*(element_stress(3)))[i];
-        eigenvec(0, 2) = (*(element_stress(5)))[i];
+        eigenvec(0, 0) = ((element_stress(0)))[i];
+        eigenvec(0, 1) = ((element_stress(3)))[i];
+        eigenvec(0, 2) = ((element_stress(5)))[i];
         eigenvec(1, 0) = eigenvec(0, 1);
-        eigenvec(1, 1) = (*(element_stress(1)))[i];
-        eigenvec(1, 2) = (*(element_stress(4)))[i];
+        eigenvec(1, 1) = ((element_stress(1)))[i];
+        eigenvec(1, 2) = ((element_stress(4)))[i];
         eigenvec(2, 0) = eigenvec(0, 2);
         eigenvec(2, 1) = eigenvec(1, 2);
-        eigenvec(2, 2) = (*(element_stress(2)))[i];
+        eigenvec(2, 2) = ((element_stress(2)))[i];
 
         Core::LinAlg::symmetric_eigen_problem(eigenvec, eigenval, true);
 
         for (int d = 0; d < 3; ++d)
         {
-          (*((*nodal_eigen_val_vec[d])(0)))[i] = eigenval(d);
-          for (int e = 0; e < 3; ++e) (*((*nodal_eigen_val_vec[d + 3])(e)))[i] = eigenvec(e, d);
+          (((*nodal_eigen_val_vec[d])(0)))[i] = eigenval(d);
+          for (int e = 0; e < 3; ++e) (((*nodal_eigen_val_vec[d + 3])(e)))[i] = eigenvec(e, d);
         }
       }
     }
@@ -578,25 +581,25 @@ struct WriteElementCenterEigenStressStep : public SpecialFieldInterface
         Core::LinAlg::SerialDenseMatrix eigenvec(2, 2);
         Core::LinAlg::SerialDenseVector eigenval(2);
 
-        eigenvec(0, 0) = (*(element_stress(0)))[i];
-        eigenvec(0, 1) = (*(element_stress(3)))[i];
+        eigenvec(0, 0) = ((element_stress(0)))[i];
+        eigenvec(0, 1) = ((element_stress(3)))[i];
         eigenvec(1, 0) = eigenvec(0, 1);
-        eigenvec(1, 1) = (*(element_stress(1)))[i];
+        eigenvec(1, 1) = ((element_stress(1)))[i];
 
         Core::LinAlg::symmetric_eigen_problem(eigenvec, eigenval, true);
 
-        (*((*nodal_eigen_val_vec[0])(0)))[i] = eigenval(0);
-        (*((*nodal_eigen_val_vec[1])(0)))[i] = eigenval(1);
-        (*((*nodal_eigen_val_vec[2])(0)))[i] = 0.0;
-        (*((*nodal_eigen_val_vec[3])(0)))[i] = eigenvec(0, 0);
-        (*((*nodal_eigen_val_vec[3])(1)))[i] = eigenvec(1, 0);
-        (*((*nodal_eigen_val_vec[3])(2)))[i] = 0.0;
-        (*((*nodal_eigen_val_vec[4])(0)))[i] = eigenvec(0, 1);
-        (*((*nodal_eigen_val_vec[4])(1)))[i] = eigenvec(1, 1);
-        (*((*nodal_eigen_val_vec[4])(2)))[i] = 0.0;
-        (*((*nodal_eigen_val_vec[5])(0)))[i] = 0.0;
-        (*((*nodal_eigen_val_vec[5])(1)))[i] = 0.0;
-        (*((*nodal_eigen_val_vec[5])(2)))[i] = 0.0;
+        (((*nodal_eigen_val_vec[0])(0)))[i] = eigenval(0);
+        (((*nodal_eigen_val_vec[1])(0)))[i] = eigenval(1);
+        (((*nodal_eigen_val_vec[2])(0)))[i] = 0.0;
+        (((*nodal_eigen_val_vec[3])(0)))[i] = eigenvec(0, 0);
+        (((*nodal_eigen_val_vec[3])(1)))[i] = eigenvec(1, 0);
+        (((*nodal_eigen_val_vec[3])(2)))[i] = 0.0;
+        (((*nodal_eigen_val_vec[4])(0)))[i] = eigenvec(0, 1);
+        (((*nodal_eigen_val_vec[4])(1)))[i] = eigenvec(1, 1);
+        (((*nodal_eigen_val_vec[4])(2)))[i] = 0.0;
+        (((*nodal_eigen_val_vec[5])(0)))[i] = 0.0;
+        (((*nodal_eigen_val_vec[5])(1)))[i] = 0.0;
+        (((*nodal_eigen_val_vec[5])(2)))[i] = 0.0;
       }
     }
 

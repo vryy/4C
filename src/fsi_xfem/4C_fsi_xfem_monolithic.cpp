@@ -2256,10 +2256,10 @@ void FSI::MonolithicXFEM::create_linear_solver()
       inv2.set<int>("null space: dimension", inv2source.get<int>("null space: dimension"));
       inv1.set<double*>("null space: vectors", inv1source.get<double*>("null space: vectors"));
       inv2.set<double*>("null space: vectors", inv2source.get<double*>("null space: vectors"));
-      inv1.set<Teuchos::RCP<Epetra_MultiVector>>(
-          "nullspace", inv1source.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace"));
-      inv2.set<Teuchos::RCP<Epetra_MultiVector>>(
-          "nullspace", inv2source.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace"));
+      inv1.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace",
+          inv1source.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace"));
+      inv2.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace",
+          inv2source.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace"));
 
       // TODO: muelu for XFSI similar to TSI?
       FOUR_C_THROW("MueLu for XFSI?");

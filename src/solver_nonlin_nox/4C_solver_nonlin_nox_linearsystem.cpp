@@ -335,10 +335,12 @@ bool NOX::Nln::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
     solver_params.reset = iter == 0;
 
     Teuchos::RCP<Epetra_Operator> matrix = Teuchos::rcpFromRef(*linProblem.GetOperator());
-    Teuchos::RCP<Epetra_MultiVector> x = Teuchos::rcpFromRef(*linProblem.GetLHS());
-    Teuchos::RCP<Epetra_MultiVector> b = Teuchos::rcpFromRef(*linProblem.GetRHS());
 
-    linsol_status = currSolver->solve_with_multi_vector(matrix, x, b, solver_params);
+    Core::LinAlg::VectorView x(*linProblem.GetLHS());
+    Core::LinAlg::VectorView b(*linProblem.GetRHS());
+
+    linsol_status = currSolver->solve_with_multi_vector(
+        matrix, x.get_non_owning_rcp_ref(), b.get_non_owning_rcp_ref(), solver_params);
 
     if (linsol_status)
     {
@@ -479,7 +481,7 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   Teuchos::RCP<Core::LinAlg::Vector<double>> vec_1 =
       Core::LinAlg::create_vector(jac->row_map(), true);
   Core::LinAlg::Vector<double> vec_2(rhs.getEpetraVector());
-  jac->multiply(false, dir.getEpetraVector(), *vec_1);
+  jac->multiply(false, Core::LinAlg::MultiVector<double>(dir.getEpetraVector()), *vec_1);
   vec_2.Scale(stepSizeInv);
   vec_1->Update(1.0, vec_2, 1.0);
   /* evaluate the second vector:              d^{T} V                   */

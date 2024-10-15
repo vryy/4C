@@ -14,13 +14,17 @@
 
 #include "4C_post_filter_base.hpp"
 
-#include <Epetra_MultiVector.h>
-
 #include <fstream>
 #include <string>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
+
+namespace Core::LinAlg
+{
+  template <typename T>
+  class MultiVector;
+}
 
 class PostField;
 
@@ -119,7 +123,7 @@ class PostWriterBase
    \brief Write one step of a nodal result
    */
   virtual void write_nodal_result_step(std::ofstream& file,
-      const Teuchos::RCP<Epetra_MultiVector>& data,
+      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf) = 0;
 
@@ -127,7 +131,7 @@ class PostWriterBase
    \brief Write one step of an element result
    */
   virtual void write_element_result_step(std::ofstream& file,
-      const Teuchos::RCP<Epetra_MultiVector>& data,
+      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from) = 0;
 

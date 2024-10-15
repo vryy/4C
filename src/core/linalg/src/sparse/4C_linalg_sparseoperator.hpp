@@ -245,7 +245,8 @@ namespace Core::LinAlg
     virtual int scale(double ScalarConstant) = 0;
 
     /// Matrix-vector product
-    virtual int multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const = 0;
+    virtual int multiply(bool TransA, const Core::LinAlg::MultiVector<double>& X,
+        Core::LinAlg::MultiVector<double>& Y) const = 0;
   };
 
 

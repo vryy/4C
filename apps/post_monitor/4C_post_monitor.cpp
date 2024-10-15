@@ -877,7 +877,7 @@ void StructMonWriter::write_str_result(std::ofstream& outfile, PostField*& field
   // discretisation (once more)
   const Teuchos::RCP<Core::FE::Discretization> dis = field->discretization();
 
-  Epetra_MultiVector nodal_stress(*dis->node_row_map(), 6, true);
+  Core::LinAlg::MultiVector<double> nodal_stress(*dis->node_row_map(), 6, true);
 
   dis->evaluate(
       [&](Core::Elements::Element& ele)
@@ -891,7 +891,7 @@ void StructMonWriter::write_str_result(std::ofstream& outfile, PostField*& field
     outfile << std::right << std::setw(10) << result.step();
     outfile << std::right << std::setw(16) << std::scientific << result.time();
     for (int i = 0; i < 6; i++)
-      outfile << std::right << std::setw(16) << std::scientific << nodal_stress[i][node];
+      outfile << std::right << std::setw(16) << std::scientific << nodal_stress(i)[node];
     outfile << std::endl;
   }
 

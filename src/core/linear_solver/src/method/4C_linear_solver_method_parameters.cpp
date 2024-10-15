@@ -77,13 +77,13 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
 
   // set coordinate information
   {
-    Teuchos::RCP<Epetra_MultiVector> coordinates;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> coordinates;
     if (nullspaceMap == Teuchos::null)
       coordinates = dis.build_node_coordinates();
     else
       coordinates = dis.build_node_coordinates(nullspaceMap);
 
-    solverlist.set<Teuchos::RCP<Epetra_MultiVector>>("Coordinates", coordinates);
+    solverlist.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("Coordinates", coordinates);
   }
 
   // set nullspace information
@@ -97,7 +97,7 @@ void Core::LinearSolver::Parameters::compute_solver_parameters(
 
     auto nullspace = Core::FE::compute_null_space(dis, numdf, dimns, *nullspaceMap);
 
-    solverlist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
+    solverlist.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace", nullspace);
     solverlist.set("null space: vectors", nullspace->Values());
     solverlist.set<bool>("ML validate parameter list", false);
   }
@@ -123,8 +123,8 @@ void Core::LinearSolver::Parameters::fix_null_space(std::string field, const Epe
   const int ndim = params.get("null space: dimension", -1);
   if (ndim == -1) FOUR_C_THROW("List does not contain nullspace dimension");
 
-  Teuchos::RCP<Epetra_MultiVector> nullspace =
-      params.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> nullspace =
+      params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace", Teuchos::null);
   if (nullspace == Teuchos::null) FOUR_C_THROW("List does not contain nullspace");
 
   const int nullspaceLength = nullspace->MyLength();
@@ -137,25 +137,25 @@ void Core::LinearSolver::Parameters::fix_null_space(std::string field, const Epe
   if (newmapLength > nullspaceLength)
     FOUR_C_THROW("New problem size larger than old - full rebuild of nullspace neccessary");
 
-  Teuchos::RCP<Epetra_MultiVector> nullspaceNew =
-      Teuchos::make_rcp<Epetra_MultiVector>(newmap, ndim, true);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> nullspaceNew =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(newmap, ndim, true);
 
   for (int i = 0; i < ndim; i++)
   {
-    Epetra_Vector* nullspaceData = (*nullspace)(i);
-    Epetra_Vector* nullspaceDataNew = (*nullspaceNew)(i);
-    const int myLength = nullspaceDataNew->MyLength();
+    auto& nullspaceData = (*nullspace)(i);
+    auto& nullspaceDataNew = (*nullspaceNew)(i);
+    const int myLength = nullspaceDataNew.MyLength();
 
     for (int j = 0; j < myLength; j++)
     {
       int gid = newmap.GID(j);
       int olid = oldmap.LID(gid);
       if (olid == -1) continue;
-      (*nullspaceDataNew)[j] = (*nullspaceData)[olid];
+      nullspaceDataNew[j] = nullspaceData[olid];
     }
   }
 
-  params.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspaceNew);
+  params.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace", nullspaceNew);
   params.set("null space: vectors", nullspaceNew->Values());
 }
 
@@ -179,15 +179,16 @@ Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(
         "parameter "
         "'null space: dimension' wrong. It has to be > 0.");
 
-  Teuchos::RCP<Epetra_MultiVector> nullspace_data =
-      list.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> nullspace_data =
+      list.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace", Teuchos::null);
   if (nullspace_data.is_null())
     FOUR_C_THROW(
         "Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist: Nullspace data is "
         "null.");
 
   Teuchos::RCP<Xpetra::MultiVector<Scalar, LocalOrdinal, GlobalOrdinal, Node>> nullspace =
-      Teuchos::make_rcp<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>>(nullspace_data);
+      Teuchos::make_rcp<Xpetra::EpetraMultiVectorT<GlobalOrdinal, Node>>(
+          nullspace_data->get_ptr_of_Epetra_MultiVector());
 
   nullspace->replaceMap(row_map);
 

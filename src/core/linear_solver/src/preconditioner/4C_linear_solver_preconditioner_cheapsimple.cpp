@@ -105,7 +105,7 @@ void Core::LinearSolver::CheapSimpleBlockPreconditioner::setup(Teuchos::RCP<Epet
     Core::LinAlg::Vector<double> diag(*mmex_.Map(0), false);
     (*A_)(0, 0).ExtractDiagonalCopy(diag);
     int err = diag.Reciprocal(diag);
-    if (err) FOUR_C_THROW("Epetra_MultiVector::Reciprocal returned %d", err);
+    if (err) FOUR_C_THROW("Core::LinAlg::MultiVector<double>::Reciprocal returned %d", err);
     diagAinv_ = Teuchos::RCP(new SparseMatrix(diag));
     diagAinv_->Complete(*mmex_.Map(0), *mmex_.Map(0));
   }
@@ -239,8 +239,10 @@ int Core::LinearSolver::CheapSimpleBlockPreconditioner::ApplyInverse(
   // so we better deep copy here
 
   // extract initial guess and rhs for velocity and pressure
-  mmex_.extract_vector(X, 0, *vb_);
-  mmex_.extract_vector(X, 1, *pb_);
+  Core::LinAlg::VectorView vb_view((Epetra_MultiVector&)*vb_);
+  Core::LinAlg::VectorView pb_view((Epetra_MultiVector&)*pb_);
+  mmex_.extract_vector(Core::LinAlg::MultiVector<double>(X), 0, vb_view);
+  mmex_.extract_vector(Core::LinAlg::MultiVector<double>(X), 1, pb_view);
 
 #if CHEAPSIMPLE_ALGORITHM  // SIMPLE and SIMPLEC but without solve, just AMG
   cheap_simple(*vx_, *px_, *vb_, *pb_);
@@ -255,8 +257,11 @@ int Core::LinearSolver::CheapSimpleBlockPreconditioner::ApplyInverse(
 #endif
 
   // insert solution for velocity and pressure
-  mmex_.insert_vector(*vx_, 0, Y);
-  mmex_.insert_vector(*px_, 1, Y);
+  Core::LinAlg::VectorView vx_view((Epetra_MultiVector&)*vx_);
+  Core::LinAlg::VectorView px_view((Epetra_MultiVector&)*px_);
+  Core::LinAlg::VectorView Y_view(Y);
+  mmex_.insert_vector(vx_view, 0, Y_view);
+  mmex_.insert_vector(px_view, 1, Y_view);
 
   return 0;
 }

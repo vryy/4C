@@ -161,17 +161,19 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
 
   if (apply_dynamic_smagorinsky_)
   {
-    col_filtered_vel_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
-    col_filtered_reynoldsstress_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
+    col_filtered_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+    col_filtered_reynoldsstress_ =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
     col_filtered_modeled_subgrid_stress_ =
-        Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 9, true);
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
     boxf_->get_filtered_velocity(*col_filtered_vel_);
     boxf_->get_filtered_reynolds_stress(*col_filtered_reynoldsstress_);
     boxf_->get_filtered_modeled_subgrid_stress(*col_filtered_modeled_subgrid_stress_);
 
     if (physicaltype_ == Inpar::FLUID::loma)
     {
-      col_filtered_dens_vel_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
+      col_filtered_dens_vel_ =
+          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
       col_filtered_dens_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
       col_filtered_dens_strainrate_ =
           Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
@@ -224,11 +226,13 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_prt(
 
   // perform filtering
   boxfsc_->apply_filter_scatra(scalar, thermpress, dirichtoggle, ndsvel);
-  col_filtered_vel_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
-  col_filtered_dens_vel_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
-  col_filtered_dens_vel_temp_ = Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
+  col_filtered_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+  col_filtered_dens_vel_ =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+  col_filtered_dens_vel_temp_ =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   col_filtered_dens_rateofstrain_temp_ =
-      Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, 3, true);
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   col_filtered_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   col_filtered_dens_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   col_filtered_dens_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);

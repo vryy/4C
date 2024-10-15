@@ -145,8 +145,9 @@ void XFEM::Utils::safety_check_materials(
 
 //! Extract a quantity for an element
 void XFEM::Utils::extract_quantity_at_element(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
-    const Core::Elements::Element* element, const Epetra_MultiVector& global_col_vector,
-    Core::FE::Discretization& dis, const int nds_vector, const int nsd)
+    const Core::Elements::Element* element,
+    const Core::LinAlg::MultiVector<double>& global_col_vector, Core::FE::Discretization& dis,
+    const int nds_vector, const int nsd)
 {
   // get the other nds-set which is connected to the current one via this boundary-cell
   Core::Elements::LocationArray la(dis.num_dof_sets());
@@ -173,7 +174,7 @@ void XFEM::Utils::extract_quantity_at_element(Core::LinAlg::SerialDenseMatrix::B
 
 //! Extract a quantity for a node
 void XFEM::Utils::extract_quantity_at_node(Core::LinAlg::SerialDenseMatrix::Base& element_vector,
-    const Core::Nodes::Node* node, const Epetra_MultiVector& global_col_vector,
+    const Core::Nodes::Node* node, const Core::LinAlg::MultiVector<double>& global_col_vector,
     Core::FE::Discretization& dis, const int nds_vector, const unsigned int nsd)
 {
   const std::vector<int> lm = dis.dof(nds_vector, node);

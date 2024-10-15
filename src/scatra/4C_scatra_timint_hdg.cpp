@@ -290,14 +290,15 @@ namespace
   void get_node_vectors_hdg(Core::FE::Discretization &dis,
       const Teuchos::RCP<Core::LinAlg::Vector<double>> &interiorValues,
       const Teuchos::RCP<Core::LinAlg::Vector<double>> &traceValues, const int ndim,
-      Teuchos::RCP<Core::LinAlg::Vector<double>> &phi, Teuchos::RCP<Epetra_MultiVector> &gradphi,
+      Teuchos::RCP<Core::LinAlg::Vector<double>> &phi,
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> &gradphi,
       Teuchos::RCP<Core::LinAlg::Vector<double>> &tracephi, int nds_intvar_, int ndofs)
   {
     dis.clear_state(true);
 
     // create dofsets for concentration at nodes
     tracephi = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(phi->Map());
-    gradphi = Teuchos::make_rcp<Epetra_MultiVector>(*dis.node_row_map(), ndim);
+    gradphi = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
 
     // call element routine to interpolate HDG to elements
     Teuchos::ParameterList eleparams;
@@ -331,7 +332,7 @@ namespace
         (*phi)[localIndex] += interpolVec(i);
         (*tracephi)[localIndex] += interpolVec(i + ele->num_node());
         for (int d = 0; d < ndim; ++d)
-          (*gradphi)[d][localIndex] += interpolVec(i + (d + 2) * ele->num_node());
+          (*gradphi)(d)[localIndex] += interpolVec(i + (d + 2) * ele->num_node());
       }
     }
 
@@ -340,7 +341,7 @@ namespace
     {
       (*phi)[i] /= touchCount[i];
       (*tracephi)[i] /= touchCount[i];
-      for (int d = 0; d < ndim; ++d) (*gradphi)[d][i] /= touchCount[i];
+      for (int d = 0; d < ndim; ++d) (*gradphi)(d)[i] /= touchCount[i];
     }
     dis.clear_state(true);
   }
@@ -363,7 +364,7 @@ void ScaTra::TimIntHDG::write_restart() const
  -----------------------------------------------------------------------*/
 void ScaTra::TimIntHDG::collect_runtime_output_data()
 {
-  Teuchos::RCP<Epetra_MultiVector> interpolatedGradPhi;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> interpolatedGradPhi;
   Teuchos::RCP<Core::LinAlg::Vector<double>> interpolatedtracePhi;
   // get (averaged) values at element nodes
   get_node_vectors_hdg(*discret_, intphinp_, phinp_, Global::Problem::instance()->n_dim(),

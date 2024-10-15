@@ -26,7 +26,6 @@
 #include <string>
 #include <vector>
 
-class Epetra_MultiVector;
 class Epetra_Map;
 class Epetra_BlockMap;
 
@@ -87,18 +86,19 @@ namespace Core::IO
      * \param[in] name  name of vector to read in
      * \return          source vector as read in
      */
-    Teuchos::RCP<Epetra_MultiVector> read_vector(std::string name);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> read_vector(std::string name);
 
     /**
      * \brief read into given vector
      *
-     * This method is based on the method read_multi_vector(Teuchos::RCP<Epetra_MultiVector> vec,
-     * std::string name). Also refer to the documentation therein.
+     * This method is based on the method
+     * read_multi_vector(Teuchos::RCP<Core::LinAlg::MultiVector<double>> vec, std::string name).
+     * Also refer to the documentation therein.
      *
      * \param[in,out] vec   target vector to be filled
      * \param[in]     name  name of vector to read in
      */
-    void read_vector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
+    void read_vector(Teuchos::RCP<Core::LinAlg::MultiVector<double>> vec, std::string name);
     void read_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> vec, std::string name);
     /**
      * \brief read in and return multi-vector
@@ -112,7 +112,7 @@ namespace Core::IO
      * \param[in] name  name of vector to read in
      * \return          source vector as read in
      */
-    Teuchos::RCP<Epetra_MultiVector> read_multi_vector(const std::string name);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> read_multi_vector(const std::string name);
 
     /**
      * \brief read into given multi-vector
@@ -125,7 +125,7 @@ namespace Core::IO
      * \param[in,out] vec   target vector to be filled
      * \param[in]     name  name of vector to read in
      */
-    void read_multi_vector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name);
+    void read_multi_vector(Teuchos::RCP<Core::LinAlg::MultiVector<double>> vec, std::string name);
 
     /// read into given std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> >
     void read_serial_dense_matrix(
@@ -289,8 +289,8 @@ namespace Core::IO
     void write_vector(const std::string name, Teuchos::RCP<const Core::LinAlg::Vector<double>> vec,
         VectorType vt = dofvector);
 
-    void write_multi_vector(
-        const std::string name, const Epetra_MultiVector& vec, VectorType vt = dofvector);
+    void write_multi_vector(const std::string name, const Core::LinAlg::MultiVector<double>& vec,
+        VectorType vt = dofvector);
 
 
 

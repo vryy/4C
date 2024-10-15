@@ -28,7 +28,6 @@
 typedef Sacado::Fad::DFad<double> FAD;
 
 // forward declaration
-class Epetra_MultiVector;
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -83,11 +82,12 @@ namespace PoroMultiPhaseScaTra
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    virtual void pre_evaluate(Teuchos::RCP<Epetra_MultiVector> gp_vector) = 0;
+    virtual void pre_evaluate(Teuchos::RCP<Core::LinAlg::MultiVector<double>> gp_vector) = 0;
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    virtual void delete_unnecessary_gps(Teuchos::RCP<Epetra_MultiVector> gp_vector) = 0;
+    virtual void delete_unnecessary_gps(
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> gp_vector) = 0;
 
     /*!
      * @brief Evaluate this pair
@@ -180,11 +180,11 @@ namespace PoroMultiPhaseScaTra
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    void pre_evaluate(Teuchos::RCP<Epetra_MultiVector> gp_vector) override;
+    void pre_evaluate(Teuchos::RCP<Core::LinAlg::MultiVector<double>> gp_vector) override;
 
     //! things that need to be done in a separate loop before the actual evaluation loop
     //! over all coupling pairs
-    void delete_unnecessary_gps(Teuchos::RCP<Epetra_MultiVector> gp_vector) override;
+    void delete_unnecessary_gps(Teuchos::RCP<Core::LinAlg::MultiVector<double>> gp_vector) override;
 
     //! flag if diameter function is active, i.e., varying diameter linearization need to be
     //! calculated
@@ -260,7 +260,7 @@ namespace PoroMultiPhaseScaTra
         const double& timefacrhs_art, const double& timefacrhs_cont);
 
     //! pre-evaluate for lateral surface coupling
-    void pre_evaluate_lateral_surface_coupling(Epetra_MultiVector& gp_vector);
+    void pre_evaluate_lateral_surface_coupling(Core::LinAlg::MultiVector<double>& gp_vector);
 
     //! pre-evaluate for centerline coupling
     void pre_evaluate_centerline_coupling();

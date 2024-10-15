@@ -270,8 +270,9 @@ FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<Core::FE::Dis
 ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsTgv::evaluate_residuals(
     std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> statevecs,
-    std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> statetenss, const double thermpressaf,
-    const double thermpressam, const double thermpressdtaf, const double thermpressdtam)
+    std::map<std::string, Teuchos::RCP<Core::LinAlg::MultiVector<double>>> statetenss,
+    const double thermpressaf, const double thermpressam, const double thermpressdtaf,
+    const double thermpressdtam)
 {
   //--------------------------------------------------------------------
   // set parameter list (time integration)

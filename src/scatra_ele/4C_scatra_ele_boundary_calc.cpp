@@ -573,7 +573,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_normal_vec
 {
   // access the global vector
   const auto normals =
-      params.get<Teuchos::RCP<Epetra_MultiVector>>("normal vectors", Teuchos::null);
+      params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("normal vectors", Teuchos::null);
   if (normals == Teuchos::null) FOUR_C_THROW("Could not access vector 'normal vectors'");
 
   // determine constant outer normal to this element

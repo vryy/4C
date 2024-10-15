@@ -939,8 +939,8 @@ void PARTICLEENGINE::ParticleEngine::setup_binning_strategy()
   binrowmap_ = binstrategy_->create_linear_map_for_numbin(comm_);
 
   // initialize vector for storage of bin center coordinates and bin weights
-  bincenters_ = Teuchos::make_rcp<Epetra_MultiVector>(*binrowmap_, 3);
-  binweights_ = Teuchos::make_rcp<Epetra_MultiVector>(*binrowmap_, 1);
+  bincenters_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*binrowmap_, 3);
+  binweights_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*binrowmap_, 1);
 
   // get all bin centers needed for repartitioning
   binstrategy_->get_all_bin_centers(*binrowmap_, *bincenters_);
@@ -2117,7 +2117,7 @@ void PARTICLEENGINE::ParticleEngine::determine_bin_weights()
     for (const auto& particleIt : particlestobins_[bincolmap_->LID(gidofbin)])
     {
       // add weight of particle of specific type
-      (*binweights_)[0][rowlidofbin] += typeweights_[particleIt.first];
+      (*binweights_)(0)[rowlidofbin] += typeweights_[particleIt.first];
     }
   }
 }

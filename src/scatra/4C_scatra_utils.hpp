@@ -15,7 +15,6 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
-#include <Epetra_MultiVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -30,7 +29,7 @@ namespace ScaTra::ScaTraUtils
 
   //! Calculate the reconstructed nodal gradient at a node by means of mean value averaging
   template <const int dim>
-  Teuchos::RCP<Epetra_MultiVector> compute_gradient_at_nodes_mean_average(
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> compute_gradient_at_nodes_mean_average(
       Core::FE::Discretization& discret, const Core::LinAlg::Vector<double>& state,
       const int scatra_dofid);
 

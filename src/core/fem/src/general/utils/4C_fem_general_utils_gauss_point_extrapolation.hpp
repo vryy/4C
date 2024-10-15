@@ -88,8 +88,9 @@ namespace Core::FE
    */
   template <Core::FE::CellType distype, class GaussIntegration>
   void extrapolate_gp_quantity_to_nodes_and_assemble(const Core::Elements::Element& ele,
-      const Core::LinAlg::SerialDenseMatrix& gp_data, Epetra_MultiVector& global_data,
-      bool nodal_average, const GaussIntegration& integration);
+      const Core::LinAlg::SerialDenseMatrix& gp_data,
+      Core::LinAlg::MultiVector<double>& global_data, bool nodal_average,
+      const GaussIntegration& integration);
 
   /*!
    * @brief Extrapolates Gauss point data to the knots of a NURBS element and assembles
@@ -111,7 +112,8 @@ namespace Core::FE
   template <Core::FE::CellType distype, class GaussIntegration>
   void extrapolate_gp_quantity_to_nurbs_knots_and_assemble(const Core::FE::Discretization& dis,
       const Core::Elements::Element& ele, const LinAlg::SerialDenseMatrix& gp_data,
-      Epetra_MultiVector& global_data, bool nodal_average, const GaussIntegration& integration);
+      Core::LinAlg::MultiVector<double>& global_data, bool nodal_average,
+      const GaussIntegration& integration);
 }  // namespace Core::FE
 
 FOUR_C_NAMESPACE_CLOSE

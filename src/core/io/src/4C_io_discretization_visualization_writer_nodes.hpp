@@ -17,7 +17,6 @@
 
 #include "4C_linalg_vector.hpp"
 
-#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -83,7 +82,8 @@ namespace Core::IO
      * @param result_num_components_per_node (in) Number of scalar values per node
      * @param resultname (in) Name of the field to be written to the visualization file
      */
-    void append_node_based_result_data_vector(Epetra_MultiVector &result_data_nodebased,
+    void append_node_based_result_data_vector(
+        Core::LinAlg::MultiVector<double> &result_data_nodebased,
         unsigned int result_num_components_per_node, const std::string &resultname);
 
     /**

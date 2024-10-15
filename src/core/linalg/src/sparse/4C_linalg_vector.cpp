@@ -35,6 +35,7 @@ template <typename T>
 Core::LinAlg::Vector<T>::Vector(const Epetra_FEVector& Source)
     : vector_(Teuchos::make_rcp<Epetra_Vector>(Epetra_DataAccess::Copy, Source, 0))
 {
+  FOUR_C_ASSERT(Source.NumVectors() == 1, "Can only convert a FE vector with a single column.");
 }
 
 template <typename T>
@@ -173,6 +174,14 @@ template <typename T>
 int Core::LinAlg::Vector<T>::PutScalar(double ScalarConstant)
 {
   return vector_->PutScalar(ScalarConstant);
+}
+
+
+template <typename T>
+int Core::LinAlg::Vector<T>::ReplaceMap(const Epetra_BlockMap& map)
+{
+  if (multi_vector_view_) multi_vector_view_->ReplaceMap(map);
+  return vector_->ReplaceMap(map);
 }
 
 template <typename T>

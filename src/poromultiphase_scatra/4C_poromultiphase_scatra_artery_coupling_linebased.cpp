@@ -443,7 +443,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::fill_unaffecte
   // global assembly and export
   if (unaffected_diams_artery_row.GlobalAssemble(Add, false) != 0)
     FOUR_C_THROW("GlobalAssemble of unaffected_seg_lengths_artery_ failed");
-  Core::LinAlg::export_to(unaffected_diams_artery_row, *unaffected_integrated_diams_artery_col_);
+  Core::LinAlg::export_to(Core::LinAlg::Vector<double>(unaffected_diams_artery_row),
+      *unaffected_integrated_diams_artery_col_);
 }
 
 /*----------------------------------------------------------------------*
@@ -651,7 +652,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::set_artery_dia
     FOUR_C_THROW("GlobalAssemble of integrated_integrated_diams_artery_row_ failed");
 
   // export to column format
-  Core::LinAlg::export_to(*integrated_diams_artery_row_, *integrated_diams_artery_col_);
+  Core::LinAlg::export_to(
+      Core::LinAlg::Vector<double>(*integrated_diams_artery_row_), *integrated_diams_artery_col_);
 
   // fill the vector collecting the element diameter
   fill_artery_ele_diam_col();

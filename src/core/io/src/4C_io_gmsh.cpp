@@ -259,13 +259,13 @@ void Core::IO::Gmsh::vector_field_dof_based_to_gmsh(Core::FE::Discretization& di
  | write multivector field to Gmsh postprocessing file                               winter 04/17 |
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::vector_field_multi_vector_dof_based_to_gmsh(
-    const Core::FE::Discretization& discret, const Epetra_MultiVector& vectorfield_row,
-    std::ostream& s, const int nds)
+    const Core::FE::Discretization& discret,
+    const Core::LinAlg::MultiVector<double>& vectorfield_row, std::ostream& s, const int nds)
 {
   // TODO: Remove dependence on size of Epetra_Multivector!!!
 
   // tranform solution vector from dof_row_map to DofColMap
-  Epetra_MultiVector vectorfield(*discret.dof_col_map(nds), 3, true);
+  Core::LinAlg::MultiVector<double> vectorfield(*discret.dof_col_map(nds), 3, true);
   Core::LinAlg::export_to(vectorfield_row, vectorfield);
 
   // loop all row elements on this processor
@@ -472,13 +472,13 @@ void Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(Core::FE::Discret
  | write node-based vector field to Gmsh postprocessing file                          henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::vector_field_node_based_to_gmsh(const Core::FE::Discretization& discret,
-    const Epetra_MultiVector& vectorfield_row, std::ostream& s)
+    const Core::LinAlg::MultiVector<double>& vectorfield_row, std::ostream& s)
 {
   // tranform solution vector from NodeRowMap to NodeColMap
   // remark: Core::Rebalance::get_col_version_of_row_vector() does only work for
   // Core::LinAlg::Vectors on dof_row_map
-  const Teuchos::RCP<Epetra_MultiVector> vectorfield =
-      Teuchos::make_rcp<Epetra_MultiVector>(*discret.node_col_map(), 3, true);
+  const Teuchos::RCP<Core::LinAlg::MultiVector<double>> vectorfield =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret.node_col_map(), 3, true);
   Core::LinAlg::export_to(vectorfield_row, *vectorfield);
 
   // loop all row elements on this processor
@@ -554,8 +554,7 @@ void Core::IO::Gmsh::scalar_field_node_based_to_gmsh(const Core::FE::Discretizat
 
     // extract local values from the global vector
     Core::LinAlg::SerialDenseVector myscalarfield(numnode);
-    Core::FE::extract_my_node_based_values(
-        ele, myscalarfield, *scalarfield.get_ptr_of_Epetra_MultiVector(), 1);
+    Core::FE::extract_my_node_based_values(ele, myscalarfield, scalarfield, 1);
 
     // write vector field to Gmsh stream
     scalar_field_to_stream(myscalarfield, distype, s);

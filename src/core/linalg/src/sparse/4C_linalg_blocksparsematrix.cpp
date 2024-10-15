@@ -257,11 +257,14 @@ int Core::LinAlg::BlockSparseMatrixBase::Apply(
   {
     for (int rblock = 0; rblock < rows(); ++rblock)
     {
-      Teuchos::RCP<Epetra_MultiVector> rowresult = rangemaps_.vector(rblock, Y.NumVectors());
-      Teuchos::RCP<Epetra_MultiVector> rowy = rangemaps_.vector(rblock, Y.NumVectors());
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> rowresult =
+          rangemaps_.vector(rblock, Y.NumVectors());
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> rowy =
+          rangemaps_.vector(rblock, Y.NumVectors());
       for (int cblock = 0; cblock < cols(); ++cblock)
       {
-        Teuchos::RCP<Epetra_MultiVector> colx = domainmaps_.extract_vector(X, cblock);
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> colx =
+            domainmaps_.extract_vector(Core::LinAlg::MultiVector<double>(X), cblock);
         const Core::LinAlg::SparseMatrix& bmat = matrix(rblock, cblock);
         int err = bmat.Apply(*colx, *rowy);
         if (err != 0)
@@ -269,24 +272,29 @@ int Core::LinAlg::BlockSparseMatrixBase::Apply(
               "failed to apply vector to matrix block (%d,%d): err=%d", rblock, cblock, err);
         rowresult->Update(1.0, *rowy, 1.0);
       }
-      rangemaps_.insert_vector(*rowresult, rblock, Y);
+      VectorView Y_view(Y);
+      rangemaps_.insert_vector(*rowresult, rblock, Y_view);
     }
   }
   else
   {
     for (int rblock = 0; rblock < cols(); ++rblock)
     {
-      Teuchos::RCP<Epetra_MultiVector> rowresult = rangemaps_.vector(rblock, Y.NumVectors());
-      Teuchos::RCP<Epetra_MultiVector> rowy = rangemaps_.vector(rblock, Y.NumVectors());
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> rowresult =
+          rangemaps_.vector(rblock, Y.NumVectors());
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> rowy =
+          rangemaps_.vector(rblock, Y.NumVectors());
       for (int cblock = 0; cblock < rows(); ++cblock)
       {
-        Teuchos::RCP<Epetra_MultiVector> colx = domainmaps_.extract_vector(X, cblock);
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> colx =
+            domainmaps_.extract_vector(Core::LinAlg::MultiVector<double>(X), cblock);
         const Core::LinAlg::SparseMatrix& bmat = matrix(cblock, rblock);
         int err = bmat.Apply(*colx, *rowy);
         if (err != 0) FOUR_C_THROW("failed to apply vector to matrix: err=%d", err);
         rowresult->Update(1.0, *rowy, 1.0);
       }
-      rangemaps_.insert_vector(*rowresult, rblock, Y);
+      VectorView Y_view(Y);
+      rangemaps_.insert_vector(*rowresult, rblock, Y_view);
     }
   }
 
@@ -367,8 +375,8 @@ int Core::LinAlg::BlockSparseMatrixBase::scale(double ScalarConstant)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::LinAlg::BlockSparseMatrixBase::multiply(
-    bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+int Core::LinAlg::BlockSparseMatrixBase::multiply(bool TransA,
+    const Core::LinAlg::MultiVector<double>& X, Core::LinAlg::MultiVector<double>& Y) const
 {
   if (TransA) FOUR_C_THROW("transpose multiply not implemented for BlockSparseMatrix");
   return Apply(X, Y);

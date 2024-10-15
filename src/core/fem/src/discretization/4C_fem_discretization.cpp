@@ -822,8 +822,8 @@ void Core::FE::Discretization::compute_null_space_if_necessary(
   // see whether we have previously computed the nullspace
   // and recomputation is enforced
   Teuchos::ParameterList& mllist = *mllist_ptr;
-  Teuchos::RCP<Epetra_MultiVector> ns =
-      mllist.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> ns =
+      mllist.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace", Teuchos::null);
   if (ns != Teuchos::null && !recompute) return;
 
   // no, we have not previously computed the nullspace
@@ -841,8 +841,8 @@ void Core::FE::Discretization::compute_null_space_if_necessary(
  |  set_state surrogate for node based vectors                  (public) |
  |                                                            gjb 06/09 |
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::add_multi_vector_to_parameter_list(
-    Teuchos::ParameterList& p, const std::string name, Teuchos::RCP<const Epetra_MultiVector> vec)
+void Core::FE::Discretization::add_multi_vector_to_parameter_list(Teuchos::ParameterList& p,
+    const std::string name, Teuchos::RCP<const Core::LinAlg::MultiVector<double>> vec)
 {
   // provide data in node-based multi-vector for usage on element level
   // -> export to column map is necessary for parallel evaluation
@@ -857,15 +857,15 @@ void Core::FE::Discretization::add_multi_vector_to_parameter_list(
     if (vec->Map().PointSameAs(*nodecolmap))
     {
       // make a copy as in parallel such that no additional RCP points to the state vector
-      Teuchos::RCP<Epetra_MultiVector> tmp =
-          Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, numcol);
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> tmp =
+          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, numcol);
       tmp->Update(1.0, *vec, 0.0);
       p.set(name, tmp);
     }
     else  // if it's not in column map export and allocate
     {
-      Teuchos::RCP<Epetra_MultiVector> tmp =
-          Teuchos::make_rcp<Epetra_MultiVector>(*nodecolmap, numcol);
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> tmp =
+          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, numcol);
       Core::LinAlg::export_to(*vec, *tmp);
       p.set(name, tmp);
     }

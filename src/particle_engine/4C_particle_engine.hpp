@@ -800,10 +800,10 @@ namespace PARTICLEENGINE
     int typevectorsize_;
 
     //! vector of bin center coordinates
-    Teuchos::RCP<Epetra_MultiVector> bincenters_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> bincenters_;
 
     //! vector of bin weights
-    Teuchos::RCP<Epetra_MultiVector> binweights_;
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> binweights_;
 
     //! vector of particle type weights for dynamic load balancing
     std::vector<double> typeweights_;

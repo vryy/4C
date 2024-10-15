@@ -15,7 +15,6 @@
 #include "4C_linalg_krylov_projector.hpp"
 #include "4C_linear_solver_preconditioner_type.hpp"
 
-#include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
 
 FOUR_C_NAMESPACE_OPEN
@@ -33,8 +32,8 @@ namespace Core::LinearSolver
     KrylovProjectionPreconditioner(Teuchos::RCP<PreconditionerTypeBase> preconditioner,
         Teuchos::RCP<Core::LinAlg::KrylovProjector> projector);
 
-    void setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,
-        Epetra_MultiVector* b) override;
+    void setup(bool create, Epetra_Operator* matrix, Core::LinAlg::MultiVector<double>* x,
+        Core::LinAlg::MultiVector<double>* b) override;
 
     /// linear operator used for preconditioning
     Teuchos::RCP<Epetra_Operator> prec_operator() const override { return p_; }

@@ -939,7 +939,7 @@ namespace FLD
     //@}
 
     /// apply external forces to the fluid
-    void apply_external_forces(Teuchos::RCP<Epetra_MultiVector> fext) override;
+    void apply_external_forces(Teuchos::RCP<Core::LinAlg::MultiVector<double>> fext) override;
 
     /// create field test
     Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;

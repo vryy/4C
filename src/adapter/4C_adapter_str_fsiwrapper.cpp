@@ -204,12 +204,12 @@ void Adapter::FSIStructureWrapper::apply_interface_forces(
 void Adapter::FSIStructureWrapper::apply_interface_forces_temporary_deprecated(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iforce)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fifc =
-      Core::LinAlg::create_vector(*dof_row_map(), true);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> fifc =
+      Core::LinAlg::create_multi_vector(*dof_row_map(), 1, true);
 
-  interface_->add_fsi_cond_vector(*iforce, *fifc);
+  interface_->add_fsi_cond_vector(*iforce, (*fifc)(0));
 
-  set_force_interface(fifc->get_ptr_of_Epetra_MultiVector());
+  set_force_interface(fifc);
 
   prepare_partition_step();
 

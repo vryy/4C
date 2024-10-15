@@ -16,9 +16,14 @@
 
 #include "4C_structure_new_impl_generic.hpp"
 
-#include <Epetra_MultiVector.h>
 
 FOUR_C_NAMESPACE_OPEN
+
+namespace Core::LinAlg
+{
+  template <typename T>
+  class MultiVector;
+}
 
 namespace Solid
 {
@@ -232,7 +237,7 @@ namespace Solid
        *
        *  entry (0): constant velocity contribution \f$\tilde{V}_{n+1}\f$
        *  entry (1): constant acceleration contribution \f$\tilde{A}_{n+1}\f$ */
-      Teuchos::RCP<Epetra_MultiVector> const_vel_acc_update_ptr_;
+      Teuchos::RCP<Core::LinAlg::MultiVector<double>> const_vel_acc_update_ptr_;
       //! @}
 
       //! @name pointers to the global state data container content

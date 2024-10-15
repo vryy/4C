@@ -63,8 +63,8 @@ void Core::FE::extract_my_values(const Core::LinAlg::Vector<double>& global,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::extract_my_values(
-    const Epetra_MultiVector& global, std::vector<double>& local, const std::vector<int>& lm)
+void Core::FE::extract_my_values(const Core::LinAlg::MultiVector<double>& global,
+    std::vector<double>& local, const std::vector<int>& lm)
 {
   const int numcol = global.NumVectors();
   const size_t ldim = lm.size();
@@ -76,14 +76,13 @@ void Core::FE::extract_my_values(
   {
     const int lid = global.Map().LID(lm[i]);
     if (lid < 0)
-      FOUR_C_THROW(
-          "Proc %d: Cannot find gid=%d in Epetra_MultiVector", global.Comm().MyPID(), lm[i]);
+      FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::MultiVector<double>",
+          global.Comm().MyPID(), lm[i]);
 
     // loop over multi vector columns (numcol=1 for Core::LinAlg::Vector<double>)
     for (int col = 0; col < numcol; col++)
     {
-      double* globalcolumn = (global)[col];
-      local[col + (numcol * i)] = globalcolumn[lid];
+      local[col + (numcol * i)] = global(col)[lid];
     }
   }
   return;
@@ -93,7 +92,7 @@ void Core::FE::extract_my_values(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
-    std::vector<double>& local, const Epetra_MultiVector& global)
+    std::vector<double>& local, const Core::LinAlg::MultiVector<double>& global)
 {
   const int numnode = ele->num_node();
   const int numcol = global.NumVectors();
@@ -111,8 +110,7 @@ void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
     // loop over multi vector columns (numcol=1 for Core::LinAlg::Vector<double>)
     for (int col = 0; col < numcol; col++)
     {
-      double* globalcolumn = (global)[col];
-      local[col + (numcol * i)] = globalcolumn[lid];
+      local[col + (numcol * i)] = global(col)[lid];
     }
   }
   return;
@@ -122,7 +120,8 @@ void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
-    Core::LinAlg::SerialDenseVector& local, Epetra_MultiVector& global, const int nsd)
+    Core::LinAlg::SerialDenseVector& local, Core::LinAlg::MultiVector<double>& global,
+    const int nsd)
 {
   if (nsd > global.NumVectors())
     FOUR_C_THROW("Requested %d of %d available columns", nsd, global.NumVectors());
@@ -132,17 +131,15 @@ void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
   // TODO: might we do change the loops?
   for (int i = 0; i < nsd; i++)
   {
-    // access actual component column of multi-vector
-    double* globalcolumn = (global)[i];
     // loop over the element nodes
     for (int j = 0; j < iel; j++)
     {
       const int nodegid = (ele->nodes()[j])->id();
       const int lid = global.Map().LID(nodegid);
       if (lid < 0)
-        FOUR_C_THROW(
-            "Proc %d: Cannot find gid=%d in Epetra_MultiVector", global.Comm().MyPID(), nodegid);
-      local(i + (nsd * j)) = globalcolumn[lid];
+        FOUR_C_THROW("Proc %d: Cannot find gid=%d in Core::LinAlg::MultiVector<double>",
+            global.Comm().MyPID(), nodegid);
+      local(i + (nsd * j)) = global(i)[lid];
     }
   }
   return;
@@ -151,7 +148,8 @@ void Core::FE::extract_my_node_based_values(const Core::Elements::Element* ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::extract_my_node_based_values(const Core::Nodes::Node* node,
-    Core::LinAlg::SerialDenseVector& local, Epetra_MultiVector& global, const int nsd)
+    Core::LinAlg::SerialDenseVector& local, Core::LinAlg::MultiVector<double>& global,
+    const int nsd)
 {
   if (nsd > global.NumVectors())
     FOUR_C_THROW("Requested %d of %d available columns", nsd, global.NumVectors());
@@ -163,9 +161,7 @@ void Core::FE::extract_my_node_based_values(const Core::Nodes::Node* node,
   for (int i = 0; i < nsd; i++)
   {
     // access actual component column of multi-vector
-    double* globalcolumn = (global)[i];
-
-    local(i + nsd) = globalcolumn[lid];
+    local(i + nsd) = global(i)[lid];
   }
   return;
 }

@@ -469,8 +469,8 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
   {
     // access the general material
     Teuchos::RCP<Core::Mat::Material> material = ele->material();
-    Teuchos::RCP<Epetra_MultiVector> material_internal_state =
-        params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> material_internal_state =
+        params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("material_internal_state");
 
     if (material->material_type() == Core::Materials::m_myocard)
     {
@@ -490,7 +490,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
       }
     }
 
-    params.set<Teuchos::RCP<Epetra_MultiVector>>(
+    params.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
         "material_internal_state", material_internal_state);
   }
 
@@ -511,8 +511,8 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
   {
     // access the general material
     Teuchos::RCP<Core::Mat::Material> material = ele->material();
-    Teuchos::RCP<Epetra_MultiVector> material_internal_state =
-        params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> material_internal_state =
+        params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("material_internal_state");
 
     if (material->material_type() == Core::Materials::m_myocard)
     {
@@ -524,7 +524,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
         for (int q = 0; q < nqpoints; ++q)
         {
           auto material_internal_state_component =
-              Teuchos::rcpFromRef(*(*material_internal_state)(k * nqpoints + q));
+              Teuchos::rcpFromRef((*material_internal_state)(k * nqpoints + q));
           material->set_internal_state(k, (*material_internal_state_component)[ele->id()], q);
         }
       }

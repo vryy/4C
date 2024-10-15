@@ -17,7 +17,6 @@ Created on: Feb 27, 2014
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_preconditioner_type.hpp"
 
-#include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
 #include <Ifpack.h>
 #include <MueLu.hpp>
@@ -62,8 +61,8 @@ namespace Core::LinearSolver::AMGNxN
       return;
     }
 
-    virtual void apply(
-        const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const = 0;
+    virtual void apply(const Core::LinAlg::MultiVector<double>& X,
+        Core::LinAlg::MultiVector<double>& Y, bool InitialGuessIsZero) const = 0;
 
    protected:
     void check_single_field_vector(const BlockedVector& V) const
@@ -170,8 +169,8 @@ namespace Core::LinearSolver::AMGNxN
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse_matrix_;
     Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_sparse_matrix_;
     Teuchos::RCP<Epetra_Operator> a_;
-    mutable Teuchos::RCP<Epetra_MultiVector> x_;
-    mutable Teuchos::RCP<Epetra_MultiVector> b_;
+    mutable Teuchos::RCP<Core::LinAlg::MultiVector<double>> x_;
+    mutable Teuchos::RCP<Core::LinAlg::MultiVector<double>> b_;
     bool is_set_up_;
   };
 
@@ -220,7 +219,7 @@ namespace Core::LinearSolver::AMGNxN
     {
     }
 
-    void apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
+    void apply(const Core::LinAlg::MultiVector<double>& X, Core::LinAlg::MultiVector<double>& Y,
         bool InitialGuessIsZero = false) const override;
 
    private:
@@ -233,7 +232,7 @@ namespace Core::LinearSolver::AMGNxN
     MueluHierarchyWrapper(
         Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>> H);
 
-    void apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
+    void apply(const Core::LinAlg::MultiVector<double>& X, Core::LinAlg::MultiVector<double>& Y,
         bool InitialGuessIsZero = false) const override;
 
    private:
@@ -248,7 +247,7 @@ namespace Core::LinearSolver::AMGNxN
         Teuchos::RCP<std::vector<double>> null_space_data,
         const Teuchos::ParameterList& muelu_list);
 
-    void apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
+    void apply(const Core::LinAlg::MultiVector<double>& X, Core::LinAlg::MultiVector<double>& Y,
         bool InitialGuessIsZero = false) const override;
 
     void setup();
@@ -273,7 +272,7 @@ namespace Core::LinearSolver::AMGNxN
         Teuchos::RCP<std::vector<double>> null_space_data, const Teuchos::ParameterList& muelu_list,
         const Teuchos::ParameterList& fine_smoother_list);
 
-    void apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
+    void apply(const Core::LinAlg::MultiVector<double>& X, Core::LinAlg::MultiVector<double>& Y,
         bool InitialGuessIsZero = false) const override;
 
    private:
@@ -287,7 +286,7 @@ namespace Core::LinearSolver::AMGNxN
    public:
     IfpackWrapper(Teuchos::RCP<Core::LinAlg::SparseMatrixBase> A, Teuchos::ParameterList& list);
     ~IfpackWrapper() override { delete prec_; }
-    void apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
+    void apply(const Core::LinAlg::MultiVector<double>& X, Core::LinAlg::MultiVector<double>& Y,
         bool InitialGuessIsZero = false) const override;
 
    private:
@@ -305,14 +304,14 @@ namespace Core::LinearSolver::AMGNxN
     void setup(Teuchos::RCP<Core::LinAlg::SparseMatrix> matrix,
         Teuchos::RCP<Teuchos::ParameterList> params);
 
-    void apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y,
+    void apply(const Core::LinAlg::MultiVector<double>& X, Core::LinAlg::MultiVector<double>& Y,
         bool InitialGuessIsZero = false) const override;
 
    private:
     Teuchos::RCP<Core::LinAlg::Solver> solver_;
     Teuchos::RCP<Epetra_Operator> a_;
-    mutable Teuchos::RCP<Epetra_MultiVector> x_;
-    mutable Teuchos::RCP<Epetra_MultiVector> b_;
+    mutable Teuchos::RCP<Core::LinAlg::MultiVector<double>> x_;
+    mutable Teuchos::RCP<Core::LinAlg::MultiVector<double>> b_;
     bool is_set_up_;
   };
 

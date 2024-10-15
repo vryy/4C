@@ -18,7 +18,6 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_linear_solver_preconditioner_type.hpp"
 
-#include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
 #include <MueLu.hpp>
 #include <MueLu_BaseClass.hpp>
@@ -79,12 +78,12 @@ namespace Core::LinearSolver::AMGNxN
     void set_pre_smoothers(std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPre);
     void set_pos_smoothers(std::vector<Teuchos::RCP<SingleFieldSmoother>> SvecPos);
 
-    void apply(
-        const Epetra_MultiVector& X, Epetra_MultiVector& Y, bool InitialGuessIsZero) const override;
+    void apply(const Core::LinAlg::MultiVector<double>& X, Core::LinAlg::MultiVector<double>& Y,
+        bool InitialGuessIsZero) const override;
 
    private:
-    void do_vcycle(const Epetra_MultiVector& X, Epetra_MultiVector& Y, int level,
-        bool InitialGuessIsZero) const;
+    void do_vcycle(const Core::LinAlg::MultiVector<double>& X, Core::LinAlg::MultiVector<double>& Y,
+        int level, bool InitialGuessIsZero) const;
 
     int num_levels_;
     int num_sweeps_;

@@ -10,9 +10,9 @@
 #include "4C_linalg_projected_precond.hpp"
 
 #include "4C_linalg_krylov_projector.hpp"
+#include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_MultiVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -45,7 +45,8 @@ int Core::LinAlg::LinalgPrecondOperator::ApplyInverse(
   // of problem
   if (project_)
   {
-    projector_->apply_p(Y);
+    VectorView Y_view(Y);
+    projector_->apply_p(Y_view);
   }
 
   return (ierr);

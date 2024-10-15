@@ -33,8 +33,8 @@ Core::LinearSolver::MLPreconditioner::MLPreconditioner(Teuchos::ParameterList& m
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void Core::LinearSolver::MLPreconditioner::setup(
-    bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
+void Core::LinearSolver::MLPreconditioner::setup(bool create, Epetra_Operator* matrix,
+    Core::LinAlg::MultiVector<double>* x, Core::LinAlg::MultiVector<double>* b)
 {
   if (matrix->Comm().MyPID() == 0)
     std::cout << "WARNING: The 4C interface to the multigrid package ML of Trilinos "

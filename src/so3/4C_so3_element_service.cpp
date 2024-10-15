@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 void Discret::ELEMENTS::assemble_gauss_point_values(
-    std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
+    std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>& global_data,
     const Core::LinAlg::SerialDenseMatrix& gp_data, const Core::Elements::Element& ele)
 {
   for (int gp = 0; gp < gp_data.numRows(); ++gp)
@@ -27,7 +27,7 @@ void Discret::ELEMENTS::assemble_gauss_point_values(
     {
       for (int i = 0; i < gp_data.numCols(); ++i)
       {
-        (*((*global_data[gp])(i)))[lid] += gp_data(gp, i);
+        ((*global_data[gp])(i))[lid] += gp_data(gp, i);
       }
     }
   }

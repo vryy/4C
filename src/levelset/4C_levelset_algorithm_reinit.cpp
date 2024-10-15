@@ -423,7 +423,7 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
     {
       // store velocity in reinitialization velocity
       const double val = (*velcomp)[lnodeid];
-      ((*nb_grad_val_)(idim))->ReplaceMyValues(1, &val, &lnodeid);
+      (*nb_grad_val_)(idim).ReplaceMyValues(1, &val, &lnodeid);
     }
   }
   return;

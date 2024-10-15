@@ -249,7 +249,8 @@ void ScaTra::MeshtyingStrategyS2I::condense_mat_and_rhs(
         if (Q_->multiply(true, *residualmaster, Q_residualmaster))
           FOUR_C_THROW("Matrix-vector multiplication failed!");
         interfacemaps_->insert_vector(Q_residualmaster, 2, *scatratimint_->residual());
-        interfacemaps_->add_vector(*imasterresidual_, 2, *scatratimint_->residual());
+        interfacemaps_->add_vector(
+            Core::LinAlg::MultiVector<double>(*imasterresidual_), 2, *scatratimint_->residual());
 
         // add projected master-side entries to slave-side entries of global residual vector
         Core::LinAlg::Vector<double> P_residualmaster(*interfacemaps_->Map(1));
@@ -622,13 +623,12 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
           // set action
           params.set<Inpar::S2I::EvaluationActions>("action", Inpar::S2I::evaluate_condition);
 
-          // evaluate mortar integration cells at current interface
           evaluate_mortar_cells(idiscret, params, islavematrix_, Inpar::S2I::side_slave,
               Inpar::S2I::side_slave, islavematrix_, Inpar::S2I::side_slave,
               Inpar::S2I::side_master, imastermatrix_, Inpar::S2I::side_master,
               Inpar::S2I::side_slave, imastermatrix_, Inpar::S2I::side_master,
               Inpar::S2I::side_master,
-              islaveresidual_ != Teuchos::null ? islaveresidual_->get_ptr_of_Epetra_MultiVector()
+              islaveresidual_ != Teuchos::null ? islaveresidual_->get_ptr_of_MultiVector()
                                                : Teuchos::null,
               Inpar::S2I::side_slave, imasterresidual_, Inpar::S2I::side_master);
         }
@@ -646,7 +646,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
               Inpar::S2I::side_master, imastermatrix_, Inpar::S2I::side_master,
               Inpar::S2I::side_slave, imastermatrix_, Inpar::S2I::side_master,
               Inpar::S2I::side_master,
-              islaveresidual_ != Teuchos::null ? islaveresidual_->get_ptr_of_Epetra_MultiVector()
+              islaveresidual_ != Teuchos::null ? islaveresidual_->get_ptr_of_MultiVector()
                                                : Teuchos::null,
               Inpar::S2I::side_slave, imasterresidual_, Inpar::S2I::side_master);
         }
@@ -694,7 +694,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
               systemmatrix->add(*islavematrix, false, 1., 1.);
               systemmatrix->add(*imastermatrix, false, 1., 1.);
               interfacemaps_->add_vector(*islaveresidual_, 1, *scatratimint_->residual());
-              interfacemaps_->add_vector(*imasterresidual_, 2, *scatratimint_->residual());
+              interfacemaps_->add_vector(Core::LinAlg::MultiVector<double>(*imasterresidual_), 2,
+                  *scatratimint_->residual());
 
               break;
             }
@@ -773,10 +774,12 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
                     false, -1., 1.);
                 systemmatrix->add(*imastermatrix_, false, 1., 1.);
                 Core::LinAlg::Vector<double> islaveresidual(*interfacemaps_->Map(1));
-                if (P_->multiply(true, *imasterresidual_, islaveresidual))
+                if (P_->multiply(
+                        true, Core::LinAlg::MultiVector<double>(*imasterresidual_), islaveresidual))
                   FOUR_C_THROW("Matrix-vector multiplication failed!");
                 interfacemaps_->add_vector(islaveresidual, 1, *scatratimint_->residual(), -1.);
-                interfacemaps_->add_vector(*imasterresidual_, 2, *scatratimint_->residual());
+                interfacemaps_->add_vector(Core::LinAlg::MultiVector<double>(*imasterresidual_), 2,
+                    *scatratimint_->residual());
               }
 
               break;
@@ -846,7 +849,8 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
 
               // assemble interface residual vectors into global residual vector
               interfacemaps_->add_vector(*islaveresidual_, 1, *scatratimint_->residual());
-              interfacemaps_->add_vector(*imasterresidual_, 2, *scatratimint_->residual());
+              interfacemaps_->add_vector(Core::LinAlg::MultiVector<double>(*imasterresidual_), 2,
+                  *scatratimint_->residual());
 
               break;
             }
@@ -1584,9 +1588,9 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_cells(const Core::FE::Discret
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix4,
     const Inpar::S2I::InterfaceSides matrix4_side_rows,
     const Inpar::S2I::InterfaceSides matrix4_side_cols,
-    const Teuchos::RCP<Epetra_MultiVector>& systemvector1,
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& systemvector1,
     const Inpar::S2I::InterfaceSides vector1_side,
-    const Teuchos::RCP<Epetra_MultiVector>& systemvector2,
+    const Teuchos::RCP<Epetra_FEVector>& systemvector2,
     const Inpar::S2I::InterfaceSides vector2_side) const
 {
   // instantiate assembly strategy for mortar integration cells
@@ -1676,9 +1680,9 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_nts(
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix4,
     const Inpar::S2I::InterfaceSides matrix4_side_rows,
     const Inpar::S2I::InterfaceSides matrix4_side_cols,
-    const Teuchos::RCP<Epetra_MultiVector>& systemvector1,
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& systemvector1,
     const Inpar::S2I::InterfaceSides vector1_side,
-    const Teuchos::RCP<Epetra_MultiVector>& systemvector2,
+    const Teuchos::RCP<Epetra_FEVector>& systemvector2,
     const Inpar::S2I::InterfaceSides vector2_side) const
 {
   // instantiate assembly strategy for node-to-segment coupling
@@ -1750,9 +1754,9 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_mortar_elements(const Epetra_Map& ie
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix4,
     const Inpar::S2I::InterfaceSides matrix4_side_rows,
     const Inpar::S2I::InterfaceSides matrix4_side_cols,
-    const Teuchos::RCP<Epetra_MultiVector>& systemvector1,
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& systemvector1,
     const Inpar::S2I::InterfaceSides vector1_side,
-    const Teuchos::RCP<Epetra_MultiVector>& systemvector2,
+    const Teuchos::RCP<Epetra_FEVector>& systemvector2,
     const Inpar::S2I::InterfaceSides vector2_side) const
 {
   // instantiate assembly strategy for mortar elements
@@ -2474,7 +2478,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
               Inpar::S2I::side_undefined, Inpar::S2I::side_undefined, Teuchos::null,
               Inpar::S2I::side_undefined, Inpar::S2I::side_undefined,
               islavenodeslumpedareas_dofvector != Teuchos::null
-                  ? islavenodeslumpedareas_dofvector->get_ptr_of_Epetra_MultiVector()
+                  ? islavenodeslumpedareas_dofvector->get_ptr_of_MultiVector()
                   : Teuchos::null,
               Inpar::S2I::side_slave, Teuchos::null, Inpar::S2I::side_undefined);
 
@@ -3676,11 +3680,12 @@ void ScaTra::MeshtyingStrategyS2I::equip_extended_solver_with_null_space_info() 
     mllist.set("null space: type", "pre-computed");
     mllist.set("null space: add default vectors", false);
 
-    const Teuchos::RCP<Epetra_MultiVector> nullspace =
-        Teuchos::make_rcp<Epetra_MultiVector>(*(scatratimint_->dof_row_map(2)), 1, true);
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>> nullspace =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+            *(scatratimint_->dof_row_map(2)), 1, true);
     nullspace->PutScalar(1.0);
 
-    mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
+    mllist.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace", nullspace);
     mllist.set("null space: vectors", nullspace->Values());
     mllist.set("ML validate parameter list", false);
   }
@@ -4790,9 +4795,9 @@ ScaTra::MortarCellAssemblyStrategy::MortarCellAssemblyStrategy(
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix4,
     const Inpar::S2I::InterfaceSides matrix4_side_rows,
     const Inpar::S2I::InterfaceSides matrix4_side_cols,
-    Teuchos::RCP<Epetra_MultiVector> systemvector1, const Inpar::S2I::InterfaceSides vector1_side,
-    Teuchos::RCP<Epetra_MultiVector> systemvector2, const Inpar::S2I::InterfaceSides vector2_side,
-    const int nds_rows, const int nds_cols)
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> systemvector1,
+    const Inpar::S2I::InterfaceSides vector1_side, Teuchos::RCP<Epetra_FEVector> systemvector2,
+    const Inpar::S2I::InterfaceSides vector2_side, const int nds_rows, const int nds_cols)
     : matrix1_side_rows_(matrix1_side_rows),
       matrix1_side_cols_(matrix1_side_cols),
       matrix2_side_rows_(matrix2_side_rows),
@@ -4896,7 +4901,7 @@ void ScaTra::MortarCellAssemblyStrategy::assemble_cell_matrix(
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
 void ScaTra::MortarCellAssemblyStrategy::assemble_cell_vector(
-    const Teuchos::RCP<Epetra_MultiVector>& systemvector,
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& systemvector,
     const Core::LinAlg::SerialDenseVector& cellvector, const Inpar::S2I::InterfaceSides side,
     Core::Elements::LocationArray& la_slave, Core::Elements::LocationArray& la_master,
     const int assembler_pid_master) const
@@ -4907,10 +4912,46 @@ void ScaTra::MortarCellAssemblyStrategy::assemble_cell_vector(
     case Inpar::S2I::side_slave:
     {
       if (systemvector->NumVectors() != 1)
-        FOUR_C_THROW("Invalid number of vectors inside Epetra_MultiVector!");
-      Core::LinAlg::assemble(*(*systemvector)(nds_rows_), cellvector, la_slave[nds_rows_].lm_,
+        FOUR_C_THROW("Invalid number of vectors inside Core::LinAlg::MultiVector<double>!");
+      Core::LinAlg::assemble((*systemvector)(nds_rows_), cellvector, la_slave[nds_rows_].lm_,
           la_slave[nds_rows_].lmowner_);
 
+      break;
+    }
+
+    case Inpar::S2I::side_master:
+    {
+      if (assembler_pid_master == systemvector->Comm().MyPID())
+      {
+        FOUR_C_ASSERT(false, "Don't know what to do! Need a FEVector.");
+      }
+
+      break;
+    }
+
+    default:
+    {
+      FOUR_C_THROW("Invalid interface side!");
+      break;
+    }
+  }
+}
+
+
+/*----------------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------------*/
+void ScaTra::MortarCellAssemblyStrategy::assemble_cell_vector(
+    const Teuchos::RCP<Epetra_FEVector>& systemvector,
+    const Core::LinAlg::SerialDenseVector& cellvector, const Inpar::S2I::InterfaceSides side,
+    Core::Elements::LocationArray& la_slave, Core::Elements::LocationArray& la_master,
+    const int assembler_pid_master) const
+{
+  // assemble cell vector into system vector
+  switch (side)
+  {
+    case Inpar::S2I::side_slave:
+    {
+      FOUR_C_ASSERT(false, "Don't know what to do, does not work for FE-Vectors.");
       break;
     }
 

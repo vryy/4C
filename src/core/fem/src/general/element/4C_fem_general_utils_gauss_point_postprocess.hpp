@@ -39,7 +39,7 @@ namespace Core::FE
    */
   void extrapolate_gauss_point_quantity_to_nodes(Core::Elements::Element& ele,
       const Core::LinAlg::SerialDenseMatrix& data, const Core::FE::Discretization& dis,
-      Epetra_MultiVector& nodal_data);
+      Core::LinAlg::MultiVector<double>& nodal_data);
 
   /*!
    * @brief Averaging of all Gauss point quantities in @data within the element @ele and assembly to
@@ -50,7 +50,7 @@ namespace Core::FE
    * @param element_data (out) : Assembled data
    */
   void evaluate_gauss_point_quantity_at_element_center(Core::Elements::Element& ele,
-      const Core::LinAlg::SerialDenseMatrix& data, Epetra_MultiVector& element_data);
+      const Core::LinAlg::SerialDenseMatrix& data, Core::LinAlg::MultiVector<double>& element_data);
 
   /*!
    * \brief Assemble averaged data. The data at the Gauss points are averaged within the element.
@@ -61,14 +61,14 @@ namespace Core::FE
    * \param ele element
    */
   template <class T>
-  void assemble_averaged_element_values(
-      Epetra_MultiVector& global_data, const T& gp_data, const Core::Elements::Element& ele);
+  void assemble_averaged_element_values(Core::LinAlg::MultiVector<double>& global_data,
+      const T& gp_data, const Core::Elements::Element& ele);
 
 
   // --- template and inline functions --- //
   template <class T>
-  void assemble_averaged_element_values(
-      Epetra_MultiVector& global_data, const T& gp_data, const Core::Elements::Element& ele)
+  void assemble_averaged_element_values(Core::LinAlg::MultiVector<double>& global_data,
+      const T& gp_data, const Core::Elements::Element& ele)
   {
     const Epetra_BlockMap& elemap = global_data.Map();
     int lid = elemap.LID(ele.id());
@@ -76,7 +76,7 @@ namespace Core::FE
     {
       for (decltype(gp_data.numCols()) i = 0; i < gp_data.numCols(); ++i)
       {
-        double& s = (*(global_data(i)))[lid];  // resolve pointer for faster access
+        double& s = (global_data(i))[lid];  // resolve pointer for faster access
         s = 0.;
         for (decltype(gp_data.numRows()) j = 0; j < gp_data.numRows(); ++j)
         {

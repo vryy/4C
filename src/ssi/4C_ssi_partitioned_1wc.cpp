@@ -95,7 +95,7 @@ void SSI::SSIPart1WC::do_scatra_step()
       if (cardmono == Teuchos::null)
       {
         // read phinp from restart file
-        Teuchos::RCP<Epetra_MultiVector> phinptemp = reader.read_vector("phinp");
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> phinptemp = reader.read_vector("phinp");
 
         // replace old scatra map with new map since ssi map has more dofs
         int err = phinptemp->ReplaceMap(*scatra_field()->dof_row_map());

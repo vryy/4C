@@ -15,9 +15,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_linalg_multi_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
 
 #include <unordered_map>
@@ -58,8 +58,8 @@ namespace BEAMINTERACTION
   void add_beam_interaction_nodal_forces(
       const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
       const Teuchos::RCP<const Core::FE::Discretization>& discret_ptr,
-      const Teuchos::RCP<const Epetra_MultiVector>& displacement, const Epetra_MultiVector& force,
-      const bool write_unique_ids = false);
+      const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& displacement,
+      const Core::LinAlg::MultiVector<double>& force, const bool write_unique_ids = false);
 
   /**
    * \brief Add the averaged normal fields to the output writer.
@@ -88,7 +88,8 @@ namespace BEAMINTERACTION
    * @param solid_resultant (out) Matrix with the force and moment resultants for the solid nodes.
    */
   void get_global_coupling_force_resultants(const Core::FE::Discretization& discret,
-      const Epetra_MultiVector& force, const Epetra_MultiVector& displacement,
+      const Core::LinAlg::MultiVector<double>& force,
+      const Core::LinAlg::MultiVector<double>& displacement,
       Core::LinAlg::Matrix<3, 2, double>& beam_resultant,
       Core::LinAlg::Matrix<3, 2, double>& solid_resultant);
 

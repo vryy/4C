@@ -34,6 +34,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+using BelosVectorType = Epetra_MultiVector;
+
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
@@ -75,8 +77,8 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::solve()
 {
   Teuchos::ParameterList& belist = params().sublist("Belos Parameters");
 
-  auto problem =
-      Teuchos::make_rcp<Belos::LinearProblem<double, VectorType, MatrixType>>(a_, x_, b_);
+  auto problem = Teuchos::make_rcp<Belos::LinearProblem<double, BelosVectorType, MatrixType>>(
+      a_, x_->get_ptr_of_Epetra_MultiVector(), b_->get_ptr_of_Epetra_MultiVector());
 
   if (preconditioner_ != Teuchos::null)
   {
@@ -88,7 +90,7 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::solve()
   if (set == false)
     FOUR_C_THROW("Core::LinearSolver::BelosSolver: Iterative solver failed to set up correctly.");
 
-  Teuchos::RCP<Belos::SolverManager<double, VectorType, MatrixType>> newSolver;
+  Teuchos::RCP<Belos::SolverManager<double, BelosVectorType, MatrixType>> newSolver;
 
   if (belist.isParameter("SOLVER_XML_FILE"))
   {
@@ -105,8 +107,9 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::solve()
         belosSolverList->set("Convergence Tolerance", belist.get<double>("Convergence Tolerance"));
       }
 
-      newSolver = Teuchos::make_rcp<Belos::PseudoBlockGmresSolMgr<double, VectorType, MatrixType>>(
-          problem, belosSolverList);
+      newSolver =
+          Teuchos::make_rcp<Belos::PseudoBlockGmresSolMgr<double, BelosVectorType, MatrixType>>(
+              problem, belosSolverList);
     }
     else if (belosParams.isSublist("CG"))
     {
@@ -116,8 +119,8 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::solve()
         belosSolverList->set("Convergence Tolerance", belist.get<double>("Convergence Tolerance"));
       }
 
-      newSolver = Teuchos::RCP(
-          new Belos::PseudoBlockCGSolMgr<double, VectorType, MatrixType>(problem, belosSolverList));
+      newSolver = Teuchos::RCP(new Belos::PseudoBlockCGSolMgr<double, BelosVectorType, MatrixType>(
+          problem, belosSolverList));
     }
     else if (belosParams.isSublist("BiCGSTAB"))
     {
@@ -128,7 +131,7 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::solve()
       }
 
       newSolver = Teuchos::RCP(
-          new Belos::BiCGStabSolMgr<double, VectorType, MatrixType>(problem, belosSolverList));
+          new Belos::BiCGStabSolMgr<double, BelosVectorType, MatrixType>(problem, belosSolverList));
     }
     else
       FOUR_C_THROW("Core::LinearSolver::BelosSolver: Unknown iterative solver solver type chosen.");
@@ -142,13 +145,13 @@ int Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::solve()
 
     std::string solverType = belist.get<std::string>("Solver Type");
     if (solverType == "GMRES")
-      newSolver = Teuchos::make_rcp<Belos::BlockGmresSolMgr<double, VectorType, MatrixType>>(
+      newSolver = Teuchos::make_rcp<Belos::BlockGmresSolMgr<double, BelosVectorType, MatrixType>>(
           problem, Teuchos::rcpFromRef(belist));
     else if (solverType == "CG")
-      newSolver = Teuchos::make_rcp<Belos::BlockCGSolMgr<double, VectorType, MatrixType>>(
+      newSolver = Teuchos::make_rcp<Belos::BlockCGSolMgr<double, BelosVectorType, MatrixType>>(
           problem, Teuchos::rcpFromRef(belist));
     else if (solverType == "BiCGSTAB")
-      newSolver = Teuchos::make_rcp<Belos::BiCGStabSolMgr<double, VectorType, MatrixType>>(
+      newSolver = Teuchos::make_rcp<Belos::BiCGStabSolMgr<double, BelosVectorType, MatrixType>>(
           problem, Teuchos::rcpFromRef(belist));
     else
       FOUR_C_THROW("Core::LinearSolver::BelosSolver: Unknown iterative solver solver type chosen.");
@@ -299,6 +302,7 @@ Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::create_precondition
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 // explicit initialization
-template class Core::LinearSolver::IterativeSolver<Epetra_Operator, Epetra_MultiVector>;
+template class Core::LinearSolver::IterativeSolver<Epetra_Operator,
+    Core::LinAlg::MultiVector<double>>;
 
 FOUR_C_NAMESPACE_CLOSE

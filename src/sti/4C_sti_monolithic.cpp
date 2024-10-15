@@ -652,7 +652,7 @@ void STI::Monolithic::output_matrix_to_file(
 /*--------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------*/
 void STI::Monolithic::output_vector_to_file(
-    const Epetra_MultiVector& vector, const int precision, const double tolerance)
+    const Core::LinAlg::MultiVector<double>& vector, const int precision, const double tolerance)
 {
   // extract communicator
   const Epetra_Comm& comm = vector.Comm();
@@ -682,7 +682,7 @@ void STI::Monolithic::output_vector_to_file(
       -1, static_cast<int>(gids.size()), gids.size() ? gids.data() : nullptr, 0, comm);
 
   // export vector to processor with ID 0
-  Epetra_MultiVector fullvector(fullmap, vector.NumVectors(), true);
+  Core::LinAlg::MultiVector<double> fullvector(fullmap, vector.NumVectors(), true);
   Core::LinAlg::export_to(vector, fullvector);
 
   // let processor with ID 0 output vector to file
@@ -707,7 +707,7 @@ void STI::Monolithic::output_vector_to_file(
 
       // check output omission tolerance
       for (j = 0; j < fullvector.NumVectors(); ++j)
-        if (std::abs(fullvector[j][lid]) > tolerance) break;
+        if (std::abs(fullvector(j)[lid]) > tolerance) break;
 
       // perform output if applicable
       if (j < fullvector.NumVectors())
@@ -718,7 +718,7 @@ void STI::Monolithic::output_vector_to_file(
         // loop over all subvectors
         for (j = 0; j < fullvector.NumVectors(); ++j)
           // write current vector component to file
-          file << "," << fullvector[j][lid];
+          file << "," << fullvector(j)[lid];
 
         // output line break
         file << std::endl;
@@ -1280,11 +1280,12 @@ void STI::Monolithic::compute_null_space_if_necessary(Teuchos::ParameterList& so
     mllist.set("null space: type", "pre-computed");
     mllist.set("null space: add default vectors", false);
 
-    Teuchos::RCP<Epetra_MultiVector> nullspace =
-        Teuchos::make_rcp<Epetra_MultiVector>(dof_row_map().operator*(), dimns, true);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> nullspace =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+            dof_row_map().operator*(), dimns, true);
     Core::LinAlg::std_vector_to_epetra_multi_vector(ns, *nullspace, dimns);
 
-    mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
+    mllist.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace", nullspace);
     mllist.set("null space: vectors", nullspace->Values());
     mllist.set("ML validate parameter list", false);
   }
@@ -1299,18 +1300,18 @@ void STI::Monolithic::compute_null_space_if_necessary(Teuchos::ParameterList& so
     mllist.set("null space: type", "pre-computed");
     mllist.set("null space: add default vectors", false);
 
-    Teuchos::RCP<Epetra_MultiVector> nullspace =
-        Teuchos::make_rcp<Epetra_MultiVector>(dof_row_map().operator*(), 1, true);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> nullspace =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(dof_row_map().operator*(), 1, true);
     nullspace->PutScalar(1.0);
 
-    mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
+    mllist.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace", nullspace);
     mllist.set("null space: vectors", nullspace->Values());
     mllist.set("ML validate parameter list", false);
 
-    Teuchos::RCP<Epetra_MultiVector> coordinates =
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> coordinates =
         scatra_field()->discretization()->build_node_coordinates();
 
-    mllist.set<Teuchos::RCP<Epetra_MultiVector>>("Coordinates", coordinates);
+    mllist.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("Coordinates", coordinates);
   }
 }  // STI::Monolithic::compute_null_space_if_necessary
 
@@ -1593,8 +1594,8 @@ void STI::Monolithic::solve()
       {
         case Inpar::S2I::coupling_matching_nodes:
         {
-          icoupthermo_->master_to_slave(masterincrement->get_ptr_of_const_Epetra_Vector(),
-              slaveincrement->get_ptr_of_Epetra_MultiVector());
+          icoupthermo_->master_to_slave(
+              masterincrement->get_ptr_of_MultiVector(), slaveincrement->get_ptr_of_MultiVector());
           break;
         }
         case Inpar::S2I::coupling_mortar_standard:

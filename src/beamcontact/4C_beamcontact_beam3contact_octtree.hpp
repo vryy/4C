@@ -179,8 +179,9 @@ class Beam3ContactOctTree
    *  \param OutVec   (in) Target/Output vector
    *  \param doexport (in) export flag
    *  \param doimport (in) import flag */
-  void communicate_multi_vector(Epetra_MultiVector& InVec, Epetra_MultiVector& OutVec,
-      bool zerofy = false, bool doexport = true, bool doimport = true);
+  void communicate_multi_vector(Core::LinAlg::MultiVector<double>& InVec,
+      Core::LinAlg::MultiVector<double>& OutVec, bool zerofy = false, bool doexport = true,
+      bool doimport = true);
 
   /*! \brief Calculate maximal and minimal x-, y- and z-value of a solid elements nodes */
   void calc_corner_pos(Core::Elements::Element* element,
@@ -194,10 +195,10 @@ class Beam3ContactOctTree
   /*! \brief Retrieve bounding box specific extrusion value*/
   double get_bounding_box_extrusion_value();
 
-  //! \brief translate std::vec<std::vec<type> > > to Epetra_MultiVector
+  //! \brief translate std::vec<std::vec<type> > > to Core::LinAlg::MultiVector<double>
   template <class TYPE>
   void std_vec_to_epetra_multi_vec(
-      std::vector<std::vector<TYPE>>& stdvec, Epetra_MultiVector& epetravec)
+      std::vector<std::vector<TYPE>>& stdvec, Core::LinAlg::MultiVector<double>& epetravec)
   {
     if (std::strcmp(typeid(TYPE).name(), "i") != 0 && std::strcmp(typeid(TYPE).name(), "f") != 0 &&
         std::strcmp(typeid(TYPE).name(), "d") != 0)
@@ -209,14 +210,14 @@ class Beam3ContactOctTree
       if ((int)stdvec[i].size() > epetravec.NumVectors())
         FOUR_C_THROW("stdvec[%i].size() = %i is larger than epetravec.NumVectors() = %i", i,
             (int)stdvec[i].size(), epetravec.NumVectors());
-      for (int j = 0; j < (int)stdvec[i].size(); j++) epetravec[j][i] = (TYPE)stdvec[i][j];
+      for (int j = 0; j < (int)stdvec[i].size(); j++) epetravec(j)[i] = (TYPE)stdvec[i][j];
     }
     return;
   }
-  //! \brief translate Epetra_MultiVector to std::vec<std::vec<type> > >
+  //! \brief translate Core::LinAlg::MultiVector<double> to std::vec<std::vec<type> > >
   template <class TYPE>
   void epetra_multi_vec_to_std_vec(
-      Epetra_MultiVector& epetravec, std::vector<std::vector<TYPE>>& stdvec)
+      Core::LinAlg::MultiVector<double>& epetravec, std::vector<std::vector<TYPE>>& stdvec)
   {
     if (std::strcmp(typeid(TYPE).name(), "i") != 0 && std::strcmp(typeid(TYPE).name(), "f") != 0 &&
         std::strcmp(typeid(TYPE).name(), "d") != 0)
@@ -230,7 +231,7 @@ class Beam3ContactOctTree
         if ((int)stdvec[j].size() < epetravec.NumVectors())
           FOUR_C_THROW("stdvec[%i].size() = %i is larger than epetravec.NumVectors() = %i", j,
               (int)stdvec[j].size(), epetravec.NumVectors());
-        stdvec[j][i] = epetravec[i][j];
+        stdvec[j][i] = epetravec(i)[j];
       }
     }
     return;
@@ -276,13 +277,13 @@ class Beam3ContactOctTree
   Teuchos::RCP<Core::LinAlg::Vector<double>> diameter_;
 
   //!\brief stores the IDs and the coordinates of all bounding boxes
-  Teuchos::RCP<Epetra_MultiVector> allbboxes_;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> allbboxes_;
 
   //!\brief vector listing the bounding boxes located in the octants
-  Teuchos::RCP<Epetra_MultiVector> bboxesinoctants_;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> bboxesinoctants_;
 
   //!\brief mapping bounding boxes to octants they lie in
-  Teuchos::RCP<Epetra_MultiVector> bbox2octant_;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> bbox2octant_;
 
   //!\brief storage vector for octree octant limits
   std::vector<Core::LinAlg::Matrix<6, 1>> octreelimits_;

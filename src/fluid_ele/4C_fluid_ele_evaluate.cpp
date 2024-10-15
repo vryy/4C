@@ -379,24 +379,26 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
     {
       if (nsd == 3)
       {
-        Teuchos::RCP<Epetra_MultiVector> col_filtered_vel =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_vel");
-        Teuchos::RCP<Epetra_MultiVector> col_filtered_reynoldsstress =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_reynoldsstress");
-        Teuchos::RCP<Epetra_MultiVector> col_filtered_modeled_subgrid_stress =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_modeled_subgrid_stress");
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_vel =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("col_filtered_vel");
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_reynoldsstress =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
+                "col_filtered_reynoldsstress");
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_modeled_subgrid_stress =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
+                "col_filtered_modeled_subgrid_stress");
 
         // pointer to class FluidEleParameter (access to the general parameter)
         Discret::ELEMENTS::FluidEleParameterStd* fldpara =
             Discret::ELEMENTS::FluidEleParameterStd::instance();
         // add potential loma specific vectors
-        Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel = Teuchos::null;
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_dens_vel = Teuchos::null;
         Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_dens = Teuchos::null;
         Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_dens_strainrate = Teuchos::null;
         if (fldpara->physical_type() == Inpar::FLUID::loma)
         {
           col_filtered_dens_vel =
-              params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_dens_vel");
+              params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("col_filtered_dens_vel");
           col_filtered_dens =
               params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_filtered_dens");
           col_filtered_dens_strainrate = params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>(
@@ -480,10 +482,10 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
     {
       if (nsd == 3)
       {
-        Teuchos::RCP<Epetra_MultiVector> col_filtered_strainrate =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_strainrate");
-        Teuchos::RCP<Epetra_MultiVector> col_filtered_alphaij =
-            params.get<Teuchos::RCP<Epetra_MultiVector>>("col_filtered_alphaij");
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_strainrate =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("col_filtered_strainrate");
+        Teuchos::RCP<Core::LinAlg::MultiVector<double>> col_filtered_alphaij =
+            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("col_filtered_alphaij");
         // pointer to class FluidEleParameter (access to the general parameter)
         Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_expression = Teuchos::null;
         Teuchos::RCP<Core::LinAlg::Vector<double>> col_filtered_alpha2 = Teuchos::null;

@@ -212,10 +212,10 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_density(
  *----------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_lk_mk_and_mk_mk(
-    Teuchos::RCP<Epetra_MultiVector>& col_filtered_vel,
-    Teuchos::RCP<Epetra_MultiVector>& col_filtered_dens_vel,
-    Teuchos::RCP<Epetra_MultiVector>& col_filtered_dens_vel_temp,
-    Teuchos::RCP<Epetra_MultiVector>& col_filtered_dens_rateofstrain_temp,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>>& col_filtered_vel,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>>& col_filtered_dens_vel,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>>& col_filtered_dens_vel_temp,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>>& col_filtered_dens_rateofstrain_temp,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_temp,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_dens,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_dens_temp, double& LkMk, double& MkMk,
@@ -234,12 +234,9 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_
   Core::FE::extract_my_node_based_values(ele, edensveltemp_hat, *col_filtered_dens_vel_temp, nsd_);
   Core::FE::extract_my_node_based_values(
       ele, edensstraintemp_hat, *col_filtered_dens_rateofstrain_temp, nsd_);
-  Core::FE::extract_my_node_based_values(
-      ele, etemp_hat, *col_filtered_temp->get_ptr_of_Epetra_MultiVector(), 1);
-  Core::FE::extract_my_node_based_values(
-      ele, edens_hat, *col_filtered_dens->get_ptr_of_Epetra_MultiVector(), 1);
-  Core::FE::extract_my_node_based_values(
-      ele, edenstemp_hat, *col_filtered_dens_temp->get_ptr_of_Epetra_MultiVector(), 1);
+  Core::FE::extract_my_node_based_values(ele, etemp_hat, *col_filtered_temp, 1);
+  Core::FE::extract_my_node_based_values(ele, edens_hat, *col_filtered_dens, 1);
+  Core::FE::extract_my_node_based_values(ele, edenstemp_hat, *col_filtered_dens_temp, 1);
 
   // get center coordinates of element
   xcenter = 0.0;
@@ -366,10 +363,10 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_
  *----------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
-    Teuchos::RCP<Epetra_MultiVector>& col_filtered_phi,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>>& col_filtered_phi,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_phi2,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_phiexpression,
-    Teuchos::RCP<Epetra_MultiVector>& col_filtered_alphaijsc, double& dt_numerator,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>>& col_filtered_alphaijsc, double& dt_numerator,
     double& dt_denominator, const Core::Elements::Element* ele)
 {
   double phi_hat2 = 0.0;
@@ -383,10 +380,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
   Core::LinAlg::Matrix<1, 1> phiexpression_hat(true);
 
   Core::FE::extract_my_node_based_values(ele, ephi_hat, *col_filtered_phi, nsd_);
-  Core::FE::extract_my_node_based_values(
-      ele, ephi2_hat, *col_filtered_phi2->get_ptr_of_Epetra_MultiVector(), 1);
-  Core::FE::extract_my_node_based_values(
-      ele, ephiexpression_hat, *col_filtered_phiexpression->get_ptr_of_Epetra_MultiVector(), 1);
+  Core::FE::extract_my_node_based_values(ele, ephi2_hat, *col_filtered_phi2, 1);
+  Core::FE::extract_my_node_based_values(ele, ephiexpression_hat, *col_filtered_phiexpression, 1);
   Core::FE::extract_my_node_based_values(ele, ealphaijsc_hat, *col_filtered_alphaijsc, nsd_ * nsd_);
   // use one-point Gauss rule to do calculations at the element center
   Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToStabGaussRule<distype>::rule);

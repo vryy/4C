@@ -163,11 +163,13 @@ namespace
       EXPECT_EQ(norm, std::sqrt(NumGlobalElements));
 
       ((Core::LinAlg::Vector<double>&)a_view).PutScalar(2.0);
-
-      // Change must be reflected in a
-      a.Norm2(&norm);
-      EXPECT_EQ(norm, 2.0 * std::sqrt(NumGlobalElements));
     }
+    const Epetra_Vector& a_const = a;
+    Core::LinAlg::VectorView a_view_const(a_const);
+    // Change must be reflected in a
+    double norm = 0.0;
+    static_cast<const Core::LinAlg::Vector<double>&>(a_view_const).Norm2(&norm);
+    EXPECT_EQ(norm, 2.0 * std::sqrt(NumGlobalElements));
   }
 
   std::vector<double> means_multi_vector(const Core::LinAlg::MultiVector<double>& mv)
@@ -273,6 +275,29 @@ namespace
       put_scalar(view_mv2, 4.0);
     }
     EXPECT_EQ(means_multi_vector(mv), (std::vector{1., 4., 1.}));
+  }
+
+  TEST_F(VectorTest, ReplaceMap)
+  {
+    Core::LinAlg::Vector<double> a(*map_, true);
+    a.PutScalar(1.0);
+
+    // New map where elements are distributed differently
+    std::array<int, 5> my_elements;
+    if (comm_->MyPID() == 0)
+      my_elements = {0, 2, 4, 6, 8};
+    else
+      my_elements = {1, 3, 5, 7, 9};
+    Epetra_Map new_map(10, my_elements.size(), my_elements.data(), 0, *comm_);
+
+    const Core::LinAlg::MultiVector<double>& b = a;
+    const Core::LinAlg::Vector<double>& c = b(0);
+
+    // A change of the map is reflected to all views
+    a.ReplaceMap(new_map);
+
+    EXPECT_TRUE(a.Map().SameAs(b.Map()));
+    EXPECT_TRUE(a.Map().SameAs(c.Map()));
   }
 
 }  // namespace

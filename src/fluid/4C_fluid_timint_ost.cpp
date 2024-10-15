@@ -228,12 +228,13 @@ void FLD::TimIntOneStepTheta::set_theta()
 /*----------------------------------------------------------------------*
 | apply external forces to the fluid                      ghamm 12/2014 |
 *-----------------------------------------------------------------------*/
-void FLD::TimIntOneStepTheta::apply_external_forces(Teuchos::RCP<Epetra_MultiVector> fext)
+void FLD::TimIntOneStepTheta::apply_external_forces(
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> fext)
 {
   // initialize external force for t_n
   if (step_ <= numstasteps_)
   {
-    external_loadsn_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*fext)(0));
+    external_loadsn_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>((*fext)(0));
     external_loadsnp_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
     external_loads_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   }

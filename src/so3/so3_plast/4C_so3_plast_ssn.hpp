@@ -379,7 +379,7 @@ namespace Discret
       /// For now, we copy the extrapolation function here and allow the use only for hex8 elements
       template <unsigned int num_cols>
       void soh8_expol(Core::LinAlg::Matrix<numgpt_post, num_cols>& data,  ///< gp data
-          Epetra_MultiVector& expolData);                                 ///< nodal data
+          Core::LinAlg::MultiVector<double>& expolData);                  ///< nodal data
 
       // EAS element techonolgy *******************************************
       //! Initialize data for EAS (once)

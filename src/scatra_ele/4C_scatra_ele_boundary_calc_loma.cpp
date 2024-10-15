@@ -148,8 +148,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_t
   std::ostringstream temp;
   temp << k;
   std::string name = "flux_phi_" + temp.str();
-  // try to get the pointer to the entry (and check if type is Teuchos::RCP<Epetra_MultiVector>)
-  Teuchos::RCP<Epetra_MultiVector>* f = params.getPtr<Teuchos::RCP<Epetra_MultiVector>>(name);
+  // try to get the pointer to the entry (and check if type is
+  // Teuchos::RCP<Core::LinAlg::MultiVector<double>>)
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>>* f =
+      params.getPtr<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(name);
   // check: field has been set and is not of type Teuchos::null
   if (f != nullptr)
     Core::FE::extract_my_node_based_values(peleptr, eflux, **f, 3);

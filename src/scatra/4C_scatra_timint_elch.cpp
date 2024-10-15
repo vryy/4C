@@ -3230,8 +3230,9 @@ void ScaTra::ScaTraTimIntElch::reduce_dimension_null_space_blocks(
         solver.params().sublist("Inverse" + iblockstr.str()).sublist("MueLu Parameters");
 
     // extract already reduced null space associated with current matrix block
-    Teuchos::RCP<Epetra_MultiVector> nspVector =
-        mueluparams.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> nspVector =
+        mueluparams.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
+            "nullspace", Teuchos::null);
 
     const int dimns = mueluparams.get<int>("null space: dimension");
     std::vector<double> nullspace(nspVector->MyLength() * nspVector->NumVectors());
@@ -3261,11 +3262,12 @@ void ScaTra::ScaTraTimIntElch::reduce_dimension_null_space_blocks(
     // Above a reference is used to directly modify the nullspace vector
     // This can be done more elegant as writing it back in a different container!
     const int dimnsnew = mueluparams.get<int>("null space: dimension");
-    Teuchos::RCP<Epetra_MultiVector> nspVectornew =
-        Teuchos::make_rcp<Epetra_MultiVector>(*(block_maps()->Map(iblock)), dimnsnew, true);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> nspVectornew =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+            *(block_maps()->Map(iblock)), dimnsnew, true);
     Core::LinAlg::std_vector_to_epetra_multi_vector(nullspace, *nspVectornew, dimnsnew);
 
-    mueluparams.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nspVectornew);
+    mueluparams.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace", nspVectornew);
   }
 }
 

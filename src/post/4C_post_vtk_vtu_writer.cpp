@@ -357,7 +357,7 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
 
 
 void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
-    const Teuchos::RCP<Epetra_MultiVector>& data,
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
@@ -376,12 +376,13 @@ void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
       colmap->MaxAllGID() == vecmap.MaxAllGID() && colmap->MinAllGID() == vecmap.MinAllGID(),
       "Given data vector does not seem to match discretization node map");
 
-  Teuchos::RCP<Epetra_MultiVector> ghostedData;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
   else
   {
-    ghostedData = Teuchos::make_rcp<Epetra_MultiVector>(*colmap, data->NumVectors(), false);
+    ghostedData =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*colmap, data->NumVectors(), false);
     Core::LinAlg::export_to(*data, *ghostedData);
   }
 
@@ -413,7 +414,7 @@ void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
         for (int idf = 0; idf < numdf; ++idf)
         {
           // Core::LinAlg::Vector<double>* column = (*ghostedData)(idf);
-          Core::LinAlg::Vector<double> column(*(*ghostedData)(idf));
+          Core::LinAlg::Vector<double> column((*ghostedData)(idf));
           int lid = ghostedData->Map().LID(ele->nodes()[numbering[n]]->id());
 
           if (lid > -1)
@@ -451,7 +452,7 @@ void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
 
 
 void PostVtuWriter::write_element_result_step(std::ofstream& file,
-    const Teuchos::RCP<Epetra_MultiVector>& data,
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
@@ -471,15 +472,15 @@ void PostVtuWriter::write_element_result_step(std::ofstream& file,
 
   const int numcol = data->NumVectors();
   if (numdf + from > numcol)
-    FOUR_C_THROW("violated column range of Epetra_MultiVector: %d", numcol);
+    FOUR_C_THROW("violated column range of Core::LinAlg::MultiVector<double>: %d", numcol);
 
-  Teuchos::RCP<Epetra_MultiVector> importedData;
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> importedData;
   if (dis->element_row_map()->SameAs(data->Map()))
     importedData = data;
   else
   {
-    importedData =
-        Teuchos::make_rcp<Epetra_MultiVector>(*dis->element_row_map(), data->NumVectors(), false);
+    importedData = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+        *dis->element_row_map(), data->NumVectors(), false);
     Core::LinAlg::export_to(*data, *importedData);
   }
 
@@ -487,7 +488,7 @@ void PostVtuWriter::write_element_result_step(std::ofstream& file,
   {
     for (int d = 0; d < numdf; ++d)
     {
-      Core::LinAlg::Vector<double> column(*(*importedData)(d + from));
+      Core::LinAlg::Vector<double> column((*importedData)(d + from));
       solution.push_back((column)[e]);
     }
     for (int d = numdf; d < ncomponents; ++d) solution.push_back(0.0);
@@ -885,7 +886,7 @@ void PostVtuWriter::write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam
 
 void PostVtuWriter::write_nodal_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
-    Teuchos::RCP<Epetra_MultiVector> ghostedData) const
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> ghostedData) const
 {
   using namespace FourC;
 
@@ -939,7 +940,7 @@ void PostVtuWriter::write_nodal_result_step_nurbs_ele(const Core::Elements::Elem
 template <Core::FE::CellType nurbs_type>
 void PostVtuWriter::write_nodal_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
-    Epetra_MultiVector& ghostedData) const
+    Core::LinAlg::MultiVector<double>& ghostedData) const
 {
   using namespace FourC;
 
@@ -988,7 +989,7 @@ void PostVtuWriter::write_nodal_result_step_nurbs_ele(const Core::Elements::Elem
     for (int idf = 0; idf < numdf; ++idf)
     {
       // Core::LinAlg::Vector<double>* column = (*ghostedData)(idf);
-      Core::LinAlg::Vector<double> column(*(ghostedData)(idf));
+      Core::LinAlg::Vector<double> column((ghostedData)(idf));
       for (unsigned m = 0; m < NUMNODES; ++m)
       {
         int lid = ghostedData.Map().LID(ele->nodes()[m]->id());
@@ -1054,21 +1055,21 @@ template void PostVtuWriter::wirte_dof_result_step_nurbs_ele<Core::FE::CellType:
 /*----------------------------------------------------------------------------*/
 template void PostVtuWriter::write_nodal_result_step_nurbs_ele<Core::FE::CellType::nurbs2>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
-    std::vector<double>& solution, Epetra_MultiVector& ghostedData) const;
+    std::vector<double>& solution, Core::LinAlg::MultiVector<double>& ghostedData) const;
 template void PostVtuWriter::write_nodal_result_step_nurbs_ele<Core::FE::CellType::nurbs3>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
-    std::vector<double>& solution, Epetra_MultiVector& ghostedData) const;
+    std::vector<double>& solution, Core::LinAlg::MultiVector<double>& ghostedData) const;
 template void PostVtuWriter::write_nodal_result_step_nurbs_ele<Core::FE::CellType::nurbs4>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
-    std::vector<double>& solution, Epetra_MultiVector& ghostedData) const;
+    std::vector<double>& solution, Core::LinAlg::MultiVector<double>& ghostedData) const;
 template void PostVtuWriter::write_nodal_result_step_nurbs_ele<Core::FE::CellType::nurbs9>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
-    std::vector<double>& solution, Epetra_MultiVector& ghostedData) const;
+    std::vector<double>& solution, Core::LinAlg::MultiVector<double>& ghostedData) const;
 template void PostVtuWriter::write_nodal_result_step_nurbs_ele<Core::FE::CellType::nurbs8>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
-    std::vector<double>& solution, Epetra_MultiVector& ghostedData) const;
+    std::vector<double>& solution, Core::LinAlg::MultiVector<double>& ghostedData) const;
 template void PostVtuWriter::write_nodal_result_step_nurbs_ele<Core::FE::CellType::nurbs27>(
     const Core::Elements::Element* ele, int ncomponents, const int numdf,
-    std::vector<double>& solution, Epetra_MultiVector& ghostedData) const;
+    std::vector<double>& solution, Core::LinAlg::MultiVector<double>& ghostedData) const;
 
 FOUR_C_NAMESPACE_CLOSE

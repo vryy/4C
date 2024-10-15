@@ -14,7 +14,6 @@
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_poromultiphase_scatra_artery_coupling_pair.hpp"
 
-#include <Epetra_MultiVector.h>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -56,8 +55,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
   const int numgp_desired = numgp_per_artele * numartele;
 
   // this vector keeps track of evaluation of GPs
-  Teuchos::RCP<Epetra_MultiVector> gp_vector =
-      Teuchos::make_rcp<Epetra_MultiVector>(*arterydis_->element_col_map(), numgp_per_artele);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> gp_vector =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+          *arterydis_->element_col_map(), numgp_per_artele);
 
   // pre-evaluate
   for (unsigned i = 0; i < coupl_elepairs_.size(); i++) coupl_elepairs_[i]->pre_evaluate(gp_vector);
@@ -91,7 +91,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased::pre_evaluate_c
       // else get the GP vector
       else
         for (int igp = 0; igp < numgp_per_artele; igp++)
-          mygpvec[igp] = static_cast<int>(((*gp_vector)[igp])[mylid]);
+          mygpvec[igp] = static_cast<int>(((*gp_vector)(igp))[mylid]);
 
       // communicate to all via summation
       get_comm().SumAll(mygpvec.data(), sumgpvec.data(), numgp_per_artele);

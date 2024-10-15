@@ -147,8 +147,8 @@ void Core::LinAlg::Solver::reset_tolerance()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::LinAlg::Solver::setup(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b,
-    const SolverParams &params)
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> x,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> b, const SolverParams &params)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::Solver:  1)   Setup");
 
@@ -181,14 +181,14 @@ void Core::LinAlg::Solver::setup(Teuchos::RCP<Epetra_Operator> matrix,
     if ("belos" == solvertype)
     {
       solver_ = Teuchos::make_rcp<
-          Core::LinearSolver::IterativeSolver<Epetra_Operator, Epetra_MultiVector>>(
+          Core::LinearSolver::IterativeSolver<Epetra_Operator, Core::LinAlg::MultiVector<double>>>(
           comm_, Solver::params());
     }
     else if ("umfpack" == solvertype or "superlu" == solvertype)
     {
-      solver_ =
-          Teuchos::make_rcp<Core::LinearSolver::DirectSolver<Epetra_Operator, Epetra_MultiVector>>(
-              solvertype);
+      solver_ = Teuchos::make_rcp<
+          Core::LinearSolver::DirectSolver<Epetra_Operator, Core::LinAlg::MultiVector<double>>>(
+          solvertype);
     }
     else
       FOUR_C_THROW("Unknown type of solver");
@@ -201,8 +201,8 @@ void Core::LinAlg::Solver::setup(Teuchos::RCP<Epetra_Operator> matrix,
  *----------------------------------------------------------------------*/
 
 int Core::LinAlg::Solver::solve_with_multi_vector(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<Epetra_MultiVector> x, Teuchos::RCP<Epetra_MultiVector> b,
-    const Core::LinAlg::SolverParams &params)
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> x,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> b, const Core::LinAlg::SolverParams &params)
 {
   setup(matrix, x, b, params);
 
@@ -219,7 +219,7 @@ int Core::LinAlg::Solver::solve(Teuchos::RCP<Epetra_Operator> matrix,
     Teuchos::RCP<Core::LinAlg::Vector<double>> x, Teuchos::RCP<Core::LinAlg::Vector<double>> b,
     const SolverParams &params)
 {
-  setup(matrix, x->get_ptr_of_Epetra_Vector(), b->get_ptr_of_Epetra_Vector(), params);
+  setup(matrix, x->get_ptr_of_MultiVector(), b->get_ptr_of_MultiVector(), params);
 
   int error_value = 0;
   {

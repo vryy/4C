@@ -19,7 +19,6 @@
 
 // forward declarations
 class Epetra_Map;
-class Epetra_MultiVector;
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -68,9 +67,10 @@ namespace STI
 
     //! output vector to *.csv file for debugging purposes, with global IDs of vector components in
     //! ascending order across all processors
-    static void output_vector_to_file(const Epetra_MultiVector& vector,  //!< vector to be output
-        const int precision = 16,                                        //!< output precision
-        const double tolerance = -1.  //!< output omission tolerance
+    static void output_vector_to_file(
+        const Core::LinAlg::MultiVector<double>& vector,  //!< vector to be output
+        const int precision = 16,                         //!< output precision
+        const double tolerance = -1.                      //!< output omission tolerance
     );
 
     //! return algebraic solver for global system of equations

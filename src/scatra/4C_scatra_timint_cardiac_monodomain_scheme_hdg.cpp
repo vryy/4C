@@ -104,11 +104,11 @@ void ScaTra::TimIntCardiacMonodomainHDG::collect_runtime_output_data()
     Teuchos::ParameterList params;
     Core::Utils::add_enum_class_to_parameter_list<ScaTra::Action>(
         "action", ScaTra::Action::get_material_internal_state, params);
-    params.set<Teuchos::RCP<Epetra_MultiVector>>(
+    params.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
         "material_internal_state", material_internal_state_np_);
     discret_->evaluate(params);
     material_internal_state_np_ =
-        params.get<Teuchos::RCP<Epetra_MultiVector>>("material_internal_state");
+        params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("material_internal_state");
     if (material_internal_state_np_ == Teuchos::null)
       FOUR_C_THROW("Cannot get state vector material internal state");
 
@@ -122,7 +122,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::collect_runtime_output_data()
       std::ostringstream temp;
       temp << k + 1;
       material_internal_state_np_component_ =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(*material_internal_state_np_)(k));
+          Teuchos::make_rcp<Core::LinAlg::Vector<double>>((*material_internal_state_np_)(k));
 
       visualization_writer().append_result_data_vector_with_context(
           *material_internal_state_np_component_, Core::IO::OutputEntity::element,

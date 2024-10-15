@@ -2984,7 +2984,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_stochastic_forces(
 
   /* get pointer at Epetra multivector in parameter list linking to random numbers for stochastic
    * forces with zero mean and standard deviation (2*kT / dt)^0.5 */
-  Teuchos::RCP<Epetra_MultiVector> randomforces =
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> randomforces =
       brownian_dyn_params_interface().get_random_forces();
 
   // tangent vector (derivative of beam centerline curve r with respect to arc-length parameter s)
@@ -3015,7 +3015,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_stochastic_forces(
 
     // extract random numbers from global vector
     for (unsigned int idim = 0; idim < ndim; idim++)
-      randnumvec(idim) = (*randomforces)[gp * randompergauss + idim][lid()];
+      randnumvec(idim) = (*randomforces)(gp * randompergauss + idim)[lid()];
 
     // compute stochastic force vector per unit length at current GP
     f_stoch.clear();

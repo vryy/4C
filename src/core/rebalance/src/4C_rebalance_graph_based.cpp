@@ -37,7 +37,7 @@ std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> Core::Rebalance::r
     const Epetra_CrsGraph& initialGraph, const Teuchos::ParameterList& rebalanceParams,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& initialNodeWeights,
     const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights,
-    const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates)
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& initialNodeCoordinates)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Rebalance::rebalance_node_maps");
 
@@ -62,7 +62,7 @@ Teuchos::RCP<Epetra_CrsGraph> Core::Rebalance::rebalance_graph(const Epetra_CrsG
     const Teuchos::ParameterList& rebalanceParams,
     const Teuchos::RCP<Core::LinAlg::Vector<double>>& initialNodeWeights,
     const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights,
-    const Teuchos::RCP<Epetra_MultiVector>& initialNodeCoordinates)
+    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& initialNodeCoordinates)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Rebalance::RebalanceGraph");
 
@@ -74,8 +74,8 @@ Teuchos::RCP<Epetra_CrsGraph> Core::Rebalance::rebalance_graph(const Epetra_CrsG
   Teuchos::RCP<Isorropia::Epetra::Partitioner> partitioner;
   if (initialNodeCoordinates != Teuchos::null)
   {
-    partitioner = Teuchos::make_rcp<Isorropia::Epetra::Partitioner>(
-        &initialGraph, &costs, initialNodeCoordinates.get(), nullptr, rebalanceParams);
+    partitioner = Teuchos::make_rcp<Isorropia::Epetra::Partitioner>(&initialGraph, &costs,
+        initialNodeCoordinates->get_ptr_of_Epetra_MultiVector().get(), nullptr, rebalanceParams);
   }
   else
   {
@@ -94,19 +94,24 @@ Teuchos::RCP<Epetra_CrsGraph> Core::Rebalance::rebalance_graph(const Epetra_CrsG
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<Teuchos::RCP<Epetra_MultiVector>, Teuchos::RCP<Epetra_MultiVector>>
-Core::Rebalance::rebalance_coordinates(const Epetra_MultiVector& initialCoordinates,
-    const Teuchos::ParameterList& rebalanceParams, const Epetra_MultiVector& initialWeights)
+std::pair<Teuchos::RCP<Core::LinAlg::MultiVector<double>>,
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>>>
+Core::Rebalance::rebalance_coordinates(const Core::LinAlg::MultiVector<double>& initialCoordinates,
+    const Teuchos::ParameterList& rebalanceParams,
+    const Core::LinAlg::MultiVector<double>& initialWeights)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Rebalance::RebalanceCoordinates");
 
   Teuchos::RCP<Isorropia::Epetra::Partitioner> part =
       Teuchos::make_rcp<Isorropia::Epetra::Partitioner>(
-          &initialCoordinates, &initialWeights, rebalanceParams);
+          initialCoordinates.get_ptr_of_Epetra_MultiVector(),
+          initialWeights.get_ptr_of_Epetra_MultiVector(), rebalanceParams);
 
   Isorropia::Epetra::Redistributor rd(part);
 
-  return {rd.redistribute(initialCoordinates), rd.redistribute(initialWeights)};
+  return {
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*rd.redistribute(initialCoordinates)),
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*rd.redistribute(initialWeights))};
 }
 
 /*----------------------------------------------------------------------*/
@@ -351,7 +356,8 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_monolithic_node_graph
   // 2. Set up a multivector which will be populated with all ghosting information,
   // i.e., the nodal connectivity of each element that collides with an element on this rank
   const int n_nodes_per_element_max = 27;  // element with highest node count is hex27
-  Epetra_MultiVector node_information(*dis.element_row_map(), n_nodes_per_element_max, true);
+  Core::LinAlg::MultiVector<double> node_information(
+      *dis.element_row_map(), n_nodes_per_element_max, true);
 
   for (int rowele_i = 0; rowele_i < dis.num_my_row_elements(); ++rowele_i)
   {
@@ -377,7 +383,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_monolithic_node_graph
   }
   Epetra_Map my_colliding_primitives_map(-1, my_colliding_primitives_vec.size(),
       my_colliding_primitives_vec.data(), 0, dis.get_comm());
-  Epetra_MultiVector my_colliding_primitives_node_ids(
+  Core::LinAlg::MultiVector<double> my_colliding_primitives_node_ids(
       my_colliding_primitives_map, n_nodes_per_element_max, false);
   Core::LinAlg::export_to(node_information, my_colliding_primitives_node_ids);
 
@@ -426,7 +432,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_monolithic_node_graph
       {
         // Get indices for primitive nodes
         int primitive_node_index =
-            (int)(my_colliding_primitives_node_ids.Pointers()[j_node][primitive_lid_in_map]);
+            (int)(my_colliding_primitives_node_ids(j_node)[primitive_lid_in_map]);
 
         if (primitive_node_index == -1)
           break;

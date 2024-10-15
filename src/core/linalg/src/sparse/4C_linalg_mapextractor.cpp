@@ -178,12 +178,12 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Core::LinAlg::MultiMapExtractor::extr
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::MultiMapExtractor::extract_vector(
-    const Epetra_MultiVector& full, int block) const
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::LinAlg::MultiMapExtractor::extract_vector(
+    const Core::LinAlg::MultiVector<double>& full, int block) const
 {
   if (maps_[block] == Teuchos::null) FOUR_C_THROW("null map at block %d", block);
-  Teuchos::RCP<Epetra_MultiVector> vec =
-      Teuchos::make_rcp<Epetra_MultiVector>(*maps_[block], full.NumVectors());
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> vec =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*maps_[block], full.NumVectors());
   extract_vector(full, block, *vec);
   return vec;
 }
@@ -191,8 +191,8 @@ Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::MultiMapExtractor::extract_vector
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::MultiMapExtractor::extract_vector(
-    const Epetra_MultiVector& full, int block, Epetra_MultiVector& partial) const
+void Core::LinAlg::MultiMapExtractor::extract_vector(const Core::LinAlg::MultiVector<double>& full,
+    int block, Core::LinAlg::MultiVector<double>& partial) const
 {
   if (maps_[block] == Teuchos::null) FOUR_C_THROW("null map at block %d", block);
   int err = partial.Import(full, *importer_[block], Insert);
@@ -214,11 +214,11 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Core::LinAlg::MultiMapExtractor::inse
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::MultiMapExtractor::insert_vector(
-    const Epetra_MultiVector& partial, int block) const
+Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::LinAlg::MultiMapExtractor::insert_vector(
+    const Core::LinAlg::MultiVector<double>& partial, int block) const
 {
-  Teuchos::RCP<Epetra_MultiVector> full =
-      Teuchos::make_rcp<Epetra_MultiVector>(*fullmap_, partial.NumVectors());
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> full =
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*fullmap_, partial.NumVectors());
   insert_vector(partial, block, *full);
   return full;
 }
@@ -227,7 +227,8 @@ Teuchos::RCP<Epetra_MultiVector> Core::LinAlg::MultiMapExtractor::insert_vector(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::LinAlg::MultiMapExtractor::insert_vector(
-    const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full) const
+    const Core::LinAlg::MultiVector<double>& partial, int block,
+    Core::LinAlg::MultiVector<double>& full) const
 {
   if (maps_[block] == Teuchos::null) FOUR_C_THROW("null map at block %d", block);
   int err = full.Export(partial, *importer_[block], Insert);
@@ -237,10 +238,10 @@ void Core::LinAlg::MultiMapExtractor::insert_vector(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::LinAlg::MultiMapExtractor::add_vector(
-    const Epetra_MultiVector& partial, int block, Epetra_MultiVector& full, double scale) const
+void Core::LinAlg::MultiMapExtractor::add_vector(const Core::LinAlg::MultiVector<double>& partial,
+    int block, Core::LinAlg::MultiVector<double>& full, double scale) const
 {
-  Teuchos::RCP<Epetra_MultiVector> v = extract_vector(full, block);
+  Teuchos::RCP<Core::LinAlg::MultiVector<double>> v = extract_vector(full, block);
   if (not v->Map().SameAs(partial.Map())) FOUR_C_THROW("The maps of the vectors must be the same!");
   v->Update(scale, partial, 1.0);
   insert_vector(*v, block, full);
@@ -319,9 +320,9 @@ void Core::LinAlg::MultiMapExtractor::scale(
  | Scale one block only                                      fang 08/16 |
  *----------------------------------------------------------------------*/
 void Core::LinAlg::MultiMapExtractor::scale(
-    Epetra_MultiVector& full, int block, double scalar) const
+    Core::LinAlg::MultiVector<double>& full, int block, double scalar) const
 {
-  for (int i = 0; i < full.NumVectors(); ++i) scale(*full(i), block, scalar);
+  for (int i = 0; i < full.NumVectors(); ++i) scale(full(i), block, scalar);
 }
 
 

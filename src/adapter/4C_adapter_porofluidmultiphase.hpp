@@ -108,7 +108,7 @@ namespace Adapter
     virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> valid_vol_frac_spec_dofs() const = 0;
 
     //! return phase flux field at time n+1
-    virtual Teuchos::RCP<const Epetra_MultiVector> flux() const = 0;
+    virtual Teuchos::RCP<const Core::LinAlg::MultiVector<double>> flux() const = 0;
 
     //! do time integration (time loop)
     virtual void time_loop() = 0;

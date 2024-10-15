@@ -175,7 +175,8 @@ namespace Core::LinAlg
     int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// Resolve virtual function of parent class
-    int multiply(bool TransA, const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
+    int multiply(bool TransA, const Core::LinAlg::MultiVector<double>& X,
+        Core::LinAlg::MultiVector<double>& Y) const override;
 
     /// Add a (transposed) BlockSparseMatrix: (*this) = (*this)*scalarB + A(^T)*scalarA
     virtual void add(const BlockSparseMatrixBase& A, const bool transposeA, const double scalarA,

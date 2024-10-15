@@ -37,7 +37,7 @@ namespace
 
 void Core::FE::extrapolate_gauss_point_quantity_to_nodes(Core::Elements::Element& ele,
     const Core::LinAlg::SerialDenseMatrix& data, const Core::FE::Discretization& dis,
-    Epetra_MultiVector& nodal_data)
+    Core::LinAlg::MultiVector<double>& nodal_data)
 {
   switch (ele.shape())
   {
@@ -135,7 +135,7 @@ void Core::FE::extrapolate_gauss_point_quantity_to_nodes(Core::Elements::Element
 }
 
 void Core::FE::evaluate_gauss_point_quantity_at_element_center(Core::Elements::Element& ele,
-    const Core::LinAlg::SerialDenseMatrix& data, Epetra_MultiVector& element_data)
+    const Core::LinAlg::SerialDenseMatrix& data, Core::LinAlg::MultiVector<double>& element_data)
 {
   assemble_averaged_element_values(element_data, data, ele);
 }

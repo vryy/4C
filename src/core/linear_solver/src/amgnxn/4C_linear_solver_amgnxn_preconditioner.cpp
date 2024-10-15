@@ -45,8 +45,8 @@ Teuchos::RCP<Epetra_Operator> Core::LinearSolver::AmGnxnPreconditioner::prec_ope
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-void Core::LinearSolver::AmGnxnPreconditioner::setup(
-    bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
+void Core::LinearSolver::AmGnxnPreconditioner::setup(bool create, Epetra_Operator* matrix,
+    Core::LinAlg::MultiVector<double>* x, Core::LinAlg::MultiVector<double>* b)
 {
   // Decide if the setup has to be done
   if (!create) return;
@@ -236,8 +236,8 @@ Core::LinearSolver::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& par
     num_pdes_[block] = mllist.get<int>("PDE equations", -1);
     null_spaces_dim_[block] = mllist.get<int>("null space: dimension", -1);
 
-    Teuchos::RCP<Epetra_MultiVector> nullspace =
-        mllist.get<Teuchos::RCP<Epetra_MultiVector>>("nullspace", Teuchos::null);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> nullspace =
+        mllist.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace", Teuchos::null);
     if (nullspace == Teuchos::null) FOUR_C_THROW("Nullspace vector is null!");
 
     Teuchos::RCP<std::vector<double>> ns =
@@ -349,14 +349,14 @@ int Core::LinearSolver::AmGnxnOperator::ApplyInverse(
   int NV = X.NumVectors();
   for (int i = 0; i < NumBlocks; i++)
   {
-    Teuchos::RCP<Epetra_MultiVector> Xi =
-        Teuchos::make_rcp<Epetra_MultiVector>(*(range_ex.Map(i)), NV);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> Xi =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(range_ex.Map(i)), NV);
 
-    Teuchos::RCP<Epetra_MultiVector> Yi =
-        Teuchos::make_rcp<Epetra_MultiVector>(*(domain_ex.Map(i)), NV);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> Yi =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(domain_ex.Map(i)), NV);
 
-    range_ex.extract_vector(X, i, *Xi);
-    domain_ex.extract_vector(Y, i, *Yi);
+    range_ex.extract_vector(Core::LinAlg::MultiVector<double>(X), i, *Xi);
+    domain_ex.extract_vector(Core::LinAlg::MultiVector<double>(X), i, *Yi);
     Xbl.set_vector(Xi, i);
     Ybl.set_vector(Yi, i);
   }
@@ -365,7 +365,8 @@ int Core::LinearSolver::AmGnxnOperator::ApplyInverse(
 
   v_->solve(Xbl, Ybl, true);
 
-  for (int i = 0; i < NumBlocks; i++) domain_ex.insert_vector(*(Ybl.get_vector(i)), i, Y);
+  Core::LinAlg::VectorView Y_view(Y);
+  for (int i = 0; i < NumBlocks; i++) domain_ex.insert_vector(*(Ybl.get_vector(i)), i, Y_view);
 
   return 0;
 }
@@ -467,12 +468,12 @@ int Core::LinearSolver::BlockSmootherOperator::ApplyInverse(
   int NV = X.NumVectors();
   for (int i = 0; i < NumBlocks; i++)
   {
-    Teuchos::RCP<Epetra_MultiVector> Xi =
-        Teuchos::make_rcp<Epetra_MultiVector>(*(range_ex.Map(i)), NV);
-    Teuchos::RCP<Epetra_MultiVector> Yi =
-        Teuchos::make_rcp<Epetra_MultiVector>(*(domain_ex.Map(i)), NV);
-    range_ex.extract_vector(X, i, *Xi);
-    domain_ex.extract_vector(Y, i, *Yi);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> Xi =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(range_ex.Map(i)), NV);
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> Yi =
+        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(domain_ex.Map(i)), NV);
+    range_ex.extract_vector(Core::LinAlg::MultiVector<double>(X), i, *Xi);
+    domain_ex.extract_vector(Core::LinAlg::MultiVector<double>(X), i, *Yi);
     Xbl.set_vector(Xi, i);
     Ybl.set_vector(Yi, i);
   }
@@ -482,7 +483,8 @@ int Core::LinearSolver::BlockSmootherOperator::ApplyInverse(
 
   s_->solve(Xbl, Ybl, true);
 
-  for (int i = 0; i < NumBlocks; i++) domain_ex.insert_vector(*(Ybl.get_vector(i)), i, Y);
+  Core::LinAlg::VectorView Y_view(Y);
+  for (int i = 0; i < NumBlocks; i++) domain_ex.insert_vector(*(Ybl.get_vector(i)), i, Y_view);
 
 
 

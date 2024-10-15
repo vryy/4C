@@ -51,7 +51,7 @@ namespace FLD
     */
     void evaluate_residuals(
         std::map<std::string, Teuchos::RCP<Core::LinAlg::Vector<double>>> statevecs,
-        std::map<std::string, Teuchos::RCP<Epetra_MultiVector>> statetenss,
+        std::map<std::string, Teuchos::RCP<Core::LinAlg::MultiVector<double>>> statetenss,
         const double thermpressaf, const double thermpressam, const double thermpressdtaf,
         const double thermpressdtam);
 
