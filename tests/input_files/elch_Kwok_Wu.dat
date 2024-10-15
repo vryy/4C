@@ -75,8 +75,6 @@ AZREUSE                         0
 AZTOL                           1.0E-11
 AZITER                          1000
 AZSUB                           40
-AZOMEGA                         1.0
-AZGRAPH                         1
 AZCONV                          AZ_r0
 SUB_SOLVER1                     3
 SUB_SOLVER2                     4
@@ -102,8 +100,6 @@ AZREUSE                         0
 AZTOL                           1.0E-10
 AZITER                          1000
 AZSUB                           40
-AZOMEGA                         1.0
-AZGRAPH                         1
 AZCONV                          AZ_r0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ion DIFFUSIVITY 0.008 VALENCE 1.0

@@ -106,10 +106,6 @@ namespace Inpar::SOLVER
           "a restart is performed.",
           &list);
 
-      Core::Utils::int_parameter("AZGRAPH", 0, "unused", &list);
-      Core::Utils::int_parameter("AZBDIAG", 0, "unused", &list);
-      Core::Utils::double_parameter("AZOMEGA", 0.0, "unused", &list);
-
       Core::Utils::string_parameter(
           "SOLVER_XML_FILE", "none", "xml file defining any linear solver", &list);
     }

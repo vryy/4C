@@ -24,12 +24,9 @@ THERM_TEMPERATURE               No
 PROBLEMTYP                      Structure
 RESTART                         0
 --------------------------------------------------------------------SOLVER 1
-AZBDIAG                         0
 AZCONV                          AZ_r0
 IFPACKGFILL                     0
-AZGRAPH                         0
 AZITER                          1000
-AZOMEGA                         0
 AZOUTPUT                        0
 IFPACKOVERLAP                   0
 AZPREC                          ILU

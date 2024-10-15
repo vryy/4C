@@ -51,9 +51,7 @@ TOL_PRES_INC	  1e-04
 SOLVER                          UMFPACK
 AZCONV                          AZ_r0
 IFPACKGFILL                     0
-AZGRAPH                         1
 AZITER                          1000
-AZOMEGA                         1.0
 AZOUTPUT                        0
 IFPACKOVERLAP                   0
 AZPREC                          ILU

@@ -88,10 +88,7 @@ AZCONV                          AZ_r0
 AZOUTPUT                        0
 AZREUSE                         0
 AZITER                          1000
-AZGRAPH                         0
-AZBDIAG                         0
 AZTOL                           1e-08
-AZOMEGA                         0
 ML_PRINT                        0
 ML_MAXCOARSESIZE                5000
 ML_MAXLEVEL                     5

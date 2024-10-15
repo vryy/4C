@@ -92,8 +92,6 @@ IFPACKGFILL                     0
 AZTOL                           1.0E-7
 AZITER                          1000
 AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
 IFPACKOVERLAP                   0
 AZCONV                          AZ_r0
 ML_PRINT                        0
@@ -122,8 +120,6 @@ AZTOL                           1.0E-7
 AZCONV                          AZ_r0
 AZITER                          1000
 AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
 IFPACKOVERLAP                   0
 ML_PRINT                        0
 ML_MAXCOARSESIZE                5000

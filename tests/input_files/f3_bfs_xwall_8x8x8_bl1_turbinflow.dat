@@ -101,8 +101,6 @@ AZTOL             1.0E-12
 AZCONV            AZ_r0
 AZITER            1000
 AZSUB             40
-AZOMEGA           0.9
-AZGRAPH           1
 IFPACKOVERLAP     3
 ML_PRINT          0
 ML_MAXCOARSESIZE  1
@@ -130,8 +128,6 @@ AZTOL             1.0E-12
 AZCONV            AZ_r0
 AZITER            1000
 AZSUB             40
-AZOMEGA           0.9
-AZGRAPH           1
 IFPACKOVERLAP     3
 ML_PRINT          0
 ML_MAXCOARSESIZE  1

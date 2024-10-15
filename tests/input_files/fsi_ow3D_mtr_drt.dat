@@ -106,12 +106,9 @@ Test Details                    = No
 Debug                           = No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
-AZBDIAG                         0
 AZCONV                          AZ_r0
 IFPACKGFILL                     0
-AZGRAPH                         0
 AZITER                          1000
-AZOMEGA                         0
 AZOUTPUT                        0
 IFPACKOVERLAP                   0
 AZPREC                          ILU
@@ -136,12 +133,9 @@ ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Structure_Solver
-AZBDIAG                         0
 AZCONV                          AZ_r0
 IFPACKGFILL                     0
-AZGRAPH                         0
 AZITER                          1000
-AZOMEGA                         0
 AZOUTPUT                        0
 IFPACKOVERLAP                   0
 AZPREC                          ILU
@@ -166,12 +160,9 @@ ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 3
 NAME                            Fluid_Solver
-AZBDIAG                         0
 AZCONV                          AZ_r0
 IFPACKGFILL                     0
-AZGRAPH                         0
 AZITER                          1000
-AZOMEGA                         0
 AZOUTPUT                        0
 IFPACKOVERLAP                   0
 AZPREC                          ILU

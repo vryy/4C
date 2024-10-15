@@ -60,10 +60,7 @@ AZCONV                          AZ_r0
 AZOUTPUT                        0
 AZREUSE                         0
 AZITER                          1000
-AZGRAPH                         0
-AZBDIAG                         0
 AZTOL                           2e-05
-AZOMEGA                         0
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_fluid   DYNVISCOSITY 1 DENSITY 0.5 GAMMA 1
 ----------------------------------------------------------------------FUNCT1

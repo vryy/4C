@@ -60,8 +60,6 @@ AZCONV                          AZ_r0
 AZTOL                           1.0E-12
 AZITER                          2500
 AZSUB                           50
-AZOMEGA                         1.0
-AZGRAPH                         1
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          98

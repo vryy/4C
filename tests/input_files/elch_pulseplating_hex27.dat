@@ -51,8 +51,6 @@ AZTOL                           1.0E-10
 AZCONV                          AZ_r0
 AZITER                          1000
 AZSUB                           40
-AZOMEGA                         1.0
-AZGRAPH                         1
 SUB_SOLVER1                     2
 SUB_SOLVER2                     3
 --------------------------------------------------------------------SOLVER 2
@@ -66,8 +64,6 @@ AZTOL                           1.0E-10
 AZCONV                          AZ_r0
 AZITER                          1000
 AZSUB                           40
-AZOMEGA                         1.0
-AZGRAPH                         1
 --------------------------------------------------------------------SOLVER 3
 NAME                            Sca_Tra_Electrical_Potential
 SOLVER                          Belos
@@ -79,8 +75,6 @@ AZTOL                           1.0E-10
 AZCONV                          AZ_r0
 AZITER                          1000
 AZSUB                           40
-AZOMEGA                         1.0
-AZGRAPH                         1
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_matlist LOCAL No NUMMAT 3 MATIDS 2 3 4
 MAT 2 MAT_ion DIFFUSIVITY 0.000423 VALENCE 2.0

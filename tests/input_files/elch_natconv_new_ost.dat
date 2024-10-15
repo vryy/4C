@@ -92,8 +92,6 @@ AZREUSE                         0
 AZTOL                           1.0E-10
 AZITER                          1000
 AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
 AZCONV                          AZ_r0
 SUB_SOLVER1                     3
 SUB_SOLVER2                     4
@@ -108,8 +106,6 @@ AZTOL                           1.0E-10
 AZCONV                          AZ_r0
 AZITER                          1000
 AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
 --------------------------------------------------------------------SOLVER 3
 NAME                            Simple_Predictor
 SOLVER                          Belos
@@ -120,8 +116,6 @@ AZREUSE                         0
 AZTOL                           1.0E-10
 AZITER                          1000
 AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
 AZCONV                          AZ_r0
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Electrical_Potential
@@ -134,8 +128,6 @@ AZTOL                           1.0E-10
 AZCONV                          AZ_r0
 AZITER                          1000
 AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1e-1 DENSITY 10.0
 MAT 2 MAT_ion DIFFUSIVITY 5e-6 VALENCE 1.0 DENSIFICATION 0.5
