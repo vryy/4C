@@ -503,15 +503,6 @@ namespace Solid
       /// Write Gmsh output for structural field
       void write_gmsh_struc_output_step() override;
 
-      /// FixMe Check if there are any elements with the micro material definition.
-      /// Maybe the detection can be moved to the element loop in the ad_str_structure_new.cpp.
-      /// There is already one.
-      bool have_micro_mat() override
-      {
-        FOUR_C_THROW("Not yet considered!");
-        return false;
-      }
-
       /// create result test for encapsulated structure algorithm
       Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
 

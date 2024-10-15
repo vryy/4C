@@ -495,9 +495,6 @@ namespace Adapter
 
     //@}
 
-    /// bool indicating if micro material is used
-    bool have_micro_mat() override { return structure_->have_micro_mat(); }
-
     /// do we have this model
     bool have_model(Inpar::Solid::ModelType model) override
     {

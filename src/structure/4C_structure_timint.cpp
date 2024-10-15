@@ -285,20 +285,6 @@ void Solid::TimInt::setup()
     }
   }
 
-  // check if we have elements with a micro-material
-  havemicromat_ = false;
-  for (int i = 0; i < discret_->num_my_col_elements(); i++)
-  {
-    Core::Elements::Element* actele = discret_->l_col_element(i);
-    Teuchos::RCP<Core::Mat::Material> mat = actele->material();
-    if (mat != Teuchos::null && mat->material_type() == Core::Materials::m_struct_multiscale)
-    {
-      havemicromat_ = true;
-      break;
-    }
-  }
-
-
   // Check for porosity dofs within the structure and build a map extractor if necessary
   porositysplitter_ = PoroElast::Utils::build_poro_splitter(*discret_);
 
@@ -961,17 +947,6 @@ void Solid::TimInt::prepare_step_contact()
       cmtbridge_->get_strategy().inttime_init();
       cmtbridge_->get_strategy().redistribute_contact((*dis_)(0), (*vel_)(0));
     }
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/* things that should be done after the actual time loop is finished */
-void Solid::TimInt::post_time_loop()
-{
-  if (have_micro_mat())
-  {
-    // stop supporting processors in multi scale simulations
-    MultiScale::stop_np_multiscale();
   }
 }
 
@@ -1751,7 +1726,6 @@ void Solid::TimInt::read_restart(const int step)
   read_restart_cardiovascular0_d();
   read_restart_contact_meshtying();
   read_restart_beam_contact();
-  read_restart_multi_scale();
   read_restart_spring_dashpot();
 
   read_restart_force();
@@ -1904,50 +1878,12 @@ void Solid::TimInt::read_restart_beam_contact()
 }
 
 /*----------------------------------------------------------------------*/
-/* Read and set restart values for multi-scale */
-void Solid::TimInt::read_restart_multi_scale()
-{
-  Teuchos::RCP<Mat::PAR::Bundle> materials = Global::Problem::instance()->materials();
-
-  if (std::any_of(materials->map().begin(), materials->map().end(),
-          [](const auto& item)
-          { return item.second->type() == Core::Materials::m_struct_multiscale; }))
-  {
-    int my_pid = Global::Problem::instance()->get_dis("structure")->get_comm().MyPID();
-    // set dummy displacements
-    discret_->set_state("displacement", zeros_);
-    Core::Elements::LocationArray la(discret_->num_dof_sets());
-    for (const auto* ele : discret_->my_col_element_range())
-    {
-      ele->location_vector(*discret_, la, false);
-
-      const auto* solid_ele = dynamic_cast<const Discret::ELEMENTS::Solid*>(ele);
-      FOUR_C_THROW_UNLESS(solid_ele,
-          "Multiscale simulations are currently only possible with the new solid elements");
-
-      solid_ele->for_each_gauss_point(*discret_, la[0].lm_,
-          [&](Mat::So3Material& solid_material, double integration_factor, int gp)
-          {
-            if (solid_material.material_type() == Core::Materials::m_struct_multiscale)
-            {
-              auto& micro = dynamic_cast<Mat::MicroMaterial&>(solid_material);
-              const bool eleowner = my_pid == ele->owner();
-
-              micro.read_restart(gp, ele->id(), eleowner);
-            }
-          });
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*/
 /* Calculate all output quantities that depend on a potential material history */
 void Solid::TimInt::prepare_output(bool force_prepare_timestep)
 {
   determine_stress_strain();
   determine_energy();
   determine_optional_quantity();
-  if (havemicromat_) prepare_output_micro();
 }
 
 /*----------------------------------------------------------------------*
@@ -2086,9 +2022,6 @@ void Solid::TimInt::output_step(const bool forced_writerestart)
   output_contact();
 
   output_volume_mass();
-
-  // write output on micro-scale (multi-scale analysis)
-  if (havemicromat_) output_micro();
 }
 
 /*-----------------------------------------------------------------------------*
@@ -2851,39 +2784,6 @@ void Solid::TimInt::output_volume_mass()
     printf("\nMass cur.:       %.10e", ((*norms)(5)));
     printf("\n**********************************\n\n");
     fflush(stdout);
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/* output on micro-scale */
-void Solid::TimInt::output_micro()
-{
-  for (int i = 0; i < discret_->num_my_row_elements(); i++)
-  {
-    Core::Elements::Element* actele = discret_->l_row_element(i);
-    Teuchos::RCP<Core::Mat::Material> mat = actele->material();
-    if (mat->material_type() == Core::Materials::m_struct_multiscale)
-    {
-      auto* micro = static_cast<Mat::MicroMaterial*>(mat.get());
-      micro->output_step_state();  // OUTDATED -> DELETE -> JUST TO MAKE COMPILE
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/* calculate stresses and strains on micro-scale */
-void Solid::TimInt::prepare_output_micro()
-{
-  for (int i = 0; i < discret_->num_my_row_elements(); i++)
-  {
-    Core::Elements::Element* actele = discret_->l_row_element(i);
-
-    Teuchos::RCP<Core::Mat::Material> mat = actele->material();
-    if (mat->material_type() == Core::Materials::m_struct_multiscale)
-    {
-      auto* micro = static_cast<Mat::MicroMaterial*>(mat.get());
-      micro->prepare_output();
-    }
   }
 }
 
