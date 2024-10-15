@@ -157,18 +157,6 @@ namespace Inpar::SOLVER
           "Uzawa"};
       Core::Utils::string_parameter(
           "ML_SMOOTHERCOARSE", "Umfpack", "", &list, ml_smoothercoarse_valid_input);
-
-
-      Core::Utils::int_parameter("SUB_SOLVER1", -1,
-          "sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable "
-          "on "
-          "all levels, BS: used for fine and intermedium BraessSarazin (BS) level smoother)",
-          &list);
-      Core::Utils::int_parameter("SUB_SOLVER2", -1,
-          "sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all "
-          "levels, "
-          "BS: used for coarse BraessSarazin (BS) level smoother)",
-          &list);
     }
 
     // MueLu options
@@ -186,9 +174,17 @@ namespace Inpar::SOLVER
     // user-given name of solver block (just for beauty)
     Core::Utils::string_parameter("NAME", "No_name", "User specified name for solver block", &list);
 
-    // damping parameter for SIMPLE
-    Core::Utils::double_parameter(
-        "SIMPLE_DAMPING", 1., "damping parameter for SIMPLE preconditioner", &list);
+    // Parameters for SIMPLE
+    {
+      Core::Utils::double_parameter(
+          "SIMPLE_DAMPING", 1., "damping parameter for SIMPLE preconditioner", &list);
+
+      Core::Utils::int_parameter("SUB_SOLVER1", -1,
+          "sub solver block number (SIMPLE/C: used for prediction of primary variable)", &list);
+
+      Core::Utils::int_parameter("SUB_SOLVER2", -1,
+          "sub solver block number (SIMPLE/C: used for SchurComplement eq.)", &list);
+    }
 
     // Parameters for AMGnxn Preconditioner
     {
