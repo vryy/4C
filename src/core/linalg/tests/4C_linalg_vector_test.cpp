@@ -163,11 +163,13 @@ namespace
       EXPECT_EQ(norm, std::sqrt(NumGlobalElements));
 
       ((Core::LinAlg::Vector<double>&)a_view).PutScalar(2.0);
-
-      // Change must be reflected in a
-      a.Norm2(&norm);
-      EXPECT_EQ(norm, 2.0 * std::sqrt(NumGlobalElements));
     }
+    const Epetra_Vector& a_const = a;
+    Core::LinAlg::VectorView a_view_const(a_const);
+    // Change must be reflected in a
+    double norm = 0.0;
+    static_cast<const Core::LinAlg::Vector<double>&>(a_view_const).Norm2(&norm);
+    EXPECT_EQ(norm, 2.0 * std::sqrt(NumGlobalElements));
   }
 
   std::vector<double> means_multi_vector(const Core::LinAlg::MultiVector<double>& mv)

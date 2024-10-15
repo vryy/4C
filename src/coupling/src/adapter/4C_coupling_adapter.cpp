@@ -616,8 +616,8 @@ Teuchos::RCP<Epetra_FEVector> Coupling::Adapter::Coupling::master_to_slave(
   Teuchos::RCP<Epetra_FEVector> sv =
       Teuchos::make_rcp<Epetra_FEVector>(*slavedofmap_, mv->NumVectors());
 
-  Core::LinAlg::VectorView sv_view((Epetra_MultiVector&)*sv);
-  Core::LinAlg::VectorView mv_view((Epetra_MultiVector&)*mv);
+  Core::LinAlg::VectorView sv_view(*sv);
+  Core::LinAlg::VectorView mv_view(*mv);
   master_to_slave(mv_view.get_non_owning_rcp_ref(), sv_view.get_non_owning_rcp_ref());
 
   return sv;
@@ -632,8 +632,8 @@ Teuchos::RCP<Epetra_FEVector> Coupling::Adapter::Coupling::slave_to_master(
   Teuchos::RCP<Epetra_FEVector> mv =
       Teuchos::make_rcp<Epetra_FEVector>(*masterdofmap_, sv->NumVectors());
 
-  Core::LinAlg::VectorView sv_view((Epetra_MultiVector&)*sv);
-  Core::LinAlg::VectorView mv_view((Epetra_MultiVector&)*mv);
+  Core::LinAlg::VectorView sv_view(*sv);
+  Core::LinAlg::VectorView mv_view(*mv);
   slave_to_master(sv_view.get_non_owning_rcp_ref(), mv_view.get_non_owning_rcp_ref());
 
   return mv;

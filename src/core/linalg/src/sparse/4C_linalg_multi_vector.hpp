@@ -53,16 +53,6 @@ namespace Core::LinAlg
 
     operator const Epetra_MultiVector &() const { return *vector_; }
 
-    operator Teuchos::RCP<Epetra_MultiVector>()
-    {
-      return Teuchos::rcp_dynamic_cast<Epetra_MultiVector>(vector_);
-    }
-
-    operator Teuchos::RCP<const Epetra_MultiVector>() const
-    {
-      return Teuchos::rcp_dynamic_cast<Epetra_MultiVector>(vector_);
-    }
-
     //! get pointer of epetra multi vector
     Teuchos::RCP<Epetra_MultiVector> get_ptr_of_Epetra_MultiVector() { return vector_; }
 
@@ -266,6 +256,7 @@ namespace Core::LinAlg
 
     friend class Vector<T>;
     friend class VectorView<MultiVector<T>>;
+    friend class VectorView<const MultiVector<T>>;
   };
 
 }  // namespace Core::LinAlg

@@ -538,7 +538,8 @@ void EHL::Base::setup_unprojectable_dbc()
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> exp =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ada_strDisp_to_lubPres_->master_dof_map());
-  Core::LinAlg::export_to(Core::LinAlg::Vector<double>(inf_gap_toggle), *exp);
+  Core::LinAlg::VectorView inf_gap_toggle_view(inf_gap_toggle);
+  Core::LinAlg::export_to(inf_gap_toggle_view, *exp);
   inf_gap_toggle_lub_ = ada_strDisp_to_lubPres_->master_to_slave(exp);
 
   static Teuchos::RCP<Core::LinAlg::Vector<double>> old_toggle = Teuchos::null;
