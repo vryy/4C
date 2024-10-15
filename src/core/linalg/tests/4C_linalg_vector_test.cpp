@@ -277,6 +277,29 @@ namespace
     EXPECT_EQ(means_multi_vector(mv), (std::vector{1., 4., 1.}));
   }
 
+  TEST_F(VectorTest, ReplaceMap)
+  {
+    Core::LinAlg::Vector<double> a(*map_, true);
+    a.PutScalar(1.0);
+
+    // New map where elements are distributed differently
+    std::array<int, 5> my_elements;
+    if (comm_->MyPID() == 0)
+      my_elements = {0, 2, 4, 6, 8};
+    else
+      my_elements = {1, 3, 5, 7, 9};
+    Epetra_Map new_map(10, my_elements.size(), my_elements.data(), 0, *comm_);
+
+    const Core::LinAlg::MultiVector<double>& b = a;
+    const Core::LinAlg::Vector<double>& c = b(0);
+
+    // A change of the map is reflected to all views
+    a.ReplaceMap(new_map);
+
+    EXPECT_TRUE(a.Map().SameAs(b.Map()));
+    EXPECT_TRUE(a.Map().SameAs(c.Map()));
+  }
+
 }  // namespace
 
 FOUR_C_NAMESPACE_CLOSE

@@ -131,7 +131,7 @@ namespace Core::LinAlg
     /** Replace map, only if new map has same point-structure as current map.
         return 0 if map is replaced, -1 if not.
      */
-    int ReplaceMap(const Epetra_BlockMap &map) { return vector_->ReplaceMap(map); }
+    int ReplaceMap(const Epetra_BlockMap &map);
 
     int ReplaceGlobalValue(int GlobalRow, int VectorIndex, double ScalarValue)
     {
