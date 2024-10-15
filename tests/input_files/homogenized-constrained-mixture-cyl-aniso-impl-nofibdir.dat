@@ -106,8 +106,6 @@ ML_COARSEN                      UC
 ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOOTHERCOARSE               Umfpack
-SUB_SOLVER1                     -1
-SUB_SOLVER2                     -1
 NAME                            No_name
 SIMPLE_DAMPING                  1
 AMGNXN_TYPE                     AMG(BGS)
