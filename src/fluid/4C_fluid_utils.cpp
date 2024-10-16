@@ -23,6 +23,7 @@
 #include "4C_linalg_mapextractor.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
+#include "4C_linear_solver_method_parameters.hpp"
 
 #include <stdio.h>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -432,99 +433,30 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::Utils::StressManager::time_avera
  *------------------------------------------------- --------------------*/
 void FLD::Utils::StressManager::calc_sep_enr(Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat)
 {
-  if (wss_type_ == Inpar::FLUID::wss_aggregation)  // iff we have not specified a ML-solver one does
-                                                   // not want to smooth the wss
+  // if we have not specified a multigrid-solver one does not want to smooth the wss
+  if (wss_type_ == Inpar::FLUID::wss_aggregation)
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat2;
 
     // Try this:
     sysmat2 = Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat);
-    if (sysmat2 == Teuchos::null)  // if it does not work the fluid matrix probably is a
-                                   // BlockSparseMatrix, compare with function use_block_matrix()
+    if (sysmat2 == Teuchos::null)
       sysmat2 = Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat)->merge();
     if (sysmat2 == Teuchos::null)
       FOUR_C_THROW("One of these two dynamic casts should have worked... Sorry!");
 
-
     if (discret_->get_comm().MyPID() == 0)
-      std::cout << "Calculating mean WSS via ML-aggregation:" << std::endl;
+      std::cout << "Calculating mean WSS via multilevel-aggregation:" << std::endl;
 
-    int ML_solver =
-        (Global::Problem::instance()->fluid_dynamic_params()).get<int>("WSS_ML_AGR_SOLVER");
-
-    if (ML_solver == -1)
-      FOUR_C_THROW(
-          "If you want to aggregate your stresses you need to specify a WSS_ML_AGR_SOLVER!");
-
-    Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
-        Global::Problem::instance()->solver_params(ML_solver), discret_->get_comm(),
-        Global::Problem::instance()->solver_params_callback(),
-        Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-            Global::Problem::instance()->io_params(), "VERBOSITY"));
-
-    if (solver == Teuchos::null)
-      FOUR_C_THROW(
-          "The solver WSS_ML_AGR_SOLVER in the FLUID DYNMAICS section is not a valid solver!");
-
-    Teuchos::ParameterList& mlparams = solver->params().sublist("ML Parameters");
-    // compute the null space,
-    discret_->compute_null_space_if_necessary(solver->params(), true);
+    Teuchos::ParameterList params;
+    Core::LinearSolver::Parameters::compute_solver_parameters(*discret_, params);
 
     // get nullspace parameters
-    double* nullspace = mlparams.get("null space: vectors", (double*)nullptr);
-    if (!nullspace) FOUR_C_THROW("No nullspace supplied in parameter list");
-    int nsdim = mlparams.get("null space: dimension", 1);
-    if (nsdim != 4)
-      FOUR_C_THROW("The calculation of mean WSS is only tested for three space dimensions!");
-
-    int lrowdofs = discret_->dof_row_map()->NumMyElements();
-
-    for (int j = 0; j < discret_->node_row_map()->NumMyElements(); ++j)
-    {
-      int gid = discret_->node_row_map()->GID(j);
-
-      if (not discret_->node_row_map()->MyGID(gid))  // just in case
-        FOUR_C_THROW("not on proc");
-      {
-        Core::Nodes::Node* node = discret_->g_node(gid);
-        if (!node) FOUR_C_THROW("Cannot find node");
-
-        int firstglobaldofid = discret_->dof(node, 0);
-        int firstlocaldofid = discret_->dof_row_map()->LID(firstglobaldofid);
-
-        std::vector<Core::Conditions::Condition*> nodedircond;
-        node->get_condition("FluidStressCalc", nodedircond);
-
-        if (not nodedircond.empty())
-        {
-          // these nodes are wall nodes, so aggregate them
-          nullspace[firstlocaldofid] = 1.0;
-          nullspace[lrowdofs + firstlocaldofid + 1] = 1.0;
-          nullspace[lrowdofs * 2 + firstlocaldofid + 2] = 1.0;
-          nullspace[lrowdofs * 3 + firstlocaldofid + 3] = 1.0;
-        }
-        else
-        {
-          // set everything to zero
-          nullspace[firstlocaldofid] = 0.0;
-          nullspace[lrowdofs + firstlocaldofid + 1] = 0.0;
-          nullspace[lrowdofs * 2 + firstlocaldofid + 2] = 0.0;
-          nullspace[lrowdofs * 3 + firstlocaldofid + 3] = 0.0;
-        }
-
-        if (discret_->num_dof(node) > 5)  // in the case of xWall fluid
-        {
-          nullspace[firstlocaldofid + 4] = 0.0;
-          nullspace[lrowdofs + firstlocaldofid + 5] = 0.0;
-          nullspace[lrowdofs * 2 + firstlocaldofid + 6] = 0.0;
-          nullspace[lrowdofs * 3 + firstlocaldofid + 7] = 0.0;
-        }
-      }
-    }
+    auto nullspace = params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace");
 
     // get plain aggregation Ptent
     Core::LinAlg::SparseMatrix Ptent =
-        Core::LinAlg::create_interpolation_matrix(*sysmat2, nullspace, mlparams);
+        Core::LinAlg::create_interpolation_matrix(*sysmat2, *nullspace, params);
 
     // compute scale-separation matrix: S = Ptent*Ptent^T
     sep_enr_ = Core::LinAlg::matrix_multiply(Ptent, false, Ptent, true);
