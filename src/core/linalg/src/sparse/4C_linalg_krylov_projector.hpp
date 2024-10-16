@@ -102,13 +102,13 @@ namespace Core::LinAlg
     int apply_projector(Core::LinAlg::MultiVector<double>& Y, Core::LinAlg::MultiVector<double>& v1,
         Core::LinAlg::MultiVector<double>& v2, Core::LinAlg::SerialDenseMatrix& inv_v1Tv2) const;
 
-    //! multiplies Epetra_MultiVector times Core::LinAlg::SerialDenseMatrix
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> multiply_multi_vecter_dense_matrix(
+    //! multiplies MultiVector times Core::LinAlg::SerialDenseMatrix
+    Teuchos::RCP<Core::LinAlg::MultiVector<double>> multiply_multi_vector_dense_matrix(
         const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv,
         const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& dm) const;
 
-    //! outer product of two Epetra_MultiVectors
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> multiply_multi_vecter_multi_vector(
+    //! outer product of two MultiVectors
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> multiply_multi_vector_multi_vector(
         const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv1,  //! first MultiVector
         const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv2,  //! second MultiVector
         const int id = 1,  //! id of MultiVector form which sparsity of output matrix is estimated

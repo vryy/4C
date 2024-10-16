@@ -148,18 +148,16 @@ namespace XFEM
        *  \param mv       (in) : master multi vector (to be transferred/source)
        *  \param map_type (in) : map type of the master vector
        *  \param sv       (out): slave multi vector (target)*/
-      void master_to_slave(const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& mv,
-          const enum XFEM::MapType& map_type,
-          Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv) const;
+      void master_to_slave(const Core::LinAlg::MultiVector<double>& mv,
+          const enum XFEM::MapType& map_type, Core::LinAlg::MultiVector<double>& sv) const;
 
       /** \brief transfer a nodal/dof multi vector from slave to master
        *
        *  \param sv       (in) : slave multi vector (to be transferred)
        *  \param map_type (in) : map type of the slave vector
        *  \param mv       (out): master multi vector (target)*/
-      void slave_to_master(const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& sv,
-          const enum XFEM::MapType& map_type,
-          Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv) const;
+      void slave_to_master(const Core::LinAlg::MultiVector<double>& sv,
+          const enum XFEM::MapType& map_type, Core::LinAlg::MultiVector<double>& mv) const;
 
       //@}
 

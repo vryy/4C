@@ -1203,7 +1203,7 @@ namespace ScaTra
      * @param la_master     master-side location array
      * @param assembler_pid_master  ID of processor performing master-side vector assembly
      */
-    void assemble_cell_vector(const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& systemvector,
+    void assemble_cell_vector(Core::LinAlg::MultiVector<double>& systemvector,
         const Core::LinAlg::SerialDenseVector& cellvector, const Inpar::S2I::InterfaceSides side,
         Core::Elements::LocationArray& la_slave, Core::Elements::LocationArray& la_master,
         const int assembler_pid_master) const;

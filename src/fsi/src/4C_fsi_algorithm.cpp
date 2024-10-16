@@ -182,7 +182,7 @@ void FSI::Algorithm::output()
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Algorithm::struct_to_fluid(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv)
 {
-  return coupsf_->master_to_slave(iv);
+  return coupsf_->master_to_slave(*iv);
 }
 
 
@@ -191,7 +191,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Algorithm::struct_to_fluid(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Algorithm::fluid_to_struct(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv)
 {
-  return coupsf_->slave_to_master(iv);
+  return coupsf_->slave_to_master(*iv);
 }
 
 
@@ -213,7 +213,7 @@ const Coupling::Adapter::Coupling& FSI::Algorithm::structure_fluid_coupling() co
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Algorithm::struct_to_fluid(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsf_->master_to_slave(iv);
+  return coupsf_->master_to_slave(*iv);
 }
 
 
@@ -222,7 +222,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Algorithm::struct_to_fluid(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Algorithm::fluid_to_struct(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsf_->slave_to_master(iv);
+  return coupsf_->slave_to_master(*iv);
 }
 
 FOUR_C_NAMESPACE_CLOSE

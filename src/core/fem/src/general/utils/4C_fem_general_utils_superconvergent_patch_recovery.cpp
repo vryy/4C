@@ -156,7 +156,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconvergen
 
   // step 2: use precalculated (velocity) gradient for patch-recovery of gradient
   // solution vector based on reduced node row map
-  Teuchos::RCP<Epetra_FEVector> nodevec = Teuchos::make_rcp<Epetra_FEVector>(noderowmap, numvec);
+  Epetra_FEVector nodevec(noderowmap, numvec);
 
   std::vector<Core::Conditions::Condition*> conds;
   dis.get_condition("SPRboundary", conds);
@@ -225,7 +225,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconvergen
           const double recoveredgradient = p(0) * x(0);
 
           // write solution vector
-          nodevec->ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
+          nodevec.ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
         }
       }  // end normal inner node
       else
@@ -296,7 +296,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconvergen
           const double recoveredgradient = p(0) * x(0);
 
           // write solution vector
-          nodevec->ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
+          nodevec.ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
         }
       }  // end inner pbc master node
     }    // end inner nodes
@@ -390,7 +390,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconvergen
           }
 
           // write solution vector
-          nodevec->ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
+          nodevec.ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
         }
       }  // end normal boundary node
       else
@@ -532,7 +532,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconvergen
           }
 
           // write solution vector
-          nodevec->ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
+          nodevec.ReplaceGlobalValues(1, &nodegid, &recoveredgradient, j);
         }
       }  // end boundary master pbc node
     }    // end boundary nodes
@@ -540,12 +540,12 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconvergen
   }  // end loop over all nodes
 
   // call global assemble
-  const int err = nodevec->GlobalAssemble(Insert, false);
+  const int err = nodevec.GlobalAssemble(Insert, false);
   if (err < 0) FOUR_C_THROW("global assemble into nodevec failed");
 
   // if no pbc are involved leave here
   if (noderowmap.PointSameAs(*fullnoderowmap))
-    return Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodevec);
+    return Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(nodevec);
 
   // solution vector based on full row map in which the solution of the master node is inserted into
   // slave nodes
@@ -562,12 +562,12 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconvergen
       const int mastergid = slavemasterpair->second;
       const int masterlid = noderowmap.LID(mastergid);
       for (int j = 0; j < numvec; ++j)
-        fullnodevec->ReplaceMyValue(i, j, ((*(*nodevec)(j))[masterlid]));
+        fullnodevec->ReplaceMyValue(i, j, ((*(nodevec)(j))[masterlid]));
     }
     else
     {
       const int lid = noderowmap.LID(nodeid);
-      for (int j = 0; j < numvec; ++j) fullnodevec->ReplaceMyValue(i, j, ((*(*nodevec)(j))[lid]));
+      for (int j = 0; j < numvec; ++j) fullnodevec->ReplaceMyValue(i, j, ((*(nodevec)(j))[lid]));
     }
   }
 

@@ -1202,7 +1202,7 @@ void Solid::ModelEvaluator::BeamInteraction::transform_force()
   TEUCHOS_FUNC_TIME_MONITOR("Solid::ModelEvaluator::BeamInteraction::transform_force");
 
   // transform force vector to problem discret layout/distribution
-  force_beaminteraction_ = coupsia_->master_to_slave(ia_force_beaminteraction_);
+  force_beaminteraction_ = coupsia_->master_to_slave(*ia_force_beaminteraction_);
 }
 
 /*-----------------------------------------------------------------------------*

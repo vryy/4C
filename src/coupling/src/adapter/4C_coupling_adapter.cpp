@@ -583,12 +583,12 @@ void Coupling::Adapter::Coupling::build_dof_maps(const Core::FE::Discretization&
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::Coupling::master_to_slave(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> mv) const
+    const Core::LinAlg::Vector<double>& mv) const
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> sv =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavedofmap_);
 
-  master_to_slave(mv->get_ptr_of_MultiVector(), sv->get_ptr_of_MultiVector());
+  master_to_slave(mv, *sv);
 
   return sv;
 }
@@ -597,12 +597,12 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::Coupling::master_t
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::Coupling::slave_to_master(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv) const
+    const Core::LinAlg::Vector<double>& sv) const
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> mv =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*masterdofmap_);
 
-  slave_to_master(sv->get_ptr_of_MultiVector(), mv->get_ptr_of_MultiVector());
+  slave_to_master(sv, *mv);
 
   return mv;
 }
@@ -611,14 +611,14 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::Coupling::slave_to
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_FEVector> Coupling::Adapter::Coupling::master_to_slave(
-    Teuchos::RCP<const Epetra_FEVector> mv) const
+    const Epetra_FEVector& mv) const
 {
   Teuchos::RCP<Epetra_FEVector> sv =
-      Teuchos::make_rcp<Epetra_FEVector>(*slavedofmap_, mv->NumVectors());
+      Teuchos::make_rcp<Epetra_FEVector>(*slavedofmap_, mv.NumVectors());
 
   Core::LinAlg::VectorView sv_view(*sv);
-  Core::LinAlg::VectorView mv_view(*mv);
-  master_to_slave(mv_view.get_non_owning_rcp_ref(), sv_view.get_non_owning_rcp_ref());
+  Core::LinAlg::VectorView mv_view(mv);
+  master_to_slave(mv_view, sv_view);
 
   return sv;
 }
@@ -627,14 +627,14 @@ Teuchos::RCP<Epetra_FEVector> Coupling::Adapter::Coupling::master_to_slave(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_FEVector> Coupling::Adapter::Coupling::slave_to_master(
-    Teuchos::RCP<const Epetra_FEVector> sv) const
+    const Epetra_FEVector& sv) const
 {
   Teuchos::RCP<Epetra_FEVector> mv =
-      Teuchos::make_rcp<Epetra_FEVector>(*masterdofmap_, sv->NumVectors());
+      Teuchos::make_rcp<Epetra_FEVector>(*masterdofmap_, sv.NumVectors());
 
-  Core::LinAlg::VectorView sv_view(*sv);
+  Core::LinAlg::VectorView sv_view(sv);
   Core::LinAlg::VectorView mv_view(*mv);
-  slave_to_master(sv_view.get_non_owning_rcp_ref(), mv_view.get_non_owning_rcp_ref());
+  slave_to_master(sv_view, mv_view);
 
   return mv;
 }
@@ -643,12 +643,12 @@ Teuchos::RCP<Epetra_FEVector> Coupling::Adapter::Coupling::slave_to_master(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::Coupling::master_to_slave(
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> mv) const
+    const Core::LinAlg::MultiVector<double>& mv) const
 {
   Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*slavedofmap_, mv->NumVectors());
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*slavedofmap_, mv.NumVectors());
 
-  master_to_slave(mv, sv);
+  master_to_slave(mv, *sv);
 
   return sv;
 }
@@ -657,12 +657,12 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::Coupling::mas
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::Coupling::slave_to_master(
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> sv) const
+    const Core::LinAlg::MultiVector<double>& sv) const
 {
   Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*masterdofmap_, sv->NumVectors());
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*masterdofmap_, sv.NumVectors());
 
-  slave_to_master(sv, mv);
+  slave_to_master(sv, *mv);
 
   return mv;
 }
@@ -671,20 +671,19 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::Coupling::sla
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::Coupling::master_to_slave(
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> mv,
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv) const
+    const Core::LinAlg::MultiVector<double>& mv, Core::LinAlg::MultiVector<double>& sv) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (not mv->Map().PointSameAs(*masterdofmap_)) FOUR_C_THROW("master dof map vector expected");
-  if (not sv->Map().PointSameAs(*slavedofmap_)) FOUR_C_THROW("slave dof map vector expected");
-  if (sv->NumVectors() != mv->NumVectors())
-    FOUR_C_THROW("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
+  if (not mv.Map().PointSameAs(*masterdofmap_)) FOUR_C_THROW("master dof map vector expected");
+  if (not sv.Map().PointSameAs(*slavedofmap_)) FOUR_C_THROW("slave dof map vector expected");
+  if (sv.NumVectors() != mv.NumVectors())
+    FOUR_C_THROW("column number mismatch %d!=%d", sv.NumVectors(), mv.NumVectors());
 #endif
 
-  Core::LinAlg::MultiVector<double> perm(*permslavedofmap_, mv->NumVectors());
-  std::copy(mv->Values(), mv->Values() + (mv->MyLength() * mv->NumVectors()), perm.Values());
+  Core::LinAlg::MultiVector<double> perm(*permslavedofmap_, mv.NumVectors());
+  std::copy(mv.Values(), mv.Values() + (mv.MyLength() * mv.NumVectors()), perm.Values());
 
-  const int err = sv->Export(perm, *slaveexport_, Insert);
+  const int err = sv.Export(perm, *slaveexport_, Insert);
   if (err) FOUR_C_THROW("Export to slave distribution returned err=%d", err);
 }
 
@@ -705,27 +704,26 @@ void Coupling::Adapter::Coupling::master_to_slave(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::Coupling::slave_to_master(
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> sv,
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv) const
+    const Core::LinAlg::MultiVector<double>& sv, Core::LinAlg::MultiVector<double>& mv) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (not mv->Map().PointSameAs(*masterdofmap_)) FOUR_C_THROW("master dof map vector expected");
-  if (not sv->Map().PointSameAs(*slavedofmap_))
+  if (not mv.Map().PointSameAs(*masterdofmap_)) FOUR_C_THROW("master dof map vector expected");
+  if (not sv.Map().PointSameAs(*slavedofmap_))
   {
     std::cout << "slavedofmap_" << std::endl;
     std::cout << *slavedofmap_ << std::endl;
     std::cout << "sv" << std::endl;
-    std::cout << sv->Map() << std::endl;
+    std::cout << sv.Map() << std::endl;
     FOUR_C_THROW("slave dof map vector expected");
   }
-  if (sv->NumVectors() != mv->NumVectors())
-    FOUR_C_THROW("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
+  if (sv.NumVectors() != mv.NumVectors())
+    FOUR_C_THROW("column number mismatch %d!=%d", sv.NumVectors(), mv.NumVectors());
 #endif
 
-  Core::LinAlg::MultiVector<double> perm(*permmasterdofmap_, sv->NumVectors());
-  std::copy(sv->Values(), sv->Values() + (sv->MyLength() * sv->NumVectors()), perm.Values());
+  Core::LinAlg::MultiVector<double> perm(*permmasterdofmap_, sv.NumVectors());
+  std::copy(sv.Values(), sv.Values() + (sv.MyLength() * sv.NumVectors()), perm.Values());
 
-  const int err = mv->Export(perm, *masterexport_, Insert);
+  const int err = mv.Export(perm, *masterexport_, Insert);
   if (err) FOUR_C_THROW("Export to master distribution returned err=%d", err);
 }
 

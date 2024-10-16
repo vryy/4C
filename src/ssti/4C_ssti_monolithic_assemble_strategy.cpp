@@ -1285,7 +1285,7 @@ void SSTI::AssembleStrategyBase::assemble_rhs(Teuchos::RCP<Core::LinAlg::Vector<
           coupling_map_extractor->extract_vector(residual_structure, 1);
 
       const auto rhs_structure_only_master_dofs =
-          coupling_adapter->slave_to_master(rhs_structure_only_slave_dofs);
+          coupling_adapter->slave_to_master(*rhs_structure_only_slave_dofs);
 
       coupling_map_extractor->add_vector(*rhs_structure_only_master_dofs, 2, *rhs_structure_master);
 

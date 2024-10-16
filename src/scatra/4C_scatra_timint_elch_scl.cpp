@@ -358,7 +358,7 @@ void ScaTra::ScaTraTimIntElchSCL::copy_solution_to_micro_field()
 {
   // extract coupled values from macro, copy to micro, and insert into full micro vector
   auto macro_to_micro_coupled_nodes = macro_micro_coupling_adapter_->master_to_slave(
-      macro_coupling_dofs_->extract_cond_vector(*phinp()));
+      *macro_coupling_dofs_->extract_cond_vector(*phinp()));
   micro_coupling_dofs_->insert_cond_vector(
       *macro_to_micro_coupled_nodes, *micro_scatra_field()->phinp());
 }
@@ -882,7 +882,7 @@ void ScaTra::ScaTraTimIntElchSCL::scale_micro_problem()
 
   // transform to micro discretization
   auto nodal_size_micro = macro_micro_coupling_adapter_->master_to_slave(
-      macro_coupling_dofs_->extract_cond_vector(*nodal_size_macro));
+      *macro_coupling_dofs_->extract_cond_vector(*nodal_size_macro));
 
   // communicate nodal size to all procs to be able to scale all rows in micro discretization
   // attached to a macro node
@@ -918,7 +918,7 @@ void ScaTra::ScaTraTimIntElchSCL::assemble_and_apply_mesh_tying()
   auto micro_residual =
       micro_coupling_dofs_->extract_cond_vector(*micro_scatra_field()->residual());
   auto micro_residual_on_macro_side =
-      macro_micro_coupling_adapter_->slave_to_master(micro_residual);
+      macro_micro_coupling_adapter_->slave_to_master(*micro_residual);
 
   auto full_macro_vector = Core::LinAlg::create_vector(*dof_row_map(), true);
   macro_coupling_dofs_->insert_cond_vector(*micro_residual_on_macro_side, *full_macro_vector);
@@ -1048,7 +1048,7 @@ void ScaTra::ScaTraTimIntElchSCL::update_iter_micro_macro()
 
   // reconstruct slave result from master side
   auto macro_extract = macro_coupling_dofs_->extract_cond_vector(*increment_macro);
-  auto macro_extract_to_micro = macro_micro_coupling_adapter_->master_to_slave(macro_extract);
+  auto macro_extract_to_micro = macro_micro_coupling_adapter_->master_to_slave(*macro_extract);
   micro_coupling_dofs_->insert_cond_vector(*macro_extract_to_micro, *increment_micro);
 
   update_iter(*increment_macro);

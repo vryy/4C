@@ -123,10 +123,10 @@ namespace FS3I
     void setup_coupled_scatra_matrix();
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> scatra2_to_scatra1(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+        const Core::LinAlg::Vector<double>& iv) const;
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> scatra1_to_scatra2(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+        const Core::LinAlg::Vector<double>& iv) const;
 
     //! linear solution of monolithic ScaTra problem
     void linear_solve_scatra();

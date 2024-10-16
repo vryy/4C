@@ -296,7 +296,7 @@ void EHL::Base::add_pressure_force(
     FOUR_C_THROW("apply failed");
   Teuchos::RCP<Core::LinAlg::Vector<double>> p_exp =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  p_exp = ada_strDisp_to_lubDisp_->slave_to_master(p_full);
+  p_exp = ada_strDisp_to_lubDisp_->slave_to_master(*p_full);
   stritraction = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->normals());
   stritraction->Multiply(-1., *mortaradapter_->normals(), *p_exp, 0.);
 
@@ -321,7 +321,7 @@ void EHL::Base::add_poiseuille_force(
 {
   // poiseuille flow forces
   Teuchos::RCP<Core::LinAlg::Vector<double>> p_int =
-      ada_strDisp_to_lubPres_->slave_to_master(lubrication_->lubrication_field()->prenp());
+      ada_strDisp_to_lubPres_->slave_to_master(*lubrication_->lubrication_field()->prenp());
   Core::LinAlg::Vector<double> p_int_full(*mortaradapter_->slave_dof_map());
   Core::LinAlg::export_to(*p_int, p_int_full);
 
@@ -371,9 +371,7 @@ void EHL::Base::add_couette_force(
   hinv_relV.Multiply(1., h_inv, *relVel, 0.);
 
   Core::FE::Discretization& lub_dis = *lubrication_->lubrication_field()->discretization();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *lubrication_->lubrication_field()->dof_row_map(1));
+  Core::LinAlg::Vector<double> visc_vec(*lubrication_->lubrication_field()->dof_row_map(1));
   for (int i = 0; i < lub_dis.node_row_map()->NumMyElements(); ++i)
   {
     Core::Nodes::Node* lnode = lub_dis.l_row_node(i);
@@ -387,7 +385,7 @@ void EHL::Base::add_couette_force(
         Teuchos::rcp_dynamic_cast<Mat::LubricationMat>(mat, true);
     const double visc = lmat->compute_viscosity(p);
 
-    for (int d = 0; d < ndim; ++d) visc_vec->ReplaceGlobalValue(lub_dis.dof(1, lnode, d), 0, visc);
+    for (int d = 0; d < ndim; ++d) visc_vec.ReplaceGlobalValue(lub_dis.dof(1, lnode, d), 0, visc);
   }
   Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec_str =
       ada_strDisp_to_lubDisp_->slave_to_master(visc_vec);
@@ -417,7 +415,7 @@ void EHL::Base::add_couette_force(
 void EHL::Base::set_average_velocity_field()
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> avVelLub =
-      ada_strDisp_to_lubDisp_->master_to_slave(mortaradapter_->av_tang_vel());
+      ada_strDisp_to_lubDisp_->master_to_slave(*mortaradapter_->av_tang_vel());
   lubrication_->lubrication_field()->set_average_velocity_field(1, avVelLub);
 }
 
@@ -427,7 +425,7 @@ void EHL::Base::set_average_velocity_field()
 void EHL::Base::set_relative_velocity_field()
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> relVelLub =
-      ada_strDisp_to_lubDisp_->master_to_slave(mortaradapter_->rel_tang_vel());
+      ada_strDisp_to_lubDisp_->master_to_slave(*mortaradapter_->rel_tang_vel());
   lubrication_->lubrication_field()->set_relative_velocity_field(1, relVelLub);
 }
 
@@ -447,7 +445,7 @@ void EHL::Base::set_height_field()
 
   // store discrete gap in lubrication disp dof map (its the film height)
   Teuchos::RCP<Core::LinAlg::Vector<double>> height =
-      ada_strDisp_to_lubDisp_->master_to_slave(discretegap);
+      ada_strDisp_to_lubDisp_->master_to_slave(*discretegap);
 
   // provide film height to lubrication discretization
   lubrication_->lubrication_field()->set_height_field(1, height);
@@ -471,7 +469,7 @@ void EHL::Base::set_height_dot()
   if (err != 0) FOUR_C_THROW("error while transforming map of weighted gap");
   // store discrete heightDot in lubrication disp dof map (its the film height time derivative)
   Teuchos::RCP<Core::LinAlg::Vector<double>> heightdotSet =
-      ada_strDisp_to_lubDisp_->master_to_slave(discretegap);
+      ada_strDisp_to_lubDisp_->master_to_slave(*discretegap);
 
   // provide film height time derivative to lubrication discretization
   lubrication_->lubrication_field()->set_height_dot_field(1, heightdotSet);
@@ -489,7 +487,7 @@ void EHL::Base::set_mesh_disp(const Core::LinAlg::Vector<double>& disp)
 
   // Transfer the displacement vector onto the lubrication field
   Teuchos::RCP<Core::LinAlg::Vector<double>> lubridisp =
-      ada_strDisp_to_lubDisp_->master_to_slave(slaveidisp);
+      ada_strDisp_to_lubDisp_->master_to_slave(*slaveidisp);
 
   // Provide the lubrication discretization with the displacement
   lubrication_->lubrication_field()->apply_mesh_movement(lubridisp, 1);
@@ -540,7 +538,7 @@ void EHL::Base::setup_unprojectable_dbc()
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ada_strDisp_to_lubPres_->master_dof_map());
   Core::LinAlg::VectorView inf_gap_toggle_view(inf_gap_toggle);
   Core::LinAlg::export_to(inf_gap_toggle_view, *exp);
-  inf_gap_toggle_lub_ = ada_strDisp_to_lubPres_->master_to_slave(exp);
+  inf_gap_toggle_lub_ = ada_strDisp_to_lubPres_->master_to_slave(*exp);
 
   static Teuchos::RCP<Core::LinAlg::Vector<double>> old_toggle = Teuchos::null;
   if (old_toggle != Teuchos::null)
@@ -774,11 +772,10 @@ void EHL::Base::output(bool forced_writerestart)
 
     // store discrete gap in lubrication disp dof map (its the film height)
     Teuchos::RCP<Core::LinAlg::Vector<double>> height =
-        ada_strDisp_to_lubDisp_->master_to_slave(discretegap);
+        ada_strDisp_to_lubDisp_->master_to_slave(*discretegap);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> height_ex =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ada_lubPres_to_lubDisp_->slave_dof_map());
-    Core::LinAlg::export_to(*height, *height_ex);
+    Core::LinAlg::Vector<double> height_ex(*ada_lubPres_to_lubDisp_->slave_dof_map());
+    Core::LinAlg::export_to(*height, height_ex);
     Teuchos::RCP<Core::LinAlg::Vector<double>> h1 =
         ada_lubPres_to_lubDisp_->slave_to_master(height_ex);
     lubrication_->lubrication_field()->disc_writer()->write_vector(
@@ -812,10 +809,9 @@ void EHL::Base::output(bool forced_writerestart)
             lubrication_->lubrication_field()->discretization()->dof(1, lnode, d), 0, visc);
     }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec_ex =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ada_lubPres_to_lubDisp_->slave_dof_map());
+    Core::LinAlg::Vector<double> visc_vec_ex(*ada_lubPres_to_lubDisp_->slave_dof_map());
 
-    Core::LinAlg::export_to(visc_vec, *visc_vec_ex);
+    Core::LinAlg::export_to(visc_vec, visc_vec_ex);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> v1 =
         ada_lubPres_to_lubDisp_->slave_to_master(visc_vec_ex);

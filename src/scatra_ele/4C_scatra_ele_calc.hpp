@@ -567,21 +567,20 @@ namespace Discret
 
       //! calculate turbulent Prandtl number for dynamic Smagorinsky model
       void scatra_calc_smag_const_lk_mk_and_mk_mk(
-          Teuchos::RCP<Core::LinAlg::MultiVector<double>>& col_filtered_vel,
-          Teuchos::RCP<Core::LinAlg::MultiVector<double>>& col_filtered_dens_vel,
-          Teuchos::RCP<Core::LinAlg::MultiVector<double>>& col_filtered_dens_vel_temp,
-          Teuchos::RCP<Core::LinAlg::MultiVector<double>>& col_filtered_dens_rateofstrain_temp,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_temp,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_dens,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_dens_temp, double& LkMk,
-          double& MkMk, double& xcenter, double& ycenter, double& zcenter,
-          const Core::Elements::Element* ele);
+          Core::LinAlg::MultiVector<double>& col_filtered_vel,
+          Core::LinAlg::MultiVector<double>& col_filtered_dens_vel,
+          Core::LinAlg::MultiVector<double>& col_filtered_dens_vel_temp,
+          Core::LinAlg::MultiVector<double>& col_filtered_dens_rateofstrain_temp,
+          Core::LinAlg::Vector<double>& col_filtered_temp,
+          Core::LinAlg::Vector<double>& col_filtered_dens,
+          Core::LinAlg::Vector<double>& col_filtered_dens_temp, double& LkMk, double& MkMk,
+          double& xcenter, double& ycenter, double& zcenter, const Core::Elements::Element* ele);
 
-      void scatra_calc_vreman_dt(Teuchos::RCP<Core::LinAlg::MultiVector<double>>& col_filtered_phi,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_phi2,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>& col_filtered_phiexpression,
-          Teuchos::RCP<Core::LinAlg::MultiVector<double>>& col_filtered_alphaijsc,
-          double& dt_numerator, double& dt_denominator, const Core::Elements::Element* ele);
+      void scatra_calc_vreman_dt(Core::LinAlg::MultiVector<double>& col_filtered_phi,
+          Core::LinAlg::Vector<double>& col_filtered_phi2,
+          Core::LinAlg::Vector<double>& col_filtered_phiexpression,
+          Core::LinAlg::MultiVector<double>& col_filtered_alphaijsc, double& dt_numerator,
+          double& dt_denominator, const Core::Elements::Element* ele);
 
       //! calculate normalized subgrid-diffusivity matrix
       virtual void calc_subgr_diff_matrix(

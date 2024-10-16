@@ -530,7 +530,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
       {
         // transform master residuals and assemble into global residual vector
         interfacemaps_->add_vector(
-            *icoup_->slave_to_master(islaveresidual_), 2, *scatratimint_->residual(), -1.);
+            *icoup_->slave_to_master(*islaveresidual_), 2, *scatratimint_->residual(), -1.);
       }
       // In case the interface linearizations and residuals are evaluated on slave side only,
       // we now apply a standard meshtying algorithm to condense out the slave-side degrees of
@@ -538,8 +538,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
       else if (!scatratimint_->discretization()->get_condition("PointCoupling"))
       {
         // initialize temporary vector for slave-side entries of residual vector
-        Teuchos::RCP<Core::LinAlg::Vector<double>> residualslave =
-            Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*icoup_->slave_dof_map());
+        Core::LinAlg::Vector<double> residualslave(*icoup_->slave_dof_map());
 
         // loop over all slave-side entries of residual vector
         for (int slavedoflid = 0; slavedoflid < icoup_->slave_dof_map()->NumMyElements();
@@ -550,7 +549,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
           if (slavedofgid < 0) FOUR_C_THROW("Couldn't find local ID %d in map!", slavedoflid);
 
           // copy current vector entry into temporary vector
-          if (residualslave->ReplaceGlobalValue(slavedofgid, 0,
+          if (residualslave.ReplaceGlobalValue(slavedofgid, 0,
                   (*scatratimint_->residual())[scatratimint_->dof_row_map()->LID(slavedofgid)]))
             FOUR_C_THROW(
                 "Cannot insert residual vector entry with global ID %d into temporary vector!",
@@ -1007,7 +1006,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
 
         // transform master residuals and assemble into global residual vector
         interfacemaps_->add_vector(
-            *icoup_->slave_to_master(islaveresidual_), 2, *scatratimint_->residual(), -1.);
+            *icoup_->slave_to_master(*islaveresidual_), 2, *scatratimint_->residual(), -1.);
 
         // compute additional linearizations and residuals in case of monolithic evaluation approach
         if (intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_monolithic)
@@ -1513,7 +1512,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
   interfacemaps_->add_vector(*islaveresidual_, 1, *scatratimint_->residual());
   // transform master residuals and assemble into global residual vector
   interfacemaps_->add_vector(
-      *icoup_->slave_to_master(imasterresidual_on_slave_side), 2, *scatratimint_->residual(), 1.0);
+      *icoup_->slave_to_master(*imasterresidual_on_slave_side), 2, *scatratimint_->residual(), 1.0);
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -3447,8 +3446,8 @@ void ScaTra::MeshtyingStrategyS2I::add_time_integration_specific_vectors() const
   {
     // add state vector containing master-side scatra degrees of freedom to scatra discretization
     interfacemaps_->insert_vector(
-        *icoup_->master_to_slave(interfacemaps_->extract_vector(*(scatratimint_->phiafnp()), 2)), 1,
-        *imasterphi_on_slave_side_np_);
+        *icoup_->master_to_slave(*interfacemaps_->extract_vector(*(scatratimint_->phiafnp()), 2)),
+        1, *imasterphi_on_slave_side_np_);
     scatratimint_->discretization()->set_state("imasterphinp", imasterphi_on_slave_side_np_);
 
     if (has_capacitive_contributions_)
@@ -3457,7 +3456,7 @@ void ScaTra::MeshtyingStrategyS2I::add_time_integration_specific_vectors() const
           *interfacemaps_->extract_vector(*(scatratimint_->phidtnp()), 1), 1, *islavephidtnp_);
       scatratimint_->discretization()->set_state("islavephidtnp", islavephidtnp_);
       interfacemaps_->insert_vector(
-          *icoup_->master_to_slave(interfacemaps_->extract_vector(*(scatratimint_->phidtnp()), 2)),
+          *icoup_->master_to_slave(*interfacemaps_->extract_vector(*(scatratimint_->phidtnp()), 2)),
           1, *imasterphidt_on_slave_side_np_);
       scatratimint_->discretization()->set_state("imasterphidtnp", imasterphidt_on_slave_side_np_);
     }
@@ -4849,7 +4848,7 @@ void ScaTra::MortarCellAssemblyStrategy::assemble_cell_matrices_and_vectors(
   // assemble cell vector 1 into system vector 1
   if (assemble_vector1())
     assemble_cell_vector(
-        systemvector1_, cellvector1_, vector1_side_, la_slave, la_master, assembler_pid_master);
+        *systemvector1_, cellvector1_, vector1_side_, la_slave, la_master, assembler_pid_master);
 
   // assemble cell vector 2 into system vector 2
   if (assemble_vector2())
@@ -4901,7 +4900,7 @@ void ScaTra::MortarCellAssemblyStrategy::assemble_cell_matrix(
 /*----------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------*/
 void ScaTra::MortarCellAssemblyStrategy::assemble_cell_vector(
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& systemvector,
+    Core::LinAlg::MultiVector<double>& systemvector,
     const Core::LinAlg::SerialDenseVector& cellvector, const Inpar::S2I::InterfaceSides side,
     Core::Elements::LocationArray& la_slave, Core::Elements::LocationArray& la_master,
     const int assembler_pid_master) const
@@ -4911,9 +4910,9 @@ void ScaTra::MortarCellAssemblyStrategy::assemble_cell_vector(
   {
     case Inpar::S2I::side_slave:
     {
-      if (systemvector->NumVectors() != 1)
+      if (systemvector.NumVectors() != 1)
         FOUR_C_THROW("Invalid number of vectors inside Core::LinAlg::MultiVector<double>!");
-      Core::LinAlg::assemble((*systemvector)(nds_rows_), cellvector, la_slave[nds_rows_].lm_,
+      Core::LinAlg::assemble((systemvector)(nds_rows_), cellvector, la_slave[nds_rows_].lm_,
           la_slave[nds_rows_].lmowner_);
 
       break;
@@ -4921,7 +4920,7 @@ void ScaTra::MortarCellAssemblyStrategy::assemble_cell_vector(
 
     case Inpar::S2I::side_master:
     {
-      if (assembler_pid_master == systemvector->Comm().MyPID())
+      if (assembler_pid_master == systemvector.Comm().MyPID())
       {
         FOUR_C_ASSERT(false, "Don't know what to do! Need a FEVector.");
       }

@@ -216,10 +216,10 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
         {
           case Core::FE::CellType::hex8:
           {
-            scatra_calc_smag_const_lk_mk_and_mk_mk(col_filtered_vel, col_filtered_dens_vel,
-                col_filtered_dens_vel_temp, col_filtered_dens_rateofstrain_temp, col_filtered_temp,
-                col_filtered_dens, col_filtered_dens_temp, LkMk, MkMk, xcenter, ycenter, zcenter,
-                ele);
+            scatra_calc_smag_const_lk_mk_and_mk_mk(*col_filtered_vel, *col_filtered_dens_vel,
+                *col_filtered_dens_vel_temp, *col_filtered_dens_rateofstrain_temp,
+                *col_filtered_temp, *col_filtered_dens, *col_filtered_dens_temp, LkMk, MkMk,
+                xcenter, ycenter, zcenter, ele);
             break;
           }
           default:
@@ -284,8 +284,9 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
         {
           case Core::FE::CellType::hex8:
           {
-            scatra_calc_vreman_dt(col_filtered_phi, col_filtered_phi2, col_filtered_phiexpression,
-                col_filtered_alphaijsc, dt_numerator, dt_denominator, ele);
+            scatra_calc_vreman_dt(*col_filtered_phi, *col_filtered_phi2,
+                *col_filtered_phiexpression, *col_filtered_alphaijsc, dt_numerator, dt_denominator,
+                ele);
             break;
           }
           default:

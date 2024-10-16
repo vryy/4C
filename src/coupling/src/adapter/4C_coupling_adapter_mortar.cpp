@@ -1275,67 +1275,21 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::master_to_slave(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mv) const
-{
-  // safety check
-  check_setup();
-
-  FOUR_C_ASSERT(masterdofrowmap_->SameAs(mv->Map()), "Vector with master dof map expected");
-
-  Core::LinAlg::Vector<double> tmp = Core::LinAlg::Vector<double>(M_->row_map());
-
-  if (M_->multiply(false, *mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
-
-  Teuchos::RCP<Core::LinAlg::Vector<double>> sv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pslavedofrowmap_);
-
-  if (Dinv_->multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
-
-  return sv;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMortar::master_to_slave(
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv) const
+    const Core::LinAlg::MultiVector<double>& mv) const
 {
   // safety check
   check_setup();
 
-  FOUR_C_ASSERT(masterdofrowmap_->SameAs(mv->Map()), "Vector with master dof map expected");
+  FOUR_C_ASSERT(masterdofrowmap_->SameAs(mv.Map()), "Vector with master dof map expected");
 
   Core::LinAlg::MultiVector<double> tmp =
-      Core::LinAlg::MultiVector<double>(M_->row_map(), mv->NumVectors());
+      Core::LinAlg::MultiVector<double>(M_->row_map(), mv.NumVectors());
 
-  if (M_->multiply(false, *mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
-
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*pslavedofrowmap_, mv->NumVectors());
-
-  if (Dinv_->multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
-
-  return sv;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMortar::master_to_slave(
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> mv) const
-{
-  // safety check
-  check_setup();
-
-  FOUR_C_ASSERT(masterdofrowmap_->SameAs(mv->Map()), "Vector with master dof map expected");
-
-  Core::LinAlg::MultiVector<double> tmp =
-      Core::LinAlg::MultiVector<double>(M_->row_map(), mv->NumVectors());
-
-  if (M_->multiply(false, *mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
+  if (M_->multiply(false, mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
 
   Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*pslavedofrowmap_, mv->NumVectors());
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*pslavedofrowmap_, mv.NumVectors());
 
   if (Dinv_->multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
 
@@ -1345,16 +1299,16 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMorta
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::master_to_slave(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> mv) const
+    const Core::LinAlg::Vector<double>& mv) const
 {
   // safety check
   check_setup();
 
-  FOUR_C_ASSERT(masterdofrowmap_->SameAs(mv->Map()), "Vector with master dof map expected");
+  FOUR_C_ASSERT(masterdofrowmap_->SameAs(mv.Map()), "Vector with master dof map expected");
 
   Core::LinAlg::Vector<double> tmp = Core::LinAlg::Vector<double>(M_->row_map());
 
-  if (M_->multiply(false, *mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
+  if (M_->multiply(false, mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> sv =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pslavedofrowmap_);
@@ -1368,26 +1322,25 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::ma
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::master_to_slave(
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> mv,
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv) const
+    const Core::LinAlg::MultiVector<double>& mv, Core::LinAlg::MultiVector<double>& sv) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (not mv->Map().PointSameAs(P_->col_map())) FOUR_C_THROW("master dof map vector expected");
-  if (not sv->Map().PointSameAs(D_->col_map())) FOUR_C_THROW("slave dof map vector expected");
+  if (not mv.Map().PointSameAs(P_->col_map())) FOUR_C_THROW("master dof map vector expected");
+  if (not sv.Map().PointSameAs(D_->col_map())) FOUR_C_THROW("slave dof map vector expected");
 #endif
 
   // safety check
   check_setup();
 
   // slave vector with auxiliary dofmap
-  Core::LinAlg::MultiVector<double> sv_aux(P_->row_map(), sv->NumVectors());
+  Core::LinAlg::MultiVector<double> sv_aux(P_->row_map(), sv.NumVectors());
 
   // project
-  P_->multiply(false, *mv, sv_aux);
+  P_->multiply(false, mv, sv_aux);
 
   // copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
   std::copy(
-      sv_aux.Values(), sv_aux.Values() + (sv_aux.MyLength() * sv_aux.NumVectors()), sv->Values());
+      sv_aux.Values(), sv_aux.Values() + (sv_aux.MyLength() * sv_aux.NumVectors()), sv.Values());
 
   // in contrast to the Adapter::Coupling class we do not need to export here, as
   // the mortar interface itself has (or should have) guaranteed the same distribution of master and
@@ -1398,25 +1351,24 @@ void Coupling::Adapter::CouplingMortar::master_to_slave(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::slave_to_master(
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> sv,
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv) const
+    const Core::LinAlg::MultiVector<double>& sv, Core::LinAlg::MultiVector<double>& mv) const
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (not mv->Map().PointSameAs(P_->col_map())) FOUR_C_THROW("master dof map vector expected");
-  if (not sv->Map().PointSameAs(D_->col_map())) FOUR_C_THROW("slave dof map vector expected");
+  if (not mv.Map().PointSameAs(P_->col_map())) FOUR_C_THROW("master dof map vector expected");
+  if (not sv.Map().PointSameAs(D_->col_map())) FOUR_C_THROW("slave dof map vector expected");
 #endif
 
   // safety check
   check_setup();
 
   Core::LinAlg::Vector<double> tmp = Core::LinAlg::Vector<double>(M_->range_map());
-  std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
+  std::copy(sv.Values(), sv.Values() + sv.MyLength(), tmp.Values());
 
   Core::LinAlg::Vector<double> tempm(*pmasterdofrowmap_);
   if (M_->multiply(true, tmp, tempm)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   // copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
-  std::copy(tempm.Values(), tempm.Values() + (tempm.MyLength() * tempm.NumVectors()), mv->Values());
+  std::copy(tempm.Values(), tempm.Values() + (tempm.MyLength() * tempm.NumVectors()), mv.Values());
 
   // in contrast to the Adapter::Coupling class we do not need to export here, as
   // the mortar interface itself has (or should have) guaranteed the same distribution of master and
@@ -1427,13 +1379,13 @@ void Coupling::Adapter::CouplingMortar::slave_to_master(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::slave_to_master(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv) const
+    const Core::LinAlg::Vector<double>& sv) const
 {
   // safety check
   check_setup();
 
   Core::LinAlg::Vector<double> tmp = Core::LinAlg::Vector<double>(M_->range_map());
-  std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
+  std::copy(sv.Values(), sv.Values() + sv.MyLength(), tmp.Values());
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> mv =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pmasterdofrowmap_);
@@ -1442,57 +1394,21 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::sl
   return mv;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::slave_to_master(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sv) const
-{
-  // safety check
-  check_setup();
-
-  Core::LinAlg::Vector<double> tmp = Core::LinAlg::Vector<double>(M_->range_map());
-  std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
-
-  Teuchos::RCP<Core::LinAlg::Vector<double>> mv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pmasterdofrowmap_);
-  if (M_->multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
-
-  return mv;
-}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMortar::slave_to_master(
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv) const
+    const Core::LinAlg::MultiVector<double>& sv) const
 {
   // safety check
   check_setup();
 
   Core::LinAlg::MultiVector<double> tmp =
-      Core::LinAlg::MultiVector<double>(M_->range_map(), sv->NumVectors());
-  std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
+      Core::LinAlg::MultiVector<double>(M_->range_map(), sv.NumVectors());
+  std::copy(sv.Values(), sv.Values() + sv.MyLength(), tmp.Values());
 
   Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*pmasterdofrowmap_, sv->NumVectors());
-  if (M_->multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
-
-  return mv;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMortar::slave_to_master(
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> sv) const
-{
-  // safety check
-  check_setup();
-
-  Core::LinAlg::MultiVector<double> tmp =
-      Core::LinAlg::MultiVector<double>(M_->range_map(), sv->NumVectors());
-  std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
-
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*pmasterdofrowmap_, sv->NumVectors());
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*pmasterdofrowmap_, sv.NumVectors());
   if (M_->multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   return mv;

@@ -1619,7 +1619,7 @@ void EHL::Monolithic::lin_pressure_force_disp(
     FOUR_C_THROW("apply failed");
   Teuchos::RCP<Core::LinAlg::Vector<double>> p_exp =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  p_exp = ada_strDisp_to_lubDisp_->slave_to_master(p_full);
+  p_exp = ada_strDisp_to_lubDisp_->slave_to_master(*p_full);
   if (p_deriv_normal->left_scale(*p_exp)) FOUR_C_THROW("leftscale failed");
   if (p_deriv_normal->scale(-1.)) FOUR_C_THROW("scale failed");
 
@@ -1641,7 +1641,7 @@ void EHL::Monolithic::lin_poiseuille_force_disp(
     Core::LinAlg::SparseMatrix& ds_dd, Core::LinAlg::SparseMatrix& dm_dd)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> p_int =
-      ada_strDisp_to_lubPres_->slave_to_master(lubrication_->lubrication_field()->prenp());
+      ada_strDisp_to_lubPres_->slave_to_master(*lubrication_->lubrication_field()->prenp());
   Core::LinAlg::Vector<double> p_int_full(*mortaradapter_->slave_dof_map());
   Core::LinAlg::export_to(*p_int, p_int_full);
 
@@ -1686,9 +1686,7 @@ void EHL::Monolithic::lin_couette_force_disp(
 {
   const int ndim = Global::Problem::instance()->n_dim();
   Core::FE::Discretization& lub_dis = *lubrication_->lubrication_field()->discretization();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *lubrication_->lubrication_field()->dof_row_map(1));
+  Core::LinAlg::Vector<double> visc_vec(*lubrication_->lubrication_field()->dof_row_map(1));
   for (int i = 0; i < lub_dis.node_row_map()->NumMyElements(); ++i)
   {
     Core::Nodes::Node* lnode = lub_dis.l_row_node(i);
@@ -1702,7 +1700,7 @@ void EHL::Monolithic::lin_couette_force_disp(
         Teuchos::rcp_dynamic_cast<Mat::LubricationMat>(mat, true);
     const double visc = lmat->compute_viscosity(p);
 
-    for (int d = 0; d < ndim; ++d) visc_vec->ReplaceGlobalValue(lub_dis.dof(1, lnode, d), 0, visc);
+    for (int d = 0; d < ndim; ++d) visc_vec.ReplaceGlobalValue(lub_dis.dof(1, lnode, d), 0, visc);
   }
   Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec_str =
       ada_strDisp_to_lubDisp_->slave_to_master(visc_vec);

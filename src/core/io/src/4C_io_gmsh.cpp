@@ -477,9 +477,8 @@ void Core::IO::Gmsh::vector_field_node_based_to_gmsh(const Core::FE::Discretizat
   // tranform solution vector from NodeRowMap to NodeColMap
   // remark: Core::Rebalance::get_col_version_of_row_vector() does only work for
   // Core::LinAlg::Vectors on dof_row_map
-  const Teuchos::RCP<Core::LinAlg::MultiVector<double>> vectorfield =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret.node_col_map(), 3, true);
-  Core::LinAlg::export_to(vectorfield_row, *vectorfield);
+  Core::LinAlg::MultiVector<double> vectorfield(*discret.node_col_map(), 3, true);
+  Core::LinAlg::export_to(vectorfield_row, vectorfield);
 
   // loop all row elements on this processor
   for (int iele = 0; iele < discret.num_my_row_elements(); ++iele)
@@ -505,7 +504,7 @@ void Core::IO::Gmsh::vector_field_node_based_to_gmsh(const Core::FE::Discretizat
 
     // extract local values from the global vector
     Core::LinAlg::SerialDenseMatrix myvectorfield(nsd, numnode);
-    Core::FE::extract_my_node_based_values(ele, myvectorfield, *vectorfield, nsd);
+    Core::FE::extract_my_node_based_values(ele, myvectorfield, vectorfield, nsd);
 
     // write vector field to Gmsh stream
     vector_field_to_stream(myvectorfield, distype, s);

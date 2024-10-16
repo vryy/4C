@@ -214,7 +214,7 @@ Core::LinAlg::Vector<double> SSI::MeshtyingStrategyBase::apply_meshtying_to_stru
         coupling_map_extractor->extract_vector(rhs_structure, 1);
 
     const auto rhs_structure_only_master_dofs =
-        coupling_adapter->slave_to_master(rhs_structure_only_slave_dofs);
+        coupling_adapter->slave_to_master(*rhs_structure_only_slave_dofs);
 
     coupling_map_extractor->add_vector(*rhs_structure_only_master_dofs, 2, *rhs_structure_master);
 

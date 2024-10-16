@@ -280,7 +280,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Coupling::Adapter::MortarVolCoupl::appl
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::MortarVolCoupl::master_to_slave(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> mv) const
+    const Core::LinAlg::Vector<double>& mv) const
 {
   // safety check
   check_setup();
@@ -290,7 +290,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::MortarVolCoupl::ma
   Teuchos::RCP<Core::LinAlg::Vector<double>> sv =
       Core::LinAlg::create_vector(p21_->row_map(), true);
   // project
-  master_to_slave(mv->get_ptr_of_MultiVector(), sv->get_ptr_of_MultiVector());
+  master_to_slave(mv, *sv);
 
   return sv;
 }
@@ -298,14 +298,13 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::MortarVolCoupl::ma
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::MortarVolCoupl::master_to_slave(
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> mv,
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv) const
+    const Core::LinAlg::MultiVector<double>& mv, Core::LinAlg::MultiVector<double>& sv) const
 {
 #ifdef FOUR_C_DEBUG
-  if (not mv->Map().PointSameAs(p21_->DomainMap())) FOUR_C_THROW("master dof map vector expected");
-  if (not sv->Map().PointSameAs(p21_->RowMap())) FOUR_C_THROW("slave dof map vector expected");
-  if (sv->NumVectors() != mv->NumVectors())
-    FOUR_C_THROW("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
+  if (not mv.Map().PointSameAs(p21_->DomainMap())) FOUR_C_THROW("master dof map vector expected");
+  if (not sv.Map().PointSameAs(p21_->RowMap())) FOUR_C_THROW("slave dof map vector expected");
+  if (sv.NumVectors() != mv.NumVectors())
+    FOUR_C_THROW("column number mismatch %d!=%d", sv.NumVectors(), mv.NumVectors());
 #endif
 
   // safety check
@@ -313,15 +312,15 @@ void Coupling::Adapter::MortarVolCoupl::master_to_slave(
   check_init();
 
   // slave vector with auxiliary dofmap
-  Core::LinAlg::MultiVector<double> sv_aux(p21_->row_map(), sv->NumVectors());
+  Core::LinAlg::MultiVector<double> sv_aux(p21_->row_map(), sv.NumVectors());
 
   // project
-  int err = p21_->multiply(false, *mv, sv_aux);
+  int err = p21_->multiply(false, mv, sv_aux);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   // copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
   std::copy(
-      sv_aux.Values(), sv_aux.Values() + (sv_aux.MyLength() * sv_aux.NumVectors()), sv->Values());
+      sv_aux.Values(), sv_aux.Values() + (sv_aux.MyLength() * sv_aux.NumVectors()), sv.Values());
 
   // in contrast to the Adapter::Coupling class we do not need to export here, as
   // the binning has (or should have) guaranteed the same distribution of master and slave dis
@@ -332,7 +331,7 @@ void Coupling::Adapter::MortarVolCoupl::master_to_slave(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::MortarVolCoupl::master_to_slave(
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> mv) const
+    const Core::LinAlg::MultiVector<double>& mv) const
 {
   // safety check
   check_setup();
@@ -340,9 +339,9 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::MortarVolCoup
 
   // create vector
   Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(p21_->row_map(), mv->NumVectors());
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(p21_->row_map(), mv.NumVectors());
   // project
-  master_to_slave(mv, sv);
+  master_to_slave(mv, *sv);
 
   return sv;
 }
@@ -350,7 +349,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::MortarVolCoup
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::MortarVolCoupl::slave_to_master(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> sv) const
+    const Core::LinAlg::Vector<double>& sv) const
 {
   // safety check
   check_setup();
@@ -360,7 +359,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::MortarVolCoupl::sl
   Teuchos::RCP<Core::LinAlg::Vector<double>> mv =
       Core::LinAlg::create_vector(p12_->row_map(), true);
   // project
-  slave_to_master(sv->get_ptr_of_MultiVector(), mv->get_ptr_of_MultiVector());
+  slave_to_master(sv, *mv);
 
   return mv;
 }
@@ -369,7 +368,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::MortarVolCoupl::sl
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::MortarVolCoupl::slave_to_master(
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> sv) const
+    const Core::LinAlg::MultiVector<double>& sv) const
 {
   // safety check
   check_setup();
@@ -377,9 +376,9 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::MortarVolCoup
 
   // create vector
   Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(p12_->row_map(), sv->NumVectors());
+      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(p12_->row_map(), sv.NumVectors());
   // project
-  slave_to_master(sv, mv);
+  slave_to_master(sv, *mv);
 
   return mv;
 }
@@ -388,14 +387,13 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::MortarVolCoup
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Coupling::Adapter::MortarVolCoupl::slave_to_master(
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> sv,
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv) const
+    const Core::LinAlg::MultiVector<double>& sv, Core::LinAlg::MultiVector<double>& mv) const
 {
 #ifdef FOUR_C_DEBUG
-  if (not mv->Map().PointSameAs(p12_->RowMap())) FOUR_C_THROW("master dof map vector expected");
-  if (not sv->Map().PointSameAs(p21_->RowMap())) FOUR_C_THROW("slave dof map vector expected");
-  if (sv->NumVectors() != mv->NumVectors())
-    FOUR_C_THROW("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
+  if (not mv.Map().PointSameAs(p12_->RowMap())) FOUR_C_THROW("master dof map vector expected");
+  if (not sv.Map().PointSameAs(p21_->RowMap())) FOUR_C_THROW("slave dof map vector expected");
+  if (sv.NumVectors() != mv.NumVectors())
+    FOUR_C_THROW("column number mismatch %d!=%d", sv.NumVectors(), mv.NumVectors());
 #endif
 
   // safety check
@@ -403,15 +401,15 @@ void Coupling::Adapter::MortarVolCoupl::slave_to_master(
   check_init();
 
   // master vector with auxiliary dofmap
-  Core::LinAlg::MultiVector<double> mv_aux(p12_->row_map(), mv->NumVectors());
+  Core::LinAlg::MultiVector<double> mv_aux(p12_->row_map(), mv.NumVectors());
 
   // project
-  int err = p12_->multiply(false, *sv, mv_aux);
+  int err = p12_->multiply(false, sv, mv_aux);
   if (err != 0) FOUR_C_THROW("ERROR: Matrix multiply returned error code %i", err);
 
   // copy from auxiliary to physical map (needed for coupling in fluid ale algorithm)
   std::copy(
-      mv_aux.Values(), mv_aux.Values() + (mv_aux.MyLength() * mv_aux.NumVectors()), mv->Values());
+      mv_aux.Values(), mv_aux.Values() + (mv_aux.MyLength() * mv_aux.NumVectors()), mv.Values());
 
   // in contrast to the Adapter::Coupling class we do not need to export here, as
   // the binning has (or should have) guaranteed the same distribution of master and slave dis

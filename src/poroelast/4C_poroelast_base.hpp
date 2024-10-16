@@ -214,7 +214,7 @@ namespace PoroElast
 
     //! field transform
     Teuchos::RCP<Core::LinAlg::Vector<double>> structure_to_fluid_field(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv);
+        const Core::LinAlg::Vector<double>& iv);
 
     //!@}
 

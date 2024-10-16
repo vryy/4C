@@ -80,7 +80,7 @@ void FSI::DirichletNeumannSlideale::remeshing()
   slideale_->evaluate_fluid_mortar(idisptotal, islave_);
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> unew =
-      slideale_->interpolate_fluid(mb_fluid_field()->extract_interface_velnp());
+      slideale_->interpolate_fluid(*mb_fluid_field()->extract_interface_velnp());
   mb_fluid_field()->apply_interface_values(islave_, unew);
 }
 
