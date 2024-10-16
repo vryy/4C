@@ -26,7 +26,6 @@ THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
 WRITE_TO_FILE                   No
-WRITE_TO_SCREEN                 Yes
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RANDSEED                        -1

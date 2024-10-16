@@ -28,6 +28,7 @@
 #include "4C_io.hpp"
 #include "4C_io_discretization_visualization_writer_nodes.hpp"
 #include "4C_io_pstream.hpp"
+#include "4C_linalg_multi_vector.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

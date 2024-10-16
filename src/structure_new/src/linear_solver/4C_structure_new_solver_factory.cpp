@@ -120,8 +120,6 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_s
 
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::multigrid_ml:
-    case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2:
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
     {
       actdis.compute_null_space_if_necessary(linsolver->params());

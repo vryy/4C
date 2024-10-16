@@ -102,20 +102,6 @@ AZCONV            AZ_r0
 AZITER            1000
 AZSUB             40
 IFPACKOVERLAP     3
-ML_PRINT          0
-ML_MAXCOARSESIZE  1
-ML_MAXLEVEL       1
-ML_COARSEN        UC
-ML_AGG_SIZE       27
-ML_PROLONG_SMO    0.0
-ML_PROLONG_THRES  0.0
-ML_SMOOTHERFINE   SGS
-ML_SMOOTHERMED    KLU
-ML_SMOOTHERCOARSE Umfpack
-ML_SMOTIMES       2 2 1
-ML_DAMPFINE       0.65
-ML_DAMPMED        0.67
-ML_DAMPCOARSE     0.95
 --------------------------------------------------------------------SOLVER 9
 NAME              Projection_Solver
 SOLVER            Belos
@@ -129,20 +115,6 @@ AZCONV            AZ_r0
 AZITER            1000
 AZSUB             40
 IFPACKOVERLAP     3
-ML_PRINT          0
-ML_MAXCOARSESIZE  1
-ML_MAXLEVEL       1
-ML_COARSEN        UC
-ML_AGG_SIZE       27
-ML_PROLONG_SMO    0.0
-ML_PROLONG_THRES  0.0
-ML_SMOOTHERFINE   SGS
-ML_SMOOTHERMED    KLU
-ML_SMOOTHERCOARSE Umfpack
-ML_SMOTIMES       2 2 1
-ML_DAMPFINE       0.65
-ML_DAMPMED        0.67
-ML_DAMPCOARSE     0.95
 ----------------------------------------------------------MATERIALS
 MAT 1   MAT_fluid   DYNVISCOSITY 0.000015268 DENSITY 1.0
 -------------------------------------------------------------FUNCT1

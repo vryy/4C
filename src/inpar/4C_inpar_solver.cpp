@@ -52,11 +52,9 @@ namespace Inpar::SOLVER
           "supports the Epetra_RowMatrix interface and the client does not pass\n"
           "in an external preconditioner!",
           Teuchos::tuple<std::string>(
-              "ILU", "ML", "MLFLUID2", "MueLu", "MueLu_contactSP", "AMGnxn", "CheapSIMPLE", "Teko"),
+              "ILU", "MueLu", "MueLu_contactSP", "AMGnxn", "CheapSIMPLE", "Teko"),
           Teuchos::tuple<Core::LinearSolver::PreconditionerType>(
               Core::LinearSolver::PreconditionerType::ilu,
-              Core::LinearSolver::PreconditionerType::multigrid_ml,
-              Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2,
               Core::LinearSolver::PreconditionerType::multigrid_muelu,
               Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp,
               Core::LinearSolver::PreconditionerType::multigrid_nxn,
@@ -108,51 +106,6 @@ namespace Inpar::SOLVER
 
       Core::Utils::string_parameter(
           "SOLVER_XML_FILE", "none", "xml file defining any linear solver", &list);
-    }
-
-    // ML options
-    {
-      Core::Utils::int_parameter("ML_PRINT", 0, "ML print-out level (0-10)", &list);
-      Core::Utils::int_parameter(
-          "ML_MAXCOARSESIZE", 5000, "ML stop coarsening when coarse ndof smaller then this", &list);
-      Core::Utils::int_parameter("ML_MAXLEVEL", 5, "ML max number of levels", &list);
-      Core::Utils::int_parameter("ML_AGG_SIZE", 27,
-          "objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27", &list);
-
-      Core::Utils::double_parameter("ML_DAMPFINE", 1., "damping fine grid", &list);
-      Core::Utils::double_parameter("ML_DAMPMED", 1., "damping med grids", &list);
-      Core::Utils::double_parameter("ML_DAMPCOARSE", 1., "damping coarse grid", &list);
-      Core::Utils::double_parameter("ML_PROLONG_SMO", 0.,
-          "damping factor for prolongator smoother (usually 1.33 or 0.0)", &list);
-      Core::Utils::double_parameter(
-          "ML_PROLONG_THRES", 0., "threshold for prolongator smoother/aggregation", &list);
-
-      Core::Utils::string_parameter("ML_SMOTIMES", "1 1 1 1 1",
-          "no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)",
-          &list);
-
-      std::vector<std::string> ml_coarsen_valid_input = {"UC", "METIS", "VBMETIS", "MIS"};
-      Core::Utils::string_parameter("ML_COARSEN", "UC", "", &list, ml_coarsen_valid_input);
-
-      Core::Utils::bool_parameter("ML_REBALANCE", "Yes",
-          "Performe ML-internal rebalancing of coarse level operators.", &list);
-
-      std::vector<std::string> ml_smootherfine_valid_input = {"SGS", "Jacobi", "Chebychev", "MLS",
-          "ILU", "KLU", "Superlu", "GS", "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD",
-          "Uzawa"};
-      Core::Utils::string_parameter(
-          "ML_SMOOTHERFINE", "ILU", "", &list, ml_smootherfine_valid_input);
-
-      std::vector<std::string> ml_smoothermed_valid_input = {"SGS", "Jacobi", "Chebychev", "MLS",
-          "ILU", "KLU", "Superlu", "GS", "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD",
-          "Uzawa"};
-      Core::Utils::string_parameter("ML_SMOOTHERMED", "ILU", "", &list, ml_smoothermed_valid_input);
-
-      std::vector<std::string> ml_smoothercoarse_valid_input = {"SGS", "Jacobi", "Chebychev", "MLS",
-          "ILU", "KLU", "Superlu", "GS", "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD",
-          "Uzawa"};
-      Core::Utils::string_parameter(
-          "ML_SMOOTHERCOARSE", "Umfpack", "", &list, ml_smoothercoarse_valid_input);
     }
 
     // MueLu options

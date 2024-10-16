@@ -14,7 +14,6 @@
 #include "4C_linear_solver_preconditioner_block.hpp"
 #include "4C_linear_solver_preconditioner_ifpack.hpp"
 #include "4C_linear_solver_preconditioner_krylovprojection.hpp"
-#include "4C_linear_solver_preconditioner_ml.hpp"
 #include "4C_linear_solver_preconditioner_muelu.hpp"
 #include "4C_linear_solver_preconditioner_teko.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -261,11 +260,6 @@ Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::create_precondition
   {
     preconditioner = Teuchos::make_rcp<Core::LinearSolver::IFPACKPreconditioner>(
         params().sublist("IFPACK Parameters"), solverlist);
-  }
-  else if (params().isSublist("ML Parameters"))
-  {
-    preconditioner =
-        Teuchos::make_rcp<Core::LinearSolver::MLPreconditioner>(params().sublist("ML Parameters"));
   }
   else if (params().isSublist("MueLu Parameters"))
   {
