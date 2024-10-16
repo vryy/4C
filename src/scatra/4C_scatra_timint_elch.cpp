@@ -1774,9 +1774,6 @@ void ScaTra::ScaTraTimIntElch::valid_parameter_diff_cond()
       FOUR_C_THROW(
           "Subgrid diffusivity is not supported by the ELCH diffusion-conduction framework!!");
 
-    if (elchparams_->get<bool>("BLOCKPRECOND"))
-      FOUR_C_THROW("Block preconditioner is not supported so far!!");
-
     // Parameters defined in "SCALAR TRANSPORT DYNAMIC"
     Teuchos::ParameterList& scatrastabparams = params_->sublist("STABILIZATION");
 

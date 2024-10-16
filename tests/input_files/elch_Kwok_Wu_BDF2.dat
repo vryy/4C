@@ -38,37 +38,9 @@ EXPLPREDICT                     Yes
 ------------------------------------------------------ELCH CONTROL
 TEMPERATURE                     11604.506                     // abused as a scaling factor in order to have: F/RT = 1.0
 EQUPOT                          ENC
-BLOCKPRECOND                    Yes
 ----------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
-SOLVER                          Belos
-AZOUTPUT                        0
-AZSOLVE                         GMRES
-AZPREC                          CheapSIMPLE
-AZREUSE                         0
-AZTOL                           1.0E-10
-AZITER                          1000
-AZSUB                           40
-SUB_SOLVER1                     2
-SUB_SOLVER2                     3
-----------------------------------------------------------SOLVER 2
-NAME                            Simple_predictor
-SOLVER                          Belos
-AZSOLVE                         GMRES
-AZPREC                          ILU
-AZTOL                           1.0E-10
-AZCONV                          AZ_r0
-AZREUSE                         0
-AZOUTPUT                        0
-----------------------------------------------------------SOLVER 3
-NAME                            Sca_Tra_Electrical_Potential
-SOLVER                          Belos
-AZSOLVE                         GMRES
-AZPREC                          ILU
-AZTOL                           1.0E-10
-AZCONV                          AZ_r0
-AZREUSE                         0
-AZOUTPUT                        0
+SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_ion DIFFUSIVITY 0.008 VALENCE 1.0
 MAT 2 MAT_ion DIFFUSIVITY 0.005 VALENCE -2.0
@@ -85,13 +57,13 @@ COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME (-0.1666666666666)*log((2.0+(cos(1*p
 ------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 131 QUANTITY flux_domain_1_x VALUE  -4.31853861686275035e-03 TOLERANCE 4.3e-11
 SCATRA DIS scatra NODE 131 QUANTITY flux_domain_1_y VALUE  -8.59767665647534138e-03 TOLERANCE 8.6e-11
-SCATRA DIS scatra NODE 131 QUANTITY flux_domain_1_z VALUE  -7.27829258665228556e-10 TOLERANCE 1.0e-16
+SCATRA DIS scatra NODE 131 QUANTITY flux_domain_1_z VALUE  -7.27829823139921029e-10 TOLERANCE 1.0e-16
 SCATRA DIS scatra NODE 131 QUANTITY phi1 VALUE  1.77548332730553349e+00 TOLERANCE 1.8e-09
 SCATRA DIS scatra NODE 307 QUANTITY phi1 VALUE  2.89806693651398772e+00 TOLERANCE 2.9e-09
 SCATRA DIS scatra NODE 131 QUANTITY phi2 VALUE  8.87741663652766633e-01 TOLERANCE 8.9e-10
 SCATRA DIS scatra NODE 307 QUANTITY phi2 VALUE  1.44903346825699297e+00 TOLERANCE 1.4e-09
 SCATRA DIS scatra NODE 131 QUANTITY phi3 VALUE  8.32267835015413765e-02 TOLERANCE 8.3e-11
-SCATRA DIS scatra NODE 307 QUANTITY phi3 VALUE  -3.19596128376323029e-10 TOLERANCE 1.0e-16
+SCATRA DIS scatra NODE 307 QUANTITY phi3 VALUE  -3.16554188195561390e-10 TOLERANCE 1.0e-16
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              origin
