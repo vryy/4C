@@ -435,7 +435,7 @@ void TSI::Algorithm::apply_thermo_coupling_state(
   {
     if (contact_strategy_lagrange_ != Teuchos::null)
       contact_strategy_lagrange_->set_state(
-          Mortar::state_temperature, *coupST_()->slave_to_master(thermo_field()->tempnp()));
+          Mortar::state_temperature, *coupST_()->slave_to_master(*thermo_field()->tempnp()));
     if (contact_strategy_nitsche_ != Teuchos::null)
       contact_strategy_nitsche_->set_state(Mortar::state_temperature, *thermo_field()->tempnp());
   }

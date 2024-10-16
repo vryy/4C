@@ -45,56 +45,34 @@ namespace Coupling::Adapter
 
     /// transfer a dof vector from master to slave
     virtual Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> mv  ///< master vector (to be transferred)
+        const Core::LinAlg::Vector<double>& mv  ///< master vector (to be transferred)
     ) const = 0;
 
     /// transfer a dof vector from slave to master
     virtual Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sv  ///< slave vector (to be transferred)
+        const Core::LinAlg::Vector<double>& sv  ///< slave vector (to be transferred)
     ) const = 0;
 
     /// transfer a dof vector from master to slave
     virtual Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv  ///< master vector (to be transferred)
+        const Core::LinAlg::MultiVector<double>& mv  ///< master vector (to be transferred)
     ) const = 0;
 
     /// transfer a dof vector from slave to master
     virtual Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv  ///< slave vector (to be transferred)
+        const Core::LinAlg::MultiVector<double>& sv  ///< slave vector (to be transferred)
     ) const = 0;
 
     /// transfer a dof vector from master to slave
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> mv  ///< master vector (to be transferred)
+    virtual void master_to_slave(
+        const Core::LinAlg::MultiVector<double>& mv,  ///< master vector (to be transferred)
+        Core::LinAlg::MultiVector<double>& sv         ///< slave vector (containing result)
     ) const = 0;
 
     /// transfer a dof vector from slave to master
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv  ///< slave vector (to be transferred)
-    ) const = 0;
-
-    /// transfer a dof vector from master to slave
-    virtual Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
-        Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
-            mv  ///< master vector (to be transferred)
-    ) const = 0;
-
-    /// transfer a dof vector from slave to master
-    virtual Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
-        Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
-            sv  ///< slave vector (to be transferred)
-    ) const = 0;
-
-    /// transfer a dof vector from master to slave
-    virtual void master_to_slave(Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
-                                     mv,                    ///< master vector (to be transferred)
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv  ///< slave vector (containing result)
-    ) const = 0;
-
-    /// transfer a dof vector from slave to master
-    virtual void slave_to_master(Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
-                                     sv,                    ///< slave vector (to be transferred)
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv  ///< master vector (containing result)
+    virtual void slave_to_master(
+        const Core::LinAlg::MultiVector<double>& sv,  ///< slave vector (to be transferred)
+        Core::LinAlg::MultiVector<double>& mv         ///< master vector (containing result)
     ) const = 0;
 
     //!@}

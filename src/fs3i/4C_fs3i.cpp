@@ -104,7 +104,7 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
     }
   }
   Teuchos::RCP<Core::LinAlg::Vector<double>> test_slaveifdirich =
-      scatracoup_->master_to_slave(masterifdirich);
+      scatracoup_->master_to_slave(*masterifdirich);
 
   const Teuchos::RCP<const Core::LinAlg::MapExtractor> slavedirichmapex =
       scatravec_[1]->scatra_field()->dirich_maps();
@@ -122,7 +122,7 @@ void FS3I::FS3IBase::check_interface_dirichlet_bc()
     }
   }
   Teuchos::RCP<Core::LinAlg::Vector<double>> test_masterifdirich =
-      scatracoup_->slave_to_master(slaveifdirich);
+      scatracoup_->slave_to_master(*slaveifdirich);
 
   // check if the locations of non-zero entries do not match
   for (int i = 0; i < slavedis->dof_row_map()->NumMyElements(); ++i)
@@ -732,7 +732,7 @@ void FS3I::FS3IBase::setup_coupled_scatra_matrix()
 Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::FS3IBase::scatra2_to_scatra1(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return scatracoup_->slave_to_master(iv);
+  return scatracoup_->slave_to_master(*iv);
 }
 
 
@@ -741,7 +741,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::FS3IBase::scatra2_to_scatra1(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::FS3IBase::scatra1_to_scatra2(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return scatracoup_->master_to_slave(iv);
+  return scatracoup_->master_to_slave(*iv);
 }
 
 /*----------------------------------------------------------------------*/

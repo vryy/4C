@@ -849,7 +849,7 @@ void FS3I::BiofilmFSI::struct_ale_solve()
 Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::fluid_to_ale(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
-  return icoupfa_->master_to_slave(iv);
+  return icoupfa_->master_to_slave(*iv);
 }
 
 
@@ -858,7 +858,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::fluid_to_ale(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::ale_to_fluid_field(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
-  return coupfa_->slave_to_master(iv);
+  return coupfa_->slave_to_master(*iv);
 }
 
 /*----------------------------------------------------------------------*/
@@ -866,7 +866,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::ale_to_fluid_field(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::ale_to_struct_field(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsa_->slave_to_master(iv);
+  return coupsa_->slave_to_master(*iv);
 }
 
 /*----------------------------------------------------------------------*/
@@ -874,7 +874,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::ale_to_struct_field
 Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::ale_to_struct_field(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsa_->slave_to_master(iv);
+  return coupsa_->slave_to_master(*iv);
 }
 
 /*----------------------------------------------------------------------*/
@@ -882,7 +882,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::ale_to_struct_field
 Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::struct_to_ale(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
-  return icoupsa_->master_to_slave(iv);
+  return icoupsa_->master_to_slave(*iv);
 }
 
 /*----------------------------------------------------------------------*/
@@ -890,7 +890,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::struct_to_ale(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FS3I::BiofilmFSI::struct_to_ale(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return icoupsa_->master_to_slave(iv);
+  return icoupsa_->master_to_slave(*iv);
 }
 
 

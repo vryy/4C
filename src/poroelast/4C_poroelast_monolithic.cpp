@@ -1794,7 +1794,7 @@ void PoroElast::Monolithic::set_poro_contact_states()
           Teuchos::RCP<Core::LinAlg::Vector<double>> fvel =
               Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
                   *fluid_field()->extract_velocity_part(fluid_field()->velnp()));
-          fvel = fluid_structure_coupling().slave_to_master(fvel);
+          fvel = fluid_structure_coupling().slave_to_master(*fvel);
           costrategy.set_state(Mortar::state_fvelocity, *fvel);
 
           // To get pressure dofs into first structural component!!! - any idea for nice
@@ -1814,7 +1814,7 @@ void PoroElast::Monolithic::set_poro_contact_states()
             modfpres->ReplaceGlobalValues(1, &val[i], &gid);
           }
 
-          modfpres = fluid_structure_coupling().slave_to_master(modfpres);
+          modfpres = fluid_structure_coupling().slave_to_master(*modfpres);
           costrategy.set_state(Mortar::state_fpressure, *modfpres);
 
           Core::LinAlg::Vector<double> dis(*structure_field()->dispnp());

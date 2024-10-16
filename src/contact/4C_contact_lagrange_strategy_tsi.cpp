@@ -120,7 +120,7 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
   for (unsigned i = 0; i < interface_.size(); ++i) interface_[i]->initialize();
 
   // set new temperatures
-  Teuchos::RCP<Core::LinAlg::Vector<double>> temp2 = coupST()->slave_to_master(temp);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> temp2 = coupST()->slave_to_master(*temp);
   set_state(Mortar::state_temperature, *temp2);
 
   // error checks
@@ -907,7 +907,7 @@ void CONTACT::LagrangeStrategyTsi::store_nodal_quantities(
 
       Core::LinAlg::export_to(*z_thr_, *tmp);
       vectorglobal = z_thr_;
-      vectorglobal = coupST.slave_to_master(tmp);
+      vectorglobal = coupST.slave_to_master(*tmp);
       Teuchos::RCP<const Epetra_Map> sdofmap, snodemap;
       // loop over all interfaces
       for (int i = 0; i < (int)interface_.size(); ++i)
@@ -999,7 +999,7 @@ void CONTACT::LagrangeStrategyTsi::update(Teuchos::RCP<const Core::LinAlg::Vecto
   Teuchos::RCP<Core::LinAlg::Vector<double>> tmp2 =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*coupST_->master_dof_map());
   Core::LinAlg::export_to(*tmp, *tmp2);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tmp3 = coupST_->master_to_slave(tmp2);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> tmp3 = coupST_->master_to_slave(*tmp2);
   Core::LinAlg::Vector<double> tmp4(*coupST_->master_to_slave_map(*gmdofrowmap_));
   Core::LinAlg::export_to(*tmp3, tmp4);
   CONTACT::Utils::add_vector(tmp4, *ftcnp_);
@@ -1049,7 +1049,7 @@ void CONTACT::LagrangeStrategyTsi::do_write_restart(
     Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*coupST_->slave_dof_map());
     Core::LinAlg::export_to(*ftcn_, *tmp);
-    restart_vectors["last_thermo_force"] = coupST_->slave_to_master(tmp);
+    restart_vectors["last_thermo_force"] = coupST_->slave_to_master(*tmp);
   }
 }
 
@@ -1068,7 +1068,7 @@ void CONTACT::LagrangeStrategyTsi::do_read_restart(Core::IO::DiscretizationReade
   Teuchos::RCP<Core::LinAlg::Vector<double>> tmp =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*coupST_->master_dof_map());
   if (!restartwithcontact) reader.read_vector(tmp, "last_thermo_force");
-  ftcn_ = coupST_->master_to_slave(tmp);
+  ftcn_ = coupST_->master_to_slave(*tmp);
   tmp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
       *coupST_->master_to_slave_map(*gsmdofrowmap_));
   Core::LinAlg::export_to(*ftcn_, *tmp);

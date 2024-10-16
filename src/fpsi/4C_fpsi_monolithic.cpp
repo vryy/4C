@@ -151,48 +151,48 @@ void FPSI::MonolithicBase::output()
 Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::fluid_to_ale(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupfa_->master_to_slave(iv);
+  return coupfa_->master_to_slave(*iv);
 }
 Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::ale_to_fluid(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupfa_->slave_to_master(iv);
+  return coupfa_->slave_to_master(*iv);
 }
 /// Just in use for problems with FSI-interface ///
 Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::struct_to_fluid_fsi(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsf_fsi_->master_to_slave(iv);
+  return coupsf_fsi_->master_to_slave(*iv);
 }
 Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::fluid_to_struct_fsi(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsf_fsi_->slave_to_master(iv);
+  return coupsf_fsi_->slave_to_master(*iv);
 }
 Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::struct_to_ale_fsi(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsa_fsi_->master_to_slave(iv);
+  return coupsa_fsi_->master_to_slave(*iv);
 }
 Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::ale_to_struct_fsi(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsa_fsi_->slave_to_master(iv);
+  return coupsa_fsi_->slave_to_master(*iv);
 }
 Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::fluid_to_ale_fsi(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupfa_fsi_->master_to_slave(iv);
+  return coupfa_fsi_->master_to_slave(*iv);
 }
 Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::ale_to_fluid_fsi(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupfa_fsi_->slave_to_master(iv);
+  return coupfa_fsi_->slave_to_master(*iv);
 }
 Teuchos::RCP<Core::LinAlg::Vector<double>> FPSI::MonolithicBase::ale_to_fluid_interface_fsi(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return icoupfa_fsi_->slave_to_master(iv);
+  return icoupfa_fsi_->slave_to_master(*iv);
 }
 /// ---------------------------------------------- ///
 

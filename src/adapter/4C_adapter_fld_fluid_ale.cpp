@@ -260,7 +260,7 @@ void Adapter::FluidAle::nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double
     Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = fluid_field()->dispnp();
     Teuchos::RCP<Core::LinAlg::Vector<double>> audispnp =
         fluid_field()->interface()->extract_au_cond_vector(*dispnp);
-    ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(audispnp));
+    ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(*audispnp));
   }
 
   // Note: We do not look for moving ale boundaries (outside the coupling
@@ -294,7 +294,7 @@ void Adapter::FluidAle::nonlinear_solve_vol_coupl(Teuchos::RCP<Core::LinAlg::Vec
     Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = fluid_field()->dispnp();
     Teuchos::RCP<Core::LinAlg::Vector<double>> audispnp =
         fluid_field()->interface()->extract_au_cond_vector(*dispnp);
-    ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(audispnp));
+    ale_field()->apply_ale_update_displacements(aucoupfa_->master_to_slave(*audispnp));
   }
 
   // Note: We do not look for moving ale boundaries (outside the coupling
@@ -400,7 +400,7 @@ Teuchos::RCP<Core::Utils::ResultTest> Adapter::FluidAle::create_field_test()
 Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::ale_to_fluid_field(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
-  return coupfa_->slave_to_master(iv);
+  return coupfa_->slave_to_master(*iv);
 }
 
 
@@ -409,7 +409,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::ale_to_fluid_field
 Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::ale_to_fluid_field(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupfa_->slave_to_master(iv);
+  return coupfa_->slave_to_master(*iv);
 }
 
 
@@ -418,7 +418,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::ale_to_fluid_field
 Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::fluid_to_ale(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
-  return icoupfa_->master_to_slave(iv);
+  return icoupfa_->master_to_slave(*iv);
 }
 
 
@@ -427,7 +427,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::fluid_to_ale(
 Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidAle::fluid_to_ale(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return icoupfa_->master_to_slave(iv);
+  return icoupfa_->master_to_slave(*iv);
 }
 
 FOUR_C_NAMESPACE_CLOSE

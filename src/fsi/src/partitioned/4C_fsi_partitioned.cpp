@@ -888,11 +888,11 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::struct_to_fluid(
   const Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
   if (matchingnodes_)
   {
-    return coupsf.master_to_slave(iv);
+    return coupsf.master_to_slave(*iv);
   }
   else
   {
-    return coupsfm_->master_to_slave(iv);
+    return coupsfm_->master_to_slave(*iv);
   }
 }
 
@@ -905,7 +905,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::fluid_to_struct(
   const Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
   if (matchingnodes_)
   {
-    return coupsf.slave_to_master(iv);
+    return coupsf.slave_to_master(*iv);
   }
   else
   {
@@ -918,7 +918,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::fluid_to_struct(
     if (iforce->ReciprocalMultiply(1.0, *ishape, *iv, 0.0))
       FOUR_C_THROW("ReciprocalMultiply failed");
 
-    return coupsfm_->slave_to_master(iforce);
+    return coupsfm_->slave_to_master(*iforce);
   }
 }
 

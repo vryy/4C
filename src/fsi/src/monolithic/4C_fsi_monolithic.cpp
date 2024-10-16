@@ -214,7 +214,7 @@ void FSI::MonolithicBase::output()
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::struct_to_ale(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsa_->master_to_slave(iv);
+  return coupsa_->master_to_slave(*iv);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -222,7 +222,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::struct_to_ale(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_struct(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsa_->slave_to_master(iv);
+  return coupsa_->slave_to_master(*iv);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -230,7 +230,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_struct(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::struct_to_fluid(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsf_->master_to_slave(iv);
+  return coupsf_->master_to_slave(*iv);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -238,7 +238,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::struct_to_fluid(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::fluid_to_struct(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsf_->slave_to_master(iv);
+  return coupsf_->slave_to_master(*iv);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -246,7 +246,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::fluid_to_struct(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_fluid(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
-  return coupfa_->slave_to_master(iv);
+  return coupfa_->slave_to_master(*iv);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -254,7 +254,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_fluid(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::fluid_to_ale_interface(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
-  return icoupfa_->master_to_slave(iv);
+  return icoupfa_->master_to_slave(*iv);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -262,7 +262,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::fluid_to_ale_int
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_fluid_interface(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
-  return icoupfa_->slave_to_master(iv);
+  return icoupfa_->slave_to_master(*iv);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -270,7 +270,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_fluid_int
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::struct_to_ale(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsa_->master_to_slave(iv);
+  return coupsa_->master_to_slave(*iv);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -278,7 +278,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::struct_to_ale(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_struct(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsa_->slave_to_master(iv);
+  return coupsa_->slave_to_master(*iv);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -286,7 +286,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_struct(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::struct_to_fluid(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsf_->master_to_slave(iv);
+  return coupsf_->master_to_slave(*iv);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -294,7 +294,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::struct_to_fluid(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::fluid_to_struct(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsf_->slave_to_master(iv);
+  return coupsf_->slave_to_master(*iv);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -302,7 +302,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::fluid_to_struct(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_fluid(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupfa_->slave_to_master(iv);
+  return coupfa_->slave_to_master(*iv);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -310,7 +310,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_fluid(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::fluid_to_ale_interface(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return icoupfa_->master_to_slave(iv);
+  return icoupfa_->master_to_slave(*iv);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -318,7 +318,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::fluid_to_ale_int
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::MonolithicBase::ale_to_fluid_interface(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return icoupfa_->slave_to_master(iv);
+  return icoupfa_->slave_to_master(*iv);
 }
 
 /*----------------------------------------------------------------------------*/

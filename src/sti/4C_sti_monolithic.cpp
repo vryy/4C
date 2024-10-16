@@ -1594,8 +1594,7 @@ void STI::Monolithic::solve()
       {
         case Inpar::S2I::coupling_matching_nodes:
         {
-          icoupthermo_->master_to_slave(
-              masterincrement->get_ptr_of_MultiVector(), slaveincrement->get_ptr_of_MultiVector());
+          icoupthermo_->master_to_slave(*masterincrement, *slaveincrement);
           break;
         }
         case Inpar::S2I::coupling_mortar_standard:

@@ -103,14 +103,14 @@ Teuchos::RCP<Core::LinAlg::Vector<double>>
 PoroElast::MonolithicSplit::structure_to_fluid_at_interface(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return icoupfs_->master_to_slave(iv);
+  return icoupfs_->master_to_slave(*iv);
 }
 
 Teuchos::RCP<Core::LinAlg::Vector<double>>
 PoroElast::MonolithicSplit::fluid_to_structure_at_interface(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return icoupfs_->slave_to_master(iv);
+  return icoupfs_->slave_to_master(*iv);
 }
 
 Teuchos::RCP<Epetra_Map> PoroElast::MonolithicSplit::fsidbc_map()

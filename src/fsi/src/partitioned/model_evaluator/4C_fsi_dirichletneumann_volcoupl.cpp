@@ -161,7 +161,7 @@ void FSI::DirichletNeumannVolCoupl::extract_previous_interface_solution()
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVolCoupl::structure_to_ale(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsa_->master_to_slave(iv);
+  return coupsa_->master_to_slave(*iv);
 }
 
 
@@ -170,7 +170,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVolCoupl::struct
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVolCoupl::ale_to_structure(
     Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
 {
-  return coupsa_->slave_to_master(iv);
+  return coupsa_->slave_to_master(*iv);
 }
 
 
@@ -219,7 +219,7 @@ void FSI::InterfaceCorrector::correct_interface_displacements(
   // FOUR_C_THROW("stop");
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_fluid_corrected =
-      icoupfs_->master_to_slave(idisp_);
+      icoupfs_->master_to_slave(*idisp_);
 
   deltadisp_->Update(1.0, *idisp_fluid_corrected, -1.0);
 

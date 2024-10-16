@@ -262,7 +262,7 @@ void CONTACT::LagrangeStrategyPoro::poro_initialize(
     Teuchos::RCP<Core::LinAlg::Vector<double>> tmpfullncoup =
         Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*coupfs.master_dof_map());
     Core::LinAlg::export_to(*NCoup_, *tmpfullncoup);
-    tmpfullncoup = coupfs.master_to_slave(tmpfullncoup);
+    tmpfullncoup = coupfs.master_to_slave(*tmpfullncoup);
     fNCoup_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fgactiven_);
     Core::LinAlg::export_to(*tmpfullncoup, *fNCoup_);
     //

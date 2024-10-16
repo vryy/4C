@@ -349,9 +349,9 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> PoroElast::PoroBase::structure_to_flu
   if (matchinggrid_)
   {
     if (submeshes_)
-      return coupling_fluid_structure_->master_to_slave(psi_extractor_->extract_cond_vector(*iv));
+      return coupling_fluid_structure_->master_to_slave(*psi_extractor_->extract_cond_vector(*iv));
     else
-      return coupling_fluid_structure_->master_to_slave(iv);
+      return coupling_fluid_structure_->master_to_slave(*iv);
   }
   else
   {

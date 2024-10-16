@@ -80,7 +80,7 @@ void FSI::Utils::DebugWriter::new_iteration()
 void FSI::Utils::DebugWriter::write_vector(
     const std::string& name, const Core::LinAlg::Vector<double>& v)
 {
-  writer_->write_vector(name, coup_->master_to_slave(Teuchos::rcpFromRef(v)));
+  writer_->write_vector(name, coup_->master_to_slave(v));
 }
 
 

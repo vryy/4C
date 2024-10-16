@@ -145,57 +145,30 @@ namespace Coupling::Adapter
     /// There are different versions to satisfy all needs. The basic
     /// idea is the same for all of them.
 
-    /// transfer a dof vector from master to slave
-    Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> mv) const override
-    {
-      return master_to_slave(Teuchos::rcp_static_cast<const Core::LinAlg::Vector<double>>(mv));
-    }
-
-    /// transfer a dof vector from slave to master
-    Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sv) const override
-    {
-      return slave_to_master(Teuchos::rcp_static_cast<const Core::LinAlg::Vector<double>>(sv));
-    }
-
-    /// transfer a dof vector from master to slave
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv) const override
-    {
-      return master_to_slave(Teuchos::rcp_static_cast<const Core::LinAlg::MultiVector<double>>(mv));
-    }
-
-    /// transfer a dof vector from slave to master
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv) const override
-    {
-      return slave_to_master(Teuchos::rcp_static_cast<const Core::LinAlg::MultiVector<double>>(sv));
-    }
 
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> mv) const override;
+        const Core::LinAlg::Vector<double>& mv) const override;
 
     /// transfer a dof vector from slave to master
     Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv) const override;
+        const Core::LinAlg::Vector<double>& sv) const override;
 
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
-        Teuchos::RCP<const Core::LinAlg::MultiVector<double>> mv) const override;
+        const Core::LinAlg::MultiVector<double>& mv) const override;
 
     /// transfer a dof vector from slave to master
     Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
-        Teuchos::RCP<const Core::LinAlg::MultiVector<double>> sv) const override;
+        const Core::LinAlg::MultiVector<double>& sv) const override;
 
     /// transfer a dof vector from master to slave
-    void master_to_slave(Teuchos::RCP<const Core::LinAlg::MultiVector<double>> mv,
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv) const override;
+    void master_to_slave(const Core::LinAlg::MultiVector<double>& mv,
+        Core::LinAlg::MultiVector<double>& sv) const override;
 
     /// transfer a dof vector from slave to master
-    void slave_to_master(Teuchos::RCP<const Core::LinAlg::MultiVector<double>> sv,
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv) const override;
+    void slave_to_master(const Core::LinAlg::MultiVector<double>& sv,
+        Core::LinAlg::MultiVector<double>& mv) const override;
 
     //@}
 

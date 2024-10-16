@@ -486,13 +486,13 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> SSTI::SSTIMono::extract_sub_increment
           // displacements
           coupling_map_extractor->insert_vector(
               *coupling_adapter->master_to_slave(
-                  coupling_map_extractor->extract_vector(*structure_field()->dispnp(), 2)),
+                  *coupling_map_extractor->extract_vector(*structure_field()->dispnp(), 2)),
               1, *structure_field()->write_access_dispnp());
           structure_field()->set_state(structure_field()->write_access_dispnp());
           // increments
           coupling_map_extractor->insert_vector(
               *coupling_adapter->master_to_slave(
-                  coupling_map_extractor->extract_vector(*subincrement, 2)),
+                  *coupling_map_extractor->extract_vector(*subincrement, 2)),
               1, *subincrement);
         }
       }

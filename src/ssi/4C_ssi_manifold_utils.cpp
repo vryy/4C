@@ -503,7 +503,7 @@ void SSI::ScaTraManifoldScaTraFluxEvaluator::copy_scatra_scatra_manifold_side(
         scatra_manifold_coupling->scatra_map_extractor()->extract_cond_vector(*rhs_scatra_cond_);
 
     auto rhs_manifold_cond_extract =
-        scatra_manifold_coupling->coupling_adapter()->master_to_slave(rhs_scatra_cond_extract);
+        scatra_manifold_coupling->coupling_adapter()->master_to_slave(*rhs_scatra_cond_extract);
 
     scatra_manifold_coupling->manifold_map_extractor()->add_cond_vector(
         *rhs_manifold_cond_extract, *rhs_manifold_cond_);
@@ -978,7 +978,7 @@ void SSI::ManifoldMeshTyingStrategyBase::apply_mesh_tying_to_manifold_rhs(
       auto multimap = meshtying->slave_master_extractor();
 
       auto slave_dofs = multimap->extract_vector(rhs_manifold, 1);
-      auto slave_to_master_dofs = coupling_adapter->slave_to_master(slave_dofs);
+      auto slave_to_master_dofs = coupling_adapter->slave_to_master(*slave_dofs);
       multimap->add_vector(*slave_to_master_dofs, 2, rhs_manifold);
       multimap->put_scalar(rhs_manifold, 1, 0.0);
     }

@@ -530,7 +530,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
       {
         // transform master residuals and assemble into global residual vector
         interfacemaps_->add_vector(
-            *icoup_->slave_to_master(islaveresidual_), 2, *scatratimint_->residual(), -1.);
+            *icoup_->slave_to_master(*islaveresidual_), 2, *scatratimint_->residual(), -1.);
       }
       // In case the interface linearizations and residuals are evaluated on slave side only,
       // we now apply a standard meshtying algorithm to condense out the slave-side degrees of
@@ -565,7 +565,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
         // add slave-side entries of residual vector to corresponding master-side entries to
         // finalize vector condensation of slave-side degrees of freedom
         interfacemaps_->add_vector(
-            *icoup_->slave_to_master(residualslave), 2, *scatratimint_->residual());
+            *icoup_->slave_to_master(*residualslave), 2, *scatratimint_->residual());
       }
 
       if (has_capacitive_contributions_) evaluate_and_assemble_capacitive_contributions();
@@ -1007,7 +1007,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_meshtying()
 
         // transform master residuals and assemble into global residual vector
         interfacemaps_->add_vector(
-            *icoup_->slave_to_master(islaveresidual_), 2, *scatratimint_->residual(), -1.);
+            *icoup_->slave_to_master(*islaveresidual_), 2, *scatratimint_->residual(), -1.);
 
         // compute additional linearizations and residuals in case of monolithic evaluation approach
         if (intlayergrowth_evaluation_ == Inpar::S2I::growth_evaluation_monolithic)
@@ -1513,7 +1513,7 @@ void ScaTra::MeshtyingStrategyS2I::evaluate_and_assemble_capacitive_contribution
   interfacemaps_->add_vector(*islaveresidual_, 1, *scatratimint_->residual());
   // transform master residuals and assemble into global residual vector
   interfacemaps_->add_vector(
-      *icoup_->slave_to_master(imasterresidual_on_slave_side), 2, *scatratimint_->residual(), 1.0);
+      *icoup_->slave_to_master(*imasterresidual_on_slave_side), 2, *scatratimint_->residual(), 1.0);
 }
 
 /*--------------------------------------------------------------------------------------*
@@ -3447,8 +3447,8 @@ void ScaTra::MeshtyingStrategyS2I::add_time_integration_specific_vectors() const
   {
     // add state vector containing master-side scatra degrees of freedom to scatra discretization
     interfacemaps_->insert_vector(
-        *icoup_->master_to_slave(interfacemaps_->extract_vector(*(scatratimint_->phiafnp()), 2)), 1,
-        *imasterphi_on_slave_side_np_);
+        *icoup_->master_to_slave(*interfacemaps_->extract_vector(*(scatratimint_->phiafnp()), 2)),
+        1, *imasterphi_on_slave_side_np_);
     scatratimint_->discretization()->set_state("imasterphinp", imasterphi_on_slave_side_np_);
 
     if (has_capacitive_contributions_)
@@ -3457,7 +3457,7 @@ void ScaTra::MeshtyingStrategyS2I::add_time_integration_specific_vectors() const
           *interfacemaps_->extract_vector(*(scatratimint_->phidtnp()), 1), 1, *islavephidtnp_);
       scatratimint_->discretization()->set_state("islavephidtnp", islavephidtnp_);
       interfacemaps_->insert_vector(
-          *icoup_->master_to_slave(interfacemaps_->extract_vector(*(scatratimint_->phidtnp()), 2)),
+          *icoup_->master_to_slave(*interfacemaps_->extract_vector(*(scatratimint_->phidtnp()), 2)),
           1, *imasterphidt_on_slave_side_np_);
       scatratimint_->discretization()->set_state("imasterphidtnp", imasterphidt_on_slave_side_np_);
     }

@@ -297,7 +297,7 @@ void FSI::Utils::SlideAleUtils::evaluate_fluid_mortar(
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Utils::SlideAleUtils::interpolate_fluid(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> uold)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> unew = coupff_->master_to_slave(uold);
+  Teuchos::RCP<Core::LinAlg::Vector<double>> unew = coupff_->master_to_slave(*uold);
   unew->ReplaceMap(uold->Map());
 
   return unew;

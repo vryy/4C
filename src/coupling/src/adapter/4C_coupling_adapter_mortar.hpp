@@ -204,30 +204,13 @@ namespace Coupling::Adapter
     /// @name Conversion between master and slave
     //@{
 
-    /*! \brief Transfer a dof vector from master to slave
-     *
-     *  \return Slave vector
-     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> mv  ///< [in] master vector (to be transferred)
-    ) const override;
-
-    /*! \brief Transfer a dof vector from master to slave
-     *
-     *  \return Slave vector
-     */
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>>
-            mv  ///< [in] master vector (to be transferred)
-    ) const override;
 
     /*! \brief Transfer a dof vector from master to slave (const version)
      *
      *  \return Slave vector
      */
     Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
-            mv  ///< [in] master vector (to be transferred)
+        const Core::LinAlg::Vector<double>& mv  ///< [in] master vector (to be transferred)
     ) const override;
 
     /*! \brief Transfer a dof vector from master to slave (const version)
@@ -235,34 +218,16 @@ namespace Coupling::Adapter
      *  \return Slave vector
      */
     Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
-        Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
-            mv  ///< [in] master vector (to be transferred)
+        const Core::LinAlg::MultiVector<double>& mv  ///< [in] master vector (to be transferred)
     ) const override;
 
-    /*! \brief Transfer a dof vector from slave to master
-     *
-     *  \return Master vector
-     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sv  ///< [in] slave vector (to be transferred)
-    ) const override;
-
-    /*! \brief Transfer a dof vector from slave to master
-     *
-     *  \return Master vector
-     */
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>>
-            sv  ///< [in] slave vector (to be transferred)
-    ) const override;
 
     /*! \brief Transfer a dof vector from slave to master (const version)
      *
      *  \return Master vector
      */
     Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
-            sv  ///< [in] slave vector (to be transferred)
+        const Core::LinAlg::Vector<double>& sv  ///< [in] slave vector (to be transferred)
     ) const override;
 
     /*! \brief Transfer a dof vector from slave to master (const version)
@@ -270,22 +235,19 @@ namespace Coupling::Adapter
      *  \return Master vector
      */
     Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
-        Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
-            sv  ///< [in] slave vector (to be transferred)
+        const Core::LinAlg::MultiVector<double>& sv  ///< [in] slave vector (to be transferred)
     ) const override;
 
     /// transfer a dof vector from master to slave
-    void master_to_slave(Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
-                             mv,  ///< [in] master vector (to be transferred)
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>>
-            sv  ///< [out] slave vector (containing result)
+    void master_to_slave(
+        const Core::LinAlg::MultiVector<double>& mv,  ///< [in] master vector (to be transferred)
+        Core::LinAlg::MultiVector<double>& sv         ///< [out] slave vector (containing result)
     ) const override;
 
     /// transfer a dof vector from slave to master
-    void slave_to_master(Teuchos::RCP<const Core::LinAlg::MultiVector<double>>
-                             sv,  ///< [in] slave vector (to be transferred)
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>>
-            mv  ///< [out] master vector (containing result)
+    void slave_to_master(
+        const Core::LinAlg::MultiVector<double>& sv,  ///< [in] slave vector (to be transferred)
+        Core::LinAlg::MultiVector<double>& mv         ///< [out] master vector (containing result)
     ) const override;
 
     //@}

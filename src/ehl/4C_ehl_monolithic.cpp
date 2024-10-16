@@ -1619,7 +1619,7 @@ void EHL::Monolithic::lin_pressure_force_disp(
     FOUR_C_THROW("apply failed");
   Teuchos::RCP<Core::LinAlg::Vector<double>> p_exp =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*mortaradapter_->slave_dof_map());
-  p_exp = ada_strDisp_to_lubDisp_->slave_to_master(p_full);
+  p_exp = ada_strDisp_to_lubDisp_->slave_to_master(*p_full);
   if (p_deriv_normal->left_scale(*p_exp)) FOUR_C_THROW("leftscale failed");
   if (p_deriv_normal->scale(-1.)) FOUR_C_THROW("scale failed");
 
@@ -1641,7 +1641,7 @@ void EHL::Monolithic::lin_poiseuille_force_disp(
     Core::LinAlg::SparseMatrix& ds_dd, Core::LinAlg::SparseMatrix& dm_dd)
 {
   Teuchos::RCP<Core::LinAlg::Vector<double>> p_int =
-      ada_strDisp_to_lubPres_->slave_to_master(lubrication_->lubrication_field()->prenp());
+      ada_strDisp_to_lubPres_->slave_to_master(*lubrication_->lubrication_field()->prenp());
   Core::LinAlg::Vector<double> p_int_full(*mortaradapter_->slave_dof_map());
   Core::LinAlg::export_to(*p_int, p_int_full);
 
@@ -1705,7 +1705,7 @@ void EHL::Monolithic::lin_couette_force_disp(
     for (int d = 0; d < ndim; ++d) visc_vec->ReplaceGlobalValue(lub_dis.dof(1, lnode, d), 0, visc);
   }
   Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec_str =
-      ada_strDisp_to_lubDisp_->slave_to_master(visc_vec);
+      ada_strDisp_to_lubDisp_->slave_to_master(*visc_vec);
 
   Core::LinAlg::Vector<double> height(*mortaradapter_->slave_dof_map());
   if (slavemaptransform_->multiply(false, *mortaradapter_->nodal_gap(), height))

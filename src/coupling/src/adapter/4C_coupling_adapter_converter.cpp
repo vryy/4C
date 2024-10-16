@@ -28,13 +28,13 @@ FOUR_C_NAMESPACE_OPEN
 Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMasterConverter::src_to_dst(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> source_vector) const
 {
-  return coup_.master_to_slave(source_vector);
+  return coup_.master_to_slave(*source_vector);
 }
 
 Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMasterConverter::dst_to_src(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> destination_vector) const
 {
-  return coup_.slave_to_master(destination_vector);
+  return coup_.slave_to_master(*destination_vector);
 }
 
 Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingMasterConverter::src_map() const
@@ -67,13 +67,13 @@ void Coupling::Adapter::CouplingMasterConverter::fill_src_to_dst_map(
 Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingSlaveConverter::src_to_dst(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> source_vector) const
 {
-  return coup_.slave_to_master(source_vector);
+  return coup_.slave_to_master(*source_vector);
 }
 
 Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingSlaveConverter::dst_to_src(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> destination_vector) const
 {
-  return coup_.master_to_slave(destination_vector);
+  return coup_.master_to_slave(*destination_vector);
 }
 
 Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingSlaveConverter::src_map() const

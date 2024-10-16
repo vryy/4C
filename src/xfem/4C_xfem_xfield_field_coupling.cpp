@@ -47,7 +47,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::master_t
   switch (map_type)
   {
     case XFEM::map_dofs:
-      return ::FourC::Coupling::Adapter::Coupling::master_to_slave(mv);
+      return ::FourC::Coupling::Adapter::Coupling::master_to_slave(*mv);
       break;
     case XFEM::map_nodes:
       sv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavenodemap_);
@@ -68,7 +68,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::slave_to
   switch (map_type)
   {
     case XFEM::map_dofs:
-      return ::FourC::Coupling::Adapter::Coupling::slave_to_master(sv);
+      return ::FourC::Coupling::Adapter::Coupling::slave_to_master(*sv);
       break;
     case XFEM::map_nodes:
       mv = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*masternodemap_);
@@ -89,7 +89,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> XFEM::XFieldField::Coupling::mas
   switch (map_type)
   {
     case XFEM::map_dofs:
-      return ::FourC::Coupling::Adapter::Coupling::master_to_slave(mv);
+      return ::FourC::Coupling::Adapter::Coupling::master_to_slave(*mv);
       break;
     case XFEM::map_nodes:
       sv = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*slavenodemap_, mv->NumVectors());
@@ -110,7 +110,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> XFEM::XFieldField::Coupling::sla
   switch (map_type)
   {
     case XFEM::map_dofs:
-      return ::FourC::Coupling::Adapter::Coupling::slave_to_master(sv);
+      return ::FourC::Coupling::Adapter::Coupling::slave_to_master(*sv);
       break;
     case XFEM::map_nodes:
       mv = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*masternodemap_, sv->NumVectors());
@@ -131,7 +131,7 @@ void XFEM::XFieldField::Coupling::master_to_slave(
   {
     case XFEM::map_dofs:
     {
-      return ::FourC::Coupling::Adapter::Coupling::master_to_slave(mv, sv);
+      return ::FourC::Coupling::Adapter::Coupling::master_to_slave(*mv, *sv);
       break;
     }
     case XFEM::map_nodes:
@@ -163,7 +163,7 @@ void XFEM::XFieldField::Coupling::slave_to_master(
   {
     case XFEM::map_dofs:
     {
-      return ::FourC::Coupling::Adapter::Coupling::slave_to_master(sv, mv);
+      return ::FourC::Coupling::Adapter::Coupling::slave_to_master(*sv, *mv);
       break;
     }
     case XFEM::map_nodes:
