@@ -308,7 +308,7 @@ enum ::NOX::StatusTest::StatusType CONTACT::NoxInterface::get_active_set_info(
   // ---------------------------------------------------------------------------
   // translate the active set semi-smooth Newton convergence flag
   // ---------------------------------------------------------------------------
-  if (strategy().active_set_semi_smooth_converged())
+  if (strategy().active_set_converged())
     return ::NOX::StatusTest::Converged;
   else
     return ::NOX::StatusTest::Unconverged;

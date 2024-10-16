@@ -457,7 +457,6 @@ namespace CONTACT
      */
 
     bool active_set_converged() const override { return true; }
-    bool active_set_semi_smooth_converged() const override { return true; }
     bool is_friction() const override { return false; }
     bool wear_both_discrete() const override { return false; }
     bool is_in_contact() const override { return true; }

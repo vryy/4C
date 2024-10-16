@@ -183,9 +183,9 @@ bool Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::allow_reuse_pr
     const int reuse, const bool reset)
 {
   // first, check some parameters with information that has to be updated
-  const Teuchos::ParameterList& linSysParams = params().sublist("Belos Parameters");
+  Teuchos::ParameterList& linSysParams = params().sublist("Belos Parameters");
 
-  bool bAllowReuse = check_reuse_status_of_active_set(linSysParams);
+  bool bAllowReuse = linSysParams.get<bool>("reuse preconditioner", true);
 
   const bool create = reset or not ncall() or not reuse or (ncall() % reuse) == 0;
   if (create) bAllowReuse = false;
@@ -206,45 +206,6 @@ bool Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::allow_reuse_pr
   return gAllowReuse == nProc;
 }
 
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-template <class MatrixType, class VectorType>
-bool Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::check_reuse_status_of_active_set(
-    const Teuchos::ParameterList& linSysParams)
-{
-  bool bAllowReuse = true;  // default: allow reuse of preconditioner
-
-  if (linSysParams.isParameter("contact activeDofMap"))
-  {
-    auto ep_active_dof_map = linSysParams.get<Teuchos::RCP<Epetra_Map>>("contact activeDofMap");
-
-    // Do we have history information available?
-    if (active_dof_map_.is_null())
-    {
-      /* No history available.
-       * This is the first application of the preconditioner. We cannot reuse it.
-       */
-      bAllowReuse = false;
-    }
-    else
-    {
-      /* History is available. We actually have to check for a change in the active set
-       * by comparing the current map of active DOFs with the stored map of active DOFs
-       * from the previous application of the preconditioner.
-       */
-      if (not ep_active_dof_map->PointSameAs(*active_dof_map_))
-      {
-        // Map of active nodes has changed -> force preconditioner to be rebuilt
-        bAllowReuse = false;
-      }
-    }
-
-    // Store current map of active slave DOFs for comparison in next preconditioner application
-    active_dof_map_ = ep_active_dof_map;
-  }
-
-  return bAllowReuse;
-}
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

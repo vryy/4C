@@ -161,7 +161,6 @@ namespace CONTACT
     };
     bool is_nitsche() const override { return true; }
     void print_active_set() const override{};
-    bool active_set_semi_smooth_converged() const override { return true; }
     bool active_set_converged() const override { return true; }
     int active_set_steps() const override { return 0; }
     void reset_active_set() override {}

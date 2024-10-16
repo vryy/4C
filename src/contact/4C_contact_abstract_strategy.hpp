@@ -922,7 +922,6 @@ namespace CONTACT
      */
     //!@{
 
-    bool active_set_semi_smooth_converged() const override = 0;
     bool active_set_converged() const override = 0;
     virtual int active_set_steps() const = 0;
     virtual Teuchos::RCP<const Epetra_Map> get_old_active_row_nodes() const = 0;
