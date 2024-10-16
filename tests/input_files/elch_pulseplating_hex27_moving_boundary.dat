@@ -94,8 +94,6 @@ AZTOL                           1.0E-10
 AZCONV                          AZ_r0
 AZITER                          1000
 AZSUB                           40
-AZOMEGA                         1.0
-AZGRAPH                         1
 SUB_SOLVER1                     3
 SUB_SOLVER2                     4
 --------------------------------------------------------------------SOLVER 2
@@ -112,8 +110,6 @@ AZTOL                           1.0E-10
 AZCONV                          AZ_r0
 AZITER                          1000
 AZSUB                           40
-AZOMEGA                         1.0
-AZGRAPH                         1
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Electrical_Potential
 SOLVER                          Belos
@@ -125,8 +121,6 @@ AZTOL                           1.0E-10
 AZCONV                          AZ_r0
 AZITER                          1000
 AZSUB                           40
-AZOMEGA                         1.0
-AZGRAPH                         1
 --------------------------------------------------------------------SOLVER 5
 NAME                            ALE-Solver
 SOLVER                          UMFPACK

@@ -71,11 +71,8 @@ STABTYPE                        SUPG
 SUGRVEL                         no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
-AZBDIAG                         0
 AZCONV                          AZ_r0
-AZGRAPH                         0
 AZITER                          1000
-AZOMEGA                         0
 AZOUTPUT                        0
 AZPREC                          ILU
 AZREUSE                         0

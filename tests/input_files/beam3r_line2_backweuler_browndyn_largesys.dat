@@ -61,8 +61,6 @@ AZTOL                  1.0E-3
 AZCONV                 AZ_r0
 AZITER                 1000
 AZSUB                  50
-AZOMEGA                0.95
-AZGRAPH                1
 IFPACKGFILL            1
 IFPACKOVERLAP          1
 IFPACKCOMBINE          Zero

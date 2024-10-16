@@ -1055,16 +1055,8 @@ AZREUSE                         0
 // max iterations
 AZITER                          1000
 //
-// unused
-AZGRAPH                         0
-//
-AZBDIAG                         0
-//
 // tolerance in (un)scaled residual
 AZTOL                           1e-08
-//
-// damping for GaussSeidel and jacobi type methods
-AZOMEGA                         0
 //
 // ML print-out level (0-10)
 ML_PRINT                        0

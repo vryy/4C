@@ -80,8 +80,6 @@ AZTOL             1.0E-18
 AZCONV            AZ_r0
 AZITER            2000
 AZSUB             120
-AZOMEGA           1.0
-AZGRAPH           1
 IFPACKOVERLAP     1
 ML_PRINT          0
 ML_MAXCOARSESIZE  100

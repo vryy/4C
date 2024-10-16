@@ -53,8 +53,6 @@ IFPACKGFILL                     0
 AZTOL                           1.0E-9
 AZITER                          1000
 AZSUB                           40
-AZOMEGA                         1.0
-AZGRAPH                         1
 IFPACKOVERLAP                   0
 AZCONV                          AZ_r0
 ML_PRINT                        0

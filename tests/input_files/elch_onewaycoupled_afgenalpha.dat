@@ -96,8 +96,6 @@ AZTOL                           1.0E-4
 AZCONV                          AZ_r0
 AZITER                          1000
 AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
 SUB_SOLVER1                     3
 SUB_SOLVER2                     4
 --------------------------------------------------------------------SOLVER 2
@@ -114,8 +112,6 @@ AZTOL                           1.0E-4
 AZCONV                          AZ_r0
 AZITER                          1000
 AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
 --------------------------------------------------------------------SOLVER 4
 NAME                            Sca_Tra_Electrical_Potential
 SOLVER                          Belos
@@ -127,8 +123,6 @@ AZTOL                           1.0E-4
 AZCONV                          AZ_r0
 AZITER                          1000
 AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 10.0
 MAT 2 MAT_ion DIFFUSIVITY 0.001 VALENCE 1.0
