@@ -70,8 +70,9 @@ void Core::LinAlg::assemble(Epetra_CrsMatrix& A, const Core::LinAlg::SerialDense
 /*----------------------------------------------------------------------*
  |  assemble a vector                                        mwgee 12/06|
  *----------------------------------------------------------------------*/
-void Core::LinAlg::assemble(Epetra_Vector& V, const Core::LinAlg::SerialDenseVector& Vele,
-    const std::vector<int>& lm, const std::vector<int>& lmowner)
+void Core::LinAlg::assemble(Core::LinAlg::Vector<double>& V,
+    const Core::LinAlg::SerialDenseVector& Vele, const std::vector<int>& lm,
+    const std::vector<int>& lmowner)
 {
   const int ldim = (int)lm.size();
   // allow Vele to provide entries past the end of lm that are not used here,
@@ -88,12 +89,6 @@ void Core::LinAlg::assemble(Epetra_Vector& V, const Core::LinAlg::SerialDenseVec
     int rlid = V.Map().LID(rgid);
     V[rlid] += Vele[lrow];
   }  // for (int lrow=0; lrow<ldim; ++lrow)
-}
-void Core::LinAlg::assemble(Core::LinAlg::Vector<double>& V,
-    const Core::LinAlg::SerialDenseVector& Vele, const std::vector<int>& lm,
-    const std::vector<int>& lmowner)
-{
-  assemble(V.get_ref_of_Epetra_Vector(), Vele, lm, lmowner);
 }
 
 /*----------------------------------------------------------------------------*

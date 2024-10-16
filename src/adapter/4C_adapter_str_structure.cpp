@@ -159,20 +159,6 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
     Teuchos::RCP<std::vector<double>> ns =
         mllist.get<Teuchos::RCP<std::vector<double>>>("nullspace");
 
-    const int size = actdis->dof_row_map()->NumMyElements();
-
-    // extract the six nullspace vectors corresponding to the modes
-    // trans x, trans y, trans z, rot x, rot y, rot z
-    // Note: We assume 3d here!
-
-    Epetra_Vector nsv1(View, *(actdis->dof_row_map()), ns->data());
-    Epetra_Vector nsv2(View, *(actdis->dof_row_map()), &ns->at(size));
-    Epetra_Vector nsv3(View, *(actdis->dof_row_map()), &ns->at(2 * size));
-    Epetra_Vector nsv4(View, *(actdis->dof_row_map()), &ns->at(3 * size));
-    Epetra_Vector nsv5(View, *(actdis->dof_row_map()), &ns->at(4 * size));
-    Epetra_Vector nsv6(View, *(actdis->dof_row_map()), &ns->at(5 * size));
-
-
     // prepare matrix for scaled thickness business of thin shell structures
     Teuchos::RCP<Core::LinAlg::SparseMatrix> stcinv =
         Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*actdis->dof_row_map(), 81, true, true);
@@ -208,19 +194,21 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
     Core::LinAlg::Vector<double> temp(*(actdis->dof_row_map()), false);
 
-    const auto multiply = [&](Epetra_Vector& vec)
+    const auto multiply_nullspace_vector = [&](std::size_t offset)
     {
-      Core::LinAlg::VectorView vec_view(vec);
-      stcinv->multiply(false, vec_view, temp);
-      vec.Update(1.0, temp, 0.0);
+      const int size = actdis->dof_row_map()->NumMyElements();
+      Core::LinAlg::Vector<double> vec(*(actdis->dof_row_map()), false);
+      std::copy(ns->data() + offset * size, ns->data() + (offset + 1) * size, vec.Values());
+
+      stcinv->multiply(false, vec, temp);
+      std::copy(temp.Values(), temp.Values() + size, ns->data() + offset * size);
     };
 
-    multiply(nsv1);
-    multiply(nsv2);
-    multiply(nsv3);
-    multiply(nsv4);
-    multiply(nsv5);
-    multiply(nsv6);
+
+    // extract and modify the six nullspace vectors corresponding to the modes
+    // trans x, trans y, trans z, rot x, rot y, rot z
+    // Note: We assume 3d here!
+    for (int i = 0; i < 6; ++i) multiply_nullspace_vector(i);
   }
 
   // Checks in case of multi-scale simulations

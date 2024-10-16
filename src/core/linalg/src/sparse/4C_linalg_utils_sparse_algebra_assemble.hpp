@@ -66,8 +66,7 @@ namespace Core::LinAlg
    */
   void assemble(Core::LinAlg::Vector<double>& V, const Core::LinAlg::SerialDenseVector& Vele,
       const std::vector<int>& lm, const std::vector<int>& lmowner);
-  void assemble(Epetra_Vector& V, const Core::LinAlg::SerialDenseVector& Vele,
-      const std::vector<int>& lm, const std::vector<int>& lmowner);
+
   /*!
    \brief Assemble a Core::LinAlg::SerialDenseVector into a Core::LinAlg::MultiVector<double>
 

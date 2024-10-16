@@ -479,7 +479,7 @@ Core::LinAlg::KrylovProjector::multiply_multi_vecter_dense_matrix(
   for (int rr = 0; rr < nsdim_; ++rr)
   {
     // extract i-th (rr-th) vector of mvout
-    Epetra_Vector mvouti(::View, *mvout, rr);
+    auto& mvouti = (*mvout)(rr);
     // loop over all vectors of mv
     for (int mm = 0; mm < nsdim_; ++mm)
     {
