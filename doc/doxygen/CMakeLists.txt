@@ -16,6 +16,9 @@ if(FOUR_C_BUILD_DOXYGEN)
   # find mathjax
   find_package(MathJax REQUIRED)
 
+  # get git revision information for inclusion in Doxygen
+  four_c_get_git_revision_information()
+
   # configure doxygen configuration
   configure_file(${DOXYGEN_CONFIG_IN} ${DOXYGEN_CONFIG_OUT} @ONLY)
 
