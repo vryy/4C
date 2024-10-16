@@ -307,7 +307,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::KrylovProjector::project(
   // auxiliary preliminary products
 
   Teuchos::RCP<Core::LinAlg::MultiVector<double>> w_invwTc =
-      multiply_multi_vecter_dense_matrix(w_, invw_tc_);
+      multiply_multi_vector_dense_matrix(w_, invw_tc_);
 
   // here: matvec = A c_;
   Teuchos::RCP<Core::LinAlg::MultiVector<double>> matvec =
@@ -325,21 +325,21 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::KrylovProjector::project(
   // std::cout << *w_invwTc << std::endl;
   // compute and add matrices
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mat1 =
-      multiply_multi_vecter_multi_vector(matvec, w_invwTc, 1, false);
+      multiply_multi_vector_multi_vector(matvec, w_invwTc, 1, false);
   {
     // put in brackets to delete mat2 immediately after being added to mat1
     // here: matvec = A^T c_;
     A.epetra_matrix()->Multiply(true, *c_, *matvec);
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mat2 =
-        multiply_multi_vecter_multi_vector(w_invwTc, matvec, 2, true);
+        multiply_multi_vector_multi_vector(w_invwTc, matvec, 2, true);
     mat1->add(*mat2, false, 1.0, 1.0);
     mat1->complete();
   }
 
   // here: matvec = w (c^T w)^-1 (c^T A c);
-  matvec = multiply_multi_vecter_dense_matrix(w_invwTc, cTAc);
+  matvec = multiply_multi_vector_dense_matrix(w_invwTc, cTAc);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mat3 =
-      multiply_multi_vecter_multi_vector(matvec, w_invwTc, 1, false);
+      multiply_multi_vector_multi_vector(matvec, w_invwTc, 1, false);
   mat3->add(*mat1, false, -1.0, 1.0);
   mat3->add(A, false, 1.0, 1.0);
 
@@ -369,12 +369,12 @@ void Core::LinAlg::KrylovProjector::create_projector(Teuchos::RCP<Core::LinAlg::
 
   // compute temp1
   Teuchos::RCP<Core::LinAlg::MultiVector<double>> temp1 =
-      multiply_multi_vecter_dense_matrix(v2, inv_v1Tv2);
+      multiply_multi_vector_dense_matrix(v2, inv_v1Tv2);
   temp1->Scale(-1.0);
 
 
   // compute P by multiplying upright temp1 with lying v1^T:
-  P = Core::LinAlg::KrylovProjector::multiply_multi_vecter_multi_vector(temp1, v1, 1, false);
+  P = Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(temp1, v1, 1, false);
 
   //--------------------------------------------------------
   // Add identity matrix
@@ -461,10 +461,9 @@ int Core::LinAlg::KrylovProjector::apply_projector(Core::LinAlg::MultiVector<dou
 
 
 /* --------------------------------------------------------------------
-         multiplies Epetra_MultiVector times Core::LinAlg::SerialDenseMatrix
    -------------------------------------------------------------------- */
 Teuchos::RCP<Core::LinAlg::MultiVector<double>>
-Core::LinAlg::KrylovProjector::multiply_multi_vecter_dense_matrix(
+Core::LinAlg::KrylovProjector::multiply_multi_vector_dense_matrix(
     const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv,
     const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& dm) const
 {
@@ -496,7 +495,7 @@ Core::LinAlg::KrylovProjector::multiply_multi_vecter_dense_matrix(
                   outer product of two Epetra_MultiVectors
    -------------------------------------------------------------------- */
 Teuchos::RCP<Core::LinAlg::SparseMatrix>
-Core::LinAlg::KrylovProjector::multiply_multi_vecter_multi_vector(
+Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
     const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv1,
     const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv2, const int id, const bool fill) const
 {
