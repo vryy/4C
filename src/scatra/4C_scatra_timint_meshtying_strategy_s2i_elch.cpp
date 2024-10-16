@@ -145,10 +145,6 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
  *--------------------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyS2IElch::evaluate_meshtying()
 {
-  // safety check
-  if (elch_tim_int()->elch_parameter_list()->get<bool>("BLOCKPRECOND"))
-    FOUR_C_THROW("Block preconditioning doesn't work for scatra-scatra interface coupling yet!");
-
   // call base class routine
   ScaTra::MeshtyingStrategyS2I::evaluate_meshtying();
 }  // ScaTra::MeshtyingStrategyS2IElch::evaluate_meshtying

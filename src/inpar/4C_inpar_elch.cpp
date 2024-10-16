@@ -84,10 +84,6 @@ void Inpar::ElCh::set_valid_parameters(Teuchos::ParameterList& list)
       tuple<Inpar::ElCh::EquPot>(equpot_undefined, equpot_enc, equpot_enc_pde, equpot_enc_pde_elim,
           equpot_poisson, equpot_laplace, equpot_divi),
       &elchcontrol);
-  Core::Utils::bool_parameter("BLOCKPRECOND", "NO",
-      "Switch to block-preconditioned family of solvers, only works with block preconditioners "
-      "like CheapSIMPLE!",
-      &elchcontrol);
   Core::Utils::bool_parameter(
       "DIFFCOND_FORMULATION", "No", "Activation of diffusion-conduction formulation", &elchcontrol);
   Core::Utils::bool_parameter("INITPOTCALC", "No",

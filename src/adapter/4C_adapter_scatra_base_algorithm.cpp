@@ -527,58 +527,6 @@ void Adapter::ScaTraBaseAlgorithm::setup()
   // setup the time integrator
   scatra_->setup();
 
-  // get the parameter list
-  auto scatradyn = scatra_->scatra_parameter_list();
-  // get the discretization
-  auto discret = scatra_->discretization();
-
-  // -------------------------------------------------------------------
-  // what's the current problem type?
-  // -------------------------------------------------------------------
-  auto probtype = Global::Problem::instance()->get_problem_type();
-
-  // prepare fixing the null space for electrochemistry and sti
-  if (probtype == Core::ProblemType::elch or
-      (probtype == Core::ProblemType::sti and discret->name() == "scatra" and
-          Teuchos::getIntegralValue<Inpar::STI::ScaTraTimIntType>(
-              Global::Problem::instance()->sti_dynamic_params(), "SCATRATIMINTTYPE") ==
-              Inpar::STI::ScaTraTimIntType::elch))
-  {
-    Teuchos::ParameterList elchparams(Global::Problem::instance()->elch_control_params());
-
-    // create a 2nd solver for block-preconditioning if chosen from input
-    if (elchparams.get<bool>("BLOCKPRECOND"))
-    {
-      const auto& solver = scatra_->solver();
-
-      const int linsolvernumber = scatradyn->get<int>("LINEAR_SOLVER");
-      const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
-          Global::Problem::instance()->solver_params(linsolvernumber), "AZPREC");
-      if (prec != Core::LinearSolver::PreconditionerType::cheap_simple)  // TODO adapt error message
-      {
-        FOUR_C_THROW(
-            "If SIMPLER flag is set to YES you can only use CheapSIMPLE as preconditioner in your "
-            "fluid solver. Choose CheapSIMPLE in the SOLVER %i block in your dat file.",
-            linsolvernumber);
-      }
-
-      solver->params().sublist("CheapSIMPLE Parameters").set("Prec Type", "CheapSIMPLE");
-      solver->params().set(
-          "ELCH", true);  // internal CheapSIMPLE modus for ML null space computation
-
-      // add Inverse1 block for velocity dofs
-      // tell Inverse1 block about nodal_block_information
-      // In contrary to contact/meshtying problems this is necessary here, since we originally have
-      // built the null space for the whole problem (velocity and pressure dofs). However, if we
-      // split the matrix into velocity and pressure block, we have to adapt the null space
-      // information for the subblocks. Therefore we need the nodal block information in the first
-      // subblock for the velocities. The pressure null space is trivial to be built using a
-      // constant vector
-      auto& inv1 = solver->params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
-      inv1.sublist("nodal_block_information") = solver->params().sublist("nodal_block_information");
-    }
-  }
-
   set_is_setup(true);
 }
 

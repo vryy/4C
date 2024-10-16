@@ -34,58 +34,31 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::MeshtyingStrategyStdElch::ini
 {
   Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix;
 
-  if (elch_tim_int()->elch_parameter_list()->get<bool>("BLOCKPRECOND"))
+  // initialize standard (stabilized) system matrix (and save its graph)
+  switch (scatratimint_->matrix_type())
   {
-    // safety checks
-    if (elch_tim_int()->equ_pot() == Inpar::ElCh::equpot_undefined)
-      FOUR_C_THROW("Type of closing equation for electric potential not correctly set!");
-    if (elch_tim_int()->equ_pot() != Inpar::ElCh::equpot_enc)
-      FOUR_C_THROW("Special ELCH assemble strategy for block-matrix will not assemble A_11 block!");
-    if (scatratimint_->num_scal() < 1)
-      FOUR_C_THROW("Number of transported scalars not correctly set!");
-
-    // initial guess for non-zeros per row: 27 neighboring nodes for hex8
-    // this is enough! A higher guess would require too much memory!
-    // A more precise guess for every submatrix would read:
-    // A_00: 27*1,  A_01: 27*1,  A_10: 27*numscal due to electroneutrality, A_11: EMPTY matrix !!!!!
-    // usage of a split strategy that makes use of the ELCH-specific sparsity pattern
-    Core::LinAlg::MapExtractor splitter;
-    Core::LinAlg::create_map_extractor_from_discretization(
-        *(scatratimint_->discretization()), scatratimint_->num_scal(), splitter);
-    systemmatrix = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<ScaTra::SplitStrategy>>(
-        splitter, splitter, 27, false, true);
-    Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrix<ScaTra::SplitStrategy>>(systemmatrix)
-        ->set_num_scal(scatratimint_->num_scal());
-  }
-
-  else
-  {
-    // initialize standard (stabilized) system matrix (and save its graph)
-    switch (scatratimint_->matrix_type())
+    case Core::LinAlg::MatrixType::sparse:
     {
-      case Core::LinAlg::MatrixType::sparse:
-      {
-        systemmatrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-            *scatratimint_->discretization()->dof_row_map(), 27, false, true);
-        break;
-      }
+      systemmatrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+          *scatratimint_->discretization()->dof_row_map(), 27, false, true);
+      break;
+    }
 
-      case Core::LinAlg::MatrixType::block_condition:
-      case Core::LinAlg::MatrixType::block_condition_dof:
-      {
-        systemmatrix = Teuchos::make_rcp<
-            Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+    case Core::LinAlg::MatrixType::block_condition:
+    case Core::LinAlg::MatrixType::block_condition_dof:
+    {
+      systemmatrix = Teuchos::make_rcp<
+          Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
 
-            *scatratimint_->block_maps(), *scatratimint_->block_maps(), 81, false, true);
+          *scatratimint_->block_maps(), *scatratimint_->block_maps(), 81, false, true);
 
-        break;
-      }
+      break;
+    }
 
-      default:
-      {
-        FOUR_C_THROW("Unknown matrix type of ScaTra field");
-        break;
-      }
+    default:
+    {
+      FOUR_C_THROW("Unknown matrix type of ScaTra field");
+      break;
     }
   }
 
