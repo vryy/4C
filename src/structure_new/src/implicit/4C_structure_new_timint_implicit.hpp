@@ -130,9 +130,6 @@ namespace Solid
        *  \author hiermeier \date 06/17 */
       void print_jacobian_in_matlab_format(const NOX::Nln::Group& curr_grp) const;
 
-      /// compute the condition number of the tangential stiffness matrix
-      void compute_condition_number(const NOX::Nln::Group& grp) const;
-
      protected:
       //! returns the current solution group
       [[nodiscard]] const ::NOX::Abstract::Group& get_solution_group() const override;

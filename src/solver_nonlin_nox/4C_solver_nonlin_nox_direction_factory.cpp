@@ -10,7 +10,7 @@
 
 #include "4C_solver_nonlin_nox_direction_factory.hpp"
 
-#include "4C_solver_nonlin_nox_direction_modified_newton.hpp"
+#include "4C_solver_nonlin_nox_direction_newton.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -31,8 +31,6 @@ Teuchos::RCP<::NOX::Direction::Generic> NOX::Nln::Direction::Factory::buildDirec
 
   if (method == "Newton")
     direction = Teuchos::make_rcp<Newton>(gd, params);
-  else if (method == "Modified Newton")
-    direction = Teuchos::make_rcp<ModifiedNewton>(gd, params);
   else
   {
     std::ostringstream msg;

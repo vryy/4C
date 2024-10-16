@@ -101,8 +101,6 @@ namespace NOX
           scale_op_identity,      //!< Use the identity matrix (see [2])
           scale_op_cfl_diagonal,  //!< Use a diagonal matrix based on the local
                                   //!< Courant-Friedrichs-Lewy (CFL) number (see [1]).
-          scale_op_lumped_mass,   //!< Use the lumped mass matrix as diagonal scaling operator (not
-                                  //!< well tested!)
           scale_op_element_based,
           scale_op_element_based_constant
         };
@@ -140,8 +138,6 @@ namespace NOX
             type = scale_op_identity;
           else if (name == "CFL diagonal")
             type = scale_op_cfl_diagonal;
-          else if (name == "Lumped Mass")
-            type = scale_op_lumped_mass;
           else if (name == "Element based")
             type = scale_op_element_based;
           else

@@ -58,16 +58,6 @@ namespace NOX
           Teuchos::RCP<Generic> build_upper_bound_test(
               Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
 
-          /*! \brief Build the inner_statustest_combo object
-
-          */
-          Teuchos::RCP<Generic> build_combo_test(Teuchos::ParameterList& p, const ::NOX::Utils& u,
-              std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests) const;
-
-          /// \brief Build volume change test
-          Teuchos::RCP<Generic> build_volume_change_test(
-              Teuchos::ParameterList& p, const ::NOX::Utils& u) const;
-
           bool check_and_tag_test(const Teuchos::ParameterList& p,
               const Teuchos::RCP<Generic>& test,
               std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests) const;

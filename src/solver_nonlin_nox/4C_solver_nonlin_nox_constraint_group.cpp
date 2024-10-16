@@ -107,44 +107,6 @@ NOX::Nln::CONSTRAINT::Group::get_constraint_interface_ptr(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::Nln::CONSTRAINT::Group::get_model_value(
-    const MeritFunction::MeritFctName merit_func_type) const
-{
-  double mrtFctVal = NOX::Nln::Group::get_model_value(merit_func_type);
-
-  // constraint contributions
-  double constr_contr = 0.0;
-  for (const auto& constr_iter : user_constraint_interfaces_)
-    constr_contr += constr_iter.second->get_model_value(merit_func_type);
-
-  return mrtFctVal + constr_contr;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-double NOX::Nln::CONSTRAINT::Group::get_linearized_model_terms(const ::NOX::Abstract::Vector& dir,
-    const enum NOX::Nln::MeritFunction::MeritFctName merit_func_type,
-    const enum NOX::Nln::MeritFunction::LinOrder linorder,
-    const enum NOX::Nln::MeritFunction::LinType lintype) const
-{
-  // contributions of the primary field
-  double linVal =
-      NOX::Nln::Group::get_linearized_model_terms(dir, merit_func_type, linorder, lintype);
-
-  const ::NOX::Epetra::Vector& dir_nox_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
-  Core::LinAlg::Vector<double> dir_v =
-      Core::LinAlg::Vector<double>(dir_nox_epetra.getEpetraVector());
-
-  // constraint contributions
-  for (const auto& constr_iter : user_constraint_interfaces_)
-    linVal +=
-        constr_iter.second->get_linearized_model_terms(dir_v, merit_func_type, linorder, lintype);
-
-  return linVal;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
 Teuchos::RCP<const std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_rhs_norms(
     const std::vector<::NOX::Abstract::Vector::NormType>& type,
     const std::vector<NOX::Nln::StatusTest::QuantityType>& chQ,

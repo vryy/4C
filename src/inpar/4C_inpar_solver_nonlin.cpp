@@ -105,15 +105,6 @@ void Inpar::NlnSol::set_valid_parameters(Teuchos::ParameterList& list)
     Core::Utils::double_parameter("Primal High Accretion Factor", 100.0,
         "High accretion factor for the adaption of the primal diagonal correction.", &modnewton);
 
-    Teuchos::Array<std::string> defaultsteptests =
-        Teuchos::tuple<std::string>("none", "Volume Change Control");
-    Teuchos::setStringToIntegralParameter<NOX::Nln::Direction::DefaultStepTest>("Default Step Test",
-        "none", "Choose a proper default step test strategy.", defaultsteptests,
-        Teuchos::tuple<NOX::Nln::Direction::DefaultStepTest>(
-            NOX::Nln::Direction::DefaultStepTest::none,
-            NOX::Nln::Direction::DefaultStepTest::volume_change_control),
-        &modnewton);
-
     Core::Utils::bool_parameter("Catch Floating Point Exceptions", "No",
         "Set to true, if"
         "floating point exceptions during the linear solver call should be "
@@ -367,14 +358,11 @@ void Inpar::NlnSol::set_valid_parameters(Teuchos::ParameterList& list)
   Teuchos::ParameterList& solverOptions = snox.sublist("Solver Options", false, "");
 
   {
-    Teuchos::Array<std::string> meritFct =
-        Teuchos::tuple<std::string>("Sum of Squares", "Lagrangian", "Lagrangian Active");
+    Teuchos::Array<std::string> meritFct = Teuchos::tuple<std::string>("Sum of Squares");
     Teuchos::setStringToIntegralParameter<NOX::Nln::MeritFunction::MeritFctName>("Merit Function",
         "Sum of Squares", "", meritFct,
         Teuchos::tuple<NOX::Nln::MeritFunction::MeritFctName>(
-            NOX::Nln::MeritFunction::mrtfct_sum_of_squares,
-            NOX::Nln::MeritFunction::mrtfct_lagrangian,
-            NOX::Nln::MeritFunction::mrtfct_lagrangian_active),
+            NOX::Nln::MeritFunction::mrtfct_sum_of_squares),
         &solverOptions);
 
     std::vector<std::string> status_test_check_type_valid_input = {"Complete", "Minimal", "None"};

@@ -192,15 +192,6 @@ bool Solid::IMPLICIT::Generic::apply_correction_system(const enum NOX::Nln::Corr
   return ok;
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void Solid::IMPLICIT::Generic::condition_number(const NOX::Nln::Group& grp) const
-{
-  const Solid::TimeInt::Implicit& timint_impl =
-      dynamic_cast<const Solid::TimeInt::Implicit&>(tim_int());
-
-  timint_impl.compute_condition_number(grp);
-}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -280,7 +271,6 @@ void NOX::Nln::PrePostOp::IMPLICIT::Generic::run_post_apply_jacobian_inverse(
       copy_to_our_vector(rhs), result_view, copy_to_our_vector(xold), grp);
 
   impl_.print_jacobian_in_matlab_format(grp);
-  impl_.condition_number(grp);
 
   // reset any possible set correction type at this point
   const Solid::ModelEvaluator::Data& eval_data = impl_.eval_data();

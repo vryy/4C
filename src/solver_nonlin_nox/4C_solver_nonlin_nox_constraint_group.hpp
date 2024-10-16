@@ -76,13 +76,6 @@ namespace NOX
         // @name "Get" functions
         //@{
 
-        double get_model_value(const MeritFunction::MeritFctName merit_func_type) const override;
-
-        double get_linearized_model_terms(const ::NOX::Abstract::Vector& dir,
-            const enum NOX::Nln::MeritFunction::MeritFctName merit_func_type,
-            const enum NOX::Nln::MeritFunction::LinOrder linorder,
-            const enum NOX::Nln::MeritFunction::LinType lintype) const override;
-
         //! Returns the right-hand-side norms of the primary and constraint quantities
         Teuchos::RCP<const std::vector<double>> get_rhs_norms(
             const std::vector<::NOX::Abstract::Vector::NormType>& type,
