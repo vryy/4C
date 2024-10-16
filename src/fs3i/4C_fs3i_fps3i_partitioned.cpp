@@ -778,7 +778,7 @@ void FS3I::PartFPS3I::extract_wss(
       fpsi_->fpsi_coupl()->fluid_fpsi_vel_pres_extractor()->extract_cond_vector(*WallShearStress);
 
   // replace global fluid interface dofs through porofluid interface dofs
-  WallShearStress = fpsi_->fpsi_coupl()->i_fluid_to_porofluid(WallShearStress);
+  WallShearStress = fpsi_->fpsi_coupl()->i_fluid_to_porofluid(*WallShearStress);
 
   // insert porofluid interface entries into vector with full porofluid length
   Teuchos::RCP<Core::LinAlg::Vector<double>> porofluid =

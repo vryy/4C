@@ -435,7 +435,7 @@ void FPSI::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
     fluid_field()->discretization()->set_state(0, "dispnp", fluid_field()->dispnp());
     meshdispold_ = ale_to_fluid(ale_field()->dispnp());
     porointerfacedisplacementsold_ = fpsi_coupl()->i_porostruct_to_ale(
-        poro_field()->structure_field()->extract_interface_dispnp(true));
+        *poro_field()->structure_field()->extract_interface_dispnp(true));
   }
 
 
@@ -459,7 +459,7 @@ void FPSI::Monolithic::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> porointerfacedisplacements_FPSI =
       fpsi_coupl()->i_porostruct_to_ale(
-          poro_field()->structure_field()->extract_interface_dispnp(true));
+          *poro_field()->structure_field()->extract_interface_dispnp(true));
   ale_field()->apply_interface_displacements(porointerfacedisplacements_FPSI);
 
   if (FSI_Interface_exists_)

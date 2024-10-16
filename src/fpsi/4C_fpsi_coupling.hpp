@@ -98,39 +98,39 @@ namespace FPSI
 
     // Vector Transform
     Teuchos::RCP<Core::LinAlg::Vector<double>> i_fluid_to_porofluid(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
+        const Core::LinAlg::Vector<double>& iv) const
     {
-      return icoup_pf_f_->slave_to_master(*iv);
+      return icoup_pf_f_->slave_to_master(iv);
     }
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> i_porofluid_to_fluid(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
+        const Core::LinAlg::Vector<double>& iv) const
     {
-      return icoup_pf_f_->master_to_slave(*iv);
+      return icoup_pf_f_->master_to_slave(iv);
     }
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> i_fluid_to_porostruct(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
+        const Core::LinAlg::Vector<double>& iv) const
     {
-      return icoup_ps_f_->slave_to_master(*iv);
+      return icoup_ps_f_->slave_to_master(iv);
     }
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> i_porostruct_to_fluid(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
+        const Core::LinAlg::Vector<double>& iv) const
     {
-      return icoup_ps_f_->master_to_slave(*iv);
+      return icoup_ps_f_->master_to_slave(iv);
     }
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> i_ale_to_porostruct(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
+        const Core::LinAlg::Vector<double>& iv) const
     {
-      return icoup_ps_a_->slave_to_master(*iv);
+      return icoup_ps_a_->slave_to_master(iv);
     }
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> i_porostruct_to_ale(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
+        const Core::LinAlg::Vector<double>& iv) const
     {
-      return icoup_ps_a_->master_to_slave(*iv);
+      return icoup_ps_a_->master_to_slave(iv);
     }
 
     //@}

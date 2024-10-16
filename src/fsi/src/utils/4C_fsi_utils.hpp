@@ -101,7 +101,7 @@ namespace FSI
       /// use fluid-fluid mortar interface to interpolate between fluid quantities before and after
       /// sliding
       Teuchos::RCP<Core::LinAlg::Vector<double>> interpolate_fluid(
-          Teuchos::RCP<const Core::LinAlg::Vector<double>>
+          const Core::LinAlg::Vector<double>&
               uold  ///< fluid velocity in configuration before sliding
       );
 

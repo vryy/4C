@@ -111,9 +111,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
     visualization->add_discretization_nodal_reference_position(
         couplingenforcer.get_structure()->get_discretization());
     visualization->add_discretization_nodal_data(
-        "velocity", couplingenforcer.get_structure()->velnp());
+        "velocity", *couplingenforcer.get_structure()->velnp());
     visualization->add_discretization_nodal_data(
-        "displacement", couplingenforcer.get_structure()->dispnp());
+        "displacement", *couplingenforcer.get_structure()->dispnp());
 
     // Create maps with the GIDs of beam nodes
     std::vector<int> gid_beam_dof;
@@ -138,7 +138,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::write_output_beam_to_
     Core::LinAlg::export_to(*couplingenforcer.assemble_structure_coupling_residual(), *force_beam);
 
 
-    visualization->add_discretization_nodal_data("force", force_beam);
+    visualization->add_discretization_nodal_data("force", *force_beam);
   }
 
   // Add the pair specific visualization by looping over the individual contact pairs.

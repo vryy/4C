@@ -82,9 +82,9 @@ void PoroElast::MonolithicSplit::prepare_time_step()
       // if there are DBCs on FSI conditioned nodes, they have to be treated seperately
 
       Teuchos::RCP<Core::LinAlg::Vector<double>> ibcveln =
-          fsibcextractor_->extract_cond_vector(*structure_to_fluid_at_interface(ivelnp));
+          fsibcextractor_->extract_cond_vector(*structure_to_fluid_at_interface(*ivelnp));
       Teuchos::RCP<Core::LinAlg::Vector<double>> inobcveln =
-          fsibcextractor_->extract_other_vector(*structure_to_fluid_at_interface(ddi_));
+          fsibcextractor_->extract_other_vector(*structure_to_fluid_at_interface(*ddi_));
 
       // DBCs at FSI-Interface
       fsibcextractor_->insert_cond_vector(*ibcveln, *ifvelnp);
@@ -93,7 +93,7 @@ void PoroElast::MonolithicSplit::prepare_time_step()
     }
     else
       // no DBCs on FSI interface -> just make preconditioners consistent (structure decides)
-      ifvelnp = structure_to_fluid_at_interface(ddi_);
+      ifvelnp = structure_to_fluid_at_interface(*ddi_);
 
     fluid_field()->apply_interface_velocities(ifvelnp);
   }
@@ -101,16 +101,16 @@ void PoroElast::MonolithicSplit::prepare_time_step()
 
 Teuchos::RCP<Core::LinAlg::Vector<double>>
 PoroElast::MonolithicSplit::structure_to_fluid_at_interface(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
+    const Core::LinAlg::Vector<double>& iv) const
 {
-  return icoupfs_->master_to_slave(*iv);
+  return icoupfs_->master_to_slave(iv);
 }
 
 Teuchos::RCP<Core::LinAlg::Vector<double>>
 PoroElast::MonolithicSplit::fluid_to_structure_at_interface(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
+    const Core::LinAlg::Vector<double>& iv) const
 {
-  return icoupfs_->slave_to_master(*iv);
+  return icoupfs_->slave_to_master(iv);
 }
 
 Teuchos::RCP<Epetra_Map> PoroElast::MonolithicSplit::fsidbc_map()
@@ -157,7 +157,7 @@ Teuchos::RCP<Epetra_Map> PoroElast::MonolithicSplit::fsidbc_map()
 
   // transfer to fluid side
   Teuchos::RCP<Core::LinAlg::Vector<double>> gidmarker_fluid =
-      structure_to_fluid_at_interface(gidmarker_struct);
+      structure_to_fluid_at_interface(*gidmarker_struct);
 
   std::vector<int> structfsidbcvector;
   const int numgids = gidmarker_fluid->MyLength();  // on each processor (lids)

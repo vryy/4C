@@ -840,7 +840,7 @@ void FSI::SlidingMonolithicStructureSplit::update()
     fluid_field()->apply_mesh_displacement(ale_to_fluid(ale_field()->dispnp()));
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> unew =
-        slideale_->interpolate_fluid(fluid_field()->extract_interface_velnp());
+        slideale_->interpolate_fluid(*fluid_field()->extract_interface_velnp());
     fluid_field()->apply_interface_velocities(unew);
   }
 

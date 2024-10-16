@@ -401,7 +401,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
   Teuchos::RCP<Core::LinAlg::Vector<double>> disp_interface =
       fluid_field()->interface()->extract_fsi_cond_vector(*fluid_field()->dispnp());
   mortar_adapter_->integrate_lin_d(
-      "displacement", disp_interface, structure_to_fluid_at_interface(lambdanp_));
+      "displacement", disp_interface, structure_to_fluid_at_interface(*lambdanp_));
   tmp_k_D = mortar_adapter_->get_mortar_matrix_d();
 
   // fill off diagonal blocks
@@ -423,7 +423,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
 
     fluid_field()->discretization()->set_state(0, "lambda",
         fluid_field()->interface()->insert_fsi_cond_vector(
-            *structure_to_fluid_at_interface(lambdanp_)));
+            *structure_to_fluid_at_interface(*lambdanp_)));
 
     // build specific assemble strategy for the fluid-mechanical system matrix
     // from the point of view of fluid_field:

@@ -1686,9 +1686,7 @@ void EHL::Monolithic::lin_couette_force_disp(
 {
   const int ndim = Global::Problem::instance()->n_dim();
   Core::FE::Discretization& lub_dis = *lubrication_->lubrication_field()->discretization();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *lubrication_->lubrication_field()->dof_row_map(1));
+  Core::LinAlg::Vector<double> visc_vec(*lubrication_->lubrication_field()->dof_row_map(1));
   for (int i = 0; i < lub_dis.node_row_map()->NumMyElements(); ++i)
   {
     Core::Nodes::Node* lnode = lub_dis.l_row_node(i);
@@ -1702,10 +1700,10 @@ void EHL::Monolithic::lin_couette_force_disp(
         Teuchos::rcp_dynamic_cast<Mat::LubricationMat>(mat, true);
     const double visc = lmat->compute_viscosity(p);
 
-    for (int d = 0; d < ndim; ++d) visc_vec->ReplaceGlobalValue(lub_dis.dof(1, lnode, d), 0, visc);
+    for (int d = 0; d < ndim; ++d) visc_vec.ReplaceGlobalValue(lub_dis.dof(1, lnode, d), 0, visc);
   }
   Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec_str =
-      ada_strDisp_to_lubDisp_->slave_to_master(*visc_vec);
+      ada_strDisp_to_lubDisp_->slave_to_master(visc_vec);
 
   Core::LinAlg::Vector<double> height(*mortaradapter_->slave_dof_map());
   if (slavemaptransform_->multiply(false, *mortaradapter_->nodal_gap(), height))

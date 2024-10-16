@@ -59,8 +59,8 @@ void BEAMINTERACTION::add_beam_interaction_nodal_forces(
   Teuchos::RCP<Core::LinAlg::Vector<double>> force_solid =
       Teuchos::make_rcp<Core::LinAlg::Vector<double>>(solid_dof_map, true);
   Core::LinAlg::export_to(force, *force_solid);
-  visualization->add_discretization_nodal_data("force_beam", force_beam);
-  visualization->add_discretization_nodal_data("force_solid", force_solid);
+  visualization->add_discretization_nodal_data("force_beam", *force_beam);
+  visualization->add_discretization_nodal_data("force_solid", *force_solid);
 
   if (write_unique_ids)
   {

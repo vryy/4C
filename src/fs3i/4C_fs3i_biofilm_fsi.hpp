@@ -64,11 +64,10 @@ namespace FS3I
         Teuchos::RCP<Core::LinAlg::Vector<double>> struidispnp_,
         Core::LinAlg::Vector<double>& struiveln_);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale(Core::LinAlg::Vector<double>& iv) const;
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid_field(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+        Core::LinAlg::Vector<double>& iv) const;
 
     /// field transform
     virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_struct_field(

@@ -912,13 +912,12 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::fluid_to_struct(
     // Translate consistent nodal forces to interface loads
     const Teuchos::RCP<Core::LinAlg::Vector<double>> ishape =
         mb_fluid_field()->integrate_interface_shape();
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> iforce =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(iv->Map());
+    Core::LinAlg::Vector<double> iforce(iv->Map());
 
-    if (iforce->ReciprocalMultiply(1.0, *ishape, *iv, 0.0))
+    if (iforce.ReciprocalMultiply(1.0, *ishape, *iv, 0.0))
       FOUR_C_THROW("ReciprocalMultiply failed");
 
-    return coupsfm_->slave_to_master(*iforce);
+    return coupsfm_->slave_to_master(iforce);
   }
 }
 

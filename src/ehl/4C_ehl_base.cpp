@@ -371,9 +371,7 @@ void EHL::Base::add_couette_force(
   hinv_relV.Multiply(1., h_inv, *relVel, 0.);
 
   Core::FE::Discretization& lub_dis = *lubrication_->lubrication_field()->discretization();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *lubrication_->lubrication_field()->dof_row_map(1));
+  Core::LinAlg::Vector<double> visc_vec(*lubrication_->lubrication_field()->dof_row_map(1));
   for (int i = 0; i < lub_dis.node_row_map()->NumMyElements(); ++i)
   {
     Core::Nodes::Node* lnode = lub_dis.l_row_node(i);
@@ -387,10 +385,10 @@ void EHL::Base::add_couette_force(
         Teuchos::rcp_dynamic_cast<Mat::LubricationMat>(mat, true);
     const double visc = lmat->compute_viscosity(p);
 
-    for (int d = 0; d < ndim; ++d) visc_vec->ReplaceGlobalValue(lub_dis.dof(1, lnode, d), 0, visc);
+    for (int d = 0; d < ndim; ++d) visc_vec.ReplaceGlobalValue(lub_dis.dof(1, lnode, d), 0, visc);
   }
   Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec_str =
-      ada_strDisp_to_lubDisp_->slave_to_master(*visc_vec);
+      ada_strDisp_to_lubDisp_->slave_to_master(visc_vec);
   Core::LinAlg::Vector<double> couette_force(*mortaradapter_->slave_dof_map());
   couette_force.Multiply(-1., *visc_vec_str, hinv_relV, 0.);
 
@@ -776,11 +774,10 @@ void EHL::Base::output(bool forced_writerestart)
     Teuchos::RCP<Core::LinAlg::Vector<double>> height =
         ada_strDisp_to_lubDisp_->master_to_slave(*discretegap);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> height_ex =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ada_lubPres_to_lubDisp_->slave_dof_map());
-    Core::LinAlg::export_to(*height, *height_ex);
+    Core::LinAlg::Vector<double> height_ex(*ada_lubPres_to_lubDisp_->slave_dof_map());
+    Core::LinAlg::export_to(*height, height_ex);
     Teuchos::RCP<Core::LinAlg::Vector<double>> h1 =
-        ada_lubPres_to_lubDisp_->slave_to_master(*height_ex);
+        ada_lubPres_to_lubDisp_->slave_to_master(height_ex);
     lubrication_->lubrication_field()->disc_writer()->write_vector(
         "height", h1, Core::IO::dofvector);
 
@@ -812,13 +809,12 @@ void EHL::Base::output(bool forced_writerestart)
             lubrication_->lubrication_field()->discretization()->dof(1, lnode, d), 0, visc);
     }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> visc_vec_ex =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ada_lubPres_to_lubDisp_->slave_dof_map());
+    Core::LinAlg::Vector<double> visc_vec_ex(*ada_lubPres_to_lubDisp_->slave_dof_map());
 
-    Core::LinAlg::export_to(visc_vec, *visc_vec_ex);
+    Core::LinAlg::export_to(visc_vec, visc_vec_ex);
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> v1 =
-        ada_lubPres_to_lubDisp_->slave_to_master(*visc_vec_ex);
+        ada_lubPres_to_lubDisp_->slave_to_master(visc_vec_ex);
 
     lubrication_->lubrication_field()->disc_writer()->write_vector(
         "viscosity", v1, Core::IO::dofvector);

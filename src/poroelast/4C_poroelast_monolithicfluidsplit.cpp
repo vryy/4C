@@ -126,7 +126,7 @@ void PoroElast::MonolithicFluidSplit::setup_rhs(bool firstcall)
     rhs->Scale(
         (1.0 - stiparam) / (1.0 - ftiparam));  // scale 'rhs' due to consistent time integration
 
-    rhs = fluid_to_structure_at_interface(rhs);
+    rhs = fluid_to_structure_at_interface(*rhs);
     rhs = structure_field()->interface()->insert_fsi_cond_vector(*rhs);
 
     extractor()->add_vector(*rhs, 0, *rhs_);  // add structure contributions to 'f'
@@ -289,7 +289,7 @@ void PoroElast::MonolithicFluidSplit::extract_field_vectors(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> scx =
         structure_field()->interface()->extract_fsi_cond_vector(*sx);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcx = structure_to_fluid_at_interface(scx);
+    Teuchos::RCP<Core::LinAlg::Vector<double>> fcx = structure_to_fluid_at_interface(*scx);
     Teuchos::RCP<const Core::LinAlg::Vector<double>> fox = extractor()->extract_vector(*x, 1);
 #ifdef FLUIDSPLITAMG
     fox = fluid_field()->interface()->extract_other_vector(*fox);

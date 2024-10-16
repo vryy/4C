@@ -81,8 +81,8 @@ namespace BEAMINTERACTION
     void add_discretization_nodal_data_from_multivector(
         const std::string& data_name, const Core::LinAlg::MultiVector<double>& vector);
 
-    void add_discretization_nodal_data(const std::string& data_name,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& vector);
+    void add_discretization_nodal_data(
+        const std::string& data_name, const Core::LinAlg::Vector<double>& vector);
 
     /**
      * \brief Write the object to disc.

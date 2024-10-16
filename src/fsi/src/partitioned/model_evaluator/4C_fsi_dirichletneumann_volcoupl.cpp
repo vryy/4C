@@ -138,7 +138,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVolCoupl::fluid_
 
     // important difference to dirichletneumann.cpp: vdisp is mapped from structure to ale here
     fluidale->nonlinear_solve_vol_coupl(
-        structure_to_ale(vdisp), struct_to_fluid(ivel), icorrector_);
+        structure_to_ale(*vdisp), struct_to_fluid(ivel), icorrector_);
 
     mb_fluid_field()->set_itemax(itemax);
 
@@ -159,18 +159,18 @@ void FSI::DirichletNeumannVolCoupl::extract_previous_interface_solution()
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVolCoupl::structure_to_ale(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
+    const Core::LinAlg::Vector<double>& iv) const
 {
-  return coupsa_->master_to_slave(*iv);
+  return coupsa_->master_to_slave(iv);
 }
 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::DirichletNeumannVolCoupl::ale_to_structure(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const
+    Core::LinAlg::Vector<double>& iv) const
 {
-  return coupsa_->slave_to_master(*iv);
+  return coupsa_->slave_to_master(iv);
 }
 
 

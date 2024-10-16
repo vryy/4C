@@ -292,7 +292,7 @@ namespace Coupling::Adapter
         Teuchos::RCP<Epetra_FEVector> mv  ///< master vector (to be transferred)
     ) const
     {
-      return master_to_slave(mv.getConst());
+      return master_to_slave(*mv.getConst());
     }
 
     /// transfer a dof vector from slave to master
@@ -300,7 +300,7 @@ namespace Coupling::Adapter
         Teuchos::RCP<Epetra_FEVector> sv  ///< slave vector (to be transferred)
     ) const
     {
-      return slave_to_master(sv.getConst());
+      return slave_to_master(*sv.getConst());
     }
 
     /// transfer a dof vector from master to slave
@@ -315,12 +315,12 @@ namespace Coupling::Adapter
 
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_FEVector> master_to_slave(
-        Teuchos::RCP<const Epetra_FEVector> mv  ///< master vector (to be transferred)
+        const Epetra_FEVector& mv  ///< master vector (to be transferred)
     ) const;
 
     /// transfer a dof vector from slave to master
     Teuchos::RCP<Epetra_FEVector> slave_to_master(
-        Teuchos::RCP<const Epetra_FEVector> sv  ///< slave vector (to be transferred)
+        const Epetra_FEVector& sv  ///< slave vector (to be transferred)
     ) const;
 
     /// transfer a dof vector from master to slave

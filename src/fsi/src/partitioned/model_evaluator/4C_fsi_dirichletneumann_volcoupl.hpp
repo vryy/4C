@@ -77,11 +77,11 @@ namespace FSI
 
     /// structure to ale mapping
     Teuchos::RCP<Core::LinAlg::Vector<double>> structure_to_ale(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+        const Core::LinAlg::Vector<double>& iv) const;
 
     /// ale to structure mapping
     Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_structure(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+        Core::LinAlg::Vector<double>& iv) const;
 
     /// ale to structure
     Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_structure(

@@ -54,7 +54,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::master_t
       break;
   }
 
-  master_to_slave(mv->get_ptr_of_MultiVector(), map_type, sv->get_ptr_of_MultiVector());
+  master_to_slave(*mv->get_ptr_of_MultiVector(), map_type, *sv->get_ptr_of_MultiVector());
   return sv;
 }
 
@@ -75,7 +75,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> XFEM::XFieldField::Coupling::slave_to
       break;
   }
 
-  slave_to_master(sv->get_ptr_of_MultiVector(), map_type, mv->get_ptr_of_MultiVector());
+  slave_to_master(*sv->get_ptr_of_MultiVector(), map_type, *mv->get_ptr_of_MultiVector());
   return mv;
 }
 
@@ -96,7 +96,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> XFEM::XFieldField::Coupling::mas
       break;
   }
 
-  master_to_slave(mv, map_type, sv);
+  master_to_slave(*mv, map_type, *sv);
   return sv;
 }
 
@@ -117,37 +117,36 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> XFEM::XFieldField::Coupling::sla
       break;
   }
 
-  slave_to_master(sv, map_type, mv);
+  slave_to_master(*sv, map_type, *mv);
   return mv;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::master_to_slave(
-    const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& mv,
-    const enum XFEM::MapType& map_type, Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv) const
+void XFEM::XFieldField::Coupling::master_to_slave(const Core::LinAlg::MultiVector<double>& mv,
+    const enum XFEM::MapType& map_type, Core::LinAlg::MultiVector<double>& sv) const
 {
   switch (map_type)
   {
     case XFEM::map_dofs:
     {
-      return ::FourC::Coupling::Adapter::Coupling::master_to_slave(*mv, *sv);
+      return ::FourC::Coupling::Adapter::Coupling::master_to_slave(mv, sv);
       break;
     }
     case XFEM::map_nodes:
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (not mv->Map().PointSameAs(*masternodemap_))
+      if (not mv.Map().PointSameAs(*masternodemap_))
         FOUR_C_THROW("master node map vector expected");
-      if (not sv->Map().PointSameAs(*slavenodemap_)) FOUR_C_THROW("slave node map vector expected");
-      if (sv->NumVectors() != mv->NumVectors())
-        FOUR_C_THROW("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
+      if (not sv.Map().PointSameAs(*slavenodemap_)) FOUR_C_THROW("slave node map vector expected");
+      if (sv.NumVectors() != mv.NumVectors())
+        FOUR_C_THROW("column number mismatch %d!=%d", sv.NumVectors(), mv.NumVectors());
 #endif
 
-      Core::LinAlg::MultiVector<double> perm(*permslavenodemap_, mv->NumVectors());
-      std::copy(mv->Values(), mv->Values() + (mv->MyLength() * mv->NumVectors()), perm.Values());
+      Core::LinAlg::MultiVector<double> perm(*permslavenodemap_, mv.NumVectors());
+      std::copy(mv.Values(), mv.Values() + (mv.MyLength() * mv.NumVectors()), perm.Values());
 
-      const int err = sv->Export(perm, *nodal_slaveexport_, Insert);
+      const int err = sv.Export(perm, *nodal_slaveexport_, Insert);
       if (err) FOUR_C_THROW("Export to nodal slave distribution returned err=%d", err);
     }  // end: case XFEM::MultiFieldMapExtractor::map_nodes
   }    // end: switch (map_type)
@@ -155,31 +154,30 @@ void XFEM::XFieldField::Coupling::master_to_slave(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void XFEM::XFieldField::Coupling::slave_to_master(
-    const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& sv,
-    const enum XFEM::MapType& map_type, Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv) const
+void XFEM::XFieldField::Coupling::slave_to_master(const Core::LinAlg::MultiVector<double>& sv,
+    const enum XFEM::MapType& map_type, Core::LinAlg::MultiVector<double>& mv) const
 {
   switch (map_type)
   {
     case XFEM::map_dofs:
     {
-      return ::FourC::Coupling::Adapter::Coupling::slave_to_master(*sv, *mv);
+      return ::FourC::Coupling::Adapter::Coupling::slave_to_master(sv, mv);
       break;
     }
     case XFEM::map_nodes:
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (not mv->Map().PointSameAs(*masternodemap_))
+      if (not mv.Map().PointSameAs(*masternodemap_))
         FOUR_C_THROW("master node map vector expected");
-      if (not sv->Map().PointSameAs(*slavenodemap_)) FOUR_C_THROW("slave node map vector expected");
-      if (sv->NumVectors() != mv->NumVectors())
-        FOUR_C_THROW("column number mismatch %d!=%d", sv->NumVectors(), mv->NumVectors());
+      if (not sv.Map().PointSameAs(*slavenodemap_)) FOUR_C_THROW("slave node map vector expected");
+      if (sv.NumVectors() != mv.NumVectors())
+        FOUR_C_THROW("column number mismatch %d!=%d", sv.NumVectors(), mv.NumVectors());
 #endif
 
-      Core::LinAlg::MultiVector<double> perm(*permmasternodemap_, sv->NumVectors());
-      std::copy(sv->Values(), sv->Values() + (sv->MyLength() * sv->NumVectors()), perm.Values());
+      Core::LinAlg::MultiVector<double> perm(*permmasternodemap_, sv.NumVectors());
+      std::copy(sv.Values(), sv.Values() + (sv.MyLength() * sv.NumVectors()), perm.Values());
 
-      const int err = mv->Export(perm, *nodal_masterexport_, Insert);
+      const int err = mv.Export(perm, *nodal_masterexport_, Insert);
       if (err) FOUR_C_THROW("Export to nodal master distribution returned err=%d", err);
     }
   }
