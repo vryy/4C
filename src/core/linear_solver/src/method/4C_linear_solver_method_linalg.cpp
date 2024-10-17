@@ -363,9 +363,6 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList &i
     case Core::LinearSolver::PreconditionerType::multigrid_nxn:
       beloslist.set("Preconditioner Type", "AMGnxn");
       break;
-    case Core::LinearSolver::PreconditionerType::cheap_simple:
-      beloslist.set("Preconditioner Type", "CheapSIMPLE");
-      break;
     case Core::LinearSolver::PreconditionerType::block_teko:
       beloslist.set("Preconditioner Type", "Teko");
       break;
@@ -379,19 +376,6 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList &i
   {
     Teuchos::ParameterList &ifpacklist = outparams.sublist("IFPACK Parameters");
     ifpacklist = translate_four_c_to_ifpack(inparams);
-  }
-
-  // set parameters for CheapSIMPLE if used
-  if (azprectyp == Core::LinearSolver::PreconditionerType::cheap_simple)
-  {
-    Teuchos::ParameterList &simplelist = outparams.sublist("CheapSIMPLE Parameters");
-    simplelist.set("Prec Type", "CheapSIMPLE");  // not used
-    Teuchos::ParameterList &predictList = simplelist.sublist("Inverse1");
-    predictList = Core::LinAlg::Solver::translate_solver_parameters(
-        get_solver_params(inparams.get<int>("SUB_SOLVER1")), get_solver_params, verbosity);
-    Teuchos::ParameterList &schurList = simplelist.sublist("Inverse2");
-    schurList = Core::LinAlg::Solver::translate_solver_parameters(
-        get_solver_params(inparams.get<int>("SUB_SOLVER2")), get_solver_params, verbosity);
   }
 
   // set parameters for ML if used

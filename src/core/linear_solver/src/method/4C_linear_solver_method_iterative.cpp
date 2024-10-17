@@ -11,7 +11,6 @@
 #include "4C_linear_solver_method_iterative.hpp"
 
 #include "4C_linear_solver_amgnxn_preconditioner.hpp"
-#include "4C_linear_solver_preconditioner_block.hpp"
 #include "4C_linear_solver_preconditioner_ifpack.hpp"
 #include "4C_linear_solver_preconditioner_krylovprojection.hpp"
 #include "4C_linear_solver_preconditioner_muelu.hpp"
@@ -268,10 +267,6 @@ Core::LinearSolver::IterativeSolver<MatrixType, VectorType>::create_precondition
   else if (params().isSublist("MueLu (Contact) Parameters"))
   {
     preconditioner = Teuchos::make_rcp<Core::LinearSolver::MueLuContactSpPreconditioner>(params());
-  }
-  else if (params().isSublist("CheapSIMPLE Parameters"))
-  {
-    preconditioner = Teuchos::make_rcp<Core::LinearSolver::SimplePreconditioner>(params());
   }
   else if (params().isSublist("Teko Parameters"))
   {
