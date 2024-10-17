@@ -772,9 +772,6 @@ IFPACKOVERLAP                   0
 // User specified name for solver block
 NAME ALE solver
 //
-// damping parameter for SIMPLE preconditioner
-SIMPLE_DAMPING                  1
-//
 // The solver to attack the system of linear equations arising of FE approach with.
 //                              Amesos_KLU_sym
 //                              Amesos_KLU_nonsym
@@ -790,12 +787,6 @@ SIMPLE_DAMPING                  1
 //                              Stratimikos_Belos
 //                              undefined
 SOLVER                          UMFPACK
-//
-// sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable on all levels, BS: used for fine and intermedium BraessSarazin (BS) level smoother)
-SUB_SOLVER1                     -1
-//
-// sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all levels, BS: used for coarse BraessSarazin (BS) level smoother)
-SUB_SOLVER2                     -1
 //
 // solver parameters for solver block 2
 --------------------------------------------------------------------SOLVER 2
@@ -876,9 +867,6 @@ IFPACKOVERLAP                   0
 // User specified name for solver block
 NAME Fluid solver
 //
-// damping parameter for SIMPLE preconditioner
-SIMPLE_DAMPING                  1
-//
 // The solver to attack the system of linear equations arising of FE approach with.
 //                              Amesos_KLU_sym
 //                              Amesos_KLU_nonsym
@@ -894,12 +882,6 @@ SIMPLE_DAMPING                  1
 //                              Stratimikos_Belos
 //                              undefined
 SOLVER                          Belos
-//
-// sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable on all levels, BS: used for fine and intermedium BraessSarazin (BS) level smoother)
-SUB_SOLVER1                     -1
-//
-// sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all levels, BS: used for coarse BraessSarazin (BS) level smoother)
-SUB_SOLVER2                     -1
 //
 // solver parameters for solver block 3
 --------------------------------------------------------------------SOLVER 3
@@ -980,9 +962,6 @@ IFPACKOVERLAP                   0
 // User specified name for solver block
 NAME Structure solver
 //
-// damping parameter for SIMPLE preconditioner
-SIMPLE_DAMPING                  1
-//
 // The solver to attack the system of linear equations arising of FE approach with.
 //                              Amesos_KLU_sym
 //                              Amesos_KLU_nonsym
@@ -998,12 +977,6 @@ SIMPLE_DAMPING                  1
 //                              Stratimikos_Belos
 //                              undefined
 SOLVER                          UMFPACK
-//
-// sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable on all levels, BS: used for fine and intermedium BraessSarazin (BS) level smoother)
-SUB_SOLVER1                     -1
-//
-// sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all levels, BS: used for coarse BraessSarazin (BS) level smoother)
-SUB_SOLVER2                     -1
 //
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 //
