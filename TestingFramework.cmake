@@ -108,25 +108,40 @@ endfunction()
 
 ###------------------------------------------------------------------ 4C Test
 # Run simulation with .dat file
-# Usage in TestingFrameworkListOfTests.cmake: "four_c_test(<input_file> optional: NP <> RESTART_STEP <> TIMEOUT <> OMP_THREADS <> POST_ENSIGHT_STRUCTURE <> LABEL <>)"
+# Usage in TestingFrameworkListOfTests.cmake:
+#            "four_c_test(<input_file> optional: NP <> RESTART_STEP <> TIMEOUT <> OMP_THREADS <> POST_ENSIGHT_STRUCTURE <> LABEL <>
+#                                                CSV_COMPARISON_RESULT_FILE <> CSV_COMPARISON_REFERENCE_FILE <>
+#                                                CSV_COMPARISON_TOL_R <> CSV_COMPARISON_TOL_A <>)"
 
 # TEST_FILE:              must equal the name of a .dat file in directory tests/input_files; without ".dat".
 #                         If two files are provided the second input file is restarted based on the results of the first input file.
 
 # optional:
-# NP:                     Number of processors the test should use. Fallback to 1 if not specified.
-#                         For two input files two NP's are required.
-# RESTART_STEP:           Number of restart step; not defined indicates no restart
-# TIMEOUT:                Manually defined duration for test timeout; defaults to global timeout if not specified
-# OMP_THREADS:            Number of OpenMP threads per proccessor the test should use; defaults to deactivated
-# POST_ENSIGHT_STRUCTURE: Test post_ensight options in serial and parallel (for structure simulation only!)
-# LABELS:                 Add labels to the test
+# NP:                             Number of processors the test should use. Fallback to 1 if not specified.
+#                                 For two input files two NP's are required.
+# RESTART_STEP:                   Number of restart step; not defined indicates no restart
+# TIMEOUT:                        Manually defined duration for test timeout; defaults to global timeout if not specified
+# OMP_THREADS:                    Number of OpenMP threads per proccessor the test should use; defaults to deactivated
+# POST_ENSIGHT_STRUCTURE:         Test post_ensight options in serial and parallel (for structure simulation only!)
+# LABELS:                         Add labels to the test
+# CSV_COMPARISON_RESULT_FILE:     Arbitrary .csv result files to be compared (see `utilites/diff_with_tolerance.py`)
+# CSV_COMPARISON_REFERENCE_FILE:  Reference files to compare with
+# CSV_COMPARISON_TOL_R:           Relative tolerances for comparison
+# CSV_COMPARISON_TOL_A:           Absolute tolerances for comparison
 
 function(four_c_test)
 
   set(options "")
   set(oneValueArgs RESTART_STEP TIMEOUT OMP_THREADS POST_ENSIGHT_STRUCTURE)
-  set(multiValueArgs TEST_FILE NP LABELS)
+  set(multiValueArgs
+      TEST_FILE
+      NP
+      LABELS
+      CSV_COMPARISON_RESULT_FILE
+      CSV_COMPARISON_REFERENCE_FILE
+      CSV_COMPARISON_TOL_R
+      CSV_COMPARISON_TOL_A
+      )
   cmake_parse_arguments(
     _parsed
     "${options}"
@@ -168,6 +183,22 @@ function(four_c_test)
     set(_parsed_LABELS "")
   endif()
 
+  if(NOT DEFINED _parsed_CSV_COMPARISON_RESULT_FILE)
+    set(_parsed_CSV_COMPARISON_RESULT_FILE "")
+  endif()
+
+  if(NOT DEFINED _parsed_CSV_COMPARISON_REFERENCE_FILE)
+    set(_parsed_CSV_COMPARISON_REFERENCE_FILE "")
+  endif()
+
+  if(NOT DEFINED _parsed_CSV_COMPARISON_TOL_R)
+    set(_parsed_CSV_COMPARISON_TOL_R "")
+  endif()
+
+  if(NOT DEFINED _parsed_CSV_COMPARISON_TOL_A)
+    set(_parsed_CSV_COMPARISON_TOL_A "")
+  endif()
+
   list(LENGTH _parsed_TEST_FILE num_TEST_FILE)
   list(LENGTH _parsed_NP num_NP)
   if(num_TEST_FILE GREATER 2 OR NOT num_NP EQUAL num_TEST_FILE)
@@ -192,6 +223,34 @@ function(four_c_test)
       message(FATAL_ERROR "Test source file ${file_name} does not exist!")
     endif()
     list(APPEND source_file ${file_name})
+  endforeach()
+
+  # check that same number of files and tolerances are provided for arbitrary .csv comparison
+  list(LENGTH _parsed_CSV_COMPARISON_RESULT_FILE num_CSV_COMPARISON_RESULT_FILE)
+  list(LENGTH _parsed_CSV_COMPARISON_REFERENCE_FILE num_CSV_COMPARISON_REFERENCE_FILE)
+  list(LENGTH _parsed_CSV_COMPARISON_TOL_R num_CSV_COMPARISON_TOL_R)
+  list(LENGTH _parsed_CSV_COMPARISON_TOL_A num_CSV_COMPARISON_TOL_A)
+  if(NOT num_CSV_COMPARISON_RESULT_FILE EQUAL num_CSV_COMPARISON_REFERENCE_FILE
+     OR NOT num_CSV_COMPARISON_RESULT_FILE EQUAL num_CSV_COMPARISON_TOL_R
+     OR NOT num_CSV_COMPARISON_RESULT_FILE EQUAL num_CSV_COMPARISON_TOL_A
+     )
+    message(
+      FATAL_ERROR
+        "You must provide the same number of files and tolerances for arbitrary .csv comparison!"
+      )
+  endif()
+
+  # check if .csv reference files exists
+  set(csv_comparison_reference_file "")
+  foreach(string IN LISTS _parsed_CSV_COMPARISON_REFERENCE_FILE)
+    set(file_name "${PROJECT_SOURCE_DIR}/tests/input_files/${string}")
+    if(NOT EXISTS ${file_name})
+      message(
+        FATAL_ERROR
+          "Reference file ${file_name} for arbitrary .csv result comparison does not exist!"
+        )
+    endif()
+    list(APPEND csv_comparison_reference_file ${file_name})
   endforeach()
 
   # set base test name and directory
@@ -246,7 +305,7 @@ function(four_c_test)
     "${_parsed_LABELS}"
     )
 
-  # set additional fixture for restart or post_ensight
+  # set additional fixture for restart
   set(additional_fixture "${name_of_test}")
 
   # restart option
@@ -268,6 +327,9 @@ function(four_c_test)
       LABELS
       "${_parsed_LABELS}"
       )
+
+    # update additional fixture for possible following post_ensight or csv comparison
+    set(additional_fixture "${name_of_test}")
 
   elseif(NOT _parsed_RESTART_STEP STREQUAL "" AND num_TEST_FILE EQUAL 2)
     # restart with different input file
@@ -304,6 +366,9 @@ function(four_c_test)
       "${_parsed_LABELS}"
       )
     set_run_serial(${name_of_test})
+
+    # update additional fixture for possible following post_ensight or csv comparison
+    set(additional_fixture "${name_of_test}")
 
   endif()
 
@@ -346,6 +411,39 @@ function(four_c_test)
       LABELS
       "${_parsed_LABELS}"
       )
+  endif()
+
+  # csv comparison
+  if(NOT _parsed_CSV_COMPARISON_RESULT_FILE STREQUAL "")
+
+    # loop over all csv comparisons
+    foreach(
+      result_file
+      reference_file
+      tol_r
+      tol_a
+      IN
+      ZIP_LISTS
+      _parsed_CSV_COMPARISON_RESULT_FILE
+      _parsed_CSV_COMPARISON_REFERENCE_FILE
+      _parsed_CSV_COMPARISON_TOL_R
+      _parsed_CSV_COMPARISON_TOL_A
+      )
+      set(name_of_csv_comparison_test "${name_of_test}-csv_comparison-${result_file}")
+      set(csv_comparison_command
+          "${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3 ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${test_directory}/${result_file} ${PROJECT_SOURCE_DIR}/tests/input_files/${reference_file} ${tol_r} ${tol_a}"
+          )
+      _add_test_with_options(
+        NAME_OF_TEST
+        ${name_of_csv_comparison_test}
+        TEST_COMMAND
+        ${csv_comparison_command}
+        ADDITIONAL_FIXTURE
+        ${additional_fixture}
+        LABELS
+        "${_parsed_LABELS}"
+        )
+    endforeach()
   endif()
 
 endfunction()
@@ -547,49 +645,6 @@ function(
 
   # Set "RUN_SERIAL TRUE" because result files can only be read by one process.
   set_run_serial(${name_of_test})
-endfunction()
-
-###------------------------------------------------------------------ Compare CSV
-# Compare arbitrary result csv file to corresponding reference file with tolerances
-# Implementation can be found in 'utilities/diff_with_tolerance.py'
-# CAUTION: This tests are based on results of a previous simulation/test
-# Usage in TestingFrameworkListOfTests.cmake: "four_c_test_result_file(<name_of_input_file> <num_proc> <filetag> <resultfilename> <referencefilename> <relative tolerance> <absolute tolerance>)"
-# <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
-# <num_proc>: number of processors the test should use
-# <num_proc_base_run>: number of processors of precursor base run
-# <filetag>: add tag to test name
-# <resultfilename>: file that should be compared
-# <referencefilename>: file to compare with
-# <relative tolerance>: relative tolerance, see `numpy.isclose`
-# <absolute tolerance>: absolute tolerance, see `numpy.isclose`
-function(
-  four_c_test_result_file
-  name_of_input_file
-  num_proc
-  num_proc_base_run
-  filetag
-  resultfilename
-  referencefilename
-  r_tol
-  a_tol
-  )
-  set(name_of_test ${name_of_input_file}-p${num_proc}-${filetag})
-  set(test_directory
-      ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}-p${num_proc_base_run}
-      )
-
-  # add test to testing framework
-  add_test(
-    NAME ${name_of_test}
-    COMMAND
-      ${PROJECT_SOURCE_DIR}/utilities/python-venv/bin/python3
-      ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${test_directory}/${resultfilename}
-      ${PROJECT_SOURCE_DIR}/tests/input_files/${referencefilename} ${r_tol} ${a_tol}
-    )
-
-  require_fixture(${name_of_test} "${name_of_input_file}-p${num_proc_base_run};test_cleanup")
-  set_processors(${name_of_test} 1)
-  set_timeout(${name_of_test})
 endfunction()
 
 ###------------------------------------------------------------------ Compare VTK
