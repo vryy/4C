@@ -51,8 +51,8 @@ namespace Core::LinAlg
    * \param params Additional configuration parameters for algebraic multigrid setup
    * \return Prolongation matrix
    */
-  Core::LinAlg::SparseMatrix create_interpolation_matrix(
-      const SparseMatrix& matrix, double* nullspace, Teuchos::ParameterList& params);
+  Core::LinAlg::SparseMatrix create_interpolation_matrix(const SparseMatrix& matrix,
+      const Core::LinAlg::MultiVector<double>& nullspace, Teuchos::ParameterList& params);
 
   /*!
    \brief Create a new Core::LinAlg::Vector<double> and return RefcountPtr to it

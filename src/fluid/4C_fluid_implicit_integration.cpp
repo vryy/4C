@@ -4078,26 +4078,12 @@ void FLD::FluidImplicitTimeInt::avm3_get_scale_separation_matrix()
   Teuchos::ParameterList params;
   Core::LinearSolver::Parameters::compute_solver_parameters(*discret_, params);
 
-  // get toggle vector for Dirchlet boundary conditions
-  const Teuchos::RCP<const Core::LinAlg::Vector<double>> dbct = dirichlet();
-
   // get nullspace parameters
-  double* nullspace = params.get("null space: vectors", (double*)nullptr);
-  if (!nullspace) FOUR_C_THROW("No nullspace supplied in parameter list");
-  int nsdim = params.get("null space: dimension", 1);
-
-  // modify nullspace to ensure that DBC are fully taken into account
-  if (nullspace)
-  {
-    const int length = system_matrix()->OperatorRangeMap().NumMyElements();
-    for (int i = 0; i < nsdim; ++i)
-      for (int j = 0; j < length; ++j)
-        if ((*dbct)[j] != 0.0) nullspace[i * length + j] = 0.0;
-  }
+  auto nullspace = params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace");
 
   // get plain aggregation Ptent
   Core::LinAlg::SparseMatrix Ptent =
-      Core::LinAlg::create_interpolation_matrix(*system_matrix(), nullspace, params);
+      Core::LinAlg::create_interpolation_matrix(*system_matrix(), *nullspace, params);
 
   // compute scale-separation matrix: S = I - Ptent*Ptent^T
   Sep_ = Core::LinAlg::matrix_multiply(Ptent, false, Ptent, true);

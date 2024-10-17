@@ -12,10 +12,21 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <MLAPI_Aggregation.h>
-#include <MLAPI_Workspace.h>
+#include <MueLu_AmalgamationFactory.hpp>
+#include <MueLu_CoalesceDropFactory.hpp>
+#include <MueLu_CoarseMapFactory.hpp>
+#include <MueLu_FactoryManager.hpp>
+#include <MueLu_TentativePFactory.hpp>
+#include <MueLu_UncoupledAggregationFactory.hpp>
+#include <MueLu_UseDefaultTypes.hpp>
+#include <MueLu_Utilities.hpp>
 
 FOUR_C_NAMESPACE_OPEN
+
+using SC = Scalar;
+using LO = LocalOrdinal;
+using GO = GlobalOrdinal;
+using NO = Node;
 
 /*----------------------------------------------------------------------*
  |  create a Epetra_CrsMatrix                                mwgee 12/06|
@@ -46,13 +57,76 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::create_identity_matrix(co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::SparseMatrix Core::LinAlg::create_interpolation_matrix(
-    const SparseMatrix& matrix, double* nullspace, Teuchos::ParameterList& params)
+Core::LinAlg::SparseMatrix Core::LinAlg::create_interpolation_matrix(const SparseMatrix& matrix,
+    const Core::LinAlg::MultiVector<double>& nullspace, Teuchos::ParameterList& params)
 {
-  Teuchos::RCP<Epetra_CrsMatrix> prolongation_operator;
+  using EpetraCrsMatrix = Xpetra::EpetraCrsMatrixT<GO, NO>;
+  using EpetraMultiVector = Xpetra::EpetraMultiVectorT<GO, NO>;
 
-  MLAPI::Init();
-  MLAPI::GetPtent(*matrix.epetra_matrix(), params, nullspace, prolongation_operator);
+  const Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> xpetra_nullspace =
+      Teuchos::rcp(new EpetraMultiVector(
+          Teuchos::rcp(new Epetra_MultiVector(*nullspace.get_ptr_of_Epetra_MultiVector()))));
+  const int number_of_equations = params.get<int>("PDE equations");
+
+  Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> mueluA =
+      Teuchos::rcp(new EpetraCrsMatrix(matrix.epetra_matrix()));
+  Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> xpetra_matrix =
+      Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(mueluA));
+  xpetra_matrix->SetFixedBlockSize(number_of_equations);
+
+  MueLu::Level fineLevel, coarseLevel;
+  Teuchos::RCP<MueLu::FactoryManager<SC, LO, GO, NO>> factoryHandler =
+      rcp(new MueLu::FactoryManager());
+  factoryHandler->SetKokkosRefactor(false);
+  fineLevel.SetFactoryManager(factoryHandler);
+  coarseLevel.SetFactoryManager(factoryHandler);
+
+  coarseLevel.SetPreviousLevel(rcpFromRef(fineLevel));
+
+  fineLevel.SetLevelID(0);
+  coarseLevel.SetLevelID(1);
+  fineLevel.SetFactoryManager(Teuchos::null);
+  coarseLevel.SetFactoryManager(Teuchos::null);
+
+  fineLevel.Set("A", xpetra_matrix);
+  fineLevel.Set("Nullspace", xpetra_nullspace);
+  fineLevel.Set("DofsPerNode", number_of_equations);
+  fineLevel.Set("Verbosity", Teuchos::VERB_EXTREME);
+
+  Teuchos::RCP<MueLu::AmalgamationFactory<SC, LO, GO, NO>> amalgFact =
+      rcp(new MueLu::AmalgamationFactory());
+  Teuchos::RCP<MueLu::CoalesceDropFactory<SC, LO, GO, NO>> dropFact =
+      rcp(new MueLu::CoalesceDropFactory());
+  dropFact->SetFactory("UnAmalgamationInfo", amalgFact);
+  dropFact->SetParameter("aggregation: use ml scaling of drop tol", Teuchos::ParameterEntry(true));
+
+  Teuchos::RCP<MueLu::UncoupledAggregationFactory<LO, GO, NO>> UncoupledAggFact =
+      rcp(new MueLu::UncoupledAggregationFactory());
+  UncoupledAggFact->SetFactory("Graph", dropFact);
+  UncoupledAggFact->SetParameter(
+      "aggregation: preserve Dirichlet points", Teuchos::ParameterEntry(true));
+  UncoupledAggFact->SetParameter("aggregation: match ML phase1", Teuchos::ParameterEntry(true));
+  UncoupledAggFact->SetParameter("aggregation: match ML phase2a", Teuchos::ParameterEntry(true));
+  UncoupledAggFact->SetParameter("aggregation: match ML phase2b", Teuchos::ParameterEntry(true));
+
+  Teuchos::RCP<MueLu::CoarseMapFactory<SC, LO, GO, NO>> coarseMapFact =
+      rcp(new MueLu::CoarseMapFactory());
+  coarseMapFact->SetFactory("Aggregates", UncoupledAggFact);
+
+  Teuchos::RCP<MueLu::TentativePFactory<SC, LO, GO, NO>> TentativePFact =
+      rcp(new MueLu::TentativePFactory());
+  TentativePFact->SetFactory("Aggregates", UncoupledAggFact);
+  TentativePFact->SetFactory("UnAmalgamationInfo", amalgFact);
+  TentativePFact->SetFactory("CoarseMap", coarseMapFact);
+
+  coarseLevel.Request("P", TentativePFact.get());
+  coarseLevel.Request(*TentativePFact);
+  TentativePFact->Build(fineLevel, coarseLevel);
+
+  Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> Ptent;
+  coarseLevel.Get("P", Ptent, TentativePFact.get());
+
+  auto prolongation_operator = MueLu::Utilities<SC, LO, GO, NO>::Op2NonConstEpetraCrs(Ptent);
 
   Core::LinAlg::SparseMatrix prolongator(prolongation_operator, Core::LinAlg::View);
 
