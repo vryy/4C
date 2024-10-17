@@ -157,13 +157,6 @@ void NOX::Nln::Solver::PseudoTransient::create_scaling_operator()
 
       break;
     }
-    case NOX::Nln::Solver::PseudoTransient::scale_op_lumped_mass:
-    {
-      // get the lumped mass matrix
-      scalingDiagOpPtr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
-          *(Teuchos::rcp_dynamic_cast<NOX::Nln::Group>(solnPtr)->get_lumped_mass_matrix_ptr()));
-      break;
-    }
     // get element based scaling operator
     case NOX::Nln::Solver::PseudoTransient::scale_op_element_based:
     {
@@ -850,7 +843,6 @@ void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
   switch (scaleoptype)
   {
     case NOX::Nln::Solver::PseudoTransient::scale_op_identity:
-    case NOX::Nln::Solver::PseudoTransient::scale_op_lumped_mass:
     {
       /* Build the scaling operator V and multiply it with the inverse
        * pseudo time step. Finally, we modify the jacobian.

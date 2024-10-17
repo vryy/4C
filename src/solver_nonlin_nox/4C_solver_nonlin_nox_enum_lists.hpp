@@ -208,28 +208,6 @@ namespace NOX
     }  // namespace LinSystem
 
 
-    namespace Direction
-    {
-      enum class DefaultStepTest : int
-      {
-        none,                  ///< unspecified
-        volume_change_control  ///< use the volume change test
-      };
-
-      inline std::string default_step_test_to_string(const enum DefaultStepTest test_type)
-      {
-        switch (test_type)
-        {
-          case DefaultStepTest::none:
-            return "DefaultStepTest::none";
-          case DefaultStepTest::volume_change_control:
-            return "DefaultStepTest::volume_change_control";
-          default:
-            return "UNKNOWN DefaultStepTest enumerator";
-        }
-      }
-    }  // namespace Direction
-
     namespace MeritFunction
     {
       //! order of the linearization term
@@ -260,10 +238,8 @@ namespace NOX
       //! merit function names
       enum MeritFctName : int
       {
-        mrtfct_sum_of_squares,          //!< sum of squares merit function
-        mrtfct_lagrangian,              //!< lagrangian merit function
-        mrtfct_lagrangian_active,       //!< lagrangian considering only the active contributions
-        mrtfct_infeasibility_two_norm,  //!< infeasibility merit function
+        mrtfct_sum_of_squares,                //!< sum of squares merit function
+        mrtfct_infeasibility_two_norm,        //!< infeasibility merit function
         mrtfct_infeasibility_two_norm_active, /*!< infeasibility merit function,
                                                *  considering only the active contributions */
         mrtfct_energy,                        //!< representative energy value
@@ -276,10 +252,6 @@ namespace NOX
         {
           case mrtfct_sum_of_squares:
             return "mrtfct_sum_of_squares";
-          case mrtfct_lagrangian:
-            return "mrtfct_lagrangian";
-          case mrtfct_lagrangian_active:
-            return "mrtfct_lagrangian_active";
           case mrtfct_infeasibility_two_norm:
             return "mrtfct_infeasibility_two_norm";
           case mrtfct_infeasibility_two_norm_active:

@@ -88,10 +88,6 @@ namespace NOX
       ::NOX::Abstract::Group::ReturnType applyJacobianInverse(Teuchos::ParameterList& p,
           const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const override;
 
-      /// apply one block of the jacobian to a vector
-      ::NOX::Abstract::Group::ReturnType apply_jacobian_block(const ::NOX::Epetra::Vector& input,
-          Teuchos::RCP<::NOX::Epetra::Vector>& result, unsigned rbid, unsigned cbid) const;
-
       //! Compute and store \f$F(x)\f$ and the jacobian \f$\frac{\partial F(x)}{\partial x}\f$ at
       //! the same time. This can result in a huge performance gain in some special cases, e.g.
       //! contact problems.
@@ -104,10 +100,6 @@ namespace NOX
       ::NOX::Abstract::Group::ReturnType compute_element_volumes(
           Core::LinAlg::Vector<double>& ele_vols) const;
 
-      /*! get the nodal dofs from the elements corresponding to the provided
-       *  global element ids */
-      void get_dofs_from_elements(
-          const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const;
 
       /// compute trial element volumes
       ::NOX::Abstract::Group::ReturnType compute_trial_element_volumes(
@@ -115,17 +107,8 @@ namespace NOX
 
       //! @}
 
-      /// compute the correction system of equations (e.g. in case of a second order correction
-      /// step)
-      ::NOX::Abstract::Group::ReturnType compute_correction_system(
-          const enum NOX::Nln::CorrectionType type);
-
       //! set right hand side
       ::NOX::Abstract::Group::ReturnType set_f(Teuchos::RCP<::NOX::Epetra::Vector> Fptr);
-
-      //! set jacobian operator
-      ::NOX::Abstract::Group::ReturnType set_jacobian_operator(
-          const Teuchos::RCP<const Epetra_Operator> jacOperator);
 
       //! set the solution vector to zero
       void reset_x();
@@ -139,21 +122,6 @@ namespace NOX
        * evaluation calls of the expensive computeJacobian() routines! Afterwards
        * the base class function is called.                   hiermeier 03/2016 */
       bool isJacobian() const override;
-
-      /// are the eigenvalues valid?
-      virtual bool is_eigenvalues() const;
-
-      inline NOX::Nln::CorrectionType get_correction_type() const { return corr_type_; }
-
-      /// @name access the eigenvalue data
-      /// @{
-
-      const Core::LinAlg::SerialDenseVector& get_jacobian_real_eigenvalues() const;
-      const Core::LinAlg::SerialDenseVector& get_jacobian_imaginary_eigenvalues() const;
-      double get_jacobian_max_real_eigenvalue() const;
-      double get_jacobian_min_real_eigenvalue() const;
-
-      /// @}
 
       //! returns the nox_nln_interface_required pointer
       Teuchos::RCP<const NOX::Nln::Interface::Required> get_nln_req_interface_ptr() const;
@@ -190,12 +158,6 @@ namespace NOX
           const std::vector<::NOX::Abstract::Vector::NormType>& type,
           const std::vector<StatusTest::QuantityType>& chQ,
           Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType>> scale) const;
-
-      //! create a backup state
-      void create_backup_state(const ::NOX::Abstract::Vector& dir) const;
-
-      //! recover from stored backup state
-      void recover_from_backup_state();
 
       //! @name reset the pre/post operator wrapper objects
       //! @{
@@ -238,52 +200,9 @@ namespace NOX
       void adjust_pseudo_time_step(double& delta, const double& stepSize,
           const ::NOX::Epetra::Vector& dir, const NOX::Nln::Solver::PseudoTransient& ptcsolver);
 
-      //! get the lumped mass matrix
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_lumped_mass_matrix_ptr() const;
-
       // Get element based scaling operator
       Teuchos::RCP<Core::LinAlg::SparseMatrix> get_contributions_from_element_level();
       //! @}
-
-      //! @name XFEM related methods
-      //! @{
-
-      //! destroy the jacobian ptr in the linear system
-      bool destroy_jacobian();
-
-      //! @}
-
-      //! compute and return some energy representative
-      virtual double get_model_value(const enum MeritFunction::MeritFctName merit_func_type) const;
-
-      //! compute contributions to a linear model
-      virtual double get_linearized_model_terms(const ::NOX::Abstract::Vector& dir,
-          enum NOX::Nln::MeritFunction::MeritFctName mf_type,
-          enum NOX::Nln::MeritFunction::LinOrder linorder,
-          enum NOX::Nln::MeritFunction::LinType lintype) const;
-
-      /// return the DOF map of the solution vector
-      const Epetra_BlockMap& get_dof_map() const;
-
-      /// get jacobian range map from row/column block rbid/cbid
-      const Epetra_Map& get_jacobian_range_map(unsigned rbid, unsigned cbid) const;
-
-      /// return a copy of the Jacobian diagonal block \c diag_bid
-      Teuchos::RCP<Core::LinAlg::Vector<double>> get_diagonal_of_jacobian(unsigned diag_bid) const;
-
-      /// replace the Jacobian diagonal block \c diag_bid
-      void replace_diagonal_of_jacobian(
-          const Core::LinAlg::Vector<double>& new_diag, unsigned diag_bid) const;
-
-      /// compute the condition number of the Jacobian matrix (serial mode)
-      ::NOX::Abstract::Group::ReturnType compute_serial_jacobian_condition_number(
-          const NOX::Nln::LinSystem::ConditionNumber condnum_type, bool printOutput);
-
-      /// compute the eigenvalues of the Jacobian matrix (serial mode)
-      ::NOX::Abstract::Group::ReturnType compute_serial_jacobian_eigenvalues(bool printOutput);
-
-      /// reset is valid Newton member
-      inline void reset_is_valid_newton() { isValidNewton = false; };
 
       /// allow to set isValidNewton manually
       inline void set_is_valid_newton(const bool value) { isValidNewton = value; };

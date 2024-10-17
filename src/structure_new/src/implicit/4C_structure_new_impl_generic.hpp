@@ -158,9 +158,6 @@ namespace Solid
       //! Get the NOX parameter list
       Teuchos::ParameterList& get_nox_params();
 
-      /// compute the condition number of the structural tangential stiffness matrix if desired
-      void condition_number(const NOX::Nln::Group& grp) const;
-
       //! @name Attribute access functions
       //@{
 

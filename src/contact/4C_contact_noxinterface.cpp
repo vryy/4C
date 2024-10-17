@@ -375,11 +375,6 @@ double CONTACT::NoxInterface::get_model_value(NOX::Nln::MeritFunction::MeritFctN
 {
   switch (name)
   {
-    case NOX::Nln::MeritFunction::mrtfct_lagrangian:
-    case NOX::Nln::MeritFunction::mrtfct_lagrangian_active:
-    {
-      return strategy().get_potential_value(name);
-    }
     case NOX::Nln::MeritFunction::mrtfct_infeasibility_two_norm:
     case NOX::Nln::MeritFunction::mrtfct_infeasibility_two_norm_active:
     {
@@ -411,11 +406,6 @@ double CONTACT::NoxInterface::get_linearized_model_terms(const Core::LinAlg::Vec
 {
   switch (name)
   {
-    case NOX::Nln::MeritFunction::mrtfct_lagrangian:
-    case NOX::Nln::MeritFunction::mrtfct_lagrangian_active:
-    {
-      return strategy().get_linearized_potential_value_terms(dir, name, linorder, lintype);
-    }
     case NOX::Nln::MeritFunction::mrtfct_infeasibility_two_norm:
     case NOX::Nln::MeritFunction::mrtfct_infeasibility_two_norm_active:
     {

@@ -12,8 +12,6 @@
 
 #include "4C_solver_nonlin_nox_meritfunction_factory.hpp"
 
-#include "4C_solver_nonlin_nox_meritfunction_lagrangian.hpp"
-
 #include <NOX_Utils.H>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
@@ -89,10 +87,6 @@ NOX::Nln::MeritFunction::Factory::build_constrained_merit_function(
   {
     // default NOX case, no pointer necessary
     mrtFctPtr = Teuchos::null;
-  }
-  else if (mftype == mrtfct_lagrangian || mftype == mrtfct_lagrangian_active)
-  {
-    mrtFctPtr = Teuchos::make_rcp<Lagrangian>(mftype, noxNlnGlobalData.get_nox_utils_ptr());
   }
   else
   {

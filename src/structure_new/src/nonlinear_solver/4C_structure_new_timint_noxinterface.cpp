@@ -444,8 +444,6 @@ double Solid::TimeInt::NoxInterface::get_model_value(const Epetra_Vector& x, con
 
   switch (merit_func_type)
   {
-    case NOX::Nln::MeritFunction::mrtfct_lagrangian_active:
-    case NOX::Nln::MeritFunction::mrtfct_lagrangian:
     case NOX::Nln::MeritFunction::mrtfct_energy:
     {
       Core::IO::cout(Core::IO::debug) << __LINE__ << " - " << __FUNCTION__ << "\n";
@@ -481,11 +479,6 @@ double Solid::TimeInt::NoxInterface::get_linearized_model_terms(const ::NOX::Abs
 {
   switch (mf_type)
   {
-    case NOX::Nln::MeritFunction::mrtfct_lagrangian:
-    case NOX::Nln::MeritFunction::mrtfct_lagrangian_active:
-    {
-      return get_linearized_energy_model_terms(group, dir, linorder, lintype);
-    }
     case NOX::Nln::MeritFunction::mrtfct_infeasibility_two_norm:
     case NOX::Nln::MeritFunction::mrtfct_infeasibility_two_norm_active:
       return 0.0;
