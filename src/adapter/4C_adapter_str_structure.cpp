@@ -497,8 +497,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
           sol != Core::LinearSolver::SolverType::superlu)
       {
         // if an iterative solver is chosen we need a block preconditioner
-        if (prec != Core::LinearSolver::PreconditionerType::cheap_simple &&
-            prec != Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp &&
+        if (prec != Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp &&
             prec != Core::LinearSolver::PreconditionerType::block_teko)
           FOUR_C_THROW(
               "You have chosen an iterative linear solver. For mortar meshtying/contact problems "
@@ -541,14 +540,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
               "STRUCTURAL DYNAMIC to a valid number!");
 
         // provide null space information
-        if (prec == Core::LinearSolver::PreconditionerType::cheap_simple)
-        {
-          actdis.compute_null_space_if_necessary(
-              solver->params()
-                  .sublist("CheapSIMPLE Parameters")
-                  .sublist("Inverse1"));  // Inverse2 is created within blockpreconditioners.cpp
-        }
-        else if (prec == Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
+        if (prec == Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
         { /* do nothing here */
         }
         else if (prec == Core::LinearSolver::PreconditionerType::block_teko)

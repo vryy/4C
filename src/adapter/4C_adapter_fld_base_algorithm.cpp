@@ -170,25 +170,6 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
               "no linear solver defined for fluid meshtying problem. Please set SIMPLER_SOLVER in "
               "FLUID DYNAMIC to a valid number! This solver is used within block preconditioner "
               "(e.g. BGS2x2) as \"Inverse 2\".");
-
-        // check, if meshtying solver is used with a valid block preconditioner
-        const auto azprectype = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
-            Global::Problem::instance()->solver_params(mshsolver), "AZPREC");
-
-        // add sub block solvers/smoothers to block preconditioners
-        switch (azprectype)
-        {
-          case Core::LinearSolver::PreconditionerType::cheap_simple:
-            break;  // CheapSIMPLE adds its own Inverse1 and Inverse2 blocks
-          default:
-            FOUR_C_THROW(
-                "Block Gauss-Seidel BGS2x2 preconditioner expected for fluid meshtying problem. "
-                "Please set AZPREC to BGS2x2 in solver block %i",
-                mshsolver);
-            break;
-        }
-
-        solver->params().set<bool>("MESHTYING", true);  // mark it as meshtying problem
       }
     }
     break;
@@ -240,46 +221,8 @@ void Adapter::FluidBaseAlgorithm::setup_fluid(const Teuchos::ParameterList& prbd
           Global::Problem::instance()->x_fluid_dynamic_params().sublist("GENERAL").get<bool>(
               "XFLUIDFLUID")))
   {
-    switch (Teuchos::getIntegralValue<Inpar::FLUID::MeshTying>(fdyn, "MESHTYING"))
-    {
-      // switch types
-      case Inpar::FLUID::condensed_bmat:
-      {
-        const Teuchos::ParameterList& mshparams =
-            Global::Problem::instance()->contact_dynamic_params();
-        const int mshsolver = mshparams.get<int>(
-            "LINEAR_SOLVER");  // meshtying solver (with block preconditioner, e.g. BGS 2x2)
-
-        // check, if meshtying solver is used with a valid block preconditioner
-        const auto azprectype = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
-            Global::Problem::instance()->solver_params(mshsolver), "AZPREC");
-
-        switch (azprectype)
-        {
-          // block preconditioners, that are implemented in 4C
-          case Core::LinearSolver::PreconditionerType::cheap_simple:
-          {
-            actdis->compute_null_space_if_necessary(
-                solver->params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"), true);
-            actdis->compute_null_space_if_necessary(
-                solver->params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"), true);
-          }
-          break;
-          default:
-          {
-          }
-        }  // end switch azprectype
-      }
-      break;
-      default:
-        // no block matrix
-        actdis->compute_null_space_if_necessary(solver->params(), true);
-        break;
-    }
+    actdis->compute_null_space_if_necessary(solver->params(), true);
   }
-
-  // create a second solver for SIMPLER preconditioner if chosen from input
-  create_second_solver(*solver, fdyn);
 
   // -------------------------------------------------------------------
   // set parameters in list
@@ -1171,9 +1114,6 @@ void Adapter::FluidBaseAlgorithm::setup_inflow_fluid(
 
   discret->compute_null_space_if_necessary(solver->params(), true);
 
-  // create a second solver for SIMPLER preconditioner if chosen from input
-  create_second_solver(*solver, fdyn);
-
   // -------------------------------------------------------------------
   // set parameters in list required for all schemes
   // -------------------------------------------------------------------
@@ -1469,56 +1409,6 @@ void Adapter::FluidBaseAlgorithm::set_general_parameters(
 
   // ---------------------------parallel evaluation
   fluidtimeparams->set<bool>("OFF_PROC_ASSEMBLY", fdyn.get<bool>("OFF_PROC_ASSEMBLY"));
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void Adapter::FluidBaseAlgorithm::create_second_solver(
-    Core::LinAlg::Solver& solver, const Teuchos::ParameterList& fdyn)
-{
-  // The BLOCKMATRIX (yes,no) parameter only controls whether the fluid matrix is
-  // assembled into a 2x2 blocked operator or a plain 1x1 block matrix
-  // A "second solver" for the preconditioner is only needed if BLOCKMATRIX == yes
-  if (fdyn.get<bool>("BLOCKMATRIX"))
-  {
-    const int linsolvernumber = fdyn.get<int>("LINEAR_SOLVER");
-    const auto prec = Teuchos::getIntegralValue<Core::LinearSolver::PreconditionerType>(
-        Global::Problem::instance()->solver_params(linsolvernumber), "AZPREC");
-    switch (prec)
-    {
-      case Core::LinearSolver::PreconditionerType::cheap_simple:
-      {
-        // add Inverse1 block for velocity dofs
-        // tell Inverse1 block about nodal_block_information
-        // In contrary to contact/meshtying problems this is necessary here, since we originally
-        // have built the null space for the whole problem (velocity and pressure dofs). However, if
-        // we split the matrix into velocity and pressure block, we have to adapt the null space
-        // information for the subblocks. Therefore we need the nodal block information in the first
-        // subblock for the velocities. The pressure null space is trivial to be built using a
-        // constant vector
-        Teuchos::ParameterList& inv1 =
-            solver.params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
-        inv1.sublist("nodal_block_information") =
-            solver.params().sublist("nodal_block_information");
-
-        // CheapSIMPLE is somewhat hardwired here
-        solver.params().sublist("CheapSIMPLE Parameters").set("Prec Type", "CheapSIMPLE");
-        solver.params().set("FLUID", true);
-      }
-      break;
-      default:
-        FOUR_C_THROW(
-            "If SIMPLER flag is set to YES you can only use CheapSIMPLE as preconditioners in your "
-            "fluid solver. Choose CheapSIMPLE in the SOLVER %i block in your dat file. "
-            "Alternatively you can also try a multigrid block preconditioner. Use then "
-            "\"MueLu_fluid\" as preconditioner and provide a parameter xml file.",
-            linsolvernumber);
-        break;
-    }
-  }
 
   return;
 }
