@@ -483,9 +483,6 @@ namespace Adapter
     void set_str_gr_disp(
         Teuchos::RCP<Core::LinAlg::Vector<double>> struct_growth_disp) override = 0;
 
-    /// bool indicating if micro material is used
-    bool have_micro_mat() override = 0;
-
     ///@}
 
     /// @name Currently unused functions, which will be deleted in the near future,

@@ -227,7 +227,6 @@ std::string Mat::MicroMaterialGP::new_result_file_path(const std::string& newpre
   return newfilename;
 }
 
-
 void Mat::MicroMaterialGP::eas_init()
 {
   Teuchos::RCP<Core::FE::Discretization> discret =
@@ -264,19 +263,34 @@ void Mat::MicroMaterialGP::eas_init()
   return;
 }
 
-
-
-void Mat::MicroMaterialGP::reset_time_and_step()
+/// Post setup routine which will be called after the end of the setup
+void Mat::MicroMaterialGP::post_setup()
 {
-  time_ = 0.0;
-  timen_ = time_ + dt_;
-  step_ = 0;
+  Global::Problem* microproblem = Global::Problem::instance(microdisnum_);
+  Teuchos::RCP<Core::FE::Discretization> microdis = microproblem->get_dis("structure");
+
+  if (microdis->get_comm().MyPID() == 0)
+  {
+    step_ = Global::Problem::instance()->restart();
+    if (step_ > 0)
+    {
+      Teuchos::RCP<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+      time_ = microstatic->get_time_to_step(step_, restartname_);
+    }
+    else
+    {
+      time_ = 0.0;
+    }
+  }
+
+  microdis->get_comm().Broadcast(&step_, 1, 0);
+  microdis->get_comm().Broadcast(&time_, 1, 0);
+
   stepn_ = step_ + 1;
+  timen_ = time_ + dt_;
 }
 
-
 /// perform microscale simulation
-
 void Mat::MicroMaterialGP::perform_micro_simulation(Core::LinAlg::Matrix<3, 3>* defgrd,
     Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat)
 {
@@ -302,7 +316,6 @@ void Mat::MicroMaterialGP::perform_micro_simulation(Core::LinAlg::Matrix<3, 3>* 
   // clear displacements in MicroStruGenAlpha for next usage
   microstatic->clear_state();
 }
-
 
 void Mat::MicroMaterialGP::update()
 {
@@ -344,7 +357,7 @@ void Mat::MicroMaterialGP::prepare_output()
 }
 
 
-void Mat::MicroMaterialGP::output()
+void Mat::MicroMaterialGP::output_step_state_microscale()
 {
   // select corresponding "time integration class" for this microstructure
   Teuchos::RCP<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
@@ -353,6 +366,22 @@ void Mat::MicroMaterialGP::output()
   microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
       old_kaainv_, old_kda_);
   microstatic->output(*micro_output_, time_, step_, dt_);
+
+  // we don't need these containers anymore
+  stress_ = Teuchos::null;
+  strain_ = Teuchos::null;
+  plstrain_ = Teuchos::null;
+}
+
+void Mat::MicroMaterialGP::write_restart()
+{
+  // select corresponding "time integration class" for this microstructure
+  Teuchos::RCP<MultiScale::MicroStatic> microstatic = microstaticmap_[microdisnum_];
+
+  // set displacements and EAS data of last step
+  microstatic->set_state(dis_, disn_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_,
+      old_kaainv_, old_kda_);
+  microstatic->write_restart(micro_output_, time_, step_, dt_);
 
   // we don't need these containers anymore
   stress_ = Teuchos::null;

@@ -56,6 +56,9 @@ namespace Mat
     //! create path of new result file
     std::string new_result_file_path(const std::string& newprefix);
 
+    /// Post setup to set time and step properly
+    void post_setup();
+
     /// Perform microscale simulation
     void perform_micro_simulation(Core::LinAlg::Matrix<3, 3>* defgrd,
         Core::LinAlg::Matrix<6, 1>* stress, Core::LinAlg::Matrix<6, 6>* cmat);
@@ -65,14 +68,14 @@ namespace Mat
     /// Calculate stresses and strains on the micro-scale
     void prepare_output();
 
-    void output();
+    /// Calculate stresses and strains on the micro-scale
+    void output_step_state_microscale();
+
+    /// write restart on the micro-scale
+    void write_restart();
 
     /// Create and initialize "empty" EAS history map
     void eas_init();
-
-    /// Reset global time and step number (needed for multi-scale inverse
-    /// analyses with multiple runs)
-    void reset_time_and_step();
 
     /// get ele id
     int ele_id() { return ele_id_; }

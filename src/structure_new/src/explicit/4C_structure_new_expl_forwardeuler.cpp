@@ -69,6 +69,8 @@ void Solid::EXPLICIT::ForwardEuler::post_setup()
 {
   check_init_setup();
   equilibrate_initial_state();
+
+  model_eval().post_setup();
 }
 
 /*----------------------------------------------------------------------------*

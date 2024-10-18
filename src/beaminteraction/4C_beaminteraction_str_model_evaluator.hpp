@@ -72,7 +72,7 @@ namespace Solid
 
       void setup() override;
 
-      virtual void post_setup();
+      void post_setup_submodels();
 
       /// print welcome to biopolymer network simulation
       virtual void logo() const;

@@ -1,5 +1,27 @@
 -----------------------------------------------------------------------TITLE
-Default_title
+This test case consists of 8 macro elements. The first six elements use
+the microscale specified in sohex8_multiscale_micro1.mat via their material
+definition. Different microscale discretizations can be used for other
+elements. This test case uses the same micro file for the last two macro
+elements. The microscale files (*.mat) are expected in the same directory
+as the macro file.
+
+The test case can either run as usual:
+
+mpirun -np 2 ./4C /path/to/sohex8_multiscale_macro_2micro.dat output_name
+
+or in nested parallelism mode via:
+
+mpirun -np 5 ./4C -nptype=separateDatFiles -ngroup=2 -glayout=2,3 /path/to
+/sohex8_multiscale_macro_2micro.dat output_name /path/to/
+sohex8_multiscale_npsupport.dat dummy_output_name
+
+The nested mode command uses 2 procs (see 1st argument in -glayout) to
+solve the macro scale and 3 procs (see 2nd argument in -glayout) to support
+while solving the microscale. The sum of the two proc numbers must
+correspond to the argument -np 5 of mpirun. The additional input file
+(sohex8_multiscale_npsupport.dat) for the supporting procs does not have
+to be adapted.
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        8
 NODES                           27
@@ -21,8 +43,10 @@ RESTARTEVRY                     1
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
 FLUID_STRESS                    No
+VERBOSITY                       Minimal
 WRITE_INITIAL_STATE             No
 ----------------------------------------------------------STRUCTURAL DYNAMIC
+INT_STRATEGY                    Standard
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1

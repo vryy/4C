@@ -11,7 +11,6 @@
 #include "4C_comm_exporter.hpp"
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils.hpp"
-#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_densematrix_svd.hpp"
 #include "4C_mat_micromaterial.hpp"
@@ -98,7 +97,8 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
 
   // tell the supporting procs that the micro material will be evaluated
-  int task[2] = {0, eleGID};
+  int task[2] = {
+      static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::evaluate), eleGID};
   subcomm->Broadcast(task, 2, 0);
 
   // container is filled with data for supporting procs
@@ -160,6 +160,25 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
 double Mat::MicroMaterial::density() const { return density_; }
 
+void Mat::MicroMaterial::post_setup()
+{
+  // get sub communicator including the supporting procs
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  if (subcomm->MyPID() == 0)
+  {
+    // tell the supporting procs that the micro material will call post_setup
+    int eleID = matgp_.begin()->second->ele_id();
+    int task[2] = {
+        static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::post_setup), eleID};
+    subcomm->Broadcast(task, 2, 0);
+  }
+
+  for (const auto& micromatgp : matgp_)
+  {
+    Teuchos::RCP<MicroMaterialGP> actmicromatgp = micromatgp.second;
+    actmicromatgp->post_setup();
+  }
+}
 
 // evaluate for supporting procs
 void Mat::MicroMaterial::evaluate(Core::LinAlg::Matrix<3, 3>* defgrd,
@@ -183,7 +202,6 @@ void Mat::MicroMaterial::evaluate(Core::LinAlg::Matrix<3, 3>* defgrd,
   Global::Problem::instance()->materials()->reset_read_from_problem();
 }
 
-
 // update for all procs
 void Mat::MicroMaterial::update()
 {
@@ -194,18 +212,17 @@ void Mat::MicroMaterial::update()
     // tell the supporting procs that the micro material will be evaluated for the element with id
     // eleID
     int eleID = matgp_.begin()->second->ele_id();
-    int task[2] = {2, eleID};
+    int task[2] = {
+        static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::update), eleID};
     subcomm->Broadcast(task, 2, 0);
   }
 
-  std::map<int, Teuchos::RCP<MicroMaterialGP>>::iterator it;
-  for (it = matgp_.begin(); it != matgp_.end(); ++it)
+  for (const auto& micromatgp : matgp_)
   {
-    Teuchos::RCP<MicroMaterialGP> actmicromatgp = (*it).second;
+    Teuchos::RCP<MicroMaterialGP> actmicromatgp = micromatgp.second;
     actmicromatgp->update();
   }
 }
-
 
 // prepare output for all procs
 void Mat::MicroMaterial::prepare_output()
@@ -216,21 +233,20 @@ void Mat::MicroMaterial::prepare_output()
   {
     // tell the supporting procs that the micro material will be prepared for output
     int eleID = matgp_.begin()->second->ele_id();
-    int task[2] = {1, eleID};
+    int task[2] = {
+        static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::prepare_output), eleID};
     subcomm->Broadcast(task, 2, 0);
   }
 
-  std::map<int, Teuchos::RCP<MicroMaterialGP>>::iterator it;
-  for (it = matgp_.begin(); it != matgp_.end(); ++it)
+  for (const auto& micromatgp : matgp_)
   {
-    Teuchos::RCP<MicroMaterialGP> actmicromatgp = (*it).second;
+    Teuchos::RCP<MicroMaterialGP> actmicromatgp = micromatgp.second;
     actmicromatgp->prepare_output();
   }
 }
 
-
 // output for all procs
-void Mat::MicroMaterial::output()
+void Mat::MicroMaterial::output_step_state()
 {
   // get sub communicator including the supporting procs
   Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
@@ -238,18 +254,39 @@ void Mat::MicroMaterial::output()
   {
     // tell the supporting procs that the micro material will be output
     int eleID = matgp_.begin()->second->ele_id();
-    int task[2] = {3, eleID};
+    int task[2] = {
+        static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::output_step_state),
+        eleID};
     subcomm->Broadcast(task, 2, 0);
   }
 
-  std::map<int, Teuchos::RCP<MicroMaterialGP>>::iterator it;
-  for (it = matgp_.begin(); it != matgp_.end(); ++it)
+  for (const auto& micromatgp : matgp_)
   {
-    Teuchos::RCP<MicroMaterialGP> actmicromatgp = (*it).second;
-    actmicromatgp->output();
+    Teuchos::RCP<MicroMaterialGP> actmicromatgp = micromatgp.second;
+    actmicromatgp->output_step_state_microscale();
   }
 }
 
+// output for all procs
+void Mat::MicroMaterial::write_restart()
+{
+  // get sub communicator including the supporting procs
+  Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
+  if (subcomm->MyPID() == 0)
+  {
+    // tell the supporting procs that the micro material will be output
+    int eleID = matgp_.begin()->second->ele_id();
+    int task[2] = {
+        static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::write_restart), eleID};
+    subcomm->Broadcast(task, 2, 0);
+  }
+
+  for (const auto& micromatgp : matgp_)
+  {
+    Teuchos::RCP<MicroMaterialGP> actmicromatgp = micromatgp.second;
+    actmicromatgp->write_restart();
+  }
+}
 
 // read restart for master procs
 void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool eleowner)
@@ -261,7 +298,8 @@ void Mat::MicroMaterial::read_restart(const int gp, const int eleID, const bool 
   Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
 
   // tell the supporting procs that the micro material will restart
-  int task[2] = {4, eleID};
+  int task[2] = {
+      static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::read_restart), eleID};
   subcomm->Broadcast(task, 2, 0);
 
   // container is filled with data for supporting procs

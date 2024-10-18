@@ -263,6 +263,10 @@ namespace Solid
        *  \author hiermeier */
       virtual void read_restart(Core::IO::DiscretizationReader& ioreader) = 0;
 
+      /*! \brief Post setup operations
+       */
+      virtual void post_setup(){};
+
       /*! \brief predict the values for DoFs that are defined in
        *         the respective model evaluators, e.g. condensed variables.*/
       virtual void predict(const Inpar::Solid::PredEnum& pred_type) = 0;
@@ -410,6 +414,9 @@ namespace Solid
 
       //! post output routine for model evlaluator
       virtual void post_output() = 0;
+
+      //! things that should be done after the timeloop
+      virtual void post_time_loop(){};
 
       /** \brief Create a backup state
        *

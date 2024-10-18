@@ -88,14 +88,13 @@ void Solid::ModelEvaluatorManager::setup()
 
   me_vec_ptr_ = transform_to_vector(*me_map_ptr_);
 
-  Map::iterator me_iter;
   int dof_offset = 0;
-  for (me_iter = me_map_ptr_->begin(); me_iter != me_map_ptr_->end(); ++me_iter)
+  for (const auto& [model_type, model_evaluator] : *me_map_ptr_)
   {
-    me_iter->second->init(eval_data_ptr_, gstate_ptr_, gio_ptr_, int_ptr_, timint_ptr_, dof_offset);
-    me_iter->second->setup();
+    model_evaluator->init(eval_data_ptr_, gstate_ptr_, gio_ptr_, int_ptr_, timint_ptr_, dof_offset);
+    model_evaluator->setup();
     // setup the block information for saddle point problems
-    dof_offset = gstate_ptr_->setup_block_information(*(me_iter->second), me_iter->first);
+    dof_offset = gstate_ptr_->setup_block_information(*model_evaluator, model_type);
   }
   gstate_ptr_->setup_multi_map_extractor();
   gstate_ptr_->setup_element_technology_map_extractors();
@@ -108,8 +107,8 @@ void Solid::ModelEvaluatorManager::setup()
 void Solid::ModelEvaluatorManager::setup_multi_map_extractor()
 {
   // setup the block information for saddle point problems
-  for (Vector::iterator me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    gstate_ptr_->setup_block_information(**me_iter, (**me_iter).type());
+  for (const auto& me_iter : *me_vec_ptr_)
+    gstate_ptr_->setup_block_information(*me_iter, me_iter->type());
 
   gstate_ptr_->setup_multi_map_extractor();
 }
@@ -154,9 +153,9 @@ void Solid::ModelEvaluatorManager::assemble_force(
 {
   if (not ok) return;
 
-  for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
+  for (const auto& cit : me_vec)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*cit)->assemble_force(f, timefac_np) : false);
+    ok = (ok ? cit->assemble_force(f, timefac_np) : false);
 }
 
 /*----------------------------------------------------------------------------*
@@ -180,9 +179,9 @@ void Solid::ModelEvaluatorManager::assemble_jacobian(bool& ok, const Vector& me_
 {
   if (not ok) return;
 
-  for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
+  for (const auto& cit : me_vec)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*cit)->assemble_jacobian(jac, timefac_np) : false);
+    ok = (ok ? cit->assemble_jacobian(jac, timefac_np) : false);
 }
 
 /*----------------------------------------------------------------------------*
@@ -190,8 +189,8 @@ void Solid::ModelEvaluatorManager::assemble_jacobian(bool& ok, const Vector& me_
 void Solid::ModelEvaluatorManager::assemble_jacobian_contributions_from_element_level_for_ptc(
     const Vector& me_vec, const double timefac_np, Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac)
 {
-  for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
-    (*cit)->assemble_jacobian_contributions_from_element_level_for_ptc(modjac, timefac_np);
+  for (const auto& cit : me_vec)
+    cit->assemble_jacobian_contributions_from_element_level_for_ptc(modjac, timefac_np);
 }
 
 /*----------------------------------------------------------------------------*
@@ -202,9 +201,9 @@ void Solid::ModelEvaluatorManager::evaluate_force(bool& ok, const Vector& me_vec
 
   pre_evaluate(ok, me_vec);
 
-  for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
+  for (const auto& cit : me_vec)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*cit)->evaluate_force() : false);
+    ok = (ok ? cit->evaluate_force() : false);
 
   post_evaluate(ok, me_vec);
 }
@@ -217,9 +216,9 @@ void Solid::ModelEvaluatorManager::evaluate_stiff(bool& ok, const Vector& me_vec
 
   pre_evaluate(ok, me_vec);
 
-  for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
+  for (const auto& cit : me_vec)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*cit)->evaluate_stiff() : false);
+    ok = (ok ? cit->evaluate_stiff() : false);
 
   post_evaluate(ok, me_vec);
 }
@@ -233,9 +232,9 @@ void Solid::ModelEvaluatorManager::evaluate_force_stiff(bool& ok, const Vector& 
   pre_evaluate(ok, me_vec);
 
 
-  for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
+  for (const auto& cit : me_vec)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*cit)->evaluate_force_stiff() : false);
+    ok = (ok ? cit->evaluate_force_stiff() : false);
 
   post_evaluate(ok, me_vec);
 }
@@ -244,7 +243,7 @@ void Solid::ModelEvaluatorManager::evaluate_force_stiff(bool& ok, const Vector& 
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluatorManager::pre_evaluate(bool ok, const Vector& me_vec) const
 {
-  for (auto& me : me_vec) me->pre_evaluate();
+  for (const auto& me : me_vec) me->pre_evaluate();
 }
 
 /*----------------------------------------------------------------------------*
@@ -253,8 +252,7 @@ void Solid::ModelEvaluatorManager::post_evaluate(bool ok, const Vector& me_vec) 
 {
   if (not ok) return;
 
-  for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
-    (*cit)->post_evaluate();
+  for (const auto& cit : me_vec) cit->post_evaluate();
 }
 
 /*----------------------------------------------------------------------------*
@@ -264,7 +262,6 @@ bool Solid::ModelEvaluatorManager::apply_initial_force(
 {
   check_init_setup();
 
-  Vector::iterator me_iter;
   bool ok = true;
   // initialize right hand side to zero
   f.PutScalar(0.0);
@@ -277,9 +274,9 @@ bool Solid::ModelEvaluatorManager::apply_initial_force(
   // ---------------------------------------------------------------------------
   // evaluate all terms
   // ---------------------------------------------------------------------------
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
+  for (const auto& me_iter : *me_vec_ptr_)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*me_iter)->evaluate_initial_force() : false);
+    ok = (ok ? me_iter->evaluate_initial_force() : false);
 
   post_evaluate(ok, *me_vec_ptr_);
 
@@ -320,7 +317,7 @@ void Solid::ModelEvaluatorManager::reset_states(
     const Core::LinAlg::Vector<double>& x, bool setstate, Vector& me_vec) const
 {
   if (setstate) int_ptr_->set_state(x);
-  for (auto& me_iter : me_vec) me_iter->reset(x);
+  for (const auto& me_iter : me_vec) me_iter->reset(x);
 }
 
 /*----------------------------------------------------------------------------*
@@ -329,7 +326,6 @@ bool Solid::ModelEvaluatorManager::apply_force(const Core::LinAlg::Vector<double
     Core::LinAlg::Vector<double>& f, const double& timefac_np) const
 {
   check_init_setup();
-  Vector::iterator me_iter;
   bool ok = true;
   // initialize right hand side to zero
   f.PutScalar(0.0);
@@ -359,7 +355,6 @@ bool Solid::ModelEvaluatorManager::apply_stiff(const Core::LinAlg::Vector<double
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   check_init_setup();
-  Vector::iterator me_iter;
   bool ok = true;
   // initialize stiffness matrix to zero
   jac.zero();
@@ -422,7 +417,6 @@ bool Solid::ModelEvaluatorManager::apply_force_stiff(const Core::LinAlg::Vector<
     const double& timefac_np) const
 {
   check_init_setup();
-  Vector::iterator me_iter;
   bool ok = true;
   // initialize stiffness matrix and right hand side to zero
   f.PutScalar(0.0);
@@ -489,9 +483,9 @@ void Solid::ModelEvaluatorManager::evaluate_cheap_soc_rhs(bool& ok, const Vector
 {
   if (not ok) return;
 
-  for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
+  for (const auto& cit : me_vec)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*cit)->evaluate_cheap_soc_rhs() : false);
+    ok = (ok ? cit->evaluate_cheap_soc_rhs() : false);
 
   post_evaluate(ok, me_vec);
 }
@@ -503,9 +497,9 @@ void Solid::ModelEvaluatorManager::assemble_cheap_soc_rhs(
 {
   if (not ok) return;
 
-  for (Vector::const_iterator cit = me_vec.begin(); cit != me_vec.end(); ++cit)
+  for (const auto& cit : me_vec)
     // if one model evaluator failed, skip the remaining ones and return false
-    ok = (ok ? (*cit)->assemble_cheap_soc_rhs(f, timefac_np) : false);
+    ok = (ok ? cit->assemble_cheap_soc_rhs(f, timefac_np) : false);
 }
 
 /*----------------------------------------------------------------------------*
@@ -523,11 +517,18 @@ bool Solid::ModelEvaluatorManager::correct_parameters(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void Solid::ModelEvaluatorManager::post_setup()
+{
+  check_init();
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->post_setup();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluatorManager::predict(const Inpar::Solid::PredEnum& pred_type) const
 {
   check_init_setup();
-  for (Vector::iterator me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->predict(pred_type);
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->predict(pred_type);
 }
 
 /*----------------------------------------------------------------------------*
@@ -536,9 +537,7 @@ void Solid::ModelEvaluatorManager::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->write_restart(iowriter, forced_writerestart);
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->write_restart(iowriter, forced_writerestart);
 }
 
 /*----------------------------------------------------------------------------*
@@ -546,9 +545,7 @@ void Solid::ModelEvaluatorManager::write_restart(
 void Solid::ModelEvaluatorManager::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->read_restart(ioreader);
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->read_restart(ioreader);
 }
 
 /*----------------------------------------------------------------------------*
@@ -560,9 +557,7 @@ void Solid::ModelEvaluatorManager::run_recover() const
   eval_data_ptr_->set_is_default_step(true);
   eval_data_ptr_->set_step_length(1.0);
   eval_data_ptr_->reset_my_norms(true);
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->run_recover();
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->run_recover();
 }
 
 /*----------------------------------------------------------------------------*
@@ -576,9 +571,7 @@ void Solid::ModelEvaluatorManager::run_post_compute_x(const Core::LinAlg::Vector
   eval_data_ptr_->set_is_default_step(isdefaultstep);
   eval_data_ptr_->set_step_length(step);
   eval_data_ptr_->reset_my_norms(isdefaultstep);
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->run_post_compute_x(xold, dir, xnew);
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->run_post_compute_x(xold, dir, xnew);
 }
 
 /*----------------------------------------------------------------------------*
@@ -590,9 +583,7 @@ void Solid::ModelEvaluatorManager::run_pre_compute_x(const Core::LinAlg::Vector<
   eval_data_ptr_->set_is_default_step(isdefaultstep);
   eval_data_ptr_->set_step_length(step);
 
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->run_pre_compute_x(xold, dir_mutable, curr_grp);
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->run_pre_compute_x(xold, dir_mutable, curr_grp);
 }
 
 /*----------------------------------------------------------------------------*
@@ -604,9 +595,7 @@ void Solid::ModelEvaluatorManager::run_post_iterate(const ::NOX::Solver::Generic
   eval_data_ptr_->set_step_length(step);
   eval_data_ptr_->set_number_of_modified_newton_corrections(num_corrs);
 
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->run_post_iterate(solver);
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->run_post_iterate(solver);
 }
 
 /*----------------------------------------------------------------------------*
@@ -617,9 +606,7 @@ void Solid::ModelEvaluatorManager::run_pre_solve(
   eval_data_ptr_->set_is_default_step(isdefaultstep);
   eval_data_ptr_->set_step_length(step);
 
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->run_pre_solve(solver);
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->run_pre_solve(solver);
 }
 
 
@@ -629,9 +616,8 @@ void Solid::ModelEvaluatorManager::run_post_apply_jacobian_inverse(
     const Core::LinAlg::Vector<double>& rhs, Core::LinAlg::Vector<double>& result,
     const Core::LinAlg::Vector<double>& xold, const NOX::Nln::Group& grp) const
 {
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->run_post_apply_jacobian_inverse(rhs, result, xold, grp);
+  for (const auto& me_iter : *me_vec_ptr_)
+    me_iter->run_post_apply_jacobian_inverse(rhs, result, xold, grp);
 }
 
 /*----------------------------------------------------------------------------*
@@ -640,9 +626,8 @@ void Solid::ModelEvaluatorManager::run_pre_apply_jacobian_inverse(
     const Core::LinAlg::Vector<double>& rhs, Core::LinAlg::Vector<double>& result,
     const Core::LinAlg::Vector<double>& xold, const NOX::Nln::Group& grp) const
 {
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->run_pre_apply_jacobian_inverse(rhs, result, xold, grp);
+  for (const auto& me_iter : *me_vec_ptr_)
+    me_iter->run_pre_apply_jacobian_inverse(rhs, result, xold, grp);
 }
 
 /*----------------------------------------------------------------------------*
@@ -709,9 +694,7 @@ void Solid::ModelEvaluatorManager::update_step_state(const double& timefac_n)
   /* Reset old structural right hand side.
    * It will be filled within the model evaluators */
   gstate_ptr_->get_fstructure_old()->PutScalar(0.0);
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->update_step_state(timefac_n);
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->update_step_state(timefac_n);
 }
 
 
@@ -722,9 +705,8 @@ void Solid::ModelEvaluatorManager::compute_jacobian_contributions_from_element_l
 {
   // evaluate ptc contributions at t^n+1
   double timefac_np = 1.0;
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->evaluate_jacobian_contributions_from_element_level_for_ptc();
+  for (const auto& me_iter : *me_vec_ptr_)
+    me_iter->evaluate_jacobian_contributions_from_element_level_for_ptc();
 
   assemble_jacobian_contributions_from_element_level_for_ptc(
       *me_vec_ptr_, timefac_np, scalingMatrixOpPtr);
@@ -736,7 +718,7 @@ void Solid::ModelEvaluatorManager::remove_condensed_contributions_from_rhs(
     Core::LinAlg::Vector<double>& rhs) const
 {
   check_init_setup();
-  for (auto& me : *me_vec_ptr_) me->remove_condensed_contributions_from_rhs(rhs);
+  for (const auto& me : *me_vec_ptr_) me->remove_condensed_contributions_from_rhs(rhs);
 }
 
 /*----------------------------------------------------------------------------*
@@ -744,9 +726,7 @@ void Solid::ModelEvaluatorManager::remove_condensed_contributions_from_rhs(
 void Solid::ModelEvaluatorManager::update_step_element()
 {
   check_init_setup();
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->update_step_element();
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->update_step_element();
 }
 
 /*----------------------------------------------------------------------------*
@@ -754,9 +734,7 @@ void Solid::ModelEvaluatorManager::update_step_element()
 void Solid::ModelEvaluatorManager::update_residual()
 {
   check_init_setup();
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->update_residual();
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->update_residual();
 }
 
 /*----------------------------------------------------------------------------*
@@ -764,9 +742,7 @@ void Solid::ModelEvaluatorManager::update_residual()
 void Solid::ModelEvaluatorManager::determine_stress_strain()
 {
   check_init_setup();
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->determine_stress_strain();
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->determine_stress_strain();
 }
 
 /*----------------------------------------------------------------------------*
@@ -774,9 +750,7 @@ void Solid::ModelEvaluatorManager::determine_stress_strain()
 void Solid::ModelEvaluatorManager::determine_energy()
 {
   check_init_setup();
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->determine_energy();
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->determine_energy();
 }
 
 /*----------------------------------------------------------------------------*
@@ -784,9 +758,7 @@ void Solid::ModelEvaluatorManager::determine_energy()
 void Solid::ModelEvaluatorManager::determine_optional_quantity()
 {
   check_init_setup();
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->determine_optional_quantity();
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->determine_optional_quantity();
 }
 
 /*----------------------------------------------------------------------------*
@@ -794,9 +766,7 @@ void Solid::ModelEvaluatorManager::determine_optional_quantity()
 void Solid::ModelEvaluatorManager::output_step_state(Core::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
-  Vector::const_iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->output_step_state(iowriter);
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->output_step_state(iowriter);
 }
 
 /*----------------------------------------------------------------------------*
@@ -804,7 +774,7 @@ void Solid::ModelEvaluatorManager::output_step_state(Core::IO::DiscretizationWri
 void Solid::ModelEvaluatorManager::runtime_pre_output_step_state()
 {
   check_init_setup();
-  for (auto me : *me_vec_ptr_) me->runtime_pre_output_step_state();
+  for (const auto& me : *me_vec_ptr_) me->runtime_pre_output_step_state();
 }
 
 /*----------------------------------------------------------------------------*
@@ -812,9 +782,7 @@ void Solid::ModelEvaluatorManager::runtime_pre_output_step_state()
 void Solid::ModelEvaluatorManager::runtime_output_step_state() const
 {
   check_init_setup();
-  Vector::const_iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->runtime_output_step_state();
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->runtime_output_step_state();
 }
 
 /*----------------------------------------------------------------------------*
@@ -822,9 +790,7 @@ void Solid::ModelEvaluatorManager::runtime_output_step_state() const
 void Solid::ModelEvaluatorManager::post_output()
 {
   check_init_setup();
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->post_output();
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->post_output();
 }
 
 /*----------------------------------------------------------------------------*
@@ -832,9 +798,15 @@ void Solid::ModelEvaluatorManager::post_output()
 void Solid::ModelEvaluatorManager::reset_step_state()
 {
   check_init_setup();
-  Vector::iterator me_iter;
-  for (me_iter = me_vec_ptr_->begin(); me_iter != me_vec_ptr_->end(); ++me_iter)
-    (*me_iter)->reset_step_state();
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->reset_step_state();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void Solid::ModelEvaluatorManager::post_time_loop()
+{
+  check_init_setup();
+  for (const auto& me_iter : *me_vec_ptr_) me_iter->post_time_loop();
 }
 
 /*----------------------------------------------------------------------------*

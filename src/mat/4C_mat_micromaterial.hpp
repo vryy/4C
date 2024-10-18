@@ -160,10 +160,16 @@ namespace Mat
     void prepare_output();
 
     /// Write output on micro-scale
-    void output();
+    void output_step_state();
 
-    // Update state vectors
+    /// Update state vectors
     void update() override;
+
+    /// Post setup routine which will be called after the end of the setup
+    virtual void post_setup();
+
+    /// Write restart on micro-scale
+    void write_restart();
 
     /// Read restart of micro scale on a processor with macro scale
     void read_restart(const int gp, const int eleID, const bool eleowner);

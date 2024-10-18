@@ -198,6 +198,9 @@ namespace Solid
      *  \author hiermeier \date 03/18 */
     void remove_condensed_contributions_from_rhs(Core::LinAlg::Vector<double>& rhs) const;
 
+    /// operations at the end of the setup
+    void post_setup();
+
     /*! \brief predict all internal variables in model evaluators
      *
      * @param[in] pred_type Type of predictor to be applied
@@ -395,6 +398,9 @@ namespace Solid
      * This is used for example to output the last successfull timestep.
      */
     void reset_step_state();
+
+    //! things that should be done after the timeloop
+    void post_time_loop();
 
     /*! \brief Recover the current state
      *

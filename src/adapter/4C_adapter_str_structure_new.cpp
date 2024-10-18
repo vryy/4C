@@ -578,8 +578,16 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   if (linePeriodicRve.size() > 0 || surfPeriodicRve.size() > 0 ||
       pointLinearCoupledEquation.size() > 0 || embeddedMeshConditions.size() > 0)
     modeltypes.insert(Inpar::Solid::model_constraints);
-}
 
+  // ---------------------------------------------------------------------------
+  // Check for multi-scale simulation
+  // ---------------------------------------------------------------------------
+  Teuchos::RCP<Mat::PAR::Bundle> materials = problem->materials();
+  const auto it = std::find_if(materials->map().begin(), materials->map().end(),
+      [](const auto& pair) { return pair.second->type() == Core::Materials::m_struct_multiscale; });
+
+  if (it != materials->map().end()) modeltypes.insert(Inpar::Solid::model_multiscale);
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

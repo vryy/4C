@@ -511,9 +511,6 @@ namespace Adapter
     /// Write Gmsh output for structural field
     virtual void write_gmsh_struc_output_step() = 0;
 
-    /// bool indicating if micro material is used
-    virtual bool have_micro_mat() = 0;
-
     /// \brief Returns true if the final state has been written
     [[nodiscard]] virtual bool has_final_state_been_written() const = 0;
   };

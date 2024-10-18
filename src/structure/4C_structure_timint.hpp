@@ -469,9 +469,6 @@ namespace Solid
     //! Output volume mass
     void output_volume_mass();
 
-    //! Output on the micro-scale (multi-scale analysis)
-    void output_micro();
-
     //! Write internal and external forces (if necessary for restart)
     virtual void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) = 0;
 
@@ -686,9 +683,6 @@ namespace Solid
 
     //! Read and set restart values for beam contact
     void read_restart_beam_contact();
-
-    //! Read and set restart values for multi scale materials
-    void read_restart_multi_scale();
 
     //! initial guess of Newton's method
     Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override = 0;
@@ -968,7 +962,7 @@ namespace Solid
     void post_output() final{};
 
     /// wrapper for things that should be done after the actual time loop is finished
-    void post_time_loop() final;
+    void post_time_loop() final{};
 
     //@}
 
@@ -999,14 +993,6 @@ namespace Solid
     virtual bool have_biofilm_growth() const { return (not strgrdisp_.is_null()); }
 
     //@}
-
-    //! @name Micro material methods
-    //@{
-
-    //! bool indicating if micro material is used
-    bool have_micro_mat() override { return havemicromat_; }
-
-    //}
 
    protected:
     /// Expand the dbc map by dofs provided in Epetra_Map maptoadd
@@ -1115,9 +1101,6 @@ namespace Solid
 
     //! Map to differentiate pressure and displacement/velocity DOFs
     Teuchos::RCP<Core::LinAlg::MapExtractor> pressure_;
-
-    //! elements with micro-materials
-    bool havemicromat_;
 
     //! Is GMSH output of displacements required?
     bool gmsh_out_;

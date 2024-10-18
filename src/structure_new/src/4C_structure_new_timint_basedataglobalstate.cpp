@@ -404,6 +404,7 @@ int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
       break;
     }
     case Inpar::Solid::model_constraints:
+    case Inpar::Solid::model_multiscale:
     {
       // do nothing
       break;

@@ -18,6 +18,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_elementtype.hpp"
 #include "4C_global_data.hpp"
+#include "4C_inpar_material.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
@@ -661,32 +662,6 @@ void MultiScale::MicroStatic::output(
 {
   bool isdatawritten = false;
 
-  //------------------------------------------------- write restart step
-  if (restartevry_ and step % restartevry_ == 0)
-  {
-    output.write_mesh(step, time);
-    output.new_step(step, time);
-    output.write_vector("displacement", dis_);
-    isdatawritten = true;
-
-    Core::LinAlg::SerialDenseMatrix emptyalpha(1, 1);
-
-    Core::Communication::PackBuffer data;
-
-    for (int i = 0; i < discret_->element_col_map()->NumMyElements(); ++i)
-    {
-      if ((*lastalpha_)[i] != Teuchos::null)
-      {
-        add_to_pack(data, *(*lastalpha_)[i]);
-      }
-      else
-      {
-        add_to_pack(data, emptyalpha);
-      }
-    }
-    output.write_vector("alpha", data(), *discret_->element_col_map());
-  }
-
   //----------------------------------------------------- output results
   if (iodisp_ && resevrydisp_ && step % resevrydisp_ == 0 && !isdatawritten)
   {
@@ -748,6 +723,33 @@ void MultiScale::MicroStatic::output(
   }
 }  // MultiScale::MicroStatic::output()
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MultiScale::MicroStatic::write_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output,
+    const double time, const int step, const double dt)
+{
+  output->write_mesh(step, time);
+  output->new_step(step, time);
+  output->write_vector("displacement", dis_);
+
+  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> emptyalpha =
+      Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(1, 1));
+
+  Core::Communication::PackBuffer data;
+
+  for (int i = 0; i < discret_->element_col_map()->NumMyElements(); ++i)
+  {
+    if ((*lastalpha_)[i] != Teuchos::null)
+    {
+      add_to_pack(data, *(*lastalpha_)[i]);
+    }
+    else
+    {
+      add_to_pack(data, *emptyalpha);
+    }
+  }
+  output->write_vector("alpha", data(), *discret_->element_col_map());
+}
 
 /*----------------------------------------------------------------------*
  |  read restart (public)                                       lw 03/08|
@@ -778,6 +780,15 @@ void MultiScale::MicroStatic::read_restart(int step, Teuchos::RCP<Core::LinAlg::
   reader.read_serial_dense_matrix(*lastalpha, "alpha");
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double MultiScale::MicroStatic::get_time_to_step(int step, std::string name)
+{
+  Teuchos::RCP<Core::IO::InputControl> inputcontrol =
+      Teuchos::rcp(new Core::IO::InputControl(name, true));
+  Core::IO::DiscretizationReader reader(discret_, inputcontrol, step);
+  return reader.read_double("time");
+}
 
 void MultiScale::MicroStatic::evaluate_micro_bc(
     Core::LinAlg::Matrix<3, 3>* defgrd, Core::LinAlg::Vector<double>& disp)
@@ -1119,7 +1130,8 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
 void MultiScale::stop_np_multiscale()
 {
   Teuchos::RCP<Epetra_Comm> subcomm = Global::Problem::instance(0)->get_communicators()->sub_comm();
-  int task[2] = {9, 0};
+  int task[2] = {
+      static_cast<int>(MultiScale::MicromaterialNestedParallelismAction::stop_multiscale), -1};
   subcomm->Broadcast(task, 2, 0);
 }
 

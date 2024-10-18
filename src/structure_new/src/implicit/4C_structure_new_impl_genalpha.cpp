@@ -150,6 +150,8 @@ void Solid::IMPLICIT::GenAlpha::post_setup()
   {
     equilibrate_initial_state();
   }
+
+  model_eval().post_setup();
 }
 
 /*----------------------------------------------------------------------------*

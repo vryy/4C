@@ -62,6 +62,7 @@ Teuchos::RCP<Solid::SOLVER::Factory::LinSolMap> Solid::SOLVER::Factory::build_li
       case Inpar::Solid::model_partitioned_coupling:
       case Inpar::Solid::model_beam_interaction_old:
       case Inpar::Solid::model_constraints:
+      case Inpar::Solid::model_multiscale:
       {
         /* Check if the structural linear solver was already added and skip
          * if true. */

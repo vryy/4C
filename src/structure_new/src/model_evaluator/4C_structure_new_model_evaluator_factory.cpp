@@ -22,6 +22,7 @@
 #include "4C_structure_new_model_evaluator_contact.hpp"
 #include "4C_structure_new_model_evaluator_lagpenconstraint.hpp"
 #include "4C_structure_new_model_evaluator_meshtying.hpp"
+#include "4C_structure_new_model_evaluator_multiscale.hpp"
 #include "4C_structure_new_model_evaluator_springdashpot.hpp"
 #include "4C_structure_new_model_evaluator_structure.hpp"
 
@@ -103,6 +104,9 @@ Solid::ModelEvaluator::Factory::build_model_evaluators(
         break;
       case Inpar::Solid::model_constraints:
         (*model_map)[*mt_iter] = Teuchos::make_rcp<Solid::ModelEvaluator::Constraints>();
+        break;
+      case Inpar::Solid::model_multiscale:
+        (*model_map)[*mt_iter] = Teuchos::make_rcp<Solid::ModelEvaluator::Multiscale>();
         break;
       default:
         FOUR_C_THROW("Not yet implemented!");

@@ -129,6 +129,11 @@ namespace Discret::ELEMENTS
       mass_matrix_integration_ = integration_rule;
     }
 
+    const Core::FE::GaussIntegration& get_gauss_rule_stiffness_integration() const
+    {
+      return stiffness_matrix_integration_;
+    };
+
    private:
     /// static values for matrix sizes
     static constexpr int num_nodes_ = Core::FE::num_nodes<celltype>;

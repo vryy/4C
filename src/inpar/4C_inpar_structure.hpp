@@ -87,7 +87,8 @@ namespace Inpar
       model_beaminteraction = 10,  ///< evaluate beaminteraction model
       model_basic_coupling = 11,   ///< evaluate coupling contributions that are independent of
                                    ///< monolithic or partitioned coupling
-      model_constraints = 12       ///< evaluate the contributions of the constraint framework
+      model_constraints = 12,      ///< evaluate the contributions of the constraint framework
+      model_multiscale = 13        ///< consider multi scale simulations
     };
 
     /// Map model type to string
@@ -135,6 +136,10 @@ namespace Inpar
         case model_constraints:
           return "Constraints";
           break;
+        case model_multiscale:
+          return "Multiscale";
+          break;
+
         default:
           FOUR_C_THROW("Cannot make std::string for model type %d", name);
           return "";
@@ -171,6 +176,8 @@ namespace Inpar
         type = model_basic_coupling;
       else if (name == "Constraints")
         type = model_constraints;
+      else if (name == "Multiscale")
+        type = model_multiscale;
       else
         FOUR_C_THROW("Unkonwn Inpar::Solid::ModelType with name '%s'.", name.c_str());
 
