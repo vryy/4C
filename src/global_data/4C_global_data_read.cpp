@@ -2171,32 +2171,28 @@ void Global::read_materials(Global::Problem& problem, Core::IO::DatFileReader& r
 
   // check if every material was identified
   const std::string material_section = "--MATERIALS";
-  std::vector<const char*> section = reader.section(material_section);
-  if (section.size() > 0)
+  for (const auto& section_i : reader.get_lines_with_content(material_section))
   {
-    for (auto& section_i : section)
+    std::stringstream condline{std::string{section_i}};
+
+    std::string mat;
+    std::string number;
+    std::string name;
+    (condline) >> mat >> number >> name;
+    if ((not(condline)) or (mat != "MAT"))
+      FOUR_C_THROW("invalid material line in '%s'", name.c_str());
+
+    // extract material ID
+    int matid = -1;
     {
-      std::stringstream condline(section_i);
-
-      std::string mat;
-      std::string number;
-      std::string name;
-      (condline) >> mat >> number >> name;
-      if ((not(condline)) or (mat != "MAT"))
-        FOUR_C_THROW("invalid material line in '%s'", name.c_str());
-
-      // extract material ID
-      int matid = -1;
-      {
-        char* ptr;
-        matid = static_cast<int>(strtol(number.c_str(), &ptr, 10));
-        if (ptr == number.c_str())
-          FOUR_C_THROW("failed to read material object number '%s'", number.c_str());
-      }
-
-      FOUR_C_THROW_UNLESS(problem.materials()->id_exists(matid),
-          "Material 'MAT %d' with name '%s' could not be identified", matid, name.c_str());
+      char* ptr;
+      matid = static_cast<int>(strtol(number.c_str(), &ptr, 10));
+      if (ptr == number.c_str())
+        FOUR_C_THROW("failed to read material object number '%s'", number.c_str());
     }
+
+    FOUR_C_THROW_UNLESS(problem.materials()->id_exists(matid),
+        "Material 'MAT %d' with name '%s' could not be identified", matid, name.c_str());
   }
 }
 
@@ -2220,35 +2216,30 @@ void Global::read_contact_constitutive_laws(
 
   // check if every contact constitutive law was identified
   const std::string contact_const_laws = "--CONTACT CONSTITUTIVE LAWS";
-  std::vector<const char*> section = reader.section(contact_const_laws);
-  if (section.size() > 0)
+  for (const auto& section_i : reader.get_lines_with_content(contact_const_laws))
   {
-    for (auto& section_i : section)
+    std::stringstream condline{std::string{section_i}};
+
+    std::string coconstlaw;
+    std::string number;
+    std::string name;
+    (condline) >> coconstlaw >> number >> name;
+    if ((not(condline)) or (coconstlaw != "LAW"))
+      FOUR_C_THROW("invalid contact constitutive law line in '%s'", name.c_str());
+
+    // extract contact constitutive law ID
+    int coconstlawid = -1;
     {
-      std::stringstream condline(section_i);
-
-      std::string coconstlaw;
-      std::string number;
-      std::string name;
-      (condline) >> coconstlaw >> number >> name;
-      if ((not(condline)) or (coconstlaw != "LAW"))
-        FOUR_C_THROW("invalid contact constitutive law line in '%s'", name.c_str());
-
-      // extract contact constitutive law ID
-      int coconstlawid = -1;
-      {
-        char* ptr;
-        coconstlawid = static_cast<int>(strtol(number.c_str(), &ptr, 10));
-        if (ptr == number.c_str())
-          FOUR_C_THROW(
-              "failed to read contact constitutive law object number '%s'", number.c_str());
-      }
-
-      // processed?
-      if (problem.contact_constitutive_laws()->find(coconstlawid) == -1)
-        FOUR_C_THROW("Contact constitutive law 'LAW %d' with name '%s' could not be identified",
-            coconstlawid, name.c_str());
+      char* ptr;
+      coconstlawid = static_cast<int>(strtol(number.c_str(), &ptr, 10));
+      if (ptr == number.c_str())
+        FOUR_C_THROW("failed to read contact constitutive law object number '%s'", number.c_str());
     }
+
+    // processed?
+    if (problem.contact_constitutive_laws()->find(coconstlawid) == -1)
+      FOUR_C_THROW("Contact constitutive law 'LAW %d' with name '%s' could not be identified",
+          coconstlawid, name.c_str());
   }
 
   // make fast access parameters

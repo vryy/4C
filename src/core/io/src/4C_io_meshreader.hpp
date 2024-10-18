@@ -13,7 +13,6 @@
 #include "4C_io_domainreader.hpp"
 #include "4C_io_elementreader.hpp"
 #include "4C_io_geometry_type.hpp"
-#include "4C_io_inputreader.hpp"
 
 #include <Epetra_CrsGraph.h>
 #include <Teuchos_ParameterList.hpp>
@@ -22,6 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::IO
 {
+  class DatFileReader;
+
   /*!
     \brief helper class to read a mesh
 

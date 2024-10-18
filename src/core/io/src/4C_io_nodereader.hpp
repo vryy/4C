@@ -11,7 +11,6 @@
 #include "4C_config.hpp"
 
 #include "4C_io_elementreader.hpp"
-#include "4C_io_inputreader.hpp"
 
 #include <string>
 #include <vector>

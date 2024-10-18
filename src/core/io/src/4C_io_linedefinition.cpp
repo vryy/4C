@@ -8,6 +8,7 @@
 #include "4C_io_linedefinition.hpp"
 
 #include "4C_io_input_parameter_container.hpp"
+#include "4C_io_inputreader.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <functional>

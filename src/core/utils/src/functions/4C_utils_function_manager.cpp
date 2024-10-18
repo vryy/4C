@@ -8,6 +8,7 @@
 #include "4C_utils_function_manager.hpp"
 
 #include "4C_io_dat_file_utils.hpp"
+#include "4C_io_inputreader.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
@@ -174,9 +175,9 @@ void Core::Utils::FunctionManager::read_input(Core::IO::DatFileReader& reader)
 
           // If we end up here, the current sections function definition could not be parsed.
           {
-            const auto section_line_defs = reader.section("--FUNCT" + std::to_string(funct_suffix));
             std::stringstream ss;
-            for (const auto& line : section_line_defs)
+            for (const auto& line :
+                reader.get_lines_with_content("--FUNCT" + std::to_string(funct_suffix)))
             {
               ss << '\n' << line;
             }

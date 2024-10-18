@@ -10,8 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_io_inputreader.hpp"
-
+#include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
 #include <memory>
@@ -27,6 +26,7 @@ namespace Core::FE
 namespace Core::IO
 {
   class LineDefinition;
+  class DatFileReader;
 
   namespace GridGenerator
   {

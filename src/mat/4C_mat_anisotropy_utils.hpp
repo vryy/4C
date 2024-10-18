@@ -13,6 +13,8 @@
 #include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
+#include <Teuchos_RCP.hpp>
+
 #include <string>
 
 FOUR_C_NAMESPACE_OPEN

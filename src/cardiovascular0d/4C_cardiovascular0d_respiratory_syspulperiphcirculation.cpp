@@ -7,6 +7,7 @@
 
 #include "4C_cardiovascular0d_respiratory_syspulperiphcirculation.hpp"
 
+#include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"

@@ -8,6 +8,7 @@
 #include "4C_fem_condition_definition.hpp"
 
 #include "4C_fem_discretization.hpp"
+#include "4C_io_inputreader.hpp"
 #include "4C_io_linecomponent.hpp"
 #include "4C_io_value_parser.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -51,16 +52,21 @@ void Core::Conditions::ConditionDefinition::add_component(
 void Core::Conditions::ConditionDefinition::read(Core::IO::DatFileReader& reader,
     std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>& cmap)
 {
-  std::vector<const char*> section = reader.section("--" + sectionname_);
+  // read the range into a vector
+  std::vector<std::string> section_vec;
+  {
+    const auto& section = reader.get_lines_with_content("--" + sectionname_);
+    for (const auto& line : section) section_vec.push_back(std::string{line});
+  }
 
-  if (section.empty()) return;
+  if (section_vec.empty()) return;
 
   // First we read a header for the current section: It needs to start with the
   // geometry type followed by the number of lines:
   //
   // ("DPOINT" | "DLINE" | "DSURF" | "DVOL" ) <number>
 
-  std::stringstream line(section[0]);
+  std::stringstream line(section_vec[0]);
 
   Core::IO::ValueParser parser_header(
       line, "While reading header of condition section '" + sectionname_ + "': ");
@@ -86,13 +92,13 @@ void Core::Conditions::ConditionDefinition::read(Core::IO::DatFileReader& reader
   parser_header.consume(expected_geometry_type);
   const int condition_count = parser_header.read<int>();
 
-  if (condition_count != static_cast<int>(section.size() - 1))
+  if (condition_count != static_cast<int>(section_vec.size() - 1))
   {
-    FOUR_C_THROW("Got %d condition lines but expected %d in section '%s'", section.size() - 1,
+    FOUR_C_THROW("Got %d condition lines but expected %d in section '%s'", section_vec.size() - 1,
         condition_count, sectionname_.c_str());
   }
 
-  for (auto i = section.begin() + 1; i != section.end(); ++i)
+  for (auto i = section_vec.begin() + 1; i != section_vec.end(); ++i)
   {
     Teuchos::RCP<std::stringstream> condline = Teuchos::make_rcp<std::stringstream>(*i);
 

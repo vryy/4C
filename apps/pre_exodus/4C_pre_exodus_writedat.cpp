@@ -12,6 +12,8 @@
 #include "4C_inpar_validconditions.hpp"
 #include "4C_pre_exodus_reader.hpp"
 
+#include <fstream>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/

@@ -7,6 +7,7 @@
 
 #include "4C_particle_engine_particlereader.hpp"
 
+#include "4C_io_inputreader.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_particle_engine_enums.hpp"
 #include "4C_particle_engine_object.hpp"

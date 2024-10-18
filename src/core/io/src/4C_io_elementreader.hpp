@@ -10,9 +10,11 @@
 
 #include "4C_config.hpp"
 
-#include "4C_io_inputreader.hpp"
-
 #include <Epetra_Map.h>
+#include <Teuchos_RCP.hpp>
+
+#include <set>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -22,6 +24,8 @@ namespace Core::FE
 }  // namespace Core::FE
 namespace Core::IO
 {
+  class DatFileReader;
+
   /*----------------------------------------------------------------------*/
   /*!
     \brief helper class to read the elements of a discretization

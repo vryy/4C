@@ -42,6 +42,11 @@ namespace std_20  // NOLINT
       {
        public:
         using iterator = typename Range::iterator;
+        using iterator_category = typename std::iterator_traits<iterator>::iterator_category;
+        using value_type = typename std::iterator_traits<iterator>::value_type;
+        using difference_type = typename std::iterator_traits<iterator>::difference_type;
+        using pointer = typename std::iterator_traits<iterator>::pointer;
+        using reference = typename std::iterator_traits<iterator>::reference;
 
         FilterIterator(iterator current, iterator end, Predicate pred)
             : current_(current), end_(end), pred_(pred)
@@ -56,8 +61,8 @@ namespace std_20  // NOLINT
           return *this;
         }
 
-        auto operator*() const { return *current_; }
-        auto operator->() const { return current_; }
+        reference operator*() const { return *current_; }
+        pointer operator->() const { return current_; }
 
         bool operator==(const FilterIterator& other) const { return current_ == other.current_; }
 
@@ -82,6 +87,7 @@ namespace std_20  // NOLINT
       {
        public:
         using iterator = FilterIterator<Range, Predicate>;
+
 
         FilterRange(Range range, Predicate pred) : range_(range), pred_(pred) {}
 

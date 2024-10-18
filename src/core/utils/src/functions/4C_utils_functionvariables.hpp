@@ -12,6 +12,8 @@
 
 #include "4C_io_linedefinition.hpp"
 
+#include <Teuchos_RCP.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 // define periodicstruct

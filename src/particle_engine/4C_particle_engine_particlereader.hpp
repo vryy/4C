@@ -10,10 +10,17 @@
 
 #include "4C_config.hpp"
 
-#include "4C_io_inputreader.hpp"
 #include "4C_particle_engine_typedefs.hpp"
 
+#include <Epetra_Comm.h>
+#include <Teuchos_RCP.hpp>
+
 FOUR_C_NAMESPACE_OPEN
+
+namespace Core::IO
+{
+  class DatFileReader;
+}
 
 namespace Input
 {

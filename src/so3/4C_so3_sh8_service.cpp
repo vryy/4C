@@ -17,6 +17,8 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
+#include <fstream>
+
 FOUR_C_NAMESPACE_OPEN
 
 

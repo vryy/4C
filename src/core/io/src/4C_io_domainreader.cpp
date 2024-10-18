@@ -12,6 +12,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element_definition.hpp"
 #include "4C_io_gridgenerator.hpp"
+#include "4C_io_inputreader.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_print.hpp"

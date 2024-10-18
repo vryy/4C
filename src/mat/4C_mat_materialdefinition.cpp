@@ -8,6 +8,7 @@
 #include "4C_mat_materialdefinition.hpp"
 
 #include "4C_comm_pack_helpers.hpp"
+#include "4C_io_inputreader.hpp"
 #include "4C_io_value_parser.hpp"
 #include "4C_mat_par_bundle.hpp"
 
@@ -44,48 +45,45 @@ std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefi
     Core::IO::DatFileReader& reader)
 {
   std::string name = "--MATERIALS";
-  std::vector<const char*> section = reader.section(name);
 
   std::vector<std::pair<int, Core::IO::InputParameterContainer>> found_materials;
-  if (!section.empty())
+  for (const auto& line : reader.get_lines_with_content(name))
   {
-    for (std::vector<const char*>::const_iterator i = section.begin(); i != section.end(); ++i)
+    Teuchos::RCP<std::stringstream> condline =
+        Teuchos::make_rcp<std::stringstream>(std::string(line));
+
+    // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
+    // reading the last entry inside This is required since the material parameters can be
+    // specified in an arbitrary order in the input file. So it might happen that the last entry
+    // is extracted before all of the previous ones are.
+    condline->seekp(0, condline->end);
+    *condline << " ";
+
+    Core::IO::ValueParser parser(*condline, "While reading 'MATERIALS' section: ");
+
+    parser.consume("MAT");
+    const int matid = parser.read<int>();
+    const std::string name = parser.read<std::string>();
+
+    // Remove the parts that were already read.
+    condline->str(condline->str().erase(0, (size_t)condline->tellg()));
+
+    if (name == materialname_)
     {
-      Teuchos::RCP<std::stringstream> condline = Teuchos::make_rcp<std::stringstream>(*i);
+      if (matid <= -1) FOUR_C_THROW("Illegal negative ID provided");
 
-      // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
-      // reading the last entry inside This is required since the material parameters can be
-      // specified in an arbitrary order in the input file. So it might happen that the last entry
-      // is extracted before all of the previous ones are.
-      condline->seekp(0, condline->end);
-      *condline << " ";
+      Core::IO::InputParameterContainer input_data;
+      for (auto& j : inputline_)
+        condline = j->read(MaterialDefinition::name(), condline, input_data);
 
-      Core::IO::ValueParser parser(*condline, "While reading 'MATERIALS' section: ");
+      // current material input line contains bad elements
+      if (condline->str().find_first_not_of(' ') != std::string::npos)
+        FOUR_C_THROW(
+            "Specification of material '%s' contains the following unknown, redundant, or "
+            "incorrect elements: '%s'",
+            materialname_.c_str(), condline->str().c_str());
 
-      parser.consume("MAT");
-      const int matid = parser.read<int>();
-      const std::string name = parser.read<std::string>();
-
-      // Remove the parts that were already read.
-      condline->str(condline->str().erase(0, (size_t)condline->tellg()));
-
-      if (name == materialname_)
-      {
-        if (matid <= -1) FOUR_C_THROW("Illegal negative ID provided");
-
-        Core::IO::InputParameterContainer input_data;
-        for (auto& j : inputline_)
-          condline = j->read(MaterialDefinition::name(), condline, input_data);
-
-        // current material input line contains bad elements
-        if (condline->str().find_first_not_of(' ') != std::string::npos)
-          FOUR_C_THROW(
-              "Specification of material '%s' contains the following unknown, redundant, or "
-              "incorrect elements: '%s'",
-              materialname_.c_str(), condline->str().c_str());
-
-        found_materials.emplace_back(matid, std::move(input_data));
-      }
+      found_materials.emplace_back(matid, std::move(input_data));
     }
   }
 
