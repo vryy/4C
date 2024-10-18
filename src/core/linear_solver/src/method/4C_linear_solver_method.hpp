@@ -67,8 +67,7 @@ namespace Core::LinearSolver
     multigrid_muelu_contactsp,  ///< multigrid preconditioner for blocked contact problems in saddle
                                 ///< point formulation (MueLu package)
     multigrid_nxn,  ///< multigrid preconditioner for a nxn block matrix (indirectly MueLu package)
-    block_teko,     ///< block preconditioning (Teko package, recommended!)
-    cheap_simple    ///< CheapSIMPLE for 2x2 systems? (inhouse implementation)
+    block_teko      ///< block preconditioning (Teko package, recommended!)
   };
 
   /// linear solver type base class

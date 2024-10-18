@@ -232,7 +232,6 @@ AZREUSE                         0
 AZITER                          1000
 AZTOL                           1e-08
 NAME                            FPSI_Solver
-SIMPLE_DAMPING                  1
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 6 POROLAWID 10 INITPOROSITY 0.5 //SPoro
 MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e8 PENALTYPARAMETER 0.0 //SPoro

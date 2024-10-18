@@ -232,8 +232,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
           sol != Core::LinearSolver::SolverType::superlu)
       {
         // if an iterative solver is chosen we need a block preconditioner like CheapSIMPLE
-        if (prec != Core::LinearSolver::PreconditionerType::cheap_simple &&
-            prec != Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp &&
+        if (prec != Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp &&
             prec != Core::LinearSolver::PreconditionerType::block_teko)
           FOUR_C_THROW(
               "You have chosen an iterative linear solver. For mortar/Contact in saddlepoint "
@@ -265,13 +264,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
       if (sol_type == Inpar::CONTACT::solution_lagmult)
       {
         // provide null space information
-        if (prec == Core::LinearSolver::PreconditionerType::cheap_simple)
-        {
-          // Inverse2 is created within blockpreconditioners.cpp
-          actdis.compute_null_space_if_necessary(
-              linsolver->params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"));
-        }
-        else if (prec == Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
+        if (prec == Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp)
         { /* do nothing here */
         }
         else if (prec == Core::LinearSolver::PreconditionerType::block_teko)
@@ -364,26 +357,6 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_constra
           Global::Problem::instance()->solver_params(linsolvernumber), "AZPREC");
       switch (prec)
       {
-        case Core::LinearSolver::PreconditionerType::cheap_simple:
-        {
-          // add Inverse1 block for velocity dofs
-          // tell Inverse1 block about nodal_block_information
-          Teuchos::ParameterList& inv1 =
-              linsolver->params().sublist("CheapSIMPLE Parameters").sublist("Inverse1");
-          inv1.sublist("nodal_block_information") =
-              linsolver->params().sublist("nodal_block_information");
-
-          // calculate null space information
-          actdis.compute_null_space_if_necessary(
-              linsolver->params().sublist("CheapSIMPLE Parameters").sublist("Inverse1"), true);
-          actdis.compute_null_space_if_necessary(
-              linsolver->params().sublist("CheapSIMPLE Parameters").sublist("Inverse2"), true);
-
-          linsolver->params().sublist("CheapSIMPLE Parameters").set("Prec Type", "CheapSIMPLE");
-          linsolver->params().set("CONSTRAINT", true);
-
-          break;
-        }
         case Core::LinearSolver::PreconditionerType::block_teko:
         {
           Core::LinearSolver::Parameters::compute_solver_parameters(

@@ -82,9 +82,6 @@ namespace Adapter
     void set_general_parameters(const Teuchos::RCP<Teuchos::ParameterList> fluidtimeparams,
         const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& fdyn);
 
-    //! create a second solver
-    void create_second_solver(Core::LinAlg::Solver& solver, const Teuchos::ParameterList& fdyn);
-
     /// fluid field solver
     Teuchos::RCP<Fluid> fluid_;
   };

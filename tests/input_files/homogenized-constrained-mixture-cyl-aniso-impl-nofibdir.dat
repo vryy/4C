@@ -90,7 +90,6 @@ AZREUSE                         0
 AZITER                          1000
 AZTOL                           1e-08
 NAME                            No_name
-SIMPLE_DAMPING                  1
 AMGNXN_TYPE                     AMG(BGS)
 AMGNXN_XML_FILE                 none
 -------------------------------------------------------------------MATERIALS

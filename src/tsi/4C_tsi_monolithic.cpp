@@ -290,62 +290,6 @@ void TSI::Monolithic::create_linear_solver()
 
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::cheap_simple:
-    {
-      // get parameter list of structural dynamics
-      const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
-      // use solver blocks for structure
-      // get the solver number used for structural solver
-      const int slinsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
-      // check if the structural solver has a valid solver number
-      if (slinsolvernumber == (-1))
-        FOUR_C_THROW(
-            "no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL "
-            "DYNAMIC to a valid number!");
-
-      // get parameter list of thermal dynamics
-      const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
-      // use solver blocks for temperature (thermal field)
-      // get the solver number used for thermal solver
-      const int tlinsolvernumber = tdyn.get<int>("LINEAR_SOLVER");
-      // check if the TSI solver has a valid solver number
-      if (tlinsolvernumber == (-1))
-        FOUR_C_THROW(
-            "no linear solver defined for thermal field. Please set LINEAR_SOLVER in THERMAL "
-            "DYNAMIC "
-            "to a valid number!");
-
-      // use solver blocks for structure and temperature (thermal field)
-      const Teuchos::ParameterList& ssolverparams =
-          Global::Problem::instance()->solver_params(slinsolvernumber);
-      const Teuchos::ParameterList& tsolverparams =
-          Global::Problem::instance()->solver_params(tlinsolvernumber);
-
-      solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
-          Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
-      solver_->put_solver_params_to_sub_params("Inverse2", tsolverparams,
-          Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
-
-      // prescribe rigid body modes
-      structure_field()->discretization()->compute_null_space_if_necessary(
-          solver_->params().sublist("Inverse1"));
-      thermo_field()->discretization()->compute_null_space_if_necessary(
-          solver_->params().sublist("Inverse2"));
-
-
-      if (azprectype == Core::LinearSolver::PreconditionerType::cheap_simple)
-      {
-        // Tell to the Core::LinAlg::SOLVER::SimplePreconditioner that we use the general
-        // implementation
-        solver_->params().set<bool>("GENERAL", true);
-      }
-
-      break;
-    }
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
     case Core::LinearSolver::PreconditionerType::block_teko:
     {

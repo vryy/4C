@@ -51,14 +51,12 @@ namespace Inpar::SOLVER
           "Note! this preconditioner will only be used if the input operator\n"
           "supports the Epetra_RowMatrix interface and the client does not pass\n"
           "in an external preconditioner!",
-          Teuchos::tuple<std::string>(
-              "ILU", "MueLu", "MueLu_contactSP", "AMGnxn", "CheapSIMPLE", "Teko"),
+          Teuchos::tuple<std::string>("ILU", "MueLu", "MueLu_contactSP", "AMGnxn", "Teko"),
           Teuchos::tuple<Core::LinearSolver::PreconditionerType>(
               Core::LinearSolver::PreconditionerType::ilu,
               Core::LinearSolver::PreconditionerType::multigrid_muelu,
               Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp,
               Core::LinearSolver::PreconditionerType::multigrid_nxn,
-              Core::LinearSolver::PreconditionerType::cheap_simple,
               Core::LinearSolver::PreconditionerType::block_teko),
           &list);
     }
@@ -122,18 +120,6 @@ namespace Inpar::SOLVER
 
     // user-given name of solver block (just for beauty)
     Core::Utils::string_parameter("NAME", "No_name", "User specified name for solver block", &list);
-
-    // Parameters for SIMPLE
-    {
-      Core::Utils::double_parameter(
-          "SIMPLE_DAMPING", 1., "damping parameter for SIMPLE preconditioner", &list);
-
-      Core::Utils::int_parameter("SUB_SOLVER1", -1,
-          "sub solver block number (SIMPLE/C: used for prediction of primary variable)", &list);
-
-      Core::Utils::int_parameter("SUB_SOLVER2", -1,
-          "sub solver block number (SIMPLE/C: used for SchurComplement eq.)", &list);
-    }
 
     // Parameters for AMGnxn Preconditioner
     {

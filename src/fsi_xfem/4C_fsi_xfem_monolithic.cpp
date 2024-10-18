@@ -2112,7 +2112,6 @@ void FSI::MonolithicXFEM::create_linear_solver()
     case Core::LinearSolver::PreconditionerType::block_teko:
       break;
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
-    case Core::LinearSolver::PreconditionerType::cheap_simple:
     {
       // no plausibility checks here
       // if you forget to declare an xml file you will get an error message anyway
@@ -2129,81 +2128,6 @@ void FSI::MonolithicXFEM::create_linear_solver()
   // prepare linear solvers and preconditioners
   switch (azprectype)
   {
-    case Core::LinearSolver::PreconditionerType::cheap_simple:
-    {
-      // This should be the default case (well-tested and used)
-      solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(xfsisolverparams,
-          // ggfs. explizit Comm von STR wie lungscatra
-          get_comm(), Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
-
-      // use solver blocks for structure and fluid
-      const Teuchos::ParameterList& ssolverparams =
-          Global::Problem::instance()->solver_params(slinsolvernumber);
-      const Teuchos::ParameterList& fsolverparams =
-          Global::Problem::instance()->solver_params(flinsolvernumber);
-
-      solver_->put_solver_params_to_sub_params("Inverse1", ssolverparams,
-          Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
-      structure_poro()->discretization()->compute_null_space_if_necessary(
-          solver_->params().sublist("Inverse1"));
-
-      solver_->put_solver_params_to_sub_params("Inverse2", fsolverparams,
-          Global::Problem::instance()->solver_params_callback(),
-          Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-              Global::Problem::instance()->io_params(), "VERBOSITY"));
-      fluid_field()->discretization()->compute_null_space_if_necessary(
-          solver_->params().sublist("Inverse2"), true);
-
-      if (structure_poro()->is_poro())
-      {
-        solver_->put_solver_params_to_sub_params("Inverse3", fsolverparams,
-            Global::Problem::instance()->solver_params_callback(),
-            Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                Global::Problem::instance()->io_params(), "VERBOSITY"));
-        structure_poro()->fluid_field()->discretization()->compute_null_space_if_necessary(
-            solver_->params().sublist("Inverse3"));
-      }
-      if (have_ale())
-      {
-        const Teuchos::ParameterList& asolverparams =
-            Global::Problem::instance()->solver_params(alinsolvernumber);
-        if (ale_i_block_ == 3)
-        {
-          solver_->put_solver_params_to_sub_params("Inverse3", asolverparams,
-              Global::Problem::instance()->solver_params_callback(),
-              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY"));
-          ale_field()->write_access_discretization()->compute_null_space_if_necessary(
-              solver_->params().sublist("Inverse3"));
-        }
-        else if (ale_i_block_ == 4)
-        {
-          solver_->put_solver_params_to_sub_params("Inverse4", asolverparams,
-              Global::Problem::instance()->solver_params_callback(),
-              Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
-                  Global::Problem::instance()->io_params(), "VERBOSITY"));
-          ale_field()->write_access_discretization()->compute_null_space_if_necessary(
-              solver_->params().sublist("Inverse4"));
-        }
-        else
-        {
-          FOUR_C_THROW("You have more than 4 Fields? --> add another Inverse 5 here!");
-        }
-      }
-
-      if (azprectype == Core::LinearSolver::PreconditionerType::cheap_simple)
-      {
-        // Tell to the Core::LinAlg::SOLVER::SimplePreconditioner that we use the general
-        // implementation
-        solver_->params().set<bool>("GENERAL", true);
-      }
-
-      break;
-    }
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
     {
       solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(xfsisolverparams,
