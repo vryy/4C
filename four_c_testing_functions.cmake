@@ -108,7 +108,7 @@ endfunction()
 
 ###------------------------------------------------------------------ 4C Test
 # Run simulation with .dat file
-# Usage in TestingFrameworkListOfTests.cmake:
+# Usage in tests/lists_of_tests.cmake:
 #            "four_c_test(<input_file> optional: NP <> RESTART_STEP <> TIMEOUT <> OMP_THREADS <> POST_ENSIGHT_STRUCTURE <> LABEL <>
 #                                                CSV_COMPARISON_RESULT_FILE <> CSV_COMPARISON_REFERENCE_FILE <>
 #                                                CSV_COMPARISON_TOL_R <> CSV_COMPARISON_TOL_A <>)"
@@ -449,7 +449,7 @@ function(four_c_test)
 endfunction()
 
 ###------------------------------------------------------------------ Nested Parallelism
-# Usage in TestingFrameworkListOfTests.cmake: "four_c_test_nested_parallelism(<name_of_input_file_1> <name_of_input_file_2> <restart_step>)"
+# Usage in tests/lists_of_tests.cmake: "four_c_test_nested_parallelism(<name_of_input_file_1> <name_of_input_file_2> <restart_step>)"
 # <name_of_input_file_1>: must equal the name of a .dat file in directory tests/input_files for the first test; without ".dat". This test will be executed using 1 process.
 # <name_of_input_file_2>: must equal the name of a .dat file in directory tests/input_files for the second test; without ".dat". This test will be executed using 2 processes.
 # <restart_step>: number of restart step; <""> indicates no restart
@@ -485,7 +485,7 @@ endfunction()
 
 ###------------------------------------------------------------------ Framework Tests
 # Testing the whole framework: pre_exodus, 4C, and post-filter
-# Usage in TestingFrameworkListOfTests.cmake: "four_c_test_framework(<name_of_input_file> <num_proc> <xml_filename>)"
+# Usage in tests/lists_of_tests.cmake: "four_c_test_framework(<name_of_input_file> <num_proc> <xml_filename>)"
 # <name_of_input_file>: must equal the name of a .e/.bc/.head file in directory tests/framework-test
 # <num_proc>: number of processors the test should use
 # <xml_filename>: copy any xml-file to the build directory. May also be ""
@@ -529,7 +529,7 @@ function(four_c_test_framework name_of_input_file num_proc xml_filename)
 endfunction()
 
 ###------------------------------------------------------------------ Cut Tests
-# Usage in TestingFrameworkListOfTests.cmake: "four_c_test_cut_test(<num_proc>)"
+# Usage in tests/lists_of_tests.cmake: "four_c_test_cut_test(<num_proc>)"
 # <num_proc>: number of processors the test should use
 function(four_c_test_cut_test num_proc)
   set(name_of_test test-p${num_proc}-cut)
@@ -555,7 +555,7 @@ endfunction()
 
 ###------------------------------------------------------------------ Preprocessing Test
 # Generate default header file and test pre_exo with it
-# Usage in TestingFrameworkListOfTests.cmake: "four_c_test_pre_processing(<name_of_input_file> <num_proc>)"
+# Usage in tests/lists_of_tests.cmake: "four_c_test_pre_processing(<name_of_input_file> <num_proc>)"
 # <name_of_input_file>: must equal the name of .e/.bc/.head file in tests/pre_processing_test
 # <num_proc>: number of processors the test should use
 function(four_c_test_pre_processing name_of_input_file num_proc)
@@ -585,7 +585,7 @@ endfunction()
 ###------------------------------------------------------------------ Postprocessing Test
 # Run ensight postprocessor on previous test
 # CAUTION: This tests bases on results of a previous simulation/test
-# Usage in TestingFrameworkListOfTests.cmake: "four_c_test_post_processing(<name_of_input_file> <num_proc> <stresstype> <straintype> <startstep> <optional: identifier> <optional: field>"
+# Usage in tests/lists_of_tests.cmake: "four_c_test_post_processing(<name_of_input_file> <num_proc> <stresstype> <straintype> <startstep> <optional: identifier> <optional: field>"
 # <name_of_input_file>: must equal the name of a .dat file from a previous tests
 # <num_proc>: number of processors the test should use
 # <num_proc_base_run>: number of processors of precursor base run
@@ -651,7 +651,7 @@ endfunction()
 # Compare XML formatted .vtk result data set referenced by .pvd files to corresponding reference files
 # CAUTION: This tests bases on results of a previous simulation/test
 # Implementation can be found in '/tests/output_test/vtk_compare.py'
-# Usage in TestingFrameworkListOfTests.cmake: "four_c_test_vtk(<name_of_input_file> <num_proc> <filetag> <pvd_referencefilename> <tolerance> <optional: time_steps>)"
+# Usage in tests/lists_of_tests.cmake: "four_c_test_vtk(<name_of_input_file> <num_proc> <filetag> <pvd_referencefilename> <tolerance> <optional: time_steps>)"
 # <name_of_test>: name of this test
 # <name_of_input_file>: must equal the name of a .dat file from a previous test
 # <num_proc_base_run>: number of processors of precursor base run
@@ -701,7 +701,7 @@ function(
 endfunction()
 
 ###------------------------------------------------------------------ List of tests
-include(TestingFrameworkListOfTests.cmake)
+include(tests/list_of_tests.cmake)
 
 ###------------------------------------------------------------------ Final cleanup
 # remove any output files from our tests
