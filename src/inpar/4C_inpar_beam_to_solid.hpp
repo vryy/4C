@@ -69,7 +69,9 @@ namespace Inpar
       //! Gauss point on cross section method (2d-3d coupling).
       gauss_point_cross_section,
       //! Mortar type coupling.
-      mortar
+      mortar,
+      //! Mortar type coupling on the beam surface
+      mortar_cross_section
     };
 
     /**

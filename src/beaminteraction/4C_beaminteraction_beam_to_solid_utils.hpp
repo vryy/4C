@@ -66,6 +66,7 @@ namespace BEAMINTERACTION
   class BeamContactPair;
   class BeamToSolidMortarManager;
   class BeamToSolidSurfaceContactParams;
+  class BeamToSolidParamsBase;
 }  // namespace BEAMINTERACTION
 
 namespace BEAMINTERACTION
@@ -95,6 +96,7 @@ namespace BEAMINTERACTION
   /**
    * \brief Get the number of Lagrange multiplicator values corresponding to the beam nodes and beam
    * element.
+   * @param beam_to_solid_params (in) Beam-to-solid parameters
    * @param shape_function (in) Mortar shape function.
    * @param n_dim (in) Spatial dimension of Lagrange multiplicator field.
    * @return {n_lambda_node, n_lambda_element} Number of Lagrange multiplicators per node and per
@@ -102,6 +104,7 @@ namespace BEAMINTERACTION
    */
   [[nodiscard]] std::pair<unsigned int, unsigned int>
   mortar_shape_functions_to_number_of_lagrange_values(
+      const Teuchos::RCP<const BeamToSolidParamsBase>& beam_to_solid_params,
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions shape_function,
       const unsigned int n_dim);
 

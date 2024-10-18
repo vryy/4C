@@ -25,6 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::BeamToSolidVolumeMeshtyingParams()
     : BeamToSolidParamsBase(),
       integration_points_circumference_(0),
+      n_fourier_modes_(-1),
       rotational_coupling_triad_construction_(
           Inpar::BeamToSolid::BeamToSolidRotationCoupling::none),
       rotational_coupling_penalty_parameter_(0.0),
@@ -53,6 +54,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams::init()
     // Number of integrations points along the circumference of the cross section.
     integration_points_circumference_ =
         beam_to_solid_contact_params_list.get<int>("INTEGRATION_POINTS_CIRCUMFERENCE");
+
+    // Number of Fourier modes.
+    n_fourier_modes_ = beam_to_solid_contact_params_list.get<int>("MORTAR_FOURIER_MODES");
 
     // Type of rotational coupling.
     rotational_coupling_triad_construction_ =

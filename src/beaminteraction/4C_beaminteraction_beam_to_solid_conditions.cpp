@@ -21,6 +21,7 @@
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_FAD.hpp"
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_params.hpp"
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_full.hpp"
+#include "4C_beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_mortar.hpp"
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_plane.hpp"
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_pair_gauss_point.hpp"
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_pair_mortar.hpp"
@@ -117,7 +118,9 @@ BEAMINTERACTION::BeamToSolidCondition::create_indirect_assembly_manager(
     const Teuchos::RCP<const Core::FE::Discretization>& discret)
 {
   if (beam_to_solid_params_->get_contact_discretization() ==
-      Inpar::BeamToSolid::BeamToSolidContactDiscretization::mortar)
+          Inpar::BeamToSolid::BeamToSolidContactDiscretization::mortar ||
+      beam_to_solid_params_->get_contact_discretization() ==
+          Inpar::BeamToSolid::BeamToSolidContactDiscretization::mortar_cross_section)
   {
     // Create the mortar manager. We add 1 to the MaxAllGID since this gives the maximum GID and NOT
     // the length of the GIDs.
@@ -335,6 +338,17 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::create_contact_pair_intern
     else
       FOUR_C_THROW(
           "2D-3D coupling is only implemented for Simo-Reissner and torsion free beam elements.");
+  }
+  else if (contact_discretization ==
+           Inpar::BeamToSolid::BeamToSolidContactDiscretization::mortar_cross_section)
+  {
+    return create_beam_to_solid_volume_pair_mortar_cross_section(shape,
+        beam_to_volume_params->get_mortar_shape_function_type(),
+        beam_to_volume_params->get_number_of_fourier_modes());
+  }
+  else
+  {
+    FOUR_C_THROW("Got unexpected contact discretization.");
   }
 
   // Default return value.

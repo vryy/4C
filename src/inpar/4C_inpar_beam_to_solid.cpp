@@ -67,11 +67,13 @@ void Inpar::BeamToSolid::set_valid_parameters(Teuchos::ParameterList& list)
   {
     setStringToIntegralParameter<BeamToSolidContactDiscretization>("CONTACT_DISCRETIZATION", "none",
         "Type of employed contact discretization",
-        tuple<std::string>("none", "gauss_point_to_segment", "mortar", "gauss_point_cross_section"),
+        tuple<std::string>("none", "gauss_point_to_segment", "mortar", "gauss_point_cross_section",
+            "mortar_cross_section"),
         tuple<BeamToSolidContactDiscretization>(BeamToSolidContactDiscretization::none,
             BeamToSolidContactDiscretization::gauss_point_to_segment,
             BeamToSolidContactDiscretization::mortar,
-            BeamToSolidContactDiscretization::gauss_point_cross_section),
+            BeamToSolidContactDiscretization::gauss_point_cross_section,
+            BeamToSolidContactDiscretization::mortar_cross_section),
         &beam_to_solid_volume_mestying);
 
     setStringToIntegralParameter<BeamToSolidConstraintEnforcement>("CONSTRAINT_STRATEGY", "none",
@@ -86,6 +88,10 @@ void Inpar::BeamToSolid::set_valid_parameters(Teuchos::ParameterList& list)
         tuple<BeamToSolidMortarShapefunctions>(BeamToSolidMortarShapefunctions::none,
             BeamToSolidMortarShapefunctions::line2, BeamToSolidMortarShapefunctions::line3,
             BeamToSolidMortarShapefunctions::line4),
+        &beam_to_solid_volume_mestying);
+
+    Core::Utils::int_parameter("MORTAR_FOURIER_MODES", -1,
+        "Number of fourier modes to be used for cross-section mortar coupling",
         &beam_to_solid_volume_mestying);
 
     Core::Utils::double_parameter("PENALTY_PARAMETER", 0.0,
