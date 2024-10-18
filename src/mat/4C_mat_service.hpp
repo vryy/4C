@@ -325,7 +325,26 @@ namespace Mat
    *
    * In tensor index notation this does:
    * \f[
-   *    X_{ABCD} = \text{fac} \cdot \left( A_{AC} \cdot B_{DB} \right)
+   *    \text{out}_{ABCD} = \text{fac} \cdot \left( A_{AD} \cdot B_{BC} \right)
+   * \f]
+   *
+   * There are no symmetries and the matrix is therefore stored in a 9x9 matrix. A and B are not
+   * required to be symmetric!!!
+   *
+   * @param[in] fac         Scalar factor
+   * @param[in] A           2nd order tensor \f[A_{AB}\f]
+   * @param[in] B           2nd order tensor \f[B_{CD}\f]
+   * @param[in,out] out     4th order tensor \f[\text{out}_{EFGH}\f]
+   */
+  void add_adbc_tensor_product(const double fac, const Core::LinAlg::Matrix<3, 3>& A,
+      const Core::LinAlg::Matrix<3, 3>& B, Core::LinAlg::Matrix<9, 9>& out);
+
+  /*!
+   * @brief Add non-symmetric product to a 4th order tensor in matrix notation
+   *
+   * In tensor index notation this does:
+   * \f[
+   *    \text{out}_{ABCD} = \text{fac} \cdot \left( A_{AC} \cdot B_{DB} \right)
    * \f]
    *
    * There are no symmetries and the matrix is therefore stored in a 9x9 matrix. A and B are not
@@ -507,6 +526,39 @@ namespace Mat
       Core::LinAlg::FourTensor<dim>& four_tensor, const Core::LinAlg::Matrix<6, 6>& matrix_voigt);
 
   /*!
+   * @brief Setup 4th order tensor from 6x9 Voigt notation
+   *
+   *
+   * @param[out] fourTensor   4th order tensor that is set up based on matrixVoigt
+   * @param[in]  matrixVoigt  4th order tensor in Voigt notation with 1st minor symmetry
+   */
+  template <int dim>
+  void setup_four_tensor_from_6x9_voigt_matrix(
+      Core::LinAlg::FourTensor<dim>& fourTensor, const Core::LinAlg::Matrix<6, 9>& matrixVoigt);
+
+  /*!
+   * @brief Setup 4th order tensor from 9x6 Voigt notation
+   *
+   *
+   * @param[out] fourTensor   4th order tensor that is set up based on matrixVoigt
+   * @param[in]  matrixVoigt  4th order tensor in Voigt notation with 2nd minor symmetry
+   */
+  template <int dim>
+  void setup_four_tensor_from_9x6_voigt_matrix(
+      Core::LinAlg::FourTensor<dim>& fourTensor, const Core::LinAlg::Matrix<9, 6>& matrixVoigt);
+
+  /*!
+   * @brief Setup 4th order tensor from 9x9 Voigt notation
+   *
+   *
+   * @param[out] fourTensor   4th order tensor that is set up based on matrixVoigt
+   * @param[in]  matrixVoigt  4th order tensor in Voigt notation without any symmetries
+   */
+  template <int dim>
+  void setup_four_tensor_from_9x9_voigt_matrix(
+      Core::LinAlg::FourTensor<dim>& fourTensor, const Core::LinAlg::Matrix<9, 9>& matrixVoigt);
+
+  /*!
    * @brief Setup 6x6 Voigt matrix from 4th order tensor with minor symmetries
    *
    * @param[out] matrix_voigt  6x6 Voigt matrix that is set up based on four_tensor
@@ -515,6 +567,36 @@ namespace Mat
   template <int dim>
   void setup_6x6_voigt_matrix_from_four_tensor(
       Core::LinAlg::Matrix<6, 6>& matrix_voigt, const Core::LinAlg::FourTensor<dim>& four_tensor);
+
+  /*!
+   * @brief Setup 9x6 Voigt matrix from 4th order tensor with 2nd minor symmetry
+   *
+   * @param[out] matrixVoigt  9x6 Voigt matrix that is set up based on fourTensor
+   * @param[in]  fourTensor   4th order tensor with 2nd minor symmetry (C_ijkl = C_ijlk)
+   */
+  template <int dim>
+  void setup_9x6_voigt_matrix_from_four_tensor(
+      Core::LinAlg::Matrix<9, 6>& matrixVoigt, const Core::LinAlg::FourTensor<dim>& fourTensor);
+
+  /*!
+   * @brief Setup 6x9 Voigt matrix from 4th order tensor with 1st minor symmetry
+   *
+   * @param[out] matrixVoigt  6x9 Voigt matrix that is set up based on fourTensor
+   * @param[in]  fourTensor   4th order tensor with 1st minor symmetry (C_ijkl = C_jikl)
+   */
+  template <int dim>
+  void setup_6x9_voigt_matrix_from_four_tensor(
+      Core::LinAlg::Matrix<6, 9>& matrixVoigt, const Core::LinAlg::FourTensor<dim>& fourTensor);
+
+  /*!
+   * @brief Setup 9x9 Voigt matrix from 4th order tensor
+   *
+   * @param[out] matrixVoigt  9x9 Voigt matrix that is set up based on fourTensor
+   * @param[in]  fourTensor   4th order tensor without symmetries
+   */
+  template <int dim>
+  void setup_9x9_voigt_matrix_from_four_tensor(
+      Core::LinAlg::Matrix<9, 9>& matrixVoigt, const Core::LinAlg::FourTensor<dim>& fourTensor);
 
   /*!
    * @brief Adds the dyadic product of two 2nd order tensors to a 4th order tensor

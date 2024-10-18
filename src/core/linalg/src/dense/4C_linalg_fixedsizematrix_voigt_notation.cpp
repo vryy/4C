@@ -49,6 +49,57 @@ void Core::LinAlg::Voigt::fourth_order_identity_matrix(Core::LinAlg::Matrix<6, 6
                VoigtUtils<cols_notation>::scale_factor(i);
 }
 
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+Core::LinAlg::Matrix<6, 6> Core::LinAlg::Voigt::modify_voigt_representation(
+    const Core::LinAlg::Matrix<6, 6>& input, const double scalar_row, const double scalar_col)
+{
+  Core::LinAlg::Matrix<6, 6> output(true);
+
+  output(0, 0) = 1.0 * input(0, 0) * 1.0;
+  output(0, 1) = 1.0 * input(0, 1) * 1.0;
+  output(0, 2) = 1.0 * input(0, 2) * 1.0;
+  output(0, 3) = 1.0 * input(0, 3) * scalar_col;
+  output(0, 4) = 1.0 * input(0, 4) * scalar_col;
+  output(0, 5) = 1.0 * input(0, 5) * scalar_col;
+
+  output(1, 0) = 1.0 * input(1, 0) * 1.0;
+  output(1, 1) = 1.0 * input(1, 1) * 1.0;
+  output(1, 2) = 1.0 * input(1, 2) * 1.0;
+  output(1, 3) = 1.0 * input(1, 3) * scalar_col;
+  output(1, 4) = 1.0 * input(1, 4) * scalar_col;
+  output(1, 5) = 1.0 * input(1, 5) * scalar_col;
+
+  output(2, 0) = 1.0 * input(2, 0) * 1.0;
+  output(2, 1) = 1.0 * input(2, 1) * 1.0;
+  output(2, 2) = 1.0 * input(2, 2) * 1.0;
+  output(2, 3) = 1.0 * input(2, 3) * scalar_col;
+  output(2, 4) = 1.0 * input(2, 4) * scalar_col;
+  output(2, 5) = 1.0 * input(2, 5) * scalar_col;
+
+  output(3, 0) = scalar_row * input(3, 0) * 1.0;
+  output(3, 1) = scalar_row * input(3, 1) * 1.0;
+  output(3, 2) = scalar_row * input(3, 2) * 1.0;
+  output(3, 3) = scalar_row * input(3, 3) * scalar_col;
+  output(3, 4) = scalar_row * input(3, 4) * scalar_col;
+  output(3, 5) = scalar_row * input(3, 5) * scalar_col;
+
+  output(4, 0) = scalar_row * input(4, 0) * 1.0;
+  output(4, 1) = scalar_row * input(4, 1) * 1.0;
+  output(4, 2) = scalar_row * input(4, 2) * 1.0;
+  output(4, 3) = scalar_row * input(4, 3) * scalar_col;
+  output(4, 4) = scalar_row * input(4, 4) * scalar_col;
+  output(4, 5) = scalar_row * input(4, 5) * scalar_col;
+
+  output(5, 0) = scalar_row * input(5, 0) * 1.0;
+  output(5, 1) = scalar_row * input(5, 1) * 1.0;
+  output(5, 2) = scalar_row * input(5, 2) * 1.0;
+  output(5, 3) = scalar_row * input(5, 3) * scalar_col;
+  output(5, 4) = scalar_row * input(5, 4) * scalar_col;
+  output(5, 5) = scalar_row * input(5, 5) * scalar_col;
+
+  return output;
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
