@@ -33,7 +33,7 @@ namespace Core::IO
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   DomainReader::DomainReader(Teuchos::RCP<Core::FE::Discretization> dis,
-      const Core::IO::DatFileReader& reader, std::string sectionname)
+      Core::IO::DatFileReader& reader, std::string sectionname)
       : name_(dis->name()),
         reader_(reader),
         comm_(reader.get_comm()),
@@ -78,72 +78,50 @@ namespace Core::IO
     // all reading is done on proc 0
     if (comm_->MyPID() == 0)
     {
-      // open input file at the right position
-      std::string inputFileName = reader_.my_inputfile_name();
-      std::ifstream file(inputFileName.c_str());
-      std::ifstream::pos_type pos = reader_.excluded_section_position(sectionname_);
-      if (pos != std::ifstream::pos_type(-1))
+      bool any_lines_read = false;
+      // read domain info
+      for (const auto& line : reader_.lines_in_section(sectionname_))
       {
-        file.seekg(pos);
-
-        // read domain info
-        std::string line;
-        while (getline(file, line))
+        any_lines_read = true;
+        std::istringstream t{std::string{line}};
+        std::string key;
+        t >> key;
+        if (key == "LOWER_BOUND")
+          t >> inputData.bottom_corner_point_[0] >> inputData.bottom_corner_point_[1] >>
+              inputData.bottom_corner_point_[2];
+        else if (key == "UPPER_BOUND")
+          t >> inputData.top_corner_point_[0] >> inputData.top_corner_point_[1] >>
+              inputData.top_corner_point_[2];
+        else if (key == "INTERVALS")
+          t >> inputData.interval_[0] >> inputData.interval_[1] >> inputData.interval_[2];
+        else if (key == "ROTATION")
+          t >> inputData.rotation_angle_[0] >> inputData.rotation_angle_[1] >>
+              inputData.rotation_angle_[2];
+        else if (key == "ELEMENTS")
         {
-          // remove comments, trailing and leading whitespaces
-          // compact internal whitespaces
-          line = Core::Utils::strip_comment(line);
-
-          // line is now empty
-          if (line.size() == 0) continue;
-
-          if (line.find("--") == 0)
-          {
-            break;
-          }
-          else
-          {
-            std::istringstream t;
-            t.str(line);
-            std::string key;
-            t >> key;
-            if (key == "LOWER_BOUND")
-              t >> inputData.bottom_corner_point_[0] >> inputData.bottom_corner_point_[1] >>
-                  inputData.bottom_corner_point_[2];
-            else if (key == "UPPER_BOUND")
-              t >> inputData.top_corner_point_[0] >> inputData.top_corner_point_[1] >>
-                  inputData.top_corner_point_[2];
-            else if (key == "INTERVALS")
-              t >> inputData.interval_[0] >> inputData.interval_[1] >> inputData.interval_[2];
-            else if (key == "ROTATION")
-              t >> inputData.rotation_angle_[0] >> inputData.rotation_angle_[1] >>
-                  inputData.rotation_angle_[2];
-            else if (key == "ELEMENTS")
-            {
-              t >> inputData.elementtype_ >> inputData.distype_;
-              getline(t, inputData.elearguments_);
-            }
-            else if (key == "PARTITION")
-            {
-              std::string tmp;
-              t >> tmp;
-              std::transform(tmp.begin(), tmp.end(), tmp.begin(),
-                  [](unsigned char c) { return std::tolower(c); });
-              if (tmp == "auto")
-                inputData.autopartition_ = true;
-              else if (tmp == "structured")
-                inputData.autopartition_ = false;
-              else
-                FOUR_C_THROW(
-                    "Invalid argument for PARTITION in DOMAIN reader. Valid options are \"auto\" "
-                    "and \"structured\".");
-            }
-            else
-              FOUR_C_THROW("Unknown Key in DOMAIN section");
-          }
+          t >> inputData.elementtype_ >> inputData.distype_;
+          getline(t, inputData.elearguments_);
         }
+        else if (key == "PARTITION")
+        {
+          std::string tmp;
+          t >> tmp;
+          std::transform(
+              tmp.begin(), tmp.end(), tmp.begin(), [](unsigned char c) { return std::tolower(c); });
+          if (tmp == "auto")
+            inputData.autopartition_ = true;
+          else if (tmp == "structured")
+            inputData.autopartition_ = false;
+          else
+            FOUR_C_THROW(
+                "Invalid argument for PARTITION in DOMAIN reader. Valid options are \"auto\" "
+                "and \"structured\".");
+        }
+        else
+          FOUR_C_THROW("Unknown Key in DOMAIN section");
       }
-      else
+
+      if (!any_lines_read)
       {
         FOUR_C_THROW("No DOMAIN specified but box geometry selected!");
       }

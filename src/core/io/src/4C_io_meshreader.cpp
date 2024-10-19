@@ -40,7 +40,7 @@ Core::IO::MeshReader::MeshReader(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::IO::MeshReader::add_advanced_reader(Teuchos::RCP<Core::FE::Discretization> dis,
-    const Core::IO::DatFileReader& reader, const std::string& sectionname,
+    Core::IO::DatFileReader& reader, const std::string& sectionname,
     const Core::IO::GeometryType geometrysource, const std::string* geofilepath)
 {
   std::set<std::string> elementtypes;
@@ -89,7 +89,7 @@ void Core::IO::MeshReader::read_and_partition()
     int local_max_node_id = max_node_id;
     comm_->MaxAll(&local_max_node_id, &max_node_id, 1);
 
-    if (max_node_id < comm_->NumProc() && reader_.excluded_section_length(node_section_name_) != 0)
+    if (max_node_id > 0 && max_node_id < comm_->NumProc())
       FOUR_C_THROW("Bad idea: Simulation with %d procs for problem with %d nodes", comm_->NumProc(),
           max_node_id);
   }

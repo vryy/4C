@@ -94,7 +94,7 @@ Core::IO::DatFileUtils::read_matching_lines_in_section(Core::IO::DatFileReader& 
     unparsed_lines.emplace_back(input_line);
   };
 
-  for (const auto& input_line : reader.get_lines_with_content("--" + section))
+  for (const auto& input_line : reader.lines_in_section("--" + section))
   {
     process_line(std::string(input_line));
   }

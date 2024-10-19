@@ -47,7 +47,7 @@ std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefi
   std::string name = "--MATERIALS";
 
   std::vector<std::pair<int, Core::IO::InputParameterContainer>> found_materials;
-  for (const auto& line : reader.get_lines_with_content(name))
+  for (const auto& line : reader.lines_in_section(name))
   {
     Teuchos::RCP<std::stringstream> condline =
         Teuchos::make_rcp<std::stringstream>(std::string(line));

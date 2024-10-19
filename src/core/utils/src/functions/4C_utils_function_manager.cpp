@@ -177,7 +177,7 @@ void Core::Utils::FunctionManager::read_input(Core::IO::DatFileReader& reader)
           {
             std::stringstream ss;
             for (const auto& line :
-                reader.get_lines_with_content("--FUNCT" + std::to_string(funct_suffix)))
+                reader.lines_in_section("--FUNCT" + std::to_string(funct_suffix)))
             {
               ss << '\n' << line;
             }

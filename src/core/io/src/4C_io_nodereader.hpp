@@ -24,7 +24,7 @@ namespace Core::IO
    * Nodes are added to the discretization objects associated with the @p element_readers.
    * The @p max_node_id is tracked for consistency checks.
    */
-  void read_nodes(const Core::IO::DatFileReader& reader, const std::string& node_section_name,
+  void read_nodes(Core::IO::DatFileReader& reader, const std::string& node_section_name,
       std::vector<ElementReader>& element_readers, int& max_node_id);
 
 }  // namespace Core::IO

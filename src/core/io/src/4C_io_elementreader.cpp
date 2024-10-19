@@ -11,7 +11,6 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_element_definition.hpp"
 #include "4C_io_inputreader.hpp"
-#include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_print.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -20,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> dis,
-    const Core::IO::DatFileReader& reader, std::string sectionname)
+    Core::IO::DatFileReader& reader, std::string sectionname)
     : name_(dis->name()),
       reader_(reader),
       comm_(reader.get_comm()),
@@ -33,7 +32,7 @@ Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> di
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> dis,
-    const Core::IO::DatFileReader& reader, std::string sectionname, std::string elementtype)
+    Core::IO::DatFileReader& reader, std::string sectionname, std::string elementtype)
     : name_(dis->name()),
       reader_(reader),
       comm_(reader.get_comm()),
@@ -47,7 +46,7 @@ Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> di
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> dis,
-    const Core::IO::DatFileReader& reader, std::string sectionname,
+    Core::IO::DatFileReader& reader, std::string sectionname,
     const std::set<std::string>& elementtypes)
     : name_(dis->name()),
       reader_(reader),
@@ -68,7 +67,7 @@ void Core::IO::ElementReader::read_and_distribute()
   const int numproc = comm_->NumProc();
 
   // read global ids of elements of this discretization
-  const auto& [numele, eids] = get_element_size_and_i_ds();
+  const auto& [numele, eids] = get_element_size_and_ids();
 
   // determine a preliminary element distribution
   int nblock, mysize, bsize;
@@ -118,45 +117,27 @@ void Core::IO::ElementReader::read_and_distribute()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<int, std::vector<int>> Core::IO::ElementReader::get_element_size_and_i_ds() const
+std::pair<int, std::vector<int>> Core::IO::ElementReader::get_element_size_and_ids() const
 {
   // vector of all global element ids
   std::vector<int> eids;
   int numele = 0;
-  std::string inputfile_name = reader_.my_inputfile_name();
 
   // all reading is done on proc 0
   if (comm_->MyPID() == 0)
   {
-    // open input file at the right position
-    std::ifstream file(inputfile_name.c_str());
-    std::ifstream::pos_type pos = reader_.excluded_section_position(sectionname_);
-    if (pos != std::ifstream::pos_type(-1))
+    for (const auto& element_line : reader_.lines_in_section(sectionname_))
     {
-      file.seekg(pos);
+      std::istringstream t{std::string{element_line}};
+      int elenumber;
+      std::string eletype;
+      t >> elenumber >> eletype;
+      elenumber -= 1;
 
-      // loop all element lines, comments in the element section are not supported!
-      std::string line;
-      while (getline(file, line))
-      {
-        if (line.find("--") == 0)
-          break;
-        else
-        {
-          std::istringstream t;
-          t.str(line);
-          int elenumber;
-          std::string eletype;
-          t >> elenumber >> eletype;
-          elenumber -= 1;
-
-          // only read registered element types or all elements if nothing is registered
-          if (elementtypes_.size() == 0 or elementtypes_.count(eletype) > 0)
-            eids.push_back(elenumber);
-        }
-      }
-      numele = static_cast<int>(eids.size());
+      // only read registered element types or all elements if nothing is registered
+      if (elementtypes_.size() == 0 or elementtypes_.count(eletype) > 0) eids.push_back(elenumber);
     }
+    numele = static_cast<int>(eids.size());
   }
 
   // Simply allreduce the element ids
@@ -173,109 +154,107 @@ std::pair<int, std::vector<int>> Core::IO::ElementReader::get_element_size_and_i
 /*----------------------------------------------------------------------*/
 void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, const int bsize)
 {
-  std::ifstream file;
-  std::string inputfile_name = reader_.my_inputfile_name();
-
-  if (comm_->MyPID() == 0)
-  {
-    file.open(inputfile_name.c_str());
-    file.seekg(reader_.excluded_section_position(sectionname_));
-  }
-  std::string line;
-  bool endofsection = false;
-
   Core::Elements::ElementDefinition ed;
   ed.setup_valid_element_lines();
 
-  for (int block = 0; block < nblock; ++block)
+  // All ranks > 0 will receive the node ids of the elements from rank 0.
+  // We know that we will read nblock blocks of elements, so call the
+  // collective function an appropriate number of times.
+  if (comm_->MyPID() > 0)
+  {
+    for (int i = 0; i < nblock; ++i)
+    {
+      std::vector<int> gidlist;
+      dis_->proc_zero_distribute_elements_to_all(*roweles_, gidlist);
+    }
+  }
+  // Rank 0 does the actual work
+  else
   {
     std::vector<int> gidlist;
-    if (!endofsection && comm_->MyPID() == 0)
+    gidlist.reserve(bsize);
+    int bcount = 0;
+    int block = 0;
+
+    for (const auto& element_line : reader_.lines_in_section(sectionname_))
     {
-      gidlist.reserve(bsize);
-      int bcount = 0;
-      while (getline(file, line))
+      std::istringstream t{std::string{element_line}};
+      int elenumber;
+      std::string eletype;
+      std::string distype;
+      // read element id type and distype
+      t >> elenumber >> eletype >> distype;
+      elenumber -= 1;
+      gidlist.push_back(elenumber);
+
+      // only read registered element types or all elements if nothing is
+      // registered
+      if (elementtypes_.size() == 0 or elementtypes_.count(eletype) > 0)
       {
-        if (line.find("--") == 0)
+        // let the factory create a matching empty element
+        Teuchos::RCP<Core::Elements::Element> ele =
+            Core::Communication::factory(eletype, distype, elenumber, 0);
+        if (ele.is_null()) FOUR_C_THROW("element creation failed");
+
+        // For the time being we support old and new input facilities. To
+        // smooth transition.
+
+        Input::LineDefinition* linedef = ed.element_lines(eletype, distype);
+        if (linedef != nullptr)
         {
-          // If we have an empty element section (or fewer elements
-          // than processors) we cannot read on. But we cannot exit
-          // the block loop beforehand either because the other
-          // processors need to syncronize nblock times.
-          endofsection = true;
-          break;
+          if (not linedef->read(t))
+          {
+            std::cout << "\n" << elenumber << " " << eletype << " " << distype << " ";
+            linedef->print(std::cout);
+            std::cout << "\n";
+            std::cout << element_line << "\n";
+            FOUR_C_THROW(
+                "failed to read element %d %s %s", elenumber, eletype.c_str(), distype.c_str());
+          }
+
+          ele->set_node_ids(distype, linedef->container());
+          ele->read_element(eletype, distype, linedef->container());
         }
         else
         {
-          std::istringstream t;
-          t.str(line);
-          int elenumber;
-          std::string eletype;
-          std::string distype;
-          // read element id type and distype
-          t >> elenumber >> eletype >> distype;
-          elenumber -= 1;
-          gidlist.push_back(elenumber);
+          FOUR_C_THROW(
+              "a matching line definition is needed for %s %s", eletype.c_str(), distype.c_str());
+        }
 
-          // only read registered element types or all elements if nothing is
-          // registered
-          if (elementtypes_.size() == 0 or elementtypes_.count(eletype) > 0)
-          {
-            // let the factory create a matching empty element
-            Teuchos::RCP<Core::Elements::Element> ele =
-                Core::Communication::factory(eletype, distype, elenumber, 0);
-            if (ele.is_null()) FOUR_C_THROW("element creation failed");
+        // add element to discretization
+        dis_->add_element(ele);
 
-            // For the time being we support old and new input facilities. To
-            // smooth transition.
+        // get the node ids of this element
+        const int numnode = ele->num_node();
+        const int* nodeids = ele->node_ids();
 
-            Input::LineDefinition* linedef = ed.element_lines(eletype, distype);
-            if (linedef != nullptr)
-            {
-              if (not linedef->read(t))
-              {
-                std::cout << "\n" << elenumber << " " << eletype << " " << distype << " ";
-                linedef->print(std::cout);
-                std::cout << "\n";
-                std::cout << line << "\n";
-                FOUR_C_THROW(
-                    "failed to read element %d %s %s", elenumber, eletype.c_str(), distype.c_str());
-              }
+        // all node gids of this element are inserted into a set of
+        // node ids --- it will be used later during reading of nodes
+        // to add the node to one or more discretisations
+        std::copy(nodeids, nodeids + numnode, std::inserter(nodes_, nodes_.begin()));
 
-              ele->set_node_ids(distype, linedef->container());
-              ele->read_element(eletype, distype, linedef->container());
-            }
-            else
-            {
-              FOUR_C_THROW("a matching line definition is needed for %s %s", eletype.c_str(),
-                  distype.c_str());
-            }
+        ++bcount;
 
-            // add element to discretization
-            dis_->add_element(ele);
-
-            // get the node ids of this element
-            const int numnode = ele->num_node();
-            const int* nodeids = ele->node_ids();
-
-            // all node gids of this element are inserted into a set of
-            // node ids --- it will be used later during reading of nodes
-            // to add the node to one or more discretisations
-            std::copy(nodeids, nodeids + numnode, std::inserter(nodes_, nodes_.begin()));
-
-            ++bcount;
-            if (block != nblock - 1)
-            {
-              if (bcount == bsize)
-              {
-                break;
-              }
-            }
-          }
+        // Distribute the block if it is full. Never distribute the last block here because it
+        // could be longer than expected and is therefore always distributed at the end.
+        if (block != nblock - 1 && bcount == bsize)
+        {
+          dis_->proc_zero_distribute_elements_to_all(*roweles_, gidlist);
+          gidlist.clear();
+          bcount = 0;
+          ++block;
         }
       }
     }
-    dis_->proc_zero_distribute_elements_to_all(*roweles_, gidlist);
+
+    // Ensure that the last block is distributed. Since the loop might abort a lot earlier
+    // than expected by the number of blocks, make sure to call the collective function
+    // the appropriate number of times to match the action of the other ranks.
+    for (; block < nblock; ++block)
+    {
+      dis_->proc_zero_distribute_elements_to_all(*roweles_, gidlist);
+      gidlist.clear();
+    }
   }
 }
 

@@ -2171,7 +2171,7 @@ void Global::read_materials(Global::Problem& problem, Core::IO::DatFileReader& r
 
   // check if every material was identified
   const std::string material_section = "--MATERIALS";
-  for (const auto& section_i : reader.get_lines_with_content(material_section))
+  for (const auto& section_i : reader.lines_in_section(material_section))
   {
     std::stringstream condline{std::string{section_i}};
 
@@ -2216,7 +2216,7 @@ void Global::read_contact_constitutive_laws(
 
   // check if every contact constitutive law was identified
   const std::string contact_const_laws = "--CONTACT CONSTITUTIVE LAWS";
-  for (const auto& section_i : reader.get_lines_with_content(contact_const_laws))
+  for (const auto& section_i : reader.lines_in_section(contact_const_laws))
   {
     std::stringstream condline{std::string{section_i}};
 
