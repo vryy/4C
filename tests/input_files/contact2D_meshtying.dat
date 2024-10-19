@@ -1190,5 +1190,3 @@ NODE 464    COORD  9.0000000000000000e+01  0.0000000000000000e+00  0.00000000000
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 280 QUANTITY dispx VALUE 3.99977034052427598e+01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 280 QUANTITY dispy VALUE -2.99388271714136138e+01 TOLERANCE 1e-8
----------------------------------------------------------------END
-// END

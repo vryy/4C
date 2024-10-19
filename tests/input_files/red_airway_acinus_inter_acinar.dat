@@ -79,5 +79,3 @@ RED_AIRWAY DIS red_airway NODE 1 QUANTITY pressure VALUE -5.84545454545454277e+0
 RED_AIRWAY DIS red_airway NODE 4 QUANTITY pressure VALUE -6.39090909090908667e+02 TOLERANCE 1e-9
 RED_AIRWAY DIS red_airway NODE 6 QUANTITY pressure VALUE -6.75454545454545155e+02 TOLERANCE 1e-9
 RED_AIRWAY DIS red_airway NODE 7 QUANTITY pressure VALUE -6.57272727272726797e+02 TOLERANCE 1e-9
--------------------------------------------------------------------------END
-//                              END

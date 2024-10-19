@@ -879,9 +879,32 @@ namespace Core::IO
       };
 
       std::string line;
-      // First loop over all input lines. This reads the actual file contents and determines whether
-      // a line is to be read immediately or should be excluded because it is in one of the excluded
-      // sections.
+
+      const auto finalize_section_read = [&](int number_of_lines)
+      {
+        if (!current_excluded_section_name.empty())
+        {
+          excludepositions_[current_excluded_section_name].second = number_of_lines;
+        }
+
+        const auto maybe_excluded_section = name_of_excluded_section(line);
+        if (!maybe_excluded_section.empty())
+        {
+          // Start a new excluded section. This starts at the next line.
+          excludepositions_[maybe_excluded_section].first = file.tellg();
+          current_excluded_section_name = maybe_excluded_section;
+        }
+        else
+        {
+          current_excluded_section_name.clear();
+        }
+
+        current_section_linecount = 0;
+      };
+
+      // First loop over all input lines. This reads the actual file contents and determines
+      // whether a line is to be read immediately or should be excluded because it is in one of
+      // the excluded sections.
       while (getline(file, line))
       {
         ++current_section_linecount;
@@ -896,26 +919,9 @@ namespace Core::IO
         // This line starts a new section
         if (line.find("--") == 0)
         {
-          if (!current_excluded_section_name.empty())
-          {
-            // finalize the last excluded section. Subtract the current line which is not part of
-            // the section anymore.
-            excludepositions_[current_excluded_section_name].second = current_section_linecount - 1;
-          }
-
-          const auto maybe_excluded_section = name_of_excluded_section(line);
-          if (!maybe_excluded_section.empty())
-          {
-            // Start a new excluded section. This starts at the next line.
-            excludepositions_[maybe_excluded_section].first = file.tellg();
-            current_excluded_section_name = maybe_excluded_section;
-          }
-          else
-          {
-            current_excluded_section_name.clear();
-          }
-
-          current_section_linecount = 0;
+          // finalize the last excluded section. Subtract the current line which is not part of
+          // the section anymore.
+          finalize_section_read(current_section_linecount - 1);
         }
 
         if (!current_excluded_section_name.empty())
@@ -929,6 +935,8 @@ namespace Core::IO
         // Count the number of characters in the line + 1 for the null-terminator we will add later.
         arraysize += static_cast<int>(line.length()) + 1;
       }
+      // Finalize the last section
+      finalize_section_read(current_section_linecount);
 
       // allocate space for copy of file
       inputfile_.clear();
@@ -1053,11 +1061,7 @@ namespace Core::IO
       knownsections_[name] = false;
     }
 
-    if (positions_.find("--END") == positions_.end())
-      FOUR_C_THROW("end section missing. incomplete dat file?");
-
     // the following section names are always regarded as valid
-    record_section_used("--END");
     record_section_used("--TITLE");
     record_section_used("--FUNCT1");
     record_section_used("--FUNCT2");

@@ -4627,5 +4627,3 @@ SCATRA DIS scatra NODE 784 QUANTITY phi VALUE 9.996155325e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 1 QUANTITY flux_boundary_1_x VALUE 0.000000000000000 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 1 QUANTITY flux_boundary_1_x VALUE 0.000000000000000 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 1 QUANTITY flux_boundary_1_z VALUE 5.000000000000000 TOLERANCE 1e-10
--------------------------------------------------------------------------END
-//                              END

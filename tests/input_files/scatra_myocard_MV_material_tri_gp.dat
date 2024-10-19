@@ -63,5 +63,3 @@ NODE        6 COORD  2.0e-01  1.0e-01  0.0e-01
 4 TRANSP TRI3 2 6 5 MAT 1 TYPE CardMono FIBER1 1.0 0.0 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 6 QUANTITY phi VALUE 1.33941967725154609e+00 TOLERANCE 1E-7
--------------------------------------------------------------------------END
-// END

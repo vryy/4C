@@ -1247,4 +1247,3 @@ NODE        45 COORD  5.0000000000000000e-01  5.0000000000000000e-01  2.20000000
 10 SOLID HEX8 31 30 36 37 35 34 38 39 MAT 3 KINEM nonlinear
 11 SOLID HEX8 32 33 34 35 40 41 42 43 MAT 3 KINEM nonlinear
 12 SOLID HEX8 35 34 38 39 43 42 44 45 MAT 3 KINEM nonlinear
--------------------------------------------------------------------------END

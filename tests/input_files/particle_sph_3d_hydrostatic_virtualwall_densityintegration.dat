@@ -1073,4 +1073,3 @@ NODE 3 COORD  0.025 0.025 -0.025
 NODE 4 COORD  0.025 -0.025 -0.025
 ------------------------------------------------STRUCTURE ELEMENTS
 1 MEMBRANE4 QUAD4 1 2 3 4 MAT 3 KINEM nonlinear THICK 0.01 STRESS_STRAIN plane_stress
--------------------------------------------------------------------------END

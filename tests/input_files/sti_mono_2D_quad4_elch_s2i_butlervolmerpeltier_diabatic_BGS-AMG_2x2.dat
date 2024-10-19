@@ -9304,4 +9304,3 @@ NODE      2909 COORD  2.9999999999999999e-02  6.0000000000000001e-03  0.00000000
    2498 TRANSP QUAD4  2885 2886 2907 2906    MAT 6 TYPE ElchElectrodeThermo
    2499 TRANSP QUAD4  2886 2887 2908 2907    MAT 6 TYPE ElchElectrodeThermo
    2500 TRANSP QUAD4  2887 2888 2909 2908    MAT 6 TYPE ElchElectrodeThermo
----------------------------------------------------------------END

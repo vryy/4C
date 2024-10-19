@@ -117,4 +117,3 @@ STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE -0.1 TOLERANCE 1e-13
 STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE -0.5 TOLERANCE 1e-13
 STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE -0.5 TOLERANCE 1e-13
 STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -0.5 TOLERANCE 1e-13
--------------------------------------------------------------------------END

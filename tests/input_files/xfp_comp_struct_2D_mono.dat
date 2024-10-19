@@ -29051,5 +29051,3 @@ FLUID DIS porofluid NODE 5624 QUANTITY velx VALUE 1.99124922784350393e-02 TOLERA
 FLUID DIS porofluid NODE 5624 QUANTITY vely VALUE -3.47772868615717538e-07 TOLERANCE 1e-12
 FLUID DIS porofluid NODE 5624 QUANTITY velz VALUE 0.00e00 TOLERANCE 1e-12
 FLUID DIS porofluid NODE 5624 QUANTITY pressure VALUE -1.50448209679150657e-06 TOLERANCE 1e-12
--------------------------------------------------------------------------END
-//                              END

@@ -172,5 +172,3 @@ STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 0 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 2.0e-05 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE 2.0e-05 TOLERANCE 1e-9
 THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 294 TOLERANCE 1.0e-9
--------------------------------------------------------------------------END
-// END

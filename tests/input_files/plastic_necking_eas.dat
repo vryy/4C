@@ -522,5 +522,3 @@ STRUCTURE DIS structure NODE 4 QUANTITY dispz VALUE 5.25 TOLERANCE 1.0e-12 NAME 
 STRUCTURE DIS structure NODE 80 QUANTITY dispx VALUE -1.15285353311795613e+00 TOLERANCE 1.0e-12 NAME ux_neck
 STRUCTURE DIS structure NODE 80 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-12 NAME uy_neck
 STRUCTURE DIS structure NODE 80 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-12 NAME uz_neck
----------------------------------------------------------------END
-// END

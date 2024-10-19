@@ -310,5 +310,3 @@ NODE 29 COORD -25.0 1.0 0.0
 15 ART LINE2 26 27 MAT 3 GP 2 TYPE PressureBased DIAM 24.0
 16 ART LINE2 27 28 MAT 3 GP 2 TYPE PressureBased DIAM 24.0
 17 ART LINE2 28 29 MAT 3 GP 2 TYPE PressureBased DIAM 24.0
----------------------------------------------------------------END
-// END

@@ -111,4 +111,3 @@ NODE 9 COORD 0.5 0.5 0.5
 4 SOLID PYRAMID5 7 8 4 3 9 MAT 1 KINEM nonlinear
 5 SOLID PYRAMID5 8 5 1 4 9 MAT 1 KINEM nonlinear
 6 SOLID PYRAMID5 5 8 7 6 9 MAT 1 KINEM nonlinear
----------------------------------------------------------------------------END

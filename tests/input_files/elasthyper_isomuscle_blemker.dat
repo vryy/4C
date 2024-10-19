@@ -155,4 +155,3 @@ NODE 27 COORD 1.0 1.0 1.0
 6 SOLID HEX8 6 11 12 8 18 23 24 20 MAT 1 KINEM nonlinear FIBER1 0.0 0.0 1.0
 7 SOLID HEX8 8 12 22 16 20 24 27 26 MAT 1 KINEM nonlinear FIBER1 0.0 0.0 1.0
 8 SOLID HEX8 7 8 16 15 19 20 26 25 MAT 1 KINEM nonlinear FIBER1 0.0 0.0 1.0
----------------------------------------------------------------END

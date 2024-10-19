@@ -311,5 +311,3 @@ NODE        91 COORD  1.5000000000000000e+00  1.5000000000000000e+00  5.00000000
 ------------------------------------------------RESULT DESCRIPTION
 THERMAL DIS thermo NODE      33 QUANTITY temp  VALUE 2.35982799471235261e+01 TOLERANCE 1e-10
 THERMAL DIS thermo NODE      74 QUANTITY temp  VALUE 3.64017200528764420e+01 TOLERANCE 1e-10
----------------------------------------------------------------END
-// END

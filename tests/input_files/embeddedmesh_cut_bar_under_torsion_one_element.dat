@@ -162,4 +162,3 @@ STRUCTURE DIS structure NODE 25 QUANTITY dispz VALUE -0.625003 TOLERANCE 1e-5
 STRUCTURE DIS structure NODE 32 QUANTITY dispx VALUE 3.21081 TOLERANCE 1e-5
 STRUCTURE DIS structure NODE 32 QUANTITY dispy VALUE -3.21083 TOLERANCE 1e-5
 STRUCTURE DIS structure NODE 32 QUANTITY dispz VALUE -0.625003 TOLERANCE 1e-5
------------------------------------------------------------------------------END

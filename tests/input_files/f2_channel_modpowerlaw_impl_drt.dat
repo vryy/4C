@@ -1046,5 +1046,4 @@ FLUID DIS fluid NODE 101 QUANTITY vely VALUE 0.000000000e+00 TOLERANCE 1e-9
 FLUID DIS fluid NODE 101 QUANTITY pressure VALUE 2.150423495e-02 TOLERANCE 1e-9
 FLUID DIS fluid NODE 21 QUANTITY tractionx VALUE 4.68467451030499138e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 21 QUANTITY tractiony VALUE -4.79217082270457506e-01 TOLERANCE 1e-9
--------------------------------------------------------------------------END
 //                              END

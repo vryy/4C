@@ -403,4 +403,3 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.5 1.0 10.0 VA
 --------------------------------------------------------------------------FUNCT3
 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1*a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.5 1.0 10.0 VALUES 0.0 0.1 0.0 0.0
------------------------------------------------------------------------------END

@@ -267,5 +267,3 @@ NODE 29 COORD 0.8 0.8 0.7
 ---------------------------------------------------ARTERY ELEMENTS
 5 ART LINE2 27 28 MAT 4 GP 3 TYPE PressureBased DIAM 0.5
 6 ART LINE2 28 29 MAT 4 GP 3 TYPE PressureBased DIAM 0.5
----------------------------------------------------------------END
-// END

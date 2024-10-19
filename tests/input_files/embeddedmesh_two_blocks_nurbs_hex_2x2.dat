@@ -554,5 +554,4 @@ NODE 109 COORD 2 2 -11.5
 22 SOLID HEX8 71 76 90 87 97 100 107 105  MAT 1 KINEM nonlinear
 23 SOLID HEX8 76 80 92 90 100 102 108 107  MAT 1 KINEM nonlinear
 24 SOLID HEX8 80 84 94 92 102 104 109 108  MAT 1 KINEM nonlinear
------------------------------------------------------------------------------END
 

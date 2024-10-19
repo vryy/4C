@@ -77,6 +77,4 @@ ARTNET DIS artery NODE 1 QUANTITY pressure VALUE 2.0 TOLERANCE 1e-13
 ARTNET DIS artery NODE 4 QUANTITY pressure VALUE 1.0 TOLERANCE 1e-13
 ARTNET DIS artery NODE 6 QUANTITY pressure VALUE 1.0 TOLERANCE 1e-13
 ARTNET DIS artery NODE 8 QUANTITY pressure VALUE 0.0 TOLERANCE 1e-13
--------------------------------------------------------------------------END
 
-//                              END

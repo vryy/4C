@@ -447,5 +447,3 @@ NODE        84 COORD  5.0000000000000000e+00  1.0000000000000000e+00  0.00000000
    58 WALLQ4POROSCATRA QUAD4  60 61 82 81    MAT 4 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroMultiReac
    59 WALLQ4POROSCATRA QUAD4  61 62 83 82    MAT 4 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroMultiReac
    60 WALLQ4POROSCATRA QUAD4  62 63 84 83    MAT 4 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroMultiReac
----------------------------------------------------------------END
-// END

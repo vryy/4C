@@ -400,4 +400,3 @@ FNODE 75 COORD 10.0 -1.0 11.0 FIBER1 1.0 0.0 6.123233995736766e-17 FIBER2 0.0 1.
 194 SOLID TET4 70 64 65 74 MAT 1 KINEM nonlinear
 195 SOLID TET4 70 72 64 74 MAT 1 KINEM nonlinear
 196 SOLID TET4 70 73 72 74 MAT 1 KINEM nonlinear
----------------------------------------------------------------------------END

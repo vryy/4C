@@ -673,5 +673,3 @@ STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 0.0000000000000000 TOLERANCE
 //STRUCTURE DIS structure ELEMENT 2 POSITION stress_gpxyz(1,1) NAME sxx VALUE 0.6572981061383760 TOLERANCE 1e-9
 //STRUCTURE DIS structure ELEMENT 2 POSITION stress_gpxyz(1,2) NAME syy VALUE 0.0000000000000000 TOLERANCE 1e-9
 //STRUCTURE DIS structure ELEMENT 2 POSITION stress_gpxyz(1,3) NAME szz VALUE 0.0000000000000000 TOLERANCE 1e-9
--------------------------------------------------------------------------END
-//                              END

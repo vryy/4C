@@ -180,4 +180,3 @@ NODE 30 COORD 5.6360000000000000e-02 0.0000000000000000e+00 0.0000000000000000e+
 27 TRANSP LINE2 27 28 MAT 3 TYPE ElchDiffCondMultiScale
 28 TRANSP LINE2 28 29 MAT 3 TYPE ElchDiffCondMultiScale
 29 TRANSP LINE2 29 30 MAT 3 TYPE ElchDiffCondMultiScale
----------------------------------------------------------------END

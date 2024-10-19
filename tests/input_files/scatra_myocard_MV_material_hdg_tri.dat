@@ -65,5 +65,3 @@ NODE         6 COORD  0.0e+00  1.0e+00  0.0e+00
 4 TRANSPHDG TRI3  4 3 2    MAT 1 TYPE HdgCardMono DEG 4 SPC 1 FIBER1 1.0 0.0 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 6 QUANTITY phi VALUE 1.33667785616053703e+00 TOLERANCE 1E-7
--------------------------------------------------------------------------END
-// END

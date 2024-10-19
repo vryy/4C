@@ -122,4 +122,3 @@ NODE 12 COORD 2.0 1.0 1.0
 2 SOLID WEDGE6 1 2 3 5 6 7 MAT 1 KINEM nonlinear
 3 SOLID WEDGE6 2 10 3 6 12 7 MAT 1 KINEM nonlinear
 4 SOLID WEDGE6 2 9 10 6 11 12 MAT 1 KINEM nonlinear
----------------------------------------------------------------------------END

@@ -294,5 +294,3 @@ NODE       136 COORD  1.5493460315363208e+00  9.3304938188574216e+00  0.00000000
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 1.02882946240125811e-01 TOLERANCE 1.000e-12
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -3.03010902382147458e-02 TOLERANCE 1.000e-12
----------------------------------------------------------------END
-// END

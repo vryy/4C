@@ -82,5 +82,3 @@ NODE 9 COORD 1.0000000000000000e+00 5.0000000000000000e-01 0.0000000000000000e+0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 9.9999999899452411e-03 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 1.1813397656211546e-12 TOLERANCE 1e-9
--------------------------------------------------------------------------END
-//                              END

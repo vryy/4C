@@ -111,4 +111,3 @@ FNODE 15 COORD 0.5 0.5 0.5 FIBER1 0.8808587253753898 0.46979132020020786 0.05817
 26 SOLID TET4 11 9 10 15 MAT 1 KINEM nonlinear
 27 SOLID TET4 11 12 9 15 MAT 1 KINEM nonlinear
 28 SOLID TET4 11 14 12 15 MAT 1 KINEM nonlinear
----------------------------------------------------------------------------END

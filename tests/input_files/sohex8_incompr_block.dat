@@ -749,5 +749,3 @@ NODE 216 COORD -2.5000000000000e+01 2.5000000000000e+01 2.5000000000000e+01
 123 SOLID HEX8 171 172 178 177 207 208 214 213 MAT 1 KINEM nonlinear TECH eas_full
 124 SOLID HEX8 172 173 179 178 208 209 215 214 MAT 1 KINEM nonlinear TECH eas_full
 125 SOLID HEX8 173 174 180 179 209 210 216 215 MAT 1 KINEM nonlinear TECH eas_full
--------------------------------------------------------------------------END
-//                              END

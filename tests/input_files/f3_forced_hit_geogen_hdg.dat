@@ -134,4 +134,3 @@ UPPER_BOUND  6.283185307  6.283185307  6.283185307
 INTERVALS   8 8 8
 ELEMENTS    FLUIDHDG HEX8 MAT 1 NA Euler DEG 1 SPC 1
 PARTITION   auto
--------------------------------------------------------------------------END

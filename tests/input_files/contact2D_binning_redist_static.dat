@@ -366,5 +366,3 @@ NODE        87 COORD -2.0000000000000000e+00 -2.0000000000000001e-01  0.00000000
    44 WALL QUAD4  81 80 82 83    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    45 WALL QUAD4  83 82 84 85    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
    46 WALL QUAD4  85 84 86 87    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
----------------------------------------------------------------END
-// END

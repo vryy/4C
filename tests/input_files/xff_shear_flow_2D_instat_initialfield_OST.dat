@@ -1454,5 +1454,3 @@ XFLUID DIS xfluid NODE 61 QUANTITY velx VALUE 8.57142857142857206e-01 TOLERANCE 
 XFLUID DIS xfluid NODE 61 QUANTITY pressure VALUE 9.0e00 TOLERANCE 1e-6
 XFLUID DIS xfluid NODE 85 QUANTITY velx VALUE 2.85714285714284144e-01 TOLERANCE 1e-6
 XFLUID DIS xfluid NODE 85 QUANTITY pressure VALUE 9.0e00 TOLERANCE 1e-6
--------------------------------------------------------------------------END
-//                              END

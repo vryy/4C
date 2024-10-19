@@ -394,5 +394,3 @@ NODE 125 COORD 5.00000000e-01 5.00000000e-01 -5.00000000e-01
 62 SOLID HEX8 91 93 98 96 116 118 123 121 MAT 1 KINEM nonlinear RAD -1 1 0 CIR 1 1 1 AXI 1 1 -2 TECH eas_mild
 63 SOLID HEX8 93 94 99 98 118 119 124 123 MAT 1 KINEM nonlinear RAD -1 1 0 CIR 1 1 1 AXI 1 1 -2 TECH eas_mild
 64 SOLID HEX8 94 95 100 99 119 120 125 124 MAT 1 KINEM nonlinear RAD -1 1 0 CIR 1 1 1 AXI 1 1 -2 TECH eas_mild
--------------------------------------------------------------------------END
-//                              END

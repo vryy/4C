@@ -102,5 +102,3 @@ THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 1.0 TOLERANCE 1e-9
 THERMAL DIS thermo NODE 9 QUANTITY temp VALUE 0.2 TOLERANCE 1e-9
 THERMAL DIS thermo NODE 10 QUANTITY temp VALUE 0.1 TOLERANCE 1e-9
 THERMAL DIS thermo NODE 11 QUANTITY temp VALUE 0.0 TOLERANCE 1e-9
--------------------------------------------------------------------------END
-//                              END

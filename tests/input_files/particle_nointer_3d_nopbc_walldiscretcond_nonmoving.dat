@@ -235,4 +235,3 @@ NODE        56 COORD -4.0000000000000002e-01  1.7677669529663687e-01 -1.76776695
    46 MEMBRANE4 QUAD4  46 47 55 54    MAT 1 KINEM nonlinear THICK 0.01 STRESS_STRAIN plane_stress
    47 MEMBRANE4 QUAD4  47 48 56 55    MAT 1 KINEM nonlinear THICK 0.01 STRESS_STRAIN plane_stress
    48 MEMBRANE4 QUAD4  48 42 50 56    MAT 1 KINEM nonlinear THICK 0.01 STRESS_STRAIN plane_stress
--------------------------------------------------------------------------END

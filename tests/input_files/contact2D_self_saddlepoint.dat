@@ -5000,5 +5000,3 @@ STRUCTURE DIS structure NODE 329 QUANTITY dispy VALUE -4.15717429186358522e+00 T
 STRUCTURE SPECIAL QUANTITY num_iter_step_80 VALUE 5.0 TOLERANCE 1.0e-20
 STRUCTURE SPECIAL QUANTITY num_iter_step_81 VALUE  5.0 TOLERANCE 1.0e-20
 STRUCTURE SPECIAL QUANTITY num_iter_step_82 VALUE  7.0 TOLERANCE 1.0e-20
--------------------------------------------------------------------------END
-//                              END

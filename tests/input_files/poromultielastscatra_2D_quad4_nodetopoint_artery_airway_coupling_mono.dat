@@ -422,5 +422,3 @@ NODE        48 COORD -3.4999999999999998e-01 -2.5000000000000000e-01  0.00000000
    32 ART LINE2  45 46    MAT 4 GP 3 TYPE PressureBased DIAM 0.05
    33 ART LINE2  46 47    MAT 4 GP 3 TYPE PressureBased DIAM 0.05
    34 ART LINE2  46 48    MAT 4 GP 3 TYPE PressureBased DIAM 0.05
----------------------------------------------------------------END
-// END

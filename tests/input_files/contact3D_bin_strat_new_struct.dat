@@ -1152,5 +1152,3 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.3 1 VALUES 
 STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE  4.06748421531402060e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE  4.03747679527175218e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 67 QUANTITY dispz VALUE -9.85603863009707926e-01 TOLERANCE 1e-8
--------------------------------------------------------------------------END
-//                              END

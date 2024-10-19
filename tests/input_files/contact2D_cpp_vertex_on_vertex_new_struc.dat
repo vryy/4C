@@ -1260,5 +1260,3 @@ NODE       505 COORD  0.0000000000000000e+00  8.5000000000000000e+00  0.00000000
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 59 QUANTITY dispx VALUE -1.66813729898446618e-04 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 59 QUANTITY dispy VALUE  5.08855804745871314e-03 TOLERANCE 1e-8
----------------------------------------------------------------END
-// END

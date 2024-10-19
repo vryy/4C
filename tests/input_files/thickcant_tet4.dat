@@ -1289,5 +1289,4 @@ STRUCTURE DIS structure NODE 176 QUANTITY dispz VALUE -4.62765525073580264e-01 T
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.1 500000.0 DESCRIPTION 50000*t 5000
--------------------------------------------------------------------------END
 //                              END

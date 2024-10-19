@@ -2734,5 +2734,3 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 25*t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 564 QUANTITY dispx VALUE 1.1361028743158721e+01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 564 QUANTITY dispy VALUE 8.1492176130686389e-01 TOLERANCE 1e-8
--------------------------------------------------------------------------END
-//                              END

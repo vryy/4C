@@ -59,4 +59,3 @@ NODE 3 COORD 2.0000000000 0.0000000000 0.0000000000
 MAT 1 MAT_LinElast1D YOUNG 2.0e7 DENS 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE -7.07106781186547621e-03 TOLERANCE 1.000e-11
--------------------------------------------------------------------------END

@@ -2423,4 +2423,3 @@ NODE       421 COORD  3.9659258264999999e-03  0.0000000000000000e+00  0.00000000
    1274 TRANSP TET4  366 370 372 348    MAT 3 TYPE ElchElectrode
    1275 TRANSP TET4  315 316 383 391    MAT 3 TYPE ElchElectrode
    1276 TRANSP TET4  315 391 317 316    MAT 3 TYPE ElchElectrode
----------------------------------------------------------------END

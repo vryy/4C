@@ -53,5 +53,3 @@ NODE 2 DLINE 2
 ----------------------------------------------------------RESULT DESCRIPTION
 RED_AIRWAY DIS red_airway NODE 2 QUANTITY pressure VALUE 4.81258869171142800e-01 TOLERANCE 1e-9
 RED_AIRWAY DIS red_airway ELEMENT 1 QUANTITY acini_volume VALUE 1.50623707771301296e+00 TOLERANCE 1.0e-6
--------------------------------------------------------------------------END
-//                              END

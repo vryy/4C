@@ -183,5 +183,3 @@ NODE 25 COORD   0.5   0.5  0.0
 14  FLUID QUAD4 17 18 23 22 MAT 1 NA Euler
 15  FLUID QUAD4 18 19 24 23 MAT 1 NA Euler
 16  FLUID QUAD4 19 20 25 24 MAT 1 NA Euler
--------------------------------------------------------------------------END
-//                              END

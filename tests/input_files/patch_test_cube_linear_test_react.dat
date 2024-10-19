@@ -120,4 +120,3 @@ STRUCTURE DIS structure NODE 1 QUANTITY reactx VALUE 0.25 TOLERANCE 1e-13
 STRUCTURE DIS structure NODE 2 QUANTITY reactx VALUE 0.25 TOLERANCE 1e-13
 STRUCTURE DIS structure NODE 3 QUANTITY reactx VALUE 0.25 TOLERANCE 1e-13
 STRUCTURE DIS structure NODE 7 QUANTITY reactx VALUE 0.25 TOLERANCE 1e-13
--------------------------------------------------------------------------END

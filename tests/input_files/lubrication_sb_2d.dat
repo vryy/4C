@@ -114,5 +114,3 @@ NODE        18 COORD  1.5000000000000000e+01 -3.0000000000000152e-02  2.50000000
    8 LUBRICATION QUAD4  15 17 18 16    MAT 3
 -------------------------------------------------RESULT DESCRIPTION
 LUBRICATION DIS lubrication NODE 10 QUANTITY pre VALUE 7.39435620711026758e+01 TOLERANCE 1e-10
----------------------------------------------------------------END
-// END

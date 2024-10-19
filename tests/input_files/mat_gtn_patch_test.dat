@@ -233,4 +233,3 @@ MAT 1 MAT_Struct_PlasticGTN YOUNG 7e4 NUE 0.33 DENS 0.0 YIELD 375.0 ISOHARD 0.0 
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY reacty VALUE -1.20281306057115742e+01 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 2 QUANTITY reacty VALUE -2.40562612150315722e+01 TOLERANCE 1e-10
--------------------------------------------------------------------------END

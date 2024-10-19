@@ -88,4 +88,3 @@ STRUCTURE DIS structure NODE 9 QUANTITY dispy VALUE -7.0710659640671969e-01 TOLE
 STRUCTURE DIS structure NODE 9 QUANTITY dispz VALUE -6.3661992421102098e-01 TOLERANCE 1e-8
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_TIME t
--------------------------------------------------------------------------END

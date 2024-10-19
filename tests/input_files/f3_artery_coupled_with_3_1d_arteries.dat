@@ -4314,5 +4314,3 @@ FLUID DIS fluid NODE  98 QUANTITY pressure VALUE -2.51315634571833471e+04 TOLERA
 FLUID DIS fluid NODE  98 QUANTITY     velx VALUE -1.37087825648620747e-02 TOLERANCE 1e-9
 FLUID DIS fluid NODE  98 QUANTITY     vely VALUE -1.82210694298935334e-02 TOLERANCE 1e-9
 FLUID DIS fluid NODE  98 QUANTITY     velz VALUE -6.36289203184698451e+01 TOLERANCE 1e-9
--------------------------------------------------------------------------END
-//                              END

@@ -71,5 +71,3 @@ RED_AIRWAY DIS red_airway NODE 3 QUANTITY pressure VALUE 0.00000000000000000e+00
 RED_AIRWAY DIS red_airway NODE 4 QUANTITY pressure VALUE 5.00000000000000000e-01 TOLERANCE 1e-9
 RED_AIRWAY DIS red_airway ELEMENT 1 QUANTITY acini_volume VALUE 1.49999614470559917e+00 TOLERANCE 1.0e-6
 RED_AIRWAY DIS red_airway ELEMENT 2 QUANTITY acini_volume VALUE 5.00003855294401944e-01 TOLERANCE 1.0e-6
--------------------------------------------------------------------------END
-//                              END

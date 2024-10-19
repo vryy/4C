@@ -4538,5 +4538,3 @@ STRUCTURE DIS structure NODE 1324 QUANTITY dispy VALUE -1.37711788598493173e-01 
 STRUCTURE DIS structure NODE 910 QUANTITY dispx VALUE 1.6449577601625317e-09 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 910 QUANTITY dispy VALUE -3.29825826261839690e-05 TOLERANCE 1e-8
 
--------------------------------------------------------------------------END
-//                              END

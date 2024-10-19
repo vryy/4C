@@ -257,4 +257,3 @@ FNODE 85 COORD 1.0 2.0 1.0 FIBER1 1.0 0.0 0.0
 29 SOLID TET10 61 21 22 69 68 38 65 75 73 72 MAT 1 KINEM nonlinear
 30 SOLID TET10 61 41 21 69 70 50 68 75 74 73 MAT 1 KINEM nonlinear
 31 SOLID TET10 61 52 41 69 76 78 70 75 77 74 MAT 1 KINEM nonlinear
----------------------------------------------------------------------------END

@@ -60,5 +60,3 @@ NODE 6 DNODE 3
 ----------------------------------------------------------RESULT DESCRIPTION
 RED_AIRWAY DIS red_airway NODE 3 QUANTITY pressure VALUE -1.45098465831474329e+02 TOLERANCE 1e-6
 RED_AIRWAY DIS red_airway NODE 4 QUANTITY pressure VALUE -1.45098465831474329e+02 TOLERANCE 1e-6
--------------------------------------------------------------------------END
-//                              END

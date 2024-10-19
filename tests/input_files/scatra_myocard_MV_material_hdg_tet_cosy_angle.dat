@@ -84,5 +84,3 @@ FNODE        12 COORD  2.0000000000000001e-01  1.0000000000000001e-01  1.0000000
    12 TRANSPHDG  TET4  9 8 5 7     MAT 1 TYPE HdgCardMono  DEG 0
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 1.54496077096426454e+00  TOLERANCE 1E-7
----------------------------------------------------------------END
-// END

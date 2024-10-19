@@ -1430,5 +1430,3 @@ NODE       626 COORD  5.0961538461538466e-03 -5.0000000000000002e-05  0.00000000
    310 TRANSP QUAD4  621 623 624 622    MAT 1 TYPE ElchDiffCond
    311 TRANSP QUAD4  623 625 626 624    MAT 1 TYPE ElchDiffCond
    312 TRANSP QUAD4  625 211 214 626    MAT 1 TYPE ElchDiffCond
----------------------------------------------------------------END
-// END

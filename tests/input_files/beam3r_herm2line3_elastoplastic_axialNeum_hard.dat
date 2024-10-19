@@ -91,4 +91,3 @@ STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 11 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-6
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_TIME t
--------------------------------------------------------------------------END

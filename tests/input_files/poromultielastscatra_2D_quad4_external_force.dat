@@ -238,5 +238,3 @@ NODE        12 COORD  1.9999999999999998e+00  4.0000000000000002e-01  0.00000000
 3 WALLQ4POROSCATRA QUAD4  5 7 8 6    MAT 4 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroMultiReac
 4 WALLQ4POROSCATRA QUAD4  7 9 10 8    MAT 4 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroMultiReac
 5 WALLQ4POROSCATRA QUAD4  9 11 12 10    MAT 4 KINEM nonlinear EAS none THICK 1 STRESS_STRAIN plane_strain GP 2 2 TYPE PoroMultiReac
----------------------------------------------------------------END
-// END
