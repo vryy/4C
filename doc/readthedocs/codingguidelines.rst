@@ -71,16 +71,3 @@ The following guidelines are especially relevant for the current state of |FOURC
 
 Variable names must not be just a single letter, because they are impossible to find in a global search operation.
 (Exception: loop indices such as i, j, but remember that even loop indices could/should have descriptive names.)
-
-
-|FOURC| file levels
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Each file has a header flag \level. This flag should indicate how well tested and applicable for others that implementation is.
-
-- Level 0: Fundamental code infrastructure.
-- Level 1: Well-tested and well-documented code with applications in several areas with clearly defined interfaces (e.g. basic fluid or structure implementations).
-- Level 2: Well-tested application-specific code (e.g. ALE-FSI implementation); good for use by others
-- Level 3: Experimental code, may still contain bugs or missing features that will be fixed by later revisions
-
-
