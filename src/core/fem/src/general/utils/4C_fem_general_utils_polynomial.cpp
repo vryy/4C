@@ -677,7 +677,7 @@ namespace Core::FE
 
 
     // Sanity check: Polynomials should be nodal in the Fekete points
-#ifdef FOUR_C_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     for (unsigned int i = 0; i < size(); ++i)
     {
       for (unsigned int d = 0; d < nsd; ++d) point(d, 0) = fekete_points_(d, i);
@@ -685,10 +685,10 @@ namespace Core::FE
       evaluate(point, values);
       for (unsigned int j = 0; j < size(); ++j)
         if (i != j)
-          if (std::abs(values(j)) > 1e-11)
-            FOUR_C_THROW("Lagrange polynomial seems to not be nodal, p_j(xi_i) = %lf!", values(j));
-      if (std::abs(values(i) - 1.) > 1e-11)
-        FOUR_C_THROW("Lagrange polynomial seems to not be nodal, p_i(xi_i) = %lf!", values(i));
+          FOUR_C_ASSERT(std::abs(values(j)) < 1e-11,
+              "Lagrange polynomial seems to not be nodal, p_j(xi_i) = %lf!", values(j));
+      FOUR_C_ASSERT(std::abs(values(i) - 1.) < 1e-11,
+          "Lagrange polynomial seems to not be nodal, p_i(xi_i) = %lf!", values(i));
     }
 #endif
   }

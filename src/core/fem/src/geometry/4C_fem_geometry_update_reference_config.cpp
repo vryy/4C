@@ -32,7 +32,7 @@ void Core::Geo::update_reference_config_with_disp(
   {
     const unsigned int ndim = mynode->n_dim();
 
-#ifdef FOUR_C_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     FOUR_C_ASSERT(static_cast<int>(ndim * dis.node_row_map()->NumGlobalElements()) ==
                       disp.Map().NumGlobalElements(),
         "Number of space dimensions does not fit to displacement vector.");

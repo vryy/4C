@@ -230,9 +230,9 @@ namespace Core::LinAlg
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
   void FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::factor_with_equilibration(bool b)
   {
-#ifdef FOUR_C_DEBUG
-    if (factored_ or inverted_)
-      FOUR_C_THROW("Cannot set equilibration after changing the matrix with Factor() or invert().");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+    FOUR_C_ASSERT(!factored_ && !inverted_,
+        "Cannot set equilibration after changing the matrix with Factor() or invert().");
 #endif
     equilibrate_ = b;
   }
@@ -240,8 +240,8 @@ namespace Core::LinAlg
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
   int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::factor()
   {
-#ifdef FOUR_C_DEBUG
-    if (inverted_) FOUR_C_THROW("Cannot factor the inverted matrix.");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+    FOUR_C_ASSERT(!inverted_, "Cannot factor the inverted matrix.");
 #endif
     if (factored_) return 0;
     int errnum = 0;
@@ -264,8 +264,8 @@ namespace Core::LinAlg
       errnum = equilibrate_rhs();
     }
     if (errnum != 0) return errnum;
-#ifdef FOUR_C_DEBUG
-    if (not vec_b_ or not vec_x_) FOUR_C_THROW("Both vectors must be set to solve.");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+    FOUR_C_ASSERT(vec_b_ && vec_x_, "Both vectors must be set to solve.");
 #endif
 
     if (inverted_)

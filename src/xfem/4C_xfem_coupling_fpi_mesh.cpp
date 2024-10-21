@@ -408,7 +408,7 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp_contact(
     double* fulltraction                    //< precomputed fsi traction (sigmaF n + gamma relvel)
 )
 {
-#ifdef FOUR_C_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   FOUR_C_ASSERT(xf_c_comm_ != Teuchos::null,
       "update_configuration_map_gp_contact but no Xfluid Contact Communicator assigned!");
 #endif
