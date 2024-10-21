@@ -378,8 +378,7 @@ void SSI::SSIBase::init_discretizations(const Epetra_Comm& comm, const std::stri
   }
   // read in the micro field, has to be done after cloning of the scatra discretization
   auto input_file_name = problem->output_control_file()->input_file_name();
-  Core::IO::DatFileReader local_reader(input_file_name);
-  Global::read_micro_fields(*problem, local_reader);
+  Global::read_micro_fields(*problem, std::filesystem::path(input_file_name).parent_path());
 }
 
 /*----------------------------------------------------------------------*

@@ -70,7 +70,7 @@ namespace
 
   TEST(StreamLineIterator, Empty)
   {
-    std::istringstream stream{""};
+    auto stream = std::make_shared<std::istringstream>("");
     Core::IO::Internal::StreamLineIterator it{stream};
     Core::IO::Internal::StreamLineIterator it_end{};
     EXPECT_EQ(it, it_end);
@@ -78,7 +78,7 @@ namespace
 
   TEST(StreamLineIterator, SingleLine)
   {
-    std::istringstream stream{"test"};
+    auto stream = std::make_shared<std::istringstream>("test");
     Core::IO::Internal::StreamLineIterator it{stream};
     Core::IO::Internal::StreamLineIterator it_end{};
     std::string line;
@@ -91,7 +91,7 @@ namespace
 
   TEST(StreamLineIterator, MultipleLineUntilEnd)
   {
-    std::istringstream stream{"a\nb\nc\n"};
+    auto stream = std::make_shared<std::istringstream>("a\nb\nc\n");
     Core::IO::Internal::StreamLineIterator it{stream};
     Core::IO::Internal::StreamLineIterator it_end{};
     std::string line;
@@ -104,7 +104,7 @@ namespace
 
   TEST(StreamLineIterator, MultipleLineUntilGivenLine)
   {
-    std::istringstream stream{"a\nb\nc\n"};
+    auto stream = std::make_shared<std::istringstream>("a\nb\nc\n");
     Core::IO::Internal::StreamLineIterator it{stream, 2};
     Core::IO::Internal::StreamLineIterator it_end{};
     std::string line;
@@ -117,7 +117,7 @@ namespace
 
   TEST(StreamLineIterator, EmptyRange)
   {
-    std::istringstream stream{"a\nb\nc\n"};
+    auto stream = std::make_shared<std::istringstream>("a\nb\nc\n");
     Core::IO::Internal::StreamLineIterator it{stream, 0};
     // Read zero lines
     Core::IO::Internal::StreamLineIterator it_end{};

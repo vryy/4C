@@ -12,6 +12,8 @@
 
 #include "4C_global_data.hpp"
 
+#include <filesystem>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Global
@@ -20,7 +22,7 @@ namespace Global
   void read_fields(
       Global::Problem& problem, Core::IO::DatFileReader& reader, const bool read_mesh = true);
 
-  void read_micro_fields(Global::Problem& problem, Core::IO::DatFileReader& reader);
+  void read_micro_fields(Global::Problem& problem, const std::filesystem::path& input_path);
 
   /// set up supporting processors for micro-scale discretizations
   void read_microfields_np_support(Global::Problem& problem);

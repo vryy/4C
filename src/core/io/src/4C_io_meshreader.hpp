@@ -134,7 +134,7 @@ namespace Core::IO
     void create_inline_mesh(int& max_node_id);
 
     /// my comm
-    Teuchos::RCP<Epetra_Comm> comm_;
+    const Epetra_Comm& comm_;
 
     //! graphs of each discretization
     std::vector<Teuchos::RCP<const Epetra_CrsGraph>> graph_;

@@ -157,7 +157,7 @@ namespace Core::IO
     Core::IO::DatFileReader& reader_;
 
     /// my comm
-    Teuchos::RCP<Epetra_Comm> comm_;
+    const Epetra_Comm& comm_;
 
     /// my section to read
     std::string sectionname_;
