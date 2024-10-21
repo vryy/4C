@@ -973,12 +973,11 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hi
 
 #ifdef FOUR_C_DEBUG
   // check if we have the right number of polynomials
-  if (poly.Size() != 125) FOUR_C_THROW("wrong number of polynomials");
+  if (poly.size() != 125) FOUR_C_THROW("wrong number of polynomials");
 #endif
 
   initialize_shapes(ele);
   shapes_->evaluate(*ele);
-
 
   if (elevec1.numRows() > 0)
   {

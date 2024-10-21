@@ -862,9 +862,9 @@ namespace Core::LinAlg
         ValueTypeOut* out, const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
@@ -888,9 +888,9 @@ namespace Core::LinAlg
         ValueTypeOut* out, const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
@@ -914,9 +914,9 @@ namespace Core::LinAlg
         ValueTypeOut* out, const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
@@ -940,9 +940,9 @@ namespace Core::LinAlg
         ValueTypeOut* out, const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
@@ -966,9 +966,9 @@ namespace Core::LinAlg
         ValueTypeOut* out, const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
@@ -992,9 +992,9 @@ namespace Core::LinAlg
         const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
@@ -1018,9 +1018,9 @@ namespace Core::LinAlg
         const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
@@ -1044,9 +1044,9 @@ namespace Core::LinAlg
         const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
@@ -1070,9 +1070,9 @@ namespace Core::LinAlg
         const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
@@ -1096,9 +1096,9 @@ namespace Core::LinAlg
         const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
@@ -1123,9 +1123,9 @@ namespace Core::LinAlg
         const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
@@ -1150,9 +1150,9 @@ namespace Core::LinAlg
         const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
@@ -1177,9 +1177,9 @@ namespace Core::LinAlg
         const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
@@ -1204,9 +1204,9 @@ namespace Core::LinAlg
         const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
@@ -1231,9 +1231,9 @@ namespace Core::LinAlg
         const ValueTypeRight* const right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
@@ -1459,7 +1459,7 @@ namespace Core::LinAlg
     inline void update(ValueTypeOut* out, const ValueTypeInfac infac, const ValueTypeIn* in)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_in>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeIn>)
         if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       *out = infac * (*in);
@@ -1472,7 +1472,7 @@ namespace Core::LinAlg
         const ValueTypeIn* in)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_in>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeIn>)
         if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30)
@@ -1494,9 +1494,9 @@ namespace Core::LinAlg
     inline void update(ValueTypeOut* out, const ValueTypeLeft* left, const ValueTypeRight* right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       *out = *left + *right;
@@ -1509,9 +1509,9 @@ namespace Core::LinAlg
         const ValueTypeRightfac rightfac, const ValueTypeRight* right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       *out = leftfac * (*left) + rightfac * (*right);
@@ -1526,9 +1526,9 @@ namespace Core::LinAlg
         const ValueTypeRight* right)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
         if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
         if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30)
@@ -1549,7 +1549,7 @@ namespace Core::LinAlg
     inline void update_t(ValueTypeOut* out, const ValueTypeIn* in)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_in>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeIn>)
         if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       for (unsigned int c2 = 0; c2 < j; c2 += 1)
@@ -1561,7 +1561,7 @@ namespace Core::LinAlg
     inline void update_t(ValueTypeOut* out, const ValueTypeInfac infac, const ValueTypeIn* in)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_in>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeIn>)
         if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       for (unsigned int c2 = 0; c2 < j; c2 += 1)
@@ -1574,7 +1574,7 @@ namespace Core::LinAlg
         const ValueTypeInfac infac, const ValueTypeIn* in)
     {
 #ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_in>)
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeIn>)
         if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30)
