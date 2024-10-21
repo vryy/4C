@@ -148,4 +148,4 @@ add_subdirectory(doc/readthedocs EXCLUDE_FROM_ALL)
 
 add_subdirectory(unittests)
 add_subdirectory(tests/cut_test)
-include(four_c_testing_functions.cmake)
+include(tests/list_of_tests.cmake)
